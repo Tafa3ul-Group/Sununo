@@ -1,53 +1,103 @@
+import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
+
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * Normalization utilities to ensure consistent UI across different screen sizes and platforms.
  */
-
-import { Platform } from 'react-native';
-
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+export const normalize = {
+  width: (size: number) => scale(size),
+  height: (size: number) => verticalScale(size),
+  font: (size: number, factor?: number) => moderateScale(size, factor),
+  radius: (size: number, factor?: number) => moderateScale(size, factor),
+};
 
 export const Colors = {
-  light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+  primary: '#2B66FF',
+  secondary: '#F0F2F5',
+  background: '#FFFFFF',
+  surface: '#F8F9FB',
+  text: {
+    primary: '#1A1A1A',
+    secondary: '#717171',
+    muted: '#9CA3AF',
+    onPrimary: '#FFFFFF',
   },
-  dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+  accent: {
+    star: '#FFB800',
+    heart: '#FFFFFF',
+    heartActive: '#FF385C',
+  },
+  border: '#EBEBEB',
+  shadow: '#000000',
+};
+
+export const Spacing = {
+  xs: normalize.width(4),
+  sm: normalize.width(8),
+  md: normalize.width(16),
+  lg: normalize.width(24),
+  xl: normalize.width(32),
+};
+
+// Use explicit literal types for fontWeight to satisfy TypeScript
+type FontWeight = 'normal' | 'bold' | '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900';
+
+interface TypeStyle {
+  fontSize: number;
+  fontWeight: FontWeight;
+  color: string;
+}
+
+export const Typography: Record<string, TypeStyle> = {
+  h1: {
+    fontSize: normalize.font(28),
+    fontWeight: '700' as FontWeight,
+    color: Colors.text.primary,
+  },
+  h2: {
+    fontSize: normalize.font(20),
+    fontWeight: '600' as FontWeight,
+    color: Colors.text.primary,
+  },
+  body: {
+    fontSize: normalize.font(14),
+    fontWeight: '400' as FontWeight,
+    color: Colors.text.primary,
+  },
+  subtitle: {
+    fontSize: normalize.font(13),
+    fontWeight: '400' as FontWeight,
+    color: Colors.text.secondary,
+  },
+  caption: {
+    fontSize: normalize.font(12),
+    fontWeight: '500' as FontWeight,
+    color: Colors.text.secondary,
+  },
+  price: {
+    fontSize: normalize.font(18),
+    fontWeight: '700' as FontWeight,
+    color: Colors.primary,
+  },
+  rating: {
+    fontSize: normalize.font(14),
+    fontWeight: '600' as FontWeight,
+    color: Colors.text.primary,
   },
 };
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
+export const Shadows = {
+  light: {
+    shadowColor: Colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
+  medium: {
+    shadowColor: Colors.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
   },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-  },
-});
+};

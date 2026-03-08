@@ -1,31 +1,48 @@
-import { StyleSheet, Text, type TextProps } from 'react-native';
-
-import { useThemeColor } from '@/hooks/use-theme-color';
+import { Typography } from '@/constants/theme';
+import { StyleSheet, Text, type TextProps, type TextStyle } from 'react-native';
 
 export type ThemedTextProps = TextProps & {
-  lightColor?: string;
-  darkColor?: string;
-  type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link';
+  type?: 'default' | 'title' | 'subtitle' | 'h1' | 'h2' | 'body' | 'caption' | 'price' | 'rating' | 'defaultSemiBold' | 'link';
 };
 
 export function ThemedText({
   style,
-  lightColor,
-  darkColor,
   type = 'default',
   ...rest
 }: ThemedTextProps) {
-  const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
+  
+  const getStyleByType = (): TextStyle => {
+    switch (type) {
+      case 'h1':
+      case 'title':
+        return Typography.h1 as TextStyle;
+      case 'h2':
+        return Typography.h2 as TextStyle;
+      case 'body':
+      case 'default':
+        return Typography.body as TextStyle;
+      case 'subtitle':
+        return Typography.subtitle as TextStyle;
+      case 'caption':
+        return Typography.caption as TextStyle;
+      case 'price':
+        return Typography.price as TextStyle;
+      case 'rating':
+        return Typography.rating as TextStyle;
+      case 'defaultSemiBold':
+        return styles.defaultSemiBold as TextStyle;
+      case 'link':
+        return styles.link as TextStyle;
+      default:
+        return Typography.body as TextStyle;
+    }
+  };
 
   return (
     <Text
       style={[
-        { color },
-        type === 'default' ? styles.default : undefined,
-        type === 'title' ? styles.title : undefined,
-        type === 'defaultSemiBold' ? styles.defaultSemiBold : undefined,
-        type === 'subtitle' ? styles.subtitle : undefined,
-        type === 'link' ? styles.link : undefined,
+        styles.base,
+        getStyleByType(),
         style,
       ]}
       {...rest}
@@ -34,27 +51,14 @@ export function ThemedText({
 }
 
 const styles = StyleSheet.create({
-  default: {
-    fontSize: 16,
-    lineHeight: 24,
+  base: {
+    fontFamily: 'System',
   },
   defaultSemiBold: {
-    fontSize: 16,
-    lineHeight: 24,
     fontWeight: '600',
   },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    lineHeight: 32,
-  },
-  subtitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
   link: {
-    lineHeight: 30,
-    fontSize: 16,
-    color: '#0a7ea4',
+    color: '#2B66FF',
+    textDecorationLine: 'underline',
   },
 });
