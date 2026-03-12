@@ -2,7 +2,8 @@ import { ChaletCard } from '@/components/chalet-card';
 import { HeaderSection } from '@/components/header-section';
 import { Colors, Spacing } from '@/constants/theme';
 import React from 'react';
-import { FlatList, Platform, SafeAreaView, StatusBar, StyleSheet, View } from 'react-native';
+import { FlatList, Platform, StatusBar, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Mock data based on the screenshot
 const MOCK_CHALETS = [
