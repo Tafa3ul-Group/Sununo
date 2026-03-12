@@ -1,14 +1,14 @@
-import React from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { useSelector, useDispatch } from 'react-redux';
+import { Colors, Spacing, Typography, normalize } from '@/constants/theme';
 import { RootState } from '@/store';
 import { setCredentials } from '@/store/authSlice';
-import { Colors, Spacing, Typography, normalize } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useDispatch, useSelector } from 'react-redux';
 
-import { useLoginMutation, useVerifyPhoneMutation } from '@/store/api/apiSlice';
+import { useLazyGetMeQuery, useLoginMutation, useVerifyPhoneMutation } from '@/store/api/apiSlice';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -16,7 +16,7 @@ export default function LoginScreen() {
   const userType = useSelector((state: RootState) => state.auth.userType);
 
   const [step, setStep] = React.useState<'phone' | 'otp'>('phone');
-  const [phone, setPhone] = React.useState('+964');
+  const [phone, setPhone] = React.useState('7700000001');
   const [code, setCode] = React.useState('');
   const [name, setName] = React.useState('');
   const [needsName, setNeedsName] = React.useState(false);
@@ -24,12 +24,13 @@ export default function LoginScreen() {
 
   const [loginMutation, { isLoading: isLoginLoading }] = useLoginMutation();
   const [verifyPhoneMutation, { isLoading: isVerifyLoading }] = useVerifyPhoneMutation();
+  const [triggerGetMe] = useLazyGetMeQuery();
 
   const handleSendCode = async () => {
     setErrorText('');
     try {
-      if (phone.length < 10) {
-        setErrorText('يرجى إدخال رقم هاتف صحيح');
+      if (phone.length < 10 || phone.length > 11) {
+        setErrorText('يرجى إدخال رقم هاتف صحيح (10-11 رقم)');
         return;
       }
       const res = await loginMutation({ phone }).unwrap();
@@ -64,11 +65,25 @@ export default function LoginScreen() {
 
       const res = await verifyPhoneMutation(data).unwrap();
       
+      // Store token first to authorize next request
       dispatch(setCredentials({
         user: res.user,
         token: res.token,
         userType: userType || 'customer'
       }));
+
+      // Fetch full profile info
+      try {
+        const fullUser = await triggerGetMe({}).unwrap();
+        dispatch(setCredentials({
+          user: fullUser,
+          token: res.token,
+          userType: userType || 'customer'
+        }));
+      } catch (meErr) {
+        console.error('Me fetch failed', meErr);
+      }
+
       router.replace(userType === 'owner' ? '/(tabs)/(dashboard)/my-chalets' : '/(tabs)');
     } catch (err: any) {
       console.error(err);
@@ -116,10 +131,11 @@ export default function LoginScreen() {
                 <Text style={styles.label}>رقم الهاتف</Text>
                 <TextInput 
                   style={[styles.input, { textAlign: 'left' }]}
-                  placeholder="+964..."
+                  placeholder="770 000 0000"
                   value={phone}
                   onChangeText={setPhone}
                   keyboardType="phone-pad"
+                  maxLength={11}
                   editable={!isLoginLoading}
                 />
               </View>
@@ -251,11 +267,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: Spacing.md,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: normalize.height(4) },
-    shadowOpacity: 0.2,
-    shadowRadius: normalize.radius(8),
-    elevation: 4,
   },
   loginButtonText: {
     ...Typography.h2,

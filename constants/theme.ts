@@ -58,7 +58,6 @@ export const Colors = {
     heartActive: '#FF385C',
   },
   border: '#EBEBEB',
-  shadow: '#000000',
   white: '#FFFFFF',
   black: '#000000',
   error: '#FF385C',
@@ -121,18 +120,18 @@ export const Typography: Record<string, TypeStyle> = {
 
 export const Shadows = {
   light: {
-    shadowColor: Colors.shadow,
-    shadowOffset: { width: 0, height: normalize.height(2) },
-    shadowOpacity: 0.05,
-    shadowRadius: normalize.radius(8),
-    elevation: 2,
+    shadowColor: 'transparent',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
   },
   medium: {
-    shadowColor: Colors.shadow,
-    shadowOffset: { width: 0, height: normalize.height(4) },
-    shadowOpacity: 0.1,
-    shadowRadius: normalize.radius(12),
-    elevation: 4,
+    shadowColor: 'transparent',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
   },
 };
 

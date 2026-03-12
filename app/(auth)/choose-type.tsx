@@ -1,14 +1,14 @@
-import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { useDispatch, useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
-import { setLanguage, setUserType, UserType } from '@/store/authSlice';
-import { Colors, Spacing, Typography, normalize } from '@/constants/theme';
-import { StatusBar } from 'expo-status-bar';
-import { RootState } from '@/store';
+import { Colors, normalize, Spacing, Typography } from '@/constants/theme';
 import i18n from '@/i18n';
+import { RootState } from '@/store';
+import { setLanguage, setUserType, UserType } from '@/store/authSlice';
+import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useDispatch, useSelector } from 'react-redux';
 
 export default function ChooseTypeScreen() {
   const router = useRouter();
@@ -159,11 +159,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
     alignItems: 'center',
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: normalize.height(4) },
-    shadowOpacity: 0.05,
-    shadowRadius: normalize.radius(10),
-    elevation: 3,
   },
   iconContainer: {
     width: normalize.width(60),

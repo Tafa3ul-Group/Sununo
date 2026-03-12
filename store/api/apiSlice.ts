@@ -51,12 +51,43 @@ export const apiSlice = createApi({
         body: data,
       }),
     }),
+    // Mutation for creating a new chalet
+    createChalet: builder.mutation({
+      query: (data) => ({
+        url: '/provider/chalets',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Chalet'],
+    }),
+
+    // Query for getting owner's chalets
+    getOwnerChalets: builder.query({
+      query: () => '/provider/chalets',
+      providesTags: ['Chalet'],
+    }),
+
+    // Get all cities
+    getCities: builder.query<any[], void>({
+      query: () => '/cities/names',
+    }),
+
+    // Get regions for a specific city
+    getRegions: builder.query<any[], string>({
+      query: (cityId) => `/cities/${cityId}/regions`,
+    }),
   }),
 });
 
 export const {
   useGetChaletsQuery,
   useGetMeQuery,
+  useLazyGetMeQuery,
   useLoginMutation,
   useVerifyPhoneMutation,
+  useCreateChaletMutation,
+  useGetOwnerChaletsQuery,
+  useGetCitiesQuery,
+  useGetRegionsQuery,
+  useLazyGetRegionsQuery,
 } = apiSlice;

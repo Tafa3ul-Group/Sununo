@@ -9,29 +9,10 @@ import { useTranslation } from 'react-i18next';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/themed-text';
 
-// Mock data for owner's chalets
-const OWNER_CHALETS = [
-  {
-    id: '1',
-    title: 'شاليه اللؤلؤة',
-    location: 'البصرة، القبلة',
-    revenue: '1,250,000 د.ع',
-    bookings: 12,
-    status: 'active',
-    image: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=400',
-  },
-  {
-    id: '2',
-    title: 'إستراحة اليرموك',
-    location: 'بغداد، اليرموك',
-    revenue: '850,000 د.ع',
-    bookings: 8,
-    status: 'active',
-    image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=400',
-  }
-];
 
 import { useRouter } from 'expo-router';
+import { useGetOwnerChaletsQuery } from '@/store/api/apiSlice';
+import { ActivityIndicator, RefreshControl } from 'react-native';
 
 export default function MyChaletsScreen() {
   const router = useRouter();
@@ -39,34 +20,41 @@ export default function MyChaletsScreen() {
   const { t } = useTranslation();
   const isRTL = language === 'ar';
 
-  const renderChaletItem = ({ item }: { item: typeof OWNER_CHALETS[0] }) => (
+  const { data: chalets, isLoading, refetch, isFetching } = useGetOwnerChaletsQuery({});
+
+  const renderChaletItem = ({ item }: { item: any }) => (
     <TouchableOpacity 
       style={styles.chaletCard}
       onPress={() => console.log('View Chalet Details', item.id)}
     >
-      <Image source={{ uri: item.image }} style={styles.chaletImage} />
+      <Image 
+        source={{ uri: item.images?.[0] || 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=400' }} 
+        style={styles.chaletImage} 
+      />
       <View style={styles.chaletInfo}>
         <View style={[styles.cardHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-          <ThemedText type="h2" style={styles.chaletTitle}>{item.title}</ThemedText>
-          <View style={[styles.statusBadge, { backgroundColor: item.status === 'active' ? '#E8F5E9' : '#FFEBEE' }]}>
-            <Text style={[styles.statusText, { color: item.status === 'active' ? '#2E7D32' : '#C62828' }]}>
-              {t(`dashboard.${item.status}`)}
+          <ThemedText type="h2" style={styles.chaletTitle}>
+            {isRTL ? (item.name?.ar || item.name) : (item.name?.en || item.name)}
+          </ThemedText>
+          <View style={[styles.statusBadge, { backgroundColor: item.isActive ? '#E8F5E9' : '#FFEBEE' }]}>
+            <Text style={[styles.statusText, { color: item.isActive ? '#2E7D32' : '#C62828' }]}>
+              {item.isActive ? t('dashboard.active') : t('dashboard.inactive')}
             </Text>
           </View>
         </View>
         
         <ThemedText style={[styles.locationText, { textAlign: isRTL ? 'right' : 'left' }]}>
-          <Ionicons name="location-outline" size={12} /> {item.location}
+          <Ionicons name="location-outline" size={12} /> {isRTL ? (item.address?.ar || item.region?.name) : (item.address?.en || item.region?.enName)}
         </ThemedText>
 
         <View style={[styles.statsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
           <View style={styles.stat}>
             <ThemedText style={styles.statLabel}>{t('dashboard.stats.totalRevenue')}</ThemedText>
-            <ThemedText type="defaultSemiBold" style={styles.statValue}>{item.revenue}</ThemedText>
+            <ThemedText type="defaultSemiBold" style={styles.statValue}>{item.price || '0'} د.ع</ThemedText>
           </View>
           <View style={styles.stat}>
             <ThemedText style={styles.statLabel}>{t('dashboard.stats.totalBookings')}</ThemedText>
-            <ThemedText type="defaultSemiBold" style={styles.statValue}>{item.bookings}</ThemedText>
+            <ThemedText type="defaultSemiBold" style={styles.statValue}>{item.reviewCount || 0}</ThemedText>
           </View>
         </View>
 
@@ -110,19 +98,28 @@ export default function MyChaletsScreen() {
           </TouchableOpacity>
         </View>
 
-        <FlatList
-          data={OWNER_CHALETS}
-          keyExtractor={(item) => item.id}
-          renderItem={renderChaletItem}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <MaterialCommunityIcons name="home-alert-outline" size={80} color={Colors.text.muted} />
-              <Text style={styles.emptyText}>{t('dashboard.noChalets')}</Text>
-            </View>
-          }
-        />
+        {isLoading && !isFetching ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={Colors.primary} />
+          </View>
+        ) : (
+          <FlatList
+            data={chalets?.data}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderChaletItem}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl refreshing={isFetching} onRefresh={refetch} tintColor={Colors.primary} />
+            }
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <MaterialCommunityIcons name="home-alert-outline" size={80} color={Colors.text.muted} />
+                <Text style={styles.emptyText}>{t('dashboard.noChalets')}</Text>
+              </View>
+            }
+          />
+        )}
       </View>
     </SafeAreaView>
   );
@@ -249,5 +246,10 @@ const styles = StyleSheet.create({
     ...Typography.body,
     marginTop: Spacing.md,
     color: Colors.text.secondary,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

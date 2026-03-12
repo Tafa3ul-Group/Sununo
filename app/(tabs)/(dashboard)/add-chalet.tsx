@@ -9,6 +9,10 @@ import {
   KeyboardAvoidingView,
   Platform,
   Image,
+  Alert,
+  Modal,
+  ActivityIndicator,
+  FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing, Typography, normalize, Shadows } from '@/constants/theme';
@@ -21,13 +25,15 @@ import { ThemedText } from '@/components/themed-text';
 import { StatusBar } from 'expo-status-bar';
 import Toast from 'react-native-toast-message';
 import * as ImagePicker from 'expo-image-picker';
-import { Alert, Modal } from 'react-native';
+import { useCreateChaletMutation, useGetCitiesQuery, useLazyGetRegionsQuery } from '@/store/api/apiSlice';
 
 export default function AddChaletScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { language } = useSelector((state: RootState) => state.auth);
   const isRTL = language === 'ar';
+
+  const [createChalet, { isLoading }] = useCreateChaletMutation();
 
   const [form, setForm] = useState({
     name: '',
@@ -36,10 +42,19 @@ export default function AddChaletScreen() {
     description: '',
     guests: '4',
     rooms: '2',
+    cityId: '',
+    cityName: '',
+    regionId: '',
+    regionName: '',
   });
 
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [showImageSource, setShowImageSource] = useState(false);
+  const [showCityPicker, setShowCityPicker] = useState(false);
+  const [showRegionPicker, setShowRegionPicker] = useState(false);
+
+  const { data: cities, isLoading: loadingCities } = useGetCitiesQuery();
+  const [triggerGetRegions, { data: regions, isLoading: loadingRegions }] = useLazyGetRegionsQuery();
 
   const [features, setFeatures] = useState([
     { id: 'pool', label: 'مسبح', icon: 'pool', selected: false },
@@ -94,15 +109,78 @@ export default function AddChaletScreen() {
     setSelectedImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSave = () => {
-    console.log('Saving Chalet:', { ...form, images: selectedImages, features: features.filter(f => f.selected) });
-    Toast.show({
-      type: 'success',
-      text1: isRTL ? 'تم بنجاح' : 'Success',
-      text2: isRTL ? 'تمت إضافة الشاليه بنجاح' : 'Chalet added successfully',
-      position: 'bottom',
-    });
-    router.back();
+  const handleSave = async () => {
+    if (!form.name || !form.location || !form.price || !form.regionId) {
+      Toast.show({
+        type: 'error',
+        text1: isRTL ? 'خطأ' : 'Error',
+        text2: isRTL ? 'يرجى ملء كافة الحقول واختيار المنطقة' : 'Please fill all fields and select a region',
+        position: 'bottom',
+      });
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      
+      // Wrap strings in LangDto format as expected by backend
+      formData.append('name', JSON.stringify({ ar: form.name, en: form.name }));
+      formData.append('description', JSON.stringify({ ar: form.description, en: form.description }));
+      formData.append('address', JSON.stringify({ ar: form.location, en: form.location }));
+      
+      formData.append('regionId', form.regionId);
+      formData.append('maxGuests', form.guests);
+      
+      // If price needs to be handled differently, we might need another API call 
+      // but for now let's satisfy the CreateChaletDto requirements
+      formData.append('depositPercentage', '25'); // Default or add to form
+      
+      const selectedFeatures = features.filter(f => f.selected).map(f => f.id);
+      formData.append('amenities', JSON.stringify(selectedFeatures));
+
+      selectedImages.forEach((uri, index) => {
+        const filename = uri.split('/').pop();
+        const match = /\.(\w+)$/.exec(filename || '');
+        const type = match ? `image/${match[1]}` : `image`;
+        
+        // @ts-ignore
+        formData.append('images', {
+          uri,
+          name: filename,
+          type,
+        });
+      });
+
+      await createChalet(formData).unwrap();
+
+      Toast.show({
+        type: 'success',
+        text1: isRTL ? 'تم بنجاح' : 'Success',
+        text2: isRTL ? 'تمت إضافة الشاليه بنجاح' : 'Chalet added successfully',
+        position: 'bottom',
+      });
+      router.back();
+    } catch (error: any) {
+      console.error('Error creating chalet:', error);
+      const errorMessage = error?.data?.message?.[0] || (isRTL ? 'فشل إرسال البيانات، حاول لاحقاً' : 'Failed to save data, try again');
+      Toast.show({
+        type: 'error',
+        text1: isRTL ? 'خطأ' : 'Error',
+        text2: errorMessage,
+        position: 'bottom',
+      });
+    }
+  };
+
+  const handleCitySelect = (city: any) => {
+    setForm({ ...form, cityId: city.id, cityName: city.name, regionId: '', regionName: '' });
+    setShowCityPicker(false);
+    triggerGetRegions(city.id);
+  };
+
+  const handleRegionSelect = (region: any) => {
+    setForm({ ...form, regionId: region.id, regionName: region.name });
+    setShowRegionPicker(false);
   };
 
   const textAlign = isRTL ? 'right' : 'left';
@@ -140,11 +218,38 @@ export default function AddChaletScreen() {
               />
             </View>
 
+            <View style={[styles.rowInputs, { flexDirection }]}>
+              <View style={[styles.inputGroup, { flex: 1 }]}>
+                <Text style={[styles.label, { textAlign }]}>المدينة</Text>
+                <TouchableOpacity 
+                  style={[styles.input, { justifyContent: 'center' }]} 
+                  onPress={() => setShowCityPicker(true)}
+                >
+                  <Text style={{ color: form.cityName ? Colors.text.primary : Colors.text.muted, textAlign }}>
+                    {form.cityName || "اختر المدينة"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <View style={{ width: Spacing.md }} />
+              <View style={[styles.inputGroup, { flex: 1 }]}>
+                <Text style={[styles.label, { textAlign }]}>المنطقة</Text>
+                <TouchableOpacity 
+                  style={[styles.input, { justifyContent: 'center' }]} 
+                  onPress={() => form.cityId ? setShowRegionPicker(true) : Alert.alert("تنبيه", "يرجى اختيار المدينة أولاً")}
+                  disabled={!form.cityId}
+                >
+                  <Text style={{ color: form.regionName ? Colors.text.primary : Colors.text.muted, textAlign }}>
+                    {form.regionName || "اختر المنطقة"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
             <View style={styles.inputGroup}>
-              <Text style={[styles.label, { textAlign }]}>الموقع</Text>
+              <Text style={[styles.label, { textAlign }]}>العنوان التفصيلي</Text>
               <TextInput
                 style={[styles.input, { textAlign }]}
-                placeholder="مثال: البصرة، القبلة"
+                placeholder="مثال: القبلة، شارع المصرف"
                 value={form.location}
                 onChangeText={(val) => setForm({ ...form, location: val })}
               />
@@ -232,14 +337,95 @@ export default function AddChaletScreen() {
           </View>
 
           <TouchableOpacity 
-            style={styles.saveButton}
+            style={[styles.saveButton, isLoading && { opacity: 0.7 }]}
             onPress={handleSave}
             activeOpacity={0.8}
+            disabled={isLoading}
           >
-            <Text style={styles.saveButtonText}>حفظ ونشر الشاليه</Text>
+            {isLoading ? (
+              <ActivityIndicator color={Colors.white} />
+            ) : (
+              <Text style={styles.saveButtonText}>حفظ ونشر الشاليه</Text>
+            )}
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* City Picker Modal */}
+      <Modal
+        visible={showCityPicker}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowCityPicker(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay} 
+          activeOpacity={1} 
+          onPress={() => setShowCityPicker(false)}
+        >
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>اختر المدينة</Text>
+            {loadingCities ? (
+              <ActivityIndicator color={Colors.primary} style={{ margin: 20 }} />
+            ) : (
+              <FlatList
+                data={cities}
+                keyExtractor={(item) => item.id}
+                style={{ width: '100%', maxHeight: 400 }}
+                renderItem={({ item }) => (
+                  <TouchableOpacity 
+                    style={styles.pickerItem} 
+                    onPress={() => handleCitySelect(item)}
+                  >
+                    <Text style={[styles.pickerItemText, { textAlign }]}>{item.name}</Text>
+                  </TouchableOpacity>
+                )}
+              />
+            )}
+            <TouchableOpacity style={styles.modalCancel} onPress={() => setShowCityPicker(false)}>
+              <Text style={styles.modalCancelText}>{isRTL ? 'إلغاء' : 'Cancel'}</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Region Picker Modal */}
+      <Modal
+        visible={showRegionPicker}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowRegionPicker(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay} 
+          activeOpacity={1} 
+          onPress={() => setShowRegionPicker(false)}
+        >
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>اختر المنطقة</Text>
+            {loadingRegions ? (
+              <ActivityIndicator color={Colors.primary} style={{ margin: 20 }} />
+            ) : (
+              <FlatList
+                data={regions}
+                keyExtractor={(item) => item.id}
+                style={{ width: '100%', maxHeight: 400 }}
+                renderItem={({ item }) => (
+                  <TouchableOpacity 
+                    style={styles.pickerItem} 
+                    onPress={() => handleRegionSelect(item)}
+                  >
+                    <Text style={[styles.pickerItemText, { textAlign }]}>{item.name}</Text>
+                  </TouchableOpacity>
+                )}
+              />
+            )}
+            <TouchableOpacity style={styles.modalCancel} onPress={() => setShowRegionPicker(false)}>
+              <Text style={styles.modalCancelText}>{isRTL ? 'إلغاء' : 'Cancel'}</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       {/* Image Source Selection Modal */}
       <Modal
@@ -394,6 +580,18 @@ const styles = StyleSheet.create({
     ...Typography.body,
     color: Colors.text.muted,
     fontWeight: '600',
+  },
+  pickerItem: {
+    width: '100%',
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  pickerItemText: {
+    ...Typography.body,
+    fontSize: normalize.font(16),
+    color: Colors.text.primary,
   },
   form: {
     gap: Spacing.md,
