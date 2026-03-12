@@ -1,0 +1,5808 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1/admin/trash/{entity}": {
+      "get": {
+        "operationId": "TrashAdminController_listTrashed",
+        "parameters": [
+          {
+            "name": "entity",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List soft-deleted items (trash)",
+        "tags": [
+          "Admin - Trash"
+        ]
+      }
+    },
+    "/api/v1/admin/trash/{entity}/{id}/restore": {
+      "post": {
+        "operationId": "TrashAdminController_restore",
+        "parameters": [
+          {
+            "name": "entity",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Restore a soft-deleted item from trash",
+        "tags": [
+          "Admin - Trash"
+        ]
+      }
+    },
+    "/api/v1/admin/trash/{entity}/{id}/permanent": {
+      "delete": {
+        "operationId": "TrashAdminController_permanentDelete",
+        "parameters": [
+          {
+            "name": "entity",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Permanently delete an item (irreversible)",
+        "tags": [
+          "Admin - Trash"
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Login",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/verify": {
+      "post": {
+        "operationId": "AuthController_verify",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "verify",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/register-provider": {
+      "post": {
+        "operationId": "AuthController_registerProvider",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterProviderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Register as provider",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Logout",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "operationId": "AuthController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Me",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/add-phone": {
+      "post": {
+        "operationId": "AuthController_addPhone",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddPhoneDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add phone number to user account (sends verification code)",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/verify-phone": {
+      "post": {
+        "operationId": "AuthController_verifyPhone",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthVerifyPhoneDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Verify phone number with code",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/google": {
+      "get": {
+        "operationId": "AuthController_googleAuth",
+        "parameters": [
+          {
+            "name": "state",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "redirect_uri",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Initiate Google OAuth login",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/google/callback": {
+      "get": {
+        "operationId": "AuthController_googleCallback",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "error",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Google OAuth callback",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/users/my-favorites": {
+      "get": {
+        "operationId": "UsersController_getUserFavorites",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "get my favorites",
+        "tags": [
+          "Users — Profile"
+        ]
+      }
+    },
+    "/api/v1/users/profile": {
+      "put": {
+        "operationId": "UsersController_updateProfile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update my profile information",
+        "tags": [
+          "Users — Profile"
+        ]
+      },
+      "delete": {
+        "operationId": "UsersController_deleteProfile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete my profile (Disable account)",
+        "tags": [
+          "Users — Profile"
+        ]
+      }
+    },
+    "/api/v1/users/profile/image": {
+      "put": {
+        "operationId": "UsersController_updateProfileImage",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileImageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update my profile image",
+        "tags": [
+          "Users — Profile"
+        ]
+      }
+    },
+    "/api/v1/users/change-phone": {
+      "post": {
+        "operationId": "UsersController_changePhoneNumber",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePhoneDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Request phone number change",
+        "tags": [
+          "Users — Profile"
+        ]
+      }
+    },
+    "/api/v1/users/verify-phone": {
+      "post": {
+        "operationId": "UsersController_verifyPhoneNumber",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateVerifyPhoneDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Verify and complete phone number change",
+        "tags": [
+          "Users — Profile"
+        ]
+      }
+    },
+    "/api/v1/admin/users": {
+      "get": {
+        "operationId": "UsersAdminController_getAllUsers",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Sort field (e.g. createdAt)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "DESC",
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search query for name, phone or email",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filter by status: active, inactive",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "role",
+            "required": false,
+            "in": "query",
+            "description": "Filter by user role/type",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "admin",
+                "employee",
+                "provider",
+                "user"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all users (filterable by role, status, search)",
+        "tags": [
+          "admin/users"
+        ]
+      }
+    },
+    "/api/v1/admin/users/names": {
+      "get": {
+        "operationId": "UsersAdminController_getAllNames",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Sort field (e.g. createdAt)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "DESC",
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search query for name, phone or email",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filter by status: active, inactive",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "role",
+            "required": false,
+            "in": "query",
+            "description": "Filter by user role/type",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "admin",
+                "employee",
+                "provider",
+                "user"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all user names",
+        "tags": [
+          "admin/users"
+        ]
+      }
+    },
+    "/api/v1/admin/users/{id}": {
+      "get": {
+        "operationId": "UsersAdminController_getUserById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get user detail with wallet info",
+        "tags": [
+          "admin/users"
+        ]
+      }
+    },
+    "/api/v1/admin/users/{id}/approve": {
+      "patch": {
+        "operationId": "UsersAdminController_approveProvider",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Approve provider account",
+        "tags": [
+          "admin/users"
+        ]
+      }
+    },
+    "/api/v1/admin/users/{id}/reject": {
+      "patch": {
+        "operationId": "UsersAdminController_rejectProvider",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reject provider account",
+        "tags": [
+          "admin/users"
+        ]
+      }
+    },
+    "/api/v1/admin/users/{id}/activate": {
+      "patch": {
+        "operationId": "UsersAdminController_toggleActive",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Toggle user active status",
+        "tags": [
+          "admin/users"
+        ]
+      }
+    },
+    "/api/v1/provider/profile": {
+      "get": {
+        "operationId": "ProviderProfileController_getProfile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get provider profile with business info",
+        "tags": [
+          "provider/profile"
+        ]
+      },
+      "patch": {
+        "operationId": "ProviderProfileController_updateProfile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProviderProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update provider business info and bank details",
+        "tags": [
+          "provider/profile"
+        ]
+      }
+    },
+    "/api/v1/customer/account": {
+      "delete": {
+        "operationId": "UsersCustomerController_deleteAccount",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete my account (Apple/Google compliance)",
+        "tags": [
+          "Customer - Account"
+        ]
+      }
+    },
+    "/api/v1/log-admin": {
+      "get": {
+        "operationId": "LogController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Sort field (e.g. createdAt)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "DESC",
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "isError",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "get all log",
+        "tags": [
+          "log-admin"
+        ]
+      }
+    },
+    "/api/v1/settings": {
+      "get": {
+        "operationId": "SettingsController_getSettings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all settings",
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/api/v1/settings/free-shipping": {
+      "put": {
+        "operationId": "SettingsController_updateFreeShipping",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFreeShippingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update free shipping ",
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/api/v1/settings/admin-phone": {
+      "put": {
+        "operationId": "SettingsController_updateAdminPhone",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAdminPhoneDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update admin phone for order notifications",
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/api/v1/settings/commission": {
+      "patch": {
+        "operationId": "SettingsController_updateCommission",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update platform commission percentage",
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/api/v1/layout/mobile": {
+      "get": {
+        "operationId": "LayoutController_getMobileLayout",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get mobile layout configuration",
+        "tags": [
+          "layout"
+        ]
+      }
+    },
+    "/api/v1/layout/desktop": {
+      "get": {
+        "operationId": "LayoutController_getDesktopLayout",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get desktop layout configuration",
+        "tags": [
+          "layout"
+        ]
+      }
+    },
+    "/api/v1/layout-admin": {
+      "get": {
+        "operationId": "LayoutAdminController_getLayout",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get layout configuration",
+        "tags": [
+          "layout-admin"
+        ]
+      },
+      "put": {
+        "operationId": "LayoutAdminController_updateLayout",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLayoutDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update layout configuration",
+        "tags": [
+          "layout-admin"
+        ]
+      }
+    },
+    "/api/v1/notifications/firebase-token": {
+      "post": {
+        "operationId": "NotificationsController_createFirebaseToken",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFirebaseTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create New Firebase Token",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/firebase-tokens": {
+      "get": {
+        "operationId": "NotificationsController_findAllFirebaseTokens",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get All Firebase Tokens",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications": {
+      "get": {
+        "operationId": "NotificationsController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Sort field (e.g. createdAt)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "DESC",
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get All Notifications",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/settings": {
+      "get": {
+        "operationId": "NotificationsController_getSettings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get Notification Settings",
+        "tags": [
+          "notifications"
+        ]
+      },
+      "put": {
+        "operationId": "NotificationsController_updateSettings",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateNotificationSettingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update Notification Settings",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/{id}/mark-as-read": {
+      "put": {
+        "operationId": "NotificationsController_markAsRead",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mark Notification as Read",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications-dashboard": {
+      "post": {
+        "operationId": "NotificationsDashboardController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateNotificationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create Notification",
+        "tags": [
+          "notifications-dashboard"
+        ]
+      },
+      "get": {
+        "operationId": "NotificationsDashboardController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Sort field (e.g. createdAt)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "DESC",
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get Notification",
+        "tags": [
+          "notifications-dashboard"
+        ]
+      }
+    },
+    "/api/v1/cities/names": {
+      "get": {
+        "operationId": "CitiesController_names",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get all city names",
+        "tags": [
+          "cities"
+        ]
+      }
+    },
+    "/api/v1/cities/{id}/regions": {
+      "get": {
+        "operationId": "CitiesController_regions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get all region",
+        "tags": [
+          "cities"
+        ]
+      }
+    },
+    "/api/v1/cities-admin": {
+      "get": {
+        "operationId": "CitiesDashboardController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Sort field (e.g. createdAt)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "DESC",
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get all cities",
+        "tags": [
+          "cities-admin"
+        ]
+      },
+      "post": {
+        "operationId": "CitiesDashboardController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Create city",
+        "tags": [
+          "cities-admin"
+        ]
+      }
+    },
+    "/api/v1/cities-admin/names": {
+      "get": {
+        "operationId": "CitiesDashboardController_names",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get all cities names",
+        "tags": [
+          "cities-admin"
+        ]
+      }
+    },
+    "/api/v1/cities-admin/{id}": {
+      "put": {
+        "operationId": "CitiesDashboardController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Update city",
+        "tags": [
+          "cities-admin"
+        ]
+      },
+      "post": {
+        "operationId": "CitiesDashboardController_addRegion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddRegionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Add region to city",
+        "tags": [
+          "cities-admin"
+        ]
+      }
+    },
+    "/api/v1/cities-admin/{id}/regions": {
+      "get": {
+        "operationId": "CitiesDashboardController_regions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Sort field (e.g. createdAt)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "DESC",
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get all regions of city",
+        "tags": [
+          "cities-admin"
+        ]
+      }
+    },
+    "/api/v1/cities-admin/{id}/delivery-price": {
+      "put": {
+        "operationId": "CitiesDashboardController_setDeliveryPrice",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Set delivery price for city",
+        "tags": [
+          "cities-admin"
+        ]
+      }
+    },
+    "/api/v1/chalets/{id}/images": {
+      "get": {
+        "operationId": "ChaletsController_getChaletImages",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get chalet images (public)",
+        "tags": [
+          "chalets"
+        ]
+      }
+    },
+    "/api/v1/provider/chalets": {
+      "post": {
+        "operationId": "ChaletsProviderController_createChalet",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateChaletDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new chalet",
+        "tags": [
+          "provider/chalets"
+        ]
+      },
+      "get": {
+        "operationId": "ChaletsProviderController_findAllChalets",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Sort field (e.g. createdAt)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "DESC",
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List own chalets (paginated)",
+        "tags": [
+          "provider/chalets"
+        ]
+      }
+    },
+    "/api/v1/provider/chalets/{chaletId}": {
+      "get": {
+        "operationId": "ChaletsProviderController_findOneChalet",
+        "parameters": [
+          {
+            "name": "chaletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get own chalet detail",
+        "tags": [
+          "provider/chalets"
+        ]
+      },
+      "patch": {
+        "operationId": "ChaletsProviderController_updateChalet",
+        "parameters": [
+          {
+            "name": "chaletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateChaletDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update own chalet",
+        "tags": [
+          "provider/chalets"
+        ]
+      },
+      "delete": {
+        "operationId": "ChaletsProviderController_deleteChalet",
+        "parameters": [
+          {
+            "name": "chaletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete own chalet (soft delete)",
+        "tags": [
+          "provider/chalets"
+        ]
+      }
+    },
+    "/api/v1/provider/chalets/{chaletId}/images": {
+      "get": {
+        "operationId": "ChaletsProviderController_getChaletImages",
+        "parameters": [
+          {
+            "name": "chaletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get chalet images",
+        "tags": [
+          "provider/chalets"
+        ]
+      },
+      "post": {
+        "operationId": "ChaletsProviderController_uploadImage",
+        "parameters": [
+          {
+            "name": "chaletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadChaletImageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Upload image to chalet (max 10)",
+        "tags": [
+          "provider/chalets"
+        ]
+      }
+    },
+    "/api/v1/provider/chalets/{chaletId}/images/{imageId}": {
+      "patch": {
+        "operationId": "ChaletsProviderController_updateImage",
+        "parameters": [
+          {
+            "name": "chaletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "imageId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateChaletImageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update image sortOrder or isCover",
+        "tags": [
+          "provider/chalets"
+        ]
+      },
+      "delete": {
+        "operationId": "ChaletsProviderController_deleteImage",
+        "parameters": [
+          {
+            "name": "chaletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "imageId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete chalet image",
+        "tags": [
+          "provider/chalets"
+        ]
+      }
+    },
+    "/api/v1/admin/chalets": {
+      "get": {
+        "operationId": "ChaletsAdminController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Sort field (e.g. createdAt)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "DESC",
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search by chalet name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "isApproved",
+            "required": false,
+            "in": "query",
+            "description": "Filter by approval status",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isActive",
+            "required": false,
+            "in": "query",
+            "description": "Filter by active status",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "regionId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by region ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "providerId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by provider ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all chalets (filterable)",
+        "tags": [
+          "admin/chalets"
+        ]
+      }
+    },
+    "/api/v1/admin/chalets/pending": {
+      "get": {
+        "operationId": "ChaletsAdminController_findPending",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Sort field (e.g. createdAt)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "DESC",
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List pending approval chalets",
+        "tags": [
+          "admin/chalets"
+        ]
+      }
+    },
+    "/api/v1/admin/chalets/{id}": {
+      "get": {
+        "operationId": "ChaletsAdminController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get chalet detail with provider info",
+        "tags": [
+          "admin/chalets"
+        ]
+      }
+    },
+    "/api/v1/admin/chalets/{id}/approve": {
+      "patch": {
+        "operationId": "ChaletsAdminController_approve",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Approve chalet",
+        "tags": [
+          "admin/chalets"
+        ]
+      }
+    },
+    "/api/v1/admin/chalets/{id}/reject": {
+      "patch": {
+        "operationId": "ChaletsAdminController_reject",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reject chalet",
+        "tags": [
+          "admin/chalets"
+        ]
+      }
+    },
+    "/api/v1/admin/chalets/{id}/toggle-active": {
+      "patch": {
+        "operationId": "ChaletsAdminController_toggleActive",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Toggle chalet active status",
+        "tags": [
+          "admin/chalets"
+        ]
+      }
+    },
+    "/api/v1/customer/chalets": {
+      "get": {
+        "operationId": "ChaletsCustomerController_browse",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "regionId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "maxGuests",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "minPrice",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxPrice",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Browse approved & active chalets (public, no auth)",
+        "tags": [
+          "Customer - Chalets"
+        ]
+      }
+    },
+    "/api/v1/customer/chalets/search": {
+      "get": {
+        "operationId": "ChaletsCustomerController_search",
+        "parameters": [
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "regionId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "maxGuests",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Search chalets by name or description (Elasticsearch-powered with fallback)",
+        "tags": [
+          "Customer - Chalets"
+        ]
+      }
+    },
+    "/api/v1/customer/chalets/{id}": {
+      "get": {
+        "operationId": "ChaletsCustomerController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get full chalet detail (shifts, pricing, images, amenities)",
+        "tags": [
+          "Customer - Chalets"
+        ]
+      }
+    },
+    "/api/v1/provider/chalets/{chaletId}/shifts": {
+      "post": {
+        "operationId": "ShiftsProviderController_createShift",
+        "parameters": [
+          {
+            "name": "chaletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateShiftDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create shift for chalet",
+        "tags": [
+          "provider/chalets/shifts"
+        ]
+      },
+      "get": {
+        "operationId": "ShiftsProviderController_findAllShifts",
+        "parameters": [
+          {
+            "name": "chaletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List shifts for chalet",
+        "tags": [
+          "provider/chalets/shifts"
+        ]
+      }
+    },
+    "/api/v1/provider/chalets/{chaletId}/shifts/{shiftId}": {
+      "patch": {
+        "operationId": "ShiftsProviderController_updateShift",
+        "parameters": [
+          {
+            "name": "chaletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "shiftId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateShiftDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update shift",
+        "tags": [
+          "provider/chalets/shifts"
+        ]
+      },
+      "delete": {
+        "operationId": "ShiftsProviderController_deleteShift",
+        "parameters": [
+          {
+            "name": "chaletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "shiftId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete shift (soft delete)",
+        "tags": [
+          "provider/chalets/shifts"
+        ]
+      }
+    },
+    "/api/v1/provider/shifts/{shiftId}/pricing": {
+      "put": {
+        "operationId": "ShiftPricingProviderController_setPricingMatrix",
+        "parameters": [
+          {
+            "name": "shiftId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetPricingMatrixDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Set full 7-day pricing matrix (upsert)",
+        "tags": [
+          "provider/shifts/pricing"
+        ]
+      },
+      "get": {
+        "operationId": "ShiftPricingProviderController_getPricingMatrix",
+        "parameters": [
+          {
+            "name": "shiftId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get current pricing matrix for shift",
+        "tags": [
+          "provider/shifts/pricing"
+        ]
+      }
+    },
+    "/api/v1/provider/shifts/{shiftId}/pricing/{pricingId}": {
+      "patch": {
+        "operationId": "ShiftPricingProviderController_updatePrice",
+        "parameters": [
+          {
+            "name": "shiftId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pricingId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePricingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update single day price",
+        "tags": [
+          "provider/shifts/pricing"
+        ]
+      }
+    },
+    "/api/v1/provider/chalets/{chaletId}/cancellation-policies": {
+      "put": {
+        "operationId": "CancellationPoliciesProviderController_setPolicies",
+        "parameters": [
+          {
+            "name": "chaletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetCancellationPoliciesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Set all cancellation tiers (replaces existing)",
+        "tags": [
+          "provider/chalets/cancellation-policies"
+        ]
+      },
+      "get": {
+        "operationId": "CancellationPoliciesProviderController_getPolicies",
+        "parameters": [
+          {
+            "name": "chaletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get current cancellation rules",
+        "tags": [
+          "provider/chalets/cancellation-policies"
+        ]
+      }
+    },
+    "/api/v1/customer/bookings": {
+      "post": {
+        "operationId": "BookingsCustomerController_createBooking",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBookingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new booking and initiate payment",
+        "tags": [
+          "Customer - Bookings"
+        ]
+      },
+      "get": {
+        "operationId": "BookingsCustomerController_findAll",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/BookingStatus"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List my bookings (paginated, filterable by status)",
+        "tags": [
+          "Customer - Bookings"
+        ]
+      }
+    },
+    "/api/v1/customer/bookings/{id}": {
+      "get": {
+        "operationId": "BookingsCustomerController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get booking detail with chalet, shift, and payment info",
+        "tags": [
+          "Customer - Bookings"
+        ]
+      }
+    },
+    "/api/v1/customer/bookings/{id}/cancellation-preview": {
+      "get": {
+        "operationId": "BookingsCustomerController_cancellationPreview",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Preview cancellation penalty and refund amounts",
+        "tags": [
+          "Customer - Bookings"
+        ]
+      }
+    },
+    "/api/v1/customer/bookings/{id}/cancel": {
+      "post": {
+        "operationId": "BookingsCustomerController_cancelBooking",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelBookingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cancel booking with reason, process refund to wallet",
+        "tags": [
+          "Customer - Bookings"
+        ]
+      }
+    },
+    "/api/v1/provider/bookings": {
+      "get": {
+        "operationId": "BookingsProviderController_findAll",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/BookingStatus"
+            }
+          },
+          {
+            "name": "chaletId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "From date (YYYY-MM-DD)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "To date (YYYY-MM-DD)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List bookings for my chalets (filterable)",
+        "tags": [
+          "Provider - Bookings"
+        ]
+      }
+    },
+    "/api/v1/provider/bookings/{id}": {
+      "get": {
+        "operationId": "BookingsProviderController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get booking detail with customer info",
+        "tags": [
+          "Provider - Bookings"
+        ]
+      }
+    },
+    "/api/v1/provider/bookings/{id}/complete": {
+      "patch": {
+        "operationId": "BookingsProviderController_markAsCompleted",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mark booking as completed",
+        "tags": [
+          "Provider - Bookings"
+        ]
+      }
+    },
+    "/api/v1/provider/chalets/{chaletId}/calendar": {
+      "get": {
+        "operationId": "BookingsProviderController_getCalendar",
+        "parameters": [
+          {
+            "name": "chaletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": true,
+            "in": "query",
+            "description": "From date (YYYY-MM-DD)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": true,
+            "in": "query",
+            "description": "To date (YYYY-MM-DD)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get chalet calendar (bookings in date range)",
+        "tags": [
+          "Provider - Bookings"
+        ]
+      }
+    },
+    "/api/v1/admin/bookings": {
+      "get": {
+        "operationId": "BookingsAdminController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "chaletId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customerId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "List all bookings across platform (admin)",
+        "tags": [
+          "Admin - Bookings"
+        ]
+      }
+    },
+    "/api/v1/admin/bookings/dashboard": {
+      "get": {
+        "operationId": "BookingsAdminController_dashboard",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Booking dashboard stats (admin)",
+        "tags": [
+          "Admin - Bookings"
+        ]
+      }
+    },
+    "/api/v1/admin/bookings/{id}": {
+      "get": {
+        "operationId": "BookingsAdminController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Full booking detail (admin)",
+        "tags": [
+          "Admin - Bookings"
+        ]
+      }
+    },
+    "/api/v1/admin/bookings/{id}/force-cancel": {
+      "post": {
+        "operationId": "BookingsAdminController_forceCancel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForceCancelBookingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Admin force cancel with custom reason and refund amount",
+        "tags": [
+          "Admin - Bookings"
+        ]
+      }
+    },
+    "/api/v1/transactions/payment-status/{transactionId}": {
+      "get": {
+        "operationId": "TransactionsController_getPaymentStatus",
+        "parameters": [
+          {
+            "name": "transactionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/api/v1/transactions/sindi-pay-webhook/{transactionId}": {
+      "post": {
+        "operationId": "TransactionsController_sindiPayWebhook",
+        "parameters": [
+          {
+            "name": "transactionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "example": "PAID"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/api/v1/transactions-admin": {
+      "get": {
+        "operationId": "TransactionsAdminController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Sort field (e.g. createdAt)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "DESC",
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search query",
+            "schema": {
+              "example": "keyword",
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "pending",
+              "type": "string",
+              "enum": [
+                "pending",
+                "success",
+                "failed"
+              ]
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "sindi_pay",
+              "type": "string",
+              "enum": [
+                "sindi_pay",
+                "manual"
+              ]
+            }
+          },
+          {
+            "name": "phone",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "0771234567",
+              "type": "string"
+            }
+          },
+          {
+            "name": "startDate",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2021-01-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2021-01-01",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all transactions",
+        "tags": [
+          "transactions-admin"
+        ]
+      }
+    },
+    "/api/v1/transactions-admin/{id}": {
+      "get": {
+        "operationId": "TransactionsAdminController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get transaction by id",
+        "tags": [
+          "transactions-admin"
+        ]
+      }
+    },
+    "/api/v1/sindi-pay/webhook": {
+      "post": {
+        "operationId": "SindiPayController_webhook",
+        "parameters": [
+          {
+            "name": "transaction-id",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "SindiPay webhook payload",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "sindi-pay"
+        ]
+      }
+    },
+    "/api/v1/wallet/my-wallet": {
+      "get": {
+        "operationId": "WalletController_getMyWallet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get my wallet",
+        "tags": [
+          "wallet"
+        ]
+      }
+    },
+    "/api/v1/customer/wallet": {
+      "get": {
+        "operationId": "WalletCustomerController_getBalance",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "View customer wallet balance",
+        "tags": [
+          "Customer - Wallet"
+        ]
+      }
+    },
+    "/api/v1/customer/wallet/transactions": {
+      "get": {
+        "operationId": "WalletCustomerController_getTransactions",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "View customer wallet transaction history",
+        "tags": [
+          "Customer - Wallet"
+        ]
+      }
+    },
+    "/api/v1/admin/amenities": {
+      "get": {
+        "operationId": "AmenitiesAdminController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all amenities",
+        "tags": [
+          "admin/amenities"
+        ]
+      },
+      "post": {
+        "operationId": "AmenitiesAdminController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAmenityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new amenity",
+        "tags": [
+          "admin/amenities"
+        ]
+      }
+    },
+    "/api/v1/admin/amenities/{id}": {
+      "get": {
+        "operationId": "AmenitiesAdminController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get amenity by ID",
+        "tags": [
+          "admin/amenities"
+        ]
+      },
+      "patch": {
+        "operationId": "AmenitiesAdminController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAmenityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update an amenity",
+        "tags": [
+          "admin/amenities"
+        ]
+      },
+      "delete": {
+        "operationId": "AmenitiesAdminController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete an amenity (soft delete)",
+        "tags": [
+          "admin/amenities"
+        ]
+      }
+    },
+    "/api/v1/provider/chalets/{chaletId}/amenities": {
+      "get": {
+        "operationId": "AmenitiesProviderController_getChaletAmenities",
+        "parameters": [
+          {
+            "name": "chaletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get amenities linked to a chalet",
+        "tags": [
+          "provider/chalets/amenities"
+        ]
+      },
+      "patch": {
+        "operationId": "AmenitiesProviderController_linkAmenities",
+        "parameters": [
+          {
+            "name": "chaletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkAmenitiesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Link/unlink amenities to chalet (replaces existing)",
+        "tags": [
+          "provider/chalets/amenities"
+        ]
+      }
+    },
+    "/api/v1/provider/payouts": {
+      "post": {
+        "operationId": "PayoutsProviderController_createPayout",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePayoutDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Request a payout (validates amount <= wallet balance)",
+        "tags": [
+          "Provider - Payouts"
+        ]
+      },
+      "get": {
+        "operationId": "PayoutsProviderController_findAll",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/PayoutStatus"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List my payout requests (paginated, filterable by status)",
+        "tags": [
+          "Provider - Payouts"
+        ]
+      }
+    },
+    "/api/v1/provider/payouts/{id}": {
+      "get": {
+        "operationId": "PayoutsProviderController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get payout detail",
+        "tags": [
+          "Provider - Payouts"
+        ]
+      }
+    },
+    "/api/v1/admin/payouts": {
+      "get": {
+        "operationId": "PayoutsAdminController_findAll",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/PayoutStatus"
+            }
+          },
+          {
+            "name": "providerId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "List all payout requests (filterable by status/provider)",
+        "tags": [
+          "Admin - Payouts"
+        ]
+      }
+    },
+    "/api/v1/admin/payouts/summary": {
+      "get": {
+        "operationId": "PayoutsAdminController_summary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Payout dashboard summary (totals by status)",
+        "tags": [
+          "Admin - Payouts"
+        ]
+      }
+    },
+    "/api/v1/admin/payouts/{id}": {
+      "get": {
+        "operationId": "PayoutsAdminController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Payout detail with provider info",
+        "tags": [
+          "Admin - Payouts"
+        ]
+      }
+    },
+    "/api/v1/admin/payouts/{id}/approve": {
+      "patch": {
+        "operationId": "PayoutsAdminController_approve",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Approve a payout request",
+        "tags": [
+          "Admin - Payouts"
+        ]
+      }
+    },
+    "/api/v1/admin/payouts/{id}/reject": {
+      "patch": {
+        "operationId": "PayoutsAdminController_reject",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectPayoutDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Reject a payout request with reason",
+        "tags": [
+          "Admin - Payouts"
+        ]
+      }
+    },
+    "/api/v1/admin/payouts/{id}/mark-paid": {
+      "patch": {
+        "operationId": "PayoutsAdminController_markPaid",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkPayoutPaidDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Mark payout as paid (deducts from provider wallet)",
+        "tags": [
+          "Admin - Payouts"
+        ]
+      }
+    },
+    "/api/v1/customer/reviews": {
+      "post": {
+        "operationId": "ReviewsCustomerController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a review for a completed booking",
+        "tags": [
+          "Customer - Reviews"
+        ]
+      }
+    },
+    "/api/v1/customer/reviews/{id}": {
+      "patch": {
+        "operationId": "ReviewsCustomerController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update own review",
+        "tags": [
+          "Customer - Reviews"
+        ]
+      },
+      "delete": {
+        "operationId": "ReviewsCustomerController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete own review",
+        "tags": [
+          "Customer - Reviews"
+        ]
+      }
+    },
+    "/api/v1/customer/chalets/{chaletId}/reviews": {
+      "get": {
+        "operationId": "ReviewsCustomerController_getChaletReviews",
+        "parameters": [
+          {
+            "name": "chaletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get paginated reviews for a chalet (public)",
+        "tags": [
+          "Customer - Reviews"
+        ]
+      }
+    },
+    "/api/v1/admin/reviews": {
+      "get": {
+        "operationId": "ReviewsAdminController_findAll",
+        "parameters": [
+          {
+            "name": "chaletId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customerId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "rating",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "isVisible",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "List all reviews (filterable)",
+        "tags": [
+          "Admin - Reviews"
+        ]
+      }
+    },
+    "/api/v1/admin/reviews/{id}/toggle-visibility": {
+      "patch": {
+        "operationId": "ReviewsAdminController_toggleVisibility",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Hide/unhide a review",
+        "tags": [
+          "Admin - Reviews"
+        ]
+      }
+    },
+    "/api/v1/admin/reviews/{id}": {
+      "delete": {
+        "operationId": "ReviewsAdminController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Hard delete review and recalculate rating",
+        "tags": [
+          "Admin - Reviews"
+        ]
+      }
+    },
+    "/api/v1/customer/favorites/{chaletId}": {
+      "post": {
+        "operationId": "FavoritesCustomerController_addFavorite",
+        "parameters": [
+          {
+            "name": "chaletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add chalet to favorites",
+        "tags": [
+          "Customer - Favorites"
+        ]
+      },
+      "delete": {
+        "operationId": "FavoritesCustomerController_removeFavorite",
+        "parameters": [
+          {
+            "name": "chaletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove chalet from favorites",
+        "tags": [
+          "Customer - Favorites"
+        ]
+      }
+    },
+    "/api/v1/customer/favorites": {
+      "get": {
+        "operationId": "FavoritesCustomerController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List my favorite chalets (paginated)",
+        "tags": [
+          "Customer - Favorites"
+        ]
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "operationId": "HealthController_check",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Health check — no auth required",
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/api/v1/admin/audit-logs": {
+      "get": {
+        "operationId": "AuditAdminController_findAll",
+        "parameters": [
+          {
+            "name": "entityName",
+            "required": false,
+            "in": "query",
+            "description": "Filter by entity name (e.g. Booking, Chalet)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entityId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by entity ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "action",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AuditAction"
+            }
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by user who performed the action",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "startDate",
+            "required": false,
+            "in": "query",
+            "description": "Start date (ISO format)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": false,
+            "in": "query",
+            "description": "End date (ISO format)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all audit logs with filters",
+        "tags": [
+          "Audit Logs"
+        ]
+      }
+    },
+    "/api/v1/admin/audit-logs/entity/{entityId}": {
+      "get": {
+        "operationId": "AuditAdminController_getEntityHistory",
+        "parameters": [
+          {
+            "name": "entityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get change history for a specific entity",
+        "tags": [
+          "Audit Logs"
+        ]
+      }
+    },
+    "/api/v1/admin/audit-logs/user/{userId}": {
+      "get": {
+        "operationId": "AuditAdminController_getUserActivity",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get activity log for a specific user",
+        "tags": [
+          "Audit Logs"
+        ]
+      }
+    },
+    "/api/v1/admin/search/reindex": {
+      "post": {
+        "operationId": "SearchAdminController_reindex",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reindex all approved & active chalets into Elasticsearch",
+        "tags": [
+          "Admin — Search"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Sununo",
+    "description": "Sununo — Chalet Booking Platform REST API",
+    "version": "1.0",
+    "contact": {
+      "name": "Sununo Team",
+      "url": "",
+      "email": "support@sununo.app"
+    }
+  },
+  "tags": [
+    {
+      "name": "auth",
+      "description": "Authentication & OTP"
+    },
+    {
+      "name": "Users — Profile",
+      "description": "User profile management"
+    },
+    {
+      "name": "Users — Admin",
+      "description": "Admin user management"
+    },
+    {
+      "name": "Chalets — Customer",
+      "description": "Public chalet browsing"
+    },
+    {
+      "name": "Chalets — Provider",
+      "description": "Provider chalet management"
+    },
+    {
+      "name": "Chalets — Admin",
+      "description": "Admin chalet management"
+    },
+    {
+      "name": "Bookings — Customer",
+      "description": "Customer booking flow"
+    },
+    {
+      "name": "Bookings — Provider",
+      "description": "Provider booking management"
+    },
+    {
+      "name": "Bookings — Admin",
+      "description": "Admin booking management"
+    },
+    {
+      "name": "Shifts — Provider",
+      "description": "Provider shift management"
+    },
+    {
+      "name": "Wallet",
+      "description": "Wallet & balance operations"
+    },
+    {
+      "name": "Transactions",
+      "description": "Payment transactions"
+    },
+    {
+      "name": "Audit Logs",
+      "description": "Activity audit trail (admin)"
+    },
+    {
+      "name": "Health",
+      "description": "Health check endpoint"
+    }
+  ],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "example": "96477"
+          }
+        },
+        "required": [
+          "phone"
+        ]
+      },
+      "VerifyDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": "454353"
+          },
+          "phone": {
+            "type": "string",
+            "example": "96477"
+          },
+          "name": {
+            "type": "string",
+            "example": "John Cena"
+          }
+        },
+        "required": [
+          "code",
+          "phone"
+        ]
+      },
+      "LangDto": {
+        "type": "object",
+        "properties": {
+          "ar": {
+            "type": "string",
+            "example": "اسم بالعربي"
+          },
+          "en": {
+            "type": "string",
+            "example": "English name"
+          }
+        },
+        "required": [
+          "ar",
+          "en"
+        ]
+      },
+      "RegisterProviderDto": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "example": "96477"
+          },
+          "businessName": {
+            "example": {
+              "ar": "اسم الشركة",
+              "en": "Company Name"
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LangDto"
+              }
+            ]
+          },
+          "businessPhone": {
+            "type": "string",
+            "example": "07701234567"
+          },
+          "commercialRegNo": {
+            "type": "string",
+            "example": "CR-123456"
+          },
+          "bankName": {
+            "type": "string",
+            "example": "Rafidain Bank"
+          },
+          "bankAccountNo": {
+            "type": "string",
+            "example": "1234567890"
+          },
+          "iban": {
+            "type": "string",
+            "example": "IQ12NBIQ850123456789012"
+          },
+          "name": {
+            "type": "string",
+            "example": "Mohammed"
+          }
+        },
+        "required": [
+          "phone",
+          "businessName"
+        ]
+      },
+      "AddPhoneDto": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "description": "Phone number to add"
+          },
+          "name": {
+            "type": "string",
+            "description": "User name"
+          },
+          "birthdate": {
+            "type": "string",
+            "description": "User birthdate"
+          }
+        },
+        "required": [
+          "phone",
+          "name",
+          "birthdate"
+        ]
+      },
+      "AuthVerifyPhoneDto": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "description": "Phone number to verify"
+          },
+          "code": {
+            "type": "number",
+            "description": "Verification code"
+          }
+        },
+        "required": [
+          "phone",
+          "code"
+        ]
+      },
+      "UpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "علي"
+          },
+          "phone": {
+            "type": "string",
+            "example": "9647777777777"
+          },
+          "image": {
+            "type": "object",
+            "example": "file.png"
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "male",
+              "female"
+            ]
+          },
+          "birthday": {
+            "format": "date-time",
+            "type": "string",
+            "example": "1990-01-01"
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": "true"
+          },
+          "cityId": {
+            "type": "string",
+            "example": "1"
+          }
+        }
+      },
+      "UpdateProfileImageDto": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "object",
+            "example": "image.png"
+          }
+        },
+        "required": [
+          "image"
+        ]
+      },
+      "ChangePhoneDto": {
+        "type": "object",
+        "properties": {
+          "newPhone": {
+            "type": "string",
+            "example": "9647777777777"
+          }
+        },
+        "required": [
+          "newPhone"
+        ]
+      },
+      "UpdateVerifyPhoneDto": {
+        "type": "object",
+        "properties": {
+          "newPhone": {
+            "type": "string",
+            "example": "9647777777777"
+          },
+          "code": {
+            "type": "number",
+            "example": 123456
+          }
+        },
+        "required": [
+          "newPhone",
+          "code"
+        ]
+      },
+      "UpdateProviderProfileDto": {
+        "type": "object",
+        "properties": {
+          "businessName": {
+            "$ref": "#/components/schemas/LangDto"
+          },
+          "businessPhone": {
+            "type": "string"
+          },
+          "commercialRegNo": {
+            "type": "string"
+          },
+          "bankName": {
+            "type": "string"
+          },
+          "bankAccountNo": {
+            "type": "string"
+          },
+          "iban": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateFreeShippingDto": {
+        "type": "object",
+        "properties": {
+          "freeShipping": {
+            "type": "object",
+            "description": "Minimum order amount for free shipping (set to null to disable free shipping)",
+            "example": 50,
+            "nullable": true
+          }
+        },
+        "required": [
+          "freeShipping"
+        ]
+      },
+      "UpdateAdminPhoneDto": {
+        "type": "object",
+        "properties": {
+          "adminPhone": {
+            "type": "object",
+            "description": "رقم هاتف الأدمن لاستقبال إشعارات الطلبات الجديدة",
+            "example": "07712345678"
+          }
+        }
+      },
+      "UpdateLayoutDto": {
+        "type": "object",
+        "properties": {
+          "mobile": {
+            "type": "object",
+            "description": "Layout configuration as a JSON object",
+            "example": {
+              "theme": "dark",
+              "language": "en"
+            },
+            "nullable": true
+          },
+          "desktop": {
+            "type": "object",
+            "description": "Layout configuration as a JSON object",
+            "example": {
+              "theme": "dark",
+              "language": "en"
+            },
+            "nullable": true
+          }
+        },
+        "required": [
+          "mobile",
+          "desktop"
+        ]
+      },
+      "CreateFirebaseTokenDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "example": "firebase-token"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "UpdateNotificationSettingDto": {
+        "type": "object",
+        "properties": {
+          "whatsapp": {
+            "type": "boolean",
+            "example": true
+          },
+          "email": {
+            "type": "boolean",
+            "example": true
+          },
+          "firebase": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "CreateNotificationDto": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "type": "array",
+            "example": [
+              "UUID"
+            ]
+          },
+          "to": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "email",
+              "firebase",
+              "whatsapp"
+            ],
+            "example": "firebase"
+          },
+          "title": {
+            "type": "string",
+            "example": "title"
+          },
+          "text": {
+            "type": "string",
+            "example": "text text"
+          },
+          "topic": {
+            "type": "string",
+            "example": "topic"
+          },
+          "redirectId": {
+            "type": "string",
+            "example": "https://example.com"
+          },
+          "redirectUrl": {
+            "type": "string",
+            "example": "https://google.com"
+          },
+          "redirectType": {
+            "type": "string",
+            "enum": [
+              "product",
+              "category",
+              "brand",
+              "offer",
+              "url",
+              "booking",
+              "payout"
+            ],
+            "example": "product"
+          }
+        },
+        "required": [
+          "ids",
+          "to",
+          "type",
+          "title",
+          "text",
+          "redirectType"
+        ]
+      },
+      "CreateCityDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Name"
+          },
+          "deliveryPrice": {
+            "type": "number",
+            "example": "3423"
+          },
+          "lat": {
+            "type": "number",
+            "example": 25.3191
+          },
+          "lng": {
+            "type": "number",
+            "example": 25.3191
+          }
+        },
+        "required": [
+          "name",
+          "deliveryPrice",
+          "lat",
+          "lng"
+        ]
+      },
+      "UpdateCityDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Name"
+          },
+          "deliveryPrice": {
+            "type": "number",
+            "example": "3423"
+          },
+          "lat": {
+            "type": "number",
+            "example": 25.3191
+          },
+          "lng": {
+            "type": "number",
+            "example": 25.3191
+          }
+        }
+      },
+      "AddRegionDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Name"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "CreateChaletDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "example": {
+              "ar": "شاليه الورد",
+              "en": "Rose Chalet"
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LangDto"
+              }
+            ]
+          },
+          "description": {
+            "$ref": "#/components/schemas/LangDto"
+          },
+          "address": {
+            "$ref": "#/components/schemas/LangDto"
+          },
+          "latitude": {
+            "type": "number",
+            "example": 33.3152
+          },
+          "longitude": {
+            "type": "number",
+            "example": 44.3661
+          },
+          "phone": {
+            "type": "string",
+            "example": "+9641234567"
+          },
+          "whatsapp": {
+            "type": "string",
+            "example": "+9641234567"
+          },
+          "maxGuests": {
+            "type": "number",
+            "example": 20
+          },
+          "depositPercentage": {
+            "type": "number",
+            "example": 25.5,
+            "description": "Deposit percentage (0-100)"
+          },
+          "regionId": {
+            "type": "string",
+            "example": "region-uuid"
+          }
+        },
+        "required": [
+          "name",
+          "regionId"
+        ]
+      },
+      "UpdateChaletDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "example": {
+              "ar": "شاليه الورد",
+              "en": "Rose Chalet"
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LangDto"
+              }
+            ]
+          },
+          "description": {
+            "$ref": "#/components/schemas/LangDto"
+          },
+          "address": {
+            "$ref": "#/components/schemas/LangDto"
+          },
+          "latitude": {
+            "type": "number",
+            "example": 33.3152
+          },
+          "longitude": {
+            "type": "number",
+            "example": 44.3661
+          },
+          "phone": {
+            "type": "string",
+            "example": "+9641234567"
+          },
+          "whatsapp": {
+            "type": "string",
+            "example": "+9641234567"
+          },
+          "maxGuests": {
+            "type": "number",
+            "example": 20
+          },
+          "depositPercentage": {
+            "type": "number",
+            "example": 25.5,
+            "description": "Deposit percentage (0-100)"
+          },
+          "regionId": {
+            "type": "string",
+            "example": "region-uuid"
+          }
+        }
+      },
+      "UploadChaletImageDto": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "object",
+            "example": "chalet-photo.jpg"
+          }
+        },
+        "required": [
+          "image"
+        ]
+      },
+      "UpdateChaletImageDto": {
+        "type": "object",
+        "properties": {
+          "order": {
+            "type": "number",
+            "example": 1
+          },
+          "isMain": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "CreateShiftDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "example": {
+              "ar": "فترة صباحية",
+              "en": "Morning Shift"
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LangDto"
+              }
+            ]
+          },
+          "startTime": {
+            "type": "string",
+            "example": "08:00",
+            "description": "Start time in HH:mm format"
+          },
+          "endTime": {
+            "type": "string",
+            "example": "14:00",
+            "description": "End time in HH:mm format"
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true,
+            "default": true
+          }
+        },
+        "required": [
+          "name",
+          "startTime",
+          "endTime"
+        ]
+      },
+      "UpdateShiftDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "example": {
+              "ar": "فترة صباحية",
+              "en": "Morning Shift"
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LangDto"
+              }
+            ]
+          },
+          "startTime": {
+            "type": "string",
+            "example": "08:00",
+            "description": "Start time in HH:mm format"
+          },
+          "endTime": {
+            "type": "string",
+            "example": "14:00",
+            "description": "End time in HH:mm format"
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true,
+            "default": true
+          }
+        }
+      },
+      "DayPriceDto": {
+        "type": "object",
+        "properties": {
+          "dayOfWeek": {
+            "type": "number",
+            "example": 0,
+            "enum": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6
+            ],
+            "description": "0=Sunday, 1=Monday, ..., 6=Saturday"
+          },
+          "price": {
+            "type": "number",
+            "example": 150,
+            "description": "Price must be > 0"
+          }
+        },
+        "required": [
+          "dayOfWeek",
+          "price"
+        ]
+      },
+      "SetPricingMatrixDto": {
+        "type": "object",
+        "properties": {
+          "pricing": {
+            "description": "Full 7-day pricing matrix",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DayPriceDto"
+            }
+          }
+        },
+        "required": [
+          "pricing"
+        ]
+      },
+      "UpdatePricingDto": {
+        "type": "object",
+        "properties": {
+          "price": {
+            "type": "number",
+            "example": 200,
+            "description": "New price (must be > 0)"
+          }
+        },
+        "required": [
+          "price"
+        ]
+      },
+      "CancellationTierDto": {
+        "type": "object",
+        "properties": {
+          "daysBeforeBooking": {
+            "type": "number",
+            "example": 7,
+            "description": "Days before booking date"
+          },
+          "penaltyPercentage": {
+            "type": "number",
+            "example": 25,
+            "description": "Penalty percentage (0-100)"
+          }
+        },
+        "required": [
+          "daysBeforeBooking",
+          "penaltyPercentage"
+        ]
+      },
+      "SetCancellationPoliciesDto": {
+        "type": "object",
+        "properties": {
+          "policies": {
+            "description": "Cancellation tiers in ascending daysBeforeBooking order",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CancellationTierDto"
+            }
+          }
+        },
+        "required": [
+          "policies"
+        ]
+      },
+      "CreateBookingDto": {
+        "type": "object",
+        "properties": {
+          "chaletId": {
+            "type": "string",
+            "description": "Chalet ID",
+            "example": "uuid"
+          },
+          "shiftId": {
+            "type": "string",
+            "description": "Shift ID",
+            "example": "uuid"
+          },
+          "bookingDate": {
+            "type": "string",
+            "description": "Booking date (YYYY-MM-DD)",
+            "example": "2026-03-15"
+          },
+          "useWalletBalance": {
+            "type": "boolean",
+            "description": "Use wallet balance for payment (full or partial)",
+            "default": false
+          }
+        },
+        "required": [
+          "chaletId",
+          "shiftId",
+          "bookingDate"
+        ]
+      },
+      "BookingStatus": {
+        "type": "string",
+        "enum": [
+          "pending_payment",
+          "confirmed",
+          "completed",
+          "cancelled",
+          "refunded"
+        ]
+      },
+      "CancelBookingDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "description": "Cancellation reason"
+          }
+        }
+      },
+      "ForceCancelBookingDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "description": "Cancellation reason"
+          },
+          "refundAmount": {
+            "type": "number",
+            "description": "Refund amount"
+          }
+        }
+      },
+      "CreateAmenityDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "example": {
+              "ar": "مسبح",
+              "en": "Swimming Pool"
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LangDto"
+              }
+            ]
+          },
+          "icon": {
+            "type": "string",
+            "example": "pool"
+          },
+          "category": {
+            "example": {
+              "ar": "ترفيه",
+              "en": "Entertainment"
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LangDto"
+              }
+            ]
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateAmenityDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "example": {
+              "ar": "مسبح",
+              "en": "Swimming Pool"
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LangDto"
+              }
+            ]
+          },
+          "icon": {
+            "type": "string",
+            "example": "pool"
+          },
+          "category": {
+            "example": {
+              "ar": "ترفيه",
+              "en": "Entertainment"
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LangDto"
+              }
+            ]
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "LinkAmenitiesDto": {
+        "type": "object",
+        "properties": {
+          "amenityIds": {
+            "example": [
+              "uuid-1",
+              "uuid-2"
+            ],
+            "description": "Array of amenity IDs to link to the chalet",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "amenityIds"
+        ]
+      },
+      "CreatePayoutDto": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "description": "Amount to withdraw (must be <= wallet balance)",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "amount"
+        ]
+      },
+      "PayoutStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "approved",
+          "paid",
+          "rejected"
+        ]
+      },
+      "RejectPayoutDto": {
+        "type": "object",
+        "properties": {
+          "rejectionReason": {
+            "type": "string",
+            "description": "Reason for rejecting the payout request"
+          }
+        },
+        "required": [
+          "rejectionReason"
+        ]
+      },
+      "MarkPayoutPaidDto": {
+        "type": "object",
+        "properties": {
+          "adminNote": {
+            "type": "string",
+            "description": "Optional admin note for the payout"
+          }
+        }
+      },
+      "CreateReviewDto": {
+        "type": "object",
+        "properties": {
+          "bookingId": {
+            "type": "string",
+            "description": "UUID of the completed booking to review"
+          },
+          "rating": {
+            "type": "number",
+            "description": "Rating from 1 to 5",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "comment": {
+            "type": "string",
+            "description": "Optional review comment"
+          }
+        },
+        "required": [
+          "bookingId",
+          "rating"
+        ]
+      },
+      "UpdateReviewDto": {
+        "type": "object",
+        "properties": {
+          "rating": {
+            "type": "number",
+            "description": "Rating from 1 to 5",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "comment": {
+            "type": "string",
+            "description": "Review comment"
+          }
+        }
+      },
+      "AuditAction": {
+        "type": "string",
+        "enum": [
+          "CREATE",
+          "UPDATE",
+          "DELETE"
+        ]
+      }
+    }
+  }
+}

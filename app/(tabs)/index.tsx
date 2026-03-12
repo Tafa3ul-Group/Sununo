@@ -1,6 +1,6 @@
 import { ChaletCard } from '@/components/chalet-card';
 import { HeaderSection } from '@/components/header-section';
-import { Colors, Spacing } from '@/constants/theme';
+import { Colors, Spacing, normalize } from '@/constants/theme';
 import React from 'react';
 import { FlatList, Platform, StatusBar, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -37,15 +37,24 @@ const MOCK_CHALETS = [
   }
 ];
 
+import { Redirect } from 'expo-router';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
+
 export default function HomeScreen() {
+  const { userType, user } = useSelector((state: RootState) => state.auth);
+  
+  if (userType === 'owner') {
+    return <Redirect href="/(tabs)/(dashboard)/my-chalets" />;
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" />
       <View style={styles.container}>
         <FlatList
           data={MOCK_CHALETS}
           keyExtractor={(item) => item.id}
-          ListHeaderComponent={<HeaderSection />}
+          ListHeaderComponent={<HeaderSection userType={userType} userName={user?.name} />}
           renderItem={({ item }) => (
             <View style={styles.cardContainer}>
               <ChaletCard {...item} />

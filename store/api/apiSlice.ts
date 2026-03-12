@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { RootState } from '../index'; // import the RootState from index.ts to prevent circular dependency issues
 
 // Define the base URL for the API
 const BASE_URL = 'https://k4wwso0cwg480c480oo0owg4.rakiza.dev/api/v1';
@@ -7,13 +8,12 @@ export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
     baseUrl: BASE_URL,
-    prepareHeaders: (headers) => {
+    prepareHeaders: (headers, { getState }) => {
       // If we have a token in the state, use it for authenticated requests
-      // This is a placeholder for when you implement auth state
-      // const token = (getState() as RootState).auth.token;
-      // if (token) {
-      //   headers.set('authorization', `Bearer ${token}`);
-      // }
+      const token = (getState() as RootState).auth.token;
+      if (token) {
+        headers.set('authorization', `Bearer ${token}`);
+      }
       return headers;
     },
   }),
@@ -34,12 +34,21 @@ export const apiSlice = createApi({
       providesTags: ['User'],
     }),
 
-    // Example mutation for login
+    // Example mutation for login (requests OTP)
     login: builder.mutation({
       query: (credentials) => ({
         url: '/auth/login',
         method: 'POST',
         body: credentials,
+      }),
+    }),
+    
+    // Example mutation for verifying OTP
+    verifyPhone: builder.mutation({
+      query: (data) => ({
+        url: '/auth/verify',
+        method: 'POST',
+        body: data,
       }),
     }),
   }),
@@ -49,4 +58,5 @@ export const {
   useGetChaletsQuery,
   useGetMeQuery,
   useLoginMutation,
+  useVerifyPhoneMutation,
 } = apiSlice;

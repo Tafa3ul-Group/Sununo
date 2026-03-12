@@ -1,0 +1,69 @@
+{
+  "auth": {
+    "chooseType": "اختر نوع الحساب",
+    "owner": "صاحب شاليه",
+    "customer": "مستأجر / ضيف",
+    "ownerDesc": "أضف شاليهك وأدر حجوزاتك بسهولة",
+    "customerDesc": "استكشف واحجز أفضل الشاليهات لرحلتك",
+    "browseAsGuest": "تصفح كضيف",
+    "login": "تسجيل الدخول",
+    "phone": "رقم الهاتف",
+    "continue": "المتابعة",
+    "verify": "تحقق",
+    "otpSent": "تم إرسال رمز التحقق إلى رقم هاتفك",
+    "enterOtp": "أدخل رمز التحقق",
+    "fullName": "الاسم الكامل"
+  },
+  "tabs": {
+    "home": "الرئيسية",
+    "myChalets": "شاليهاتي",
+    "bookings": "الحجوزات",
+    "customers": "المستأجرين",
+    "revenue": "الأرباح",
+    "profile": "حسابي"
+  },
+  "home": {
+    "welcome": "أهلاً بك",
+    "searchPlaceholder": "ابحث عن شاليه...",
+    "categories": {
+      "all": "الكل",
+      "popular": "الأكثر طلباً",
+      "nearby": "قريب منك",
+      "luxury": "فاخر"
+    }
+  },
+  "profile": {
+    "title": "الملف الشخصي",
+    "editProfile": "تعديل البيانات",
+    "notifications": "الإشعارات",
+    "language": "اللغة",
+    "logout": "تسجيل الخروج"
+  },
+  "dashboard": {
+    "addChalet": "إضافة شاليه جديد",
+    "editChalet": "تعديل الشاليه",
+    "noChalets": "لا توجد شاليهات مضافة",
+    "active": "نشط",
+    "inactive": "غير نشط",
+    "recentBookings": "أحدث الحجوزات",
+    "viewAll": "عرض الكل",
+    "stats": {
+      "totalRevenue": "إجمالي الأرباح",
+      "totalBookings": "إجمالي الحجوزات",
+      "activeChalets": "الشاليهات النشطة"
+    },
+    "bookings": {
+      "new": "جديدة",
+      "confirmed": "مؤكدة",
+      "finished": "منتهية",
+      "cancelled": "ملغاة",
+      "accept": "قبول",
+      "decline": "رفض"
+    },
+    "revenue": {
+      "balance": "الرصيد المتاح",
+      "withdraw": "سحب الأرباح",
+      "history": "سجل المعاملات"
+    }
+  }
+}

@@ -59,6 +59,9 @@ export const Colors = {
   },
   border: '#EBEBEB',
   shadow: '#000000',
+  white: '#FFFFFF',
+  black: '#000000',
+  error: '#FF385C',
 };
 
 export const Spacing = {
@@ -119,16 +122,16 @@ export const Typography: Record<string, TypeStyle> = {
 export const Shadows = {
   light: {
     shadowColor: Colors.shadow,
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: normalize.height(2) },
     shadowOpacity: 0.05,
-    shadowRadius: 8,
+    shadowRadius: normalize.radius(8),
     elevation: 2,
   },
   medium: {
     shadowColor: Colors.shadow,
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: normalize.height(4) },
     shadowOpacity: 0.1,
-    shadowRadius: 12,
+    shadowRadius: normalize.radius(12),
     elevation: 4,
   },
 };

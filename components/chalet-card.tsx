@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 2,
+    marginBottom: normalize.height(2),
   },
   title: {
     flex: 1,
@@ -131,19 +131,19 @@ const styles = StyleSheet.create({
   ratingBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: normalize.width(4),
   },
   ratingText: {
-    marginLeft: 2,
+    marginLeft: normalize.width(2),
   },
   infoText: {
-    marginBottom: 4,
+    marginBottom: normalize.height(4),
   },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
   },
   perNight: {
-    marginLeft: 4,
+    marginLeft: normalize.width(4),
   },
 });

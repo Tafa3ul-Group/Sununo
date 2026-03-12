@@ -1,0 +1,69 @@
+{
+  "auth": {
+    "chooseType": "Choose Account Type",
+    "owner": "Chalet Owner",
+    "customer": "Customer / Guest",
+    "ownerDesc": "List your chalet and manage bookings easily",
+    "customerDesc": "Explore and book the best chalets for your trip",
+    "browseAsGuest": "Browse as Guest",
+    "login": "Login",
+    "phone": "Phone Number",
+    "continue": "Continue",
+    "verify": "Verify",
+    "otpSent": "Verification code sent to your phone",
+    "enterOtp": "Enter verification code",
+    "fullName": "Full Name"
+  },
+  "tabs": {
+    "home": "Home",
+    "myChalets": "My Chalets",
+    "bookings": "Bookings",
+    "customers": "Customers",
+    "revenue": "Revenue",
+    "profile": "Profile"
+  },
+  "home": {
+    "welcome": "Welcome",
+    "searchPlaceholder": "Search for a chalet...",
+    "categories": {
+      "all": "All",
+      "popular": "Popular",
+      "nearby": "Nearby",
+      "luxury": "Luxury"
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "editProfile": "Edit Profile",
+    "notifications": "Notifications",
+    "language": "Language",
+    "logout": "Logout"
+  },
+  "dashboard": {
+    "addChalet": "Add New Chalet",
+    "editChalet": "Edit Chalet",
+    "noChalets": "No chalets added yet",
+    "active": "Active",
+    "inactive": "Inactive",
+    "recentBookings": "Recent Bookings",
+    "viewAll": "View All",
+    "stats": {
+      "totalRevenue": "Total Revenue",
+      "totalBookings": "Total Bookings",
+      "activeChalets": "Active Chalets"
+    },
+    "bookings": {
+      "new": "New",
+      "confirmed": "Confirmed",
+      "finished": "Finished",
+      "cancelled": "Cancelled",
+      "accept": "Accept",
+      "decline": "Decline"
+    },
+    "revenue": {
+      "balance": "Available Balance",
+      "withdraw": "Withdraw Funds",
+      "history": "Transaction History"
+    }
+  }
+}
