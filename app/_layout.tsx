@@ -11,6 +11,8 @@ import Toast from 'react-native-toast-message';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import '@/i18n';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
@@ -31,8 +33,12 @@ export default function RootLayout() {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <RootLayoutNav />
-        <Toast />
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <BottomSheetModalProvider>
+            <RootLayoutNav />
+            <Toast />
+          </BottomSheetModalProvider>
+        </GestureHandlerRootView>
       </PersistGate>
     </Provider>
   );

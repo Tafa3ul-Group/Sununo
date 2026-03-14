@@ -1,15 +1,14 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { View, Image, StyleSheet, Platform } from 'react-native';
+import { Image, Platform, StyleSheet, View } from 'react-native';
 
 import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors, normalize, Shadows } from '@/constants/theme';
+import { normalize } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
-import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();

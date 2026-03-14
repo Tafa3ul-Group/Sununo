@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useRef, useMemo } from 'react';
 import {
   StyleSheet,
   View,
@@ -10,10 +10,9 @@ import {
   Platform,
   Image,
   Alert,
-  Modal,
   ActivityIndicator,
-  FlatList,
 } from 'react-native';
+import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop, BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing, Typography, normalize, Shadows } from '@/constants/theme';
 import { useRouter } from 'expo-router';
@@ -49,12 +48,30 @@ export default function AddChaletScreen() {
   });
 
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
-  const [showImageSource, setShowImageSource] = useState(false);
-  const [showCityPicker, setShowCityPicker] = useState(false);
-  const [showRegionPicker, setShowRegionPicker] = useState(false);
-
   const { data: cities, isLoading: loadingCities } = useGetCitiesQuery();
   const [triggerGetRegions, { data: regions, isLoading: loadingRegions }] = useLazyGetRegionsQuery();
+
+  // Bottom Sheet Refs
+  const citySheetRef = useRef<BottomSheetModal>(null);
+  const regionSheetRef = useRef<BottomSheetModal>(null);
+  const imageSourceSheetRef = useRef<BottomSheetModal>(null);
+
+  // Snap Points
+  const snapPoints = useMemo(() => ['50%', '75%'], []);
+  const imageSnapPoints = useMemo(() => ['30%'], []);
+
+  // Backdrop
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        pressBehavior="close"
+      />
+    ),
+    []
+  );
 
   const [features, setFeatures] = useState([
     { id: 'pool', label: 'مسبح', icon: 'pool', selected: false },
@@ -83,7 +100,6 @@ export default function AddChaletScreen() {
 
     if (!result.canceled) {
       setSelectedImages([...selectedImages, ...result.assets.map(a => a.uri)]);
-      setShowImageSource(false);
     }
   };
 
@@ -101,7 +117,6 @@ export default function AddChaletScreen() {
 
     if (!result.canceled) {
       setSelectedImages([...selectedImages, result.assets[0].uri]);
-      setShowImageSource(false);
     }
   };
 
@@ -174,13 +189,13 @@ export default function AddChaletScreen() {
 
   const handleCitySelect = (city: any) => {
     setForm({ ...form, cityId: city.id, cityName: city.name, regionId: '', regionName: '' });
-    setShowCityPicker(false);
+    citySheetRef.current?.dismiss();
     triggerGetRegions(city.id);
   };
 
   const handleRegionSelect = (region: any) => {
     setForm({ ...form, regionId: region.id, regionName: region.name });
-    setShowRegionPicker(false);
+    regionSheetRef.current?.dismiss();
   };
 
   const textAlign = isRTL ? 'right' : 'left';
@@ -223,7 +238,7 @@ export default function AddChaletScreen() {
                 <Text style={[styles.label, { textAlign }]}>المدينة</Text>
                 <TouchableOpacity 
                   style={[styles.input, { justifyContent: 'center' }]} 
-                  onPress={() => setShowCityPicker(true)}
+                  onPress={() => citySheetRef.current?.present()}
                 >
                   <Text style={{ color: form.cityName ? Colors.text.primary : Colors.text.muted, textAlign }}>
                     {form.cityName || "اختر المدينة"}
@@ -235,7 +250,7 @@ export default function AddChaletScreen() {
                 <Text style={[styles.label, { textAlign }]}>المنطقة</Text>
                 <TouchableOpacity 
                   style={[styles.input, { justifyContent: 'center' }]} 
-                  onPress={() => form.cityId ? setShowRegionPicker(true) : Alert.alert("تنبيه", "يرجى اختيار المدينة أولاً")}
+                  onPress={() => form.cityId ? regionSheetRef.current?.present() : Alert.alert("تنبيه", "يرجى اختيار المدينة أولاً")}
                   disabled={!form.cityId}
                 >
                   <Text style={{ color: form.regionName ? Colors.text.primary : Colors.text.muted, textAlign }}>
@@ -329,7 +344,7 @@ export default function AddChaletScreen() {
                   </TouchableOpacity>
                 </View>
               ))}
-              <TouchableOpacity style={styles.imageUpload} onPress={() => setShowImageSource(true)}>
+              <TouchableOpacity style={styles.imageUpload} onPress={() => imageSourceSheetRef.current?.present()}>
                 <MaterialCommunityIcons name="camera-plus-outline" size={32} color={Colors.text.muted} />
                 <Text style={styles.uploadText}>{isRTL ? 'إضافة صور' : 'Add Photos'}</Text>
               </TouchableOpacity>
@@ -351,116 +366,92 @@ export default function AddChaletScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* City Picker Modal */}
-      <Modal
-        visible={showCityPicker}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowCityPicker(false)}
+      {/* City Picker Bottom Sheet */}
+      <BottomSheetModal
+        ref={citySheetRef}
+        index={0}
+        snapPoints={snapPoints}
+        backdropComponent={renderBackdrop}
+        backgroundStyle={{ borderRadius: normalize.radius(24) }}
       >
-        <TouchableOpacity 
-          style={styles.modalOverlay} 
-          activeOpacity={1} 
-          onPress={() => setShowCityPicker(false)}
-        >
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>اختر المدينة</Text>
-            {loadingCities ? (
-              <ActivityIndicator color={Colors.primary} style={{ margin: 20 }} />
-            ) : (
-              <FlatList
-                data={cities}
-                keyExtractor={(item) => item.id}
-                style={{ width: '100%', maxHeight: 400 }}
-                renderItem={({ item }) => (
-                  <TouchableOpacity 
-                    style={styles.pickerItem} 
-                    onPress={() => handleCitySelect(item)}
-                  >
-                    <Text style={[styles.pickerItemText, { textAlign }]}>{item.name}</Text>
-                  </TouchableOpacity>
-                )}
-              />
-            )}
-            <TouchableOpacity style={styles.modalCancel} onPress={() => setShowCityPicker(false)}>
-              <Text style={styles.modalCancelText}>{isRTL ? 'إلغاء' : 'Cancel'}</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      </Modal>
+        <BottomSheetView style={styles.sheetContent}>
+          <Text style={styles.modalTitle}>اختر المدينة</Text>
+          {loadingCities ? (
+            <ActivityIndicator color={Colors.primary} style={{ margin: 20 }} />
+          ) : (
+            <BottomSheetFlatList
+              data={cities}
+              keyExtractor={(item: any) => item.id}
+              style={{ width: '100%' }}
+              renderItem={({ item }: { item: any }) => (
+                <TouchableOpacity 
+                  style={styles.pickerItem} 
+                  onPress={() => handleCitySelect(item)}
+                >
+                  <Text style={[styles.pickerItemText, { textAlign }]}>{item.name}</Text>
+                </TouchableOpacity>
+              )}
+            />
+          )}
+        </BottomSheetView>
+      </BottomSheetModal>
 
-      {/* Region Picker Modal */}
-      <Modal
-        visible={showRegionPicker}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowRegionPicker(false)}
+      {/* Region Picker Bottom Sheet */}
+      <BottomSheetModal
+        ref={regionSheetRef}
+        index={0}
+        snapPoints={snapPoints}
+        backdropComponent={renderBackdrop}
+        backgroundStyle={{ borderRadius: normalize.radius(24) }}
       >
-        <TouchableOpacity 
-          style={styles.modalOverlay} 
-          activeOpacity={1} 
-          onPress={() => setShowRegionPicker(false)}
-        >
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>اختر المنطقة</Text>
-            {loadingRegions ? (
-              <ActivityIndicator color={Colors.primary} style={{ margin: 20 }} />
-            ) : (
-              <FlatList
-                data={regions}
-                keyExtractor={(item) => item.id}
-                style={{ width: '100%', maxHeight: 400 }}
-                renderItem={({ item }) => (
-                  <TouchableOpacity 
-                    style={styles.pickerItem} 
-                    onPress={() => handleRegionSelect(item)}
-                  >
-                    <Text style={[styles.pickerItemText, { textAlign }]}>{item.name}</Text>
-                  </TouchableOpacity>
-                )}
-              />
-            )}
-            <TouchableOpacity style={styles.modalCancel} onPress={() => setShowRegionPicker(false)}>
-              <Text style={styles.modalCancelText}>{isRTL ? 'إلغاء' : 'Cancel'}</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      </Modal>
+        <BottomSheetView style={styles.sheetContent}>
+          <Text style={styles.modalTitle}>اختر المنطقة</Text>
+          {loadingRegions ? (
+            <ActivityIndicator color={Colors.primary} style={{ margin: 20 }} />
+          ) : (
+            <BottomSheetFlatList
+              data={regions}
+              keyExtractor={(item: any) => item.id}
+              style={{ width: '100%' }}
+              renderItem={({ item }: { item: any }) => (
+                <TouchableOpacity 
+                  style={styles.pickerItem} 
+                  onPress={() => handleRegionSelect(item)}
+                >
+                  <Text style={[styles.pickerItemText, { textAlign }]}>{item.name}</Text>
+                </TouchableOpacity>
+              )}
+            />
+          )}
+        </BottomSheetView>
+      </BottomSheetModal>
 
-      {/* Image Source Selection Modal */}
-      <Modal
-        visible={showImageSource}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowImageSource(false)}
+      {/* Image Source Bottom Sheet */}
+      <BottomSheetModal
+        ref={imageSourceSheetRef}
+        index={0}
+        snapPoints={imageSnapPoints}
+        backdropComponent={renderBackdrop}
+        backgroundStyle={{ borderRadius: normalize.radius(24) }}
       >
-        <TouchableOpacity 
-          style={styles.modalOverlay} 
-          activeOpacity={1} 
-          onPress={() => setShowImageSource(false)}
-        >
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>{isRTL ? 'اختر مصدر الصورة' : 'Select Image Source'}</Text>
-            <View style={styles.modalOptions}>
-              <TouchableOpacity style={styles.modalOption} onPress={takePhoto}>
-                <View style={[styles.modalIcon, { backgroundColor: '#E3F2FD' }]}>
-                  <Ionicons name="camera" size={30} color={Colors.primary} />
-                </View>
-                <Text style={styles.modalOptionText}>{isRTL ? 'الكاميرا' : 'Camera'}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.modalOption} onPress={pickImage}>
-                <View style={[styles.modalIcon, { backgroundColor: '#F3E5F5' }]}>
-                  <Ionicons name="images" size={30} color="#9C27B0" />
-                </View>
-                <Text style={styles.modalOptionText}>{isRTL ? 'الأستوديو' : 'Gallery'}</Text>
-              </TouchableOpacity>
-            </View>
-            <TouchableOpacity style={styles.modalCancel} onPress={() => setShowImageSource(false)}>
-              <Text style={styles.modalCancelText}>{isRTL ? 'إلغاء' : 'Cancel'}</Text>
+        <BottomSheetView style={styles.sheetContent}>
+          <Text style={styles.modalTitle}>{isRTL ? 'اختر مصدر الصورة' : 'Select Image Source'}</Text>
+          <View style={styles.modalOptions}>
+            <TouchableOpacity style={styles.modalOption} onPress={() => { takePhoto(); imageSourceSheetRef.current?.dismiss(); }}>
+              <View style={[styles.modalIcon, { backgroundColor: '#E3F2FD' }]}>
+                <Ionicons name="camera" size={30} color={Colors.primary} />
+              </View>
+              <Text style={styles.modalOptionText}>{isRTL ? 'الكاميرا' : 'Camera'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.modalOption} onPress={() => { pickImage(); imageSourceSheetRef.current?.dismiss(); }}>
+              <View style={[styles.modalIcon, { backgroundColor: '#F3E5F5' }]}>
+                <Ionicons name="images" size={30} color="#9C27B0" />
+              </View>
+              <Text style={styles.modalOptionText}>{isRTL ? 'الأستوديو' : 'Gallery'}</Text>
             </TouchableOpacity>
           </View>
-        </TouchableOpacity>
-      </Modal>
+        </BottomSheetView>
+      </BottomSheetModal>
     </SafeAreaView>
   );
 }
@@ -536,12 +527,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: Spacing.xl,
   },
-  modalContent: {
-    width: '100%',
-    backgroundColor: Colors.white,
-    borderRadius: normalize.radius(24),
+  sheetContent: {
     padding: Spacing.lg,
     alignItems: 'center',
+    flex: 1,
   },
   modalTitle: {
     ...Typography.h2,
