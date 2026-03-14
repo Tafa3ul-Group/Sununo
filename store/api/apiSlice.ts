@@ -61,6 +61,16 @@ export const apiSlice = createApi({
       invalidatesTags: ['Chalet'],
     }),
 
+    // Mutation for uploading chalet image
+    uploadChaletImage: builder.mutation({
+      query: ({ chaletId, formData }) => ({
+        url: `/provider/chalets/${chaletId}/images`,
+        method: 'POST',
+        body: formData,
+      }),
+    }),
+
+
     // Query for getting owner's chalets
     getOwnerChalets: builder.query({
       query: () => '/provider/chalets',
@@ -86,7 +96,9 @@ export const {
   useLoginMutation,
   useVerifyPhoneMutation,
   useCreateChaletMutation,
+  useUploadChaletImageMutation,
   useGetOwnerChaletsQuery,
+
   useGetCitiesQuery,
   useGetRegionsQuery,
   useLazyGetRegionsQuery,

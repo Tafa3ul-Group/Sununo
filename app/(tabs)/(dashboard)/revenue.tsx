@@ -69,8 +69,8 @@ export default function RevenueScreen() {
         showSearch={false}
         showCategories={false}
       />
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        <View style={styles.spacer} />
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 0 }}>
+        <View style={{ paddingHorizontal: Spacing.md }}>
 
         {/* Balance Card */}
         <View style={styles.balanceCard}>
@@ -109,6 +109,7 @@ export default function RevenueScreen() {
             </View>
           ))}
         </View>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -121,22 +122,15 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    paddingHorizontal: Spacing.md,
-  },
-  spacer: {
-    height: Spacing.md,
-  },
-  pageTitle: {
-    marginBottom: Spacing.md,
-    marginTop: Spacing.sm,
+    backgroundColor: '#FAFAFA',
   },
   balanceCard: {
     backgroundColor: Colors.primary,
-    borderRadius: normalize.radius(24),
-    padding: Spacing.xl,
+    borderRadius: 20,
+    padding: 24,
     alignItems: 'center',
-    ...Shadows.medium,
     marginBottom: Spacing.lg,
+    marginTop: Spacing.md,
   },
   balanceLabel: {
     color: Colors.white + '90',
@@ -161,16 +155,17 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(14),
   },
   statsRow: {
-    gap: Spacing.md,
-    marginBottom: Spacing.xl,
+    gap: 12,
+    marginBottom: 24,
+    paddingHorizontal: Spacing.md,
   },
   statBox: {
     flex: 1,
-    backgroundColor: Colors.surface,
-    padding: Spacing.md,
-    borderRadius: normalize.radius(16),
+    backgroundColor: Colors.white,
+    padding: 16,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.border + '80',
   },
   quickStatLabel: {
     fontSize: normalize.font(10),
@@ -186,22 +181,26 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: Spacing.md,
+    paddingHorizontal: Spacing.md,
   },
   historyTitle: {
     fontSize: normalize.font(18),
+    fontWeight: '700',
+    color: Colors.text.primary,
   },
   viewAllText: {
     color: Colors.primary,
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(13),
     fontWeight: '600',
   },
   historyList: {
-    backgroundColor: Colors.surface,
-    borderRadius: normalize.radius(16),
-    padding: Spacing.sm,
-    marginBottom: Spacing.xl,
+    backgroundColor: Colors.white,
+    borderRadius: 16,
+    padding: 8,
+    marginHorizontal: Spacing.md,
+    marginBottom: 32,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.border + '80',
   },
   transactionItem: {
     padding: Spacing.md,

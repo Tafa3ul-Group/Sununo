@@ -1,5 +1,7 @@
 import React from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
+import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing, Typography, normalize, Shadows } from '@/constants/theme';
 import { HeaderSection } from '@/components/header-section';
@@ -96,31 +98,35 @@ export default function BookingsScreen() {
         showCategories={false}
       />
       <View style={styles.container}>
-        <View style={styles.spacer} />
-        
-        <View style={[styles.tabBar, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-          {TABS.map(tab => (
-            <TouchableOpacity 
-              key={tab.id}
-              onPress={() => setActiveTab(tab.id)}
-              style={[styles.tabItem, activeTab === tab.id && styles.activeTabItem]}
-            >
-              <Text style={[styles.tabLabel, activeTab === tab.id && styles.activeTabLabel]}>
-                {tab.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
+        <View style={styles.listHeader}>
+          <View style={[styles.tabBar, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            {TABS.map(tab => (
+              <TouchableOpacity 
+                key={tab.id}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  setActiveTab(tab.id);
+                }}
+                style={[styles.tabItem, activeTab === tab.id && styles.activeTabItem]}
+              >
+                <Text style={[styles.tabLabel, activeTab === tab.id && styles.activeTabLabel]}>
+                  {tab.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
 
-        <FlatList
+        <FlashList
           data={filteredBookings}
           keyExtractor={(item) => item.id}
           renderItem={renderBookingItem}
+          estimatedItemSize={120}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <MaterialCommunityIcons name="calendar-blank" size={80} color={Colors.text.muted} />
+              <MaterialCommunityIcons name="calendar-blank-outline" size={64} color={Colors.text.muted} />
               <Text style={styles.emptyText}>{t('dashboard.noChalets')}</Text>
             </View>
           }
@@ -137,83 +143,90 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+    backgroundColor: '#FAFAFA',
+  },
+  listHeader: {
     paddingHorizontal: Spacing.md,
-  },
-  spacer: {
-    height: Spacing.md,
-  },
-  pageTitle: {
-    marginBottom: Spacing.md,
-    marginTop: Spacing.sm,
+    backgroundColor: Colors.white,
+    paddingBottom: Spacing.sm,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: Colors.border,
   },
   tabBar: {
-    backgroundColor: Colors.surface,
-    borderRadius: normalize.radius(12),
-    padding: 4,
-    marginBottom: Spacing.md,
-    gap: 4,
+    backgroundColor: '#F2F2F7',
+    borderRadius: 10,
+    padding: 2,
+    flexDirection: 'row',
+    gap: 2,
+    marginTop: Spacing.sm,
   },
   tabItem: {
     flex: 1,
-    paddingVertical: normalize.height(10),
+    paddingVertical: 8,
     alignItems: 'center',
-    borderRadius: normalize.radius(8),
+    borderRadius: 8,
   },
   activeTabItem: {
     backgroundColor: Colors.white,
-    ...Shadows.light,
   },
   tabLabel: {
-    fontSize: normalize.font(14),
+    fontSize: normalize.font(13),
     color: Colors.text.muted,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   activeTabLabel: {
-    color: Colors.primary,
+    color: Colors.text.primary,
+    fontWeight: '700',
   },
   listContent: {
-    paddingBottom: Spacing.xl,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
   },
   bookingCard: {
-    backgroundColor: Colors.surface,
-    padding: Spacing.md,
-    borderRadius: normalize.radius(16),
-    marginBottom: Spacing.md,
+    backgroundColor: Colors.white,
+    padding: 16,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.border + '80',
+    marginBottom: Spacing.sm,
   },
   bookingHeader: {
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: Spacing.sm,
+    marginBottom: 4,
   },
   customerName: {
     fontSize: normalize.font(16),
+    fontWeight: '700',
+    color: Colors.text.primary,
   },
   chaletName: {
-    fontSize: normalize.font(12),
-    color: Colors.text.secondary,
+    fontSize: normalize.font(13),
+    color: Colors.text.muted,
+    marginTop: 2,
   },
   priceText: {
     fontSize: normalize.font(14),
+    fontWeight: '600',
+    color: Colors.primary,
   },
   detailRow: {
     alignItems: 'center',
-    gap: Spacing.xs,
-    marginBottom: Spacing.md,
+    gap: 6,
+    marginTop: 8,
+    marginBottom: 16,
   },
   detailText: {
     fontSize: normalize.font(12),
-    color: Colors.text.secondary,
+    color: Colors.text.muted,
   },
   actionRow: {
-    gap: Spacing.sm,
-    marginTop: Spacing.xs,
+    gap: 12,
   },
   actionButton: {
     flex: 1,
-    paddingVertical: normalize.height(10),
-    borderRadius: normalize.radius(10),
+    height: 40,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -222,36 +235,37 @@ const styles = StyleSheet.create({
   },
   acceptButtonText: {
     color: Colors.white,
-    fontWeight: 'bold',
-    fontSize: normalize.font(12),
+    fontWeight: '700',
+    fontSize: normalize.font(13),
   },
   declineButton: {
-    backgroundColor: Colors.white,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    backgroundColor: '#FEE2E2',
   },
   declineButtonText: {
-    color: Colors.text.secondary,
-    fontWeight: '600',
-    fontSize: normalize.font(12),
+    color: '#EF4444',
+    fontWeight: '700',
+    fontSize: normalize.font(13),
   },
   statusInfo: {
     alignItems: 'center',
     gap: 6,
-    paddingTop: Spacing.xs,
+    paddingTop: 8,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: Colors.border,
   },
   statusInfoText: {
     fontSize: normalize.font(12),
     fontWeight: '700',
   },
   emptyContainer: {
-    marginTop: 100,
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    opacity: 0.5,
+    marginTop: 100,
   },
   emptyText: {
-    ...Typography.body,
-    marginTop: Spacing.md,
-    color: Colors.text.secondary,
+    fontSize: normalize.font(14),
+    color: Colors.text.muted,
+    marginTop: 12,
   },
 });

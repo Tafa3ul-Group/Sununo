@@ -24,7 +24,7 @@ import { ThemedText } from '@/components/themed-text';
 import { StatusBar } from 'expo-status-bar';
 import Toast from 'react-native-toast-message';
 import * as ImagePicker from 'expo-image-picker';
-import { useCreateChaletMutation, useGetCitiesQuery, useLazyGetRegionsQuery } from '@/store/api/apiSlice';
+import { useCreateChaletMutation, useUploadChaletImageMutation, useGetCitiesQuery, useLazyGetRegionsQuery } from '@/store/api/apiSlice';
 
 export default function AddChaletScreen() {
   const router = useRouter();
@@ -32,7 +32,9 @@ export default function AddChaletScreen() {
   const { language } = useSelector((state: RootState) => state.auth);
   const isRTL = language === 'ar';
 
-  const [createChalet, { isLoading }] = useCreateChaletMutation();
+  const [createChalet, { isLoading: isCreating }] = useCreateChaletMutation();
+  const [uploadImage, { isLoading: isUploading }] = useUploadChaletImageMutation();
+  const isLoading = isCreating || isUploading;
 
   const [form, setForm] = useState({
     name: '',
@@ -136,37 +138,37 @@ export default function AddChaletScreen() {
     }
 
     try {
-      const formData = new FormData();
-      
-      // Wrap strings in LangDto format as expected by backend
-      formData.append('name', JSON.stringify({ ar: form.name, en: form.name }));
-      formData.append('description', JSON.stringify({ ar: form.description, en: form.description }));
-      formData.append('address', JSON.stringify({ ar: form.location, en: form.location }));
-      
-      formData.append('regionId', form.regionId);
-      formData.append('maxGuests', form.guests);
-      
-      // If price needs to be handled differently, we might need another API call 
-      // but for now let's satisfy the CreateChaletDto requirements
-      formData.append('depositPercentage', '25'); // Default or add to form
-      
-      const selectedFeatures = features.filter(f => f.selected).map(f => f.id);
-      formData.append('amenities', JSON.stringify(selectedFeatures));
+      const payload = {
+        name: { ar: form.name, en: form.name },
+        description: { ar: form.description, en: form.description },
+        address: { ar: form.location, en: form.location },
+        regionId: form.regionId,
+        maxGuests: parseInt(form.guests) || 0,
+        depositPercentage: 25,
+      };
 
-      selectedImages.forEach((uri, index) => {
-        const filename = uri.split('/').pop();
-        const match = /\.(\w+)$/.exec(filename || '');
-        const type = match ? `image/${match[1]}` : `image`;
-        
-        // @ts-ignore
-        formData.append('images', {
-          uri,
-          name: filename,
-          type,
-        });
-      });
+      const result = await createChalet(payload).unwrap();
+      const chaletId = result.id;
 
-      await createChalet(formData).unwrap();
+      // Upload images one by one
+      if (selectedImages.length > 0) {
+        for (const uri of selectedImages) {
+          const imageFormData = new FormData();
+          const filename = uri.split('/').pop();
+          const match = /\.(\w+)$/.exec(filename || '');
+          const type = match ? `image/${match[1]}` : `image`;
+          
+          // @ts-ignore
+          imageFormData.append('image', {
+            uri,
+            name: filename,
+            type,
+          });
+          
+          await uploadImage({ chaletId, formData: imageFormData }).unwrap();
+        }
+      }
+
 
       Toast.show({
         type: 'success',

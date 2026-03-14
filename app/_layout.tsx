@@ -1,13 +1,12 @@
-import { store, persistor } from '@/store';
-import { RootState } from '@/store';
+import { persistor, store } from '@/store';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack, useRouter } from 'expo-router';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect } from 'react';
+import React from 'react';
 import 'react-native-reanimated';
-import { Provider, useSelector } from 'react-redux';
-import { PersistGate } from 'redux-persist/integration/react';
 import Toast from 'react-native-toast-message';
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import '@/i18n';

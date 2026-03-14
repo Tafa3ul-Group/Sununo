@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Image } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing, Typography, normalize, Shadows } from '@/constants/theme';
 import { HeaderSection } from '@/components/header-section';
@@ -82,12 +83,12 @@ export default function CustomersScreen() {
         showCategories={false}
       />
       <View style={styles.container}>
-        <View style={styles.spacer} />
 
-        <FlatList
+        <FlashList
           data={MOCK_CUSTOMERS}
           keyExtractor={(item) => item.id}
           renderItem={renderCustomerItem}
+          estimatedItemSize={140}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
@@ -109,26 +110,19 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    paddingHorizontal: Spacing.md,
-  },
-  spacer: {
-    height: Spacing.md,
-  },
-  pageTitle: {
-    marginBottom: Spacing.md,
-    marginTop: Spacing.sm,
+    backgroundColor: '#FAFAFA',
   },
   listContent: {
-    paddingBottom: Spacing.xl,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
   },
   customerCard: {
-    backgroundColor: Colors.surface,
-    borderRadius: normalize.radius(16),
-    padding: Spacing.md,
-    marginBottom: Spacing.md,
+    backgroundColor: Colors.white,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: Spacing.sm,
     borderWidth: 1,
-    borderColor: Colors.border,
-    ...Shadows.light,
+    borderColor: Colors.border + '80',
   },
   cardContent: {
     alignItems: 'center',
@@ -136,28 +130,30 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   avatar: {
-    width: normalize.width(50),
-    height: normalize.width(50),
-    borderRadius: normalize.radius(25),
-    backgroundColor: Colors.primary + '15',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#F2F2F7',
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarText: {
-    fontSize: normalize.font(20),
-    color: Colors.primary,
-    fontWeight: 'bold',
+    fontSize: normalize.font(18),
+    color: Colors.text.primary,
+    fontWeight: '700',
   },
   info: {
     flex: 1,
   },
   customerName: {
     fontSize: normalize.font(16),
-    marginBottom: 2,
+    fontWeight: '700',
+    color: Colors.text.primary,
   },
   customerPhone: {
-    fontSize: normalize.font(12),
-    color: Colors.text.secondary,
+    fontSize: normalize.font(13),
+    color: Colors.text.muted,
+    marginTop: 2,
   },
   contactButton: {
     padding: Spacing.sm,
@@ -167,10 +163,10 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
   },
   statsRow: {
-    backgroundColor: Colors.background,
-    padding: Spacing.sm,
-    borderRadius: normalize.radius(12),
-    justifyContent: 'space-around',
+    backgroundColor: '#F9F9F9',
+    padding: 12,
+    borderRadius: 12,
+    flexDirection: 'row',
   },
   stat: {
     flex: 1,
@@ -181,7 +177,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   statValue: {
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(13),
     fontWeight: '700',
     color: Colors.text.primary,
   },

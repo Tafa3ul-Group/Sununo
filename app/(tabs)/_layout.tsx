@@ -44,11 +44,11 @@ export default function TabLayout() {
         name="index"
         options={{
           title: t('tabs.home'),
-          href: !isOwner ? '/(tabs)' : null,
+          href: isOwner ? null : '/(tabs)',
           tabBarIcon: ({ color, focused }) => (
             <MaterialCommunityIcons 
               size={normalize.width(24)} 
-              name={focused ? "view-grid" : "view-grid-outline"} 
+              name={focused ? "home" : "home-outline"} 
               color={color} 
             />
           ),
@@ -58,7 +58,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="(dashboard)/my-chalets"
         options={{
-          title: t('tabs.myChalets'),
+          title: isOwner ? t('tabs.home') : t('tabs.myChalets'),
           href: isOwner ? '/(tabs)/(dashboard)/my-chalets' : null,
           tabBarIcon: ({ color, focused }) => (
             <MaterialCommunityIcons 

@@ -2,8 +2,12 @@ import { ChaletCard } from '@/components/chalet-card';
 import { HeaderSection } from '@/components/header-section';
 import { Colors, Spacing, normalize } from '@/constants/theme';
 import React from 'react';
-import { FlatList, Platform, StatusBar, StyleSheet, View } from 'react-native';
+import { Platform, StatusBar, StyleSheet, View } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Redirect } from 'expo-router';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 
 // Mock data based on the screenshot
 const MOCK_CHALETS = [
@@ -37,10 +41,6 @@ const MOCK_CHALETS = [
   }
 ];
 
-import { Redirect } from 'expo-router';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
-
 export default function HomeScreen() {
   const { userType, user } = useSelector((state: RootState) => state.auth);
   
@@ -51,9 +51,10 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <FlatList
+        <FlashList
           data={MOCK_CHALETS}
           keyExtractor={(item) => item.id}
+          estimatedItemSize={380}
           ListHeaderComponent={<HeaderSection userType={userType} userName={user?.name} />}
           renderItem={({ item }) => (
             <View style={styles.cardContainer}>
