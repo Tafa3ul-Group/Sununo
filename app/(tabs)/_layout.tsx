@@ -32,11 +32,12 @@ export default function TabLayout() {
         },
         tabBarStyle: {
           backgroundColor: '#FFFFFF',
-          height: Platform.OS === 'ios' ? normalize.height(88) : normalize.height(64),
-          borderTopWidth: 1,
+          paddingBottom: Platform.OS === 'ios' ? normalize.height(30) : normalize.height(10),
+          paddingTop: normalize.height(10),
+          height: Platform.OS === 'ios' ? normalize.height(90) : normalize.height(64),
+          borderTopWidth: StyleSheet.hairlineWidth,
           borderTopColor: '#EBEBEB',
           elevation: 0,
-          shadowOpacity: 0,
         },
       }}>
       
@@ -44,7 +45,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: t('tabs.home'),
-          href: isOwner ? null : '/(tabs)',
+          href: userType === 'owner' ? null : '/(tabs)',
           tabBarIcon: ({ color, focused }) => (
             <MaterialCommunityIcons 
               size={normalize.width(24)} 
@@ -56,10 +57,10 @@ export default function TabLayout() {
       />
       
       <Tabs.Screen
-        name="(dashboard)/my-chalets"
+        name="(dashboard)/home"
         options={{
-          title: isOwner ? t('tabs.home') : t('tabs.myChalets'),
-          href: isOwner ? '/(tabs)/(dashboard)/my-chalets' : null,
+          title: userType === 'owner' ? t('tabs.home') : t('tabs.myChalets'),
+          href: userType === 'owner' ? '/(tabs)/(dashboard)/home' : null,
           tabBarIcon: ({ color, focused }) => (
             <MaterialCommunityIcons 
               size={normalize.width(24)} 
@@ -74,7 +75,7 @@ export default function TabLayout() {
         name="(dashboard)/bookings"
         options={{
           title: t('tabs.bookings'),
-          href: isOwner ? '/(tabs)/(dashboard)/bookings' : null,
+          href: userType === 'owner' ? '/(tabs)/(dashboard)/bookings' : null,
           tabBarIcon: ({ color, focused }) => (
             <Ionicons 
               size={normalize.width(24)} 
@@ -89,7 +90,7 @@ export default function TabLayout() {
         name="(dashboard)/customers"
         options={{
           title: t('tabs.customers'),
-          href: isOwner ? '/(tabs)/(dashboard)/customers' : null,
+          href: userType === 'owner' ? '/(tabs)/(dashboard)/customers' : null,
           tabBarIcon: ({ color, focused }) => (
             <Ionicons 
               size={normalize.width(24)} 
@@ -104,7 +105,7 @@ export default function TabLayout() {
         name="(dashboard)/revenue"
         options={{
           title: t('tabs.revenue'),
-          href: isOwner ? '/(tabs)/(dashboard)/revenue' : null,
+          href: userType === 'owner' ? '/(tabs)/(dashboard)/revenue' : null,
           tabBarIcon: ({ color, focused }) => (
             <Ionicons 
               size={normalize.width(24)} 
@@ -112,6 +113,21 @@ export default function TabLayout() {
               color={color} 
             />
           ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="(dashboard)/notifications"
+        options={{
+          href: null,
+          title: t('notifications.title'),
+        }}
+      />
+
+      <Tabs.Screen
+        name="(dashboard)/chalet-details"
+        options={{
+          href: null,
         }}
       />
 

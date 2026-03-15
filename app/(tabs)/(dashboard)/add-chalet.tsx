@@ -647,7 +647,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: Spacing.xl,
-    ...Shadows.medium,
   },
   saveButtonText: {
     color: Colors.white,

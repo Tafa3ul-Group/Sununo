@@ -14,6 +14,8 @@ import { ThemedText } from './themed-text';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
+import { useRouter } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 import { UserType } from '@/store/authSlice';
 
 interface HeaderSectionProps {
@@ -31,6 +33,7 @@ export function HeaderSection({
   showSearch = true, 
   showCategories = true 
 }: HeaderSectionProps) {
+  const router = useRouter();
   const { t } = useTranslation();
   const { language } = useSelector((state: RootState) => state.auth);
   const [selectedCategory, setSelectedCategory] = React.useState('all');
@@ -57,12 +60,15 @@ export function HeaderSection({
           <ThemedText type="h1">
             {title || (isOwner ? t('tabs.myChalets') : t('tabs.home'))}
           </ThemedText>
-          <ThemedText type="subtitle" style={{ color: Colors.text.secondary }}>
-            {userName ? `${t('home.welcome')}, ${userName}` : t('home.welcome')}
-          </ThemedText>
         </View>
-        <TouchableOpacity style={styles.filterButton}>
-          <Ionicons name="options-outline" size={normalize.width(22)} color={Colors.text.primary} />
+        <TouchableOpacity 
+          style={styles.filterButton}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            router.push('/(tabs)/(dashboard)/notifications');
+          }}
+        >
+          <Ionicons name="notifications-outline" size={normalize.width(22)} color={Colors.text.primary} />
         </TouchableOpacity>
       </View>
 
@@ -134,7 +140,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     padding: normalize.width(8),
     borderRadius: normalize.radius(50),
-    ...Shadows.light,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   searchContainer: {
     paddingHorizontal: Spacing.md,

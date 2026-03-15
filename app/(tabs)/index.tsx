@@ -45,7 +45,7 @@ export default function HomeScreen() {
   const { userType, user } = useSelector((state: RootState) => state.auth);
   
   if (userType === 'owner') {
-    return <Redirect href="/(tabs)/(dashboard)/my-chalets" />;
+    return <Redirect href="/(tabs)/(dashboard)/home" />;
   }
 
   return (

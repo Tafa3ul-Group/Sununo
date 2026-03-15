@@ -84,7 +84,7 @@ export default function LoginScreen() {
         console.error('Me fetch failed', meErr);
       }
 
-      router.replace(userType === 'owner' ? '/(tabs)/(dashboard)/my-chalets' : '/(tabs)');
+      router.replace(userType === 'owner' ? '/(tabs)/(dashboard)/home' : '/(tabs)');
     } catch (err: any) {
       console.error(err);
       setErrorText(err?.data?.message || 'رمز التحقق غير صحيح');

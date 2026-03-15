@@ -70,7 +70,7 @@ export default function ProfileScreen() {
           {isOwner && (
             <TouchableOpacity 
               style={styles.menuItem}
-              onPress={() => router.push('/(tabs)/(dashboard)/my-chalets')}
+              onPress={() => router.push('/(tabs)/(dashboard)/home')}
             >
               <Ionicons name="chevron-back" size={20} color={Colors.text.muted} />
               <View style={styles.menuItemContent}>

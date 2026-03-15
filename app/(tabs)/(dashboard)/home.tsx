@@ -1,21 +1,21 @@
-import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Image } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, Spacing, Typography, normalize, Shadows } from '@/constants/theme';
 import { HeaderSection } from '@/components/header-section';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
-import { useTranslation } from 'react-i18next';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/themed-text';
+import { Colors, normalize, Spacing, Typography } from '@/constants/theme';
+import { RootState } from '@/store';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { FlashList } from '@shopify/flash-list';
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSelector } from 'react-redux';
 
 
-import { useRouter } from 'expo-router';
 import { useGetOwnerChaletsQuery } from '@/store/api/apiSlice';
-import { ActivityIndicator, RefreshControl, Alert, ScrollView, Text as RNText } from 'react-native';
-import { Swipeable, GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
+import { useRouter } from 'expo-router';
+import { ActivityIndicator, Alert, RefreshControl } from 'react-native';
+import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
 
 // Mock data for dashboard highlights
 const RECENT_BOOKINGS = [
@@ -37,11 +37,18 @@ const RECENT_BOOKINGS = [
   }
 ];
 
-export default function MyChaletsScreen() {
+export default function HomeScreen() {
   const router = useRouter();
   const { user, userType, language } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
   const isRTL = language === 'ar';
+  const isOwner = userType === 'owner';
+  const [isBalanceHidden, setIsBalanceHidden] = useState(false);
+
+  const toggleBalanceVisibility = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setIsBalanceHidden(!isBalanceHidden);
+  };
 
   const { data: chalets, isLoading, refetch, isFetching } = useGetOwnerChaletsQuery({});
 
@@ -101,7 +108,13 @@ export default function MyChaletsScreen() {
         <TouchableOpacity 
           style={[styles.chaletCard, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
           activeOpacity={0.6}
-          onPress={() => console.log('View Chalet Details', item.id)}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            router.push({
+              pathname: '/(tabs)/(dashboard)/chalet-details',
+              params: { id: item.id }
+            });
+          }}
         >
           <View style={styles.imageContainer}>
             <Image source={{ uri: mainImage }} style={styles.chaletImage} />
@@ -150,7 +163,7 @@ export default function MyChaletsScreen() {
         <HeaderSection 
           userType={userType} 
           userName={user?.name} 
-          title={t('tabs.myChalets')}
+          title={userType === 'owner' ? t('tabs.home') : t('tabs.myChalets')}
           showSearch={false}
           showCategories={false}
         />
@@ -174,34 +187,37 @@ export default function MyChaletsScreen() {
               ListHeaderComponent={() => (
                 <View style={styles.dashboardHeader}>
                   {/* Quick Stats Grid */}
-                  <View style={[styles.statsGrid, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                    <TouchableOpacity 
-                      style={styles.statCard}
-                      onPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        router.push('/(tabs)/(dashboard)/revenue');
-                      }}
-                    >
-                      <View style={[styles.statIcon, { backgroundColor: '#E8F5E9' }]}>
-                        <Ionicons name="wallet-outline" size={20} color="#2E7D32" />
+                  <View style={styles.statsGrid}>
+                    <View style={styles.walletCard}>
+                      <Text style={[styles.walletLabel, { textAlign: isRTL ? 'right' : 'left' }]}>
+                        {isRTL ? 'رصيدك المتاح' : 'Your balance'}
+                      </Text>
+                      <View style={[styles.balanceRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                        <Text style={styles.walletValue}>
+                          {isBalanceHidden ? '••••••' : '2,150,000'} 
+                          {!isBalanceHidden && <Text style={styles.walletCurrency}> د.ع</Text>}
+                        </Text>
+                        <TouchableOpacity onPress={toggleBalanceVisibility}>
+                          <Ionicons 
+                            name={isBalanceHidden ? "eye-off-outline" : "eye-outline"} 
+                            size={24} 
+                            color={Colors.text.primary} 
+                          />
+                        </TouchableOpacity>
                       </View>
-                      <Text style={styles.statLabel}>{t('dashboard.revenue.balance')}</Text>
-                      <Text style={styles.statValue}>2.1M <Text style={styles.currency}>د.ع</Text></Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity 
-                      style={styles.statCard}
-                      onPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        router.push('/(tabs)/(dashboard)/bookings');
-                      }}
-                    >
-                      <View style={[styles.statIcon, { backgroundColor: '#E3F2FD' }]}>
-                        <Ionicons name="calendar-outline" size={20} color="#1565C0" />
-                      </View>
-                      <Text style={styles.statLabel}>{isRTL ? 'حجوزات نشطة' : 'Active Bookings'}</Text>
-                      <Text style={styles.statValue}>12</Text>
-                    </TouchableOpacity>
+                      
+                      <TouchableOpacity 
+                        style={styles.withdrawCTA}
+                        onPress={() => {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                          router.push('/(tabs)/(dashboard)/revenue');
+                        }}
+                      >
+                        <Text style={styles.withdrawText}>
+                          {isRTL ? 'سحب الأرباح' : 'Withdraw earnings'}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
 
                   {/* Latest Bookings Section */}
@@ -288,35 +304,46 @@ const styles = StyleSheet.create({
     gap: 12,
     marginVertical: Spacing.md,
   },
-  statCard: {
-    flex: 1,
+  walletCard: {
     backgroundColor: Colors.white,
-    padding: 16,
-    borderRadius: 20,
+    borderRadius: 24,
+    padding: 24,
+    marginVertical: Spacing.sm,
     borderWidth: 1,
-    borderColor: Colors.border + '80',
+    borderColor: Colors.border + '50',
   },
-  statIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+  walletLabel: {
+    fontSize: normalize.font(14),
+    color: '#8E8E93',
+    marginBottom: 4,
+    fontWeight: '500',
+  },
+  balanceRow: {
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  walletValue: {
+    fontSize: normalize.font(32),
+    fontWeight: '800',
+    color: '#000000',
+  },
+  walletCurrency: {
+    fontSize: normalize.font(16),
+    color: Colors.text.muted,
+  },
+  withdrawCTA: {
+    backgroundColor: '#1C1C1E',
+    height: 54,
+    borderRadius: 27,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    width: '100%',
   },
-  statLabel: {
-    fontSize: normalize.font(12),
-    color: Colors.text.muted,
-    marginBottom: 4,
-  },
-  statValue: {
-    fontSize: normalize.font(18),
-    fontWeight: '700',
-    color: Colors.text.primary,
-  },
-  currency: {
-    fontSize: normalize.font(10),
-    color: Colors.text.muted,
+  withdrawText: {
+    color: Colors.white,
+    fontSize: normalize.font(16),
+    fontWeight: '600',
   },
   sectionHeader: {
     flexDirection: 'row',
