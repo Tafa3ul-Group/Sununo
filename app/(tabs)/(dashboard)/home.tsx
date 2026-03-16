@@ -6,7 +6,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View, Alert, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 
@@ -14,8 +14,9 @@ import { useSelector } from 'react-redux';
 import { useGetOwnerChaletsQuery } from '@/store/api/apiSlice';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import { ActivityIndicator, Alert, RefreshControl } from 'react-native';
 import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
+import { useImageSrc } from '@/hooks/useImageSrc';
+import { formatPrice } from '@/utils/format';
 import { getImageSrc } from '@/hooks/useImageSrc';
 
 // Mock data for dashboard highlights
@@ -66,7 +67,10 @@ export default function HomeScreen() {
             style={[styles.swipeAction, { backgroundColor: '#F5F5F7' }]}
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              console.log('Edit', id);
+              router.push({
+                pathname: '/(tabs)/(dashboard)/edit-chalet',
+                params: { id }
+              });
             }}
           >
             <Ionicons name="create-outline" size={20} color={Colors.text.primary} />
@@ -139,7 +143,7 @@ export default function HomeScreen() {
             </Text>
 
             <View style={[styles.infoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-              <Text style={styles.infoValue}>{item.price?.toLocaleString()} <Text style={styles.currencyText}>د.ع</Text></Text>
+              <Text style={styles.infoValue}>{formatPrice(item.price)} <Text style={styles.currencyText}>د.ع</Text></Text>
               <View style={styles.dotSeparator} />
               <Text style={styles.infoValue}>{item.reviewCount || 0} {isRTL ? 'حجز' : 'Bookings'}</Text>
             </View>

@@ -1,5 +1,4 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { RootState } from '../index'; // import the RootState from index.ts to prevent circular dependency issues
 
 // Define the base URL for the API
 const BASE_URL = 'https://k4wwso0cwg480c480oo0owg4.rakiza.dev/api/v1';
@@ -10,7 +9,7 @@ export const apiSlice = createApi({
     baseUrl: BASE_URL,
     prepareHeaders: (headers, { getState }) => {
       // If we have a token in the state, use it for authenticated requests
-      const token = (getState() as RootState).auth.token;
+      const token = (getState() as any).auth.token;
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
       }
@@ -80,7 +79,35 @@ export const apiSlice = createApi({
     // Query for getting specific owners chalet details
     getOwnerChaletDetails: builder.query({
       query: (id) => `/provider/chalets/${id}`,
-      providesTags: (result, error, id) => [{ type: 'Chalet', id }],
+      providesTags: (result, error, id) => [{ type: 'Chalet' as const, id }],
+    }),
+
+    // Mutation for updating a chalet
+    updateChalet: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/provider/chalets/${id}`,
+        method: 'PATCH',
+        body: data,
+      }),
+      invalidatesTags: (result, error, { id }) => ['Chalet', { type: 'Chalet' as const, id }],
+    }),
+
+    // Get shifts for a specific chalet
+    getChaletShifts: builder.query({
+      query: (chaletId) => `/provider/chalets/${chaletId}/shifts`,
+      providesTags: ['Chalet'],
+    }),
+
+    // Get pricing matrix for a specific shift
+    getShiftPricing: builder.query({
+      query: (shiftId) => `/provider/shifts/${shiftId}/pricing`,
+      providesTags: ['Chalet'],
+    }),
+
+    // Get cancellation policies for a chalet
+    getChaletCancellationPolicies: builder.query({
+      query: (chaletId) => `/provider/chalets/${chaletId}/cancellation-policies`,
+      providesTags: ['Chalet'],
     }),
 
     // Get all cities
@@ -92,6 +119,58 @@ export const apiSlice = createApi({
     getRegions: builder.query<any[], string>({
       query: (cityId) => `/cities/${cityId}/regions`,
     }),
+    
+    // Lazy query for regions
+    lazyGetRegions: builder.query<any[], string>({
+      query: (cityId) => `/cities/${cityId}/regions`,
+    }),
+
+    // Shift Mutations
+    createShift: builder.mutation({
+      query: ({ chaletId, data }) => ({
+        url: `/provider/chalets/${chaletId}/shifts`,
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Chalet'],
+    }),
+
+    updateShift: builder.mutation({
+      query: ({ shiftId, data }) => ({
+        url: `/provider/shifts/${shiftId}`,
+        method: 'PATCH',
+        body: data,
+      }),
+      invalidatesTags: ['Chalet'],
+    }),
+
+    deleteShift: builder.mutation({
+      query: (shiftId) => ({
+        url: `/provider/shifts/${shiftId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Chalet'],
+    }),
+
+    // Pricing Matrix Mutation
+    setShiftPricing: builder.mutation({
+      query: ({ shiftId, data }) => ({
+        url: `/provider/shifts/${shiftId}/pricing`,
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Chalet'],
+    }),
+
+    // Policies Mutation
+    setChaletPolicies: builder.mutation({
+      query: ({ chaletId, data }) => ({
+        url: `/provider/chalets/${chaletId}/cancellation-policies`,
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Chalet'],
+    }),
   }),
 });
 
@@ -102,9 +181,20 @@ export const {
   useLoginMutation,
   useVerifyPhoneMutation,
   useCreateChaletMutation,
+  useUpdateChaletMutation,
   useUploadChaletImageMutation,
   useGetOwnerChaletsQuery,
   useGetOwnerChaletDetailsQuery,
+  
+  useGetChaletShiftsQuery,
+  useGetShiftPricingQuery,
+  useGetChaletCancellationPoliciesQuery,
+  
+  useCreateShiftMutation,
+  useUpdateShiftMutation,
+  useDeleteShiftMutation,
+  useSetShiftPricingMutation,
+  useSetChaletPoliciesMutation,
 
   useGetCitiesQuery,
   useGetRegionsQuery,
