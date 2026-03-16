@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
+import { getImageSrc } from '@/hooks/useImageSrc';
 import { ThemedText } from '@/components/themed-text';
 import { StatusBar } from 'expo-status-bar';
 import Toast from 'react-native-toast-message';
@@ -340,7 +341,7 @@ export default function AddChaletScreen() {
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.imageContainer, { flexDirection }]}>
               {selectedImages.map((uri, index) => (
                 <View key={index} style={styles.imageItem}>
-                  <Image source={{ uri }} style={styles.uploadedImage} />
+                  <Image source={getImageSrc(uri)} style={styles.uploadedImage} />
                   <TouchableOpacity style={styles.removeImageButton} onPress={() => removeImage(index)}>
                     <Ionicons name="close-circle" size={24} color={Colors.error} />
                   </TouchableOpacity>

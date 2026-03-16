@@ -77,6 +77,12 @@ export const apiSlice = createApi({
       providesTags: ['Chalet'],
     }),
 
+    // Query for getting specific owners chalet details
+    getOwnerChaletDetails: builder.query({
+      query: (id) => `/provider/chalets/${id}`,
+      providesTags: (result, error, id) => [{ type: 'Chalet', id }],
+    }),
+
     // Get all cities
     getCities: builder.query<any[], void>({
       query: () => '/cities/names',
@@ -98,6 +104,7 @@ export const {
   useCreateChaletMutation,
   useUploadChaletImageMutation,
   useGetOwnerChaletsQuery,
+  useGetOwnerChaletDetailsQuery,
 
   useGetCitiesQuery,
   useGetRegionsQuery,

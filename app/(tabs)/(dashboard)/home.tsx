@@ -16,6 +16,7 @@ import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { ActivityIndicator, Alert, RefreshControl } from 'react-native';
 import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
+import { getImageSrc } from '@/hooks/useImageSrc';
 
 // Mock data for dashboard highlights
 const RECENT_BOOKINGS = [
@@ -53,9 +54,7 @@ export default function HomeScreen() {
   const { data: chalets, isLoading, refetch, isFetching } = useGetOwnerChaletsQuery({});
 
   const renderChaletItem = ({ item }: { item: any }) => {
-    const mainImage = item.images?.[0]?.url 
-      ? `https://k4wwso0cwg480c480oo0owg4.rakiza.dev/api/v1/chalets/images/${item.images[0].url}` 
-      : 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=400';
+    const mainImageSrc = getImageSrc(item.images?.[0]?.url);
 
     const chaletName = isRTL ? (item.name?.ar || item.name) : (item.name?.en || item.name);
     const chaletLocation = isRTL ? (item.address?.ar || item.region?.name) : (item.address?.en || item.region?.enName);
@@ -117,7 +116,7 @@ export default function HomeScreen() {
           }}
         >
           <View style={styles.imageContainer}>
-            <Image source={{ uri: mainImage }} style={styles.chaletImage} />
+            <Image source={mainImageSrc} style={styles.chaletImage} />
             {item.isActive ? (
               <View style={styles.activeDot} />
             ) : (

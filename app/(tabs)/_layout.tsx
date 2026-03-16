@@ -9,6 +9,7 @@ import { RootState } from '@/store';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { getImageSrc } from '@/hooks/useImageSrc';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -155,7 +156,7 @@ export default function TabLayout() {
               focused && styles.focusedProfile
             ]}>
               <Image 
-                source={{ uri: 'https://i.pravatar.cc/100' }} 
+                source={getImageSrc('https://i.pravatar.cc/100')} 
                 style={styles.profileImage} 
               />
             </View>

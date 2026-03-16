@@ -1,13 +1,15 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, Switch, Platform } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, Switch, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { Colors, normalize, Shadows, Spacing, Typography } from '@/constants/theme';
 import * as Haptics from 'expo-haptics';
+import useImageSrc from '@/hooks/useImageSrc';
+import { useGetOwnerChaletDetailsQuery } from '@/store/api/apiSlice';
 
 export default function ChaletDetailsScreen() {
   const router = useRouter();
@@ -16,37 +18,51 @@ export default function ChaletDetailsScreen() {
   const { t } = useTranslation();
   const isRTL = language === 'ar';
   
-  // Mock data for a single chalet
-  const chalet = {
-    id: id,
-    name: { ar: 'شاليه اللؤلؤة', en: 'Pearl Chalet' },
-    location: { ar: 'اليرموك، بغداد', en: 'Yarmouk, Baghdad' },
-    price: 150000,
-    rating: 4.8,
-    reviews: 24,
-    bookings: 156,
-    revenue: '12.5M',
-    isActive: true,
-    image: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=800',
-    description: { 
-      ar: 'شاليه فخم يتميز بمسبح خارجي كبير وحديقة واسعة، مناسب للعوائل والمناسبات الخاصة.',
-      en: 'A luxury chalet featuring a large outdoor pool and a spacious garden, suitable for families and special events.'
-    }
-  };
+  const { data: response, isLoading } = useGetOwnerChaletDetailsQuery(id);
+  const chalet = response?.data;
 
-  const [isActive, setIsActive] = useState(chalet.isActive);
+  const chaletImage = useImageSrc(chalet?.images?.[0]?.url);
+  const [isActive, setIsActive] = useState(false);
+
+  useEffect(() => {
+    if (chalet) {
+      setIsActive(chalet.isActive);
+    }
+  }, [chalet]);
 
   const toggleStatus = (value: boolean) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setIsActive(value);
   };
 
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </View>
+    );
+  }
+
+  if (!chalet) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={{ color: Colors.text.muted }}>
+          {isRTL ? 'لم يتم العثور على الشاليه' : 'Chalet not found'}
+        </Text>
+      </View>
+    );
+  }
+
+  const chaletName = isRTL ? (chalet.name?.ar || chalet.name) : (chalet.name?.en || chalet.name);
+  const chaletLocation = isRTL ? (chalet.address?.ar || chalet.region?.name) : (chalet.address?.en || chalet.region?.enName);
+  const chaletDescription = isRTL ? (chalet.description?.ar || chalet.description) : (chalet.description?.en || chalet.description);
+
   return (
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Hero Image Section */}
         <View style={styles.imageContainer}>
-          <Image source={{ uri: chalet.image }} style={styles.heroImage} />
+          <Image source={chaletImage} style={styles.heroImage} />
           <SafeAreaView style={styles.imageOverlay}>
             <View style={[styles.headerActions, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
               <TouchableOpacity style={styles.iconButton} onPress={() => router.back()}>
@@ -63,10 +79,10 @@ export default function ChaletDetailsScreen() {
           {/* Title & Status Section */}
           <View style={[styles.titleSection, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             <View style={{ flex: 1, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
-              <Text style={styles.chaletName}>{isRTL ? chalet.name.ar : chalet.name.en}</Text>
+              <Text style={styles.chaletName}>{chaletName}</Text>
               <View style={[styles.locationRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 <Ionicons name="location-outline" size={16} color={Colors.text.muted} />
-                <Text style={styles.locationText}>{isRTL ? chalet.location.ar : chalet.location.en}</Text>
+                <Text style={styles.locationText}>{chaletLocation}</Text>
               </View>
             </View>
             <View style={styles.statusToggle}>
@@ -91,16 +107,17 @@ export default function ChaletDetailsScreen() {
             <View style={styles.verticalDivider} />
             <View style={styles.statBox}>
               <Text style={styles.statLabel}>{isRTL ? 'الحجوزات' : 'Bookings'}</Text>
-              <Text style={styles.statValue}>{chalet.bookings}</Text>
+              <Text style={styles.statValue}>{chalet.reviewCount || 0}</Text>
             </View>
             <View style={styles.verticalDivider} />
             <View style={styles.statBox}>
               <Text style={styles.statLabel}>{isRTL ? 'التقييم' : 'Rating'}</Text>
               <View style={styles.ratingRow}>
                 <Ionicons name="star" size={14} color="#FFD700" />
-                <Text style={styles.statValue}>{chalet.rating}</Text>
+                <Text style={styles.statValue}>{typeof chalet.rating === 'string' ? parseFloat(chalet.rating).toFixed(1) : (chalet.rating || 0)}</Text>
               </View>
             </View>
+ Kinder:
           </View>
 
           {/* Action Grid */}
@@ -132,7 +149,7 @@ export default function ChaletDetailsScreen() {
           <View style={[styles.aboutSection, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
             <Text style={styles.sectionTitle}>{isRTL ? 'عن الشاليه' : 'About Chalet'}</Text>
             <Text style={[styles.description, { textAlign: isRTL ? 'right' : 'left' }]}>
-              {isRTL ? chalet.description.ar : chalet.description.en}
+              {chaletDescription}
             </Text>
           </View>
 
@@ -140,7 +157,7 @@ export default function ChaletDetailsScreen() {
           <View style={styles.pricingCard}>
              <View style={[styles.pricingRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 <Text style={styles.pricingLabel}>{isRTL ? 'السعر لليلة الواحدة' : 'Price per night'}</Text>
-                <Text style={styles.priceValue}>{chalet.price.toLocaleString()} <Text style={styles.currency}>د.ع</Text></Text>
+                <Text style={styles.priceValue}>{(chalet.price || 0).toLocaleString()} <Text style={styles.currency}>د.ع</Text></Text>
              </View>
           </View>
         </View>
@@ -314,5 +331,11 @@ const styles = StyleSheet.create({
   currency: {
     fontSize: normalize.font(12),
     color: '#666',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F8F9FB',
   }
 });

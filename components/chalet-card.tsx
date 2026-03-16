@@ -1,5 +1,6 @@
 import { Colors, normalize, Spacing } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
+import { getImageSrc } from '@/hooks/useImageSrc';
 import React from 'react';
 import {
     Image,
@@ -33,7 +34,7 @@ export function ChaletCard({
       {/* Image Container */}
       <View style={styles.imageWrapper}>
         <Image 
-          source={typeof image === 'string' ? { uri: image } : image} 
+          source={typeof image === 'string' ? getImageSrc(image) : image} 
           style={styles.image} 
           resizeMode="cover"
         />
