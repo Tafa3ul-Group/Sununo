@@ -136,8 +136,8 @@ export const apiSlice = createApi({
     }),
 
     updateShift: builder.mutation({
-      query: ({ shiftId, data }) => ({
-        url: `/provider/shifts/${shiftId}`,
+      query: ({ chaletId, shiftId, data }) => ({
+        url: `/provider/chalets/${chaletId}/shifts/${shiftId}`,
         method: 'PATCH',
         body: data,
       }),
@@ -145,8 +145,8 @@ export const apiSlice = createApi({
     }),
 
     deleteShift: builder.mutation({
-      query: (shiftId) => ({
-        url: `/provider/shifts/${shiftId}`,
+      query: ({ chaletId, shiftId }) => ({
+        url: `/provider/chalets/${chaletId}/shifts/${shiftId}`,
         method: 'DELETE',
       }),
       invalidatesTags: ['Chalet'],
@@ -156,7 +156,7 @@ export const apiSlice = createApi({
     setShiftPricing: builder.mutation({
       query: ({ shiftId, data }) => ({
         url: `/provider/shifts/${shiftId}/pricing`,
-        method: 'POST',
+        method: 'PUT',
         body: data,
       }),
       invalidatesTags: ['Chalet'],
@@ -166,7 +166,7 @@ export const apiSlice = createApi({
     setChaletPolicies: builder.mutation({
       query: ({ chaletId, data }) => ({
         url: `/provider/chalets/${chaletId}/cancellation-policies`,
-        method: 'POST',
+        method: 'PUT',
         body: data,
       }),
       invalidatesTags: ['Chalet'],

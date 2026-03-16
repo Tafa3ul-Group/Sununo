@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing, Typography, normalize, Shadows } from '@/constants/theme';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -31,13 +32,13 @@ import {
   useSetShiftPricingMutation
 } from '@/store/api/apiSlice';
 import { HeaderSection } from '@/components/header-section';
-import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
+import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import Toast from 'react-native-toast-message';
 import { formatPrice } from '@/utils/format';
 
 // Sub-component for Shift Pricing to avoid fetching all at once or handle per-shift logic
-function ShiftPricingView({ shiftId, isRTL, onEdit }: { shiftId: string; isRTL: boolean; onEdit: () => void }) {
-  const { data: pricingResponse, isLoading } = useGetShiftPricingQuery(shiftId);
+function ShiftPricingView({ shift, isRTL, onEdit }: { shift: any; isRTL: boolean; onEdit: (data?: any[]) => void }) {
+  const { data: pricingResponse, isLoading } = useGetShiftPricingQuery(shift.id);
   const pricing = pricingResponse?.data || pricingResponse;
 
   const days = isRTL 
@@ -46,36 +47,49 @@ function ShiftPricingView({ shiftId, isRTL, onEdit }: { shiftId: string; isRTL: 
 
   if (isLoading) return <ActivityIndicator size="small" color={Colors.primary} style={{ marginVertical: 10 }} />;
 
-  if (!pricing || !pricing.length) {
-    return (
-      <View style={styles.emptyPricing}>
-        <Text style={styles.emptyPricingText}>
-          {isRTL ? 'لا توجد أسعار محددة للأيام' : 'No custom pricing set for days'}
-        </Text>
-        <TouchableOpacity onPress={onEdit} style={{ marginTop: 8 }}>
-            <Text style={{ color: Colors.primary, fontWeight: '700' }}>{isRTL ? 'إعداد الأسعار' : 'Set Prices'}</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  // Sort pricing by dayOfWeek (0=Sunday)
-  const sortedPricing = [...pricing].sort((a, b) => a.dayOfWeek - b.dayOfWeek);
+  const flexDirection = isRTL ? 'row-reverse' : 'row';
 
   return (
-    <View style={styles.pricingContainer}>
-      {sortedPricing.map((item) => {
-        const isWeekend = item.dayOfWeek === 5 || item.dayOfWeek === 6; // Fri, Sat
-        return (
-          <View key={item.id || item.dayOfWeek} style={[styles.pricingCard, isWeekend && styles.weekendCard]}>
-            <Text style={[styles.pricingCardDay, isWeekend && styles.weekendText]}>{days[item.dayOfWeek]}</Text>
-            <View style={styles.pricingCardValue}>
-              <Text style={[styles.pricingCardPrice, isWeekend && styles.weekendText]}>{formatPrice(item.price)}</Text>
-              <Text style={[styles.pricingCardCurrency, isWeekend && styles.weekendText]}>د.ع</Text>
-            </View>
-          </View>
-        );
-      })}
+    <View>
+      <View style={[styles.expandedHeader, { flexDirection, marginBottom: 12 }]}>
+        <Text style={styles.expandedTitle}>{isRTL ? 'أسعار أيام الأسبوع' : 'Weekly Pricing'}</Text>
+        {pricing && pricing.length > 0 && (
+          <TouchableOpacity onPress={() => onEdit(pricing)}>
+            <Text style={styles.editText}>{isRTL ? 'تعديل' : 'Edit'}</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {!pricing || !pricing.length ? (
+        <View style={styles.emptyPricing}>
+          <Text style={styles.emptyPricingText}>
+            {isRTL ? 'لا توجد أسعار محددة للأيام' : 'No custom pricing set for days'}
+          </Text>
+          <TouchableOpacity onPress={() => onEdit(pricing)} style={{ marginTop: 8 }}>
+              <Text style={{ color: Colors.primary, fontWeight: '700' }}>{isRTL ? 'إعداد الأسعار' : 'Set Prices'}</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View style={styles.pricingContainer}>
+          {[...pricing].sort((a, b) => a.dayOfWeek - b.dayOfWeek).map((item) => {
+            const isWeekend = item.dayOfWeek === 5 || item.dayOfWeek === 6;
+            return (
+              <TouchableOpacity 
+                key={item.id || item.dayOfWeek} 
+                style={[styles.pricingCard, isWeekend && styles.weekendCard]}
+                onPress={() => onEdit(pricing)}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.pricingCardDay, isWeekend && styles.weekendText]}>{days[item.dayOfWeek]}</Text>
+                <View style={styles.pricingCardValue}>
+                  <Text style={[styles.pricingCardPrice, isWeekend && styles.weekendText]}>{formatPrice(item.price)}</Text>
+                  <Text style={[styles.pricingCardCurrency, isWeekend && styles.weekendText]}>د.ع</Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      )}
     </View>
   );
 }
@@ -89,13 +103,17 @@ export default function CalendarScreen() {
 
   const [expandedShift, setExpandedShift] = useState<string | null>(null);
   
+  // Picker States
+  const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+
   // Sheet Refs
   const shiftSheetRef = useRef<BottomSheetModal>(null);
   const pricingSheetRef = useRef<BottomSheetModal>(null);
 
   // Form States
   const [selectedShift, setSelectedShift] = useState<any>(null);
-  const [shiftForm, setShiftForm] = useState({ name: '', startTime: '08:00', endTime: '23:00' });
+  const [shiftForm, setShiftForm] = useState({ name: '', startTime: '08:00', endTime: '23:00', price: '' });
   const [pricingForm, setPricingForm] = useState<any[]>([]);
 
   const { data: chaletResponse } = useGetOwnerChaletDetailsQuery(id);
@@ -125,19 +143,51 @@ export default function CalendarScreen() {
   const handleAddShift = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setSelectedShift(null);
-    setShiftForm({ name: '', startTime: '08:00', endTime: '23:00' });
+    setShiftForm({ name: '', startTime: '08:00', endTime: '23:00', price: '' });
     shiftSheetRef.current?.present();
   };
 
   const handleEditShift = (shift: any) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setSelectedShift(shift);
+    
+    // Normalize time to HH:mm in case API returns HH:mm:ss
+    const normalizeTime = (t: string) => t ? t.substring(0, 5) : '';
+
     setShiftForm({ 
       name: isRTL ? (shift.name?.ar || shift.name) : (shift.name?.en || shift.name), 
-      startTime: shift.startTime, 
-      endTime: shift.endTime 
+      startTime: normalizeTime(shift.startTime) || '08:00', 
+      endTime: normalizeTime(shift.endTime) || '23:00',
+      price: '' // Price is not part of shift entity
     });
     shiftSheetRef.current?.present();
+  };
+
+  const onTimeChange = (event: any, selectedDate?: Date, type: 'start' | 'end' = 'start') => {
+    if (event.type === 'dismissed') {
+        if (type === 'start') setShowStartTimePicker(false);
+        else setShowEndTimePicker(false);
+        return;
+    }
+
+    if (selectedDate) {
+        const hours = selectedDate.getHours().toString().padStart(2, '0');
+        const minutes = selectedDate.getMinutes().toString().padStart(2, '0');
+        const timeStr = `${hours}:${minutes}`;
+        setShiftForm({ ...shiftForm, [type === 'start' ? 'startTime' : 'endTime']: timeStr });
+    }
+
+    if (Platform.OS === 'android') {
+        if (type === 'start') setShowStartTimePicker(false);
+        else setShowEndTimePicker(false);
+    }
+  };
+
+  const getTimeDate = (timeStr: string) => {
+      const [hours, minutes] = timeStr.split(':').map(Number);
+      const d = new Date();
+      d.setHours(hours || 0, minutes || 0, 0, 0);
+      return d;
   };
 
   const saveShift = async () => {
@@ -149,14 +199,19 @@ export default function CalendarScreen() {
 
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      
+      // Ensure time is strictly HH:mm
+      const startTime = shiftForm.startTime.substring(0, 5);
+      const endTime = shiftForm.endTime.substring(0, 5);
+
       const data = {
         name: { ar: shiftForm.name, en: shiftForm.name },
-        startTime: shiftForm.startTime,
-        endTime: shiftForm.endTime,
+        startTime,
+        endTime
       };
 
       if (selectedShift) {
-        await updateShift({ shiftId: selectedShift.id, data }).unwrap();
+        await updateShift({ chaletId: id, shiftId: selectedShift.id, data }).unwrap();
       } else {
         await createShift({ chaletId: id, data }).unwrap();
       }
@@ -171,17 +226,21 @@ export default function CalendarScreen() {
     }
   };
 
-  const handlePricing = (shift: any) => {
+  const handlePricing = (shift: any, existingPricing?: any[]) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setSelectedShift(shift);
     
     // Initialize pricing form
-    if (shift.pricing && shift.pricing.length > 0) {
-        setPricingForm(shift.pricing.map((p: any) => ({ ...p })));
+    const pricingToUse = existingPricing || shift.pricing;
+    if (pricingToUse && pricingToUse.length > 0) {
+        setPricingForm(pricingToUse.map((p: any) => ({ 
+          ...p, 
+          price: p.price ?? shift.price ?? 0 
+        })));
     } else {
         const initialPricing = Array.from({ length: 7 }, (_, i) => ({
             dayOfWeek: i,
-            price: shift.price || 0
+            price: shift.price ?? 0
         }));
         setPricingForm(initialPricing);
     }
@@ -193,19 +252,39 @@ export default function CalendarScreen() {
       setPricingForm(pricingForm.map(item => ({ ...item, price: p })));
   };
 
+  const adjustPrice = (index: number, amount: number) => {
+      const newPricing = [...pricingForm];
+      const currentPrice = parseInt(String(newPricing[index].price)) || 0;
+      newPricing[index].price = Math.max(0, currentPrice + amount);
+      setPricingForm(newPricing);
+  };
+
   const savePricing = async () => {
       try {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          
+          // Clean the pricing form to only include required fields
+          const cleanPricing = pricingForm.map(item => ({
+              dayOfWeek: item.dayOfWeek,
+              price: parseInt(String(item.price)) || 0
+          }));
+
           await setShiftPricing({
               shiftId: selectedShift.id,
-              data: { pricing: pricingForm }
+              data: { pricing: cleanPricing }
           }).unwrap();
+          
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           Toast.show({ type: 'success', text1: isRTL ? 'تم تحديث الأسعار' : 'Pricing updated' });
           pricingSheetRef.current?.dismiss();
       } catch (e) {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-          Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error' });
+          console.error('Save Pricing Error:', e);
+          Toast.show({ 
+              type: 'error', 
+              text1: isRTL ? 'خطأ' : 'Error',
+              text2: isRTL ? 'فشل في حفظ الأسعار، يرجى المحاولة لاحقاً' : 'Failed to save pricing, please try again'
+          });
       }
   };
 
@@ -218,7 +297,7 @@ export default function CalendarScreen() {
         { text: isRTL ? 'إلغاء' : 'Cancel', style: 'cancel' },
         { text: isRTL ? 'حذف' : 'Delete', style: 'destructive', onPress: async () => {
             try {
-                await deleteShift(shiftId).unwrap();
+                await deleteShift({ chaletId: id, shiftId }).unwrap();
                 Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             } catch (e) {
                 Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -328,28 +407,17 @@ export default function CalendarScreen() {
                         </View>
                         
                         <View style={{ alignItems: isRTL ? 'flex-start' : 'flex-end', marginLeft: isRTL ? 0 : 8, marginRight: isRTL ? 8 : 0 }}>
-                          <View style={styles.priceContainer}>
-                            <Text style={styles.priceValue}>{formatPrice(shift.price)}</Text>
-                            <Text style={styles.priceSymbol}>د.ع</Text>
-                          </View>
                           <Ionicons 
                             name={isExpanded ? "chevron-up" : "chevron-down"} 
-                            size={18} 
+                            size={20} 
                             color={Colors.text.muted} 
-                            style={{ marginTop: 8 }}
                           />
                         </View>
                       </TouchableOpacity>
 
                       {isExpanded && (
                         <View style={styles.expandedContent}>
-                          <View style={[styles.expandedHeader, { flexDirection }]}>
-                            <Text style={styles.expandedTitle}>{isRTL ? 'أسعار أيام الأسبوع' : 'Weekly Pricing'}</Text>
-                            <TouchableOpacity onPress={() => handlePricing(shift)}>
-                               <Text style={styles.editText}>{isRTL ? 'تعديل' : 'Edit'}</Text>
-                            </TouchableOpacity>
-                          </View>
-                          <ShiftPricingView shiftId={shift.id} isRTL={isRTL} onEdit={() => handlePricing(shift)} />
+                          <ShiftPricingView shift={shift} isRTL={isRTL} onEdit={(data) => handlePricing(shift, data)} />
                         </View>
                       )}
                     </View>
@@ -441,22 +509,46 @@ export default function CalendarScreen() {
             <View style={[styles.rowInputs, { flexDirection, marginTop: 16 }]}>
                 <View style={{ flex: 1 }}>
                     <Text style={[styles.label, { textAlign }]}>{isRTL ? 'وقت البدء' : 'Start Time'}</Text>
-                    <TextInput 
-                        style={[styles.input, { textAlign }]} 
-                        placeholder="08:00"
-                        value={shiftForm.startTime}
-                        onChangeText={t => setShiftForm({ ...shiftForm, startTime: t })}
-                    />
+                    <TouchableOpacity 
+                        style={[styles.timePickerBtn, { flexDirection: isRTL ? 'row-reverse' : 'row' }]} 
+                        onPress={() => setShowStartTimePicker(true)}
+                    >
+                        <Ionicons name="time-outline" size={20} color={Colors.primary} />
+                        <Text style={styles.timePickerBtnText}>{shiftForm.startTime}</Text>
+                    </TouchableOpacity>
+                    {showStartTimePicker && (
+                        <DateTimePicker
+                            value={getTimeDate(shiftForm.startTime)}
+                            mode="time"
+                            is24Hour={true}
+                            display={Platform.OS === 'ios' ? 'inline' : 'default'}
+                            accentColor={Colors.primary}
+                            onChange={(e, d) => onTimeChange(e, d, 'start')}
+                            style={{ alignSelf: 'center', marginTop: 10 }}
+                        />
+                    )}
                 </View>
                 <View style={{ width: 16 }} />
                 <View style={{ flex: 1 }}>
                     <Text style={[styles.label, { textAlign }]}>{isRTL ? 'وقت الانتهاء' : 'End Time'}</Text>
-                    <TextInput 
-                        style={[styles.input, { textAlign }]} 
-                        placeholder="23:00"
-                        value={shiftForm.endTime}
-                        onChangeText={t => setShiftForm({ ...shiftForm, endTime: t })}
-                    />
+                    <TouchableOpacity 
+                        style={[styles.timePickerBtn, { flexDirection: isRTL ? 'row-reverse' : 'row' }]} 
+                        onPress={() => setShowEndTimePicker(true)}
+                    >
+                        <Ionicons name="time-outline" size={20} color={Colors.primary} />
+                        <Text style={styles.timePickerBtnText}>{shiftForm.endTime}</Text>
+                    </TouchableOpacity>
+                    {showEndTimePicker && (
+                        <DateTimePicker
+                            value={getTimeDate(shiftForm.endTime)}
+                            mode="time"
+                            is24Hour={true}
+                            display={Platform.OS === 'ios' ? 'inline' : 'default'}
+                            accentColor={Colors.primary}
+                            onChange={(e, d) => onTimeChange(e, d, 'end')}
+                            style={{ alignSelf: 'center', marginTop: 10 }}
+                        />
+                    )}
                 </View>
             </View>
 
@@ -477,27 +569,39 @@ export default function CalendarScreen() {
         index={0}
         snapPoints={['90%']}
         backdropComponent={renderBackdrop}
-        backgroundStyle={{ borderRadius: 24 }}
+        backgroundStyle={{ borderRadius: 32, backgroundColor: '#F8F9FB' }}
       >
-        <BottomSheetView style={[styles.sheetContent, { paddingHorizontal: 16 }]}>
-          <Text style={styles.modalTitle}>{isRTL ? 'إعداد أسعار الأسبوع' : 'Weekly Pricing Setup'}</Text>
+        <View style={{ flex: 1, paddingHorizontal: 20 }}>
+          <View style={styles.sheetHeaderCompact}>
+             <View style={styles.sheetHeaderHandle} />
+             <Text style={styles.modalTitleCompact}>{isRTL ? 'إعداد أسعار الأسبوع' : 'Weekly Pricing Setup'}</Text>
+          </View>
           
-          <View style={styles.quickApplyContainer}>
-              <Text style={[styles.label, { textAlign }]}>{isRTL ? 'تطبيق سعر موحد للكل' : 'Apply same price to all'}</Text>
-              <View style={[styles.rowInputs, { flexDirection }]}>
-                <TextInput 
-                    style={[styles.input, { flex: 1, textAlign: isRTL ? 'left' : 'right' }]}
-                    placeholder="0"
-                    keyboardType="numeric"
-                    onChangeText={applyToAllDays}
-                />
-                <View style={styles.priceSuffix}>
-                    <Text style={styles.priceSuffixText}>د.ع</Text>
+          <View style={styles.quickApplyCard}>
+              <View style={[styles.quickApplyRow, { flexDirection }]}>
+                <View style={styles.quickApplyIcon}>
+                    <Ionicons name="flash" size={18} color={Colors.white} />
+                </View>
+                <View style={{ flex: 1, marginRight: isRTL ? 12 : 0, marginLeft: isRTL ? 0 : 12 }}>
+                    <Text style={styles.quickApplyLabel}>{isRTL ? 'تطبيق سعر موحد للكل' : 'Apply same price to all'}</Text>
+                    <View style={[styles.rowInputs, { flexDirection, marginTop: 8 }]}>
+                        <TextInput 
+                            style={[styles.quickApplyInput, { textAlign: isRTL ? 'right' : 'left' }]}
+                            placeholder="0"
+                            keyboardType="numeric"
+                            onChangeText={applyToAllDays}
+                        />
+                        <Text style={styles.quickApplyCurrency}>{isRTL ? 'د.ع' : 'IQD'}</Text>
+                    </View>
                 </View>
               </View>
           </View>
 
-          <ScrollView style={{ width: '100%', marginTop: 16 }} showsVerticalScrollIndicator={false}>
+          <BottomSheetScrollView 
+            style={{ flex: 1, marginTop: 12 }} 
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 100 }}
+          >
             {pricingForm.map((item, index) => {
                 const daysOfWeek = isRTL 
                     ? ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
@@ -505,42 +609,60 @@ export default function CalendarScreen() {
                 const isWeekend = item.dayOfWeek === 5 || item.dayOfWeek === 6;
 
                 return (
-                    <View key={index} style={[styles.pricingFormCard, isWeekend && styles.pricingFormCardWeekend]}>
-                        <View style={[styles.pricingFormHeader, { flexDirection }]}>
-                            <View style={[styles.dayBadge, isWeekend && styles.dayBadgeWeekend]}>
-                                <Text style={[styles.dayBadgeText, isWeekend && styles.dayBadgeTextWeekend]}>{daysOfWeek[item.dayOfWeek]}</Text>
-                            </View>
-                            {isWeekend && (
-                                <Text style={styles.weekendLabel}>{isRTL ? 'نهاية الأسبوع' : 'Weekend'}</Text>
-                            )}
+                    <View key={index} style={[styles.pricingRow, isWeekend && styles.pricingRowWeekend]}>
+                        <View style={[styles.dayInfo, { flexDirection }]}>
+                            <View style={[styles.dayIndicator, isWeekend && styles.dayIndicatorWeekend]} />
+                            <Text style={[styles.dayNameText, isWeekend && styles.dayNameTextWeekend]}>{daysOfWeek[item.dayOfWeek]}</Text>
                         </View>
-                        <View style={[styles.pricingFormBody, { flexDirection }]}>
-                            <TextInput 
-                                style={[styles.pricingFormInput, { textAlign: isRTL ? 'left' : 'right' }]}
-                                keyboardType="numeric"
-                                value={item.price.toString()}
-                                onChangeText={t => {
-                                    const newPricing = [...pricingForm];
-                                    newPricing[index].price = parseInt(t) || 0;
-                                    setPricingForm(newPricing);
-                                }}
-                            />
-                            <View style={styles.inlineCurrency}>
-                                <Text style={styles.inlineCurrencyText}>د.ع</Text>
+
+                        <View style={[styles.priceActions, { flexDirection }]}>
+                            <TouchableOpacity 
+                                style={[styles.adjustBtn, { backgroundColor: '#FFEEED' }]}
+                                onPress={() => adjustPrice(index, -25000)}
+                            >
+                                <Ionicons name="remove" size={18} color="#FF4D4D" />
+                            </TouchableOpacity>
+
+                            <View style={styles.priceInputWrapper}>
+                                <TextInput 
+                                    style={[styles.pricingRowInput, { textAlign: 'center' }]}
+                                    keyboardType="numeric"
+                                    value={String(item.price ?? '')}
+                                    onChangeText={t => {
+                                        const newPricing = [...pricingForm];
+                                        newPricing[index].price = parseInt(t) || 0;
+                                        setPricingForm(newPricing);
+                                    }}
+                                />
                             </View>
+
+                            <TouchableOpacity 
+                                style={[styles.adjustBtn, { backgroundColor: '#EBF5FF' }]}
+                                onPress={() => adjustPrice(index, 25000)}
+                            >
+                                <Ionicons name="add" size={18} color={Colors.primary} />
+                            </TouchableOpacity>
                         </View>
                     </View>
                 );
             })}
+          </BottomSheetScrollView>
+
+          <View style={styles.footerContainer}>
             <TouchableOpacity 
-                style={[styles.saveBtn, { marginTop: 24, marginBottom: 40 }]}
+                style={styles.saveBtnLarge}
                 onPress={savePricing}
                 disabled={isSettingPricing}
             >
-                {isSettingPricing ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveBtnText}>{isRTL ? 'تحديث الأسعار' : 'Update Pricing'}</Text>}
+                {isSettingPricing ? <ActivityIndicator color="#fff" /> : (
+                    <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }}>
+                        <Ionicons name="checkmark-circle" size={20} color="#fff" style={{ marginHorizontal: 8 }} />
+                        <Text style={styles.saveBtnTextLarge}>{isRTL ? 'حفظ الأسعار الجديدة' : 'Save New Pricing'}</Text>
+                    </View>
+                )}
             </TouchableOpacity>
-          </ScrollView>
-        </BottomSheetView>
+          </View>
+        </View>
       </BottomSheetModal>
 
     </SafeAreaView>
@@ -984,5 +1106,154 @@ const styles = StyleSheet.create({
       fontSize: normalize.font(14),
       color: Colors.text.muted,
       fontWeight: '600',
+  },
+  // New Styles for Pricing Sheet
+  sheetHeaderCompact: {
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  sheetHeaderHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 2,
+    marginBottom: 12,
+  },
+  modalTitleCompact: {
+    fontSize: normalize.font(16),
+    fontWeight: '800',
+    color: Colors.text.primary,
+  },
+  quickApplyCard: {
+    backgroundColor: Colors.primary,
+    borderRadius: 16,
+    padding: 12,
+    marginTop: 8,
+    ...Shadows.medium,
+  },
+  quickApplyRow: {
+    alignItems: 'center',
+  },
+  quickApplyIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  quickApplyLabel: {
+    fontSize: normalize.font(11),
+    color: 'rgba(255,255,255,0.8)',
+    fontWeight: '600',
+  },
+  quickApplyInput: {
+    flex: 1,
+    fontSize: normalize.font(18),
+    fontWeight: '800',
+    color: Colors.white,
+    padding: 0,
+  },
+  quickApplyCurrency: {
+    fontSize: normalize.font(13),
+    color: Colors.white,
+    fontWeight: '700',
+    marginLeft: 8,
+  },
+  pricingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: Colors.white,
+    padding: 8,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    marginBottom: 6,
+    borderWidth: 1,
+    borderColor: '#F0F2F7',
+  },
+  pricingRowWeekend: {
+    borderColor: '#FFE0E0',
+    backgroundColor: '#FFF9F9',
+  },
+  dayInfo: {
+    alignItems: 'center',
+    gap: 12,
+  },
+  dayIndicator: {
+    width: 4,
+    height: 20,
+    backgroundColor: Colors.primary,
+    borderRadius: 2,
+  },
+  dayIndicatorWeekend: {
+    backgroundColor: '#FF4D4D',
+  },
+  dayNameText: {
+    fontSize: normalize.font(14),
+    fontWeight: '700',
+    color: Colors.text.primary,
+  },
+  dayNameTextWeekend: {
+    color: '#FF4D4D',
+  },
+  priceActions: {
+    alignItems: 'center',
+    gap: 8,
+  },
+  adjustBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  priceInputWrapper: {
+    width: 90,
+    height: 36,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    justifyContent: 'center',
+  },
+  pricingRowInput: {
+    fontSize: normalize.font(14),
+    fontWeight: '800',
+    color: Colors.text.primary,
+    padding: 0,
+  },
+  footerContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 16,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 16,
+    backgroundColor: 'rgba(248, 249, 251, 0.95)',
+  },
+  timePickerBtn: {
+    backgroundColor: '#F3F4F6',
+    height: 54,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    gap: 10,
+  },
+  timePickerBtnText: {
+    fontSize: normalize.font(16),
+    fontWeight: '700',
+    color: Colors.text.primary,
+  },
+  saveBtnLarge: {
+    backgroundColor: Colors.primary,
+    height: 52,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...Shadows.medium,
+  },
+  saveBtnTextLarge: {
+    color: Colors.white,
+    fontSize: normalize.font(15),
+    fontWeight: '800',
   }
 });
