@@ -1,8 +1,14 @@
-import React from 'react';
-import { TouchableOpacity, StyleSheet, View, ViewStyle, TextStyle } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { ThemedText } from '@/components/themed-text';
+import { ThemedText } from "@/components/themed-text";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import React from "react";
+import {
+  StyleSheet,
+  TextStyle,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from "react-native";
+import Svg, { Path } from "react-native-svg";
 
 interface SecondaryButtonProps {
   label: string;
@@ -35,12 +41,12 @@ export function SecondaryButton({
   style,
   textStyle,
 }: SecondaryButtonProps) {
-  const bgColor = isActive ? activeColor : "white";
-  const borderColor = isActive ? activeColor : (inactiveColor === "#E9EBED" ? "#E9EBED" : inactiveColor);
+  const bgColor = isActive ? activeColor : "transparent";
+  const borderColor = isActive ? activeColor : "#E5E7EB";
   const finalContentColor = isActive ? "white" : activeColor;
 
   // Scale calculations: Original height 29, new height 46. Factor = 1.586
-  const scaledWidth = 44.4; 
+  const scaledWidth = 44.4;
 
   return (
     <TouchableOpacity
@@ -50,15 +56,15 @@ export function SecondaryButton({
     >
       {/* Icon Section (Right part in RTL) */}
       <View style={[styles.iconWrapper, { width: scaledWidth, height: 46 }]}>
-        <Svg 
-          width="100%" 
-          height="100%" 
-          viewBox="88.5 0 28 29" 
+        <Svg
+          width="100%"
+          height="100%"
+          viewBox="88.5 0 28 29"
           fill="none"
           preserveAspectRatio="xMidYMid meet"
         >
-          <Path 
-            d="M102.5 0.5H93.1172C90.5673 0.500248 88.5002 2.5673 88.5 5.11719V23.8828C88.5002 26.4327 90.5673 28.4998 93.1172 28.5H102.5C110.232 28.5 116.5 22.232 116.5 14.5C116.5 6.76801 110.232 0.5 102.5 0.5Z" 
+          <Path
+            d="M102.5 0.5H93.1172C90.5673 0.500248 88.5002 2.5673 88.5 5.11719V23.8828C88.5002 26.4327 90.5673 28.4998 93.1172 28.5H102.5C110.232 28.5 116.5 22.232 116.5 14.5C116.5 6.76801 110.232 0.5 102.5 0.5Z"
             fill={bgColor}
             stroke={borderColor}
             strokeWidth="1"
@@ -66,25 +72,25 @@ export function SecondaryButton({
         </Svg>
         {icon && (
           <View style={styles.iconContainer}>
-            <MaterialCommunityIcons 
-              name={icon as any} 
+            <MaterialCommunityIcons
+              name={icon as any}
               size={22} // Scaled icon size (from 16 to approx 22-24)
-              color={finalContentColor} 
+              color={finalContentColor}
             />
           </View>
         )}
       </View>
 
       {/* Label Section (Left part in RTL) */}
-      <View style={[
-        styles.textWrapper, 
-        { backgroundColor: bgColor, borderColor: borderColor, height: 46 }
-      ]}>
-        <ThemedText style={[
-          styles.text, 
-          { color: finalContentColor },
-          textStyle
-        ]}>
+      <View
+        style={[
+          styles.textWrapper,
+          { backgroundColor: bgColor, borderColor: borderColor, height: 46 },
+        ]}
+      >
+        <ThemedText
+          style={[styles.text, { color: finalContentColor }, textStyle]}
+        >
           {label}
         </ThemedText>
       </View>
@@ -94,26 +100,26 @@ export function SecondaryButton({
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row-reverse',
+    flexDirection: "row-reverse",
     height: 46,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   iconWrapper: {
-    position: 'relative',
-    justifyContent: 'center',
-    alignItems: 'center',
+    position: "relative",
+    justifyContent: "center",
+    alignItems: "center",
   },
   iconContainer: {
-    position: 'absolute',
+    position: "absolute",
     inset: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingLeft: 3, // Proportional padding
   },
   textWrapper: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: 22,
     borderWidth: 1.5, // Thicker border for larger size
     borderRadius: 8.7, // Proportional radius (5.5 * 1.586)
@@ -121,8 +127,8 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 18,
-    fontWeight: '800',
-    textAlign: 'center',
+    fontWeight: "800",
+    textAlign: "center",
     lineHeight: 22,
   },
 });
