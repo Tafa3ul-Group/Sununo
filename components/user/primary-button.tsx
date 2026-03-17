@@ -97,6 +97,7 @@ export function PrimaryButton({
             backgroundColor: color,
             height: 46,
             borderRadius: 8.7,
+            flex: 1, // Make sure it fills the space
           },
         ]}
       >
@@ -145,8 +146,7 @@ const styles = StyleSheet.create({
   middleSection: {
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 8,
-    minWidth: 10,
+    paddingHorizontal: 4,
   },
   primaryText: {
     fontSize: 18, // Slightly larger font for 46px height

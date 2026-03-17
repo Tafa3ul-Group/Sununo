@@ -85,7 +85,12 @@ export function SecondaryButton({
       <View
         style={[
           styles.textWrapper,
-          { backgroundColor: bgColor, borderColor: borderColor, height: 46 },
+          { 
+            backgroundColor: bgColor, 
+            borderColor: borderColor, 
+            height: 46,
+            flex: 1, // Allow text to fill space
+          },
         ]}
       >
         <ThemedText
@@ -120,7 +125,7 @@ const styles = StyleSheet.create({
   textWrapper: {
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 22,
+    paddingHorizontal: 12, // Reduced padding for flexibility
     borderWidth: 1.5, // Thicker border for larger size
     borderRadius: 8.7, // Proportional radius (5.5 * 1.586)
     marginRight: -1,

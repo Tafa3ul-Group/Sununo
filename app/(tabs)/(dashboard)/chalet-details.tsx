@@ -6,10 +6,12 @@ import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, Switch, Pl
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
-import { Colors, normalize, Shadows, Spacing } from '@/constants/theme';
+import { Colors, normalize, Spacing } from '@/constants/theme';
 import * as Haptics from 'expo-haptics';
 import { getImageSrc } from '@/hooks/useImageSrc';
 import { useGetOwnerChaletDetailsQuery } from '@/store/api/apiSlice';
+import { PrimaryButton } from '@/components/user/primary-button';
+import { SecondaryButton } from '@/components/user/secondary-button';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const HERO_HEIGHT = 420;
@@ -61,27 +63,15 @@ export default function ChaletDetailsScreen() {
   const chaletLocation = isRTL ? (chalet.address?.ar || chalet.region?.name) : (chalet.address?.en || chalet.region?.enName);
   const chaletDescription = isRTL ? (chalet.description?.ar || chalet.description) : (chalet.description?.en || chalet.description);
 
-  // Parallax Header Animations
-  const headerTranslate = scrollY.interpolate({
-    inputRange: [0, HERO_HEIGHT],
-    outputRange: [0, -HERO_HEIGHT * 0.4],
-    extrapolate: 'clamp',
-  });
-
-  const imageScale = scrollY.interpolate({
-    inputRange: [-150, 0],
-    outputRange: [1.3, 1],
-    extrapolate: 'clamp',
-  });
-
+  // Fixed Header State - Image stays background, content slides UP over it.
   const headerOpacity = scrollY.interpolate({
-    inputRange: [0, HERO_HEIGHT / 1.5],
+    inputRange: [0, HERO_HEIGHT / 2],
     outputRange: [1, 0],
     extrapolate: 'clamp',
   });
 
   const navBarOpacity = scrollY.interpolate({
-    inputRange: [HERO_HEIGHT - 80, HERO_HEIGHT - 40],
+    inputRange: [HERO_HEIGHT - 100, HERO_HEIGHT - 60],
     outputRange: [0, 1],
     extrapolate: 'clamp',
   });
@@ -90,23 +80,19 @@ export default function ChaletDetailsScreen() {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
       
-      {/* Persistent Nav Bar (Sticky on scroll) */}
+      {/* Persistent Nav Bar (Sticky title only) */}
       <Animated.View style={[styles.navBar, { opacity: navBarOpacity }]}>
         <SafeAreaView edges={['top']} style={styles.navBarContent}>
-          <TouchableOpacity style={styles.navBarButton} onPress={() => router.back()}>
-            <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={22} color={Colors.text.primary} />
-          </TouchableOpacity>
+          <View style={styles.navBarButtonPlaceholder} />
           <Text style={styles.navBarTitle} numberOfLines={1}>
             {chaletName}
           </Text>
-          <TouchableOpacity style={styles.navBarButton} onPress={() => router.push({ pathname: '/(tabs)/(dashboard)/edit-chalet', params: { id: chalet.id } })}>
-            <Ionicons name="create-outline" size={22} color={Colors.text.primary} />
-          </TouchableOpacity>
+          <View style={styles.navBarButtonPlaceholder} />
         </SafeAreaView>
       </Animated.View>
 
-      {/* Hero Background - Parallax */}
-      <Animated.View style={[styles.imageContainer, { transform: [{ translateY: headerTranslate }, { scale: imageScale }] }]}>
+      {/* Hero Background - Static (Content slides over this) */}
+      <View style={styles.imageContainer}>
         <ScrollView 
           horizontal 
           pagingEnabled 
@@ -154,7 +140,19 @@ export default function ChaletDetailsScreen() {
             ))}
           </View>
         )}
-      </Animated.View>
+      </View>
+
+      {/* Persistent Header Actions (Always in the same place & design) */}
+      <View style={styles.fixedHeaderActions}>
+        <SafeAreaView edges={['top']} style={[styles.headerActions, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <TouchableOpacity style={styles.iconButton} onPress={() => router.back()}>
+            <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={22} color={Colors.white} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.iconButton} onPress={() => router.push({ pathname: '/(tabs)/(dashboard)/edit-chalet', params: { id: chalet.id } })}>
+            <Ionicons name="create-outline" size={22} color={Colors.white} />
+          </TouchableOpacity>
+        </SafeAreaView>
+      </View>
 
       {/* Main Scroll Content */}
       <Animated.ScrollView
@@ -165,22 +163,11 @@ export default function ChaletDetailsScreen() {
           { useNativeDriver: true }
         )}
         contentContainerStyle={styles.scrollContent}
+        bounces={false}
       >
         <View style={styles.heroSpacer} />
         
         <View style={styles.contentCard}>
-          {/* Header Controls (Only visible when at top) */}
-          <Animated.View style={[styles.headerActionsOverlay, { opacity: headerOpacity }]}>
-            <SafeAreaView edges={['top']} style={[styles.headerActions, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-              <TouchableOpacity style={styles.iconButton} onPress={() => router.back()}>
-                <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={22} color={Colors.white} />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.iconButton} onPress={() => router.push({ pathname: '/(tabs)/(dashboard)/edit-chalet', params: { id: chalet.id } })}>
-                <Ionicons name="create-outline" size={22} color={Colors.white} />
-              </TouchableOpacity>
-            </SafeAreaView>
-          </Animated.View>
-
           <View style={styles.contentBody}>
             {/* Title & Status Block */}
             <View style={[styles.titleSection, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
@@ -238,34 +225,15 @@ export default function ChaletDetailsScreen() {
               </View>
             </View>
 
-            {/* Quick Management Tools */}
-            <View style={[styles.managerGrid, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-              <TouchableOpacity 
-                style={styles.managerAction}
+            {/* Main Management Action - Calendar */}
+            <View style={styles.managementSection}>
+              <SecondaryButton 
+                label={isRTL ? 'إدارة التوفر والأسعار' : 'Availability & Pricing'}
                 onPress={() => router.push({ pathname: '/(tabs)/(dashboard)/calendar', params: { id: chalet?.id } })}
-              >
-                <View style={styles.managerIconCircle}>
-                  <Ionicons name="calendar" size={22} color={Colors.text.primary} />
-                </View>
-                <Text style={styles.managerLabel}>{isRTL ? 'التقويم' : 'Calendar'}</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.managerAction}
-                onPress={() => router.push({ pathname: '/(tabs)/(dashboard)/edit-chalet', params: { id: chalet?.id } })}
-              >
-                <View style={styles.managerIconCircle}>
-                  <Ionicons name="options" size={22} color={Colors.text.primary} />
-                </View>
-                <Text style={styles.managerLabel}>{isRTL ? 'تعديل' : 'Edit'}</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.managerAction}>
-                <View style={styles.managerIconCircle}>
-                  <Ionicons name="share-social" size={22} color={Colors.text.primary} />
-                </View>
-                <Text style={styles.managerLabel}>{isRTL ? 'مشاركة' : 'Share'}</Text>
-              </TouchableOpacity>
+                icon="calendar-month"
+                isActive={false} // Use the outlined design system style
+                style={styles.fullWidthButton}
+              />
             </View>
 
             <View style={styles.sectionDivider} />
@@ -308,21 +276,19 @@ export default function ChaletDetailsScreen() {
 
             {/* Navigation Actions */}
             <View style={styles.navigationGrid}>
-              <TouchableOpacity style={[styles.navActionCard, { flexDirection: isRTL ? 'row-reverse' : 'row' }]} onPress={() => router.push('/(tabs)/(dashboard)/bookings')}>
-                <View style={[styles.navActionIcon, { backgroundColor: '#F1F5F9' }]}>
-                  <MaterialCommunityIcons name="calendar-clock" size={24} color={Colors.text.primary} />
-                </View>
-                <Text style={styles.navActionText}>{isRTL ? 'إدارة حجوزاتك' : 'Manage Bookings'}</Text>
-                <Ionicons name={isRTL ? "chevron-back" : "chevron-forward"} size={18} color={Colors.text.muted} />
-              </TouchableOpacity>
+              <SecondaryButton
+                label={isRTL ? 'إدارة حجوزاتك' : 'Manage Bookings'}
+                onPress={() => router.push('/(tabs)/(dashboard)/bookings')}
+                icon="calendar-clock"
+                style={styles.navActionButton}
+              />
               
-              <TouchableOpacity style={[styles.navActionCard, { flexDirection: isRTL ? 'row-reverse' : 'row' }]} onPress={() => router.push('/(tabs)/(dashboard)/revenue')}>
-                <View style={[styles.navActionIcon, { backgroundColor: '#F1F5F9' }]}>
-                  <MaterialCommunityIcons name="chart-line" size={24} color={Colors.text.primary} />
-                </View>
-                <Text style={styles.navActionText}>{isRTL ? 'التقارير المالية' : 'Financial Reports'}</Text>
-                <Ionicons name={isRTL ? "chevron-back" : "chevron-forward"} size={18} color={Colors.text.muted} />
-              </TouchableOpacity>
+              <SecondaryButton
+                label={isRTL ? 'التقارير المالية' : 'Financial Reports'}
+                onPress={() => router.push('/(tabs)/(dashboard)/revenue')}
+                icon="chart-line"
+                style={styles.navActionButton}
+              />
             </View>
 
             {/* About Section */}
@@ -338,7 +304,7 @@ export default function ChaletDetailsScreen() {
 
       {/* Modern Bottom Action Bar */}
       <View style={styles.stickyFooter}>
-        <SafeAreaView edges={['bottom']} style={[styles.footerContent, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <SafeAreaView edges={['bottom']} style={[styles.footerContent, { flexDirection: isRTL ? 'row-reverse' : 'row', gap: 20 }]}>
           <View style={{ alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
             <Text style={styles.footerPriceLabel}>{isRTL ? 'السعر لليلة' : 'Price per night'}</Text>
             <Text style={styles.footerPriceValue}>
@@ -346,12 +312,11 @@ export default function ChaletDetailsScreen() {
               <Text style={styles.footerCurrency}> {isRTL ? 'د.ع' : 'IQD'}</Text>
             </Text>
           </View>
-          <TouchableOpacity 
-            style={styles.footerPrimaryBtn} 
+          <PrimaryButton 
+            label={isRTL ? 'تعديل التفاصيل والسعر' : 'Edit Details & Price'}
             onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
-          >
-            <Text style={styles.footerBtnText}>{isRTL ? 'تعديل السعر' : 'Update Price'}</Text>
-          </TouchableOpacity>
+            style={styles.footerButtonOverride}
+          />
         </SafeAreaView>
       </View>
     </View>
@@ -374,11 +339,10 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    zIndex: 100,
+    zIndex: 50, // Below buttons
     backgroundColor: 'rgba(255,255,255,0.98)',
     borderBottomWidth: 1,
     borderBottomColor: '#F1F5F9',
-    ...Shadows.small,
   },
   navBarContent: {
     flexDirection: 'row',
@@ -387,18 +351,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 12,
   },
-  navBarButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
+  navBarButtonPlaceholder: {
+    width: 42, // Match iconButton size
+    height: 42,
   },
   navBarTitle: {
     fontSize: normalize.font(16),
     fontWeight: '700',
     color: Colors.text.primary,
-    maxWidth: '70%',
+    maxWidth: '65%',
+    textAlign: 'center',
   },
   imageContainer: {
     position: 'absolute',
@@ -430,16 +392,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopLeftRadius: 36,
     borderTopRightRadius: 36,
-    ...Shadows.large,
-    shadowOpacity: 0.1,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
     minHeight: SCREEN_HEIGHT - 100,
   },
-  headerActionsOverlay: {
+  fixedHeaderActions: {
     position: 'absolute',
-    top: -HERO_HEIGHT + 60,
+    top: 0,
     left: 0,
     right: 0,
-    zIndex: 10,
+    zIndex: 100, // Top-most
   },
   headerActions: {
     paddingHorizontal: 20,
@@ -545,34 +507,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#E2E8F0',
     alignSelf: 'center',
   },
-  managerGrid: {
-    gap: 12,
+  managementSection: {
     marginBottom: 32,
   },
-  managerAction: {
-    flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 22,
-    paddingVertical: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    ...Shadows.small,
+  fullWidthButton: {
+    width: '100%',
   },
-  managerIconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F8FAFC',
-    justifyContent: 'center',
-    alignItems: 'center',
+  navActionButton: {
+    width: '100%',
+    marginBottom: 10,
   },
-  managerLabel: {
-    fontSize: normalize.font(12),
-    fontWeight: '700',
-    color: Colors.text.primary,
+  navigationGrid: {
+    marginBottom: 32,
   },
   sectionDivider: {
     height: 1,
@@ -636,34 +582,6 @@ const styles = StyleSheet.create({
     color: Colors.text.muted,
     fontWeight: '600',
   },
-  navigationGrid: {
-    gap: 14,
-    marginBottom: 32,
-  },
-  navActionCard: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    ...Shadows.small,
-  },
-  navActionIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  navActionText: {
-    flex: 1,
-    fontSize: normalize.font(15),
-    fontWeight: '700',
-    color: Colors.text.primary,
-    marginHorizontal: 16,
-  },
   descriptionText: {
     fontSize: normalize.font(15),
     color: Colors.text.secondary,
@@ -674,7 +592,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingBottom: Platform.OS === 'ios' ? 0 : 16,
   },
   footerPriceLabel: {
     fontSize: normalize.font(12),
@@ -691,17 +608,8 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontWeight: '700',
   },
-  footerPrimaryBtn: {
-    backgroundColor: Colors.primary,
-    paddingHorizontal: 28,
-    paddingVertical: 14,
-    borderRadius: 18,
-    ...Shadows.medium,
-  },
-  footerBtnText: {
-    color: '#fff',
-    fontSize: normalize.font(15),
-    fontWeight: '700',
+  footerButtonOverride: {
+    flex: 1,
   },
   stickyFooter: {
     position: 'absolute',
@@ -713,7 +621,6 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     borderTopWidth: 1,
     borderTopColor: '#F1F5F9',
-    ...Shadows.large,
   },
   pagination: {
     flexDirection: 'row',

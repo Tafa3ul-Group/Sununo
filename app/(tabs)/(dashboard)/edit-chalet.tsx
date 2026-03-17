@@ -11,6 +11,7 @@ import {
   Image,
   Alert,
   ActivityIndicator,
+  Keyboard,
 } from 'react-native';
 import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop, BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -35,6 +36,10 @@ import {
   useGetChaletAmenitiesQuery,
   useSetChaletAmenitiesMutation
 } from '@/store/api/apiSlice';
+import { PrimaryButton } from '@/components/user/primary-button';
+import { SecondaryButton } from '@/components/user/secondary-button';
+import { LocationPickerModal } from '@/components/user/location-picker-modal';
+import { AppMap } from '@/components/user/app-map';
 
 export default function EditChaletScreen() {
   const router = useRouter();
@@ -52,16 +57,33 @@ export default function EditChaletScreen() {
   const isLoading = isUpdating || isUploading || isLoadingDetails || isLinking;
 
   const [form, setForm] = useState({
-    name: '',
-    location: '',
-    description: '',
+    nameAr: '',
+    nameEn: '',
+    addressAr: '',
+    addressEn: '',
+    descriptionAr: '',
+    descriptionEn: '',
     guests: '4',
     cityId: '',
     cityName: '',
     regionId: '',
     regionName: '',
     depositPercentage: '25',
+    phone: '',
+    whatsapp: '',
+    latitude: '',
+    longitude: '',
   });
+
+  const [currentStep, setCurrentStep] = useState(0);
+  const steps = [
+    { id: 'basic', title: isRTL ? 'الأساسية' : 'Basic' },
+    { id: 'location', title: isRTL ? 'الموقع' : 'Location' },
+    { id: 'booking', title: isRTL ? 'الحجز' : 'Booking' },
+    { id: 'media', title: isRTL ? 'المزايا والصور' : 'Media' },
+  ];
+
+  const [showMap, setShowMap] = useState(false);
 
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<any[]>([]);
@@ -78,7 +100,7 @@ export default function EditChaletScreen() {
   const imageSourceSheetRef = useRef<BottomSheetModal>(null);
 
   // Snap Points
-  const snapPoints = useMemo(() => ['50%', '75%'], []);
+  const snapPoints = useMemo(() => ['65%', '90%'], []);
   const imageSnapPoints = useMemo(() => ['30%'], []);
 
   // Backdrop
@@ -97,15 +119,22 @@ export default function EditChaletScreen() {
   useEffect(() => {
     if (chalet) {
       setForm({
-        name: (isRTL ? chalet.name?.ar : chalet.name?.en) || chalet.name?.ar || chalet.name || '',
-        location: (isRTL ? chalet.address?.ar : chalet.address?.en) || chalet.address?.ar || chalet.address || '',
-        description: (isRTL ? chalet.description?.ar : chalet.description?.en) || chalet.description?.ar || chalet.description || '',
+        nameAr: chalet.name?.ar || chalet.name || '',
+        nameEn: chalet.name?.en || '',
+        addressAr: chalet.address?.ar || chalet.address || '',
+        addressEn: chalet.address?.en || '',
+        descriptionAr: chalet.description?.ar || chalet.description || '',
+        descriptionEn: chalet.description?.en || '',
         guests: chalet.maxGuests?.toString() || '4',
         cityId: chalet.region?.cityId || '',
         cityName: chalet.region?.city?.name || '',
         regionId: chalet.regionId || '',
         regionName: chalet.region?.name || '',
         depositPercentage: chalet.depositPercentage?.toString() || '25',
+        phone: chalet.phone || '',
+        whatsapp: chalet.whatsapp || '',
+        latitude: chalet.latitude?.toString() || '',
+        longitude: chalet.longitude?.toString() || '',
       });
       setExistingImages(chalet.images || []);
       
@@ -167,11 +196,11 @@ export default function EditChaletScreen() {
   };
 
   const handleUpdate = async () => {
-    if (!form.name || !form.location || !form.regionId) {
+    if (!form.nameAr || !form.addressAr || !form.regionId) {
       Toast.show({
         type: 'error',
         text1: isRTL ? 'خطأ' : 'Error',
-        text2: isRTL ? 'يرجى ملء كافة الحقول واختيار المنطقة' : 'Please fill all fields and select a region',
+        text2: isRTL ? 'يرجى ملء الاسم العربي والعنوان والمنطقة' : 'Please fill Arabic name, address, and select a region',
         position: 'bottom',
       });
       return;
@@ -179,10 +208,14 @@ export default function EditChaletScreen() {
 
     try {
       const payload = {
-        name: { ar: form.name, en: form.name },
-        description: { ar: form.description, en: form.description },
-        address: { ar: form.location, en: form.location },
+        name: { ar: form.nameAr, en: form.nameEn || form.nameAr },
+        description: { ar: form.descriptionAr, en: form.descriptionEn || form.descriptionAr },
+        address: { ar: form.addressAr, en: form.addressEn || form.addressAr },
         regionId: form.regionId,
+        latitude: form.latitude ? parseFloat(form.latitude) : null,
+        longitude: form.longitude ? parseFloat(form.longitude) : null,
+        phone: form.phone || null,
+        whatsapp: form.whatsapp || null,
         maxGuests: parseInt(form.guests) || 0,
         depositPercentage: parseFloat(form.depositPercentage) || 0,
       };
@@ -241,6 +274,69 @@ export default function EditChaletScreen() {
     regionSheetRef.current?.dismiss();
   };
 
+  const isStepValid = useMemo(() => {
+    switch (currentStep) {
+      case 0:
+        return !!form.nameAr && !!form.descriptionAr;
+      case 1:
+        return !!form.cityId && !!form.regionId && !!form.addressAr;
+      case 2:
+        return !!form.phone && !!form.depositPercentage && !!form.guests;
+      case 3:
+        return true; // Images are optional for update? Or keep same. I'll allow update even without new images.
+      default:
+        return true;
+    }
+  }, [currentStep, form]);
+
+  const nextStep = () => {
+    if (!isStepValid) return;
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const renderStepIndicator = () => {
+    return (
+      <View style={[styles.stepIndicatorContainer, { flexDirection }]}>
+        {steps.map((step, index) => {
+          const isActive = index === currentStep;
+          const isCompleted = index < currentStep;
+          
+          return (
+            <React.Fragment key={step.id}>
+              <View style={styles.stepItem}>
+                <View style={[
+                  styles.stepDot, 
+                  isActive && styles.stepDotActive,
+                  isCompleted && styles.stepDotCompleted
+                ]}>
+                  {isCompleted ? (
+                    <Ionicons name="checkmark" size={12} color={Colors.white} />
+                  ) : (
+                    <Text style={[styles.stepNumber, isActive && styles.stepNumberActive]}>{index + 1}</Text>
+                  )}
+                </View>
+                <Text style={[styles.stepTitle, isActive && styles.stepTitleActive]}>
+                  {step.title}
+                </Text>
+              </View>
+              {index < steps.length - 1 && (
+                <View style={[styles.stepLine, isCompleted && styles.stepLineCompleted]} />
+              )}
+            </React.Fragment>
+          );
+        })}
+      </View>
+    );
+  };
+
   const textAlign = isRTL ? 'right' : 'left';
   const flexDirection = isRTL ? 'row-reverse' : 'row';
 
@@ -272,164 +368,276 @@ export default function EditChaletScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
+          {renderStepIndicator()}
 
-          <View style={styles.form}>
-            <View style={styles.inputGroup}>
-              <Text style={[styles.label, { textAlign }]}>اسم الشاليه</Text>
-              <TextInput
-                style={[styles.input, { textAlign }]}
-                placeholder="مثال: شاليه اللؤلؤة"
-                value={form.name}
-                onChangeText={(val) => setForm({ ...form, name: val })}
-              />
-            </View>
-
-            <View style={[styles.rowInputs, { flexDirection }]}>
-              <View style={[styles.inputGroup, { flex: 1 }]}>
-                <Text style={[styles.label, { textAlign }]}>المدينة</Text>
-                <TouchableOpacity 
-                  style={[styles.input, { justifyContent: 'center' }]} 
-                  onPress={() => citySheetRef.current?.present()}
-                >
-                  <Text style={{ color: form.cityName ? Colors.text.primary : Colors.text.muted, textAlign }}>
-                    {form.cityName || "اختر المدينة"}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-              <View style={{ width: Spacing.md }} />
-              <View style={[styles.inputGroup, { flex: 1 }]}>
-                <Text style={[styles.label, { textAlign }]}>المنطقة</Text>
-                <TouchableOpacity 
-                  style={[styles.input, { justifyContent: 'center' }]} 
-                  onPress={() => form.cityId ? regionSheetRef.current?.present() : Alert.alert("تنبيه", "يرجى اختيار المدينة أولاً")}
-                  disabled={!form.cityId}
-                >
-                  <Text style={{ color: form.regionName ? Colors.text.primary : Colors.text.muted, textAlign }}>
-                    {form.regionName || "اختر المنطقة"}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={[styles.label, { textAlign }]}>العنوان التفصيلي</Text>
-              <TextInput
-                style={[styles.input, { textAlign }]}
-                placeholder="مثال: القبلة، شارع المصرف"
-                value={form.location}
-                onChangeText={(val) => setForm({ ...form, location: val })}
-              />
-            </View>
-
-            <View style={[styles.rowInputs, { flexDirection }]}>
-              <View style={[styles.inputGroup, { flex: 1 }]}>
-                <Text style={[styles.label, { textAlign }]}>{isRTL ? 'نسبة العربون (%)' : 'Deposit %'}</Text>
+          {currentStep === 0 && (
+            <View style={styles.sectionCard}>
+              <ThemedText type="h2" style={styles.sectionHeader}>{isRTL ? 'المعلومات الأساسية' : 'Basic Information'}</ThemedText>
+              
+              <View style={styles.inputGroup}>
+                <Text style={[styles.label, { textAlign }]}>{isRTL ? 'اسم الشاليه (بالعربي)' : 'Chalet Name (Arabic)'}</Text>
                 <TextInput
                   style={[styles.input, { textAlign }]}
-                  placeholder="25"
-                  keyboardType="numeric"
-                  value={form.depositPercentage}
-                  onChangeText={(val) => setForm({ ...form, depositPercentage: val })}
+                  placeholder={isRTL ? "مثال: شاليه الورد" : "e.g. Rose Chalet"}
+                  value={form.nameAr}
+                  onChangeText={(val) => setForm({ ...form, nameAr: val })}
                 />
               </View>
-              <View style={{ width: Spacing.md }} />
-              <View style={[styles.inputGroup, { flex: 1 }]}>
-                <Text style={[styles.label, { textAlign }]}>عدد الضيوف</Text>
+
+              <View style={styles.inputGroup}>
+                <Text style={[styles.label, { textAlign }]}>{isRTL ? 'اسم الشاليه (English)' : 'Chalet Name (English)'}</Text>
                 <TextInput
-                  style={[styles.input, { textAlign }]}
-                  placeholder="4"
-                  keyboardType="numeric"
-                  value={form.guests}
-                  onChangeText={(val) => setForm({ ...form, guests: val })}
+                  style={[styles.input, { textAlign: 'left' }]}
+                  placeholder="e.g. Rose Chalet"
+                  value={form.nameEn}
+                  onChangeText={(val) => setForm({ ...form, nameEn: val })}
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={[styles.label, { textAlign }]}>{isRTL ? 'الوصف (بالعربي)' : 'Description (Arabic)'}</Text>
+                <TextInput
+                  style={[styles.input, styles.textArea, { textAlign }]}
+                  placeholder={isRTL ? "اكتب وصفاً بالعربي..." : "Enter Arabic description..."}
+                  multiline
+                  numberOfLines={4}
+                  value={form.descriptionAr}
+                  onChangeText={(val) => setForm({ ...form, descriptionAr: val })}
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={[styles.label, { textAlign }]}>{isRTL ? 'الوصف (English)' : 'Description (English)'}</Text>
+                <TextInput
+                  style={[styles.input, styles.textArea, { textAlign: 'left' }]}
+                  placeholder="Enter description in English..."
+                  multiline
+                  numberOfLines={4}
+                  value={form.descriptionEn}
+                  onChangeText={(val) => setForm({ ...form, descriptionEn: val })}
                 />
               </View>
             </View>
+          )}
 
-            <View style={styles.inputGroup}>
-              <Text style={[styles.label, { textAlign }]}>الوصف</Text>
-              <TextInput
-                style={[styles.input, styles.textArea, { textAlign }]}
-                placeholder="اكتب وصفاً مفصلاً للشاليه..."
-                multiline
-                numberOfLines={4}
-                value={form.description}
-                onChangeText={(val) => setForm({ ...form, description: val })}
-              />
-            </View>
-
-            <Text style={[styles.label, { textAlign, marginBottom: Spacing.sm }]}>{isRTL ? 'المميزات المتوفرة' : 'Available Amenities'}</Text>
-            <View style={[styles.featuresGrid, { flexDirection }]}>
-              {availableAmenities?.map((amenity: any) => {
-                const isSelected = selectedAmenities.includes(amenity.id);
-                return (
-                  <TouchableOpacity
-                    key={amenity.id}
-                    onPress={() => toggleAmenity(amenity.id)}
-                    style={[
-                      styles.featureItem,
-                      isSelected && styles.featureItemSelected
-                    ]}
+          {currentStep === 1 && (
+            <View style={styles.sectionCard}>
+              <ThemedText type="h2" style={styles.sectionHeader}>{isRTL ? 'تحديد الموقع' : 'Location Details'}</ThemedText>
+              
+              <View style={[styles.rowInputs, { flexDirection }]}>
+                <View style={[styles.inputGroup, { flex: 1 }]}>
+                  <Text style={[styles.label, { textAlign }]}>المدينة</Text>
+                  <TouchableOpacity 
+                    style={[styles.input, { justifyContent: 'center' }]} 
+                    onPress={() => citySheetRef.current?.present()}
                   >
-                    <MaterialCommunityIcons 
-                      name={(amenity.icon || 'star-outline') as any} 
-                      size={20} 
-                      color={isSelected ? Colors.white : Colors.text.primary} 
-                    />
-                    <Text style={[
-                      styles.featureLabel,
-                      isSelected && styles.featureLabelSelected
-                    ]}>
-                      {isRTL ? amenity.name?.ar : amenity.name?.en}
+                    <Text style={{ color: form.cityName ? Colors.text.primary : Colors.text.muted, textAlign }}>
+                      {form.cityName || "اختر المدينة"}
                     </Text>
                   </TouchableOpacity>
-                );
-              })}
-            </View>
-          </View>
-
-          <View style={[styles.imageSection, { marginTop: Spacing.lg }]}>
-            <Text style={[styles.label, { textAlign, marginBottom: Spacing.sm }]}>{isRTL ? 'الصور الحالية' : 'Current Photos'}</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.imageContainer, { flexDirection }]}>
-              {existingImages.map((img, index) => (
-                <View key={img.id} style={styles.imageItem}>
-                  <Image source={getImageSrc(img.url)} style={styles.uploadedImage} />
                 </View>
-              ))}
-            </ScrollView>
-
-            <Text style={[styles.label, { textAlign, marginBottom: Spacing.sm, marginTop: Spacing.md }]}>{isRTL ? 'إضافة صور جديدة' : 'Add New Photos'}</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.imageContainer, { flexDirection }]}>
-              {selectedImages.map((uri, index) => (
-                <View key={index} style={styles.imageItem}>
-                  <Image source={getImageSrc(uri)} style={styles.uploadedImage} />
-                  <TouchableOpacity style={styles.removeImageButton} onPress={() => removeSelectedImage(index)}>
-                    <Ionicons name="close-circle" size={24} color={Colors.error} />
+                <View style={[styles.inputGroup, { flex: 1 }]}>
+                  <Text style={[styles.label, { textAlign }]}>المنطقة</Text>
+                  <TouchableOpacity 
+                    style={[styles.input, { justifyContent: 'center' }]} 
+                    onPress={() => form.cityId ? regionSheetRef.current?.present() : Alert.alert("تنبيه", "يرجى اختيار المدينة أولاً")}
+                    disabled={!form.cityId}
+                  >
+                    <Text style={{ color: form.regionName ? Colors.text.primary : Colors.text.muted, textAlign }}>
+                      {form.regionName || "اختر المنطقة"}
+                    </Text>
                   </TouchableOpacity>
                 </View>
-              ))}
-              <TouchableOpacity style={styles.imageUpload} onPress={() => imageSourceSheetRef.current?.present()}>
-                <MaterialCommunityIcons name="camera-plus-outline" size={32} color={Colors.text.muted} />
-                <Text style={styles.uploadText}>{isRTL ? 'إضافة صور' : 'Add Photos'}</Text>
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
+              </View>
 
-          <TouchableOpacity 
-            style={[styles.saveButton, (isUpdating || isUploading) && { opacity: 0.7 }]}
-            onPress={handleUpdate}
-            activeOpacity={0.8}
-            disabled={isUpdating || isUploading}
-          >
-            {isUpdating || isUploading ? (
-              <ActivityIndicator color={Colors.white} />
-            ) : (
-              <Text style={styles.saveButtonText}>{isRTL ? 'تحديث البيانات' : 'Update Listing'}</Text>
-            )}
-          </TouchableOpacity>
+              <View style={styles.inputGroup}>
+                <Text style={[styles.label, { textAlign }]}>{isRTL ? 'العنوان (بالعربي)' : 'Address (Arabic)'}</Text>
+                <TextInput
+                  style={[styles.input, { textAlign }]}
+                  placeholder={isRTL ? "مثال: القبلة، شارع المصرف" : "e.g. Al-Qibla, Bank St."}
+                  value={form.addressAr}
+                  onChangeText={(val) => setForm({ ...form, addressAr: val })}
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={[styles.label, { textAlign }]}>{isRTL ? 'العنوان (English)' : 'Address (English)'}</Text>
+                <TextInput
+                  style={[styles.input, { textAlign: 'left' }]}
+                  placeholder="e.g. Al-Qibla, Bank St."
+                  value={form.addressEn}
+                  onChangeText={(val) => setForm({ ...form, addressEn: val })}
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={[styles.label, { textAlign }]}>{isRTL ? 'موقع الشاليه' : 'Chalet Location'}</Text>
+                <TouchableOpacity 
+                  style={styles.mapPreviewContainer}
+                  onPress={() => setShowMap(true)}
+                  activeOpacity={0.8}
+                >
+                  <AppMap 
+                    style={styles.miniMap}
+                    centerCoordinate={form.latitude && form.longitude ? [parseFloat(form.longitude), parseFloat(form.latitude)] : undefined}
+                    zoomLevel={15}
+                    interactive={false}
+                    showMarker={true}
+                  />
+                  <View style={styles.mapOverlay}>
+                      <View style={styles.editLocBadge}>
+                          <Ionicons name="map" size={16} color={Colors.white} />
+                          <Text style={styles.editLocText}>{isRTL ? 'تعديل الموقع على الخارطة' : 'Edit on Map'}</Text>
+                      </View>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          {currentStep === 2 && (
+            <View style={styles.sectionCard}>
+              <ThemedText type="h2" style={styles.sectionHeader}>{isRTL ? 'التواصل وسياسة الحجز' : 'Contact & Booking'}</ThemedText>
+              
+              <View style={styles.inputGroup}>
+                <Text style={[styles.label, { textAlign }]}>{isRTL ? 'رقم الهاتف' : 'Phone'}</Text>
+                <TextInput
+                  style={[styles.input, { textAlign: 'left' }]}
+                  placeholder="+964..."
+                  keyboardType="phone-pad"
+                  value={form.phone}
+                  onChangeText={(val) => setForm({ ...form, phone: val })}
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={[styles.label, { textAlign }]}>{isRTL ? 'رابط واتساب' : 'WhatsApp Link'}</Text>
+                <TextInput
+                  style={[styles.input, { textAlign: 'left' }]}
+                  placeholder="https://wa.me/964..."
+                  keyboardType="url"
+                  autoCapitalize="none"
+                  value={form.whatsapp}
+                  onChangeText={(val) => setForm({ ...form, whatsapp: val })}
+                />
+              </View>
+
+              <View style={[styles.rowInputs, { flexDirection }]}>
+                <View style={[styles.inputGroup, { flex: 1 }]}>
+                  <Text style={[styles.label, { textAlign }]}>{isRTL ? 'نسبة العربون (%)' : 'Deposit %'}</Text>
+                  <TextInput
+                    style={[styles.input, { textAlign: 'left' }]}
+                    placeholder="25"
+                    keyboardType="numeric"
+                    value={form.depositPercentage}
+                    onChangeText={(val) => setForm({ ...form, depositPercentage: val })}
+                  />
+                </View>
+                <View style={[styles.inputGroup, { flex: 1 }]}>
+                  <Text style={[styles.label, { textAlign }]}>{isRTL ? 'أقصى عدد ضيوف' : 'Max Guests'}</Text>
+                  <TextInput
+                    style={[styles.input, { textAlign: 'left' }]}
+                    placeholder="20"
+                    keyboardType="numeric"
+                    value={form.guests}
+                    onChangeText={(val) => setForm({ ...form, guests: val })}
+                  />
+                </View>
+              </View>
+            </View>
+          )}
+
+          {currentStep === 3 && (
+            <>
+              <View style={styles.sectionCard}>
+                <ThemedText type="h2" style={styles.sectionHeader}>{isRTL ? 'المميزات المتوفرة' : 'Available Amenities'}</ThemedText>
+                <View style={[styles.featuresGrid, { flexDirection }]}>
+                  {availableAmenities?.map((amenity: any) => {
+                    const isSelected = selectedAmenities.includes(amenity.id);
+                    return (
+                      <View key={amenity.id} style={styles.featureItemWrapper}>
+                        <SecondaryButton
+                          label={isRTL ? amenity.name?.ar : amenity.name?.en}
+                          onPress={() => toggleAmenity(amenity.id)}
+                          icon={amenity.icon ? (amenity.icon as any) : 'star'}
+                          isActive={isSelected}
+                          textStyle={{ fontSize: normalize.font(12) }}
+                          style={{ height: 40 }}
+                        />
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+
+              <View style={styles.sectionCard}>
+                <ThemedText type="h2" style={styles.sectionHeader}>{isRTL ? 'صور الشاليه' : 'Chalet Photos'}</ThemedText>
+                
+                {existingImages.length > 0 && (
+                  <View style={{ marginBottom: Spacing.md }}>
+                    <Text style={[styles.label, { textAlign, marginBottom: 8 }]}>{isRTL ? 'الصور الحالية' : 'Current Photos'}</Text>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.imageContainer, { flexDirection }]}>
+                      {existingImages.map((img: any, index: number) => (
+                        <View key={img.id || index} style={styles.imageItem}>
+                          <Image source={{ uri: getImageSrc(img.url) }} style={styles.uploadedImage} />
+                        </View>
+                      ))}
+                    </ScrollView>
+                  </View>
+                )}
+
+                <Text style={[styles.label, { textAlign, marginBottom: 8 }]}>{isRTL ? 'إضافة صور جديدة' : 'Add New Photos'}</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.imageContainer, { flexDirection }]}>
+                  {selectedImages.map((uri, index) => (
+                    <View key={index} style={styles.imageItem}>
+                      <Image source={{ uri }} style={styles.uploadedImage} />
+                      <TouchableOpacity 
+                        style={styles.removeImageButton} 
+                        onPress={() => removeSelectedImage(index)}
+                      >
+                        <Ionicons name="close-circle" size={24} color={Colors.error} />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                  <TouchableOpacity style={styles.imageUpload} onPress={() => imageSourceSheetRef.current?.present()}>
+                    <MaterialCommunityIcons name="camera-plus-outline" size={32} color={Colors.text.muted} />
+                    <Text style={styles.uploadText}>{isRTL ? 'إضافة صور' : 'Add Photos'}</Text>
+                  </TouchableOpacity>
+                </ScrollView>
+              </View>
+            </>
+          )}
         </ScrollView>
+
+        <View style={[styles.footer, { flexDirection }]}>
+          {currentStep > 0 && (
+            <SecondaryButton
+              label={isRTL ? 'السابق' : 'Back'}
+              onPress={prevStep}
+              style={{ flex: 1 }}
+            />
+          )}
+          {currentStep < steps.length - 1 ? (
+            <PrimaryButton
+              label={isRTL ? 'التالي' : 'Next'}
+              onPress={nextStep}
+              disabled={!isStepValid}
+              activeColor={isStepValid ? Colors.primary : '#CBD5E1'}
+              style={{ flex: 2 }}
+            />
+          ) : (
+            <PrimaryButton 
+              label={isRTL ? 'تحديث البيانات' : 'Update Listing'}
+              onPress={handleUpdate}
+              loading={isUpdating || isUploading}
+              disabled={!isStepValid}
+              activeColor={isStepValid ? Colors.primary : '#CBD5E1'}
+              style={{ flex: 2 }}
+            />
+          )}
+        </View>
       </KeyboardAvoidingView>
 
-      {/* City Picker Bottom Sheet */}
       <BottomSheetModal
         ref={citySheetRef}
         index={0}
@@ -438,7 +646,6 @@ export default function EditChaletScreen() {
         backgroundStyle={{ borderRadius: normalize.radius(24) }}
       >
         <BottomSheetView style={styles.sheetContent}>
-          <Text style={styles.modalTitle}>اختر المدينة</Text>
           {loadingCities ? (
             <ActivityIndicator color={Colors.primary} style={{ margin: 20 }} />
           ) : (
@@ -446,6 +653,7 @@ export default function EditChaletScreen() {
               data={cities}
               keyExtractor={(item: any) => item.id}
               style={{ width: '100%' }}
+              ListHeaderComponent={<Text style={styles.modalTitle}>اختر المدينة</Text>}
               renderItem={({ item }: { item: any }) => (
                 <TouchableOpacity 
                   style={styles.pickerItem} 
@@ -454,6 +662,7 @@ export default function EditChaletScreen() {
                   <Text style={[styles.pickerItemText, { textAlign }]}>{item.name}</Text>
                 </TouchableOpacity>
               )}
+              contentContainerStyle={{ paddingBottom: Spacing.xl }}
             />
           )}
         </BottomSheetView>
@@ -468,7 +677,6 @@ export default function EditChaletScreen() {
         backgroundStyle={{ borderRadius: normalize.radius(24) }}
       >
         <BottomSheetView style={styles.sheetContent}>
-          <Text style={styles.modalTitle}>اختر المنطقة</Text>
           {loadingRegions ? (
             <ActivityIndicator color={Colors.primary} style={{ margin: 20 }} />
           ) : (
@@ -476,6 +684,7 @@ export default function EditChaletScreen() {
               data={regions}
               keyExtractor={(item: any) => item.id}
               style={{ width: '100%' }}
+              ListHeaderComponent={<Text style={styles.modalTitle}>اختر المنطقة</Text>}
               renderItem={({ item }: { item: any }) => (
                 <TouchableOpacity 
                   style={styles.pickerItem} 
@@ -484,6 +693,7 @@ export default function EditChaletScreen() {
                   <Text style={[styles.pickerItemText, { textAlign }]}>{item.name}</Text>
                 </TouchableOpacity>
               )}
+              contentContainerStyle={{ paddingBottom: Spacing.xl }}
             />
           )}
         </BottomSheetView>
@@ -515,6 +725,13 @@ export default function EditChaletScreen() {
           </View>
         </BottomSheetView>
       </BottomSheetModal>
+
+      <LocationPickerModal
+        visible={showMap}
+        onClose={() => setShowMap(false)}
+        onSelect={(lat, lng) => setForm({ ...form, latitude: lat.toString(), longitude: lng.toString() })}
+        initialLocation={form.latitude && form.longitude ? { latitude: parseFloat(form.latitude), longitude: parseFloat(form.longitude) } : undefined}
+      />
     </SafeAreaView>
   );
 }
@@ -546,7 +763,88 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: Spacing.md,
-    paddingBottom: Spacing.xl * 2,
+    paddingBottom: Spacing.xl,
+  },
+  stepIndicatorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.sm,
+    marginBottom: Spacing.lg,
+    backgroundColor: '#fff',
+    padding: Spacing.md,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  stepItem: {
+    alignItems: 'center',
+    gap: 4,
+  },
+  stepDot: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#E2E8F0',
+  },
+  stepDotActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  stepDotCompleted: {
+    backgroundColor: '#10B981',
+    borderColor: '#10B981',
+  },
+  stepNumber: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#64748B',
+  },
+  stepNumberActive: {
+    color: Colors.white,
+  },
+  stepTitle: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#94A3B8',
+  },
+  stepTitleActive: {
+    color: Colors.primary,
+    fontWeight: '700',
+  },
+  stepLine: {
+    flex: 1,
+    height: 2,
+    backgroundColor: '#E2E8F0',
+    marginHorizontal: 4,
+    marginTop: -16, // Align with dots
+  },
+  stepLineCompleted: {
+    backgroundColor: '#10B981',
+  },
+  footer: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+    padding: Spacing.md,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+  },
+  sectionCard: {
+    backgroundColor: 'transparent',
+    padding: Spacing.xs,
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
+  sectionHeader: {
+    fontSize: normalize.font(16),
+    fontWeight: '800',
+    color: Colors.text.primary,
+    marginBottom: 4,
   },
   uploadText: {
     marginTop: 4,
@@ -573,10 +871,10 @@ const styles = StyleSheet.create({
   },
   removeImageButton: {
     position: 'absolute',
-    top: 4,
-    right: 4,
+    top: normalize.height(6),
+    right: normalize.width(6),
     backgroundColor: Colors.white,
-    borderRadius: 12,
+    borderRadius: normalize.radius(12),
   },
   imageUpload: {
     width: normalize.width(100),
@@ -592,7 +890,6 @@ const styles = StyleSheet.create({
   sheetContent: {
     padding: Spacing.lg,
     alignItems: 'center',
-    flex: 1,
   },
   modalTitle: {
     ...Typography.h2,
@@ -636,7 +933,7 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
   },
   inputGroup: {
-    gap: Spacing.xs,
+    gap: 4,
   },
   label: {
     ...Typography.caption,
@@ -645,62 +942,72 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(14),
   },
   input: {
-    height: normalize.height(56),
-    backgroundColor: Colors.surface,
+    height: normalize.height(54),
+    backgroundColor: '#F8FAFC',
     borderRadius: normalize.radius(16),
     paddingHorizontal: Spacing.md,
     borderWidth: 1,
-    borderColor: Colors.border,
-    fontSize: normalize.font(16),
+    borderColor: '#E2E8F0',
+    fontSize: normalize.font(15),
+    color: Colors.text.primary,
   },
   rowInputs: {
-    width: '100%',
+    gap: Spacing.sm,
   },
   textArea: {
-    height: normalize.height(120),
-    paddingTop: Spacing.md,
+    height: normalize.height(100),
+    paddingTop: 16,
     textAlignVertical: 'top',
-  },
-  saveButton: {
-    backgroundColor: Colors.primary,
-    height: normalize.height(56),
-    borderRadius: normalize.radius(16),
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: Spacing.xl,
-  },
-  saveButtonText: {
-    color: Colors.white,
-    fontSize: normalize.font(18),
-    fontWeight: 'bold',
   },
   featuresGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.sm,
-    marginTop: Spacing.xs,
   },
-  featureItem: {
+  featureItemWrapper: {
+    width: '48.5%', // Solid 2-column layout
+  },
+  saveBtn: {
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.xl,
+  },
+  mapPreviewContainer: {
+    height: normalize.height(180),
+    width: '100%',
+    borderRadius: normalize.radius(16),
+    overflow: 'hidden',
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    position: 'relative',
+  },
+  miniMap: {
+    flex: 1,
+  },
+  mapOverlay: {
+    position: 'absolute',
+    bottom: Spacing.sm,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  editLocBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: normalize.height(10),
-    borderRadius: normalize.radius(12),
-    gap: Spacing.xs,
+    gap: 6,
+    backgroundColor: 'rgba(3, 93, 249, 0.9)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 100,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  featureItemSelected: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  featureLabel: {
-    fontSize: normalize.font(12),
-    fontWeight: '600',
-    color: Colors.text.primary,
-  },
-  featureLabelSelected: {
+  editLocText: {
     color: Colors.white,
-  },
+    fontSize: normalize.font(12),
+    fontWeight: '700',
+  }
 });
