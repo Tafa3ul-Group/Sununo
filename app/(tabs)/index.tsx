@@ -150,18 +150,18 @@ export default function HomeScreen() {
         <GHScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={[
-            { paddingHorizontal: 16, flexDirection: "row-reverse" },
-          ]}
-          snapToInterval={CARD_WIDTH + 12}
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            flexDirection: "row-reverse",
+            gap: 10, // Solid 10px gap between cards
+          }}
+          snapToInterval={CARD_WIDTH + 10}
           decelerationRate="fast"
           nestedScrollEnabled={true}
           disallowInterruption={true}
         >
           {POPULAR_CHALETS.map((chalet, index) => (
-            <View key={chalet.id} style={{ marginLeft: index === 0 ? 0 : 12 }}>
-              <ColoredCard {...chalet} shapeIndex={index} />
-            </View>
+            <ColoredCard key={chalet.id} {...chalet} shapeIndex={index} />
           ))}
         </GHScrollView>
 
