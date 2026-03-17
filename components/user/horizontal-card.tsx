@@ -1,14 +1,15 @@
-import React from 'react';
-import { 
-  View, 
-  StyleSheet, 
-  TouchableOpacity, 
-  ViewStyle 
-} from 'react-native';
-import Svg, { Path, Defs, ClipPath, G, Image as SvgImage } from 'react-native-svg';
-import { Colors, normalize, Spacing, Shadows } from '@/constants/theme';
-import { ThemedText } from '@/components/themed-text';
-import { Ionicons } from '@expo/vector-icons';
+import { ThemedText } from "@/components/themed-text";
+import { Colors, normalize, Shadows, Spacing } from "@/constants/theme";
+import { Ionicons } from "@expo/vector-icons";
+import React from "react";
+import { StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
+import Svg, {
+  ClipPath,
+  Defs,
+  G,
+  Path,
+  Image as SvgImage,
+} from "react-native-svg";
 
 interface HorizontalCardProps {
   title: string;
@@ -40,7 +41,7 @@ export function HorizontalCard({
   image,
   shapeIndex = 0,
   onPress,
-  style
+  style,
 }: HorizontalCardProps) {
   const currentIndex = shapeIndex % SHAPE_PATHS.length;
   const pathData = SHAPE_PATHS[currentIndex];
@@ -48,35 +49,39 @@ export function HorizontalCard({
   const strokeColor = strokeColors[currentIndex];
 
   return (
-    <TouchableOpacity 
-      activeOpacity={0.9} 
+    <TouchableOpacity
+      activeOpacity={0.9}
       onPress={onPress}
       style={[styles.container, style]}
     >
       {/* Content Side */}
       <View style={styles.content}>
-        <ThemedText style={styles.title} numberOfLines={1}>
-          {title}
-        </ThemedText>
-        <ThemedText style={styles.location}>
-          {location}
-        </ThemedText>
-        
-        <View style={styles.footer}>
-          <ThemedText style={styles.price}>
-            {price} <ThemedText style={styles.priceUnit}>/ شفت</ThemedText>
+        <View style={{ alignItems: 'flex-end' }}>
+          <ThemedText style={styles.title} numberOfLines={1}>
+            {title}
           </ThemedText>
-          
+          <ThemedText style={styles.location}>{location}</ThemedText>
+        </View>
+
+        <View style={styles.footer}>
           <View style={styles.ratingContainer}>
-            <Ionicons name="star" size={normalize.width(14)} color="#FF385C" />
+            <Ionicons name="star" size={normalize.width(16)} color="#EA2129" />
             <ThemedText style={styles.ratingText}>{rating}</ThemedText>
           </View>
+          
+          <ThemedText style={styles.price}>
+            {price} / <ThemedText style={styles.priceUnit}>شفت</ThemedText>
+          </ThemedText>
         </View>
       </View>
 
       {/* Image Side with Organic Blob */}
       <View style={styles.imageWrapper}>
-        <Svg height="110" width="120" viewBox="0 0 140 135">
+        <Svg 
+          height={normalize.height(90)} 
+          width={normalize.width(100)} 
+          viewBox="0 0 140 135"
+        >
           <Defs>
             <ClipPath id={`clip-horiz-${currentIndex}`}>
               <Path d={pathData} />
@@ -90,12 +95,7 @@ export function HorizontalCard({
               preserveAspectRatio="xMidYMid slice"
             />
           </G>
-          <Path 
-            d={pathData} 
-            stroke={strokeColor} 
-            strokeWidth="4" 
-            fill="none"
-          />
+          <Path d={pathData} stroke={strokeColor} strokeWidth="4" fill="none" />
         </Svg>
       </View>
     </TouchableOpacity>
@@ -104,61 +104,66 @@ export function HorizontalCard({
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    backgroundColor: 'white',
-    borderRadius: normalize.radius(20),
-    padding: Spacing.sm,
+    flexDirection: "row",
+    backgroundColor: "white",
+    borderRadius: normalize.radius(16),
+    padding: normalize.width(8),
     borderWidth: 1,
-    borderColor: Colors.border,
-    alignItems: 'center',
+    borderColor: "#EBEBEB",
+    alignItems: "center",
     marginBottom: Spacing.md,
-    ...Shadows.small,
+    width: normalize.width(323),
+    height: normalize.height(103),
+    overflow: "hidden",
   },
   content: {
     flex: 1,
-    paddingHorizontal: Spacing.md,
-    alignItems: 'flex-end',
-  },
-  imageWrapper: {
-    width: normalize.width(120),
-    height: normalize.width(110),
-    justifyContent: 'center',
-    alignItems: 'center',
+    height: '100%',
+    paddingRight: normalize.width(8),
+    justifyContent: "space-between",
+    paddingVertical: normalize.height(10),
   },
   title: {
     fontSize: normalize.font(16),
-    fontWeight: '700',
-    color: '#111827', // Darker for premium feel
-    marginBottom: 4,
+    fontWeight: "900",
+    color: "#111827",
+    textAlign: "right",
   },
   location: {
     fontSize: normalize.font(13),
     color: Colors.text.secondary,
-    marginBottom: 8,
+    textAlign: "right",
+    marginTop: 2,
   },
   footer: {
-    flexDirection: 'row-reverse',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
+  },
+  ratingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  ratingText: {
+    fontSize: normalize.font(14),
+    fontWeight: "900",
+    color: "#EA2129",
   },
   price: {
-    fontSize: normalize.font(14),
-    fontWeight: '700',
-    color: Colors.text.primary,
+    fontSize: normalize.font(13),
+    fontWeight: "800",
+    color: "#111827",
   },
   priceUnit: {
     fontSize: normalize.font(10),
     color: Colors.text.muted,
   },
-  ratingContainer: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    gap: 4,
-  },
-  ratingText: {
-    fontSize: normalize.font(13),
-    fontWeight: '600',
-    color: Colors.text.primary,
+  imageWrapper: {
+    width: normalize.width(110),
+    height: normalize.height(90),
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
