@@ -167,7 +167,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
     justifyContent: "flex-start",
-    marginRight: 10,
     overflow: "hidden",
   },
   favoriteButton: {

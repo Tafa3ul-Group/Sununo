@@ -151,16 +151,17 @@ export default function HomeScreen() {
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={[
-            styles.horizontalScrollPadding,
-            { flexDirection: "row-reverse" },
+            { paddingHorizontal: 16, flexDirection: "row-reverse" },
           ]}
-          snapToInterval={CARD_WIDTH + Spacing.sm}
+          snapToInterval={CARD_WIDTH + 12}
           decelerationRate="fast"
           nestedScrollEnabled={true}
           disallowInterruption={true}
         >
           {POPULAR_CHALETS.map((chalet, index) => (
-            <ColoredCard key={chalet.id} {...chalet} shapeIndex={index} />
+            <View key={chalet.id} style={{ marginLeft: index === 0 ? 0 : 12 }}>
+              <ColoredCard {...chalet} shapeIndex={index} />
+            </View>
           ))}
         </GHScrollView>
 
@@ -213,35 +214,37 @@ export default function HomeScreen() {
           <ThemedText style={styles.sectionTitle}>مقترح لك</ThemedText>
         </View>
 
-        {/* Filter Tabs */}
         <GHScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.tabsContainer}
+          contentContainerStyle={[
+            styles.tabsContainer,
+            { paddingHorizontal: 16 }
+          ]}
           style={styles.tabsWrapper}
         >
-          {FILTER_OPTIONS.map((filter) =>
-            filter.id === "all" ? (
-              <PrimaryButton
-                key={filter.id}
-                label={filter.label}
-                isActive={activeFilter === filter.id}
-                activeColor={filter.activeColor}
-                onPress={() => setActiveFilter(filter.id)}
-                style={styles.allTabButton}
-              />
-            ) : (
-              <SecondaryButton
-                key={filter.id}
-                label={filter.label}
-                isActive={activeFilter === filter.id}
-                activeColor={filter.activeColor}
-                icon={filter.icon as any}
-                onPress={() => setActiveFilter(filter.id)}
-                style={styles.filterTab}
-              />
-            ),
-          )}
+          <View style={{ flexDirection: 'row-reverse', gap: 8 }}>
+            {FILTER_OPTIONS.map((filter) =>
+              filter.id === "all" ? (
+                <PrimaryButton
+                  key={filter.id}
+                  label={filter.label}
+                  isActive={activeFilter === filter.id}
+                  activeColor={filter.activeColor}
+                  onPress={() => setActiveFilter(filter.id)}
+                />
+              ) : (
+                <SecondaryButton
+                  key={filter.id}
+                  label={filter.label}
+                  isActive={activeFilter === filter.id}
+                  activeColor={filter.activeColor}
+                  icon={filter.icon as any}
+                  onPress={() => setActiveFilter(filter.id)}
+                />
+              ),
+            )}
+          </View>
         </GHScrollView>
 
         {/* Vertical Chalet List */}
@@ -274,7 +277,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: Spacing.md,
+    paddingHorizontal: 16,
     paddingVertical: Spacing.md,
     justifyContent: "space-between",
     marginTop: Platform.OS === "ios" ? 0 : Spacing.sm,
@@ -282,7 +285,7 @@ const styles = StyleSheet.create({
   headerLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: normalize.width(12),
+    gap: 12,
   },
   avatar: {
     width: normalize.width(40),
@@ -314,7 +317,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: Spacing.md,
+    paddingHorizontal: 16,
     marginTop: Spacing.xl, // More breathing room
     marginBottom: Spacing.sm,
   },
@@ -334,21 +337,21 @@ const styles = StyleSheet.create({
   },
   mapContainer: {
     height: 200,
-    marginHorizontal: Spacing.md,
+    marginHorizontal: 16,
     borderRadius: 24,
     overflow: "hidden",
     backgroundColor: "#F3F4F6",
     marginTop: Spacing.md,
   },
   listPadding: {
-    paddingHorizontal: Spacing.md,
+    paddingHorizontal: 16,
     marginTop: Spacing.md,
   },
   tabsWrapper: {
     marginVertical: Spacing.md, // Spacing above and below tabs
   },
   tabsContainer: {
-    paddingHorizontal: Spacing.md,
+    paddingHorizontal: 16,
     gap: 4, // 4px gap as requested
     flexDirection: "row-reverse",
     alignItems: "center",
