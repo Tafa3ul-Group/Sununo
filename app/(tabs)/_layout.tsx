@@ -2,7 +2,7 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 import { Image, Platform, StyleSheet, View } from 'react-native';
 
-import { HapticTab } from '@/components/haptic-tab';
+import { CustomTabBar } from '@/components/user/custom-tab-bar';
 import { normalize } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { RootState } from '@/store';
@@ -20,25 +20,14 @@ export default function TabLayout() {
 
   return (
     <Tabs
+      tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
-        tabBarActiveTintColor: '#2B66FF', // Using theme's primary color
+        tabBarActiveTintColor: '#2B66FF',
         tabBarInactiveTintColor: '#717171',
         headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarShowLabel: true,
-        tabBarLabelStyle: {
-          fontSize: normalize.font(10),
-          fontWeight: '500',
-          marginBottom: Platform.OS === 'ios' ? 0 : normalize.height(8),
-        },
+        tabBarShowLabel: false,
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
-          paddingBottom: Platform.OS === 'ios' ? normalize.height(30) : normalize.height(10),
-          paddingTop: normalize.height(10),
-          height: Platform.OS === 'ios' ? normalize.height(90) : normalize.height(64),
-          borderTopWidth: StyleSheet.hairlineWidth,
-          borderTopColor: '#EBEBEB',
-          elevation: 0,
+          display: 'none', // Standard bar is hidden as we use absolute positioning in CustomTabBar
         },
       }}>
       

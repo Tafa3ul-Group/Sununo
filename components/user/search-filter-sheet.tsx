@@ -1,11 +1,12 @@
-import React, { forwardRef, useMemo, useState } from 'react';
-import { View, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native';
-import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
-import { Colors, normalize, Shadows, Spacing } from '@/constants/theme';
-import { ThemedText } from '@/components/themed-text';
-import { AdvancedSegmentTab } from './advanced-segment-tab';
-import { AppButton } from './app-button';
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import React, { forwardRef, useMemo, useState } from 'react';
+import { ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+
+import { ThemedText } from '@/components/themed-text';
+import { Colors, normalize, Shadows, Spacing } from '@/constants/theme';
+import { AppButton } from './app-button';
+import { MainTabs, TabType } from './MainTabs';
 
 const CITIES = [
   { id: 'basra', name: 'البصرة', icon: 'map' },
@@ -18,16 +19,10 @@ const CITIES = [
  * SearchFilterSheet - A search and filter drawer matching the provided design.
  */
 export const SearchFilterSheet = forwardRef<BottomSheetModal>((props, ref) => {
-  const [activeTab, setActiveTab] = useState('where');
+  const [activeTab, setActiveTab] = useState<TabType>('WHERE');
   const [selectedCity, setSelectedCity] = useState('basra');
 
   const snapPoints = useMemo(() => ['75%'], []);
-
-  const tabs = [
-    { id: 'where', label: 'وين', color: '#2B66FF' },
-    { id: 'when', label: 'شوكت', color: '#00B36B' },
-    { id: 'who', label: 'منو', color: '#FF7A00' },
-  ];
 
   const renderBackdrop = (props: any) => (
     <BottomSheetBackdrop {...props} disappearsAt={0} appearsAt={0.5} />
@@ -42,11 +37,10 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal>((props, ref) => {
       handleIndicatorStyle={{ backgroundColor: Colors.border }}
     >
       <BottomSheetView style={styles.container}>
-        {/* Tabs */}
-        <AdvancedSegmentTab 
-          tabs={tabs} 
+        {/* Wavy Tabs */}
+        <MainTabs 
           activeTab={activeTab} 
-          onTabChange={setActiveTab} 
+          onChange={setActiveTab} 
         />
 
         {/* Content Card */}
@@ -109,7 +103,6 @@ const styles = StyleSheet.create({
     borderRadius: normalize.radius(30),
     padding: Spacing.md,
     marginBottom: Spacing.xl,
-    // Borders/Shadows to distinguish from background
     borderWidth: 1,
     borderColor: '#F0F2F5',
   },
@@ -161,7 +154,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     marginTop: Spacing.md,
-    alignItems: 'flex-start', // Next button on the left
+    alignItems: 'flex-start',
   },
   nextButton: {
     width: normalize.width(120),
