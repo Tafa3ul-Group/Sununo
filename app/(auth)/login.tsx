@@ -1,36 +1,50 @@
-import { Colors, Spacing, Typography, normalize } from '@/constants/theme';
-import { RootState } from '@/store';
-import { setCredentials } from '@/store/authSlice';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useDispatch, useSelector } from 'react-redux';
+import { Colors, Spacing, Typography, normalize } from "@/constants/theme";
+import { RootState } from "@/store";
+import { setCredentials } from "@/store/authSlice";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useDispatch, useSelector } from "react-redux";
 
-import { useLazyGetMeQuery, useLoginMutation, useVerifyPhoneMutation } from '@/store/api/apiSlice';
+import {
+  useLazyGetMeQuery,
+  useLoginMutation,
+  useVerifyPhoneMutation,
+} from "@/store/api/apiSlice";
 
 export default function LoginScreen() {
   const router = useRouter();
   const dispatch = useDispatch();
   const userType = useSelector((state: RootState) => state.auth.userType);
 
-  const [step, setStep] = React.useState<'phone' | 'otp'>('phone');
-  const [phone, setPhone] = React.useState('7700000001');
-  const [code, setCode] = React.useState('');
-  const [name, setName] = React.useState('');
+  const [step, setStep] = React.useState<"phone" | "otp">("phone");
+  const [phone, setPhone] = React.useState("7700000001");
+  const [code, setCode] = React.useState("");
+  const [name, setName] = React.useState("");
   const [needsName, setNeedsName] = React.useState(false);
-  const [errorText, setErrorText] = React.useState('');
+  const [errorText, setErrorText] = React.useState("");
 
   const [loginMutation, { isLoading: isLoginLoading }] = useLoginMutation();
-  const [verifyPhoneMutation, { isLoading: isVerifyLoading }] = useVerifyPhoneMutation();
+  const [verifyPhoneMutation, { isLoading: isVerifyLoading }] =
+    useVerifyPhoneMutation();
   const [triggerGetMe] = useLazyGetMeQuery();
 
   const handleSendCode = async () => {
-    setErrorText('');
+    setErrorText("");
     try {
       if (phone.length < 10 || phone.length > 11) {
-        setErrorText('يرجى إدخال رقم هاتف صحيح (10-11 رقم)');
+        setErrorText("يرجى إدخال رقم هاتف صحيح (10-11 رقم)");
         return;
       }
       const res = await loginMutation({ phone }).unwrap();
@@ -41,22 +55,24 @@ export default function LoginScreen() {
       if (res.code) {
         setCode(res.code.toString());
       }
-      setStep('otp');
+      setStep("otp");
     } catch (err: any) {
       console.error(err);
-      setErrorText(err?.data?.message?.[0] || err?.data?.message || 'حدث خطأ غير متوقع');
+      setErrorText(
+        err?.data?.message?.[0] || err?.data?.message || "حدث خطأ غير متوقع",
+      );
     }
   };
 
   const handleVerify = async () => {
-    setErrorText('');
+    setErrorText("");
     try {
       if (!code) {
-        setErrorText('يرجى إدخال رمز التحقق');
+        setErrorText("يرجى إدخال رمز التحقق");
         return;
       }
       if (needsName && !name) {
-        setErrorText('يرجى إدخال اسمك');
+        setErrorText("يرجى إدخال اسمك");
         return;
       }
 
@@ -64,46 +80,52 @@ export default function LoginScreen() {
       if (needsName) data.name = name;
 
       const res = await verifyPhoneMutation(data).unwrap();
-      
+
       // Store token first to authorize next request
-      dispatch(setCredentials({
-        user: res.user,
-        token: res.token,
-        userType: userType || 'customer'
-      }));
+      dispatch(
+        setCredentials({
+          user: res.user,
+          token: res.token,
+          userType: userType || "customer",
+        }),
+      );
 
       // Fetch full profile info
       try {
         const fullUser = await triggerGetMe({}).unwrap();
-        dispatch(setCredentials({
-          user: fullUser,
-          token: res.token,
-          userType: userType || 'customer'
-        }));
+        dispatch(
+          setCredentials({
+            user: fullUser,
+            token: res.token,
+            userType: userType || "customer",
+          }),
+        );
       } catch (meErr) {
-        console.error('Me fetch failed', meErr);
+        console.error("Me fetch failed", meErr);
       }
 
-      router.replace(userType === 'owner' ? '/(tabs)/(dashboard)/home' : '/(tabs)');
+      router.replace(
+        userType === "owner" ? "/(tabs)/(dashboard)/home" : "/(tabs)",
+      );
     } catch (err: any) {
       console.error(err);
-      setErrorText(err?.data?.message || 'رمز التحقق غير صحيح');
+      setErrorText(err?.data?.message || "رمز التحقق غير صحيح");
     }
   };
 
-  const isOwner = userType === 'owner';
+  const isOwner = userType === "owner";
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          <TouchableOpacity 
-            style={styles.backButton} 
+          <TouchableOpacity
+            style={styles.backButton}
             onPress={() => {
-              if (step === 'otp') setStep('phone');
+              if (step === "otp") setStep("phone");
               else router.back();
             }}
             disabled={isLoginLoading || isVerifyLoading}
@@ -114,23 +136,28 @@ export default function LoginScreen() {
           <View style={styles.header}>
             <Text style={styles.title}>تسجيل الدخول</Text>
             <Text style={styles.subtitle}>
-              {step === 'phone' 
-                ? (isOwner ? 'أهلاً بك مجدداً، صاحب الشاليه' : 'أهلاً بك مجدداً، يسعدنا انضمامك')
-                : 'أدخل رمز التحقق المرسل إلى رقم هاتفك'
-              }
+              {step === "phone"
+                ? isOwner
+                  ? "أهلاً بك مجدداً، صاحب الشاليه"
+                  : "أهلاً بك مجدداً، يسعدنا انضمامك"
+                : "أدخل رمز التحقق المرسل إلى رقم هاتفك"}
             </Text>
           </View>
 
           <View style={styles.form}>
             {errorText ? (
-              <Text style={{ color: 'red', textAlign: 'right', marginBottom: 10 }}>{errorText}</Text>
+              <Text
+                style={{ color: "red", textAlign: "right", marginBottom: 10 }}
+              >
+                {errorText}
+              </Text>
             ) : null}
 
-            {step === 'phone' ? (
+            {step === "phone" ? (
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>رقم الهاتف</Text>
-                <TextInput 
-                  style={[styles.input, { textAlign: 'left' }]}
+                <TextInput
+                  style={[styles.input, { textAlign: "left" }]}
                   placeholder="770 000 0000"
                   value={phone}
                   onChangeText={setPhone}
@@ -143,8 +170,11 @@ export default function LoginScreen() {
               <>
                 <View style={styles.inputGroup}>
                   <Text style={styles.label}>رمز التحقق</Text>
-                  <TextInput 
-                    style={[styles.input, { textAlign: 'center', letterSpacing: 5 }]}
+                  <TextInput
+                    style={[
+                      styles.input,
+                      { textAlign: "center", letterSpacing: 5 },
+                    ]}
                     placeholder="123456"
                     value={code}
                     onChangeText={setCode}
@@ -157,7 +187,7 @@ export default function LoginScreen() {
                 {needsName && (
                   <View style={styles.inputGroup}>
                     <Text style={styles.label}>اسمك الكامل</Text>
-                    <TextInput 
+                    <TextInput
                       style={styles.input}
                       placeholder="محمد أحمد"
                       value={name}
@@ -169,23 +199,24 @@ export default function LoginScreen() {
               </>
             )}
 
-            <TouchableOpacity 
-              style={[
-                styles.loginButton, 
-                { backgroundColor: Colors.primary }
-              ]} 
-              onPress={step === 'phone' ? handleSendCode : handleVerify}
+            <TouchableOpacity
+              style={[styles.loginButton, { backgroundColor: Colors.primary }]}
+              onPress={step === "phone" ? handleSendCode : handleVerify}
               activeOpacity={0.8}
               disabled={isLoginLoading || isVerifyLoading}
             >
               <Text style={styles.loginButtonText}>
-                {step === 'phone' 
-                  ? (isLoginLoading ? 'جاري الإرسال...' : 'المتابعة') 
-                  : (isVerifyLoading ? 'جاري التحقق...' : 'تسجيل الدخول')}
+                {step === "phone"
+                  ? isLoginLoading
+                    ? "جاري الإرسال..."
+                    : "المتابعة"
+                  : isVerifyLoading
+                    ? "جاري التحقق..."
+                    : "تسجيل الدخول"}
               </Text>
             </TouchableOpacity>
 
-            {step === 'phone' && (
+            {step === "phone" && (
               <View style={styles.registerContainer}>
                 <Text style={styles.noAccountText}>ليس لديك حساب؟</Text>
                 <TouchableOpacity>
@@ -216,19 +247,19 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: Spacing.xl * 2,
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
   },
   title: {
     ...Typography.h1,
     fontSize: normalize.font(32),
     color: Colors.text.primary,
-    textAlign: 'right',
+    textAlign: "right",
     marginBottom: Spacing.xs,
   },
   subtitle: {
     ...Typography.body,
     color: Colors.text.secondary,
-    textAlign: 'right',
+    textAlign: "right",
     fontSize: normalize.font(16),
   },
   form: {
@@ -239,9 +270,9 @@ const styles = StyleSheet.create({
   },
   label: {
     ...Typography.caption,
-    textAlign: 'right',
+    textAlign: "right",
     color: Colors.text.primary,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: normalize.height(4),
   },
   input: {
@@ -251,11 +282,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     borderWidth: 1,
     borderColor: Colors.border,
-    textAlign: 'right',
+    textAlign: "right",
     fontSize: normalize.font(16),
   },
   forgotPassword: {
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
   },
   forgotPasswordText: {
     ...Typography.caption,
@@ -264,8 +295,8 @@ const styles = StyleSheet.create({
   loginButton: {
     height: normalize.height(56),
     borderRadius: normalize.radius(16),
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: Spacing.md,
   },
   loginButtonText: {
@@ -274,9 +305,9 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(18),
   },
   registerContainer: {
-    flexDirection: 'row-reverse',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row-reverse",
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: Spacing.xl,
     gap: Spacing.xs,
   },
@@ -287,6 +318,6 @@ const styles = StyleSheet.create({
   registerText: {
     ...Typography.body,
     color: Colors.primary,
-    fontWeight: '700',
+    fontWeight: "700",
   },
 });
