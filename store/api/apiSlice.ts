@@ -2,6 +2,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 // Define the base URL for the API
 const BASE_URL = 'https://k4wwso0cwg480c480oo0owg4.rakiza.dev/api/v1';
+// Force reload hooks
 
 export const apiSlice = createApi({
   reducerPath: 'api',
@@ -116,14 +117,10 @@ export const apiSlice = createApi({
     }),
 
     // Get regions for a specific city
-    getRegions: builder.query<any[], string>({
+    getChaletRegions: builder.query<any[], string>({
       query: (cityId) => `/cities/${cityId}/regions`,
     }),
     
-    // Lazy query for regions
-    lazyGetRegions: builder.query<any[], string>({
-      query: (cityId) => `/cities/${cityId}/regions`,
-    }),
 
     // Shift Mutations
     createShift: builder.mutation({
@@ -171,6 +168,25 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['Chalet'],
     }),
+
+    // Amenities
+    getAmenities: builder.query<any[], void>({
+      query: () => '/provider/chalets/amenities/all',
+    }),
+
+    getChaletAmenities: builder.query<any[], string>({
+      query: (chaletId) => `/provider/chalets/${chaletId}/amenities`,
+      providesTags: ['Chalet'],
+    }),
+
+    setChaletAmenities: builder.mutation({
+      query: ({ chaletId, data }) => ({
+        url: `/provider/chalets/${chaletId}/amenities`,
+        method: 'PATCH',
+        body: data,
+      }),
+      invalidatesTags: ['Chalet'],
+    }),
   }),
 });
 
@@ -197,6 +213,10 @@ export const {
   useSetChaletPoliciesMutation,
 
   useGetCitiesQuery,
-  useGetRegionsQuery,
-  useLazyGetRegionsQuery,
+  useGetChaletRegionsQuery,
+  useLazyGetChaletRegionsQuery,
+  
+  useGetAmenitiesQuery,
+  useGetChaletAmenitiesQuery,
+  useSetChaletAmenitiesMutation,
 } = apiSlice;

@@ -29,10 +29,12 @@ import {
   useCreateShiftMutation,
   useUpdateShiftMutation,
   useDeleteShiftMutation,
-  useSetShiftPricingMutation
+  useSetShiftPricingMutation,
+  useSetChaletPoliciesMutation
 } from '@/store/api/apiSlice';
 import { HeaderSection } from '@/components/header-section';
-import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+// Re-bundling fix
+import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop, BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import Toast from 'react-native-toast-message';
 import { formatPrice } from '@/utils/format';
 
@@ -110,11 +112,13 @@ export default function CalendarScreen() {
   // Sheet Refs
   const shiftSheetRef = useRef<BottomSheetModal>(null);
   const pricingSheetRef = useRef<BottomSheetModal>(null);
+  const policySheetRef = useRef<BottomSheetModal>(null);
 
   // Form States
   const [selectedShift, setSelectedShift] = useState<any>(null);
   const [shiftForm, setShiftForm] = useState({ name: '', startTime: '08:00', endTime: '23:00', price: '' });
   const [pricingForm, setPricingForm] = useState<any[]>([]);
+  const [policyForm, setPolicyForm] = useState<any[]>([]);
 
   const { data: chaletResponse } = useGetOwnerChaletDetailsQuery(id);
   const chalet = chaletResponse?.data || chaletResponse;
@@ -190,6 +194,14 @@ export default function CalendarScreen() {
       return d;
   };
 
+  const formatTime12h = (timeStr: string) => {
+    if (!timeStr) return '';
+    const [h, m] = timeStr.split(':').map(Number);
+    const period = h >= 12 ? (isRTL ? 'مساءً' : 'PM') : (isRTL ? 'صباحاً' : 'AM');
+    const hours12 = h % 12 || 12;
+    return `${hours12}:${m.toString().padStart(2, '0')} ${period}`;
+  };
+
   const saveShift = async () => {
     if (!shiftForm.name || !shiftForm.startTime || !shiftForm.endTime) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -219,10 +231,15 @@ export default function CalendarScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Toast.show({ type: 'success', text1: isRTL ? 'تم بنجاح' : 'Success' });
       shiftSheetRef.current?.dismiss();
-    } catch (e) {
+    } catch (e: any) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       console.error(e);
-      Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error' });
+      const errorMsg = e.data?.message || (isRTL ? 'خطأ في الحفظ' : 'Error saving');
+      Toast.show({ 
+        type: 'error', 
+        text1: isRTL ? 'خطأ' : 'Error', 
+        text2: Array.isArray(errorMsg) ? errorMsg[0] : errorMsg 
+      });
     }
   };
 
@@ -286,6 +303,66 @@ export default function CalendarScreen() {
               text2: isRTL ? 'فشل في حفظ الأسعار، يرجى المحاولة لاحقاً' : 'Failed to save pricing, please try again'
           });
       }
+  };
+
+  const [setChaletPolicies, { isLoading: isSavingPolicies }] = useSetChaletPoliciesMutation();
+
+  const handleEditPolicies = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const existingPolicies = policies || [];
+    setPolicyForm(existingPolicies.length > 0 ? existingPolicies.map((p: any) => ({ ...p })) : [{ daysBeforeBooking: 7, penaltyPercentage: 50 }]);
+    policySheetRef.current?.present();
+  };
+
+  const addPolicyTier = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setPolicyForm([...policyForm, { daysBeforeBooking: 1, penaltyPercentage: 100 }]);
+  };
+
+  const removePolicyTier = (index: number) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setPolicyForm(policyForm.filter((_, i) => i !== index));
+  };
+
+  const updatePolicyTier = (index: number, field: string, value: string) => {
+    const newForm = [...policyForm];
+    newForm[index] = { ...newForm[index], [field]: parseInt(value) || 0 };
+    setPolicyForm(newForm);
+  };
+
+  const savePolicies = async () => {
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      
+      // Basic validation
+      if (policyForm.some(p => p.daysBeforeBooking < 0 || p.penaltyPercentage < 0 || p.penaltyPercentage > 100)) {
+        Toast.show({ type: 'error', text1: isRTL ? 'خطأ في المدخلات' : 'Input Error' });
+        return;
+      }
+
+      const cleanPolicies = policyForm.map(p => ({
+        daysBeforeBooking: p.daysBeforeBooking,
+        penaltyPercentage: p.penaltyPercentage
+      }));
+
+      await setChaletPolicies({
+        chaletId: id,
+        data: { policies: cleanPolicies }
+      }).unwrap();
+
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Toast.show({ type: 'success', text1: isRTL ? 'تم التحديث' : 'Policy updated' });
+      policySheetRef.current?.dismiss();
+    } catch (e: any) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      console.error(e);
+      const errorMsg = e.data?.message || (isRTL ? 'خطأ في الحفظ' : 'Error saving');
+      Toast.show({ 
+        type: 'error', 
+        text1: isRTL ? 'خطأ' : 'Error', 
+        text2: Array.isArray(errorMsg) ? errorMsg[0] : errorMsg 
+      });
+    }
   };
 
   const confirmDeleteShift = (shiftId: string) => {
@@ -402,7 +479,9 @@ export default function CalendarScreen() {
                           <Text style={styles.cardTitle}>{shiftName}</Text>
                           <View style={[styles.timeBadge, { flexDirection, marginTop: 6 }]}>
                             <Ionicons name="time" size={14} color={Colors.primary} style={{ marginHorizontal: 2 }} />
-                            <Text style={styles.timeBadgeText}>{shift.startTime} - {shift.endTime}</Text>
+                            <Text style={styles.timeBadgeText}>
+                              {formatTime12h(shift.startTime)} - {formatTime12h(shift.endTime)}
+                            </Text>
                           </View>
                         </View>
                         
@@ -477,7 +556,7 @@ export default function CalendarScreen() {
                 </View>
               )}
               
-              <TouchableOpacity style={styles.editPoliciesBtn} onPress={() => console.log('Edit Policies')}>
+              <TouchableOpacity style={styles.editPoliciesBtn} onPress={handleEditPolicies}>
                 <Ionicons name="create-outline" size={18} color={Colors.primary} />
                 <Text style={styles.editPoliciesText}>{isRTL ? 'إدارة السياسات' : 'Manage Policies'}</Text>
               </TouchableOpacity>
@@ -499,7 +578,7 @@ export default function CalendarScreen() {
           <Text style={styles.modalTitle}>{selectedShift ? (isRTL ? 'تعديل الفترة' : 'Edit Shift') : (isRTL ? 'إضافة فترة جديدة' : 'Add New Shift')}</Text>
           <View style={styles.formContainer}>
             <Text style={[styles.label, { textAlign }]}>{isRTL ? 'اسم الفترة' : 'Shift Name'}</Text>
-            <TextInput 
+            <BottomSheetTextInput 
                 style={[styles.input, { textAlign }]} 
                 placeholder={isRTL ? 'مثلاً: الفترة الصباحية' : 'e.g. Morning Shift'}
                 value={shiftForm.name}
@@ -585,7 +664,7 @@ export default function CalendarScreen() {
                 <View style={{ flex: 1, marginRight: isRTL ? 12 : 0, marginLeft: isRTL ? 0 : 12 }}>
                     <Text style={styles.quickApplyLabel}>{isRTL ? 'تطبيق سعر موحد للكل' : 'Apply same price to all'}</Text>
                     <View style={[styles.rowInputs, { flexDirection, marginTop: 8 }]}>
-                        <TextInput 
+                        <BottomSheetTextInput 
                             style={[styles.quickApplyInput, { textAlign: isRTL ? 'right' : 'left' }]}
                             placeholder="0"
                             keyboardType="numeric"
@@ -624,7 +703,7 @@ export default function CalendarScreen() {
                             </TouchableOpacity>
 
                             <View style={styles.priceInputWrapper}>
-                                <TextInput 
+                                <BottomSheetTextInput 
                                     style={[styles.pricingRowInput, { textAlign: 'center' }]}
                                     keyboardType="numeric"
                                     value={String(item.price ?? '')}
@@ -666,6 +745,90 @@ export default function CalendarScreen() {
       </BottomSheetModal>
 
     </SafeAreaView>
+      {/* Cancellation Policy Bottom Sheet */}
+      <BottomSheetModal
+        ref={policySheetRef}
+        index={0}
+        snapPoints={['85%']}
+        backdropComponent={renderBackdrop}
+        backgroundStyle={{ borderRadius: 32, backgroundColor: '#F8F9FB' }}
+      >
+        <View style={{ flex: 1, paddingHorizontal: 20 }}>
+          <View style={styles.sheetHeaderCompact}>
+             <View style={styles.sheetHeaderHandle} />
+             <Text style={styles.modalTitleCompact}>{isRTL ? 'إدارة سياسات الإلغاء' : 'Manage Cancellation Policies'}</Text>
+          </View>
+
+          <BottomSheetScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+             <View style={{ marginBottom: 16 }}>
+                <Text style={[styles.label, { textAlign, opacity: 0.7 }]}>
+                   {isRTL ? 'حدد قواعد الإلغاء ونسبة الخصم بناءً على الوقت المتبقي' : 'Define cancellation rules and penalty based on time'}
+                </Text>
+             </View>
+
+             {policyForm.map((policy, index) => (
+                <View key={index} style={styles.policyFormCard}>
+                   <View style={[styles.rowInputs, { flexDirection, justifyContent: 'space-between', marginBottom: 16 }]}>
+                      <Text style={{ fontWeight: '700', color: Colors.primary }}>{isRTL ? `قاعدة رقم ${index + 1}` : `Rule #${index + 1}`}</Text>
+                      {policyForm.length > 1 && (
+                         <TouchableOpacity onPress={() => removePolicyTier(index)} style={styles.policyDeleteBtn}>
+                            <Ionicons name="trash-outline" size={18} color="#FF3B30" />
+                         </TouchableOpacity>
+                      )}
+                   </View>
+
+                   <View style={[styles.rowInputs, { flexDirection }]}>
+                      <View style={{ flex: 1 }}>
+                         <Text style={[styles.policyInputLabel, { textAlign }]}>{isRTL ? 'قبل الحجز بـ (أيام)' : 'Days Before Booking'}</Text>
+                         <View style={[styles.compactInput, { flexDirection }]}>
+                             <BottomSheetTextInput 
+                                style={[styles.policyNumberInput, { textAlign }]} 
+                                keyboardType="numeric"
+                                value={String(policy.daysBeforeBooking)}
+                                onChangeText={(v) => updatePolicyTier(index, 'daysBeforeBooking', v)}
+                             />
+                            <Text style={{ color: Colors.text.muted, fontSize: 12 }}>{isRTL ? 'يوم' : 'Days'}</Text>
+                         </View>
+                      </View>
+                      <View style={{ width: 12 }} />
+                      <View style={{ flex: 1 }}>
+                         <Text style={[styles.policyInputLabel, { textAlign }]}>{isRTL ? 'نسبة الخصم' : 'Penalty Percentage'}</Text>
+                         <View style={[styles.compactInput, { flexDirection }]}>
+                             <BottomSheetTextInput 
+                                style={[styles.policyNumberInput, { textAlign }]} 
+                                keyboardType="numeric"
+                                value={String(policy.penaltyPercentage)}
+                                onChangeText={(v) => updatePolicyTier(index, 'penaltyPercentage', v)}
+                             />
+                            <Text style={{ color: Colors.text.muted, fontSize: 14 }}>%</Text>
+                         </View>
+                      </View>
+                   </View>
+                </View>
+             ))}
+
+             <TouchableOpacity style={styles.addTierBtn} onPress={addPolicyTier}>
+                <Ionicons name="add-circle-outline" size={20} color={Colors.primary} />
+                <Text style={styles.addTierText}>{isRTL ? 'إضافة قاعدة جديدة' : 'Add New Rule'}</Text>
+             </TouchableOpacity>
+          </BottomSheetScrollView>
+          
+          <View style={styles.footerContainer}>
+             <TouchableOpacity 
+               style={styles.saveBtnLarge} 
+               onPress={savePolicies}
+               disabled={isSavingPolicies}
+             >
+               {isSavingPolicies ? <ActivityIndicator color="#fff" /> : (
+                 <>
+                   <Ionicons name="checkmark-circle" size={20} color="#fff" />
+                   <Text style={styles.saveBtnTextLarge}>{isRTL ? 'حفظ السياسات' : 'Save Policies'}</Text>
+                 </>
+               )}
+             </TouchableOpacity>
+          </View>
+        </View>
+      </BottomSheetModal>
     </GestureHandlerRootView>
   );
 }
@@ -1120,9 +1283,31 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   modalTitleCompact: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(18),
     fontWeight: '800',
     color: Colors.text.primary,
+  },
+  policyFormCard: {
+    backgroundColor: Colors.white,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  policyDeleteBtn: {
+    padding: 8,
+  },
+  policyInputLabel: {
+    fontSize: normalize.font(12),
+    color: Colors.text.muted,
+    marginBottom: 6,
+  },
+  policyNumberInput: {
+    fontSize: normalize.font(16),
+    fontWeight: '700',
+    color: Colors.text.primary,
+    padding: 0,
   },
   quickApplyCard: {
     backgroundColor: Colors.primary,
@@ -1255,5 +1440,30 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontSize: normalize.font(15),
     fontWeight: '800',
-  }
+  },
+  addTierBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+    borderStyle: 'dashed',
+    marginTop: 8,
+    gap: 8,
+  },
+  addTierText: {
+    color: Colors.primary,
+    fontWeight: '700',
+    fontSize: normalize.font(14),
+  },
+  compactInput: {
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    alignItems: 'center',
+    gap: 8,
+  },
 });

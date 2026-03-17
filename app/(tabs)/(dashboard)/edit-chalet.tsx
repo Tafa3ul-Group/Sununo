@@ -30,7 +30,10 @@ import {
   useUpdateChaletMutation, 
   useUploadChaletImageMutation, 
   useGetCitiesQuery, 
-  useLazyGetRegionsQuery 
+  useLazyGetChaletRegionsQuery,
+  useGetAmenitiesQuery,
+  useGetChaletAmenitiesQuery,
+  useSetChaletAmenitiesMutation
 } from '@/store/api/apiSlice';
 
 export default function EditChaletScreen() {
@@ -45,25 +48,29 @@ export default function EditChaletScreen() {
 
   const [updateChalet, { isLoading: isUpdating }] = useUpdateChaletMutation();
   const [uploadImage, { isLoading: isUploading }] = useUploadChaletImageMutation();
-  const isLoading = isUpdating || isUploading || isLoadingDetails;
+  const [setAmenities, { isLoading: isLinking }] = useSetChaletAmenitiesMutation();
+  const isLoading = isUpdating || isUploading || isLoadingDetails || isLinking;
 
   const [form, setForm] = useState({
     name: '',
     location: '',
-    price: '',
     description: '',
     guests: '4',
     cityId: '',
     cityName: '',
     regionId: '',
     regionName: '',
+    depositPercentage: '25',
   });
 
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<any[]>([]);
   
   const { data: cities, isLoading: loadingCities } = useGetCitiesQuery();
-  const [triggerGetRegions, { data: regions, isLoading: loadingRegions }] = useLazyGetRegionsQuery();
+  const [triggerGetRegions, { data: regions, isLoading: loadingRegions }] = useLazyGetChaletRegionsQuery();
+  const { data: availableAmenities } = useGetAmenitiesQuery();
+  const { data: currentAmenities } = useGetChaletAmenitiesQuery(id as string);
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
 
   // Bottom Sheet Refs
   const citySheetRef = useRef<BottomSheetModal>(null);
@@ -92,13 +99,13 @@ export default function EditChaletScreen() {
       setForm({
         name: (isRTL ? chalet.name?.ar : chalet.name?.en) || chalet.name?.ar || chalet.name || '',
         location: (isRTL ? chalet.address?.ar : chalet.address?.en) || chalet.address?.ar || chalet.address || '',
-        price: chalet.price?.toString() || '',
         description: (isRTL ? chalet.description?.ar : chalet.description?.en) || chalet.description?.ar || chalet.description || '',
         guests: chalet.maxGuests?.toString() || '4',
         cityId: chalet.region?.cityId || '',
         cityName: chalet.region?.city?.name || '',
         regionId: chalet.regionId || '',
         regionName: chalet.region?.name || '',
+        depositPercentage: chalet.depositPercentage?.toString() || '25',
       });
       setExistingImages(chalet.images || []);
       
@@ -107,6 +114,18 @@ export default function EditChaletScreen() {
       }
     }
   }, [chalet, isRTL]);
+
+  useEffect(() => {
+    if (currentAmenities) {
+      setSelectedAmenities(currentAmenities.map((a: any) => a.amenityId || a.amenity?.id));
+    }
+  }, [currentAmenities]);
+
+  const toggleAmenity = (id: string) => {
+    setSelectedAmenities(prev => 
+      prev.includes(id) ? prev.filter(a => a !== id) : [...prev, id]
+    );
+  };
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -148,7 +167,7 @@ export default function EditChaletScreen() {
   };
 
   const handleUpdate = async () => {
-    if (!form.name || !form.location || !form.price || !form.regionId) {
+    if (!form.name || !form.location || !form.regionId) {
       Toast.show({
         type: 'error',
         text1: isRTL ? 'خطأ' : 'Error',
@@ -165,7 +184,7 @@ export default function EditChaletScreen() {
         address: { ar: form.location, en: form.location },
         regionId: form.regionId,
         maxGuests: parseInt(form.guests) || 0,
-        price: parseFloat(form.price) || 0,
+        depositPercentage: parseFloat(form.depositPercentage) || 0,
       };
 
       await updateChalet({ id, data: payload }).unwrap();
@@ -188,6 +207,9 @@ export default function EditChaletScreen() {
           await uploadImage({ chaletId: id, formData: imageFormData }).unwrap();
         }
       }
+
+      // Update Amenities
+      await setAmenities({ chaletId: id, data: { amenityIds: selectedAmenities } }).unwrap();
 
       Toast.show({
         type: 'success',
@@ -301,13 +323,13 @@ export default function EditChaletScreen() {
 
             <View style={[styles.rowInputs, { flexDirection }]}>
               <View style={[styles.inputGroup, { flex: 1 }]}>
-                <Text style={[styles.label, { textAlign }]}>السعر لليلة (د.ع)</Text>
+                <Text style={[styles.label, { textAlign }]}>{isRTL ? 'نسبة العربون (%)' : 'Deposit %'}</Text>
                 <TextInput
                   style={[styles.input, { textAlign }]}
-                  placeholder="300,000"
+                  placeholder="25"
                   keyboardType="numeric"
-                  value={form.price}
-                  onChangeText={(val) => setForm({ ...form, price: val })}
+                  value={form.depositPercentage}
+                  onChangeText={(val) => setForm({ ...form, depositPercentage: val })}
                 />
               </View>
               <View style={{ width: Spacing.md }} />
@@ -333,6 +355,35 @@ export default function EditChaletScreen() {
                 value={form.description}
                 onChangeText={(val) => setForm({ ...form, description: val })}
               />
+            </View>
+
+            <Text style={[styles.label, { textAlign, marginBottom: Spacing.sm }]}>{isRTL ? 'المميزات المتوفرة' : 'Available Amenities'}</Text>
+            <View style={[styles.featuresGrid, { flexDirection }]}>
+              {availableAmenities?.map((amenity: any) => {
+                const isSelected = selectedAmenities.includes(amenity.id);
+                return (
+                  <TouchableOpacity
+                    key={amenity.id}
+                    onPress={() => toggleAmenity(amenity.id)}
+                    style={[
+                      styles.featureItem,
+                      isSelected && styles.featureItemSelected
+                    ]}
+                  >
+                    <MaterialCommunityIcons 
+                      name={(amenity.icon || 'star-outline') as any} 
+                      size={20} 
+                      color={isSelected ? Colors.white : Colors.text.primary} 
+                    />
+                    <Text style={[
+                      styles.featureLabel,
+                      isSelected && styles.featureLabelSelected
+                    ]}>
+                      {isRTL ? amenity.name?.ar : amenity.name?.en}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
 
@@ -622,5 +673,34 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontSize: normalize.font(18),
     fontWeight: 'bold',
+  },
+  featuresGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+    marginTop: Spacing.xs,
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: normalize.height(10),
+    borderRadius: normalize.radius(12),
+    gap: Spacing.xs,
+  },
+  featureItemSelected: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  featureLabel: {
+    fontSize: normalize.font(12),
+    fontWeight: '600',
+    color: Colors.text.primary,
+  },
+  featureLabelSelected: {
+    color: Colors.white,
   },
 });

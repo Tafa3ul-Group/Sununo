@@ -25,7 +25,7 @@ import { ThemedText } from '@/components/themed-text';
 import { StatusBar } from 'expo-status-bar';
 import Toast from 'react-native-toast-message';
 import * as ImagePicker from 'expo-image-picker';
-import { useCreateChaletMutation, useUploadChaletImageMutation, useGetCitiesQuery, useLazyGetRegionsQuery } from '@/store/api/apiSlice';
+import { useCreateChaletMutation, useUploadChaletImageMutation, useGetCitiesQuery, useLazyGetChaletRegionsQuery, useGetAmenitiesQuery, useSetChaletAmenitiesMutation } from '@/store/api/apiSlice';
 
 export default function AddChaletScreen() {
   const router = useRouter();
@@ -35,12 +35,12 @@ export default function AddChaletScreen() {
 
   const [createChalet, { isLoading: isCreating }] = useCreateChaletMutation();
   const [uploadImage, { isLoading: isUploading }] = useUploadChaletImageMutation();
-  const isLoading = isCreating || isUploading;
+  const [setAmenities, { isLoading: isLinking }] = useSetChaletAmenitiesMutation();
+  const isLoading = isCreating || isUploading || isLinking;
 
   const [form, setForm] = useState({
     name: '',
     location: '',
-    price: '',
     description: '',
     guests: '4',
     rooms: '2',
@@ -48,11 +48,14 @@ export default function AddChaletScreen() {
     cityName: '',
     regionId: '',
     regionName: '',
+    depositPercentage: '25',
   });
 
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const { data: cities, isLoading: loadingCities } = useGetCitiesQuery();
-  const [triggerGetRegions, { data: regions, isLoading: loadingRegions }] = useLazyGetRegionsQuery();
+  const [triggerGetRegions, { data: regions, isLoading: loadingRegions }] = useLazyGetChaletRegionsQuery();
+  const { data: availableAmenities } = useGetAmenitiesQuery();
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
 
   // Bottom Sheet Refs
   const citySheetRef = useRef<BottomSheetModal>(null);
@@ -76,16 +79,10 @@ export default function AddChaletScreen() {
     []
   );
 
-  const [features, setFeatures] = useState([
-    { id: 'pool', label: 'مسبح', icon: 'pool', selected: false },
-    { id: 'wifi', label: 'واي فاي', icon: 'wifi', selected: false },
-    { id: 'ac', label: 'تكييف', icon: 'air-conditioner', selected: false },
-    { id: 'grill', label: 'شواء', icon: 'grill', selected: false },
-    { id: 'garden', label: 'حديقة', icon: 'tree', selected: false },
-  ]);
-
-  const toggleFeature = (id: string) => {
-    setFeatures(prev => prev.map(f => f.id === id ? { ...f, selected: !f.selected } : f));
+  const toggleAmenity = (id: string) => {
+    setSelectedAmenities(prev => 
+      prev.includes(id) ? prev.filter(a => a !== id) : [...prev, id]
+    );
   };
 
   const pickImage = async () => {
@@ -128,7 +125,7 @@ export default function AddChaletScreen() {
   };
 
   const handleSave = async () => {
-    if (!form.name || !form.location || !form.price || !form.regionId) {
+    if (!form.name || !form.location || !form.regionId) {
       Toast.show({
         type: 'error',
         text1: isRTL ? 'خطأ' : 'Error',
@@ -145,7 +142,7 @@ export default function AddChaletScreen() {
         address: { ar: form.location, en: form.location },
         regionId: form.regionId,
         maxGuests: parseInt(form.guests) || 0,
-        depositPercentage: 25,
+        depositPercentage: parseFloat(form.depositPercentage) || 25,
       };
 
       const result = await createChalet(payload).unwrap();
@@ -168,6 +165,11 @@ export default function AddChaletScreen() {
           
           await uploadImage({ chaletId, formData: imageFormData }).unwrap();
         }
+      }
+
+      // Link Amenities
+      if (selectedAmenities.length > 0) {
+        await setAmenities({ chaletId, data: { amenityIds: selectedAmenities } }).unwrap();
       }
 
 
@@ -275,13 +277,13 @@ export default function AddChaletScreen() {
 
             <View style={[styles.rowInputs, { flexDirection }]}>
               <View style={[styles.inputGroup, { flex: 1 }]}>
-                <Text style={[styles.label, { textAlign }]}>السعر لليلة (د.ع)</Text>
+                <Text style={[styles.label, { textAlign }]}>{isRTL ? 'نسبة العربون (%)' : 'Deposit %'}</Text>
                 <TextInput
                   style={[styles.input, { textAlign }]}
-                  placeholder="300,000"
+                  placeholder="25"
                   keyboardType="numeric"
-                  value={form.price}
-                  onChangeText={(val) => setForm({ ...form, price: val })}
+                  value={form.depositPercentage}
+                  onChangeText={(val) => setForm({ ...form, depositPercentage: val })}
                 />
               </View>
               <View style={{ width: Spacing.md }} />
@@ -309,30 +311,33 @@ export default function AddChaletScreen() {
               />
             </View>
 
-            <Text style={[styles.label, { textAlign, marginBottom: Spacing.sm }]}>المميزات</Text>
+            <Text style={[styles.label, { textAlign, marginBottom: Spacing.sm }]}>{isRTL ? 'المميزات المتوفرة' : 'Available Amenities'}</Text>
             <View style={[styles.featuresGrid, { flexDirection }]}>
-              {features.map((feature) => (
-                <TouchableOpacity
-                  key={feature.id}
-                  onPress={() => toggleFeature(feature.id)}
-                  style={[
-                    styles.featureItem,
-                    feature.selected && styles.featureItemSelected
-                  ]}
-                >
-                  <MaterialCommunityIcons 
-                    name={feature.icon as any} 
-                    size={20} 
-                    color={feature.selected ? Colors.white : Colors.text.primary} 
-                  />
-                  <Text style={[
-                    styles.featureLabel,
-                    feature.selected && styles.featureLabelSelected
-                  ]}>
-                    {feature.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+              {availableAmenities?.map((amenity: any) => {
+                const isSelected = selectedAmenities.includes(amenity.id);
+                return (
+                  <TouchableOpacity
+                    key={amenity.id}
+                    onPress={() => toggleAmenity(amenity.id)}
+                    style={[
+                      styles.featureItem,
+                      isSelected && styles.featureItemSelected
+                    ]}
+                  >
+                    <MaterialCommunityIcons 
+                      name={(amenity.icon || 'star-outline') as any} 
+                      size={20} 
+                      color={isSelected ? Colors.white : Colors.text.primary} 
+                    />
+                    <Text style={[
+                      styles.featureLabel,
+                      isSelected && styles.featureLabelSelected
+                    ]}>
+                      {isRTL ? amenity.name?.ar : amenity.name?.en}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
 
