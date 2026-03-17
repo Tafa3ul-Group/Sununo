@@ -22,16 +22,26 @@ interface HeaderSectionProps {
   userType?: UserType;
   userName?: string;
   title?: string;
+  subtitle?: string;
   showSearch?: boolean;
   showCategories?: boolean;
+  showBackButton?: boolean;
+  onBackPress?: () => void;
+  extraIcon?: string | any;
+  onExtraIconPress?: () => void;
 }
 
 export function HeaderSection({ 
   userType, 
   userName, 
   title, 
+  subtitle,
   showSearch = true, 
-  showCategories = true 
+  showCategories = true,
+  showBackButton = false,
+  onBackPress,
+  extraIcon,
+  onExtraIconPress
 }: HeaderSectionProps) {
   const router = useRouter();
   const { t } = useTranslation();
@@ -56,19 +66,41 @@ export function HeaderSection({
       <StatusBar style="dark" />
       {/* Title & Filter Row */}
       <View style={[styles.topRow, { flexDirection }]}>
-        <View style={{ alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
-          <ThemedText type="h1">
-            {title || (isOwner ? t('tabs.myChalets') : t('tabs.home'))}
-          </ThemedText>
+        <View style={[styles.titleContainer, { flexDirection }]}>
+          {showBackButton && (
+            <TouchableOpacity 
+              onPress={onBackPress || (() => router.back())} 
+              style={styles.backButton}
+            >
+              <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={normalize.width(24)} color={Colors.text.primary} />
+            </TouchableOpacity>
+          )}
+          <View style={{ alignItems: showBackButton ? 'center' : (isRTL ? 'flex-end' : 'flex-start'), flex: showBackButton ? 1 : 0 }}>
+            <ThemedText style={{ fontSize: normalize.font(18), fontWeight: '700' }}>
+              {title || (isOwner ? t('tabs.myChalets') : t('tabs.home'))}
+            </ThemedText>
+            {subtitle && (
+              <ThemedText style={styles.subtitle} numberOfLines={1}>
+                {subtitle}
+              </ThemedText>
+            )}
+          </View>
         </View>
+
         <TouchableOpacity 
           style={styles.filterButton}
-          onPress={() => {
+          onPress={onExtraIconPress || (() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             router.push('/(tabs)/(dashboard)/notifications');
-          }}
+          })}
         >
-          <Ionicons name="notifications-outline" size={normalize.width(22)} color={Colors.text.primary} />
+          {extraIcon ? (
+            typeof extraIcon === 'string' ? (
+              <Ionicons name={extraIcon as any} size={normalize.width(22)} color={Colors.text.primary} />
+            ) : (extraIcon)
+          ) : (
+            <Ionicons name="notifications-outline" size={normalize.width(22)} color={Colors.text.primary} />
+          )}
         </TouchableOpacity>
       </View>
 
@@ -128,13 +160,26 @@ export function HeaderSection({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: Colors.background,
-    paddingTop: Platform.OS === 'ios' ? 0 : Spacing.md,
   },
   topRow: {
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.sm,
     marginBottom: Spacing.md,
+  },
+  titleContainer: {
+    alignItems: 'center',
+    gap: Spacing.sm,
+    flex: 1,
+  },
+  backButton: {
+    padding: normalize.width(4),
+  },
+  subtitle: {
+    fontSize: normalize.font(14),
+    color: Colors.text.muted,
+    fontWeight: '400',
   },
   filterButton: {
     backgroundColor: Colors.surface,

@@ -140,6 +140,20 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
+        name="(dashboard)/edit-chalet"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="(dashboard)/calendar"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
         name="explore"
         options={{
           href: null,

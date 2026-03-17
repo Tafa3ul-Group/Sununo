@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -15,7 +15,7 @@ import {
 import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop, BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing, Typography, normalize, Shadows } from '@/constants/theme';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
@@ -25,25 +25,37 @@ import { ThemedText } from '@/components/themed-text';
 import { StatusBar } from 'expo-status-bar';
 import Toast from 'react-native-toast-message';
 import * as ImagePicker from 'expo-image-picker';
-import { useCreateChaletMutation, useUploadChaletImageMutation, useGetCitiesQuery, useLazyGetChaletRegionsQuery, useGetAmenitiesQuery, useSetChaletAmenitiesMutation } from '@/store/api/apiSlice';
+import { 
+  useGetOwnerChaletDetailsQuery, 
+  useUpdateChaletMutation, 
+  useUploadChaletImageMutation, 
+  useGetCitiesQuery, 
+  useLazyGetChaletRegionsQuery,
+  useGetAmenitiesQuery,
+  useGetChaletAmenitiesQuery,
+  useSetChaletAmenitiesMutation
+} from '@/store/api/apiSlice';
 
-export default function AddChaletScreen() {
+export default function EditChaletScreen() {
   const router = useRouter();
+  const { id } = useLocalSearchParams();
   const { t } = useTranslation();
   const { language } = useSelector((state: RootState) => state.auth);
   const isRTL = language === 'ar';
 
-  const [createChalet, { isLoading: isCreating }] = useCreateChaletMutation();
+  const { data: response, isLoading: isLoadingDetails } = useGetOwnerChaletDetailsQuery(id);
+  const chalet = response?.data || response;
+
+  const [updateChalet, { isLoading: isUpdating }] = useUpdateChaletMutation();
   const [uploadImage, { isLoading: isUploading }] = useUploadChaletImageMutation();
   const [setAmenities, { isLoading: isLinking }] = useSetChaletAmenitiesMutation();
-  const isLoading = isCreating || isUploading || isLinking;
+  const isLoading = isUpdating || isUploading || isLoadingDetails || isLinking;
 
   const [form, setForm] = useState({
     name: '',
     location: '',
     description: '',
     guests: '4',
-    rooms: '2',
     cityId: '',
     cityName: '',
     regionId: '',
@@ -52,9 +64,12 @@ export default function AddChaletScreen() {
   });
 
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [existingImages, setExistingImages] = useState<any[]>([]);
+  
   const { data: cities, isLoading: loadingCities } = useGetCitiesQuery();
   const [triggerGetRegions, { data: regions, isLoading: loadingRegions }] = useLazyGetChaletRegionsQuery();
   const { data: availableAmenities } = useGetAmenitiesQuery();
+  const { data: currentAmenities } = useGetChaletAmenitiesQuery(id as string);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
 
   // Bottom Sheet Refs
@@ -78,6 +93,33 @@ export default function AddChaletScreen() {
     ),
     []
   );
+
+  useEffect(() => {
+    if (chalet) {
+      setForm({
+        name: (isRTL ? chalet.name?.ar : chalet.name?.en) || chalet.name?.ar || chalet.name || '',
+        location: (isRTL ? chalet.address?.ar : chalet.address?.en) || chalet.address?.ar || chalet.address || '',
+        description: (isRTL ? chalet.description?.ar : chalet.description?.en) || chalet.description?.ar || chalet.description || '',
+        guests: chalet.maxGuests?.toString() || '4',
+        cityId: chalet.region?.cityId || '',
+        cityName: chalet.region?.city?.name || '',
+        regionId: chalet.regionId || '',
+        regionName: chalet.region?.name || '',
+        depositPercentage: chalet.depositPercentage?.toString() || '25',
+      });
+      setExistingImages(chalet.images || []);
+      
+      if (chalet.region?.cityId) {
+        triggerGetRegions(chalet.region.cityId);
+      }
+    }
+  }, [chalet, isRTL]);
+
+  useEffect(() => {
+    if (currentAmenities) {
+      setSelectedAmenities(currentAmenities.map((a: any) => a.amenityId || a.amenity?.id));
+    }
+  }, [currentAmenities]);
 
   const toggleAmenity = (id: string) => {
     setSelectedAmenities(prev => 
@@ -120,11 +162,11 @@ export default function AddChaletScreen() {
     }
   };
 
-  const removeImage = (index: number) => {
+  const removeSelectedImage = (index: number) => {
     setSelectedImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSave = async () => {
+  const handleUpdate = async () => {
     if (!form.name || !form.location || !form.regionId) {
       Toast.show({
         type: 'error',
@@ -142,13 +184,12 @@ export default function AddChaletScreen() {
         address: { ar: form.location, en: form.location },
         regionId: form.regionId,
         maxGuests: parseInt(form.guests) || 0,
-        depositPercentage: parseFloat(form.depositPercentage) || 25,
+        depositPercentage: parseFloat(form.depositPercentage) || 0,
       };
 
-      const result = await createChalet(payload).unwrap();
-      const chaletId = result.id;
+      await updateChalet({ id, data: payload }).unwrap();
 
-      // Upload images one by one
+      // Upload new images
       if (selectedImages.length > 0) {
         for (const uri of selectedImages) {
           const imageFormData = new FormData();
@@ -163,26 +204,23 @@ export default function AddChaletScreen() {
             type,
           });
           
-          await uploadImage({ chaletId, formData: imageFormData }).unwrap();
+          await uploadImage({ chaletId: id, formData: imageFormData }).unwrap();
         }
       }
 
-      // Link Amenities
-      if (selectedAmenities.length > 0) {
-        await setAmenities({ chaletId, data: { amenityIds: selectedAmenities } }).unwrap();
-      }
-
+      // Update Amenities
+      await setAmenities({ chaletId: id, data: { amenityIds: selectedAmenities } }).unwrap();
 
       Toast.show({
         type: 'success',
         text1: isRTL ? 'تم بنجاح' : 'Success',
-        text2: isRTL ? 'تمت إضافة الشاليه بنجاح' : 'Chalet added successfully',
+        text2: isRTL ? 'تم تحديث البيانات بنجاح' : 'Listing updated successfully',
         position: 'bottom',
       });
       router.back();
     } catch (error: any) {
-      console.error('Error creating chalet:', error);
-      const errorMessage = error?.data?.message?.[0] || (isRTL ? 'فشل إرسال البيانات، حاول لاحقاً' : 'Failed to save data, try again');
+      console.error('Error updating chalet:', error);
+      const errorMessage = error?.data?.message?.[0] || (isRTL ? 'فشل تحديث البيانات، حاول لاحقاً' : 'Failed to update data, try again');
       Toast.show({
         type: 'error',
         text1: isRTL ? 'خطأ' : 'Error',
@@ -206,6 +244,14 @@ export default function AddChaletScreen() {
   const textAlign = isRTL ? 'right' : 'left';
   const flexDirection = isRTL ? 'row-reverse' : 'row';
 
+  if (isLoadingDetails) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
@@ -214,7 +260,7 @@ export default function AddChaletScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={Colors.text.primary} />
         </TouchableOpacity>
-        <ThemedText type="h2" style={styles.headerTitle}>{t('dashboard.addChalet')}</ThemedText>
+        <ThemedText type="h2" style={styles.headerTitle}>{isRTL ? 'تعديل الشاليه' : 'Edit Chalet'}</ThemedText>
         <View style={{ width: 40 }} />
       </View>
 
@@ -342,12 +388,21 @@ export default function AddChaletScreen() {
           </View>
 
           <View style={[styles.imageSection, { marginTop: Spacing.lg }]}>
-            <Text style={[styles.label, { textAlign, marginBottom: Spacing.sm }]}>{isRTL ? 'صور الشاليه' : 'Chalet Photos'}</Text>
+            <Text style={[styles.label, { textAlign, marginBottom: Spacing.sm }]}>{isRTL ? 'الصور الحالية' : 'Current Photos'}</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.imageContainer, { flexDirection }]}>
+              {existingImages.map((img, index) => (
+                <View key={img.id} style={styles.imageItem}>
+                  <Image source={getImageSrc(img.url)} style={styles.uploadedImage} />
+                </View>
+              ))}
+            </ScrollView>
+
+            <Text style={[styles.label, { textAlign, marginBottom: Spacing.sm, marginTop: Spacing.md }]}>{isRTL ? 'إضافة صور جديدة' : 'Add New Photos'}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.imageContainer, { flexDirection }]}>
               {selectedImages.map((uri, index) => (
                 <View key={index} style={styles.imageItem}>
                   <Image source={getImageSrc(uri)} style={styles.uploadedImage} />
-                  <TouchableOpacity style={styles.removeImageButton} onPress={() => removeImage(index)}>
+                  <TouchableOpacity style={styles.removeImageButton} onPress={() => removeSelectedImage(index)}>
                     <Ionicons name="close-circle" size={24} color={Colors.error} />
                   </TouchableOpacity>
                 </View>
@@ -360,15 +415,15 @@ export default function AddChaletScreen() {
           </View>
 
           <TouchableOpacity 
-            style={[styles.saveButton, isLoading && { opacity: 0.7 }]}
-            onPress={handleSave}
+            style={[styles.saveButton, (isUpdating || isUploading) && { opacity: 0.7 }]}
+            onPress={handleUpdate}
             activeOpacity={0.8}
-            disabled={isLoading}
+            disabled={isUpdating || isUploading}
           >
-            {isLoading ? (
+            {isUpdating || isUploading ? (
               <ActivityIndicator color={Colors.white} />
             ) : (
-              <Text style={styles.saveButtonText}>حفظ ونشر الشاليه</Text>
+              <Text style={styles.saveButtonText}>{isRTL ? 'تحديث البيانات' : 'Update Listing'}</Text>
             )}
           </TouchableOpacity>
         </ScrollView>
@@ -469,6 +524,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.background,
+  },
   header: {
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -528,13 +589,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: Spacing.xl,
-  },
   sheetContent: {
     padding: Spacing.lg,
     alignItems: 'center',
@@ -564,18 +618,6 @@ const styles = StyleSheet.create({
   },
   modalOptionText: {
     ...Typography.body,
-    fontWeight: '600',
-  },
-  modalCancel: {
-    width: '100%',
-    padding: Spacing.md,
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: Colors.border,
-  },
-  modalCancelText: {
-    ...Typography.body,
-    color: Colors.text.muted,
     fontWeight: '600',
   },
   pickerItem: {
@@ -619,9 +661,24 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.md,
     textAlignVertical: 'top',
   },
+  saveButton: {
+    backgroundColor: Colors.primary,
+    height: normalize.height(56),
+    borderRadius: normalize.radius(16),
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: Spacing.xl,
+  },
+  saveButtonText: {
+    color: Colors.white,
+    fontSize: normalize.font(18),
+    fontWeight: 'bold',
+  },
   featuresGrid: {
+    flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.sm,
+    marginTop: Spacing.xs,
   },
   featureItem: {
     flexDirection: 'row',
@@ -645,18 +702,5 @@ const styles = StyleSheet.create({
   },
   featureLabelSelected: {
     color: Colors.white,
-  },
-  saveButton: {
-    backgroundColor: Colors.primary,
-    height: normalize.height(56),
-    borderRadius: normalize.radius(16),
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: Spacing.xl,
-  },
-  saveButtonText: {
-    color: Colors.white,
-    fontSize: normalize.font(18),
-    fontWeight: 'bold',
   },
 });
