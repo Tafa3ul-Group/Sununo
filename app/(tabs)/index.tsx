@@ -129,7 +129,7 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Section: Most Popular (num1-num5 cards) - NOW AT TOP */}
+        {/* Section: Most Popular (num1-num5 cards) - AT TOP */}
         <View style={styles.sectionHeader}>
           <TouchableOpacity>
             <ThemedText style={styles.seeAll}>
@@ -155,6 +155,18 @@ export default function HomeScreen() {
             <ColoredCard key={chalet.id} {...chalet} shapeIndex={index} />
           ))}
         </GHScrollView>
+
+        {/* Section: Nearest to you - Map Section (MOVED UP) */}
+        <View style={styles.sectionHeader}>
+          <TouchableOpacity>
+            <ThemedText style={styles.seeAll}>افتح الخارطة</ThemedText>
+          </TouchableOpacity>
+          <ThemedText style={styles.sectionTitle}>الاقرب اليك</ThemedText>
+        </View>
+
+        <View style={styles.mapContainer}>
+          <AppMap style={styles.map} />
+        </View>
 
         {/* Section: Recommended for you (Tabs + Vertical List) */}
         <View style={styles.sectionHeader}>
@@ -228,18 +240,6 @@ export default function HomeScreen() {
              </View>
           ))}
         </GHScrollView>
-
-        {/* Nearest to you - Map Section */}
-        <View style={styles.sectionHeader}>
-          <TouchableOpacity>
-            <ThemedText style={styles.seeAll}>افتح الخارطة</ThemedText>
-          </TouchableOpacity>
-          <ThemedText style={styles.sectionTitle}>الاقرب اليك</ThemedText>
-        </View>
-
-        <View style={styles.mapContainer}>
-          <AppMap style={styles.map} />
-        </View>
       </ScrollView>
 
       {/* Filter/Search Bottom Sheet */}
@@ -261,20 +261,20 @@ const styles = StyleSheet.create({
     flexDirection: "row-reverse",
     alignItems: "center",
     paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
+    paddingVertical: Spacing.md, // Increased padding
     justifyContent: "space-between",
-    marginTop: Platform.OS === 'ios' ? 0 : Spacing.xs,
+    marginTop: Platform.OS === 'ios' ? 0 : Spacing.sm,
   },
   avatar: {
-    width: normalize.width(44),
-    height: normalize.width(44),
-    borderRadius: normalize.radius(22),
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: "#FFE5D4",
   },
   searchButton: {
-    width: normalize.width(44),
-    height: normalize.width(44),
-    borderRadius: normalize.radius(22),
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: "white",
     justifyContent: "center",
     alignItems: "center",
@@ -286,8 +286,8 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   logo: {
-    width: normalize.width(100),
-    height: normalize.width(40),
+    width: 110,
+    height: 45,
   },
   map: {
     flex: 1,
@@ -297,49 +297,51 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: Spacing.md,
-    marginTop: Spacing.lg,
-    marginBottom: Spacing.md,
+    marginTop: Spacing.xl, // More breathing room
+    marginBottom: Spacing.sm,
   },
   sectionTitle: {
-    fontSize: normalize.font(20),
-    fontWeight: "700",
+    fontSize: 22,
+    fontWeight: "900", // Stronger bold
     color: Colors.text.primary,
   },
   seeAll: {
-    fontSize: normalize.font(14),
-    color: Colors.text.secondary,
+    fontSize: 15,
+    color: "#035DF9", // Sununo Blue
+    fontWeight: "600",
     textDecorationLine: "underline",
   },
   horizontalScrollPadding: {
     paddingHorizontal: Spacing.md,
   },
   mapContainer: {
-    height: normalize.height(180),
+    height: 200,
     marginHorizontal: Spacing.md,
-    borderRadius: normalize.radius(24),
+    borderRadius: 24,
     overflow: "hidden",
     backgroundColor: "#F3F4F6",
+    marginTop: Spacing.md,
   },
   listPadding: {
     paddingHorizontal: Spacing.md,
-    marginTop: Spacing.sm,
+    marginTop: Spacing.md,
   },
   tabsWrapper: {
-    marginBottom: Spacing.md,
+    marginVertical: Spacing.md, // Spacing above and below tabs
   },
   tabsContainer: {
     paddingHorizontal: Spacing.md,
-    gap: 4, // Reduced gap between buttons
+    gap: 4, // 4px gap as requested
     flexDirection: 'row-reverse',
     alignItems: 'center',
   },
   allTabButton: {
-    marginRight: Spacing.sm,
+    marginRight: 4,
   },
   tabText: {
-    fontSize: normalize.font(16),
+    fontSize: 16,
   },
   filterTab: {
-    marginRight: Spacing.sm,
+    marginRight: 4,
   }
 });

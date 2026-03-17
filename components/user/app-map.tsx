@@ -20,8 +20,8 @@ interface AppMapProps {
 }
 
 /**
- * AppMap - A Mapbox wrapper component that shows the user's current location.
- * Includes a fallback for Expo Go where native code is not available.
+ * AppMap - A Mapbox wrapper component.
+ * Includes a design-accurate fallback for Expo Go to match USER screenshot.
  */
 export const AppMap = ({ style }: AppMapProps) => {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
@@ -46,13 +46,6 @@ export const AppMap = ({ style }: AppMapProps) => {
     })();
   }, []);
 
-  // Check if Mapbox is available
-  useEffect(() => {
-    if (!Mapbox || !Mapbox.StyleURL) {
-      setHasNativeMap(false);
-    }
-  }, []);
-
   if (loading) {
     return (
       <View style={[styles.container, style, styles.loading]}>
@@ -61,7 +54,7 @@ export const AppMap = ({ style }: AppMapProps) => {
     );
   }
 
-  // Fallback for Expo Go / Missing Native Code / Web
+  // Fallback for Expo Go / Web to match USER screenshot design
   if (!hasNativeMap || Platform.OS === 'web') {
     return (
       <View style={[styles.container, style, styles.fallbackContainer]}>
@@ -70,11 +63,26 @@ export const AppMap = ({ style }: AppMapProps) => {
           style={styles.fallbackImage}
           resizeMode="cover"
         />
+        
+        {/* Design-accurate markers based on user image 1 */}
+        <View style={[styles.designMarker, { top: '30%', right: '20%', borderColor: '#035DF9' }]}>
+            <Image source={{ uri: 'https://images.unsplash.com/photo-1540518614846-7eded433c457?w=100' }} style={styles.markerImage} />
+        </View>
+        <View style={[styles.designMarker, { top: '50%', left: '40%', borderColor: '#EF79D7' }]}>
+            <Image source={{ uri: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=100' }} style={styles.markerImage} />
+        </View>
+        <View style={[styles.designMarker, { bottom: '20%', right: '30%', borderColor: '#EA2129' }]}>
+            <Image source={{ uri: 'https://images.unsplash.com/photo-1449156001437-3a1621dfbe2b?w=100' }} style={styles.markerImage} />
+        </View>
+        <View style={[styles.designMarker, { bottom: '35%', left: '25%', borderColor: '#15AB64' }]}>
+            <Image source={{ uri: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=100' }} style={styles.markerImage} />
+        </View>
+
         <View style={styles.fallbackOverlay}>
           <ThemedText style={styles.fallbackText}>
             {Platform.OS === 'web' 
-              ? 'الخارطة الحية غير متوفرة على الويب حالياً' 
-              : 'تتطلب الخارطة الحية بناء اصدار مخصص (Dev Build)'}
+              ? 'الخارطة الحية (قيد التطوير)' 
+              : 'الخارطة الحية تتطلب اصدار مخصص'}
           </ThemedText>
         </View>
       </View>
@@ -92,18 +100,8 @@ export const AppMap = ({ style }: AppMapProps) => {
               : [47.85, 30.50]
           }
           animationMode="flyTo"
-          animationDuration={2000}
         />
-        {location && (
-          <Mapbox.PointAnnotation
-            id="currentLocation"
-            coordinate={[location.coords.longitude, location.coords.latitude]}
-          >
-            <View style={styles.markerContainer}>
-              <View style={styles.marker} />
-            </View>
-          </Mapbox.PointAnnotation>
-        )}
+        {/* Markers are handled via children of Mapbox.MapView if we have real data */}
       </Mapbox.MapView>
     </View>
   );
@@ -112,7 +110,7 @@ export const AppMap = ({ style }: AppMapProps) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    borderRadius: 20,
+    borderRadius: 24, // Consistent with HomeScreen mapContainer
     overflow: 'hidden',
     backgroundColor: '#eee',
   },
@@ -124,44 +122,43 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   fallbackContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
     position: 'relative',
     height: '100%',
     width: '100%',
+    backgroundColor: '#F3F4F6',
   },
   fallbackImage: {
     width: '100%',
     height: '100%',
-    opacity: 0.6,
+    opacity: 0.5,
+  },
+  designMarker: {
+    position: 'absolute',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 2,
+    backgroundColor: 'white',
+    padding: 1,
+    overflow: 'hidden',
+  },
+  markerImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 14,
   },
   fallbackOverlay: {
     position: 'absolute',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#eee',
-    maxWidth: '80%',
+    bottom: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    alignSelf: 'center',
   },
   fallbackText: {
-    textAlign: 'center',
-    fontSize: normalize.font(14),
-    color: '#333',
+    fontSize: 10,
+    color: '#666',
     fontWeight: '600',
-  },
-  markerContainer: {
-    width: 20,
-    height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  marker: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: '#035DF9',
-    borderWidth: 2,
-    borderColor: 'white',
   },
 });
