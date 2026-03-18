@@ -3,6 +3,7 @@ import { StyleSheet, View, ActivityIndicator, Image, Platform } from 'react-nati
 import * as Location from 'expo-location';
 import { Colors, normalize } from '@/constants/theme';
 import { ThemedText } from '@/components/themed-text';
+import { Ionicons } from '@expo/vector-icons';
 
 // Lazy load Mapbox to avoid crashes in environments without native code (like Expo Go)
 let Mapbox: any = null;
@@ -17,16 +18,26 @@ try {
 
 interface AppMapProps {
   style?: any;
+  centerCoordinate?: [number, number]; // [lng, lat]
+  zoomLevel?: number;
+  interactive?: boolean;
+  showMarker?: boolean;
 }
 
 /**
  * AppMap - A Mapbox wrapper component.
  * Includes a design-accurate fallback for Expo Go to match USER screenshot.
  */
-export const AppMap = ({ style }: AppMapProps) => {
+export const AppMap = ({ 
+  style, 
+  centerCoordinate, 
+  zoomLevel = 12, 
+  interactive = true,
+  showMarker = false
+}: AppMapProps) => {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [loading, setLoading] = useState(true);
-  const [hasNativeMap, setHasNativeMap] = useState(!!Mapbox);
+  const [hasNativeMap] = useState(!!Mapbox);
 
   useEffect(() => {
     (async () => {
@@ -56,27 +67,22 @@ export const AppMap = ({ style }: AppMapProps) => {
 
   // Fallback for Expo Go / Web to match USER screenshot design
   if (!hasNativeMap || Platform.OS === 'web') {
+    const fallbackLng = centerCoordinate?.[0] || 47.85;
+    const fallbackLat = centerCoordinate?.[1] || 30.50;
+
     return (
       <View style={[styles.container, style, styles.fallbackContainer]}>
         <Image 
-          source={{ uri: 'https://api.mapbox.com/styles/v1/mapbox/light-v10/static/47.85,30.50,12/800x400?access_token=MOCK_TOKEN' }}
+          source={{ uri: `https://api.mapbox.com/styles/v1/mapbox/light-v10/static/${fallbackLng},${fallbackLat},${zoomLevel}/800x400?access_token=MOCK_TOKEN` }}
           style={styles.fallbackImage}
           resizeMode="cover"
         />
         
-        {/* Design-accurate markers based on user image 1 */}
-        <View style={[styles.designMarker, { top: '30%', right: '20%', borderColor: '#035DF9' }]}>
-            <Image source={{ uri: 'https://images.unsplash.com/photo-1540518614846-7eded433c457?w=100' }} style={styles.markerImage} />
-        </View>
-        <View style={[styles.designMarker, { top: '50%', left: '40%', borderColor: '#EF79D7' }]}>
-            <Image source={{ uri: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=100' }} style={styles.markerImage} />
-        </View>
-        <View style={[styles.designMarker, { bottom: '20%', right: '30%', borderColor: '#EA2129' }]}>
-            <Image source={{ uri: 'https://images.unsplash.com/photo-1449156001437-3a1621dfbe2b?w=100' }} style={styles.markerImage} />
-        </View>
-        <View style={[styles.designMarker, { bottom: '35%', left: '25%', borderColor: '#15AB64' }]}>
-            <Image source={{ uri: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=100' }} style={styles.markerImage} />
-        </View>
+        {showMarker && (
+          <View style={[styles.designMarker, { top: '50%', left: '50%', transform: [{translateX: -16}, {translateY: -16}], borderColor: Colors.primary, justifyContent: 'center', alignItems: 'center' }]}>
+            <Ionicons name="location" size={20} color={Colors.primary} />
+          </View>
+        )}
 
         <View style={styles.fallbackOverlay}>
           <ThemedText style={styles.fallbackText}>
@@ -89,19 +95,33 @@ export const AppMap = ({ style }: AppMapProps) => {
     );
   }
 
+  const finalCenter: [number, number] = centerCoordinate || (location 
+    ? [location.coords.longitude, location.coords.latitude] 
+    : [47.85, 30.50]);
+
   return (
     <View style={[styles.container, style]}>
-      <Mapbox.MapView style={styles.map} styleURL={Mapbox.StyleURL.Light}>
+      <Mapbox.MapView 
+        style={styles.map} 
+        styleURL={Mapbox.StyleURL.Light}
+        scrollEnabled={interactive}
+        zoomEnabled={interactive}
+      >
         <Mapbox.Camera
-          zoomLevel={12}
-          centerCoordinate={
-            location 
-              ? [location.coords.longitude, location.coords.latitude] 
-              : [47.85, 30.50]
-          }
+          zoomLevel={zoomLevel}
+          centerCoordinate={finalCenter}
           animationMode="flyTo"
         />
-        {/* Markers are handled via children of Mapbox.MapView if we have real data */}
+        {showMarker && (
+          <Mapbox.PointAnnotation
+            id="chaletLocation"
+            coordinate={finalCenter}
+          >
+            <View style={styles.nativeMarker}>
+                <Ionicons name="location" size={30} color={Colors.primary} />
+            </View>
+          </Mapbox.PointAnnotation>
+        )}
       </Mapbox.MapView>
     </View>
   );
@@ -161,4 +181,11 @@ const styles = StyleSheet.create({
     color: '#666',
     fontWeight: '600',
   },
+  nativeMarker: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 2,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+  }
 });
