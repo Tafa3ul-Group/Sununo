@@ -1,7 +1,9 @@
-import { Ionicons } from '@expo/vector-icons';
+import { RootState } from '@/store';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSelector } from 'react-redux';
 
 /* 
  * CustomTabBar - New floating navigation design
@@ -16,35 +18,64 @@ interface TabProps {
 
 export const CustomTabBar: React.FC<TabProps> = ({ state, navigation }) => {
   const insets = useSafeAreaInsets();
-  
+  const { userType, language } = useSelector((state: RootState) => state.auth);
+  const isOwner = userType === 'owner';
+
   // Current active route name
   const currentRoute = state.routes[state.index].name;
+
+  // Hade the tab bar if we are on screens that need full space
+  const hiddenScreens = [
+    '(dashboard)/add-chalet',
+    '(dashboard)/edit-chalet',
+    '(dashboard)/chalet-details'
+  ];
+
+  if (hiddenScreens.includes(currentRoute)) {
+    return null;
+  }
 
   const navigateTo = (routeName: string) => {
     navigation.navigate(routeName);
   };
 
-  // Defining the 3 tabs for the capsule
-  const tabs = [
-    { name: 'explore', icon: 'heart', route: 'explore' },
-    { name: 'notifications', icon: 'notifications', route: '(dashboard)/notifications' },
-    { name: 'home', icon: 'home', route: 'index' },
-  ];
+  // Dynamic Navigation Configuration
+  const activeBlue = '#035DF9';
+
+  const leftAction = isOwner
+    ? { icon: 'calendar-month', route: '(dashboard)/bookings' as const }
+    : { icon: 'map', route: 'index' as const };
+
+  const capsuleTabs = isOwner
+    ? [
+      { name: 'home', icon: 'view-grid', route: '(dashboard)/home' },
+      { name: 'revenue', icon: 'wallet', route: '(dashboard)/revenue' },
+      { name: 'profile', icon: 'account', route: 'profile' },
+    ]
+    : [
+      { name: 'explore', icon: 'heart', route: 'explore' },
+      { name: 'notifications', icon: 'bell', route: '(dashboard)/notifications' },
+      { name: 'home', icon: 'home', route: 'index' },
+      { name: 'profile', icon: 'account', route: 'profile' },
+    ];
+
+  const bgColor = activeBlue;
+  const iconInactiveColor = 'rgba(255, 255, 255, 0.6)';
 
   return (
     <View style={[styles.container, { bottom: insets.bottom + 16 }]}>
-      {/* Left: Separate Map Button */}
-      <TouchableOpacity 
-        style={styles.mapButton}
-        onPress={() => navigateTo('(dashboard)/home')}
+      {/* Left: Action Button (Bookings for Owner, Map for User) */}
+      <TouchableOpacity
+        style={[styles.circleButton, { backgroundColor: activeBlue }]}
+        onPress={() => navigateTo(leftAction.route)}
         activeOpacity={0.8}
       >
-        <Ionicons name="map" size={28} color="white" />
+        <MaterialCommunityIcons name={leftAction.icon as any} size={32} color="white" />
       </TouchableOpacity>
 
-      {/* Right: Main Navigation Capsule */}
+      {/* Right: Navigation Capsule */}
       <View style={styles.tabCapsule}>
-        {tabs.map((tab) => {
+        {capsuleTabs.map((tab) => {
           const isActive = currentRoute === tab.route;
           return (
             <TouchableOpacity
@@ -52,14 +83,15 @@ export const CustomTabBar: React.FC<TabProps> = ({ state, navigation }) => {
               onPress={() => navigateTo(tab.route)}
               style={[
                 styles.tabItem,
-                isActive && styles.activeTabItem
+                isActive && styles.activeTabItem,
+                { width: 50 }
               ]}
               activeOpacity={0.7}
             >
-              <Ionicons 
-                name={isActive ? (tab.icon as any) : (`${tab.icon}-outline` as any)} 
-                size={26} 
-                color={isActive ? '#035DF9' : 'rgba(255, 255, 255, 0.7)'} 
+              <MaterialCommunityIcons
+                name={isActive ? (tab.icon as any) : (`${tab.icon}-outline` as any)}
+                size={26}
+                color={isActive ? activeBlue : iconInactiveColor}
               />
             </TouchableOpacity>
           );
@@ -79,7 +111,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     zIndex: 1000,
   },
-  mapButton: {
+  circleButton: {
     width: 64,
     height: 64,
     borderRadius: 32,

@@ -1,9 +1,9 @@
-import React from 'react';
-import { TouchableOpacity, StyleSheet, ActivityIndicator, ViewStyle, TextStyle, View } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
-import { Colors, normalize, Spacing } from '@/constants/theme';
 import { ThemedText } from '@/components/themed-text';
+import { Colors, Spacing } from '@/constants/theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import React from 'react';
+import { ActivityIndicator, StyleSheet, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 
 interface AppButtonProps {
   label: string;
@@ -66,8 +66,8 @@ export function AppButton({
         {/* Right Curve SVG (ViewBox matches the right part of the original SVG) */}
         <View style={styles.svgPart}>
           <Svg width="29" height="29" viewBox="62 0 29 29" fill="none">
-            <Path 
-              d="M91 14.5C91 6.49187 84.5081 0 76.5 0H67.1176C64.2912 0 62 2.29125 62 5.11765V23.8824C62 26.7088 64.2912 29 67.1176 29H76.5C84.5081 29 91 22.5081 91 14.5Z" 
+            <Path
+              d="M91 14.5C91 6.49187 84.5081 0 76.5 0H67.1176C64.2912 0 62 2.29125 62 5.11765V23.8824C62 26.7088 64.2912 29 67.1176 29H76.5C84.5081 29 91 22.5081 91 14.5Z"
               fill={color}
             />
           </Svg>
@@ -83,8 +83,8 @@ export function AppButton({
         {/* Left Curve SVG (ViewBox matches the left part of the original SVG) */}
         <View style={styles.svgPart}>
           <Svg width="29" height="29" viewBox="0 0 29 29" fill="none">
-             <Path 
-              d="M0 14.5C0 6.49187 6.49187 0 14.5 0H23.8824C26.7088 0 29 2.29125 29 5.11765V23.8824C29 26.7088 26.7088 29 23.8824 29H14.5C6.49187 29 0 22.5081 0 14.5Z" 
+            <Path
+              d="M0 14.5C0 6.49187 6.49187 0 14.5 0H23.8824C26.7088 0 29 2.29125 29 5.11765V23.8824C29 26.7088 26.7088 29 23.8824 29H14.5C6.49187 29 0 22.5081 0 14.5Z"
               fill={color}
             />
           </Svg>
@@ -110,10 +110,10 @@ export function AppButton({
       {/* Icon Section */}
       {icon && (
         <View style={[styles.iconPart, { backgroundColor: isActive ? 'rgba(0,102,255,0.05)' : 'transparent' }]}>
-          <MaterialCommunityIcons 
-             name={icon as any} 
-             size={22} 
-             color={isActive ? secondaryActiveColor : '#9CA3AF'} 
+          <MaterialCommunityIcons
+            name={icon as any}
+            size={22}
+            color={isActive ? secondaryActiveColor : '#9CA3AF'}
           />
         </View>
       )}
@@ -172,11 +172,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   secondaryActiveShadow: {
-    shadowColor: "#0066FF",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    // Shadows removed per user request
   },
   iconPart: {
     height: '100%',
