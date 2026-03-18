@@ -1,8 +1,8 @@
-import React from 'react';
-import { TouchableOpacity, StyleSheet, View, ViewStyle, TextStyle } from 'react-native';
-import { Colors, normalize, Spacing } from '@/constants/theme';
 import { ThemedText } from '@/components/themed-text';
+import { Colors, normalize, Spacing } from '@/constants/theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import React from 'react';
+import { StyleSheet, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 
 interface FilterInputProps {
   label: string;
@@ -18,13 +18,13 @@ interface FilterInputProps {
  * Features a label, a vertical divider, and an icon.
  * Design matches the "يحتوي مسبح" image provided.
  */
-export function FilterInput({ 
-  label, 
-  iconName, 
-  selected = false, 
-  onPress, 
+export function FilterInput({
+  label,
+  iconName,
+  selected = false,
+  onPress,
   style,
-  labelStyle 
+  labelStyle
 }: FilterInputProps) {
   return (
     <TouchableOpacity
@@ -36,23 +36,23 @@ export function FilterInput({
         style
       ]}
     >
-      <ThemedText 
+      <ThemedText
         style={[
-          styles.label, 
+          styles.label,
           selected && styles.selectedText,
           labelStyle
         ]}
       >
         {label}
       </ThemedText>
-      
+
       <View style={styles.divider} />
-      
+
       <View style={styles.iconContainer}>
-        <MaterialCommunityIcons 
-          name={iconName as any} 
-          size={normalize.width(22)} 
-          color={Colors.primary} 
+        <MaterialCommunityIcons
+          name={iconName as any}
+          size={normalize.width(22)}
+          color={Colors.primary}
         />
       </View>
     </TouchableOpacity>
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
   container: {
     // We use a row for the design [Text | Icon]
     // The image shows Text on the left, Icon on the right.
-    flexDirection: 'row', 
+    flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.white,
     borderWidth: 1.5, // slightly thicker for premium feel

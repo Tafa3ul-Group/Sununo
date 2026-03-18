@@ -1,43 +1,41 @@
-import React, { useState, useCallback, useRef, useMemo } from 'react';
+import { ThemedText } from '@/components/themed-text';
+import { AppMap } from '@/components/user/app-map';
+import { LocationPickerModal } from '@/components/user/location-picker-modal';
+import { PrimaryButton } from '@/components/user/primary-button';
+import { SecondaryButton } from '@/components/user/secondary-button';
+import { Colors, normalize, Spacing, Typography } from '@/constants/theme';
+import { RootState } from '@/store';
 import {
+  useCreateChaletMutation,
+  useGetAmenitiesQuery,
+  useGetCitiesQuery,
+  useLazyGetChaletRegionsQuery,
+  useSetChaletAmenitiesMutation,
+  useUploadChaletImageMutation
+} from '@/store/api/apiSlice';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   StyleSheet,
-  View,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  Image,
-  Alert,
-  ActivityIndicator,
-  Keyboard,
+  View
 } from 'react-native';
-import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop, BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, Spacing, Typography, normalize, Shadows } from '@/constants/theme';
-import { useRouter } from 'expo-router';
-import { useTranslation } from 'react-i18next';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
-import { getImageSrc } from '@/hooks/useImageSrc';
-import { ThemedText } from '@/components/themed-text';
-import { StatusBar } from 'expo-status-bar';
 import Toast from 'react-native-toast-message';
-import * as ImagePicker from 'expo-image-picker';
-import { 
-  useCreateChaletMutation, 
-  useUploadChaletImageMutation, 
-  useGetCitiesQuery, 
-  useLazyGetChaletRegionsQuery, 
-  useGetAmenitiesQuery, 
-  useSetChaletAmenitiesMutation 
-} from '@/store/api/apiSlice';
-import { PrimaryButton } from '@/components/user/primary-button';
-import { SecondaryButton } from '@/components/user/secondary-button';
-import { LocationPickerModal } from '@/components/user/location-picker-modal';
-import { AppMap } from '@/components/user/app-map';
+import { useSelector } from 'react-redux';
 
 export default function AddChaletScreen() {
   const router = useRouter();
@@ -107,7 +105,7 @@ export default function AddChaletScreen() {
   );
 
   const toggleAmenity = (id: string) => {
-    setSelectedAmenities(prev => 
+    setSelectedAmenities(prev =>
       prev.includes(id) ? prev.filter(a => a !== id) : [...prev, id]
     );
   };
@@ -186,14 +184,14 @@ export default function AddChaletScreen() {
           const filename = uri.split('/').pop();
           const match = /\.(\w+)$/.exec(filename || '');
           const type = match ? `image/${match[1]}` : `image`;
-          
+
           // @ts-ignore
           imageFormData.append('image', {
             uri,
             name: filename,
             type,
           });
-          
+
           await uploadImage({ chaletId, formData: imageFormData }).unwrap();
         }
       }
@@ -268,12 +266,12 @@ export default function AddChaletScreen() {
         {steps.map((step, index) => {
           const isActive = index === currentStep;
           const isCompleted = index < currentStep;
-          
+
           return (
             <React.Fragment key={step.id}>
               <View style={styles.stepItem}>
                 <View style={[
-                  styles.stepDot, 
+                  styles.stepDot,
                   isActive && styles.stepDotActive,
                   isCompleted && styles.stepDotCompleted
                 ]}>
@@ -303,7 +301,7 @@ export default function AddChaletScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
-      
+
       <View style={[styles.header, { flexDirection }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={Colors.text.primary} />
@@ -316,7 +314,7 @@ export default function AddChaletScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
-        <ScrollView 
+        <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
@@ -325,7 +323,7 @@ export default function AddChaletScreen() {
           {currentStep === 0 && (
             <View style={styles.sectionCard}>
               <ThemedText type="h2" style={styles.sectionHeader}>{isRTL ? 'المعلومات الأساسية' : 'Basic Information'}</ThemedText>
-              
+
               <View style={styles.inputGroup}>
                 <Text style={[styles.label, { textAlign }]}>{isRTL ? 'اسم الشاليه (بالعربي)' : 'Chalet Name (Arabic)'}</Text>
                 <TextInput
@@ -375,12 +373,12 @@ export default function AddChaletScreen() {
           {currentStep === 1 && (
             <View style={styles.sectionCard}>
               <ThemedText type="h2" style={styles.sectionHeader}>{isRTL ? 'تحديد الموقع' : 'Location Details'}</ThemedText>
-              
+
               <View style={[styles.rowInputs, { flexDirection }]}>
                 <View style={[styles.inputGroup, { flex: 1 }]}>
                   <Text style={[styles.label, { textAlign }]}>المدينة</Text>
-                  <TouchableOpacity 
-                    style={[styles.input, { justifyContent: 'center' }]} 
+                  <TouchableOpacity
+                    style={[styles.input, { justifyContent: 'center' }]}
                     onPress={() => citySheetRef.current?.present()}
                   >
                     <Text style={{ color: form.cityName ? Colors.text.primary : Colors.text.muted, textAlign }}>
@@ -390,8 +388,8 @@ export default function AddChaletScreen() {
                 </View>
                 <View style={[styles.inputGroup, { flex: 1 }]}>
                   <Text style={[styles.label, { textAlign }]}>المنطقة</Text>
-                  <TouchableOpacity 
-                    style={[styles.input, { justifyContent: 'center' }]} 
+                  <TouchableOpacity
+                    style={[styles.input, { justifyContent: 'center' }]}
                     onPress={() => form.cityId ? regionSheetRef.current?.present() : Alert.alert("تنبيه", "يرجى اختيار المدينة أولاً")}
                     disabled={!form.cityId}
                   >
@@ -424,12 +422,12 @@ export default function AddChaletScreen() {
 
               <View style={styles.inputGroup}>
                 <Text style={[styles.label, { textAlign }]}>{isRTL ? 'موقع الشاليه' : 'Chalet Location'}</Text>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.mapPreviewContainer}
                   onPress={() => setShowMap(true)}
                   activeOpacity={0.8}
                 >
-                  <AppMap 
+                  <AppMap
                     style={styles.miniMap}
                     centerCoordinate={form.latitude && form.longitude ? [parseFloat(form.longitude), parseFloat(form.latitude)] : undefined}
                     zoomLevel={15}
@@ -437,10 +435,10 @@ export default function AddChaletScreen() {
                     showMarker={true}
                   />
                   <View style={styles.mapOverlay}>
-                      <View style={styles.editLocBadge}>
-                          <Ionicons name="map" size={16} color={Colors.white} />
-                          <Text style={styles.editLocText}>{isRTL ? 'تعديل الموقع على الخارطة' : 'Edit on Map'}</Text>
-                      </View>
+                    <View style={styles.editLocBadge}>
+                      <Ionicons name="map" size={16} color={Colors.white} />
+                      <Text style={styles.editLocText}>{isRTL ? 'تعديل الموقع على الخارطة' : 'Edit on Map'}</Text>
+                    </View>
                   </View>
                 </TouchableOpacity>
               </View>
@@ -450,7 +448,7 @@ export default function AddChaletScreen() {
           {currentStep === 2 && (
             <View style={styles.sectionCard}>
               <ThemedText type="h2" style={styles.sectionHeader}>{isRTL ? 'التواصل وسياسة الحجز' : 'Contact & Booking'}</ThemedText>
-              
+
               <View style={styles.inputGroup}>
                 <Text style={[styles.label, { textAlign }]}>{isRTL ? 'رقم الهاتف' : 'Phone'}</Text>
                 <TextInput
@@ -528,8 +526,8 @@ export default function AddChaletScreen() {
                   {selectedImages.map((uri, index) => (
                     <View key={index} style={styles.imageItem}>
                       <Image source={{ uri }} style={styles.uploadedImage} />
-                      <TouchableOpacity 
-                        style={styles.removeImageButton} 
+                      <TouchableOpacity
+                        style={styles.removeImageButton}
                         onPress={() => removeImage(index)}
                       >
                         <Ionicons name="close-circle" size={24} color={Colors.error} />
@@ -593,8 +591,8 @@ export default function AddChaletScreen() {
               style={{ width: '100%' }}
               ListHeaderComponent={<Text style={styles.modalTitle}>اختر المدينة</Text>}
               renderItem={({ item }: { item: any }) => (
-                <TouchableOpacity 
-                  style={styles.pickerItem} 
+                <TouchableOpacity
+                  style={styles.pickerItem}
                   onPress={() => handleCitySelect(item)}
                 >
                   <Text style={[styles.pickerItemText, { textAlign }]}>{item.name}</Text>
@@ -624,8 +622,8 @@ export default function AddChaletScreen() {
               style={{ width: '100%' }}
               ListHeaderComponent={<Text style={styles.modalTitle}>اختر المنطقة</Text>}
               renderItem={({ item }: { item: any }) => (
-                <TouchableOpacity 
-                  style={styles.pickerItem} 
+                <TouchableOpacity
+                  style={styles.pickerItem}
                   onPress={() => handleRegionSelect(item)}
                 >
                   <Text style={[styles.pickerItemText, { textAlign }]}>{item.name}</Text>

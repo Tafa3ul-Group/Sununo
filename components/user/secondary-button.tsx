@@ -85,9 +85,9 @@ export function SecondaryButton({
       <View
         style={[
           styles.textWrapper,
-          { 
-            backgroundColor: bgColor, 
-            borderColor: borderColor, 
+          {
+            backgroundColor: bgColor,
+            borderColor: borderColor,
             height: 46,
             flex: 1, // Allow text to fill space
           },

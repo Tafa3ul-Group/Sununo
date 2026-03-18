@@ -9,10 +9,12 @@ import {
   ViewStyle,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 interface PrimaryButtonProps {
   label: string;
   onPress: () => void;
+  icon?: keyof typeof MaterialCommunityIcons.glyphMap;
   isActive?: boolean;
   loading?: boolean;
   disabled?: boolean;
@@ -28,13 +30,11 @@ interface PrimaryButtonProps {
 /**
  * PrimaryButton - Hybrid design for React Native.
  * Scales the original 91x29 design correctly.
- * Original Aspect Ratio: 3.13:1 (Width: 91, Height: 29)
- * New Height: 46px -> New Width (approx): 144px
- * Scaling factor: 46 / 29 ≈ 1.586
  */
 export function PrimaryButton({
   label,
   onPress,
+  icon,
   isActive = true,
   loading = false,
   disabled = false,
@@ -58,7 +58,6 @@ export function PrimaryButton({
     );
   }
 
-  // Original width of the curves was 29. 29 * 1.586 ≈ 46
   const scaledPartWidth = 46;
   const currentBorderColor = isActive ? "transparent" : border;
   const currentBorderWidth = isActive ? 0 : 1;
@@ -70,7 +69,7 @@ export function PrimaryButton({
       disabled={disabled}
       style={[styles.hybridContainer, style]}
     >
-      {/* Right Curve SVG (Scaled consistently) */}
+      {/* Right Curve SVG */}
       <View style={[styles.svgPart, { width: scaledPartWidth, height: 46 }]}>
         <Svg
           width="100%"
@@ -97,18 +96,28 @@ export function PrimaryButton({
             backgroundColor: color,
             height: 46,
             borderRadius: 8.7,
-            flex: 1, // Make sure it fills the space
+            flex: 1,
           },
         ]}
       >
-        <ThemedText
-          style={[styles.primaryText, { color: textColor }, textStyle]}
-        >
-          {label}
-        </ThemedText>
+        <View style={styles.textWithIcon}>
+          {icon && (
+            <MaterialCommunityIcons 
+              name={icon} 
+              size={20} 
+              color={textColor} 
+              style={{ marginLeft: 8 }} 
+            />
+          )}
+          <ThemedText
+            style={[styles.primaryText, { color: textColor }, textStyle]}
+          >
+            {label}
+          </ThemedText>
+        </View>
       </View>
 
-      {/* Left Curve SVG (Scaled consistently) */}
+      {/* Left Curve SVG */}
       <View style={[styles.svgPart, { width: scaledPartWidth, height: 46 }]}>
         <Svg
           width="100%"
@@ -141,7 +150,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   svgPart: {
-    // Width and Height set dynamically above
   },
   middleSection: {
     justifyContent: "center",
@@ -149,9 +157,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   primaryText: {
-    fontSize: 18, // Slightly larger font for 46px height
+    fontSize: 18,
     fontWeight: "800",
     textAlign: "center",
-    lineHeight: 22,
+  },
+  textWithIcon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
