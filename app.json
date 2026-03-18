@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "my-app",
-    "slug": "my-app",
+    "name": "Sununo",
+    "slug": "Sununo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "sununo",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {

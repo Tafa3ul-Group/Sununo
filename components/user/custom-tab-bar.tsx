@@ -1,12 +1,12 @@
-import { RootState } from '@/store';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { normalize } from '@/constants/theme';
+import { SolarIcon, SolarIconName } from '@/components/ui/solar-icon';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
 
 /* 
  * CustomTabBar - New floating navigation design
+ * Height: 50 (Normalized)
  * Left: Map button (circle)
  * Right: Main tabs (capsule)
  */
@@ -18,80 +18,56 @@ interface TabProps {
 
 export const CustomTabBar: React.FC<TabProps> = ({ state, navigation }) => {
   const insets = useSafeAreaInsets();
-  const { userType, language } = useSelector((state: RootState) => state.auth);
-  const isOwner = userType === 'owner';
-
+  
   // Current active route name
   const currentRoute = state.routes[state.index].name;
-
-  // Hade the tab bar if we are on screens that need full space
-  const hiddenScreens = [
-    '(dashboard)/add-chalet',
-    '(dashboard)/edit-chalet',
-    '(dashboard)/chalet-details'
-  ];
-
-  if (hiddenScreens.includes(currentRoute)) {
-    return null;
-  }
 
   const navigateTo = (routeName: string) => {
     navigation.navigate(routeName);
   };
 
-  // Dynamic Navigation Configuration
-  const activeBlue = '#035DF9';
+  // Defining the 3 tabs for the capsule
+  const tabs = [
+    { name: 'explore', icon: 'heart' as SolarIconName, route: 'explore' },
+    { name: 'notifications', icon: 'bell' as SolarIconName, route: '(dashboard)/notifications' },
+    { name: 'home', icon: 'home-smile' as SolarIconName, route: 'index' },
+  ];
 
-  const leftAction = isOwner
-    ? { icon: 'calendar-month', route: '(dashboard)/bookings' as const }
-    : { icon: 'map', route: 'index' as const };
-
-  const capsuleTabs = isOwner
-    ? [
-      { name: 'home', icon: 'view-grid', route: '(dashboard)/home' },
-      { name: 'revenue', icon: 'wallet', route: '(dashboard)/revenue' },
-      { name: 'profile', icon: 'account', route: 'profile' },
-    ]
-    : [
-      { name: 'explore', icon: 'heart', route: 'explore' },
-      { name: 'notifications', icon: 'bell', route: '(dashboard)/notifications' },
-      { name: 'home', icon: 'home', route: 'index' },
-      { name: 'profile', icon: 'account', route: 'profile' },
-    ];
-
-  const bgColor = activeBlue;
-  const iconInactiveColor = 'rgba(255, 255, 255, 0.6)';
+  const NAV_HEIGHT = normalize.height(50);
 
   return (
     <View style={[styles.container, { bottom: insets.bottom + 16 }]}>
-      {/* Left: Action Button (Bookings for Owner, Map for User) */}
-      <TouchableOpacity
-        style={[styles.circleButton, { backgroundColor: activeBlue }]}
-        onPress={() => navigateTo(leftAction.route)}
+      {/* Left: Separate Map Button */}
+      <TouchableOpacity 
+        style={[styles.mapButton, { width: NAV_HEIGHT, height: NAV_HEIGHT, borderRadius: NAV_HEIGHT / 2 }]}
+        onPress={() => navigateTo('(dashboard)/home')}
         activeOpacity={0.8}
       >
-        <MaterialCommunityIcons name={leftAction.icon as any} size={32} color="white" />
+        <SolarIcon name="map-bold" size={normalize.width(24)} color="white" />
       </TouchableOpacity>
 
-      {/* Right: Navigation Capsule */}
-      <View style={styles.tabCapsule}>
-        {capsuleTabs.map((tab) => {
+      {/* Right: Main Navigation Capsule */}
+      <View style={[styles.tabCapsule, { height: NAV_HEIGHT, borderRadius: NAV_HEIGHT / 2 }]}>
+        {tabs.map((tab) => {
           const isActive = currentRoute === tab.route;
+          const iconSize = normalize.width(22);
+          const iconName = isActive ? (`${tab.icon}-bold` as SolarIconName) : (`${tab.icon}-linear` as SolarIconName);
+
           return (
             <TouchableOpacity
               key={tab.name}
               onPress={() => navigateTo(tab.route)}
               style={[
                 styles.tabItem,
-                isActive && styles.activeTabItem,
-                { width: 50 }
+                { width: NAV_HEIGHT - 8, height: NAV_HEIGHT - 8, borderRadius: (NAV_HEIGHT - 8) / 2 },
+                isActive && styles.activeTabItem
               ]}
               activeOpacity={0.7}
             >
-              <MaterialCommunityIcons
-                name={isActive ? (tab.icon as any) : (`${tab.icon}-outline` as any)}
-                size={26}
-                color={isActive ? activeBlue : iconInactiveColor}
+              <SolarIcon 
+                name={iconName}
+                size={iconSize} 
+                color={isActive ? '#035DF9' : 'rgba(255, 255, 255, 0.7)'} 
               />
             </TouchableOpacity>
           );
@@ -111,10 +87,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     zIndex: 1000,
   },
-  circleButton: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+  mapButton: {
     backgroundColor: '#035DF9',
     justifyContent: 'center',
     alignItems: 'center',
@@ -127,11 +100,9 @@ const styles = StyleSheet.create({
   tabCapsule: {
     flexDirection: 'row',
     backgroundColor: '#035DF9',
-    borderRadius: 40,
-    height: 64,
-    paddingHorizontal: 8,
+    paddingHorizontal: 6,
     alignItems: 'center',
-    gap: 8,
+    gap: 4,
     elevation: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -139,9 +110,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
   },
   tabItem: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
     justifyContent: 'center',
     alignItems: 'center',
   },
