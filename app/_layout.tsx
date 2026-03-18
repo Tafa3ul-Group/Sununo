@@ -1,3 +1,4 @@
+// @@iconify-code-gen
 import { persistor, store } from '@/store';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
