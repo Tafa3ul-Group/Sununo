@@ -1,18 +1,18 @@
 import React, { useEffect } from "react";
 import {
-  Dimensions,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Dimensions,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import Animated, {
-  interpolate,
-  interpolateColor,
-  useAnimatedProps,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
+    interpolate,
+    interpolateColor,
+    useAnimatedProps,
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
 } from "react-native-reanimated";
 import Svg, { G, Path } from "react-native-svg";
 
@@ -60,9 +60,16 @@ export const MainTabs: React.FC<MainTabsProps> = ({ activeTab, onChange }) => {
     const xOffset = interpolate(transition.value, [0, 1, 2], [-112, 0, 112]);
     const s = interpolate(transition.value, [0, 1, 2], [0.85, 1, 0.85]);
 
-    // Pivot at (172, 40) which is the design center of the circle
+    // Use array of objects for transform to be bridge-compatible with New Architecture
     return {
-      transform: `translate(${xOffset}, 0) translate(172, 40) scale(${s}) translate(-172, -40)`,
+      transform: [
+        { translateX: xOffset },
+        { translateX: 172 },
+        { translateY: 40 },
+        { scale: s },
+        { translateX: -172 },
+        { translateY: -40 },
+      ],
     };
   });
 

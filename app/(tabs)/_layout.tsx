@@ -3,13 +3,12 @@ import { Tabs } from "expo-router";
 import React from "react";
 import { Image, StyleSheet, View } from "react-native";
 
+import { SolarIcon } from "@/components/ui/solar-icon";
 import { CustomTabBar } from "@/components/user/custom-tab-bar";
 import { normalize } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { RootState } from "@/store";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { SolarIcon } from "@/components/ui/solar-icon";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
@@ -29,7 +28,8 @@ export default function TabLayout() {
         headerShown: false,
         tabBarShowLabel: false,
         tabBarStyle: {
-          display: "none", // Standard bar is hidden as we use absolute positioning in CustomTabBar
+          // No display: none needed here as CustomTabBar replaces it,
+          // let react-navigation handle the hidden state cleanly
         },
       }}
     >
@@ -37,7 +37,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: t("tabs.home"),
-          href: userType === "owner" ? null : "/(tabs)",
+          href: userType === "owner" ? undefined : "/(tabs)",
           tabBarIcon: ({ color, focused }) => (
             <SolarIcon
               size={normalize.width(22)}
@@ -52,7 +52,7 @@ export default function TabLayout() {
         name="(dashboard)/home"
         options={{
           title: userType === "owner" ? t("tabs.home") : t("tabs.myChalets"),
-          href: userType === "owner" ? "/(tabs)/(dashboard)/home" : null,
+          href: userType === "owner" ? "/(tabs)/(dashboard)/home" : undefined,
           tabBarIcon: ({ color, focused }) => (
             <SolarIcon
               size={normalize.width(22)}
@@ -67,7 +67,8 @@ export default function TabLayout() {
         name="(dashboard)/bookings"
         options={{
           title: t("tabs.bookings"),
-          href: userType === "owner" ? "/(tabs)/(dashboard)/bookings" : null,
+          href:
+            userType === "owner" ? "/(tabs)/(dashboard)/bookings" : undefined,
           tabBarIcon: ({ color, focused }) => (
             <SolarIcon
               size={normalize.width(22)}
@@ -82,7 +83,8 @@ export default function TabLayout() {
         name="(dashboard)/customers"
         options={{
           title: t("tabs.customers"),
-          href: userType === "owner" ? "/(tabs)/(dashboard)/customers" : null,
+          href:
+            userType === "owner" ? "/(tabs)/(dashboard)/customers" : undefined,
           tabBarIcon: ({ color, focused }) => (
             <SolarIcon
               size={normalize.width(22)}
@@ -97,7 +99,8 @@ export default function TabLayout() {
         name="(dashboard)/revenue"
         options={{
           title: t("tabs.revenue"),
-          href: userType === "owner" ? "/(tabs)/(dashboard)/revenue" : null,
+          href:
+            userType === "owner" ? "/(tabs)/(dashboard)/revenue" : undefined,
           tabBarIcon: ({ color, focused }) => (
             <SolarIcon
               size={normalize.width(22)}
@@ -111,7 +114,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="(dashboard)/notifications"
         options={{
-          href: null,
+          href: undefined,
           title: t("notifications.title"),
         }}
       />
@@ -119,35 +122,35 @@ export default function TabLayout() {
       <Tabs.Screen
         name="(dashboard)/chalet-details"
         options={{
-          href: null,
+          href: undefined,
         }}
       />
 
       <Tabs.Screen
         name="(dashboard)/add-chalet"
         options={{
-          href: null,
+          href: undefined,
         }}
       />
 
       <Tabs.Screen
         name="(dashboard)/edit-chalet"
         options={{
-          href: null,
+          href: undefined,
         }}
       />
 
       <Tabs.Screen
         name="(dashboard)/calendar"
         options={{
-          href: null,
+          href: undefined,
         }}
       />
 
       <Tabs.Screen
         name="explore"
         options={{
-          href: null,
+          href: undefined,
         }}
       />
 

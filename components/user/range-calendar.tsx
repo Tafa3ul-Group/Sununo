@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 14,
     fontWeight: "800",
-    color: "#1A1A1A",
+    color: "#15AB64",
   },
   grid: {
     flexDirection: "row",

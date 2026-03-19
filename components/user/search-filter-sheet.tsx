@@ -4,6 +4,7 @@ import {
   BottomSheetModal,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
+import { Image } from "expo-image";
 import React, { forwardRef, useCallback, useMemo, useState } from "react";
 import {
   Dimensions,
@@ -17,6 +18,7 @@ import {
 import { ThemedText } from "@/components/themed-text";
 import { Colors, isRTL, Shadows, Spacing } from "@/constants/theme";
 import { AppButton } from "./app-button";
+import { GuestCounter } from "./guest-counter";
 import { MainTabs, TabType } from "./MainTabs";
 import { RangeCalendar } from "./range-calendar";
 
@@ -32,16 +34,27 @@ const CITIES = [
 export const SearchFilterSheet = forwardRef<BottomSheetModal>((props, ref) => {
   const [activeTab, setActiveTab] = useState<TabType>("WHERE");
   const [selectedCity, setSelectedCity] = useState("basra");
+  const [whenStep, setWhenStep] = useState(1); // 1: Calendar, 2: Periods
+  const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null);
+  const [adults, setAdults] = useState(2);
+  const [children, setChildren] = useState(1);
 
   const snapPoints = useMemo(() => ["95%"], []);
 
   const handleNext = useCallback(() => {
-    if (activeTab === "WHERE") setActiveTab("WHEN");
-    else if (activeTab === "WHEN") setActiveTab("WHO");
-    else {
+    if (activeTab === "WHERE") {
+      setActiveTab("WHEN");
+      setWhenStep(1);
+    } else if (activeTab === "WHEN") {
+      if (whenStep === 1) {
+        setWhenStep(2);
+      } else {
+        setActiveTab("WHO");
+      }
+    } else {
       // Completed search
     }
-  }, [activeTab]);
+  }, [activeTab, whenStep]);
 
   const renderBackdrop = (props: any) => (
     <BottomSheetBackdrop
@@ -75,6 +88,28 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal>((props, ref) => {
         </View>
 
         <View style={[styles.contentCard, Shadows.large]}>
+          {/* Step Indicators (Green Dots) - Visible in WHEN tab */}
+          {activeTab === "WHEN" && (
+            <View style={styles.stepIndicators}>
+              <TouchableOpacity
+                onPress={() => setWhenStep(2)}
+                activeOpacity={0.7}
+                style={[
+                  styles.stepDot,
+                  { backgroundColor: whenStep === 2 ? "#15AB64" : "#15AB6433" },
+                ]}
+              />
+              <TouchableOpacity
+                onPress={() => setWhenStep(1)}
+                activeOpacity={0.7}
+                style={[
+                  styles.stepDot,
+                  { backgroundColor: whenStep === 1 ? "#15AB64" : "#15AB6433" },
+                ]}
+              />
+            </View>
+          )}
+
           <View style={styles.dragHandleContainer}>
             <View style={styles.dragHandle} />
           </View>
@@ -123,53 +158,134 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal>((props, ref) => {
                 </ScrollView>
               </View>
             ) : activeTab === "WHEN" ? (
-              <View style={{ flex: 1 }}>
-                <RangeCalendar />
-                <View style={styles.calendarFooter}>
-                  <View style={styles.legendWrapper}>
-                    <View style={styles.legendItem}>
-                      <ThemedText style={styles.legendText}>
-                        وقت النهاية
-                      </ThemedText>
-                      <View
-                        style={[styles.dot, { backgroundColor: "#15AB64" }]}
-                      />
-                    </View>
-                    <View style={styles.legendItem}>
-                      <ThemedText style={styles.legendText}>
-                        وقت البداية
-                      </ThemedText>
-                      <View
-                        style={[styles.dot, { backgroundColor: "#035DF9" }]}
-                      />
+              whenStep === 1 ? (
+                <View style={{ flex: 1 }}>
+                  <RangeCalendar />
+                  <View style={styles.calendarFooter}>
+                    <View style={styles.legendWrapper}>
+                      <View style={styles.legendItem}>
+                        <ThemedText style={styles.legendText}>
+                          وقت النهاية
+                        </ThemedText>
+                        <View
+                          style={[styles.dot, { backgroundColor: "#15AB64" }]}
+                        />
+                      </View>
+                      <View style={styles.legendItem}>
+                        <ThemedText style={styles.legendText}>
+                          وقت البداية
+                        </ThemedText>
+                        <View
+                          style={[styles.dot, { backgroundColor: "#035DF9" }]}
+                        />
+                      </View>
                     </View>
                   </View>
                 </View>
-              </View>
+              ) : (
+                <View style={styles.periodsContainer}>
+                  {/* Sub-tabs: Period / Custom Hours */}
+                  <View style={styles.subTabsContainer}>
+                    <TouchableOpacity style={styles.subTabItem}>
+                      <ThemedText style={styles.subTabTextInactive}>
+                        ساعات مخصصة
+                      </ThemedText>
+                    </TouchableOpacity>
+                    <View style={styles.subTabDivider} />
+                    <TouchableOpacity
+                      style={[styles.subTabItem, styles.subTabItemActive]}
+                    >
+                      <ThemedText style={styles.subTabTextActive}>
+                        فترة
+                      </ThemedText>
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Period List */}
+                  <View style={styles.periodList}>
+                    <TouchableOpacity
+                      style={[
+                        styles.periodItem,
+                        selectedPeriod === "morning" &&
+                          styles.selectedPeriodItem,
+                      ]}
+                      onPress={() => setSelectedPeriod("morning")}
+                    >
+                      <Image
+                        source={require("@/assets/tabs/sun.svg")}
+                        style={{ width: 34, height: 34 }}
+                        contentFit="contain"
+                      />
+                      <ThemedText style={styles.periodLabel}>
+                        الفترة الصباحية
+                      </ThemedText>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={[
+                        styles.periodItem,
+                        selectedPeriod === "evening" &&
+                          styles.selectedPeriodItem,
+                      ]}
+                      onPress={() => setSelectedPeriod("evening")}
+                    >
+                      <Image
+                        source={require("@/assets/tabs/night.svg")}
+                        style={{ width: 34, height: 34 }}
+                        contentFit="contain"
+                      />
+                      <ThemedText style={styles.periodLabel}>
+                        الفترة المسائية
+                      </ThemedText>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={[
+                        styles.periodItem,
+                        selectedPeriod === "overnight" &&
+                          styles.selectedPeriodItem,
+                      ]}
+                      onPress={() => setSelectedPeriod("overnight")}
+                    >
+                      <Image
+                        source={require("@/assets/tabs/sleep.svg")}
+                        style={{ width: 34, height: 34 }}
+                        contentFit="contain"
+                      />
+                      <ThemedText style={styles.periodLabel}>المبيت</ThemedText>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )
             ) : (
               <View style={styles.whoContainer}>
-                <View style={styles.searchBar}>
-                  <TextInput
-                    placeholder="منو؟ (عدد الأشخاص)"
-                    style={styles.searchInput}
-                    placeholderTextColor={Colors.text.muted}
-                    keyboardType="numeric"
+                {/* Adults Counter */}
+                <View style={styles.guestItem}>
+                  <GuestCounter
+                    value={adults}
+                    onIncrement={() => setAdults(adults + 1)}
+                    onDecrement={() => setAdults(Math.max(1, adults - 1))}
                   />
-                  <MaterialCommunityIcons
-                    name="account-group-outline"
-                    size={24}
-                    color={Colors.text.muted}
-                  />
+                  <View style={styles.guestInfo}>
+                    <ThemedText style={styles.guestLabel}>البالغين</ThemedText>
+                    <ThemedText style={styles.guestSubLabel}>
+                      18 واكبر
+                    </ThemedText>
+                  </View>
                 </View>
-                <ThemedText
-                  style={{
-                    textAlign: "right",
-                    marginTop: Spacing.md,
-                    paddingHorizontal: 24,
-                  }}
-                >
-                  حدد عدد الضيوف للحصول على نتائج أدق
-                </ThemedText>
+
+                {/* Children Counter */}
+                <View style={styles.guestItem}>
+                  <GuestCounter
+                    value={children}
+                    onIncrement={() => setChildren(children + 1)}
+                    onDecrement={() => setChildren(Math.max(0, children - 1))}
+                  />
+                  <View style={styles.guestInfo}>
+                    <ThemedText style={styles.guestLabel}>الاطفال</ThemedText>
+                    <ThemedText style={styles.guestSubLabel}>0 - 18</ThemedText>
+                  </View>
+                </View>
               </View>
             )}
           </View>
@@ -180,7 +296,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal>((props, ref) => {
               label={activeTab === "WHO" ? "بحث" : "التالية"}
               onPress={handleNext}
               isActive={true}
-              activeColor="#15AB64"
+              activeColor={activeTab === "WHO" ? "#F64200" : "#15AB64"}
               style={styles.nextButton}
             />
           </View>
@@ -316,5 +432,138 @@ const styles = StyleSheet.create({
   whoContainer: {
     flex: 1,
     paddingTop: 10,
+  },
+  stepIndicators: {
+    flexDirection: "row",
+    position: "absolute",
+    top: 20,
+    right: 24,
+    gap: 8,
+    zIndex: 100,
+  },
+  stepDot: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+  },
+  periodsContainer: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingTop: 10,
+  },
+  subTabsContainer: {
+    flexDirection: "row-reverse",
+    backgroundColor: "#F8F9FB",
+    borderRadius: 20,
+    height: 56,
+    padding: 4,
+    marginBottom: 24,
+  },
+  subTabItem: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 16,
+  },
+  subTabItemActive: {
+    backgroundColor: "white",
+    ...Shadows.small,
+  },
+  subTabDivider: {
+    width: 1,
+    height: "60%",
+    backgroundColor: "#E0E0E0",
+    alignSelf: "center",
+  },
+  subTabTextActive: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#1A1A1A",
+  },
+  subTabTextInactive: {
+    fontSize: 18,
+    fontWeight: "500",
+    color: "#717171",
+  },
+  periodList: {
+    gap: 12,
+  },
+  periodItem: {
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    backgroundColor: "#F7FCF9",
+    borderRadius: 16,
+    height: 64,
+    paddingHorizontal: 20,
+    borderWidth: 1.5,
+    borderColor: "transparent",
+    gap: 16,
+  },
+  selectedPeriodItem: {
+    borderColor: "#15AB64",
+    backgroundColor: "white",
+  },
+  periodLabel: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#1A1A1A",
+    flex: 1,
+    textAlign: "right",
+  },
+  guestItem: {
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 16,
+    marginHorizontal: 24,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#F0F2F5",
+    height: 94,
+    ...Shadows.small,
+  },
+  guestInfo: {
+    flex: 1,
+    marginRight: 12,
+  },
+  guestLabel: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#1A1A1A",
+    textAlign: "right",
+  },
+  guestSubLabel: {
+    fontSize: 16,
+    color: "#9CA3AF",
+    textAlign: "right",
+    marginTop: 2,
+  },
+  counterGroup: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 1, // Minimal gap to look like fused blocks
+  },
+  counterButton: {
+    backgroundColor: "#F64200",
+    width: 52,
+    height: 52,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 14,
+  },
+  counterValue: {
+    backgroundColor: "#F64200",
+    width: 60,
+    height: 52,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 8,
+    marginHorizontal: 4,
+  },
+  counterText: {
+    fontSize: 24,
+    fontWeight: "900",
+    color: "white",
   },
 });
