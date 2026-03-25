@@ -1,66 +1,69 @@
-import { Platform } from 'react-native';
-import { moderateScale, scale, verticalScale } from 'react-native-size-matters';
+import { I18nManager, Platform } from "react-native";
+import { moderateScale, scale, verticalScale } from "react-native-size-matters";
+
+export const isRTL = I18nManager.isRTL;
 
 /**
  * Normalization utilities to ensure consistent UI across different screen sizes and platforms.
+ * use width for horizontal spacing, height for vertical, and font for text.
  */
 export const normalize = {
   width: (size: number) => scale(size),
   height: (size: number) => verticalScale(size),
-  font: (size: number, factor?: number) => moderateScale(size, factor),
-  radius: (size: number, factor?: number) => moderateScale(size, factor),
+  font: (size: number, factor: number = 0.5) => moderateScale(size, factor),
+  radius: (size: number, factor: number = 0.5) => moderateScale(size, factor),
 };
 
-const tintColorLight = '#2B66FF';
-const tintColorDark = '#fff';
+const tintColorLight = "#2B66FF";
+const tintColorDark = "#fff";
 
 export const Colors = {
   light: {
-    text: '#1A1A1A',
-    background: '#FFFFFF',
+    text: "#1A1A1A",
+    background: "#FFFFFF",
     tint: tintColorLight,
-    icon: '#717171',
-    tabIconDefault: '#717171',
+    icon: "#717171",
+    tabIconDefault: "#717171",
     tabIconSelected: tintColorLight,
-    primary: '#2B66FF',
-    secondary: '#F0F2F5',
-    surface: '#F8F9FB',
-    border: '#EBEBEB',
-    muted: '#9CA3AF',
+    primary: "#2B66FF",
+    secondary: "#F0F2F5",
+    surface: "#F8F9FB",
+    border: "#EBEBEB",
+    muted: "#9CA3AF",
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
+    text: "#ECEDEE",
+    background: "#151718",
     tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
+    icon: "#9BA1A6",
+    tabIconDefault: "#9BA1A6",
     tabIconSelected: tintColorDark,
-    primary: '#2B66FF',
-    secondary: '#2A2A2A',
-    surface: '#222222',
-    border: '#333333',
-    muted: '#6B7280',
+    primary: "#2B66FF",
+    secondary: "#2A2A2A",
+    surface: "#222222",
+    border: "#333333",
+    muted: "#6B7280",
   },
   // Shared/Legacy support for the new design components
-  primary: '#2B66FF',
-  secondary: '#F0F2F5',
-  background: '#FFFFFF',
-  surface: '#F8F9FB',
+  primary: "#2B66FF",
+  secondary: "#F0F2F5",
+  background: "#FFFFFF",
+  surface: "#F8F9FB",
   text: {
-    primary: '#1A1A1A',
-    secondary: '#717171',
-    muted: '#9CA3AF',
-    onPrimary: '#FFFFFF',
+    primary: "#1A1A1A",
+    secondary: "#717171",
+    muted: "#9CA3AF",
+    onPrimary: "#FFFFFF",
   },
   accent: {
-    star: '#FFB800',
-    heart: '#FFFFFF',
-    heartActive: '#FF385C',
+    star: "#FFB800",
+    heart: "#FFFFFF",
+    heartActive: "#FF385C",
   },
-  border: '#EBEBEB',
-  white: '#FFFFFF',
-  black: '#000000',
-  error: '#FF385C',
+  border: "#EBEBEB",
+  white: "#FFFFFF",
+  black: "#000000",
+  error: "#FF385C",
 };
 
 export const Spacing = {
@@ -72,7 +75,18 @@ export const Spacing = {
 };
 
 // Use explicit literal types for fontWeight to satisfy TypeScript
-type FontWeight = 'normal' | 'bold' | '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900';
+type FontWeight =
+  | "normal"
+  | "bold"
+  | "100"
+  | "200"
+  | "300"
+  | "400"
+  | "500"
+  | "600"
+  | "700"
+  | "800"
+  | "900";
 
 interface TypeStyle {
   fontSize: number;
@@ -83,58 +97,58 @@ interface TypeStyle {
 export const Typography: Record<string, TypeStyle> = {
   h1: {
     fontSize: normalize.font(28),
-    fontWeight: '700' as FontWeight,
+    fontWeight: "700" as FontWeight,
     color: Colors.light.text, // Defaulting to light text
   },
   h2: {
     fontSize: normalize.font(20),
-    fontWeight: '600' as FontWeight,
+    fontWeight: "600" as FontWeight,
     color: Colors.light.text,
   },
   body: {
     fontSize: normalize.font(14),
-    fontWeight: '400' as FontWeight,
+    fontWeight: "400" as FontWeight,
     color: Colors.light.text,
   },
   subtitle: {
     fontSize: normalize.font(13),
-    fontWeight: '400' as FontWeight,
+    fontWeight: "400" as FontWeight,
     color: Colors.light.icon,
   },
   caption: {
     fontSize: normalize.font(12),
-    fontWeight: '500' as FontWeight,
+    fontWeight: "500" as FontWeight,
     color: Colors.light.icon,
   },
   price: {
     fontSize: normalize.font(18),
-    fontWeight: '700' as FontWeight,
+    fontWeight: "700" as FontWeight,
     color: Colors.light.primary,
   },
   rating: {
     fontSize: normalize.font(14),
-    fontWeight: '600' as FontWeight,
+    fontWeight: "600" as FontWeight,
     color: Colors.light.text,
   },
 };
 
 export const Shadows = {
   small: {
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
   medium: {
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 4,
   },
   large: {
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.2,
     shadowRadius: 16,
@@ -142,24 +156,24 @@ export const Shadows = {
   },
 };
 
-
 export const Fonts = Platform.select({
   ios: {
-    sans: 'system-ui',
-    serif: 'ui-serif',
-    rounded: 'ui-rounded',
-    mono: 'ui-monospace',
+    sans: "system-ui",
+    serif: "ui-serif",
+    rounded: "ui-rounded",
+    mono: "ui-monospace",
   },
   default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
+    sans: "normal",
+    serif: "serif",
+    rounded: "normal",
+    mono: "monospace",
   },
   web: {
     sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
     serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
+    rounded:
+      "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
     mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   },
 });

@@ -32,7 +32,8 @@
       "popular": "Popular",
       "nearby": "Nearby",
       "luxury": "Luxury"
-    }
+    },
+    "seeAll": "See All"
   },
   "profile": {
     "title": "Profile",
