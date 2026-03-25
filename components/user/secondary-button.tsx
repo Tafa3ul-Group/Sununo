@@ -15,6 +15,7 @@ interface SecondaryButtonProps {
   onPress: () => void;
   isActive?: boolean;
   icon?: keyof typeof MaterialCommunityIcons.glyphMap;
+  iconLabel?: string;
   activeColor?: string;
   inactiveColor?: string;
   activeTextColor?: string;
@@ -34,6 +35,7 @@ export function SecondaryButton({
   onPress,
   isActive = false,
   icon,
+  iconLabel,
   activeColor = "#035DF9",
   inactiveColor = "#E9EBED",
   activeTextColor = "white",
@@ -70,13 +72,19 @@ export function SecondaryButton({
             strokeWidth="1"
           />
         </Svg>
-        {icon && (
+        {(icon || iconLabel) && (
           <View style={styles.iconContainer}>
-            <MaterialCommunityIcons
-              name={icon as any}
-              size={22} // Scaled icon size (from 16 to approx 22-24)
-              color={finalContentColor}
-            />
+            {iconLabel ? (
+              <ThemedText style={[styles.text, { color: finalContentColor, fontSize: 16 }]}>
+                {iconLabel}
+              </ThemedText>
+            ) : (
+              <MaterialCommunityIcons
+                name={icon as any}
+                size={22}
+                color={finalContentColor}
+              />
+            )}
           </View>
         )}
       </View>

@@ -3,11 +3,14 @@ import {
   BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetView,
+  useBottomSheetModal,
+  BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import { Image } from "expo-image";
 import React, { forwardRef, useCallback, useMemo, useState } from "react";
 import {
   Dimensions,
+  Pressable,
   ScrollView,
   StyleSheet,
   TextInput,
@@ -32,6 +35,7 @@ const CITIES = [
 ];
 
 export const SearchFilterSheet = forwardRef<BottomSheetModal>((props, ref) => {
+  const { dismiss } = useBottomSheetModal();
   const [activeTab, setActiveTab] = useState<TabType>("WHERE");
   const [selectedCity, setSelectedCity] = useState("basra");
   const [whenStep, setWhenStep] = useState(1); // 1: Calendar, 2: Periods
@@ -52,9 +56,10 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal>((props, ref) => {
         setActiveTab("WHO");
       }
     } else {
-      // Completed search
+      // Completed search - close sheet
+      dismiss();
     }
-  }, [activeTab, whenStep]);
+  }, [activeTab, whenStep, dismiss]);
 
   const renderBackdrop = (props: any) => (
     <BottomSheetBackdrop
@@ -81,7 +86,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal>((props, ref) => {
       enablePanDownToClose={true}
     >
       <BottomSheetView style={styles.container}>
-        <View style={{ flex: 1 }} />
+        <Pressable style={{ flex: 1 }} onPress={() => dismiss()} />
 
         <View style={styles.headerWrapper}>
           <MainTabs activeTab={activeTab} onChange={setActiveTab} />
@@ -130,9 +135,9 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal>((props, ref) => {
                   />
                 </View>
 
-                <ScrollView
+                <BottomSheetScrollView
                   showsVerticalScrollIndicator={false}
-                  contentContainerStyle={{ paddingBottom: Spacing.xl }}
+                  contentContainerStyle={{ paddingBottom: Spacing.xl + 40 }}
                 >
                   {CITIES.map((city) => (
                     <TouchableOpacity
@@ -155,7 +160,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal>((props, ref) => {
                       </View>
                     </TouchableOpacity>
                   ))}
-                </ScrollView>
+                </BottomSheetScrollView>
               </View>
             ) : activeTab === "WHEN" ? (
               whenStep === 1 ? (
@@ -321,11 +326,12 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderTopLeftRadius: 40,
     borderTopRightRadius: 40,
-    height: SCREEN_HEIGHT * 0.75,
+    flex: 1,
+    minHeight: SCREEN_HEIGHT * 0.75,
     width: "100%",
     overflow: "hidden",
-    borderWidth: 1,
-    borderColor: "#F0F2F5",
+    marginTop: -20, // Overlap slightly with tabs for seamless transition
+    paddingBottom: 40, // Account for bottom safe area
   },
   dragHandleContainer: {
     width: "100%",

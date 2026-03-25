@@ -179,6 +179,12 @@ export const apiSlice = createApi({
       providesTags: ['Chalet'],
     }),
 
+    // Get specific chalet details for customer
+    getChaletDetails: builder.query({
+      query: (id) => `/customer/chalets/${id}`,
+      providesTags: (result, error, id) => [{ type: 'Chalet' as const, id }],
+    }),
+
     setChaletAmenities: builder.mutation({
       query: ({ chaletId, data }) => ({
         url: `/provider/chalets/${chaletId}/amenities`,
@@ -201,10 +207,12 @@ export const {
   useUploadChaletImageMutation,
   useGetOwnerChaletsQuery,
   useGetOwnerChaletDetailsQuery,
+  useGetChaletDetailsQuery,
   
   useGetChaletShiftsQuery,
   useGetShiftPricingQuery,
   useGetChaletCancellationPoliciesQuery,
+
   
   useCreateShiftMutation,
   useUpdateShiftMutation,
