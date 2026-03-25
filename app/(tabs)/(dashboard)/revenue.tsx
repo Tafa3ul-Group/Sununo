@@ -125,16 +125,16 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   scrollContent: {
-    paddingHorizontal: 12,
-    paddingTop: 4,
+    paddingHorizontal: 10,
+    paddingTop: 0,
     paddingBottom: 100,
   },
   balanceCard: {
     backgroundColor: Colors.primary,
     borderRadius: 20,
-    padding: 20,
+    padding: 18,
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   balanceLabel: {
     color: Colors.white + '90',
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
   },
   statsRow: {
     gap: 12,
-    marginBottom: 20,
+    marginBottom: 16,
     paddingHorizontal: 0,
   },
   statBox: {
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
   historyHeader: {
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
     paddingHorizontal: 0,
   },
   historyTitle: {
