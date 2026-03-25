@@ -468,6 +468,7 @@ export default function BookingsScreen() {
           title={t('tabs.bookings')}
           showSearch={false}
           showCategories={false}
+          showBackButton={true}
         />
         <View style={styles.container}>
           <View style={styles.calendarContainer}>

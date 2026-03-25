@@ -81,6 +81,7 @@ export default function CustomersScreen() {
         title={t('tabs.customers')}
         showSearch={false}
         showCategories={false}
+        showBackButton={true}
       />
       <View style={styles.container}>
         <FlashList

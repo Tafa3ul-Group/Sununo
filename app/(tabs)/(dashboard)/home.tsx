@@ -261,8 +261,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   scrollContent: {
-    paddingHorizontal: 10,
-    paddingTop: 0,
+    paddingHorizontal: 8,
+    paddingTop: 4,
     paddingBottom: 100,
   },
   dashboardHeader: {
@@ -275,10 +275,10 @@ const styles = StyleSheet.create({
   walletCard: {
     backgroundColor: Colors.white,
     borderRadius: 20,
-    padding: 18,
+    padding: 16,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#EFEFEF',
+    borderColor: '#F0F0F0',
   },
   walletLabel: {
     fontSize: normalize.font(14),
@@ -383,8 +383,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   listContent: {
-    paddingHorizontal: 10,
-    paddingBottom: 24,
+    paddingHorizontal: 8,
+    paddingBottom: 20,
   },
   chaletCardHorizontal: {
     backgroundColor: Colors.white,

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useRouter } from 'expo-router';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing, Typography, normalize, Shadows } from '@/constants/theme';
@@ -35,6 +36,7 @@ const MOCK_TRANSACTIONS = [
 ];
 
 export default function RevenueScreen() {
+  const router = useRouter();
   const { user, userType, language } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
   const isRTL = language === 'ar';
@@ -68,6 +70,7 @@ export default function RevenueScreen() {
         title={t('tabs.revenue')}
         showSearch={false}
         showCategories={false}
+        showBackButton={true}
       />
         <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <View style={{ paddingHorizontal: Spacing.md }}>
@@ -97,7 +100,7 @@ export default function RevenueScreen() {
         {/* Recent Transactions */}
         <View style={[styles.historyHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
           <ThemedText type="h2" style={styles.historyTitle}>{t('dashboard.revenue.history')}</ThemedText>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/(tabs)/(dashboard)/transactions')}>
             <Text style={styles.viewAllText}>{t('dashboard.viewAll')}</Text>
           </TouchableOpacity>
         </View>
@@ -125,8 +128,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   scrollContent: {
-    paddingHorizontal: 10,
-    paddingTop: 0,
+    paddingHorizontal: 8,
+    paddingTop: 4,
     paddingBottom: 100,
   },
   balanceCard: {
@@ -134,7 +137,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 18,
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   balanceLabel: {
     color: Colors.white + '90',
@@ -160,7 +163,7 @@ const styles = StyleSheet.create({
   },
   statsRow: {
     gap: 12,
-    marginBottom: 16,
+    marginBottom: 10,
     paddingHorizontal: 0,
   },
   statBox: {
