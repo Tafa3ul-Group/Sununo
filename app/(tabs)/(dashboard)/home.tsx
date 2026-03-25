@@ -122,6 +122,7 @@ export default function HomeScreen() {
           title={userType === 'owner' ? t('tabs.home') : t('tabs.myChalets')}
           showSearch={false}
           showCategories={false}
+          showProfile={true}
         />
         <ScrollView 
           style={styles.container}

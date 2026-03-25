@@ -127,9 +127,25 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
+        name="(dashboard)/edit-chalet"
+        options={{
+          href: null,
+          title: isRTL ? 'تعديل الشاليه' : 'Edit Chalet',
+        }}
+      />
+
+      <Tabs.Screen
         name="(dashboard)/chalet-details"
         options={{
           href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="(dashboard)/transactions"
+        options={{
+          href: null,
+          title: isRTL ? 'سجل المعاملات' : 'Transactions',
         }}
       />
 

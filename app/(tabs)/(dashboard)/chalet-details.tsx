@@ -390,8 +390,6 @@ const styles = StyleSheet.create({
   contentCard: {
     flex: 1,
     backgroundColor: '#fff',
-    borderTopLeftRadius: 36,
-    borderTopRightRadius: 36,
     borderWidth: 1,
     borderColor: '#F1F5F9',
     minHeight: SCREEN_HEIGHT - 100,
@@ -419,8 +417,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.25)',
   },
   contentBody: {
-    padding: 24,
-    paddingTop: 36,
+    paddingHorizontal: 14,
+    paddingTop: 24,
   },
   titleSection: {
     justifyContent: 'space-between',
@@ -470,13 +468,13 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   statsRow: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 28,
-    padding: 20,
+    backgroundColor: Colors.white,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
     justifyContent: 'space-between',
-    marginBottom: 32,
+    marginBottom: 24,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: '#F0F0F0',
   },
   statItem: {
     alignItems: 'center',
@@ -546,7 +544,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: '#F0F0F0',
     gap: 10,
     minWidth: '47%',
   },
@@ -570,7 +568,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: '#F0F0F0',
   },
   detailValue: {
     fontSize: normalize.font(16),

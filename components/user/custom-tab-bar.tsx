@@ -1,10 +1,9 @@
 import { normalize } from '@/constants/theme';
-import { SolarIcon, SolarIconName } from '@/components/ui/solar-icon';
+import { RootState } from '@/store';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
 
 /* 
  * CustomTabBar - Dynamic floating navigation design
@@ -19,10 +18,27 @@ interface TabProps {
 export const CustomTabBar: React.FC<TabProps> = ({ state, navigation, descriptors }) => {
   const insets = useSafeAreaInsets();
   const { userType } = useSelector((state: RootState) => state.auth);
-  
+
   // Current active route index/name
   const activeIndex = state.index;
   const currentRouteName = state.routes[activeIndex].name;
+  const currentOptions = descriptors[state.routes[activeIndex].key]?.options;
+
+  // List of screens that should hide the tab bar
+  const hiddenScreens = [
+    '(dashboard)/add-chalet',
+    '(dashboard)/edit-chalet',
+    '(dashboard)/chalet-details',
+    '(dashboard)/revenue',
+    '(dashboard)/transactions',
+    '(dashboard)/notifications',
+    '(dashboard)/customers',
+  ];
+
+  // Hide tab bar if screen is a sub-screen (explicitly href: null) OR in blacklist
+  if (currentOptions?.href === null || hiddenScreens.includes(currentRouteName)) {
+    return null;
+  }
 
   // Filter routes that should be visible (href !== null)
   const visibleRoutes = state.routes.filter((route: any) => {
@@ -62,7 +78,7 @@ export const CustomTabBar: React.FC<TabProps> = ({ state, navigation, descriptor
 
   const renderIcon = (route: any, isActive: boolean) => {
     const { options } = descriptors[route.key];
-    
+
     if (options.tabBarIcon) {
       return options.tabBarIcon({
         focused: isActive,
@@ -80,9 +96,9 @@ export const CustomTabBar: React.FC<TabProps> = ({ state, navigation, descriptor
   return (
     <View style={[styles.container, { bottom: insets.bottom + 16 }]}>
       {/* Left Button */}
-      <TouchableOpacity 
+      <TouchableOpacity
         style={[
-          styles.roundButton, 
+          styles.roundButton,
           { width: NAV_HEIGHT, height: NAV_HEIGHT, borderRadius: NAV_HEIGHT / 2 },
           isLeftTabActive && styles.activeRoundButton
         ]}
@@ -96,7 +112,7 @@ export const CustomTabBar: React.FC<TabProps> = ({ state, navigation, descriptor
       <View style={[styles.tabCapsule, { height: NAV_HEIGHT, borderRadius: NAV_HEIGHT / 2 }]}>
         {capsuleTabs.map((route: any) => {
           const isActive = currentRouteName === route.name;
-          
+
           return (
             <TouchableOpacity
               key={route.key}

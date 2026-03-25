@@ -29,6 +29,8 @@ interface HeaderSectionProps {
   onBackPress?: () => void;
   extraIcon?: string | any;
   onExtraIconPress?: () => void;
+  showProfile?: boolean;
+  onProfilePress?: () => void;
 }
 
 export function HeaderSection({ 
@@ -41,7 +43,9 @@ export function HeaderSection({
   showBackButton = false,
   onBackPress,
   extraIcon,
-  onExtraIconPress
+  onExtraIconPress,
+  showProfile = false,
+  onProfilePress
 }: HeaderSectionProps) {
   const router = useRouter();
   const { t } = useTranslation();
@@ -87,21 +91,32 @@ export function HeaderSection({
           </View>
         </View>
 
-        <TouchableOpacity 
-          style={styles.filterButton}
-          onPress={onExtraIconPress || (() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            router.push('/(tabs)/(dashboard)/notifications');
-          })}
-        >
-          {extraIcon ? (
-            typeof extraIcon === 'string' ? (
-              <Ionicons name={extraIcon as any} size={normalize.width(22)} color={Colors.text.primary} />
-            ) : (extraIcon)
-          ) : (
-            <Ionicons name="notifications-outline" size={normalize.width(22)} color={Colors.text.primary} />
+        <View style={[styles.actionsContainer, { flexDirection }]}>
+          {showProfile && (
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={onProfilePress || (() => router.push('/profile'))}
+            >
+              <Ionicons name="person-outline" size={normalize.width(22)} color={Colors.text.primary} />
+            </TouchableOpacity>
           )}
-        </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.actionButton}
+            onPress={onExtraIconPress || (() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push('/(tabs)/(dashboard)/notifications');
+            })}
+          >
+            {extraIcon ? (
+              typeof extraIcon === 'string' ? (
+                <Ionicons name={extraIcon as any} size={normalize.width(22)} color={Colors.text.primary} />
+              ) : (extraIcon)
+            ) : (
+              <Ionicons name="notifications-outline" size={normalize.width(22)} color={Colors.text.primary} />
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Search Bar */}
@@ -181,12 +196,16 @@ const styles = StyleSheet.create({
     color: Colors.text.muted,
     fontWeight: '400',
   },
-  filterButton: {
-    backgroundColor: Colors.surface,
+  actionsContainer: {
+    gap: Spacing.sm,
+    alignItems: 'center',
+  },
+  actionButton: {
+    backgroundColor: Colors.white,
     padding: normalize.width(8),
     borderRadius: normalize.radius(50),
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: '#F0F0F0',
   },
   searchContainer: {
     paddingHorizontal: Spacing.md,
