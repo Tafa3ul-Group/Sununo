@@ -672,7 +672,7 @@ export default function BookingsScreen() {
         index={0}
         enablePanDownToClose
         backdropComponent={renderBackdrop}
-        backgroundStyle={{ borderRadius: 32 }}
+        backgroundStyle={{ borderRadius: 40, backgroundColor: Colors.white }}
       >
         <BottomSheetView style={{ flex: 1 }}>
           {selectedBookingId && (
@@ -691,19 +691,19 @@ export default function BookingsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.white,
   },
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: Colors.white,
   },
   calendarContainer: {
     backgroundColor: Colors.white,
     paddingHorizontal: Spacing.md,
-    paddingTop: Spacing.md,
+    paddingTop: Spacing.xl, // Increase top space
     paddingBottom: Spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border + '50',
+    borderBottomColor: Colors.border,
   },
   calendarHeader: {
     justifyContent: 'space-between',
@@ -1098,6 +1098,7 @@ const styles = StyleSheet.create({
     borderColor: '#BAE6FD',
   },
   // ── Detail Card ──
+  // Removed duplicate bookingCard style
   detailCard: {
     backgroundColor: '#FFF',
     borderRadius: 16,

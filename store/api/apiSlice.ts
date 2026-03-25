@@ -178,6 +178,23 @@ export const apiSlice = createApi({
       invalidatesTags: ['Chalet'],
     }),
 
+    createChaletPolicy: builder.mutation({
+      query: ({ chaletId, data }) => ({
+        url: `/provider/chalets/${chaletId}/cancellation-policies`,
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Chalet'],
+    }),
+
+    deleteChaletPolicy: builder.mutation({
+      query: ({ chaletId, policyId }) => ({
+        url: `/provider/chalets/${chaletId}/cancellation-policies/${policyId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Chalet'],
+    }),
+
     // Amenities
     getAmenities: builder.query<any[], void>({
       query: () => '/provider/chalets/amenities/all',
@@ -243,6 +260,8 @@ export const {
   useSetShiftPricingMutation,
   useUpdateShiftPricingDayMutation,
   useSetChaletPoliciesMutation,
+  useCreateChaletPolicyMutation,
+  useDeleteChaletPolicyMutation,
 
   useGetCitiesQuery,
   useGetChaletRegionsQuery,

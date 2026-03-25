@@ -69,7 +69,7 @@ export default function RevenueScreen() {
         showSearch={false}
         showCategories={false}
       />
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 0 }}>
+        <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <View style={{ paddingHorizontal: Spacing.md }}>
 
         {/* Balance Card */}
@@ -110,7 +110,7 @@ export default function RevenueScreen() {
           ))}
         </View>
         </View>
-      </ScrollView>
+        </ScrollView>
     </SafeAreaView>
   );
 }
@@ -118,19 +118,23 @@ export default function RevenueScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.white,
   },
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: Colors.white,
+  },
+  scrollContent: {
+    paddingHorizontal: 12,
+    paddingTop: 4,
+    paddingBottom: 100,
   },
   balanceCard: {
     backgroundColor: Colors.primary,
     borderRadius: 20,
-    padding: 24,
+    padding: 20,
     alignItems: 'center',
-    marginBottom: Spacing.lg,
-    marginTop: Spacing.md,
+    marginBottom: 16,
   },
   balanceLabel: {
     color: Colors.white + '90',
@@ -156,8 +160,8 @@ const styles = StyleSheet.create({
   },
   statsRow: {
     gap: 12,
-    marginBottom: 24,
-    paddingHorizontal: Spacing.md,
+    marginBottom: 20,
+    paddingHorizontal: 0,
   },
   statBox: {
     flex: 1,
@@ -165,7 +169,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: Colors.border + '80',
+    borderColor: '#F0F0F0',
   },
   quickStatLabel: {
     fontSize: normalize.font(10),
@@ -180,8 +184,8 @@ const styles = StyleSheet.create({
   historyHeader: {
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: Spacing.md,
-    paddingHorizontal: Spacing.md,
+    marginBottom: 12,
+    paddingHorizontal: 0,
   },
   historyTitle: {
     fontSize: normalize.font(18),
@@ -195,12 +199,12 @@ const styles = StyleSheet.create({
   },
   historyList: {
     backgroundColor: Colors.white,
-    borderRadius: 16,
-    padding: 8,
-    marginHorizontal: Spacing.md,
+    borderRadius: 20,
+    padding: 4,
+    marginHorizontal: 0,
     marginBottom: 32,
     borderWidth: 1,
-    borderColor: Colors.border + '80',
+    borderColor: '#F2F2F2',
   },
   transactionItem: {
     padding: Spacing.md,

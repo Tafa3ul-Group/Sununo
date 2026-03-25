@@ -83,7 +83,6 @@ export default function CustomersScreen() {
         showCategories={false}
       />
       <View style={styles.container}>
-
         <FlashList
           data={MOCK_CUSTOMERS}
           keyExtractor={(item) => item.id}
@@ -106,23 +105,26 @@ export default function CustomersScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.white,
   },
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: Colors.white,
   },
   listContent: {
     paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.md,
+    paddingTop: 16,
+    paddingBottom: 100,
   },
   customerCard: {
     backgroundColor: Colors.white,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: Spacing.sm,
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 16,
     borderWidth: 1,
-    borderColor: Colors.border + '80',
+    borderColor: Colors.border,
+    ...Shadows.small,
+    shadowOpacity: 0.03,
   },
   cardContent: {
     alignItems: 'center',
@@ -147,7 +149,7 @@ const styles = StyleSheet.create({
   },
   customerName: {
     fontSize: normalize.font(16),
-    fontWeight: '700',
+    fontWeight: '800',
     color: Colors.text.primary,
   },
   customerPhone: {
@@ -163,10 +165,12 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
   },
   statsRow: {
-    backgroundColor: '#F9F9F9',
-    padding: 12,
-    borderRadius: 12,
+    backgroundColor: '#F9FAFB',
+    padding: 14,
+    borderRadius: 16,
     flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
   },
   stat: {
     flex: 1,
@@ -175,10 +179,12 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(10),
     color: Colors.text.muted,
     marginBottom: 2,
+    fontWeight: '600',
+    textTransform: 'uppercase',
   },
   statValue: {
-    fontSize: normalize.font(13),
-    fontWeight: '700',
+    fontSize: normalize.font(14),
+    fontWeight: '800',
     color: Colors.text.primary,
   },
   emptyContainer: {

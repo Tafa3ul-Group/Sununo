@@ -1,6 +1,6 @@
 import { HeaderSection } from '@/components/header-section';
 import { ThemedText } from '@/components/themed-text';
-import { Colors, normalize, Spacing, Typography } from '@/constants/theme';
+import { Colors, normalize, Shadows, Spacing, Typography } from '@/constants/theme';
 import { RootState } from '@/store';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useGetOwnerChaletsQuery } from '@/store/api/apiSlice';
@@ -126,6 +126,7 @@ export default function HomeScreen() {
         <ScrollView 
           style={styles.container}
           showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
           refreshControl={
             <RefreshControl refreshing={isFetching} onRefresh={refetch} tintColor={Colors.primary} />
           }
@@ -244,7 +245,7 @@ export default function HomeScreen() {
               </View>
             </View>
           )}
-        </ScrollView>
+          </ScrollView>
       </SafeAreaView>
     </GestureHandlerRootView>
   );
@@ -253,14 +254,19 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.white,
   },
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: Colors.white,
+  },
+  scrollContent: {
+    paddingHorizontal: 10,
+    paddingTop: 0,
+    paddingBottom: 100,
   },
   dashboardHeader: {
-    paddingBottom: Spacing.xl,
+    paddingBottom: 0,
   },
   statsGrid: {
     gap: 12,
@@ -268,11 +274,11 @@ const styles = StyleSheet.create({
   },
   walletCard: {
     backgroundColor: Colors.white,
-    borderRadius: 24,
-    padding: 24,
-    marginVertical: Spacing.sm,
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 10,
     borderWidth: 1,
-    borderColor: Colors.border + '30',
+    borderColor: '#EFEFEF',
   },
   walletLabel: {
     fontSize: normalize.font(14),
@@ -313,12 +319,14 @@ const styles = StyleSheet.create({
   },
   bookingItem: {
     backgroundColor: Colors.white,
-    padding: 12,
-    borderRadius: 16,
-    marginBottom: 10,
+    padding: 16,
+    borderRadius: 20,
+    marginBottom: 12,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: Colors.border + '30',
+    borderColor: Colors.border,
+    ...Shadows.small,
+    shadowOpacity: 0.03,
   },
   bookingAvatar: {
     width: 40,
@@ -375,21 +383,21 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   listContent: {
-    paddingHorizontal: Spacing.md,
-    paddingBottom: Spacing.xl,
+    paddingHorizontal: 10,
+    paddingBottom: 24,
   },
   chaletCardHorizontal: {
     backgroundColor: Colors.white,
     width: normalize.width(280),
-    borderRadius: normalize.radius(20),
-    marginRight: 16,
+    borderRadius: 16,
+    marginRight: 12,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: Colors.border + '30',
-    padding: 10,
+    borderColor: '#F0F0F0',
+    padding: 8,
   },
   chaletSliderContent: {
-    paddingRight: 32,
+    paddingRight: 12,
   },
   chaletImageLarge: {
     width: '100%',

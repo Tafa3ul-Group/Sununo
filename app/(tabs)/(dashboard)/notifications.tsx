@@ -1,5 +1,5 @@
 import { ThemedText } from '@/components/themed-text';
-import { Colors, normalize, Spacing, Typography } from '@/constants/theme';
+import { Colors, normalize, Shadows, Spacing, Typography } from '@/constants/theme';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
 import * as Haptics from 'expo-haptics';
@@ -127,18 +127,20 @@ export default function NotificationsScreen() {
         </TouchableOpacity>
       </View>
 
-      <FlashList
-        data={notifications}
-        renderItem={renderNotificationItem}
-        estimatedItemSize={100}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <MaterialCommunityIcons name="bell-off-outline" size={80} color="#D1D1D6" />
-            <Text style={styles.emptyText}>{isRTL ? 'لا توجد تنبيهات حالياً' : 'No notifications yet'}</Text>
-          </View>
-        }
-      />
+      <View style={styles.container}>
+        <FlashList
+          data={notifications}
+          renderItem={renderNotificationItem}
+          estimatedItemSize={100}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <MaterialCommunityIcons name="bell-off-outline" size={80} color="#D1D1D6" />
+              <Text style={styles.emptyText}>{isRTL ? 'لا توجد تنبيهات حالياً' : 'No notifications yet'}</Text>
+            </View>
+          }
+        />
+      </View>
     </SafeAreaView>
   );
 }
@@ -146,15 +148,20 @@ export default function NotificationsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.white,
   },
   header: {
     paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
+    paddingVertical: Spacing.lg,
     alignItems: 'center',
     justifyContent: 'space-between',
+    backgroundColor: Colors.white,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border + '50',
+    borderBottomColor: Colors.border,
+  },
+  container: {
+    flex: 1,
+    backgroundColor: Colors.white,
   },
   backButton: {
     width: 40,
@@ -164,23 +171,28 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: normalize.font(18),
-    fontWeight: '700',
+    fontWeight: '800',
+    color: Colors.text.primary,
   },
   markReadText: {
     fontSize: normalize.font(14),
-    fontWeight: '500',
+    fontWeight: '600',
     color: Colors.primary,
   },
   listContent: {
     padding: Spacing.md,
+    paddingTop: 16,
+    paddingBottom: 100,
   },
   notificationCard: {
     backgroundColor: Colors.white,
-    padding: 16,
-    borderRadius: 16,
+    padding: 18,
+    borderRadius: 24,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: Colors.border + '30',
+    borderColor: Colors.border,
+    ...Shadows.small,
+    shadowOpacity: 0.03,
   },
   iconContainer: {
     width: 48,
@@ -200,7 +212,7 @@ const styles = StyleSheet.create({
   },
   notifTitle: {
     fontSize: normalize.font(15),
-    fontWeight: '700',
+    fontWeight: '800',
     color: Colors.text.primary,
   },
   unreadDot: {

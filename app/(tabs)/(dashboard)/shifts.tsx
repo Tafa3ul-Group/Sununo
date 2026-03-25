@@ -11,9 +11,11 @@ import {
   useGetOwnerChaletsQuery,
   useGetShiftPricingQuery,
   useSetChaletPoliciesMutation,
-  useSetShiftPricingMutation,
   useUpdateShiftPricingDayMutation,
-  useUpdateShiftMutation
+  useCreateChaletPolicyMutation,
+  useDeleteChaletPolicyMutation,
+  useUpdateShiftMutation,
+  useSetShiftPricingMutation
 } from '@/store/api/apiSlice';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -153,6 +155,9 @@ export default function ShiftsAndPricesScreen() {
   const [deleteShift] = useDeleteShiftMutation();
   const [setShiftPricing, { isLoading: isSettingPricing }] = useSetShiftPricingMutation();
   const [updateShiftPricingDay] = useUpdateShiftPricingDayMutation();
+  const [setChaletPolicies, { isLoading: isSavingPolicies }] = useSetChaletPoliciesMutation();
+  const [createChaletPolicy] = useCreateChaletPolicyMutation();
+  const [deleteChaletPolicy] = useDeleteChaletPolicyMutation();
 
   // Custom Time Picker State
   const [activePicker, setActivePicker] = useState<'start' | 'end' | null>(null);
@@ -608,8 +613,7 @@ export default function ShiftsAndPricesScreen() {
     }
   };
 
-  const [setChaletPolicies, { isLoading: isSavingPolicies }] = useSetChaletPoliciesMutation();
-
+  // Refund Policy (Cancellation)
   const handleEditPolicies = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const existingPolicies = policies || [];
@@ -622,7 +626,19 @@ export default function ShiftsAndPricesScreen() {
     setPolicyForm([...policyForm, { daysBeforeBooking: 1, penaltyPercentage: 100 }]);
   };
 
-  const removePolicyTier = (index: number) => {
+  const removePolicyTier = async (index: number) => {
+    const policy = policyForm[index];
+    if (policy.id) {
+       // Live delete if it exists on server
+       try {
+         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+         await deleteChaletPolicy({ chaletId: selectedChaletId, policyId: policy.id }).unwrap();
+         Toast.show({ type: 'success', text1: isRTL ? 'تم الحذف' : 'Deleted' });
+       } catch (e) {
+         Toast.show({ type: 'error', text1: isRTL ? 'خطأ في الحذف' : 'Delete failed' });
+         return;
+       }
+    }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setPolicyForm(policyForm.filter((_, i) => i !== index));
   };
@@ -654,7 +670,7 @@ export default function ShiftsAndPricesScreen() {
       }).unwrap();
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Toast.show({ type: 'success', text1: isRTL ? 'تم التحديث' : 'Policy updated' });
+      Toast.show({ type: 'success', text1: isRTL ? 'تم التحديث' : 'Refund policy updated' });
       policySheetRef.current?.dismiss();
     } catch (e: any) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -763,7 +779,7 @@ export default function ShiftsAndPricesScreen() {
           onExtraIconPress={() => ownerChalets.length > 1 ? handleSwitchChalet() : refetchShifts()}
         />
 
-        <View style={styles.contentWrapper}>
+        <View style={styles.container}>
           <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
             {/* Shifts & Pricing Section */}
@@ -890,45 +906,65 @@ export default function ShiftsAndPricesScreen() {
               )}
             </View>
 
-            {/* Cancellation Policies Section */}
-            <View style={[styles.section, { marginTop: Spacing.lg }]}>
+            {/* Refund Policy Section */}
+            <View style={[styles.section, { marginTop: Spacing.xl }]}>
               <View style={[styles.sectionHeader, { flexDirection }]}>
                 <View style={[styles.row, { flex: 1 }]}>
-                  <Ionicons name="shield-checkmark" size={24} color={Colors.primary} />
-                  <Text style={[styles.sectionTitle, { textAlign, marginLeft: 8 }]}>{isRTL ? 'سياسات الإلغاء' : 'Cancellation Policies'}</Text>
+                  <Ionicons name="receipt-outline" size={22} color={Colors.primary} />
+                  <Text style={[styles.sectionTitle, { textAlign, marginLeft: 8 }]}>{isRTL ? 'سياسة الاسترجاع' : 'Refund Policy'}</Text>
                 </View>
               </View>
 
-              <View style={styles.premiumCard}>
-                {policies && policies.length > 0 ? (
-                  policies.map((policy: any, index: number) => (
-                    <View key={index} style={[styles.policyItem, index === policies.length - 1 && { borderBottomWidth: 0 }]}>
-                      <View style={[styles.policyHeader, { flexDirection }]}>
-                        <View style={[styles.policyBadge, { flexDirection }]}>
-                          <Ionicons name="calendar-outline" size={14} color={Colors.primary} />
-                          <Text style={styles.policyBadgeText}>
-                            {isRTL ? `قبل ${policy.daysBeforeBooking} يوم` : `${policy.daysBeforeBooking} days before`}
+              {policies && policies.length > 0 ? (
+                <TouchableOpacity 
+                   style={styles.cardFlat} 
+                   activeOpacity={0.8}
+                   onPress={handleEditPolicies}
+                >
+                  <View style={{ padding: 20 }}>
+                    {policies.map((p: any, i: number) => (
+                      <View key={p.id || i} style={[styles.row, { marginBottom: 12, alignItems: 'center' }]}>
+                        <View style={[styles.iconCircleSmall, { backgroundColor: Colors.primary + '10' }]}>
+                          <Ionicons name="time-outline" size={14} color={Colors.primary} />
+                        </View>
+                        <View style={{ flex: 1, marginHorizontal: 12 }}>
+                          <Text style={styles.detailTextLarge}>
+                            {isRTL 
+                              ? `قبل ${p.daysBeforeBooking} أيام أو أكثر` 
+                              : `${p.daysBeforeBooking} days or more`}
+                          </Text>
+                          <Text style={styles.detailLabelSmall}>
+                            {isRTL 
+                                ? `خصم مالي بقيمة ${p.penaltyPercentage}%` 
+                                : `Penalty amount: ${p.penaltyPercentage}%`}
                           </Text>
                         </View>
-                        <View style={styles.penaltyChip}>
-                          <Text style={styles.penaltyText}>
-                            {policy.penaltyPercentage}% {isRTL ? 'خصم مالي' : 'Penalty'}
-                          </Text>
-                        </View>
+                        <Ionicons name="chevron-forward" size={16} color={Colors.border} />
                       </View>
+                    ))}
+                    
+                    <View style={[styles.sectionDivider, { marginVertical: 12, marginBottom: 8 }]} />
+                    <View style={[styles.row, { justifyContent: 'center' }]}>
+                      <Text style={{ color: Colors.primary, fontWeight: '700', fontSize: 13 }}>
+                        {isRTL ? 'تعديل سياسة الاسترجاع' : 'Edit Refund Policy'}
+                      </Text>
                     </View>
-                  ))
-                ) : (
-                  <View style={styles.emptyCardSmall}>
-                    <Text style={styles.emptyTextSmall}>{isRTL ? 'لم يتم تحديد سياسات إلغاء' : 'No cancellation policies defined'}</Text>
                   </View>
-                )}
-
-                <TouchableOpacity style={styles.manageBtn} onPress={handleEditPolicies}>
-                  <Ionicons name="settings-outline" size={18} color={Colors.primary} />
-                  <Text style={styles.manageBtnText}>{isRTL ? 'إدارة القواعد والسياسات' : 'Configure Rules'}</Text>
                 </TouchableOpacity>
-              </View>
+              ) : (
+                <TouchableOpacity style={styles.emptyCard} onPress={handleEditPolicies}>
+                  <Ionicons name="receipt-outline" size={36} color={Colors.primary + '40'} />
+                  <Text style={styles.emptyTitle}>{isRTL ? 'لا توجد سياسة مضافة' : 'No Policy Added'}</Text>
+                  <Text style={styles.emptyText}>
+                    {isRTL 
+                      ? 'حدد القواعد المالية لعمليات إلغاء الحجز من قبل العملاء' 
+                      : 'Define financial rules for booking cancellations by customers'}
+                  </Text>
+                  <View style={[styles.addInlineBtn, { marginTop: 12 }]}>
+                    <Text style={styles.addInlineText}>{isRTL ? 'إضافة سياسة' : 'Add Policy'}</Text>
+                  </View>
+                </TouchableOpacity>
+              )}
             </View>
 
           </ScrollView>
@@ -1364,13 +1400,13 @@ export default function ShiftsAndPricesScreen() {
         <View style={{ flex: 1, paddingHorizontal: 20 }}>
           <View style={styles.sheetHeaderCompact}>
             <View style={styles.sheetHeaderHandle} />
-            <Text style={styles.modalTitleCompact}>{isRTL ? 'إدارة سياسات الإلغاء' : 'Manage Cancellation Policies'}</Text>
+            <Text style={styles.modalTitleCompact}>{isRTL ? 'سياسة الاسترجاع' : 'Refund Policy'}</Text>
           </View>
 
           <BottomSheetScrollView contentContainerStyle={{ paddingBottom: 100 }}>
             <View style={{ marginBottom: 16 }}>
               <Text style={[styles.label, { textAlign, opacity: 0.7 }]}>
-                {isRTL ? 'حدد قواعد الإلغاء ونسبة الخصم بناءً على الوقت المتبقي' : 'Define cancellation rules and penalty based on time'}
+                {isRTL ? 'حدد قواعد الإلغاء ونسبة الخصم (سياسة الاسترجاع)' : 'Define cancellation rules and penalty (Refund Policy)'}
               </Text>
             </View>
 
@@ -1430,7 +1466,7 @@ export default function ShiftsAndPricesScreen() {
               {isSavingPolicies ? <ActivityIndicator color="#fff" /> : (
                 <>
                   <Ionicons name="checkmark-circle" size={20} color="#fff" />
-                  <Text style={styles.saveBtnTextLarge}>{isRTL ? 'حفظ السياسات' : 'Save Policies'}</Text>
+                  <Text style={styles.saveBtnTextLarge}>{isRTL ? 'حفظ سياسة الاسترجاع' : 'Save Refund Policy'}</Text>
                 </>
               )}
             </TouchableOpacity>
@@ -1445,14 +1481,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.white,
-  },
-  contentWrapper: {
-    flex: 1,
-    backgroundColor: Colors.surface,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    marginTop: -20,
-    overflow: 'hidden',
   },
   swipeLeftContainer: {
     backgroundColor: Colors.primary,
@@ -1482,14 +1510,14 @@ const styles = StyleSheet.create({
   },
   cardFlat: {
     backgroundColor: Colors.white,
-    borderRadius: 20,
+    borderRadius: 24,
     marginBottom: 16,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#F0F2F5',
+    borderColor: Colors.border,
     ...Shadows.small,
     shadowColor: Colors.primary,
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.03,
   },
   loadingContainer: {
     flex: 1,
@@ -1498,11 +1526,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   scrollContent: {
-    padding: 20,
-    paddingBottom: 100,
+    padding: 24,
+    paddingTop: 32, // Added more space at the top
+    paddingBottom: 150, // More breathing room at the bottom
   },
   section: {
-    marginBottom: 24,
+    marginBottom: 32, // Increased spacing between sections
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -1511,9 +1540,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   sectionTitle: {
-    fontSize: normalize.font(16),
-    fontWeight: '800',
-    color: '#1A1A1A',
+    ...Typography.h2,
+    color: Colors.text.primary,
+    fontWeight: '800', // Making it more bold for prominence
+    fontSize: normalize.font(18),
   },
   card: {
     backgroundColor: Colors.white,
@@ -1546,18 +1576,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   addShiftHeaderBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F0F7FF',
+    backgroundColor: Colors.primary + '10',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 8,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 4,
   },
   addShiftHeaderText: {
-    fontSize: normalize.font(12),
-    fontWeight: '700',
+    fontSize: normalize.font(13),
     color: Colors.primary,
+    fontWeight: '700',
   },
   editCardBtn: {
     padding: 8,
@@ -1566,16 +1596,16 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   timeBadge: {
-    backgroundColor: '#F5F5F7',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    backgroundColor: Colors.primary + '10',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
     alignItems: 'center',
   },
   timeBadgeText: {
-    fontSize: normalize.font(12),
-    color: Colors.text.primary,
-    fontWeight: '600',
+    fontSize: normalize.font(13),
+    color: Colors.primary,
+    fontWeight: '700',
   },
   priceContainer: {
     alignItems: 'flex-end',
@@ -2394,6 +2424,29 @@ const styles = StyleSheet.create({
     padding: 12,
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  iconCircleSmall: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  detailTextLarge: {
+    fontSize: normalize.font(15),
+    fontWeight: '700',
+    color: Colors.text.primary,
+  },
+  detailLabelSmall: {
+    fontSize: normalize.font(12),
+    color: Colors.text.muted,
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  sectionDivider: {
+    height: 1,
+    backgroundColor: Colors.border,
+    width: '100%',
   },
   chaletSelectImageWrap: {
     width: 48,
