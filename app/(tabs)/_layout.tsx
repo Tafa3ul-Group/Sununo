@@ -49,21 +49,6 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="(dashboard)/home"
-        options={{
-          title: userType === "owner" ? t("tabs.home") : t("tabs.myChalets"),
-          href: userType === "owner" ? "/(tabs)/(dashboard)/home" : null,
-          tabBarIcon: ({ color, focused }) => (
-            <SolarIcon
-              size={normalize.width(22)}
-              name={focused ? "map-bold" : "map-linear"}
-              color={color}
-            />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
         name="(dashboard)/bookings"
         options={{
           title: t("tabs.bookings"),
@@ -71,7 +56,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <SolarIcon
               size={normalize.width(22)}
-              name={focused ? "bell-bold" : "bell-linear"}
+              name={focused ? "notes-bold" : "notes-linear"}
               color={color}
             />
           ),
@@ -79,32 +64,56 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="(dashboard)/customers"
+        name="(dashboard)/home"
         options={{
-          title: t("tabs.customers"),
-          href: userType === "owner" ? "/(tabs)/(dashboard)/customers" : null,
+          title: t("tabs.home"),
+          href: userType === "owner" ? "/(tabs)/(dashboard)/home" : null,
           tabBarIcon: ({ color, focused }) => (
             <SolarIcon
               size={normalize.width(22)}
-              name={focused ? "bell-bold" : "bell-linear"}
+              name={focused ? "home-smile-bold" : "home-smile-linear"}
               color={color}
             />
           ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="(dashboard)/calendar"
+        options={{
+          title: t("tabs.calendar"),
+          href: userType === "owner" ? "/(tabs)/(dashboard)/calendar" : null,
+          tabBarIcon: ({ color, focused }) => (
+            <SolarIcon
+              size={normalize.width(22)}
+              name={focused ? "calendar-bold" : "calendar-linear"}
+              color={color}
+            />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="(dashboard)/add-chalet"
+        options={{
+          href: null,
+          title: t("tabs.addChalet"),
         }}
       />
 
       <Tabs.Screen
         name="(dashboard)/revenue"
         options={{
+          href: null,
           title: t("tabs.revenue"),
-          href: userType === "owner" ? "/(tabs)/(dashboard)/revenue" : null,
-          tabBarIcon: ({ color, focused }) => (
-            <SolarIcon
-              size={normalize.width(22)}
-              name={focused ? "heart-bold" : "heart-linear"}
-              color={color}
-            />
-          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="(dashboard)/customers"
+        options={{
+          href: null,
+          title: t("tabs.customers"),
         }}
       />
 
@@ -118,27 +127,6 @@ export default function TabLayout() {
 
       <Tabs.Screen
         name="(dashboard)/chalet-details"
-        options={{
-          href: null,
-        }}
-      />
-
-      <Tabs.Screen
-        name="(dashboard)/add-chalet"
-        options={{
-          href: null,
-        }}
-      />
-
-      <Tabs.Screen
-        name="(dashboard)/edit-chalet"
-        options={{
-          href: null,
-        }}
-      />
-
-      <Tabs.Screen
-        name="(dashboard)/calendar"
         options={{
           href: null,
         }}

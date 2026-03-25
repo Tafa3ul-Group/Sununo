@@ -18,6 +18,8 @@
     "home": "Home",
     "myChalets": "My Chalets",
     "bookings": "Bookings",
+    "calendar": "Calendar",
+    "addChalet": "Add",
     "customers": "Customers",
     "revenue": "Revenue",
     "profile": "Profile"
@@ -58,12 +60,32 @@
       "finished": "Finished",
       "cancelled": "Cancelled",
       "accept": "Accept",
-      "decline": "Decline"
+      "decline": "Decline",
+      "cancellationReason": "Cancellation Reason"
     },
     "revenue": {
       "balance": "Available Balance",
       "withdraw": "Withdraw Funds",
       "history": "Transaction History"
     }
+  },
+  "common": {
+    "user": "User",
+    "iqd": "IQD",
+    "details": "Details",
+    "viewDetails": "View Details",
+    "customer": "Customer / Guest",
+    "location": "Location",
+    "time": "Time",
+    "guests": "Guests",
+    "payment": "Payment",
+    "earnings": "Earnings",
+    "chalet": "Chalet",
+    "email": "Email",
+    "address": "Address",
+    "guestsCount": "Guests Count",
+    "paymentMethod": "Payment Method",
+    "fullPayment": "Full Payment",
+    "depositPayment": "Deposit"
   }
 }

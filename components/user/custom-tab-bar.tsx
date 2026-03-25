@@ -3,60 +3,104 @@ import { SolarIcon, SolarIconName } from '@/components/ui/solar-icon';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 
 /* 
- * CustomTabBar - New floating navigation design
- * Height: 50 (Normalized)
- * Left: Map button (circle)
- * Right: Main tabs (capsule)
+ * CustomTabBar - Dynamic floating navigation design
  */
 
 interface TabProps {
   state: any;
   navigation: any;
+  descriptors: any;
 }
 
-export const CustomTabBar: React.FC<TabProps> = ({ state, navigation }) => {
+export const CustomTabBar: React.FC<TabProps> = ({ state, navigation, descriptors }) => {
   const insets = useSafeAreaInsets();
+  const { userType } = useSelector((state: RootState) => state.auth);
   
-  // Current active route name
-  const currentRoute = state.routes[state.index].name;
+  // Current active route index/name
+  const activeIndex = state.index;
+  const currentRouteName = state.routes[activeIndex].name;
+
+  // Filter routes that should be visible (href !== null)
+  const visibleRoutes = state.routes.filter((route: any) => {
+    const options = descriptors[route.key]?.options;
+    // In expo-router, href: null explicitly hides the tab. 
+    // If href is undefined, it's visible by default.
+    return options?.href !== null;
+  });
+
+  if (visibleRoutes.length === 0) return null;
+
+  // Separate left button vs capsule tabs
+  let leftTab: any;
+  let capsuleTabs: any[];
+
+  if (userType === 'owner') {
+    // For owner, explicitly make Bookings the separate left button
+    leftTab = visibleRoutes.find((r: any) => r.name === '(dashboard)/bookings');
+    // If we can't find it for some reason, fallback to first visible
+    if (!leftTab) leftTab = visibleRoutes[0];
+
+    // Other 3 tabs go in capsule (limited to 3 max to match design)
+    capsuleTabs = visibleRoutes
+      .filter((r: any) => r.name !== leftTab.name && (descriptors[r.key]?.options?.href !== null))
+      .slice(0, 3);
+  } else {
+    // For regular users, fallback to first visible as main button
+    leftTab = visibleRoutes[0];
+    capsuleTabs = visibleRoutes.slice(1);
+  }
 
   const navigateTo = (routeName: string) => {
     navigation.navigate(routeName);
   };
 
-  // Defining the 3 tabs for the capsule
-  const tabs = [
-    { name: 'explore', icon: 'heart' as SolarIconName, route: 'explore' },
-    { name: 'notifications', icon: 'bell' as SolarIconName, route: '(dashboard)/notifications' },
-    { name: 'home', icon: 'home-smile' as SolarIconName, route: 'index' },
-  ];
-
   const NAV_HEIGHT = normalize.height(50);
+
+  const renderIcon = (route: any, isActive: boolean) => {
+    const { options } = descriptors[route.key];
+    
+    if (options.tabBarIcon) {
+      return options.tabBarIcon({
+        focused: isActive,
+        color: isActive ? '#035DF9' : 'rgba(255, 255, 255, 0.7)',
+        size: normalize.width(22),
+      });
+    }
+
+    // Fallback (should not be reached if all routes have icons)
+    return null;
+  };
+
+  const isLeftTabActive = currentRouteName === leftTab.name;
 
   return (
     <View style={[styles.container, { bottom: insets.bottom + 16 }]}>
-      {/* Left: Separate Map Button */}
+      {/* Left Button */}
       <TouchableOpacity 
-        style={[styles.mapButton, { width: NAV_HEIGHT, height: NAV_HEIGHT, borderRadius: NAV_HEIGHT / 2 }]}
-        onPress={() => navigateTo('(dashboard)/home')}
+        style={[
+          styles.roundButton, 
+          { width: NAV_HEIGHT, height: NAV_HEIGHT, borderRadius: NAV_HEIGHT / 2 },
+          isLeftTabActive && styles.activeRoundButton
+        ]}
+        onPress={() => navigateTo(leftTab.name)}
         activeOpacity={0.8}
       >
-        <SolarIcon name="map-bold" size={normalize.width(24)} color="white" />
+        {renderIcon(leftTab, isLeftTabActive)}
       </TouchableOpacity>
 
-      {/* Right: Main Navigation Capsule */}
+      {/* Main Navigation Capsule */}
       <View style={[styles.tabCapsule, { height: NAV_HEIGHT, borderRadius: NAV_HEIGHT / 2 }]}>
-        {tabs.map((tab) => {
-          const isActive = currentRoute === tab.route;
-          const iconSize = normalize.width(22);
-          const iconName = isActive ? (`${tab.icon}-bold` as SolarIconName) : (`${tab.icon}-linear` as SolarIconName);
-
+        {capsuleTabs.map((route: any) => {
+          const isActive = currentRouteName === route.name;
+          
           return (
             <TouchableOpacity
-              key={tab.name}
-              onPress={() => navigateTo(tab.route)}
+              key={route.key}
+              onPress={() => navigateTo(route.name)}
               style={[
                 styles.tabItem,
                 { width: NAV_HEIGHT - 8, height: NAV_HEIGHT - 8, borderRadius: (NAV_HEIGHT - 8) / 2 },
@@ -64,11 +108,7 @@ export const CustomTabBar: React.FC<TabProps> = ({ state, navigation }) => {
               ]}
               activeOpacity={0.7}
             >
-              <SolarIcon 
-                name={iconName}
-                size={iconSize} 
-                color={isActive ? '#035DF9' : 'rgba(255, 255, 255, 0.7)'} 
-              />
+              {renderIcon(route, isActive)}
             </TouchableOpacity>
           );
         })}
@@ -87,7 +127,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     zIndex: 1000,
   },
-  mapButton: {
+  roundButton: {
     backgroundColor: '#035DF9',
     justifyContent: 'center',
     alignItems: 'center',
@@ -97,12 +137,16 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
   },
+  activeRoundButton: {
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: '#035DF9',
+  },
   tabCapsule: {
     flexDirection: 'row',
     backgroundColor: '#035DF9',
-    paddingHorizontal: 6,
+    paddingHorizontal: 4,
     alignItems: 'center',
-    gap: 4,
     elevation: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },

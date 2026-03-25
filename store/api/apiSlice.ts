@@ -187,6 +187,28 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['Chalet'],
     }),
+
+    // Provider Bookings
+    getProviderBookings: builder.query({
+      query: (params) => ({
+        url: '/provider/bookings',
+        params,
+      }),
+      providesTags: ['Booking'],
+    }),
+
+    getProviderBookingDetails: builder.query({
+      query: (id) => `/provider/bookings/${id}`,
+      providesTags: (result, error, id) => [{ type: 'Booking' as const, id }],
+    }),
+
+    // Shift availability for a chalet on a date range
+    getShiftAvailability: builder.query({
+      query: ({ chaletId, from, to }: { chaletId: string; from: string; to: string }) => ({
+        url: `/provider/chalets/${chaletId}/shifts/availability`,
+        params: { from, to },
+      }),
+    }),
   }),
 });
 
@@ -219,4 +241,8 @@ export const {
   useGetAmenitiesQuery,
   useGetChaletAmenitiesQuery,
   useSetChaletAmenitiesMutation,
+  useGetProviderBookingsQuery,
+  useGetProviderBookingDetailsQuery,
+  useGetShiftAvailabilityQuery,
+  useLazyGetShiftAvailabilityQuery,
 } = apiSlice;

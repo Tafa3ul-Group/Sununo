@@ -19,6 +19,7 @@ interface SecondaryButtonProps {
   inactiveColor?: string;
   activeTextColor?: string;
   inactiveTextColor?: string;
+  iconOnly?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
 }
@@ -38,12 +39,13 @@ export function SecondaryButton({
   inactiveColor = "#E9EBED",
   activeTextColor = "white",
   inactiveTextColor = "#035DF9",
+  iconOnly = false,
   style,
   textStyle,
 }: SecondaryButtonProps) {
   const bgColor = isActive ? activeColor : "transparent";
-  const borderColor = isActive ? activeColor : "#E5E7EB";
-  const finalContentColor = isActive ? "white" : activeColor;
+  const borderColor = isActive ? activeColor : inactiveColor;
+  const finalContentColor = isActive ? activeTextColor : (inactiveTextColor || activeColor);
 
   // Scale calculations: Original height 29, new height 46. Factor = 1.586
   const scaledWidth = 44.4;
@@ -82,23 +84,25 @@ export function SecondaryButton({
       </View>
 
       {/* Label Section (Left part in RTL) */}
-      <View
-        style={[
-          styles.textWrapper,
-          {
-            backgroundColor: bgColor,
-            borderColor: borderColor,
-            height: 46,
-            flex: 1, // Allow text to fill space
-          },
-        ]}
-      >
-        <ThemedText
-          style={[styles.text, { color: finalContentColor }, textStyle]}
+      {!iconOnly && (
+        <View
+          style={[
+            styles.textWrapper,
+            {
+              backgroundColor: bgColor,
+              borderColor: borderColor,
+              height: 46,
+              flex: 1, // Allow text to fill space
+            },
+          ]}
         >
-          {label}
-        </ThemedText>
-      </View>
+          <ThemedText
+            style={[styles.text, { color: finalContentColor }, textStyle]}
+          >
+            {label}
+          </ThemedText>
+        </View>
+      )}
     </TouchableOpacity>
   );
 }

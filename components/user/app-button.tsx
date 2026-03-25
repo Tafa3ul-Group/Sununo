@@ -64,8 +64,8 @@ export function AppButton({
         style={[styles.hybridContainer, style]}
       >
         {/* Right Curve SVG (ViewBox matches the right part of the original SVG) */}
-        <View style={styles.svgPart}>
-          <Svg width="29" height="29" viewBox="62 0 29 29" fill="none">
+        <View style={[styles.svgPart, { height: '100%', width: undefined, aspectRatio: 1 }]}>
+          <Svg width="100%" height="100%" viewBox="62 0 29 29" fill="none">
             <Path
               d="M91 14.5C91 6.49187 84.5081 0 76.5 0H67.1176C64.2912 0 62 2.29125 62 5.11765V23.8824C62 26.7088 64.2912 29 67.1176 29H76.5C84.5081 29 91 22.5081 91 14.5Z"
               fill={color}
@@ -75,14 +75,24 @@ export function AppButton({
 
         {/* Flexible Middle Section */}
         <View style={[styles.middleSection, { backgroundColor: color }]}>
-          <ThemedText style={[styles.primaryText, { color: textColor }, textStyle]}>
-            {label}
-          </ThemedText>
+          <View style={[styles.contentRow, { flexDirection: 'row' }]}>
+            {icon && (
+              <MaterialCommunityIcons 
+                name={icon as any} 
+                size={18} 
+                color={textColor} 
+                style={{ marginRight: 6 }} 
+              />
+            )}
+            <ThemedText style={[styles.primaryText, { color: textColor }, textStyle]}>
+              {label}
+            </ThemedText>
+          </View>
         </View>
 
         {/* Left Curve SVG (ViewBox matches the left part of the original SVG) */}
-        <View style={styles.svgPart}>
-          <Svg width="29" height="29" viewBox="0 0 29 29" fill="none">
+        <View style={[styles.svgPart, { height: '100%', width: undefined, aspectRatio: 1 }]}>
+          <Svg width="100%" height="100%" viewBox="0 0 29 29" fill="none">
             <Path
               d="M0 14.5C0 6.49187 6.49187 0 14.5 0H23.8824C26.7088 0 29 2.29125 29 5.11765V23.8824C29 26.7088 26.7088 29 23.8824 29H14.5C6.49187 29 0 22.5081 0 14.5Z"
               fill={color}
@@ -142,7 +152,7 @@ const styles = StyleSheet.create({
   },
   hybridContainer: {
     flexDirection: 'row-reverse',
-    height: 32,
+    height: 32, // Default height
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -151,11 +161,16 @@ const styles = StyleSheet.create({
     height: 29,
   },
   middleSection: {
-    height: 29,
+    flex: 1,
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 4, // Slightly more padding for better spacing
+    paddingHorizontal: 4,
     minWidth: 10,
+  },
+  contentRow: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   primaryText: {
     fontSize: 16,
