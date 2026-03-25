@@ -5,7 +5,8 @@ import { RootState } from '@/store';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useGetOwnerChaletsQuery } from '@/store/api/apiSlice';
 import { getImageSrc, useImageSrc } from '@/hooks/useImageSrc';
-import { AppButton } from '@/components/user/app-button';
+import { PrimaryButton } from '@/components/user/primary-button';
+import { SecondaryButton } from '@/components/user/secondary-button';
 import { formatPrice } from '@/utils/format';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
@@ -156,13 +157,15 @@ export default function HomeScreen() {
                       </TouchableOpacity>
                     </View>
                     
-                    <AppButton
+                    <SecondaryButton
                       label={isRTL ? 'سحب الأرباح' : 'Withdraw earnings'}
+                      icon="wallet-outline"
                       onPress={() => {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                         router.push('/(tabs)/(dashboard)/revenue');
                       }}
-                      variant="primary"
+                      isActive={false}
+                      style={{ height: 34 }}
                     />
                   </View>
                 </View>
@@ -207,16 +210,15 @@ export default function HomeScreen() {
                   <ThemedText type="defaultSemiBold" style={{ fontSize: normalize.font(16) }}>
                     {isRTL ? 'شاليهاتي' : 'My Chalets'} ({chalets?.data?.length || 0})
                   </ThemedText>
-                  <AppButton
-                    label={isRTL ? 'أضف' : 'Add'}
+                  <SecondaryButton
+                    label={isRTL ? 'أضف شاليه' : 'Add Chalet'}
                     icon="plus"
                     onPress={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                       router.push('/(tabs)/(dashboard)/add-chalet');
                     }}
-                    variant="primary"
-                    style={{ height: 32, width: 80 }}
-                    textStyle={{ fontSize: 13 }}
+                    isActive={false}
+                    style={{ height: 34 }}
                   />
                 </View>
 

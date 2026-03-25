@@ -159,6 +159,15 @@ export const apiSlice = createApi({
       invalidatesTags: ['Chalet'],
     }),
 
+    updateShiftPricingDay: builder.mutation({
+      query: ({ shiftId, pricingId, price }) => ({
+        url: `/provider/shifts/${shiftId}/pricing/${pricingId}`,
+        method: 'PATCH',
+        body: { price },
+      }),
+      invalidatesTags: ['Chalet'],
+    }),
+
     // Policies Mutation
     setChaletPolicies: builder.mutation({
       query: ({ chaletId, data }) => ({
@@ -232,6 +241,7 @@ export const {
   useUpdateShiftMutation,
   useDeleteShiftMutation,
   useSetShiftPricingMutation,
+  useUpdateShiftPricingDayMutation,
   useSetChaletPoliciesMutation,
 
   useGetCitiesQuery,

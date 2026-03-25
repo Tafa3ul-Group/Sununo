@@ -16,7 +16,8 @@ import { useSelector } from "react-redux";
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const { t } = useTranslation();
-  const { userType } = useSelector((state: RootState) => state.auth);
+  const { userType, language } = useSelector((state: RootState) => state.auth);
+  const isRTL = language === 'ar';
 
   const isOwner = userType === "owner";
 
@@ -79,10 +80,10 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="(dashboard)/calendar"
+        name="(dashboard)/shifts"
         options={{
-          title: t("tabs.calendar"),
-          href: userType === "owner" ? "/(tabs)/(dashboard)/calendar" : null,
+          title: isRTL ? 'الفترات والأسعار' : 'Shifts & Prices',
+          href: userType === "owner" ? "/(tabs)/(dashboard)/shifts" : null,
           tabBarIcon: ({ color, focused }) => (
             <SolarIcon
               size={normalize.width(22)}

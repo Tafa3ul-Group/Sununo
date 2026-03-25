@@ -228,9 +228,9 @@ export default function ChaletDetailsScreen() {
             {/* Main Management Action - Calendar */}
             <View style={styles.managementSection}>
               <SecondaryButton 
-                label={isRTL ? 'إدارة التوفر والأسعار' : 'Availability & Pricing'}
-                onPress={() => router.push({ pathname: '/(tabs)/(dashboard)/calendar', params: { id: chalet?.id } })}
-                icon="calendar-month"
+                label={isRTL ? 'إدارة الفترات والأسعار' : 'Manage Shifts & Pricing'}
+                onPress={() => router.push({ pathname: '/(tabs)/(dashboard)/shifts', params: { id: chalet?.id } })}
+                icon="clock-edit-outline"
                 isActive={false} // Use the outlined design system style
                 style={styles.fullWidthButton}
               />

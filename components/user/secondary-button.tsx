@@ -47,8 +47,8 @@ export function SecondaryButton({
   const borderColor = isActive ? activeColor : inactiveColor;
   const finalContentColor = isActive ? activeTextColor : (inactiveTextColor || activeColor);
 
-  // Scale calculations: Original height 29, new height 46. Factor = 1.586
-  const scaledWidth = 44.4;
+  const buttonHeight = (style as ViewStyle)?.height || 46;
+  const scaledWidth = Number(buttonHeight) * (28 / 29);
 
   return (
     <TouchableOpacity
@@ -56,8 +56,8 @@ export function SecondaryButton({
       onPress={onPress}
       style={[styles.container, style]}
     >
-      {/* Icon Section (Right part in RTL) */}
-      <View style={[styles.iconWrapper, { width: scaledWidth, height: 46 }]}>
+      {/* Icon Section */}
+      <View style={[styles.iconWrapper, { width: scaledWidth, height: '100%' }]}>
         <Svg
           width="100%"
           height="100%"
@@ -76,14 +76,14 @@ export function SecondaryButton({
           <View style={styles.iconContainer}>
             <MaterialCommunityIcons
               name={icon as any}
-              size={22} // Scaled icon size (from 16 to approx 22-24)
+              size={Number(buttonHeight) * 0.48}
               color={finalContentColor}
             />
           </View>
         )}
       </View>
 
-      {/* Label Section (Left part in RTL) */}
+      {/* Label Section */}
       {!iconOnly && (
         <View
           style={[
@@ -91,13 +91,21 @@ export function SecondaryButton({
             {
               backgroundColor: bgColor,
               borderColor: borderColor,
-              height: 46,
-              flex: 1, // Allow text to fill space
+              height: '100%',
+              minWidth: 40,
             },
           ]}
         >
           <ThemedText
-            style={[styles.text, { color: finalContentColor }, textStyle]}
+            style={[
+              styles.text, 
+              { 
+                color: finalContentColor, 
+                fontSize: Number(buttonHeight) * 0.38,
+                lineHeight: Number(buttonHeight) * 0.45 
+              }, 
+              textStyle
+            ]}
           >
             {label}
           </ThemedText>
@@ -111,7 +119,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row-reverse",
     height: 46,
-    alignItems: "center",
+    alignItems: "stretch",
     justifyContent: "center",
   },
   iconWrapper: {
@@ -124,20 +132,18 @@ const styles = StyleSheet.create({
     inset: 0,
     justifyContent: "center",
     alignItems: "center",
-    paddingLeft: 3, // Proportional padding
+    paddingLeft: 3, 
   },
   textWrapper: {
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 12, // Reduced padding for flexibility
-    borderWidth: 1.5, // Thicker border for larger size
-    borderRadius: 8.7, // Proportional radius (5.5 * 1.586)
+    paddingHorizontal: 12, 
+    borderWidth: 1.5, 
+    borderRadius: 8.7, 
     marginRight: -1,
   },
   text: {
-    fontSize: 18,
     fontWeight: "800",
     textAlign: "center",
-    lineHeight: 22,
   },
 });
