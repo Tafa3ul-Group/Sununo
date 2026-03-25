@@ -89,23 +89,12 @@ const BookingDetailsContent = ({ id, isRTL, t }: { id: string; isRTL: boolean; t
     <BottomSheetScrollView contentContainerStyle={styles.sheetScroll}>
       {/* ── Header: Title + Status ── */}
       <View style={[styles.sheetTopRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-        <Text style={styles.sheetHeroTitle}>{isRTL ? 'تفاصيل الحجز' : 'Booking Details'}</Text>
-        <View style={[styles.statusBadge, {
-          backgroundColor: data.status === 'cancelled' ? '#FEF2F2' : '#EFF6FF',
-          borderColor: data.status === 'cancelled' ? '#FEE2E2' : '#DBEAFE'
-        }]}>
-          <Text style={[styles.statusText, { color: data.status === 'cancelled' ? '#EF4444' : Colors.primary }]}>
-            {data.status === 'cancelled' ? t('dashboard.bookings.cancelled') : data.status}
-          </Text>
-        </View>
+        <Text style={[styles.sheetHeroTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
+          {isRTL ? 'تفاصيل الحجز' : 'Booking Details'}
+        </Text>
       </View>
 
-      {data.status === 'cancelled' && data.cancellationReason && (
-        <View style={[styles.cancelReasonBanner, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-           <SolarIcon name="danger-circle-bold" size={16} color="#EF4444" />
-           <Text style={styles.cancelReasonText}>{data.cancellationReason}</Text>
-        </View>
-      )}
+
 
       {/* ── Customer Card ── */}
       <View style={styles.customerCard}>
@@ -188,7 +177,7 @@ const BookingDetailsContent = ({ id, isRTL, t }: { id: string; isRTL: boolean; t
 
       {/* ── Payment Summary ── */}
       <View style={styles.paymentCard}>
-        <View style={[styles.paymentHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <View style={[styles.paymentHeader, { flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'flex-start' }]}>
           <Text style={styles.paymentTitle}>{isRTL ? 'ملخص الدفع' : 'Payment Summary'}</Text>
         </View>
         <View style={[styles.paymentTotalRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
