@@ -416,18 +416,27 @@ export default function ChaletDetailScreen() {
               ]}
             >
               {[
-                { label: "شروط الشاليه", icon: "key-outline" },
-                { label: "سياسة الالغاء", icon: "remove-circle-outline" },
-                { label: "الامان", icon: "shield-checkmark-outline" },
-                { label: "وقت الدخول والخروج", icon: "time-outline" },
+                { label: "شروط الشاليه", icon: "document-text-outline" },
+                { label: "سياسة الالغاء", icon: "alert-circle-outline" },
+                { label: "الامان والخصوصية", icon: "shield-checkmark-outline" },
+                { label: "وقت الدخول", icon: "enter-outline" },
+                { label: "وقت الخروج", icon: "exit-outline" },
+                { label: "مبلغ التأمين", icon: "cash-outline" },
+                { label: "مرافق قريبة", icon: "location-outline" },
+                { label: "الصيانة", icon: "construct-outline" },
               ].map((item, idx) => (
                 <View key={idx} style={styles.interestItem}>
-                  <View style={styles.interestJaggedCard}>
-                    <View style={styles.interestIconCircle}>
+                  <View style={styles.amenityIconWrapper}>
+                    <Image
+                      source={require("@/assets/shapes/info.svg")}
+                      style={styles.amenityShape}
+                      contentFit="contain"
+                    />
+                    <View style={styles.amenityIconCentered}>
                       <Ionicons
                         name={item.icon as any}
-                        size={24}
-                        color="#9CA3AF"
+                        size={22}
+                        color="#111827"
                       />
                     </View>
                   </View>
