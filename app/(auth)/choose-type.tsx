@@ -36,7 +36,7 @@ export default function ChooseTypeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
-      
+
       {/* Language Switcher */}
       <View style={styles.langSwitcherContainer}>
         <TouchableOpacity style={styles.langButton} onPress={toggleLanguage}>
@@ -51,15 +51,15 @@ export default function ChooseTypeScreen() {
         </View>
 
         <View style={styles.optionsContainer}>
-          <TouchableOpacity 
-            style={[styles.card, { flexDirection: isRTL ? 'row-reverse' : 'row' }]} 
+          <TouchableOpacity
+            style={[styles.card, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
             onPress={() => handleSelectType('owner')}
             activeOpacity={0.8}
           >
-            <View style={[styles.iconContainer, { 
-              backgroundColor: '#E3F2FD', 
+            <View style={[styles.iconContainer, {
+              backgroundColor: '#E3F2FD',
               marginLeft: isRTL ? Spacing.md : 0,
-              marginRight: isRTL ? 0 : Spacing.md 
+              marginRight: isRTL ? 0 : Spacing.md
             }]}>
               <Text style={styles.emoji}>🏡</Text>
             </View>
@@ -69,15 +69,15 @@ export default function ChooseTypeScreen() {
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={[styles.card, { flexDirection: isRTL ? 'row-reverse' : 'row' }]} 
+          <TouchableOpacity
+            style={[styles.card, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
             onPress={() => handleSelectType('customer')}
             activeOpacity={0.8}
           >
-            <View style={[styles.iconContainer, { 
-              backgroundColor: '#FFF3E0', 
+            <View style={[styles.iconContainer, {
+              backgroundColor: '#FFF3E0',
               marginLeft: isRTL ? Spacing.md : 0,
-              marginRight: isRTL ? 0 : Spacing.md 
+              marginRight: isRTL ? 0 : Spacing.md
             }]}>
               <Text style={styles.emoji}>👤</Text>
             </View>
@@ -88,14 +88,14 @@ export default function ChooseTypeScreen() {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity 
-          style={styles.guestButton} 
+        <TouchableOpacity
+          style={styles.guestButton}
           onPress={() => handleSelectType('guest')}
         >
           <Text style={styles.guestButtonText}>{t('auth.browseAsGuest')}</Text>
         </TouchableOpacity>
       </View>
-      
+
       <View style={styles.footer}>
         <Text style={styles.footerText}>Secure & Premium Chalet Booking</Text>
       </View>

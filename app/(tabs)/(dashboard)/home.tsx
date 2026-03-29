@@ -3,19 +3,18 @@ import { ThemedText } from '@/components/themed-text';
 import { Colors, normalize, Shadows, Spacing, Typography } from '@/constants/theme';
 import { RootState } from '@/store';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useGetOwnerChaletsQuery } from '@/store/api/apiSlice';
-import { getImageSrc, useImageSrc } from '@/hooks/useImageSrc';
-import { PrimaryButton } from '@/components/user/primary-button';
+import { useGetOwnerChaletsQuery, useGetProviderProfileQuery, useGetProviderBookingsQuery } from '@/store/api/apiSlice';
+import { getImageSrc } from '@/hooks/useImageSrc';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { formatPrice } from '@/utils/format';
 import * as Haptics from 'expo-haptics';
+import * as LocalAuthentication from 'expo-local-authentication';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
   Image,
   RefreshControl,
   ScrollView,
@@ -28,50 +27,70 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 
-// Mock data for dashboard highlights
-const RECENT_BOOKINGS = [
-  {
-    id: '1',
-    customer: 'أحمد علي',
-    chalet: 'شاليه اللؤلؤة',
-    date: 'اليوم، 04:30 م',
-    price: '150,000 د.ع',
-    status: 'new'
-  },
-  {
-    id: '2',
-    customer: 'سارة خالد',
-    chalet: 'إستراحة اليرموك',
-    date: 'أمس، 09:15 ص',
-    price: '100,000 د.ع',
-    status: 'confirmed'
-  }
-];
-
 export default function HomeScreen() {
   const router = useRouter();
   const { user, userType, language } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
   const isRTL = language === 'ar';
   const isOwner = userType === 'owner';
-  const [isBalanceHidden, setIsBalanceHidden] = useState(false);
+  const [isBalanceVisible, setIsBalanceVisible] = useState(false);
 
-  const toggleBalanceVisibility = () => {
+  // API hooks
+  const { data: chalets, isLoading, refetch, isFetching } = useGetOwnerChaletsQuery({});
+  const { data: profileResponse } = useGetProviderProfileQuery(undefined);
+  const { data: bookingsResponse } = useGetProviderBookingsQuery({ limit: 3 });
+
+  const profile = profileResponse?.data || profileResponse;
+  const recentBookings = bookingsResponse?.data || bookingsResponse || [];
+  const walletBalance = profile?.walletBalance ?? user?.walletBalance ?? 0;
+
+  const handleToggleBalance = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setIsBalanceHidden(!isBalanceHidden);
+
+    if (isBalanceVisible) {
+      // Just hide it
+      setIsBalanceVisible(false);
+      return;
+    }
+
+    // Authenticate to show
+    const hasHardware = await LocalAuthentication.hasHardwareAsync();
+    const enrolled = await LocalAuthentication.isEnrolledAsync();
+
+    if (!hasHardware || !enrolled) {
+      // Fallback: show directly if no biometrics available
+      setIsBalanceVisible(true);
+      return;
+    }
+
+    const result = await LocalAuthentication.authenticateAsync({
+      promptMessage: isRTL ? 'تحقق من هويتك لعرض الرصيد' : 'Verify identity to show balance',
+      cancelLabel: isRTL ? 'إلغاء' : 'Cancel',
+      fallbackLabel: isRTL ? 'استخدم رمز المرور' : 'Use Passcode',
+    });
+
+    if (result.success) {
+      setIsBalanceVisible(true);
+    }
   };
 
-  const { data: chalets, isLoading, refetch, isFetching } = useGetOwnerChaletsQuery({});
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return isRTL ? 'صباح الخير' : 'Good Morning';
+    if (hour < 18) return isRTL ? 'مساء الخير' : 'Good Afternoon';
+    return isRTL ? 'مساء الخير' : 'Good Evening';
+  };
 
-  const renderChaletCard = ({ item }: { item: any }) => {
+  const renderChaletCard = (item: any) => {
     const mainImageSrc = getImageSrc(item.images?.[0]?.url);
     const chaletName = isRTL ? (item.name?.ar || item.name) : (item.name?.en || item.name);
     const chaletLocation = isRTL ? (item.address?.ar || item.region?.name) : (item.address?.en || item.region?.enName);
 
     return (
       <TouchableOpacity 
-        style={styles.chaletCardHorizontal}
-        activeOpacity={0.8}
+        key={item.id}
+        style={styles.chaletCard}
+        activeOpacity={0.85}
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           router.push({
@@ -80,33 +99,52 @@ export default function HomeScreen() {
           });
         }}
       >
-        <Image source={mainImageSrc} style={styles.chaletImageLarge} />
-        <View style={styles.cardContentHorizontal}>
-          <Text style={[styles.chaletTitle, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
-            {chaletName}
-          </Text>
-          <Text style={[styles.locationText, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
-            {chaletLocation}
-          </Text>
-          <View style={[styles.infoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-            <Text style={styles.infoValue}>{formatPrice(item.price)} <Text style={styles.currencyText}>د.ع</Text></Text>
-            <View style={styles.dotSeparator} />
-            <Text style={styles.infoValue}>{item.reviewCount || 0} {isRTL ? 'حجز' : 'Bookings'}</Text>
+        <View style={[styles.chaletCardInner, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          {/* Image */}
+          <View style={styles.chaletImageWrap}>
+            <Image source={mainImageSrc} style={styles.chaletImage} />
+            {/* Status indicator */}
+            <View style={[styles.statusIndicator, { backgroundColor: item.isApproved ? '#10B981' : '#F59E0B' }]} />
           </View>
-        </View>
-        
-        <View style={styles.cardActions}>
+
+          {/* Info */}
+          <View style={[styles.chaletInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+            <Text style={[styles.chaletName, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
+              {chaletName}
+            </Text>
+            <View style={[styles.locationRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+              <Ionicons name="location-outline" size={12} color={Colors.primary} />
+              <Text style={styles.locationLabel} numberOfLines={1}>{chaletLocation}</Text>
+            </View>
+
+            {/* Stat chips row */}
+            <View style={[styles.chipRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+              <View style={[styles.statChip, { backgroundColor: '#ECFDF5' }]}>
+                <MaterialCommunityIcons name="cash-multiple" size={12} color="#10B981" />
+                <Text style={[styles.statChipText, { color: '#10B981' }]}>{formatPrice(item.price)}</Text>
+              </View>
+              <View style={[styles.statChip, { backgroundColor: '#EFF6FF' }]}>
+                <MaterialCommunityIcons name="calendar-check" size={12} color={Colors.primary} />
+                <Text style={[styles.statChipText, { color: Colors.primary }]}>{item.reviewCount || 0}</Text>
+              </View>
+              {item.maxGuests && (
+                <View style={[styles.statChip, { backgroundColor: '#FFF7ED' }]}>
+                  <Ionicons name="people-outline" size={12} color="#F97316" />
+                  <Text style={[styles.statChipText, { color: '#F97316' }]}>{item.maxGuests}</Text>
+                </View>
+              )}
+            </View>
+          </View>
+
+          {/* Actions */}
           <TouchableOpacity 
-            style={styles.actionIconBtn}
+            style={styles.editBtn}
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              router.push({
-                pathname: '/(tabs)/(dashboard)/edit-chalet',
-                params: { id: item.id }
-              });
+              router.push({ pathname: '/(tabs)/(dashboard)/edit-chalet', params: { id: item.id } });
             }}
           >
-            <Ionicons name="create-outline" size={18} color={Colors.primary} />
+            <Ionicons name="chevron-forward" size={18} color={Colors.text.muted} />
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -137,116 +175,189 @@ export default function HomeScreen() {
               <ActivityIndicator size="large" color={Colors.primary} />
             </View>
           ) : (
-            <View style={styles.listContent}>
-              <View style={styles.dashboardHeader}>
-                {/* Quick Stats Grid */}
-                <View style={styles.statsGrid}>
-                  <View style={styles.walletCard}>
-                    <Text style={[styles.walletLabel, { textAlign: isRTL ? 'right' : 'left' }]}>
-                      {isRTL ? 'رصيدك المتاح' : 'Your balance'}
-                    </Text>
-                    <View style={[styles.balanceRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                      <Text style={styles.walletValue}>
-                        {isBalanceHidden ? '••••••' : '2,150,000'} 
-                        {!isBalanceHidden && <Text style={styles.walletCurrency}> د.ع</Text>}
-                      </Text>
-                      <TouchableOpacity onPress={toggleBalanceVisibility}>
-                        <Ionicons 
-                          name={isBalanceHidden ? "eye-off-outline" : "eye-outline"} 
-                          size={24} 
-                          color={Colors.text.primary} 
-                        />
-                      </TouchableOpacity>
+            <>
+              {/* Greeting */}
+              <View style={[styles.greetingRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <View style={{ flex: 1, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
+                  <Text style={styles.greetingText}>{getGreeting()} 👋</Text>
+                  <Text style={styles.greetingName}>{user?.name || (isRTL ? 'مالك الشاليه' : 'Chalet Owner')}</Text>
+                </View>
+              </View>
+
+              {/* Wallet Card */}
+              <View style={styles.walletCard}>
+                <View style={styles.walletCardInner}>
+                  <View style={[styles.decorCircle, styles.decorCircle1]} />
+                  <View style={[styles.decorCircle, styles.decorCircle2]} />
+
+                  <View style={[styles.walletTop, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <View style={{ flex: 1, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
+                      <Text style={styles.walletLabel}>{isRTL ? 'رصيدك المتاح' : 'Available Balance'}</Text>
+                      <View style={[styles.walletAmountRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                        <Text style={styles.walletValue}>
+                          {isBalanceVisible ? walletBalance.toLocaleString() : '••••••'}
+                        </Text>
+                        {isBalanceVisible && <Text style={styles.walletCurrency}> {isRTL ? 'د.ع' : 'IQD'}</Text>}
+                      </View>
                     </View>
-                    
-                    <SecondaryButton
-                      label={isRTL ? 'سحب الأرباح' : 'Withdraw earnings'}
-                      icon="wallet-outline"
-                      onPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                        router.push('/(tabs)/(dashboard)/revenue');
-                      }}
-                      isActive={false}
-                      style={{ height: 34 }}
-                    />
+                    <TouchableOpacity style={styles.eyeButton} onPress={handleToggleBalance}>
+                      <Ionicons 
+                        name={isBalanceVisible ? 'eye-outline' : 'eye-off-outline'} 
+                        size={22} 
+                        color="rgba(255,255,255,0.8)" 
+                      />
+                    </TouchableOpacity>
+                  </View>
+
+                  <View style={[styles.walletActions, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <TouchableOpacity 
+                      style={styles.walletActionBtn}
+                      onPress={() => router.push('/(tabs)/(dashboard)/revenue')}
+                      activeOpacity={0.85}
+                    >
+                      <MaterialCommunityIcons name="bank-transfer-out" size={18} color={Colors.primary} />
+                      <Text style={styles.walletActionText}>{isRTL ? 'سحب' : 'Withdraw'}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                      style={styles.walletActionBtn}
+                      onPress={() => router.push('/(tabs)/(dashboard)/transactions')}
+                      activeOpacity={0.85}
+                    >
+                      <MaterialCommunityIcons name="history" size={18} color={Colors.primary} />
+                      <Text style={styles.walletActionText}>{isRTL ? 'المعاملات' : 'History'}</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
+              </View>
 
-                {/* Latest Bookings Section */}
-                <View style={styles.sectionHeader}>
-                  <Text style={styles.sectionTitle}>{isRTL ? 'أحدث الحجوزات' : 'Latest Bookings'}</Text>
-                  <TouchableOpacity onPress={() => router.push('/(tabs)/(dashboard)/bookings')}>
-                    <Text style={styles.viewAll}>{t('dashboard.viewAll')}</Text>
-                  </TouchableOpacity>
-                </View>
+              {/* Quick Actions */}
+              <View style={[styles.quickActionsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <TouchableOpacity style={styles.quickAction} onPress={() => router.push('/(tabs)/(dashboard)/bookings')}>
+                  <View style={[styles.quickActionIcon, { backgroundColor: '#EFF6FF' }]}>
+                    <MaterialCommunityIcons name="calendar-check" size={22} color={Colors.primary} />
+                  </View>
+                  <Text style={styles.quickActionLabel}>{isRTL ? 'الحجوزات' : 'Bookings'}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.quickAction} onPress={() => router.push('/(tabs)/(dashboard)/revenue')}>
+                  <View style={[styles.quickActionIcon, { backgroundColor: '#ECFDF5' }]}>
+                    <MaterialCommunityIcons name="chart-line" size={22} color="#10B981" />
+                  </View>
+                  <Text style={styles.quickActionLabel}>{isRTL ? 'الأرباح' : 'Revenue'}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.quickAction} onPress={() => router.push('/(tabs)/(dashboard)/customers')}>
+                  <View style={[styles.quickActionIcon, { backgroundColor: '#FFF7ED' }]}>
+                    <MaterialCommunityIcons name="account-group-outline" size={22} color="#F97316" />
+                  </View>
+                  <Text style={styles.quickActionLabel}>{isRTL ? 'العملاء' : 'Customers'}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.quickAction} onPress={() => router.push('/(tabs)/(dashboard)/notifications')}>
+                  <View style={[styles.quickActionIcon, { backgroundColor: '#FEF2F2' }]}>
+                    <MaterialCommunityIcons name="bell-outline" size={22} color="#EF4444" />
+                  </View>
+                  <Text style={styles.quickActionLabel}>{isRTL ? 'الإشعارات' : 'Alerts'}</Text>
+                </TouchableOpacity>
+              </View>
 
-                {RECENT_BOOKINGS.map((booking) => (
-                  <TouchableOpacity 
-                    key={booking.id} 
-                    style={[styles.bookingItem, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
-                    onPress={() => router.push('/(tabs)/(dashboard)/bookings')}
-                  >
-                    <View style={[styles.bookingAvatar, { backgroundColor: booking.status === 'new' ? Colors.primary + '10' : '#F2F2F7' }]}>
-                      <Text style={[styles.avatarText, { color: booking.status === 'new' ? Colors.primary : Colors.text.primary }]}>
-                        {booking.customer[0]}
-                      </Text>
-                    </View>
-                    <View style={[styles.bookingInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                      <Text style={styles.bookingCustomer}>{booking.customer}</Text>
-                      <Text style={styles.bookingChalet} numberOfLines={1}>{booking.chalet}</Text>
-                      <Text style={styles.bookingDate}>{booking.date}</Text>
-                    </View>
-                    <View style={{ alignItems: isRTL ? 'flex-start' : 'flex-end' }}>
-                      <Text style={styles.bookingPrice}>{booking.price}</Text>
-                      {booking.status === 'new' && (
-                        <View style={styles.newBadge}>
-                          <Text style={styles.newBadgeText}>{isRTL ? 'جديد' : 'New'}</Text>
+              {/* Recent Bookings */}
+              {Array.isArray(recentBookings) && recentBookings.length > 0 && (
+                <>
+                  <View style={[styles.sectionHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <Text style={styles.sectionTitle}>{isRTL ? 'أحدث الحجوزات' : 'Recent Bookings'}</Text>
+                    <TouchableOpacity 
+                      style={styles.viewAllBtn}
+                      onPress={() => router.push('/(tabs)/(dashboard)/bookings')}
+                    >
+                      <Text style={styles.viewAllText}>{isRTL ? 'عرض الكل' : 'View All'}</Text>
+                      <Ionicons name={isRTL ? 'chevron-back' : 'chevron-forward'} size={14} color={Colors.primary} />
+                    </TouchableOpacity>
+                  </View>
+
+                  {recentBookings.slice(0, 3).map((booking: any) => (
+                    <TouchableOpacity 
+                      key={booking.id} 
+                      style={[styles.bookingCard, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+                      onPress={() => router.push('/(tabs)/(dashboard)/bookings')}
+                      activeOpacity={0.7}
+                    >
+                      <View style={[styles.bookingAvatar, { 
+                        backgroundColor: booking.status === 'confirmed' ? '#EFF6FF' : booking.status === 'pending' ? '#FFF7ED' : '#F8F9FB' 
+                      }]}>
+                        <Text style={[styles.avatarLetter, { 
+                          color: booking.status === 'confirmed' ? Colors.primary : booking.status === 'pending' ? '#F59E0B' : Colors.text.primary 
+                        }]}>
+                          {(booking.customer?.name || booking.user?.name || '?')[0]}
+                        </Text>
+                      </View>
+                      <View style={[styles.bookingInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                        <Text style={styles.bookingName}>{booking.customer?.name || booking.user?.name || '-'}</Text>
+                        <Text style={styles.bookingChalet} numberOfLines={1}>
+                          {isRTL ? (booking.chalet?.name?.ar || '-') : (booking.chalet?.name?.en || '-')}
+                        </Text>
+                        <Text style={styles.bookingDate}>
+                          {new Date(booking.startDate || booking.createdAt).toLocaleDateString(isRTL ? 'ar-IQ' : 'en-US', { month: 'short', day: 'numeric' })}
+                        </Text>
+                      </View>
+                      <View style={{ alignItems: isRTL ? 'flex-start' : 'flex-end' }}>
+                        <Text style={styles.bookingAmount}>
+                          {(booking.totalPrice || 0).toLocaleString()} <Text style={styles.bookingCurrency}>{isRTL ? 'د.ع' : 'IQD'}</Text>
+                        </Text>
+                        <View style={[styles.bookingStatusBadge, {
+                          backgroundColor: booking.status === 'confirmed' ? '#ECFDF5' : booking.status === 'pending' ? '#FFF7ED' : '#FEF2F2'
+                        }]}>
+                          <Text style={[styles.bookingStatusText, {
+                            color: booking.status === 'confirmed' ? '#10B981' : booking.status === 'pending' ? '#F59E0B' : '#EF4444'
+                          }]}>
+                            {booking.status === 'confirmed' ? (isRTL ? 'مؤكد' : 'Confirmed') : 
+                             booking.status === 'pending' ? (isRTL ? 'معلق' : 'Pending') : (isRTL ? 'ملغي' : 'Cancelled')}
+                          </Text>
                         </View>
-                      )}
-                    </View>
-                  </TouchableOpacity>
-                ))}
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </>
+              )}
 
-                {/* Chalets Section Title */}
-                <View style={[styles.listHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                  <ThemedText type="defaultSemiBold" style={{ fontSize: normalize.font(16) }}>
-                    {isRTL ? 'شاليهاتي' : 'My Chalets'} ({chalets?.data?.length || 0})
-                  </ThemedText>
-                  <SecondaryButton
-                    label={isRTL ? 'أضف شاليه' : 'Add Chalet'}
-                    icon="plus"
+              {/* My Chalets */}
+              <View style={styles.chaletSectionWrap}>
+                <View style={[styles.chaletSectionHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                  <View style={[styles.sectionTitleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <MaterialCommunityIcons name="home-city-outline" size={22} color={Colors.primary} />
+                    <Text style={styles.sectionTitle}>{isRTL ? 'شاليهاتي' : 'My Chalets'}</Text>
+                    <View style={styles.countBadge}>
+                      <Text style={styles.countBadgeText}>{chalets?.data?.length || 0}</Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.addChaletBtn}
                     onPress={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                       router.push('/(tabs)/(dashboard)/add-chalet');
                     }}
-                    isActive={false}
-                    style={{ height: 34 }}
-                  />
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons name="add" size={18} color={Colors.white} />
+                  </TouchableOpacity>
                 </View>
 
-                {/* Chalets Slider */}
                 {chalets?.data?.length > 0 ? (
-                  <FlatList
-                    data={chalets.data}
-                    renderItem={renderChaletCard}
-                    keyExtractor={(item) => item.id.toString()}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.chaletSliderContent}
-                    snapToInterval={normalize.width(280) + 16}
-                    decelerationRate="fast"
-                    inverted={isRTL}
-                  />
+                  <View style={styles.chaletsList}>
+                    {chalets.data.map((item: any) => renderChaletCard(item))}
+                  </View>
                 ) : (
                   <View style={styles.emptyContainer}>
-                    <MaterialCommunityIcons name="home-alert-outline" size={80} color={Colors.text.muted} />
-                    <ThemedText type="h2" style={styles.emptyText}>{t('dashboard.noChalets')}</ThemedText>
+                    <View style={styles.emptyIconWrap}>
+                      <MaterialCommunityIcons name="home-plus-outline" size={48} color="#D1D5DB" />
+                    </View>
+                    <Text style={styles.emptyTitle}>{isRTL ? 'لا توجد شاليهات بعد' : 'No Chalets Yet'}</Text>
+                    <Text style={styles.emptySubtitle}>
+                      {isRTL ? 'أضف أول شاليه لك وابدأ بإستقبال الحجوزات' : 'Add your first chalet to start receiving bookings'}
+                    </Text>
                   </View>
                 )}
               </View>
-            </View>
+            </>
           )}
-          </ScrollView>
+        </ScrollView>
       </SafeAreaView>
     </GestureHandlerRootView>
   );
@@ -262,213 +373,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   scrollContent: {
-    paddingHorizontal: 8,
+    paddingHorizontal: 14,
     paddingTop: 4,
     paddingBottom: 100,
-  },
-  dashboardHeader: {
-    paddingBottom: 0,
-  },
-  statsGrid: {
-    gap: 12,
-    marginVertical: Spacing.md,
-  },
-  walletCard: {
-    backgroundColor: Colors.white,
-    borderRadius: 20,
-    padding: 16,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: '#F0F0F0',
-  },
-  walletLabel: {
-    fontSize: normalize.font(14),
-    color: '#8E8E93',
-    marginBottom: 4,
-    fontWeight: '500',
-  },
-  balanceRow: {
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  walletValue: {
-    fontSize: normalize.font(32),
-    fontWeight: '800',
-    color: '#000000',
-  },
-  walletCurrency: {
-    fontSize: normalize.font(16),
-    color: Colors.text.muted,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 8,
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    fontSize: normalize.font(16),
-    fontWeight: '700',
-    color: Colors.text.primary,
-  },
-  viewAll: {
-    fontSize: normalize.font(12),
-    color: Colors.primary,
-    fontWeight: '600',
-  },
-  bookingItem: {
-    backgroundColor: Colors.white,
-    padding: 16,
-    borderRadius: 20,
-    marginBottom: 12,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.border,
-    ...Shadows.small,
-    shadowOpacity: 0.03,
-  },
-  bookingAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: {
-    fontSize: normalize.font(16),
-    fontWeight: '700',
-  },
-  bookingInfo: {
-    flex: 1,
-    paddingHorizontal: 12,
-  },
-  bookingCustomer: {
-    fontSize: normalize.font(14),
-    fontWeight: '600',
-    color: Colors.text.primary,
-  },
-  bookingChalet: {
-    fontSize: normalize.font(12),
-    color: Colors.text.muted,
-    marginTop: 1,
-  },
-  bookingDate: {
-    fontSize: normalize.font(11),
-    color: Colors.text.muted,
-    marginTop: 2,
-  },
-  bookingPrice: {
-    fontSize: normalize.font(13),
-    fontWeight: '700',
-    color: Colors.primary,
-  },
-  newBadge: {
-    backgroundColor: Colors.primary,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-    marginTop: 4,
-  },
-  newBadgeText: {
-    color: Colors.white,
-    fontSize: normalize.font(9),
-    fontWeight: '700',
-  },
-  listHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 24,
-    marginBottom: 16,
-  },
-  listContent: {
-    paddingHorizontal: 8,
-    paddingBottom: 20,
-  },
-  chaletCardHorizontal: {
-    backgroundColor: Colors.white,
-    width: normalize.width(280),
-    borderRadius: 16,
-    marginRight: 12,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#F0F0F0',
-    padding: 8,
-  },
-  chaletSliderContent: {
-    paddingRight: 12,
-  },
-  chaletImageLarge: {
-    width: '100%',
-    height: normalize.height(140),
-    borderRadius: normalize.radius(16),
-    backgroundColor: '#F5F5F7',
-  },
-  cardContentHorizontal: {
-    paddingVertical: 12,
-    paddingHorizontal: 4,
-  },
-  chaletTitle: {
-    fontSize: normalize.font(16),
-    fontWeight: '600',
-    color: Colors.text.primary,
-    marginBottom: 4,
-  },
-  locationText: {
-    color: Colors.text.muted,
-    fontSize: normalize.font(12),
-    fontWeight: '400',
-    marginBottom: 8,
-  },
-  infoRow: {
-    alignItems: 'center',
-    gap: 8,
-  },
-  infoValue: {
-    fontSize: normalize.font(13),
-    fontWeight: '500',
-    color: Colors.text.primary,
-  },
-  currencyText: {
-    fontSize: normalize.font(10),
-    color: Colors.text.muted,
-    fontWeight: '400',
-  },
-  dotSeparator: {
-    width: 3,
-    height: 3,
-    borderRadius: 1.5,
-    backgroundColor: Colors.border,
-  },
-  cardActions: {
-    position: 'absolute',
-    top: 18,
-    right: 18,
-    flexDirection: 'row',
-    gap: 8,
-  },
-  actionIconBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  emptyContainer: {
-    flex: 1,
-    height: 300,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: Spacing.xl,
-  },
-  emptyText: {
-    ...Typography.body,
-    marginTop: Spacing.md,
-    color: Colors.text.secondary,
-    textAlign: 'center',
   },
   loadingContainer: {
     flex: 1,
@@ -476,6 +383,350 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  // Greeting
+  greetingRow: {
+    alignItems: 'center',
+    marginBottom: 16,
+    marginTop: 4,
+  },
+  greetingText: {
+    fontSize: normalize.font(14),
+    color: Colors.text.muted,
+    fontWeight: '500',
+  },
+  greetingName: {
+    fontSize: normalize.font(22),
+    fontWeight: '800',
+    color: Colors.text.primary,
+    marginTop: 2,
+  },
+  // Wallet Card
+  walletCard: {
+    marginBottom: 20,
+    borderRadius: 24,
+    overflow: 'hidden',
+  },
+  walletCardInner: {
+    backgroundColor: Colors.primary,
+    padding: 24,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  decorCircle: {
+    position: 'absolute',
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+  },
+  decorCircle1: {
+    width: 180,
+    height: 180,
+    top: -60,
+    right: -40,
+  },
+  decorCircle2: {
+    width: 120,
+    height: 120,
+    bottom: -30,
+    left: -20,
+  },
+  walletTop: {
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 20,
+  },
+  walletLabel: {
+    color: 'rgba(255,255,255,0.65)',
+    fontSize: normalize.font(12),
+    fontWeight: '600',
+    marginBottom: 6,
+    letterSpacing: 0.3,
+    textTransform: 'uppercase',
+  },
+  walletAmountRow: {
+    alignItems: 'baseline',
+  },
+  walletValue: {
+    color: Colors.white,
+    fontSize: normalize.font(32),
+    fontWeight: '800',
+    letterSpacing: -0.5,
+  },
+  walletCurrency: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: normalize.font(14),
+    fontWeight: '600',
+  },
+  eyeButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  walletActions: {
+    gap: 10,
+  },
+  walletActionBtn: {
+    flex: 1,
+    backgroundColor: Colors.white,
+    paddingVertical: 10,
+    borderRadius: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  walletActionText: {
+    color: Colors.primary,
+    fontWeight: '700',
+    fontSize: normalize.font(13),
+  },
+  // Quick Actions
+  quickActionsRow: {
+    gap: 10,
+    marginBottom: 24,
+  },
+  quickAction: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 8,
+  },
+  quickActionIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  quickActionLabel: {
+    fontSize: normalize.font(11),
+    fontWeight: '600',
+    color: Colors.text.secondary,
+    textAlign: 'center',
+  },
+  // Section Header
+  sectionHeader: {
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  sectionTitle: {
+    fontSize: normalize.font(18),
+    fontWeight: '800',
+    color: Colors.text.primary,
+  },
+  viewAllBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  viewAllText: {
+    color: Colors.primary,
+    fontSize: normalize.font(13),
+    fontWeight: '600',
+  },
+  // Booking Cards
+  bookingCard: {
+    backgroundColor: Colors.white,
+    padding: 14,
+    borderRadius: 16,
+    marginBottom: 10,
+    alignItems: 'center',
+    gap: 12,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
+  },
+  bookingAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarLetter: {
+    fontSize: normalize.font(18),
+    fontWeight: '700',
+  },
+  bookingInfo: {
+    flex: 1,
+  },
+  bookingName: {
+    fontSize: normalize.font(14),
+    fontWeight: '700',
+    color: Colors.text.primary,
+    marginBottom: 1,
+  },
+  bookingChalet: {
+    fontSize: normalize.font(11),
+    color: Colors.text.muted,
+    fontWeight: '500',
+  },
+  bookingDate: {
+    fontSize: normalize.font(10),
+    color: Colors.text.muted,
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  bookingAmount: {
+    fontSize: normalize.font(14),
+    fontWeight: '800',
+    color: Colors.text.primary,
+    marginBottom: 4,
+  },
+  bookingCurrency: {
+    fontSize: normalize.font(10),
+    color: Colors.text.muted,
+    fontWeight: '600',
+  },
+  bookingStatusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  bookingStatusText: {
+    fontSize: normalize.font(9),
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  },
+  // Chalet Section
+  chaletSectionWrap: {
+    marginTop: 24,
+  },
+  chaletSectionHeader: {
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  sectionTitleRow: {
+    alignItems: 'center',
+    gap: 8,
+  },
+  countBadge: {
+    backgroundColor: Colors.primary,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  countBadgeText: {
+    color: Colors.white,
+    fontSize: normalize.font(11),
+    fontWeight: '800',
+  },
+  addChaletBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  // Chalet Cards
+  chaletsList: {
+    gap: 10,
+  },
+  chaletCard: {
+    backgroundColor: Colors.white,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
+    overflow: 'hidden',
+  },
+  chaletCardInner: {
+    padding: 12,
+    alignItems: 'center',
+    gap: 14,
+  },
+  chaletImageWrap: {
+    position: 'relative',
+  },
+  chaletImage: {
+    width: normalize.width(90),
+    height: normalize.width(90),
+    borderRadius: 14,
+    backgroundColor: '#F5F5F7',
+  },
+  statusIndicator: {
+    position: 'absolute',
+    top: 6,
+    left: 6,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 2,
+    borderColor: Colors.white,
+  },
+  chaletInfo: {
+    flex: 1,
+    justifyContent: 'center',
+    gap: 6,
+  },
+  chaletName: {
+    fontSize: normalize.font(15),
+    fontWeight: '700',
+    color: Colors.text.primary,
+  },
+  locationRow: {
+    alignItems: 'center',
+    gap: 3,
+  },
+  locationLabel: {
+    fontSize: normalize.font(11),
+    color: Colors.text.muted,
+    fontWeight: '500',
+  },
+  chipRow: {
+    gap: 6,
+    marginTop: 2,
+  },
+  statChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    gap: 4,
+  },
+  statChipText: {
+    fontSize: normalize.font(11),
+    fontWeight: '700',
+  },
+  editBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: '#F8F9FB',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  // Empty State
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    gap: 8,
+  },
+  emptyIconWrap: {
+    width: 80,
+    height: 80,
+    borderRadius: 24,
+    backgroundColor: '#F8F9FB',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  emptyTitle: {
+    fontSize: normalize.font(16),
+    fontWeight: '700',
+    color: Colors.text.primary,
+  },
+  emptySubtitle: {
+    fontSize: normalize.font(12),
+    color: Colors.text.muted,
+    fontWeight: '500',
+    textAlign: 'center',
+    paddingHorizontal: 40,
+  },
 });
-
-

@@ -31,6 +31,7 @@ interface HeaderSectionProps {
   onExtraIconPress?: () => void;
   showProfile?: boolean;
   onProfilePress?: () => void;
+  onDeletePress?: () => void;
 }
 
 export function HeaderSection({ 
@@ -45,7 +46,8 @@ export function HeaderSection({
   extraIcon,
   onExtraIconPress,
   showProfile = false,
-  onProfilePress
+  onProfilePress,
+  onDeletePress
 }: HeaderSectionProps) {
   const router = useRouter();
   const { t } = useTranslation();
@@ -116,6 +118,18 @@ export function HeaderSection({
               <Ionicons name="notifications-outline" size={normalize.width(22)} color={Colors.text.primary} />
             )}
           </TouchableOpacity>
+
+          {onDeletePress && (
+            <TouchableOpacity 
+              style={[styles.actionButton, { borderColor: '#FEE2E2', backgroundColor: '#FEF2F2' }]}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                onDeletePress();
+              }}
+            >
+              <Ionicons name="trash-outline" size={normalize.width(22)} color="#EF4444" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 

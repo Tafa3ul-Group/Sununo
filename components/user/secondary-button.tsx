@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  ActivityIndicator,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
 
@@ -22,6 +23,7 @@ interface SecondaryButtonProps {
   iconOnly?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
+  isLoading?: boolean;
 }
 
 /**
@@ -42,11 +44,12 @@ export function SecondaryButton({
   iconOnly = false,
   style,
   textStyle,
+  isLoading = false,
 }: SecondaryButtonProps) {
   const bgColor = isActive ? activeColor : "transparent";
   const borderColor = isActive ? activeColor : inactiveColor;
   const finalContentColor = isActive ? activeTextColor : (inactiveTextColor || activeColor);
-
+  
   const buttonHeight = (style as ViewStyle)?.height || 46;
   const scaledWidth = Number(buttonHeight) * (28 / 29);
 
@@ -54,6 +57,7 @@ export function SecondaryButton({
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={onPress}
+      disabled={isLoading}
       style={[styles.container, style]}
     >
       {/* Icon Section */}
@@ -72,7 +76,11 @@ export function SecondaryButton({
             strokeWidth="1"
           />
         </Svg>
-        {icon && (
+        {isLoading ? (
+          <View style={styles.iconContainer}>
+            <ActivityIndicator size="small" color={finalContentColor} />
+          </View>
+        ) : icon && (
           <View style={styles.iconContainer}>
             <MaterialCommunityIcons
               name={icon as any}
@@ -96,19 +104,23 @@ export function SecondaryButton({
             },
           ]}
         >
-          <ThemedText
-            style={[
-              styles.text, 
-              { 
-                color: finalContentColor, 
-                fontSize: Number(buttonHeight) * 0.38,
-                lineHeight: Number(buttonHeight) * 0.45 
-              }, 
-              textStyle
-            ]}
-          >
-            {label}
-          </ThemedText>
+          {isLoading ? (
+             <ActivityIndicator size="small" color={finalContentColor} />
+          ) : (
+            <ThemedText
+              style={[
+                styles.text, 
+                { 
+                  color: finalContentColor, 
+                  fontSize: Number(buttonHeight) * 0.38,
+                  lineHeight: Number(buttonHeight) * 0.45 
+                }, 
+                textStyle
+              ]}
+            >
+              {label}
+            </ThemedText>
+          )}
         </View>
       )}
     </TouchableOpacity>

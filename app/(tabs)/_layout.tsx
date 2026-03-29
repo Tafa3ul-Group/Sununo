@@ -150,6 +150,14 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
+        name="(dashboard)/provider-profile"
+        options={{
+          href: null,
+          title: isRTL ? 'معلومات العمل والمصرف' : 'Business & Bank Info',
+        }}
+      />
+
+      <Tabs.Screen
         name="explore"
         options={{
           href: null,

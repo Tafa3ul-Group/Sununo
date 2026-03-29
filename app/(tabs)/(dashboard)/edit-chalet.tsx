@@ -15,7 +15,8 @@ import {
   useLazyGetChaletRegionsQuery,
   useSetChaletAmenitiesMutation,
   useUpdateChaletMutation,
-  useUploadChaletImageMutation
+  useUploadChaletImageMutation,
+  useDeleteChaletMutation
 } from '@/store/api/apiSlice';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
@@ -54,7 +55,8 @@ export default function EditChaletScreen() {
   const [updateChalet, { isLoading: isUpdating }] = useUpdateChaletMutation();
   const [uploadImage, { isLoading: isUploading }] = useUploadChaletImageMutation();
   const [setAmenities, { isLoading: isLinking }] = useSetChaletAmenitiesMutation();
-  const isLoading = isUpdating || isUploading || isLoadingDetails || isLinking;
+  const [deleteChalet, { isLoading: isDeletingChalet }] = useDeleteChaletMutation();
+  const isLoading = isUpdating || isUploading || isLoadingDetails || isLinking || isDeletingChalet;
 
   const [form, setForm] = useState({
     nameAr: '',
@@ -263,6 +265,28 @@ export default function EditChaletScreen() {
     }
   };
 
+  const handleDelete = () => {
+    Alert.alert(
+      isRTL ? 'حذف الشاليه' : 'Delete Chalet',
+      isRTL ? 'هل أنت متأكد من حذف هذا الشاليه نهائياً؟ لا يمكن التراجع عن هذا الإجراء.' : 'Are you sure you want to permanently delete this chalet? This action cannot be undone.',
+      [
+        { text: isRTL ? 'إلغاء' : 'Cancel', style: 'cancel' },
+        {
+          text: isRTL ? 'حذف' : 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteChalet(id).unwrap();
+              router.replace('/(tabs)/(dashboard)/home');
+            } catch (err) {
+              Alert.alert(isRTL ? 'خطأ' : 'Error', isRTL ? 'فشل حذف الشاليه' : 'Failed to delete chalet');
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const handleCitySelect = (city: any) => {
     setForm({ ...form, cityId: city.id, cityName: city.name, regionId: '', regionName: '' });
     citySheetRef.current?.dismiss();
@@ -352,12 +376,13 @@ export default function EditChaletScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
 
-      <HeaderSection 
+      <HeaderSection
         userType="owner"
         title={isRTL ? 'تعديل الشاليه' : 'Edit Chalet'}
         showSearch={false}
         showCategories={false}
         showBackButton={true}
+        onDeletePress={handleDelete}
       />
 
       <KeyboardAvoidingView

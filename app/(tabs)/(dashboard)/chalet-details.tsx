@@ -2,14 +2,14 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, Switch, Platform, ActivityIndicator, Dimensions, Animated, StatusBar } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, Switch, Platform, ActivityIndicator, Dimensions, Animated, StatusBar, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { Colors, normalize, Spacing } from '@/constants/theme';
 import * as Haptics from 'expo-haptics';
 import { getImageSrc } from '@/hooks/useImageSrc';
-import { useGetOwnerChaletDetailsQuery } from '@/store/api/apiSlice';
+import { useGetOwnerChaletDetailsQuery, useDeleteChaletMutation } from '@/store/api/apiSlice';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { SecondaryButton } from '@/components/user/secondary-button';
 
@@ -24,10 +24,33 @@ export default function ChaletDetailsScreen() {
   const isRTL = language === 'ar';
   
   const { data: response, isLoading } = useGetOwnerChaletDetailsQuery(id);
+  const [deleteChalet] = useDeleteChaletMutation();
   const chalet = response?.data || (response?.id ? response : null);
 
   const [isActive, setIsActive] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+  const handleDelete = () => {
+    Alert.alert(
+      isRTL ? 'حذف الشاليه' : 'Delete Chalet',
+      isRTL ? 'هل أنت متأكد من حذف هذا الشاليه نهائياً؟ لا يمكن التراجع عن هذا الإجراء.' : 'Are you sure you want to permanently delete this chalet? This action cannot be undone.',
+      [
+        { text: isRTL ? 'إلغاء' : 'Cancel', style: 'cancel' },
+        { 
+          text: isRTL ? 'حذف' : 'Delete', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteChalet(id).unwrap();
+              router.replace('/(tabs)/(dashboard)/home');
+            } catch (err) {
+              Alert.alert(isRTL ? 'خطأ' : 'Error', isRTL ? 'فشل حذف الشاليه' : 'Failed to delete chalet');
+            }
+          }
+        }
+      ]
+    );
+  };
   const scrollY = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -148,9 +171,17 @@ export default function ChaletDetailsScreen() {
           <TouchableOpacity style={styles.iconButton} onPress={() => router.back()}>
             <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={22} color={Colors.white} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton} onPress={() => router.push({ pathname: '/(tabs)/(dashboard)/edit-chalet', params: { id: chalet.id } })}>
-            <Ionicons name="create-outline" size={22} color={Colors.white} />
-          </TouchableOpacity>
+          <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 10 }}>
+            <TouchableOpacity 
+              style={[styles.iconButton, { backgroundColor: '#FEF2F2', borderColor: '#FEE2E2' }]} 
+              onPress={handleDelete}
+            >
+              <Ionicons name="trash-outline" size={22} color="#EF4444" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconButton} onPress={() => router.push({ pathname: '/(tabs)/(dashboard)/edit-chalet', params: { id: chalet.id } })}>
+              <Ionicons name="create-outline" size={22} color={Colors.white} />
+            </TouchableOpacity>
+          </View>
         </SafeAreaView>
       </View>
 

@@ -1,38 +1,53 @@
-import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
-import { useSelector, useDispatch } from 'react-redux';
+import { Colors, Spacing, Typography, normalize } from '@/constants/theme';
 import { RootState } from '@/store';
 import { logout } from '@/store/authSlice';
-import { Colors, Spacing, Typography, normalize } from '@/constants/theme';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import React from 'react';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { HeaderSection } from '@/components/header-section';
 import { useTranslation } from 'react-i18next';
 
 export default function ProfileScreen() {
   const dispatch = useDispatch();
-  const { t } = useTranslation();
+  const { i18n, t } = useTranslation();
+  const isRTL = i18n.language === 'ar';
   const { user, userType } = useSelector((state: RootState) => state.auth);
 
   const router = useRouter();
 
   const handleLogout = () => {
-    dispatch(logout());
-    router.replace('/');
+    Alert.alert(
+      isRTL ? 'تسجيل الخروج' : 'Logout',
+      isRTL ? 'هل أنت متأكد من تسجيل الخروج؟' : 'Are you sure you want to logout?',
+      [
+        { text: isRTL ? 'إلغاء' : 'Cancel', style: 'cancel' },
+        { 
+          text: isRTL ? 'خروج' : 'Logout', 
+          style: 'destructive', 
+          onPress: () => {
+            dispatch(logout());
+            router.replace('/(auth)/choose-type');
+          }
+        }
+      ]
+    );
   };
 
   const isOwner = userType === 'owner';
 
   return (
     <SafeAreaView style={styles.container}>
-      <HeaderSection 
-        userType={userType} 
-        userName={user?.name} 
+      <HeaderSection
+        userType={userType}
+        userName={user?.name}
         title={t('profile.title')}
         showSearch={false}
         showCategories={false}
+        showBackButton={true}
       />
       <ScrollView contentContainerStyle={styles.content}>
 
@@ -45,10 +60,10 @@ export default function ProfileScreen() {
               <Ionicons name="camera" size={18} color={Colors.white} />
             </TouchableOpacity>
           </View>
-          
+
           <Text style={styles.userName}>{user?.name || (userType === 'guest' ? t('auth.browseAsGuest') : t('profile.title'))}</Text>
           {user?.email && <Text style={styles.userEmail}>{user.email}</Text>}
-          
+
           <View style={[styles.roleBadge, { backgroundColor: isOwner ? '#E3F2FD' : '#FFF3E0' }]}>
             <Text style={[styles.roleText, { color: isOwner ? '#1976D2' : '#F57C00' }]}>
               {isOwner ? t('auth.owner') : (userType === 'guest' ? t('auth.browseAsGuest') : t('auth.customer'))}
@@ -58,17 +73,22 @@ export default function ProfileScreen() {
 
         <View style={styles.menuContainer}>
           <Text style={styles.menuLabel}>{t('profile.title')}</Text>
-          
-          <TouchableOpacity style={styles.menuItem}>
+
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => isOwner ? router.push('/(tabs)/(dashboard)/provider-profile') : null}
+          >
             <Ionicons name="chevron-back" size={20} color={Colors.text.muted} />
             <View style={styles.menuItemContent}>
-              <Text style={styles.menuItemTitle}>{t('profile.editProfile')}</Text>
-              <Ionicons name="person-outline" size={22} color={Colors.primary} />
+              <Text style={styles.menuItemTitle}>
+                {isOwner ? (isRTL ? 'معلومات العمل والمصرف' : 'Business & Bank Info') : t('profile.editProfile')}
+              </Text>
+              <Ionicons name={isOwner ? "business-outline" : "person-outline"} size={22} color={Colors.primary} />
             </View>
           </TouchableOpacity>
 
           {isOwner && (
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.menuItem}
               onPress={() => router.push('/(tabs)/(dashboard)/home')}
             >
@@ -97,8 +117,8 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity 
-          style={styles.logoutButton} 
+        <TouchableOpacity
+          style={styles.logoutButton}
           onPress={handleLogout}
           activeOpacity={0.8}
         >

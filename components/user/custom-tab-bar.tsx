@@ -16,8 +16,12 @@ interface TabProps {
 }
 
 export const CustomTabBar: React.FC<TabProps> = ({ state, navigation, descriptors }) => {
+  const { userType, language } = useSelector((state: RootState) => state.auth);
+  const isRTL = language === 'ar';
   const insets = useSafeAreaInsets();
-  const { userType } = useSelector((state: RootState) => state.auth);
+
+  // Hide tab bar if no user type (logging out)
+  if (!userType) return null;
 
   // Current active route index/name
   const activeIndex = state.index;
@@ -33,6 +37,8 @@ export const CustomTabBar: React.FC<TabProps> = ({ state, navigation, descriptor
     '(dashboard)/transactions',
     '(dashboard)/notifications',
     '(dashboard)/customers',
+    'profile',
+    '(dashboard)/provider-profile',
   ];
 
   // Hide tab bar if screen is a sub-screen (explicitly href: null) OR in blacklist
@@ -74,7 +80,7 @@ export const CustomTabBar: React.FC<TabProps> = ({ state, navigation, descriptor
     navigation.navigate(routeName);
   };
 
-  const NAV_HEIGHT = normalize.height(50);
+  const NAV_HEIGHT = normalize.height(54);
 
   const renderIcon = (route: any, isActive: boolean) => {
     const { options } = descriptors[route.key];
@@ -94,7 +100,14 @@ export const CustomTabBar: React.FC<TabProps> = ({ state, navigation, descriptor
   const isLeftTabActive = currentRouteName === leftTab.name;
 
   return (
-    <View style={[styles.container, { bottom: insets.bottom + 16 }]}>
+    <View style={[
+      styles.container, 
+      { 
+        bottom: insets.bottom + 16, 
+        flexDirection: 'row',
+        paddingHorizontal: 16
+      }
+    ]}>
       {/* Left Button */}
       <TouchableOpacity
         style={[
@@ -110,7 +123,7 @@ export const CustomTabBar: React.FC<TabProps> = ({ state, navigation, descriptor
 
       {/* Main Navigation Capsule */}
       <View style={[styles.tabCapsule, { height: NAV_HEIGHT, borderRadius: NAV_HEIGHT / 2 }]}>
-        {capsuleTabs.map((route: any) => {
+        {capsuleTabs.map((route: any, index: number) => {
           const isActive = currentRouteName === route.name;
 
           return (
@@ -120,7 +133,8 @@ export const CustomTabBar: React.FC<TabProps> = ({ state, navigation, descriptor
               style={[
                 styles.tabItem,
                 { width: NAV_HEIGHT - 8, height: NAV_HEIGHT - 8, borderRadius: (NAV_HEIGHT - 8) / 2 },
-                isActive && styles.activeTabItem
+                isActive && styles.activeTabItem,
+                index > 0 && { marginLeft: 4 }
               ]}
               activeOpacity={0.7}
             >
@@ -136,8 +150,8 @@ export const CustomTabBar: React.FC<TabProps> = ({ state, navigation, descriptor
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    left: 16,
-    right: 16,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
