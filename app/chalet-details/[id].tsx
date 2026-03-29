@@ -425,8 +425,8 @@ export default function ChaletDetailScreen() {
                 { label: "مرافق قريبة", icon: "location-outline" },
                 { label: "الصيانة", icon: "construct-outline" },
               ].map((item, idx) => (
-                <View key={idx} style={styles.interestItem}>
-                  <View style={styles.amenityIconWrapper}>
+                <View key={idx} style={styles.interestItemExtended}>
+                  <View style={styles.interestIconWrapperLarge}>
                     <Image
                       source={require("@/assets/shapes/info.svg")}
                       style={styles.amenityShape}
@@ -435,8 +435,8 @@ export default function ChaletDetailScreen() {
                     <View style={styles.amenityIconCentered}>
                       <Ionicons
                         name={item.icon as any}
-                        size={22}
-                        color="#111827"
+                        size={28}
+                        color="white"
                       />
                     </View>
                   </View>
@@ -749,10 +749,19 @@ const styles = StyleSheet.create({
     gap: 16,
     marginTop: 16,
   },
-  interestItem: {
-    width: (SCREEN_WIDTH - 48 - 32) / 4,
+  interestItemExtended: {
+    width: (SCREEN_WIDTH - 48 - 32) / 4, // 4 items per row accounting for grid gap
     alignItems: "center",
-    gap: 12,
+    gap: 8,
+    marginBottom: 16,
+  },
+  interestIconWrapperLarge: {
+    width: 72,
+    height: 72,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 4,
+    position: 'relative',
   },
   interestJaggedCard: {
     backgroundColor: "#9CA3AF",
