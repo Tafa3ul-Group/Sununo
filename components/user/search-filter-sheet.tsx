@@ -356,12 +356,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#F0F2F5",
     borderRadius: 2,
   },
-  innerContent: {
+  scrollView: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 16,
+    paddingBottom: 24, // Added more bottom padding for better scroll end
   },
   tabContent: {
     paddingHorizontal: 24,
