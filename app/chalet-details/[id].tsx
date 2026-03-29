@@ -9,7 +9,6 @@ import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Dimensions,
-  Image,
   Platform,
   ScrollView,
   StatusBar,
@@ -18,6 +17,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -229,23 +229,25 @@ export default function ChaletDetailScreen() {
               ]}
             >
               {[
-                { label: "مسبح", icon: "water", color: "#035DF9" },
-                { label: "واي فاي", icon: "wifi", color: "#E879F9" },
-                { label: "تكييف هواء", icon: "snow", color: "#EF4444" },
-                { label: "مطبخ", icon: "restaurant", color: "#10B981" },
-                { label: "مسبح", icon: "water", color: "#035DF9" },
-                { label: "مطبخ", icon: "restaurant", color: "#10B981" },
-                { label: "تكييف هواء", icon: "snow", color: "#EF4444" },
-                { label: "واي فاي", icon: "wifi", color: "#E879F9" },
+                { label: "مسبح", icon: "water", shape: require("@/assets/shapes/blue.svg") },
+                { label: "واي فاي", icon: "wifi", shape: require("@/assets/shapes/pink.svg") },
+                { label: "تكييف هواء", icon: "snow", shape: require("@/assets/shapes/red.svg") },
+                { label: "مطبخ", icon: "restaurant", shape: require("@/assets/shapes/green.svg") },
+                { label: "مساحة", icon: "expand", shape: require("@/assets/shapes/blue.svg") },
+                { label: "موقف", icon: "car", shape: require("@/assets/shapes/green.svg") },
+                { label: "حديقة", icon: "leaf", shape: require("@/assets/shapes/red.svg") },
+                { label: "تلفاز", icon: "tv", shape: require("@/assets/shapes/pink.svg") },
               ].map((item, idx) => (
                 <View key={idx} style={styles.amenityItem}>
-                  <View
-                    style={[
-                      styles.amenityIconContainer,
-                      { backgroundColor: item.color },
-                    ]}
-                  >
-                    <Ionicons name={item.icon as any} size={28} color="white" />
+                  <View style={styles.amenityIconWrapper}>
+                    <Image
+                      source={item.shape}
+                      style={styles.amenityShape}
+                      contentFit="contain"
+                    />
+                    <View style={styles.amenityIconCentered}>
+                      <Ionicons name={item.icon as any} size={24} color="white" />
+                    </View>
                   </View>
                   <Text style={styles.amenityLabel}>{item.label}</Text>
                 </View>
@@ -601,13 +603,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 16,
   },
-  amenityIconContainer: {
+  amenityIconWrapper: {
     width: 60,
     height: 60,
-    borderRadius: 18,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 8,
+    position: 'relative',
+  },
+  amenityShape: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+  },
+  amenityIconCentered: {
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1,
   },
   amenityLabel: {
     fontSize: 13,
