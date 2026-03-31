@@ -3,7 +3,6 @@ import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize } from "@/constants/theme";
 import { useGetChaletDetailsQuery } from "@/store/api/apiSlice";
 import { HorizontalCard } from "@/components/user/horizontal-card";
-import { SununoBookButton } from "@/components/user/sununo-book-button";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -33,7 +32,6 @@ function SolarStarBold({ color, size }: { color: string; size: number }) {
   );
 }
 
-// Professional ReviewCard Component
 const ReviewCard = ({
   name,
   rating,
@@ -51,7 +49,6 @@ const ReviewCard = ({
 }) => {
   return (
     <View style={reviewStyles.card}>
-      {/* Top Header: Rating (Left) and User Info (Right) */}
       <View style={reviewStyles.header}>
         <View style={reviewStyles.ratingRow}>
           <SolarStarBold color="#035DF9" size={24} />
@@ -64,16 +61,13 @@ const ReviewCard = ({
         </View>
       </View>
 
-      {/* Comment Section */}
       <Text style={reviewStyles.comment}>{comment}</Text>
 
-      {/* Image Gallery */}
       {images.length > 0 && (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={reviewStyles.imageGallery}
-          style={{ flexDirection: "row-reverse" }}
         >
           {images.map((img, idx) => (
             <Image key={idx} source={img} style={reviewStyles.galleryImage} />
@@ -81,7 +75,6 @@ const ReviewCard = ({
         </ScrollView>
       )}
 
-      {/* Date */}
       <Text style={reviewStyles.date}>{date}</Text>
     </View>
   );
@@ -137,7 +130,7 @@ const reviewStyles = StyleSheet.create({
     marginBottom: normalize.height(16),
   },
   imageGallery: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     gap: normalize.width(8),
     paddingBottom: normalize.height(12),
   },
@@ -156,7 +149,7 @@ const reviewStyles = StyleSheet.create({
 });
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const SWIPER_HEIGHT = 500;
+const SWIPER_HEIGHT = normalize.height(450);
 
 export default function ChaletDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -165,46 +158,15 @@ export default function ChaletDetailScreen() {
   const isRTL = i18n.language === "ar";
   const { data: chalet, isLoading } = useGetChaletDetailsQuery(id as string);
 
-  // Mock data as per USER image for perfect match
   const chaletName = "شالية الاروعى علة الطلاق";
   const chaletLocation = "البصرة - الجزائر";
-  const rating = "4.5";
   const images = [
-    {
-      uri: "https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&q=80&w=1000",
-    },
-    {
-      uri: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=1000",
-    },
-    {
-      uri: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=1000",
-    },
+    { uri: "https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&q=80&w=1000" },
+    { uri: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=1000" },
   ];
 
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
-  const timerRef = useRef<any>(null);
-
-  useEffect(() => {
-    const startAutoPlay = () => {
-      timerRef.current = setInterval(() => {
-        let nextIndex = activeIndex + 1;
-        if (nextIndex >= images.length) {
-          nextIndex = 0;
-        }
-        scrollRef.current?.scrollTo({
-          x: nextIndex * SCREEN_WIDTH,
-          animated: true,
-        });
-        setActiveIndex(nextIndex);
-      }, 3000);
-    };
-
-    startAutoPlay();
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [activeIndex, images.length]);
 
   if (isLoading) {
     return (
@@ -214,24 +176,10 @@ export default function ChaletDetailScreen() {
     );
   }
 
-  // Safety check to prevent crashes if API fails
-  const guestCount = chalet?.maxGuests || 15;
-  const areaValue = chalet?.area || 1200;
-
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <StatusBar
-        barStyle="light-content"
-        translucent
-        backgroundColor="transparent"
-      />
-
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 120 }}
-      >
-        {/* Top Section with Swiper */}
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
         <View style={styles.swiperContainer}>
           <ScrollView
             ref={scrollRef}
@@ -241,38 +189,19 @@ export default function ChaletDetailScreen() {
             onScroll={(e) => {
               const x = e.nativeEvent.contentOffset.x;
               const newIndex = Math.round(x / SCREEN_WIDTH);
-              if (newIndex !== activeIndex) {
-                setActiveIndex(newIndex);
-              }
+              if (newIndex !== activeIndex) setActiveIndex(newIndex);
             }}
             scrollEventThrottle={16}
-            style={styles.scrollView}
           >
             {images.map((imgSource: any, index: number) => (
-              <Image
-                key={index}
-                source={imgSource}
-                style={styles.swiperImage}
-                resizeMode="cover"
-              />
+              <Image key={index} source={imgSource} style={styles.swiperImage} resizeMode="cover" />
             ))}
           </ScrollView>
-
-          {/* Back Button */}
           <View style={styles.headerActions}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => router.back()}
-            >
-              <Image
-                source={require("@/assets/button/back.svg")}
-                style={styles.backIcon}
-                contentFit="contain"
-              />
+            <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+              <Ionicons name="arrow-back" size={24} color="white" />
             </TouchableOpacity>
           </View>
-
-          {/* Custom Pagination Dots */}
           <View style={styles.swiperFooter}>
             <View style={styles.pagination}>
               {images.map((_: any, i: number) => (
@@ -284,7 +213,6 @@ export default function ChaletDetailScreen() {
                       backgroundColor:
                         i === activeIndex ? "#035DF9" : "rgba(255,255,255,0.5)",
                       width: 10,
-                      height: 10,
                     },
                   ]}
                 />
@@ -293,201 +221,99 @@ export default function ChaletDetailScreen() {
           </View>
         </View>
 
-        {/* Overlapping Content Section */}
+        {/* 2. Overlapping Content Section */}
         <View style={styles.contentWrapper}>
           <View style={styles.premiumCard}>
+            {/* Title & Rating */}
             <View
               style={[
                 styles.infoRow,
-                { flexDirection: isRTL ? "row" : "row-reverse" },
+                { flexDirection: isRTL ? "row" : "row-reverse", paddingHorizontal: normalize.width(16) },
               ]}
             >
-              {/* Rating on the Left (in RTL) */}
               <View style={styles.ratingContainer}>
-                <SolarStarBold color="#035DF9" size={24} />
+                <SolarStarBold color="#035DF9" size={normalize.width(22)} />
                 <Text style={styles.ratingValueText}>4.5</Text>
               </View>
 
-              {/* Title & Location on the Right (in RTL) */}
-              <View
-                style={{
-                  alignItems: "flex-end",
-                }}
-              >
+              <View style={{ alignItems: "flex-end" }}>
                 <Text style={styles.chaletTitle}>{chaletName}</Text>
                 <Text style={styles.locationText}>{chaletLocation}</Text>
               </View>
             </View>
 
-            {/* 1. Basic Specifications Section */}
-            <Text
-              style={[
-                styles.sectionTitle,
-                { textAlign: "right", marginTop: 10 },
-              ]}
-            >
-              المواصفات الاساسية
-            </Text>
-            <View style={[styles.specsRow, { flexDirection: "row-reverse" }]}>
-              <View style={styles.specTag}>
-                <Text style={styles.specText} numberOfLines={1}>
-                  بستان مع بيت
-                </Text>
-              </View>
-              <View style={styles.specTag}>
-                <Text style={styles.specText} numberOfLines={1}>
-                  300 م
-                </Text>
-              </View>
-              <View style={styles.specTag}>
-                <Text style={styles.specText} numberOfLines={1}>
-                  1 حمام
-                </Text>
-              </View>
-              <View style={styles.specTag}>
-                <Text style={styles.specText} numberOfLines={1}>
-                  3 غرف
-                </Text>
-              </View>
-            </View>
-
-            {/* 2. Amenities Section */}
-            <View
-              style={[
-                styles.sectionHeader,
-                { flexDirection: isRTL ? "row-reverse" : "row" },
-              ]}
-            >
-              <Text style={styles.sectionTitle}>الميزات</Text>
-              <TouchableOpacity>
-                <Text style={styles.seeAllText}>الكل</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View
-              style={[
-                styles.amenitiesGrid,
-                { flexDirection: isRTL ? "row-reverse" : "row" },
-              ]}
-            >
-              {[
-                {
-                  label: "مسبح",
-                  icon: "water",
-                  shape: require("@/assets/shapes/blue.svg"),
-                },
-                {
-                  label: "واي فاي",
-                  icon: "wifi",
-                  shape: require("@/assets/shapes/pink.svg"),
-                },
-                {
-                  label: "تكييف هواء",
-                  icon: "snow",
-                  shape: require("@/assets/shapes/red.svg"),
-                },
-                {
-                  label: "مطبخ",
-                  icon: "restaurant",
-                  shape: require("@/assets/shapes/green.svg"),
-                },
-                {
-                  label: "مساحة",
-                  icon: "expand",
-                  shape: require("@/assets/shapes/blue.svg"),
-                },
-                {
-                  label: "موقف",
-                  icon: "car",
-                  shape: require("@/assets/shapes/green.svg"),
-                },
-                {
-                  label: "حديقة",
-                  icon: "leaf",
-                  shape: require("@/assets/shapes/red.svg"),
-                },
-                {
-                  label: "تلفاز",
-                  icon: "tv",
-                  shape: require("@/assets/shapes/pink.svg"),
-                },
-              ].map((item, idx) => (
-                <View key={idx} style={styles.amenityItem}>
-                  <View style={styles.amenityIconWrapper}>
-                    <Image
-                      source={item.shape}
-                      style={styles.amenityShape}
-                      contentFit="contain"
-                    />
-                    <View style={styles.amenityIconCentered}>
-                      <Ionicons
-                        name={item.icon as any}
-                        size={24}
-                        color="white"
-                      />
-                    </View>
+            {/* 3. Basic Specifications */}
+            <View style={{ paddingHorizontal: normalize.width(16) }}>
+              <Text style={[styles.sectionTitle, { textAlign: "right", marginTop: 20 }]}>
+                المواصفات الاساسية
+              </Text>
+              <View style={[styles.specsRow, { flexDirection: "row-reverse" }]}>
+                {["بستان مع بيت", "300 م", "1 حمام", "3 غرف"].map((spec, i) => (
+                  <View key={i} style={styles.specTag}>
+                    <Text style={styles.specText}>{spec}</Text>
                   </View>
-                  <Text style={styles.amenityLabel}>{item.label}</Text>
-                </View>
-              ))}
-            </View>
-
-            {/* 3. Overview Section */}
-            <Text
-              style={[
-                styles.sectionTitle,
-                { textAlign: isRTL ? "right" : "left", marginTop: 24 },
-              ]}
-            >
-              نظرة عامة
-            </Text>
-            <Text
-              style={[
-                styles.overviewText,
-                { textAlign: isRTL ? "right" : "left" },
-              ]}
-            >
-              هو ببساطة نص شكلي (بمعنى أن الغاية هي الشكل وليس المحتوى) ويُستخدم
-              في صناعات المطابع ودور النشر. كان لوريم إيبسوم ولايزال المعيار
-              للنص الشكلي منذ القرن الخامس عشر عندما قامت مطبعة مجهولة برص
-              مجموعة من الأحرف بشكل عشوائي أخذتها من نص، لتكوّن كتيب بمثابة دليل
-              أو مرجع شكلي....
-            </Text>
-
-            <PrimaryButton
-              label="اقرأ المزيد"
-              onPress={() => {}}
-              style={{ marginTop: 20, alignSelf: "center", width: "100%" }}
-            />
-
-            {/* 4. Location Section */}
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>الموقع</Text>
-              <TouchableOpacity>
-                <Text style={styles.seeAllText}>افتح الخارطة</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.mapContainer}>
-              <Image
-                source={require("../../assets/temp_mock/map_preview_1774440194241.png")}
-                style={styles.mapImage}
-                resizeMode="cover"
-              />
-              <View style={styles.mapFooter}>
-                <Text style={styles.mapLocationText}>البصرة - ابة الخصيب</Text>
+                ))}
               </View>
             </View>
 
-            {/* 5. Host Section */}
-            <View style={styles.hostCardContainer}>
-              <View style={styles.hostJaggedCard}>
-                <Image
-                  source={require("../../assets/tabs/contact.svg")}
-                  style={styles.hostStickerImage}
-                  contentFit="contain"
-                />
+            {/* 4. Amenities */}
+            <View style={{ paddingHorizontal: normalize.width(16) }}>
+              <View style={[styles.sectionHeader, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+                <Text style={styles.sectionTitle}>الميزات</Text>
+                <TouchableOpacity><Text style={styles.seeAllText}>الكل</Text></TouchableOpacity>
+              </View>
 
-                {/* Text Overlay on Host Card */}
+              <View style={[styles.amenitiesGrid, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+                {[
+                  { label: "مسبح", icon: "water", shape: require("@/assets/shapes/blue.svg") },
+                  { label: "واي فاي", icon: "wifi", shape: require("@/assets/shapes/pink.svg") },
+                  { label: "تكييف هواء", icon: "snow", shape: require("@/assets/shapes/red.svg") },
+                  { label: "مطبخ", icon: "restaurant", shape: require("@/assets/shapes/green.svg") },
+                  { label: "مساحة", icon: "expand", shape: require("@/assets/shapes/blue.svg") },
+                  { label: "موقف", icon: "car", shape: require("@/assets/shapes/green.svg") },
+                  { label: "حديقة", icon: "leaf", shape: require("@/assets/shapes/red.svg") },
+                  { label: "تلفاز", icon: "tv", shape: require("@/assets/shapes/pink.svg") },
+                ].map((item, idx) => (
+                  <View key={idx} style={styles.amenityItem}>
+                    <View style={styles.amenityIconWrapper}>
+                      <Image source={item.shape} style={styles.amenityShape} contentFit="contain" />
+                      <View style={styles.amenityIconCentered}>
+                        <Ionicons name={item.icon as any} size={normalize.width(22)} color="white" />
+                      </View>
+                    </View>
+                    <Text style={styles.amenityLabel}>{item.label}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+
+            {/* 5. Overview */}
+            <View style={{ paddingHorizontal: normalize.width(16) }}>
+              <Text style={[styles.sectionTitle, { textAlign: isRTL ? "right" : "left", marginTop: 24 }]}>
+                نظرة عامة
+              </Text>
+              <Text style={[styles.overviewText, { textAlign: isRTL ? "right" : "left" }]}>
+                هو ببساطة نص شكلي (بمعنى أن الغاية هي الشكل وليس المحتوى) ويُستخدم في صناعات المطابع ودور النشر.
+              </Text>
+              <PrimaryButton label="اقرأ المزيد" onPress={() => {}} style={{ marginTop: 20 }} />
+            </View>
+
+            {/* 6. Location */}
+            <View style={{ paddingHorizontal: normalize.width(16) }}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>الموقع</Text>
+                <TouchableOpacity><Text style={styles.seeAllText}>افتح الخارطة</Text></TouchableOpacity>
+              </View>
+              <View style={styles.mapContainer}>
+                <Image source={require("../../assets/temp_mock/map_preview_1774440194241.png")} style={styles.mapImage} />
+                <View style={styles.mapFooter}><Text style={styles.mapLocationText}>البصرة - ابة الخصيب</Text></View>
+              </View>
+            </View>
+
+            {/* 7. Host Section (Extended to 16px edges) */}
+            <View style={[styles.hostCardContainer, { paddingHorizontal: normalize.width(16) }]}>
+              <View style={styles.hostJaggedCard}>
+                <Image source={require("../../assets/tabs/contact.svg")} style={styles.hostStickerImage} contentFit="contain" />
                 <View style={styles.hostOverlayContainer}>
                   <Text style={styles.hostLabelText}>المضيف</Text>
                   <Text style={styles.hostNameText}>انيس انس</Text>
@@ -495,105 +321,68 @@ export default function ChaletDetailScreen() {
               </View>
             </View>
 
-            {/* 6. Review Stats Row */}
-            <View
-              style={[
-                styles.reviewStatsRow,
-                { flexDirection: isRTL ? "row" : "row-reverse" },
-              ]}
-            >
-              <View
-                style={[
-                  styles.ratingPill,
-                  { flexDirection: isRTL ? "row" : "row-reverse" },
-                ]}
-              >
-                <Text style={styles.ratingPillValue}>4.5</Text>
-                <SolarStarBold color="white" size={18} />
+            {/* 8. Review Section */}
+            <View style={{ paddingHorizontal: normalize.width(16) }}>
+              <View style={[styles.reviewStatsRow, { flexDirection: isRTL ? "row" : "row-reverse" }]}>
+                <View style={[styles.ratingPill, { flexDirection: isRTL ? "row" : "row-reverse" }]}>
+                  <Text style={styles.ratingPillValue}>4.5</Text>
+                  <SolarStarBold color="white" size={18} />
+                </View>
+                <SecondaryButton iconLabel="45" label="مراجعة" onPress={() => {}} isActive={true} style={{ width: normalize.width(140) }} />
               </View>
 
-              <SecondaryButton
-                iconLabel="45"
-                label="مراجعة"
-                onPress={() => {}}
-                isActive={true}
-                style={{ width: 150 }}
-              />
+              <View style={[styles.sectionHeader, { marginTop: 32 }]}>
+                <Text style={styles.sectionTitle}>المراجعات</Text>
+                <TouchableOpacity><Text style={styles.seeAllText}>الكل</Text></TouchableOpacity>
+              </View>
+              
+              <View style={styles.reviewsList}>
+                <ReviewCard
+                  name="انسة انس"
+                  rating="4"
+                  comment="خوش مكان ونضيف يستاهل، الهواء نقي بسبب التشجير"
+                  avatar={require("../../assets/temp_mock/reviewer_1_1774440162768.png")}
+                  date="2025/09/22"
+                  images={[
+                    require("../../assets/temp_mock/media__1774436293910.png"),
+                    require("../../assets/temp_mock/media__1774436996725.png"),
+                    require("../../assets/temp_mock/media__1774438026848.png"),
+                  ]}
+                />
+                <ReviewCard
+                  name="انسة انس"
+                  rating="5"
+                  comment="خوش مكان ونضيف يستاهل"
+                  avatar={require("../../assets/temp_mock/reviewer_2_1774440178616.png")}
+                  date="2025/09/22"
+                />
+              </View>
+
+              <PrimaryButton label="إضافة مراجعة" onPress={() => {}} style={{ marginTop: 32 }} />
             </View>
 
-            {/* 7. Reviews List Section */}
-            <View style={[styles.sectionHeader, { marginTop: 32 }]}>
-              <Text style={styles.sectionTitle}>المراجعات</Text>
-              <TouchableOpacity>
-                <Text style={styles.seeAllText}>الكل</Text>
-              </TouchableOpacity>
+            {/* 9. Information of Interest */}
+            <View style={{ paddingHorizontal: normalize.width(16) }}>
+              <Text style={[styles.sectionTitle, { textAlign: isRTL ? "right" : "left", marginTop: normalize.height(48) }]}>
+                معلومات تهمك
+              </Text>
             </View>
-
-            <View style={styles.reviewsList}>
-              <ReviewCard
-                name="انسة انس"
-                rating="4"
-                comment="خوش مكان ونضيف يستاهل، الهواء نقي بسبب التشجير"
-                avatar={require("../../assets/temp_mock/reviewer_1_1774440162768.png")}
-                date="2025/09/22"
-                images={[
-                  require("../../assets/temp_mock/media__1774436293910.png"),
-                  require("../../assets/temp_mock/media__1774436996725.png"),
-                  require("../../assets/temp_mock/media__1774438026848.png"),
-                  require("../../assets/temp_mock/media__1774439027729.png"),
-                ]}
-              />
-              <ReviewCard
-                name="انسة انس"
-                rating="5"
-                comment="خوش مكان ونضيف يستاهل، الهواء نقي بسبب التشجير"
-                avatar={require("../../assets/temp_mock/reviewer_2_1774440178616.png")}
-                date="2025/09/22"
-              />
-            </View>
-
-            {/* 8. Add Review Button */}
-            <PrimaryButton
-              label="إضافة مراجعة"
-              onPress={() => {}}
-              style={{ marginTop: 32, alignSelf: "center", width: "100%" }}
-            />
-
-            {/* 9. Information of Interest Section (Swiper/Horizontal) */}
-            <Text
-              style={[
-                styles.sectionTitle,
-                { textAlign: isRTL ? "right" : "left", marginTop: normalize.height(48) },
-              ]}
-            >
-              معلومات تهمك
-            </Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               style={{ flexDirection: isRTL ? "row-reverse" : "row" }}
-              contentContainerStyle={styles.interestSwiper}
+              contentContainerStyle={[styles.interestSwiper, { paddingHorizontal: normalize.width(16) }]}
             >
               {[
                 { label: "شروط الشاليه", icon: "document-text-outline" },
                 { label: "سياسة الالغاء", icon: "alert-circle-outline" },
                 { label: "الامان", icon: "shield-checkmark-outline" },
-                { label: "وقت الدخول والخروج", icon: "time-outline" },
-                { label: "مرافق قريبة", icon: "location-outline" },
               ].map((item, idx) => (
                 <View key={idx} style={styles.interestSwiperItem}>
                   <View style={styles.interestIconWrapperLarge}>
-                    <Image
-                      source={require("@/assets/shapes/info.svg")}
-                      style={styles.amenityShape}
-                      contentFit="contain"
-                    />
+                    <Image source={require("@/assets/shapes/info.svg")} style={styles.amenityShape} contentFit="contain" />
                     <View style={styles.amenityIconCentered}>
-                      <Ionicons
-                        name={item.icon as any}
-                        size={normalize.width(24)}
-                        color="white"
-                      />
+                      <Ionicons name={item.icon as any} size={normalize.width(24)} color="white" />
                     </View>
                   </View>
                   <Text style={styles.interestLabel}>{item.label}</Text>
@@ -601,48 +390,22 @@ export default function ChaletDetailScreen() {
               ))}
             </ScrollView>
 
-            {/* 10. Suggested Chalets Section */}
-            <Text
-              style={[
-                styles.sectionTitle,
-                { textAlign: isRTL ? "right" : "left", marginTop: normalize.height(40) },
-              ]}
-            >
-              قد يعجبك ايضا
-            </Text>
+            {/* 10. Suggested Chalets */}
+            <View style={{ paddingHorizontal: normalize.width(16), marginTop: normalize.height(40) }}>
+              <Text style={styles.sectionTitle}>قد يعجبك ايضا</Text>
+            </View>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              style={{ flexDirection: "row" }} // Standard row, content then image
-              contentContainerStyle={styles.suggestionList}
+              style={{ flexDirection: "row" }}
+              contentContainerStyle={[styles.suggestionList, { paddingLeft: normalize.width(16) }]}
             >
               {[
-                { 
-                  id: '1', 
-                  title: 'شالية الاروعة علة الطلاق', 
-                  location: 'البصرة - الجزائر', 
-                  price: 'IQD 30,000', 
-                  rating: 4.5, 
-                  image: "https://images.unsplash.com/photo-1518780664697-55e3ad937233?q=80&w=1000&auto=format&fit=crop"
-                },
-                { 
-                  id: '2', 
-                  title: 'شالية هادئ وجميل', 
-                  location: 'البصرة - نوجة', 
-                  price: 'IQD 25,000', 
-                  rating: 4.8, 
-                  image: "https://images.unsplash.com/photo-1449156001437-3a1621dfbe2b?q=80&w=1000&auto=format&fit=crop"
-                },
+                { id: '1', title: 'شالية الاروع علة الطلاق', location: 'البصرة - الجزائر', price: 'IQD 30,000', rating: 4.5, image: "https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&q=80&w=600" },
+                { id: '2', title: 'شالية هادئ وجميل', location: 'البصرة - نوجة', price: 'IQD 25,000', rating: 4.8, image: "https://images.unsplash.com/photo-1449156001437-3a1621dfbe2b?auto=format&fit=crop&q=80&w=600" },
               ].map((item, index) => (
-                <View key={item.id} style={{ marginLeft: normalize.width(16) }}>
-                   <HorizontalCard
-                     title={item.title}
-                     image={item.image}
-                     location={item.location}
-                     price={item.price}
-                     rating={item.rating}
-                     shapeIndex={index + 7}
-                   />
+                <View key={item.id} style={{ marginLeft: normalize.width(10) }}>
+                   <HorizontalCard {...item} shapeIndex={index + 7} />
                 </View>
               ))}
             </ScrollView>
@@ -650,13 +413,8 @@ export default function ChaletDetailScreen() {
         </View>
       </ScrollView>
 
-      {/* Fixed Footer Optimized per Screenshot */}
-      <View
-        style={[
-          styles.fixedFooter,
-          { flexDirection: "row" },
-        ]}
-      >
+      {/* 11. Fixed Footer */}
+      <View style={[styles.fixedFooter, { flexDirection: isRTL ? "row-reverse" : "row", paddingHorizontal: normalize.width(16) }]}>
         <View style={styles.footerPriceContainer}>
           <Text style={styles.footerPrice}>30,000 IQD</Text>
           <Text style={styles.footerPriceDetails}>
@@ -664,9 +422,10 @@ export default function ChaletDetailScreen() {
           </Text>
         </View>
 
-        <SununoBookButton
+        <PrimaryButton
+          label="احجز الان"
           onPress={() => {}}
-          style={styles.bookNowButton}
+          style={{ width: normalize.width(140) }}
         />
       </View>
     </View>
