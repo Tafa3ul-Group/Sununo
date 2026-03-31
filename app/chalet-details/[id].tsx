@@ -1,11 +1,13 @@
 import { PrimaryButton } from "@/components/user/primary-button";
-import { SecondaryButton } from "@/components/user/secondary-button"; // Added import
+import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize } from "@/constants/theme";
 import { useGetChaletDetailsQuery } from "@/store/api/apiSlice";
+import { HorizontalCard } from "@/components/user/horizontal-card";
+import { SununoBookButton } from "@/components/user/sununo-book-button";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -328,16 +330,24 @@ export default function ChaletDetailScreen() {
             </Text>
             <View style={[styles.specsRow, { flexDirection: "row-reverse" }]}>
               <View style={styles.specTag}>
-                <Text style={styles.specText} numberOfLines={1}>بستان مع بيت</Text>
+                <Text style={styles.specText} numberOfLines={1}>
+                  بستان مع بيت
+                </Text>
               </View>
               <View style={styles.specTag}>
-                <Text style={styles.specText} numberOfLines={1}>300 م</Text>
+                <Text style={styles.specText} numberOfLines={1}>
+                  300 م
+                </Text>
               </View>
               <View style={styles.specTag}>
-                <Text style={styles.specText} numberOfLines={1}>1 حمام</Text>
+                <Text style={styles.specText} numberOfLines={1}>
+                  1 حمام
+                </Text>
               </View>
               <View style={styles.specTag}>
-                <Text style={styles.specText} numberOfLines={1}>3 غرف</Text>
+                <Text style={styles.specText} numberOfLines={1}>
+                  3 غرف
+                </Text>
               </View>
             </View>
 
@@ -549,32 +559,29 @@ export default function ChaletDetailScreen() {
               style={{ marginTop: 32, alignSelf: "center", width: "100%" }}
             />
 
-            {/* 9. Information of Interest Section */}
+            {/* 9. Information of Interest Section (Swiper/Horizontal) */}
             <Text
               style={[
                 styles.sectionTitle,
-                { textAlign: isRTL ? "right" : "left", marginTop: 40 },
+                { textAlign: isRTL ? "right" : "left", marginTop: normalize.height(48) },
               ]}
             >
               معلومات تهمك
             </Text>
-            <View
-              style={[
-                styles.infoInterestGrid,
-                { flexDirection: isRTL ? "row-reverse" : "row" },
-              ]}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ flexDirection: isRTL ? "row-reverse" : "row" }}
+              contentContainerStyle={styles.interestSwiper}
             >
               {[
                 { label: "شروط الشاليه", icon: "document-text-outline" },
                 { label: "سياسة الالغاء", icon: "alert-circle-outline" },
-                { label: "الامان والخصوصية", icon: "shield-checkmark-outline" },
-                { label: "وقت الدخول", icon: "enter-outline" },
-                { label: "وقت الخروج", icon: "exit-outline" },
-                { label: "مبلغ التأمين", icon: "cash-outline" },
+                { label: "الامان", icon: "shield-checkmark-outline" },
+                { label: "وقت الدخول والخروج", icon: "time-outline" },
                 { label: "مرافق قريبة", icon: "location-outline" },
-                { label: "الصيانة", icon: "construct-outline" },
               ].map((item, idx) => (
-                <View key={idx} style={styles.interestItemExtended}>
+                <View key={idx} style={styles.interestSwiperItem}>
                   <View style={styles.interestIconWrapperLarge}>
                     <Image
                       source={require("@/assets/shapes/info.svg")}
@@ -584,7 +591,7 @@ export default function ChaletDetailScreen() {
                     <View style={styles.amenityIconCentered}>
                       <Ionicons
                         name={item.icon as any}
-                        size={28}
+                        size={normalize.width(24)}
                         color="white"
                       />
                     </View>
@@ -592,16 +599,62 @@ export default function ChaletDetailScreen() {
                   <Text style={styles.interestLabel}>{item.label}</Text>
                 </View>
               ))}
-            </View>
+            </ScrollView>
+
+            {/* 10. Suggested Chalets Section */}
+            <Text
+              style={[
+                styles.sectionTitle,
+                { textAlign: isRTL ? "right" : "left", marginTop: normalize.height(40) },
+              ]}
+            >
+              قد يعجبك ايضا
+            </Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ flexDirection: "row" }} // Standard row, content then image
+              contentContainerStyle={styles.suggestionList}
+            >
+              {[
+                { 
+                  id: '1', 
+                  title: 'شالية الاروعة علة الطلاق', 
+                  location: 'البصرة - الجزائر', 
+                  price: 'IQD 30,000', 
+                  rating: 4.5, 
+                  image: "https://images.unsplash.com/photo-1518780664697-55e3ad937233?q=80&w=1000&auto=format&fit=crop"
+                },
+                { 
+                  id: '2', 
+                  title: 'شالية هادئ وجميل', 
+                  location: 'البصرة - نوجة', 
+                  price: 'IQD 25,000', 
+                  rating: 4.8, 
+                  image: "https://images.unsplash.com/photo-1449156001437-3a1621dfbe2b?q=80&w=1000&auto=format&fit=crop"
+                },
+              ].map((item, index) => (
+                <View key={item.id} style={{ marginLeft: normalize.width(16) }}>
+                   <HorizontalCard
+                     title={item.title}
+                     image={item.image}
+                     location={item.location}
+                     price={item.price}
+                     rating={item.rating}
+                     shapeIndex={index + 7}
+                   />
+                </View>
+              ))}
+            </ScrollView>
           </View>
         </View>
       </ScrollView>
 
-      {/* Fixed Footer */}
+      {/* Fixed Footer Optimized per Screenshot */}
       <View
         style={[
           styles.fixedFooter,
-          { flexDirection: isRTL ? "row" : "row-reverse" },
+          { flexDirection: "row" },
         ]}
       >
         <View style={styles.footerPriceContainer}>
@@ -610,10 +663,10 @@ export default function ChaletDetailScreen() {
             شفت صباحي . 23 اكتوبر . 5 بالغين
           </Text>
         </View>
-        <PrimaryButton
-          label="احجز الان"
+
+        <SununoBookButton
           onPress={() => {}}
-          style={{ paddingHorizontal: 40 }}
+          style={styles.bookNowButton}
         />
       </View>
     </View>
@@ -645,7 +698,7 @@ const styles = StyleSheet.create({
   },
   headerActions: {
     position: "absolute",
-    top: normalize.height(20), // Adjusted from 50 back to 20 per request
+    top: normalize.height(20),
     left: normalize.width(16),
     zIndex: 10,
   },
@@ -768,7 +821,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   amenityItem: {
-    width: (SCREEN_WIDTH - 64 - 48) / 4, // 4 items per row
+    width: (SCREEN_WIDTH - 64 - 48) / 4,
     alignItems: "center",
     marginBottom: 16,
   },
@@ -842,7 +895,7 @@ const styles = StyleSheet.create({
   },
   hostOverlayContainer: {
     position: "absolute",
-    right: normalize.width(95), // Reduced from 110 per request
+    right: normalize.width(95),
     top: "15%",
     alignItems: "flex-end",
     justifyContent: "center",
@@ -852,7 +905,7 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(13),
     color: "#6B7280",
     fontWeight: "600",
-    marginBottom: 0, // Reduced from 2 per request
+    marginBottom: 0,
   },
   hostNameText: {
     fontSize: normalize.font(18),
@@ -940,46 +993,125 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   infoInterestGrid: {
+    flexDirection: "row-reverse",
     flexWrap: "wrap",
-    gap: 16,
-    marginTop: 16,
+    justifyContent: "space-between",
+    gap: normalize.width(8),
+  },
+  interestSwiper: {
+    paddingRight: normalize.width(16),
+    gap: normalize.width(16),
+    marginTop: normalize.height(16),
+  },
+  interestSwiperItem: {
+    width: normalize.width(85),
+    alignItems: "center",
   },
   interestItemExtended: {
-    width: (SCREEN_WIDTH - normalize.width(32) - normalize.width(45)) / 4, // 4 items per row accounting for grid gap
+    width: (SCREEN_WIDTH - normalize.width(32) - normalize.width(24)) / 4,
     alignItems: "center",
-    gap: 8,
-    marginBottom: 16,
+    marginBottom: normalize.height(16),
   },
   interestIconWrapperLarge: {
-    width: 72,
-    height: 72,
+    width: normalize.width(65),
+    height: normalize.width(65),
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 4,
+    marginBottom: 8,
     position: "relative",
   },
-  interestJaggedCard: {
-    backgroundColor: "#9CA3AF",
-    width: 60,
-    height: 60,
-    borderRadius: 20,
-    padding: 2,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  interestIconCircle: {
-    backgroundColor: "white",
-    width: "100%",
-    height: "100%",
-    borderRadius: 18,
-    justifyContent: "center",
-    alignItems: "center",
-  },
   interestLabel: {
-    fontSize: 12,
+    fontSize: normalize.font(11),
     fontWeight: "700",
     color: "#111827",
     textAlign: "center",
+    marginTop: normalize.height(4),
+  },
+  suggestionList: {
+    paddingRight: normalize.width(16),
+    gap: normalize.width(16),
+    paddingBottom: normalize.height(120), // Avoid footer overlapping items
+  },
+  suggestionItemContainer: {
+    width: SCREEN_WIDTH * 0.7,
+  },
+  suggestedCard: {
+    width: SCREEN_WIDTH * 0.8,
+    backgroundColor: "white",
+    borderRadius: normalize.radius(24),
+    padding: normalize.width(16),
+    borderWidth: 1,
+    borderColor: "#F3F4F6",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  suggestedCardContent: {
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  suggestedImageContainer: {
+    width: normalize.width(85),
+    height: normalize.width(85),
+    borderRadius: normalize.radius(20),
+    overflow: "hidden",
+  },
+  suggestedImage: {
+    width: "100%",
+    height: "100%",
+  },
+  suggestedTextContainer: {
+    flex: 1,
+    paddingRight: normalize.width(16),
+    alignItems: "flex-end",
+  },
+  suggestedTitle: {
+    fontSize: normalize.font(16),
+    fontWeight: "900",
+    color: "#111827",
+    marginBottom: 4,
+  },
+  suggestedLocation: {
+    fontSize: normalize.font(13),
+    color: "#6B7280",
+    fontWeight: "600",
+    marginBottom: 8,
+  },
+  suggestedFooterRow: {
+    flexDirection: "row-reverse",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
+  },
+  suggestedRating: {
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    gap: 4,
+  },
+  suggestedRatingText: {
+    fontSize: normalize.font(14),
+    fontWeight: "900",
+    color: "#111827",
+  },
+  suggestedPrice: {
+    fontSize: normalize.font(14),
+    fontWeight: "900",
+    color: "#111827",
+  },
+  heartIcon: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: "#F9FAFB",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 2,
   },
   fixedFooter: {
     position: "absolute",
@@ -1009,9 +1141,16 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginTop: 2,
   },
+  bookNowButton: {
+    width: normalize.width(140),
+    height: normalize.height(50),
+    borderRadius: normalize.radius(16),
+    justifyContent: "center",
+    alignItems: "center",
+  },
   bookNowText: {
     color: "white",
-    fontSize: 18,
+    fontSize: normalize.font(18),
     fontWeight: "800",
   },
 });
