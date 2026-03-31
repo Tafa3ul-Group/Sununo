@@ -20,7 +20,6 @@ import { Image } from "expo-image";
 import { Redirect, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
-import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 
 import { ThemedText } from "@/components/themed-text";

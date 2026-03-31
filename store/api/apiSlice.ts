@@ -193,6 +193,21 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['Chalet'],
     }),
+
+    // Get provider profile
+    getProviderProfile: builder.query({
+      query: () => '/provider/profile',
+      providesTags: ['User'],
+    }),
+
+    // Get provider bookings
+    getProviderBookings: builder.query({
+      query: (params) => ({
+        url: '/provider/bookings',
+        params,
+      }),
+      providesTags: ['Booking'],
+    }),
   }),
 });
 
@@ -227,4 +242,7 @@ export const {
   useGetAmenitiesQuery,
   useGetChaletAmenitiesQuery,
   useSetChaletAmenitiesMutation,
+
+  useGetProviderProfileQuery,
+  useGetProviderBookingsQuery,
 } = apiSlice;
