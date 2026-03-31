@@ -1,9 +1,10 @@
 import { PrimaryButton } from "@/components/user/primary-button";
 import { SecondaryButton } from "@/components/user/secondary-button"; // Added import
-import { Colors } from "@/constants/theme";
+import { Colors, normalize } from "@/constants/theme";
 import { useGetChaletDetailsQuery } from "@/store/api/apiSlice";
 import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { Image } from "expo-image";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -17,11 +18,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Image } from "expo-image";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const SWIPER_HEIGHT = 450;
+const SWIPER_HEIGHT = 500;
 
 export default function ChaletDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -31,7 +30,7 @@ export default function ChaletDetailScreen() {
   const { data: chalet, isLoading } = useGetChaletDetailsQuery(id as string);
 
   // Mock data as per USER image for perfect match
-  const chaletName = "شالية الاروع علة الطلاق";
+  const chaletName = "شالية الاروعى علة الطلاق";
   const chaletLocation = "البصرة - الجزائر";
   const rating = "4.5";
   const images = [
@@ -62,8 +61,9 @@ export default function ChaletDetailScreen() {
 
   return (
     <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
       <StatusBar
-        barStyle="dark-content"
+        barStyle="light-content"
         translucent
         backgroundColor="transparent"
       />
@@ -96,54 +96,36 @@ export default function ChaletDetailScreen() {
           </ScrollView>
 
           {/* Back Button */}
-          <SafeAreaView edges={["top"]} style={styles.headerActions}>
+          <View style={styles.headerActions}>
             <TouchableOpacity
               style={styles.backButton}
               onPress={() => router.back()}
             >
-              <Ionicons
-                name={isRTL ? "arrow-forward" : "arrow-back"}
-                size={24}
-                color={Colors.white}
+              <Image
+                source={require("@/assets/button/back.svg")}
+                style={styles.backIcon}
+                contentFit="contain"
               />
             </TouchableOpacity>
-          </SafeAreaView>
+          </View>
 
-          {/* Custom Pagination Dots & Browse Button */}
+          {/* Custom Pagination Dots */}
           <View style={styles.swiperFooter}>
-            <View
-              style={[
-                styles.footerRow,
-                { flexDirection: isRTL ? "row-reverse" : "row" },
-              ]}
-            >
-              <PrimaryButton
-                label="تصفح حسب المرفق"
-                onPress={() => {}}
-                variant="white"
-                style={{ flex: 0 }}
-              />
-
-              <View style={styles.paginationSection}>
-                <View style={styles.pagination}>
-                  {images.map((_: any, i: number) => (
-                    <View
-                      key={i}
-                      style={[
-                        styles.dot,
-                        {
-                          backgroundColor:
-                            i === activeIndex
-                              ? "#035DF9"
-                              : "rgba(255,255,255,0.7)",
-                          width: i === activeIndex ? 10 : 8,
-                          height: i === activeIndex ? 10 : 8,
-                        },
-                      ]}
-                    />
-                  ))}
-                </View>
-              </View>
+            <View style={styles.pagination}>
+              {images.map((_: any, i: number) => (
+                <View
+                  key={i}
+                  style={[
+                    styles.dot,
+                    {
+                      backgroundColor:
+                        i === activeIndex ? "#035DF9" : "rgba(255,255,255,0.5)",
+                      width: 10,
+                      height: 10,
+                    },
+                  ]}
+                />
+              ))}
             </View>
           </View>
         </View>
@@ -154,47 +136,36 @@ export default function ChaletDetailScreen() {
             <View
               style={[
                 styles.infoRow,
-                { flexDirection: isRTL ? "row-reverse" : "row" },
+                { flexDirection: isRTL ? "row" : "row-reverse" },
               ]}
             >
+              {/* Rating on the Left (in RTL) */}
+              <View style={styles.ratingContainer}>
+                <Ionicons name="star" size={24} color="#035DF9" />
+                <Text style={styles.ratingValueText}>4.5</Text>
+              </View>
+
+              {/* Title & Location on the Right (in RTL) */}
               <View
                 style={{
-                  flex: 1,
-                  alignItems: isRTL ? "flex-end" : "flex-start",
+                  alignItems: "flex-end",
                 }}
               >
                 <Text style={styles.chaletTitle}>{chaletName}</Text>
                 <Text style={styles.locationText}>{chaletLocation}</Text>
               </View>
-
-              <View
-                style={[
-                  styles.ratingPill,
-                  { flexDirection: isRTL ? "row" : "row-reverse" },
-                ]}
-              >
-                <Text style={styles.ratingPillValue}>4.5</Text>
-                <Ionicons name="star" size={18} color="white" />
-              </View>
             </View>
-
-            <View style={styles.divider} />
 
             {/* 1. Basic Specifications Section */}
             <Text
               style={[
                 styles.sectionTitle,
-                { textAlign: isRTL ? "right" : "left" },
+                { textAlign: "right", marginTop: 10 },
               ]}
             >
               المواصفات الاساسية
             </Text>
-            <View
-              style={[
-                styles.specsRow,
-                { flexDirection: isRTL ? "row-reverse" : "row" },
-              ]}
-            >
+            <View style={[styles.specsRow, { flexDirection: "row-reverse" }]}>
               <View style={styles.specTag}>
                 <Text style={styles.specText}>بستان مع بيت</Text>
               </View>
@@ -229,14 +200,46 @@ export default function ChaletDetailScreen() {
               ]}
             >
               {[
-                { label: "مسبح", icon: "water", shape: require("@/assets/shapes/blue.svg") },
-                { label: "واي فاي", icon: "wifi", shape: require("@/assets/shapes/pink.svg") },
-                { label: "تكييف هواء", icon: "snow", shape: require("@/assets/shapes/red.svg") },
-                { label: "مطبخ", icon: "restaurant", shape: require("@/assets/shapes/green.svg") },
-                { label: "مساحة", icon: "expand", shape: require("@/assets/shapes/blue.svg") },
-                { label: "موقف", icon: "car", shape: require("@/assets/shapes/green.svg") },
-                { label: "حديقة", icon: "leaf", shape: require("@/assets/shapes/red.svg") },
-                { label: "تلفاز", icon: "tv", shape: require("@/assets/shapes/pink.svg") },
+                {
+                  label: "مسبح",
+                  icon: "water",
+                  shape: require("@/assets/shapes/blue.svg"),
+                },
+                {
+                  label: "واي فاي",
+                  icon: "wifi",
+                  shape: require("@/assets/shapes/pink.svg"),
+                },
+                {
+                  label: "تكييف هواء",
+                  icon: "snow",
+                  shape: require("@/assets/shapes/red.svg"),
+                },
+                {
+                  label: "مطبخ",
+                  icon: "restaurant",
+                  shape: require("@/assets/shapes/green.svg"),
+                },
+                {
+                  label: "مساحة",
+                  icon: "expand",
+                  shape: require("@/assets/shapes/blue.svg"),
+                },
+                {
+                  label: "موقف",
+                  icon: "car",
+                  shape: require("@/assets/shapes/green.svg"),
+                },
+                {
+                  label: "حديقة",
+                  icon: "leaf",
+                  shape: require("@/assets/shapes/red.svg"),
+                },
+                {
+                  label: "تلفاز",
+                  icon: "tv",
+                  shape: require("@/assets/shapes/pink.svg"),
+                },
               ].map((item, idx) => (
                 <View key={idx} style={styles.amenityItem}>
                   <View style={styles.amenityIconWrapper}>
@@ -246,7 +249,11 @@ export default function ChaletDetailScreen() {
                       contentFit="contain"
                     />
                     <View style={styles.amenityIconCentered}>
-                      <Ionicons name={item.icon as any} size={24} color="white" />
+                      <Ionicons
+                        name={item.icon as any}
+                        size={24}
+                        color="white"
+                      />
                     </View>
                   </View>
                   <Text style={styles.amenityLabel}>{item.label}</Text>
@@ -279,7 +286,7 @@ export default function ChaletDetailScreen() {
             <PrimaryButton
               label="اقرأ المزيد"
               onPress={() => {}}
-              style={{ marginTop: 20, alignSelf: "center" }}
+              style={{ marginTop: 20, alignSelf: "center", width: "100%" }}
             />
 
             {/* 4. Location Section */}
@@ -303,12 +310,17 @@ export default function ChaletDetailScreen() {
             {/* 5. Host Section */}
             <View style={styles.hostCardContainer}>
               <View style={styles.hostJaggedCard}>
-                {/* The SVG contains the mint background, text, and avatar */}
                 <Image
                   source={require("../../assets/tabs/contact.svg")}
                   style={styles.hostStickerImage}
-                  resizeMode="contain"
+                  contentFit="contain"
                 />
+
+                {/* Text Overlay on Host Card */}
+                <View style={styles.hostOverlayContainer}>
+                  <Text style={styles.hostLabelText}>المضيف</Text>
+                  <Text style={styles.hostNameText}>انيس انس</Text>
+                </View>
               </View>
             </View>
 
@@ -496,24 +508,27 @@ const styles = StyleSheet.create({
   },
   headerActions: {
     position: "absolute",
-    top: 0,
-    left: 20,
+    top: normalize.height(20),
+    left: normalize.width(16),
     zIndex: 10,
   },
   backButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "rgba(0,0,0,0.3)",
+    width: normalize.width(44),
+    height: normalize.width(44),
+    borderRadius: normalize.radius(22),
+    backgroundColor: "white",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: Platform.OS === "android" ? 10 : 0,
+  },
+  backIcon: {
+    width: "70%",
+    height: "70%",
   },
   swiperFooter: {
     position: "absolute",
-    bottom: 50, // Higher up to leave space for the overlapping card
+    bottom: normalize.height(30),
     width: "100%",
-    paddingHorizontal: 20,
+    paddingHorizontal: normalize.width(20),
   },
   footerRow: {
     alignItems: "center",
@@ -526,80 +541,88 @@ const styles = StyleSheet.create({
   pagination: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    backgroundColor: "rgba(255,255,255,0.25)",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 20,
+    justifyContent: "center",
+    gap: normalize.width(8),
+    width: "100%",
   },
   dot: {
-    borderRadius: 5,
+    width: normalize.width(10),
+    height: normalize.width(10),
+    borderRadius: normalize.radius(5),
   },
   contentWrapper: {
-    marginTop: -40, // Overlap the swiper
+    marginTop: 0,
   },
   premiumCard: {
     backgroundColor: "white",
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    padding: 24,
+    padding: normalize.width(16),
   },
   infoRow: {
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 20,
+    marginBottom: normalize.height(6),
   },
-  chaletTitle: {
-    fontSize: 26,
-    fontWeight: "900",
+  ratingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: normalize.width(4),
+    marginTop: normalize.height(4),
+  },
+  ratingValueText: {
+    fontSize: normalize.font(18),
+    fontWeight: "800",
     color: "#111827",
   },
+  chaletTitle: {
+    fontSize: normalize.font(22),
+    fontWeight: "900",
+    color: "#111827",
+    textAlign: "right",
+  },
   locationText: {
-    fontSize: 16,
+    fontSize: normalize.font(15),
     color: "#6B7280",
     fontWeight: "500",
-    marginTop: 4,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: "#F3F4F6",
-    marginVertical: 20,
+    marginTop: normalize.height(2),
+    textAlign: "right",
   },
   sectionHeader: {
     flexDirection: "row-reverse",
     justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 24,
-    marginBottom: 16,
+    marginTop: normalize.height(24),
+    marginBottom: normalize.height(10),
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: normalize.font(18),
     fontWeight: "800",
     color: "#111827",
-    marginBottom: 16,
+    marginBottom: normalize.height(10),
   },
   seeAllText: {
-    fontSize: 16,
+    fontSize: normalize.font(14),
     color: "#6B7280",
     fontWeight: "600",
   },
   specsRow: {
-    flexWrap: "wrap",
-    gap: 8,
-    marginBottom: 8,
+    flexDirection: "row-reverse",
+    justifyContent: "space-between",
+    gap: normalize.width(8),
+    marginBottom: normalize.height(8),
   },
   specTag: {
-    backgroundColor: "#F3F7FF",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 10,
-    minWidth: 80,
+    backgroundColor: "#F0F7FF",
+    paddingHorizontal: normalize.width(12),
+    paddingVertical: normalize.height(10),
+    borderRadius: normalize.radius(12),
+    flex: 1,
     alignItems: "center",
+    justifyContent: "center",
   },
   specText: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: "#111827",
+    fontSize: normalize.font(15),
+    fontWeight: "500",
+    color: "#4B5563",
   },
   amenitiesGrid: {
     flexDirection: "row",
@@ -618,12 +641,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 8,
-    position: 'relative',
+    position: "relative",
   },
   amenityShape: {
-    width: '100%',
-    height: '100%',
-    position: 'absolute',
+    width: "100%",
+    height: "100%",
+    position: "absolute",
   },
   amenityIconCentered: {
     justifyContent: "center",
@@ -665,19 +688,54 @@ const styles = StyleSheet.create({
     color: "#111827",
   },
   hostCardContainer: {
-    marginTop: 32,
-    marginHorizontal: -24, // Bleed into parent padding
-    width: SCREEN_WIDTH,
+    marginTop: 24,
+    paddingHorizontal: 0,
+    width: "100%",
   },
   hostJaggedCard: {
-    borderRadius: 28,
-    alignItems: "center",
+    width: "100%",
+    aspectRatio: 339 / 80,
+    position: "relative",
     justifyContent: "center",
-    overflow: "hidden",
   },
   hostStickerImage: {
     width: "100%",
-    aspectRatio: 339 / 57,
+    height: "100%",
+    position: "absolute",
+  },
+  hostOverlayContainer: {
+    position: "absolute",
+    right: normalize.width(110), // Increased from 90 to 110 for better spacing
+    top: "15%",
+    alignItems: "flex-end",
+    justifyContent: "center",
+    height: "70%",
+  },
+  hostLabelText: {
+    fontSize: normalize.font(13),
+    color: "#6B7280",
+    fontWeight: "600",
+    marginBottom: normalize.height(2),
+  },
+  hostNameText: {
+    fontSize: normalize.font(18),
+    fontWeight: "900",
+    color: "#111827",
+  },
+  hostAvatarOverlay: {
+    position: "absolute",
+    right: normalize.width(25),
+    top: "15%",
+    width: normalize.width(55),
+    height: normalize.width(55),
+    borderRadius: normalize.radius(27.5),
+    overflow: "hidden",
+    borderWidth: 2,
+    borderColor: "white",
+  },
+  hostAvatarImage: {
+    width: "100%",
+    height: "100%",
   },
   reviewStatsRow: {
     marginTop: 32,
@@ -761,7 +819,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 4,
-    position: 'relative',
+    position: "relative",
   },
   interestJaggedCard: {
     backgroundColor: "#9CA3AF",
