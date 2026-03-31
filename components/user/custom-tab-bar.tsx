@@ -105,8 +105,8 @@ export const CustomTabBar: React.FC<TabProps> = ({ state, navigation, descriptor
     if (options.tabBarIcon) {
       return options.tabBarIcon({
         focused: isActive,
-        color: isActive ? '#035DF9' : 'rgba(255, 255, 255, 1)',
-        size: normalize.width(22),
+        color: isActive ? '#035DF9' : '#FFFFFF',
+        size: normalize.width(26), // Slightly larger to match image
       });
     }
 
@@ -121,24 +121,23 @@ export const CustomTabBar: React.FC<TabProps> = ({ state, navigation, descriptor
         styles.navWrapper, 
         { 
           bottom: Math.max(insets.bottom, 16),
-          flexDirection: isRTL ? 'row-reverse' : 'row'
+          flexDirection: 'row' // Keep map on left, capsule on right to match design
         }
       ]}>
         {/* Separate Left Button (Explore/Map) */}
         <TouchableOpacity
           style={[
             styles.roundButton,
-            { width: NAV_HEIGHT, height: NAV_HEIGHT, borderRadius: NAV_HEIGHT / 2 },
-            isLeftTabActive && styles.activeRoundButton
+            { width: NAV_HEIGHT + 6, height: NAV_HEIGHT + 6, borderRadius: (NAV_HEIGHT + 6) / 2 },
           ]}
           onPress={() => navigateTo(leftTab.name)}
           activeOpacity={0.8}
         >
-          {renderIcon(leftTab, isLeftTabActive)}
+          {renderIcon(leftTab, false)}
         </TouchableOpacity>
 
         {/* Combined Navigation Capsule (Right Side) */}
-        <View style={[styles.tabCapsule, { height: NAV_HEIGHT, borderRadius: NAV_HEIGHT / 2 }]}>
+        <View style={[styles.tabCapsule, { height: NAV_HEIGHT + 6, borderRadius: (NAV_HEIGHT + 6) / 2 }]}>
           {capsuleTabs.map((route: any, index: number) => {
             const isActive = currentRouteName === route.name;
             const isProfile = route.name === 'profile' || route.name === '(dashboard)/provider-profile';
@@ -151,7 +150,7 @@ export const CustomTabBar: React.FC<TabProps> = ({ state, navigation, descriptor
                   styles.tabItem,
                   { width: NAV_HEIGHT - 6, height: NAV_HEIGHT - 6, borderRadius: (NAV_HEIGHT - 6) / 2 },
                   isActive && !isProfile && styles.activeTabItem,
-                  index > 0 && { marginLeft: 12 }
+                  index > 0 && { marginLeft: 16 }
                 ]}
                 activeOpacity={0.7}
               >
@@ -197,13 +196,8 @@ const styles = StyleSheet.create({
   tabCapsule: {
     flexDirection: 'row',
     backgroundColor: '#035DF9',
-    paddingHorizontal: 6,
+    paddingHorizontal: 8,
     alignItems: 'center',
-    elevation: 12,
-    shadowColor: '#035DF9',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
   },
   tabItem: {
     justifyContent: 'center',
@@ -211,11 +205,6 @@ const styles = StyleSheet.create({
   },
   activeTabItem: {
     backgroundColor: 'white', 
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
   },
   profileBtnWrapper: {
     width: 38,
