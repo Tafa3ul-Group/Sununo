@@ -15,6 +15,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Colors, normalize, Shadows } from '@/constants/theme';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { SolarIcon } from '@/components/ui/solar-icon';
+import { ExIcon } from '@/components/ui/ex-icon';
 import * as Haptics from 'expo-haptics';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -59,7 +60,11 @@ export default function CompleteBookingScreen() {
         ]}>
           {day}
         </ThemedText>
-        {isDisabled && <View style={styles.disabledLine} />}
+        {isDisabled && (
+           <View style={{ position: 'absolute', width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
+             <ExIcon color="#94A3B8" />
+           </View>
+        )}
       </TouchableOpacity>
     );
   };
@@ -87,14 +92,14 @@ export default function CompleteBookingScreen() {
         
         {/* 1. Steps Indicator */}
         <View style={styles.stepsContainer}>
-           <View style={styles.stepsPill}>
-              <View style={[styles.stepItem, styles.activeStep]}>
+           <View style={styles.peanutTabsContainer}>
+              <View style={[styles.peanutCircle, styles.peanutActive, { zIndex: 3 }]}>
                 <ThemedText style={styles.activeStepText}>شوكت</ThemedText>
               </View>
-              <View style={styles.stepItem}>
+              <View style={[styles.peanutCircle, { zIndex: 2, marginLeft: -20 }]}>
                 <ThemedText style={[styles.inactiveStepText, { color: '#059669' }]}>منو</ThemedText>
               </View>
-              <View style={[styles.stepItem, { borderRightWidth: 0 }]}>
+              <View style={[styles.peanutCircle, { zIndex: 1, marginLeft: -20 }]}>
                 <ThemedText style={[styles.inactiveStepText, { color: '#EA580C' }]}>التفصيل</ThemedText>
               </View>
            </View>
@@ -204,29 +209,28 @@ const styles = StyleSheet.create({
   },
   stepsContainer: {
     alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 20,
   },
-  stepsPill: {
+  peanutTabsContainer: {
     flexDirection: 'row-reverse',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 50,
-    height: 85,
-    width: '100%',
-    padding: 6,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    ...Shadows.small,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  stepItem: {
-    flex: 1,
+  peanutCircle: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRightWidth: 1,
-    borderRightColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    ...Shadows.small,
   },
-  activeStep: {
+  peanutActive: {
     backgroundColor: '#035DF9',
-    borderRadius: 40,
+    borderColor: '#035DF9',
   },
   activeStepText: {
     color: '#FFF',
@@ -345,14 +349,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
   disabledDayCell: {
-    opacity: 0.8,
-  },
-  disabledLine: {
-    position: 'absolute',
-    width: '60%',
-    height: 1.5,
-    backgroundColor: '#94A3B8',
-    transform: [{ rotate: '-45deg' }],
+    opacity: 0.6,
   },
   shiftsContainer: {
     marginTop: 25,
