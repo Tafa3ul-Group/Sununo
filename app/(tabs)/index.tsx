@@ -17,6 +17,7 @@ const CARD_HEIGHT = normalize.height(240);
 import { Ionicons } from "@expo/vector-icons";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { Image } from "expo-image";
+import { Redirect, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { useRouter } from "expo-router";
@@ -95,12 +96,16 @@ const POPULAR_CHALETS = [
 ];
 
 export default function HomeScreen() {
-  const { user } = useSelector((state: RootState) => state.auth);
+  const { user, userType } = useSelector((state: RootState) => state.auth);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const router = useRouter();
   const { t } = useTranslation();
   const [activeFilter, setActiveFilter] = React.useState("all");
   const [selectedChalet, setSelectedChalet] = React.useState<any>(null);
+
+  if (userType === 'owner') {
+    return <Redirect href="/(tabs)/(dashboard)/home" />;
+  }
 
   const handleOpenSearch = () => {
     bottomSheetRef.current?.present();

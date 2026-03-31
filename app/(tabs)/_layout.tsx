@@ -3,19 +3,21 @@ import { Tabs } from "expo-router";
 import React from "react";
 import { Image, StyleSheet, View } from "react-native";
 
-import { SolarIcon } from "@/components/ui/solar-icon";
 import { CustomTabBar } from "@/components/user/custom-tab-bar";
 import { normalize } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { RootState } from "@/store";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { SolarIcon } from "@/components/ui/solar-icon";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const { t } = useTranslation();
-  const { userType } = useSelector((state: RootState) => state.auth);
+  const { userType, language } = useSelector((state: RootState) => state.auth);
+  const isRTL = language === 'ar';
 
   const isOwner = userType === "owner";
 
@@ -28,8 +30,7 @@ export default function TabLayout() {
         headerShown: false,
         tabBarShowLabel: false,
         tabBarStyle: {
-          // No display: none needed here as CustomTabBar replaces it,
-          // let react-navigation handle the hidden state cleanly
+          display: "none", // Standard bar is hidden as we use absolute positioning in CustomTabBar
         },
       }}
     >
@@ -37,7 +38,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: t("tabs.home"),
-          href: userType === "owner" ? undefined : "/(tabs)",
+          href: userType === "owner" ? null : "/(tabs)",
           tabBarIcon: ({ color, focused }) => (
             <SolarIcon
               size={normalize.width(22)}
@@ -49,30 +50,14 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="(dashboard)/home"
-        options={{
-          title: userType === "owner" ? t("tabs.home") : t("tabs.myChalets"),
-          href: userType === "owner" ? "/(tabs)/(dashboard)/home" : undefined,
-          tabBarIcon: ({ color, focused }) => (
-            <SolarIcon
-              size={normalize.width(22)}
-              name={focused ? "map-bold" : "map-linear"}
-              color={color}
-            />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
         name="(dashboard)/bookings"
         options={{
           title: t("tabs.bookings"),
-          href:
-            userType === "owner" ? "/(tabs)/(dashboard)/bookings" : undefined,
+          href: userType === "owner" ? "/(tabs)/(dashboard)/bookings" : null,
           tabBarIcon: ({ color, focused }) => (
             <SolarIcon
               size={normalize.width(22)}
-              name={focused ? "bell-bold" : "bell-linear"}
+              name={focused ? "notes-bold" : "notes-linear"}
               color={color}
             />
           ),
@@ -80,15 +65,14 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="(dashboard)/customers"
+        name="(dashboard)/home"
         options={{
-          title: t("tabs.customers"),
-          href:
-            userType === "owner" ? "/(tabs)/(dashboard)/customers" : undefined,
+          title: t("tabs.home"),
+          href: userType === "owner" ? "/(tabs)/(dashboard)/home" : null,
           tabBarIcon: ({ color, focused }) => (
             <SolarIcon
               size={normalize.width(22)}
-              name={focused ? "bell-bold" : "bell-linear"}
+              name={focused ? "home-smile-bold" : "home-smile-linear"}
               color={color}
             />
           ),
@@ -96,61 +80,87 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="(dashboard)/revenue"
+        name="(dashboard)/shifts"
         options={{
-          title: t("tabs.revenue"),
-          href:
-            userType === "owner" ? "/(tabs)/(dashboard)/revenue" : undefined,
+          title: isRTL ? 'الفترات والأسعار' : 'Shifts & Prices',
+          href: userType === "owner" ? "/(tabs)/(dashboard)/shifts" : null,
           tabBarIcon: ({ color, focused }) => (
             <SolarIcon
               size={normalize.width(22)}
-              name={focused ? "heart-bold" : "heart-linear"}
+              name={focused ? "calendar-bold" : "calendar-linear"}
               color={color}
             />
           ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="(dashboard)/notifications"
-        options={{
-          href: undefined,
-          title: t("notifications.title"),
-        }}
-      />
-
-      <Tabs.Screen
-        name="(dashboard)/chalet-details"
-        options={{
-          href: undefined,
         }}
       />
 
       <Tabs.Screen
         name="(dashboard)/add-chalet"
         options={{
-          href: undefined,
+          href: null,
+          title: t("tabs.addChalet"),
+        }}
+      />
+
+      <Tabs.Screen
+        name="(dashboard)/revenue"
+        options={{
+          href: null,
+          title: t("tabs.revenue"),
+        }}
+      />
+
+      <Tabs.Screen
+        name="(dashboard)/customers"
+        options={{
+          href: null,
+          title: t("tabs.customers"),
+        }}
+      />
+
+      <Tabs.Screen
+        name="(dashboard)/notifications"
+        options={{
+          href: null,
+          title: t("notifications.title"),
         }}
       />
 
       <Tabs.Screen
         name="(dashboard)/edit-chalet"
         options={{
-          href: undefined,
+          href: null,
+          title: isRTL ? 'تعديل الشاليه' : 'Edit Chalet',
         }}
       />
 
       <Tabs.Screen
-        name="(dashboard)/calendar"
+        name="(dashboard)/chalet-details"
         options={{
-          href: undefined,
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="(dashboard)/transactions"
+        options={{
+          href: null,
+          title: isRTL ? 'سجل المعاملات' : 'Transactions',
+        }}
+      />
+
+      <Tabs.Screen
+        name="(dashboard)/provider-profile"
+        options={{
+          href: null,
+          title: isRTL ? 'معلومات العمل والمصرف' : 'Business & Bank Info',
         }}
       />
 
       <Tabs.Screen
         name="explore"
         options={{
-          href: undefined,
+          href: null,
         }}
       />
 

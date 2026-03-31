@@ -1,3 +1,4 @@
+import { HeaderSection } from '@/components/header-section';
 import { ThemedText } from '@/components/themed-text';
 import { AppMap } from '@/components/user/app-map';
 import { LocationPickerModal } from '@/components/user/location-picker-modal';
@@ -302,13 +303,13 @@ export default function AddChaletScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
 
-      <View style={[styles.header, { flexDirection }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={Colors.text.primary} />
-        </TouchableOpacity>
-        <ThemedText type="h2" style={styles.headerTitle}>{t('dashboard.addChalet')}</ThemedText>
-        <View style={{ width: 40 }} />
-      </View>
+      <HeaderSection 
+        userType="owner" // Hardcode for dashboard
+        title={t('dashboard.addChalet')}
+        showSearch={false}
+        showCategories={false}
+        showBackButton={true}
+      />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -675,15 +676,7 @@ export default function AddChaletScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
-  },
-  header: {
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    backgroundColor: Colors.white,
   },
   backButton: {
     padding: 8,
@@ -692,7 +685,8 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(18),
   },
   scrollContent: {
-    padding: Spacing.md,
+    paddingHorizontal: 14,
+    paddingTop: 12,
     paddingBottom: Spacing.xl,
   },
   stepIndicatorContainer: {
@@ -701,11 +695,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.sm,
     marginBottom: Spacing.lg,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     padding: Spacing.md,
-    borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: '#F0F0F0',
   },
   stepItem: {
     alignItems: 'center',
@@ -749,7 +742,7 @@ const styles = StyleSheet.create({
   stepLine: {
     flex: 1,
     height: 2,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: '#F0F0F0',
     marginHorizontal: 4,
     marginTop: -16, // Align with dots
   },

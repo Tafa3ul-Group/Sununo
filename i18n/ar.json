@@ -18,6 +18,8 @@
     "home": "الرئيسية",
     "myChalets": "شاليهاتي",
     "bookings": "الحجوزات",
+    "calendar": "التقويم",
+    "addChalet": "إضافة",
     "customers": "المستأجرين",
     "revenue": "الأرباح",
     "profile": "حسابي"
@@ -59,12 +61,32 @@
       "finished": "منتهية",
       "cancelled": "ملغاة",
       "accept": "قبول",
-      "decline": "رفض"
+      "decline": "رفض",
+      "cancellationReason": "سبب الإلغاء"
     },
     "revenue": {
       "balance": "الرصيد المتاح",
       "withdraw": "سحب الأرباح",
       "history": "سجل المعاملات"
     }
+  },
+  "common": {
+    "user": "مستخدم",
+    "iqd": "د.ع",
+    "details": "التفاصيل",
+    "viewDetails": "عرض التفاصيل",
+    "customer": "المستأجر",
+    "location": "الموقع",
+    "time": "الوقت",
+    "guests": "الضيوف",
+    "payment": "الدفع",
+    "earnings": "الأرباح",
+    "chalet": "الشاليه",
+    "email": "البريد الإلكتروني",
+    "address": "العنوان",
+    "guestsCount": "عدد الضيوف",
+    "paymentMethod": "طريقة الدفع",
+    "fullPayment": "دفع كامل",
+    "depositPayment": "عربون"
   }
 }

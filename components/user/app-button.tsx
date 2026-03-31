@@ -65,11 +65,11 @@ export function AppButton({
         disabled={disabled}
         style={[styles.hybridContainer, style]}
       >
-        {/* Right Curve SVG (ViewBox matches the right part of the original SVG) */}
-        <View style={styles.svgPart}>
-          <Svg width="29" height="29" viewBox="62 0 29 29" fill="none">
+        {/* Left Curve SVG */}
+        <View style={[styles.svgPart, { aspectRatio: 1 }]}>
+          <Svg width="100%" height="100%" viewBox="0 0 29 29" fill="none">
             <Path
-              d="M91 14.5C91 6.49187 84.5081 0 76.5 0H67.1176C64.2912 0 62 2.29125 62 5.11765V23.8824C62 26.7088 64.2912 29 67.1176 29H76.5C84.5081 29 91 22.5081 91 14.5Z"
+              d="M0 14.5C0 6.49187 6.49187 0 14.5 0H23.8824C26.7088 0 29 2.29125 29 5.11765V23.8824C29 26.7088 26.7088 29 23.8824 29H14.5C6.49187 29 0 22.5081 0 14.5Z"
               fill={color}
             />
           </Svg>
@@ -77,16 +77,26 @@ export function AppButton({
 
         {/* Flexible Middle Section */}
         <View style={[styles.middleSection, { backgroundColor: color }]}>
-          <ThemedText style={[styles.primaryText, { color: textColor }, textStyle]}>
-            {label}
-          </ThemedText>
+          <View style={styles.contentRow}>
+            {icon && (
+              <MaterialCommunityIcons 
+                name={icon as any} 
+                size={18} 
+                color={textColor} 
+                style={{ marginRight: 6 }} 
+              />
+            )}
+            <ThemedText style={[styles.primaryText, { color: textColor }, textStyle]}>
+              {label}
+            </ThemedText>
+          </View>
         </View>
 
-        {/* Left Curve SVG (ViewBox matches the left part of the original SVG) */}
-        <View style={styles.svgPart}>
-          <Svg width="29" height="29" viewBox="0 0 29 29" fill="none">
+        {/* Right Curve SVG */}
+        <View style={[styles.svgPart, { aspectRatio: 1 }]}>
+          <Svg width="100%" height="100%" viewBox="62 0 29 29" fill="none">
             <Path
-              d="M0 14.5C0 6.49187 6.49187 0 14.5 0H23.8824C26.7088 0 29 2.29125 29 5.11765V23.8824C29 26.7088 26.7088 29 23.8824 29H14.5C6.49187 29 0 22.5081 0 14.5Z"
+              d="M91 14.5C91 6.49187 84.5081 0 76.5 0H67.1176C64.2912 0 62 2.29125 62 5.11765V23.8824C62 26.7088 64.2912 29 67.1176 29H76.5C84.5081 29 91 22.5081 91 14.5Z"
               fill={color}
             />
           </Svg>
@@ -149,26 +159,34 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
   },
   hybridContainer: {
-    flexDirection: 'row-reverse',
-    height: 32,
-    alignItems: 'center',
+    flexDirection: 'row',
+    height: 36, // Improved default height
+    alignItems: 'stretch',
     justifyContent: 'center',
   },
   svgPart: {
-    width: 29,
-    height: 29,
+    height: '100%',
   },
   middleSection: {
-    height: 29,
+    flexGrow: 1,
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 4, // Slightly more padding for better spacing
-    minWidth: 10,
+    paddingHorizontal: 2,
+  },
+  contentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
   },
   primaryText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
     textAlign: 'center',
+    lineHeight: 20,
+    includeFontPadding: false,
+    textAlignVertical: 'center',
   },
   secondaryContainer: {
     flexDirection: 'row-reverse',

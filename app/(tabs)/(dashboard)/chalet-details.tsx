@@ -2,14 +2,14 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, Switch, Platform, ActivityIndicator, Dimensions, Animated, StatusBar } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, Switch, Platform, ActivityIndicator, Dimensions, Animated, StatusBar, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { Colors, normalize, Spacing } from '@/constants/theme';
 import * as Haptics from 'expo-haptics';
 import { getImageSrc } from '@/hooks/useImageSrc';
-import { useGetOwnerChaletDetailsQuery } from '@/store/api/apiSlice';
+import { useGetOwnerChaletDetailsQuery, useDeleteChaletMutation } from '@/store/api/apiSlice';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { SecondaryButton } from '@/components/user/secondary-button';
 
@@ -24,10 +24,33 @@ export default function ChaletDetailsScreen() {
   const isRTL = language === 'ar';
   
   const { data: response, isLoading } = useGetOwnerChaletDetailsQuery(id);
+  const [deleteChalet] = useDeleteChaletMutation();
   const chalet = response?.data || (response?.id ? response : null);
 
   const [isActive, setIsActive] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+  const handleDelete = () => {
+    Alert.alert(
+      isRTL ? 'حذف الشاليه' : 'Delete Chalet',
+      isRTL ? 'هل أنت متأكد من حذف هذا الشاليه نهائياً؟ لا يمكن التراجع عن هذا الإجراء.' : 'Are you sure you want to permanently delete this chalet? This action cannot be undone.',
+      [
+        { text: isRTL ? 'إلغاء' : 'Cancel', style: 'cancel' },
+        { 
+          text: isRTL ? 'حذف' : 'Delete', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteChalet(id).unwrap();
+              router.replace('/(tabs)/(dashboard)/home');
+            } catch (err) {
+              Alert.alert(isRTL ? 'خطأ' : 'Error', isRTL ? 'فشل حذف الشاليه' : 'Failed to delete chalet');
+            }
+          }
+        }
+      ]
+    );
+  };
   const scrollY = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -148,9 +171,17 @@ export default function ChaletDetailsScreen() {
           <TouchableOpacity style={styles.iconButton} onPress={() => router.back()}>
             <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={22} color={Colors.white} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton} onPress={() => router.push({ pathname: '/(tabs)/(dashboard)/edit-chalet', params: { id: chalet.id } })}>
-            <Ionicons name="create-outline" size={22} color={Colors.white} />
-          </TouchableOpacity>
+          <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 10 }}>
+            <TouchableOpacity 
+              style={[styles.iconButton, { backgroundColor: '#FEF2F2', borderColor: '#FEE2E2' }]} 
+              onPress={handleDelete}
+            >
+              <Ionicons name="trash-outline" size={22} color="#EF4444" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconButton} onPress={() => router.push({ pathname: '/(tabs)/(dashboard)/edit-chalet', params: { id: chalet.id } })}>
+              <Ionicons name="create-outline" size={22} color={Colors.white} />
+            </TouchableOpacity>
+          </View>
         </SafeAreaView>
       </View>
 
@@ -228,9 +259,9 @@ export default function ChaletDetailsScreen() {
             {/* Main Management Action - Calendar */}
             <View style={styles.managementSection}>
               <SecondaryButton 
-                label={isRTL ? 'إدارة التوفر والأسعار' : 'Availability & Pricing'}
-                onPress={() => router.push({ pathname: '/(tabs)/(dashboard)/calendar', params: { id: chalet?.id } })}
-                icon="calendar-month"
+                label={isRTL ? 'إدارة الفترات والأسعار' : 'Manage Shifts & Pricing'}
+                onPress={() => router.push({ pathname: '/(tabs)/(dashboard)/shifts', params: { id: chalet?.id } })}
+                icon="clock-edit-outline"
                 isActive={false} // Use the outlined design system style
                 style={styles.fullWidthButton}
               />
@@ -390,8 +421,6 @@ const styles = StyleSheet.create({
   contentCard: {
     flex: 1,
     backgroundColor: '#fff',
-    borderTopLeftRadius: 36,
-    borderTopRightRadius: 36,
     borderWidth: 1,
     borderColor: '#F1F5F9',
     minHeight: SCREEN_HEIGHT - 100,
@@ -419,8 +448,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.25)',
   },
   contentBody: {
-    padding: 24,
-    paddingTop: 36,
+    paddingHorizontal: 14,
+    paddingTop: 24,
   },
   titleSection: {
     justifyContent: 'space-between',
@@ -470,13 +499,13 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   statsRow: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 28,
-    padding: 20,
+    backgroundColor: Colors.white,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
     justifyContent: 'space-between',
-    marginBottom: 32,
+    marginBottom: 24,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: '#F0F0F0',
   },
   statItem: {
     alignItems: 'center',
@@ -546,7 +575,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: '#F0F0F0',
     gap: 10,
     minWidth: '47%',
   },
@@ -570,7 +599,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: '#F0F0F0',
   },
   detailValue: {
     fontSize: normalize.font(16),
