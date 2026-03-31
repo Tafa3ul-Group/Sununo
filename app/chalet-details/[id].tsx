@@ -645,7 +645,7 @@ const styles = StyleSheet.create({
   },
   headerActions: {
     position: "absolute",
-    top: normalize.height(50), // Standard safe area space
+    top: normalize.height(20), // Adjusted from 50 back to 20 per request
     left: normalize.width(16),
     zIndex: 10,
   },
