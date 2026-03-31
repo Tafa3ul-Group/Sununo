@@ -15,6 +15,7 @@ interface PrimaryButtonProps {
   label: string;
   onPress: () => void;
   icon?: keyof typeof MaterialCommunityIcons.glyphMap;
+  variant?: 'primary' | 'white';
   isActive?: boolean;
   loading?: boolean;
   disabled?: boolean;
@@ -35,20 +36,25 @@ export function PrimaryButton({
   label,
   onPress,
   icon,
+  variant = 'primary',
   isActive = true,
   loading = false,
   disabled = false,
-  activeColor = "#035DF9",
+  activeColor,
   inactiveColor = "#ffffffff",
-  activeTextColor = "white",
+  activeTextColor,
   inactiveTextColor,
   border = "#E5E7EB",
   style,
   textStyle,
 }: PrimaryButtonProps) {
-  const color = isActive ? activeColor : inactiveColor;
-  const determinedInactiveTextColor = inactiveTextColor || activeColor;
-  const textColor = isActive ? activeTextColor : determinedInactiveTextColor;
+  const isWhite = variant === 'white';
+  const defaultActiveColor = isWhite ? "white" : "#035DF9";
+  const defaultActiveTextColor = isWhite ? "#6B7280" : "white";
+
+  const color = isActive ? (activeColor || defaultActiveColor) : inactiveColor;
+  const determinedInactiveTextColor = inactiveTextColor || (activeColor || defaultActiveColor);
+  const textColor = isActive ? (activeTextColor || defaultActiveTextColor) : determinedInactiveTextColor;
 
   if (loading) {
     return (

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, ActivityIndicator, Image, Platform } from 'react-native';
+import { StyleSheet, View, ActivityIndicator, Image, Platform, TouchableOpacity } from 'react-native';
 import * as Location from 'expo-location';
 import { Colors, normalize } from '@/constants/theme';
 import { ThemedText } from '@/components/themed-text';
@@ -22,18 +22,22 @@ interface AppMapProps {
   zoomLevel?: number;
   interactive?: boolean;
   showMarker?: boolean;
+  selectedChalet?: any;
+  onSelectMarker?: (chalet: any) => void;
+  onPressCard?: (id: string) => void;
 }
 
-/**
- * AppMap - A Mapbox wrapper component.
- * Includes a design-accurate fallback for Expo Go to match USER screenshot.
- */
+import { MapCard } from './map-card';
+
 export const AppMap = ({ 
   style, 
   centerCoordinate, 
   zoomLevel = 12, 
   interactive = true,
-  showMarker = false
+  showMarker = false,
+  selectedChalet,
+  onSelectMarker,
+  onPressCard
 }: AppMapProps) => {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [loading, setLoading] = useState(true);
@@ -79,8 +83,21 @@ export const AppMap = ({
         />
         
         {showMarker && (
-          <View style={[styles.designMarker, { top: '50%', left: '50%', transform: [{translateX: -16}, {translateY: -16}], borderColor: Colors.primary, justifyContent: 'center', alignItems: 'center' }]}>
+          <TouchableOpacity 
+            onPress={() => onSelectMarker?.({ id: '1', title: 'شالية الاروع علة الطلاق', location: 'البصرة - الجزائر', rating: 4.5, image: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?q=80&w=1000&auto=format&fit=crop', price: 'IQD 30,000' })}
+            style={[styles.designMarker, { top: '50%', left: '50%', transform: [{translateX: -16}, {translateY: -16}], borderColor: Colors.primary, justifyContent: 'center', alignItems: 'center' }]}
+          >
             <Ionicons name="location" size={20} color={Colors.primary} />
+          </TouchableOpacity>
+        )}
+
+        {selectedChalet && (
+          <View style={styles.cardOverlay}>
+            <MapCard 
+              {...selectedChalet} 
+              onPress={() => onPressCard?.(selectedChalet.id)}
+              onClose={() => onSelectMarker?.(null)}
+            />
           </View>
         )}
 
@@ -94,6 +111,7 @@ export const AppMap = ({
       </View>
     );
   }
+
 
   const finalCenter: [number, number] = centerCoordinate || (location 
     ? [location.coords.longitude, location.coords.latitude] 
@@ -187,5 +205,12 @@ const styles = StyleSheet.create({
     padding: 2,
     borderWidth: 1,
     borderColor: Colors.primary,
+  },
+  cardOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100,
   }
 });

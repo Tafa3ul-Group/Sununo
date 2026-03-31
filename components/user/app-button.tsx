@@ -13,6 +13,7 @@ interface AppButtonProps {
   loading?: boolean;
   disabled?: boolean;
   icon?: keyof typeof MaterialCommunityIcons.glyphMap;
+  leftLabel?: string; // New prop for custom text in the icon slot
   activeColor?: string;
   inactiveColor?: string;
   activeTextColor?: string;
@@ -34,6 +35,7 @@ export function AppButton({
   loading = false,
   disabled = false,
   icon,
+  leftLabel,
   activeColor = "#035DF9",
   inactiveColor = "#E5E7EB",
   activeTextColor = "white",
@@ -103,7 +105,7 @@ export function AppButton({
     );
   }
 
-  // Secondary Variant: Rounded with Divider and Icon
+  // Secondary Variant: Rounded with Divider and Icon/LeftLabel
   const secondaryActiveColor = "#0066FF";
   return (
     <TouchableOpacity
@@ -117,14 +119,20 @@ export function AppButton({
         style
       ]}
     >
-      {/* Icon Section */}
-      {icon && (
+      {/* Icon/LeftLabel Section */}
+      {(icon || leftLabel) && (
         <View style={[styles.iconPart, { backgroundColor: isActive ? 'rgba(0,102,255,0.05)' : 'transparent' }]}>
-          <MaterialCommunityIcons
-            name={icon as any}
-            size={22}
-            color={isActive ? secondaryActiveColor : '#9CA3AF'}
-          />
+          {leftLabel ? (
+            <ThemedText style={[styles.secondaryText, { color: isActive ? secondaryActiveColor : '#9CA3AF' }]}>
+              {leftLabel}
+            </ThemedText>
+          ) : (
+            <MaterialCommunityIcons
+              name={icon as any}
+              size={22}
+              color={isActive ? secondaryActiveColor : '#9CA3AF'}
+            />
+          )}
         </View>
       )}
 

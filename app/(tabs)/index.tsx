@@ -20,6 +20,7 @@ import { Image } from "expo-image";
 import { Redirect, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
+import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 
 import { ThemedText } from "@/components/themed-text";
@@ -97,8 +98,10 @@ const POPULAR_CHALETS = [
 export default function HomeScreen() {
   const { user, userType } = useSelector((state: RootState) => state.auth);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const router = useRouter();
   const { t } = useTranslation();
   const [activeFilter, setActiveFilter] = React.useState("all");
+  const [selectedChalet, setSelectedChalet] = React.useState<any>(null);
 
   if (userType === 'owner') {
     return <Redirect href="/(tabs)/(dashboard)/home" />;
@@ -106,6 +109,10 @@ export default function HomeScreen() {
 
   const handleOpenSearch = () => {
     bottomSheetRef.current?.present();
+  };
+
+  const navigateToDetails = (id: string) => {
+    router.push(`/chalet-details/${id}`);
   };
 
   return (
@@ -166,7 +173,12 @@ export default function HomeScreen() {
           disallowInterruption={true}
         >
           {POPULAR_CHALETS.map((chalet, index) => (
-            <ColoredCard key={chalet.id} {...chalet} shapeIndex={index} />
+            <ColoredCard 
+              key={chalet.id} 
+              {...chalet} 
+              shapeIndex={index} 
+              onPress={() => navigateToDetails(chalet.id)}
+            />
           ))}
         </GHScrollView>
 
@@ -179,8 +191,15 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.mapContainer}>
-          <AppMap style={styles.map} />
+          <AppMap 
+            style={styles.map} 
+            showMarker 
+            selectedChalet={selectedChalet}
+            onSelectMarker={setSelectedChalet}
+            onPressCard={navigateToDetails}
+          />
         </View>
+
 
         {/* Section: Best Today - Horizontal (MOVED UNDER MAP) */}
         <View style={styles.sectionHeader}>
@@ -206,7 +225,11 @@ export default function HomeScreen() {
               key={chalet.id}
               style={{ width: normalize.width(323), marginLeft: Spacing.md }}
             >
-              <HorizontalCard {...chalet} shapeIndex={index + 5} />
+              <HorizontalCard 
+                {...chalet} 
+                shapeIndex={index + 5} 
+                onPress={() => navigateToDetails(chalet.id)}
+              />
             </View>
           ))}
         </GHScrollView>
@@ -259,10 +282,12 @@ export default function HomeScreen() {
               key={chalet.id}
               {...chalet}
               shapeIndex={index + 10}
+              onPress={() => navigateToDetails(chalet.id)}
             />
           ))}
         </View>
       </ScrollView>
+
 
       {/* Filter/Search Bottom Sheet */}
       <SearchFilterSheet ref={bottomSheetRef} />

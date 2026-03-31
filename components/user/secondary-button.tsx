@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  ActivityIndicator,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
 
@@ -16,14 +15,13 @@ interface SecondaryButtonProps {
   onPress: () => void;
   isActive?: boolean;
   icon?: keyof typeof MaterialCommunityIcons.glyphMap;
+  iconLabel?: string;
   activeColor?: string;
   inactiveColor?: string;
   activeTextColor?: string;
   inactiveTextColor?: string;
-  iconOnly?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
-  isLoading?: boolean;
 }
 
 /**
@@ -37,31 +35,29 @@ export function SecondaryButton({
   onPress,
   isActive = false,
   icon,
+  iconLabel,
   activeColor = "#035DF9",
   inactiveColor = "#E9EBED",
   activeTextColor = "white",
   inactiveTextColor = "#035DF9",
-  iconOnly = false,
   style,
   textStyle,
-  isLoading = false,
 }: SecondaryButtonProps) {
   const bgColor = isActive ? activeColor : "transparent";
-  const borderColor = isActive ? activeColor : inactiveColor;
-  const finalContentColor = isActive ? activeTextColor : (inactiveTextColor || activeColor);
-  
-  const buttonHeight = (style as ViewStyle)?.height || 46;
-  const scaledWidth = Number(buttonHeight) * (28 / 29);
+  const borderColor = isActive ? activeColor : "#E5E7EB";
+  const finalContentColor = isActive ? "white" : activeColor;
+
+  // Scale calculations: Original height 29, new height 46. Factor = 1.586
+  const scaledWidth = 44.4;
 
   return (
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={onPress}
-      disabled={isLoading}
       style={[styles.container, style]}
     >
-      {/* Icon Section */}
-      <View style={[styles.iconWrapper, { width: scaledWidth, height: '100%' }]}>
+      {/* Icon Section (Right part in RTL) */}
+      <View style={[styles.iconWrapper, { width: scaledWidth, height: 46 }]}>
         <Svg
           width="100%"
           height="100%"
@@ -76,53 +72,41 @@ export function SecondaryButton({
             strokeWidth="1"
           />
         </Svg>
-        {isLoading ? (
+        {(icon || iconLabel) && (
           <View style={styles.iconContainer}>
-            <ActivityIndicator size="small" color={finalContentColor} />
-          </View>
-        ) : icon && (
-          <View style={styles.iconContainer}>
-            <MaterialCommunityIcons
-              name={icon as any}
-              size={Number(buttonHeight) * 0.48}
-              color={finalContentColor}
-            />
+            {iconLabel ? (
+              <ThemedText style={[styles.text, { color: finalContentColor, fontSize: 16 }]}>
+                {iconLabel}
+              </ThemedText>
+            ) : (
+              <MaterialCommunityIcons
+                name={icon as any}
+                size={22}
+                color={finalContentColor}
+              />
+            )}
           </View>
         )}
       </View>
 
-      {/* Label Section */}
-      {!iconOnly && (
-        <View
-          style={[
-            styles.textWrapper,
-            {
-              backgroundColor: bgColor,
-              borderColor: borderColor,
-              height: '100%',
-              minWidth: 40,
-            },
-          ]}
+      {/* Label Section (Left part in RTL) */}
+      <View
+        style={[
+          styles.textWrapper,
+          {
+            backgroundColor: bgColor,
+            borderColor: borderColor,
+            height: 46,
+            flex: 1, // Allow text to fill space
+          },
+        ]}
+      >
+        <ThemedText
+          style={[styles.text, { color: finalContentColor }, textStyle]}
         >
-          {isLoading ? (
-             <ActivityIndicator size="small" color={finalContentColor} />
-          ) : (
-            <ThemedText
-              style={[
-                styles.text, 
-                { 
-                  color: finalContentColor, 
-                  fontSize: Number(buttonHeight) * 0.38,
-                  lineHeight: Number(buttonHeight) * 0.45 
-                }, 
-                textStyle
-              ]}
-            >
-              {label}
-            </ThemedText>
-          )}
-        </View>
-      )}
+          {label}
+        </ThemedText>
+      </View>
     </TouchableOpacity>
   );
 }
@@ -131,7 +115,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row-reverse",
     height: 46,
-    alignItems: "stretch",
+    alignItems: "center",
     justifyContent: "center",
   },
   iconWrapper: {
@@ -144,18 +128,20 @@ const styles = StyleSheet.create({
     inset: 0,
     justifyContent: "center",
     alignItems: "center",
-    paddingLeft: 3, 
+    paddingLeft: 3, // Proportional padding
   },
   textWrapper: {
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 12, 
-    borderWidth: 1.5, 
-    borderRadius: 8.7, 
+    paddingHorizontal: 12, // Reduced padding for flexibility
+    borderWidth: 1.5, // Thicker border for larger size
+    borderRadius: 8.7, // Proportional radius (5.5 * 1.586)
     marginRight: -1,
   },
   text: {
+    fontSize: 18,
     fontWeight: "800",
     textAlign: "center",
+    lineHeight: 22,
   },
 });
