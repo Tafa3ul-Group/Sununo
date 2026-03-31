@@ -208,6 +208,58 @@ export const apiSlice = createApi({
       }),
       providesTags: ['Booking'],
     }),
+
+    // Get provider booking details
+    getProviderBookingDetails: builder.query({
+      query: (id) => `/provider/bookings/${id}`,
+      providesTags: (result, error, id) => [{ type: 'Booking' as const, id }],
+    }),
+
+    // Get shift availability
+    getShiftAvailability: builder.query({
+      query: (params) => ({
+        url: '/provider/shifts/availability',
+        params,
+      }),
+      providesTags: ['Chalet'],
+    }),
+
+    // Mark booking as completed
+    markBookingCompleted: builder.mutation({
+      query: (id) => ({
+        url: `/provider/bookings/${id}/complete`,
+        method: 'POST',
+      }),
+      invalidatesTags: (result, error, id) => ['Booking', { type: 'Booking' as const, id }],
+    }),
+
+    // Create external booking
+    createExternalBooking: builder.mutation({
+      query: (data) => ({
+        url: '/provider/bookings/external',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Booking', 'Chalet'],
+    }),
+
+    // Delete external booking
+    deleteExternalBooking: builder.mutation({
+      query: (id) => ({
+        url: `/provider/bookings/external/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Booking', 'Chalet'],
+    }),
+
+    // Cancel booking
+    cancelBooking: builder.mutation({
+      query: (id) => ({
+        url: `/provider/bookings/${id}/cancel`,
+        method: 'POST',
+      }),
+      invalidatesTags: (result, error, id) => ['Booking', { type: 'Booking' as const, id }],
+    }),
   }),
 });
 
@@ -245,4 +297,10 @@ export const {
 
   useGetProviderProfileQuery,
   useGetProviderBookingsQuery,
+  useGetProviderBookingDetailsQuery,
+  useGetShiftAvailabilityQuery,
+  useMarkBookingCompletedMutation,
+  useCreateExternalBookingMutation,
+  useDeleteExternalBookingMutation,
+  useCancelBookingMutation,
 } = apiSlice;

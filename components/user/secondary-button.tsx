@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  ActivityIndicator,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
 
@@ -22,6 +23,7 @@ interface SecondaryButtonProps {
   inactiveTextColor?: string;
   style?: ViewStyle;
   textStyle?: TextStyle;
+  isLoading?: boolean;
 }
 
 /**
@@ -42,6 +44,7 @@ export function SecondaryButton({
   inactiveTextColor = "#035DF9",
   style,
   textStyle,
+  isLoading = false,
 }: SecondaryButtonProps) {
   const bgColor = isActive ? activeColor : "transparent";
   const borderColor = isActive ? activeColor : "#E5E7EB";
@@ -54,7 +57,8 @@ export function SecondaryButton({
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={onPress}
-      style={[styles.container, style]}
+      style={[styles.container, style, isLoading && { opacity: 0.7 }]}
+      disabled={isLoading}
     >
       {/* Icon Section (Right part in RTL) */}
       <View style={[styles.iconWrapper, { width: scaledWidth, height: 46 }]}>
@@ -72,19 +76,21 @@ export function SecondaryButton({
             strokeWidth="1"
           />
         </Svg>
-        {(icon || iconLabel) && (
+        {(icon || iconLabel || isLoading) && (
           <View style={styles.iconContainer}>
-            {iconLabel ? (
+            {isLoading ? (
+              <ActivityIndicator color={finalContentColor} size="small" />
+            ) : iconLabel ? (
               <ThemedText style={[styles.text, { color: finalContentColor, fontSize: 16 }]}>
                 {iconLabel}
               </ThemedText>
-            ) : (
+            ) : icon ? (
               <MaterialCommunityIcons
                 name={icon as any}
                 size={22}
                 color={finalContentColor}
               />
-            )}
+            ) : null}
           </View>
         )}
       </View>

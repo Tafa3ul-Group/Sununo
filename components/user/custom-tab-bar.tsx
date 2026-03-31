@@ -1,7 +1,8 @@
 import { normalize } from '@/constants/theme';
 import { RootState } from '@/store';
 import React from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { getImageSrc } from '@/hooks/useImageSrc';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 
@@ -84,64 +85,81 @@ export const CustomTabBar: React.FC<TabProps> = ({ state, navigation, descriptor
 
   const renderIcon = (route: any, isActive: boolean) => {
     const { options } = descriptors[route.key];
+    const isProfile = route.name === 'profile' || route.name === '(dashboard)/provider-profile';
+
+    if (isProfile) {
+      // Return the image wrapped in a white circle as per design
+      return (
+        <View style={[
+          styles.profileBtnWrapper, 
+          isActive && { borderColor: 'white', borderWidth: 2 }
+        ]}>
+          <Image
+            source={getImageSrc("https://i.pravatar.cc/100")}
+            style={styles.profileBtnImage}
+          />
+        </View>
+      );
+    }
 
     if (options.tabBarIcon) {
       return options.tabBarIcon({
         focused: isActive,
-        color: isActive ? '#035DF9' : 'rgba(255, 255, 255, 0.7)',
+        color: isActive ? '#035DF9' : 'rgba(255, 255, 255, 1)',
         size: normalize.width(22),
       });
     }
 
-    // Fallback (should not be reached if all routes have icons)
     return null;
   };
 
   const isLeftTabActive = currentRouteName === leftTab.name;
 
   return (
-    <View style={[
-      styles.container, 
-      { 
-        bottom: insets.bottom + 16, 
-        flexDirection: 'row',
-        paddingHorizontal: 16
-      }
-    ]}>
-      {/* Left Button */}
-      <TouchableOpacity
-        style={[
-          styles.roundButton,
-          { width: NAV_HEIGHT, height: NAV_HEIGHT, borderRadius: NAV_HEIGHT / 2 },
-          isLeftTabActive && styles.activeRoundButton
-        ]}
-        onPress={() => navigateTo(leftTab.name)}
-        activeOpacity={0.8}
-      >
-        {renderIcon(leftTab, isLeftTabActive)}
-      </TouchableOpacity>
+    <View style={styles.container}>
+      <View style={[
+        styles.navWrapper, 
+        { 
+          bottom: Math.max(insets.bottom, 16),
+          flexDirection: isRTL ? 'row-reverse' : 'row'
+        }
+      ]}>
+        {/* Separate Left Button (Explore/Map) */}
+        <TouchableOpacity
+          style={[
+            styles.roundButton,
+            { width: NAV_HEIGHT, height: NAV_HEIGHT, borderRadius: NAV_HEIGHT / 2 },
+            isLeftTabActive && styles.activeRoundButton
+          ]}
+          onPress={() => navigateTo(leftTab.name)}
+          activeOpacity={0.8}
+        >
+          {renderIcon(leftTab, isLeftTabActive)}
+        </TouchableOpacity>
 
-      {/* Main Navigation Capsule */}
-      <View style={[styles.tabCapsule, { height: NAV_HEIGHT, borderRadius: NAV_HEIGHT / 2 }]}>
-        {capsuleTabs.map((route: any, index: number) => {
-          const isActive = currentRouteName === route.name;
+        {/* Combined Navigation Capsule (Right Side) */}
+        <View style={[styles.tabCapsule, { height: NAV_HEIGHT, borderRadius: NAV_HEIGHT / 2 }]}>
+          {capsuleTabs.map((route: any, index: number) => {
+            const isActive = currentRouteName === route.name;
+            const isProfile = route.name === 'profile' || route.name === '(dashboard)/provider-profile';
 
-          return (
-            <TouchableOpacity
-              key={route.key}
-              onPress={() => navigateTo(route.name)}
-              style={[
-                styles.tabItem,
-                { width: NAV_HEIGHT - 8, height: NAV_HEIGHT - 8, borderRadius: (NAV_HEIGHT - 8) / 2 },
-                isActive && styles.activeTabItem,
-                index > 0 && { marginLeft: 4 }
-              ]}
-              activeOpacity={0.7}
-            >
-              {renderIcon(route, isActive)}
-            </TouchableOpacity>
-          );
-        })}
+            return (
+              <TouchableOpacity
+                key={route.key}
+                onPress={() => navigateTo(route.name)}
+                style={[
+                  styles.tabItem,
+                  { width: NAV_HEIGHT - 6, height: NAV_HEIGHT - 6, borderRadius: (NAV_HEIGHT - 6) / 2 },
+                  isActive && !isProfile && styles.activeTabItem,
+                  index > 0 && { marginLeft: 12 }
+                ]}
+                activeOpacity={0.7}
+              >
+                {renderIcon(route, isActive)}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
       </View>
     </View>
   );
@@ -152,42 +170,65 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    bottom: 0,
     zIndex: 1000,
+  },
+  navWrapper: {
+    marginHorizontal: 20,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
   },
   roundButton: {
     backgroundColor: '#035DF9',
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    elevation: 12,
+    shadowColor: '#035DF9',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
   },
   activeRoundButton: {
     backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#035DF9',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
   },
   tabCapsule: {
     flexDirection: 'row',
     backgroundColor: '#035DF9',
-    paddingHorizontal: 4,
+    paddingHorizontal: 6,
     alignItems: 'center',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    elevation: 12,
+    shadowColor: '#035DF9',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
   },
   tabItem: {
     justifyContent: 'center',
     alignItems: 'center',
   },
   activeTabItem: {
+    backgroundColor: 'white', 
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  profileBtnWrapper: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     backgroundColor: 'white',
+    padding: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  profileBtnImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 18,
   },
 });

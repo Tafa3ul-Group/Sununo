@@ -176,7 +176,7 @@ const BookingDetailsContent = ({ id, isRTL, t, onRefresh, onClose }: { id: strin
               <Text style={[styles.shiftChipText, { color: bIsNightShift ? "#7C3AED" : "#EA580C" }]}>{bShiftName}</Text>
             </View>
           </View>
-          <div className="flex flex-row gap-4 p-4 justify-around">
+          <View style={{ flexDirection: 'row', gap: 16, padding: 16, justifyContent: 'space-around' }}>
             <View style={[styles.timeBlock, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
               <Text style={styles.timeLabel}>{isRTL ? 'الدخول' : 'Check-in'}</Text>
               <Text style={styles.timeValue}>{format12H(data.shiftStartTime, isRTL)}</Text>
@@ -188,7 +188,7 @@ const BookingDetailsContent = ({ id, isRTL, t, onRefresh, onClose }: { id: strin
               <Text style={styles.timeLabel}>{isRTL ? 'الخروج' : 'Check-out'}</Text>
               <Text style={styles.timeValue}>{format12H(data.shiftEndTime, isRTL)}</Text>
             </View>
-          </div>
+          </View>
         </View>
       </View>
 
@@ -359,12 +359,12 @@ export default function BookingsScreen() {
           <SolarIcon name="calendar-minimalistic-bold" size={16} color={IDENTITY_BLUE} />
           <Text style={styles.dateHighlightText}>{item.bookingDate} - {isRTL ? (item.shift?.name?.ar || item.shift?.name) : (item.shift?.name?.en || item.shift?.name)}</Text>
         </View>
-        <div className="flex flex-row justify-between items-center mt-3">
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
            <View style={[styles.statusBadge, { backgroundColor: item.status === 'confirmed' ? '#DCFCE7' : '#FEF3C7' }]}><Text style={[styles.statusText, { color: item.status === 'confirmed' ? '#16A34A' : '#D97706' }]}>{t(`dashboard.bookings.status.${item.status}`)}</Text></View>
            <Text style={styles.codeText}>#{item.bookingCode}</Text>
-        </div>
+        </View>
         {item.status === 'confirmed' && (
-           <div className="flex flex-row gap-3 mt-4">
+           <View style={{ flexDirection: 'row', gap: 12, marginTop: 16 }}>
               <SecondaryButton
                 label={t('dashboard.bookings.complete')}
                 onPress={async () => {
@@ -398,7 +398,7 @@ export default function BookingsScreen() {
                 activeColor="#EF4444"
                 style={{ flex: 1, height: 44 }}
               />
-           </div>
+           </View>
         )}
       </TouchableOpacity>
     );
@@ -463,15 +463,17 @@ export default function BookingsScreen() {
             </View>
           )}
 
-          <FlashList
-            data={bookingsData?.data || []}
-            renderItem={renderBookingItem}
-            estimatedItemSize={150}
-            contentContainerStyle={{ padding: 16 }}
-            onRefresh={refreshAvailability}
-            refreshing={isBookingsLoading}
-            ListEmptyComponent={<View style={{ padding: 40, alignItems: 'center' }}><SolarIcon name="calendar-linear" size={64} color="#CBD5E1" /><Text style={{ marginTop: 16, color: Colors.text.muted }}>{isRTL ? 'لا توجد حجوزات' : 'No bookings'}</Text></View>}
-          />
+          {(FlashList as any) && (
+            <FlashList
+              data={bookingsData?.data || []}
+              renderItem={renderBookingItem}
+              estimatedItemSize={150}
+              contentContainerStyle={{ padding: 16 }}
+              onRefresh={refreshAvailability}
+              refreshing={isBookingsLoading}
+              ListEmptyComponent={<View style={{ padding: 40, alignItems: 'center' }}><SolarIcon name="calendar-linear" size={64} color="#CBD5E1" /><Text style={{ marginTop: 16, color: Colors.text.muted }}>{isRTL ? 'لا توجد حجوزات' : 'No bookings'}</Text></View>}
+            />
+          )}
 
           <BottomSheetModal ref={detailsSheetRef} snapPoints={['85%']} backdropComponent={renderBackdrop} enablePanDownToClose onDismiss={() => setSelectedBookingId(null)}>
             <BottomSheetView style={{ flex: 1 }}>

@@ -8,7 +8,6 @@ import { normalize } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { RootState } from "@/store";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { SolarIcon } from "@/components/ui/solar-icon";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
@@ -18,8 +17,6 @@ export default function TabLayout() {
   const { t } = useTranslation();
   const { userType, language } = useSelector((state: RootState) => state.auth);
   const isRTL = language === 'ar';
-
-  const isOwner = userType === "owner";
 
   return (
     <Tabs
@@ -34,47 +31,86 @@ export default function TabLayout() {
         },
       }}
     >
+      {/* CUSTOMER TABS */}
       <Tabs.Screen
         name="index"
         options={{
-          title: t("tabs.home"),
+          title: t("tabs.explore"),
           href: userType === "owner" ? null : "/(tabs)",
-          tabBarIcon: ({ color, focused }) => (
-            <SolarIcon
-              size={normalize.width(22)}
-              name={focused ? "home-smile-bold" : "home-smile-linear"}
-              color={color}
-            />
+          tabBarIcon: ({ color, size }) => (
+            <SolarIcon name="globus-linear" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="bookings"
+        options={{
+          title: t("tabs.bookings"),
+          href: userType === "owner" ? null : "/(tabs)/bookings",
+          tabBarIcon: ({ color, size }) => (
+            <SolarIcon name="calendar-linear" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="favorites"
+        options={{
+          title: t("tabs.favorites"),
+          href: userType === "owner" ? null : "/(tabs)/favorites",
+          tabBarIcon: ({ color, size }) => (
+            <SolarIcon name="heart-linear" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: t("tabs.profile"),
+          href: userType === "owner" ? null : "/(tabs)/profile",
+          tabBarIcon: ({ color, size }) => (
+            <SolarIcon name="user-linear" size={size} color={color} />
           ),
         }}
       />
 
+      {/* DASHBOARD TABS (OWNER ONLY) */}
+      <Tabs.Screen
+        name="(dashboard)/home"
+        options={{
+          title: t("tabs.dashboard"),
+          href: userType === "customer" ? null : "/(tabs)/(dashboard)/home",
+          tabBarIcon: ({ color, size }) => (
+            <SolarIcon name="home-2-linear" size={size} color={color} />
+          ),
+        }}
+      />
       <Tabs.Screen
         name="(dashboard)/bookings"
         options={{
           title: t("tabs.bookings"),
-          href: userType === "owner" ? "/(tabs)/(dashboard)/bookings" : null,
-          tabBarIcon: ({ color, focused }) => (
-            <SolarIcon
-              size={normalize.width(22)}
-              name={focused ? "notes-bold" : "notes-linear"}
-              color={color}
-            />
+          href: userType === "customer" ? null : "/(tabs)/(dashboard)/bookings",
+          tabBarIcon: ({ color, size }) => (
+            <SolarIcon name="notes-linear" size={size} color={color} />
           ),
         }}
       />
-
       <Tabs.Screen
-        name="(dashboard)/home"
+        name="(dashboard)/revenue"
         options={{
-          title: t("tabs.home"),
-          href: userType === "owner" ? "/(tabs)/(dashboard)/home" : null,
-          tabBarIcon: ({ color, focused }) => (
-            <SolarIcon
-              size={normalize.width(22)}
-              name={focused ? "home-smile-bold" : "home-smile-linear"}
-              color={color}
-            />
+          title: isRTL ? 'الأرباح' : 'Revenue',
+          href: userType === "customer" ? null : "/(tabs)/(dashboard)/revenue",
+          tabBarIcon: ({ color, size }) => (
+            <SolarIcon name="banknote-linear" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="(dashboard)/provider-profile"
+        options={{
+          title: t("tabs.profile"),
+          href: userType === "customer" ? null : "/(tabs)/(dashboard)/provider-profile",
+          tabBarIcon: ({ color, size }) => (
+            <SolarIcon name="settings-linear" size={size} color={color} />
           ),
         }}
       />
@@ -82,15 +118,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="(dashboard)/shifts"
         options={{
+          href: null,
           title: isRTL ? 'الفترات والأسعار' : 'Shifts & Prices',
-          href: userType === "owner" ? "/(tabs)/(dashboard)/shifts" : null,
-          tabBarIcon: ({ color, focused }) => (
-            <SolarIcon
-              size={normalize.width(22)}
-              name={focused ? "calendar-bold" : "calendar-linear"}
-              color={color}
-            />
-          ),
         }}
       />
 
@@ -99,14 +128,6 @@ export default function TabLayout() {
         options={{
           href: null,
           title: t("tabs.addChalet"),
-        }}
-      />
-
-      <Tabs.Screen
-        name="(dashboard)/revenue"
-        options={{
-          href: null,
-          title: t("tabs.revenue"),
         }}
       />
 
@@ -150,39 +171,12 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="(dashboard)/provider-profile"
-        options={{
-          href: null,
-          title: isRTL ? 'معلومات العمل والمصرف' : 'Business & Bank Info',
-        }}
-      />
-
-      <Tabs.Screen
         name="explore"
         options={{
           href: null,
         }}
       />
 
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: t("tabs.profile"),
-          tabBarIcon: ({ focused }) => (
-            <View
-              style={[
-                styles.profileIconContainer,
-                focused && styles.focusedProfile,
-              ]}
-            >
-              <Image
-                source={getImageSrc("https://i.pravatar.cc/100")}
-                style={styles.profileImage}
-              />
-            </View>
-          ),
-        }}
-      />
     </Tabs>
   );
 }

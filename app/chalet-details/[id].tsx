@@ -424,7 +424,7 @@ export default function ChaletDetailScreen() {
 
         <PrimaryButton
           label="احجز الان"
-          onPress={() => {}}
+          onPress={() => router.push({ pathname: '/booking/complete', params: { id } })}
           style={{ width: normalize.width(140) }}
         />
       </View>
