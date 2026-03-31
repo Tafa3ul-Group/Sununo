@@ -5,7 +5,7 @@ import { useGetChaletDetailsQuery } from "@/store/api/apiSlice";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -18,6 +18,140 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Svg, { Path } from "react-native-svg";
+
+function SolarStarBold({ color, size }: { color: string; size: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        fill={color}
+        d="M9.153 5.408C10.42 3.136 11.053 2 12 2s1.58 1.136 2.847 3.408l.328.588c.36.646.54.969.82 1.182s.63.292 1.33.45l.636.144c2.46.557 3.689.835 3.982 1.776c.292.94-.546 1.921-2.223 3.882l-.434.507c-.476.557-.715.836-.822 1.18c-.107.345-.071.717.001 1.46l.066.677c.253 2.617.38 3.925-.386 4.506s-1.918.051-4.22-1.009l-.597-.274c-.654-.302-.981-.452-1.328-.452s-.674.15-1.328.452l-.596.274c-2.303 1.06-3.455 1.59-4.22 1.01c-.767-.582-.64-1.89-.387-4.507l.066-.676c.072-.744.108-1.116 0-1.46c-.106-.345-.345-.624-.821-1.18l-.434-.508c-1.677-1.96-2.515-2.941-2.223-3.882S3.58 8.328 6.04 7.772l.636-.144c.699-.158 1.048-.237 1.329-.45s.46-.536.82-1.182z"
+      />
+    </Svg>
+  );
+}
+
+// Professional ReviewCard Component
+const ReviewCard = ({
+  name,
+  rating,
+  comment,
+  avatar,
+  images = [],
+  date,
+}: {
+  name: string;
+  rating: string;
+  comment: string;
+  avatar: any;
+  images?: any[];
+  date: string;
+}) => {
+  return (
+    <View style={reviewStyles.card}>
+      {/* Top Header: Rating (Left) and User Info (Right) */}
+      <View style={reviewStyles.header}>
+        <View style={reviewStyles.ratingRow}>
+          <SolarStarBold color="#035DF9" size={24} />
+          <Text style={reviewStyles.ratingText}>{rating}</Text>
+        </View>
+
+        <View style={reviewStyles.profileRow}>
+          <Text style={reviewStyles.name}>{name}</Text>
+          <Image source={avatar} style={reviewStyles.avatar} />
+        </View>
+      </View>
+
+      {/* Comment Section */}
+      <Text style={reviewStyles.comment}>{comment}</Text>
+
+      {/* Image Gallery */}
+      {images.length > 0 && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={reviewStyles.imageGallery}
+          style={{ flexDirection: "row-reverse" }}
+        >
+          {images.map((img, idx) => (
+            <Image key={idx} source={img} style={reviewStyles.galleryImage} />
+          ))}
+        </ScrollView>
+      )}
+
+      {/* Date */}
+      <Text style={reviewStyles.date}>{date}</Text>
+    </View>
+  );
+};
+
+const reviewStyles = StyleSheet.create({
+  card: {
+    backgroundColor: "white",
+    borderRadius: normalize.radius(24),
+    padding: normalize.width(16),
+    borderWidth: 1,
+    borderColor: "#F3F4F6",
+    marginBottom: normalize.height(16),
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: normalize.height(12),
+  },
+  ratingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: normalize.width(6),
+  },
+  ratingText: {
+    fontSize: normalize.font(18),
+    fontWeight: "900",
+    color: "#111827",
+  },
+  profileRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: normalize.width(12),
+  },
+  name: {
+    fontSize: normalize.font(18),
+    fontWeight: "800",
+    color: "#111827",
+  },
+  avatar: {
+    width: normalize.width(55),
+    height: normalize.width(55),
+    borderRadius: normalize.radius(27.5),
+    backgroundColor: "#F3F4F6",
+  },
+  comment: {
+    fontSize: normalize.font(15),
+    lineHeight: normalize.font(24),
+    color: "#4B5563",
+    fontWeight: "500",
+    textAlign: "right",
+    marginBottom: normalize.height(16),
+  },
+  imageGallery: {
+    flexDirection: "row-reverse",
+    gap: normalize.width(8),
+    paddingBottom: normalize.height(12),
+  },
+  galleryImage: {
+    width: normalize.width(80),
+    height: normalize.width(80),
+    borderRadius: normalize.radius(10),
+  },
+  date: {
+    fontSize: normalize.font(14),
+    color: "#9CA3AF",
+    fontWeight: "600",
+    textAlign: "right",
+    marginTop: normalize.height(4),
+  },
+});
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SWIPER_HEIGHT = 500;
@@ -38,7 +172,7 @@ export default function ChaletDetailScreen() {
       uri: "https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&q=80&w=1000",
     },
     {
-      uri: "https://images.unsplash.com/photo-1542314831-068cd1dbfe81?auto=format&fit=crop&q=80&w=1000",
+      uri: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=1000",
     },
     {
       uri: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=1000",
@@ -46,6 +180,29 @@ export default function ChaletDetailScreen() {
   ];
 
   const [activeIndex, setActiveIndex] = useState(0);
+  const scrollRef = useRef<ScrollView>(null);
+  const timerRef = useRef<any>(null);
+
+  useEffect(() => {
+    const startAutoPlay = () => {
+      timerRef.current = setInterval(() => {
+        let nextIndex = activeIndex + 1;
+        if (nextIndex >= images.length) {
+          nextIndex = 0;
+        }
+        scrollRef.current?.scrollTo({
+          x: nextIndex * SCREEN_WIDTH,
+          animated: true,
+        });
+        setActiveIndex(nextIndex);
+      }, 3000);
+    };
+
+    startAutoPlay();
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [activeIndex, images.length]);
 
   if (isLoading) {
     return (
@@ -75,12 +232,16 @@ export default function ChaletDetailScreen() {
         {/* Top Section with Swiper */}
         <View style={styles.swiperContainer}>
           <ScrollView
+            ref={scrollRef}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
             onScroll={(e) => {
               const x = e.nativeEvent.contentOffset.x;
-              setActiveIndex(Math.round(x / SCREEN_WIDTH));
+              const newIndex = Math.round(x / SCREEN_WIDTH);
+              if (newIndex !== activeIndex) {
+                setActiveIndex(newIndex);
+              }
             }}
             scrollEventThrottle={16}
             style={styles.scrollView}
@@ -141,7 +302,7 @@ export default function ChaletDetailScreen() {
             >
               {/* Rating on the Left (in RTL) */}
               <View style={styles.ratingContainer}>
-                <Ionicons name="star" size={24} color="#035DF9" />
+                <SolarStarBold color="#035DF9" size={24} />
                 <Text style={styles.ratingValueText}>4.5</Text>
               </View>
 
@@ -167,16 +328,16 @@ export default function ChaletDetailScreen() {
             </Text>
             <View style={[styles.specsRow, { flexDirection: "row-reverse" }]}>
               <View style={styles.specTag}>
-                <Text style={styles.specText}>بستان مع بيت</Text>
+                <Text style={styles.specText} numberOfLines={1}>بستان مع بيت</Text>
               </View>
               <View style={styles.specTag}>
-                <Text style={styles.specText}>300 م</Text>
+                <Text style={styles.specText} numberOfLines={1}>300 م</Text>
               </View>
               <View style={styles.specTag}>
-                <Text style={styles.specText}>1 حمام</Text>
+                <Text style={styles.specText} numberOfLines={1}>1 حمام</Text>
               </View>
               <View style={styles.specTag}>
-                <Text style={styles.specText}>3 غرف</Text>
+                <Text style={styles.specText} numberOfLines={1}>3 غرف</Text>
               </View>
             </View>
 
@@ -338,7 +499,7 @@ export default function ChaletDetailScreen() {
                 ]}
               >
                 <Text style={styles.ratingPillValue}>4.5</Text>
-                <Ionicons name="star" size={18} color="white" />
+                <SolarStarBold color="white" size={18} />
               </View>
 
               <SecondaryButton
@@ -359,50 +520,26 @@ export default function ChaletDetailScreen() {
             </View>
 
             <View style={styles.reviewsList}>
-              {[
-                {
-                  name: "انسة انس",
-                  rating: "4.5",
-                  comment: "خوش مكان ونضيف يستاهل، الهواء نقي بسبب التشجير",
-                  avatar: require("../../assets/temp_mock/reviewer_1_1774440162768.png"),
-                },
-                {
-                  name: "انسة انس",
-                  rating: "4.5",
-                  comment: "خوش مكان ونضيف يستاهل، الهواء نقي بسبب التشجير",
-                  avatar: require("../../assets/temp_mock/reviewer_2_1774440178616.png"),
-                },
-              ].map((review, idx) => (
-                <View
-                  key={idx}
-                  style={[
-                    styles.reviewItem,
-                    { flexDirection: isRTL ? "row" : "row-reverse" },
-                  ]}
-                >
-                  <Image source={review.avatar} style={styles.reviewerAvatar} />
-                  <View
-                    style={[
-                      styles.reviewTextContent,
-                      { alignItems: isRTL ? "flex-end" : "flex-start" },
-                    ]}
-                  >
-                    <Text style={styles.reviewerName}>{review.name}</Text>
-                    <View
-                      style={[
-                        styles.reviewRatingRow,
-                        { flexDirection: isRTL ? "row-reverse" : "row" },
-                      ]}
-                    >
-                      <Ionicons name="star" size={16} color="#035DF9" />
-                      <Text style={styles.reviewRatingValue}>
-                        {review.rating}
-                      </Text>
-                    </View>
-                    <Text style={styles.reviewComment}>{review.comment}</Text>
-                  </View>
-                </View>
-              ))}
+              <ReviewCard
+                name="انسة انس"
+                rating="4"
+                comment="خوش مكان ونضيف يستاهل، الهواء نقي بسبب التشجير"
+                avatar={require("../../assets/temp_mock/reviewer_1_1774440162768.png")}
+                date="2025/09/22"
+                images={[
+                  require("../../assets/temp_mock/media__1774436293910.png"),
+                  require("../../assets/temp_mock/media__1774436996725.png"),
+                  require("../../assets/temp_mock/media__1774438026848.png"),
+                  require("../../assets/temp_mock/media__1774439027729.png"),
+                ]}
+              />
+              <ReviewCard
+                name="انسة انس"
+                rating="5"
+                comment="خوش مكان ونضيف يستاهل، الهواء نقي بسبب التشجير"
+                avatar={require("../../assets/temp_mock/reviewer_2_1774440178616.png")}
+                date="2025/09/22"
+              />
             </View>
 
             {/* 8. Add Review Button */}
@@ -508,7 +645,7 @@ const styles = StyleSheet.create({
   },
   headerActions: {
     position: "absolute",
-    top: normalize.height(20),
+    top: normalize.height(50), // Standard safe area space
     left: normalize.width(16),
     zIndex: 10,
   },
@@ -606,16 +743,16 @@ const styles = StyleSheet.create({
   },
   specsRow: {
     flexDirection: "row-reverse",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
+    flexWrap: "wrap",
     gap: normalize.width(8),
     marginBottom: normalize.height(8),
   },
   specTag: {
     backgroundColor: "#F0F7FF",
-    paddingHorizontal: normalize.width(12),
-    paddingVertical: normalize.height(10),
-    borderRadius: normalize.radius(12),
-    flex: 1,
+    paddingHorizontal: normalize.width(10),
+    paddingVertical: normalize.height(8),
+    borderRadius: normalize.radius(10),
     alignItems: "center",
     justifyContent: "center",
   },
@@ -705,7 +842,7 @@ const styles = StyleSheet.create({
   },
   hostOverlayContainer: {
     position: "absolute",
-    right: normalize.width(110), // Increased from 90 to 110 for better spacing
+    right: normalize.width(95), // Reduced from 110 per request
     top: "15%",
     alignItems: "flex-end",
     justifyContent: "center",
@@ -715,7 +852,7 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(13),
     color: "#6B7280",
     fontWeight: "600",
-    marginBottom: normalize.height(2),
+    marginBottom: 0, // Reduced from 2 per request
   },
   hostNameText: {
     fontSize: normalize.font(18),
@@ -808,7 +945,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   interestItemExtended: {
-    width: (SCREEN_WIDTH - 48 - 32) / 4, // 4 items per row accounting for grid gap
+    width: (SCREEN_WIDTH - normalize.width(32) - normalize.width(45)) / 4, // 4 items per row accounting for grid gap
     alignItems: "center",
     gap: 8,
     marginBottom: 16,
