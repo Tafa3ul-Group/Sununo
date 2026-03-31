@@ -58,7 +58,6 @@ module.exports = function (api) {
             'solar:eye-closed-linear',
             'solar:add-circle-linear',
             'solar:chart-linear',
-            'solar:home-search-linear',
             'solar:star-bold',
             'solar:calendar-add-linear',
             'solar:trash-bin-trash-linear',
