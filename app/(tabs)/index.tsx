@@ -20,9 +20,9 @@ import { Image } from "expo-image";
 import { Redirect, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
-import { useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 
+import { HeaderSection } from "@/components/header-section";
 import { ThemedText } from "@/components/themed-text";
 import { AppMap } from "@/components/user/app-map";
 import { ColoredCard } from "@/components/user/colored-card";
@@ -123,31 +123,15 @@ export default function HomeScreen() {
         contentContainerStyle={styles.scrollContent}
       >
         {/* Header Section */}
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <TouchableOpacity>
-              <Image
-                source={require("@/assets/profile.svg")}
-                style={styles.avatar}
-                contentFit="cover"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.searchButton}
-              onPress={handleOpenSearch}
-            >
-              <Ionicons name="search" size={20} color={Colors.text.primary} />
-            </TouchableOpacity>
-          </View>
-          
-          <View style={styles.logoContainer}>
-            <Image
-              source={require("@/assets/logo.svg")}
-              style={styles.logo}
-              contentFit="contain"
-            />
-          </View>
-        </View>
+        <HeaderSection 
+          userType={userType} 
+          showLogo={true}
+          showSearch={false}
+          showCategories={false}
+          showProfile={true}
+          extraIcon="search"
+          onExtraIconPress={handleOpenSearch}
+        />
 
         {/* Section: Most Popular (num1-num5 cards) - AT TOP */}
         <View style={styles.sectionHeader}>
@@ -304,42 +288,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: Spacing.xl,
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: Spacing.md,
-    justifyContent: "space-between",
-    marginTop: Platform.OS === "ios" ? 0 : Spacing.sm,
-  },
-  headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  avatar: {
-    width: normalize.width(40),
-    height: normalize.width(40),
-    borderRadius: normalize.radius(20),
-    backgroundColor: "#FFE5D4",
-  },
-  searchButton: {
-    width: normalize.width(40),
-    height: normalize.width(40),
-    borderRadius: normalize.radius(20),
-    backgroundColor: "white",
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1.2,
-    borderColor: "#EBEBEB",
-  },
-  logoContainer: {
-    alignItems: "flex-end",
-  },
-  logo: {
-    width: normalize.width(50),
-    height: normalize.width(50),
-  },
+
   map: {
     flex: 1,
   },

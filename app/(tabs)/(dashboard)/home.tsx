@@ -74,12 +74,7 @@ export default function HomeScreen() {
     }
   };
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return isRTL ? 'صباح الخير' : 'Good Morning';
-    if (hour < 18) return isRTL ? 'مساء الخير' : 'Good Afternoon';
-    return isRTL ? 'مساء الخير' : 'Good Evening';
-  };
+
 
   const renderChaletCard = (item: any) => {
     const mainImageSrc = getImageSrc(item.images?.[0]?.url);
@@ -157,10 +152,15 @@ export default function HomeScreen() {
         <HeaderSection 
           userType={userType} 
           userName={user?.name} 
-          title={userType === 'owner' ? t('tabs.home') : t('tabs.myChalets')}
           showSearch={false}
           showCategories={false}
           showProfile={true}
+          showLogo={true}
+          extraIcon="search"
+          onExtraIconPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            // Default to notifications for now as requested by previous logic or keep as search
+          }}
         />
         <ScrollView 
           style={styles.container}
@@ -176,13 +176,7 @@ export default function HomeScreen() {
             </View>
           ) : (
             <>
-              {/* Greeting */}
-              <View style={[styles.greetingRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                <View style={{ flex: 1, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
-                  <Text style={styles.greetingText}>{getGreeting()} 👋</Text>
-                  <Text style={styles.greetingName}>{user?.name || (isRTL ? 'مالك الشاليه' : 'Chalet Owner')}</Text>
-                </View>
-              </View>
+
 
               {/* Wallet Card */}
               <View style={styles.walletCard}>
@@ -230,33 +224,7 @@ export default function HomeScreen() {
                 </View>
               </View>
 
-              {/* Quick Actions */}
-              <View style={[styles.quickActionsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                <TouchableOpacity style={styles.quickAction} onPress={() => router.push('/(tabs)/(dashboard)/bookings')}>
-                  <View style={[styles.quickActionIcon, { backgroundColor: '#EFF6FF' }]}>
-                    <MaterialCommunityIcons name="calendar-check" size={22} color={Colors.primary} />
-                  </View>
-                  <Text style={styles.quickActionLabel}>{isRTL ? 'الحجوزات' : 'Bookings'}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.quickAction} onPress={() => router.push('/(tabs)/(dashboard)/revenue')}>
-                  <View style={[styles.quickActionIcon, { backgroundColor: '#ECFDF5' }]}>
-                    <MaterialCommunityIcons name="chart-line" size={22} color="#10B981" />
-                  </View>
-                  <Text style={styles.quickActionLabel}>{isRTL ? 'الأرباح' : 'Revenue'}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.quickAction} onPress={() => router.push('/(tabs)/(dashboard)/customers')}>
-                  <View style={[styles.quickActionIcon, { backgroundColor: '#FFF7ED' }]}>
-                    <MaterialCommunityIcons name="account-group-outline" size={22} color="#F97316" />
-                  </View>
-                  <Text style={styles.quickActionLabel}>{isRTL ? 'العملاء' : 'Customers'}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.quickAction} onPress={() => router.push('/(tabs)/(dashboard)/notifications')}>
-                  <View style={[styles.quickActionIcon, { backgroundColor: '#FEF2F2' }]}>
-                    <MaterialCommunityIcons name="bell-outline" size={22} color="#EF4444" />
-                  </View>
-                  <Text style={styles.quickActionLabel}>{isRTL ? 'الإشعارات' : 'Alerts'}</Text>
-                </TouchableOpacity>
-              </View>
+
 
               {/* Recent Bookings */}
               {Array.isArray(recentBookings) && recentBookings.length > 0 && (
@@ -383,23 +351,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  // Greeting
-  greetingRow: {
-    alignItems: 'center',
-    marginBottom: 16,
-    marginTop: 4,
-  },
-  greetingText: {
-    fontSize: normalize.font(14),
-    color: Colors.text.muted,
-    fontWeight: '500',
-  },
-  greetingName: {
-    fontSize: normalize.font(22),
-    fontWeight: '800',
-    color: Colors.text.primary,
-    marginTop: 2,
-  },
+
   // Wallet Card
   walletCard: {
     marginBottom: 20,
@@ -482,29 +434,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: normalize.font(13),
   },
-  // Quick Actions
-  quickActionsRow: {
-    gap: 10,
-    marginBottom: 24,
-  },
-  quickAction: {
-    flex: 1,
-    alignItems: 'center',
-    gap: 8,
-  },
-  quickActionIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  quickActionLabel: {
-    fontSize: normalize.font(11),
-    fontWeight: '600',
-    color: Colors.text.secondary,
-    textAlign: 'center',
-  },
+
   // Section Header
   sectionHeader: {
     justifyContent: 'space-between',

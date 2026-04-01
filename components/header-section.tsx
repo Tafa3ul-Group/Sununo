@@ -1,22 +1,23 @@
-import { Colors, normalize, Shadows, Spacing, Typography } from '@/constants/theme';
-import { FontAwesome5, Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import {
-    Platform,
-    ScrollView,
-    StyleSheet,
-    TextInput,
-    TouchableOpacity,
-    View,
-} from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import { ThemedText } from './themed-text';
-import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
+import { Colors, normalize, Spacing } from '@/constants/theme';
 import { RootState } from '@/store';
-import { useRouter } from 'expo-router';
-import * as Haptics from 'expo-haptics';
 import { UserType } from '@/store/authSlice';
+import { FontAwesome5, Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { useSelector } from 'react-redux';
+import { ThemedText } from './themed-text';
+
 
 interface HeaderSectionProps {
   userType?: UserType;
@@ -32,14 +33,16 @@ interface HeaderSectionProps {
   showProfile?: boolean;
   onProfilePress?: () => void;
   onDeletePress?: () => void;
+  showLogo?: boolean;
+  showExtra?: boolean;
 }
 
-export function HeaderSection({ 
-  userType, 
-  userName, 
-  title, 
+export function HeaderSection({
+  userType,
+  userName,
+  title,
   subtitle,
-  showSearch = true, 
+  showSearch = true,
   showCategories = true,
   showBackButton = false,
   onBackPress,
@@ -47,15 +50,24 @@ export function HeaderSection({
   onExtraIconPress,
   showProfile = false,
   onProfilePress,
-  onDeletePress
+  onDeletePress,
+  showLogo = false,
+  showExtra = true
 }: HeaderSectionProps) {
   const router = useRouter();
   const { t } = useTranslation();
   const { language } = useSelector((state: RootState) => state.auth);
   const [selectedCategory, setSelectedCategory] = React.useState('all');
-  
+
+
   const isOwner = userType === 'owner';
   const isRTL = language === 'ar';
+  const [useArLogo, setUseArLogo] = React.useState(true);
+
+  const toggleLogo = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setUseArLogo(!useArLogo);
+  };
 
   const CATEGORIES = [
     { id: 'all', label: t('home.categories.all'), icon: 'th-large' },
@@ -72,30 +84,41 @@ export function HeaderSection({
       <StatusBar style="dark" />
       {/* Title & Filter Row */}
       <View style={[styles.topRow, { flexDirection }]}>
-        <View style={[styles.titleContainer, { flexDirection }]}>
+        <View style={[styles.titleContainer, { flexDirection, flex: showLogo ? 0 : 1, alignItems: showLogo ? 'flex-end' : (showBackButton ? 'center' : (isRTL ? 'flex-end' : 'flex-start')) }]}>
           {showBackButton && (
-            <TouchableOpacity 
-              onPress={onBackPress || (() => router.back())} 
+            <TouchableOpacity
+              onPress={onBackPress || (() => router.back())}
               style={styles.backButton}
             >
               <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={normalize.width(24)} color={Colors.text.primary} />
             </TouchableOpacity>
           )}
-          <View style={{ alignItems: showBackButton ? 'center' : (isRTL ? 'flex-end' : 'flex-start'), flex: showBackButton ? 1 : 0 }}>
-            <ThemedText style={{ fontSize: normalize.font(18), fontWeight: '700' }}>
-              {title || (isOwner ? t('tabs.myChalets') : t('tabs.home'))}
-            </ThemedText>
-            {subtitle && (
-              <ThemedText style={styles.subtitle} numberOfLines={1}>
-                {subtitle}
+
+          {showLogo ? (
+            <TouchableOpacity onPress={toggleLogo} activeOpacity={0.8}>
+              <Image
+                source={useArLogo ? require('@/assets/arlogo.svg') : require('@/assets/logo.svg')}
+                style={styles.logo}
+                contentFit="contain"
+              />
+            </TouchableOpacity>
+          ) : (
+            <View style={{ alignItems: showBackButton ? 'center' : (isRTL ? 'flex-end' : 'flex-start'), flex: showBackButton ? 1 : 0 }}>
+              <ThemedText style={{ fontSize: normalize.font(18), fontWeight: '700' }}>
+                {title || (isOwner ? t('tabs.home') : t('tabs.myChalets'))}
               </ThemedText>
-            )}
-          </View>
+              {subtitle && (
+                <ThemedText style={styles.subtitle} numberOfLines={1}>
+                  {subtitle}
+                </ThemedText>
+              )}
+            </View>
+          )}
         </View>
 
-        <View style={[styles.actionsContainer, { flexDirection }]}>
+        <View style={[styles.actionsContainer, { flexDirection: 'row' }]}>
           {showProfile && (
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.actionButton}
               onPress={onProfilePress || (() => router.push('/profile'))}
             >
@@ -103,24 +126,26 @@ export function HeaderSection({
             </TouchableOpacity>
           )}
 
-          <TouchableOpacity 
-            style={styles.actionButton}
-            onPress={onExtraIconPress || (() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              router.push('/(tabs)/(dashboard)/notifications');
-            })}
-          >
-            {extraIcon ? (
-              typeof extraIcon === 'string' ? (
-                <Ionicons name={extraIcon as any} size={normalize.width(22)} color={Colors.text.primary} />
-              ) : (extraIcon)
-            ) : (
-              <Ionicons name="notifications-outline" size={normalize.width(22)} color={Colors.text.primary} />
-            )}
-          </TouchableOpacity>
+          {showExtra && (
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={onExtraIconPress || (() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push('/(tabs)/(dashboard)/notifications');
+              })}
+            >
+              {extraIcon ? (
+                typeof extraIcon === 'string' ? (
+                  <Ionicons name={extraIcon as any} size={normalize.width(22)} color={Colors.text.primary} />
+                ) : (extraIcon)
+              ) : (
+                <Ionicons name="notifications-outline" size={normalize.width(22)} color={Colors.text.primary} />
+              )}
+            </TouchableOpacity>
+          )}
 
           {onDeletePress && (
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.actionButton, { borderColor: '#FEE2E2', backgroundColor: '#FEF2F2' }]}
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -138,7 +163,7 @@ export function HeaderSection({
         <View style={styles.searchContainer}>
           <View style={[styles.searchBar, { flexDirection }]}>
             <Ionicons name="search" size={normalize.width(20)} color={Colors.text.muted} />
-            <TextInput 
+            <TextInput
               placeholder={t('home.searchPlaceholder')}
               placeholderTextColor={Colors.text.muted}
               style={[styles.searchInput, { textAlign }]}
@@ -149,14 +174,14 @@ export function HeaderSection({
 
       {/* Categories Scrollable */}
       {showCategories && (
-        <ScrollView 
-          horizontal 
+        <ScrollView
+          horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={[styles.categoriesContent, { flexDirection }]}
           style={styles.categoriesScroll}
         >
           {CATEGORIES.map((cat) => (
-            <TouchableOpacity 
+            <TouchableOpacity
               key={cat.id}
               onPress={() => setSelectedCategory(cat.id)}
               style={[
@@ -165,12 +190,12 @@ export function HeaderSection({
                 selectedCategory === cat.id && styles.categoryItemActive
               ]}
             >
-              <FontAwesome5 
-                name={cat.icon} 
-                size={normalize.width(16)} 
-                color={selectedCategory === cat.id ? Colors.background : Colors.text.primary} 
+              <FontAwesome5
+                name={cat.icon}
+                size={normalize.width(16)}
+                color={selectedCategory === cat.id ? Colors.background : Colors.text.primary}
               />
-              <ThemedText 
+              <ThemedText
                 style={[
                   styles.categoryLabel,
                   selectedCategory === cat.id && styles.categoryLabelActive
@@ -200,7 +225,10 @@ const styles = StyleSheet.create({
   titleContainer: {
     alignItems: 'center',
     gap: Spacing.sm,
-    flex: 1,
+  },
+  logo: {
+    width: normalize.width(62),
+    height: normalize.width(62),
   },
   backButton: {
     padding: normalize.width(4),

@@ -1,9 +1,11 @@
 import { HeaderSection } from '@/components/header-section';
 import { SecondaryButton } from '@/components/user/secondary-button';
-import { Colors, normalize, Shadows, Spacing, Typography } from '@/constants/theme';
+import { Colors, normalize, Shadows, Spacing } from '@/constants/theme';
 import { RootState } from '@/store';
 import {
+  useCreateChaletPolicyMutation,
   useCreateShiftMutation,
+  useDeleteChaletPolicyMutation,
   useDeleteShiftMutation,
   useGetChaletCancellationPoliciesQuery,
   useGetChaletShiftsQuery,
@@ -11,15 +13,13 @@ import {
   useGetOwnerChaletsQuery,
   useGetShiftPricingQuery,
   useSetChaletPoliciesMutation,
-  useUpdateShiftPricingDayMutation,
-  useCreateChaletPolicyMutation,
-  useDeleteChaletPolicyMutation,
+  useSetShiftPricingMutation,
   useUpdateShiftMutation,
-  useSetShiftPricingMutation
+  useUpdateShiftPricingDayMutation
 } from '@/store/api/apiSlice';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -30,6 +30,7 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TouchableOpacity,
   View
@@ -100,6 +101,145 @@ function ShiftPricingView({ shift, isRTL, onEdit }: { shift: any; isRTL: boolean
   );
 }
 
+function DayVisualizer({ 
+  shifts, 
+  isRTL, 
+  onEditShift, 
+  onAddShift, 
+  currentShiftForm, 
+  selectedId 
+}: { 
+  shifts: any[]; 
+  isRTL: boolean; 
+  onEditShift: (shift: any) => void; 
+  onAddShift: (h: number) => void;
+  currentShiftForm?: any;
+  selectedId?: string;
+}) {
+  const renderRow = (hourIndices: number[], icon: string, iconColor: string) => {
+    const slots: any[] = [];
+    let i = 0;
+    while (i < hourIndices.length) {
+      const h = hourIndices[i];
+      
+      const shift = shifts?.find((s: any) => {
+        if (selectedId && s.id === selectedId) return false;
+        const sT = parseInt(s.startTime.split(':')[0]);
+        const sE = parseInt(s.endTime.split(':')[0]);
+        const isNight = sT > sE;
+        return isNight ? (h >= sT || h < sE) : (h >= sT && h < sE);
+      });
+
+      if (shift) {
+        const shiftIndex = shifts?.findIndex((s: any) => s.id === shift.id);
+        const palette = ['#007AFF', '#5856D6', '#AF52DE', '#FF2D55', '#FF9500', '#34C759', '#00C7BE', '#FF3B30'];
+        const shiftColor = palette[shiftIndex % palette.length] || palette[0];
+
+        let span = 1;
+        while (i + span < hourIndices.length) {
+          const nextH = hourIndices[i + span];
+          const nextShift = shifts?.find((s: any) => {
+            if (selectedId && s.id === selectedId) return false;
+            const sT = parseInt(s.startTime.split(':')[0]);
+            const sE = parseInt(s.endTime.split(':')[0]);
+            const isNight = sT > sE;
+            return isNight ? (nextH >= sT || nextH < sE) : (nextH >= sT && nextH < sE);
+          });
+          if (nextShift?.id === shift.id) {
+            span++;
+          } else {
+            break;
+          }
+        }
+        slots.push({ type: 'shift', shift, span, hStart: h, color: shiftColor });
+        i += span;
+      } else {
+        let isCurrent = false;
+        if (currentShiftForm) {
+            const cS = parseInt(currentShiftForm.startTime.split(':')[0]);
+            const cE = parseInt(currentShiftForm.endTime.split(':')[0]);
+            const cIsNight = cS > cE;
+            isCurrent = cIsNight ? (h >= cS || h < cE) : (h >= cS && h < cE);
+        }
+        slots.push({ type: 'empty', h, isCurrent });
+        i++;
+      }
+    }
+
+    return (
+      <View style={[styles.hourGridRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <View style={[styles.rowIconOuter, { marginLeft: isRTL ? 12 : 0, marginRight: isRTL ? 0 : 12 }]}>
+          <Ionicons name={icon as any} size={24} color={iconColor} />
+        </View>
+        <View style={{ flex: 1, flexDirection: isRTL ? 'row-reverse' : 'row', gap: 4 }}>
+          {slots.map((slot, index) => {
+            if (slot.type === 'shift') {
+              const name = isRTL ? (slot.shift.name?.ar || slot.shift.name) : (slot.shift.name?.en || slot.shift.name);
+              return (
+                <TouchableOpacity
+                  key={`shift-${slot.shift.id}-${index}`}
+                  style={[styles.hourSquareMerged, { flex: slot.span, backgroundColor: slot.color, borderColor: slot.color }]}
+                  onPress={() => onEditShift(slot.shift)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.shiftOverlayText} numberOfLines={1}>{name}</Text>
+                </TouchableOpacity>
+              );
+            } else {
+              return (
+                <TouchableOpacity 
+                  key={`empty-${slot.h}`} 
+                  style={[
+                    styles.hourSquare, 
+                    slot.isCurrent && { 
+                      backgroundColor: Colors.primary + '15', 
+                      borderColor: Colors.primary,
+                      borderWidth: 1.5
+                    }
+                  ]} 
+                  onPress={() => onAddShift(slot.h)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.hourText, slot.isCurrent && { color: Colors.primary, fontWeight: '900' }]}>
+                    {slot.h % 12 || 12}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+          })}
+        </View>
+      </View>
+    );
+  };
+
+  return (
+    <View style={styles.hoursGridContainer}>
+      <View style={styles.gridHeader}>
+        <Text style={styles.gridTitleLarge}>{isRTL ? 'مخطط توزيع ساعات اليوم' : 'Daily Hours Chart'}</Text>
+        <View style={{ flexDirection: 'row', gap: 12 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={[styles.legendItem, { backgroundColor: Colors.primary, width: 10, height: 10, borderRadius: 5, marginRight: 6 }]} />
+            <Text style={styles.legendText}>{isRTL ? 'فترة محجوزة' : 'Shift'}</Text>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={[styles.legendItem, { backgroundColor: Colors.primary + '20', width: 10, height: 10, borderRadius: 5, marginRight: 6 }]} />
+            <Text style={styles.legendText}>{isRTL ? 'الفترة المختارة' : 'Selected'}</Text>
+          </View>
+        </View>
+      </View>
+      <View style={styles.gridContent}>
+        {renderRow([0, 1, 2, 3, 4, 5], "moon", "#323232")}
+        <View style={{ height: 8 }} />
+        {renderRow([6, 7, 8, 9, 10, 11], "sunny", "#FFCC00")}
+        <View style={{ height: 8 }} />
+        {renderRow([12, 13, 14, 15, 16, 17], "sunny", "#FF9500")}
+        <View style={{ height: 8 }} />
+        {renderRow([18, 19, 20, 21, 22, 23], "moon", "#5856D6")}
+      </View>
+    </View>
+  );
+}
+
 export default function ShiftsAndPricesScreen() {
   const router = useRouter();
   const { id: initialId } = useLocalSearchParams();
@@ -140,6 +280,29 @@ export default function ShiftsAndPricesScreen() {
 
   const { data: shiftsResponse, isLoading: isLoadingShifts, refetch: refetchShifts } = useGetChaletShiftsQuery(selectedChaletId, { skip: !selectedChaletId });
   const shifts = shiftsResponse?.data || shiftsResponse;
+
+  const firstShiftRef = useRef<any>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      let timer: any;
+      if (shifts && shifts.length > 0 && firstShiftRef.current) {
+        timer = setTimeout(() => {
+          if (firstShiftRef.current) {
+            if (isRTL) {
+              firstShiftRef.current.openLeft();
+            } else {
+              firstShiftRef.current.openRight();
+            }
+            setTimeout(() => {
+              firstShiftRef.current?.close();
+            }, 800);
+          }
+        }, 700);
+      }
+      return () => clearTimeout(timer);
+    }, [shifts, isRTL])
+  );
 
   const { data: policiesResponse, isLoading: isLoadingPolicies } = useGetChaletCancellationPoliciesQuery(selectedChaletId, { skip: !selectedChaletId });
   const policies = policiesResponse?.data || policiesResponse;
@@ -255,9 +418,9 @@ export default function ShiftsAndPricesScreen() {
       if (eOld <= sOld) eOld += 1440;
 
       // Overlap detection
-      return (sNew < eOld && eNew > sOld) || 
-             (sNew < eOld + 1440 && eNew > sOld + 1440) ||
-             (sNew + 1440 < eOld && eNew + 1440 > sOld);
+      return (sNew < eOld && eNew > sOld) ||
+        (sNew < eOld + 1440 && eNew > sOld + 1440) ||
+        (sNew + 1440 < eOld && eNew + 1440 > sOld);
     });
   }, [shiftForm.startTime, shiftForm.endTime, shifts, selectedShift]);
 
@@ -327,6 +490,17 @@ export default function ShiftsAndPricesScreen() {
     shiftSheetRef.current?.present();
   };
 
+  const handleAddShiftAtHour = (h: number) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setSelectedShift(null);
+    const startStr = `${h.toString().padStart(2, '0')}:00`;
+    let endH = (h + 4) % 24;
+    const endStr = `${endH.toString().padStart(2, '0')}:00`;
+
+    setShiftForm({ name: '', startTime: startStr, endTime: endStr, price: '' });
+    shiftSheetRef.current?.present();
+  };
+
   const handleEditShift = (shift: any) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setSelectedShift(shift);
@@ -381,7 +555,7 @@ export default function ShiftsAndPricesScreen() {
   const saveShift = async () => {
     const isNew = !selectedShift;
     const isMissingRequired = !shiftForm.name || !shiftForm.startTime || !shiftForm.endTime || (isNew && !shiftForm.price);
-    
+
     if (isMissingRequired) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: isRTL ? 'يرجى ملء كافة الحقول' : 'Please fill all fields' });
@@ -404,7 +578,7 @@ export default function ShiftsAndPricesScreen() {
 
       if (selectedShift) {
         await updateShift({ chaletId: selectedChaletId, shiftId: selectedShift.id, data }).unwrap();
-        
+
         // If price is provided and changed, update all days pricing
         if (shiftForm.price) {
           const p = parseInt(shiftForm.price);
@@ -422,7 +596,7 @@ export default function ShiftsAndPricesScreen() {
       } else {
         const result = await createShift({ chaletId: selectedChaletId, data }).unwrap();
         const newShiftId = result?.data?.id || result?.id;
-        
+
         // If price is provided, set initial pricing for all days
         if (newShiftId && shiftForm.price) {
           const p = parseInt(shiftForm.price);
@@ -482,20 +656,28 @@ export default function ShiftsAndPricesScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setSelectedShift(shift);
 
-    // Initialize pricing form
-    const pricingToUse = existingPricing || shift.pricing;
-    if (pricingToUse && pricingToUse.length > 0) {
-      setPricingForm(pricingToUse.map((p: any) => ({
-        ...p,
-        price: p.price ?? shift.price ?? 0
-      })));
-    } else {
-      const initialPricing = Array.from({ length: 7 }, (_, i) => ({
-        dayOfWeek: i,
-        price: shift.price ?? 0
-      }));
-      setPricingForm(initialPricing);
-    }
+    // 1. Create a full week skeleton (0-6)
+    const fullWeek = Array.from({ length: 7 }, (_, i) => ({
+      dayOfWeek: i,
+      price: shift.price ?? 0
+    }));
+
+    // 2. Merge existing pricing from backend/prop
+    const pricingToUse = existingPricing || shift.pricing || [];
+
+    // Create a form where we fill the skeleton with actual data where it exists
+    const finalPricing = fullWeek.map(defaultDay => {
+      const existingDay = pricingToUse.find((p: any) => p.dayOfWeek === defaultDay.dayOfWeek);
+      if (existingDay) {
+        return {
+          ...existingDay,
+          price: existingDay.price ?? shift.price ?? 0
+        };
+      }
+      return defaultDay;
+    });
+
+    setPricingForm(finalPricing);
     pricingSheetRef.current?.present();
   };
 
@@ -521,23 +703,7 @@ export default function ShiftsAndPricesScreen() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
       // Frontend Verification
-      const minPrice = 0.01;
-      const invalidDays = pricingForm.filter(item => (parseInt(String(item.price)) || 0) < minPrice);
-      if (invalidDays.length > 0) {
-        const daysOfWeekAr = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-        const daysOfWeekEn = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        const dayName = isRTL ? daysOfWeekAr[invalidDays[0].dayOfWeek] : daysOfWeekEn[invalidDays[0].dayOfWeek];
-        
-        Toast.show({
-          type: 'info',
-          text1: isRTL ? 'تنبيه' : 'Minimum Price Required',
-          text2: isRTL ? `يجب أن يكون السعر أكبر من صفر ليوم ${dayName}` : `Price for ${dayName} must be greater than zero`
-        });
-        return;
-      }
-
-      // Clean the pricing form to only include required fields
-      // NOTE: Backend rejected including 'id' here for bulk replacement.
+      // Note: We no longer block price < 0.01 because 0 now means "Day Off"
       const cleanPricing = pricingForm.map(item => ({
         dayOfWeek: item.dayOfWeek,
         price: parseInt(String(item.price)) || 0
@@ -554,10 +720,10 @@ export default function ShiftsAndPricesScreen() {
     } catch (e: any) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       console.error('Save Pricing Error:', e);
-      
+
       const errorMessage = e.data?.message;
       let displayMsg = isRTL ? 'فشل في حفظ الأسعار، يرجى التأكد من المبالغ المدخلة' : 'Failed to save pricing, please check your values';
-      
+
       if (Array.isArray(errorMessage)) {
         displayMsg = errorMessage[0];
       } else if (typeof errorMessage === 'string') {
@@ -574,21 +740,21 @@ export default function ShiftsAndPricesScreen() {
 
   const handleUpdateSingleDay = async (index: number) => {
     if (!selectedShift?.id) {
-       Toast.show({ type: 'error', text2: isRTL ? 'خطأ في تحديد الفترة' : 'Invalid shift selection' });
-       return;
+      Toast.show({ type: 'error', text2: isRTL ? 'خطأ في تحديد الفترة' : 'Invalid shift selection' });
+      return;
     }
 
     const item = pricingForm[index];
     if (!item.id) {
-       // If no ID, we must use the bulk update or the backend might create it
-       // But the image shows PATCH requires pricingId
-       Toast.show({ type: 'error', text2: isRTL ? 'يجب استخدام الحفظ العام لهذه الفترة' : 'Must use general save for this day' });
-       return;
+      // If no ID, we must use the bulk update or the backend might create it
+      // But the image shows PATCH requires pricingId
+      Toast.show({ type: 'error', text2: isRTL ? 'يجب استخدام الحفظ العام لهذه الفترة' : 'Must use general save for this day' });
+      return;
     }
 
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      
+
       const price = parseInt(String(item.price)) || 0;
       if (price < 0.01) {
         Toast.show({ type: 'info', text1: isRTL ? 'تنبيه' : 'Invalid Price', text2: isRTL ? 'يجب أن يكون السعر أكبر من صفر' : 'Price must be greater than zero' });
@@ -600,10 +766,10 @@ export default function ShiftsAndPricesScreen() {
         pricingId: item.id,
         price: price
       }).unwrap();
-      
+
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Toast.show({ 
-        type: 'success', 
+      Toast.show({
+        type: 'success',
         text1: isRTL ? 'تم تحديث السعر' : 'Price updated',
         text2: isRTL ? `تم حفظ سعر يوم ${['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'][item.dayOfWeek]}` : `Price for ${['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][item.dayOfWeek]} saved`
       });
@@ -629,15 +795,15 @@ export default function ShiftsAndPricesScreen() {
   const removePolicyTier = async (index: number) => {
     const policy = policyForm[index];
     if (policy.id) {
-       // Live delete if it exists on server
-       try {
-         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-         await deleteChaletPolicy({ chaletId: selectedChaletId, policyId: policy.id }).unwrap();
-         Toast.show({ type: 'success', text1: isRTL ? 'تم الحذف' : 'Deleted' });
-       } catch (e) {
-         Toast.show({ type: 'error', text1: isRTL ? 'خطأ في الحذف' : 'Delete failed' });
-         return;
-       }
+      // Live delete if it exists on server
+      try {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        await deleteChaletPolicy({ chaletId: selectedChaletId, policyId: policy.id }).unwrap();
+        Toast.show({ type: 'success', text1: isRTL ? 'تم الحذف' : 'Deleted' });
+      } catch (e) {
+        Toast.show({ type: 'error', text1: isRTL ? 'خطأ في الحذف' : 'Delete failed' });
+        return;
+      }
     }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setPolicyForm(policyForm.filter((_, i) => i !== index));
@@ -717,22 +883,22 @@ export default function ShiftsAndPricesScreen() {
 
   const renderShiftActions = (shift: any, shiftName: string) => {
     return (
-      <View style={[styles.swipeActions, { flexDirection: isRTL ? 'row' : 'row' }]}>
+      <View style={styles.swipeActions}>
         <TouchableOpacity
-          style={[styles.swipeAction, { backgroundColor: '#F5F5F7' }]}
+          style={[styles.swipeAction, { backgroundColor: '#F0F7FF' }]}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             handleEditShift(shift);
           }}
         >
-          <Ionicons name="create-outline" size={20} color={Colors.text.primary} />
-          <Text style={[styles.swipeActionText, { color: Colors.text.primary }]}>{isRTL ? 'تعديل' : 'Edit'}</Text>
+          <Ionicons name="create" size={22} color={Colors.primary} />
+          <Text style={[styles.swipeActionText, { color: Colors.primary }]}>{isRTL ? 'تعديل' : 'Edit'}</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.swipeAction, { backgroundColor: '#FFF5F5' }]}
+          style={[styles.swipeAction, { backgroundColor: '#FFEEED' }]}
           onPress={() => confirmDeleteShift(shift.id)}
         >
-          <Ionicons name="trash-outline" size={20} color="#FF3B30" />
+          <Ionicons name="trash" size={22} color="#FF3B30" />
           <Text style={[styles.swipeActionText, { color: '#FF3B30' }]}>{isRTL ? 'حذف' : 'Delete'}</Text>
         </TouchableOpacity>
       </View>
@@ -791,6 +957,8 @@ export default function ShiftsAndPricesScreen() {
                 </View>
               </View>
 
+
+
               {isDayFull && (
                 <View style={[styles.fullDayWarning, { marginHorizontal: 0, marginBottom: 16 }]}>
                   <Ionicons name="lock-closed" size={24} color="#FF3B30" />
@@ -804,13 +972,14 @@ export default function ShiftsAndPricesScreen() {
               )}
 
               {shifts && shifts.length > 0 ? (
-                shifts.map((shift: any) => {
+                shifts.map((shift: any, index: number) => {
                   const isExpanded = expandedShift === shift.id;
                   const shiftName = isRTL ? (shift.name?.ar || shift.name) : (shift.name?.en || shift.name);
 
                   return (
                     <Swipeable
                       key={shift.id}
+                      ref={index === 0 ? firstShiftRef : undefined}
                       renderRightActions={!isRTL ? () => renderShiftActions(shift, shiftName) : undefined}
                       renderLeftActions={isRTL ? () => renderShiftActions(shift, shiftName) : undefined}
                       onSwipeableWillOpen={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
@@ -819,48 +988,31 @@ export default function ShiftsAndPricesScreen() {
                     >
                       <View style={styles.cardFlat}>
                         <TouchableOpacity
-                          style={[styles.cardHeader, { flexDirection }]}
+                          style={styles.cardHeader}
                           onPress={() => {
                             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                             setExpandedShift(isExpanded ? null : shift.id);
                           }}
                           activeOpacity={0.7}
                         >
-                          <View style={[styles.cardIconContainer, { marginLeft: isRTL ? 12 : 0, marginRight: isRTL ? 0 : 12 }]}>
-                            <View style={styles.iconCircle}>
+                          <View style={[styles.row, { flexDirection, justifyContent: 'space-between', width: '100%' }]}>
+                            <View style={{ flex: 1, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
+                              <Text style={styles.cardTitle}>{shiftName}</Text>
+                              <View style={[styles.timeBadge, { flexDirection, marginTop: 6, alignSelf: isRTL ? 'flex-end' : 'flex-start' }]}>
+                                <Ionicons name="time-outline" size={14} color={Colors.primary} style={{ marginHorizontal: 3 }} />
+                                <Text style={styles.timeBadgeText}>
+                                  {formatTime12h(shift.startTime)} - {formatTime12h(shift.endTime)}
+                                </Text>
+                              </View>
+                            </View>
+
+                            <View style={[styles.row, { gap: 10, alignItems: 'center' }]}>
                               <Ionicons
-                                name={shift.startTime?.includes('1') ? "moon" : "sunny"}
+                                name={isExpanded ? "chevron-up" : "chevron-down"}
                                 size={20}
-                                color={Colors.primary}
+                                color={Colors.border}
                               />
                             </View>
-                          </View>
-
-                          <View style={{ flex: 1, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
-                            <Text style={styles.cardTitle}>{shiftName}</Text>
-                            <View style={[styles.timeBadge, { flexDirection, marginTop: 6 }]}>
-                              <Ionicons name="time" size={14} color={Colors.primary} style={{ marginHorizontal: 2 }} />
-                              <Text style={styles.timeBadgeText}>
-                                {formatTime12h(shift.startTime)} - {formatTime12h(shift.endTime)}
-                              </Text>
-                            </View>
-                          </View>
-
-                          <View style={[styles.row, { marginLeft: isRTL ? 0 : 8, marginRight: isRTL ? 8 : 0 }]}>
-                            <TouchableOpacity
-                              style={styles.editCardBtn}
-                              onPress={(e) => {
-                                e.stopPropagation();
-                                handleEditShift(shift);
-                              }}
-                            >
-                              <Ionicons name="pencil" size={16} color={Colors.primary} />
-                            </TouchableOpacity>
-                            <Ionicons
-                              name={isExpanded ? "chevron-up" : "chevron-down"}
-                              size={20}
-                              color={Colors.text.muted}
-                            />
                           </View>
                         </TouchableOpacity>
 
@@ -916,10 +1068,10 @@ export default function ShiftsAndPricesScreen() {
               </View>
 
               {policies && policies.length > 0 ? (
-                <TouchableOpacity 
-                   style={styles.cardFlat} 
-                   activeOpacity={0.8}
-                   onPress={handleEditPolicies}
+                <TouchableOpacity
+                  style={styles.cardFlat}
+                  activeOpacity={0.8}
+                  onPress={handleEditPolicies}
                 >
                   <View style={{ padding: 20 }}>
                     {policies.map((p: any, i: number) => (
@@ -929,20 +1081,20 @@ export default function ShiftsAndPricesScreen() {
                         </View>
                         <View style={{ flex: 1, marginHorizontal: 12 }}>
                           <Text style={styles.detailTextLarge}>
-                            {isRTL 
-                              ? `قبل ${p.daysBeforeBooking} أيام أو أكثر` 
+                            {isRTL
+                              ? `قبل ${p.daysBeforeBooking} أيام أو أكثر`
                               : `${p.daysBeforeBooking} days or more`}
                           </Text>
                           <Text style={styles.detailLabelSmall}>
-                            {isRTL 
-                                ? `خصم مالي بقيمة ${p.penaltyPercentage}%` 
-                                : `Penalty amount: ${p.penaltyPercentage}%`}
+                            {isRTL
+                              ? `خصم مالي بقيمة ${p.penaltyPercentage}%`
+                              : `Penalty amount: ${p.penaltyPercentage}%`}
                           </Text>
                         </View>
                         <Ionicons name="chevron-forward" size={16} color={Colors.border} />
                       </View>
                     ))}
-                    
+
                     <View style={[styles.sectionDivider, { marginVertical: 12, marginBottom: 8 }]} />
                     <View style={[styles.row, { justifyContent: 'center' }]}>
                       <Text style={{ color: Colors.primary, fontWeight: '700', fontSize: 13 }}>
@@ -956,8 +1108,8 @@ export default function ShiftsAndPricesScreen() {
                   <Ionicons name="receipt-outline" size={36} color={Colors.primary + '40'} />
                   <Text style={styles.emptyTitle}>{isRTL ? 'لا توجد سياسة مضافة' : 'No Policy Added'}</Text>
                   <Text style={styles.emptyText}>
-                    {isRTL 
-                      ? 'حدد القواعد المالية لعمليات إلغاء الحجز من قبل العملاء' 
+                    {isRTL
+                      ? 'حدد القواعد المالية لعمليات إلغاء الحجز من قبل العملاء'
                       : 'Define financial rules for booking cancellations by customers'}
                   </Text>
                   <View style={[styles.addInlineBtn, { marginTop: 12 }]}>
@@ -974,12 +1126,18 @@ export default function ShiftsAndPricesScreen() {
         <BottomSheetModal
           ref={shiftSheetRef}
           index={0}
-          snapPoints={['50%', '75%']}
+          snapPoints={['55%', '90%']}
           backdropComponent={renderBackdrop}
           backgroundStyle={{ borderRadius: 24 }}
         >
-          <BottomSheetView style={styles.sheetContent}>
-            <Text style={styles.modalTitle}>{selectedShift ? (isRTL ? 'تعديل الفترة' : 'Edit Shift') : (isRTL ? 'إضافة فترة جديدة' : 'Add New Shift')}</Text>
+          <BottomSheetScrollView
+            showsVerticalScrollIndicator={false}
+            style={{ width: '100%' }}
+            contentContainerStyle={{ paddingBottom: 40, paddingHorizontal: 20 }}
+          >
+            <View style={{ paddingVertical: 10, alignItems: 'center' }}>
+              <Text style={styles.modalTitle}>{selectedShift ? (isRTL ? 'تعديل الفترة' : 'Edit Shift') : (isRTL ? 'إضافة فترة جديدة' : 'Add New Shift')}</Text>
+            </View>
             <View style={styles.formContainer}>
               {(!shiftForm.name || (!selectedShift && !shiftForm.price)) && (
                 <View style={[styles.fullDayWarning, { backgroundColor: '#FFF9F9', borderColor: '#FFE0E0', padding: 12, marginBottom: 16 }]}>
@@ -1001,54 +1159,15 @@ export default function ShiftsAndPricesScreen() {
                 </View>
               )}
 
-              {/* Visual 24h Timeline */}
-              <View style={[styles.timelineContainer, isDayFull && { borderColor: '#FF3B3040' }]}>
-                <View style={[styles.row, { justifyContent: 'space-between', marginBottom: 6 }]}>
-                  <Text style={styles.timelineLabel}>{isRTL ? 'توزيع ساعات اليوم الـ 24' : '24h Daily Distribution'}</Text>
-                  <View style={[styles.row, { gap: 8 }]}>
-                    <View style={[styles.legendItem, { backgroundColor: '#34C75940' }]} />
-                    <Text style={styles.timelineInfo}>{isRTL ? 'متاح' : 'Free'}</Text>
-                    <View style={[styles.legendItem, { backgroundColor: '#FF3B30' }]} />
-                    <Text style={styles.timelineInfo}>{isRTL ? 'مشغول' : 'Busy'}</Text>
-                  </View>
-                </View>
-                <View style={styles.timelineBar}>
-                  {Array.from({ length: 24 }).map((_, i) => {
-                    const isOccupied = shifts?.some((s: any) => {
-                      if (selectedShift && s.id === selectedShift.id) return false;
-                      const sT = parseInt(s.startTime.split(':')[0]);
-                      const sE = parseInt(s.endTime.split(':')[0]);
-
-                      const isNight = sT > sE;
-                      return isNight ? (i >= sT || i < sE) : (i >= sT && i < sE);
-                    });
-
-                    const nS = parseInt(shiftForm.startTime.split(':')[0]);
-                    const nE = parseInt(shiftForm.endTime.split(':')[0]);
-
-                    const isNewInNight = nS > nE;
-                    const isNew = isNewInNight ? (i >= nS || i < nE) : (i >= nS && i < nE);
-
-                    return (
-                      <View
-                        key={i}
-                        style={[
-                          styles.timelineSegment,
-                          isOccupied && styles.segmentOccupied,
-                          isNew && styles.segmentNew,
-                          i === 0 && { borderTopLeftRadius: 4, borderBottomLeftRadius: 4 },
-                          i === 23 && { borderTopRightRadius: 4, borderBottomRightRadius: 4 }
-                        ]}
-                      />
-                    );
-                  })}
-                </View>
-                <View style={[styles.timelineTicks, { flexDirection }]}>
-                  {[0, 6, 12, 18, 24].map((t) => (
-                    <Text key={t} style={styles.timelineTick}>{t}</Text>
-                  ))}
-                </View>
-              </View>
+              {/* Enhanced 24h Grid Visualizer */}
+              <DayVisualizer 
+                shifts={shifts} 
+                isRTL={isRTL} 
+                onEditShift={handleEditShift} 
+                onAddShift={handleAddShiftAtHour}
+                currentShiftForm={shiftForm}
+                selectedId={selectedShift?.id}
+              />
 
               <Text style={[styles.label, { textAlign, marginTop: 16 }]}>{isRTL ? 'اسم الفترة' : 'Shift Name'}</Text>
               <BottomSheetTextInput
@@ -1082,7 +1201,7 @@ export default function ShiftsAndPricesScreen() {
                   <View style={styles.durationBadge}>
                     <Ionicons name="hourglass-outline" size={14} color={Colors.primary} />
                     <Text style={styles.durationText}>
-                      {isRTL ? `المدة: ${duration} ساعة` : `Duration: ${duration}h`}
+                      {isRTL ? `المدة: ${parseFloat(Number(duration).toFixed(2))} ساعة` : `Duration: ${parseFloat(Number(duration).toFixed(2))}h`}
                     </Text>
                   </View>
                 </View>
@@ -1208,8 +1327,20 @@ export default function ShiftsAndPricesScreen() {
               >
                 {(isCreatingShift || isUpdatingShift) ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveBtnText}>{isRTL ? 'حفظ' : 'Save'}</Text>}
               </TouchableOpacity>
+
+              {selectedShift && (
+                <TouchableOpacity
+                  style={[styles.deleteTextBtn, { marginTop: 12, alignSelf: 'center' }]}
+                  onPress={() => {
+                    shiftSheetRef.current?.dismiss();
+                    setTimeout(() => confirmDeleteShift(selectedShift.id), 300);
+                  }}
+                >
+                  <Text style={styles.deleteTextBtnLabel}>{isRTL ? 'حذف هذه الفترة نهائياً' : 'Delete this shift permanently'}</Text>
+                </TouchableOpacity>
+              )}
             </View>
-          </BottomSheetView>
+          </BottomSheetScrollView>
         </BottomSheetModal>
 
         {/* Pricing Matrix Bottom Sheet */}
@@ -1218,119 +1349,149 @@ export default function ShiftsAndPricesScreen() {
           index={0}
           snapPoints={['90%']}
           backdropComponent={renderBackdrop}
-          backgroundStyle={{ borderRadius: 32, backgroundColor: '#F8F9FB' }}
+          backgroundStyle={{ borderRadius: 32, backgroundColor: '#F8F9FA' }}
         >
           <View style={{ flex: 1, paddingHorizontal: 20 }}>
-            <View style={styles.sheetHeaderCompact}>
-              <View style={styles.sheetHeaderHandle} />
-              <Text style={styles.modalTitleCompact}>{isRTL ? 'إعداد أسعار الأسبوع' : 'Weekly Pricing Setup'}</Text>
-              {selectedShift && (
-                <Text style={{ fontSize: normalize.font(13), color: Colors.text.muted, marginTop: 4, fontWeight: '600' }}>
-                  {isRTL ? (selectedShift.name?.ar || selectedShift.name) : (selectedShift.name?.en || selectedShift.name)}
-                </Text>
-              )}
-            </View>
-
-            {pricingForm.some(item => (parseInt(String(item.price)) || 0) < 0.01) && (
-              <View style={styles.matrixWarning}>
-                <Ionicons name="alert-circle" size={18} color="#FF9500" />
-                <Text style={styles.matrixWarningText}>
-                  {isRTL ? 'يجب تحديد سعر صالح لأيام الأسبوع المتبقية' : 'A valid price must be set for all week days'}
-                </Text>
-              </View>
-            )}
-
-            <View style={styles.quickApplyCard}>
-              <View style={[styles.quickApplyRow, { flexDirection }]}>
-                <View style={styles.quickApplyIcon}>
-                  <Ionicons name="flash" size={18} color={Colors.white} />
-                </View>
-                <View style={{ flex: 1, marginRight: isRTL ? 12 : 0, marginLeft: isRTL ? 0 : 12 }}>
-                  <Text style={styles.quickApplyLabel}>{isRTL ? 'تطبيق سعر موحد للكل' : 'Apply same price to all'}</Text>
-                  <View style={[styles.rowInputs, { flexDirection, marginTop: 8 }]}>
-                    <BottomSheetTextInput
-                      style={[styles.quickApplyInput, { textAlign: isRTL ? 'right' : 'left' }]}
-                      placeholder="0"
-                      keyboardType="numeric"
-                      onChangeText={applyToAllDays}
-                    />
-                    <Text style={styles.quickApplyCurrency}>{isRTL ? 'د.ع' : 'IQD'}</Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-
-            <BottomSheetScrollView
-              style={{ flex: 1, marginTop: 12 }}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 100 }}
-            >
-              {pricingForm.map((item, index) => {
-                const daysOfWeek = isRTL
-                  ? ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
-                  : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-                const isWeekend = item.dayOfWeek === 5 || item.dayOfWeek === 6;
-                const isInvalid = (parseInt(String(item.price)) || 0) < 0.01;
-
-                return (
-                  <View key={index} style={[styles.pricingRow, isWeekend && styles.pricingRowWeekend, isInvalid && styles.pricingRowInvalid]}>
-                    <View style={[styles.dayInfo, { flexDirection }]}>
-                      <View style={[styles.dayIndicator, isWeekend && styles.dayIndicatorWeekend]} />
-                      <Text style={[styles.dayNameText, isWeekend && styles.dayNameTextWeekend]}>{daysOfWeek[item.dayOfWeek]}</Text>
+            {/* 1. Header & Quick Apply Section */}
+            <View style={styles.pricingHeaderNew}>
+              <View style={[styles.row, { justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }]}>
+                <View>
+                  <Text style={styles.modalTitleCompact}>{isRTL ? 'إعداد أسعار الأسبوع' : 'Weekly Pricing'}</Text>
+                  {selectedShift && (
+                    <View style={styles.shiftLabelBadge}>
+                      <Text style={styles.shiftLabelBadgeText}>
+                        {isRTL ? (selectedShift.name?.ar || selectedShift.name) : (selectedShift.name?.en || selectedShift.name)}
+                      </Text>
                     </View>
+                  )}
+                </View>
+                <TouchableOpacity onPress={() => pricingSheetRef.current?.dismiss()} style={styles.closeBtnCircle}>
+                  <Ionicons name="close" size={20} color={Colors.text.muted} />
+                </TouchableOpacity>
+              </View>
 
-                    <View style={[styles.priceActions, { flexDirection }]}>
-                      <TouchableOpacity
-                        style={[styles.adjustBtn, { backgroundColor: '#FFEEED' }]}
-                        onPress={() => adjustPrice(index, -25000)}
-                      >
-                        <Ionicons name="remove" size={18} color="#FF4D4D" />
-                      </TouchableOpacity>
+              <View style={styles.quickActionCardNew}>
+                <View style={[styles.row, { alignItems: 'center', marginBottom: 12 }]}>
+                  <View style={styles.quickIconCircle}>
+                    <Ionicons name="flash-outline" size={16} color={Colors.primary} />
+                  </View>
+                  <Text style={styles.quickLabelNew}>{isRTL ? 'تطبيق سعر موحد للكل' : 'Apply to all days'}</Text>
+                </View>
+                <View style={[styles.row, { alignItems: 'center' }]}>
+                  <BottomSheetTextInput
+                    style={[styles.quickInputNew, { textAlign: isRTL ? 'right' : 'left' }]}
+                    placeholder="0"
+                    keyboardType="numeric"
+                    onChangeText={(t) => {
+                      const rawValue = t.replace(/[^0-9]/g, '');
+                      applyToAllDays(rawValue);
+                    }}
+                  />
+                  <Text style={styles.quickCurrencyNew}>{isRTL ? 'د.ع' : 'IQD'}</Text>
+                </View>
+              </View>
+            </View>
 
-                      <View style={styles.priceInputWrapper}>
-                        <BottomSheetTextInput
-                          style={[styles.pricingRowInput, { textAlign: 'center' }]}
-                          keyboardType="numeric"
-                          value={String(item.price ?? '')}
-                          onChangeText={t => {
-                            const newPricing = [...pricingForm];
-                            newPricing[index].price = parseInt(t) || 0;
-                            setPricingForm(newPricing);
-                          }}
-                        />
+            {/* 2. Main Pricing List */}
+            <BottomSheetScrollView
+              style={{ flex: 1 }}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 240 }}
+            >
+              <View style={{ paddingVertical: 12 }}>
+                {pricingForm.map((item, index) => {
+                  const daysOfWeek = isRTL
+                    ? ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
+                    : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                  const isWeekend = item.dayOfWeek === 5 || item.dayOfWeek === 6;
+                  // If the price is 1 IQD, we consider it "Manually Blocked/Stopped" by the provider
+                  const isStopped = (parseInt(String(item.price)) || 0) <= 1;
+
+                  return (
+                    <View key={index} style={[styles.pricingRowModern, isStopped && styles.pricingRowStopped, { flexDirection: 'row', alignItems: 'center', padding: 14, paddingHorizontal: 16, justifyContent: 'space-between' }]}>
+                      {/* 1. Day Info */}
+                      <View style={{ flex: 1, marginHorizontal: 2, justifyContent: 'center' }}>
+                        <Text style={[styles.dayFullName, { fontSize: 14, color: isWeekend ? Colors.primary : Colors.text.primary, marginBottom: 2 }]}>
+                          {daysOfWeek[item.dayOfWeek]}
+                        </Text>
+                        <View style={[styles.row, { alignItems: 'center' }]}>
+                          <View style={[styles.statusDot, { width: 6, height: 6, backgroundColor: isStopped ? '#FF3B30' : '#34C759' }]} />
+                          <Text style={[styles.statusTextSmall, { fontSize: 10, color: isStopped ? '#FF3B30' : '#34C759' }]}>
+                            {isStopped ? (isRTL ? 'مغلق' : 'Closed') : (isRTL ? 'متاح' : 'Active')}
+                          </Text>
+                        </View>
                       </View>
 
-                      <TouchableOpacity
-                        style={[styles.adjustBtn, { backgroundColor: '#EBF5FF' }]}
-                        onPress={() => adjustPrice(index, 25000)}
-                      >
-                        <Ionicons name="add" size={18} color={Colors.primary} />
-                      </TouchableOpacity>
+                      {/* 2. Price Control (Only if Active) */}
+                      {!isStopped && (
+                        <View style={[styles.priceAdjustmentSection, { width: '45%', height: 44, padding: 4, marginHorizontal: 12 }]}>
+                          <TouchableOpacity
+                            style={[styles.stepBtnModern, { width: 32, height: 32, borderRadius: 8 }]}
+                            onPress={() => adjustPrice(index, -25000)}
+                          >
+                            <Ionicons name="remove" size={16} color={Colors.text.primary} />
+                          </TouchableOpacity>
 
-                      {item.id && (
-                        <TouchableOpacity
-                          style={styles.saveSingleBtn}
-                          onPress={() => handleUpdateSingleDay(index)}
-                        >
-                          <Ionicons name="cloud-upload-outline" size={20} color={Colors.primary} />
-                        </TouchableOpacity>
+                          <View style={styles.priceInputWrapperModern}>
+                            <BottomSheetTextInput
+                              style={[styles.pricingInputModern, { fontSize: 14, textAlign: 'center' }]}
+                              keyboardType="numeric"
+                              value={formatPrice(item.price)}
+                              onChangeText={t => {
+                                const newPricing = [...pricingForm];
+                                const rawValue = t.replace(/[^0-9]/g, '');
+                                newPricing[index].price = parseInt(rawValue) || 0;
+                                setPricingForm(newPricing);
+                              }}
+                            />
+                            <Text style={[styles.innerCurrency, { fontSize: 8 }]}>{isRTL ? 'د.ع' : 'IQD'}</Text>
+                          </View>
+
+                          <TouchableOpacity
+                            style={[styles.stepBtnModern, { width: 32, height: 32, borderRadius: 8 }]}
+                            onPress={() => adjustPrice(index, 25000)}
+                          >
+                            <Ionicons name="add" size={16} color={Colors.text.primary} />
+                          </TouchableOpacity>
+                        </View>
                       )}
+
+                      {/* 3. Switch */}
+                      <View style={{ width: 44, alignItems: 'center', marginLeft: isRTL ? 0 : 4, marginRight: isRTL ? 4 : 0 }}>
+                        <Switch
+                          value={!isStopped}
+                          onValueChange={(val) => {
+                            const newPricing = [...pricingForm];
+                            if (!val) {
+                              newPricing[index].price = 1;
+                            } else {
+                              newPricing[index].price = parseInt(shiftForm.price) || 50000;
+                            }
+                            setPricingForm(newPricing);
+                          }}
+                          trackColor={{ true: Colors.primary, false: '#E9E9EB' }}
+                          thumbColor={Platform.OS === 'ios' ? '#fff' : (!isStopped ? Colors.primary : '#fff')}
+                          style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
+                        />
+                      </View>
                     </View>
-                  </View>
-                );
-              })}
+                  );
+                })}
+              </View>
             </BottomSheetScrollView>
 
-            <View style={styles.footerContainer}>
+            <View style={styles.pricingFloatingFooter}>
               <TouchableOpacity
-                style={styles.saveBtnLarge}
+                style={styles.applyBtnLargeModern}
                 onPress={savePricing}
                 disabled={isSettingPricing}
               >
-                {isSettingPricing ? <ActivityIndicator color="#fff" /> : (
-                  <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }}>
-                    <Ionicons name="checkmark-circle" size={20} color="#fff" style={{ marginHorizontal: 8 }} />
-                    <Text style={styles.saveBtnTextLarge}>{isRTL ? 'حفظ الأسعار الجديدة' : 'Save New Pricing'}</Text>
+                {isSettingPricing ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <View style={[styles.row, { alignItems: 'center' }]}>
+                    <Ionicons name="checkmark-circle" size={22} color="#fff" style={{ marginRight: 8, marginLeft: 8 }} />
+                    <Text style={styles.applyBtnTextLarge}>{isRTL ? 'حفظ التعديلات' : 'Save Changes'}</Text>
                   </View>
                 )}
               </TouchableOpacity>
@@ -1482,190 +1643,180 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.white,
   },
-  swipeLeftContainer: {
-    backgroundColor: Colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  swipeActions: {
-    flexDirection: 'row',
-    height: '100%',
-    borderRadius: 24,
-    overflow: 'hidden',
-    marginBottom: 16,
-  },
-  swipeAction: {
-    width: 74,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 4,
-    alignSelf: 'stretch',
-  },
-  swipeActionText: {
-    fontSize: normalize.font(10),
-    fontWeight: '600',
-  },
-  swipeableContainer: {
-    marginBottom: 0,
-  },
-  cardFlat: {
-    backgroundColor: Colors.white,
-    borderRadius: 24,
-    marginBottom: 16,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: Colors.border,
-    ...Shadows.small,
-    shadowColor: Colors.primary,
-    shadowOpacity: 0.03,
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.white,
+    backgroundColor: '#fff',
   },
   scrollContent: {
-    padding: 24,
-    paddingTop: 32, // Added more space at the top
-    paddingBottom: 150, // More breathing room at the bottom
+    padding: 12,
+    paddingBottom: 100,
   },
   section: {
-    marginBottom: 32, // Increased spacing between sections
+    marginBottom: 20,
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 10,
     paddingHorizontal: 4,
   },
   sectionTitle: {
-    ...Typography.h2,
-    color: Colors.text.primary,
-    fontWeight: '800', // Making it more bold for prominence
-    fontSize: normalize.font(18),
+    fontSize: normalize.font(16),
+    fontWeight: '800',
+    color: '#000',
   },
-  card: {
-    backgroundColor: Colors.white,
-    borderRadius: 24,
-    marginBottom: 16,
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  cardFlat: {
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    marginBottom: 12,
+    borderWidth: 1.2,
+    borderColor: '#F0F2F7',
+    padding: 0,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: Colors.border,
+    ...Shadows.small,
   },
   cardHeader: {
-    padding: 20,
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    padding: 14,
+    paddingHorizontal: 16,
   },
   cardTitle: {
     fontSize: normalize.font(16),
-    fontWeight: '700',
-    color: Colors.text.primary,
-  },
-  cardIconContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  iconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#F0F7FF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  addShiftHeaderBtn: {
-    backgroundColor: Colors.primary + '10',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  addShiftHeaderText: {
-    fontSize: normalize.font(13),
-    color: Colors.primary,
-    fontWeight: '700',
-  },
-  editCardBtn: {
-    padding: 8,
-    backgroundColor: Colors.primary + '10',
-    borderRadius: 8,
-    marginRight: 10,
+    fontWeight: '800',
+    color: '#000',
   },
   timeBadge: {
-    backgroundColor: Colors.primary + '10',
-    paddingHorizontal: 12,
+    backgroundColor: '#F0F7FF',
+    paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 12,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   timeBadgeText: {
-    fontSize: normalize.font(13),
     color: Colors.primary,
-    fontWeight: '700',
-  },
-  priceContainer: {
-    alignItems: 'flex-end',
-  },
-  priceValue: {
-    fontSize: normalize.font(18),
+    fontSize: normalize.font(12),
     fontWeight: '800',
-    color: Colors.primary,
-  },
-  priceSymbol: {
-    fontSize: normalize.font(10),
-    color: Colors.text.muted,
-    marginTop: -2,
-  },
-  priceTag: {
-    backgroundColor: '#E5F1FF',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-  priceText: {
-    fontSize: normalize.font(15),
-    fontWeight: '800',
-    color: Colors.primary,
-  },
-  currency: {
-    fontSize: normalize.font(10),
-  },
-  rowActions: {
-    alignItems: 'center',
-    gap: 12,
-  },
-  detailItem: {
-    alignItems: 'center',
-    gap: 6,
-  },
-  detailText: {
-    fontSize: normalize.font(13),
-    color: Colors.text.secondary,
   },
   expandedContent: {
+    padding: 14,
     backgroundColor: '#FAFBFF',
-    padding: 20,
     borderTopWidth: 1,
     borderTopColor: '#F0F2F7',
   },
   expandedHeader: {
+    flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 10,
+  },
+  hoursGridContainer: {
+    marginVertical: 20,
+    backgroundColor: '#fff',
+    borderRadius: 0,
+    padding: 20,
+    borderWidth: 1.2,
+    borderColor: '#F0F2F7',
+  },
+  gridHeader: {
+    alignItems: 'center',
+    marginBottom: 24,
+    gap: 8,
+  },
+  gridTitleLarge: {
+    fontSize: normalize.font(18),
+    fontWeight: '900',
+    color: '#000',
+    textAlign: 'center',
+  },
+  legendText: {
+    fontSize: normalize.font(12),
+    color: Colors.text.muted,
+    fontWeight: '700',
+  },
+  gridContent: {
+    width: '100%',
+  },
+  hourGridRow: {
+    height: 62,
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 4,
+  },
+  rowIconOuter: {
+    width: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  hourSquare: {
+    flex: 1,
+    height: 52,
+    borderRadius: 0,
+    backgroundColor: '#F5F7FA',
+    borderWidth: 1,
+    borderColor: '#E8EAED',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  hourSquareMerged: {
+    height: 52,
+    borderRadius: 0,
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    borderWidth: 1.5,
+    borderColor: Colors.primary,
+  },
+  hourText: {
+    fontSize: normalize.font(15),
+    color: '#475467',
+    fontWeight: '900',
+    textAlign: 'center',
+  },
+  hourTextMerged: {
+    fontSize: normalize.font(10),
+    color: 'rgba(255,255,255,0.7)',
+    position: 'absolute',
+    bottom: 2,
+    fontWeight: '900',
+    textAlign: 'center',
+  },
+  shiftOverlayText: {
+    fontSize: normalize.font(14),
+    color: '#fff',
+    fontWeight: '900',
+    textAlign: 'center',
   },
   expandedTitle: {
     fontSize: normalize.font(14),
-    fontWeight: '700',
-    color: Colors.text.primary,
+    fontWeight: '800',
+    color: '#000',
   },
   editText: {
+    fontSize: normalize.font(12),
     color: Colors.primary,
-    fontSize: normalize.font(13),
-    fontWeight: '600',
+    fontWeight: '700',
+    textDecorationLine: 'underline',
+  },
+  emptyPricing: {
+    padding: 14,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 14,
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#EDF0F5',
+    borderStyle: 'dashed',
+  },
+  emptyPricingText: {
+    fontSize: normalize.font(12),
+    color: '#666',
+    textAlign: 'center',
   },
   pricingContainer: {
     flexDirection: 'row',
@@ -1674,896 +1825,721 @@ const styles = StyleSheet.create({
   },
   pricingCard: {
     width: '31%',
-    backgroundColor: Colors.white,
+    backgroundColor: '#fff',
+    borderRadius: 14,
     padding: 10,
-    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E7EAF0',
+    borderColor: '#EDF0F5',
     alignItems: 'center',
   },
   weekendCard: {
     backgroundColor: '#FFF5F5',
-    borderColor: '#FFEBEB',
-  },
-  pricingCardDay: {
-    fontSize: normalize.font(11),
-    color: Colors.text.secondary,
-    fontWeight: '600',
-    marginBottom: 4,
+    borderColor: '#FFE0E0',
   },
   weekendText: {
     color: Colors.error,
   },
+  pricingCardDay: {
+    fontSize: normalize.font(10),
+    fontWeight: '700',
+    color: '#666',
+    marginBottom: 2,
+  },
   pricingCardValue: {
     flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 2,
+    alignItems: 'center',
   },
   pricingCardPrice: {
-    fontSize: normalize.font(13),
-    fontWeight: '700',
-    color: Colors.text.primary,
+    fontSize: normalize.font(12),
+    fontWeight: '800',
+    color: '#000',
   },
   pricingCardCurrency: {
-    fontSize: normalize.font(9),
-    color: Colors.text.muted,
-  },
-  emptyPricing: {
-    padding: 10,
-    alignItems: 'center',
-  },
-  emptyPricingText: {
-    fontSize: normalize.font(13),
-    color: Colors.text.muted,
-    fontStyle: 'italic',
-  },
-  addShiftRow: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-    gap: 8,
-  },
-  addShiftRowText: {
-    color: Colors.primary,
-    fontWeight: '600',
-    fontSize: normalize.font(14),
-  },
-  policyCard: {
-    backgroundColor: Colors.white,
-    borderRadius: 24,
-    padding: 8,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  policyItem: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F2F7',
-  },
-  policyHeader: {
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  policyDayBox: {
-    alignItems: 'center',
-    gap: 8,
-  },
-  policyDays: {
-    fontSize: normalize.font(14),
-    fontWeight: '600',
-    color: Colors.text.primary,
-  },
-  penaltyBadge: {
-    backgroundColor: '#FFF1F0',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  policyRefund: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(8),
+    color: '#666',
+    marginLeft: 2,
     fontWeight: '700',
-    color: Colors.error,
   },
-  editPoliciesBtn: {
-    margin: 8,
-    height: 50,
-    borderRadius: 16,
-    backgroundColor: '#F8F9FF',
+  swipeableContainer: {
+    marginBottom: 12,
+    borderRadius: 18,
+  },
+  swipeActions: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
+    height: '100%',
+    borderRadius: 18,
+    overflow: 'hidden',
   },
-  editPoliciesText: {
-    color: Colors.primary,
-    fontSize: normalize.font(15),
+  swipeAction: {
+    width: 90,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+  },
+  swipeActionText: {
+    fontSize: normalize.font(12),
     fontWeight: '700',
+    color: '#fff',
   },
   emptyCard: {
-    backgroundColor: '#FBFCFE',
-    borderRadius: 28,
-    padding: 32,
+    padding: 40,
+    backgroundColor: '#F8F9FB',
+    borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#EDF0F5',
     borderStyle: 'dashed',
+    borderColor: '#E1E4EB',
     marginTop: 8,
   },
   emptyIconContainer: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: Colors.primary + '08',
+    backgroundColor: Colors.primary + '10',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   emptyTitle: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(18),
     fontWeight: '800',
-    color: Colors.text.primary,
+    color: '#333',
     marginBottom: 8,
   },
   emptyText: {
-    color: Colors.text.muted,
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
+    color: '#888',
     textAlign: 'center',
     lineHeight: 20,
     paddingHorizontal: 20,
-    marginBottom: 8,
   },
   addInlineBtn: {
-    marginTop: 16,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    backgroundColor: Colors.primary,
-    borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    ...Shadows.small,
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 16,
+    marginTop: 20,
   },
   addInlineText: {
-    color: Colors.white,
+    color: '#fff',
     fontWeight: '800',
-    fontSize: normalize.font(14),
-  },
-  sheetContent: {
-    padding: 24,
-    alignItems: 'center',
-    flex: 1,
+    fontSize: normalize.font(15),
   },
   modalTitle: {
-    ...Typography.h2,
-    fontSize: normalize.font(18),
+    fontSize: normalize.font(20),
+    fontWeight: '800',
+    color: '#000',
     marginBottom: 24,
   },
   formContainer: {
     width: '100%',
   },
   label: {
-    ...Typography.caption,
-    fontWeight: '700',
-    marginBottom: 8,
-    color: Colors.text.primary,
+    fontSize: normalize.font(14),
+    fontWeight: '800',
+    color: '#333',
+    marginBottom: 10,
+    paddingHorizontal: 4,
   },
   input: {
     backgroundColor: '#F3F4F6',
-    height: 54,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    fontSize: normalize.font(16),
-  },
-  rowInputs: {
-    width: '100%',
-  },
-  saveBtn: {
-    backgroundColor: Colors.primary,
-    height: 54,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-  },
-  saveBtnText: {
-    color: '#fff',
-    fontWeight: '700',
-    fontSize: normalize.font(16),
-  },
-  pricingFormCard: {
-    backgroundColor: Colors.white,
-    padding: 16,
+    height: 56,
     borderRadius: 16,
-    marginBottom: 12,
+    paddingHorizontal: 16,
+    fontSize: normalize.font(15),
+    fontWeight: '600',
     borderWidth: 1,
-    borderColor: '#F3F4F6',
+    borderColor: 'transparent',
   },
-  pricingFormCardWeekend: {
-    borderColor: '#FFEBEB',
-    backgroundColor: '#FFF9F9',
+  timeSelectionCard: {
+    backgroundColor: '#F8F9FA',
+    padding: 20,
+    borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor: '#EDF0F5',
+    marginTop: 20,
   },
-  pricingFormHeader: {
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
+  cardTitleSmall: {
+    fontSize: normalize.font(15),
+    fontWeight: '800',
+    color: '#000',
   },
-  dayBadge: {
-    backgroundColor: '#F0F7FF',
+  durationBadge: {
+    backgroundColor: Colors.primary + '15',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 8,
-  },
-  dayBadgeWeekend: {
-    backgroundColor: '#FFEBEB',
-  },
-  dayBadgeText: {
-    fontSize: normalize.font(13),
-    fontWeight: '700',
-    color: Colors.primary,
-  },
-  dayBadgeTextWeekend: {
-    color: Colors.error,
-  },
-  weekendLabel: {
-    fontSize: normalize.font(11),
-    color: Colors.error,
-    fontWeight: '600',
-    opacity: 0.8,
-  },
-  pricingFormBody: {
+    borderRadius: 20,
+    flexDirection: 'row',
     alignItems: 'center',
-  },
-  pricingFormInput: {
-    flex: 1,
-    height: 48,
-    backgroundColor: '#F3F4F6',
-    borderRadius: 10,
-    paddingHorizontal: 16,
-    fontSize: normalize.font(16),
-    fontWeight: '700',
-  },
-  inlineCurrency: {
-    marginLeft: 12,
-    backgroundColor: '#F3F4F6',
-    height: 48,
-    paddingHorizontal: 12,
-    justifyContent: 'center',
-    borderRadius: 10,
-  },
-  inlineCurrencyText: {
-    fontSize: normalize.font(12),
-    color: Colors.text.muted,
-    fontWeight: '600',
-  },
-  quickApplyContainer: {
-    width: '100%',
-    backgroundColor: '#F8FAFF',
-    padding: 16,
-    borderRadius: 16,
+    gap: 6,
     borderWidth: 1,
     borderColor: Colors.primary + '20',
   },
-  priceSuffix: {
-    marginLeft: 12,
-    justifyContent: 'center',
-  },
-  priceSuffixText: {
-    fontSize: normalize.font(14),
-    color: Colors.text.muted,
-    fontWeight: '600',
-  },
-  // New Styles for Pricing Sheet
-  sheetHeaderCompact: {
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  sheetHeaderHandle: {
-    width: 40,
-    height: 4,
-    backgroundColor: '#E0E0E0',
-    borderRadius: 2,
-    marginBottom: 12,
-  },
-  modalTitleCompact: {
-    fontSize: normalize.font(18),
-    fontWeight: '800',
-    color: Colors.text.primary,
-  },
-  policyFormCard: {
-    backgroundColor: Colors.white,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  policyDeleteBtn: {
-    padding: 8,
-  },
-  policyInputLabel: {
+  durationText: {
     fontSize: normalize.font(12),
-    color: Colors.text.muted,
-    marginBottom: 6,
-  },
-  policyNumberInput: {
-    fontSize: normalize.font(16),
-    fontWeight: '700',
-    color: Colors.text.primary,
-    padding: 0,
-  },
-  quickApplyCard: {
-    backgroundColor: Colors.primary,
-    borderRadius: 16,
-    padding: 12,
-    marginTop: 8,
-    ...Shadows.medium,
-  },
-  quickApplyRow: {
-    alignItems: 'center',
-  },
-  quickApplyIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  quickApplyLabel: {
-    fontSize: normalize.font(11),
-    color: 'rgba(255,255,255,0.8)',
-    fontWeight: '600',
-  },
-  quickApplyInput: {
-    flex: 1,
-    fontSize: normalize.font(18),
-    fontWeight: '800',
-    color: Colors.white,
-    padding: 0,
-  },
-  quickApplyCurrency: {
-    fontSize: normalize.font(13),
-    color: Colors.white,
-    fontWeight: '700',
-    marginLeft: 8,
-  },
-  pricingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: Colors.white,
-    padding: 8,
-    paddingHorizontal: 12,
-    borderRadius: 14,
-    marginBottom: 6,
-    borderWidth: 1,
-    borderColor: '#F0F2F7',
-  },
-  pricingRowWeekend: {
-    borderColor: '#FFE0E0',
-    backgroundColor: '#FFF9F9',
-  },
-  dayInfo: {
-    alignItems: 'center',
-    gap: 12,
-  },
-  dayIndicator: {
-    width: 4,
-    height: 20,
-    backgroundColor: Colors.primary,
-    borderRadius: 2,
-  },
-  dayIndicatorWeekend: {
-    backgroundColor: '#FF4D4D',
-  },
-  dayNameText: {
-    fontSize: normalize.font(14),
-    fontWeight: '700',
-    color: Colors.text.primary,
-  },
-  dayNameTextWeekend: {
-    color: '#FF4D4D',
-  },
-  priceActions: {
-    alignItems: 'center',
-    gap: 8,
-  },
-  adjustBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  priceInputWrapper: {
-    width: 90,
-    height: 36,
-    backgroundColor: '#F3F4F6',
-    borderRadius: 8,
-    justifyContent: 'center',
-  },
-  pricingRowInput: {
-    fontSize: normalize.font(14),
-    fontWeight: '800',
-    color: Colors.text.primary,
-    padding: 0,
-  },
-  footerContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 16,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 16,
-    backgroundColor: 'rgba(248, 249, 251, 0.95)',
-  },
-  // Time Selection Styling
-  timeSelectionCard: {
-    backgroundColor: '#F8F9FA',
-    borderRadius: 20,
-    padding: 16,
-    marginTop: 16,
-    borderWidth: 1,
-    borderColor: '#E9EBED',
-  },
-  timeSelectRow: {
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  timeInputCol: {
-    flex: 1,
-  },
-  timeSeparator: {
-    width: 32,
-    alignItems: 'center',
-    paddingTop: 24,
-  },
-  timeLabelText: {
-    fontSize: normalize.font(12),
-    fontWeight: '700',
-    color: Colors.text.muted,
-  },
-  iosCompactPickerWrap: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 4,
-    borderWidth: 1,
-    borderColor: '#E9EBED',
-  },
-  customTimeDisplay: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#E9EBED',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  customTimeText: {
-    fontSize: normalize.font(14),
     fontWeight: '800',
     color: Colors.primary,
   },
+  timeSelectRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  timeInputCol: {
+    flex: 1,
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: '#EDF0F5',
+  },
   activeTimeCol: {
-    transform: [{ scale: 1.02 }],
+    borderColor: Colors.primary,
+    backgroundColor: '#fff',
+    borderWidth: 2,
+  },
+  timeLabelText: {
+    fontSize: normalize.font(12),
+    color: '#999',
+    fontWeight: '700',
+  },
+  customTimeDisplay: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 6,
+  },
+  customTimeText: {
+    fontSize: normalize.font(15),
+    fontWeight: '800',
+    color: '#000',
+  },
+  timeSeparator: {
+    paddingHorizontal: 14,
   },
   customPickerMain: {
-    marginTop: 16,
-    paddingTop: 16,
+    marginTop: 20,
+    paddingTop: 20,
     borderTopWidth: 1,
-    borderTopColor: '#E9EBED',
+    borderTopColor: '#F0F2F7',
   },
   pickerWheelsRow: {
-    height: 120,
+    flexDirection: 'row',
+    height: 140,
     justifyContent: 'center',
     alignItems: 'center',
     gap: 12,
   },
   wheelCol: {
-    width: 60,
+    width: 70,
     height: '100%',
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: '#EDF0F5',
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#F0F2F5',
-  },
-  wheelColCompact: {
-    height: '100%',
-    justifyContent: 'center',
-    gap: 8,
   },
   wheelItem: {
-    height: 40,
+    height: 44,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  wheelItemText: {
+    fontSize: normalize.font(16),
+    color: '#AAA',
+    fontWeight: '600',
+  },
+  wheelItemSelected: {
+    color: Colors.primary,
+    fontWeight: '900',
+    fontSize: normalize.font(20),
+  },
   wheelItemTaken: {
-    backgroundColor: '#FDECEC',
+    backgroundColor: '#FFF5F5',
     opacity: 0.5,
   },
   wheelItemTextTaken: {
     color: '#FF3B30',
     textDecorationLine: 'line-through',
   },
-  wheelItemText: {
-    fontSize: normalize.font(16),
-    color: Colors.text.muted,
-    fontWeight: '600',
-  },
-  wheelItemSelected: {
-    color: Colors.primary,
-    fontWeight: '800',
-    fontSize: normalize.font(18),
+  wheelColCompact: {
+    width: 90,
+    justifyContent: 'center',
+    gap: 10,
   },
   periodBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#EDF0F5',
     backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#E9EBED',
-  },
-  periodBtnTaken: {
-    opacity: 0.3,
-    backgroundColor: '#F2F2F7',
-  },
-  periodBtnTextTaken: {
-    textDecorationLine: 'line-through',
+    alignItems: 'center',
   },
   periodBtnActive: {
     backgroundColor: Colors.primary,
     borderColor: Colors.primary,
   },
+  periodBtnTaken: {
+    opacity: 0.3,
+  },
   periodBtnText: {
-    fontSize: normalize.font(12),
-    fontWeight: '700',
-    color: Colors.text.muted,
+    fontSize: normalize.font(13),
+    fontWeight: '800',
+    color: '#333',
   },
   periodBtnTextActive: {
     color: '#fff',
   },
+  periodBtnTextTaken: {
+    textDecorationLine: 'line-through',
+  },
   closePickerBtn: {
-    marginTop: 16,
     backgroundColor: Colors.primary + '10',
-    padding: 12,
-    borderRadius: 12,
+    padding: 16,
+    borderRadius: 16,
     alignItems: 'center',
+    marginTop: 16,
   },
   closePickerText: {
     color: Colors.primary,
-    fontWeight: '800',
-    fontSize: normalize.font(14),
-  },
-  androidTimeBtn: {
-    backgroundColor: '#fff',
-    height: 44,
-    borderRadius: 10,
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#E9EBED',
-  },
-  androidTimeText: {
+    fontWeight: '900',
     fontSize: normalize.font(15),
-    fontWeight: '700',
-    color: Colors.text.primary,
   },
-  // Timeline Styling
-  timelineContainer: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#EFEFF4',
-    marginBottom: 20,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
-    marginTop: 10,
-  },
-  timelineLabel: {
-    fontSize: normalize.font(13),
-    fontWeight: '700',
-    color: Colors.text.primary,
-  },
-  timelineInfo: {
-    fontSize: normalize.font(10),
-    color: Colors.text.muted,
-  },
-  timelineBar: {
-    flexDirection: 'row',
-    height: 32,
-    backgroundColor: '#F2F2F7',
-    borderRadius: 8,
-    overflow: 'hidden',
-    padding: 2,
-    marginTop: 8,
-  },
-  timelineSegment: {
-    flex: 1,
-    marginHorizontal: 0.5,
-    backgroundColor: '#34C75920', // Very light green for free
-    borderRadius: 1,
-  },
-  segmentOccupied: {
-    backgroundColor: '#FF3B30', // Solid red for busy
-  },
-  segmentNew: {
-    backgroundColor: Colors.primary, // Selection color
-  },
-  timelineTicks: {
-    justifyContent: 'space-between',
-    marginTop: 8,
-    paddingHorizontal: 2,
-  },
-  timelineTick: {
-    fontSize: normalize.font(10),
-    fontWeight: '600',
-    color: Colors.text.muted,
-  },
-  legendItem: {
-    width: 8,
-    height: 8,
-    borderRadius: 2,
-  },
-  durationBadge: {
-    backgroundColor: '#F0F7FF',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+  saveBtn: {
+    backgroundColor: Colors.primary,
+    paddingVertical: 16,
     borderRadius: 20,
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    borderWidth: 1,
-    borderColor: Colors.primary + '20',
+    marginTop: 24,
   },
-  durationText: {
-    fontSize: normalize.font(11),
-    fontWeight: '700',
-    color: Colors.primary,
-  },
-  cardTitleSmall: {
-    fontSize: normalize.font(13),
-    fontWeight: '700',
-    color: Colors.text.primary,
-  },
-  fullDayWarning: {
-    backgroundColor: '#FFF1F0',
-    flexDirection: 'row',
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#FF3B3030',
-    alignItems: 'center',
-    gap: 12,
-  },
-  fullDayTitle: {
-    fontSize: normalize.font(14),
+  saveBtnText: {
+    color: '#fff',
     fontWeight: '800',
-    color: '#FF3B30',
-  },
-  fullDayText: {
-    fontSize: normalize.font(12),
-    color: '#FF3B30',
-    opacity: 0.8,
-    marginTop: 2,
-    lineHeight: 18,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  conflictWarning: {
-    backgroundColor: '#FFF9F0',
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 10,
-    borderRadius: 10,
-    marginTop: 12,
-    borderWidth: 1,
-    borderColor: '#FFE5B4',
-    gap: 8,
-  },
-  conflictWarningText: {
-    fontSize: normalize.font(12),
-    color: '#FF9500',
-    fontWeight: '700',
+    fontSize: normalize.font(17),
   },
   saveBtnDisabled: {
     opacity: 0.6,
-    backgroundColor: '#D1D1D6',
+    backgroundColor: '#BDBDBD',
   },
-  saveBtnLarge: {
-    backgroundColor: Colors.primary,
-    height: 52,
-    borderRadius: 16,
+  deleteTextBtn: {
+    padding: 16,
+    alignItems: 'center',
+  },
+  deleteTextBtnLabel: {
+    color: Colors.error,
+    fontWeight: '800',
+    fontSize: normalize.font(15),
+    textDecorationLine: 'underline',
+  },
+  pricingHeaderNew: {
+    paddingBottom: 20,
+    paddingTop: 12,
+  },
+  sheetHeaderHandle: {
+    width: 44,
+    height: 5,
+    backgroundColor: '#E0E3E8',
+    borderRadius: 3,
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  modalTitleCompact: {
+    fontSize: normalize.font(19),
+    fontWeight: '800',
+    color: '#000',
+  },
+  shiftLabelBadge: {
+    backgroundColor: '#F0F7FF',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    marginTop: 6,
+    alignSelf: 'flex-start',
+  },
+  shiftLabelBadgeText: {
+    fontSize: normalize.font(11),
+    color: Colors.primary,
+    fontWeight: '800',
+  },
+  closeBtnCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F1F3F5',
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  quickActionCardNew: {
+    backgroundColor: Colors.primary,
+    padding: 16,
+    borderRadius: 20,
+    marginTop: 20,
+  },
+  quickIconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  quickLabelNew: {
+    fontSize: normalize.font(14),
+    fontWeight: '800',
+    color: '#fff',
+  },
+  quickInputNew: {
+    flex: 1,
+    fontSize: normalize.font(20),
+    fontWeight: '900',
+    color: '#fff',
+  },
+  quickCurrencyNew: {
+    fontSize: normalize.font(13),
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginLeft: 6,
+    fontWeight: '700',
+  },
+  pricingRowModern: {
+    padding: 20,
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    marginBottom: 12,
+    borderWidth: 1.5,
+    borderColor: '#F0F2F7',
+  },
+  pricingRowStopped: {
+    backgroundColor: '#FFF9F9',
+    borderColor: '#FFE0E0',
+  },
+  dayControlSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  dayCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#F1F3F5',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dayInitial: {
+    fontSize: normalize.font(13),
+    fontWeight: '800',
+    color: '#666',
+  },
+  dayFullName: {
+    fontSize: normalize.font(16),
+    fontWeight: '800',
+    color: '#000',
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 8,
+  },
+  statusTextSmall: {
+    fontSize: normalize.font(12),
+    fontWeight: '700',
+  },
+  priceAdjustmentSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+    borderRadius: 16,
+    padding: 6,
+    borderWidth: 1,
+    borderColor: '#EDF0F5',
+  },
+  stepBtnModern: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  priceInputWrapperModern: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pricingInputModern: {
+    fontSize: normalize.font(18),
+    fontWeight: '900',
+    color: '#000',
+  },
+  innerCurrency: {
+    fontSize: normalize.font(11),
+    color: '#999',
+    fontWeight: '700',
+  },
+  stoppedMessage: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+    backgroundColor: '#FFF1F0',
+    padding: 10,
+    borderRadius: 12,
+  },
+  stoppedMessageText: {
+    fontSize: normalize.font(12),
+    color: Colors.error,
+    fontWeight: '700',
+  },
+  pricingFloatingFooter: {
+    padding: 16,
+    paddingBottom: 40,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#F0F2F7',
+    marginHorizontal: -20, // To span full width of the modal content container
+  },
+  applyBtnLargeModern: {
+    backgroundColor: Colors.primary,
+    paddingVertical: 18,
+    borderRadius: 18,
     alignItems: 'center',
     ...Shadows.medium,
   },
-  saveBtnTextLarge: {
-    color: Colors.white,
-    fontSize: normalize.font(15),
+  applyBtnTextLarge: {
+    color: '#fff',
+    fontSize: normalize.font(16),
     fontWeight: '800',
+  },
+  sheetHeaderCompact: {
+    paddingVertical: 16,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F2F7',
+    marginBottom: 16,
+  },
+  policyFormCard: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor: '#F0F2F7',
+    marginBottom: 16,
+  },
+  rowInputs: {
+    flexDirection: 'row',
+    width: '100%',
+  },
+  policyDeleteBtn: {
+    padding: 8,
+    backgroundColor: '#FFF1F0',
+    borderRadius: 12,
+  },
+  policyInputLabel: {
+    fontSize: normalize.font(12),
+    color: '#888',
+    fontWeight: '800',
+    marginBottom: 6,
+    paddingHorizontal: 4,
+  },
+  compactInput: {
+    flex: 1,
+    height: 52,
+    backgroundColor: '#F8F9FA',
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#EDF0F5',
+  },
+  policyNumberInput: {
+    flex: 1,
+    fontSize: normalize.font(16),
+    fontWeight: '900',
+    color: Colors.text.primary,
   },
   addTierBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
+    padding: 18,
+    borderWidth: 2,
     borderColor: Colors.primary,
     borderStyle: 'dashed',
+    borderRadius: 20,
     marginTop: 8,
-    gap: 8,
+    gap: 10,
   },
   addTierText: {
     color: Colors.primary,
-    fontWeight: '700',
-    fontSize: normalize.font(14),
+    fontWeight: '800',
+    fontSize: normalize.font(15),
   },
-  compactInput: {
-    flex: 1,
-    height: 48,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E9EBED',
-    paddingHorizontal: 12,
+  footerContainer: {
+    paddingVertical: 16,
+  },
+  saveBtnLarge: {
+    backgroundColor: Colors.primary,
+    height: 58,
+    borderRadius: 20,
+    justifyContent: 'center',
     alignItems: 'center',
+    flexDirection: 'row',
+    gap: 10,
+  },
+  saveBtnTextLarge: {
+    color: Colors.white,
+    fontSize: normalize.font(16),
+    fontWeight: '900',
   },
   chaletSelectCard: {
-    backgroundColor: Colors.surface,
-    borderRadius: 16,
-    padding: 12,
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  iconCircleSmall: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  detailTextLarge: {
-    fontSize: normalize.font(15),
-    fontWeight: '700',
-    color: Colors.text.primary,
-  },
-  detailLabelSmall: {
-    fontSize: normalize.font(12),
-    color: Colors.text.muted,
-    marginTop: 2,
-    fontWeight: '500',
-  },
-  sectionDivider: {
-    height: 1,
-    backgroundColor: Colors.border,
-    width: '100%',
+    padding: 16,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#F0F2F7',
+    marginBottom: 10,
   },
   chaletSelectImageWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: Colors.primary + '10',
+    width: 52,
+    height: 52,
+    borderRadius: 14,
+    backgroundColor: '#F1F3F5',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
-    marginLeft: 12,
+    marginRight: 16,
   },
   chaletSelectImage: {
     width: '100%',
     height: '100%',
-    borderRadius: 12,
+    borderRadius: 14,
   },
   chaletSelectName: {
     fontSize: normalize.font(16),
-    fontWeight: '700',
+    fontWeight: '800',
     color: Colors.text.primary,
-    marginBottom: 4,
   },
   chaletSelectLoc: {
     fontSize: normalize.font(13),
-    color: Colors.text.muted,
+    color: '#888',
+    fontWeight: '600',
+    marginTop: 2,
   },
-  premiumCard: {
-    backgroundColor: '#fff',
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: '#EFEFF4',
-    overflow: 'hidden',
-    ...Shadows.medium,
-  },
-  policyBadge: {
-    backgroundColor: '#F0F7FF',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 10,
+  fullDayWarning: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  policyBadgeText: {
-    fontSize: normalize.font(12),
-    fontWeight: '700',
-    color: Colors.primary,
-  },
-  penaltyChip: {
-    backgroundColor: '#FFF5F5',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 10,
-  },
-  penaltyText: {
-    fontSize: normalize.font(12),
-    fontWeight: '700',
-    color: '#FF3B30',
-  },
-  manageBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#FFF1F0',
     padding: 16,
-    backgroundColor: '#F8F9FA',
-    gap: 8,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#FFE0E0',
+    alignItems: 'center',
+    gap: 14,
+    marginBottom: 20,
   },
-  manageBtnText: {
+  fullDayTitle: {
+    fontSize: normalize.font(15),
+    fontWeight: '900',
+    color: Colors.error,
+  },
+  fullDayText: {
     fontSize: normalize.font(13),
+    color: '#666',
+    lineHeight: 18,
+  },
+  timelineContainer: {
+    marginTop: 20,
+    padding: 20,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor: '#EDF0F5',
+  },
+  timelineLabel: {
+    fontSize: normalize.font(14),
+    fontWeight: '800',
+    color: '#333',
+  },
+  legendItem: {
+    width: 12,
+    height: 12,
+    borderRadius: 3,
+  },
+  timelineInfo: {
+    fontSize: normalize.font(12),
+    color: '#888',
     fontWeight: '700',
-    color: Colors.primary,
+  },
+  timelineBar: {
+    flexDirection: 'row',
+    height: 28,
+    backgroundColor: '#E9ECF0',
+    borderRadius: 8,
+    overflow: 'hidden',
+    marginTop: 10,
+    padding: 3,
+  },
+  timelineSegment: {
+    flex: 1,
+    borderRadius: 4,
+    marginHorizontal: 0.5,
+  },
+  segmentOccupied: {
+    backgroundColor: Colors.error,
+  },
+  segmentNew: {
+    backgroundColor: Colors.primary,
+  },
+  timelineTicks: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 6,
+    paddingHorizontal: 4,
+  },
+  timelineTick: {
+    fontSize: normalize.font(10),
+    color: '#BBB',
+    fontWeight: '800',
   },
   centeredContent: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 40,
   },
   emptyTextLarge: {
-    fontSize: normalize.font(15),
-    color: Colors.text.muted,
-    textAlign: 'center',
+    fontSize: normalize.font(18),
+    color: '#888',
     marginTop: 16,
-    fontWeight: '600',
+    fontWeight: '800',
   },
-  emptyCardSmall: {
-    padding: 32,
+  iconCircleSmall: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Colors.primary + '15',
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  emptyTextSmall: {
-    fontSize: normalize.font(13),
-    color: Colors.text.muted,
+  detailTextLarge: {
+    fontSize: normalize.font(15),
+    fontWeight: '800',
+    color: '#000',
   },
-  saveSingleBtn: {
-    padding: 8,
-    marginLeft: 4,
-    backgroundColor: '#F0F7FF',
-    borderRadius: 8,
-  },
-  pricingRowInvalid: {
-    borderColor: '#FF3B3040',
-    backgroundColor: '#FFF1F0',
-  },
-  matrixWarning: {
-    backgroundColor: '#FFF9F0',
-    padding: 12,
-    borderRadius: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: '#FFECC0',
-  },
-  matrixWarningText: {
+  detailLabelSmall: {
     fontSize: normalize.font(12),
-    color: '#FF9500',
+    color: '#888',
     fontWeight: '700',
-    marginLeft: 8,
+    marginTop: 2,
+  },
+  sectionDivider: {
+    height: 1,
+    backgroundColor: '#F0F2F7',
+    marginVertical: 12,
   },
 });

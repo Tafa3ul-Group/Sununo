@@ -1,19 +1,14 @@
 import { ThemedText } from "@/components/themed-text";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
-import {
-  StyleSheet,
-  TextStyle,
-  TouchableOpacity,
-  View,
-  ViewStyle,
-} from "react-native";
+import { ActivityIndicator, StyleSheet, TextStyle, TouchableOpacity, View, ViewStyle } from "react-native";
 import Svg, { Path } from "react-native-svg";
 
 interface SecondaryButtonProps {
   label: string;
   onPress: () => void;
   isActive?: boolean;
+  isLoading?: boolean;
   icon?: keyof typeof MaterialCommunityIcons.glyphMap;
   iconLabel?: string;
   activeColor?: string;
@@ -34,6 +29,7 @@ export function SecondaryButton({
   label,
   onPress,
   isActive = false,
+  isLoading = false,
   icon,
   iconLabel,
   activeColor = "#035DF9",
@@ -54,7 +50,8 @@ export function SecondaryButton({
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={onPress}
-      style={[styles.container, style]}
+      disabled={isLoading}
+      style={[styles.container, style, isLoading && { opacity: 0.7 }]}
     >
       {/* Icon Section (Right part in RTL) */}
       <View style={[styles.iconWrapper, { width: scaledWidth, height: 46 }]}>
@@ -72,7 +69,7 @@ export function SecondaryButton({
             strokeWidth="1"
           />
         </Svg>
-        {(icon || iconLabel) && (
+        {(icon || iconLabel) && !isLoading && (
           <View style={styles.iconContainer}>
             {iconLabel ? (
               <ThemedText style={[styles.text, { color: finalContentColor, fontSize: 16 }]}>
@@ -101,11 +98,15 @@ export function SecondaryButton({
           },
         ]}
       >
-        <ThemedText
-          style={[styles.text, { color: finalContentColor }, textStyle]}
-        >
-          {label}
-        </ThemedText>
+        {isLoading ? (
+          <ActivityIndicator color={finalContentColor} />
+        ) : (
+          <ThemedText
+            style={[styles.text, { color: finalContentColor }, textStyle]}
+          >
+            {label}
+          </ThemedText>
+        )}
       </View>
     </TouchableOpacity>
   );
