@@ -1,44 +1,52 @@
-import { HeaderSection } from '@/components/header-section';
-import { ThemedText } from '@/components/themed-text';
-import { Colors, normalize, Shadows, Spacing, Typography } from '@/constants/theme';
-import { RootState } from '@/store';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useGetOwnerChaletsQuery, useGetProviderProfileQuery, useGetProviderBookingsQuery } from '@/store/api/apiSlice';
-import { getImageSrc } from '@/hooks/useImageSrc';
-import { SecondaryButton } from '@/components/user/secondary-button';
-import { formatPrice } from '@/utils/format';
-import * as Haptics from 'expo-haptics';
-import * as LocalAuthentication from 'expo-local-authentication';
-import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { ThemedText } from "@/components/themed-text";
+import { SolarIcon } from "@/components/ui/solar-icon";
+import { SecondaryButton } from "@/components/user/secondary-button";
+import { Colors } from "@/constants/theme";
+import { getImageSrc } from "@/hooks/useImageSrc";
+import { RootState } from "@/store";
+import {
+  useGetOwnerChaletsQuery,
+  useGetProviderBookingsQuery,
+  useGetProviderProfileQuery,
+} from "@/store/api/apiSlice";
+import { formatPrice } from "@/utils/format";
+import * as Haptics from "expo-haptics";
+import * as LocalAuthentication from "expo-local-authentication";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
-} from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
+  View,
+} from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useSelector } from "react-redux";
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { user, userType, language } = useSelector((state: RootState) => state.auth);
+  const { user, userType, language } = useSelector(
+    (state: RootState) => state.auth,
+  );
   const { t } = useTranslation();
-  const isRTL = language === 'ar';
-  const isOwner = userType === 'owner';
+  const isRTL = language === "ar";
   const [isBalanceVisible, setIsBalanceVisible] = useState(false);
 
   // API hooks
-  const { data: chalets, isLoading, refetch, isFetching } = useGetOwnerChaletsQuery({});
+  const {
+    data: chalets,
+    isLoading,
+    refetch,
+    isFetching,
+  } = useGetOwnerChaletsQuery({});
   const { data: profileResponse } = useGetProviderProfileQuery(undefined);
-  const { data: bookingsResponse } = useGetProviderBookingsQuery({ limit: 3 });
+  const { data: bookingsResponse } = useGetProviderBookingsQuery({ limit: 5 });
 
   const profile = profileResponse?.data || profileResponse;
   const recentBookings = bookingsResponse?.data || bookingsResponse || [];
@@ -48,25 +56,24 @@ export default function HomeScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     if (isBalanceVisible) {
-      // Just hide it
       setIsBalanceVisible(false);
       return;
     }
 
-    // Authenticate to show
     const hasHardware = await LocalAuthentication.hasHardwareAsync();
     const enrolled = await LocalAuthentication.isEnrolledAsync();
 
     if (!hasHardware || !enrolled) {
-      // Fallback: show directly if no biometrics available
       setIsBalanceVisible(true);
       return;
     }
 
     const result = await LocalAuthentication.authenticateAsync({
-      promptMessage: isRTL ? 'تحقق من هويتك لعرض الرصيد' : 'Verify identity to show balance',
-      cancelLabel: isRTL ? 'إلغاء' : 'Cancel',
-      fallbackLabel: isRTL ? 'استخدم رمز المرور' : 'Use Passcode',
+      promptMessage: isRTL
+        ? "تحقق من هويتك لعرض الرصيد"
+        : "Verify identity to show balance",
+      cancelLabel: isRTL ? "إلغاء" : "Cancel",
+      fallbackLabel: isRTL ? "استخدم رمز المرور" : "Use Passcode",
     });
 
     if (result.success) {
@@ -74,73 +81,54 @@ export default function HomeScreen() {
     }
   };
 
-
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return isRTL ? "صباح الخير" : "Good Morning";
+    if (hour < 18) return isRTL ? "مساء الخير" : "Good Afternoon";
+    return isRTL ? "مساء الخير" : "Good Evening";
+  };
 
   const renderChaletCard = (item: any) => {
     const mainImageSrc = getImageSrc(item.images?.[0]?.url);
-    const chaletName = isRTL ? (item.name?.ar || item.name) : (item.name?.en || item.name);
-    const chaletLocation = isRTL ? (item.address?.ar || item.region?.name) : (item.address?.en || item.region?.enName);
+    const chaletName = isRTL
+      ? item.name?.ar || item.name
+      : item.name?.en || item.name;
+    const chaletLocation = isRTL
+      ? item.address?.ar || item.region?.name
+      : item.address?.en || item.region?.enName;
 
     return (
-      <TouchableOpacity 
+      <TouchableOpacity
         key={item.id}
         style={styles.chaletCard}
         activeOpacity={0.85}
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           router.push({
-            pathname: '/(tabs)/(dashboard)/chalet-details',
-            params: { id: item.id }
+            pathname: "/(tabs)/(dashboard)/chalet-details",
+            params: { id: item.id },
           });
         }}
       >
-        <View style={[styles.chaletCardInner, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-          {/* Image */}
-          <View style={styles.chaletImageWrap}>
-            <Image source={mainImageSrc} style={styles.chaletImage} />
-            {/* Status indicator */}
-            <View style={[styles.statusIndicator, { backgroundColor: item.isApproved ? '#10B981' : '#F59E0B' }]} />
-          </View>
-
-          {/* Info */}
-          <View style={[styles.chaletInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-            <Text style={[styles.chaletName, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
-              {chaletName}
+        <Image source={mainImageSrc} style={styles.chaletImage} />
+        <View style={styles.chaletInfo}>
+          <Text style={styles.chaletName} numberOfLines={1}>
+            {chaletName}
+          </Text>
+          <View style={styles.locationContainer}>
+            <SolarIcon name="map-point-linear" size={12} color="#64748B" />
+            <Text style={styles.locationText} numberOfLines={1}>
+              {chaletLocation}
             </Text>
-            <View style={[styles.locationRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-              <Ionicons name="location-outline" size={12} color={Colors.primary} />
-              <Text style={styles.locationLabel} numberOfLines={1}>{chaletLocation}</Text>
-            </View>
-
-            {/* Stat chips row */}
-            <View style={[styles.chipRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-              <View style={[styles.statChip, { backgroundColor: '#ECFDF5' }]}>
-                <MaterialCommunityIcons name="cash-multiple" size={12} color="#10B981" />
-                <Text style={[styles.statChipText, { color: '#10B981' }]}>{formatPrice(item.price)}</Text>
-              </View>
-              <View style={[styles.statChip, { backgroundColor: '#EFF6FF' }]}>
-                <MaterialCommunityIcons name="calendar-check" size={12} color={Colors.primary} />
-                <Text style={[styles.statChipText, { color: Colors.primary }]}>{item.reviewCount || 0}</Text>
-              </View>
-              {item.maxGuests && (
-                <View style={[styles.statChip, { backgroundColor: '#FFF7ED' }]}>
-                  <Ionicons name="people-outline" size={12} color="#F97316" />
-                  <Text style={[styles.statChipText, { color: '#F97316' }]}>{item.maxGuests}</Text>
-                </View>
-              )}
+          </View>
+          <View style={styles.cardFooter}>
+            <Text style={styles.priceText}>
+              {formatPrice(item.pricePerNight)}
+            </Text>
+            <View style={styles.statusBadge}>
+              <Text style={styles.statusText}>{isRTL ? "نشط" : "Active"}</Text>
             </View>
           </View>
-
-          {/* Actions */}
-          <TouchableOpacity 
-            style={styles.editBtn}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              router.push({ pathname: '/(tabs)/(dashboard)/edit-chalet', params: { id: item.id } });
-            }}
-          >
-            <Ionicons name="chevron-forward" size={18} color={Colors.text.muted} />
-          </TouchableOpacity>
         </View>
       </TouchableOpacity>
     );
@@ -149,182 +137,220 @@ export default function HomeScreen() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeArea}>
-        <HeaderSection 
-          userType={userType} 
-          userName={user?.name} 
-          showSearch={false}
-          showCategories={false}
-          showProfile={true}
-          showLogo={true}
-          extraIcon="search"
-          onExtraIconPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            // Default to notifications for now as requested by previous logic or keep as search
-          }}
-        />
-        <ScrollView 
-          style={styles.container}
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
           refreshControl={
-            <RefreshControl refreshing={isFetching} onRefresh={refetch} tintColor={Colors.primary} />
+            <RefreshControl
+              refreshing={isFetching}
+              onRefresh={refetch}
+              tintColor={Colors.primary}
+            />
           }
         >
-          {isLoading && !isFetching ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={Colors.primary} />
+          {/* Welcome Section */}
+          <View style={styles.welcomeSection}>
+            <View>
+              <ThemedText style={styles.greetingText}>
+                {getGreeting()},
+              </ThemedText>
+              <ThemedText style={styles.nameText}>
+                {profile?.fullName || user?.name || "..."}
+              </ThemedText>
             </View>
-          ) : (
-            <>
+            <TouchableOpacity
+              style={styles.notificationBtn}
+              onPress={() => router.push("/(tabs)/(dashboard)/notifications")}
+            >
+              <SolarIcon name="bell-bing-linear" size={24} color="#1E293B" />
+              <View style={styles.unreadDot} />
+            </TouchableOpacity>
+          </View>
 
-
-              {/* Wallet Card */}
-              <View style={styles.walletCard}>
-                <View style={styles.walletCardInner}>
-                  <View style={[styles.decorCircle, styles.decorCircle1]} />
-                  <View style={[styles.decorCircle, styles.decorCircle2]} />
-
-                  <View style={[styles.walletTop, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                    <View style={{ flex: 1, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
-                      <Text style={styles.walletLabel}>{isRTL ? 'رصيدك المتاح' : 'Available Balance'}</Text>
-                      <View style={[styles.walletAmountRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                        <Text style={styles.walletValue}>
-                          {isBalanceVisible ? walletBalance.toLocaleString() : '••••••'}
-                        </Text>
-                        {isBalanceVisible && <Text style={styles.walletCurrency}> {isRTL ? 'د.ع' : 'IQD'}</Text>}
-                      </View>
-                    </View>
-                    <TouchableOpacity style={styles.eyeButton} onPress={handleToggleBalance}>
-                      <Ionicons 
-                        name={isBalanceVisible ? 'eye-outline' : 'eye-off-outline'} 
-                        size={22} 
-                        color="rgba(255,255,255,0.8)" 
-                      />
-                    </TouchableOpacity>
-                  </View>
-
-                  <View style={[styles.walletActions, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                    <TouchableOpacity 
-                      style={styles.walletActionBtn}
-                      onPress={() => router.push('/(tabs)/(dashboard)/revenue')}
-                      activeOpacity={0.85}
-                    >
-                      <MaterialCommunityIcons name="bank-transfer-out" size={18} color={Colors.primary} />
-                      <Text style={styles.walletActionText}>{isRTL ? 'سحب' : 'Withdraw'}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity 
-                      style={styles.walletActionBtn}
-                      onPress={() => router.push('/(tabs)/(dashboard)/transactions')}
-                      activeOpacity={0.85}
-                    >
-                      <MaterialCommunityIcons name="history" size={18} color={Colors.primary} />
-                      <Text style={styles.walletActionText}>{isRTL ? 'المعاملات' : 'History'}</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
+          {/* Dashboard Stats Summary */}
+          <View style={styles.statsGrid}>
+            <View style={[styles.statsCard, { backgroundColor: "#F0F5FF" }]}>
+              <View
+                style={[styles.statsIconBox, { backgroundColor: "#DEE8FF" }]}
+              >
+                <SolarIcon name="banknote-2-linear" size={20} color="#035DF9" />
               </View>
-
-
-
-              {/* Recent Bookings */}
-              {Array.isArray(recentBookings) && recentBookings.length > 0 && (
-                <>
-                  <View style={[styles.sectionHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                    <Text style={styles.sectionTitle}>{isRTL ? 'أحدث الحجوزات' : 'Recent Bookings'}</Text>
-                    <TouchableOpacity 
-                      style={styles.viewAllBtn}
-                      onPress={() => router.push('/(tabs)/(dashboard)/bookings')}
-                    >
-                      <Text style={styles.viewAllText}>{isRTL ? 'عرض الكل' : 'View All'}</Text>
-                      <Ionicons name={isRTL ? 'chevron-back' : 'chevron-forward'} size={14} color={Colors.primary} />
-                    </TouchableOpacity>
-                  </View>
-
-                  {recentBookings.slice(0, 3).map((booking: any) => (
-                    <TouchableOpacity 
-                      key={booking.id} 
-                      style={[styles.bookingCard, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
-                      onPress={() => router.push('/(tabs)/(dashboard)/bookings')}
-                      activeOpacity={0.7}
-                    >
-                      <View style={[styles.bookingAvatar, { 
-                        backgroundColor: booking.status === 'confirmed' ? '#EFF6FF' : booking.status === 'pending' ? '#FFF7ED' : '#F8F9FB' 
-                      }]}>
-                        <Text style={[styles.avatarLetter, { 
-                          color: booking.status === 'confirmed' ? Colors.primary : booking.status === 'pending' ? '#F59E0B' : Colors.text.primary 
-                        }]}>
-                          {(booking.customer?.name || booking.user?.name || '?')[0]}
-                        </Text>
-                      </View>
-                      <View style={[styles.bookingInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                        <Text style={styles.bookingName}>{booking.customer?.name || booking.user?.name || '-'}</Text>
-                        <Text style={styles.bookingChalet} numberOfLines={1}>
-                          {isRTL ? (booking.chalet?.name?.ar || '-') : (booking.chalet?.name?.en || '-')}
-                        </Text>
-                        <Text style={styles.bookingDate}>
-                          {new Date(booking.startDate || booking.createdAt).toLocaleDateString(isRTL ? 'ar-IQ' : 'en-US', { month: 'short', day: 'numeric' })}
-                        </Text>
-                      </View>
-                      <View style={{ alignItems: isRTL ? 'flex-start' : 'flex-end' }}>
-                        <Text style={styles.bookingAmount}>
-                          {(booking.totalPrice || 0).toLocaleString()} <Text style={styles.bookingCurrency}>{isRTL ? 'د.ع' : 'IQD'}</Text>
-                        </Text>
-                        <View style={[styles.bookingStatusBadge, {
-                          backgroundColor: booking.status === 'confirmed' ? '#ECFDF5' : booking.status === 'pending' ? '#FFF7ED' : '#FEF2F2'
-                        }]}>
-                          <Text style={[styles.bookingStatusText, {
-                            color: booking.status === 'confirmed' ? '#10B981' : booking.status === 'pending' ? '#F59E0B' : '#EF4444'
-                          }]}>
-                            {booking.status === 'confirmed' ? (isRTL ? 'مؤكد' : 'Confirmed') : 
-                             booking.status === 'pending' ? (isRTL ? 'معلق' : 'Pending') : (isRTL ? 'ملغي' : 'Cancelled')}
-                          </Text>
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-                  ))}
-                </>
-              )}
-
-              {/* My Chalets */}
-              <View style={styles.chaletSectionWrap}>
-                <View style={[styles.chaletSectionHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                  <View style={[styles.sectionTitleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                    <MaterialCommunityIcons name="home-city-outline" size={22} color={Colors.primary} />
-                    <Text style={styles.sectionTitle}>{isRTL ? 'شاليهاتي' : 'My Chalets'}</Text>
-                    <View style={styles.countBadge}>
-                      <Text style={styles.countBadgeText}>{chalets?.data?.length || 0}</Text>
-                    </View>
-                  </View>
-                  <TouchableOpacity
-                    style={styles.addChaletBtn}
-                    onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                      router.push('/(tabs)/(dashboard)/add-chalet');
-                    }}
-                    activeOpacity={0.8}
-                  >
-                    <Ionicons name="add" size={18} color={Colors.white} />
-                  </TouchableOpacity>
-                </View>
-
-                {chalets?.data?.length > 0 ? (
-                  <View style={styles.chaletsList}>
-                    {chalets.data.map((item: any) => renderChaletCard(item))}
-                  </View>
-                ) : (
-                  <View style={styles.emptyContainer}>
-                    <View style={styles.emptyIconWrap}>
-                      <MaterialCommunityIcons name="home-plus-outline" size={48} color="#D1D5DB" />
-                    </View>
-                    <Text style={styles.emptyTitle}>{isRTL ? 'لا توجد شاليهات بعد' : 'No Chalets Yet'}</Text>
-                    <Text style={styles.emptySubtitle}>
-                      {isRTL ? 'أضف أول شاليه لك وابدأ بإستقبال الحجوزات' : 'Add your first chalet to start receiving bookings'}
-                    </Text>
-                  </View>
-                )}
+              <ThemedText style={styles.statsLabel}>
+                {t("dashboard.revenue.total")}
+              </ThemedText>
+              <View style={styles.balanceContainer}>
+                <ThemedText style={styles.statsValue}>
+                  {isBalanceVisible ? formatPrice(walletBalance) : "••••••"}
+                </ThemedText>
+                <TouchableOpacity
+                  onPress={handleToggleBalance}
+                  style={styles.eyeBtn}
+                >
+                  <SolarIcon
+                    name={isBalanceVisible ? "eye-linear" : "eye-closed-linear"}
+                    size={18}
+                    color="#94A3B8"
+                  />
+                </TouchableOpacity>
               </View>
-            </>
-          )}
+            </View>
+
+            <View style={styles.statsRow}>
+              <View
+                style={[
+                  styles.statsCardSmall,
+                  { flex: 1, backgroundColor: "#FFF7ED" },
+                ]}
+              >
+                <View
+                  style={[styles.statsIconBox, { backgroundColor: "#FFEDD5" }]}
+                >
+                  <SolarIcon
+                    name="calendar-minimalistic-linear"
+                    size={18}
+                    color="#EA580C"
+                  />
+                </View>
+                <ThemedText style={styles.statsLabelSmall}>
+                  {t("tabs.bookings")}
+                </ThemedText>
+                <ThemedText style={styles.statsValueSmall}>
+                  {recentBookings.length || 0}+
+                </ThemedText>
+              </View>
+              <View
+                style={[
+                  styles.statsCardSmall,
+                  { flex: 1, backgroundColor: "#ECFDF5", marginLeft: 12 },
+                ]}
+              >
+                <View
+                  style={[styles.statsIconBox, { backgroundColor: "#D1FAE5" }]}
+                >
+                  <SolarIcon name="home-2-linear" size={18} color="#059669" />
+                </View>
+                <ThemedText style={styles.statsLabelSmall}>
+                  {isRTL ? "الشاليهات" : "Chalets"}
+                </ThemedText>
+                <ThemedText style={styles.statsValueSmall}>
+                  {chalets?.length || 0}
+                </ThemedText>
+              </View>
+            </View>
+          </View>
+
+          {/* Action Buttons */}
+          <View style={styles.actionSection}>
+            <View style={styles.sectionHeader}>
+              <ThemedText style={styles.sectionTitle}>
+                {isRTL ? "إجراءات سريعة" : "Quick Actions"}
+              </ThemedText>
+            </View>
+            <View style={styles.actionGrid}>
+              <TouchableOpacity
+                style={styles.actionBtn}
+                onPress={() => router.push("/(tabs)/(dashboard)/add-chalet")}
+              >
+                <View
+                  style={[styles.actionIconBox, { backgroundColor: "#6366F1" }]}
+                >
+                  <SolarIcon name="add-circle-linear" size={24} color="white" />
+                </View>
+                <ThemedText style={styles.actionText}>
+                  {t("tabs.addChalet")}
+                </ThemedText>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.actionBtn}
+                onPress={() => router.push("/(tabs)/(dashboard)/revenue")}
+              >
+                <View
+                  style={[styles.actionIconBox, { backgroundColor: "#F59E0B" }]}
+                >
+                  <SolarIcon name="chart-linear" size={24} color="white" />
+                </View>
+                <ThemedText style={styles.actionText}>
+                  {t("tabs.revenue")}
+                </ThemedText>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.actionBtn}
+                onPress={() => router.push("/(tabs)/(dashboard)/bookings")}
+              >
+                <View
+                  style={[styles.actionIconBox, { backgroundColor: "#8B5CF6" }]}
+                >
+                  <SolarIcon name="calendar-linear" size={24} color="white" />
+                </View>
+                <ThemedText style={styles.actionText}>
+                  {isRTL ? "الحجوزات" : "Bookings"}
+                </ThemedText>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.actionBtn}
+                onPress={() =>
+                  router.push("/(tabs)/(dashboard)/provider-profile")
+                }
+              >
+                <View
+                  style={[styles.actionIconBox, { backgroundColor: "#10B981" }]}
+                >
+                  <SolarIcon name="settings-linear" size={24} color="white" />
+                </View>
+                <ThemedText style={styles.actionText}>
+                  {isRTL ? "الإعدادات" : "Settings"}
+                </ThemedText>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* My Chalets Section */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <ThemedText style={styles.sectionTitle}>
+                {isRTL ? "شاليهاتك" : "My Chalets"}
+              </ThemedText>
+              <TouchableOpacity
+                onPress={() => router.push("/(tabs)/(dashboard)/add-chalet")}
+              >
+                <ThemedText style={styles.viewAllText}>
+                  {isRTL ? "+ إضافة" : "+ Add"}
+                </ThemedText>
+              </TouchableOpacity>
+            </View>
+
+            {isLoading ? (
+              <ActivityIndicator
+                color={Colors.primary}
+                size="large"
+                style={{ margin: 20 }}
+              />
+            ) : chalets && chalets.length > 0 ? (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.chaletsList}
+              >
+                {chalets.map(renderChaletCard)}
+              </ScrollView>
+            ) : (
+              <View style={styles.emptyState}>
+                <SolarIcon name="magnifer-linear" size={48} color="#94A3B8" />
+                <ThemedText style={styles.emptyStateText}>
+                  {isRTL ? "لا توجد شاليهات بعد" : "No chalets added yet"}
+                </ThemedText>
+                <SecondaryButton
+                  label={t("tabs.addChalet")}
+                  onPress={() => router.push("/(tabs)/(dashboard)/add-chalet")}
+                  isActive={true}
+                  style={styles.addChaletBtn}
+                />
+              </View>
+            )}
+          </View>
         </ScrollView>
       </SafeAreaView>
     </GestureHandlerRootView>
@@ -334,329 +360,255 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.white,
+    backgroundColor: "#FAFAFB",
   },
-  container: {
-    flex: 1,
-    backgroundColor: Colors.white,
+  scrollContainer: {
+    paddingBottom: 120,
   },
-  scrollContent: {
-    paddingHorizontal: 14,
-    paddingTop: 4,
-    paddingBottom: 100,
+  welcomeSection: {
+    padding: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 10,
   },
-  loadingContainer: {
-    flex: 1,
-    height: 400,
-    justifyContent: 'center',
-    alignItems: 'center',
+  greetingText: {
+    fontSize: 14,
+    color: "#64748B",
+    fontWeight: "500",
   },
-
-  // Wallet Card
-  walletCard: {
-    marginBottom: 20,
-    borderRadius: 24,
-    overflow: 'hidden',
+  nameText: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#1E293B",
+    marginTop: 4,
   },
-  walletCardInner: {
-    backgroundColor: Colors.primary,
-    padding: 24,
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  decorCircle: {
-    position: 'absolute',
-    borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-  },
-  decorCircle1: {
-    width: 180,
-    height: 180,
-    top: -60,
-    right: -40,
-  },
-  decorCircle2: {
-    width: 120,
-    height: 120,
-    bottom: -30,
-    left: -20,
-  },
-  walletTop: {
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 20,
-  },
-  walletLabel: {
-    color: 'rgba(255,255,255,0.65)',
-    fontSize: normalize.font(12),
-    fontWeight: '600',
-    marginBottom: 6,
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
-  },
-  walletAmountRow: {
-    alignItems: 'baseline',
-  },
-  walletValue: {
-    color: Colors.white,
-    fontSize: normalize.font(32),
-    fontWeight: '800',
-    letterSpacing: -0.5,
-  },
-  walletCurrency: {
-    color: 'rgba(255,255,255,0.5)',
-    fontSize: normalize.font(14),
-    fontWeight: '600',
-  },
-  eyeButton: {
+  notificationBtn: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  walletActions: {
-    gap: 10,
-  },
-  walletActionBtn: {
-    flex: 1,
-    backgroundColor: Colors.white,
-    paddingVertical: 10,
-    borderRadius: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-  },
-  walletActionText: {
-    color: Colors.primary,
-    fontWeight: '700',
-    fontSize: normalize.font(13),
-  },
-
-  // Section Header
-  sectionHeader: {
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 14,
-  },
-  sectionTitle: {
-    fontSize: normalize.font(18),
-    fontWeight: '800',
-    color: Colors.text.primary,
-  },
-  viewAllBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-  },
-  viewAllText: {
-    color: Colors.primary,
-    fontSize: normalize.font(13),
-    fontWeight: '600',
-  },
-  // Booking Cards
-  bookingCard: {
-    backgroundColor: Colors.white,
-    padding: 14,
-    borderRadius: 16,
-    marginBottom: 10,
-    alignItems: 'center',
-    gap: 12,
+    backgroundColor: "white",
+    justifyContent: "center",
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: "#E2E8F0",
   },
-  bookingAvatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
+  unreadDot: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#EF4444",
+    borderWidth: 1.5,
+    borderColor: "white",
   },
-  avatarLetter: {
-    fontSize: normalize.font(18),
-    fontWeight: '700',
+  statsGrid: {
+    paddingHorizontal: 20,
+    gap: 12,
   },
-  bookingInfo: {
-    flex: 1,
+  statsCard: {
+    padding: 20,
+    borderRadius: 24,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
   },
-  bookingName: {
-    fontSize: normalize.font(14),
-    fontWeight: '700',
-    color: Colors.text.primary,
-    marginBottom: 1,
+  statsRow: {
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 12,
   },
-  bookingChalet: {
-    fontSize: normalize.font(11),
-    color: Colors.text.muted,
-    fontWeight: '500',
+  statsCardSmall: {
+    padding: 16,
+    borderRadius: 20,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
   },
-  bookingDate: {
-    fontSize: normalize.font(10),
-    color: Colors.text.muted,
-    fontWeight: '500',
-    marginTop: 2,
-  },
-  bookingAmount: {
-    fontSize: normalize.font(14),
-    fontWeight: '800',
-    color: Colors.text.primary,
-    marginBottom: 4,
-  },
-  bookingCurrency: {
-    fontSize: normalize.font(10),
-    color: Colors.text.muted,
-    fontWeight: '600',
-  },
-  bookingStatusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  bookingStatusText: {
-    fontSize: normalize.font(9),
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-  // Chalet Section
-  chaletSectionWrap: {
-    marginTop: 24,
-  },
-  chaletSectionHeader: {
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  sectionTitleRow: {
-    alignItems: 'center',
-    gap: 8,
-  },
-  countBadge: {
-    backgroundColor: Colors.primary,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  countBadgeText: {
-    color: Colors.white,
-    fontSize: normalize.font(11),
-    fontWeight: '800',
-  },
-  addChaletBtn: {
+  statsIconBox: {
     width: 36,
     height: 36,
     borderRadius: 12,
-    backgroundColor: Colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 12,
   },
-  // Chalet Cards
+  statsLabel: {
+    fontSize: 14,
+    color: "#64748B",
+    fontWeight: "500",
+  },
+  statsLabelSmall: {
+    fontSize: 12,
+    color: "#64748B",
+    fontWeight: "500",
+  },
+  balanceContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 8,
+  },
+  statsValue: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#035DF9",
+  },
+  statsValueSmall: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#1E293B",
+    marginTop: 4,
+  },
+  eyeBtn: {
+    padding: 8,
+  },
+  actionSection: {
+    marginTop: 28,
+    paddingHorizontal: 20,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#1E293B",
+  },
+  viewAllText: {
+    fontSize: 14,
+    color: "#035DF9",
+    fontWeight: "600",
+  },
+  actionGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+  actionBtn: {
+    width: "48%",
+    backgroundColor: "white",
+    padding: 16,
+    borderRadius: 20,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#F1F5F9",
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 8,
+  },
+  actionIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  actionText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#334155",
+  },
+  section: {
+    marginTop: 28,
+  },
   chaletsList: {
-    gap: 10,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    gap: 16,
   },
   chaletCard: {
-    backgroundColor: Colors.white,
-    borderRadius: 18,
+    width: 280,
+    backgroundColor: "white",
+    borderRadius: 24,
+    overflow: "hidden",
     borderWidth: 1,
-    borderColor: '#F0F0F0',
-    overflow: 'hidden',
-  },
-  chaletCardInner: {
-    padding: 12,
-    alignItems: 'center',
-    gap: 14,
-  },
-  chaletImageWrap: {
-    position: 'relative',
+    borderColor: "#F1F5F9",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    marginRight: 16,
   },
   chaletImage: {
-    width: normalize.width(90),
-    height: normalize.width(90),
-    borderRadius: 14,
-    backgroundColor: '#F5F5F7',
-  },
-  statusIndicator: {
-    position: 'absolute',
-    top: 6,
-    left: 6,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    borderWidth: 2,
-    borderColor: Colors.white,
+    width: "100%",
+    height: 160,
   },
   chaletInfo: {
-    flex: 1,
-    justifyContent: 'center',
-    gap: 6,
+    padding: 16,
   },
   chaletName: {
-    fontSize: normalize.font(15),
-    fontWeight: '700',
-    color: Colors.text.primary,
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#1E293B",
   },
-  locationRow: {
-    alignItems: 'center',
-    gap: 3,
+  locationContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 6,
   },
-  locationLabel: {
-    fontSize: normalize.font(11),
-    color: Colors.text.muted,
-    fontWeight: '500',
+  locationText: {
+    fontSize: 13,
+    color: "#64748B",
+    marginLeft: 4,
   },
-  chipRow: {
-    gap: 6,
-    marginTop: 2,
+  cardFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#F1F5F9",
   },
-  statChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  priceText: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#035DF9",
+  },
+  statusBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
-    gap: 4,
+    backgroundColor: "#ECFDF5",
   },
-  statChipText: {
-    fontSize: normalize.font(11),
-    fontWeight: '700',
+  statusText: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#059669",
   },
-  editBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    backgroundColor: '#F8F9FB',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  // Empty State
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 60,
-    gap: 8,
-  },
-  emptyIconWrap: {
-    width: 80,
-    height: 80,
+  emptyState: {
+    padding: 40,
+    alignItems: "center",
+    backgroundColor: "#F8FAFC",
+    marginHorizontal: 20,
     borderRadius: 24,
-    backgroundColor: '#F8F9FB',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: "#F1F5F9",
+    borderStyle: "dashed",
   },
-  emptyTitle: {
-    fontSize: normalize.font(16),
-    fontWeight: '700',
-    color: Colors.text.primary,
+  emptyStateText: {
+    marginTop: 12,
+    color: "#64748B",
+    fontSize: 14,
+    textAlign: "center",
   },
-  emptySubtitle: {
-    fontSize: normalize.font(12),
-    color: Colors.text.muted,
-    fontWeight: '500',
-    textAlign: 'center',
-    paddingHorizontal: 40,
+  addChaletBtn: {
+    marginTop: 20,
+    width: "100%",
+    height: 48,
   },
 });

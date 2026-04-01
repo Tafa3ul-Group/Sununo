@@ -194,13 +194,13 @@ export const apiSlice = createApi({
       invalidatesTags: ['Chalet'],
     }),
 
-    // Provider Profile
+    // Get provider profile
     getProviderProfile: builder.query({
       query: () => '/provider/profile',
       providesTags: ['User'],
     }),
 
-    // Provider Bookings
+    // Get provider bookings
     getProviderBookings: builder.query({
       query: (params) => ({
         url: '/provider/bookings',
@@ -209,124 +209,56 @@ export const apiSlice = createApi({
       providesTags: ['Booking'],
     }),
 
+    // Get provider booking details
     getProviderBookingDetails: builder.query({
       query: (id) => `/provider/bookings/${id}`,
       providesTags: (result, error, id) => [{ type: 'Booking' as const, id }],
     }),
 
-    markBookingCompleted: builder.mutation({
-      query: (id) => ({
-        url: `/provider/bookings/${id}/complete`,
-        method: 'PATCH',
-      }),
-      invalidatesTags: (result, error, id) => ['Booking', { type: 'Booking' as const, id }],
-    }),
-
-    createExternalBooking: builder.mutation({
-      query: ({ chaletId, ...data }) => ({
-        url: `/provider/chalets/${chaletId}/external-bookings`,
-        method: 'POST',
-        body: data,
-      }),
-      invalidatesTags: ['Booking', 'Chalet'],
-    }),
-
-    deleteExternalBooking: builder.mutation({
-      query: (id) => ({
-        url: `/provider/bookings/${id}/external`,
-        method: 'DELETE',
-      }),
-      invalidatesTags: ['Booking', 'Chalet'],
-    }),
-
-    cancelBooking: builder.mutation({
-      query: ({ id, reason }) => ({
-        url: `/customer/bookings/${id}/cancel`,
-        method: 'POST',
-        body: { reason },
-      }),
-      invalidatesTags: ['Booking', 'Chalet'],
-    }),
-
-    rejectBooking: builder.mutation({
-      query: ({ id, reason }) => ({
-        url: `/admin/bookings/${id}/force-cancel`,
-        method: 'POST',
-        body: { reason },
-      }),
-      invalidatesTags: ['Booking', 'Chalet'],
-    }),
-
+    // Get shift availability
     getShiftAvailability: builder.query({
-      query: ({ chaletId, ...params }) => ({
-        url: `/provider/chalets/${chaletId}/shifts/availability`,
+      query: (params) => ({
+        url: '/provider/shifts/availability',
         params,
       }),
       providesTags: ['Chalet'],
     }),
 
-    // Update Provider Profile
-    updateProviderProfile: builder.mutation({
-      query: (data) => ({
-        url: '/provider/profile',
-        method: 'PATCH',
-        body: data,
-      }),
-      invalidatesTags: ['User'],
-    }),
-
-    // Payouts
-    getPayouts: builder.query({
-      query: (params) => ({
-        url: '/provider/payouts',
-        params,
-      }),
-      providesTags: ['User'],
-    }),
-
-    requestPayout: builder.mutation({
-      query: (data) => ({
-        url: '/provider/payouts',
-        method: 'POST',
-        body: data,
-      }),
-      invalidatesTags: ['User'],
-    }),
-
-    // Delete Chalet
-    deleteChalet: builder.mutation({
+    // Mark booking as completed
+    markBookingCompleted: builder.mutation({
       query: (id) => ({
-        url: `/provider/chalets/${id}`,
-        method: 'DELETE',
+        url: `/provider/bookings/${id}/complete`,
+        method: 'POST',
       }),
-      invalidatesTags: ['Chalet'],
+      invalidatesTags: (result, error, id) => ['Booking', { type: 'Booking' as const, id }],
     }),
 
-    // Missing mutations from shifts.tsx
-    updateShiftPricingDay: builder.mutation({
-      query: ({ shiftId, pricingId, price }) => ({
-        url: `/provider/shifts/${shiftId}/pricing/${pricingId}`,
-        method: 'PATCH',
-        body: { price },
-      }),
-      invalidatesTags: ['Chalet'],
-    }),
-
-    createChaletPolicy: builder.mutation({
-      query: ({ chaletId, data }) => ({
-        url: `/provider/chalets/${chaletId}/cancellation-policies`,
+    // Create external booking
+    createExternalBooking: builder.mutation({
+      query: (data) => ({
+        url: '/provider/bookings/external',
         method: 'POST',
         body: data,
       }),
-      invalidatesTags: ['Chalet'],
+      invalidatesTags: ['Booking', 'Chalet'],
     }),
 
-    deleteChaletPolicy: builder.mutation({
-      query: ({ chaletId, policyId }) => ({
-        url: `/provider/chalets/${chaletId}/cancellation-policies/${policyId}`,
+    // Delete external booking
+    deleteExternalBooking: builder.mutation({
+      query: (id) => ({
+        url: `/provider/bookings/external/${id}`,
         method: 'DELETE',
       }),
-      invalidatesTags: ['Chalet'],
+      invalidatesTags: ['Booking', 'Chalet'],
+    }),
+
+    // Cancel booking
+    cancelBooking: builder.mutation({
+      query: (id) => ({
+        url: `/provider/bookings/${id}/cancel`,
+        method: 'POST',
+      }),
+      invalidatesTags: (result, error, id) => ['Booking', { type: 'Booking' as const, id }],
     }),
   }),
 });
@@ -366,19 +298,9 @@ export const {
   useGetProviderProfileQuery,
   useGetProviderBookingsQuery,
   useGetProviderBookingDetailsQuery,
+  useGetShiftAvailabilityQuery,
   useMarkBookingCompletedMutation,
   useCreateExternalBookingMutation,
   useDeleteExternalBookingMutation,
   useCancelBookingMutation,
-  useRejectBookingMutation,
-  useGetShiftAvailabilityQuery,
-  useUpdateProviderProfileMutation,
-
-  useGetPayoutsQuery,
-  useRequestPayoutMutation,
-  useDeleteChaletMutation,
-  
-  useUpdateShiftPricingDayMutation,
-  useCreateChaletPolicyMutation,
-  useDeleteChaletPolicyMutation,
 } = apiSlice;
