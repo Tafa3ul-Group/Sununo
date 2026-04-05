@@ -28,6 +28,8 @@ import { SolarIcon } from '@/components/ui/solar-icon';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import { BookingDetailsModalContent } from '@/components/booking-details-modal-content';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -37,6 +39,8 @@ export default function HomeScreen() {
   const isOwner = userType === 'owner';
   const [activeFilter, setActiveFilter] = useState('all');
   const [isBalanceVisible, setIsBalanceVisible] = useState(false);
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
+  const detailsSheetRef = React.useRef<BottomSheetModal>(null);
 
 
   // API hooks
@@ -170,10 +174,8 @@ export default function HomeScreen() {
         activeOpacity={0.8}
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          router.push({
-            pathname: '/(tabs)/(dashboard)/bookings',
-            params: { id: item.id }
-          });
+          setSelectedBookingId(item.id);
+          detailsSheetRef.current?.present();
         }}
       >
         <View style={[styles.modernBookingInner, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
@@ -204,6 +206,10 @@ export default function HomeScreen() {
       </TouchableOpacity>
     );
   };
+
+  const renderBackdrop = React.useCallback((props: any) => (
+    <BottomSheetBackdrop {...props} appearsOnIndex={0} disappearsOnIndex={-1} pressBehavior="close" />
+  ), []);
 
   const renderFilterButton = (filter: { id: string; label: string; icon?: string }) => {
     const isActive = activeFilter === filter.id;
@@ -305,6 +311,27 @@ export default function HomeScreen() {
             </View>
           )}
         </View>
+
+        {/* Booking Details Drawer */}
+        <BottomSheetModal 
+          ref={detailsSheetRef} 
+          snapPoints={['85%']} 
+          backdropComponent={renderBackdrop} 
+          enablePanDownToClose 
+          onDismiss={() => setSelectedBookingId(null)}
+        >
+          <BottomSheetView style={{ flex: 1 }}>
+            {selectedBookingId && (
+              <BookingDetailsModalContent 
+                id={selectedBookingId} 
+                isRTL={isRTL} 
+                t={t} 
+                onRefresh={refetch} 
+                onClose={() => detailsSheetRef.current?.dismiss()} 
+              />
+            )}
+          </BottomSheetView>
+        </BottomSheetModal>
       </SafeAreaView>
     </GestureHandlerRootView>
   );

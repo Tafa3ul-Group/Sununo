@@ -80,6 +80,21 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
+        name="(dashboard)/my-chalets"
+        options={{
+          title: t("tabs.myChalets"),
+          href: userType === "owner" ? "/(tabs)/(dashboard)/my-chalets" : null,
+          tabBarIcon: ({ color, focused }) => (
+            <SolarIcon
+              size={normalize.width(22)}
+              name={focused ? "home-2-bold" : "home-2-linear"}
+              color={color}
+            />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
         name="(dashboard)/shifts"
         options={{
           title: isRTL ? 'الفترات والأسعار' : 'Shifts & Prices',

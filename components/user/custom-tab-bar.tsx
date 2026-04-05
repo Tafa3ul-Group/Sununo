@@ -66,10 +66,10 @@ export const CustomTabBar: React.FC<TabProps> = ({ state, navigation, descriptor
     // If we can't find it for some reason, fallback to first visible
     if (!leftTab) leftTab = visibleRoutes[0];
 
-    // Other 3 tabs go in capsule (limited to 3 max to match design)
+    // Other tabs go in capsule (limited to 4 max to match design with new tab)
     capsuleTabs = visibleRoutes
       .filter((r: any) => r.name !== leftTab.name && (descriptors[r.key]?.options?.href !== null))
-      .slice(0, 3);
+      .slice(0, 4);
   } else {
     // For regular users, fallback to first visible as main button
     leftTab = visibleRoutes[0];

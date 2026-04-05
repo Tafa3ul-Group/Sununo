@@ -1,3 +1,4 @@
+import { ChaletProgressTabs } from '@/components/chalet-progress-tabs';
 import { HeaderSection } from '@/components/header-section';
 import { ThemedText } from '@/components/themed-text';
 import { AppMap } from '@/components/user/app-map';
@@ -69,10 +70,9 @@ export default function AddChaletScreen() {
   });
   const [currentStep, setCurrentStep] = useState(0);
   const steps = [
-    { id: 'basic', title: isRTL ? 'الأساسية' : 'Basic' },
-    { id: 'location', title: isRTL ? 'الموقع' : 'Location' },
-    { id: 'booking', title: isRTL ? 'الحجز' : 'Booking' },
-    { id: 'media', title: isRTL ? 'المزايا والصور' : 'Media' },
+    { id: 'details', title: isRTL ? 'التفاصيل' : 'Details' },
+    { id: 'extra', title: isRTL ? 'تفاصيل اضافية' : 'More Info' },
+    { id: 'amenities', title: isRTL ? 'المرافق' : 'Amenities' },
   ];
 
   const [showMap, setShowMap] = useState(false);
@@ -236,12 +236,10 @@ export default function AddChaletScreen() {
   const isStepValid = useMemo(() => {
     switch (currentStep) {
       case 0:
-        return !!form.nameAr && !!form.descriptionAr;
+        return !!form.nameAr && !!form.descriptionAr && !!form.cityId && !!form.regionId && !!form.addressAr;
       case 1:
-        return !!form.cityId && !!form.regionId && !!form.addressAr;
-      case 2:
         return !!form.phone && !!form.depositPercentage && !!form.guests;
-      case 3:
+      case 2:
         return selectedImages.length > 0;
       default:
         return true;
@@ -261,40 +259,7 @@ export default function AddChaletScreen() {
     }
   };
 
-  const renderStepIndicator = () => {
-    return (
-      <View style={[styles.stepIndicatorContainer, { flexDirection }]}>
-        {steps.map((step, index) => {
-          const isActive = index === currentStep;
-          const isCompleted = index < currentStep;
 
-          return (
-            <React.Fragment key={step.id}>
-              <View style={styles.stepItem}>
-                <View style={[
-                  styles.stepDot,
-                  isActive && styles.stepDotActive,
-                  isCompleted && styles.stepDotCompleted
-                ]}>
-                  {isCompleted ? (
-                    <Ionicons name="checkmark" size={12} color={Colors.white} />
-                  ) : (
-                    <Text style={[styles.stepNumber, isActive && styles.stepNumberActive]}>{index + 1}</Text>
-                  )}
-                </View>
-                <Text style={[styles.stepTitle, isActive && styles.stepTitleActive]}>
-                  {step.title}
-                </Text>
-              </View>
-              {index < steps.length - 1 && (
-                <View style={[styles.stepLine, isCompleted && styles.stepLineCompleted]} />
-              )}
-            </React.Fragment>
-          );
-        })}
-      </View>
-    );
-  };
 
   const textAlign = isRTL ? 'right' : 'left';
   const flexDirection = isRTL ? 'row-reverse' : 'row';
@@ -319,134 +284,113 @@ export default function AddChaletScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {renderStepIndicator()}
+          <ChaletProgressTabs
+            steps={steps}
+            currentStep={currentStep}
+            onStepPress={(index) => {
+              // Only allow going to completed or current steps
+              if (index <= currentStep) setCurrentStep(index);
+            }}
+            isRTL={isRTL}
+          />
 
           {currentStep === 0 && (
-            <View style={styles.sectionCard}>
-              <ThemedText type="h2" style={styles.sectionHeader}>{isRTL ? 'المعلومات الأساسية' : 'Basic Information'}</ThemedText>
+            <>
+              <View style={styles.sectionCard}>
+                <ThemedText type="h2" style={styles.sectionHeader}>{isRTL ? 'اسم الشاليه' : 'Chalet Name'}</ThemedText>
 
-              <View style={styles.inputGroup}>
-                <Text style={[styles.label, { textAlign }]}>{isRTL ? 'اسم الشاليه (بالعربي)' : 'Chalet Name (Arabic)'}</Text>
-                <TextInput
-                  style={[styles.input, { textAlign }]}
-                  placeholder={isRTL ? "مثال: شاليه الورد" : "e.g. Rose Chalet"}
-                  value={form.nameAr}
-                  onChangeText={(val) => setForm({ ...form, nameAr: val })}
-                />
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.label, { textAlign }]}>{isRTL ? 'اسم الشاليه' : 'Chalet Name'}</Text>
+                  <TextInput
+                    style={[styles.input, { textAlign }]}
+                    placeholder={isRTL ? "اسم الشاليه" : "e.g. Rose Chalet"}
+                    placeholderTextColor="#BCBCBC"
+                    value={form.nameAr}
+                    onChangeText={(val) => setForm({ ...form, nameAr: val })}
+                  />
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.label, { textAlign }]}>{isRTL ? 'وصف الشاليه' : 'Description'}</Text>
+                  <TextInput
+                    style={[styles.input, styles.textArea, { textAlign }]}
+                    placeholder={isRTL ? "اسم الشاليه" : "Enter description..."}
+                    placeholderTextColor="#BCBCBC"
+                    multiline
+                    numberOfLines={4}
+                    value={form.descriptionAr}
+                    onChangeText={(val) => setForm({ ...form, descriptionAr: val })}
+                  />
+                </View>
               </View>
 
-              <View style={styles.inputGroup}>
-                <Text style={[styles.label, { textAlign }]}>{isRTL ? 'اسم الشاليه (English)' : 'Chalet Name (English)'}</Text>
-                <TextInput
-                  style={[styles.input, { textAlign: 'left' }]}
-                  placeholder="e.g. Rose Chalet"
-                  value={form.nameEn}
-                  onChangeText={(val) => setForm({ ...form, nameEn: val })}
-                />
-              </View>
+              <View style={styles.sectionCard}>
+                <ThemedText type="h2" style={styles.sectionHeader}>{isRTL ? 'الموقع' : 'Location'}</ThemedText>
 
-              <View style={styles.inputGroup}>
-                <Text style={[styles.label, { textAlign }]}>{isRTL ? 'الوصف (بالعربي)' : 'Description (Arabic)'}</Text>
-                <TextInput
-                  style={[styles.input, styles.textArea, { textAlign }]}
-                  placeholder={isRTL ? "اكتب وصفاً بالعربي..." : "Enter Arabic description..."}
-                  multiline
-                  numberOfLines={4}
-                  value={form.descriptionAr}
-                  onChangeText={(val) => setForm({ ...form, descriptionAr: val })}
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={[styles.label, { textAlign }]}>{isRTL ? 'الوصف (English)' : 'Description (English)'}</Text>
-                <TextInput
-                  style={[styles.input, styles.textArea, { textAlign: 'left' }]}
-                  placeholder="Enter description in English..."
-                  multiline
-                  numberOfLines={4}
-                  value={form.descriptionEn}
-                  onChangeText={(val) => setForm({ ...form, descriptionEn: val })}
-                />
-              </View>
-            </View>
-          )}
-
-          {currentStep === 1 && (
-            <View style={styles.sectionCard}>
-              <ThemedText type="h2" style={styles.sectionHeader}>{isRTL ? 'تحديد الموقع' : 'Location Details'}</ThemedText>
-
-              <View style={[styles.rowInputs, { flexDirection }]}>
-                <View style={[styles.inputGroup, { flex: 1 }]}>
-                  <Text style={[styles.label, { textAlign }]}>المدينة</Text>
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.label, { textAlign }]}>{isRTL ? 'المدينة' : 'City'}</Text>
                   <TouchableOpacity
                     style={[styles.input, { justifyContent: 'center' }]}
                     onPress={() => citySheetRef.current?.present()}
                   >
-                    <Text style={{ color: form.cityName ? Colors.text.primary : Colors.text.muted, textAlign }}>
-                      {form.cityName || "اختر المدينة"}
+                    <Text style={{ color: form.cityName ? Colors.text.primary : '#BCBCBC', textAlign }}>
+                      {form.cityName || (isRTL ? 'البصرة' : 'Select City')}
                     </Text>
                   </TouchableOpacity>
                 </View>
-                <View style={[styles.inputGroup, { flex: 1 }]}>
-                  <Text style={[styles.label, { textAlign }]}>المنطقة</Text>
+
+                <View style={styles.inputGroup}>
                   <TouchableOpacity
-                    style={[styles.input, { justifyContent: 'center' }]}
-                    onPress={() => form.cityId ? regionSheetRef.current?.present() : Alert.alert("تنبيه", "يرجى اختيار المدينة أولاً")}
-                    disabled={!form.cityId}
+                    style={styles.mapPreviewContainer}
+                    onPress={() => setShowMap(true)}
+                    activeOpacity={0.8}
                   >
-                    <Text style={{ color: form.regionName ? Colors.text.primary : Colors.text.muted, textAlign }}>
-                      {form.regionName || "اختر المنطقة"}
-                    </Text>
+                    <AppMap
+                      style={styles.miniMap}
+                      centerCoordinate={form.latitude && form.longitude ? [parseFloat(form.longitude), parseFloat(form.latitude)] : undefined}
+                      zoomLevel={15}
+                      interactive={false}
+                      showMarker={true}
+                    />
+                    <View style={styles.mapOverlay}>
+                      <View style={styles.editLocBadge}>
+                        <Ionicons name="map" size={16} color={Colors.white} />
+                        <Text style={styles.editLocText}>{isRTL ? 'تعديل الموقع على الخارطة' : 'Edit on Map'}</Text>
+                      </View>
+                    </View>
                   </TouchableOpacity>
                 </View>
-              </View>
 
-              <View style={styles.inputGroup}>
-                <Text style={[styles.label, { textAlign }]}>{isRTL ? 'العنوان (بالعربي)' : 'Address (Arabic)'}</Text>
-                <TextInput
-                  style={[styles.input, { textAlign }]}
-                  placeholder={isRTL ? "مثال: القبلة، شارع المصرف" : "e.g. Al-Qibla, Bank St."}
-                  value={form.addressAr}
-                  onChangeText={(val) => setForm({ ...form, addressAr: val })}
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={[styles.label, { textAlign }]}>{isRTL ? 'العنوان (English)' : 'Address (English)'}</Text>
-                <TextInput
-                  style={[styles.input, { textAlign: 'left' }]}
-                  placeholder="e.g. Al-Qibla, Bank St."
-                  value={form.addressEn}
-                  onChangeText={(val) => setForm({ ...form, addressEn: val })}
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={[styles.label, { textAlign }]}>{isRTL ? 'موقع الشاليه' : 'Chalet Location'}</Text>
-                <TouchableOpacity
-                  style={styles.mapPreviewContainer}
-                  onPress={() => setShowMap(true)}
-                  activeOpacity={0.8}
-                >
-                  <AppMap
-                    style={styles.miniMap}
-                    centerCoordinate={form.latitude && form.longitude ? [parseFloat(form.longitude), parseFloat(form.latitude)] : undefined}
-                    zoomLevel={15}
-                    interactive={false}
-                    showMarker={true}
-                  />
-                  <View style={styles.mapOverlay}>
-                    <View style={styles.editLocBadge}>
-                      <Ionicons name="map" size={16} color={Colors.white} />
-                      <Text style={styles.editLocText}>{isRTL ? 'تعديل الموقع على الخارطة' : 'Edit on Map'}</Text>
-                    </View>
+                <View style={[styles.rowInputs, { flexDirection }]}>
+                  <View style={[styles.inputGroup, { flex: 1 }]}>
+                    <TouchableOpacity
+                      style={[styles.input, { justifyContent: 'center' }]}
+                      onPress={() => form.cityId ? regionSheetRef.current?.present() : Alert.alert(isRTL ? 'تنبيه' : 'Alert', isRTL ? 'يرجى اختيار المدينة أولاً' : 'Select city first')}
+                      disabled={!form.cityId}
+                    >
+                      <Text style={{ color: form.regionName ? Colors.text.primary : '#BCBCBC', textAlign }}>
+                        {form.regionName || (isRTL ? 'اختر المنطقة' : 'Select Region')}
+                      </Text>
+                    </TouchableOpacity>
                   </View>
-                </TouchableOpacity>
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <TextInput
+                    style={[styles.input, { textAlign }]}
+                    placeholder={isRTL ? "العنوان" : "Address"}
+                    placeholderTextColor="#BCBCBC"
+                    value={form.addressAr}
+                    onChangeText={(val) => setForm({ ...form, addressAr: val })}
+                  />
+                </View>
               </View>
-            </View>
+            </>
           )}
 
-          {currentStep === 2 && (
+
+
+          {currentStep === 1 && (
             <View style={styles.sectionCard}>
               <ThemedText type="h2" style={styles.sectionHeader}>{isRTL ? 'التواصل وسياسة الحجز' : 'Contact & Booking'}</ThemedText>
 
@@ -455,6 +399,7 @@ export default function AddChaletScreen() {
                 <TextInput
                   style={[styles.input, { textAlign: 'left' }]}
                   placeholder="+964..."
+                  placeholderTextColor="#BCBCBC"
                   keyboardType="phone-pad"
                   value={form.phone}
                   onChangeText={(val) => setForm({ ...form, phone: val })}
@@ -466,6 +411,7 @@ export default function AddChaletScreen() {
                 <TextInput
                   style={[styles.input, { textAlign: 'left' }]}
                   placeholder="https://wa.me/964..."
+                  placeholderTextColor="#BCBCBC"
                   keyboardType="url"
                   autoCapitalize="none"
                   value={form.whatsapp}
@@ -479,6 +425,7 @@ export default function AddChaletScreen() {
                   <TextInput
                     style={[styles.input, { textAlign: 'left' }]}
                     placeholder="25"
+                    placeholderTextColor="#BCBCBC"
                     keyboardType="numeric"
                     value={form.depositPercentage}
                     onChangeText={(val) => setForm({ ...form, depositPercentage: val })}
@@ -489,6 +436,7 @@ export default function AddChaletScreen() {
                   <TextInput
                     style={[styles.input, { textAlign: 'left' }]}
                     placeholder="20"
+                    placeholderTextColor="#BCBCBC"
                     keyboardType="numeric"
                     value={form.guests}
                     onChangeText={(val) => setForm({ ...form, guests: val })}
@@ -498,7 +446,7 @@ export default function AddChaletScreen() {
             </View>
           )}
 
-          {currentStep === 3 && (
+          {currentStep === 2 && (
             <>
               <View style={styles.sectionCard}>
                 <ThemedText type="h2" style={styles.sectionHeader}>{isRTL ? 'المميزات المتوفرة' : 'Available Amenities'}</ThemedText>
@@ -689,66 +637,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: Spacing.xl,
   },
-  stepIndicatorContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.sm,
-    marginBottom: Spacing.lg,
-    backgroundColor: Colors.white,
-    padding: Spacing.md,
-    borderWidth: 1,
-    borderColor: '#F0F0F0',
-  },
-  stepItem: {
-    alignItems: 'center',
-    gap: 4,
-  },
-  stepDot: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#F1F5F9',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#E2E8F0',
-  },
-  stepDotActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  stepDotCompleted: {
-    backgroundColor: '#10B981',
-    borderColor: '#10B981',
-  },
-  stepNumber: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#64748B',
-  },
-  stepNumberActive: {
-    color: Colors.white,
-  },
-  stepTitle: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#94A3B8',
-  },
-  stepTitleActive: {
-    color: Colors.primary,
-    fontWeight: '700',
-  },
-  stepLine: {
-    flex: 1,
-    height: 2,
-    backgroundColor: '#F0F0F0',
-    marginHorizontal: 4,
-    marginTop: -16, // Align with dots
-  },
-  stepLineCompleted: {
-    backgroundColor: '#10B981',
-  },
+
   footer: {
     flexDirection: 'row',
     gap: Spacing.md,
@@ -759,15 +648,15 @@ const styles = StyleSheet.create({
   },
   sectionCard: {
     backgroundColor: 'transparent',
-    padding: Spacing.xs,
-    gap: Spacing.sm,
+    padding: 0,
+    gap: Spacing.md,
     marginBottom: Spacing.md,
   },
   sectionHeader: {
     fontSize: normalize.font(16),
     fontWeight: '800',
     color: Colors.text.primary,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   uploadText: {
     marginTop: normalize.height(4),
@@ -879,27 +768,27 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
   },
   inputGroup: {
-    gap: 4,
+    gap: 6,
   },
   label: {
     ...Typography.caption,
     color: Colors.text.primary,
-    fontWeight: '700',
+    fontWeight: '800',
     fontSize: normalize.font(14),
   },
   input: {
-    height: normalize.height(54),
-    backgroundColor: '#F8FAFC',
-    borderRadius: normalize.radius(16),
+    height: normalize.height(48),
+    backgroundColor: '#FFFFFF',
+    borderRadius: normalize.radius(12),
     paddingHorizontal: Spacing.md,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#E8E8E8',
     fontSize: normalize.font(15),
     color: Colors.text.primary,
   },
   textArea: {
     height: normalize.height(100),
-    paddingTop: 16,
+    paddingTop: 18,
     textAlignVertical: 'top',
   },
   featuresGrid: {
@@ -915,13 +804,12 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xl,
   },
   mapPreviewContainer: {
-    height: normalize.height(180),
+    height: normalize.height(160),
     width: '100%',
-    borderRadius: normalize.radius(16),
+    borderRadius: normalize.radius(12),
     overflow: 'hidden',
     backgroundColor: '#F1F5F9',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderWidth: 0,
     position: 'relative',
   },
   miniMap: {
