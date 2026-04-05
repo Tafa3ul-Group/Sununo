@@ -12,6 +12,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
+  FlatList,
   Image,
   RefreshControl,
   ScrollView,
@@ -20,6 +21,10 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { PrimaryButton } from '@/components/user/primary-button';
+import { SecondaryButton } from '@/components/user/secondary-button';
+import { SolarIcon } from '@/components/ui/solar-icon';
+
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
@@ -30,12 +35,24 @@ export default function HomeScreen() {
   const { t } = useTranslation();
   const isRTL = language === 'ar';
   const isOwner = userType === 'owner';
+  const [activeFilter, setActiveFilter] = useState('all');
   const [isBalanceVisible, setIsBalanceVisible] = useState(false);
+
 
   // API hooks
   const { data: chalets, isLoading, refetch, isFetching } = useGetOwnerChaletsQuery({});
   const { data: profileResponse } = useGetProviderProfileQuery(undefined);
-  const { data: bookingsResponse } = useGetProviderBookingsQuery({ limit: 3 });
+  
+  const statusMap: Record<string, string> = {
+    pending: 'pending_payment',
+    confirmed: 'confirmed',
+    finished: 'completed',
+  };
+
+  const { data: bookingsResponse, isFetching: isBookingsFetching } = useGetProviderBookingsQuery({ 
+    limit: 5,
+    status: activeFilter !== 'all' ? statusMap[activeFilter] : undefined
+  });
 
   const profile = profileResponse?.data || profileResponse;
   const recentBookings = bookingsResponse?.data || bookingsResponse || [];
@@ -70,7 +87,6 @@ export default function HomeScreen() {
       setIsBalanceVisible(true);
     }
   };
-
 
 
   const renderChaletCard = (item: any) => {
@@ -143,6 +159,76 @@ export default function HomeScreen() {
     );
   };
 
+  const renderBookingCard = (item: any) => {
+    const customerName = item.customer?.name || t('common.user');
+    const shiftName = isRTL ? (item.shift?.name?.ar || item.shift?.name) : (item.shift?.name?.en || item.shift?.name);
+    
+    return (
+      <TouchableOpacity
+        key={item.id}
+        style={styles.modernBookingCard}
+        activeOpacity={0.8}
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          router.push({
+            pathname: '/(tabs)/(dashboard)/bookings',
+            params: { id: item.id }
+          });
+        }}
+      >
+        <View style={[styles.modernBookingInner, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          {/* 1. Avatar (Right part in RTL) */}
+          <View style={styles.modernBookingAvatar}>
+            {item.customer?.image ? (
+              <Image source={{ uri: item.customer.image }} style={styles.modernBookingImg} />
+            ) : (
+              <View style={styles.modernBookingPlaceholder}>
+                <SolarIcon name="user-linear" size={24} color="#CBD5E1" />
+              </View>
+            )}
+          </View>
+
+          {/* 2. Info (Name and Shift) */}
+          <View style={[styles.modernBookingInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+            <Text style={[styles.modernBookingName, { textAlign: isRTL ? 'right' : 'left' }]}>{customerName}</Text>
+            <Text style={[styles.modernBookingShift, { textAlign: isRTL ? 'right' : 'left' }]}>{t('common.shift')} {shiftName}</Text>
+          </View>
+          
+          {/* 3. Price (Left part in RTL) */}
+          <View style={styles.modernBookingPriceWrap}>
+            <Text style={styles.modernBookingPrice}>
+              {Number(item.totalPrice).toLocaleString()} {t('common.iqd')}
+            </Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderFilterButton = (filter: { id: string; label: string; icon?: string }) => {
+    const isActive = activeFilter === filter.id;
+    const isAll = filter.id === 'all';
+    
+    return (
+      <View key={filter.id} style={{ transform: [{ scale: 0.92 }] }}>
+        {isAll ? (
+          <PrimaryButton
+            label={filter.label}
+            isActive={isActive}
+            onPress={() => setActiveFilter(filter.id)}
+          />
+        ) : (
+          <SecondaryButton
+            label={filter.label}
+            isActive={isActive}
+            icon={filter.icon as any}
+            onPress={() => setActiveFilter(filter.id)}
+          />
+        )}
+      </View>
+    );
+  };
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeArea}>
@@ -156,34 +242,68 @@ export default function HomeScreen() {
           extraIcon="search"
           onExtraIconPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            // Default to notifications for now as requested by previous logic or keep as search
           }}
         />
-        <ScrollView
-          style={styles.container}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-          refreshControl={
-            <RefreshControl refreshing={isFetching} onRefresh={refetch} tintColor={Colors.primary} />
-          }
-        >
+        <View style={{ flex: 1 }}>
           {isLoading && !isFetching ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color={Colors.primary} />
             </View>
           ) : (
-            <>
+            <View style={{ flex: 1 }}>
+              {/* Fixed Section: Header + Filter */}
+              <View style={styles.fixedHeaderArea}>
+                <View style={[styles.bookingsHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                  <Text style={styles.bookingsTitle}>{t('dashboard.recentBookings')}</Text>
+                  <TouchableOpacity onPress={() => router.push('/(tabs)/(dashboard)/bookings')}>
+                    <Text style={styles.bookingsViewAll}>
+                      {t('dashboard.viewAll')}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
 
+                {/* Filter Bar */}
+                <View style={styles.filterWrapper}>
+                  <ScrollView 
+                    horizontal 
+                    showsHorizontalScrollIndicator={false} 
+                    style={styles.filterScroll}
+                    contentContainerStyle={[styles.filterContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+                  >
+                    {[
+                      { id: 'all', label: t('home.categories.all') },
+                      { id: 'pending', label: t('dashboard.bookings.new'), icon: 'clock-outline' },
+                      { id: 'confirmed', label: t('dashboard.bookings.confirmed'), icon: 'check-decagram-outline' },
+                      { id: 'finished', label: t('dashboard.bookings.finished'), icon: 'calendar-check-outline' },
+                    ].map(renderFilterButton)}
+                  </ScrollView>
+                </View>
+              </View>
 
-
-
-
-
-
-
-            </>
+              {/* Scrollable Section: Only Cards */}
+              <ScrollView
+                style={styles.container}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.scrollContent}
+                refreshControl={
+                  <RefreshControl refreshing={isFetching} onRefresh={refetch} tintColor={Colors.primary} />
+                }
+              >
+                <View style={styles.bookingList}>
+                  {isBookingsFetching && !recentBookings.length ? (
+                    <ActivityIndicator color={Colors.primary} style={{ marginVertical: 20 }} />
+                  ) : recentBookings.length > 0 ? (
+                    recentBookings.map(renderBookingCard)
+                  ) : (
+                    <View style={styles.noBookings}>
+                      <Text style={styles.noBookingsText}>{t('dashboard.noBookings') || (isRTL ? 'لا توجد حجوزات حالياً' : 'No bookings found')}</Text>
+                    </View>
+                  )}
+                </View>
+              </ScrollView>
+            </View>
           )}
-        </ScrollView>
+        </View>
       </SafeAreaView>
     </GestureHandlerRootView>
   );
@@ -200,7 +320,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 14,
-    paddingTop: 4,
+    paddingTop: 10,
     paddingBottom: 100,
   },
   loadingContainer: {
@@ -377,6 +497,121 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textTransform: 'uppercase',
   },
+
+  // New Modern Bookings Section
+  bookingsSection: {
+    marginTop: 0,
+    marginBottom: 20,
+  },
+  bookingsHeader: {
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingHorizontal: 16,
+    marginTop: 10,
+  },
+  bookingsTitle: {
+    fontSize: normalize.font(20),
+    fontWeight: '800',
+    color: Colors.text.primary,
+  },
+  bookingsViewAll: {
+    fontSize: normalize.font(16),
+    color: Colors.text.primary,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
+  },
+  filterScroll: {
+    marginBottom: 15,
+  },
+  filterContainer: {
+    gap: 8,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+  },
+  filterWrapper: {
+    height: 55,
+    justifyContent: 'center',
+  },
+  bookingList: {
+    gap: 12,
+  },
+  modernBookingCard: {
+    backgroundColor: Colors.white,
+    borderRadius: 22,
+    borderWidth: 1.2,
+    borderColor: '#F1F3F5',
+    overflow: 'hidden',
+    padding: 12,
+  },
+  modernBookingInner: {
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  modernBookingAvatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 18,
+    backgroundColor: '#F8F9FA',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  modernBookingImg: {
+    width: '100%',
+    height: '100%',
+  },
+  modernBookingPlaceholder: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#F1F3F5',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modernBookingInfo: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  modernBookingName: {
+    fontSize: normalize.font(18),
+    fontWeight: '800',
+    color: Colors.text.primary,
+    marginBottom: 2,
+  },
+  modernBookingShift: {
+    fontSize: normalize.font(15),
+    color: Colors.text.muted,
+    fontWeight: '600',
+  },
+  modernBookingPriceWrap: {
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+  },
+  modernBookingPrice: {
+    fontSize: normalize.font(16),
+    fontWeight: '800',
+    color: Colors.text.primary,
+  },
+  fixedHeaderArea: {
+    backgroundColor: Colors.white,
+    zIndex: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+    paddingBottom: 5,
+  },
+  noBookings: {
+    padding: 30,
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+    borderRadius: 16,
+  },
+  noBookingsText: {
+    color: Colors.text.muted,
+    fontSize: normalize.font(14),
+    fontWeight: '600',
+  },
+
   // Chalet Section
   chaletSectionWrap: {
     marginTop: 24,

@@ -87,6 +87,7 @@
     "guestsCount": "Guests Count",
     "paymentMethod": "Payment Method",
     "fullPayment": "Full Payment",
-    "depositPayment": "Deposit"
+    "depositPayment": "Deposit",
+    "shift": "Shift"
   }
 }

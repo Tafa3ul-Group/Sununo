@@ -53,6 +53,7 @@ module.exports = function (api) {
             'solar:add-circle-bold',
             'solar:lock-bold',
             'solar:calendar-search-linear',
+            'solar:water-linear',
           ],
         },
       ],

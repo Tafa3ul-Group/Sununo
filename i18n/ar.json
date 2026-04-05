@@ -87,6 +87,7 @@
     "guestsCount": "عدد الضيوف",
     "paymentMethod": "طريقة الدفع",
     "fullPayment": "دفع كامل",
-    "depositPayment": "عربون"
+    "depositPayment": "عربون",
+    "shift": "شفت"
   }
 }
