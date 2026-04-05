@@ -243,6 +243,7 @@ export default function HomeScreen() {
           onExtraIconPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           }}
+          marginBottom={4}
         />
         <View style={{ flex: 1 }}>
           {isLoading && !isFetching ? (
@@ -320,8 +321,8 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 14,
-    paddingTop: 10,
-    paddingBottom: 100,
+    paddingTop: 5,
+    paddingBottom: 10,
   },
   loadingContainer: {
     flex: 1,
@@ -501,28 +502,28 @@ const styles = StyleSheet.create({
   // New Modern Bookings Section
   bookingsSection: {
     marginTop: 0,
-    marginBottom: 20,
+    marginBottom: 0,
   },
   bookingsHeader: {
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 10,
     paddingHorizontal: 16,
-    marginTop: 10,
+    marginTop: 0,
   },
   bookingsTitle: {
-    fontSize: normalize.font(20),
+    fontSize: normalize.font(17),
     fontWeight: '800',
     color: Colors.text.primary,
   },
   bookingsViewAll: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     color: Colors.text.primary,
     fontWeight: '600',
     textDecorationLine: 'underline',
   },
   filterScroll: {
-    marginBottom: 15,
+    marginBottom: 0,
   },
   filterContainer: {
     gap: 8,
@@ -538,21 +539,21 @@ const styles = StyleSheet.create({
   },
   modernBookingCard: {
     backgroundColor: Colors.white,
-    borderRadius: 22,
-    borderWidth: 1.2,
+    borderRadius: 20,
+    borderWidth: 1.1,
     borderColor: '#F1F3F5',
     overflow: 'hidden',
-    padding: 12,
+    padding: 10,
   },
   modernBookingInner: {
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 12,
+    gap: 10,
   },
   modernBookingAvatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 18,
+    width: 52,
+    height: 52,
+    borderRadius: 15,
     backgroundColor: '#F8F9FA',
     justifyContent: 'center',
     alignItems: 'center',
@@ -574,13 +575,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   modernBookingName: {
-    fontSize: normalize.font(18),
+    fontSize: normalize.font(16),
     fontWeight: '800',
     color: Colors.text.primary,
-    marginBottom: 2,
+    marginBottom: 1,
   },
   modernBookingShift: {
-    fontSize: normalize.font(15),
+    fontSize: normalize.font(13),
     color: Colors.text.muted,
     fontWeight: '600',
   },
@@ -589,15 +590,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   modernBookingPrice: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontWeight: '800',
     color: Colors.text.primary,
   },
   fixedHeaderArea: {
     backgroundColor: Colors.white,
     zIndex: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
     paddingBottom: 5,
   },
   noBookings: {

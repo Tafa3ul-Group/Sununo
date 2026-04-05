@@ -35,6 +35,7 @@ interface HeaderSectionProps {
   onDeletePress?: () => void;
   showLogo?: boolean;
   showExtra?: boolean;
+  marginBottom?: number;
 }
 
 export function HeaderSection({
@@ -52,7 +53,8 @@ export function HeaderSection({
   onProfilePress,
   onDeletePress,
   showLogo = false,
-  showExtra = true
+  showExtra = true,
+  marginBottom = Spacing.md
 }: HeaderSectionProps) {
   const router = useRouter();
   const { t } = useTranslation();
@@ -83,7 +85,7 @@ export function HeaderSection({
     <View style={styles.container}>
       <StatusBar style="dark" />
       {/* Title & Filter Row */}
-      <View style={[styles.topRow, { flexDirection }]}>
+      <View style={[styles.topRow, { flexDirection, marginBottom }]}>
         <View style={[styles.titleContainer, { flexDirection, flex: showLogo ? 0 : 1, alignItems: showLogo ? 'flex-end' : (showBackButton ? 'center' : (isRTL ? 'flex-end' : 'flex-start')) }]}>
           {showBackButton && (
             <TouchableOpacity
