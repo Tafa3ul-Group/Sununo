@@ -1,12 +1,10 @@
 import { HeaderSection } from '@/components/header-section';
-import { ThemedText } from '@/components/themed-text';
-import { Colors, normalize, Shadows, Spacing, Typography } from '@/constants/theme';
-import { RootState } from '@/store';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useGetOwnerChaletsQuery, useGetProviderProfileQuery, useGetProviderBookingsQuery } from '@/store/api/apiSlice';
+import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
-import { SecondaryButton } from '@/components/user/secondary-button';
+import { RootState } from '@/store';
+import { useGetOwnerChaletsQuery, useGetProviderBookingsQuery, useGetProviderProfileQuery } from '@/store/api/apiSlice';
 import { formatPrice } from '@/utils/format';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useRouter } from 'expo-router';
@@ -14,7 +12,6 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
-  Alert,
   Image,
   RefreshControl,
   ScrollView,
@@ -82,7 +79,7 @@ export default function HomeScreen() {
     const chaletLocation = isRTL ? (item.address?.ar || item.region?.name) : (item.address?.en || item.region?.enName);
 
     return (
-      <TouchableOpacity 
+      <TouchableOpacity
         key={item.id}
         style={styles.chaletCard}
         activeOpacity={0.85}
@@ -132,7 +129,7 @@ export default function HomeScreen() {
           </View>
 
           {/* Actions */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.editBtn}
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -149,9 +146,9 @@ export default function HomeScreen() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeArea}>
-        <HeaderSection 
-          userType={userType} 
-          userName={user?.name} 
+        <HeaderSection
+          userType={userType}
+          userName={user?.name}
           showSearch={false}
           showCategories={false}
           showProfile={true}
@@ -162,7 +159,7 @@ export default function HomeScreen() {
             // Default to notifications for now as requested by previous logic or keep as search
           }}
         />
-        <ScrollView 
+        <ScrollView
           style={styles.container}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
@@ -178,151 +175,12 @@ export default function HomeScreen() {
             <>
 
 
-              {/* Wallet Card */}
-              <View style={styles.walletCard}>
-                <View style={styles.walletCardInner}>
-                  <View style={[styles.decorCircle, styles.decorCircle1]} />
-                  <View style={[styles.decorCircle, styles.decorCircle2]} />
-
-                  <View style={[styles.walletTop, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                    <View style={{ flex: 1, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
-                      <Text style={styles.walletLabel}>{isRTL ? 'رصيدك المتاح' : 'Available Balance'}</Text>
-                      <View style={[styles.walletAmountRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                        <Text style={styles.walletValue}>
-                          {isBalanceVisible ? walletBalance.toLocaleString() : '••••••'}
-                        </Text>
-                        {isBalanceVisible && <Text style={styles.walletCurrency}> {isRTL ? 'د.ع' : 'IQD'}</Text>}
-                      </View>
-                    </View>
-                    <TouchableOpacity style={styles.eyeButton} onPress={handleToggleBalance}>
-                      <Ionicons 
-                        name={isBalanceVisible ? 'eye-outline' : 'eye-off-outline'} 
-                        size={22} 
-                        color="rgba(255,255,255,0.8)" 
-                      />
-                    </TouchableOpacity>
-                  </View>
-
-                  <View style={[styles.walletActions, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                    <TouchableOpacity 
-                      style={styles.walletActionBtn}
-                      onPress={() => router.push('/(tabs)/(dashboard)/revenue')}
-                      activeOpacity={0.85}
-                    >
-                      <MaterialCommunityIcons name="bank-transfer-out" size={18} color={Colors.primary} />
-                      <Text style={styles.walletActionText}>{isRTL ? 'سحب' : 'Withdraw'}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity 
-                      style={styles.walletActionBtn}
-                      onPress={() => router.push('/(tabs)/(dashboard)/transactions')}
-                      activeOpacity={0.85}
-                    >
-                      <MaterialCommunityIcons name="history" size={18} color={Colors.primary} />
-                      <Text style={styles.walletActionText}>{isRTL ? 'المعاملات' : 'History'}</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
 
 
 
-              {/* Recent Bookings */}
-              {Array.isArray(recentBookings) && recentBookings.length > 0 && (
-                <>
-                  <View style={[styles.sectionHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                    <Text style={styles.sectionTitle}>{isRTL ? 'أحدث الحجوزات' : 'Recent Bookings'}</Text>
-                    <TouchableOpacity 
-                      style={styles.viewAllBtn}
-                      onPress={() => router.push('/(tabs)/(dashboard)/bookings')}
-                    >
-                      <Text style={styles.viewAllText}>{isRTL ? 'عرض الكل' : 'View All'}</Text>
-                      <Ionicons name={isRTL ? 'chevron-back' : 'chevron-forward'} size={14} color={Colors.primary} />
-                    </TouchableOpacity>
-                  </View>
 
-                  {recentBookings.slice(0, 3).map((booking: any) => (
-                    <TouchableOpacity 
-                      key={booking.id} 
-                      style={[styles.bookingCard, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
-                      onPress={() => router.push('/(tabs)/(dashboard)/bookings')}
-                      activeOpacity={0.7}
-                    >
-                      <View style={[styles.bookingAvatar, { 
-                        backgroundColor: booking.status === 'confirmed' ? '#EFF6FF' : booking.status === 'pending' ? '#FFF7ED' : '#F8F9FB' 
-                      }]}>
-                        <Text style={[styles.avatarLetter, { 
-                          color: booking.status === 'confirmed' ? Colors.primary : booking.status === 'pending' ? '#F59E0B' : Colors.text.primary 
-                        }]}>
-                          {(booking.customer?.name || booking.user?.name || '?')[0]}
-                        </Text>
-                      </View>
-                      <View style={[styles.bookingInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                        <Text style={styles.bookingName}>{booking.customer?.name || booking.user?.name || '-'}</Text>
-                        <Text style={styles.bookingChalet} numberOfLines={1}>
-                          {isRTL ? (booking.chalet?.name?.ar || '-') : (booking.chalet?.name?.en || '-')}
-                        </Text>
-                        <Text style={styles.bookingDate}>
-                          {new Date(booking.startDate || booking.createdAt).toLocaleDateString(isRTL ? 'ar-IQ' : 'en-US', { month: 'short', day: 'numeric' })}
-                        </Text>
-                      </View>
-                      <View style={{ alignItems: isRTL ? 'flex-start' : 'flex-end' }}>
-                        <Text style={styles.bookingAmount}>
-                          {(booking.totalPrice || 0).toLocaleString()} <Text style={styles.bookingCurrency}>{isRTL ? 'د.ع' : 'IQD'}</Text>
-                        </Text>
-                        <View style={[styles.bookingStatusBadge, {
-                          backgroundColor: booking.status === 'confirmed' ? '#ECFDF5' : booking.status === 'pending' ? '#FFF7ED' : '#FEF2F2'
-                        }]}>
-                          <Text style={[styles.bookingStatusText, {
-                            color: booking.status === 'confirmed' ? '#10B981' : booking.status === 'pending' ? '#F59E0B' : '#EF4444'
-                          }]}>
-                            {booking.status === 'confirmed' ? (isRTL ? 'مؤكد' : 'Confirmed') : 
-                             booking.status === 'pending' ? (isRTL ? 'معلق' : 'Pending') : (isRTL ? 'ملغي' : 'Cancelled')}
-                          </Text>
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-                  ))}
-                </>
-              )}
 
-              {/* My Chalets */}
-              <View style={styles.chaletSectionWrap}>
-                <View style={[styles.chaletSectionHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                  <View style={[styles.sectionTitleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                    <MaterialCommunityIcons name="home-city-outline" size={22} color={Colors.primary} />
-                    <Text style={styles.sectionTitle}>{isRTL ? 'شاليهاتي' : 'My Chalets'}</Text>
-                    <View style={styles.countBadge}>
-                      <Text style={styles.countBadgeText}>{chalets?.data?.length || 0}</Text>
-                    </View>
-                  </View>
-                  <TouchableOpacity
-                    style={styles.addChaletBtn}
-                    onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                      router.push('/(tabs)/(dashboard)/add-chalet');
-                    }}
-                    activeOpacity={0.8}
-                  >
-                    <Ionicons name="add" size={18} color={Colors.white} />
-                  </TouchableOpacity>
-                </View>
 
-                {chalets?.data?.length > 0 ? (
-                  <View style={styles.chaletsList}>
-                    {chalets.data.map((item: any) => renderChaletCard(item))}
-                  </View>
-                ) : (
-                  <View style={styles.emptyContainer}>
-                    <View style={styles.emptyIconWrap}>
-                      <MaterialCommunityIcons name="home-plus-outline" size={48} color="#D1D5DB" />
-                    </View>
-                    <Text style={styles.emptyTitle}>{isRTL ? 'لا توجد شاليهات بعد' : 'No Chalets Yet'}</Text>
-                    <Text style={styles.emptySubtitle}>
-                      {isRTL ? 'أضف أول شاليه لك وابدأ بإستقبال الحجوزات' : 'Add your first chalet to start receiving bookings'}
-                    </Text>
-                  </View>
-                )}
-              </View>
             </>
           )}
         </ScrollView>
