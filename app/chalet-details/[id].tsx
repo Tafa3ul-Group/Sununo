@@ -14,6 +14,7 @@ import { SolarIcon } from '@/components/ui/solar-icon';
 import Svg, { Path } from 'react-native-svg';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { CircleBackButton } from '@/components/ui/circle-back-button';
+import { HorizontalCard } from '@/components/user/horizontal-card';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -102,21 +103,13 @@ export default function ChaletDetailScreen() {
              <View style={styles.mapLocLabel}><ThemedText style={styles.mapLocText}>البصرة - ابة الخصيب</ThemedText></View>
           </View>
 
-          {/* المضيف */}
+          {/* المضيف (استخدام صورة الكونتاكت) */}
           <View style={styles.hostStampArea}>
-             <View style={styles.hostGreenJagged}>
-                <View style={styles.hostContentBox}>
-                   <View style={styles.hostAvatarComp}>
-                      <View style={styles.avatarOrangeFrame}>
-                         <Image source={require('@/assets/profile.svg')} style={styles.hostImgMain} resizeMode="contain" />
-                      </View>
-                   </View>
-                   <View style={styles.hostInfoText}>
-                      <ThemedText style={styles.hostLabelAlt}>المضيف</ThemedText>
-                      <ThemedText style={styles.hostNameAlt}>انيس انس</ThemedText>
-                   </View>
-                </View>
-             </View>
+             <Image 
+                source={require('@/assets/tabs/contact.svg')} 
+                style={styles.contactBanner} 
+                resizeMode="contain" 
+             />
           </View>
 
           {/* أزرار التقييم والمراجعات مع الربط بالصفحة الجديدة */}
@@ -163,17 +156,22 @@ export default function ChaletDetailScreen() {
           {/* قد يعجبك ايضا */}
           <ThemedText style={styles.sectionTitle}>قد يعجبك ايضا</ThemedText>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.relatedRow}>
-             <View style={styles.relatedCardFlatFinal}>
-                <View style={styles.relInfoLeft}>
-                   <View style={styles.relFavBtn}><SolarIcon name="heart-bold" size={17} color="#FF4500"/></View>
-                   <ThemedText style={styles.relChaletTitle}>شالية الاروع علة الطلاق</ThemedText>
-                   <ThemedText style={styles.relChaletLoc}>البصرة - الجزائر</ThemedText>
-                   <View style={styles.relBottomMeta}>
-                      <View style={styles.relRatingBox}><SolarIcon name="star-bold" size={14} color="#15CB64"/><ThemedText style={styles.relRatingNum}>4.5</ThemedText></View>
-                      <ThemedText style={styles.relChaletPrice}>IQD 30,000 / شفت</ThemedText>
-                   </View>
-                </View>
-                <View style={styles.relImgRight}><View style={styles.relImgBorder}><Image source={{ uri: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=400' }} style={styles.relImgMain} /></View></View>
+             <View style={{ flexDirection: 'row-reverse', gap: 15 }}>
+               {[1, 2, 3].map((_, index) => (
+                 <HorizontalCard 
+                   key={index}
+                   chalet={{
+                     title: 'شالية الاروع علة الطلاق',
+                     location: 'البصرة - الجزائر',
+                     price: '30,000',
+                     rating: 4.5,
+                     image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=400',
+                     color: ['#035DF9', '#15AB64', '#F64300'][index % 3]
+                   }}
+                   shapeIndex={index}
+                   style={{ width: SCREEN_WIDTH * 0.8 }}
+                 />
+               ))}
              </View>
           </ScrollView>
         </View>
@@ -229,15 +227,8 @@ const styles = StyleSheet.create({
   mapLocLabel: { paddingVertical: 10, alignItems: 'center' },
   mapLocText: { fontSize: 15, fontWeight: '800' },
 
-  hostStampArea: { marginVertical: 20, alignItems: 'center' },
-  hostGreenJagged: { backgroundColor: '#15AB64', padding: 15, borderRadius: 25, width: '95%' },
-  hostContentBox: { backgroundColor: 'white', borderRadius: 15, padding: 10, flexDirection: 'row', alignItems: 'center' },
-  hostAvatarComp: { width: 60, height: 60 },
-  avatarOrangeFrame: { backgroundColor: '#F64200', borderRadius: 15, width: '100%', height: '100%', padding: 5 },
-  hostImgMain: { width: '100%', height: '100%', borderRadius: 10 },
-  hostInfoText: { flex: 1, alignItems: 'flex-end', paddingRight: 15 },
-  hostLabelAlt: { fontSize: 11, color: '#6B7280' },
-  hostNameAlt: { fontSize: 18, fontWeight: '900' },
+  hostStampArea: { marginVertical: 20, width: '100%', alignItems: 'center' },
+  contactBanner: { width: SCREEN_WIDTH - 40, height: 100 },
 
   ctaRowReview: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 25 },
   pillBackRating: { backgroundColor: '#035DF9', flexDirection: 'row', height: 46, paddingHorizontal: 18, borderRadius: 23, alignItems: 'center', gap: 8 },
