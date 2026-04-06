@@ -67,7 +67,7 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
           )}
 
           {/* Center Pin / Crosshair */}
-          <View style={styles.markerFixed} pointerEvents="none">
+          <View style={[styles.markerFixed, { pointerEvents: "none" }]}>
             <Ionicons name="location" size={40} color={Colors.primary} />
           </View>
         </View>

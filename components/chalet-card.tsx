@@ -9,6 +9,7 @@ import {
     View,
 } from 'react-native';
 import { ThemedText } from './themed-text';
+import { SolarIcon } from './ui/solar-icon';
 
 interface ChaletCardProps {
   image: any;
@@ -39,9 +40,16 @@ export function ChaletCard({
           resizeMode="cover"
         />
         
-        {/* Heart Icon Overlay */}
-        <TouchableOpacity style={styles.heartButton}>
-          <Ionicons name="heart-outline" size={normalize.width(22)} color={Colors.accent.heart} />
+        {/* Heart Icon Overlay with num4.svg background */}
+        <TouchableOpacity style={styles.heartWrapper}>
+          <Image 
+            source={require('@/assets/card/shaps/num4.svg')} 
+            style={styles.shapeBg} 
+            contentFit="contain"
+          />
+          <View style={styles.iconOverlay}>
+            <SolarIcon name="heart-bold" color={Colors.primary} size={normalize.width(20)} />
+          </View>
         </TouchableOpacity>
 
         {/* Badge Overlay */}
@@ -57,7 +65,8 @@ export function ChaletCard({
         <View style={styles.headerRow}>
           <ThemedText type="h2" style={styles.title} numberOfLines={1}>{title}</ThemedText>
           <View style={styles.ratingBox}>
-            <Ionicons name="star" size={normalize.width(14)} color={Colors.accent.star} />
+            {/* NO RED: Using Orange for stars */}
+            <Ionicons name="star" size={normalize.width(14)} color={Colors.accent} />
             <ThemedText type="rating" style={styles.ratingText}>{rating.toFixed(1)}</ThemedText>
           </View>
         </View>
@@ -67,7 +76,7 @@ export function ChaletCard({
         </ThemedText>
 
         <View style={styles.priceRow}>
-          <ThemedText type="price">${price}</ThemedText>
+          <ThemedText type="price" style={{ color: Colors.primary }}>${price}</ThemedText>
           <ThemedText type="subtitle" style={styles.perNight}> / night</ThemedText>
         </View>
       </View>
@@ -94,13 +103,22 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  heartButton: {
+  heartWrapper: {
     position: 'absolute',
     top: Spacing.md,
     right: Spacing.md,
-    backgroundColor: 'rgba(0,0,0,0.15)',
-    padding: normalize.width(8),
-    borderRadius: normalize.radius(25),
+    width: normalize.width(42),
+    height: normalize.width(42),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  shapeBg: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+  },
+  iconOverlay: {
+    zIndex: 1,
   },
   badge: {
     position: 'absolute',
@@ -118,6 +136,7 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingVertical: Spacing.sm,
+    paddingHorizontal: 5,
   },
   headerRow: {
     flexDirection: 'row',

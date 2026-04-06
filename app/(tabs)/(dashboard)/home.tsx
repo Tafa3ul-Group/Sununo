@@ -1,7 +1,7 @@
 import { ThemedText } from "@/components/themed-text";
 import { SolarIcon } from "@/components/ui/solar-icon";
 import { SecondaryButton } from "@/components/user/secondary-button";
-import { Colors } from "@/constants/theme";
+import { Colors, Shadows } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { RootState } from "@/store";
 import {
@@ -412,10 +412,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 24,
     elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
+    ...Shadows.small,
   },
   statsRow: {
     flexDirection: "row",
@@ -426,10 +423,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 20,
     elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
+    ...Shadows.small,
   },
   statsIconBox: {
     width: 36,
@@ -503,10 +497,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#F1F5F9",
     elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 8,
+    ...Shadows.small,
   },
   actionIconBox: {
     width: 48,

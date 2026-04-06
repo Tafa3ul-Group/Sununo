@@ -5,7 +5,6 @@ export const isRTL = I18nManager.isRTL;
 
 /**
  * Normalization utilities to ensure consistent UI across different screen sizes and platforms.
- * use width for horizontal spacing, height for vertical, and font for text.
  */
 export const normalize = {
   width: (size: number) => scale(size),
@@ -14,56 +13,64 @@ export const normalize = {
   radius: (size: number, factor: number = 0.5) => moderateScale(size, factor),
 };
 
-const tintColorLight = "#2B66FF";
-const tintColorDark = "#fff";
+const BrandColors = {
+  blue: "#2B66FF",
+  green: "#22C55E",
+  orange: "#F97316",
+  white: "#FFFFFF",
+  black: "#111827",
+};
 
 export const Colors = {
   light: {
-    text: "#1A1A1A",
+    text: "#111827",
     background: "#FFFFFF",
-    tint: tintColorLight,
-    icon: "#717171",
-    tabIconDefault: "#717171",
-    tabIconSelected: tintColorLight,
-    primary: "#2B66FF",
-    secondary: "#F0F2F5",
-    surface: "#F8F9FB",
-    border: "#EBEBEB",
+    tint: BrandColors.blue,
+    icon: "#6B7280",
+    tabIconDefault: "#9CA3AF",
+    tabIconSelected: BrandColors.blue,
+    primary: BrandColors.blue,
+    secondary: BrandColors.green,
+    accent: BrandColors.orange,
+    surface: "#F9FAFB",
+    border: "#E5E7EB",
     muted: "#9CA3AF",
   },
   dark: {
-    text: "#ECEDEE",
-    background: "#151718",
-    tint: tintColorDark,
-    icon: "#9BA1A6",
-    tabIconDefault: "#9BA1A6",
-    tabIconSelected: tintColorDark,
-    primary: "#2B66FF",
-    secondary: "#2A2A2A",
-    surface: "#222222",
-    border: "#333333",
+    text: "#F9FAFB",
+    background: "#111827",
+    tint: "#FFFFFF",
+    icon: "#9CA3AF",
+    tabIconDefault: "#4B5563",
+    tabIconSelected: "#FFFFFF",
+    primary: BrandColors.blue,
+    secondary: BrandColors.green,
+    accent: BrandColors.orange,
+    surface: "#1F2937",
+    border: "#374151",
     muted: "#6B7280",
   },
-  // Shared/Legacy support for the new design components
-  primary: "#2B66FF",
-  secondary: "#F0F2F5",
+  // Shared
+  primary: BrandColors.blue,
+  secondary: BrandColors.green,
+  accent: BrandColors.orange,
   background: "#FFFFFF",
-  surface: "#F8F9FB",
+  surface: "#F9FAFB",
   text: {
-    primary: "#1A1A1A",
-    secondary: "#717171",
+    primary: "#111827",
+    secondary: "#6B7280",
     muted: "#9CA3AF",
     onPrimary: "#FFFFFF",
   },
-  accent: {
-    star: "#FFB800",
-    heart: "#FFFFFF",
-    heartActive: "#FF385C",
+  status: {
+    star: "#FFB000",
+    heart: BrandColors.blue,
+    heartActive: BrandColors.blue,
   },
-  border: "#EBEBEB",
+  border: "#E5E7EB",
   white: "#FFFFFF",
   black: "#000000",
-  error: "#FF385C",
+  error: BrandColors.orange, // Replaced Red with Orange
 };
 
 export const Spacing = {
@@ -74,19 +81,7 @@ export const Spacing = {
   xl: normalize.width(32),
 };
 
-// Use explicit literal types for fontWeight to satisfy TypeScript
-type FontWeight =
-  | "normal"
-  | "bold"
-  | "100"
-  | "200"
-  | "300"
-  | "400"
-  | "500"
-  | "600"
-  | "700"
-  | "800"
-  | "900";
+type FontWeight = "normal" | "bold" | "100" | "200" | "300" | "400" | "500" | "600" | "700" | "800" | "900";
 
 interface TypeStyle {
   fontSize: number;
@@ -98,7 +93,7 @@ export const Typography: Record<string, TypeStyle> = {
   h1: {
     fontSize: normalize.font(28),
     fontWeight: "700" as FontWeight,
-    color: Colors.light.text, // Defaulting to light text
+    color: Colors.light.text,
   },
   h2: {
     fontSize: normalize.font(20),
@@ -133,47 +128,35 @@ export const Typography: Record<string, TypeStyle> = {
 };
 
 export const Shadows = {
-  small: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  medium: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  large: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
-    elevation: 8,
-  },
+  small: Platform.select({
+    web: { boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.05)" },
+    default: {
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+  }),
+  medium: Platform.select({
+    web: { boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.08)" },
+    default: {
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.08,
+      shadowRadius: 8,
+      elevation: 4,
+    },
+  }),
 };
 
 export const Fonts = Platform.select({
-  ios: {
-    sans: "system-ui",
-    serif: "ui-serif",
-    rounded: "ui-rounded",
-    mono: "ui-monospace",
-  },
-  default: {
-    sans: "normal",
-    serif: "serif",
-    rounded: "normal",
-    mono: "monospace",
-  },
+  ios: { sans: "system-ui", serif: "ui-serif", rounded: "ui-rounded", mono: "ui-monospace" },
+  default: { sans: "normal", serif: "serif", rounded: "normal", mono: "monospace" },
   web: {
     sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
     serif: "Georgia, 'Times New Roman', serif",
-    rounded:
-      "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
+    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
     mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   },
 });
