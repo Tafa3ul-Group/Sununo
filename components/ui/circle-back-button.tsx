@@ -1,0 +1,43 @@
+import React from 'react';
+import { TouchableOpacity, StyleSheet, View, ViewStyle } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
+import { useRouter } from 'expo-router';
+import { normalize } from '@/constants/theme';
+
+interface CircleBackButtonProps {
+  style?: ViewStyle;
+}
+
+const BACK_ICON_PATH = "M16.9467 0L16.984 0.0319551C16.9918 0.563434 17.0077 1.11929 16.9957 1.64861C16.695 2.1116 15.6337 3.01428 15.2014 3.39902C13.6558 4.77432 11.2704 6.6148 10.1626 8.37453C9.66288 9.15572 9.33791 10.0399 9.21086 10.9642C8.96436 12.8514 9.38009 14.7291 10.5583 16.2312C11.0052 16.801 11.7141 17.4728 12.2449 17.9938L14.9532 20.6073C15.3814 21.0236 16.1485 21.753 16.4858 22.2046C16.5279 22.8117 16.5161 23.3931 16.4911 24C15.9468 23.8061 14.9671 23.3157 14.3994 23.0547L10.252 21.1529C8.50688 20.321 6.06286 19.4531 4.65913 18.0823C3.62117 17.0688 2.90487 15.0354 2.91724 13.5511C2.50593 13.4266 1.45728 12.5735 1.04287 12.2832C0.657269 12.013 0.433131 11.8682 0 11.6452C0.660173 11.1658 1.36011 10.727 2.0402 10.2775C2.31689 10.0946 2.85074 9.80927 3.07692 9.61241C3.09687 8.79841 3.17037 8.21858 3.46665 7.45396C3.85861 6.44889 4.52293 5.57892 5.38162 4.94608C6.58946 4.04845 8.20426 3.58706 9.56851 3.00721C10.8307 2.46863 12.0383 1.92053 13.319 1.40781C14.0582 1.1135 14.799 0.823459 15.5414 0.537748C16.0014 0.363519 16.5003 0.198389 16.9467 0Z";
+
+export function CircleBackButton({ style }: CircleBackButtonProps) {
+  const router = useRouter();
+
+  return (
+    <TouchableOpacity 
+      onPress={() => router.back()} 
+      style={[styles.container, style]}
+      activeOpacity={0.8}
+    >
+      <Svg width={normalize.width(17)} height={normalize.height(24)} viewBox="0 0 17 24" fill="none">
+        <Path d={BACK_ICON_PATH} fill="#035DF9" />
+      </Svg>
+    </TouchableOpacity>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    width: normalize.width(42),
+    height: normalize.width(42),
+    borderRadius: normalize.width(21),
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  }
+});

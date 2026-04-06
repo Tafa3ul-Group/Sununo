@@ -27,54 +27,43 @@ import { Colors, normalize } from "@/constants/theme";
 import { RootState } from "@/store";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const CARD_WIDTH = normalize.width(175);
 
-const FILTER_OPTIONS = [
-  { id: "all", label: "الكل", icon: "view-grid", activeColor: Colors.primary },
-  {
-    id: "pool",
-    label: "يحتوي مسبح",
-    icon: "pool",
-    activeColor: Colors.secondary,
-  },
-  { id: "bbq", label: "يحتوي شواء", icon: "grill", activeColor: Colors.accent },
-  { id: "garden", label: "حديقة", icon: "tree", activeColor: Colors.secondary },
-];
-
+// --- تحديث الصور لتبدو كشاليهات حقيقية وفخمة ---
 const POPULAR_CHALETS = [
   {
     id: "1",
-    title: "شالية الاروع",
-    location: "البصرة - الجزائر",
-    price: "30,000",
-    rating: 4.5,
+    title: "شالية الؤلؤة البصرية",
+    location: "البصرة - شط العرب",
+    price: "45,000",
+    rating: 4.9,
     color: Colors.primary,
-    images: [
-      "https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=600",
-    ],
+    image: "https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&q=80&w=600",
   },
   {
     id: "2",
-    title: "شالية الورد",
-    location: "البصرة - الطويسة",
-    price: "45,000",
+    title: "شالية الورد والياسمين",
+    location: "البصرة - الجزائر",
+    price: "35,000",
     rating: 4.8,
     color: Colors.secondary,
-    images: [
-      "https://images.unsplash.com/photo-1449156001437-3a1621dfbe2b?w=600",
-    ],
+    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=600",
   },
   {
     id: "3",
-    title: "شالية الخليج",
-    location: "البصرة - العشار",
+    title: "شالية إطلالة الخليج",
+    location: "البصرة - القبلة",
     price: "25,000",
     rating: 4.2,
     color: Colors.accent,
-    images: [
-      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600",
-    ],
+    image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=600",
   },
+];
+
+const FILTER_OPTIONS = [
+  { id: "all", label: "الكل", icon: "view-grid", activeColor: Colors.primary },
+  { id: "pool", label: "يحتوي مسبح", icon: "pool", activeColor: Colors.secondary },
+  { id: "bbq", label: "شواء", icon: "grill", activeColor: Colors.accent },
+  { id: "garden", label: "حديقة", icon: "tree", activeColor: Colors.secondary },
 ];
 
 export default function HomeScreen() {
@@ -83,138 +72,94 @@ export default function HomeScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const [activeFilter, setActiveFilter] = React.useState("all");
-  const [selectedChalet, setSelectedChalet] = React.useState<any>(null);
 
   if (userType === "owner") return <Redirect href="/(tabs)/(dashboard)/home" />;
 
-  const navigateToDetails = (id: string) =>
-    router.push(`/chalet-details/${id}`);
+  const navigateToDetails = (id: string) => router.push(`/chalet-details/${id}`);
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" />
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        <HeaderSection
-          userType={userType}
-          showLogo
-          showSearch={false}
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        
+        {/* Header */}
+        <HeaderSection 
+          userType={userType} 
+          showLogo 
+          showSearch={false} 
           showCategories={false}
-          showProfile
-          extraIcon="search"
-          onExtraIconPress={() => bottomSheetRef.current?.present()}
+          showProfile 
+          extraIcon="search" 
+          onExtraIconPress={() => bottomSheetRef.current?.present()} 
         />
 
+        {/* الأكثر شيوعاً */}
         <View style={styles.sectionHeader}>
-          <TouchableOpacity>
-            <ThemedText style={styles.seeAll}>
-              {t("home.seeAll") || "الكل"}
-            </ThemedText>
-          </TouchableOpacity>
+          <TouchableOpacity><ThemedText style={styles.seeAll}>{t("home.seeAll") || "الكل"}</ThemedText></TouchableOpacity>
           <ThemedText style={styles.sectionTitle}>الاكثر شيوعاً</ThemedText>
         </View>
 
-        <GHScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.popularContainer}
-        >
-          {POPULAR_CHALETS.map((chalet, index) => (
-            <ColoredCard
-              key={chalet.id}
-              {...chalet}
-              shapeIndex={index}
-              onPress={() => navigateToDetails(chalet.id)}
+        <GHScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.popularRow}>
+          {POPULAR_CHALETS.map((item, index) => (
+            <ColoredCard 
+              key={item.id} 
+              {...item} 
+              shapeIndex={index} 
+              onPress={() => navigateToDetails(item.id)} 
             />
           ))}
         </GHScrollView>
 
+        {/* الأقرب إليك */}
         <View style={styles.sectionHeader}>
-          <TouchableOpacity>
-            <ThemedText style={styles.seeAll}>افتح الخارطة</ThemedText>
-          </TouchableOpacity>
+          <TouchableOpacity><ThemedText style={styles.seeAll}>افتح الخارطة</ThemedText></TouchableOpacity>
           <ThemedText style={styles.sectionTitle}>الاقرب اليك</ThemedText>
         </View>
-
         <View style={styles.mapContainer}>
-          <AppMap
-            style={styles.map}
-            showMarker
-            selectedChalet={selectedChalet}
-            onSelectMarker={setSelectedChalet}
-            onPressCard={navigateToDetails}
-          />
+          <AppMap style={styles.map} showMarker onPressCard={navigateToDetails} />
         </View>
 
+        {/* الأفضل اليوم (Horizontal) */}
         <View style={styles.sectionHeader}>
-          <TouchableOpacity>
-            <ThemedText style={styles.seeAll}>الكل</ThemedText>
-          </TouchableOpacity>
+          <TouchableOpacity><ThemedText style={styles.seeAll}>عرض الكل</ThemedText></TouchableOpacity>
           <ThemedText style={styles.sectionTitle}>الافضل اليوم</ThemedText>
         </View>
-
-        <GHScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.horizontalScrollPadding}
-        >
-          {POPULAR_CHALETS.map((chalet) => (
-            <View key={chalet.id} style={styles.horizontalCardWrapper}>
-              <HorizontalCard
-                chalet={chalet}
-                onPress={() => navigateToDetails(chalet.id)}
-              />
-            </View>
-          ))}
+        <GHScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: 16 }}>
+           <View style={{ flexDirection: 'row-reverse', gap: 15 }}>
+             {POPULAR_CHALETS.map((item) => (
+               <HorizontalCard 
+                 key={item.id} 
+                 chalet={item} 
+                 style={{ width: SCREEN_WIDTH * 0.8 }} 
+                 onPress={() => navigateToDetails(item.id)} 
+               />
+             ))}
+           </View>
         </GHScrollView>
 
+        {/* مقترح لك */}
         <View style={styles.sectionHeader}>
-          <TouchableOpacity>
-            <ThemedText style={styles.seeAll}>افتح الكل</ThemedText>
-          </TouchableOpacity>
           <ThemedText style={styles.sectionTitle}>مقترح لك</ThemedText>
         </View>
-
-        <GHScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.tabsWrapper}
-        >
-          <View style={styles.tabsInnerContainer}>
-            {FILTER_OPTIONS.map((filter) =>
-              filter.id === "all" ? (
-                <PrimaryButton
-                  key={filter.id}
-                  label={filter.label}
-                  isActive={activeFilter === filter.id}
-                  activeColor={filter.activeColor}
-                  onPress={() => setActiveFilter(filter.id)}
-                  style={{ paddingHorizontal: 20 }}
+        <GHScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsContainer}>
+           <View style={{ flexDirection: 'row-reverse', gap: 10 }}>
+             {FILTER_OPTIONS.map((filter) => (
+                <SecondaryButton 
+                  key={filter.id} 
+                  label={filter.label} 
+                  isActive={activeFilter === filter.id} 
+                  activeColor={filter.activeColor} 
+                  icon={filter.icon as any} 
+                  onPress={() => setActiveFilter(filter.id)} 
                 />
-              ) : (
-                <SecondaryButton
-                  key={filter.id}
-                  label={filter.label}
-                  isActive={activeFilter === filter.id}
-                  activeColor={filter.activeColor}
-                  icon={filter.icon as any}
-                  onPress={() => setActiveFilter(filter.id)}
-                />
-              ),
-            )}
-          </View>
+             ))}
+           </View>
         </GHScrollView>
 
         <View style={styles.listPadding}>
-          {POPULAR_CHALETS.map((chalet) => (
-            <HorizontalCard
-              key={chalet.id}
-              chalet={chalet}
-              onPress={() => navigateToDetails(chalet.id)}
-            />
-          ))}
+           {[...POPULAR_CHALETS, ...POPULAR_CHALETS].map((item, index) => (
+             <HorizontalCard key={index} chalet={item} onPress={() => navigateToDetails(item.id)} />
+           ))}
         </View>
       </ScrollView>
 
@@ -224,51 +169,14 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: Colors.background,
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-  },
-  scrollContent: { paddingBottom: 100 },
-  popularContainer: {
-    paddingHorizontal: 16,
-    flexDirection: "row-reverse",
-    gap: 12,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    marginTop: 30,
-    marginBottom: 10,
-  },
-  sectionTitle: { fontSize: 20, fontWeight: "900", color: Colors.text.primary },
-  seeAll: {
-    fontSize: 14,
-    color: Colors.primary,
-    fontWeight: "600",
-    textDecorationLine: "underline",
-  },
-  mapContainer: {
-    height: 180,
-    marginHorizontal: 16,
-    borderRadius: 24,
-    overflow: "hidden",
-    backgroundColor: "#F3F4F6",
-    marginTop: 10,
-  },
+  safeArea: { flex: 1, backgroundColor: Colors.background, paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0 },
+  scrollContent: { paddingBottom: 120 },
+  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginTop: 35, marginBottom: 15 },
+  sectionTitle: { fontSize: 22, fontWeight: "900", color: Colors.text.primary, textAlign: 'right' },
+  seeAll: { fontSize: 15, color: Colors.primary, fontWeight: "600", textDecorationLine: "underline" },
+  popularRow: { paddingHorizontal: 16, flexDirection: "row-reverse", gap: 12 },
+  mapContainer: { height: 210, marginHorizontal: 16, borderRadius: 28, overflow: "hidden", backgroundColor: "#F3F4F6", marginTop: 10 },
   map: { flex: 1 },
-  horizontalScrollPadding: {
-    paddingHorizontal: 16,
-    flexDirection: "row-reverse",
-  },
-  horizontalCardWrapper: { width: SCREEN_WIDTH * 0.8, marginLeft: 12 },
-  listPadding: { paddingHorizontal: 16, marginTop: 15 },
-  tabsWrapper: { marginVertical: 15 },
-  tabsInnerContainer: {
-    flexDirection: "row-reverse",
-    gap: 10,
-    paddingHorizontal: 16,
-  },
+  listPadding: { paddingHorizontal: 16 },
+  tabsContainer: { paddingHorizontal: 16, marginVertical: 15 },
 });
