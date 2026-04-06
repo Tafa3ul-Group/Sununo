@@ -91,8 +91,12 @@ export default function ChaletDetailScreen() {
 
           {/* نظرة عامة */}
           <ThemedText style={styles.sectionTitle}>نظرة عامة</ThemedText>
-          <ThemedText style={styles.descriptionText}>هو ببساطة نص شكلي ويُستخدم في صناعات المطابع ودور النشر.</ThemedText>
-          <View style={styles.readMoreWrapper}><PrimaryButton label="اقرأ المزيد" onPress={() => {}} style={styles.readMoreComp} /></View>
+          <ThemedText style={styles.descriptionText}>
+            هو ببساطة نص شكلي (بمعنى أن الغاية هي الشكل وليس المحتوى) ويُستخدم في صناعات المطابع ودور النشر. كان لوريم إيبسوم ولايزال المعيار للنص الشكلي منذ القرن الخامس عشر عندما قامت مطبعة مجهولة برص مجموعة من الأحرف بشكل عشوائي أخذتها من نص، لتكوّن كتيّب بمثابة دليل أو مرجع شكلي....
+          </ThemedText>
+          <View style={styles.readMoreWrapper}>
+            <PrimaryButton label="اقرأ المزيد" onPress={() => {}} style={styles.readMoreComp} />
+          </View>
 
           {/* الموقع */}
           <ThemedText style={styles.sectionTitle}>الموقع</ThemedText>
@@ -226,7 +230,7 @@ const styles = StyleSheet.create({
   shapeCont: { width: 55, height: 55, justifyContent: 'center', alignItems: 'center' },
   iconInShape: { position: 'absolute' },
   facilityLabelText: { fontSize: 12, fontWeight: '700', marginTop: 6, textAlign: 'center' },
-  descriptionText: { fontSize: 14, color: '#6B7280', lineHeight: 22, textAlign: 'right' },
+  descriptionText: { fontSize: 14, color: '#6B7280', lineHeight: 22, textAlign: 'right', marginTop: 5 },
   readMoreWrapper: { alignItems: 'center', marginTop: 15 },
   readMoreComp: { width: '40%', height: 40, borderRadius: 20 },
   
@@ -305,8 +309,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 1, borderTopColor: '#F3F4F6'
   },
   footerTextSide: { alignItems: 'flex-end' },
-  footerPriceBig: { fontSize: 26, fontWeight: '900' },
-  footerMetaSmall: { fontSize: 12, color: '#9CA3AF' },
-  footerBtnSide: { width: 150 },
-  footerFlatBtn: { height: 50, borderRadius: 25 }
+  footerPriceBig: { fontSize: 20, fontWeight: "900" },
+  footerMetaSmall: { fontSize: 11, color: "#9CA3AF" },
+  footerBtnSide: { flex: 1, marginRight: 20 },
+  footerFlatBtn: { height: 48, borderRadius: 24, width: '100%' }
 });
