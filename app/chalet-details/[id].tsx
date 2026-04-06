@@ -15,6 +15,7 @@ import Svg, { Path } from 'react-native-svg';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { CircleBackButton } from '@/components/ui/circle-back-button';
 import { HorizontalCard } from '@/components/user/horizontal-card';
+import { SecondaryButton } from '@/components/user/secondary-button';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -112,16 +113,25 @@ export default function ChaletDetailScreen() {
              />
           </View>
 
-          {/* أزرار التقييم والمراجعات مع الربط بالصفحة الجديدة */}
+          {/* التقييم والمراجعات */}
           <View style={styles.ctaRowReview}>
-             <TouchableOpacity style={styles.pillBackRating} onPress={() => router.push(`/chalet-details/reviews/${id}`)}>
-                <SolarIcon name="star-bold" size={18} color="white" />
-                <ThemedText style={styles.pillRateText}>4.5</ThemedText>
+             {/* حبة التقييم المصممة يدوياً حسب الصورة */}
+             <TouchableOpacity 
+                style={styles.customRatingPill} 
+                onPress={() => router.push(`/chalet-details/reviews/${id}`)}
+             >
+                <SolarIcon name="star-bold" size={20} color="white" />
+                <ThemedText style={styles.customRatingText}>4.5</ThemedText>
              </TouchableOpacity>
-             <TouchableOpacity style={styles.revSplitButton} onPress={() => router.push(`/chalet-details/reviews/${id}`)}>
-                <View style={styles.revLabelSide}><ThemedText style={styles.revLabelText}>مراجعة</ThemedText></View>
-                <View style={styles.revNumSide}><ThemedText style={styles.revNumText}>45</ThemedText></View>
-             </TouchableOpacity>
+
+             <SecondaryButton 
+                label="مراجعة"
+                iconLabel="45"
+                iconPosition="right"
+                isActive={true}
+                onPress={() => router.push(`/chalet-details/reviews/${id}`)}
+                style={{ width: 140 }}
+             />
           </View>
 
           {/* المراجعات */}
@@ -230,14 +240,29 @@ const styles = StyleSheet.create({
   hostStampArea: { marginVertical: 20, width: '100%', alignItems: 'center' },
   contactBanner: { width: SCREEN_WIDTH - 40, height: 100 },
 
-  ctaRowReview: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 25 },
-  pillBackRating: { backgroundColor: '#035DF9', flexDirection: 'row', height: 46, paddingHorizontal: 18, borderRadius: 23, alignItems: 'center', gap: 8 },
-  pillRateText: { color: 'white', fontSize: 18, fontWeight: '900' },
-  revSplitButton: { flexDirection: 'row', height: 46 },
-  revLabelSide: { backgroundColor: '#035DF9', justifyContent: 'center', paddingHorizontal: 20, borderTopLeftRadius: 15, borderBottomLeftRadius: 15 },
-  revNumSide: { backgroundColor: '#0055EE', justifyContent: 'center', paddingHorizontal: 15, borderTopRightRadius: 23, borderBottomRightRadius: 23, minWidth: 50, alignItems: 'center' },
-  revLabelText: { color: 'white', fontSize: 16, fontWeight: '800' },
-  revNumText: { color: 'white', fontSize: 16, fontWeight: '900' },
+  ctaRowReview: {
+    flexDirection: 'row',
+    marginTop: 20,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  customRatingPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#035DF9',
+    height: 46,
+    paddingHorizontal: 20,
+    borderTopLeftRadius: 23,
+    borderBottomLeftRadius: 23,
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 8,
+    gap: 8,
+  },
+  customRatingText: {
+    color: 'white',
+    fontSize: 22,
+    fontWeight: '800',
+  },
 
   revComplexCardFlat: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 20, marginVertical: 10, borderWidth: 1, borderColor: '#F3F4F6' },
   revHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },

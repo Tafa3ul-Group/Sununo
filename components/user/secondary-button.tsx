@@ -2,12 +2,12 @@ import { ThemedText } from "@/components/themed-text";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import {
+  ActivityIndicator,
   StyleSheet,
   TextStyle,
   TouchableOpacity,
   View,
   ViewStyle,
-  ActivityIndicator,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
 
@@ -81,7 +81,12 @@ export function SecondaryButton({
             {isLoading ? (
               <ActivityIndicator color={finalContentColor} size="small" />
             ) : iconLabel ? (
-              <ThemedText style={[styles.text, { color: finalContentColor, fontSize: 16 }]}>
+              <ThemedText
+                style={[
+                  styles.text,
+                  { color: finalContentColor, fontSize: 16 },
+                ]}
+              >
                 {iconLabel}
               </ThemedText>
             ) : icon ? (

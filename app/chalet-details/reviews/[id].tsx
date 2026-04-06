@@ -10,6 +10,7 @@ import {
 import { ThemedText } from '@/components/themed-text';
 import { SolarIcon } from '@/components/ui/solar-icon';
 import { CircleBackButton } from '@/components/ui/circle-back-button';
+import { SecondaryButton } from '@/components/user/secondary-button';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -51,12 +52,15 @@ export default function ReviewsScreen() {
              </View>
           </View>
 
-          {/* فلتر الترتيب */}
+          {/* فلتر الترتيب باستخدام SecondaryButton */}
           <View style={styles.filterRow}>
-             <View style={styles.filterBox}>
-                <SolarIcon name="alt-arrow-down-outline" size={18} color="#035DF9" />
-                <ThemedText style={styles.filterText}>اخر التقييمات</ThemedText>
-             </View>
+             <SecondaryButton 
+                label="اخر التقييمات"
+                solarIconName="alt-arrow-down-outline"
+                onPress={() => {}}
+                isActive={false}
+                style={{ width: 160 }}
+             />
           </View>
 
           {/* قائمة المراجعات */}
