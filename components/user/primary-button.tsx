@@ -67,7 +67,9 @@ export function PrimaryButton({
     );
   }
 
-  const scaledPartWidth = 46;
+  const scaledPartHeight = 46;
+  const scaledPartWidth = (29 / 29) * scaledPartHeight; // Maintain aspect ratio of the 29x29 design
+
   const currentBorderColor = isActive ? "transparent" : border;
   const currentBorderWidth = isActive ? 0 : 1;
 
@@ -79,13 +81,12 @@ export function PrimaryButton({
       style={[styles.hybridContainer, style]}
     >
       {/* Right Curve SVG */}
-      <View style={[styles.svgPart, { width: scaledPartWidth, height: 46 }]}>
+      <View style={{ width: scaledPartWidth, height: scaledPartHeight }}>
         <Svg
           width="100%"
           height="100%"
           viewBox="62 0 29 29"
           fill="none"
-          preserveAspectRatio="xMidYMid meet"
         >
           <Path
             d="M91 14.5C91 6.49187 84.5081 0 76.5 0H67.1176C64.2912 0 62 2.29125 62 5.11765V23.8824C62 26.7088 64.2912 29 67.1176 29H76.5C84.5081 29 91 22.5081 91 14.5Z"
@@ -103,13 +104,13 @@ export function PrimaryButton({
             borderColor: currentBorderColor,
             borderWidth: currentBorderWidth,
             backgroundColor: color,
-            height: 46,
-            borderRadius: 8.7,
+            height: scaledPartHeight,
             flex: 1,
+            marginHorizontal: -2, // Slight overlap to fix pixel gaps
           },
         ]}
       >
-        <View style={[styles.textWithIcon, { flexShrink: 0 }]}>
+        <View style={styles.textWithIcon}>
           {icon && (
             <MaterialCommunityIcons 
               name={icon} 
@@ -119,9 +120,7 @@ export function PrimaryButton({
             />
           )}
           <ThemedText
-            numberOfLines={1}
-            ellipsizeMode="clip"
-            style={[styles.primaryText, { color: textColor, flexShrink: 0 }, textStyle]}
+            style={[styles.primaryText, { color: textColor }, textStyle]}
           >
             {label}
           </ThemedText>
@@ -129,13 +128,12 @@ export function PrimaryButton({
       </View>
 
       {/* Left Curve SVG */}
-      <View style={[styles.svgPart, { width: scaledPartWidth, height: 46 }]}>
+      <View style={{ width: scaledPartWidth, height: scaledPartHeight }}>
         <Svg
           width="100%"
           height="100%"
           viewBox="0 0 29 29"
           fill="none"
-          preserveAspectRatio="xMidYMid meet"
         >
           <Path
             d="M0 14.5C0 6.49187 6.49187 0 14.5 0H23.8824C26.7088 0 29 2.29125 29 5.11765V23.8824C29 26.7088 26.7088 29 23.8824 29H14.5C6.49187 29 0 22.5081 0 14.5Z"
