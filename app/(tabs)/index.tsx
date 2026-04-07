@@ -110,7 +110,7 @@ export default function HomeScreen() {
         {/* الأفضل اليوم (Horizontal) */}
         <View style={styles.sectionHeader}>
           <TouchableOpacity><ThemedText style={styles.seeAll}>عرض الكل</ThemedText></TouchableOpacity>
-          <ThemedText style={styles.sectionTitle}>الافضل اليوم</ThemedText>
+          <ThemedText style={styles.sectionTitle}>آخر الحجوزات</ThemedText>
         </View>
         <HorizontalSwiper 
           data={POPULAR_CHALETS} 
@@ -150,13 +150,13 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: Colors.background, paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0 },
-  scrollContent: { paddingBottom: 120 },
-  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginTop: 35, marginBottom: 15 },
+  scrollContent: { paddingBottom: 120, paddingTop: 5 },
+  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginTop: 20, marginBottom: 10 },
   sectionTitle: { fontSize: 22, fontWeight: "900", color: Colors.text.primary, textAlign: 'right' },
   seeAll: { fontSize: 15, color: Colors.primary, fontWeight: "600", textDecorationLine: "underline" },
   popularRow: { paddingHorizontal: 16, flexDirection: "row-reverse", gap: 12 },
   mapContainer: { height: 210, marginHorizontal: 16, borderRadius: 28, overflow: "hidden", backgroundColor: "#F3F4F6", marginTop: 10 },
   map: { flex: 1 },
   listPadding: { paddingHorizontal: 16 },
-  tabsContainer: { paddingHorizontal: 16, marginVertical: 15 },
+  tabsContainer: { paddingHorizontal: 16, marginVertical: 10 },
 });
