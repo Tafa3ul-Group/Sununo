@@ -8,7 +8,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
-  Platform,
 } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { SolarIcon } from '@/components/ui/solar-icon';
@@ -19,7 +18,6 @@ import { HorizontalCard } from '@/components/user/horizontal-card';
 import { HorizontalSwiper } from '@/components/user/horizontal-swiper';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { SolarStarBold, SolarMapBoldDuotone } from '@/components/icons/solar-icons';
-import { useTranslation } from 'react-i18next';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -30,20 +28,7 @@ const SHAPES = {
 export default function ChaletDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
   const [activeImage, setActiveImage] = useState(0);
-
-  const FACILITIES = [
-    { label: t('home.amenities.pool'), icon: 'water-bold', color: '#035DF9' }, 
-    { label: t('home.amenities.wifi'), icon: 'wi-fi-bold', color: '#EF79D7' }, 
-    { label: t('home.amenities.ac'), icon: 'wind-bold', color: '#F64200' }, 
-    { label: t('home.amenities.kitchen'), icon: 'home-2-bold', color: '#15AB64' },
-    { label: t('home.amenities.ac'), icon: 'wind-bold', color: '#F64200' }, 
-    { label: t('home.amenities.kitchen'), icon: 'home-2-bold', color: '#15AB64' },
-    { label: t('home.amenities.pool'), icon: 'water-bold', color: '#035DF9' }, 
-    { label: t('home.amenities.wifi'), icon: 'wi-fi-bold', color: '#EF79D7' },
-  ];
 
   return (
     <View style={styles.container}>
@@ -63,34 +48,39 @@ export default function ChaletDetailScreen() {
 
         <View style={styles.infoWrapper}>
           {/* العنوان (النجمة يساراً) */}
-          <View style={[styles.titleSection, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-              <View style={[styles.ratingGroupLeft, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+          <View style={styles.titleSection}>
+              <View style={styles.ratingGroupLeft}>
                   <SolarStarBold size={14} color="#035DF9" />
                   <ThemedText style={styles.ratingVal}>4.5</ThemedText>
               </View>
-              <View style={{ alignItems: isRTL ? 'flex-end' : 'flex-start', flex: 1 }}>
+              <View style={{ alignItems: 'flex-end', flex: 1 }}>
                  <ThemedText style={styles.mainTitle}>شالية الاروع علة الطلاق</ThemedText>
                  <ThemedText style={styles.locationSub}>البصرة - الجزائر</ThemedText>
               </View>
           </View>
 
           {/* المواصفات الأساسية */}
-          <ThemedText style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('home.mainSpecs')}</ThemedText>
-          <View style={[styles.specsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-             {(isRTL ? ['بستان مع بيت', '300 م', '1 حمام', '3 غرف'] : ['Garden & House', '300m', '1 Bath', '3 Rooms']).map((d, i) => (
+          <ThemedText style={styles.sectionTitle}>المواصفات الاساسية</ThemedText>
+          <View style={styles.specsRow}>
+             {['بستان مع بيت', '300 م', '1 حمام', '3 غرف'].map((d, i) => (
                 <View key={i} style={styles.specTag}><ThemedText style={styles.specText}>{d}</ThemedText></View>
              ))}
           </View>
 
           {/* المرافق */}
-          <View style={[styles.facilitiesHeader, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
-             <TouchableOpacity onPress={() => router.push(`/chalet-details/facilities/${id}` as any)}>
-               <ThemedText style={styles.viewAllText}>{t('home.seeAll')}</ThemedText>
+          <View style={styles.facilitiesHeader}>
+             <TouchableOpacity onPress={() => router.push(`/chalet-details/facilities/${id}`)}>
+               <ThemedText style={styles.viewAllText}>الكل</ThemedText>
              </TouchableOpacity>
-             <ThemedText style={styles.sectionTitle}>{t('home.facilities')}</ThemedText>
+             <ThemedText style={styles.sectionTitle}>المرافق</ThemedText>
           </View>
-          <View style={[styles.facilitiesGrid, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-             {FACILITIES.map((f, i) => (
+          <View style={styles.facilitiesGrid}>
+             {[
+               { label: 'مسبح', icon: 'water-bold', color: '#035DF9' }, { label: 'واي فاي', icon: 'wi-fi-bold', color: '#EF79D7' }, 
+               { label: 'تكييف هواء', icon: 'wind-bold', color: '#F64200' }, { label: 'مطبخ', icon: 'home-2-bold', color: '#15AB64' },
+               { label: 'تكييف هواء', icon: 'wind-bold', color: '#F64200' }, { label: 'مطبخ', icon: 'home-2-bold', color: '#15AB64' },
+               { label: 'مسبح', icon: 'water-bold', color: '#035DF9' }, { label: 'واي فاي', icon: 'wi-fi-bold', color: '#EF79D7' },
+             ].map((f, i) => (
                <View key={i} style={styles.facilityCell}>
                   <View style={styles.shapeCont}>
                     <Svg height={55} width={55} viewBox="0 0 60 60"><Path d={SHAPES.blue} fill={f.color}/></Svg>
@@ -102,22 +92,22 @@ export default function ChaletDetailScreen() {
           </View>
 
           {/* نظرة عامة */}
-          <ThemedText style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('home.overview')}</ThemedText>
-          <ThemedText style={[styles.descriptionText, { textAlign: isRTL ? 'right' : 'left' }]}>
-            {isRTL ? "هو ببساطة نص شكلي (بمعنى أن الغاية هي الشكل وليس المحتوى) ويُستخدم في صناعات المطابع ودور النشر. كان لوريم إيبسوم ولايزال المعيار للنص الشكلي منذ القرن الخامس عشر عندما قامت مطبعة مجهولة برص مجموعة من الأحرف بشكل عشوائي أخذتها من نص، لتكوّن كتيّب بمثابة دليل أو مرجع شكلي...." : "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book."}
+          <ThemedText style={styles.sectionTitle}>نظرة عامة</ThemedText>
+          <ThemedText style={styles.descriptionText}>
+            هو ببساطة نص شكلي (بمعنى أن الغاية هي الشكل وليس المحتوى) ويُستخدم في صناعات المطابع ودور النشر. كان لوريم إيبسوم ولايزال المعيار للنص الشكلي منذ القرن الخامس عشر عندما قامت مطبعة مجهولة برص مجموعة من الأحرف بشكل عشوائي أخذتها من نص، لتكوّن كتيّب بمثابة دليل أو مرجع شكلي....
           </ThemedText>
           <View style={styles.readMoreWrapper}>
-            <PrimaryButton label={t('home.readMore')} onPress={() => {}} style={styles.readMoreComp} />
+            <PrimaryButton label="اقرأ المزيد" onPress={() => {}} style={styles.readMoreComp} />
           </View>
 
           {/* الموقع */}
-          <ThemedText style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('common.location')}</ThemedText>
+          <ThemedText style={styles.sectionTitle}>الموقع</ThemedText>
           <View style={styles.mapCardFlat}>
              <View style={styles.mapInner}>
                 <Image source={{ uri: 'https://miro.medium.com/v2/resize:fit:1400/1*qV3uDpS9mZc6jS1j75n6oA.png' }} style={styles.mapImg} />
                 <View style={styles.pinCenter}><SolarMapBoldDuotone size={32} color="#035DF9" /></View>
              </View>
-             <View style={[styles.mapLocLabel, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}><ThemedText style={styles.mapLocText}>البصرة - ابة الخصيب</ThemedText></View>
+             <View style={styles.mapLocLabel}><ThemedText style={styles.mapLocText}>البصرة - ابة الخصيب</ThemedText></View>
           </View>
 
           {/* المضيف (استخدام صورة الكونتاكت) */}
@@ -130,354 +120,197 @@ export default function ChaletDetailScreen() {
           </View>
 
           {/* التقييم والمراجعات */}
-          <View style={[styles.ctaRowReview, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+          <View style={styles.ctaRowReview}>
+             {/* حبة التقييم المصممة يدوياً حسب الصورة */}
              <TouchableOpacity 
                 style={styles.customRatingPill} 
-                onPress={() => router.push(`/chalet-details/reviews/${id}` as any)}
+                onPress={() => router.push(`/chalet-details/reviews/${id}`)}
              >
                 <SolarStarBold size={20} color="white" />
                 <ThemedText style={styles.customRatingText}>4.5</ThemedText>
              </TouchableOpacity>
 
              <SecondaryButton 
-                label={t('home.review')}
+                label="مراجعة"
                 iconLabel="45"
-                iconPosition={isRTL ? "right" : "left"}
+                iconPosition="right"
                 isActive={true}
-                onPress={() => router.push(`/chalet-details/reviews/${id}` as any)}
+                onPress={() => router.push(`/chalet-details/reviews/${id}`)}
                 style={{ width: 140 }}
-              />
+             />
           </View>
 
           {/* المراجعات */}
-          <ThemedText style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('home.reviewsLabel')}</ThemedText>
+          <ThemedText style={styles.sectionTitle}>المراجعات</ThemedText>
           {[1, 2].map((_, i) => (
              <View key={i} style={styles.revComplexCardFlat}>
-                <View style={[styles.revHeaderRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
-                   <View style={[styles.revRatingCorner, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}><SolarStarBold size={16} color="#15CB64" /><ThemedText style={styles.revRateNum}>4</ThemedText></View>
-                   <View style={[styles.reviewerMeta, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}><ThemedText style={styles.reviewerName}>انسة انس</ThemedText><Image source={require('@/assets/profile.svg')} style={styles.revAvatarSmall} /></View>
+                <View style={styles.revHeaderRow}>
+                   <View style={styles.revRatingCorner}><SolarStarBold size={16} color="#15CB64" /><ThemedText style={styles.revRateNum}>4</ThemedText></View>
+                   <View style={styles.reviewerMeta}><ThemedText style={styles.reviewerName}>انسة انس</ThemedText><Image source={require('@/assets/profile.svg')} style={styles.revAvatarSmall} /></View>
                 </View>
-                <ThemedText style={[styles.revComment, { textAlign: isRTL ? 'right' : 'left' }]}>هذا النص هو مثال لنص يمكن أن يستبدل في نفس المساحة، لقد تم توليد هذا النص من مولد النص العربى، حيث يمكنك أن تولد مثل هذا النص أو العديد من النصوص الأخرى إضافة إلى زيادة عدد الحروف التى يولدها التطبيق.</ThemedText>
+                <ThemedText style={styles.revMessage}>خوش مكان ونضيف يستاهل، الهواء نقي بسبب التشجير</ThemedText>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.revImgSwiper}>
+                   {[1, 2, 3, 4].map(im => <Image key={im} source={{ uri: 'https://images.unsplash.com/photo-1502082559145?w=200' }} style={styles.revPhotoThumb} />)}
+                </ScrollView>
+                <ThemedText style={styles.revTimeText}>2025/09/22</ThemedText>
              </View>
           ))}
-        </View>
 
-        {/* RELATED CHALETS */}
-        <View style={styles.sectionHeader}>
-            <TouchableOpacity><ThemedText style={styles.seeAll}>{t('home.seeAll')}</ThemedText></TouchableOpacity>
-            <ThemedText style={styles.sectionTitle}>{t('home.lastBookings')}</ThemedText>
-        </View>
-        <HorizontalSwiper data={[]} />
+          <View style={styles.addReviewAction}><PrimaryButton label="إضافة مراجعة" onPress={() => {}} style={styles.addBtnFinal} /></View>
 
+          {/* معلومات تهمك */}
+          <ThemedText style={styles.sectionTitle}>معلومات تهمك</ThemedText>
+          <View style={styles.infoIconsGrid}>
+             {[ { label: 'شروط الشاليه', icon: 'key-bold' }, { label: 'سياسة الالغاء', icon: 'forbidden-bold' }, { label: 'الامان', icon: 'shield-check-bold' }, { label: 'وقت الدخول والخروج', icon: 'clock-circle-bold' } ].map((item, i) => (
+                <View key={i} style={styles.infoIconCell}>
+                   <View style={styles.infoGearWrap}><Svg width={55} height={55} viewBox="0 0 60 60"><Path d={SHAPES.blue} fill="#BDBDBD"/></Svg><View style={styles.infoGearIcon}><SolarIcon name={item.icon as any} size={24} color="white"/></View></View>
+                   <ThemedText style={styles.infoLabelText}>{item.label}</ThemedText>
+                </View>
+             ))}
+          </View>
+
+          {/* قد يعجبك ايضا */}
+          <ThemedText style={styles.sectionTitle}>قد يعجبك ايضا</ThemedText>
+          <HorizontalSwiper 
+            data={[1, 2, 3].map((_, index) => ({
+              id: `${index}`,
+              title: 'شالية الاروع علة الطلاق',
+              location: 'البصرة - الجزائر',
+              price: '30,000',
+              rating: 4.5,
+              image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=400',
+              color: ['#035DF9', '#15AB64', '#F64300'][index % 3]
+            }))}
+            onPressCard={(id) => router.push(`/chalet-details/${id}`)}
+          />
+        </View>
       </ScrollView>
 
-      {/* حجز الآن (Fixed Footer) */}
-      <View style={[styles.footerFlat, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
-         <View style={[styles.priceBoxFooter, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-            <ThemedText style={styles.priceFootVal}>{t('common.iqdShort')} 25,000</ThemedText>
-            <ThemedText style={styles.priceFootLab}>{t('common.perShift')}</ThemedText>
-         </View>
-         <PrimaryButton 
-            label={t('common.bookNow') || "حجز الآن"} 
-            onPress={() => router.push(`/booking-flow/${id}` as any)} 
-            style={styles.footerFlatBtn} 
-         />
+      {/* الفوتر Flat */}
+      <View style={styles.flatUltimateFooter}>
+          <View style={styles.footerBtnSide}>
+             <PrimaryButton label="احجز الان" onPress={() => {}} style={styles.footerFlatBtn} />
+          </View>
+          <View style={styles.footerTextSide}>
+             <ThemedText style={styles.footerPriceBig}>30,000 IQD</ThemedText>
+             <View style={styles.footerMetaRow}>
+                <SolarIcon name="clock-circle-bold" size={12} color="#9CA3AF" />
+                <ThemedText style={styles.footerMetaSmall}>شفت صباحي</ThemedText>
+             </View>
+          </View>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  imageHeader: {
-    width: SCREEN_WIDTH,
-    height: normalize.height(350),
-    position: 'relative',
-  },
-  headerImage: {
-    width: SCREEN_WIDTH,
-    height: '100%',
-  },
-  backBtnOriginal: {
-    position: 'absolute',
-    top: normalize.height(50),
-    left: normalize.width(20),
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  paginationDots: {
-    position: 'absolute',
-    bottom: normalize.height(20),
-    alignSelf: 'center',
-    flexDirection: 'row',
-    gap: 6,
-  },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: 'rgba(255,255,255,0.4)',
-  },
-  activeDot: {
-    backgroundColor: '#FFFFFF',
-    width: 20,
-  },
-  infoWrapper: {
-    borderTopLeftRadius: normalize.radius(32),
-    borderTopRightRadius: normalize.radius(32),
-    marginTop: normalize.height(-30),
-    backgroundColor: 'white',
-    paddingHorizontal: normalize.width(20),
-    paddingTop: normalize.height(25),
-  },
-  titleSection: {
-    alignItems: 'center',
-    marginBottom: normalize.height(22),
-  },
-  ratingGroupLeft: {
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#F3F4F6',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  ratingVal: {
-    fontSize: normalize.font(14),
-    fontWeight: '800',
-    color: '#1F2937',
-  },
-  mainTitle: {
-    fontSize: normalize.font(20),
-    fontWeight: '900',
-    color: '#1F2937',
-  },
-  locationSub: {
-    fontSize: normalize.font(14),
-    color: '#6B7280',
-    marginTop: 2,
-  },
-  sectionTitle: {
-    fontSize: normalize.font(18),
-    fontWeight: '900',
-    color: '#1F2937',
-    marginBottom: normalize.height(15),
-  },
-  specsRow: {
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: normalize.height(25),
-  },
-  specTag: {
-    backgroundColor: '#F8F9FB',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
-  },
-  specText: {
-    fontSize: normalize.font(13),
-    fontWeight: '700',
-    color: '#4B5563',
-  },
-  facilitiesHeader: {
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: normalize.height(5),
-  },
-  viewAllText: {
-    fontSize: normalize.font(14),
-    fontWeight: '700',
-    color: Colors.primary,
-  },
-  facilitiesGrid: {
-    flexWrap: 'wrap',
-    gap: normalize.width(15),
-    marginBottom: normalize.height(25),
-  },
-  facilityCell: {
-    width: (SCREEN_WIDTH - 80) / 4,
-    alignItems: 'center',
-    gap: 8,
-  },
-  shapeCont: {
-    width: 55,
-    height: 55,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  iconInShape: {
-    position: 'absolute',
-  },
-  facilityLabelText: {
-    fontSize: normalize.font(11),
-    fontWeight: '700',
-    color: '#6B7280',
-    textAlign: 'center',
-  },
-  descriptionText: {
-    fontSize: normalize.font(14),
-    lineHeight: 22,
-    color: '#4B5563',
-    marginBottom: normalize.height(15),
-  },
-  readMoreWrapper: {
-    alignItems: 'center',
-    marginBottom: normalize.height(25),
-  },
-  readMoreComp: {
-    width: 140,
-    height: 48,
-    borderRadius: 24,
-  },
-  mapCardFlat: {
-    borderRadius: 24,
-    overflow: 'hidden',
-    backgroundColor: '#F9FAFB',
-    marginBottom: normalize.height(25),
-    borderWidth: 1.5,
-    borderColor: '#F3F4F6',
-  },
-  mapInner: {
-    width: '100%',
-    height: 140,
-    position: 'relative',
-  },
-  mapImg: {
-    width: '100%',
-    height: '100%',
-  },
-  pinCenter: {
-    position: 'absolute',
-    top: '40%',
-    left: '46%',
-  },
-  mapLocLabel: {
-    padding: 15,
-  },
-  mapLocText: {
-    fontSize: normalize.font(14),
-    fontWeight: '700',
-    color: '#1F2937',
-  },
-  hostStampArea: {
-    marginTop: 10,
-    marginBottom: 30,
-    borderRadius: 24,
-    overflow: 'hidden',
-  },
-  contactBanner: {
-    width: '100%',
-    height: 120,
-  },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  imageHeader: { width: SCREEN_WIDTH, height: 350, position: 'relative' },
+  headerImage: { width: SCREEN_WIDTH, height: '100%' },
+  backBtnOriginal: { position: 'absolute', top: 50, left: 20, zIndex: 10 },
+  paginationDots: { position: 'absolute', bottom: 20, width: '100%', flexDirection: 'row', justifyContent: 'center', gap: 6 },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.6)' },
+  activeDot: { backgroundColor: '#035DF9', width: 20 },
+  infoWrapper: { padding: 20 },
+  titleSection: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
+  ratingGroupLeft: { flexDirection: 'row', alignItems: 'center', gap: 6, marginRight: 15 },
+  ratingVal: { fontSize: 18, fontWeight: '800' },
+  mainTitle: { fontSize: 22, fontWeight: '900', textAlign: 'right' },
+  locationSub: { fontSize: 13, color: '#6B7280', textAlign: 'right' },
+  sectionTitle: { fontSize: 18, fontWeight: '900', marginVertical: 15, textAlign: 'right' },
+  specsRow: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 8 },
+  specTag: { backgroundColor: '#F3F7FF', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12 },
+  specText: { fontSize: 13, fontWeight: '700' },
+  viewAllText: { fontSize: 13, color: '#6B7280', fontWeight: '700' },
+  facilitiesHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  facilitiesGrid: { flexDirection: 'row-reverse', flexWrap: 'wrap', justifyContent: 'space-between', marginVertical: 15 },
+  facilityCell: { width: '23%', alignItems: 'center', marginBottom: 20 },
+  shapeCont: { width: 55, height: 55, justifyContent: 'center', alignItems: 'center' },
+  iconInShape: { position: 'absolute' },
+  facilityLabelText: { fontSize: 12, fontWeight: '700', marginTop: 6, textAlign: 'center' },
+  descriptionText: { fontSize: 14, color: '#6B7280', lineHeight: 22, textAlign: 'right', marginTop: 5 },
+  readMoreWrapper: { alignItems: 'center', marginTop: 15 },
+  readMoreComp: { width: '55%', height: 48, borderRadius: 24 },
+  
+  mapCardFlat: { backgroundColor: '#F9FAFB', borderRadius: 24, padding: 10, marginBottom: 20, borderWidth: 1, borderColor: '#F3F4F6' },
+  mapInner: { height: 180, borderRadius: 15, overflow: 'hidden' },
+  mapImg: { width: '100%', height: '100%' },
+  pinCenter: { position: 'absolute', top: '40%', left: '46%' },
+  mapLocLabel: { paddingVertical: 10, alignItems: 'center' },
+  mapLocText: { fontSize: 15, fontWeight: '800' },
+
+  hostStampArea: { marginVertical: 20, width: '100%', alignItems: 'center' },
+  contactBanner: { width: SCREEN_WIDTH - 40, height: 100 },
+
   ctaRowReview: {
+    flexDirection: 'row',
+    marginTop: 20,
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: normalize.height(15),
   },
   customRatingPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 24,
-    gap: 6,
+    backgroundColor: '#035DF9',
+    height: 46,
+    paddingHorizontal: 20,
+    borderTopLeftRadius: 23,
+    borderBottomLeftRadius: 23,
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 8,
+    gap: 8,
   },
   customRatingText: {
     color: 'white',
-    fontSize: 18,
-    fontWeight: '900',
-  },
-  revComplexCardFlat: {
-    backgroundColor: '#F8F9FB',
-    borderRadius: 20,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
-  },
-  revHeaderRow: {
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  revRatingCorner: {
-    alignItems: 'center',
-    gap: 4,
-  },
-  revRateNum: {
+    fontSize: 22,
     fontWeight: '800',
-    fontSize: 14,
-    color: '#111827',
   },
-  reviewerMeta: {
-    alignItems: 'center',
-    gap: 10,
+
+  revComplexCardFlat: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 20, marginVertical: 10, borderWidth: 1, borderColor: '#F3F4F6' },
+  revHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  reviewerMeta: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  reviewerName: { fontSize: 16, fontWeight: '900' },
+  revAvatarSmall: { width: 50, height: 50, borderRadius: 25 },
+  revRatingCorner: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  revRateNum: { fontSize: 18, fontWeight: '900' },
+  revMessage: { fontSize: 14, color: '#6B7280', marginVertical: 15, fontWeight: '600', textAlign: 'right' },
+  revImgSwiper: { gap: 10 },
+  revPhotoThumb: { width: 130, height: 90, borderRadius: 12, marginRight: 10 },
+  revTimeText: { fontSize: 11, color: '#9CA3AF', marginTop: 10, textAlign: 'left' },
+
+  addReviewAction: { alignItems: 'center', marginVertical: 20 },
+  addBtnFinal: { width: '80%', height: 48, borderRadius: 24 },
+  infoIconsGrid: { flexDirection: 'row-reverse', justifyContent: 'space-between' },
+  infoIconCell: { width: '23%', alignItems: 'center' },
+  infoGearWrap: { width: 55, height: 55, justifyContent: 'center', alignItems: 'center' },
+  infoGearIcon: { position: 'absolute' },
+  infoLabelText: { fontSize: 11, fontWeight: '700', marginTop: 8, textAlign: 'center' },
+
+  relatedRow: { marginTop: 10 },
+  relatedCardFlatFinal: { width: SCREEN_WIDTH * 0.82, height: 140, backgroundColor: 'white', borderRadius: 24, borderWidth: 1, borderColor: '#F3F4F6', flexDirection: 'row', padding: 12, marginRight: 20 },
+  relInfoLeft: { flex: 1, justifyContent: 'space-between' },
+  relFavBtn: { width: 30, height: 30, borderRadius: 15, backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center' },
+  relChaletTitle: { fontSize: 16, fontWeight: '900', textAlign: 'right' },
+  relChaletLoc: { fontSize: 12, color: '#6B7280', textAlign: 'right' },
+  relBottomMeta: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  relRatingBox: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  relRatingNum: { fontSize: 14, fontWeight: '800', color: '#15CB64' },
+  relChaletPrice: { fontSize: 13, fontWeight: '900' },
+  relImgRight: { width: 100, height: 100, marginLeft: 10 },
+  relImgBorder: { width: 100, height: 100, borderRadius: 50, borderWidth: 3, borderColor: '#15AB64', overflow: 'hidden' },
+  relImgMain: { width: '100%', height: '100%' },
+
+  flatUltimateFooter: { 
+    position: 'absolute', bottom: 0, width: '100%', height: 100, 
+    backgroundColor: 'white', borderTopLeftRadius: 35, borderTopRightRadius: 35, 
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 25,
+    borderTopWidth: 1, borderTopColor: '#F3F4F6'
   },
-  reviewerName: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#1F2937',
-  },
-  revAvatarSmall: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#E5E7EB',
-  },
-  revComment: {
-    fontSize: 13,
-    lineHeight: 18,
-    color: '#4B5563',
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    marginTop: 10,
-    marginBottom: 15,
-  },
-  seeAll: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: Colors.primary,
-  },
-  footerFlat: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: normalize.width(20),
-    paddingBottom: Platform.OS === 'ios' ? normalize.height(35) : normalize.height(20),
-    backgroundColor: 'white',
-    borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  priceBoxFooter: {
-    gap: 2,
-  },
-  priceFootVal: {
-    fontSize: 18,
-    fontWeight: '900',
-    color: '#111827',
-  },
-  priceFootLab: {
-    fontSize: 12,
-    color: '#6B7280',
-    fontWeight: '700',
-  },
-  footerFlatBtn: {
-    width: SCREEN_WIDTH * 0.55,
-    height: 56,
-    borderRadius: 28,
-  },
+  footerTextSide: { alignItems: 'flex-end', flex: 1 },
+  footerPriceBig: { fontSize: 18, fontWeight: "900", marginBottom: 4 },
+  footerMetaRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6 },
+  footerMetaSmall: { fontSize: 10, color: "#9CA3AF", fontWeight: '600' },
+  vDivider: { width: 1, height: 10, backgroundColor: '#BDBDBD', marginHorizontal: 4 },
+  footerBtnSide: { width: 150 },
+  footerFlatBtn: { height: 48, borderRadius: 24, alignSelf: 'stretch' }
 });

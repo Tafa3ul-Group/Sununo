@@ -1,23 +1,12 @@
-import { SolarHeartBold, SolarStarBold } from "@/components/icons/solar-icons";
-import { ThemedText } from "@/components/themed-text";
-import { Colors, normalize } from "@/constants/theme";
 import React, { useState } from "react";
-import {
-  Dimensions,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-  ViewStyle,
-} from "react-native";
-import Svg, {
-  ClipPath,
-  Defs,
-  G,
-  Path,
-  Image as SvgImage,
-} from "react-native-svg";
+import { StyleSheet, TouchableOpacity, View, ViewStyle, Dimensions } from "react-native";
+import Svg, { ClipPath, Defs, G, Path, Image as SvgImage } from "react-native-svg";
+import { ThemedText } from "@/components/themed-text";
+import { Colors, normalize, Spacing } from "@/constants/theme";
+import { SolarIcon } from "../ui/solar-icon";
+import { SolarStarBold, SolarHeartBold } from "@/components/icons/solar-icons";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const SHAPES_CONFIG = [
   {
@@ -53,20 +42,12 @@ interface HorizontalCardProps {
   shapeIndex?: number;
 }
 
-export function HorizontalCard({
-  chalet,
-  onPress,
-  style,
-  shapeIndex = 2,
-}: HorizontalCardProps) {
+export function HorizontalCard({ chalet, onPress, style, shapeIndex = 2 }: HorizontalCardProps) {
   const [isFavorite, setIsFavorite] = useState(false);
 
   if (!chalet) return null;
 
-  const imageUrl =
-    chalet.images?.[0] ||
-    chalet.image ||
-    "https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=400";
+  const imageUrl = chalet.images?.[0] || chalet.image || "https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=400";
   const borderColor = chalet.color || Colors.secondary;
 
   const config = SHAPES_CONFIG[shapeIndex % SHAPES_CONFIG.length];
@@ -79,48 +60,42 @@ export function HorizontalCard({
     >
       {/* 1. الطرف الأيسر: القلب والتقييم */}
       <View style={styles.leftColumn}>
-        <TouchableOpacity
-          style={styles.heartCircle}
+        <TouchableOpacity 
+          style={styles.heartCircle} 
           onPress={() => setIsFavorite(!isFavorite)}
         >
-          <SolarHeartBold
-            size={normalize.width(20)}
-            color={isFavorite ? "#EA2129" : "#9CA3AF"}
+          <SolarHeartBold 
+            size={normalize.width(20)} 
+            color={isFavorite ? "#EA2129" : "#9CA3AF"} 
           />
         </TouchableOpacity>
 
         <View style={styles.ratingBox}>
-          <SolarStarBold size={normalize.width(16)} color={Colors.secondary} />
-          <ThemedText style={styles.ratingText}>
-            {chalet.rating || "4.5"}
-          </ThemedText>
+           <SolarStarBold size={normalize.width(16)} color={Colors.secondary} />
+           <ThemedText style={styles.ratingText}>{chalet.rating || '4.5'}</ThemedText>
         </View>
       </View>
 
       {/* 2. المنتصف: العنوان والموقع والسعر */}
       <View style={styles.content}>
         <View style={styles.upperText}>
-          <ThemedText style={styles.title} numberOfLines={1}>
-            {chalet.title}
-          </ThemedText>
-          <ThemedText style={styles.location} numberOfLines={1}>
-            {chalet.location}
-          </ThemedText>
+          <ThemedText style={styles.title} numberOfLines={1}>{chalet.title}</ThemedText>
+          <ThemedText style={styles.location} numberOfLines={1}>{chalet.location}</ThemedText>
         </View>
-
+        
         <View style={styles.footerRow}>
-          <View style={styles.priceRow}>
-            <ThemedText style={styles.price}>IQD {chalet.price}</ThemedText>
-            <ThemedText style={styles.priceLabel}> / شفت</ThemedText>
-          </View>
+           <View style={styles.priceRow}>
+              <ThemedText style={styles.price}>IQD {chalet.price}</ThemedText>
+              <ThemedText style={styles.priceLabel}> / شفت</ThemedText>
+           </View>
         </View>
       </View>
 
       {/* 3. الطرف الأيمن: الصورة Blob */}
       <View style={styles.imageWrapper}>
-        <Svg
-          height={normalize.height(88)}
-          width={normalize.width(98)}
+        <Svg 
+          height={normalize.height(88)} 
+          width={normalize.width(98)} 
           viewBox={config.viewBox}
         >
           <Defs>
@@ -136,17 +111,13 @@ export function HorizontalCard({
               preserveAspectRatio="xMidYMid slice"
             />
           </G>
-          <Path
-            d={config.path}
-            stroke={borderColor}
-            strokeWidth="6"
-            fill="none"
-          />
+          <Path d={config.path} stroke={borderColor} strokeWidth="6" fill="none" />
         </Svg>
       </View>
     </TouchableOpacity>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
@@ -163,23 +134,23 @@ const styles = StyleSheet.create({
   },
   leftColumn: {
     width: normalize.width(42),
-    height: "100%",
-    justifyContent: "space-between",
+    height: '100%',
+    justifyContent: 'space-between',
     paddingVertical: 2,
   },
   heartCircle: {
     width: normalize.width(36),
     height: normalize.width(36),
     borderRadius: normalize.radius(18),
-    backgroundColor: "white",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
     borderWidth: 0.5,
-    borderColor: "#E5E7EB",
+    borderColor: '#E5E7EB',
   },
   ratingBox: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 4,
     marginBottom: 4,
   },
@@ -192,12 +163,12 @@ const styles = StyleSheet.create({
     flex: 1,
     flexShrink: 1,
     paddingHorizontal: normalize.width(10),
-    height: "100%",
-    justifyContent: "space-between",
+    height: '100%',
+    justifyContent: 'space-between',
     paddingVertical: 4,
   },
   upperText: {
-    alignItems: "flex-end",
+    alignItems: 'flex-end',
   },
   title: {
     fontSize: normalize.font(16),
@@ -210,13 +181,13 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   footerRow: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    width: "100%",
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    width: '100%',
   },
   priceRow: {
-    flexDirection: "row-reverse",
-    alignItems: "center",
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
     gap: 4,
   },
   price: {

@@ -3,9 +3,10 @@ import {
   FlatList, 
   StyleSheet, 
   View, 
-  Dimensions 
+  Dimensions, 
+  NativeScrollEvent, 
+  NativeSyntheticEvent 
 } from 'react-native';
-import { useTranslation } from 'react-i18next';
 import { HorizontalCard } from './horizontal-card';
 import { normalize } from '@/constants/theme';
 
@@ -19,9 +20,6 @@ interface HorizontalSwiperProps {
 }
 
 export function HorizontalSwiper({ data, onPressCard }: HorizontalSwiperProps) {
-  const { i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
-
   const renderItem = ({ item, index }: { item: any; index: number }) => (
     <View style={{ width: ITEM_WIDTH }}>
       <HorizontalCard 
@@ -43,13 +41,12 @@ export function HorizontalSwiper({ data, onPressCard }: HorizontalSwiperProps) {
         showsHorizontalScrollIndicator={false}
         snapToInterval={ITEM_WIDTH + SEPARATOR_WIDTH}
         decelerationRate="fast"
-        contentContainerStyle={[
-          styles.listContent, 
-          { flexDirection: isRTL ? 'row-reverse' : 'row' }
-        ]}
+        contentContainerStyle={styles.listContent}
         ItemSeparatorComponent={() => <View style={{ width: SEPARATOR_WIDTH }} />}
         pagingEnabled={false}
-        inverted={isRTL} 
+        inverted={true} // For RTL feel if needed, but FlatList horizontal with row-reverse can be tricky
+        // Actually, in Sununo we mostly use row-reverse View inside SCrollView for RTL.
+        // For FlatList horizontal, it's better to just use standard horizontal and handle LTR/RTL via style.
       />
     </View>
   );
@@ -61,10 +58,11 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: normalize.width(20),
+    flexDirection: 'row-reverse', // Align items for Arabic
   },
   cardOverride: {
     width: '100%',
-    marginBottom: 0, 
+    marginBottom: 0, // Reset margin since separator handles it
     borderWidth: 1.5,
     borderColor: '#F3F4F6',
   }

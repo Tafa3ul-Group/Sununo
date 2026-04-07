@@ -33,37 +33,13 @@
       "nearby": "قريب منك",
       "luxury": "فاخر"
     },
-    "seeAll": "عرض الكل",
-    "openMap": "افتح الخارطة",
-    "lastBookings": "آخر الحجوزات",
-    "suggestedForYou": "مقترح لك",
-    "mainSpecs": "المواصفات الاساسية",
-    "facilities": "المرافق",
-    "overview": "نظرة عامة",
-    "readMore": "اقرأ المزيد",
-    "reviewsLabel": "المراجعات",
-    "review": "مراجعة",
-    "amenities": {
-      "pool": "مسبح",
-      "wifi": "واي فاي",
-      "ac": "تكييف هواء",
-      "kitchen": "مطبخ"
-    },
-    "filters": {
-      "all": "الكل",
-      "pool": "يحتوي مسبح",
-      "bbq": "شواء",
-      "garden": "حديقة"
-    }
+    "seeAll": "عرض الكل"
   },
   "profile": {
     "title": "الملف الشخصي",
     "editProfile": "تعديل البيانات",
     "notifications": "الإشعارات",
     "language": "اللغة",
-    "selectLanguage": "اختر اللغة",
-    "arabic": "العربية",
-    "english": "الإنجليزية",
     "logout": "تسجيل الخروج"
   },
   "dashboard": {
@@ -111,8 +87,6 @@
     "guestsCount": "عدد الضيوف",
     "paymentMethod": "طريقة الدفع",
     "fullPayment": "دفع كامل",
-    "depositPayment": "عربون",
-    "perShift": " / شفت",
-    "iqdShort": "د.ع"
+    "depositPayment": "عربون"
   }
 }

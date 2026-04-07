@@ -62,18 +62,17 @@ const POPULAR_CHALETS = [
 ];
 
 const FILTER_OPTIONS = [
-  { id: "all", labelKey: "home.filters.all", icon: "view-grid", activeColor: Colors.primary },
-  { id: "pool", labelKey: "home.filters.pool", icon: "pool", activeColor: Colors.secondary },
-  { id: "bbq", labelKey: "home.filters.bbq", icon: "grill", activeColor: Colors.accent },
-  { id: "garden", labelKey: "home.filters.garden", icon: "tree", activeColor: Colors.secondary },
+  { id: "all", label: "الكل", icon: "view-grid", activeColor: Colors.primary },
+  { id: "pool", label: "يحتوي مسبح", icon: "pool", activeColor: Colors.secondary },
+  { id: "bbq", label: "شواء", icon: "grill", activeColor: Colors.accent },
+  { id: "garden", label: "حديقة", icon: "tree", activeColor: Colors.secondary },
 ];
 
 export default function HomeScreen() {
   const { userType } = useSelector((state: RootState) => state.auth);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const router = useRouter();
-  const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
+  const { t } = useTranslation();
   const [activeFilter, setActiveFilter] = React.useState("all");
 
   if (userType === "owner") return <Redirect href="/(tabs)/(dashboard)/home" />;
@@ -101,8 +100,8 @@ export default function HomeScreen() {
 
         {/* الأقرب إليك */}
         <View style={styles.sectionHeader}>
-          <TouchableOpacity><ThemedText style={styles.seeAll}>{t('home.openMap')}</ThemedText></TouchableOpacity>
-          <ThemedText style={styles.sectionTitle}>{t('home.categories.nearby')}</ThemedText>
+          <TouchableOpacity><ThemedText style={styles.seeAll}>افتح الخارطة</ThemedText></TouchableOpacity>
+          <ThemedText style={styles.sectionTitle}>الاقرب اليك</ThemedText>
         </View>
         <View style={styles.mapContainer}>
           <AppMap style={styles.map} showMarker onPressCard={navigateToDetails} />
@@ -110,8 +109,8 @@ export default function HomeScreen() {
 
         {/* الأفضل اليوم (Horizontal) */}
         <View style={styles.sectionHeader}>
-          <TouchableOpacity><ThemedText style={styles.seeAll}>{t('home.seeAll')}</ThemedText></TouchableOpacity>
-          <ThemedText style={styles.sectionTitle}>{t('home.lastBookings')}</ThemedText>
+          <TouchableOpacity><ThemedText style={styles.seeAll}>عرض الكل</ThemedText></TouchableOpacity>
+          <ThemedText style={styles.sectionTitle}>آخر الحجوزات</ThemedText>
         </View>
         <HorizontalSwiper 
           data={POPULAR_CHALETS} 
@@ -120,14 +119,14 @@ export default function HomeScreen() {
 
         {/* مقترح لك */}
         <View style={styles.sectionHeader}>
-          <ThemedText style={styles.sectionTitle}>{t('home.suggestedForYou')}</ThemedText>
+          <ThemedText style={styles.sectionTitle}>مقترح لك</ThemedText>
         </View>
         <GHScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsContainer}>
-           <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 10 }}>
+           <View style={{ flexDirection: 'row-reverse', gap: 10 }}>
              {FILTER_OPTIONS.map((filter) => (
                 <SecondaryButton 
                   key={filter.id} 
-                  label={t(filter.labelKey)} 
+                  label={filter.label} 
                   isActive={activeFilter === filter.id} 
                   activeColor={filter.activeColor} 
                   icon={filter.icon as any} 

@@ -33,37 +33,13 @@
       "nearby": "Nearby",
       "luxury": "Luxury"
     },
-    "seeAll": "See All",
-    "openMap": "Open Map",
-    "lastBookings": "Recent Bookings",
-    "suggestedForYou": "Suggested For You",
-    "mainSpecs": "Main Specifications",
-    "facilities": "Facilities",
-    "overview": "Overview",
-    "readMore": "Read More",
-    "reviewsLabel": "Reviews",
-    "review": "Review",
-    "amenities": {
-      "pool": "Pool",
-      "wifi": "Wi-Fi",
-      "ac": "AC",
-      "kitchen": "Kitchen"
-    },
-    "filters": {
-      "all": "All",
-      "pool": "Pool",
-      "bbq": "BBQ",
-      "garden": "Garden"
-    }
+    "seeAll": "See All"
   },
   "profile": {
     "title": "Profile",
     "editProfile": "Edit Profile",
     "notifications": "Notifications",
     "language": "Language",
-    "selectLanguage": "Select Language",
-    "arabic": "Arabic",
-    "english": "English",
     "logout": "Logout"
   },
   "dashboard": {
@@ -111,8 +87,6 @@
     "guestsCount": "Guests Count",
     "paymentMethod": "Payment Method",
     "fullPayment": "Full Payment",
-    "depositPayment": "Deposit",
-    "perShift": " / shift",
-    "iqdShort": "IQD"
+    "depositPayment": "Deposit"
   }
 }
