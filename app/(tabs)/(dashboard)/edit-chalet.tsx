@@ -9,6 +9,7 @@ import { Colors, normalize, Spacing, Typography } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
 import { RootState } from '@/store';
 import {
+  useDeleteChaletMutation,
   useGetAmenitiesQuery,
   useGetChaletAmenitiesQuery,
   useGetCitiesQuery,
@@ -16,8 +17,7 @@ import {
   useLazyGetChaletRegionsQuery,
   useSetChaletAmenitiesMutation,
   useUpdateChaletMutation,
-  useUploadChaletImageMutation,
-  useDeleteChaletMutation
+  useUploadChaletImageMutation
 } from '@/store/api/apiSlice';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
@@ -62,15 +62,11 @@ export default function EditChaletScreen() {
   const [form, setForm] = useState({
     nameAr: '',
     nameEn: '',
-    addressAr: '',
-    addressEn: '',
     descriptionAr: '',
     descriptionEn: '',
     guests: '4',
     cityId: '',
     cityName: '',
-    regionId: '',
-    regionName: '',
     depositPercentage: '25',
     phone: '',
     whatsapp: '',
@@ -98,7 +94,6 @@ export default function EditChaletScreen() {
 
   // Bottom Sheet Refs
   const citySheetRef = useRef<BottomSheetModal>(null);
-  const regionSheetRef = useRef<BottomSheetModal>(null);
   const imageSourceSheetRef = useRef<BottomSheetModal>(null);
 
   // Snap Points
@@ -123,15 +118,11 @@ export default function EditChaletScreen() {
       setForm({
         nameAr: chalet.name?.ar || chalet.name || '',
         nameEn: chalet.name?.en || '',
-        addressAr: chalet.address?.ar || chalet.address || '',
-        addressEn: chalet.address?.en || '',
         descriptionAr: chalet.description?.ar || chalet.description || '',
         descriptionEn: chalet.description?.en || '',
         guests: chalet.maxGuests?.toString() || '4',
         cityId: chalet.region?.cityId || '',
         cityName: chalet.region?.city?.name || '',
-        regionId: chalet.regionId || '',
-        regionName: chalet.region?.name || '',
         depositPercentage: chalet.depositPercentage?.toString() || '25',
         phone: chalet.phone || '',
         whatsapp: chalet.whatsapp || '',
@@ -141,7 +132,7 @@ export default function EditChaletScreen() {
       setExistingImages(chalet.images || []);
 
       if (chalet.region?.cityId) {
-        triggerGetRegions(chalet.region.cityId);
+        // No action needed for region
       }
     }
   }, [chalet, isRTL]);
@@ -198,11 +189,11 @@ export default function EditChaletScreen() {
   };
 
   const handleUpdate = async () => {
-    if (!form.nameAr || !form.addressAr || !form.regionId) {
+    if (!form.nameAr) {
       Toast.show({
         type: 'error',
         text1: isRTL ? 'خطأ' : 'Error',
-        text2: isRTL ? 'يرجى ملء الاسم العربي والعنوان والمنطقة' : 'Please fill Arabic name, address, and select a region',
+        text2: isRTL ? 'يرجى ملء اسم الشاليه' : 'Please fill Chalet name',
         position: 'bottom',
       });
       return;
@@ -212,8 +203,6 @@ export default function EditChaletScreen() {
       const payload = {
         name: { ar: form.nameAr, en: form.nameEn || form.nameAr },
         description: { ar: form.descriptionAr, en: form.descriptionEn || form.descriptionAr },
-        address: { ar: form.addressAr, en: form.addressEn || form.addressAr },
-        regionId: form.regionId,
         latitude: form.latitude ? parseFloat(form.latitude) : null,
         longitude: form.longitude ? parseFloat(form.longitude) : null,
         phone: form.phone || null,
@@ -288,20 +277,15 @@ export default function EditChaletScreen() {
   };
 
   const handleCitySelect = (city: any) => {
-    setForm({ ...form, cityId: city.id, cityName: city.name, regionId: '', regionName: '' });
+    setForm({ ...form, cityId: city.id, cityName: city.name });
     citySheetRef.current?.dismiss();
-    triggerGetRegions(city.id);
   };
 
-  const handleRegionSelect = (region: any) => {
-    setForm({ ...form, regionId: region.id, regionName: region.name });
-    regionSheetRef.current?.dismiss();
-  };
 
   const isStepValid = useMemo(() => {
     switch (currentStep) {
       case 0:
-        return !!form.nameAr && !!form.descriptionAr && !!form.cityId && !!form.regionId && !!form.addressAr;
+        return !!form.nameAr && !!form.descriptionAr && !!form.cityId;
       case 1:
         return !!form.phone && !!form.depositPercentage && !!form.guests;
       case 2:
@@ -370,7 +354,6 @@ export default function EditChaletScreen() {
           {currentStep === 0 && (
             <>
               <View style={styles.sectionCard}>
-                <ThemedText type="h2" style={styles.sectionHeader}>{isRTL ? 'اسم الشاليه' : 'Chalet Name'}</ThemedText>
 
                 <View style={styles.inputGroup}>
                   <Text style={[styles.label, { textAlign }]}>{isRTL ? 'اسم الشاليه' : 'Chalet Name'}</Text>
@@ -396,7 +379,6 @@ export default function EditChaletScreen() {
               </View>
 
               <View style={styles.sectionCard}>
-                <ThemedText type="h2" style={styles.sectionHeader}>{isRTL ? 'الموقع' : 'Location'}</ThemedText>
 
                 <View style={styles.inputGroup}>
                   <Text style={[styles.label, { textAlign }]}>{isRTL ? 'المدينة' : 'City'}</Text>
@@ -432,28 +414,6 @@ export default function EditChaletScreen() {
                   </TouchableOpacity>
                 </View>
 
-                <View style={[styles.rowInputs, { flexDirection }]}>
-                  <View style={[styles.inputGroup, { flex: 1 }]}>
-                    <TouchableOpacity
-                      style={[styles.input, { justifyContent: 'center' }]}
-                      onPress={() => form.cityId ? regionSheetRef.current?.present() : Alert.alert(isRTL ? 'تنبيه' : 'Alert', isRTL ? 'يرجى اختيار المدينة أولاً' : 'Select city first')}
-                      disabled={!form.cityId}
-                    >
-                      <Text style={{ color: form.regionName ? Colors.text.primary : Colors.text.muted, textAlign }}>
-                        {form.regionName || (isRTL ? 'اختر المنطقة' : 'Select Region')}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                <View style={styles.inputGroup}>
-                  <TextInput
-                    style={[styles.input, { textAlign }]}
-                    placeholder={isRTL ? "العنوان" : "Address"}
-                    value={form.addressAr}
-                    onChangeText={(val) => setForm({ ...form, addressAr: val })}
-                  />
-                </View>
               </View>
             </>
           )}
@@ -631,36 +591,6 @@ export default function EditChaletScreen() {
         </BottomSheetView>
       </BottomSheetModal>
 
-      {/* Region Picker Bottom Sheet */}
-      <BottomSheetModal
-        ref={regionSheetRef}
-        index={0}
-        snapPoints={snapPoints}
-        backdropComponent={renderBackdrop}
-        backgroundStyle={{ borderRadius: normalize.radius(24) }}
-      >
-        <BottomSheetView style={styles.sheetContent}>
-          {loadingRegions ? (
-            <ActivityIndicator color={Colors.primary} style={{ margin: 20 }} />
-          ) : (
-            <BottomSheetFlatList
-              data={regions}
-              keyExtractor={(item: any) => item.id}
-              style={{ width: '100%' }}
-              ListHeaderComponent={<Text style={styles.modalTitle}>اختر المنطقة</Text>}
-              renderItem={({ item }: { item: any }) => (
-                <TouchableOpacity
-                  style={styles.pickerItem}
-                  onPress={() => handleRegionSelect(item)}
-                >
-                  <Text style={[styles.pickerItemText, { textAlign }]}>{item.name}</Text>
-                </TouchableOpacity>
-              )}
-              contentContainerStyle={{ paddingBottom: Spacing.xl }}
-            />
-          )}
-        </BottomSheetView>
-      </BottomSheetModal>
 
       {/* Image Source Bottom Sheet */}
       <BottomSheetModal

@@ -53,15 +53,11 @@ export default function AddChaletScreen() {
   const [form, setForm] = useState({
     nameAr: '',
     nameEn: '',
-    addressAr: '',
-    addressEn: '',
     descriptionAr: '',
     descriptionEn: '',
     guests: '4',
     cityId: '',
     cityName: '',
-    regionId: '',
-    regionName: '',
     depositPercentage: '25',
     phone: '',
     whatsapp: '',
@@ -85,7 +81,6 @@ export default function AddChaletScreen() {
 
   // Bottom Sheet Refs
   const citySheetRef = useRef<BottomSheetModal>(null);
-  const regionSheetRef = useRef<BottomSheetModal>(null);
   const imageSourceSheetRef = useRef<BottomSheetModal>(null);
 
   // Snap Points
@@ -151,11 +146,11 @@ export default function AddChaletScreen() {
   };
 
   const handleSave = async () => {
-    if (!form.nameAr || !form.addressAr || !form.regionId) {
+    if (!form.nameAr) {
       Toast.show({
         type: 'error',
         text1: isRTL ? 'خطأ' : 'Error',
-        text2: isRTL ? 'يرجى ملء الاسم العربي والعنوان والمنطقة' : 'Please fill Arabic name, address, and select a region',
+        text2: isRTL ? 'يرجى ملء اسم الشاليه' : 'Please fill chalet name',
         position: 'bottom',
       });
       return;
@@ -165,8 +160,6 @@ export default function AddChaletScreen() {
       const payload = {
         name: { ar: form.nameAr, en: form.nameEn || form.nameAr },
         description: { ar: form.descriptionAr, en: form.descriptionEn || form.descriptionAr },
-        address: { ar: form.addressAr, en: form.addressEn || form.addressAr },
-        regionId: form.regionId,
         latitude: form.latitude ? parseFloat(form.latitude) : null,
         longitude: form.longitude ? parseFloat(form.longitude) : null,
         phone: form.phone || null,
@@ -223,20 +216,15 @@ export default function AddChaletScreen() {
   };
 
   const handleCitySelect = (city: any) => {
-    setForm({ ...form, cityId: city.id, cityName: city.name, regionId: '', regionName: '' });
+    setForm({ ...form, cityId: city.id, cityName: city.name });
     citySheetRef.current?.dismiss();
-    triggerGetRegions(city.id);
   };
 
-  const handleRegionSelect = (region: any) => {
-    setForm({ ...form, regionId: region.id, regionName: region.name });
-    regionSheetRef.current?.dismiss();
-  };
 
   const isStepValid = useMemo(() => {
     switch (currentStep) {
       case 0:
-        return !!form.nameAr && !!form.descriptionAr && !!form.cityId && !!form.regionId && !!form.addressAr;
+        return !!form.nameAr && !!form.descriptionAr && !!form.cityId;
       case 1:
         return !!form.phone && !!form.depositPercentage && !!form.guests;
       case 2:
@@ -268,7 +256,7 @@ export default function AddChaletScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
 
-      <HeaderSection 
+      <HeaderSection
         userType="owner" // Hardcode for dashboard
         title={t('dashboard.addChalet')}
         showSearch={false}
@@ -297,7 +285,7 @@ export default function AddChaletScreen() {
           {currentStep === 0 && (
             <>
               <View style={styles.sectionCard}>
-                <ThemedText type="h2" style={styles.sectionHeader}>{isRTL ? 'اسم الشاليه' : 'Chalet Name'}</ThemedText>
+
 
                 <View style={styles.inputGroup}>
                   <Text style={[styles.label, { textAlign }]}>{isRTL ? 'اسم الشاليه' : 'Chalet Name'}</Text>
@@ -325,7 +313,7 @@ export default function AddChaletScreen() {
               </View>
 
               <View style={styles.sectionCard}>
-                <ThemedText type="h2" style={styles.sectionHeader}>{isRTL ? 'الموقع' : 'Location'}</ThemedText>
+
 
                 <View style={styles.inputGroup}>
                   <Text style={[styles.label, { textAlign }]}>{isRTL ? 'المدينة' : 'City'}</Text>
@@ -361,29 +349,6 @@ export default function AddChaletScreen() {
                   </TouchableOpacity>
                 </View>
 
-                <View style={[styles.rowInputs, { flexDirection }]}>
-                  <View style={[styles.inputGroup, { flex: 1 }]}>
-                    <TouchableOpacity
-                      style={[styles.input, { justifyContent: 'center' }]}
-                      onPress={() => form.cityId ? regionSheetRef.current?.present() : Alert.alert(isRTL ? 'تنبيه' : 'Alert', isRTL ? 'يرجى اختيار المدينة أولاً' : 'Select city first')}
-                      disabled={!form.cityId}
-                    >
-                      <Text style={{ color: form.regionName ? Colors.text.primary : '#BCBCBC', textAlign }}>
-                        {form.regionName || (isRTL ? 'اختر المنطقة' : 'Select Region')}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                <View style={styles.inputGroup}>
-                  <TextInput
-                    style={[styles.input, { textAlign }]}
-                    placeholder={isRTL ? "العنوان" : "Address"}
-                    placeholderTextColor="#BCBCBC"
-                    value={form.addressAr}
-                    onChangeText={(val) => setForm({ ...form, addressAr: val })}
-                  />
-                </View>
               </View>
             </>
           )}
@@ -553,36 +518,6 @@ export default function AddChaletScreen() {
         </BottomSheetView>
       </BottomSheetModal>
 
-      {/* Region Picker Bottom Sheet */}
-      <BottomSheetModal
-        ref={regionSheetRef}
-        index={0}
-        snapPoints={snapPoints}
-        backdropComponent={renderBackdrop}
-        backgroundStyle={{ borderRadius: normalize.radius(24) }}
-      >
-        <BottomSheetView style={styles.sheetContent}>
-          {loadingRegions ? (
-            <ActivityIndicator color={Colors.primary} style={{ margin: 20 }} />
-          ) : (
-            <BottomSheetFlatList
-              data={regions}
-              keyExtractor={(item: any) => item.id}
-              style={{ width: '100%' }}
-              ListHeaderComponent={<Text style={styles.modalTitle}>اختر المنطقة</Text>}
-              renderItem={({ item }: { item: any }) => (
-                <TouchableOpacity
-                  style={styles.pickerItem}
-                  onPress={() => handleRegionSelect(item)}
-                >
-                  <Text style={[styles.pickerItemText, { textAlign }]}>{item.name}</Text>
-                </TouchableOpacity>
-              )}
-              contentContainerStyle={{ paddingBottom: Spacing.xl }}
-            />
-          )}
-        </BottomSheetView>
-      </BottomSheetModal>
 
       {/* Image Source Bottom Sheet */}
       <BottomSheetModal
