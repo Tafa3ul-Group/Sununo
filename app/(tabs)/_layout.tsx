@@ -6,6 +6,12 @@ import { RootState } from "@/store";
 import { SolarIcon } from "@/components/ui/solar-icon";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
+import { 
+  SolarHomeSmileBoldDuotone, 
+  SolarBellBingBoldDuotone, 
+  SolarHeartBold, 
+  SolarMapBoldDuotone 
+} from "@/components/icons/solar-icons";
 
 export default function TabLayout() {
   const { t } = useTranslation();
@@ -32,7 +38,7 @@ export default function TabLayout() {
         options={{
           href: userType === "owner" ? null : "/(tabs)",
           tabBarIcon: ({ color, size }) => (
-            <SolarIcon name="map-point-linear" size={size} color={color} />
+            <SolarMapBoldDuotone size={size} color={color} />
           ),
         }}
       />
@@ -43,7 +49,7 @@ export default function TabLayout() {
         options={{
           href: userType === "owner" ? null : "/(tabs)/profile",
           tabBarIcon: ({ color, size }) => (
-            <SolarIcon name="home-smile-linear" size={size} color={color} />
+            <SolarHomeSmileBoldDuotone size={size} color={color} />
           ),
         }}
       />
@@ -54,7 +60,7 @@ export default function TabLayout() {
         options={{
           href: userType === "owner" ? null : "/(tabs)/bookings",
           tabBarIcon: ({ color, size }) => (
-            <SolarIcon name="bell-linear" size={size} color={color} />
+            <SolarBellBingBoldDuotone size={size} color={color} />
           ),
         }}
       />
@@ -65,7 +71,7 @@ export default function TabLayout() {
         options={{
           href: userType === "owner" ? null : "/(tabs)/favorites",
           tabBarIcon: ({ color, size }) => (
-            <SolarIcon name="heart-linear" size={size} color={color} />
+            <SolarHeartBold size={size} color={color} />
           ),
         }}
       />

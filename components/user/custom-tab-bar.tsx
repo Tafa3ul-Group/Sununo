@@ -52,13 +52,13 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
   const SIDE_PADDING = normalize.width(23);
   const ACTIVE_INDICATOR_SIZE = normalize.height(40); // 40x40 EXACT
 
-  const renderIcon = (route: any, isActive: boolean) => {
+  const renderIcon = (route: any, isActive: boolean, isIsolated: boolean = false) => {
     const { options } = descriptors[route.key];
     if (options.tabBarIcon) {
       return options.tabBarIcon({
         focused: isActive,
-        color: isActive ? Colors.primary : 'white',
-        size: normalize.width(22),
+        color: isIsolated ? 'white' : (isActive ? Colors.primary : 'white'),
+        size: normalize.width(24),
       });
     }
     return null;
@@ -69,31 +69,37 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
       <View style={[
         styles.navWrapper, 
         { 
-          bottom: Math.max(insets.bottom, 20),
+          bottom: Math.max(insets.bottom, 24),
           paddingHorizontal: SIDE_PADDING,
           flexDirection: isRTL ? 'row-reverse' : 'row'
         }
       ]}>
+        {/* Isolated Button (Map for Customer) */}
         <TouchableOpacity
-          style={[styles.roundButton, { width: NAV_HEIGHT, height: NAV_HEIGHT, borderRadius: NAV_HEIGHT / 2 }]}
+          style={styles.roundButton}
           onPress={() => navigation.navigate(isolatedTab.name)}
           activeOpacity={0.8}
         >
-          {renderIcon(isolatedTab, currentRouteName === isolatedTab.name)}
+          {renderIcon(isolatedTab, currentRouteName === isolatedTab.name, true)}
         </TouchableOpacity>
 
-        <View style={[styles.tabCapsule, { width: PILL_WIDTH, height: NAV_HEIGHT, borderRadius: NAV_HEIGHT / 2, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        {/* Tab Capsule */}
+        <View style={styles.tabCapsule}>
           {pillTabs.map((route: any) => {
             const isActive = currentRouteName === route.name;
             return (
-              <TouchableOpacity
-                key={route.key}
-                onPress={() => navigation.navigate(route.name)}
-                style={[styles.tabItem, isActive && styles.activeIndicator, isActive && { width: ACTIVE_INDICATOR_SIZE, height: ACTIVE_INDICATOR_SIZE, borderRadius: ACTIVE_INDICATOR_SIZE / 2 }]}
-                activeOpacity={0.7}
-              >
-                {renderIcon(route, isActive)}
-              </TouchableOpacity>
+              <View key={route.key} style={styles.tabItemContainer}>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate(route.name)}
+                  style={[
+                    styles.tabIconCircle,
+                    isActive && styles.activeTabIndicator
+                  ]}
+                  activeOpacity={0.7}
+                >
+                  {renderIcon(route, isActive)}
+                </TouchableOpacity>
+              </View>
             );
           })}
         </View>
@@ -104,9 +110,42 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
 
 const styles = StyleSheet.create({
   container: { position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 1000 },
-  navWrapper: { width: '100%', alignItems: 'center', justifyContent: 'space-between' },
-  roundButton: { backgroundColor: Colors.primary, justifyContent: 'center', alignItems: 'center' },
-  tabCapsule: { backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'space-around' },
-  tabItem: { justifyContent: 'center', alignItems: 'center', flex: 1, height: '100%' },
-  activeIndicator: { backgroundColor: 'white' },
+  navWrapper: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  roundButton: { 
+    width: normalize.height(52), 
+    height: normalize.height(52), 
+    borderRadius: normalize.height(26),
+    backgroundColor: Colors.primary, 
+    justifyContent: 'center', 
+    alignItems: 'center' 
+  },
+  tabCapsule: { 
+    width: normalize.width(180), 
+    height: normalize.height(52), 
+    borderRadius: normalize.height(26),
+    backgroundColor: Colors.primary, 
+    alignItems: 'center', 
+    justifyContent: 'space-around',
+    flexDirection: 'row',
+    paddingHorizontal: 8
+  },
+  tabItemContainer: { 
+    flex: 1, 
+    alignItems: 'center', 
+    justifyContent: 'center' 
+  },
+  tabIconCircle: {
+    width: normalize.height(40),
+    height: normalize.height(40),
+    borderRadius: normalize.height(20),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  activeTabIndicator: { 
+    backgroundColor: 'white',
+  },
 });

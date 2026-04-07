@@ -16,6 +16,7 @@ import { PrimaryButton } from '@/components/user/primary-button';
 import { CircleBackButton } from '@/components/ui/circle-back-button';
 import { HorizontalCard } from '@/components/user/horizontal-card';
 import { SecondaryButton } from '@/components/user/secondary-button';
+import { SolarStarBold, SolarMapBoldDuotone } from '@/components/icons/solar-icons';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -48,7 +49,7 @@ export default function ChaletDetailScreen() {
           {/* العنوان (النجمة يساراً) */}
           <View style={styles.titleSection}>
               <View style={styles.ratingGroupLeft}>
-                  <SolarIcon name="star-bold" size={14} color="#035DF9" />
+                  <SolarStarBold size={14} color="#035DF9" />
                   <ThemedText style={styles.ratingVal}>4.5</ThemedText>
               </View>
               <View style={{ alignItems: 'flex-end', flex: 1 }}>
@@ -103,7 +104,7 @@ export default function ChaletDetailScreen() {
           <View style={styles.mapCardFlat}>
              <View style={styles.mapInner}>
                 <Image source={{ uri: 'https://miro.medium.com/v2/resize:fit:1400/1*qV3uDpS9mZc6jS1j75n6oA.png' }} style={styles.mapImg} />
-                <View style={styles.pinCenter}><SolarIcon name="map-point-bold" size={32} color="#035DF9" /></View>
+                <View style={styles.pinCenter}><SolarMapBoldDuotone size={32} color="#035DF9" /></View>
              </View>
              <View style={styles.mapLocLabel}><ThemedText style={styles.mapLocText}>البصرة - ابة الخصيب</ThemedText></View>
           </View>
@@ -124,7 +125,7 @@ export default function ChaletDetailScreen() {
                 style={styles.customRatingPill} 
                 onPress={() => router.push(`/chalet-details/reviews/${id}`)}
              >
-                <SolarIcon name="star-bold" size={20} color="white" />
+                <SolarStarBold size={20} color="white" />
                 <ThemedText style={styles.customRatingText}>4.5</ThemedText>
              </TouchableOpacity>
 
@@ -143,7 +144,7 @@ export default function ChaletDetailScreen() {
           {[1, 2].map((_, i) => (
              <View key={i} style={styles.revComplexCardFlat}>
                 <View style={styles.revHeaderRow}>
-                   <View style={styles.revRatingCorner}><SolarIcon name="star-bold" size={16} color="#15CB64" /><ThemedText style={styles.revRateNum}>4</ThemedText></View>
+                   <View style={styles.revRatingCorner}><SolarStarBold size={16} color="#15CB64" /><ThemedText style={styles.revRateNum}>4</ThemedText></View>
                    <View style={styles.reviewerMeta}><ThemedText style={styles.reviewerName}>انسة انس</ThemedText><Image source={require('@/assets/profile.svg')} style={styles.revAvatarSmall} /></View>
                 </View>
                 <ThemedText style={styles.revMessage}>خوش مكان ونضيف يستاهل، الهواء نقي بسبب التشجير</ThemedText>
@@ -198,7 +199,10 @@ export default function ChaletDetailScreen() {
           </View>
           <View style={styles.footerTextSide}>
              <ThemedText style={styles.footerPriceBig}>30,000 IQD</ThemedText>
-             <ThemedText style={styles.footerMetaSmall}>شفت صباحي . 23/اكتوبر . 5 بالغين</ThemedText>
+             <View style={styles.footerMetaRow}>
+                <SolarIcon name="clock-circle-bold" size={12} color="#9CA3AF" />
+                <ThemedText style={styles.footerMetaSmall}>شفت صباحي</ThemedText>
+             </View>
           </View>
       </View>
     </View>
@@ -232,7 +236,7 @@ const styles = StyleSheet.create({
   facilityLabelText: { fontSize: 12, fontWeight: '700', marginTop: 6, textAlign: 'center' },
   descriptionText: { fontSize: 14, color: '#6B7280', lineHeight: 22, textAlign: 'right', marginTop: 5 },
   readMoreWrapper: { alignItems: 'center', marginTop: 15 },
-  readMoreComp: { width: '40%', height: 40, borderRadius: 20 },
+  readMoreComp: { width: '55%', height: 48, borderRadius: 24 },
   
   mapCardFlat: { backgroundColor: '#F9FAFB', borderRadius: 24, padding: 10, marginBottom: 20, borderWidth: 1, borderColor: '#F3F4F6' },
   mapInner: { height: 180, borderRadius: 15, overflow: 'hidden' },
@@ -308,9 +312,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 25,
     borderTopWidth: 1, borderTopColor: '#F3F4F6'
   },
-  footerTextSide: { alignItems: 'flex-end' },
-  footerPriceBig: { fontSize: 20, fontWeight: "900" },
-  footerMetaSmall: { fontSize: 11, color: "#9CA3AF" },
-  footerBtnSide: { flex: 1, marginRight: 20 },
-  footerFlatBtn: { height: 48, borderRadius: 24, width: '100%' }
+  footerTextSide: { alignItems: 'flex-end', flex: 1 },
+  footerPriceBig: { fontSize: 18, fontWeight: "900", marginBottom: 4 },
+  footerMetaRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6 },
+  footerMetaSmall: { fontSize: 10, color: "#9CA3AF", fontWeight: '600' },
+  vDivider: { width: 1, height: 10, backgroundColor: '#BDBDBD', marginHorizontal: 4 },
+  footerBtnSide: { width: 150 },
+  footerFlatBtn: { height: 48, borderRadius: 24, alignSelf: 'stretch' }
 });

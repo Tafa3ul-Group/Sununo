@@ -4,6 +4,7 @@ import Svg, { ClipPath, Defs, G, Path, Image as SvgImage } from "react-native-sv
 import { ThemedText } from "@/components/themed-text";
 import { Colors, normalize, Spacing } from "@/constants/theme";
 import { SolarIcon } from "../ui/solar-icon";
+import { SolarStarBold, SolarHeartBold } from "@/components/icons/solar-icons";
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -63,15 +64,14 @@ export function HorizontalCard({ chalet, onPress, style, shapeIndex = 2 }: Horiz
           style={styles.heartCircle} 
           onPress={() => setIsFavorite(!isFavorite)}
         >
-          <SolarIcon 
-            name={isFavorite ? "heart-bold" : "heart-linear"} 
-            size={normalize.width(18)} 
+          <SolarHeartBold 
+            size={normalize.width(20)} 
             color={isFavorite ? "#EA2129" : "#9CA3AF"} 
           />
         </TouchableOpacity>
 
         <View style={styles.ratingBox}>
-           <SolarIcon name="star-bold" size={normalize.width(16)} color={Colors.secondary} />
+           <SolarStarBold size={normalize.width(16)} color={Colors.secondary} />
            <ThemedText style={styles.ratingText}>{chalet.rating || '4.5'}</ThemedText>
         </View>
       </View>

@@ -1,4 +1,5 @@
 import { ThemedText } from "@/components/themed-text";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import {
   ActivityIndicator,
@@ -9,13 +10,12 @@ import {
   ViewStyle,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 interface PrimaryButtonProps {
   label: string;
   onPress: () => void;
   icon?: keyof typeof MaterialCommunityIcons.glyphMap;
-  variant?: 'primary' | 'white';
+  variant?: "primary" | "white";
   isActive?: boolean;
   loading?: boolean;
   disabled?: boolean;
@@ -36,7 +36,7 @@ export function PrimaryButton({
   label,
   onPress,
   icon,
-  variant = 'primary',
+  variant = "primary",
   isActive = true,
   loading = false,
   disabled = false,
@@ -48,13 +48,16 @@ export function PrimaryButton({
   style,
   textStyle,
 }: PrimaryButtonProps) {
-  const isWhite = variant === 'white';
+  const isWhite = variant === "white";
   const defaultActiveColor = isWhite ? "white" : "#035DF9";
   const defaultActiveTextColor = isWhite ? "#6B7280" : "white";
 
-  const color = isActive ? (activeColor || defaultActiveColor) : inactiveColor;
-  const determinedInactiveTextColor = inactiveTextColor || (activeColor || defaultActiveColor);
-  const textColor = isActive ? (activeTextColor || defaultActiveTextColor) : determinedInactiveTextColor;
+  const color = isActive ? activeColor || defaultActiveColor : inactiveColor;
+  const determinedInactiveTextColor =
+    inactiveTextColor || activeColor || defaultActiveColor;
+  const textColor = isActive
+    ? activeTextColor || defaultActiveTextColor
+    : determinedInactiveTextColor;
 
   if (loading) {
     return (
@@ -106,7 +109,7 @@ export function PrimaryButton({
           },
         ]}
       >
-        <View style={styles.textWithIcon}>
+        <View style={[styles.textWithIcon, { flexShrink: 0 }]}>
           {icon && (
             <MaterialCommunityIcons 
               name={icon} 
@@ -116,7 +119,9 @@ export function PrimaryButton({
             />
           )}
           <ThemedText
-            style={[styles.primaryText, { color: textColor }, textStyle]}
+            numberOfLines={1}
+            ellipsizeMode="clip"
+            style={[styles.primaryText, { color: textColor, flexShrink: 0 }, textStyle]}
           >
             {label}
           </ThemedText>
@@ -155,8 +160,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  svgPart: {
-  },
+  svgPart: {},
   middleSection: {
     justifyContent: "center",
     alignItems: "center",
@@ -168,8 +172,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   textWithIcon: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

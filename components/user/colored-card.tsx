@@ -1,7 +1,7 @@
 import { ThemedText } from "@/components/themed-text";
 import { normalize } from "@/constants/theme";
-import { Ionicons } from "@expo/vector-icons";
 import React from "react";
+import { SolarStarBold, SolarHeartBold } from "@/components/icons/solar-icons";
 import { StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
 import Svg, {
   ClipPath,
@@ -92,7 +92,7 @@ export function ColoredCard({
       {/* Favorite Button */}
       <View style={styles.favoriteButton}>
         <View style={styles.favoriteCircle}>
-          <Ionicons name="heart" size={12} color="#EA2129" />
+          <SolarHeartBold size={14} color="#EA2129" />
         </View>
       </View>
 
@@ -144,7 +144,7 @@ export function ColoredCard({
         <View style={styles.footer}>
           {/* Rating */}
           <View style={styles.ratingContainer}>
-            <Ionicons name="star" size={10} color="#FFFFFF" />
+            <SolarStarBold size={12} color="#FFFFFF" />
             <ThemedText style={styles.ratingText}>{rating}</ThemedText>
           </View>
 
