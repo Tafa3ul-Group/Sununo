@@ -10,6 +10,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { ProfileShape } from '@/components/icons/solar-icons';
 import { CircleBackButton } from '@/components/ui/circle-back-button';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { LanguageBottomSheet } from '@/components/user/language-bottom-sheet';
+import { useRef } from 'react';
 
 export default function ProfileScreen() {
   const dispatch = useDispatch();
@@ -17,15 +20,16 @@ export default function ProfileScreen() {
   const isRTL = i18n.language === 'ar';
   const { user, userType } = useSelector((state: RootState) => state.auth);
   const router = useRouter();
+  const languageSheetRef = useRef<BottomSheetModal>(null);
 
   const handleLogout = () => {
     Alert.alert(
-      isRTL ? 'تسجيل الخروج' : 'Logout',
+      t('profile.logout'),
       isRTL ? 'هل أنت متأكد من تسجيل الخروج؟' : 'Are you sure you want to logout?',
       [
         { text: isRTL ? 'إلغاء' : 'Cancel', style: 'cancel' },
         { 
-          text: isRTL ? 'خروج' : 'Logout', 
+          text: t('profile.logout'), 
           style: 'destructive', 
           onPress: () => {
             dispatch(logout());
@@ -37,13 +41,13 @@ export default function ProfileScreen() {
   };
 
   const menuItems = [
-    { id: 'wallet', title: isRTL ? 'المحفظة' : 'Wallet', shape: 'red' as const, icon: 'wallet', route: '/(tabs)/(dashboard)/transactions' },
-    { id: 'bookings', title: isRTL ? 'الحجوزات' : 'Bookings', shape: 'red' as const, icon: 'calendar-text', route: '/(tabs)/bookings' },
+    { id: 'wallet', title: t('common.earnings'), shape: 'red' as const, icon: 'wallet', route: '/(tabs)/(dashboard)/transactions' },
+    { id: 'bookings', title: t('tabs.bookings'), shape: 'red' as const, icon: 'calendar-text', route: '/(tabs)/bookings' },
     { id: 'reviews', title: isRTL ? 'المراجعات' : 'Reviews', shape: 'blue' as const, icon: 'heart-outline' },
-    { id: 'language', title: isRTL ? 'اللغة' : 'Language', shape: 'pink' as const, icon: 'web' },
+    { id: 'language', title: t('profile.language'), shape: 'pink' as const, icon: 'web' },
     { id: 'contact', title: isRTL ? 'تواصل معنا' : 'Contact Us', shape: 'green' as const, icon: 'phone-outline' },
     { id: 'privacy', title: isRTL ? 'سياسة الخصوصية' : 'Privacy Policy', shape: 'blue' as const, icon: 'shield-alert-outline' },
-    { id: 'logout', title: isRTL ? 'تسجيل الخروج' : 'Logout', shape: 'red' as const, icon: 'logout-variant', action: handleLogout },
+    { id: 'logout', title: t('profile.logout'), shape: 'red' as const, icon: 'logout-variant', action: handleLogout },
   ];
 
   return (
@@ -51,7 +55,7 @@ export default function ProfileScreen() {
       {/* Custom Header */}
       <View style={styles.header}>
         <CircleBackButton style={{ shadowOpacity: 0, elevation: 0 }} />
-        <Text style={styles.headerTitle}>{isRTL ? 'الملف الشخصي' : 'Profile'}</Text>
+        <Text style={styles.headerTitle}>{t('profile.title')}</Text>
         <View style={styles.logoCircle}>
           <Image 
             source={require('@/assets/arlogo.svg')} 
@@ -86,7 +90,15 @@ export default function ProfileScreen() {
             <TouchableOpacity 
               key={item.id} 
               style={styles.menuRow} 
-              onPress={item.id === 'logout' ? item.action : (item.route ? () => router.push(item.route as any) : undefined)}
+              onPress={() => {
+                if (item.id === 'language') {
+                  languageSheetRef.current?.present();
+                } else if (item.id === 'logout') {
+                  item.action?.();
+                } else if (item.route) {
+                  router.push(item.route as any);
+                }
+              }}
               activeOpacity={0.7}
             >
               <Text style={styles.menuLabelText}>{item.title}</Text>
@@ -98,6 +110,7 @@ export default function ProfileScreen() {
         </View>
 
         <View style={{ height: normalize.height(100) }} />
+        <LanguageBottomSheet ref={languageSheetRef} />
       </ScrollView>
     </SafeAreaView>
   );
