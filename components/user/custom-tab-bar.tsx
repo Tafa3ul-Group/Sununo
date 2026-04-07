@@ -1,193 +1,112 @@
-import { normalize } from '@/constants/theme';
+import { normalize, Shadows, Colors } from '@/constants/theme';
 import { RootState } from '@/store';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 
-/* 
- * CustomTabBar - Dynamic floating navigation design
+/**
+ * CustomTabBar - Refined Active Indicator 40x40
  */
-
-interface TabProps {
-  state: any;
-  navigation: any;
-  descriptors: any;
-}
-
-export const CustomTabBar: React.FC<TabProps> = ({ state, navigation, descriptors }) => {
+export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) => {
   const { userType, language } = useSelector((state: RootState) => state.auth);
   const isRTL = language === 'ar';
   const insets = useSafeAreaInsets();
 
-  // Hide tab bar if no user type (logging out)
   if (!userType) return null;
 
-  // Current active route index/name
-  const activeIndex = state.index;
-  const currentRouteName = state.routes[activeIndex].name;
-  const currentOptions = descriptors[state.routes[activeIndex].key]?.options;
+  const currentRouteIndex = state.index;
+  const currentRouteName = state.routes[currentRouteIndex].name;
+  const currentOptions = descriptors[state.routes[currentRouteIndex].key]?.options;
 
-  // List of screens that should hide the tab bar
   const hiddenScreens = [
-    '(dashboard)/add-chalet',
-    '(dashboard)/edit-chalet',
-    '(dashboard)/chalet-details',
-    '(dashboard)/revenue',
-    '(dashboard)/transactions',
-    '(dashboard)/notifications',
-    '(dashboard)/customers',
-    'profile',
-    '(dashboard)/provider-profile',
+    '(dashboard)/add-chalet', '(dashboard)/edit-chalet', '(dashboard)/chalet-details',
+    '(dashboard)/revenue', '(dashboard)/transactions', '(dashboard)/notifications',
+    '(dashboard)/customers', 'profile', '(dashboard)/provider-profile', 'explore',
   ];
 
-  // Hide tab bar if screen is a sub-screen (explicitly href: null) OR in blacklist
   if (currentOptions?.href === null || hiddenScreens.includes(currentRouteName)) {
     return null;
   }
 
-  // Filter routes that should be visible (href !== null)
   const visibleRoutes = state.routes.filter((route: any) => {
     const options = descriptors[route.key]?.options;
-    // In expo-router, href: null explicitly hides the tab. 
-    // If href is undefined, it's visible by default.
     return options?.href !== null;
   });
 
   if (visibleRoutes.length === 0) return null;
 
-  // Separate left button vs capsule tabs
-  let leftTab: any;
-  let capsuleTabs: any[];
+  let isolatedTab: any;
+  let pillTabs: any[];
 
   if (userType === 'owner') {
-    // For owner, explicitly make Bookings the separate left button
-    leftTab = visibleRoutes.find((r: any) => r.name === '(dashboard)/bookings');
-    // If we can't find it for some reason, fallback to first visible
-    if (!leftTab) leftTab = visibleRoutes[0];
-
-    // Other tabs go in capsule (limited to 4 max to match design with new tab)
-    capsuleTabs = visibleRoutes
-      .filter((r: any) => r.name !== leftTab.name && (descriptors[r.key]?.options?.href !== null))
-      .slice(0, 4);
+    isolatedTab = visibleRoutes.find((r: any) => r.name === '(dashboard)/bookings') || visibleRoutes[0];
+    pillTabs = visibleRoutes.filter((r: any) => r.name !== isolatedTab.name).slice(0, 3);
   } else {
-    // For regular users, fallback to first visible as main button
-    leftTab = visibleRoutes[0];
-    capsuleTabs = visibleRoutes.slice(1);
+    isolatedTab = visibleRoutes.find((r: any) => r.name === 'index') || visibleRoutes[0];
+    pillTabs = visibleRoutes.filter((r: any) => r.name !== isolatedTab.name).slice(0, 3);
   }
 
-  const navigateTo = (routeName: string) => {
-    navigation.navigate(routeName);
-  };
-
-  const NAV_HEIGHT = normalize.height(54);
+  const NAV_HEIGHT = normalize.height(50);
+  const PILL_WIDTH = normalize.width(170);
+  const SIDE_PADDING = normalize.width(23);
+  const ACTIVE_INDICATOR_SIZE = normalize.height(40); // 40x40 EXACT
 
   const renderIcon = (route: any, isActive: boolean) => {
     const { options } = descriptors[route.key];
-
     if (options.tabBarIcon) {
       return options.tabBarIcon({
         focused: isActive,
-        color: isActive ? '#035DF9' : 'rgba(255, 255, 255, 0.7)',
+        color: isActive ? Colors.primary : 'white',
         size: normalize.width(22),
       });
     }
-
-    // Fallback (should not be reached if all routes have icons)
     return null;
   };
 
-  const isLeftTabActive = currentRouteName === leftTab.name;
-
   return (
-    <View style={[
-      styles.container, 
-      { 
-        bottom: insets.bottom + 16, 
-        flexDirection: 'row',
-        paddingHorizontal: 16
-      }
-    ]}>
-      {/* Left Button */}
-      <TouchableOpacity
-        style={[
-          styles.roundButton,
-          { width: NAV_HEIGHT, height: NAV_HEIGHT, borderRadius: NAV_HEIGHT / 2 },
-          isLeftTabActive && styles.activeRoundButton
-        ]}
-        onPress={() => navigateTo(leftTab.name)}
-        activeOpacity={0.8}
-      >
-        {renderIcon(leftTab, isLeftTabActive)}
-      </TouchableOpacity>
+    <View style={styles.container}>
+      <View style={[
+        styles.navWrapper, 
+        { 
+          bottom: Math.max(insets.bottom, 20),
+          paddingHorizontal: SIDE_PADDING,
+          flexDirection: isRTL ? 'row-reverse' : 'row'
+        }
+      ]}>
+        <TouchableOpacity
+          style={[styles.roundButton, { width: NAV_HEIGHT, height: NAV_HEIGHT, borderRadius: NAV_HEIGHT / 2 }]}
+          onPress={() => navigation.navigate(isolatedTab.name)}
+          activeOpacity={0.8}
+        >
+          {renderIcon(isolatedTab, currentRouteName === isolatedTab.name)}
+        </TouchableOpacity>
 
-      {/* Main Navigation Capsule */}
-      <View style={[styles.tabCapsule, { height: NAV_HEIGHT, borderRadius: NAV_HEIGHT / 2 }]}>
-        {capsuleTabs.map((route: any, index: number) => {
-          const isActive = currentRouteName === route.name;
-
-          return (
-            <TouchableOpacity
-              key={route.key}
-              onPress={() => navigateTo(route.name)}
-              style={[
-                styles.tabItem,
-                { width: NAV_HEIGHT - 8, height: NAV_HEIGHT - 8, borderRadius: (NAV_HEIGHT - 8) / 2 },
-                isActive && styles.activeTabItem,
-                index > 0 && { marginLeft: 4 }
-              ]}
-              activeOpacity={0.7}
-            >
-              {renderIcon(route, isActive)}
-            </TouchableOpacity>
-          );
-        })}
+        <View style={[styles.tabCapsule, { width: PILL_WIDTH, height: NAV_HEIGHT, borderRadius: NAV_HEIGHT / 2, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          {pillTabs.map((route: any) => {
+            const isActive = currentRouteName === route.name;
+            return (
+              <TouchableOpacity
+                key={route.key}
+                onPress={() => navigation.navigate(route.name)}
+                style={[styles.tabItem, isActive && styles.activeIndicator, isActive && { width: ACTIVE_INDICATOR_SIZE, height: ACTIVE_INDICATOR_SIZE, borderRadius: ACTIVE_INDICATOR_SIZE / 2 }]}
+                activeOpacity={0.7}
+              >
+                {renderIcon(route, isActive)}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    zIndex: 1000,
-  },
-  roundButton: {
-    backgroundColor: '#035DF9',
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-  },
-  activeRoundButton: {
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#035DF9',
-  },
-  tabCapsule: {
-    flexDirection: 'row',
-    backgroundColor: '#035DF9',
-    paddingHorizontal: 4,
-    alignItems: 'center',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-  },
-  tabItem: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  activeTabItem: {
-    backgroundColor: 'white',
-  },
+  container: { position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 1000 },
+  navWrapper: { width: '100%', alignItems: 'center', justifyContent: 'space-between' },
+  roundButton: { backgroundColor: Colors.primary, justifyContent: 'center', alignItems: 'center' },
+  tabCapsule: { backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'space-around' },
+  tabItem: { justifyContent: 'center', alignItems: 'center', flex: 1, height: '100%' },
+  activeIndicator: { backgroundColor: 'white' },
 });

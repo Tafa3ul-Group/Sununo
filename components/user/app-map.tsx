@@ -77,7 +77,7 @@ export const AppMap = ({
     return (
       <View style={[styles.container, style, styles.fallbackContainer]}>
         <Image 
-          source={{ uri: `https://api.mapbox.com/styles/v1/mapbox/light-v10/static/${fallbackLng},${fallbackLat},${zoomLevel}/800x400?access_token=MOCK_TOKEN` }}
+          source={{ uri: `https://api.mapbox.com/styles/v1/mapbox/light-v10/static/${fallbackLng},${fallbackLat},${zoomLevel}/800x400?access_token=sk.eyJ1Ijoibm92YWl0aCIsImEiOiJjbXNneHdhd2YwYXZwMmtxeGZnb3l0OG0zIn0.n-s6o_-wXo_-w` }}
           style={styles.fallbackImage}
           resizeMode="cover"
         />
@@ -103,9 +103,7 @@ export const AppMap = ({
 
         <View style={styles.fallbackOverlay}>
           <ThemedText style={styles.fallbackText}>
-            {Platform.OS === 'web' 
-              ? 'الخارطة الحية (قيد التطوير)' 
-              : 'الخارطة الحية تتطلب اصدار مخصص'}
+            الخارطة الحية - {centerCoordinate ? 'موقع الشالية' : 'موقعك الحالي'}
           </ThemedText>
         </View>
       </View>

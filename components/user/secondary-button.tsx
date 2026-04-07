@@ -1,14 +1,20 @@
 import { ThemedText } from "@/components/themed-text";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
-import { ActivityIndicator, StyleSheet, TextStyle, TouchableOpacity, View, ViewStyle } from "react-native";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  TextStyle,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from "react-native";
 import Svg, { Path } from "react-native-svg";
 
 interface SecondaryButtonProps {
   label: string;
   onPress: () => void;
   isActive?: boolean;
-  isLoading?: boolean;
   icon?: keyof typeof MaterialCommunityIcons.glyphMap;
   iconLabel?: string;
   activeColor?: string;
@@ -17,6 +23,7 @@ interface SecondaryButtonProps {
   inactiveTextColor?: string;
   style?: ViewStyle;
   textStyle?: TextStyle;
+  isLoading?: boolean;
 }
 
 /**
@@ -29,7 +36,6 @@ export function SecondaryButton({
   label,
   onPress,
   isActive = false,
-  isLoading = false,
   icon,
   iconLabel,
   activeColor = "#035DF9",
@@ -38,6 +44,7 @@ export function SecondaryButton({
   inactiveTextColor = "#035DF9",
   style,
   textStyle,
+  isLoading = false,
 }: SecondaryButtonProps) {
   const bgColor = isActive ? activeColor : "transparent";
   const borderColor = isActive ? activeColor : "#E5E7EB";
@@ -50,8 +57,8 @@ export function SecondaryButton({
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={onPress}
-      disabled={isLoading}
       style={[styles.container, style, isLoading && { opacity: 0.7 }]}
+      disabled={isLoading}
     >
       {/* Icon Section (Right part in RTL) */}
       <View style={[styles.iconWrapper, { width: scaledWidth, height: 46 }]}>
@@ -69,19 +76,26 @@ export function SecondaryButton({
             strokeWidth="1"
           />
         </Svg>
-        {(icon || iconLabel) && !isLoading && (
+        {(icon || iconLabel || isLoading) && (
           <View style={styles.iconContainer}>
-            {iconLabel ? (
-              <ThemedText style={[styles.text, { color: finalContentColor, fontSize: 16 }]}>
+            {isLoading ? (
+              <ActivityIndicator color={finalContentColor} size="small" />
+            ) : iconLabel ? (
+              <ThemedText
+                style={[
+                  styles.text,
+                  { color: finalContentColor, fontSize: 16 },
+                ]}
+              >
                 {iconLabel}
               </ThemedText>
-            ) : (
+            ) : icon ? (
               <MaterialCommunityIcons
                 name={icon as any}
                 size={22}
                 color={finalContentColor}
               />
-            )}
+            ) : null}
           </View>
         )}
       </View>
@@ -98,15 +112,11 @@ export function SecondaryButton({
           },
         ]}
       >
-        {isLoading ? (
-          <ActivityIndicator color={finalContentColor} />
-        ) : (
-          <ThemedText
-            style={[styles.text, { color: finalContentColor }, textStyle]}
-          >
-            {label}
-          </ThemedText>
-        )}
+        <ThemedText
+          style={[styles.text, { color: finalContentColor }, textStyle]}
+        >
+          {label}
+        </ThemedText>
       </View>
     </TouchableOpacity>
   );

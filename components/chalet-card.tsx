@@ -1,150 +1,186 @@
 import { Colors, normalize, Spacing } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
-import { getImageSrc } from '@/hooks/useImageSrc';
+import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import {
-    Image,
-    StyleSheet,
-    TouchableOpacity,
-    View,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  ViewStyle
 } from 'react-native';
 import { ThemedText } from './themed-text';
+import Svg, { Path } from 'react-native-svg';
+import { SolarIcon } from './ui/solar-icon';
 
 interface ChaletCardProps {
-  image: any;
-  title: string;
-  location: string;
-  guests: number;
-  price: number;
-  rating: number;
-  isRecentlyAdded?: boolean;
+  chalet: any;
+  onPress?: () => void;
+  style?: ViewStyle;
 }
 
-export function ChaletCard({
-  image,
-  title,
-  location,
-  guests,
-  price,
-  rating,
-  isRecentlyAdded = false,
-}: ChaletCardProps) {
+// شكل النجمة (num4) المستخدم كخلفية للقلب
+const STAR_SHAPE = "M21.5794 1.3411C23.0039 -0.447035 25.7533 -0.447035 27.1778 1.3411L30.9328 6.05437C31.5583 6.83951 32.5599 7.25435 33.5852 7.15286L39.7366 6.54401C42.068 6.31326 43.7674 8.65243 42.9234 10.8258L40.6942 16.5658C40.3228 17.5222 40.4851 18.599 41.1239 19.4168L44.958 24.3243C46.4111 26.1843 45.3611 28.9702 43.1 29.3821L37.1197 30.4716C36.1235 30.6531 35.2933 31.3323 34.9221 32.2681L32.6931 37.8876C31.8484 40.0163 28.91 40.0163 28.0654 37.8876L25.8364 32.2681C25.4652 31.3323 24.6349 30.6531 23.6387 30.4716L17.6585 29.3821C15.3973 28.9702 14.3473 26.1843 15.8005 24.3243L19.6346 19.4168C20.2733 18.599 20.4357 17.5222 20.0642 16.5658L17.8351 10.8258C16.9911 8.65243 18.6905 6.31326 21.0218 6.54401L27.1733 7.15286C28.1986 7.25435 29.2002 6.83951 29.8257 6.05437L33.5806 1.3411L21.5794 1.3411Z";
+
+export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
+  const router = useRouter();
+  const [isFavorite, setIsFavorite] = React.useState(false);
+
+  if (!chalet) return null;
+
+  const imageUrl = chalet.images?.[0] || chalet.image || "https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=400";
+
   return (
-    <View style={styles.container}>
-      {/* Image Container */}
-      <View style={styles.imageWrapper}>
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={onPress || (() => router.push(`/chalet-details/${chalet.id}`))}
+      style={[styles.container, style]}
+    >
+      <View style={styles.imageContainer}>
         <Image 
-          source={typeof image === 'string' ? getImageSrc(image) : image} 
+          source={{ uri: imageUrl }} 
           style={styles.image} 
-          resizeMode="cover"
+          contentFit="cover" 
         />
         
-        {/* Heart Icon Overlay */}
-        <TouchableOpacity style={styles.heartButton}>
-          <Ionicons name="heart-outline" size={normalize.width(22)} color={Colors.accent.heart} />
-        </TouchableOpacity>
+        {/* الطبقة العلوية للأيقونات (التقييم والقلب) */}
+        <View style={styles.topActions}>
+           {/* التقييم في زاوية اليمنى صريحاً وبنفس المسافة */}
+           <View style={styles.ratingOverlay}>
+              <ThemedText style={styles.ratingText}>{chalet.rating || '4.5'}</ThemedText>
+              <SolarIcon name="star-bold" size={normalize.width(16)} color="#FFB801" />
+           </View>
 
-        {/* Badge Overlay */}
-        {isRecentlyAdded && (
-          <View style={styles.badge}>
-            <ThemedText style={styles.badgeText}>Recently added</ThemedText>
-          </View>
-        )}
-      </View>
-
-      {/* Content */}
-      <View style={styles.content}>
-        <View style={styles.headerRow}>
-          <ThemedText type="h2" style={styles.title} numberOfLines={1}>{title}</ThemedText>
-          <View style={styles.ratingBox}>
-            <Ionicons name="star" size={normalize.width(14)} color={Colors.accent.star} />
-            <ThemedText type="rating" style={styles.ratingText}>{rating.toFixed(1)}</ThemedText>
-          </View>
-        </View>
-
-        <ThemedText type="subtitle" style={styles.infoText}>
-          {location} • {guests} guests
-        </ThemedText>
-
-        <View style={styles.priceRow}>
-          <ThemedText type="price">${price}</ThemedText>
-          <ThemedText type="subtitle" style={styles.perNight}> / night</ThemedText>
+           {/* القلب في زاوية اليسرى مع خلفية الـ Svg */}
+           <TouchableOpacity 
+             style={styles.heartContainer} 
+             onPress={() => setIsFavorite(!isFavorite)}
+           >
+              <View style={styles.svgBackground}>
+                <Svg height="42" width="46" viewBox="14 0 32 40">
+                  <Path d={STAR_SHAPE} fill="white" />
+                </Svg>
+              </View>
+              <SolarIcon 
+                name={isFavorite ? "heart-bold" : "heart-linear"} 
+                size={normalize.width(20)} 
+                color={isFavorite ? "#EA2129" : "#9CA3AF"} 
+              />
+           </TouchableOpacity>
         </View>
       </View>
-    </View>
+
+      <View style={styles.infoContainer}>
+        <View style={styles.titleRow}>
+          <ThemedText style={styles.title} numberOfLines={1}>{chalet.title}</ThemedText>
+        </View>
+        
+        <View style={styles.locationRow}>
+          <ThemedText style={styles.location} numberOfLines={1}>{chalet.location}</ThemedText>
+          <SolarIcon name="map-point-linear" size={normalize.width(14)} color="#9CA3AF" />
+        </View>
+
+        <View style={styles.priceContainer}>
+          <View style={styles.priceRow}>
+            <ThemedText style={styles.price}>IQD {chalet.price}</ThemedText>
+            <ThemedText style={styles.priceLabel}> / ليلة</ThemedText>
+          </View>
+        </View>
+      </View>
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.background,
-    borderRadius: normalize.radius(16),
-    marginBottom: Spacing.lg,
-    overflow: 'hidden',
+    backgroundColor: "white",
+    borderRadius: normalize.radius(20),
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#F3F4F6",
+    width: normalize.width(240),
+    marginRight: Spacing.md,
   },
-  imageWrapper: {
-    width: '100%',
-    height: normalize.height(260),
-    borderRadius: normalize.radius(16),
-    overflow: 'hidden',
-    position: 'relative',
-    backgroundColor: Colors.surface,
+  imageContainer: {
+    width: "100%",
+    height: normalize.height(180),
+    position: "relative",
   },
   image: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
+    position: "absolute",
   },
-  heartButton: {
-    position: 'absolute',
-    top: Spacing.md,
-    right: Spacing.md,
-    backgroundColor: 'rgba(0,0,0,0.15)',
-    padding: normalize.width(8),
-    borderRadius: normalize.radius(25),
-  },
-  badge: {
-    position: 'absolute',
-    bottom: Spacing.md,
-    left: Spacing.md,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: normalize.height(4),
-    borderRadius: normalize.radius(20),
-  },
-  badgeText: {
-    color: Colors.background,
-    fontSize: normalize.font(11),
-    fontWeight: '600',
-  },
-  content: {
-    paddingVertical: Spacing.sm,
-  },
-  headerRow: {
+  topActions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: normalize.height(2),
+    paddingHorizontal: normalize.width(10), // المسافة الموحدة من الحواف (10 بكسل)
+    paddingTop: normalize.height(10),
+    width: '100%',
   },
-  title: {
-    flex: 1,
-    marginRight: Spacing.sm,
-  },
-  ratingBox: {
+  ratingOverlay: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: normalize.width(4),
+    backgroundColor: 'white',
+    paddingHorizontal: normalize.width(10),
+    paddingVertical: normalize.height(6),
+    borderRadius: normalize.radius(10),
+    gap: 4,
   },
   ratingText: {
-    marginLeft: normalize.width(2),
+    fontSize: normalize.font(14),
+    fontWeight: '800',
+    color: '#111827',
   },
-  infoText: {
-    marginBottom: normalize.height(4),
+  heartContainer: {
+    width: normalize.width(42),
+    height: normalize.width(42),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  svgBackground: {
+    position: 'absolute',
+    top: -2,
+    left: -2,
+  },
+  infoContainer: {
+    padding: normalize.width(12),
+  },
+  titleRow: {
+    alignItems: 'flex-end',
+  },
+  title: {
+    fontSize: normalize.font(16),
+    fontWeight: "900",
+    color: "#111827",
+  },
+  locationRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+  },
+  location: {
+    fontSize: normalize.font(12),
+    color: "#6B7280",
+  },
+  priceContainer: {
+    marginTop: normalize.height(12),
+    alignItems: 'flex-end',
   },
   priceRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 4,
   },
-  perNight: {
-    marginLeft: normalize.width(4),
+  price: {
+    fontSize: normalize.font(16),
+    fontWeight: "900",
+    color: "#111827",
+  },
+  priceLabel: {
+    fontSize: normalize.font(12),
+    color: "#6B7280",
   },
 });
