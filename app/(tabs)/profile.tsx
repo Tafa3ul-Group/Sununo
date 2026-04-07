@@ -10,6 +10,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { ProfileShape } from '@/components/icons/solar-icons';
 import { CircleBackButton } from '@/components/ui/circle-back-button';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { LanguageSheet } from '@/components/user/language-sheet';
 
 export default function ProfileScreen() {
   const dispatch = useDispatch();
@@ -17,6 +19,11 @@ export default function ProfileScreen() {
   const isRTL = i18n.language === 'ar';
   const { user, userType } = useSelector((state: RootState) => state.auth);
   const router = useRouter();
+  const languageSheetRef = React.useRef<BottomSheetModal>(null);
+
+  const openLanguageSheet = () => {
+    languageSheetRef.current?.present();
+  };
 
   const handleLogout = () => {
     Alert.alert(
@@ -40,7 +47,7 @@ export default function ProfileScreen() {
     { id: 'wallet', title: isRTL ? 'المحفظة' : 'Wallet', shape: 'red' as const, icon: 'wallet', route: '/(tabs)/(dashboard)/transactions' },
     { id: 'bookings', title: isRTL ? 'الحجوزات' : 'Bookings', shape: 'red' as const, icon: 'calendar-text', route: '/(tabs)/bookings' },
     { id: 'reviews', title: isRTL ? 'المراجعات' : 'Reviews', shape: 'blue' as const, icon: 'heart-outline' },
-    { id: 'language', title: isRTL ? 'اللغة' : 'Language', shape: 'pink' as const, icon: 'web' },
+    { id: 'language', title: isRTL ? 'اللغة' : 'Language', shape: 'pink' as const, icon: 'web', action: openLanguageSheet },
     { id: 'contact', title: isRTL ? 'تواصل معنا' : 'Contact Us', shape: 'green' as const, icon: 'phone-outline' },
     { id: 'privacy', title: isRTL ? 'سياسة الخصوصية' : 'Privacy Policy', shape: 'blue' as const, icon: 'shield-alert-outline' },
     { id: 'logout', title: isRTL ? 'تسجيل الخروج' : 'Logout', shape: 'red' as const, icon: 'logout-variant', action: handleLogout },
@@ -50,7 +57,7 @@ export default function ProfileScreen() {
     <SafeAreaView style={styles.container}>
       {/* Custom Header */}
       <View style={styles.header}>
-        <CircleBackButton style={{ shadowOpacity: 0, elevation: 0 }} />
+        <CircleBackButton />
         <Text style={styles.headerTitle}>{isRTL ? 'الملف الشخصي' : 'Profile'}</Text>
         <View style={styles.logoCircle}>
           <Image 
@@ -89,7 +96,13 @@ export default function ProfileScreen() {
             <TouchableOpacity 
               key={item.id} 
               style={styles.menuRow} 
-              onPress={item.id === 'logout' ? item.action : (item.route ? () => router.push(item.route as any) : undefined)}
+              onPress={() => {
+                if (item.action) {
+                  item.action();
+                } else if (item.route) {
+                  router.push(item.route as any);
+                }
+              }}
               activeOpacity={0.7}
             >
               <Text style={styles.menuLabelText}>{item.title}</Text>
@@ -102,6 +115,8 @@ export default function ProfileScreen() {
 
         <View style={{ height: normalize.height(100) }} />
       </ScrollView>
+
+      <LanguageSheet ref={languageSheetRef} />
     </SafeAreaView>
   );
 }
