@@ -21,6 +21,7 @@ import { AppMap } from "@/components/user/app-map";
 import { ColoredCard } from "@/components/user/colored-card";
 import { HorizontalCard } from "@/components/user/horizontal-card";
 import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
+import { BannerSwiper } from "@/components/user/banner-swiper";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { SearchFilterSheet } from "@/components/user/search-filter-sheet";
 import { SecondaryButton } from "@/components/user/secondary-button";
@@ -94,22 +95,8 @@ export default function HomeScreen() {
           onExtraIconPress={() => bottomSheetRef.current?.present()} 
         />
 
-        {/* الأكثر شيوعاً */}
-        <View style={styles.sectionHeader}>
-          <TouchableOpacity><ThemedText style={styles.seeAll}>{t("home.seeAll") || "الكل"}</ThemedText></TouchableOpacity>
-          <ThemedText style={styles.sectionTitle}>الاكثر شيوعاً</ThemedText>
-        </View>
-
-        <GHScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.popularRow}>
-          {POPULAR_CHALETS.map((item, index) => (
-            <ColoredCard 
-              key={item.id} 
-              {...item} 
-              shapeIndex={index} 
-              onPress={() => navigateToDetails(item.id)} 
-            />
-          ))}
-        </GHScrollView>
+        {/* Banners Swiper */}
+        <BannerSwiper />
 
         {/* الأقرب إليك */}
         <View style={styles.sectionHeader}>
