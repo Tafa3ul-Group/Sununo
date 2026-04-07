@@ -20,6 +20,7 @@ import { ThemedText } from "@/components/themed-text";
 import { AppMap } from "@/components/user/app-map";
 import { ColoredCard } from "@/components/user/colored-card";
 import { HorizontalCard } from "@/components/user/horizontal-card";
+import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { SearchFilterSheet } from "@/components/user/search-filter-sheet";
 import { SecondaryButton } from "@/components/user/secondary-button";
@@ -124,18 +125,10 @@ export default function HomeScreen() {
           <TouchableOpacity><ThemedText style={styles.seeAll}>عرض الكل</ThemedText></TouchableOpacity>
           <ThemedText style={styles.sectionTitle}>الافضل اليوم</ThemedText>
         </View>
-        <GHScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: 16 }}>
-           <View style={{ flexDirection: 'row-reverse', gap: 15 }}>
-             {POPULAR_CHALETS.map((item) => (
-               <HorizontalCard 
-                 key={item.id} 
-                 chalet={item} 
-                 style={{ width: SCREEN_WIDTH * 0.8 }} 
-                 onPress={() => navigateToDetails(item.id)} 
-               />
-             ))}
-           </View>
-        </GHScrollView>
+        <HorizontalSwiper 
+          data={POPULAR_CHALETS} 
+          onPressCard={navigateToDetails} 
+        />
 
         {/* مقترح لك */}
         <View style={styles.sectionHeader}>

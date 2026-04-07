@@ -15,6 +15,7 @@ import Svg, { Path } from 'react-native-svg';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { CircleBackButton } from '@/components/ui/circle-back-button';
 import { HorizontalCard } from '@/components/user/horizontal-card';
+import { HorizontalSwiper } from '@/components/user/horizontal-swiper';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { SolarStarBold, SolarMapBoldDuotone } from '@/components/icons/solar-icons';
 
@@ -170,25 +171,18 @@ export default function ChaletDetailScreen() {
 
           {/* قد يعجبك ايضا */}
           <ThemedText style={styles.sectionTitle}>قد يعجبك ايضا</ThemedText>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.relatedRow}>
-             <View style={{ flexDirection: 'row-reverse', gap: 15 }}>
-               {[1, 2, 3].map((_, index) => (
-                 <HorizontalCard 
-                   key={index}
-                   chalet={{
-                     title: 'شالية الاروع علة الطلاق',
-                     location: 'البصرة - الجزائر',
-                     price: '30,000',
-                     rating: 4.5,
-                     image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=400',
-                     color: ['#035DF9', '#15AB64', '#F64300'][index % 3]
-                   }}
-                   shapeIndex={index}
-                   style={{ width: SCREEN_WIDTH * 0.8 }}
-                 />
-               ))}
-             </View>
-          </ScrollView>
+          <HorizontalSwiper 
+            data={[1, 2, 3].map((_, index) => ({
+              id: `${index}`,
+              title: 'شالية الاروع علة الطلاق',
+              location: 'البصرة - الجزائر',
+              price: '30,000',
+              rating: 4.5,
+              image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=400',
+              color: ['#035DF9', '#15AB64', '#F64300'][index % 3]
+            }))}
+            onPressCard={(id) => router.push(`/chalet-details/${id}`)}
+          />
         </View>
       </ScrollView>
 

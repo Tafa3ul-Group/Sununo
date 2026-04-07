@@ -130,7 +130,6 @@ const styles = StyleSheet.create({
     borderColor: "#F3F4F6",
     alignItems: "center",
     marginBottom: normalize.height(12),
-    width: '100%',
     height: normalize.height(115),
   },
   leftColumn: {
@@ -162,7 +161,8 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: normalize.width(8),
+    flexShrink: 1,
+    paddingHorizontal: normalize.width(10),
     height: '100%',
     justifyContent: 'space-between',
     paddingVertical: 4,
