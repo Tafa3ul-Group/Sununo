@@ -62,8 +62,11 @@ export default function ProfileScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* User Profile Card */}
-        <View style={styles.userCard}>
+        <TouchableOpacity 
+          style={styles.userCard}
+          onPress={() => router.push('/profile-edit')}
+          activeOpacity={0.9}
+        >
           <ProfileShape size={normalize.width(48)} type="green">
             <MaterialCommunityIcons name="pencil" size={18} color="white" />
           </ProfileShape>
@@ -78,7 +81,7 @@ export default function ProfileScreen() {
               style={styles.avatarImg} 
             />
           </View>
-        </View>
+        </TouchableOpacity>
 
         {/* Action Menu Items */}
         <View style={styles.menuGroup}>
