@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Dimensions, Platform } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
@@ -150,12 +150,12 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 14,
         fontWeight: '700',
-        color: '#9CA3AF', // Gray color as in image
+        color: '#9CA3AF',
     },
     notificationCard: {
         flexDirection: 'row',
         backgroundColor: 'white',
-        borderRadius: 24, // Very rounded
+        borderRadius: 24,
         padding: 16,
         marginBottom: 12,
         borderWidth: 1,
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
         width: 12,
         height: 12,
         borderRadius: 6,
-        backgroundColor: '#FF4500', // Solid orange as in image
+        backgroundColor: '#FF4500',
     },
     timeText: {
         fontSize: 12,

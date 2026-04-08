@@ -39,7 +39,7 @@ export default function CustomerLayout() {
         }}
       />
       <Tabs.Screen
-        name="bookings"
+        name="notifications"
         options={{
           tabBarIcon: ({ color, size }) => (
             <SolarBellBingBoldDuotone size={size} color={color} />
