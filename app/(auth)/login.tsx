@@ -1,7 +1,7 @@
+import { SolarIcon } from "@/components/ui/solar-icon";
 import { Colors, Spacing, Typography, normalize } from "@/constants/theme";
 import { RootState } from "@/store";
 import { setCredentials } from "@/store/authSlice";
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
@@ -130,7 +130,7 @@ export default function LoginScreen() {
             }}
             disabled={isLoginLoading || isVerifyLoading}
           >
-            <Ionicons name="arrow-back" size={24} color={Colors.text.primary} />
+            <SolarIcon name="4k-bold" size={24} color={Colors.text.primary} />
           </TouchableOpacity>
 
           <View style={styles.header}>

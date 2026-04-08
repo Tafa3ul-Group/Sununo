@@ -87,7 +87,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal>((props, ref) => {
           style={styles.searchInput}
           placeholderTextColor={Colors.text.muted}
         />
-        <Ionicons name="search-outline" size={22} color={Colors.text.muted} />
+        <SolarIcon name="4k-bold" size={22} color={Colors.text.muted} />
       </View>
 
       {CITIES.map((city) => (
@@ -101,8 +101,8 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal>((props, ref) => {
         >
           <ThemedText style={styles.cityName}>{city.name}</ThemedText>
           <View style={styles.cityRight}>
-            <MaterialCommunityIcons
-              name="map-outline"
+            <SolarIcon
+              name="4k-bold"
               size={24}
               color={Colors.primary}
             />

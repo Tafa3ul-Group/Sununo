@@ -41,7 +41,7 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={28} color={Colors.text.primary} />
+            <SolarIcon name="4k-bold" size={28} color={Colors.text.primary} />
           </TouchableOpacity>
           <Text style={styles.title}>تحديد الموقع</Text>
           <View style={{ width: 40 }} />
@@ -61,14 +61,14 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
             </Mapbox.MapView>
           ) : (
             <View style={styles.fallback}>
-                <Ionicons name="map-outline" size={64} color={Colors.text.muted} />
+                <SolarIcon name="4k-bold" size={64} color={Colors.text.muted} />
                 <Text style={styles.fallbackText}>الخارطة الحية تتطلب بيئة تشغيل حقيقية</Text>
             </View>
           )}
 
           {/* Center Pin / Crosshair */}
           <View style={[styles.markerFixed, { pointerEvents: "none" }]}>
-            <Ionicons name="location" size={40} color={Colors.primary} />
+            <SolarIcon name="4k-bold" size={40} color={Colors.primary} />
           </View>
         </View>
 

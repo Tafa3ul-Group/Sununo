@@ -87,7 +87,7 @@ export const AppMap = ({
             onPress={() => onSelectMarker?.({ id: '1', title: 'شالية الاروع علة الطلاق', location: 'البصرة - الجزائر', rating: 4.5, image: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?q=80&w=1000&auto=format&fit=crop', price: 'IQD 30,000' })}
             style={[styles.designMarker, { top: '50%', left: '50%', transform: [{translateX: -16}, {translateY: -16}], borderColor: Colors.primary, justifyContent: 'center', alignItems: 'center' }]}
           >
-            <Ionicons name="location" size={20} color={Colors.primary} />
+            <SolarIcon name="4k-bold" size={20} color={Colors.primary} />
           </TouchableOpacity>
         )}
 
@@ -134,7 +134,7 @@ export const AppMap = ({
             coordinate={finalCenter}
           >
             <View style={styles.nativeMarker}>
-                <Ionicons name="location" size={30} color={Colors.primary} />
+                <SolarIcon name="4k-bold" size={30} color={Colors.primary} />
             </View>
           </Mapbox.PointAnnotation>
         )}

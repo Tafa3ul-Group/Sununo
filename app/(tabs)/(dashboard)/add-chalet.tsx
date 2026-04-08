@@ -1,3 +1,4 @@
+import { SolarIcon } from "@/components/ui/solar-icon";
 import { ChaletProgressTabs } from '@/components/chalet-progress-tabs';
 import { HeaderSection } from '@/components/header-section';
 import { ThemedText } from '@/components/themed-text';
@@ -15,7 +16,6 @@ import {
   useSetChaletAmenitiesMutation,
   useUploadChaletImageMutation
 } from '@/store/api/apiSlice';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
@@ -342,7 +342,7 @@ export default function AddChaletScreen() {
                     />
                     <View style={styles.mapOverlay}>
                       <View style={styles.editLocBadge}>
-                        <Ionicons name="map" size={16} color={Colors.white} />
+                        <SolarIcon name="4k-bold" size={16} color={Colors.white} />
                         <Text style={styles.editLocText}>{isRTL ? 'تعديل الموقع على الخارطة' : 'Edit on Map'}</Text>
                       </View>
                     </View>
@@ -444,12 +444,12 @@ export default function AddChaletScreen() {
                         style={styles.removeImageButton}
                         onPress={() => removeImage(index)}
                       >
-                        <Ionicons name="close-circle" size={24} color={Colors.error} />
+                        <SolarIcon name="4k-bold" size={24} color={Colors.error} />
                       </TouchableOpacity>
                     </View>
                   ))}
                   <TouchableOpacity style={styles.imageUpload} onPress={() => imageSourceSheetRef.current?.present()}>
-                    <MaterialCommunityIcons name="camera-plus-outline" size={32} color={Colors.text.muted} />
+                    <SolarIcon name="4k-bold" size={32} color={Colors.text.muted} />
                     <Text style={styles.uploadText}>{isRTL ? 'إضافة صور' : 'Add Photos'}</Text>
                   </TouchableOpacity>
                 </ScrollView>
@@ -532,13 +532,13 @@ export default function AddChaletScreen() {
           <View style={styles.modalOptions}>
             <TouchableOpacity style={styles.modalOption} onPress={() => { takePhoto(); imageSourceSheetRef.current?.dismiss(); }}>
               <View style={[styles.modalIcon, { backgroundColor: '#E3F2FD' }]}>
-                <Ionicons name="camera" size={30} color={Colors.primary} />
+                <SolarIcon name="4k-bold" size={30} color={Colors.primary} />
               </View>
               <Text style={styles.modalOptionText}>{isRTL ? 'الكاميرا' : 'Camera'}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.modalOption} onPress={() => { pickImage(); imageSourceSheetRef.current?.dismiss(); }}>
               <View style={[styles.modalIcon, { backgroundColor: '#F3E5F5' }]}>
-                <Ionicons name="images" size={30} color="#9C27B0" />
+                <SolarIcon name="4k-bold" size={30} color="#9C27B0" />
               </View>
               <Text style={styles.modalOptionText}>{isRTL ? 'الأستوديو' : 'Gallery'}</Text>
             </TouchableOpacity>

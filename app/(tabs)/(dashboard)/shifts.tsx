@@ -101,17 +101,17 @@ function ShiftPricingView({ shift, isRTL, onEdit }: { shift: any; isRTL: boolean
   );
 }
 
-function DayVisualizer({ 
-  shifts, 
-  isRTL, 
-  onEditShift, 
-  onAddShift, 
-  currentShiftForm, 
-  selectedId 
-}: { 
-  shifts: any[]; 
-  isRTL: boolean; 
-  onEditShift: (shift: any) => void; 
+function DayVisualizer({
+  shifts,
+  isRTL,
+  onEditShift,
+  onAddShift,
+  currentShiftForm,
+  selectedId
+}: {
+  shifts: any[];
+  isRTL: boolean;
+  onEditShift: (shift: any) => void;
   onAddShift: (h: number) => void;
   currentShiftForm?: any;
   selectedId?: string;
@@ -121,7 +121,7 @@ function DayVisualizer({
     let i = 0;
     while (i < hourIndices.length) {
       const h = hourIndices[i];
-      
+
       const shift = shifts?.find((s: any) => {
         if (selectedId && s.id === selectedId) return false;
         const sT = parseInt(s.startTime.split(':')[0]);
@@ -156,10 +156,10 @@ function DayVisualizer({
       } else {
         let isCurrent = false;
         if (currentShiftForm) {
-            const cS = parseInt(currentShiftForm.startTime.split(':')[0]);
-            const cE = parseInt(currentShiftForm.endTime.split(':')[0]);
-            const cIsNight = cS > cE;
-            isCurrent = cIsNight ? (h >= cS || h < cE) : (h >= cS && h < cE);
+          const cS = parseInt(currentShiftForm.startTime.split(':')[0]);
+          const cE = parseInt(currentShiftForm.endTime.split(':')[0]);
+          const cIsNight = cS > cE;
+          isCurrent = cIsNight ? (h >= cS || h < cE) : (h >= cS && h < cE);
         }
         slots.push({ type: 'empty', h, isCurrent });
         i++;
@@ -187,16 +187,16 @@ function DayVisualizer({
               );
             } else {
               return (
-                <TouchableOpacity 
-                  key={`empty-${slot.h}`} 
+                <TouchableOpacity
+                  key={`empty-${slot.h}`}
                   style={[
-                    styles.hourSquare, 
-                    slot.isCurrent && { 
-                      backgroundColor: Colors.primary + '15', 
+                    styles.hourSquare,
+                    slot.isCurrent && {
+                      backgroundColor: Colors.primary + '15',
                       borderColor: Colors.primary,
                       borderWidth: 1.5
                     }
-                  ]} 
+                  ]}
                   onPress={() => onAddShift(slot.h)}
                   activeOpacity={0.7}
                 >
@@ -1160,10 +1160,10 @@ export default function ShiftsAndPricesScreen() {
               )}
 
               {/* Enhanced 24h Grid Visualizer */}
-              <DayVisualizer 
-                shifts={shifts} 
-                isRTL={isRTL} 
-                onEditShift={handleEditShift} 
+              <DayVisualizer
+                shifts={shifts}
+                isRTL={isRTL}
+                onEditShift={handleEditShift}
                 onAddShift={handleAddShiftAtHour}
                 currentShiftForm={shiftForm}
                 selectedId={selectedShift?.id}

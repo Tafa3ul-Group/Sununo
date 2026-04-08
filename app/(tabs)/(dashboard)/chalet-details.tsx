@@ -1,4 +1,4 @@
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { SolarIcon } from "@/components/ui/solar-icon";
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -169,17 +169,17 @@ export default function ChaletDetailsScreen() {
       <View style={styles.fixedHeaderActions}>
         <SafeAreaView edges={['top']} style={[styles.headerActions, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
           <TouchableOpacity style={styles.iconButton} onPress={() => router.back()}>
-            <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={22} color={Colors.white} />
+            <SolarIcon name="4k-bold" size={22} color={Colors.white} />
           </TouchableOpacity>
           <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 10 }}>
             <TouchableOpacity 
               style={[styles.iconButton, { backgroundColor: '#FEF2F2', borderColor: '#FEE2E2' }]} 
               onPress={handleDelete}
             >
-              <Ionicons name="trash-outline" size={22} color="#EF4444" />
+              <SolarIcon name="4k-bold" size={22} color="#EF4444" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.iconButton} onPress={() => router.push({ pathname: '/(tabs)/(dashboard)/edit-chalet', params: { id: chalet.id } })}>
-              <Ionicons name="create-outline" size={22} color={Colors.white} />
+              <SolarIcon name="4k-bold" size={22} color={Colors.white} />
             </TouchableOpacity>
           </View>
         </SafeAreaView>
@@ -212,7 +212,7 @@ export default function ChaletDetailsScreen() {
                   </View>
                 </View>
                 <View style={[styles.locationRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                  <Ionicons name="location" size={16} color={Colors.primary} style={{ marginTop: 2 }} />
+                  <SolarIcon name="4k-bold" size={16} color={Colors.primary} style={{ marginTop: 2 }} />
                   <Text style={styles.locationText}>{chaletLocation || ''}</Text>
                 </View>
               </View>
@@ -233,7 +233,7 @@ export default function ChaletDetailsScreen() {
             <View style={[styles.statsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
               <View style={styles.statItem}>
                 <View style={[styles.statIconWrap, { backgroundColor: '#EFF6FF' }]}>
-                  <MaterialCommunityIcons name="currency-usd" size={20} color={Colors.primary} />
+                  <SolarIcon name="4k-bold" size={20} color={Colors.primary} />
                 </View>
                 <Text style={styles.statValue}>{chalet?.revenue || '0'}</Text>
                 <Text style={styles.statLabel}>{isRTL ? 'الأرباح' : 'Revenue'}</Text>
@@ -241,7 +241,7 @@ export default function ChaletDetailsScreen() {
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
                 <View style={[styles.statIconWrap, { backgroundColor: '#ECFDF5' }]}>
-                  <MaterialCommunityIcons name="calendar-check" size={20} color="#10B981" />
+                  <SolarIcon name="4k-bold" size={20} color="#10B981" />
                 </View>
                 <Text style={styles.statValue}>{chalet?.reviewCount || 0}</Text>
                 <Text style={styles.statLabel}>{isRTL ? 'الحجوزات' : 'Bookings'}</Text>
@@ -249,7 +249,7 @@ export default function ChaletDetailsScreen() {
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
                 <View style={[styles.statIconWrap, { backgroundColor: '#FFF7ED' }]}>
-                  <MaterialCommunityIcons name="star" size={20} color="#F97316" />
+                  <SolarIcon name="4k-bold" size={20} color="#F97316" />
                 </View>
                 <Text style={styles.statValue}>{typeof chalet?.rating === 'string' ? parseFloat(chalet.rating).toFixed(1) : (chalet?.rating || 0)}</Text>
                 <Text style={styles.statLabel}>{isRTL ? 'التقييم' : 'Rating'}</Text>
@@ -289,14 +289,14 @@ export default function ChaletDetailsScreen() {
               <Text style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'معلومات أساسية' : 'Key Info'}</Text>
               <View style={[styles.detailsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 <View style={styles.detailCard}>
-                  <Ionicons name="people" size={20} color={Colors.primary} />
+                  <SolarIcon name="4k-bold" size={20} color={Colors.primary} />
                   <View style={{ alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
                     <Text style={styles.detailValue}>{chalet?.maxGuests}</Text>
                     <Text style={styles.detailLabel}>{isRTL ? 'أقصى عدد' : 'Max Guests'}</Text>
                   </View>
                 </View>
                 <View style={styles.detailCard}>
-                  <Ionicons name="card" size={20} color={Colors.primary} />
+                  <SolarIcon name="4k-bold" size={20} color={Colors.primary} />
                   <View style={{ alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
                     <Text style={styles.detailValue}>{chalet?.depositPercentage}%</Text>
                     <Text style={styles.detailLabel}>{isRTL ? 'العربون' : 'Deposit'}</Text>

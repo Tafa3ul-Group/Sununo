@@ -10,7 +10,6 @@ import {
   StatusBar
 } from 'react-native';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/themed-text';
 import { Colors, normalize, Shadows } from '@/constants/theme';
 import { PrimaryButton } from '@/components/user/primary-button';
@@ -78,12 +77,12 @@ export default function CompleteBookingScreen() {
         headerTitleStyle: { fontWeight: '800', fontSize: 18 },
         headerLeft: () => (
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-            <Ionicons name="chevron-forward" size={24} color="#111827" />
+            <SolarIcon name="4k-bold" size={24} color="#111827" />
           </TouchableOpacity>
         ),
         headerRight: () => (
           <View style={styles.logoContainer}>
-             <SolarIcon name="globus-linear" size={28} color="#035DF9" />
+             <SolarIcon name="4k-bold" size={28} color="#035DF9" />
           </View>
         )
       }} />
@@ -114,7 +113,7 @@ export default function CompleteBookingScreen() {
                <ThemedText style={styles.dateBadgeText}>18</ThemedText>
             </View>
             <TouchableOpacity style={styles.addDateBtn}>
-               <Ionicons name="add" size={20} color="#94A3B8" />
+               <SolarIcon name="4k-bold" size={20} color="#94A3B8" />
             </TouchableOpacity>
         </View>
 
@@ -152,7 +151,7 @@ export default function CompleteBookingScreen() {
            >
               <View style={styles.shiftLeft}>
                 <View style={[styles.shiftIconBox, { backgroundColor: '#FEF9C3' }]}>
-                  <SolarIcon name="sun-bold" size={22} color="#F59E0B" />
+                  <SolarIcon name="4k-bold" size={22} color="#F59E0B" />
                 </View>
                 <ThemedText style={styles.shiftTitle}>الفترة الصباحية</ThemedText>
               </View>
@@ -165,7 +164,7 @@ export default function CompleteBookingScreen() {
            >
               <View style={styles.shiftLeft}>
                 <View style={[styles.shiftIconBox, { backgroundColor: '#EEF2FF' }]}>
-                  <SolarIcon name="moon-bold" size={20} color="#035DF9" />
+                  <SolarIcon name="4k-bold" size={20} color="#035DF9" />
                 </View>
                 <ThemedText style={styles.shiftTitle}>الفترة المسائية</ThemedText>
               </View>

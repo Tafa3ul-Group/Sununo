@@ -48,7 +48,7 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
            {/* التقييم في زاوية اليمنى صريحاً وبنفس المسافة */}
            <View style={styles.ratingOverlay}>
               <ThemedText style={styles.ratingText}>{chalet.rating || '4.5'}</ThemedText>
-              <SolarIcon name="star-bold" size={normalize.width(16)} color="#FFB801" />
+              <SolarIcon name="4k-bold" size={normalize.width(16)} color="#FFB801" />
            </View>
 
            {/* القلب في زاوية اليسرى مع خلفية الـ Svg */}
@@ -62,7 +62,7 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
                 </Svg>
               </View>
               <SolarIcon 
-                name={isFavorite ? "heart-bold" : "heart-linear"} 
+                name="4k-bold" 
                 size={normalize.width(20)} 
                 color={isFavorite ? "#EA2129" : "#9CA3AF"} 
               />
@@ -77,7 +77,7 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
         
         <View style={styles.locationRow}>
           <ThemedText style={styles.location} numberOfLines={1}>{chalet.location}</ThemedText>
-          <SolarIcon name="map-point-linear" size={normalize.width(14)} color="#9CA3AF" />
+          <SolarIcon name="4k-bold" size={normalize.width(14)} color="#9CA3AF" />
         </View>
 
         <View style={styles.priceContainer}>

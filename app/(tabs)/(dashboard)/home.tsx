@@ -1,4 +1,7 @@
 import { HeaderSection } from '@/components/header-section';
+import { SolarIcon } from '@/components/ui/solar-icon';
+import { PrimaryButton } from '@/components/user/primary-button';
+import { SecondaryButton } from '@/components/user/secondary-button';
 import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
 import { RootState } from '@/store';
@@ -12,7 +15,6 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
-  FlatList,
   Image,
   RefreshControl,
   ScrollView,
@@ -21,15 +23,12 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import { PrimaryButton } from '@/components/user/primary-button';
-import { SecondaryButton } from '@/components/user/secondary-button';
-import { SolarIcon } from '@/components/ui/solar-icon';
 
+import { BookingDetailsModalContent } from '@/components/booking-details-modal-content';
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
-import { BookingDetailsModalContent } from '@/components/booking-details-modal-content';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -46,14 +45,14 @@ export default function HomeScreen() {
   // API hooks
   const { data: chalets, isLoading, refetch, isFetching } = useGetOwnerChaletsQuery({});
   const { data: profileResponse } = useGetProviderProfileQuery(undefined);
-  
+
   const statusMap: Record<string, string> = {
     pending: 'pending_payment',
     confirmed: 'confirmed',
     finished: 'completed',
   };
 
-  const { data: bookingsResponse, isFetching: isBookingsFetching } = useGetProviderBookingsQuery({ 
+  const { data: bookingsResponse, isFetching: isBookingsFetching } = useGetProviderBookingsQuery({
     limit: 5,
     status: activeFilter !== 'all' ? statusMap[activeFilter] : undefined
   });
@@ -166,7 +165,7 @@ export default function HomeScreen() {
   const renderBookingCard = (item: any) => {
     const customerName = item.customer?.name || t('common.user');
     const shiftName = isRTL ? (item.shift?.name?.ar || item.shift?.name) : (item.shift?.name?.en || item.shift?.name);
-    
+
     return (
       <TouchableOpacity
         key={item.id}
@@ -195,7 +194,7 @@ export default function HomeScreen() {
             <Text style={[styles.modernBookingName, { textAlign: isRTL ? 'right' : 'left' }]}>{customerName}</Text>
             <Text style={[styles.modernBookingShift, { textAlign: isRTL ? 'right' : 'left' }]}>{t('common.shift')} {shiftName}</Text>
           </View>
-          
+
           {/* 3. Price (Left part in RTL) */}
           <View style={styles.modernBookingPriceWrap}>
             <Text style={styles.modernBookingPrice}>
@@ -214,7 +213,7 @@ export default function HomeScreen() {
   const renderFilterButton = (filter: { id: string; label: string; icon?: string }) => {
     const isActive = activeFilter === filter.id;
     const isAll = filter.id === 'all';
-    
+
     return (
       <View key={filter.id} style={{ transform: [{ scale: 0.92 }] }}>
         {isAll ? (
@@ -271,9 +270,9 @@ export default function HomeScreen() {
 
                 {/* Filter Bar */}
                 <View style={styles.filterWrapper}>
-                  <ScrollView 
-                    horizontal 
-                    showsHorizontalScrollIndicator={false} 
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
                     style={styles.filterScroll}
                     contentContainerStyle={[styles.filterContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
                   >
@@ -313,21 +312,21 @@ export default function HomeScreen() {
         </View>
 
         {/* Booking Details Drawer */}
-        <BottomSheetModal 
-          ref={detailsSheetRef} 
-          snapPoints={['85%']} 
-          backdropComponent={renderBackdrop} 
-          enablePanDownToClose 
+        <BottomSheetModal
+          ref={detailsSheetRef}
+          snapPoints={['85%']}
+          backdropComponent={renderBackdrop}
+          enablePanDownToClose
           onDismiss={() => setSelectedBookingId(null)}
         >
           <BottomSheetView style={{ flex: 1 }}>
             {selectedBookingId && (
-              <BookingDetailsModalContent 
-                id={selectedBookingId} 
-                isRTL={isRTL} 
-                t={t} 
-                onRefresh={refetch} 
-                onClose={() => detailsSheetRef.current?.dismiss()} 
+              <BookingDetailsModalContent
+                id={selectedBookingId}
+                isRTL={isRTL}
+                t={t}
+                onRefresh={refetch}
+                onClose={() => detailsSheetRef.current?.dismiss()}
               />
             )}
           </BottomSheetView>

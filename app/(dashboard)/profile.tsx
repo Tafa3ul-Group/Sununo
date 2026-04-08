@@ -1,25 +1,28 @@
+import { SolarIcon } from "@/components/ui/solar-icon";
 import { Colors, Spacing, Typography, normalize } from '@/constants/theme';
 import { RootState } from '@/store';
 import { logout } from '@/store/authSlice';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
-
 import { HeaderSection } from '@/components/header-section';
 import { useTranslation } from 'react-i18next';
+import { useGetProviderProfileQuery } from '@/store/api/apiSlice';
 
-export default function ProfileScreen() {
+export default function ProviderProfileScreen() {
   const dispatch = useDispatch();
   const { i18n, t } = useTranslation();
   const isRTL = i18n.language === 'ar';
   const { user, userType } = useSelector((state: RootState) => state.auth);
-
+  const { data: profileResponse } = useGetProviderProfileQuery(undefined);
+  const profile = profileResponse?.data || profileResponse;
+  
   const router = useRouter();
 
   const handleLogout = () => {
+    console.log('Logging out owner...');
     Alert.alert(
       isRTL ? 'تسجيل الخروج' : 'Logout',
       isRTL ? 'هل أنت متأكد من تسجيل الخروج؟' : 'Are you sure you want to logout?',
@@ -37,14 +40,11 @@ export default function ProfileScreen() {
     );
   };
 
-  const isOwner = userType === 'owner';
-
   return (
     <SafeAreaView style={styles.container}>
       <HeaderSection
         userType={userType}
-        userName={user?.name}
-        title={t('profile.title')}
+        title={isRTL ? 'الملف الشخصي' : 'Owner Profile'}
         showSearch={false}
         showCategories={false}
         showBackButton={true}
@@ -54,65 +54,67 @@ export default function ProfileScreen() {
         <View style={styles.profileCard}>
           <View style={styles.avatarContainer}>
             <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{user?.name?.charAt(0) || 'U'}</Text>
+              <Text style={styles.avatarText}>{profile?.business_name?.charAt(0) || user?.name?.charAt(0) || 'O'}</Text>
             </View>
-            <TouchableOpacity style={styles.editAvatar}>
-              <Ionicons name="camera" size={18} color={Colors.white} />
-            </TouchableOpacity>
           </View>
+          <Text style={styles.userName}>{profile?.business_name || user?.name || t('tabs.home')}</Text>
+          <Text style={styles.userEmail}>{user?.phone || user?.email}</Text>
 
-          <Text style={styles.userName}>{user?.name || (userType === 'guest' ? t('auth.browseAsGuest') : t('profile.title'))}</Text>
-          {user?.email && <Text style={styles.userEmail}>{user.email}</Text>}
-
-          <View style={[styles.roleBadge, { backgroundColor: isOwner ? '#E3F2FD' : '#FFF3E0' }]}>
-            <Text style={[styles.roleText, { color: isOwner ? '#1976D2' : '#F57C00' }]}>
-              {isOwner ? t('auth.owner') : (userType === 'guest' ? t('auth.browseAsGuest') : t('auth.customer'))}
-            </Text>
+          <View style={styles.roleBadge}>
+            <Text style={styles.roleText}>{isRTL ? 'مالك معتمد' : 'Verified Owner'}</Text>
           </View>
         </View>
 
         <View style={styles.menuContainer}>
-          <Text style={styles.menuLabel}>{t('profile.title')}</Text>
+          <Text style={styles.menuLabel}>{isRTL ? 'الإعدادات' : 'Settings'}</Text>
 
+          {/* معلومات العمل والمصرف */}
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => isOwner ? router.push('/(tabs)/(dashboard)/provider-profile') : null}
+            onPress={() => router.push('/(dashboard)/edit-business')}
           >
-            <Ionicons name="chevron-back" size={20} color={Colors.text.muted} />
+            <SolarIcon name="4k-bold" size={20} color={Colors.text.muted} />
             <View style={styles.menuItemContent}>
               <Text style={styles.menuItemTitle}>
-                {isOwner ? (isRTL ? 'معلومات العمل والمصرف' : 'Business & Bank Info') : t('profile.editProfile')}
+                {isRTL ? 'معلومات العمل والمصرف' : 'Business & Bank Info'}
               </Text>
-              <Ionicons name={isOwner ? "business-outline" : "person-outline"} size={22} color={Colors.primary} />
+              <SolarIcon name="4k-bold" size={22} color={Colors.primary} />
             </View>
           </TouchableOpacity>
 
-          {isOwner && (
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => router.push('/(tabs)/(dashboard)/home')}
-            >
-              <Ionicons name="chevron-back" size={20} color={Colors.text.muted} />
-              <View style={styles.menuItemContent}>
-                <Text style={styles.menuItemTitle}>{t('tabs.myChalets')}</Text>
-                <MaterialCommunityIcons name="home-city-outline" size={22} color={Colors.primary} />
-              </View>
-            </TouchableOpacity>
-          )}
+          {/* شاليهاتي */}
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => router.push('/(tabs)/(dashboard)/home')}
+          >
+            <SolarIcon name="4k-bold" size={20} color={Colors.text.muted} />
+            <View style={styles.menuItemContent}>
+              <Text style={styles.menuItemTitle}>{isRTL ? 'إدارة شاليهاتي' : 'Manage My Chalets'}</Text>
+              <SolarIcon name="4k-bold" size={22} color={Colors.primary} />
+            </View>
+          </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuItem}>
-            <Ionicons name="chevron-back" size={20} color={Colors.text.muted} />
+          {/* إحصائيات الدخل */}
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => router.push('/(tabs)/(dashboard)/revenue')}
+          >
+            <SolarIcon name="4k-bold" size={20} color={Colors.text.muted} />
+            <View style={styles.menuItemContent}>
+              <Text style={styles.menuItemTitle}>{isRTL ? 'المالية والأرباح' : 'Finances & Revenue'}</Text>
+              <SolarIcon name="4k-bold" size={22} color={Colors.primary} />
+            </View>
+          </TouchableOpacity>
+
+          {/* الإشعارات */}
+          <TouchableOpacity 
+            style={styles.menuItem}
+            onPress={() => router.push('/(tabs)/(dashboard)/notifications')}
+          >
+            <SolarIcon name="4k-bold" size={20} color={Colors.text.muted} />
             <View style={styles.menuItemContent}>
               <Text style={styles.menuItemTitle}>{t('profile.notifications')}</Text>
-              <Ionicons name="notifications-outline" size={22} color={Colors.primary} />
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.menuItem}>
-            <Ionicons name="chevron-back" size={20} color={Colors.text.muted} />
-            <View style={styles.menuItemContent}>
-              <Text style={styles.menuItemTitle}>{t('profile.language')}</Text>
-              <Ionicons name="language-outline" size={22} color={Colors.primary} />
+              <SolarIcon name="4k-bold" size={22} color={Colors.primary} />
             </View>
           </TouchableOpacity>
         </View>
@@ -122,8 +124,8 @@ export default function ProfileScreen() {
           onPress={handleLogout}
           activeOpacity={0.8}
         >
-          <Text style={styles.logoutText}>{userType === 'guest' ? t('auth.login') : t('profile.logout')}</Text>
-          <Ionicons name="log-out-outline" size={22} color="#FF3B30" />
+          <Text style={styles.logoutText}>{t('profile.logout')}</Text>
+          <SolarIcon name="4k-bold" size={22} color="#FF3B30" />
         </TouchableOpacity>
 
         <Text style={styles.versionText}>V 1.0.0</Text>
@@ -139,16 +141,7 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.xl,
-  },
-  header: {
-    marginTop: Spacing.md,
-    marginBottom: Spacing.lg,
-    alignItems: 'center',
-  },
-  title: {
-    ...Typography.h2,
-    fontSize: normalize.font(24),
+    paddingBottom: 150, // Added more padding to clear the absolute tab bar
   },
   profileCard: {
     backgroundColor: Colors.surface,
@@ -176,16 +169,6 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontWeight: 'bold',
   },
-  editAvatar: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: Colors.primary,
-    padding: normalize.width(6),
-    borderRadius: normalize.radius(15),
-    borderWidth: normalize.width(3),
-    borderColor: Colors.surface,
-  },
   userName: {
     ...Typography.h1,
     fontSize: normalize.font(20),
@@ -200,10 +183,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: normalize.height(6),
     borderRadius: normalize.radius(12),
+    backgroundColor: '#E8F5E9',
   },
   roleText: {
     ...Typography.caption,
     fontWeight: '700',
+    color: '#2E7D32',
   },
   menuContainer: {
     gap: Spacing.xs,

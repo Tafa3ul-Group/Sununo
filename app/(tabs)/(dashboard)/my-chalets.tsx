@@ -1,10 +1,10 @@
+import { SolarIcon } from "@/components/ui/solar-icon";
 import { HeaderSection } from '@/components/header-section';
 import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
 import { RootState } from '@/store';
 import { useGetOwnerChaletsQuery } from '@/store/api/apiSlice';
 import { formatPrice } from '@/utils/format';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import React from 'react';
@@ -63,18 +63,18 @@ export default function MyChaletsScreen() {
               {chaletName}
             </Text>
             <View style={[styles.locationRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-              <Ionicons name="location-outline" size={12} color={Colors.primary} />
+              <SolarIcon name="4k-bold" size={12} color={Colors.primary} />
               <Text style={styles.locationLabel} numberOfLines={1}>{chaletLocation}</Text>
             </View>
 
             {/* Stat chips row */}
             <View style={[styles.chipRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
               <View style={[styles.statChip, { backgroundColor: '#ECFDF5' }]}>
-                <MaterialCommunityIcons name="cash-multiple" size={12} color="#10B981" />
+                <SolarIcon name="4k-bold" size={12} color="#10B981" />
                 <Text style={[styles.statChipText, { color: '#10B981' }]}>{formatPrice(item.price)}</Text>
               </View>
               <View style={[styles.statChip, { backgroundColor: '#EFF6FF' }]}>
-                <MaterialCommunityIcons name="calendar-check" size={12} color={Colors.primary} />
+                <SolarIcon name="4k-bold" size={12} color={Colors.primary} />
                 <Text style={[styles.statChipText, { color: Colors.primary }]}>{item.reviewCount || 0}</Text>
               </View>
             </View>
@@ -88,7 +88,7 @@ export default function MyChaletsScreen() {
               router.push({ pathname: '/(tabs)/(dashboard)/edit-chalet', params: { id: item.id } });
             }}
           >
-            <Ionicons name="chevron-forward" size={18} color={Colors.text.muted} />
+            <SolarIcon name="4k-bold" size={18} color={Colors.text.muted} />
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -126,7 +126,7 @@ export default function MyChaletsScreen() {
               style={styles.addChaletBtn}
               onPress={() => router.push('/(tabs)/(dashboard)/add-chalet')}
             >
-              <Ionicons name="add" size={24} color={Colors.white} />
+              <SolarIcon name="4k-bold" size={24} color={Colors.white} />
             </TouchableOpacity>
         </View>
 
@@ -138,7 +138,7 @@ export default function MyChaletsScreen() {
           ) : (
             <View style={styles.emptyContainer}>
               <View style={styles.emptyIconWrap}>
-                 <MaterialCommunityIcons name="home-outline" size={40} color={Colors.text.muted} />
+                 <SolarIcon name="4k-bold" size={40} color={Colors.text.muted} />
               </View>
               <Text style={styles.emptyTitle}>{isRTL ? 'لا توجد شاليهات' : 'No Chalets Found'}</Text>
               <Text style={styles.emptySubtitle}>

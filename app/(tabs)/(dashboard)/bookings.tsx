@@ -1,5 +1,5 @@
+import { BookingDetailsModalContent } from '@/components/booking-details-modal-content';
 import { HeaderSection } from '@/components/header-section';
-import { ThemedText } from '@/components/themed-text';
 import { SolarIcon } from '@/components/ui/solar-icon';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { Colors, normalize } from '@/constants/theme';
@@ -9,11 +9,9 @@ import {
   useCreateExternalBookingMutation,
   useDeleteExternalBookingMutation,
   useGetOwnerChaletsQuery,
-  useGetProviderBookingDetailsQuery,
   useGetProviderBookingsQuery,
   useGetShiftAvailabilityQuery,
-  useMarkBookingCompletedMutation,
-  useRejectBookingMutation
+  useMarkBookingCompletedMutation
 } from '@/store/api/apiSlice';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput, BottomSheetView } from '@gorhom/bottom-sheet';
 import { FlashList } from '@shopify/flash-list';
@@ -21,10 +19,9 @@ import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Alert, Image, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
-import { BookingDetailsModalContent } from '@/components/booking-details-modal-content';
 
 // Status mapping from UI to API
 const API_STATUS_MAP: Record<string, string> = {
@@ -363,6 +360,7 @@ export default function BookingsScreen() {
       <FlashList
         data={bookingsData?.data || []}
         renderItem={renderBookingItem}
+        // @ts-ignore
         estimatedItemSize={150}
         contentContainerStyle={{ padding: 16 }}
         onRefresh={refreshAvailability}

@@ -1,46 +1,37 @@
-import { normalize, Shadows, Colors } from '@/constants/theme';
+import { normalize, Colors } from '@/constants/theme';
 import { RootState } from '@/store';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 
-/**
- * CustomTabBar - Refined Active Indicator 40x40
- */
-export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) => {
+export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors }) => {
   const { userType, language } = useSelector((state: RootState) => state.auth);
   const isRTL = language === 'ar';
   const insets = useSafeAreaInsets();
 
-  if (!userType) return null;
+  if (userType !== 'owner') return null;
 
   const currentRouteIndex = state.index;
-  const currentRouteName = state.routes[currentRouteIndex].name;
   const currentOptions = descriptors[state.routes[currentRouteIndex].key]?.options;
 
-  const hiddenScreens = [
-    'explore',
-  ];
-
-  if (currentOptions?.href === null || hiddenScreens.includes(currentRouteName)) {
+  if (currentOptions?.href === null) {
     return null;
   }
 
-  const visibleRoutes = state.routes.filter((route: any) => {
-    const options = descriptors[route.key]?.options;
-    return options?.href !== null;
-  });
-
-  if (visibleRoutes.length === 0) return null;
-
-  const isolatedTab = visibleRoutes.find((r: any) => r.name === 'index') || visibleRoutes[0];
-  const pillTabs = visibleRoutes.filter((r: any) => r.name !== isolatedTab.name).slice(0, 3);
+  const currentRouteName = state.routes[currentRouteIndex].name;
+  
+  // Routes to show in the tab bar
+  const visibleRouteNames = ['home', 'bookings', 'revenue'];
+  
+  const visibleRoutes = state.routes.filter((route: any) => 
+    visibleRouteNames.includes(route.name)
+  );
 
   const NAV_HEIGHT = normalize.height(50);
   const PILL_WIDTH = normalize.width(170);
   const SIDE_PADDING = normalize.width(23);
-  const ACTIVE_INDICATOR_SIZE = normalize.height(40); // 40x40 EXACT
+  const ACTIVE_INDICATOR_SIZE = normalize.height(40);
 
   const renderIcon = (route: any, isActive: boolean) => {
     const { options } = descriptors[route.key];
@@ -53,6 +44,10 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
     }
     return null;
   };
+
+  const isolatedTabName = 'bookings';
+  const isolatedTab = visibleRoutes.find((r: any) => r.name === isolatedTabName) || visibleRoutes[0];
+  const pillTabs = visibleRoutes.filter((r: any) => r.name !== isolatedTabName);
 
   return (
     <View style={styles.container}>

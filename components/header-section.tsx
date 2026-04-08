@@ -122,7 +122,13 @@ export function HeaderSection({
           {showProfile && (
             <TouchableOpacity
               style={styles.actionButton}
-              onPress={onProfilePress || (() => router.push('/profile'))}
+              onPress={onProfilePress || (() => {
+                if (userType === 'owner') {
+                  router.push('/(dashboard)/profile');
+                } else {
+                  router.push('/(customer)/profile');
+                }
+              })}
             >
               <Ionicons name="person-outline" size={normalize.width(22)} color={Colors.text.primary} />
             </TouchableOpacity>

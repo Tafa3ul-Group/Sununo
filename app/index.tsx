@@ -10,9 +10,9 @@ export default function Index() {
   }
 
   if (userType === 'owner' && !isAuthenticated) {
-    return <Redirect href="/(auth)/login" />;
+    return <Redirect href="/(auth)/choose-type" />;
   }
 
-  // Customers and Guests land on (tabs) directly
-  return <Redirect href="/(tabs)" />;
+  // Customers and Guests land on customer tabs
+  return <Redirect href="/(tabs)/(customer)" />;
 }

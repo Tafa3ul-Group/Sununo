@@ -169,6 +169,32 @@ export const apiSlice = createApi({
       invalidatesTags: ['Chalet'],
     }),
 
+    createChaletPolicy: builder.mutation({
+      query: ({ chaletId, data }) => ({
+        url: `/provider/chalets/${chaletId}/cancellation-policies`,
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Chalet'],
+    }),
+
+    deleteChaletPolicy: builder.mutation({
+      query: ({ chaletId, policyId }) => ({
+        url: `/provider/chalets/${chaletId}/cancellation-policies/${policyId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Chalet'],
+    }),
+
+    updateShiftPricingDay: builder.mutation({
+      query: ({ shiftId, pricingId, price }) => ({
+        url: `/provider/shifts/${shiftId}/pricing/${pricingId}`,
+        method: 'PATCH',
+        body: { price },
+      }),
+      invalidatesTags: ['Chalet'],
+    }),
+
     // Amenities
     getAmenities: builder.query<any[], void>({
       query: () => '/provider/chalets/amenities/all',
@@ -200,6 +226,16 @@ export const apiSlice = createApi({
       providesTags: ['User'],
     }),
 
+    // Update provider profile
+    updateProviderProfile: builder.mutation({
+      query: (data) => ({
+        url: '/provider/profile',
+        method: 'PATCH',
+        body: data,
+      }),
+      invalidatesTags: ['User'],
+    }),
+
     // Get provider bookings
     getProviderBookings: builder.query({
       query: (params) => ({
@@ -228,9 +264,18 @@ export const apiSlice = createApi({
     markBookingCompleted: builder.mutation({
       query: (id) => ({
         url: `/provider/bookings/${id}/complete`,
-        method: 'POST',
+        method: 'PATCH',
       }),
       invalidatesTags: (result, error, id) => ['Booking', { type: 'Booking' as const, id }],
+    }),
+
+    // Delete chalet
+    deleteChalet: builder.mutation({
+      query: (id) => ({
+        url: `/provider/chalets/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Chalet'],
     }),
 
     // Create external booking
@@ -286,6 +331,9 @@ export const {
   useDeleteShiftMutation,
   useSetShiftPricingMutation,
   useSetChaletPoliciesMutation,
+  useCreateChaletPolicyMutation,
+  useDeleteChaletPolicyMutation,
+  useUpdateShiftPricingDayMutation,
 
   useGetCitiesQuery,
   useGetChaletRegionsQuery,
@@ -296,6 +344,7 @@ export const {
   useSetChaletAmenitiesMutation,
 
   useGetProviderProfileQuery,
+  useUpdateProviderProfileMutation,
   useGetProviderBookingsQuery,
   useGetProviderBookingDetailsQuery,
   useGetShiftAvailabilityQuery,
@@ -303,4 +352,5 @@ export const {
   useCreateExternalBookingMutation,
   useDeleteExternalBookingMutation,
   useCancelBookingMutation,
+  useDeleteChaletMutation,
 } = apiSlice;
