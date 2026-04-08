@@ -89,7 +89,7 @@ export default function NotificationsScreen() {
         activeOpacity={0.7}
       >
         <View style={[styles.iconContainer, { backgroundColor: icon.bg }]}>
-          <SolarIcon name="4k-bold" size={24} color={icon.color} />
+          <SolarIcon name={`${item.type === 'payment' ? 'banknote' : item.type === 'system' ? 'settings' : 'calendar'}-bold`} size={24} color={icon.color} />
         </View>
 
         <View style={[styles.contentContainer, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
@@ -113,7 +113,7 @@ export default function NotificationsScreen() {
           onPress={() => router.back()}
           style={styles.backButton}
         >
-          <SolarIcon name="4k-bold" size={24} color={Colors.text.primary} />
+          <SolarIcon name="alt-arrow-left-linear" size={24} color={Colors.text.primary} />
         </TouchableOpacity>
         
         <ThemedText type="h2" style={styles.headerTitle}>
@@ -135,7 +135,7 @@ export default function NotificationsScreen() {
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <SolarIcon name="4k-bold" size={80} color="#D1D1D6" />
+              <SolarIcon name="bell-linear" size={80} color="#D1D1D6" />
               <Text style={styles.emptyText}>{isRTL ? 'لا توجد تنبيهات حالياً' : 'No notifications yet'}</Text>
             </View>
           }

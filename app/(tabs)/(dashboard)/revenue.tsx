@@ -112,7 +112,7 @@ export default function RevenueScreen() {
               activeOpacity={0.85}
               onPress={() => withdrawSheetRef.current?.present()}
             >
-              <SolarIcon name="4k-bold" size={18} color={Colors.primary} />
+              <SolarIcon name="wallet-bold" size={18} color={Colors.primary} />
               <Text style={styles.withdrawButtonText}>{isRTL ? 'سحب الأرباح' : 'Withdraw'}</Text>
             </TouchableOpacity>
           </View>
@@ -138,21 +138,21 @@ export default function RevenueScreen() {
         <View style={[styles.statsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
           <View style={styles.statCard}>
             <View style={[styles.statIconWrap, { backgroundColor: '#EFF6FF' }]}>  
-              <SolarIcon name="4k-bold" size={20} color={Colors.primary} />
+              <SolarIcon name="calendar-bold" size={20} color={Colors.primary} />
             </View>
             <Text style={styles.statValue}>14</Text>
             <Text style={styles.statLabel}>{isRTL ? 'حجوزات الشهر' : "Month's Bookings"}</Text>
           </View>
           <View style={styles.statCard}>
             <View style={[styles.statIconWrap, { backgroundColor: '#ECFDF5' }]}>
-              <SolarIcon name="4k-bold" size={20} color="#10B981" />
+              <SolarIcon name="banknote-bold" size={20} color="#10B981" />
             </View>
             <Text style={styles.statValue}>900,000</Text>
             <Text style={styles.statLabel}>{isRTL ? 'دخل الشهر' : "Month's Income"}</Text>
           </View>
           <View style={styles.statCard}>
             <View style={[styles.statIconWrap, { backgroundColor: '#FFF7ED' }]}>
-              <SolarIcon name="4k-bold" size={20} color="#F97316" />
+              <SolarIcon name="users-group-bold" size={20} color="#F97316" />
             </View>
             <Text style={styles.statValue}>92%</Text>
             <Text style={styles.statLabel}>{isRTL ? 'نسبة الإشغال' : 'Occupancy'}</Text>
@@ -168,7 +168,7 @@ export default function RevenueScreen() {
             activeOpacity={0.7}
           >
             <Text style={styles.viewAllText}>{isRTL ? 'عرض الكل' : 'View All'}</Text>
-            <SolarIcon name="4k-bold" size={14} color={Colors.primary} />
+            <SolarIcon name="alt-arrow-right-linear" size={14} color={Colors.primary} />
           </TouchableOpacity>
         </View>
 
@@ -184,7 +184,7 @@ export default function RevenueScreen() {
                     { backgroundColor: item.status === 'paid' ? '#ECFDF5' : item.status === 'rejected' ? '#FEF2F2' : '#FFF7ED' }
                   ]}>
                     <SolarIcon 
-                      name="4k-bold" 
+                      name="banknote-bold" 
                       size={20} 
                       color={getStatusColor(item.status)} 
                     />
@@ -213,7 +213,7 @@ export default function RevenueScreen() {
             ))
           ) : (
             <View style={styles.emptyState}>
-              <SolarIcon name="4k-bold" size={40} color="#D1D5DB" />
+              <SolarIcon name="banknote-linear" size={40} color="#D1D5DB" />
               <Text style={styles.emptyText}>{isRTL ? 'لا توجد طلبات سحب بعد' : 'No payout requests yet'}</Text>
             </View>
           )}

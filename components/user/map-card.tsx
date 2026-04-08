@@ -3,6 +3,7 @@ import { Colors, Shadows } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { SolarIcon } from "@/components/ui/solar-icon";
 
 interface MapCardProps {
   title: string;

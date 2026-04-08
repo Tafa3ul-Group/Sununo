@@ -3,6 +3,7 @@ import { Colors, normalize, Shadows, Spacing } from "@/constants/theme";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import React from "react";
+import { SolarIcon } from "@/components/ui/solar-icon";
 import {
   StyleSheet,
   Text,

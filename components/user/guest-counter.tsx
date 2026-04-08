@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
 import Svg, { Path } from "react-native-svg";
+import { SolarIcon } from "@/components/ui/solar-icon";
 
 interface GuestCounterProps {
   value: number;

@@ -305,6 +305,35 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: (result, error, id) => ['Booking', { type: 'Booking' as const, id }],
     }),
+
+    // Reject booking (usually for providers) - maps to cancel endpoint with reason
+    rejectBooking: builder.mutation({
+      query: ({ id, reason }) => ({
+        url: `/provider/bookings/${id}/cancel`,
+        method: 'POST',
+        body: { reason },
+      }),
+      invalidatesTags: (result, error, { id }) => ['Booking', { type: 'Booking' as const, id }],
+    }),
+
+    // Get payouts/withdrawals
+    getPayouts: builder.query({
+      query: (params) => ({
+        url: '/provider/payouts',
+        params,
+      }),
+      providesTags: ['User'],
+    }),
+
+    // Request payout/withdrawal
+    requestPayout: builder.mutation({
+      query: (data) => ({
+        url: '/provider/payouts',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['User'],
+    }),
   }),
 });
 
@@ -352,5 +381,8 @@ export const {
   useCreateExternalBookingMutation,
   useDeleteExternalBookingMutation,
   useCancelBookingMutation,
+  useRejectBookingMutation,
   useDeleteChaletMutation,
+  useGetPayoutsQuery,
+  useRequestPayoutMutation,
 } = apiSlice;

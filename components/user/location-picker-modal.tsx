@@ -4,6 +4,7 @@ import { Colors, Spacing, normalize, Typography } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { PrimaryButton } from './primary-button';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { SolarIcon } from "@/components/ui/solar-icon";
 
 let Mapbox: any = null;
 try {

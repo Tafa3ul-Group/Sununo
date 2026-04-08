@@ -4,6 +4,7 @@ import * as Location from 'expo-location';
 import { Colors, normalize } from '@/constants/theme';
 import { ThemedText } from '@/components/themed-text';
 import { Ionicons } from '@expo/vector-icons';
+import { SolarIcon } from "@/components/ui/solar-icon";
 
 // Lazy load Mapbox to avoid crashes in environments without native code (like Expo Go)
 let Mapbox: any = null;

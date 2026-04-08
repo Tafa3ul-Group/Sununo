@@ -56,7 +56,7 @@ export default function CustomersScreen() {
         </View>
 
         <TouchableOpacity style={styles.contactButton}>
-          <SolarIcon name="4k-bold" size={20} color={Colors.primary} />
+          <SolarIcon name="phone-bold" size={20} color={Colors.primary} />
         </TouchableOpacity>
       </View>
 
@@ -93,7 +93,7 @@ export default function CustomersScreen() {
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <SolarIcon name="4k-bold" size={80} color={Colors.text.muted} />
+              <SolarIcon name="users-group-two-rounded-linear" size={80} color={Colors.text.muted} />
               <Text style={styles.emptyText}>{t('dashboard.noChalets')}</Text>
             </View>
           }

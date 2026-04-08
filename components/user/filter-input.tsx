@@ -3,6 +3,7 @@ import { Colors, normalize, Spacing } from '@/constants/theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { SolarIcon } from "@/components/ui/solar-icon";
 
 interface FilterInputProps {
   label: string;
