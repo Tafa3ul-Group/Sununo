@@ -1,6 +1,8 @@
 import { View } from "react-native";
 import Svg, { Circle, G, Path, SvgProps } from "react-native-svg";
 
+// Solar Icon Registry - Unified Architecture v1.1
+
 interface SolarIconProps extends SvgProps {
   size?: number | string;
 }
