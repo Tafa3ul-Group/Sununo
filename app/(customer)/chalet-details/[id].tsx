@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
   relImgMain: { width: '100%', height: '100%' },
 
   flatUltimateFooter: { 
-    position: 'absolute', bottom: 0, width: '100%', height: 100, 
+    position: 'absolute', bottom: 0, width: '100%', height: 110, 
     backgroundColor: 'white', borderTopLeftRadius: 35, borderTopRightRadius: 35, 
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 25,
     borderTopWidth: 1, borderTopColor: '#F3F4F6'
@@ -327,6 +327,6 @@ const styles = StyleSheet.create({
   footerMetaRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6 },
   footerMetaSmall: { fontSize: 10, color: "#9CA3AF", fontWeight: '600' },
   vDivider: { width: 1, height: 10, backgroundColor: '#BDBDBD', marginHorizontal: 4 },
-  footerBtnSide: { width: 150 },
-  footerFlatBtn: { height: 48, borderRadius: 24, alignSelf: 'stretch' }
+  footerBtnSide: { width: 180 },
+  footerFlatBtn: { height: 76, borderRadius: normalize.radius(38), alignSelf: 'stretch' }
 });
