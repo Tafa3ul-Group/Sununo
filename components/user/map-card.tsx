@@ -34,7 +34,7 @@ export const MapCard = ({
       <View style={styles.content}>
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={16} color="#6B7280" />
+            <SolarIcon name="4k-bold" size={16} color="#6B7280" />
           </TouchableOpacity>
           <View style={styles.titleSection}>
             <ThemedText style={styles.title} numberOfLines={1}>
@@ -49,7 +49,7 @@ export const MapCard = ({
         <View style={styles.footer}>
           <View style={styles.ratingContainer}>
             <Text style={styles.rating}>{rating}</Text>
-            <Ionicons name="star" size={14} color="#035DF9" />
+            <SolarIcon name="4k-bold" size={14} color="#035DF9" />
           </View>
           <ThemedText style={styles.price}>{price} / شفت</ThemedText>
         </View>

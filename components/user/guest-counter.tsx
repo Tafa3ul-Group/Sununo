@@ -38,7 +38,7 @@ export const GuestCounter: React.FC<GuestCounterProps> = ({
         </Svg>
         <View style={styles.iconOverlay}>
           <View style={styles.iconCircle}>
-            <Ionicons name="add" size={18} color="white" />
+            <SolarIcon name="4k-bold" size={18} color="white" />
           </View>
         </View>
       </TouchableOpacity>
@@ -59,7 +59,7 @@ export const GuestCounter: React.FC<GuestCounterProps> = ({
         </Svg>
         <View style={styles.iconOverlay}>
           <View style={styles.iconCircle}>
-            <Ionicons name="remove" size={18} color="white" />
+            <SolarIcon name="4k-bold" size={18} color="white" />
           </View>
         </View>
       </TouchableOpacity>

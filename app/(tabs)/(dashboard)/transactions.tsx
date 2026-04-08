@@ -1,3 +1,4 @@
+import { SolarIcon } from "@/components/ui/solar-icon";
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -6,7 +7,6 @@ import { HeaderSection } from '@/components/header-section';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { useTranslation } from 'react-i18next';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
 import { useGetPayoutsQuery } from '@/store/api/apiSlice';
@@ -91,7 +91,7 @@ export default function TransactionsScreen() {
         activeOpacity={0.7}
       >
         <View style={[styles.transactionIcon, { backgroundColor: statusBg }]}>
-          <MaterialCommunityIcons name={getStatusIcon(item.status)} size={22} color={statusColor} />
+          <SolarIcon name="4k-bold" size={22} color={statusColor} />
         </View>
         
         <View style={[styles.transactionInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
@@ -164,7 +164,7 @@ export default function TransactionsScreen() {
             ListEmptyComponent={
               <View style={styles.emptyState}>
                 <View style={styles.emptyIconWrap}>
-                  <MaterialCommunityIcons name="receipt-text-outline" size={48} color="#D1D5DB" />
+                  <SolarIcon name="4k-bold" size={48} color="#D1D5DB" />
                 </View>
                 <Text style={styles.emptyTitle}>{isRTL ? 'لا توجد معاملات' : 'No Transactions'}</Text>
                 <Text style={styles.emptySubtitle}>

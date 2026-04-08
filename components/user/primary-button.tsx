@@ -112,11 +112,11 @@ export function PrimaryButton({
       >
         <View style={styles.textWithIcon}>
           {icon && (
-            <MaterialCommunityIcons 
-              name={icon} 
-              size={20} 
-              color={textColor} 
-              style={{ marginLeft: 8 }} 
+            <MaterialCommunityIcons
+              name={icon}
+              size={20}
+              color={textColor}
+              style={{ marginLeft: 8 }}
             />
           )}
           <ThemedText

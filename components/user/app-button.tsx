@@ -79,8 +79,8 @@ export function AppButton({
         <View style={[styles.middleSection, { backgroundColor: color }]}>
           <View style={styles.contentRow}>
             {icon && (
-              <MaterialCommunityIcons 
-                name={icon as any} 
+              <SolarIcon 
+                name="4k-bold" 
                 size={18} 
                 color={textColor} 
                 style={{ marginRight: 6 }} 
@@ -127,8 +127,8 @@ export function AppButton({
               {leftLabel}
             </ThemedText>
           ) : (
-            <MaterialCommunityIcons
-              name={icon as any}
+            <SolarIcon
+              name="4k-bold"
               size={22}
               color={isActive ? secondaryActiveColor : '#9CA3AF'}
             />

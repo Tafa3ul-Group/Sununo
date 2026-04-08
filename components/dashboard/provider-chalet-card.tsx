@@ -59,7 +59,7 @@ export function ProviderChaletCard({
           {title}
         </Text>
         <View style={[styles.locationRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-          <Ionicons name="location-sharp" size={14} color={Colors.primary} />
+          <SolarIcon name="4k-bold" size={14} color={Colors.primary} />
           <Text style={styles.location} numberOfLines={1}>
             {location}
           </Text>
@@ -73,7 +73,7 @@ export function ProviderChaletCard({
               onEdit?.();
             }}
           >
-            <MaterialCommunityIcons name="pencil-outline" size={18} color={Colors.primary} />
+            <SolarIcon name="4k-bold" size={18} color={Colors.primary} />
             <Text style={styles.editBtnText}>{isRTL ? 'تعديل' : 'Edit'}</Text>
           </TouchableOpacity>
 
@@ -84,7 +84,7 @@ export function ProviderChaletCard({
               onRevenue?.();
             }}
           >
-            <MaterialCommunityIcons name="chart-line" size={18} color="#FFFFFF" />
+            <SolarIcon name="4k-bold" size={18} color="#FFFFFF" />
             <Text style={styles.revenueBtnText}>{isRTL ? 'الأرباح' : 'Income'}</Text>
           </TouchableOpacity>
         </View>

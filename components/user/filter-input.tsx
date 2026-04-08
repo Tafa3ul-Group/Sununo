@@ -49,8 +49,8 @@ export function FilterInput({
       <View style={styles.divider} />
 
       <View style={styles.iconContainer}>
-        <MaterialCommunityIcons
-          name={iconName as any}
+        <SolarIcon
+          name="4k-bold"
           size={normalize.width(22)}
           color={Colors.primary}
         />

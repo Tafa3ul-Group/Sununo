@@ -20,9 +20,7 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
   const currentOptions = descriptors[state.routes[currentRouteIndex].key]?.options;
 
   const hiddenScreens = [
-    '(dashboard)/add-chalet', '(dashboard)/edit-chalet', '(dashboard)/chalet-details',
-    '(dashboard)/revenue', '(dashboard)/transactions', '(dashboard)/notifications',
-    '(dashboard)/customers', 'profile', '(dashboard)/provider-profile', 'explore',
+    'explore',
   ];
 
   if (currentOptions?.href === null || hiddenScreens.includes(currentRouteName)) {
@@ -36,16 +34,8 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
 
   if (visibleRoutes.length === 0) return null;
 
-  let isolatedTab: any;
-  let pillTabs: any[];
-
-  if (userType === 'owner') {
-    isolatedTab = visibleRoutes.find((r: any) => r.name === '(dashboard)/bookings') || visibleRoutes[0];
-    pillTabs = visibleRoutes.filter((r: any) => r.name !== isolatedTab.name).slice(0, 3);
-  } else {
-    isolatedTab = visibleRoutes.find((r: any) => r.name === 'index') || visibleRoutes[0];
-    pillTabs = visibleRoutes.filter((r: any) => r.name !== isolatedTab.name).slice(0, 3);
-  }
+  const isolatedTab = visibleRoutes.find((r: any) => r.name === 'index') || visibleRoutes[0];
+  const pillTabs = visibleRoutes.filter((r: any) => r.name !== isolatedTab.name).slice(0, 3);
 
   const NAV_HEIGHT = normalize.height(50);
   const PILL_WIDTH = normalize.width(170);

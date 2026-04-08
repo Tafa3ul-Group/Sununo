@@ -1,3 +1,4 @@
+import { SolarIcon } from "@/components/ui/solar-icon";
 import React, { useState, useEffect } from 'react';
 import { 
   StyleSheet, 
@@ -11,8 +12,9 @@ import {
   Platform
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { useDispatch } from 'react-redux';
+import { logout } from '@/store/authSlice';
 import { useGetProviderProfileQuery, useUpdateProviderProfileMutation } from '@/store/api/apiSlice';
 import { Colors, Spacing, Typography, normalize } from '@/constants/theme';
 import { ThemedText } from '@/components/themed-text';
@@ -21,6 +23,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProviderProfileScreen() {
   const { t, i18n } = useTranslation();
+  const dispatch = useDispatch();
   const isRTL = i18n.language === 'ar';
   const router = useRouter();
 
@@ -85,7 +88,7 @@ export default function ProviderProfileScreen() {
           placeholderTextColor={Colors.text.muted}
           multiline={multiline}
         />
-        <MaterialCommunityIcons name={icon as any} size={20} color={Colors.text.muted} />
+        <SolarIcon name="4k-bold" size={20} color={Colors.text.muted} />
       </View>
     </View>
   );
@@ -167,6 +170,7 @@ export default function ProviderProfileScreen() {
               <ThemedText style={styles.saveButtonText}>{isRTL ? 'حفظ التعديلات' : 'Save Changes'}</ThemedText>
             )}
           </TouchableOpacity>
+
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -239,11 +243,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 8,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
   },
   disabledButton: {
     opacity: 0.7,

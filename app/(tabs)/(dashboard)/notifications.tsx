@@ -1,6 +1,6 @@
+import { SolarIcon } from "@/components/ui/solar-icon";
 import { ThemedText } from '@/components/themed-text';
 import { Colors, normalize, Shadows, Spacing, Typography } from '@/constants/theme';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
@@ -89,7 +89,7 @@ export default function NotificationsScreen() {
         activeOpacity={0.7}
       >
         <View style={[styles.iconContainer, { backgroundColor: icon.bg }]}>
-          <MaterialCommunityIcons name={icon.name as any} size={24} color={icon.color} />
+          <SolarIcon name="4k-bold" size={24} color={icon.color} />
         </View>
 
         <View style={[styles.contentContainer, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
@@ -113,7 +113,7 @@ export default function NotificationsScreen() {
           onPress={() => router.back()}
           style={styles.backButton}
         >
-          <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={24} color={Colors.text.primary} />
+          <SolarIcon name="4k-bold" size={24} color={Colors.text.primary} />
         </TouchableOpacity>
         
         <ThemedText type="h2" style={styles.headerTitle}>
@@ -135,7 +135,7 @@ export default function NotificationsScreen() {
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <MaterialCommunityIcons name="bell-off-outline" size={80} color="#D1D1D6" />
+              <SolarIcon name="4k-bold" size={80} color="#D1D1D6" />
               <Text style={styles.emptyText}>{isRTL ? 'لا توجد تنبيهات حالياً' : 'No notifications yet'}</Text>
             </View>
           }

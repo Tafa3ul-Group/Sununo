@@ -1,3 +1,4 @@
+import { SolarIcon } from "@/components/ui/solar-icon";
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Image } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
@@ -7,7 +8,6 @@ import { HeaderSection } from '@/components/header-section';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { useTranslation } from 'react-i18next';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/themed-text';
 
 // Mock data for customers
@@ -56,7 +56,7 @@ export default function CustomersScreen() {
         </View>
 
         <TouchableOpacity style={styles.contactButton}>
-          <Ionicons name="call-outline" size={20} color={Colors.primary} />
+          <SolarIcon name="4k-bold" size={20} color={Colors.primary} />
         </TouchableOpacity>
       </View>
 
@@ -93,7 +93,7 @@ export default function CustomersScreen() {
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <MaterialCommunityIcons name="account-search-outline" size={80} color={Colors.text.muted} />
+              <SolarIcon name="4k-bold" size={80} color={Colors.text.muted} />
               <Text style={styles.emptyText}>{t('dashboard.noChalets')}</Text>
             </View>
           }

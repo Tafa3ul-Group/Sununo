@@ -46,6 +46,7 @@
     "addChalet": "Add New Chalet",
     "editChalet": "Edit Chalet",
     "noChalets": "No chalets added yet",
+    "noBookings": "No bookings found",
     "active": "Active",
     "inactive": "Inactive",
     "recentBookings": "Recent Bookings",
@@ -87,6 +88,7 @@
     "guestsCount": "Guests Count",
     "paymentMethod": "Payment Method",
     "fullPayment": "Full Payment",
-    "depositPayment": "Deposit"
+    "depositPayment": "Deposit",
+    "shift": "Shift"
   }
 }

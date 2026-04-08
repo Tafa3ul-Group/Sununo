@@ -1,3 +1,4 @@
+import { SolarIcon } from "@/components/ui/solar-icon";
 import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'expo-router';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
@@ -7,7 +8,6 @@ import { HeaderSection } from '@/components/header-section';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { useTranslation } from 'react-i18next';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useGetPayoutsQuery, useRequestPayoutMutation } from '@/store/api/apiSlice';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { PrimaryButton } from '@/components/user/primary-button';
@@ -112,7 +112,7 @@ export default function RevenueScreen() {
               activeOpacity={0.85}
               onPress={() => withdrawSheetRef.current?.present()}
             >
-              <MaterialCommunityIcons name="bank-transfer-out" size={18} color={Colors.primary} />
+              <SolarIcon name="4k-bold" size={18} color={Colors.primary} />
               <Text style={styles.withdrawButtonText}>{isRTL ? 'سحب الأرباح' : 'Withdraw'}</Text>
             </TouchableOpacity>
           </View>
@@ -138,21 +138,21 @@ export default function RevenueScreen() {
         <View style={[styles.statsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
           <View style={styles.statCard}>
             <View style={[styles.statIconWrap, { backgroundColor: '#EFF6FF' }]}>  
-              <MaterialCommunityIcons name="calendar-check" size={20} color={Colors.primary} />
+              <SolarIcon name="4k-bold" size={20} color={Colors.primary} />
             </View>
             <Text style={styles.statValue}>14</Text>
             <Text style={styles.statLabel}>{isRTL ? 'حجوزات الشهر' : "Month's Bookings"}</Text>
           </View>
           <View style={styles.statCard}>
             <View style={[styles.statIconWrap, { backgroundColor: '#ECFDF5' }]}>
-              <MaterialCommunityIcons name="trending-up" size={20} color="#10B981" />
+              <SolarIcon name="4k-bold" size={20} color="#10B981" />
             </View>
             <Text style={styles.statValue}>900,000</Text>
             <Text style={styles.statLabel}>{isRTL ? 'دخل الشهر' : "Month's Income"}</Text>
           </View>
           <View style={styles.statCard}>
             <View style={[styles.statIconWrap, { backgroundColor: '#FFF7ED' }]}>
-              <MaterialCommunityIcons name="percent-outline" size={20} color="#F97316" />
+              <SolarIcon name="4k-bold" size={20} color="#F97316" />
             </View>
             <Text style={styles.statValue}>92%</Text>
             <Text style={styles.statLabel}>{isRTL ? 'نسبة الإشغال' : 'Occupancy'}</Text>
@@ -168,7 +168,7 @@ export default function RevenueScreen() {
             activeOpacity={0.7}
           >
             <Text style={styles.viewAllText}>{isRTL ? 'عرض الكل' : 'View All'}</Text>
-            <Ionicons name={isRTL ? 'chevron-back' : 'chevron-forward'} size={14} color={Colors.primary} />
+            <SolarIcon name="4k-bold" size={14} color={Colors.primary} />
           </TouchableOpacity>
         </View>
 
@@ -183,8 +183,8 @@ export default function RevenueScreen() {
                     styles.transactionIcon, 
                     { backgroundColor: item.status === 'paid' ? '#ECFDF5' : item.status === 'rejected' ? '#FEF2F2' : '#FFF7ED' }
                   ]}>
-                    <MaterialCommunityIcons 
-                      name={item.status === 'paid' ? 'check-circle-outline' : item.status === 'rejected' ? 'close-circle-outline' : 'clock-outline'} 
+                    <SolarIcon 
+                      name="4k-bold" 
                       size={20} 
                       color={getStatusColor(item.status)} 
                     />
@@ -213,7 +213,7 @@ export default function RevenueScreen() {
             ))
           ) : (
             <View style={styles.emptyState}>
-              <MaterialCommunityIcons name="cash-register" size={40} color="#D1D5DB" />
+              <SolarIcon name="4k-bold" size={40} color="#D1D5DB" />
               <Text style={styles.emptyText}>{isRTL ? 'لا توجد طلبات سحب بعد' : 'No payout requests yet'}</Text>
             </View>
           )}

@@ -1,3 +1,4 @@
+import { SolarIcon } from "@/components/ui/solar-icon";
 // Fallback for using MaterialIcons on Android and web.
 
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -39,5 +40,5 @@ export function IconSymbol({
   style?: StyleProp<TextStyle>;
   weight?: SymbolWeight;
 }) {
-  return <MaterialIcons color={color} size={size} name={MAPPING[name]} style={style} />;
+  return <SolarIcon color={color} size={size} name="4k-bold" style={style} />;
 }
