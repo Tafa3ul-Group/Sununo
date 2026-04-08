@@ -8,6 +8,7 @@ import {
   StatusBar,
   ScrollView,
 } from "react-native";
+import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import { useSelector } from "react-redux";
 import { Redirect, useRouter } from "expo-router";
 import { AppMap } from "@/components/user/app-map";
@@ -85,13 +86,23 @@ export default function ExploreScreen() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [selectedChalet, setSelectedChalet] = useState(MOCK_CHALETS[0]);
 
+  // Simple filtering logic
+  const filteredChalets = activeFilter === "all" 
+    ? MOCK_CHALETS 
+    : MOCK_CHALETS.filter(c => {
+        if (activeFilter === "pool") return c.id === "1" || c.id === "3";
+        if (activeFilter === "bbq") return c.id === "2" || c.id === "4";
+        if (activeFilter === "garden") return c.id === "2" || c.id === "3";
+        return true;
+      });
+
   if (userType === "owner") return <Redirect href="/(tabs)/(dashboard)/home" />;
 
   const navigateToDetails = (id: string) => router.push(`/chalet-details/${id}`);
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
+      <ExpoStatusBar style="dark" translucent backgroundColor="transparent" />
       
       {/* Background Map */}
       <View style={styles.mapBackground}>
@@ -100,7 +111,7 @@ export default function ExploreScreen() {
           centerCoordinate={selectedChalet.coordinates}
           zoomLevel={13}
           showMarker={true}
-          markers={MOCK_CHALETS}
+          markers={filteredChalets}
           selectedChalet={selectedChalet}
           onSelectMarker={(chalet) => chalet && setSelectedChalet(MOCK_CHALETS.find(c => c.id === chalet.id) || MOCK_CHALETS[0])}
           onPressCard={navigateToDetails}
@@ -134,7 +145,7 @@ export default function ExploreScreen() {
                   key={filter.id} 
                   label={filter.label} 
                   isActive={activeFilter === filter.id} 
-                  activeColor={filter.activeColor} 
+                  activeColor="#035DF9" 
                   icon={filter.icon(activeFilter === filter.id)} 
                   onPress={() => setActiveFilter(filter.id)} 
                 />
@@ -146,7 +157,7 @@ export default function ExploreScreen() {
         {/* Chalets Swiper */}
         <View style={styles.swiperContainer}>
           <HorizontalSwiper 
-            data={MOCK_CHALETS} 
+            data={filteredChalets} 
             onPressCard={navigateToDetails} 
           />
         </View>
@@ -158,7 +169,7 @@ export default function ExploreScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: "white",
   },
   mapBackground: {
     ...StyleSheet.absoluteFillObject,
@@ -172,16 +183,17 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 10,
-    backgroundColor: 'rgba(255,255,255,0.7)', // Subtle white overlay for header area
+    backgroundColor: 'transparent',
   },
   filterWrapper: {
-    paddingVertical: 10,
+    marginTop: normalize.height(8), // Exact 8px between header and tabs
+    backgroundColor: 'transparent',
   },
   filterBar: {
-    paddingHorizontal: 16,
+    paddingHorizontal: normalize.width(16),
   },
   swiperContainer: {
-    marginTop: 5,
-    ...Shadows.medium,
+    marginTop: normalize.height(16), // Exact 16px as requested
+    backgroundColor: 'transparent',
   },
 });

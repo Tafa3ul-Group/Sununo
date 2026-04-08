@@ -19,8 +19,8 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
   const currentRouteName = state.routes[currentRouteIndex].name;
   const currentOptions = descriptors[state.routes[currentRouteIndex].key]?.options;
 
-  const hiddenScreens = [
-    'explore',
+  const hiddenScreens: string[] = [
+    // Add screens here that should NOT show the tab bar
   ];
 
   if (currentOptions?.href === null || hiddenScreens.includes(currentRouteName)) {

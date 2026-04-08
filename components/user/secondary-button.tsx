@@ -48,9 +48,9 @@ export function SecondaryButton({
   // Use provided iconPosition or default to RTL-aware default
   const finalIconPosition = iconPosition || (isRTL ? 'right' : 'left');
 
-  const bgColor = isActive ? activeColor : "transparent";
+  const bgColor = isActive ? activeColor : "white";
   const borderColor = isActive ? activeColor : "#E5E7EB";
-  const finalContentColor = isActive ? "white" : activeColor;
+  const finalContentColor = isActive ? "white" : "#035DF9";
 
   const scaledWidth = 44.4;
 

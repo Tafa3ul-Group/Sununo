@@ -51,7 +51,7 @@ export function HorizontalSwiper({ data, onPressCard }: HorizontalSwiperProps) {
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: normalize.height(10),
+    // No default margins, managed by parent
   },
   listContent: {
     paddingHorizontal: normalize.width(20),

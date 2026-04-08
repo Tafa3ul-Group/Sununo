@@ -1,19 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, ActivityIndicator, Image, Platform, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, ActivityIndicator, Image, Platform, TouchableOpacity, Linking } from 'react-native';
 import * as Location from 'expo-location';
-import { Colors, normalize, Shadows } from '@/constants/theme';
+import * as Theme from '@/constants/theme';
 import { ThemedText } from '@/components/themed-text';
-import { SolarMapPointBold } from "@/components/icons/solar-icons";
+import { SolarMapPointBold } from '@/components/icons/solar-icons';
 
-// Lazy load Mapbox to avoid crashes in environments without native code (like Expo Go)
+const { Colors, normalize, Shadows } = Theme;
+const SafeShadows = Shadows || { small: {}, medium: {}, large: {} };
+
+// Mapbox Token
+const MAPBOX_ACCESS_TOKEN = 'sk.eyJ1Ijoibm92YWl0aCIsImEiOiJjbXNneHdhd2YwYXZwMmtxeGZnb3l0OG0zIn0.n-s6o_-wXo_-w';
+
+// Lazy load Mapbox
 let Mapbox: any = null;
 try {
   Mapbox = require('@rnmapbox/maps').default;
   if (Mapbox) {
-    Mapbox.setAccessToken('sk.eyJ1Ijoibm92YWl0aCIsImEiOiJjbXNneHdhd2YwYXZwMmtxeGZnb3l0OG0zIn0.n-s6o_-wXo_-w');
+    Mapbox.setAccessToken(MAPBOX_ACCESS_TOKEN);
   }
 } catch (e) {
-  console.log('Mapbox could not be initialized:', e);
+  console.log('Mapbox native module not found:', e);
 }
 
 interface MarkerData {
@@ -36,8 +42,6 @@ interface AppMapProps {
   onPressCard?: (id: string) => void;
 }
 
-import { MapCard } from './map-card';
-
 export const AppMap = ({ 
   style, 
   centerCoordinate, 
@@ -51,15 +55,18 @@ export const AppMap = ({
 }: AppMapProps) => {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [loading, setLoading] = useState(true);
-  const [hasNativeMap] = useState(!!Mapbox);
+  const [hasNativeMap, setHasNativeMap] = useState(false);
 
   useEffect(() => {
+    // Check if native Mapbox is truly ready
+    if (Mapbox && Platform.OS !== 'web') {
+      setHasNativeMap(true);
+    }
+
     (async () => {
       try {
         let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-          console.warn('Geolocation permission denied');
-        } else {
+        if (status === 'granted') {
           let currentLocation = await Location.getCurrentPositionAsync({});
           setLocation(currentLocation);
         }
@@ -79,30 +86,32 @@ export const AppMap = ({
     );
   }
 
-  // Fallback for Expo Go / Web to match USER screenshot design
+  // Fallback for Expo Go / Web / Error
   if (!hasNativeMap || Platform.OS === 'web') {
     const fallbackLng = centerCoordinate?.[0] || 47.85;
     const fallbackLat = centerCoordinate?.[1] || 30.50;
 
     return (
       <View style={[styles.container, style, styles.fallbackContainer]}>
-        <Image 
-          source={{ uri: `https://api.mapbox.com/styles/v1/mapbox/light-v10/static/${fallbackLng},${fallbackLat},${zoomLevel}/800x800?access_token=sk.eyJ1Ijoibm92YWl0aCIsImEiOiJjbXNneHdhd2YwYXZwMmtxeGZnb3l0OG0zIn0.n-s6o_-wXo_-w` }}
-          style={styles.fallbackImage}
-          resizeMode="cover"
-        />
+        <View style={styles.abstractMapBackground}>
+           <Image 
+              source={{ uri: `https://api.mapbox.com/styles/v1/mapbox/light-v10/static/${fallbackLng},${fallbackLat},${zoomLevel}/800x800?access_token=${MAPBOX_ACCESS_TOKEN}` }}
+              style={styles.fallbackImage}
+              resizeMode="cover"
+            />
+        </View>
         
-        {/* Render fallback markers in a somewhat distributed way */}
-        {!selectedChalet && markers.map((marker, idx) => (
+        {/* Render markers */}
+        {markers.map((marker, idx) => (
           <TouchableOpacity 
             key={marker.id}
             onPress={() => onSelectMarker?.(marker)}
             style={[
-              styles.customMarker, 
+              styles.customMarkerUI, 
               { 
                 position: 'absolute',
-                top: 100 + (idx * 60), 
-                left: 50 + (idx * 80),
+                top: 150 + (idx * 100), 
+                left: 50 + (idx * 40 * (idx % 2 === 0 ? 1 : -1)),
               }
             ]}
           >
@@ -113,34 +122,14 @@ export const AppMap = ({
           </TouchableOpacity>
         ))}
 
-        {showMarker && !selectedChalet && (
-          <TouchableOpacity 
-            onPress={() => onSelectMarker?.({ id: '1', title: 'شالية الاروع علة الطلاق', location: 'البصرة - الجزائر', rating: 4.5, image: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?q=80&w=1000&auto=format&fit=crop', price: 'IQD 30,000' })}
-            style={[styles.designMarker, { top: '50%', left: '50%', transform: [{translateX: -16}, {translateY: -16}], borderColor: Colors.primary, justifyContent: 'center', alignItems: 'center' }]}
-          >
-            <SolarMapPointBold size={20} color={Colors.primary} />
-          </TouchableOpacity>
-        )}
-
-        {selectedChalet && (
-          <View style={styles.cardOverlay}>
-            <MapCard 
-              {...selectedChalet} 
-              onPress={() => onPressCard?.(selectedChalet.id)}
-              onClose={() => onSelectMarker?.(null)}
-            />
-          </View>
-        )}
-
         <View style={styles.fallbackOverlay}>
           <ThemedText style={styles.fallbackText}>
-            الخارطة الحية - {centerCoordinate ? 'موقع الشالية' : 'موقعك الحالي'}
+            Mapbox Live requires a Development Build
           </ThemedText>
         </View>
       </View>
     );
   }
-
 
   const finalCenter: [number, number] = centerCoordinate || (location 
     ? [location.coords.longitude, location.coords.latitude] 
@@ -151,8 +140,8 @@ export const AppMap = ({
       <Mapbox.MapView 
         style={styles.map} 
         styleURL={Mapbox.StyleURL.Light}
-        scrollEnabled={interactive}
-        zoomEnabled={interactive}
+        logoEnabled={false}
+        attributionEnabled={false}
       >
         <Mapbox.Camera
           zoomLevel={zoomLevel}
@@ -167,25 +156,14 @@ export const AppMap = ({
             coordinate={marker.coordinates}
             onSelected={() => onSelectMarker?.(marker)}
           >
-            <View style={styles.customMarker}>
+            <View style={styles.customMarkerUI}>
               <View style={styles.markerCircle}>
-                <Image source={{ uri: marker.image }} style={styles.markerImage} />
+                <Image source={{ uri: marker.image }} style={styles.markerImage} resizeMode="cover" />
               </View>
               <ThemedText style={styles.markerTitle}>{marker.title}</ThemedText>
             </View>
           </Mapbox.PointAnnotation>
         ))}
-
-        {showMarker && !markers.length && (
-          <Mapbox.PointAnnotation
-            id="chaletLocation"
-            coordinate={finalCenter}
-          >
-            <View style={styles.nativeMarker}>
-                <SolarMapPointBold size={30} color={Colors.primary} />
-            </View>
-          </Mapbox.PointAnnotation>
-        )}
       </Mapbox.MapView>
     </View>
   );
@@ -194,9 +172,8 @@ export const AppMap = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    borderRadius: 24, // Consistent with HomeScreen mapContainer
+    backgroundColor: '#F3F4F6',
     overflow: 'hidden',
-    backgroundColor: '#eee',
   },
   map: {
     flex: 1,
@@ -209,79 +186,65 @@ const styles = StyleSheet.create({
     position: 'relative',
     height: '100%',
     width: '100%',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#E5E7EB',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  abstractMapBackground: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#F8F9FA',
   },
   fallbackImage: {
     width: '100%',
     height: '100%',
-    opacity: 0.5,
+    opacity: 0.9,
   },
-  designMarker: {
-    position: 'absolute',
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 2,
-    backgroundColor: 'white',
-    padding: 1,
+  customMarkerUI: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 100,
+  },
+  markerCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 3,
+    borderColor: 'white',
+    backgroundColor: '#F3F4F6',
     overflow: 'hidden',
+    ...SafeShadows.medium,
   },
   markerImage: {
     width: '100%',
     height: '100%',
-    borderRadius: 14,
+  },
+  markerTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#111827',
+    marginTop: 6,
+    textAlign: 'center',
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    ...SafeShadows.small,
   },
   fallbackOverlay: {
     position: 'absolute',
-    bottom: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    bottom: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
     alignSelf: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   fallbackText: {
     fontSize: 10,
-    color: '#666',
+    color: '#6B7280',
     fontWeight: '600',
-  },
-  nativeMarker: {
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 2,
-    borderWidth: 1,
-    borderColor: Colors.primary,
-  },
-  cardOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    zIndex: 100,
-  },
-  customMarker: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 80,
-  },
-  markerCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 2,
-    borderColor: 'white',
-    backgroundColor: '#F3F4F6',
-    overflow: 'hidden',
-    ...Shadows.small,
-  },
-  markerTitle: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#111827',
-    marginTop: 4,
     textAlign: 'center',
-    backgroundColor: 'rgba(255,255,255,0.8)',
-    paddingHorizontal: 4,
-    borderRadius: 4,
-  }
+  },
 });

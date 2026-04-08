@@ -1,14 +1,16 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { Colors, normalize, Shadows } from '@/constants/theme';
 import { ThemedText } from '@/components/themed-text';
-import { SolarHeartBold, SolarStarBold, SolarMapPointBold } from "@/components/icons/solar-icons";
-import { formatPrice } from '@/utils/format';
+import { SolarAltArrowRightBold, SolarHeartBold } from "@/components/icons/solar-icons";
 import { useRouter } from 'expo-router';
+import { HorizontalCard } from '@/components/user/horizontal-card';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function FavoritesScreen() {
   const { t } = useTranslation();
@@ -16,58 +18,52 @@ export default function FavoritesScreen() {
   const isRTL = language === 'ar';
   const router = useRouter();
 
-  // Mock favorites for now
-  const favorites: any[] = [];
-
-  const renderFavoriteItem = (chalet: any) => {
-    const chaletName = isRTL ? (chalet.name?.ar || chalet.name) : (chalet.name?.en || chalet.name);
-    
-    return (
-      <TouchableOpacity 
-        key={chalet.id} 
-        style={styles.chaletCard}
-        onPress={() => router.push({ pathname: '/chalet-details', params: { id: chalet.id } })}
-      >
-        <Image 
-          source={{ uri: chalet.images?.[0]?.url || 'https://images.unsplash.com/photo-1540518614846-7eded433c457?q=80&w=400' }} 
-          style={styles.chaletImage} 
-        />
-        <TouchableOpacity style={styles.favoriteBadge}>
-          <SolarHeartBold size={20} color="#EA2129" />
-        </TouchableOpacity>
-        
-        <View style={styles.chaletInfo}>
-          <View style={styles.headerRow}>
-            <ThemedText style={styles.chaletName}>{chaletName}</ThemedText>
-            <View style={styles.ratingRow}>
-              <SolarStarBold size={14} color="#F59E0B" />
-              <ThemedText style={styles.ratingText}>4.8</ThemedText>
-            </View>
-          </View>
-          
-          <View style={[styles.detailsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-             <SolarMapPointBold size={14} color="#64748B" />
-             <ThemedText style={styles.detailsText}>{isRTL ? 'البصرة - الجزائر' : 'Basra - Al Jazayer'}</ThemedText>
-          </View>
-          
-          <View style={styles.cardFooter}>
-            <ThemedText style={styles.priceValue}>{formatPrice(450000)}</ThemedText>
-            <ThemedText style={styles.priceLabel}>/ {isRTL ? 'الليلة' : 'night'}</ThemedText>
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
-  };
+  // Mock favorites that look like the design
+  const favorites = [
+    {
+      id: '1',
+      title: 'شالية الاروع علة الطلاق',
+      location: 'البصرة - الجزائر',
+      price: '30,000',
+      rating: '4.5',
+      image: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=400',
+      color: '#22C55E' // Green squiggly for the one in image
+    },
+    {
+        id: '2',
+        title: 'شالية منتجع النخيل',
+        location: 'البصرة - شط العرب',
+        price: '45,000',
+        rating: '4.8',
+        image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=400',
+        color: '#FF69B4'
+    }
+  ];
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header matching the design */}
       <View style={styles.header}>
-        <ThemedText style={styles.headerTitle}>{t('tabs.favorites')}</ThemedText>
+         <View style={styles.headerInner}>
+            <ThemedText style={styles.headerTitle}>{isRTL ? 'المفضلات' : 'Favorites'}</ThemedText>
+            <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+                <SolarAltArrowRightBold size={normalize.width(22)} color="#035DF9" />
+            </TouchableOpacity>
+         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {favorites.length > 0 ? (
-          favorites.map(renderFavoriteItem)
+          favorites.map((chalet, index) => (
+            <View key={chalet.id} style={styles.cardWrapper}>
+                 <HorizontalCard 
+                    chalet={chalet} 
+                    shapeIndex={index + 1} 
+                    onPress={() => router.push({ pathname: '/chalet-details', params: { id: chalet.id } })}
+                    style={styles.customCard}
+                 />
+            </View>
+          ))
         ) : (
           <View style={styles.emptyState}>
             <SolarHeartBold size={80} color="#E2E8F0" />
@@ -75,9 +71,6 @@ export default function FavoritesScreen() {
             <ThemedText style={styles.emptySubtitle}>
               {isRTL ? 'أي شاليه تعجبك، يمكنك إضافتها هنا للوصول إليها لاحقاً بسهولة.' : 'Any chalet you like can be added here for easy access later.'}
             </ThemedText>
-            <TouchableOpacity style={styles.exploreBtn} onPress={() => router.push('/(tabs)')}>
-              <ThemedText style={styles.exploreBtnText}>{isRTL ? 'اكتشف الشاليهات' : 'Explore Chalets'}</ThemedText>
-            </TouchableOpacity>
           </View>
         )}
       </ScrollView>
@@ -88,102 +81,49 @@ export default function FavoritesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFB',
+    backgroundColor: 'white',
   },
   header: {
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 15,
     backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+  },
+  headerInner: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    height: 48,
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#1E293B',
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#111827',
+  },
+  backButton: {
+    position: 'absolute',
+    right: 0,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...Shadows.small,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
   },
   scrollContent: {
     padding: 16,
     paddingBottom: 100,
   },
-  chaletCard: {
-    backgroundColor: 'white',
-    borderRadius: 24,
-    marginBottom: 20,
-    overflow: 'hidden',
-    ...Shadows.small,
+  cardWrapper: {
+    position: 'relative',
+    marginBottom: normalize.height(15),
+  },
+  customCard: {
     borderWidth: 1,
-    borderColor: '#F1F5F9',
-  },
-  chaletImage: {
-    width: '100%',
-    height: 180,
-  },
-  favoriteBadge: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...Shadows.small,
-  },
-  chaletInfo: {
-    padding: 16,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  chaletName: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#1E293B',
-  },
-  ratingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF7ED',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  ratingText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#EA580C',
-    marginLeft: 4,
-  },
-  detailsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  detailsText: {
-    fontSize: 13,
-    color: '#64748B',
-    marginLeft: 6,
-  },
-  cardFooter: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    marginTop: 16,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
-  },
-  priceValue: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#035DF9',
-  },
-  priceLabel: {
-    fontSize: 13,
-    color: '#64748B',
-    marginLeft: 4,
+    borderColor: '#F3F4F6',
   },
   emptyState: {
     alignItems: 'center',
@@ -204,15 +144,4 @@ const styles = StyleSheet.create({
     marginTop: 10,
     lineHeight: 20,
   },
-  exploreBtn: {
-    marginTop: 24,
-    backgroundColor: '#035DF9',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 12,
-  },
-  exploreBtnText: {
-    color: 'white',
-    fontWeight: '700',
-  }
 });

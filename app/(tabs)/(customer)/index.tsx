@@ -118,10 +118,12 @@ export default function HomeScreen() {
           <TouchableOpacity><ThemedText style={styles.seeAll}>عرض الكل</ThemedText></TouchableOpacity>
           <ThemedText style={styles.sectionTitle}>آخر الحجوزات</ThemedText>
         </View>
-        <HorizontalSwiper 
-          data={POPULAR_CHALETS} 
-          onPressCard={navigateToDetails} 
-        />
+        <View style={styles.swiperWrapper}>
+          <HorizontalSwiper 
+            data={POPULAR_CHALETS} 
+            onPressCard={navigateToDetails} 
+          />
+        </View>
 
         {/* مقترح لك */}
         <View style={styles.sectionHeader}>
@@ -165,4 +167,5 @@ const styles = StyleSheet.create({
   map: { flex: 1 },
   listPadding: { paddingHorizontal: 16 },
   tabsContainer: { paddingHorizontal: 16, marginVertical: 10 },
+  swiperWrapper: { marginVertical: 10 },
 });
