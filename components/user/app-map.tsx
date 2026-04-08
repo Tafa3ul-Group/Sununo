@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, ActivityIndicator, Image, Platform, TouchableOpacity } from 'react-native';
 import * as Location from 'expo-location';
-import { Colors, normalize } from '@/constants/theme';
+import { Colors, normalize, Shadows } from '@/constants/theme';
 import { ThemedText } from '@/components/themed-text';
 import { SolarMapPointBold } from "@/components/icons/solar-icons";
 
@@ -16,6 +16,14 @@ try {
   console.log('Mapbox could not be initialized:', e);
 }
 
+interface MarkerData {
+  id: string;
+  title: string;
+  image: string;
+  coordinates: [number, number];
+  [key: string]: any;
+}
+
 interface AppMapProps {
   style?: any;
   centerCoordinate?: [number, number]; // [lng, lat]
@@ -23,6 +31,7 @@ interface AppMapProps {
   interactive?: boolean;
   showMarker?: boolean;
   selectedChalet?: any;
+  markers?: MarkerData[];
   onSelectMarker?: (chalet: any) => void;
   onPressCard?: (id: string) => void;
 }
@@ -36,6 +45,7 @@ export const AppMap = ({
   interactive = true,
   showMarker = false,
   selectedChalet,
+  markers = [],
   onSelectMarker,
   onPressCard
 }: AppMapProps) => {
@@ -77,12 +87,33 @@ export const AppMap = ({
     return (
       <View style={[styles.container, style, styles.fallbackContainer]}>
         <Image 
-          source={{ uri: `https://api.mapbox.com/styles/v1/mapbox/light-v10/static/${fallbackLng},${fallbackLat},${zoomLevel}/800x400?access_token=sk.eyJ1Ijoibm92YWl0aCIsImEiOiJjbXNneHdhd2YwYXZwMmtxeGZnb3l0OG0zIn0.n-s6o_-wXo_-w` }}
+          source={{ uri: `https://api.mapbox.com/styles/v1/mapbox/light-v10/static/${fallbackLng},${fallbackLat},${zoomLevel}/800x800?access_token=sk.eyJ1Ijoibm92YWl0aCIsImEiOiJjbXNneHdhd2YwYXZwMmtxeGZnb3l0OG0zIn0.n-s6o_-wXo_-w` }}
           style={styles.fallbackImage}
           resizeMode="cover"
         />
         
-        {showMarker && (
+        {/* Render fallback markers in a somewhat distributed way */}
+        {!selectedChalet && markers.map((marker, idx) => (
+          <TouchableOpacity 
+            key={marker.id}
+            onPress={() => onSelectMarker?.(marker)}
+            style={[
+              styles.customMarker, 
+              { 
+                position: 'absolute',
+                top: 100 + (idx * 60), 
+                left: 50 + (idx * 80),
+              }
+            ]}
+          >
+            <View style={styles.markerCircle}>
+              <Image source={{ uri: marker.image }} style={styles.markerImage} />
+            </View>
+            <ThemedText style={styles.markerTitle}>{marker.title}</ThemedText>
+          </TouchableOpacity>
+        ))}
+
+        {showMarker && !selectedChalet && (
           <TouchableOpacity 
             onPress={() => onSelectMarker?.({ id: '1', title: 'شالية الاروع علة الطلاق', location: 'البصرة - الجزائر', rating: 4.5, image: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?q=80&w=1000&auto=format&fit=crop', price: 'IQD 30,000' })}
             style={[styles.designMarker, { top: '50%', left: '50%', transform: [{translateX: -16}, {translateY: -16}], borderColor: Colors.primary, justifyContent: 'center', alignItems: 'center' }]}
@@ -128,7 +159,24 @@ export const AppMap = ({
           centerCoordinate={finalCenter}
           animationMode="flyTo"
         />
-        {showMarker && (
+
+        {markers.map((marker) => (
+          <Mapbox.PointAnnotation
+            key={marker.id}
+            id={marker.id}
+            coordinate={marker.coordinates}
+            onSelected={() => onSelectMarker?.(marker)}
+          >
+            <View style={styles.customMarker}>
+              <View style={styles.markerCircle}>
+                <Image source={{ uri: marker.image }} style={styles.markerImage} />
+              </View>
+              <ThemedText style={styles.markerTitle}>{marker.title}</ThemedText>
+            </View>
+          </Mapbox.PointAnnotation>
+        ))}
+
+        {showMarker && !markers.length && (
           <Mapbox.PointAnnotation
             id="chaletLocation"
             coordinate={finalCenter}
@@ -210,5 +258,30 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 100,
+  },
+  customMarker: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 80,
+  },
+  markerCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 2,
+    borderColor: 'white',
+    backgroundColor: '#F3F4F6',
+    overflow: 'hidden',
+    ...Shadows.small,
+  },
+  markerTitle: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#111827',
+    marginTop: 4,
+    textAlign: 'center',
+    backgroundColor: 'rgba(255,255,255,0.8)',
+    paddingHorizontal: 4,
+    borderRadius: 4,
   }
 });

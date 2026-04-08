@@ -1,120 +1,187 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-import { Redirect, useRouter } from 'expo-router';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
+import React, { useState, useRef } from "react";
+import {
+  StyleSheet,
+  View,
+  Dimensions,
+  TouchableOpacity,
+  Platform,
+  StatusBar,
+  ScrollView,
+} from "react-native";
+import { useSelector } from "react-redux";
+import { Redirect, useRouter } from "expo-router";
+import { AppMap } from "@/components/user/app-map";
+import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
+import { SecondaryButton } from "@/components/user/secondary-button";
+import { HeaderSection } from "@/components/header-section";
+import { ThemedText } from "@/components/themed-text";
+import { Colors, normalize, Shadows } from "@/constants/theme";
+import { RootState } from "@/store";
+import { 
+  SolarWidgetBold, 
+  SolarWaterBold, 
+  SolarFireBold, 
+  SolarTreeBold,
+  SolarMagnifierBold
+} from "@/components/icons/solar-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { SolarCodeBold } from '@/components/icons/solar-icons';
-import { Fonts } from '@/constants/theme';
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
-export default function TabTwoScreen() {
+const MOCK_CHALETS = [
+  {
+    id: "1",
+    title: "شالية الاروع علة الطلاق",
+    location: "البصرة - الجزائر",
+    price: "30,000",
+    rating: 4.5,
+    color: Colors.primary,
+    image: "https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&q=80&w=600",
+    coordinates: [47.82, 30.51] as [number, number],
+  },
+  {
+    id: "2",
+    title: "جنة الوطن",
+    location: "البصرة - شط العرب",
+    price: "45,000",
+    rating: 4.8,
+    color: Colors.secondary,
+    image: "https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&q=80&w=600",
+    coordinates: [47.85, 30.52] as [number, number],
+  },
+  {
+    id: "3",
+    title: "شالية الملك",
+    location: "البصرة - القبلة",
+    price: "25,000",
+    rating: 4.2,
+    color: Colors.accent,
+    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=600",
+    coordinates: [47.88, 30.53] as [number, number],
+  },
+  {
+    id: "4",
+    title: "شالية محسن",
+    location: "البصرة - الزبير",
+    price: "35,000",
+    rating: 4.9,
+    color: Colors.secondary,
+    image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=600",
+    coordinates: [47.84, 30.49] as [number, number],
+  },
+];
+
+const FILTER_OPTIONS = [
+  { id: "all", label: "الكل", icon: (isActive: boolean) => <SolarWidgetBold size={18} color={isActive ? "white" : Colors.primary} />, activeColor: Colors.primary },
+  { id: "pool", label: "يحتوي مسبح", icon: (isActive: boolean) => <SolarWaterBold size={18} color={isActive ? "white" : Colors.secondary} />, activeColor: Colors.secondary },
+  { id: "bbq", label: "شواء", icon: (isActive: boolean) => <SolarFireBold size={18} color={isActive ? "white" : Colors.accent} />, activeColor: Colors.accent },
+  { id: "garden", label: "حديقة", icon: (isActive: boolean) => <SolarTreeBold size={18} color={isActive ? "white" : Colors.secondary} />, activeColor: Colors.secondary },
+];
+
+export default function ExploreScreen() {
   const { userType } = useSelector((state: RootState) => state.auth);
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [selectedChalet, setSelectedChalet] = useState(MOCK_CHALETS[0]);
 
-  if (userType === 'owner') {
-    return <Redirect href="/(tabs)/(dashboard)/home" />;
-  }
+  if (userType === "owner") return <Redirect href="/(tabs)/(dashboard)/home" />;
+
+  const navigateToDetails = (id: string) => router.push(`/chalet-details/${id}`);
 
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <SolarCodeBold
-          size={310}
-          color="#808080"
-          style={styles.headerImage}
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
+      
+      {/* Background Map */}
+      <View style={styles.mapBackground}>
+        <AppMap 
+          style={styles.map} 
+          centerCoordinate={selectedChalet.coordinates}
+          zoomLevel={13}
+          showMarker={true}
+          markers={MOCK_CHALETS}
+          selectedChalet={selectedChalet}
+          onSelectMarker={(chalet) => chalet && setSelectedChalet(MOCK_CHALETS.find(c => c.id === chalet.id) || MOCK_CHALETS[0])}
+          onPressCard={navigateToDetails}
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
+      </View>
+
+      {/* Top UI Overlays */}
+      <View style={[styles.topOverlay, { paddingTop: insets.top }]}>
+        {/* Main Header */}
+        <HeaderSection 
+          userType={userType} 
+          showLogo 
+          showSearch={false} 
+          showCategories={false}
+          showProfile 
+          extraIcon={<SolarMagnifierBold size={normalize.width(22)} color={Colors.text.primary} />} 
+          onExtraIconPress={() => {}} 
+          marginBottom={0}
         />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+
+        {/* Filter Bar */}
+        <View style={styles.filterWrapper}>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false} 
+            contentContainerStyle={styles.filterBar}
+          >
+            <View style={{ flexDirection: 'row-reverse', gap: 10 }}>
+              {FILTER_OPTIONS.map((filter) => (
+                <SecondaryButton 
+                  key={filter.id} 
+                  label={filter.label} 
+                  isActive={activeFilter === filter.id} 
+                  activeColor={filter.activeColor} 
+                  icon={filter.icon(activeFilter === filter.id)} 
+                  onPress={() => setActiveFilter(filter.id)} 
+                />
+              ))}
+            </View>
+          </ScrollView>
+        </View>
+
+        {/* Chalets Swiper */}
+        <View style={styles.swiperContainer}>
+          <HorizontalSwiper 
+            data={MOCK_CHALETS} 
+            onPressCard={navigateToDetails} 
+          />
+        </View>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
   },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
+  mapBackground: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  map: {
+    flex: 1,
+  },
+  topOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    backgroundColor: 'rgba(255,255,255,0.7)', // Subtle white overlay for header area
+  },
+  filterWrapper: {
+    paddingVertical: 10,
+  },
+  filterBar: {
+    paddingHorizontal: 16,
+  },
+  swiperContainer: {
+    marginTop: 5,
+    ...Shadows.medium,
   },
 });
