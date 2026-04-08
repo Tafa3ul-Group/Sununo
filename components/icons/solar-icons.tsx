@@ -1036,14 +1036,48 @@ export function ProfileShape({
   );
 }
 
-export function SolarCameraAddBold({ size = 24, color, ...props }: SolarIconProps) {
+export function SolarCameraAddBold({
+  size = 24,
+  color,
+  ...props
+}: SolarIconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
-      <Path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke={color || '#111827'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <Path d="M3.46 10.5V19C3.46 20.92 4.027 21.478 5.948 21.523C6.286 21.531 6.628 21.532 6.969 21.532H13" stroke={color || '#111827'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <Path d="M21.5 16V10.5C21.5 8.58 20.933 8.022 19.012 7.977C18.674 7.969 18.332 7.968 17.991 7.968H16.892C15.82 7.968 14.85 7.385 14.352 6.44L13.627 5.062C13.129 4.117 12.159 3.534 11.087 3.534H8.892C7.82 3.534 6.85 4.117 6.352 5.062L5.627 6.44C5.129 7.385 4.159 7.968 3.087 7.968H6C4.08 7.968 3.513 8.526 3.468 10.447C3.46 10.785 3.46 11.127 3.46 11.468" stroke={color || '#111827'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <Path d="M18.5 18V22" stroke={color || '#111827'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <Path d="M20.5 20H16.5" stroke={color || '#111827'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <Path
+        d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z"
+        stroke={color || "#111827"}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M3.46 10.5V19C3.46 20.92 4.027 21.478 5.948 21.523C6.286 21.531 6.628 21.532 6.969 21.532H13"
+        stroke={color || "#111827"}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M21.5 16V10.5C21.5 8.58 20.933 8.022 19.012 7.977C18.674 7.969 18.332 7.968 17.991 7.968H16.892C15.82 7.968 14.85 7.385 14.352 6.44L13.627 5.062C13.129 4.117 12.159 3.534 11.087 3.534H8.892C7.82 3.534 6.85 4.117 6.352 5.062L5.627 6.44C5.129 7.385 4.159 7.968 3.087 7.968H6C4.08 7.968 3.513 8.526 3.468 10.447C3.46 10.785 3.46 11.127 3.46 11.468"
+        stroke={color || "#111827"}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M18.5 18V22"
+        stroke={color || "#111827"}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M20.5 20H16.5"
+        stroke={color || "#111827"}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </Svg>
   );
 }
@@ -1051,73 +1085,207 @@ export function SolarCameraAddBold({ size = 24, color, ...props }: SolarIconProp
 export function SolarHomeBold({ size = 24, color, ...props }: SolarIconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
-      <Path d="M9.16016 21.0001V12.0001L12.0002 9.00012L14.8402 12.0001V21.0001" stroke={color || '#111827'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <Path d="M2 12L12 2L22 12V21C22 21.5523 21.5523 22 21 22H3C2.44772 22 2 21.5523 2 21V12Z" stroke={color || '#111827'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <Path
+        d="M9.16016 21.0001V12.0001L12.0002 9.00012L14.8402 12.0001V21.0001"
+        stroke={color || "#111827"}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M2 12L12 2L22 12V21C22 21.5523 21.5523 22 21 22H3C2.44772 22 2 21.5523 2 21V12Z"
+        stroke={color || "#111827"}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </Svg>
   );
 }
 
-export function SolarAltArrowDownBold({ size = 24, color, ...props }: SolarIconProps) {
+export function SolarAltArrowDownBold({
+  size = 24,
+  color,
+  ...props
+}: SolarIconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
-      <Path d="M19.9201 8.94995L13.4001 15.47C12.6301 16.24 11.3701 16.24 10.6001 15.47L4.08008 8.94995" stroke={color || '#111827'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <Path
+        d="M19.9201 8.94995L13.4001 15.47C12.6301 16.24 11.3701 16.24 10.6001 15.47L4.08008 8.94995"
+        stroke={color || "#111827"}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </Svg>
   );
 }
 
-export function SolarAltArrowUpBold({ size = 24, color, ...props }: SolarIconProps) {
+export function SolarAltArrowUpBold({
+  size = 24,
+  color,
+  ...props
+}: SolarIconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
-      <Path d="M19.9201 15.05L13.4001 8.53005C12.6301 7.76005 11.3701 7.76005 10.6001 8.53005L4.08008 15.05" stroke={color || '#111827'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <Path
+        d="M19.9201 15.05L13.4001 8.53005C12.6301 7.76005 11.3701 7.76005 10.6001 8.53005L4.08008 15.05"
+        stroke={color || "#111827"}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </Svg>
   );
 }
 
-export function SolarRefreshBold({ size = 24, color, ...props }: SolarIconProps) {
+export function SolarRefreshBold({
+  size = 24,
+  color,
+  ...props
+}: SolarIconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
-      <Path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C14.8273 3 17.35 4.3036 19 6.34267" stroke={color || '#111827'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <Path d="M15 6H19V2" stroke={color || '#111827'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <Path
+        d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C14.8273 3 17.35 4.3036 19 6.34267"
+        stroke={color || "#111827"}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M15 6H19V2"
+        stroke={color || "#111827"}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </Svg>
   );
 }
 
-export function SolarInfoCircleBold({ size = 24, color, ...props }: SolarIconProps) {
+export function SolarInfoCircleBold({
+  size = 24,
+  color,
+  ...props
+}: SolarIconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
-      <Circle cx="12" cy="12" r="10" stroke={color || '#111827'} strokeWidth="1.5"/>
-      <Path d="M12 11V16" stroke={color || '#111827'} strokeWidth="1.5" strokeLinecap="round"/>
-      <Path d="M12 8H12.01" stroke={color || '#111827'} strokeWidth="2.5" strokeLinecap="round"/>
+      <Circle
+        cx="12"
+        cy="12"
+        r="10"
+        stroke={color || "#111827"}
+        strokeWidth="1.5"
+      />
+      <Path
+        d="M12 11V16"
+        stroke={color || "#111827"}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <Path
+        d="M12 8H12.01"
+        stroke={color || "#111827"}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
     </Svg>
   );
 }
 
-export function SolarHourglassBold({ size = 24, color, ...props }: SolarIconProps) {
+export function SolarHourglassBold({
+  size = 24,
+  color,
+  ...props
+}: SolarIconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
-      <Path d="M12 12L19 5H5L12 12ZM12 12L5 19H19L12 12Z" stroke={color || '#111827'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <Path d="M5 2H19" stroke={color || '#111827'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <Path d="M5 22H19" stroke={color || '#111827'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <Path
+        d="M12 12L19 5H5L12 12ZM12 12L5 19H19L12 12Z"
+        stroke={color || "#111827"}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M5 2H19"
+        stroke={color || "#111827"}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M5 22H19"
+        stroke={color || "#111827"}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </Svg>
   );
 }
 
-export function SolarAltArrowRightLowBold({ size = 24, color, ...props }: SolarIconProps) {
+export function SolarAltArrowRightLowBold({
+  size = 24,
+  color,
+  ...props
+}: SolarIconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
-      <Path d="M9 19L15 12L9 5" stroke={color || '#111827'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <Path
+        d="M9 19L15 12L9 5"
+        stroke={color || "#111827"}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </Svg>
   );
 }
 
-export function SolarLightbulbBold({ size = 24, color, ...props }: SolarIconProps) {
+export function SolarLightbulbBold({
+  size = 24,
+  color,
+  ...props
+}: SolarIconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
-      <Path d="M12 21C14.7614 21 17 18.7614 17 16C17 14.3333 16 13 15 12C14 11 14 10 14 9C14 7.89543 13.1046 7 12 7C10.8954 7 10 7.89543 10 9C10 10 10 11 9 12C8 13 7 14.3333 7 16C7 18.7614 9.23858 21 12 21Z" stroke={color || '#111827'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <Path d="M10 21H14" stroke={color || '#111827'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <Path d="M12 2V4" stroke={color || '#111827'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <Path d="M4 8L6 9" stroke={color || '#111827'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <Path d="M20 8L18 9" stroke={color || '#111827'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <Path
+        d="M12 21C14.7614 21 17 18.7614 17 16C17 14.3333 16 13 15 12C14 11 14 10 14 9C14 7.89543 13.1046 7 12 7C10.8954 7 10 7.89543 10 9C10 10 10 11 9 12C8 13 7 14.3333 7 16C7 18.7614 9.23858 21 12 21Z"
+        stroke={color || "#111827"}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M10 21H14"
+        stroke={color || "#111827"}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M12 2V4"
+        stroke={color || "#111827"}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M4 8L6 9"
+        stroke={color || "#111827"}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M20 8L18 9"
+        stroke={color || "#111827"}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </Svg>
   );
 }
@@ -1125,8 +1293,20 @@ export function SolarLightbulbBold({ size = 24, color, ...props }: SolarIconProp
 export function SolarCloseBold({ size = 24, color, ...props }: SolarIconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
-      <Path d="M18 6L6 18" stroke={color || '#111827'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <Path d="M6 6L18 18" stroke={color || '#111827'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <Path
+        d="M18 6L6 18"
+        stroke={color || "#111827"}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M6 6L18 18"
+        stroke={color || "#111827"}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </Svg>
   );
 }
