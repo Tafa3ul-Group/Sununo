@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { StatusModal } from '@/components/ui/status-modal';
 import {
   StyleSheet,
   View,
@@ -28,15 +29,23 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const DAYS = ['SAT', 'FRI', 'THU', 'WED', 'TUE', 'MON', 'SUN'];
 const MONTH_NAME = 'MARCH 2024';
 
+
 export default function CompleteBookingScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const [selectedDate, setSelectedDate] = useState(15);
   const [selectedShift, setSelectedShift] = useState<'morning' | 'evening' | null>('morning');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleNext = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    // Navigate to next step
+    setIsLoading(true);
+    
+    // Simulate booking process
+    setTimeout(() => {
+      setIsLoading(false);
+      router.push('/(customer)/booking/success');
+    }, 2500);
   };
 
   const renderCalendarDay = (day: number | string, isCurrentMonth = true, isDisabled = false, isSelected = false) => {
@@ -76,6 +85,11 @@ export default function CompleteBookingScreen() {
 
   return (
     <View style={styles.container}>
+      <StatusModal 
+        visible={isLoading} 
+        type="loading"
+        message="جاري معالجة طلبك..." 
+      />
       <Stack.Screen options={{ 
         headerShown: true,
         headerTitle: 'اكتمال الحجز',
