@@ -1,4 +1,3 @@
-import { SolarIcon } from "@/components/ui/solar-icon";
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +11,18 @@ import { getImageSrc } from '@/hooks/useImageSrc';
 import { useGetOwnerChaletDetailsQuery, useDeleteChaletMutation } from '@/store/api/apiSlice';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { SecondaryButton } from '@/components/user/secondary-button';
+import { 
+  SolarAltArrowLeftBold,
+  SolarTrashBinBold,
+  SolarPenBold,
+  SolarMapPointBold,
+  SolarBanknoteBold,
+  SolarStarBold, 
+  SolarUsersGroupBold,
+  SolarChartBold,
+  SolarClockCircleBold,
+  SolarCalendarBold
+} from "@/components/icons/solar-icons";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const HERO_HEIGHT = 420;
@@ -169,17 +180,17 @@ export default function ChaletDetailsScreen() {
       <View style={styles.fixedHeaderActions}>
         <SafeAreaView edges={['top']} style={[styles.headerActions, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
           <TouchableOpacity style={styles.iconButton} onPress={() => router.back()}>
-            <SolarIcon name="4k-bold" size={22} color={Colors.white} />
+            <SolarAltArrowLeftBold size={22} color={Colors.white} />
           </TouchableOpacity>
           <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 10 }}>
             <TouchableOpacity 
               style={[styles.iconButton, { backgroundColor: '#FEF2F2', borderColor: '#FEE2E2' }]} 
               onPress={handleDelete}
             >
-              <SolarIcon name="4k-bold" size={22} color="#EF4444" />
+              <SolarTrashBinBold size={22} color="#EF4444" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.iconButton} onPress={() => router.push({ pathname: '/(tabs)/(dashboard)/edit-chalet', params: { id: chalet.id } })}>
-              <SolarIcon name="4k-bold" size={22} color={Colors.white} />
+              <SolarPenBold size={22} color={Colors.white} />
             </TouchableOpacity>
           </View>
         </SafeAreaView>
@@ -212,7 +223,7 @@ export default function ChaletDetailsScreen() {
                   </View>
                 </View>
                 <View style={[styles.locationRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                  <SolarIcon name="4k-bold" size={16} color={Colors.primary} style={{ marginTop: 2 }} />
+                  <SolarMapPointBold size={16} color={Colors.primary} style={{ marginTop: 2 }} />
                   <Text style={styles.locationText}>{chaletLocation || ''}</Text>
                 </View>
               </View>
@@ -233,7 +244,7 @@ export default function ChaletDetailsScreen() {
             <View style={[styles.statsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
               <View style={styles.statItem}>
                 <View style={[styles.statIconWrap, { backgroundColor: '#EFF6FF' }]}>
-                  <SolarIcon name="4k-bold" size={20} color={Colors.primary} />
+                  <SolarBanknoteBold size={20} color={Colors.primary} />
                 </View>
                 <Text style={styles.statValue}>{chalet?.revenue || '0'}</Text>
                 <Text style={styles.statLabel}>{isRTL ? 'الأرباح' : 'Revenue'}</Text>
@@ -241,7 +252,7 @@ export default function ChaletDetailsScreen() {
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
                 <View style={[styles.statIconWrap, { backgroundColor: '#ECFDF5' }]}>
-                  <SolarIcon name="4k-bold" size={20} color="#10B981" />
+                  <SolarCalendarBold size={20} color="#10B981" />
                 </View>
                 <Text style={styles.statValue}>{chalet?.reviewCount || 0}</Text>
                 <Text style={styles.statLabel}>{isRTL ? 'الحجوزات' : 'Bookings'}</Text>
@@ -249,7 +260,7 @@ export default function ChaletDetailsScreen() {
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
                 <View style={[styles.statIconWrap, { backgroundColor: '#FFF7ED' }]}>
-                  <SolarIcon name="4k-bold" size={20} color="#F97316" />
+                  <SolarStarBold size={20} color="#F97316" />
                 </View>
                 <Text style={styles.statValue}>{typeof chalet?.rating === 'string' ? parseFloat(chalet.rating).toFixed(1) : (chalet?.rating || 0)}</Text>
                 <Text style={styles.statLabel}>{isRTL ? 'التقييم' : 'Rating'}</Text>
@@ -261,7 +272,7 @@ export default function ChaletDetailsScreen() {
               <SecondaryButton 
                 label={isRTL ? 'إدارة الفترات والأسعار' : 'Manage Shifts & Pricing'}
                 onPress={() => router.push({ pathname: '/(tabs)/(dashboard)/shifts', params: { id: chalet?.id } })}
-                icon="clock-edit-outline"
+                icon={<SolarClockCircleBold size={22} color={Colors.primary} />}
                 isActive={false} // Use the outlined design system style
                 style={styles.fullWidthButton}
               />
@@ -289,14 +300,14 @@ export default function ChaletDetailsScreen() {
               <Text style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'معلومات أساسية' : 'Key Info'}</Text>
               <View style={[styles.detailsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 <View style={styles.detailCard}>
-                  <SolarIcon name="4k-bold" size={20} color={Colors.primary} />
+                  <SolarUsersGroupBold size={20} color={Colors.primary} />
                   <View style={{ alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
                     <Text style={styles.detailValue}>{chalet?.maxGuests}</Text>
                     <Text style={styles.detailLabel}>{isRTL ? 'أقصى عدد' : 'Max Guests'}</Text>
                   </View>
                 </View>
                 <View style={styles.detailCard}>
-                  <SolarIcon name="4k-bold" size={20} color={Colors.primary} />
+                  <SolarBanknoteBold size={20} color={Colors.primary} />
                   <View style={{ alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
                     <Text style={styles.detailValue}>{chalet?.depositPercentage}%</Text>
                     <Text style={styles.detailLabel}>{isRTL ? 'العربون' : 'Deposit'}</Text>
@@ -310,14 +321,14 @@ export default function ChaletDetailsScreen() {
               <SecondaryButton
                 label={isRTL ? 'إدارة حجوزاتك' : 'Manage Bookings'}
                 onPress={() => router.push('/(tabs)/(dashboard)/bookings')}
-                icon="calendar-clock"
+                icon={<SolarCalendarBold size={22} color={Colors.primary} />}
                 style={styles.navActionButton}
               />
               
               <SecondaryButton
                 label={isRTL ? 'التقارير المالية' : 'Financial Reports'}
                 onPress={() => router.push('/(tabs)/(dashboard)/revenue')}
-                icon="chart-line"
+                icon={<SolarChartBold size={22} color={Colors.primary} />}
                 style={styles.navActionButton}
               />
             </View>

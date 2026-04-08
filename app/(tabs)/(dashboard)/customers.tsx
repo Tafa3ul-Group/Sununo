@@ -1,4 +1,4 @@
-import { SolarIcon } from "@/components/ui/solar-icon";
+import { SolarPhoneBold, SolarUsersGroupRoundedBold } from "@/components/icons/solar-icons";
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Image } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
@@ -56,7 +56,7 @@ export default function CustomersScreen() {
         </View>
 
         <TouchableOpacity style={styles.contactButton}>
-          <SolarIcon name="phone-bold" size={20} color={Colors.primary} />
+          <SolarPhoneBold size={20} color={Colors.primary} />
         </TouchableOpacity>
       </View>
 
@@ -93,7 +93,7 @@ export default function CustomersScreen() {
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <SolarIcon name="users-group-two-rounded-linear" size={80} color={Colors.text.muted} />
+              <SolarUsersGroupRoundedBold size={80} color={Colors.text.muted} />
               <Text style={styles.emptyText}>{t('dashboard.noChalets')}</Text>
             </View>
           }

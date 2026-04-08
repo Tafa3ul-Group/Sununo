@@ -1,17 +1,26 @@
 import { Colors, normalize, Spacing, Typography } from '@/constants/theme';
 import { RootState } from '@/store';
 import { logout } from '@/store/authSlice';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import {
+  SolarWalletBold,
+  SolarCalendarBold,
+  SolarHeartBold,
+  SolarGlobalBold,
+  SolarPhoneBold,
+  SolarShieldBold,
+  SolarLogoutBold,
+  SolarPenBold,
+  ProfileShape
+} from '@/components/icons/solar-icons';
+import { CircleBackButton } from '@/components/ui/circle-back-button';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { LanguageSheet } from '@/components/user/language-sheet';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { ProfileShape } from '@/components/icons/solar-icons';
-import { CircleBackButton } from '@/components/ui/circle-back-button';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { LanguageSheet } from '@/components/user/language-sheet';
 
 export default function ProfileScreen() {
   const dispatch = useDispatch();
@@ -44,13 +53,13 @@ export default function ProfileScreen() {
   };
 
   const menuItems = [
-    { id: 'wallet', title: isRTL ? 'المحفظة' : 'Wallet', shape: 'red' as const, icon: 'wallet', route: '/(tabs)/(dashboard)/transactions' },
-    { id: 'bookings', title: isRTL ? 'الحجوزات' : 'Bookings', shape: 'red' as const, icon: 'calendar-text', route: '/(tabs)/bookings' },
-    { id: 'reviews', title: isRTL ? 'المراجعات' : 'Reviews', shape: 'blue' as const, icon: 'heart-outline' },
-    { id: 'language', title: isRTL ? 'اللغة' : 'Language', shape: 'pink' as const, icon: 'web', action: openLanguageSheet },
-    { id: 'contact', title: isRTL ? 'تواصل معنا' : 'Contact Us', shape: 'green' as const, icon: 'phone-outline' },
-    { id: 'privacy', title: isRTL ? 'سياسة الخصوصية' : 'Privacy Policy', shape: 'blue' as const, icon: 'shield-alert-outline' },
-    { id: 'logout', title: isRTL ? 'تسجيل الخروج' : 'Logout', shape: 'red' as const, icon: 'logout-variant', action: handleLogout },
+    { id: 'wallet', title: isRTL ? 'المحفظة' : 'Wallet', shape: 'red' as const, icon: <SolarWalletBold size={20} color="white" />, route: '/(tabs)/(dashboard)/transactions' },
+    { id: 'bookings', title: isRTL ? 'الحجوزات' : 'Bookings', shape: 'red' as const, icon: <SolarCalendarBold size={20} color="white" />, route: '/(tabs)/bookings' },
+    { id: 'reviews', title: isRTL ? 'المراجعات' : 'Reviews', shape: 'blue' as const, icon: <SolarHeartBold size={20} color="white" /> },
+    { id: 'language', title: isRTL ? 'اللغة' : 'Language', shape: 'pink' as const, icon: <SolarGlobalBold size={20} color="white" />, action: openLanguageSheet },
+    { id: 'contact', title: isRTL ? 'تواصل معنا' : 'Contact Us', shape: 'green' as const, icon: <SolarPhoneBold size={20} color="white" /> },
+    { id: 'privacy', title: isRTL ? 'سياسة الخصوصية' : 'Privacy Policy', shape: 'blue' as const, icon: <SolarShieldBold size={20} color="white" /> },
+    { id: 'logout', title: isRTL ? 'تسجيل الخروج' : 'Logout', shape: 'red' as const, icon: <SolarLogoutBold size={20} color="white" />, action: handleLogout },
   ];
 
   return (
@@ -75,7 +84,7 @@ export default function ProfileScreen() {
           activeOpacity={0.9}
         >
           <ProfileShape size={normalize.width(48)} type="green">
-            <MaterialCommunityIcons name="pencil" size={18} color="white" />
+            <SolarPenBold size={18} color="white" />
           </ProfileShape>
           
           <View style={styles.userInfo}>
@@ -107,7 +116,7 @@ export default function ProfileScreen() {
             >
               <Text style={styles.menuLabelText}>{item.title}</Text>
               <ProfileShape size={normalize.width(42)} type={item.shape}>
-                <MaterialCommunityIcons name={item.icon as any} size={20} color="white" />
+                {item.icon}
               </ProfileShape>
             </TouchableOpacity>
           ))}

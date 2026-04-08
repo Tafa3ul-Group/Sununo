@@ -1,10 +1,9 @@
 import { ThemedText } from '@/components/themed-text';
 import { Colors, Spacing } from '@/constants/theme';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
 import { ActivityIndicator, StyleSheet, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { SolarIcon } from "@/components/ui/solar-icon";
+import { SolarMagnifierBold } from "@/components/icons/solar-icons";
 
 interface AppButtonProps {
   label: string;
@@ -13,7 +12,7 @@ interface AppButtonProps {
   isActive?: boolean;
   loading?: boolean;
   disabled?: boolean;
-  icon?: keyof typeof MaterialCommunityIcons.glyphMap;
+  icon?: React.ReactNode;
   leftLabel?: string; // New prop for custom text in the icon slot
   activeColor?: string;
   inactiveColor?: string;
@@ -79,14 +78,7 @@ export function AppButton({
         {/* Flexible Middle Section */}
         <View style={[styles.middleSection, { backgroundColor: color }]}>
           <View style={styles.contentRow}>
-            {icon && (
-              <SolarIcon 
-                name="4k-bold" 
-                size={18} 
-                color={textColor} 
-                style={{ marginRight: 6 }} 
-              />
-            )}
+            {icon}
             <ThemedText style={[styles.primaryText, { color: textColor }, textStyle]}>
               {label}
             </ThemedText>
@@ -128,11 +120,7 @@ export function AppButton({
               {leftLabel}
             </ThemedText>
           ) : (
-            <SolarIcon
-              name="4k-bold"
-              size={22}
-              color={isActive ? secondaryActiveColor : '#9CA3AF'}
-            />
+            icon
           )}
         </View>
       )}

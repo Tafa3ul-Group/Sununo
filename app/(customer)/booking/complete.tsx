@@ -13,8 +13,14 @@ import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { Colors, normalize, Shadows } from '@/constants/theme';
 import { PrimaryButton } from '@/components/user/primary-button';
-import { SolarIcon } from '@/components/ui/solar-icon';
-import { ExIcon } from '@/components/ui/ex-icon';
+import { 
+  SolarAltArrowRightLinear, 
+  SolarHome2Bold, 
+  SolarSunBold, 
+  SolarMoonBold, 
+  SolarAddCircleBold,
+  SolarExIcon
+} from "@/components/icons/solar-icons";
 import * as Haptics from 'expo-haptics';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -61,7 +67,7 @@ export default function CompleteBookingScreen() {
         </ThemedText>
         {isDisabled && (
            <View style={{ position: 'absolute', width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
-             <ExIcon color="#94A3B8" />
+             <SolarExIcon color="#94A3B8" />
            </View>
         )}
       </TouchableOpacity>
@@ -77,12 +83,12 @@ export default function CompleteBookingScreen() {
         headerTitleStyle: { fontWeight: '800', fontSize: 18 },
         headerLeft: () => (
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-            <SolarIcon name="4k-bold" size={24} color="#111827" />
+            <SolarAltArrowRightLinear size={24} color="#111827" />
           </TouchableOpacity>
         ),
         headerRight: () => (
           <View style={styles.logoContainer}>
-             <SolarIcon name="4k-bold" size={28} color="#035DF9" />
+              <SolarHome2Bold size={28} color="#035DF9" />
           </View>
         )
       }} />
@@ -113,7 +119,7 @@ export default function CompleteBookingScreen() {
                <ThemedText style={styles.dateBadgeText}>18</ThemedText>
             </View>
             <TouchableOpacity style={styles.addDateBtn}>
-               <SolarIcon name="4k-bold" size={20} color="#94A3B8" />
+               <SolarAddCircleBold size={20} color="#94A3B8" />
             </TouchableOpacity>
         </View>
 
@@ -151,8 +157,8 @@ export default function CompleteBookingScreen() {
            >
               <View style={styles.shiftLeft}>
                 <View style={[styles.shiftIconBox, { backgroundColor: '#FEF9C3' }]}>
-                  <SolarIcon name="4k-bold" size={22} color="#F59E0B" />
-                </View>
+                <SolarSunBold size={22} color="#F59E0B" />
+              </View>
                 <ThemedText style={styles.shiftTitle}>الفترة الصباحية</ThemedText>
               </View>
               <ThemedText style={styles.shiftTime}>9:00 ص - 3:00 م</ThemedText>
@@ -164,7 +170,7 @@ export default function CompleteBookingScreen() {
            >
               <View style={styles.shiftLeft}>
                 <View style={[styles.shiftIconBox, { backgroundColor: '#EEF2FF' }]}>
-                  <SolarIcon name="4k-bold" size={20} color="#035DF9" />
+                  <SolarMoonBold size={20} color="#035DF9" />
                 </View>
                 <ThemedText style={styles.shiftTitle}>الفترة المسائية</ThemedText>
               </View>

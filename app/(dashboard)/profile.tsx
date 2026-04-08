@@ -1,4 +1,12 @@
-import { SolarIcon } from "@/components/ui/solar-icon";
+import { 
+  SolarLogoutBold, 
+  SolarBanknoteBold, 
+  SolarHome2Bold, 
+  SolarChartBold, 
+  SolarBellBold, 
+  SolarAltArrowLeftLinear, 
+  SolarAltArrowRightLinear 
+} from "@/components/icons/solar-icons";
 import { Colors, Spacing, Typography, normalize } from '@/constants/theme';
 import { RootState } from '@/store';
 import { logout } from '@/store/authSlice';
@@ -73,12 +81,16 @@ export default function ProviderProfileScreen() {
             style={styles.menuItem}
             onPress={() => router.push('/(dashboard)/edit-business')}
           >
-            <SolarIcon name="4k-bold" size={20} color={Colors.text.muted} />
-            <View style={styles.menuItemContent}>
+            <SolarBanknoteBold size={20} color={Colors.text.muted} />
+            <View style={[styles.menuItemContent, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
               <Text style={styles.menuItemTitle}>
                 {isRTL ? 'معلومات العمل والمصرف' : 'Business & Bank Info'}
               </Text>
-              <SolarIcon name="4k-bold" size={22} color={Colors.primary} />
+              {isRTL ? (
+                <SolarAltArrowLeftLinear size={22} color={Colors.primary} />
+              ) : (
+                <SolarAltArrowRightLinear size={22} color={Colors.primary} />
+              )}
             </View>
           </TouchableOpacity>
 
@@ -87,10 +99,14 @@ export default function ProviderProfileScreen() {
             style={styles.menuItem}
             onPress={() => router.push('/(tabs)/(dashboard)/home')}
           >
-            <SolarIcon name="4k-bold" size={20} color={Colors.text.muted} />
-            <View style={styles.menuItemContent}>
+            <SolarHome2Bold size={20} color={Colors.text.muted} />
+            <View style={[styles.menuItemContent, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
               <Text style={styles.menuItemTitle}>{isRTL ? 'إدارة شاليهاتي' : 'Manage My Chalets'}</Text>
-              <SolarIcon name="4k-bold" size={22} color={Colors.primary} />
+              {isRTL ? (
+                <SolarAltArrowLeftLinear size={22} color={Colors.primary} />
+              ) : (
+                <SolarAltArrowRightLinear size={22} color={Colors.primary} />
+              )}
             </View>
           </TouchableOpacity>
 
@@ -99,10 +115,14 @@ export default function ProviderProfileScreen() {
             style={styles.menuItem}
             onPress={() => router.push('/(tabs)/(dashboard)/revenue')}
           >
-            <SolarIcon name="4k-bold" size={20} color={Colors.text.muted} />
-            <View style={styles.menuItemContent}>
+            <SolarChartBold size={20} color={Colors.text.muted} />
+            <View style={[styles.menuItemContent, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
               <Text style={styles.menuItemTitle}>{isRTL ? 'المالية والأرباح' : 'Finances & Revenue'}</Text>
-              <SolarIcon name="4k-bold" size={22} color={Colors.primary} />
+              {isRTL ? (
+                <SolarAltArrowLeftLinear size={22} color={Colors.primary} />
+              ) : (
+                <SolarAltArrowRightLinear size={22} color={Colors.primary} />
+              )}
             </View>
           </TouchableOpacity>
 
@@ -111,10 +131,14 @@ export default function ProviderProfileScreen() {
             style={styles.menuItem}
             onPress={() => router.push('/(tabs)/(dashboard)/notifications')}
           >
-            <SolarIcon name="4k-bold" size={20} color={Colors.text.muted} />
-            <View style={styles.menuItemContent}>
+            <SolarBellBold size={20} color={Colors.text.muted} />
+            <View style={[styles.menuItemContent, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
               <Text style={styles.menuItemTitle}>{t('profile.notifications')}</Text>
-              <SolarIcon name="4k-bold" size={22} color={Colors.primary} />
+              {isRTL ? (
+                <SolarAltArrowLeftLinear size={22} color={Colors.primary} />
+              ) : (
+                <SolarAltArrowRightLinear size={22} color={Colors.primary} />
+              )}
             </View>
           </TouchableOpacity>
         </View>
@@ -125,7 +149,7 @@ export default function ProviderProfileScreen() {
           activeOpacity={0.8}
         >
           <Text style={styles.logoutText}>{t('profile.logout')}</Text>
-          <SolarIcon name="4k-bold" size={22} color="#FF3B30" />
+          <SolarLogoutBold size={22} color="#FF3B30" />
         </TouchableOpacity>
 
         <Text style={styles.versionText}>V 1.0.0</Text>

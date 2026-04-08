@@ -1,11 +1,9 @@
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetScrollView,
   useBottomSheetModal,
 } from "@gorhom/bottom-sheet";
-import { Image } from "expo-image";
 import React, { forwardRef, useCallback, useMemo, useState } from "react";
 import {
   Dimensions,
@@ -24,7 +22,7 @@ import { AppButton } from "./app-button";
 import { GuestCounter } from "./guest-counter";
 import { MainTabs, TabType } from "./MainTabs";
 import { RangeCalendar } from "./range-calendar";
-import { SolarIcon } from "@/components/ui/solar-icon";
+import { SolarMagnifierBold, SolarMapPointBold, SolarSunBold, SolarMoonBold, SolarBedBold, SolarIcon } from "@/components/icons/solar-icons";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -88,7 +86,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal>((props, ref) => {
           style={styles.searchInput}
           placeholderTextColor={Colors.text.muted}
         />
-        <SolarIcon name="4k-bold" size={22} color={Colors.text.muted} />
+        <SolarMagnifierBold size={22} color={Colors.text.muted} />
       </View>
 
       {CITIES.map((city) => (
@@ -102,8 +100,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal>((props, ref) => {
         >
           <ThemedText style={styles.cityName}>{city.name}</ThemedText>
           <View style={styles.cityRight}>
-            <SolarIcon
-              name="4k-bold"
+            <SolarMapPointBold
               size={24}
               color={Colors.primary}
             />
@@ -158,10 +155,9 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal>((props, ref) => {
             ]}
             onPress={() => setSelectedPeriod("morning")}
           >
-            <Image
-              source={require("@/assets/tabs/sun.svg")}
-              style={{ width: 34, height: 34 }}
-              contentFit="contain"
+            <SolarSunBold
+              size={34}
+              color={selectedPeriod === "morning" ? "#F64200" : Colors.text.muted}
             />
             <ThemedText style={styles.periodLabel}>
               الفترة الصباحية
@@ -175,10 +171,9 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal>((props, ref) => {
             ]}
             onPress={() => setSelectedPeriod("evening")}
           >
-            <Image
-              source={require("@/assets/tabs/night.svg")}
-              style={{ width: 34, height: 34 }}
-              contentFit="contain"
+            <SolarMoonBold
+              size={34}
+              color={selectedPeriod === "evening" ? "#035DF9" : Colors.text.muted}
             />
             <ThemedText style={styles.periodLabel}>
               الفترة المسائية
@@ -192,10 +187,9 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal>((props, ref) => {
             ]}
             onPress={() => setSelectedPeriod("overnight")}
           >
-            <Image
-              source={require("@/assets/tabs/sleep.svg")}
-              style={{ width: 34, height: 34 }}
-              contentFit="contain"
+            <SolarBedBold
+              size={34}
+              color={selectedPeriod === "overnight" ? "#15AB64" : Colors.text.muted}
             />
             <ThemedText style={styles.periodLabel}>المبيت</ThemedText>
           </TouchableOpacity>

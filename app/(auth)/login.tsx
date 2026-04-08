@@ -1,4 +1,4 @@
-import { SolarIcon } from "@/components/ui/solar-icon";
+import { SolarAltArrowRightLinear } from "@/components/icons/solar-icons";
 import { Colors, Spacing, Typography, normalize } from "@/constants/theme";
 import { RootState } from "@/store";
 import { setCredentials } from "@/store/authSlice";
@@ -130,7 +130,7 @@ export default function LoginScreen() {
             }}
             disabled={isLoginLoading || isVerifyLoading}
           >
-            <SolarIcon name="4k-bold" size={24} color={Colors.text.primary} />
+            <SolarAltArrowRightLinear size={24} color={Colors.text.primary} />
           </TouchableOpacity>
 
           <View style={styles.header}>

@@ -1,6 +1,17 @@
 import { BookingDetailsModalContent } from '@/components/booking-details-modal-content';
 import { HeaderSection } from '@/components/header-section';
-import { SolarIcon } from '@/components/ui/solar-icon';
+import { 
+  SolarClockCircleLinear, 
+  SolarLockBold, 
+  SolarAddCircleBold, 
+  SolarUserBold, 
+  SolarCalendarMinimalisticBold, 
+  SolarAltArrowLeftLinear, 
+  SolarAltArrowRightLinear, 
+  SolarAltArrowDownLinear, 
+  SolarHome2Bold, 
+  SolarCalendarBold 
+} from "@/components/icons/solar-icons";
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { Colors, normalize } from '@/constants/theme';
 import { RootState } from '@/store';
@@ -193,7 +204,7 @@ export default function BookingsScreen() {
                   <View style={[styles.shiftNameGroup, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
                     <Text style={[styles.shiftTileName, { color: accentColor }]}>{name}</Text>
                     <View style={[styles.shiftTimeGroup, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                      <SolarIcon name="clock-circle-linear" size={14} color="#94A3B8" />
+                      <SolarClockCircleLinear size={14} color="#94A3B8" />
                       <Text style={styles.shiftTileTime}>{format12H(shift.startTime, isRTL)} - {format12H(shift.endTime, isRTL)}</Text>
                     </View>
                     {!isAvailable && shift.booking && (
@@ -217,12 +228,11 @@ export default function BookingsScreen() {
                     <Text style={[styles.statusBadgeText, { color: isAvailable ? '#16A34A' : '#64748B' }]}>
                       {isAvailable ? (isRTL ? 'متاح' : 'Available') : (isRTL ? 'محجوز' : 'Booked')}
                     </Text>
-                    <SolarIcon
-                      name={isAvailable ? "add-circle-bold" : "lock-bold"}
-                      size={14}
-                      color={isAvailable ? '#16A34A' : '#64748B'}
-                      style={{ marginLeft: 6 }}
-                    />
+                    {isAvailable ? (
+                      <SolarAddCircleBold size={14} color="#16A34A" style={{ marginLeft: 6 }} />
+                    ) : (
+                      <SolarLockBold size={14} color="#64748B" style={{ marginLeft: 6 }} />
+                    )}
                   </View>
                 </View>
               </View>
@@ -240,7 +250,7 @@ export default function BookingsScreen() {
       <TouchableOpacity style={styles.bookingCard} onPress={() => openBookingDetails(item.id)}>
         <View style={[styles.bookingHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
           <View style={[styles.customerSection, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-            <View style={styles.avatarPlaceholder}><SolarIcon name="user-bold" size={20} color="#FFF" /></View>
+            <View style={styles.avatarPlaceholder}><SolarUserBold size={20} color="#FFF" /></View>
             <View style={{ alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
               <Text style={styles.customerName}>{customerName}</Text>
               <Text style={styles.chaletName}>{chaletName}</Text>
@@ -249,7 +259,7 @@ export default function BookingsScreen() {
           <Text style={styles.priceText}>{Number(item.totalPrice).toLocaleString()} {t('common.iqd')}</Text>
         </View>
         <View style={[styles.dateHighlight, { flexDirection: isRTL ? 'row-reverse' : 'row', marginTop: 12 }]}>
-          <SolarIcon name="calendar-minimalistic-bold" size={16} color={IDENTITY_BLUE} />
+          <SolarCalendarMinimalisticBold size={16} color={IDENTITY_BLUE} />
           <Text style={styles.dateHighlightText}>{item.bookingDate} - {isRTL ? (item.shift?.name?.ar || item.shift?.name) : (item.shift?.name?.en || item.shift?.name)}</Text>
         </View>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
@@ -312,7 +322,11 @@ export default function BookingsScreen() {
       <View style={styles.calendarContainer}>
         <View style={[styles.calendarHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
           <TouchableOpacity onPress={() => changeWeek(isRTL ? 'prev' : 'next')}>
-            <SolarIcon name={isRTL ? "alt-arrow-right-linear" : "alt-arrow-left-linear"} size={20} color="#64748B" />
+            {isRTL ? (
+              <SolarAltArrowRightLinear size={20} color="#64748B" />
+            ) : (
+              <SolarAltArrowLeftLinear size={20} color="#64748B" />
+            )}
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -322,11 +336,15 @@ export default function BookingsScreen() {
             <Text style={styles.monthLabel}>
               {baseDate.toLocaleString(isRTL ? 'ar-IQ' : 'en-US', { month: 'long', year: 'numeric' })}
             </Text>
-            <SolarIcon name="alt-arrow-down-linear" size={14} color={IDENTITY_BLUE} style={{ marginLeft: 4 }} />
+            <SolarAltArrowDownLinear size={14} color={IDENTITY_BLUE} style={{ marginLeft: 4 }} />
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => changeWeek(isRTL ? 'next' : 'prev')}>
-            <SolarIcon name={isRTL ? "alt-arrow-left-linear" : "alt-arrow-right-linear"} size={20} color="#64748B" />
+            {isRTL ? (
+              <SolarAltArrowLeftLinear size={20} color="#64748B" />
+            ) : (
+              <SolarAltArrowRightLinear size={20} color="#64748B" />
+            )}
           </TouchableOpacity>
         </View>
 
@@ -348,7 +366,7 @@ export default function BookingsScreen() {
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chaletChipsScroll}>
             {ownerChalets.map((chalet: any) => (
               <TouchableOpacity key={chalet.id} style={[styles.chaletChip, selectedChaletId === chalet.id && styles.chaletChipActive]} onPress={() => setSelectedChaletId(selectedChaletId === chalet.id ? null : chalet.id)}>
-                <SolarIcon name="home-2-bold" size={14} color={selectedChaletId === chalet.id ? '#FFF' : Colors.primary} />
+                <SolarHome2Bold size={14} color={selectedChaletId === chalet.id ? '#FFF' : Colors.primary} />
                 <Text style={[styles.chaletChipText, selectedChaletId === chalet.id && { color: '#FFF' }]}>{isRTL ? chalet.name?.ar : chalet.name?.en}</Text>
               </TouchableOpacity>
             ))}
@@ -434,7 +452,7 @@ export default function BookingsScreen() {
           <View style={{ padding: 24 }}>
             <View style={[styles.sheetHeaderLabelRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
               <View style={styles.modalIconCircle}>
-                <SolarIcon name="calendar-bold" size={20} color={IDENTITY_BLUE} />
+                <SolarCalendarBold size={20} color={IDENTITY_BLUE} />
               </View>
               <Text style={[styles.sheetTitle, { textAlign: isRTL ? 'right' : 'left', marginBottom: 0 }]}>
                 {isRTL ? 'تحديد الفترة' : 'Select Period'}

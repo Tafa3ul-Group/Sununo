@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { Colors, normalize, Shadows } from '@/constants/theme';
 import { ThemedText } from '@/components/themed-text';
-import { SolarIcon } from '@/components/ui/solar-icon';
+import { SolarCalendarBold, SolarBanknoteBold, SolarCalendarAddBold } from "@/components/icons/solar-icons";
 import { useGetProviderBookingsQuery } from '@/store/api/apiSlice';
 import { formatPrice } from '@/utils/format';
 import { useRouter } from 'expo-router';
@@ -44,13 +44,13 @@ export default function BookingsScreen() {
             </View>
           </View>
           
-          <View style={styles.detailsRow}>
-             <SolarIcon name="calendar-linear" size={14} color="#64748B" />
+          <View style={[styles.detailsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+             <SolarCalendarBold size={14} color="#64748B" />
              <ThemedText style={styles.detailsText}>
                {new Date(booking.startDate).toLocaleDateString(isRTL ? 'ar-IQ' : 'en-US')}
              </ThemedText>
              <View style={styles.divider} />
-             <SolarIcon name="banknote-linear" size={14} color="#64748B" />
+             <SolarBanknoteBold size={14} color="#64748B" />
              <ThemedText style={styles.detailsText}>{formatPrice(booking.totalPrice)}</ThemedText>
           </View>
         </View>
@@ -72,7 +72,7 @@ export default function BookingsScreen() {
           bookings.map(renderBookingItem)
         ) : (
           <View style={styles.emptyState}>
-            <SolarIcon name="calendar-add-linear" size={80} color="#E2E8F0" />
+            <SolarCalendarAddBold size={80} color="#E2E8F0" />
             <ThemedText style={styles.emptyTitle}>{isRTL ? 'لا توجد حجوزات حتى الآن' : 'No bookings yet'}</ThemedText>
             <ThemedText style={styles.emptySubtitle}>
               {isRTL ? 'ابدأ باستكشاف الشاليهات المتاحة واحجز رحلتك القادمة!' : 'Explore available chalets and book your next trip!'}

@@ -1,5 +1,17 @@
+import { BookingDetailsModalContent } from '@/components/booking-details-modal-content';
 import { HeaderSection } from '@/components/header-section';
-import { SolarIcon } from '@/components/ui/solar-icon';
+import {
+  SolarAltArrowRightBold,
+  SolarBanknoteBold,
+  SolarCalendarBold,
+  SolarCheckCircleBold,
+  SolarClockCircleBold,
+  SolarMagnifierBold,
+  SolarMapPointBold,
+  SolarPenBold,
+  SolarUserBold,
+  SolarUsersGroupBold
+} from "@/components/icons/solar-icons";
 import { PrimaryButton } from '@/components/user/primary-button';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { Colors, normalize } from '@/constants/theme';
@@ -7,7 +19,7 @@ import { getImageSrc } from '@/hooks/useImageSrc';
 import { RootState } from '@/store';
 import { useGetOwnerChaletsQuery, useGetProviderBookingsQuery, useGetProviderProfileQuery } from '@/store/api/apiSlice';
 import { formatPrice } from '@/utils/format';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useRouter } from 'expo-router';
@@ -23,9 +35,6 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-
-import { BookingDetailsModalContent } from '@/components/booking-details-modal-content';
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
@@ -59,7 +68,6 @@ export default function HomeScreen() {
 
   const profile = profileResponse?.data || profileResponse;
   const recentBookings = bookingsResponse?.data || bookingsResponse || [];
-  const walletBalance = profile?.walletBalance ?? user?.walletBalance ?? 0;
 
   const handleToggleBalance = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -124,23 +132,23 @@ export default function HomeScreen() {
               {chaletName}
             </Text>
             <View style={[styles.locationRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-              <Ionicons name="location-outline" size={12} color={Colors.primary} />
+              <SolarMapPointBold size={normalize.width(14)} color={Colors.primary} />
               <Text style={styles.locationLabel} numberOfLines={1}>{chaletLocation}</Text>
             </View>
 
             {/* Stat chips row */}
             <View style={[styles.chipRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
               <View style={[styles.statChip, { backgroundColor: '#ECFDF5' }]}>
-                <MaterialCommunityIcons name="cash-multiple" size={12} color="#10B981" />
+                <SolarBanknoteBold size={12} color="#10B981" />
                 <Text style={[styles.statChipText, { color: '#10B981' }]}>{formatPrice(item.price)}</Text>
               </View>
               <View style={[styles.statChip, { backgroundColor: '#EFF6FF' }]}>
-                <MaterialCommunityIcons name="calendar-check" size={12} color={Colors.primary} />
+                <SolarCalendarBold size={12} color={Colors.primary} />
                 <Text style={[styles.statChipText, { color: Colors.primary }]}>{item.reviewCount || 0}</Text>
               </View>
               {item.maxGuests && (
                 <View style={[styles.statChip, { backgroundColor: '#FFF7ED' }]}>
-                  <Ionicons name="people-outline" size={12} color="#F97316" />
+                  <SolarUsersGroupBold size={12} color="#F97316" />
                   <Text style={[styles.statChipText, { color: '#F97316' }]}>{item.maxGuests}</Text>
                 </View>
               )}
@@ -155,7 +163,7 @@ export default function HomeScreen() {
               router.push({ pathname: '/(tabs)/(dashboard)/edit-chalet', params: { id: item.id } });
             }}
           >
-            <Ionicons name="chevron-forward" size={18} color={Colors.text.muted} />
+            <SolarAltArrowRightBold size={18} color={Colors.text.muted} style={{ transform: [{ rotate: isRTL ? '180deg' : '0deg' }] }} />
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -184,7 +192,7 @@ export default function HomeScreen() {
               <Image source={{ uri: item.customer.image }} style={styles.modernBookingImg} />
             ) : (
               <View style={styles.modernBookingPlaceholder}>
-                <SolarIcon name="user-linear" size={24} color="#CBD5E1" />
+                <SolarUserBold size={24} color="#CBD5E1" />
               </View>
             )}
           </View>
@@ -210,7 +218,7 @@ export default function HomeScreen() {
     <BottomSheetBackdrop {...props} appearsOnIndex={0} disappearsOnIndex={-1} pressBehavior="close" />
   ), []);
 
-  const renderFilterButton = (filter: { id: string; label: string; icon?: string }) => {
+  const renderFilterButton = (filter: { id: string; label: string; icon?: React.ReactNode }) => {
     const isActive = activeFilter === filter.id;
     const isAll = filter.id === 'all';
 
@@ -226,7 +234,7 @@ export default function HomeScreen() {
           <SecondaryButton
             label={filter.label}
             isActive={isActive}
-            icon={filter.icon as any}
+            icon={filter.icon}
             onPress={() => setActiveFilter(filter.id)}
           />
         )}
@@ -278,9 +286,21 @@ export default function HomeScreen() {
                   >
                     {[
                       { id: 'all', label: t('home.categories.all') },
-                      { id: 'pending', label: t('dashboard.bookings.new'), icon: 'clock-outline' },
-                      { id: 'confirmed', label: t('dashboard.bookings.confirmed'), icon: 'check-decagram-outline' },
-                      { id: 'finished', label: t('dashboard.bookings.finished'), icon: 'calendar-check-outline' },
+                      { 
+                        id: 'pending', 
+                        label: t('dashboard.bookings.new'), 
+                        icon: <SolarClockCircleBold size={18} color={activeFilter === 'pending' ? 'white' : Colors.primary} /> 
+                      },
+                      { 
+                        id: 'confirmed', 
+                        label: t('dashboard.bookings.confirmed'), 
+                        icon: <SolarCheckCircleBold size={18} color={activeFilter === 'confirmed' ? 'white' : Colors.primary} /> 
+                      },
+                      { 
+                        id: 'finished', 
+                        label: t('dashboard.bookings.finished'), 
+                        icon: <SolarCalendarBold size={18} color={activeFilter === 'finished' ? 'white' : Colors.primary} /> 
+                      },
                     ].map(renderFilterButton)}
                   </ScrollView>
                 </View>
@@ -306,6 +326,30 @@ export default function HomeScreen() {
                     </View>
                   )}
                 </View>
+
+                {/* Owner Chalets Section */}
+                {isOwner && chalets?.data && chalets.data.length > 0 && (
+                   <View style={styles.chaletSectionWrap}>
+                     <View style={[styles.chaletSectionHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                        <View style={[styles.sectionTitleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                          <Text style={styles.sectionTitle}>{isRTL ? 'شاليهاتك' : 'Your Chalets'}</Text>
+                          <View style={styles.countBadge}>
+                            <Text style={styles.countBadgeText}>{chalets.data.length}</Text>
+                          </View>
+                        </View>
+                        <TouchableOpacity 
+                          style={styles.addChaletBtn}
+                          onPress={() => router.push('/(tabs)/(dashboard)/add-chalet')}
+                        >
+                          <SolarPenBold size={20} color="white" />
+                        </TouchableOpacity>
+                     </View>
+                     
+                     <View style={styles.chaletsList}>
+                        {chalets.data.map(renderChaletCard)}
+                     </View>
+                   </View>
+                )}
               </ScrollView>
             </View>
           )}

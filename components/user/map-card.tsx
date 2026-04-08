@@ -1,9 +1,8 @@
 import { ThemedText } from "@/components/themed-text";
 import { Colors, Shadows } from "@/constants/theme";
-import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { SolarIcon } from "@/components/ui/solar-icon";
+import { SolarCloseCircleBold, SolarStarBold } from "@/components/icons/solar-icons";
 
 interface MapCardProps {
   title: string;
@@ -35,7 +34,7 @@ export const MapCard = ({
       <View style={styles.content}>
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <SolarIcon name="4k-bold" size={16} color="#6B7280" />
+            <SolarCloseCircleBold size={16} color="#6B7280" />
           </TouchableOpacity>
           <View style={styles.titleSection}>
             <ThemedText style={styles.title} numberOfLines={1}>
@@ -50,7 +49,7 @@ export const MapCard = ({
         <View style={styles.footer}>
           <View style={styles.ratingContainer}>
             <Text style={styles.rating}>{rating}</Text>
-            <SolarIcon name="4k-bold" size={14} color="#035DF9" />
+            <SolarStarBold size={14} color="#035DF9" />
           </View>
           <ThemedText style={styles.price}>{price} / شفت</ThemedText>
         </View>

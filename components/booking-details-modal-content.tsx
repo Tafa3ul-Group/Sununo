@@ -1,6 +1,19 @@
 import { Colors, normalize } from '@/constants/theme';
 import { useGetProviderBookingDetailsQuery, useRejectBookingMutation, useDeleteExternalBookingMutation } from '@/store/api/apiSlice';
-import { SolarIcon } from '@/components/ui/solar-icon';
+import { 
+  SolarDangerCircleBold, 
+  SolarUserBold, 
+  SolarPhoneBold, 
+  SolarChatLineLinear, 
+  SolarHome2Bold, 
+  SolarMapPointLinear, 
+  SolarCalendarMinimalisticBold, 
+  SolarMoonBold, 
+  SolarSunBold, 
+  SolarAltArrowLeftLinear, 
+  SolarAltArrowRightLinear, 
+  SolarNotesBoldDuotone 
+} from '@/components/icons/solar-icons';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { ThemedText } from '@/components/themed-text';
 import { BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
@@ -45,7 +58,7 @@ export const BookingDetailsModalContent = ({ id, isRTL, t, onRefresh, onClose }:
   if (error || !data || !data.id) {
     return (
       <View style={{ padding: 40, alignItems: 'center' }}>
-        <SolarIcon name="danger-circle-bold" size={48} color={Colors.text.muted} />
+        <SolarDangerCircleBold size={48} color={Colors.text.muted} />
         <ThemedText style={{ marginTop: 16, color: Colors.text.muted }}>{t('common.error')}</ThemedText>
       </View>
     );
@@ -117,7 +130,7 @@ export const BookingDetailsModalContent = ({ id, isRTL, t, onRefresh, onClose }:
             {data.customer?.image ? (
               <Image source={{ uri: data.customer.image }} style={styles.customerAvatarImg} />
             ) : (
-              <SolarIcon name="user-bold" size={18} color="#FFF" />
+              <SolarUserBold size={18} color="#FFF" />
             )}
           </View>
           <View style={{ flex: 1, marginHorizontal: 10, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
@@ -126,10 +139,10 @@ export const BookingDetailsModalContent = ({ id, isRTL, t, onRefresh, onClose }:
           </View>
           <View style={[styles.contactActions, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             <TouchableOpacity style={[styles.contactBtn, styles.contactBtnCall]} onPress={bHandleCall}>
-              <SolarIcon name="phone-bold" size={16} color="#16A34A" />
+              <SolarPhoneBold size={16} color="#16A34A" />
             </TouchableOpacity>
             <TouchableOpacity style={[styles.contactBtn, styles.contactBtnChat]} onPress={bHandleWhatsApp}>
-              <SolarIcon name="chat-line-linear" size={16} color="#0284C7" />
+              <SolarChatLineLinear size={16} color="#0284C7" />
             </TouchableOpacity>
           </View>
         </View>
@@ -138,23 +151,23 @@ export const BookingDetailsModalContent = ({ id, isRTL, t, onRefresh, onClose }:
       <View style={styles.detailCard}>
         <View style={[styles.detailCardHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
           <View style={[styles.detailIconCircle, { backgroundColor: '#EEF2FF' }]}>
-            <SolarIcon name="home-2-bold" size={16} color={Colors.primary} />
+            <SolarHome2Bold size={16} color={Colors.primary} />
           </View>
           <Text style={[styles.detailCardTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{bChaletName}</Text>
         </View>
         {bChaletAddress && (
           <View style={[styles.detailSubRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-            <SolarIcon name="map-point-linear" size={13} color="#94A3B8" />
+            <SolarMapPointLinear size={13} color="#94A3B8" />
             <Text style={styles.detailSubText}>{bChaletAddress}</Text>
           </View>
         )}
 
         <View style={styles.scheduleBlock}>
           <View style={[styles.scheduleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-            <SolarIcon name="calendar-minimalistic-bold" size={16} color={Colors.primary} />
+            <SolarCalendarMinimalisticBold size={16} color={Colors.primary} />
             <Text style={styles.scheduleDate}>{data.bookingDate}</Text>
             <View style={[styles.shiftChip, { backgroundColor: bIsNightShift ? '#F5F3FF' : '#FFF7ED' }]}>
-              <SolarIcon name={bIsNightShift ? "moon-bold" : "sun-bold"} size={11} color={bIsNightShift ? "#7C3AED" : "#EA580C"} />
+              {bIsNightShift ? <SolarMoonBold size={11} color="#7C3AED" /> : <SolarSunBold size={11} color="#EA580C" />}
               <Text style={[styles.shiftChipText, { color: bIsNightShift ? "#7C3AED" : "#EA580C" }]}>{bShiftName}</Text>
             </View>
           </View>
@@ -164,7 +177,7 @@ export const BookingDetailsModalContent = ({ id, isRTL, t, onRefresh, onClose }:
               <Text style={styles.timeValue}>{format12H(data.shiftStartTime, isRTL)}</Text>
             </View>
             <View style={styles.timeArrow}>
-              <SolarIcon name={isRTL ? "alt-arrow-left-linear" : "alt-arrow-right-linear"} size={14} color="#CBD5E1" />
+              {isRTL ? <SolarAltArrowLeftLinear size={14} color="#CBD5E1" /> : <SolarAltArrowRightLinear size={14} color="#CBD5E1" />}
             </View>
             <View style={[styles.timeBlock, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
               <Text style={styles.timeLabel}>{isRTL ? 'الخروج' : 'Check-out'}</Text>
@@ -184,7 +197,7 @@ export const BookingDetailsModalContent = ({ id, isRTL, t, onRefresh, onClose }:
       {data.notes && (
         <View style={[styles.notesContainer, { marginTop: 12, alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
           <View style={[styles.row, { flexDirection: isRTL ? 'row-reverse' : 'row', gap: 6, marginBottom: 4 }]}>
-            <SolarIcon name="notes-bold" size={16} color={IDENTITY_BLUE} />
+            <SolarNotesBoldDuotone size={16} color={IDENTITY_BLUE} />
             <Text style={styles.notesLabel}>{isRTL ? 'ملاحظات الحجز' : 'Booking Notes'}</Text>
           </View>
           <Text style={[styles.notesText, { textAlign: isRTL ? 'right' : 'left' }]}>{data.notes}</Text>

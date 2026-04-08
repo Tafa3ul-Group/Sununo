@@ -1,4 +1,3 @@
-import { SolarIcon } from "@/components/ui/solar-icon";
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
 import { useGetPayoutsQuery } from '@/store/api/apiSlice';
+import { SolarBanknoteBold } from "@/components/icons/solar-icons";
 
 const FILTERS = [
   { id: undefined, ar: 'الكل', en: 'All' },
@@ -91,7 +91,7 @@ export default function TransactionsScreen() {
         activeOpacity={0.7}
       >
         <View style={[styles.transactionIcon, { backgroundColor: statusBg }]}>
-          <SolarIcon name="banknote-bold" size={22} color={statusColor} />
+          <SolarBanknoteBold size={22} color={statusColor} />
         </View>
         
         <View style={[styles.transactionInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
@@ -164,7 +164,7 @@ export default function TransactionsScreen() {
             ListEmptyComponent={
               <View style={styles.emptyState}>
                 <View style={styles.emptyIconWrap}>
-                  <SolarIcon name="banknote-linear" size={48} color="#D1D5DB" />
+                  <SolarBanknoteBold size={48} color="#D1D5DB" />
                 </View>
                 <Text style={styles.emptyTitle}>{isRTL ? 'لا توجد معاملات' : 'No Transactions'}</Text>
                 <Text style={styles.emptySubtitle}>

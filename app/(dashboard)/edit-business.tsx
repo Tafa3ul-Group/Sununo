@@ -1,4 +1,10 @@
-import { SolarIcon } from "@/components/ui/solar-icon";
+import { 
+  SolarShopBold, 
+  SolarMapPointBold, 
+  SolarPenBold, 
+  SolarBanknoteBold, 
+  SolarCardBold 
+} from "@/components/icons/solar-icons";
 import React, { useState, useEffect } from 'react';
 import { 
   StyleSheet, 
@@ -76,10 +82,10 @@ export default function ProviderProfileScreen() {
     );
   }
 
-  const renderField = (label: string, value: string, key: string, icon: string, placeholder: string, multiline = false) => (
+  const renderField = (label: string, value: string, key: string, IconComponent: React.ElementType, placeholder: string, multiline = false) => (
     <View style={styles.fieldContainer}>
       <ThemedText style={styles.label}>{label}</ThemedText>
-      <View style={[styles.inputWrapper, multiline && styles.multilineWrapper]}>
+      <View style={[styles.inputWrapper, multiline && styles.multilineWrapper, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
         <TextInput
           style={[styles.input, multiline && styles.multilineInput, { textAlign: isRTL ? 'right' : 'left' }]}
           value={value}
@@ -88,7 +94,7 @@ export default function ProviderProfileScreen() {
           placeholderTextColor={Colors.text.muted}
           multiline={multiline}
         />
-        <SolarIcon name="4k-bold" size={20} color={Colors.text.muted} />
+        <IconComponent size={20} color={Colors.text.muted} />
       </View>
     </View>
   );
@@ -114,21 +120,21 @@ export default function ProviderProfileScreen() {
               isRTL ? 'اسم العمل' : 'Business Name',
               formData.business_name,
               'business_name',
-              'store-outline',
+              SolarShopBold,
               isRTL ? 'أدخل اسم عملك' : 'Enter business name'
             )}
             {renderField(
               isRTL ? 'العنوان' : 'Address',
               formData.address,
               'address',
-              'map-marker-outline',
+              SolarMapPointBold,
               isRTL ? 'العنوان الفعلي' : 'Physical address'
             )}
             {renderField(
               isRTL ? 'الوصف' : 'Description',
               formData.business_description,
               'business_description',
-              'text-box-outline',
+              SolarPenBold,
               isRTL ? 'وصف مختصر لعملك' : 'Short business description',
               true
             )}
@@ -140,21 +146,21 @@ export default function ProviderProfileScreen() {
               isRTL ? 'اسم البنك' : 'Bank Name',
               formData.bank_name,
               'bank_name',
-              'bank-outline',
+              SolarBanknoteBold,
               isRTL ? 'اسم المصرف' : 'Bank name'
             )}
             {renderField(
               isRTL ? 'رقم الحساب' : 'Account Number',
               formData.account_number,
               'account_number',
-              'numeric',
+              SolarCardBold,
               '1234567890'
             )}
             {renderField(
               isRTL ? 'IBAN (اختياري)' : 'IBAN (Optional)',
               formData.iban,
               'iban',
-              'barcode',
+              SolarBanknoteBold,
               'IQ00 BANK 0000 ...'
             )}
           </View>

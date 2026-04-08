@@ -1,10 +1,9 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Modal, Platform } from 'react-native';
 import { Colors, Spacing, normalize, Typography } from '@/constants/theme';
-import { Ionicons } from '@expo/vector-icons';
 import { PrimaryButton } from './primary-button';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { SolarIcon } from "@/components/ui/solar-icon";
+import { SolarCloseCircleBold, SolarMapPointBold, SolarMapPointLinear } from "@/components/icons/solar-icons";
 
 let Mapbox: any = null;
 try {
@@ -42,7 +41,7 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <SolarIcon name="4k-bold" size={28} color={Colors.text.primary} />
+            <SolarCloseCircleBold size={28} color={Colors.text.primary} />
           </TouchableOpacity>
           <Text style={styles.title}>تحديد الموقع</Text>
           <View style={{ width: 40 }} />
@@ -62,14 +61,14 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
             </Mapbox.MapView>
           ) : (
             <View style={styles.fallback}>
-                <SolarIcon name="4k-bold" size={64} color={Colors.text.muted} />
+                <SolarMapPointLinear size={64} color={Colors.text.muted} />
                 <Text style={styles.fallbackText}>الخارطة الحية تتطلب بيئة تشغيل حقيقية</Text>
             </View>
           )}
 
           {/* Center Pin / Crosshair */}
           <View style={[styles.markerFixed, { pointerEvents: "none" }]}>
-            <SolarIcon name="4k-bold" size={40} color={Colors.primary} />
+            <SolarMapPointBold size={40} color={Colors.primary} />
           </View>
         </View>
 

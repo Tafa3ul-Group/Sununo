@@ -1,13 +1,12 @@
 import { ThemedText } from '@/components/themed-text';
 import { Colors, normalize, Spacing } from '@/constants/theme';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
-import { SolarIcon } from "@/components/ui/solar-icon";
+import { SolarMagnifierBold } from "@/components/icons/solar-icons";
 
 interface FilterInputProps {
   label: string;
-  iconName: string;
+  icon?: React.ReactNode;
   selected?: boolean;
   onPress: () => void;
   style?: ViewStyle;
@@ -21,7 +20,7 @@ interface FilterInputProps {
  */
 export function FilterInput({
   label,
-  iconName,
+  icon,
   selected = false,
   onPress,
   style,
@@ -50,11 +49,7 @@ export function FilterInput({
       <View style={styles.divider} />
 
       <View style={styles.iconContainer}>
-        <SolarIcon
-          name="4k-bold"
-          size={normalize.width(22)}
-          color={Colors.primary}
-        />
+        {icon}
       </View>
     </TouchableOpacity>
   );

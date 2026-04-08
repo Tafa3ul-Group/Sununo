@@ -1,4 +1,3 @@
-import { SolarIcon } from "@/components/ui/solar-icon";
 import { ThemedText } from '@/components/themed-text';
 import { Colors, normalize, Shadows, Spacing, Typography } from '@/constants/theme';
 import { FlashList } from '@shopify/flash-list';
@@ -10,6 +9,13 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
+import { 
+  SolarBellBingBoldDuotone, 
+  SolarBanknoteBold, 
+  SolarSettingsBold, 
+  SolarCalendarBold, 
+  SolarAltArrowLeftBold 
+} from "@/components/icons/solar-icons";
 
 interface NotificationItem {
   id: string;
@@ -89,7 +95,13 @@ export default function NotificationsScreen() {
         activeOpacity={0.7}
       >
         <View style={[styles.iconContainer, { backgroundColor: icon.bg }]}>
-          <SolarIcon name={`${item.type === 'payment' ? 'banknote' : item.type === 'system' ? 'settings' : 'calendar'}-bold`} size={24} color={icon.color} />
+          {item.type === 'payment' ? (
+            <SolarBanknoteBold size={24} color={icon.color} />
+          ) : item.type === 'system' ? (
+            <SolarSettingsBold size={24} color={icon.color} />
+          ) : (
+            <SolarCalendarBold size={24} color={icon.color} />
+          )}
         </View>
 
         <View style={[styles.contentContainer, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
@@ -113,7 +125,7 @@ export default function NotificationsScreen() {
           onPress={() => router.back()}
           style={styles.backButton}
         >
-          <SolarIcon name="alt-arrow-left-linear" size={24} color={Colors.text.primary} />
+          <SolarAltArrowLeftBold size={24} color={Colors.text.primary} />
         </TouchableOpacity>
         
         <ThemedText type="h2" style={styles.headerTitle}>
@@ -135,7 +147,7 @@ export default function NotificationsScreen() {
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <SolarIcon name="bell-linear" size={80} color="#D1D1D6" />
+              <SolarBellBingBoldDuotone size={80} color="#D1D1D6" />
               <Text style={styles.emptyText}>{isRTL ? 'لا توجد تنبيهات حالياً' : 'No notifications yet'}</Text>
             </View>
           }

@@ -14,9 +14,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, Stack } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { Colors, normalize, Spacing } from '@/constants/theme';
-import { SolarIcon } from '@/components/ui/solar-icon';
+import { 
+  SolarMenuDotsBold, 
+  SolarPenBold, 
+  SolarMapPointBold 
+} from "@/components/icons/solar-icons";
 import { PrimaryButton } from '@/components/user/primary-button';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -34,7 +37,7 @@ export default function ProfileEditScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.headerIconBtn}>
-          <MaterialCommunityIcons name="dots-vertical" size={24} color="#6B7280" />
+          <SolarMenuDotsBold size={24} color="#6B7280" />
         </TouchableOpacity>
         
         <ThemedText style={styles.headerTitle}>الملف الشخصي</ThemedText>
@@ -60,7 +63,7 @@ export default function ProfileEditScreen() {
               style={styles.avatarImg} 
             />
             <TouchableOpacity style={styles.editIconBadge}>
-              <MaterialCommunityIcons name="pencil" size={20} color="white" />
+              <SolarPenBold size={20} color="white" />
             </TouchableOpacity>
           </View>
         </View>
@@ -119,7 +122,7 @@ export default function ProfileEditScreen() {
                 style={styles.mapImage} 
               />
               <View style={styles.mapPinOverlay}>
-                 <MaterialCommunityIcons name="map-marker" size={32} color="#035DF9" />
+                 <SolarMapPointBold size={32} color="#035DF9" />
               </View>
               <View style={styles.mapFooter}>
                  <TouchableOpacity>

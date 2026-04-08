@@ -1,12 +1,12 @@
+import { SolarAltArrowDownLinear, SolarStarBold } from "@/components/icons/solar-icons";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
 import { ThemedText } from "@/components/themed-text";
 import { CircleBackButton } from "@/components/ui/circle-back-button";
-import { SolarIcon } from "@/components/ui/solar-icon";
 import { Stack, useLocalSearchParams } from "expo-router";
 import React from "react";
 import { Dimensions, Image, ScrollView, StyleSheet, View } from "react-native";
-import { SolarStarBold } from "@/components/icons/solar-icons";
-
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const SAMPLE_IMAGES = [
   "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=400",
@@ -68,8 +68,7 @@ export default function ReviewsScreen() {
               <ThemedText style={styles.splitLabel}>اخر التقييمات</ThemedText>
             </View>
             <View style={styles.splitIconPart}>
-              <SolarIcon
-                name="alt-arrow-down-outline"
+              <SolarAltArrowDownLinear
                 size={18}
                 color="#035DF9"
               />

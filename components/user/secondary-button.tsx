@@ -1,5 +1,4 @@
 import { ThemedText } from "@/components/themed-text";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import {
   ActivityIndicator,
@@ -16,7 +15,7 @@ interface SecondaryButtonProps {
   label: string;
   onPress: () => void;
   isActive?: boolean;
-  icon?: keyof typeof MaterialCommunityIcons.glyphMap;
+  icon?: React.ReactNode;
   iconLabel?: string;
   iconPosition?: 'left' | 'right';
   activeColor?: string;
@@ -98,11 +97,7 @@ export function SecondaryButton({
                 {iconLabel}
               </ThemedText>
             ) : icon ? (
-              <MaterialCommunityIcons
-                name={icon as any}
-                size={22}
-                color={finalContentColor}
-              />
+              icon
             ) : null}
           </View>
         )}

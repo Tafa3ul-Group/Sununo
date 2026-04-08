@@ -1,7 +1,18 @@
+import {
+  SolarAltArrowLeftBold,
+  SolarBellBold,
+  SolarDangerCircleBold,
+  SolarGalleryBold,
+  SolarMagnifierBold,
+  SolarMapPointBold,
+  SolarStarBold,
+  SolarTrashBinBold,
+  SolarUserBold,
+  SolarAltArrowRightBold
+} from '@/components/icons/solar-icons';
 import { Colors, normalize, Spacing } from '@/constants/theme';
 import { RootState } from '@/store';
 import { UserType } from '@/store/authSlice';
-import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -17,7 +28,6 @@ import {
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import { ThemedText } from './themed-text';
-
 
 interface HeaderSectionProps {
   userType?: UserType;
@@ -72,10 +82,10 @@ export function HeaderSection({
   };
 
   const CATEGORIES = [
-    { id: 'all', label: t('home.categories.all'), icon: 'th-large' },
-    { id: 'popular', label: t('home.categories.popular'), icon: 'fire' },
-    { id: 'nearby', label: t('home.categories.nearby'), icon: 'map-marker-alt' },
-    { id: 'luxury', label: t('home.categories.luxury'), icon: 'crown' },
+    { id: 'all', label: t('home.categories.all'), icon: <SolarGalleryBold size={normalize.width(18)} /> },
+    { id: 'popular', label: t('home.categories.popular'), icon: <SolarDangerCircleBold size={normalize.width(18)} /> },
+    { id: 'nearby', label: t('home.categories.nearby'), icon: <SolarMapPointBold size={normalize.width(18)} /> },
+    { id: 'luxury', label: t('home.categories.luxury'), icon: <SolarStarBold size={normalize.width(18)} /> },
   ];
 
   const flexDirection = isRTL ? 'row-reverse' : 'row';
@@ -92,7 +102,11 @@ export function HeaderSection({
               onPress={onBackPress || (() => router.back())}
               style={styles.backButton}
             >
-              <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={normalize.width(24)} color={Colors.text.primary} />
+              {isRTL ? (
+                <SolarAltArrowRightBold size={normalize.width(22)} color={Colors.text.primary} />
+              ) : (
+                <SolarAltArrowLeftBold size={normalize.width(22)} color={Colors.text.primary} />
+              )}
             </TouchableOpacity>
           )}
 
@@ -130,7 +144,7 @@ export function HeaderSection({
                 }
               })}
             >
-              <Ionicons name="person-outline" size={normalize.width(22)} color={Colors.text.primary} />
+              <SolarUserBold size={normalize.width(22)} color={Colors.text.primary} />
             </TouchableOpacity>
           )}
 
@@ -144,10 +158,10 @@ export function HeaderSection({
             >
               {extraIcon ? (
                 typeof extraIcon === 'string' ? (
-                  <Ionicons name={extraIcon as any} size={normalize.width(22)} color={Colors.text.primary} />
+                   <SolarBellBold size={normalize.width(22)} color={Colors.text.primary} />
                 ) : (extraIcon)
               ) : (
-                <Ionicons name="notifications-outline" size={normalize.width(22)} color={Colors.text.primary} />
+                <SolarBellBold size={normalize.width(22)} color={Colors.text.primary} />
               )}
             </TouchableOpacity>
           )}
@@ -160,7 +174,7 @@ export function HeaderSection({
                 onDeletePress();
               }}
             >
-              <Ionicons name="trash-outline" size={normalize.width(22)} color="#EF4444" />
+              <SolarTrashBinBold size={normalize.width(22)} color="#EF4444" />
             </TouchableOpacity>
           )}
         </View>
@@ -170,7 +184,7 @@ export function HeaderSection({
       {showSearch && (
         <View style={styles.searchContainer}>
           <View style={[styles.searchBar, { flexDirection }]}>
-            <Ionicons name="search" size={normalize.width(20)} color={Colors.text.muted} />
+            <SolarMagnifierBold size={normalize.width(20)} color={Colors.text.muted} />
             <TextInput
               placeholder={t('home.searchPlaceholder')}
               placeholderTextColor={Colors.text.muted}
@@ -198,11 +212,9 @@ export function HeaderSection({
                 selectedCategory === cat.id && styles.categoryItemActive
               ]}
             >
-              <FontAwesome5
-                name={cat.icon}
-                size={normalize.width(16)}
-                color={selectedCategory === cat.id ? Colors.background : Colors.text.primary}
-              />
+              {React.cloneElement(cat.icon as React.ReactElement, {
+                color: selectedCategory === cat.id ? Colors.background : Colors.text.primary
+              })}
               <ThemedText
                 style={[
                   styles.categoryLabel,

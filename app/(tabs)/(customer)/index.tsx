@@ -27,6 +27,12 @@ import { SearchFilterSheet } from "@/components/user/search-filter-sheet";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize } from "@/constants/theme";
 import { RootState } from "@/store";
+import { 
+  SolarWidgetBold, 
+  SolarWaterBold, 
+  SolarFireBold, 
+  SolarTreeBold 
+} from "@/components/icons/solar-icons";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -62,10 +68,10 @@ const POPULAR_CHALETS = [
 ];
 
 const FILTER_OPTIONS = [
-  { id: "all", label: "الكل", icon: "view-grid", activeColor: Colors.primary },
-  { id: "pool", label: "يحتوي مسبح", icon: "pool", activeColor: Colors.secondary },
-  { id: "bbq", label: "شواء", icon: "grill", activeColor: Colors.accent },
-  { id: "garden", label: "حديقة", icon: "tree", activeColor: Colors.secondary },
+  { id: "all", label: "الكل", icon: (isActive: boolean) => <SolarWidgetBold size={18} color={isActive ? "white" : Colors.primary} />, activeColor: Colors.primary },
+  { id: "pool", label: "يحتوي مسبح", icon: (isActive: boolean) => <SolarWaterBold size={18} color={isActive ? "white" : Colors.secondary} />, activeColor: Colors.secondary },
+  { id: "bbq", label: "شواء", icon: (isActive: boolean) => <SolarFireBold size={18} color={isActive ? "white" : Colors.accent} />, activeColor: Colors.accent },
+  { id: "garden", label: "حديقة", icon: (isActive: boolean) => <SolarTreeBold size={18} color={isActive ? "white" : Colors.secondary} />, activeColor: Colors.secondary },
 ];
 
 export default function HomeScreen() {
@@ -129,7 +135,7 @@ export default function HomeScreen() {
                   label={filter.label} 
                   isActive={activeFilter === filter.id} 
                   activeColor={filter.activeColor} 
-                  icon={filter.icon as any} 
+                  icon={filter.icon(activeFilter === filter.id)} 
                   onPress={() => setActiveFilter(filter.id)} 
                 />
              ))}

@@ -1,9 +1,8 @@
-import { ThemedText } from "@/components/themed-text";
-import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
 import Svg, { Path } from "react-native-svg";
-import { SolarIcon } from "@/components/ui/solar-icon";
+import { SolarAddBold, SolarMinusBold } from "@/components/icons/solar-icons";
+import { ThemedText } from "@/components/themed-text";
 
 interface GuestCounterProps {
   value: number;
@@ -38,9 +37,7 @@ export const GuestCounter: React.FC<GuestCounterProps> = ({
           <Path d={leftPath} fill="#F64200" />
         </Svg>
         <View style={styles.iconOverlay}>
-          <View style={styles.iconCircle}>
-            <SolarIcon name="4k-bold" size={18} color="white" />
-          </View>
+            <SolarAddBold size={18} color="white" />
         </View>
       </TouchableOpacity>
 
@@ -59,9 +56,7 @@ export const GuestCounter: React.FC<GuestCounterProps> = ({
           <Path d={leftPath} fill="#F64200" />
         </Svg>
         <View style={styles.iconOverlay}>
-          <View style={styles.iconCircle}>
-            <SolarIcon name="4k-bold" size={18} color="white" />
-          </View>
+            <SolarMinusBold size={18} color="white" />
         </View>
       </TouchableOpacity>
     </View>

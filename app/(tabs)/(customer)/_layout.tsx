@@ -1,7 +1,7 @@
 import { Tabs, Redirect } from "expo-router";
 import React from "react";
 import { CustomTabBar } from "@/components/user/custom-tab-bar";
-import { SolarIcon } from "@/components/ui/solar-icon";
+import { SolarMapPointBold, SolarHeartBold, SolarBellBingBoldDuotone } from "@/components/icons/solar-icons";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
@@ -26,7 +26,7 @@ export default function CustomerLayout() {
         name="index"
         options={{
           tabBarIcon: ({ color, size }) => (
-            <SolarIcon name="map-point-linear" size={size} color={color} />
+            <SolarMapPointBold size={size} color={color} />
           ),
         }}
       />
@@ -34,7 +34,7 @@ export default function CustomerLayout() {
         name="favorites"
         options={{
           tabBarIcon: ({ color, size }) => (
-            <SolarIcon name="heart-linear" size={size} color={color} />
+            <SolarHeartBold size={size} color={color} />
           ),
         }}
       />
@@ -42,7 +42,7 @@ export default function CustomerLayout() {
         name="bookings"
         options={{
           tabBarIcon: ({ color, size }) => (
-            <SolarIcon name="bell-linear" size={size} color={color} />
+            <SolarBellBingBoldDuotone size={size} color={color} />
           ),
         }}
       />

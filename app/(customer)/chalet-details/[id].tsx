@@ -10,14 +10,25 @@ import {
   View,
 } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
-import { SolarIcon } from '@/components/ui/solar-icon';
+import { 
+  SolarStarBold, 
+  SolarMapBoldDuotone, 
+  SolarWaterBold, 
+  SolarWifiBold, 
+  SolarWindBold, 
+  SolarHome2Bold,
+  SolarKeyBold,
+  SolarForbiddenBold,
+  SolarShieldCheckBold,
+  SolarClockCircleBold,
+  SolarMapPointBold
+} from '@/components/icons/solar-icons';
 import Svg, { Path } from 'react-native-svg';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { CircleBackButton } from '@/components/ui/circle-back-button';
 import { HorizontalCard } from '@/components/user/horizontal-card';
 import { HorizontalSwiper } from '@/components/user/horizontal-swiper';
 import { SecondaryButton } from '@/components/user/secondary-button';
-import { SolarStarBold, SolarMapBoldDuotone } from '@/components/icons/solar-icons';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -74,22 +85,22 @@ export default function ChaletDetailScreen() {
              </TouchableOpacity>
              <ThemedText style={styles.sectionTitle}>المرافق</ThemedText>
           </View>
-          <View style={styles.facilitiesGrid}>
-             {[
-               { label: 'مسبح', icon: 'water-bold', color: '#035DF9' }, { label: 'واي فاي', icon: 'wi-fi-bold', color: '#EF79D7' }, 
-               { label: 'تكييف هواء', icon: 'wind-bold', color: '#F64200' }, { label: 'مطبخ', icon: 'home-2-bold', color: '#15AB64' },
-               { label: 'تكييف هواء', icon: 'wind-bold', color: '#F64200' }, { label: 'مطبخ', icon: 'home-2-bold', color: '#15AB64' },
-               { label: 'مسبح', icon: 'water-bold', color: '#035DF9' }, { label: 'واي فاي', icon: 'wi-fi-bold', color: '#EF79D7' },
-             ].map((f, i) => (
-               <View key={i} style={styles.facilityCell}>
-                  <View style={styles.shapeCont}>
-                    <Svg height={55} width={55} viewBox="0 0 60 60"><Path d={SHAPES.blue} fill={f.color}/></Svg>
-                    <View style={styles.iconInShape}><SolarIcon name={f.icon as any} size={22} color="white" /></View>
-                  </View>
-                  <ThemedText style={styles.facilityLabelText}>{f.label}</ThemedText>
-               </View>
-             ))}
-          </View>
+           <View style={styles.facilitiesGrid}>
+              {[
+                { label: 'مسبح', Icon: SolarWaterBold, color: '#035DF9' }, { label: 'واي فاي', Icon: SolarWifiBold, color: '#EF79D7' }, 
+                { label: 'تكييف هواء', Icon: SolarWindBold, color: '#F64200' }, { label: 'مطبخ', Icon: SolarHome2Bold, color: '#15AB64' },
+                { label: 'تكييف هواء', Icon: SolarWindBold, color: '#F64200' }, { label: 'مطبخ', Icon: SolarHome2Bold, color: '#15AB64' },
+                { label: 'مسبح', Icon: SolarWaterBold, color: '#035DF9' }, { label: 'واي فاي', Icon: SolarWifiBold, color: '#EF79D7' },
+              ].map((f, i) => (
+                <View key={i} style={styles.facilityCell}>
+                   <View style={styles.shapeCont}>
+                     <Svg height={55} width={55} viewBox="0 0 60 60"><Path d={SHAPES.blue} fill={f.color}/></Svg>
+                     <View style={styles.iconInShape}><f.Icon size={22} color="white" /></View>
+                   </View>
+                   <ThemedText style={styles.facilityLabelText}>{f.label}</ThemedText>
+                </View>
+              ))}
+           </View>
 
           {/* نظرة عامة */}
           <ThemedText style={styles.sectionTitle}>نظرة عامة</ThemedText>
@@ -105,7 +116,7 @@ export default function ChaletDetailScreen() {
           <View style={styles.mapCardFlat}>
              <View style={styles.mapInner}>
                 <Image source={{ uri: 'https://miro.medium.com/v2/resize:fit:1400/1*qV3uDpS9mZc6jS1j75n6oA.png' }} style={styles.mapImg} />
-                <View style={styles.pinCenter}><SolarMapBoldDuotone size={32} color="#035DF9" /></View>
+                <View style={styles.pinCenter}><SolarMapPointBold size={32} color="#035DF9" /></View>
              </View>
              <View style={styles.mapLocLabel}><ThemedText style={styles.mapLocText}>البصرة - ابة الخصيب</ThemedText></View>
           </View>
@@ -160,14 +171,19 @@ export default function ChaletDetailScreen() {
 
           {/* معلومات تهمك */}
           <ThemedText style={styles.sectionTitle}>معلومات تهمك</ThemedText>
-          <View style={styles.infoIconsGrid}>
-             {[ { label: 'شروط الشاليه', icon: 'key-bold' }, { label: 'سياسة الالغاء', icon: 'forbidden-bold' }, { label: 'الامان', icon: 'shield-check-bold' }, { label: 'وقت الدخول والخروج', icon: 'clock-circle-bold' } ].map((item, i) => (
-                <View key={i} style={styles.infoIconCell}>
-                   <View style={styles.infoGearWrap}><Svg width={55} height={55} viewBox="0 0 60 60"><Path d={SHAPES.blue} fill="#BDBDBD"/></Svg><View style={styles.infoGearIcon}><SolarIcon name={item.icon as any} size={24} color="white"/></View></View>
-                   <ThemedText style={styles.infoLabelText}>{item.label}</ThemedText>
-                </View>
-             ))}
-          </View>
+           <View style={styles.infoIconsGrid}>
+              {[ 
+                { label: 'شروط الشاليه', Icon: SolarKeyBold }, 
+                { label: 'سياسة الالغاء', Icon: SolarForbiddenBold }, 
+                { label: 'الامان', Icon: SolarShieldCheckBold }, 
+                { label: 'وقت الدخول والخروج', Icon: SolarClockCircleBold } 
+              ].map((item, i) => (
+                 <View key={i} style={styles.infoIconCell}>
+                    <View style={styles.infoGearWrap}><Svg width={55} height={55} viewBox="0 0 60 60"><Path d={SHAPES.blue} fill="#BDBDBD"/></Svg><View style={styles.infoGearIcon}><item.Icon size={24} color="white"/></View></View>
+                    <ThemedText style={styles.infoLabelText}>{item.label}</ThemedText>
+                 </View>
+              ))}
+           </View>
 
           {/* قد يعجبك ايضا */}
           <ThemedText style={styles.sectionTitle}>قد يعجبك ايضا</ThemedText>
@@ -194,7 +210,7 @@ export default function ChaletDetailScreen() {
           <View style={styles.footerTextSide}>
              <ThemedText style={styles.footerPriceBig}>30,000 IQD</ThemedText>
              <View style={styles.footerMetaRow}>
-                <SolarIcon name="clock-circle-bold" size={12} color="#9CA3AF" />
+                <SolarClockCircleBold size={12} color="#9CA3AF" />
                 <ThemedText style={styles.footerMetaSmall}>شفت صباحي</ThemedText>
              </View>
           </View>

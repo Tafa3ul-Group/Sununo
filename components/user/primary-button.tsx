@@ -1,5 +1,3 @@
-import { ThemedText } from "@/components/themed-text";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import {
   ActivityIndicator,
@@ -10,11 +8,12 @@ import {
   ViewStyle,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
+import { ThemedText } from "@/components/themed-text";
 
 interface PrimaryButtonProps {
   label: string;
   onPress: () => void;
-  icon?: keyof typeof MaterialCommunityIcons.glyphMap;
+  icon?: React.ReactNode;
   variant?: "primary" | "white";
   isActive?: boolean;
   loading?: boolean;
@@ -111,14 +110,7 @@ export function PrimaryButton({
         ]}
       >
         <View style={styles.textWithIcon}>
-          {icon && (
-            <MaterialCommunityIcons
-              name={icon}
-              size={20}
-              color={textColor}
-              style={{ marginLeft: 8 }}
-            />
-          )}
+          {icon}
           <ThemedText
             style={[styles.primaryText, { color: textColor }, textStyle]}
           >

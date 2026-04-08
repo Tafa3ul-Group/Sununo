@@ -1,9 +1,6 @@
-import { ThemedText } from "@/components/themed-text";
 import { Colors, normalize, Shadows, Spacing } from "@/constants/theme";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import React from "react";
-import { SolarIcon } from "@/components/ui/solar-icon";
 import {
   StyleSheet,
   Text,
@@ -11,6 +8,7 @@ import {
   View,
   ViewStyle,
 } from "react-native";
+import { SolarMapPointBold, SolarPenBold, SolarBanknoteBold } from "@/components/icons/solar-icons";
 
 interface ProviderChaletCardProps {
   title: string;
@@ -60,7 +58,7 @@ export function ProviderChaletCard({
           {title}
         </Text>
         <View style={[styles.locationRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-          <SolarIcon name="4k-bold" size={14} color={Colors.primary} />
+          <SolarMapPointBold size={14} color={Colors.primary} />
           <Text style={styles.location} numberOfLines={1}>
             {location}
           </Text>
@@ -74,7 +72,7 @@ export function ProviderChaletCard({
               onEdit?.();
             }}
           >
-            <SolarIcon name="4k-bold" size={18} color={Colors.primary} />
+            <SolarPenBold size={18} color={Colors.primary} />
             <Text style={styles.editBtnText}>{isRTL ? 'تعديل' : 'Edit'}</Text>
           </TouchableOpacity>
 
@@ -85,7 +83,7 @@ export function ProviderChaletCard({
               onRevenue?.();
             }}
           >
-            <SolarIcon name="4k-bold" size={18} color="#FFFFFF" />
+            <SolarBanknoteBold size={18} color="#FFFFFF" />
             <Text style={styles.revenueBtnText}>{isRTL ? 'الأرباح' : 'Income'}</Text>
           </TouchableOpacity>
         </View>

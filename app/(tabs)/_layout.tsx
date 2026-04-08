@@ -3,7 +3,6 @@ import React from "react";
 import { StyleSheet } from "react-native";
 import { CustomTabBar } from "@/components/user/custom-tab-bar";
 import { RootState } from "@/store";
-import { SolarIcon } from "@/components/ui/solar-icon";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { 

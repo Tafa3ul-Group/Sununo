@@ -1,4 +1,32 @@
 import { HeaderSection } from '@/components/header-section';
+import {
+  SolarAddCircleBold,
+  SolarAltArrowLeftBold,
+  SolarAltArrowRightBold,
+  SolarBanknoteBold,
+  SolarCalendarBold,
+  SolarCheckCircleBold,
+  SolarClockCircleBold,
+  SolarMagnifierBold,
+  SolarMapPointBold,
+  SolarMoonBold,
+  SolarPenBold,
+  SolarSunBold,
+  SolarTrashBinBold,
+  SolarUserBold,
+  SolarUsersGroupBold,
+  SolarCloseCircleBold,
+  SolarShieldBold,
+  SolarHomeBold,
+  SolarAltArrowDownBold,
+  SolarAltArrowUpBold,
+  SolarRefreshBold,
+  SolarInfoCircleBold,
+  SolarHourglassBold,
+  SolarAltArrowRightLowBold,
+  SolarLightbulbBold,
+  SolarCloseBold
+} from '@/components/icons/solar-icons';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { Colors, normalize, Shadows, Spacing } from '@/constants/theme';
 import { RootState } from '@/store';
@@ -17,7 +45,6 @@ import {
   useUpdateShiftMutation,
   useUpdateShiftPricingDayMutation
 } from '@/store/api/apiSlice';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -116,7 +143,7 @@ function DayVisualizer({
   currentShiftForm?: any;
   selectedId?: string;
 }) {
-  const renderRow = (hourIndices: number[], icon: string, iconColor: string) => {
+  const renderRow = (hourIndices: number[], icon: 'sun' | 'moon', iconColor: string) => {
     const slots: any[] = [];
     let i = 0;
     while (i < hourIndices.length) {
@@ -169,7 +196,11 @@ function DayVisualizer({
     return (
       <View style={[styles.hourGridRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
         <View style={[styles.rowIconOuter, { marginLeft: isRTL ? 12 : 0, marginRight: isRTL ? 0 : 12 }]}>
-          <Ionicons name={icon as any} size={24} color={iconColor} />
+          {icon === 'sun' ? (
+            <SolarSunBold size={24} color={iconColor} />
+          ) : (
+            <SolarMoonBold size={24} color={iconColor} />
+          )}
         </View>
         <View style={{ flex: 1, flexDirection: isRTL ? 'row-reverse' : 'row', gap: 4 }}>
           {slots.map((slot, index) => {
@@ -230,9 +261,9 @@ function DayVisualizer({
       <View style={styles.gridContent}>
         {renderRow([0, 1, 2, 3, 4, 5], "moon", "#323232")}
         <View style={{ height: 8 }} />
-        {renderRow([6, 7, 8, 9, 10, 11], "sunny", "#FFCC00")}
+        {renderRow([6, 7, 8, 9, 10, 11], "sun", "#FFCC00")}
         <View style={{ height: 8 }} />
-        {renderRow([12, 13, 14, 15, 16, 17], "sunny", "#FF9500")}
+        {renderRow([12, 13, 14, 15, 16, 17], "sun", "#FF9500")}
         <View style={{ height: 8 }} />
         {renderRow([18, 19, 20, 21, 22, 23], "moon", "#5856D6")}
       </View>
@@ -891,14 +922,14 @@ export default function ShiftsAndPricesScreen() {
             handleEditShift(shift);
           }}
         >
-          <Ionicons name="create" size={22} color={Colors.primary} />
+          <SolarPenBold size={22} color={Colors.primary} />
           <Text style={[styles.swipeActionText, { color: Colors.primary }]}>{isRTL ? 'تعديل' : 'Edit'}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.swipeAction, { backgroundColor: '#FFEEED' }]}
           onPress={() => confirmDeleteShift(shift.id)}
         >
-          <Ionicons name="trash" size={22} color="#FF3B30" />
+          <SolarTrashBinBold size={22} color="#FF3B30" />
           <Text style={[styles.swipeActionText, { color: '#FF3B30' }]}>{isRTL ? 'حذف' : 'Delete'}</Text>
         </TouchableOpacity>
       </View>
@@ -916,7 +947,7 @@ export default function ShiftsAndPricesScreen() {
         <StatusBar style="dark" />
         <HeaderSection title={isRTL ? 'الفترات والأسعار' : 'Shifts & Prices'} showBackButton />
         <View style={styles.centeredContent}>
-          <Ionicons name="home-outline" size={64} color={Colors.primary + '20'} />
+          <SolarHomeBold size={64} color={Colors.primary + '20'} />
           <Text style={styles.emptyTextLarge}>
             {isRTL ? 'لا يوجد لديك شاليهات مضافة حالياً' : 'You don\'t have any chalets added yet'}
           </Text>
@@ -938,10 +969,10 @@ export default function ShiftsAndPricesScreen() {
           showCategories={false}
           extraIcon={ownerChalets.length > 1 ? (
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Ionicons name="chevron-down" size={16} color={Colors.text.muted} style={{ marginRight: 4 }} />
-              <Ionicons name="home-outline" size={20} color={Colors.primary} />
+              <SolarAltArrowDownBold size={16} color={Colors.text.muted} style={{ marginRight: 4 }} />
+              <SolarHomeBold size={20} color={Colors.primary} />
             </View>
-          ) : <Ionicons name="refresh" size={18} color={Colors.primary} />}
+          ) : <SolarRefreshBold size={18} color={Colors.primary} />}
           onExtraIconPress={() => ownerChalets.length > 1 ? handleSwitchChalet() : refetchShifts()}
         />
 
@@ -952,7 +983,7 @@ export default function ShiftsAndPricesScreen() {
             <View style={styles.section}>
               <View style={[styles.sectionHeader, { flexDirection }]}>
                 <View style={[styles.row, { flex: 1 }]}>
-                  <MaterialCommunityIcons name="calendar-clock" size={24} color={Colors.primary} />
+                  <SolarCalendarBold size={24} color={Colors.primary} />
                   <Text style={[styles.sectionTitle, { textAlign, marginLeft: 8 }]}>{isRTL ? 'الفترات والأسعار' : 'Shifts & Pricing'}</Text>
                 </View>
               </View>
@@ -961,7 +992,7 @@ export default function ShiftsAndPricesScreen() {
 
               {isDayFull && (
                 <View style={[styles.fullDayWarning, { marginHorizontal: 0, marginBottom: 16 }]}>
-                  <Ionicons name="lock-closed" size={24} color="#FF3B30" />
+                  <SolarShieldBold size={24} color="#FF3B30" />
                   <View style={{ flex: 1 }}>
                     <Text style={styles.fullDayTitle}>{isRTL ? 'اليوم ممتلئ تماماً' : 'No More Shifts Possible'}</Text>
                     <Text style={styles.fullDayText}>
@@ -999,7 +1030,7 @@ export default function ShiftsAndPricesScreen() {
                             <View style={{ flex: 1, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
                               <Text style={styles.cardTitle}>{shiftName}</Text>
                               <View style={[styles.timeBadge, { flexDirection, marginTop: 6, alignSelf: isRTL ? 'flex-end' : 'flex-start' }]}>
-                                <Ionicons name="time-outline" size={14} color={Colors.primary} style={{ marginHorizontal: 3 }} />
+                                <SolarClockCircleBold size={14} color={Colors.primary} style={{ marginHorizontal: 3 }} />
                                 <Text style={styles.timeBadgeText}>
                                   {formatTime12h(shift.startTime)} - {formatTime12h(shift.endTime)}
                                 </Text>
@@ -1007,11 +1038,11 @@ export default function ShiftsAndPricesScreen() {
                             </View>
 
                             <View style={[styles.row, { gap: 10, alignItems: 'center' }]}>
-                              <Ionicons
-                                name={isExpanded ? "chevron-up" : "chevron-down"}
-                                size={20}
-                                color={Colors.border}
-                              />
+                              {isExpanded ? (
+                                <SolarAltArrowUpBold size={20} color={Colors.border} />
+                              ) : (
+                                <SolarAltArrowDownBold size={20} color={Colors.border} />
+                              )}
                             </View>
                           </View>
                         </TouchableOpacity>
@@ -1028,7 +1059,7 @@ export default function ShiftsAndPricesScreen() {
               ) : (
                 <View style={styles.emptyCard}>
                   <View style={styles.emptyIconContainer}>
-                    <Ionicons name="calendar-outline" size={48} color={Colors.primary + '40'} />
+                     <SolarCalendarBold size={48} color={Colors.primary + '40'} />
                   </View>
                   <Text style={styles.emptyTitle}>{isRTL ? 'لا توجد فترات' : 'No Shifts Yet'}</Text>
                   <Text style={styles.emptyText}>
@@ -1038,7 +1069,7 @@ export default function ShiftsAndPricesScreen() {
                   </Text>
                   {!isDayFull && (
                     <TouchableOpacity style={styles.addInlineBtn} onPress={handleAddShift}>
-                      <Ionicons name="add" size={20} color="#fff" style={{ marginHorizontal: 4 }} />
+                      <SolarAddCircleBold size={20} color="#fff" style={{ marginHorizontal: 4 }} />
                       <Text style={styles.addInlineText}>{isRTL ? 'أضف فترة جديدة' : 'Add New Shift'}</Text>
                     </TouchableOpacity>
                   )}
@@ -1050,7 +1081,7 @@ export default function ShiftsAndPricesScreen() {
                   <SecondaryButton
                     label={isRTL ? 'إضافة فترة (Shift) إضافية' : 'Add another shift'}
                     onPress={handleAddShift}
-                    icon="plus"
+                    icon={<SolarAddCircleBold size={20} color={isRTL ? "#fff" : Colors.primary} />}
                     isActive={false}
                     style={{ width: '100%' }}
                   />
@@ -1062,7 +1093,7 @@ export default function ShiftsAndPricesScreen() {
             <View style={[styles.section, { marginTop: Spacing.xl }]}>
               <View style={[styles.sectionHeader, { flexDirection }]}>
                 <View style={[styles.row, { flex: 1 }]}>
-                  <Ionicons name="receipt-outline" size={22} color={Colors.primary} />
+                  <SolarBanknoteBold size={22} color={Colors.primary} />
                   <Text style={[styles.sectionTitle, { textAlign, marginLeft: 8 }]}>{isRTL ? 'سياسة الاسترجاع' : 'Refund Policy'}</Text>
                 </View>
               </View>
@@ -1077,7 +1108,7 @@ export default function ShiftsAndPricesScreen() {
                     {policies.map((p: any, i: number) => (
                       <View key={p.id || i} style={[styles.row, { marginBottom: 12, alignItems: 'center' }]}>
                         <View style={[styles.iconCircleSmall, { backgroundColor: Colors.primary + '10' }]}>
-                          <Ionicons name="time-outline" size={14} color={Colors.primary} />
+                          <SolarClockCircleBold size={14} color={Colors.primary} />
                         </View>
                         <View style={{ flex: 1, marginHorizontal: 12 }}>
                           <Text style={styles.detailTextLarge}>
@@ -1091,7 +1122,7 @@ export default function ShiftsAndPricesScreen() {
                               : `Penalty amount: ${p.penaltyPercentage}%`}
                           </Text>
                         </View>
-                        <Ionicons name="chevron-forward" size={16} color={Colors.border} />
+                        <SolarAltArrowRightBold size={16} color={Colors.border} />
                       </View>
                     ))}
 
@@ -1105,7 +1136,7 @@ export default function ShiftsAndPricesScreen() {
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity style={styles.emptyCard} onPress={handleEditPolicies}>
-                  <Ionicons name="receipt-outline" size={36} color={Colors.primary + '40'} />
+                  <SolarBanknoteBold size={36} color={Colors.primary + '40'} />
                   <Text style={styles.emptyTitle}>{isRTL ? 'لا توجد سياسة مضافة' : 'No Policy Added'}</Text>
                   <Text style={styles.emptyText}>
                     {isRTL
@@ -1141,7 +1172,7 @@ export default function ShiftsAndPricesScreen() {
             <View style={styles.formContainer}>
               {(!shiftForm.name || (!selectedShift && !shiftForm.price)) && (
                 <View style={[styles.fullDayWarning, { backgroundColor: '#FFF9F9', borderColor: '#FFE0E0', padding: 12, marginBottom: 16 }]}>
-                  <Ionicons name="information-circle-outline" size={20} color="#FF3B30" />
+                  <SolarInfoCircleBold size={20} color="#FF3B30" />
                   <Text style={{ fontSize: 13, color: '#FF3B30', fontWeight: '700', marginLeft: 8 }}>
                     {isRTL ? 'يرجى ملء الاسم والسعر' : 'Please fill the Name & Price'}
                   </Text>
@@ -1149,7 +1180,7 @@ export default function ShiftsAndPricesScreen() {
               )}
               {isDayFull && !selectedShift && (
                 <View style={styles.fullDayWarning}>
-                  <Ionicons name="lock-closed" size={24} color="#FF3B30" />
+                  <SolarShieldBold size={24} color="#FF3B30" />
                   <View style={{ flex: 1 }}>
                     <Text style={styles.fullDayTitle}>{isRTL ? 'اليوم ممتلئ تماماً' : 'Day is Fully Booked'}</Text>
                     <Text style={styles.fullDayText}>
@@ -1199,7 +1230,7 @@ export default function ShiftsAndPricesScreen() {
                 <View style={[styles.row, { justifyContent: 'space-between', marginBottom: 12 }]}>
                   <Text style={styles.cardTitleSmall}>{isRTL ? 'تحديد الوقت' : 'Time Selection'}</Text>
                   <View style={styles.durationBadge}>
-                    <Ionicons name="hourglass-outline" size={14} color={Colors.primary} />
+                    <SolarHourglassBold size={14} color={Colors.primary} />
                     <Text style={styles.durationText}>
                       {isRTL ? `المدة: ${parseFloat(Number(duration).toFixed(2))} ساعة` : `Duration: ${parseFloat(Number(duration).toFixed(2))}h`}
                     </Text>
@@ -1215,17 +1246,17 @@ export default function ShiftsAndPricesScreen() {
                     }}
                   >
                     <View style={[styles.row, { marginBottom: 6, justifyContent: isRTL ? 'flex-end' : 'flex-start' }]}>
-                      <Ionicons name="sunny" size={16} color={Colors.primary} style={{ marginHorizontal: 4 }} />
+                      <SolarSunBold size={16} color={Colors.primary} style={{ marginHorizontal: 4 }} />
                       <Text style={styles.timeLabelText}>{isRTL ? 'وقت البدء' : 'Start Time'}</Text>
                     </View>
                     <View style={styles.customTimeDisplay}>
                       <Text style={styles.customTimeText}>{formatTime12h(shiftForm.startTime)}</Text>
-                      <Ionicons name={activePicker === 'start' ? "chevron-up" : "chevron-down"} size={14} color={Colors.primary} />
+                      <SolarAltArrowDownBold size={14} color={Colors.primary} />
                     </View>
                   </TouchableOpacity>
 
                   <View style={styles.timeSeparator}>
-                    <Ionicons name="arrow-forward" size={14} color={Colors.text.muted} style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }} />
+                    <SolarAltArrowRightLowBold size={14} color={Colors.text.muted} style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }} />
                   </View>
 
                   {/* End Time */}
@@ -1237,12 +1268,12 @@ export default function ShiftsAndPricesScreen() {
                     }}
                   >
                     <View style={[styles.row, { marginBottom: 6, justifyContent: isRTL ? 'flex-end' : 'flex-start' }]}>
-                      <Ionicons name="moon" size={16} color="#5856D6" style={{ marginHorizontal: 4 }} />
+                      <SolarMoonBold size={16} color="#5856D6" style={{ marginHorizontal: 4 }} />
                       <Text style={styles.timeLabelText}>{isRTL ? 'وقت الانتهاء' : 'End Time'}</Text>
                     </View>
                     <View style={styles.customTimeDisplay}>
                       <Text style={[styles.customTimeText, { color: '#5856D6' }]}>{formatTime12h(shiftForm.endTime)}</Text>
-                      <Ionicons name={activePicker === 'end' ? "chevron-up" : "chevron-down"} size={14} color="#5856D6" />
+                      <SolarAltArrowDownBold size={14} color="#5856D6" />
                     </View>
                   </TouchableOpacity>
                 </View>
@@ -1366,14 +1397,14 @@ export default function ShiftsAndPricesScreen() {
                   )}
                 </View>
                 <TouchableOpacity onPress={() => pricingSheetRef.current?.dismiss()} style={styles.closeBtnCircle}>
-                  <Ionicons name="close" size={20} color={Colors.text.muted} />
+                  <SolarCloseBold size={20} color={Colors.text.muted} />
                 </TouchableOpacity>
               </View>
 
               <View style={styles.quickActionCardNew}>
                 <View style={[styles.row, { alignItems: 'center', marginBottom: 12 }]}>
                   <View style={styles.quickIconCircle}>
-                    <Ionicons name="flash-outline" size={16} color={Colors.primary} />
+                    <SolarLightbulbBold size={16} color={Colors.primary} />
                   </View>
                   <Text style={styles.quickLabelNew}>{isRTL ? 'تطبيق سعر موحد للكل' : 'Apply to all days'}</Text>
                 </View>
@@ -1429,7 +1460,7 @@ export default function ShiftsAndPricesScreen() {
                             style={[styles.stepBtnModern, { width: 32, height: 32, borderRadius: 8 }]}
                             onPress={() => adjustPrice(index, -25000)}
                           >
-                            <Ionicons name="remove" size={16} color={Colors.text.primary} />
+                            <SolarCloseCircleBold size={16} color={Colors.text.primary} />
                           </TouchableOpacity>
 
                           <View style={styles.priceInputWrapperModern}>
@@ -1451,7 +1482,7 @@ export default function ShiftsAndPricesScreen() {
                             style={[styles.stepBtnModern, { width: 32, height: 32, borderRadius: 8 }]}
                             onPress={() => adjustPrice(index, 25000)}
                           >
-                            <Ionicons name="add" size={16} color={Colors.text.primary} />
+                            <SolarAddCircleBold size={16} color={Colors.text.primary} />
                           </TouchableOpacity>
                         </View>
                       )}
@@ -1490,7 +1521,7 @@ export default function ShiftsAndPricesScreen() {
                   <ActivityIndicator color="#fff" />
                 ) : (
                   <View style={[styles.row, { alignItems: 'center' }]}>
-                    <Ionicons name="checkmark-circle" size={22} color="#fff" style={{ marginRight: 8, marginLeft: 8 }} />
+                    <SolarCheckCircleBold size={22} color="#fff" style={{ marginRight: 8, marginLeft: 8 }} />
                     <Text style={styles.applyBtnTextLarge}>{isRTL ? 'حفظ التعديلات' : 'Save Changes'}</Text>
                   </View>
                 )}
@@ -1533,14 +1564,14 @@ export default function ShiftsAndPricesScreen() {
                         {mainImage ? (
                           <Image source={{ uri: mainImage }} style={styles.chaletSelectImage} />
                         ) : (
-                          <MaterialCommunityIcons name="home-city" size={24} color={Colors.primary} />
+                          <SolarHomeBold size={24} color={Colors.primary} />
                         )}
                       </View>
                       <View style={{ flex: 1, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
                         <Text style={[styles.chaletSelectName, active && { color: Colors.primary }]}>{name}</Text>
                         <Text style={styles.chaletSelectLoc}>{isRTL ? item.region?.name : item.region?.enName}</Text>
                       </View>
-                      {active && <Ionicons name="checkmark-circle" size={20} color={Colors.primary} />}
+                      {active && <SolarCheckCircleBold size={20} color={Colors.primary} />}
                     </TouchableOpacity>
                   );
                 })}
@@ -1577,7 +1608,7 @@ export default function ShiftsAndPricesScreen() {
                   <Text style={{ fontWeight: '700', color: Colors.primary }}>{isRTL ? `قاعدة رقم ${index + 1}` : `Rule #${index + 1}`}</Text>
                   {policyForm.length > 1 && (
                     <TouchableOpacity onPress={() => removePolicyTier(index)} style={styles.policyDeleteBtn}>
-                      <Ionicons name="trash-outline" size={18} color="#FF3B30" />
+                      <SolarTrashBinBold size={18} color="#FF3B30" />
                     </TouchableOpacity>
                   )}
                 </View>
@@ -1613,7 +1644,7 @@ export default function ShiftsAndPricesScreen() {
             ))}
 
             <TouchableOpacity style={styles.addTierBtn} onPress={addPolicyTier}>
-              <Ionicons name="add-circle-outline" size={20} color={Colors.primary} />
+              <SolarAddCircleBold size={20} color={Colors.primary} />
               <Text style={styles.addTierText}>{isRTL ? 'إضافة قاعدة جديدة' : 'Add New Rule'}</Text>
             </TouchableOpacity>
           </BottomSheetScrollView>
@@ -1626,7 +1657,7 @@ export default function ShiftsAndPricesScreen() {
             >
               {isSavingPolicies ? <ActivityIndicator color="#fff" /> : (
                 <>
-                  <Ionicons name="checkmark-circle" size={20} color="#fff" />
+                  <SolarCheckCircleBold size={20} color="#fff" />
                   <Text style={styles.saveBtnTextLarge}>{isRTL ? 'حفظ سياسة الاسترجاع' : 'Save Refund Policy'}</Text>
                 </>
               )}

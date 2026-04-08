@@ -8,7 +8,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { ThemedText } from "@/components/themed-text";
 import { Colors, normalize, Spacing } from "@/constants/theme";
-import { SolarIcon } from "../ui/solar-icon";
+import { SolarCheckCircleBold } from "@/components/icons/solar-icons";
 
 interface LanguageSheetProps {
   onSelect?: (lang: string) => void;
@@ -76,7 +76,7 @@ export const LanguageSheet = React.forwardRef<BottomSheetModal, LanguageSheetPro
               >
                 {currentLang === lang.id ? (
                   <View style={styles.checkCircleActive}>
-                    <SolarIcon name="check-read-bold" size={12} color="white" />
+                    <SolarCheckCircleBold size={12} color="white" />
                   </View>
                 ) : (
                   <View style={styles.checkCircle} />

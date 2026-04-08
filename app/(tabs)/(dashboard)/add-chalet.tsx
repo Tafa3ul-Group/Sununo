@@ -1,4 +1,3 @@
-import { SolarIcon } from "@/components/ui/solar-icon";
 import { ChaletProgressTabs } from '@/components/chalet-progress-tabs';
 import { HeaderSection } from '@/components/header-section';
 import { ThemedText } from '@/components/themed-text';
@@ -22,6 +21,12 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { 
+  SolarMapPointBold, 
+  SolarCloseCircleBold, 
+  SolarGalleryBold, 
+  SolarCameraBold 
+} from "@/components/icons/solar-icons";
 import {
   ActivityIndicator,
   Alert,
@@ -342,7 +347,7 @@ export default function AddChaletScreen() {
                     />
                     <View style={styles.mapOverlay}>
                       <View style={styles.editLocBadge}>
-                        <SolarIcon name="4k-bold" size={16} color={Colors.white} />
+                        <SolarMapPointBold size={16} color={Colors.white} />
                         <Text style={styles.editLocText}>{isRTL ? 'تعديل الموقع على الخارطة' : 'Edit on Map'}</Text>
                       </View>
                     </View>
@@ -444,12 +449,12 @@ export default function AddChaletScreen() {
                         style={styles.removeImageButton}
                         onPress={() => removeImage(index)}
                       >
-                        <SolarIcon name="4k-bold" size={24} color={Colors.error} />
+                        <SolarCloseCircleBold size={24} color={Colors.error} />
                       </TouchableOpacity>
                     </View>
                   ))}
                   <TouchableOpacity style={styles.imageUpload} onPress={() => imageSourceSheetRef.current?.present()}>
-                    <SolarIcon name="4k-bold" size={32} color={Colors.text.muted} />
+                    <SolarGalleryBold size={32} color={Colors.text.muted} />
                     <Text style={styles.uploadText}>{isRTL ? 'إضافة صور' : 'Add Photos'}</Text>
                   </TouchableOpacity>
                 </ScrollView>
@@ -532,13 +537,13 @@ export default function AddChaletScreen() {
           <View style={styles.modalOptions}>
             <TouchableOpacity style={styles.modalOption} onPress={() => { takePhoto(); imageSourceSheetRef.current?.dismiss(); }}>
               <View style={[styles.modalIcon, { backgroundColor: '#E3F2FD' }]}>
-                <SolarIcon name="4k-bold" size={30} color={Colors.primary} />
+                <SolarCameraBold size={30} color={Colors.primary} />
               </View>
               <Text style={styles.modalOptionText}>{isRTL ? 'الكاميرا' : 'Camera'}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.modalOption} onPress={() => { pickImage(); imageSourceSheetRef.current?.dismiss(); }}>
               <View style={[styles.modalIcon, { backgroundColor: '#F3E5F5' }]}>
-                <SolarIcon name="4k-bold" size={30} color="#9C27B0" />
+                <SolarGalleryBold size={30} color="#9C27B0" />
               </View>
               <Text style={styles.modalOptionText}>{isRTL ? 'الأستوديو' : 'Gallery'}</Text>
             </TouchableOpacity>

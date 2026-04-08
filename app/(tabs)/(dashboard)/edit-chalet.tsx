@@ -1,5 +1,16 @@
 import { ChaletProgressTabs } from '@/components/chalet-progress-tabs';
 import { HeaderSection } from '@/components/header-section';
+import {
+  SolarAltArrowLeftBold,
+  SolarCameraBold,
+  SolarGalleryBold,
+  SolarCloseCircleBold,
+  SolarCameraAddBold,
+  SolarMapPointBold,
+  SolarPenBold,
+  SolarStarBold,
+  SolarAltArrowRightBold
+} from '@/components/icons/solar-icons';
 import { ThemedText } from '@/components/themed-text';
 import { AppMap } from '@/components/user/app-map';
 import { LocationPickerModal } from '@/components/user/location-picker-modal';
@@ -19,7 +30,6 @@ import {
   useUpdateChaletMutation,
   useUploadChaletImageMutation
 } from '@/store/api/apiSlice';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -86,8 +96,7 @@ export default function EditChaletScreen() {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<any[]>([]);
 
-  const { data: cities, isLoading: loadingCities } = useGetCitiesQuery();
-  const [triggerGetRegions, { data: regions, isLoading: loadingRegions }] = useLazyGetChaletRegionsQuery();
+  const { data: cities } = useGetCitiesQuery();
   const { data: availableAmenities } = useGetAmenitiesQuery();
   const { data: currentAmenities } = useGetChaletAmenitiesQuery(id as string);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
@@ -130,12 +139,8 @@ export default function EditChaletScreen() {
         longitude: chalet.longitude?.toString() || '',
       });
       setExistingImages(chalet.images || []);
-
-      if (chalet.region?.cityId) {
-        // No action needed for region
-      }
     }
-  }, [chalet, isRTL]);
+  }, [chalet]);
 
   useEffect(() => {
     if (currentAmenities) {
@@ -213,7 +218,6 @@ export default function EditChaletScreen() {
 
       await updateChalet({ id, data: payload }).unwrap();
 
-      // Upload new images
       if (selectedImages.length > 0) {
         for (const uri of selectedImages) {
           const imageFormData = new FormData();
@@ -232,7 +236,6 @@ export default function EditChaletScreen() {
         }
       }
 
-      // Update Amenities
       await setAmenities({ chaletId: id, data: { amenityIds: selectedAmenities } }).unwrap();
 
       Toast.show({
@@ -288,8 +291,6 @@ export default function EditChaletScreen() {
         return !!form.nameAr && !!form.descriptionAr && !!form.cityId;
       case 1:
         return !!form.phone && !!form.depositPercentage && !!form.guests;
-      case 2:
-        return true;
       default:
         return true;
     }
@@ -407,7 +408,7 @@ export default function EditChaletScreen() {
                     />
                     <View style={styles.mapOverlay}>
                       <View style={styles.editLocBadge}>
-                        <Ionicons name="map" size={16} color={Colors.white} />
+                        <SolarMapPointBold size={16} color={Colors.white} />
                         <Text style={styles.editLocText}>{isRTL ? 'تعديل الموقع على الخارطة' : 'Edit on Map'}</Text>
                       </View>
                     </View>
@@ -482,7 +483,7 @@ export default function EditChaletScreen() {
                         <SecondaryButton
                           label={isRTL ? amenity.name?.ar : amenity.name?.en}
                           onPress={() => toggleAmenity(amenity.id)}
-                          icon={amenity.icon ? (amenity.icon as any) : 'star'}
+                          icon={amenity.icon ? <SolarStarBold size={18} /> : <SolarStarBold size={18} />}
                           isActive={isSelected}
                           textStyle={{ fontSize: normalize.font(12) }}
                           style={{ height: 40 }}
@@ -518,12 +519,12 @@ export default function EditChaletScreen() {
                         style={styles.removeImageButton}
                         onPress={() => removeSelectedImage(index)}
                       >
-                        <Ionicons name="close-circle" size={24} color={Colors.error} />
+                        <SolarCloseCircleBold size={24} color={Colors.error} />
                       </TouchableOpacity>
                     </View>
                   ))}
                   <TouchableOpacity style={styles.imageUpload} onPress={() => imageSourceSheetRef.current?.present()}>
-                    <MaterialCommunityIcons name="camera-plus-outline" size={32} color={Colors.text.muted} />
+                    <SolarCameraAddBold size={32} color={Colors.text.muted} />
                     <Text style={styles.uploadText}>{isRTL ? 'إضافة صور' : 'Add Photos'}</Text>
                   </TouchableOpacity>
                 </ScrollView>
@@ -569,25 +570,21 @@ export default function EditChaletScreen() {
         backgroundStyle={{ borderRadius: normalize.radius(24) }}
       >
         <BottomSheetView style={styles.sheetContent}>
-          {loadingCities ? (
-            <ActivityIndicator color={Colors.primary} style={{ margin: 20 }} />
-          ) : (
-            <BottomSheetFlatList
-              data={cities}
-              keyExtractor={(item: any) => item.id}
-              style={{ width: '100%' }}
-              ListHeaderComponent={<Text style={styles.modalTitle}>اختر المدينة</Text>}
-              renderItem={({ item }: { item: any }) => (
-                <TouchableOpacity
-                  style={styles.pickerItem}
-                  onPress={() => handleCitySelect(item)}
-                >
-                  <Text style={[styles.pickerItemText, { textAlign }]}>{item.name}</Text>
-                </TouchableOpacity>
-              )}
-              contentContainerStyle={{ paddingBottom: Spacing.xl }}
-            />
-          )}
+          <BottomSheetFlatList
+            data={cities}
+            keyExtractor={(item: any) => item.id}
+            style={{ width: '100%' }}
+            ListHeaderComponent={<Text style={styles.modalTitle}>اختر المدينة</Text>}
+            renderItem={({ item }: { item: any }) => (
+              <TouchableOpacity
+                style={styles.pickerItem}
+                onPress={() => handleCitySelect(item)}
+              >
+                <Text style={[styles.pickerItemText, { textAlign }]}>{item.name}</Text>
+              </TouchableOpacity>
+            )}
+            contentContainerStyle={{ paddingBottom: Spacing.xl }}
+          />
         </BottomSheetView>
       </BottomSheetModal>
 
@@ -605,13 +602,13 @@ export default function EditChaletScreen() {
           <View style={styles.modalOptions}>
             <TouchableOpacity style={styles.modalOption} onPress={() => { takePhoto(); imageSourceSheetRef.current?.dismiss(); }}>
               <View style={[styles.modalIcon, { backgroundColor: '#E3F2FD' }]}>
-                <Ionicons name="camera" size={30} color={Colors.primary} />
+                <SolarCameraBold size={30} color={Colors.primary} />
               </View>
               <Text style={styles.modalOptionText}>{isRTL ? 'الكاميرا' : 'Camera'}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.modalOption} onPress={() => { pickImage(); imageSourceSheetRef.current?.dismiss(); }}>
               <View style={[styles.modalIcon, { backgroundColor: '#F3E5F5' }]}>
-                <Ionicons name="images" size={30} color="#9C27B0" />
+                <SolarGalleryBold size={30} color="#9C27B0" />
               </View>
               <Text style={styles.modalOptionText}>{isRTL ? 'الأستوديو' : 'Gallery'}</Text>
             </TouchableOpacity>
@@ -640,18 +637,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: Colors.white,
   },
-  backButton: {
-    padding: 8,
-  },
-  headerTitle: {
-    fontSize: normalize.font(18),
-  },
   scrollContent: {
     paddingHorizontal: 14,
     paddingTop: 12,
     paddingBottom: Spacing.xl,
   },
-
   footer: {
     flexDirection: 'row',
     gap: Spacing.md,
@@ -677,9 +667,6 @@ const styles = StyleSheet.create({
     color: Colors.text.muted,
     fontSize: normalize.font(12),
     fontWeight: '600',
-  },
-  imageSection: {
-    marginBottom: Spacing.lg,
   },
   imageContainer: {
     gap: Spacing.sm,
@@ -755,9 +742,6 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(16),
     color: Colors.text.primary,
   },
-  form: {
-    gap: Spacing.md,
-  },
   inputGroup: {
     gap: 6,
   },
@@ -791,48 +775,35 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   featureItemWrapper: {
-    width: '48.5%', // Solid 2-column layout
-  },
-  saveBtn: {
-    marginTop: Spacing.sm,
-    marginBottom: Spacing.xl,
+    width: '48.5%',
   },
   mapPreviewContainer: {
-    height: normalize.height(160),
-    width: '100%',
-    borderRadius: normalize.radius(12),
+    height: normalize.height(140),
+    borderRadius: normalize.radius(16),
     overflow: 'hidden',
-    backgroundColor: '#F1F5F9',
-    borderWidth: 0,
-    position: 'relative',
+    marginTop: 4,
   },
   miniMap: {
     flex: 1,
   },
   mapOverlay: {
-    position: 'absolute',
-    bottom: Spacing.sm,
-    left: 0,
-    right: 0,
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.1)',
+    justifyContent: 'center',
     alignItems: 'center',
   },
   editLocBadge: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
     gap: 6,
-    backgroundColor: 'rgba(3, 93, 249, 0.9)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 100,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
   },
   editLocText: {
     color: Colors.white,
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(11),
     fontWeight: '700',
-  }
+  },
 });

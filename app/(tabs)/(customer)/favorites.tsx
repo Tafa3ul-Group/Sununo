@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { Colors, normalize, Shadows } from '@/constants/theme';
 import { ThemedText } from '@/components/themed-text';
-import { SolarIcon } from '@/components/ui/solar-icon';
+import { SolarHeartBold, SolarStarBold, SolarMapPointBold } from "@/components/icons/solar-icons";
 import { formatPrice } from '@/utils/format';
 import { useRouter } from 'expo-router';
 
@@ -33,20 +33,20 @@ export default function FavoritesScreen() {
           style={styles.chaletImage} 
         />
         <TouchableOpacity style={styles.favoriteBadge}>
-          <SolarIcon name="heart-bold" size={20} color="#EA2129" />
+          <SolarHeartBold size={20} color="#EA2129" />
         </TouchableOpacity>
         
         <View style={styles.chaletInfo}>
           <View style={styles.headerRow}>
             <ThemedText style={styles.chaletName}>{chaletName}</ThemedText>
             <View style={styles.ratingRow}>
-              <SolarIcon name="star-bold" size={14} color="#F59E0B" />
+              <SolarStarBold size={14} color="#F59E0B" />
               <ThemedText style={styles.ratingText}>4.8</ThemedText>
             </View>
           </View>
           
-          <View style={styles.detailsRow}>
-             <SolarIcon name="map-point-linear" size={14} color="#64748B" />
+          <View style={[styles.detailsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+             <SolarMapPointBold size={14} color="#64748B" />
              <ThemedText style={styles.detailsText}>{isRTL ? 'البصرة - الجزائر' : 'Basra - Al Jazayer'}</ThemedText>
           </View>
           
@@ -70,7 +70,7 @@ export default function FavoritesScreen() {
           favorites.map(renderFavoriteItem)
         ) : (
           <View style={styles.emptyState}>
-            <SolarIcon name="heart-linear" size={80} color="#E2E8F0" />
+            <SolarHeartBold size={80} color="#E2E8F0" />
             <ThemedText style={styles.emptyTitle}>{isRTL ? 'لا توجد مفضلات حتى الآن' : 'No favorites yet'}</ThemedText>
             <ThemedText style={styles.emptySubtitle}>
               {isRTL ? 'أي شاليه تعجبك، يمكنك إضافتها هنا للوصول إليها لاحقاً بسهولة.' : 'Any chalet you like can be added here for easy access later.'}

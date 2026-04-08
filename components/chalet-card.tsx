@@ -1,5 +1,4 @@
 import { Colors, normalize, Spacing } from '@/constants/theme';
-import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React from 'react';
@@ -11,7 +10,11 @@ import {
 } from 'react-native';
 import { ThemedText } from './themed-text';
 import Svg, { Path } from 'react-native-svg';
-import { SolarIcon } from './ui/solar-icon';
+import { 
+  SolarStarBold, 
+  SolarHeartBold, 
+  SolarMapPointBold 
+} from './icons/solar-icons';
 
 interface ChaletCardProps {
   chalet: any;
@@ -48,8 +51,8 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
            {/* التقييم في زاوية اليمنى صريحاً وبنفس المسافة */}
            <View style={styles.ratingOverlay}>
               <ThemedText style={styles.ratingText}>{chalet.rating || '4.5'}</ThemedText>
-              <SolarIcon name="4k-bold" size={normalize.width(16)} color="#FFB801" />
-           </View>
+               <SolarStarBold size={normalize.width(16)} color="#FFB801" />
+            </View>
 
            {/* القلب في زاوية اليسرى مع خلفية الـ Svg */}
            <TouchableOpacity 
@@ -61,12 +64,11 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
                   <Path d={STAR_SHAPE} fill="white" />
                 </Svg>
               </View>
-              <SolarIcon 
-                name="4k-bold" 
-                size={normalize.width(20)} 
-                color={isFavorite ? "#EA2129" : "#9CA3AF"} 
-              />
-           </TouchableOpacity>
+               <SolarHeartBold 
+                 size={normalize.width(20)} 
+                 color={isFavorite ? "#EA2129" : "#9CA3AF"} 
+               />
+            </TouchableOpacity>
         </View>
       </View>
 
@@ -77,7 +79,7 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
         
         <View style={styles.locationRow}>
           <ThemedText style={styles.location} numberOfLines={1}>{chalet.location}</ThemedText>
-          <SolarIcon name="4k-bold" size={normalize.width(14)} color="#9CA3AF" />
+           <SolarMapPointBold size={normalize.width(14)} color="#9CA3AF" />
         </View>
 
         <View style={styles.priceContainer}>

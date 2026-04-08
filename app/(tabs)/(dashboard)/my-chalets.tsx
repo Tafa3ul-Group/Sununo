@@ -1,4 +1,3 @@
-import { SolarIcon } from "@/components/ui/solar-icon";
 import { HeaderSection } from '@/components/header-section';
 import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
@@ -9,6 +8,14 @@ import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  SolarMapPointBold,
+  SolarBanknoteBold,
+  SolarStarBold,
+  SolarPenBold,
+  SolarAddSquareBold,
+  SolarHome2Bold
+} from "@/components/icons/solar-icons";
 import {
   ActivityIndicator,
   Image,
@@ -63,18 +70,18 @@ export default function MyChaletsScreen() {
               {chaletName}
             </Text>
             <View style={[styles.locationRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-              <SolarIcon name="4k-bold" size={12} color={Colors.primary} />
+              <SolarMapPointBold size={12} color={Colors.primary} />
               <Text style={styles.locationLabel} numberOfLines={1}>{chaletLocation}</Text>
             </View>
 
             {/* Stat chips row */}
             <View style={[styles.chipRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
               <View style={[styles.statChip, { backgroundColor: '#ECFDF5' }]}>
-                <SolarIcon name="4k-bold" size={12} color="#10B981" />
+                <SolarBanknoteBold size={12} color="#10B981" />
                 <Text style={[styles.statChipText, { color: '#10B981' }]}>{formatPrice(item.price)}</Text>
               </View>
               <View style={[styles.statChip, { backgroundColor: '#EFF6FF' }]}>
-                <SolarIcon name="4k-bold" size={12} color={Colors.primary} />
+                <SolarStarBold size={12} color={Colors.primary} />
                 <Text style={[styles.statChipText, { color: Colors.primary }]}>{item.reviewCount || 0}</Text>
               </View>
             </View>
@@ -88,7 +95,7 @@ export default function MyChaletsScreen() {
               router.push({ pathname: '/(tabs)/(dashboard)/edit-chalet', params: { id: item.id } });
             }}
           >
-            <SolarIcon name="4k-bold" size={18} color={Colors.text.muted} />
+            <SolarPenBold size={18} color={Colors.text.muted} />
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -126,7 +133,7 @@ export default function MyChaletsScreen() {
               style={styles.addChaletBtn}
               onPress={() => router.push('/(tabs)/(dashboard)/add-chalet')}
             >
-              <SolarIcon name="4k-bold" size={24} color={Colors.white} />
+              <SolarAddSquareBold size={24} color={Colors.white} />
             </TouchableOpacity>
         </View>
 
@@ -138,7 +145,7 @@ export default function MyChaletsScreen() {
           ) : (
             <View style={styles.emptyContainer}>
               <View style={styles.emptyIconWrap}>
-                 <SolarIcon name="4k-bold" size={40} color={Colors.text.muted} />
+                 <SolarHome2Bold size={40} color={Colors.text.muted} />
               </View>
               <Text style={styles.emptyTitle}>{isRTL ? 'لا توجد شاليهات' : 'No Chalets Found'}</Text>
               <Text style={styles.emptySubtitle}>

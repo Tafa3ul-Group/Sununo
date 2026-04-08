@@ -3,7 +3,6 @@ import { StyleSheet, TouchableOpacity, View, ViewStyle, Dimensions } from "react
 import Svg, { ClipPath, Defs, G, Path, Image as SvgImage } from "react-native-svg";
 import { ThemedText } from "@/components/themed-text";
 import { Colors, normalize, Spacing } from "@/constants/theme";
-import { SolarIcon } from "../ui/solar-icon";
 import { SolarStarBold, SolarHeartBold } from "@/components/icons/solar-icons";
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
