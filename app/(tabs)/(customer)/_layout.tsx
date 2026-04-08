@@ -1,7 +1,7 @@
 import { Tabs, Redirect } from "expo-router";
 import React from "react";
 import { CustomTabBar } from "@/components/user/custom-tab-bar";
-import { SolarMapPointBold, SolarHeartBold, SolarBellBingBoldDuotone } from "@/components/icons/solar-icons";
+import { SolarHomeSmileBoldDuotone, SolarMapBoldDuotone, SolarHeartBold, SolarBellBingBoldDuotone } from "@/components/icons/solar-icons";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
@@ -26,7 +26,7 @@ export default function CustomerLayout() {
         name="index"
         options={{
           tabBarIcon: ({ color, size }) => (
-            <SolarMapPointBold size={size} color={color} />
+            <SolarHomeSmileBoldDuotone size={size} color={color} />
           ),
         }}
       />
@@ -46,7 +46,14 @@ export default function CustomerLayout() {
           ),
         }}
       />
-      <Tabs.Screen name="explore" options={{ href: null }} />
+      <Tabs.Screen
+        name="explore"
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <SolarMapBoldDuotone size={size} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }

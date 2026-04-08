@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   chaletsList: {
-    gap: 12,
+    // Removed gap for compatibility
   },
   chaletCard: {
     backgroundColor: Colors.white,
@@ -218,6 +218,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F0F0F0',
     overflow: 'hidden',
+    marginBottom: 12, // Increased from 4
   },
   chaletCardInner: {
     padding: 12,

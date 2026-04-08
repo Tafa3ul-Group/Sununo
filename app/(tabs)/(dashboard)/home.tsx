@@ -605,7 +605,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   bookingList: {
-    gap: 12,
+    // Removed gap for compatibility
   },
   modernBookingCard: {
     backgroundColor: Colors.white,
@@ -614,6 +614,7 @@ const styles = StyleSheet.create({
     borderColor: '#F1F3F5',
     overflow: 'hidden',
     padding: 10,
+    marginBottom: 12, // Increased from 4
   },
   modernBookingInner: {
     alignItems: 'center',
@@ -717,7 +718,7 @@ const styles = StyleSheet.create({
   },
   // Chalet Cards
   chaletsList: {
-    gap: 10,
+    // Removed gap for compatibility
   },
   chaletCard: {
     backgroundColor: Colors.white,
@@ -725,6 +726,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F0F0F0',
     overflow: 'hidden',
+    marginBottom: 12, // Increased from 4
   },
   chaletCardInner: {
     padding: 12,
