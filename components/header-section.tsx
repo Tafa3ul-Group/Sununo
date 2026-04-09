@@ -28,6 +28,7 @@ import {
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import { ThemedText } from './themed-text';
+import { CircleBackButton } from './ui/circle-back-button';
 
 interface HeaderSectionProps {
   userType?: UserType;
@@ -68,11 +69,11 @@ export function HeaderSection({
 }: HeaderSectionProps) {
   const router = useRouter();
   const { t } = useTranslation();
-  const { language } = useSelector((state: RootState) => state.auth);
+  const { language, userType: stateUserType } = useSelector((state: RootState) => state.auth);
   const [selectedCategory, setSelectedCategory] = React.useState('all');
 
-
-  const isOwner = userType === 'owner';
+  const finalUserType = userType || stateUserType;
+  const isOwner = finalUserType === 'owner';
   const isRTL = language === 'ar';
   const [useArLogo, setUseArLogo] = React.useState(true);
 
@@ -88,102 +89,113 @@ export function HeaderSection({
     { id: 'luxury', label: t('home.categories.luxury'), icon: <SolarStarBold size={normalize.width(18)} /> },
   ];
 
-  const flexDirection = isRTL ? 'row-reverse' : 'row';
   const textAlign = isRTL ? 'right' : 'left';
 
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
-      {/* Title & Filter Row */}
-      <View style={[styles.topRow, { flexDirection, marginBottom }]}>
-        <View style={[styles.titleContainer, { flexDirection, flex: showLogo ? 0 : 1, alignItems: showLogo ? 'flex-end' : (showBackButton ? 'center' : (isRTL ? 'flex-end' : 'flex-start')) }]}>
-          {showBackButton && (
-            <TouchableOpacity
-              onPress={onBackPress || (() => router.back())}
-              style={styles.backButton}
-            >
-              {isRTL ? (
-                <SolarAltArrowRightBold size={normalize.width(22)} color={Colors.text.primary} />
-              ) : (
+      
+      {/* Title Bar Section */}
+      <View style={[styles.topRow, { marginBottom }]}>
+        {/* Left Side (Back button for LTR, Logo for RTL) */}
+        <View style={styles.headerSide}>
+          {!isRTL && showBackButton && (
+            isOwner ? <CircleBackButton onPress={onBackPress} /> : (
+              <TouchableOpacity onPress={onBackPress || (() => router.back())} style={styles.backButton}>
                 <SolarAltArrowLeftBold size={normalize.width(22)} color={Colors.text.primary} />
-              )}
-            </TouchableOpacity>
+              </TouchableOpacity>
+            )
           )}
-
-          {showLogo ? (
+          {isRTL && showLogo && (
             <TouchableOpacity onPress={toggleLogo} activeOpacity={0.8}>
-              <Image
-                source={useArLogo ? require('@/assets/arlogo.svg') : require('@/assets/logo.svg')}
-                style={styles.logo}
-                contentFit="contain"
-              />
-            </TouchableOpacity>
-          ) : (
-            <View style={{ alignItems: showBackButton ? 'center' : (isRTL ? 'flex-end' : 'flex-start'), flex: showBackButton ? 1 : 0 }}>
-              <ThemedText style={{ fontSize: normalize.font(18), fontWeight: '700' }}>
-                {title || (isOwner ? t('tabs.home') : t('tabs.myChalets'))}
-              </ThemedText>
-              {subtitle && (
-                <ThemedText style={styles.subtitle} numberOfLines={1}>
-                  {subtitle}
-                </ThemedText>
-              )}
-            </View>
+               <Image
+                 source={useArLogo ? require('@/assets/arlogo.svg') : require('@/assets/logo.svg')}
+                 style={styles.logo}
+                 contentFit="contain"
+               />
+             </TouchableOpacity>
           )}
         </View>
 
-        <View style={[styles.actionsContainer, { flexDirection: 'row' }]}>
-          {showProfile && (
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={onProfilePress || (() => {
-                if (userType === 'owner') {
-                  router.push('/(dashboard)/profile');
-                } else {
-                  router.push('/(customer)/profile');
-                }
-              })}
-            >
-              <SolarUserBold size={normalize.width(22)} color={Colors.text.primary} />
-            </TouchableOpacity>
-          )}
+        {/* Center - Title (perfectly centered in the screen) */}
+        <View style={styles.titleWrapper}>
+          <ThemedText style={styles.headerTitle} numberOfLines={1}>
+            {title || (isOwner ? t('tabs.home') : t('tabs.myChalets'))}
+          </ThemedText>
+        </View>
 
-          {showExtra && (
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={onExtraIconPress || (() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                router.push('/(tabs)/(dashboard)/notifications');
-              })}
-            >
-              {extraIcon ? (
-                typeof extraIcon === 'string' ? (
-                   <SolarBellBold size={normalize.width(22)} color={Colors.text.primary} />
-                ) : (extraIcon)
-              ) : (
-                <SolarBellBold size={normalize.width(22)} color={Colors.text.primary} />
-              )}
-            </TouchableOpacity>
+        {/* Right Side (Back button for RTL, Logo/Actions for LTR) */}
+        <View style={[styles.headerSide, { alignItems: 'flex-end' }]}>
+          {isRTL && showBackButton && (
+            isOwner ? <CircleBackButton onPress={onBackPress} /> : (
+              <TouchableOpacity onPress={onBackPress || (() => router.back())} style={styles.backButton}>
+                <SolarAltArrowRightBold size={normalize.width(22)} color={Colors.text.primary} />
+              </TouchableOpacity>
+            )
           )}
+          {!isRTL && showLogo && (
+            <TouchableOpacity onPress={toggleLogo} activeOpacity={0.8}>
+               <Image
+                 source={useArLogo ? require('@/assets/arlogo.svg') : require('@/assets/logo.svg')}
+                 style={styles.logo}
+                 contentFit="contain"
+               />
+             </TouchableOpacity>
+          )}
+          
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            {showProfile && (
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={onProfilePress || (() => {
+                  if (finalUserType === 'owner') {
+                    router.push('/(dashboard)/profile');
+                  } else {
+                    router.push('/(customer)/profile');
+                  }
+                })}
+              >
+                <SolarUserBold size={normalize.width(22)} color={Colors.text.primary} />
+              </TouchableOpacity>
+            )}
 
-          {onDeletePress && (
-            <TouchableOpacity
-              style={[styles.actionButton, { borderColor: '#FEE2E2', backgroundColor: '#FEF2F2' }]}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                onDeletePress();
-              }}
-            >
-              <SolarTrashBinBold size={normalize.width(22)} color="#EF4444" />
-            </TouchableOpacity>
-          )}
+            {showExtra && (
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={onExtraIconPress || (() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  router.push('/(tabs)/(dashboard)/notifications');
+                })}
+              >
+                {extraIcon ? (
+                  typeof extraIcon === 'string' ? (
+                     <SolarBellBold size={normalize.width(22)} color={Colors.text.primary} />
+                  ) : (extraIcon)
+                ) : (
+                  <SolarBellBold size={normalize.width(22)} color={Colors.text.primary} />
+                )}
+              </TouchableOpacity>
+            )}
+
+            {onDeletePress && (
+              <TouchableOpacity
+                style={[styles.actionButton, { borderColor: '#FEE2E2', backgroundColor: '#FEF2F2' }]}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                  onDeletePress();
+                }}
+              >
+                <SolarTrashBinBold size={normalize.width(22)} color="#EF4444" />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </View>
 
       {/* Search Bar */}
       {showSearch && (
         <View style={styles.searchContainer}>
-          <View style={[styles.searchBar, { flexDirection }]}>
+          <View style={[styles.searchBar, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             <SolarMagnifierBold size={normalize.width(20)} color={Colors.text.muted} />
             <TextInput
               placeholder={t('home.searchPlaceholder')}
@@ -199,7 +211,7 @@ export function HeaderSection({
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={[styles.categoriesContent, { flexDirection }]}
+          contentContainerStyle={[styles.categoriesContent, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
           style={styles.categoriesScroll}
         >
           {CATEGORIES.map((cat) => (
@@ -208,7 +220,7 @@ export function HeaderSection({
               onPress={() => setSelectedCategory(cat.id)}
               style={[
                 styles.categoryItem,
-                { flexDirection },
+                { flexDirection: isRTL ? 'row-reverse' : 'row' },
                 selectedCategory === cat.id && styles.categoryItemActive
               ]}
             >
@@ -236,15 +248,25 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   topRow: {
-    justifyContent: 'space-between',
+    flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: Spacing.md,
     paddingTop: Spacing.sm,
-    marginBottom: Spacing.md,
+    height: normalize.height(60),
   },
-  titleContainer: {
+  headerSide: {
+    width: normalize.width(80),
+    justifyContent: 'center',
+  },
+  titleWrapper: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: Spacing.sm,
+  },
+  headerTitle: {
+    fontSize: normalize.font(18),
+    fontWeight: '700',
+    color: Colors.text.primary,
   },
   logo: {
     width: normalize.width(62),
@@ -257,10 +279,6 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(14),
     color: Colors.text.muted,
     fontWeight: '400',
-  },
-  actionsContainer: {
-    gap: Spacing.sm,
-    alignItems: 'center',
   },
   actionButton: {
     backgroundColor: Colors.white,

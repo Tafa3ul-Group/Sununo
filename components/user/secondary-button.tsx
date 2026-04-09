@@ -83,7 +83,7 @@ export function SecondaryButton({
             strokeWidth="1"
           />
         </Svg>
-        {(icon || iconLabel || isLoading) && (
+        {!!(icon || iconLabel || isLoading) && (
           <View style={styles.iconContainer}>
             {isLoading ? (
               <ActivityIndicator color={finalContentColor} size="small" />

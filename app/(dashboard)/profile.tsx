@@ -1,21 +1,28 @@
-import { 
-  SolarLogoutBold, 
-  SolarBanknoteBold, 
-  SolarHome2Bold, 
-  SolarChartBold, 
-  SolarBellBold, 
-  SolarAltArrowLeftLinear, 
-  SolarAltArrowRightLinear 
-} from "@/components/icons/solar-icons";
-import { Colors, Spacing, Typography, normalize } from '@/constants/theme';
+import { Colors, normalize, Spacing, Typography } from '@/constants/theme';
 import { RootState } from '@/store';
 import { logout } from '@/store/authSlice';
+import {
+  SolarLogoutBold,
+  SolarBanknoteBold,
+  SolarHome2Bold,
+  SolarChartBold,
+  SolarBellBold,
+  SolarAltArrowLeftLinear,
+  SolarAltArrowRightLinear,
+  SolarPenBold,
+  SolarGlobalBold,
+  SolarPhoneBold,
+  SolarShieldBold,
+  ProfileShape
+} from "@/components/icons/solar-icons";
+import { CircleBackButton } from '@/components/ui/circle-back-button';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { LanguageSheet } from '@/components/user/language-sheet';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
-import { HeaderSection } from '@/components/header-section';
 import { useTranslation } from 'react-i18next';
 import { useGetProviderProfileQuery } from '@/store/api/apiSlice';
 
@@ -28,9 +35,13 @@ export default function ProviderProfileScreen() {
   const profile = profileResponse?.data || profileResponse;
   
   const router = useRouter();
+  const languageSheetRef = React.useRef<BottomSheetModal>(null);
+
+  const openLanguageSheet = () => {
+    languageSheetRef.current?.present();
+  };
 
   const handleLogout = () => {
-    console.log('Logging out owner...');
     Alert.alert(
       isRTL ? 'تسجيل الخروج' : 'Logout',
       isRTL ? 'هل أنت متأكد من تسجيل الخروج؟' : 'Are you sure you want to logout?',
@@ -48,112 +59,92 @@ export default function ProviderProfileScreen() {
     );
   };
 
+  const menuItems = [
+    { id: 'business', title: isRTL ? 'معلومات العمل والمصرف' : 'Business Info', shape: 'blue' as const, icon: <SolarBanknoteBold size={20} color="white" />, route: '/(dashboard)/edit-business' },
+    { id: 'chalets', title: isRTL ? 'إدارة شاليهاتي' : 'Manage My Chalets', shape: 'green' as const, icon: <SolarHome2Bold size={20} color="white" />, route: '/(tabs)/(dashboard)/home' },
+    { id: 'revenue', title: isRTL ? 'المالية والأرباح' : 'Revenue', shape: 'red' as const, icon: <SolarChartBold size={20} color="white" />, route: '/(tabs)/(dashboard)/revenue' },
+    { id: 'notifications', title: isRTL ? 'الإشعارات' : 'Notifications', shape: 'pink' as const, icon: <SolarBellBold size={20} color="white" />, route: '/(tabs)/(dashboard)/notifications' },
+    { id: 'language', title: isRTL ? 'اللغة' : 'Language', shape: 'blue' as const, icon: <SolarGlobalBold size={20} color="white" />, action: openLanguageSheet },
+    { id: 'contact', title: isRTL ? 'تواصل معنا' : 'Contact Us', shape: 'green' as const, icon: <SolarPhoneBold size={20} color="white" /> },
+    { id: 'privacy', title: isRTL ? 'سياسة الخصوصية' : 'Privacy Policy', shape: 'blue' as const, icon: <SolarShieldBold size={20} color="white" /> },
+    { id: 'logout', title: isRTL ? 'تسجيل الخروج' : 'Logout', shape: 'red' as const, icon: <SolarLogoutBold size={20} color="white" />, action: handleLogout },
+  ];
+
   return (
     <SafeAreaView style={styles.container}>
-      <HeaderSection
-        userType={userType}
-        title={isRTL ? 'الملف الشخصي' : 'Owner Profile'}
-        showSearch={false}
-        showCategories={false}
-        showBackButton={true}
-      />
-      <ScrollView contentContainerStyle={styles.content}>
-
-        <View style={styles.profileCard}>
-          <View style={styles.avatarContainer}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{profile?.business_name?.charAt(0) || user?.name?.charAt(0) || 'O'}</Text>
-            </View>
-          </View>
-          <Text style={styles.userName}>{profile?.business_name || user?.name || t('tabs.home')}</Text>
-          <Text style={styles.userEmail}>{user?.phone || user?.email}</Text>
-
-          <View style={styles.roleBadge}>
-            <Text style={styles.roleText}>{isRTL ? 'مالك معتمد' : 'Verified Owner'}</Text>
-          </View>
+      {/* Custom Header */}
+      <View style={styles.header}>
+        <CircleBackButton />
+        <Text style={styles.headerTitle}>{isRTL ? 'الملف الشخصي' : 'Profile'}</Text>
+        <View style={styles.logoCircle}>
+          <Image 
+            source={require('@/assets/arlogo.svg')} 
+            style={styles.logoImg}
+            resizeMode="contain"
+          />
         </View>
+      </View>
 
-        <View style={styles.menuContainer}>
-          <Text style={styles.menuLabel}>{isRTL ? 'الإعدادات' : 'Settings'}</Text>
-
-          {/* معلومات العمل والمصرف */}
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => router.push('/(dashboard)/edit-business')}
-          >
-            <SolarBanknoteBold size={20} color={Colors.text.muted} />
-            <View style={[styles.menuItemContent, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
-              <Text style={styles.menuItemTitle}>
-                {isRTL ? 'معلومات العمل والمصرف' : 'Business & Bank Info'}
-              </Text>
-              {isRTL ? (
-                <SolarAltArrowLeftLinear size={22} color={Colors.primary} />
-              ) : (
-                <SolarAltArrowRightLinear size={22} color={Colors.primary} />
-              )}
-            </View>
-          </TouchableOpacity>
-
-          {/* شاليهاتي */}
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => router.push('/(tabs)/(dashboard)/home')}
-          >
-            <SolarHome2Bold size={20} color={Colors.text.muted} />
-            <View style={[styles.menuItemContent, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
-              <Text style={styles.menuItemTitle}>{isRTL ? 'إدارة شاليهاتي' : 'Manage My Chalets'}</Text>
-              {isRTL ? (
-                <SolarAltArrowLeftLinear size={22} color={Colors.primary} />
-              ) : (
-                <SolarAltArrowRightLinear size={22} color={Colors.primary} />
-              )}
-            </View>
-          </TouchableOpacity>
-
-          {/* إحصائيات الدخل */}
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => router.push('/(tabs)/(dashboard)/revenue')}
-          >
-            <SolarChartBold size={20} color={Colors.text.muted} />
-            <View style={[styles.menuItemContent, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
-              <Text style={styles.menuItemTitle}>{isRTL ? 'المالية والأرباح' : 'Finances & Revenue'}</Text>
-              {isRTL ? (
-                <SolarAltArrowLeftLinear size={22} color={Colors.primary} />
-              ) : (
-                <SolarAltArrowRightLinear size={22} color={Colors.primary} />
-              )}
-            </View>
-          </TouchableOpacity>
-
-          {/* الإشعارات */}
-          <TouchableOpacity 
-            style={styles.menuItem}
-            onPress={() => router.push('/(tabs)/(dashboard)/notifications')}
-          >
-            <SolarBellBold size={20} color={Colors.text.muted} />
-            <View style={[styles.menuItemContent, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
-              <Text style={styles.menuItemTitle}>{t('profile.notifications')}</Text>
-              {isRTL ? (
-                <SolarAltArrowLeftLinear size={22} color={Colors.primary} />
-              ) : (
-                <SolarAltArrowRightLinear size={22} color={Colors.primary} />
-              )}
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        <TouchableOpacity
-          style={styles.logoutButton}
-          onPress={handleLogout}
-          activeOpacity={0.8}
+      {/* Profile Header & User Card - Fixed at top */}
+      <View style={styles.topSection}>
+        <TouchableOpacity 
+          style={styles.userCard}
+          onPress={() => router.push('/(dashboard)/edit-business')}
+          activeOpacity={0.9}
         >
-          <Text style={styles.logoutText}>{t('profile.logout')}</Text>
-          <SolarLogoutBold size={22} color="#FF3B30" />
-        </TouchableOpacity>
+          <ProfileShape size={normalize.width(48)} type="green">
+            <SolarPenBold size={18} color="white" />
+          </ProfileShape>
+          
+          <View style={styles.userInfo}>
+            <Text style={styles.userName}>{profile?.business_name || user?.name || t('tabs.home')}</Text>
+          </View>
 
-        <Text style={styles.versionText}>V 1.0.0</Text>
+          <View style={styles.avatarWrap}>
+            {profile?.business_name ? (
+               <View style={styles.avatarInitial}>
+                  <Text style={styles.avatarInitialText}>{profile?.business_name?.charAt(0)}</Text>
+               </View>
+            ) : (
+              <Image 
+                source={{ uri: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png' }} 
+                style={styles.avatarImg} 
+              />
+            )}
+          </View>
+        </TouchableOpacity>
+      </View>
+
+      {/* Scrollable Content - Only menu items */}
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent} 
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.menuGroup}>
+          {menuItems.map((item) => (
+            <TouchableOpacity 
+              key={item.id} 
+              style={styles.menuRow} 
+              onPress={() => {
+                if (item.action) {
+                  item.action();
+                } else if (item.route) {
+                  router.push(item.route as any);
+                }
+              }}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.menuLabelText}>{item.title}</Text>
+              <ProfileShape size={normalize.width(42)} type={item.shape}>
+                {item.icon}
+              </ProfileShape>
+            </TouchableOpacity>
+          ))}
+        </View>
       </ScrollView>
+
+      <LanguageSheet ref={languageSheetRef} />
     </SafeAreaView>
   );
 }
@@ -161,109 +152,117 @@ export default function ProviderProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: '#FFFFFF',
   },
-  content: {
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: 150, // Added more padding to clear the absolute tab bar
-  },
-  profileCard: {
-    backgroundColor: Colors.surface,
-    borderRadius: normalize.radius(24),
-    padding: Spacing.lg,
+  header: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: Spacing.xl,
+    justifyContent: 'space-between',
+    paddingHorizontal: normalize.width(20),
+    paddingVertical: normalize.height(15),
+    backgroundColor: '#FFFFFF',
+  },
+  headerTitle: {
+    fontSize: normalize.font(18),
+    fontWeight: '800',
+    color: '#1F2937',
+  },
+  logoCircle: {
+    width: normalize.width(42),
+    height: normalize.width(42),
+    borderRadius: normalize.width(21),
+    backgroundColor: '#F9FAFB',
+    justifyContent: 'center',
+    alignItems: 'center',
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: '#F3F4F6',
+    overflow: 'hidden',
   },
-  avatarContainer: {
-    position: 'relative',
-    marginBottom: Spacing.md,
+  logoImg: {
+    width: '70%',
+    height: '70%',
   },
-  avatar: {
-    width: normalize.width(100),
-    height: normalize.width(100),
-    borderRadius: normalize.radius(50),
+  topSection: {
+    paddingHorizontal: normalize.width(20),
+    paddingTop: normalize.height(10),
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: normalize.width(20),
+    paddingTop: normalize.height(10),
+  },
+  userCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: normalize.radius(24),
+    padding: normalize.width(18),
+    marginBottom: normalize.height(20),
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  userInfo: {
+    flex: 1,
+    marginRight: normalize.width(15),
+  },
+  userName: {
+    fontSize: normalize.font(16),
+    fontWeight: '800',
+    color: '#374151',
+    textAlign: 'right',
+  },
+  avatarWrap: {
+    width: normalize.width(60),
+    height: normalize.width(60),
+    borderRadius: normalize.width(30),
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarImg: {
+    width: '100%',
+    height: '100%',
+  },
+  avatarInitial: {
+    width: '100%',
+    height: '100%',
     backgroundColor: Colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  avatarText: {
-    fontSize: normalize.font(40),
-    color: Colors.white,
-    fontWeight: 'bold',
+  avatarInitialText: {
+    color: 'white',
+    fontSize: normalize.font(24),
+    fontWeight: '800',
   },
-  userName: {
-    ...Typography.h1,
-    fontSize: normalize.font(20),
-    marginBottom: normalize.height(4),
+  menuGroup: {
+    gap: normalize.height(16),
   },
-  userEmail: {
-    ...Typography.body,
-    color: Colors.text.secondary,
-    marginBottom: Spacing.md,
-  },
-  roleBadge: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: normalize.height(6),
-    borderRadius: normalize.radius(12),
-    backgroundColor: '#E8F5E9',
-  },
-  roleText: {
-    ...Typography.caption,
-    fontWeight: '700',
-    color: '#2E7D32',
-  },
-  menuContainer: {
-    gap: Spacing.xs,
-  },
-  menuLabel: {
-    ...Typography.caption,
-    color: Colors.text.muted,
-    marginBottom: Spacing.sm,
-    textAlign: 'right',
-    paddingHorizontal: normalize.width(4),
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.surface,
-    padding: Spacing.md,
-    borderRadius: normalize.radius(16),
-    marginBottom: Spacing.xs,
-  },
-  menuItemContent: {
-    flex: 1,
+  menuRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
-    gap: Spacing.md,
-  },
-  menuItemTitle: {
-    ...Typography.body,
-    fontWeight: '600',
-  },
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: Spacing.xl,
-    padding: Spacing.md,
-    borderRadius: normalize.radius(16),
+    backgroundColor: '#FFFFFF',
+    borderRadius: normalize.radius(18),
+    paddingVertical: normalize.height(14),
+    paddingHorizontal: normalize.width(18),
     borderWidth: 1,
-    borderColor: '#FF3B3020',
-    backgroundColor: '#FF3B3005',
-    gap: Spacing.sm,
+    borderColor: '#F3F4F6',
+    shadowOpacity: 0,
+    elevation: 0,
   },
-  logoutText: {
-    ...Typography.body,
-    color: '#FF3B30',
+  menuLabelText: {
+    fontSize: normalize.font(16),
     fontWeight: '700',
-  },
-  versionText: {
-    ...Typography.caption,
-    textAlign: 'center',
-    color: Colors.text.muted,
-    marginTop: Spacing.xl,
+    color: '#374151',
+    marginRight: normalize.width(15),
+    textAlign: 'right',
   },
 });

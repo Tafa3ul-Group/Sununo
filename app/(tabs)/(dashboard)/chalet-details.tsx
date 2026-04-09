@@ -12,7 +12,6 @@ import { useGetOwnerChaletDetailsQuery, useDeleteChaletMutation } from '@/store/
 import { PrimaryButton } from '@/components/user/primary-button';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { 
-  SolarAltArrowLeftBold,
   SolarTrashBinBold,
   SolarPenBold,
   SolarMapPointBold,
@@ -23,6 +22,7 @@ import {
   SolarClockCircleBold,
   SolarCalendarBold
 } from "@/components/icons/solar-icons";
+import { CircleBackButton } from '@/components/ui/circle-back-button';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const HERO_HEIGHT = 420;
@@ -179,9 +179,10 @@ export default function ChaletDetailsScreen() {
       {/* Persistent Header Actions (Always in the same place & design) */}
       <View style={styles.fixedHeaderActions}>
         <SafeAreaView edges={['top']} style={[styles.headerActions, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-          <TouchableOpacity style={styles.iconButton} onPress={() => router.back()}>
-            <SolarAltArrowLeftBold size={22} color={Colors.white} />
-          </TouchableOpacity>
+          <CircleBackButton 
+            onPress={() => router.back()} 
+            style={{ width: 42, height: 42, borderRadius: 21 }} 
+          />
           <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 10 }}>
             <TouchableOpacity 
               style={[styles.iconButton, { backgroundColor: '#FEF2F2', borderColor: '#FEE2E2' }]} 

@@ -945,7 +945,7 @@ export default function ShiftsAndPricesScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <StatusBar style="dark" />
-        <HeaderSection title={isRTL ? 'الفترات والأسعار' : 'Shifts & Prices'} showBackButton />
+        <HeaderSection title={isRTL ? 'الفترات والأسعار' : 'Shifts & Prices'} showBackButton={true} showExtra={false} />
         <View style={styles.centeredContent}>
           <SolarHomeBold size={64} color={Colors.primary + '20'} />
           <Text style={styles.emptyTextLarge}>

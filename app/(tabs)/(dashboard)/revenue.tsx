@@ -100,6 +100,7 @@ export default function RevenueScreen() {
         showSearch={false}
         showCategories={false}
         showBackButton={true}
+        showExtra={false}
       />
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         

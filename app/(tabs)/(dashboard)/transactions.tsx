@@ -123,6 +123,7 @@ export default function TransactionsScreen() {
         showSearch={false}
         showCategories={false}
         showBackButton={true}
+        showExtra={false}
       />
 
       {/* Filter Pills - Scrollable */}
