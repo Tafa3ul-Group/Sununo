@@ -28,7 +28,7 @@ const WHO_COLOR = "#F64200";
 const WHEN_COLOR = "#15AB64";
 const WHERE_COLOR = "#035DF9";
 
-export type TabType = "WHO" | "WHEN" | "WHERE";
+export type TabType = "DETAILS" | "MANO" | "SHOOKET";
 
 interface MainTabsProps {
   activeTab: TabType;
@@ -37,7 +37,7 @@ interface MainTabsProps {
 
 export const MainTabs: React.FC<MainTabsProps> = ({ activeTab, onChange }) => {
   const transition = useSharedValue(
-    activeTab === "WHO" ? 0 : activeTab === "WHEN" ? 1 : 2,
+    activeTab === "DETAILS" ? 0 : activeTab === "MANO" ? 1 : 2,
   );
 
   const springConfig = {
@@ -48,9 +48,9 @@ export const MainTabs: React.FC<MainTabsProps> = ({ activeTab, onChange }) => {
 
   useEffect(() => {
     let target = 0;
-    if (activeTab === "WHO") target = 0;
-    else if (activeTab === "WHEN") target = 1;
-    else if (activeTab === "WHERE") target = 2;
+    if (activeTab === "DETAILS") target = 0;
+    else if (activeTab === "MANO") target = 1;
+    else if (activeTab === "SHOOKET") target = 2;
 
     transition.value = withSpring(target, springConfig);
   }, [activeTab]);
@@ -78,30 +78,30 @@ export const MainTabs: React.FC<MainTabsProps> = ({ activeTab, onChange }) => {
       fill: interpolateColor(
         transition.value,
         [0, 1, 2],
-        [WHO_COLOR, WHEN_COLOR, WHERE_COLOR],
+        [WHEN_COLOR, WHO_COLOR, WHERE_COLOR],
       ),
     };
   });
 
-  const whoTextStyle = useAnimatedStyle(() => ({
-    color: interpolateColor(transition.value, [0, 0.4], ["#FFFFFF", WHO_COLOR]),
+  const detailsTextStyle = useAnimatedStyle(() => ({
+    color: interpolateColor(transition.value, [0, 0.4], ["#FFFFFF", WHEN_COLOR]),
     transform: [
       { scale: interpolate(transition.value, [0, 1], [1.1, 1], "clamp") },
     ],
   }));
 
-  const whenTextStyle = useAnimatedStyle(() => ({
+  const manoTextStyle = useAnimatedStyle(() => ({
     color: interpolateColor(
       transition.value,
       [0.4, 1, 1.6],
-      [WHEN_COLOR, "#FFFFFF", WHEN_COLOR],
+      [WHO_COLOR, "#FFFFFF", WHO_COLOR],
     ),
     transform: [
       { scale: interpolate(transition.value, [0, 1, 2], [1, 1.1, 1], "clamp") },
     ],
   }));
 
-  const whereTextStyle = useAnimatedStyle(() => ({
+  const shooketTextStyle = useAnimatedStyle(() => ({
     color: interpolateColor(
       transition.value,
       [1.6, 2],
@@ -133,32 +133,32 @@ export const MainTabs: React.FC<MainTabsProps> = ({ activeTab, onChange }) => {
 
       <View style={styles.buttonsContainer}>
         <TouchableOpacity
-          onPress={() => onChange("WHO")}
+          onPress={() => onChange("DETAILS")}
           style={styles.tabButton}
           activeOpacity={1}
         >
-          <AnimatedText style={[styles.tabText, whoTextStyle]}>
+          <AnimatedText style={[styles.tabText, detailsTextStyle]}>
+            التفصيل
+          </AnimatedText>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => onChange("MANO")}
+          style={styles.tabButton}
+          activeOpacity={1}
+        >
+          <AnimatedText style={[styles.tabText, manoTextStyle]}>
             منو
           </AnimatedText>
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => onChange("WHEN")}
+          onPress={() => onChange("SHOOKET")}
           style={styles.tabButton}
           activeOpacity={1}
         >
-          <AnimatedText style={[styles.tabText, whenTextStyle]}>
+          <AnimatedText style={[styles.tabText, shooketTextStyle]}>
             شوكت
-          </AnimatedText>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => onChange("WHERE")}
-          style={styles.tabButton}
-          activeOpacity={1}
-        >
-          <AnimatedText style={[styles.tabText, whereTextStyle]}>
-            وين
           </AnimatedText>
         </TouchableOpacity>
       </View>

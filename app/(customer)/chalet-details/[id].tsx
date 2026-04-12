@@ -205,7 +205,7 @@ export default function ChaletDetailScreen() {
       {/* الفوتر Flat */}
       <View style={styles.flatUltimateFooter}>
           <View style={styles.footerBtnSide}>
-             <PrimaryButton label="احجز الان" onPress={() => {}} style={styles.footerFlatBtn} />
+             <PrimaryButton label="احجز الان" onPress={() => router.push(`/(customer)/booking/complete?id=${id}`)} style={styles.footerFlatBtn} />
           </View>
           <View style={styles.footerTextSide}>
              <ThemedText style={styles.footerPriceBig}>30,000 IQD</ThemedText>

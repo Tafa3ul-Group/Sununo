@@ -129,23 +129,23 @@ export const Typography: Record<string, TypeStyle> = {
 
 export const Shadows = {
   small: Platform.select({
-    web: { boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.05)" },
+    web: { boxShadow: "none" },
     default: {
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.05,
-      shadowRadius: 4,
-      elevation: 2,
+      shadowColor: "transparent",
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0,
+      shadowRadius: 0,
+      elevation: 0,
     },
   }),
   medium: Platform.select({
-    web: { boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.08)" },
+    web: { boxShadow: "none" },
     default: {
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.08,
-      shadowRadius: 8,
-      elevation: 4,
+      shadowColor: "transparent",
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0,
+      shadowRadius: 0,
+      elevation: 0,
     },
   }),
 };
