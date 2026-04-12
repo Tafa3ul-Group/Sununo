@@ -1,12 +1,18 @@
-import { SolarAltArrowDownLinear, SolarStarBold } from "@/components/icons/solar-icons";
+import { RatingBackground } from "@/components/icons/rating-background";
+import {
+  SolarAltArrowDownLinear,
+  SolarStarBold,
+  SolarStarLinear,
+} from "@/components/icons/solar-icons";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 import { ThemedText } from "@/components/themed-text";
 import { CircleBackButton } from "@/components/ui/circle-back-button";
+import { Image } from "expo-image";
 import { Stack, useLocalSearchParams } from "expo-router";
-import React from "react";
-import { Dimensions, Image, ScrollView, StyleSheet, View } from "react-native";
+import React, { useState } from "react";
+import { Dimensions, Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 const SAMPLE_IMAGES = [
   "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=400",
@@ -16,6 +22,7 @@ const SAMPLE_IMAGES = [
 
 export default function ReviewsScreen() {
   const { id } = useLocalSearchParams();
+  const [userRating, setUserRating] = useState(0);
   const reviews = [
     {
       name: "انسة انس",
@@ -68,10 +75,7 @@ export default function ReviewsScreen() {
               <ThemedText style={styles.splitLabel}>اخر التقييمات</ThemedText>
             </View>
             <View style={styles.splitIconPart}>
-              <SolarAltArrowDownLinear
-                size={18}
-                color="#035DF9"
-              />
+              <SolarAltArrowDownLinear size={18} color="#035DF9" />
             </View>
           </View>
         </View>
@@ -130,17 +134,27 @@ export default function ReviewsScreen() {
 
       {/* الفوتر الملتصق بالأسفل تماماً باستخدام rating.svg */}
       <View style={styles.footerSticky}>
-        <Image
-          source={require("@/assets/rating.svg")}
+        <RatingBackground
           style={styles.footerBgImage}
-          resizeMode="stretch"
+          width="100%"
+          height="100%"
+          preserveAspectRatio="xMidYMax slice"
         />
         <View style={styles.footerOverlayContent}>
           <View style={styles.whiteInputPill}>
-            <ThemedText style={styles.questionTitle}>كولنه رايك بالمكان؟</ThemedText>
+
+            <ThemedText style={styles.questionTitle}>
+              شكد تقيم تجربتك؟
+            </ThemedText>
             <View style={styles.inputStarsRow}>
               {[1, 2, 3, 4, 5].map((i) => (
-                <SolarStarBold key={i} size={28} color="#E5E7EB" />
+                <Pressable key={i} onPress={() => setUserRating(i)}>
+                  {i <= userRating ? (
+                    <SolarStarBold size={32} color="#15AB64" />
+                  ) : (
+                    <SolarStarLinear size={32} color="#15AB64" />
+                  )}
+                </Pressable>
               ))}
             </View>
           </View>
@@ -255,43 +269,33 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 140, // تقليل الارتفاع ليناسب التصميم الملتصق
-    paddingBottom: 0,
-    marginBottom: 0,
+    height: 150,
   },
   footerBgImage: {
     position: "absolute",
-    bottom: 0,
+    bottom: -25, // Push deeper to hide bottom whitespace
     width: "100%",
     height: "100%",
   },
   footerOverlayContent: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     justifyContent: "center",
     alignItems: "center",
-    paddingBottom: 25,
+    paddingTop: 35, // Adjust centering for the lower height
   },
   whiteInputPill: {
-    backgroundColor: "white",
-    borderStyle: "solid",
-    borderWidth: 1,
-    borderColor: "#F3F4F6",
-    borderRadius: 40,
-    height: 85,
+    backgroundColor: "#F0F6F5",
+    borderRadius: 50,
+    height: 90,
     width: "90%",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
   },
   questionTitle: {
     fontSize: 16,
     fontWeight: "900",
     color: "#111827",
-    marginBottom: 5,
+    marginBottom: 8,
   },
-  inputStarsRow: { flexDirection: "row", gap: 10 },
+  inputStarsRow: { flexDirection: "row", gap: 12 },
 });
