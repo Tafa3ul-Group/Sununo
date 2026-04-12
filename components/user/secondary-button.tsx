@@ -1,5 +1,6 @@
 import { ThemedText } from "@/components/themed-text";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   StyleSheet,
@@ -8,8 +9,6 @@ import {
   View,
   ViewStyle,
 } from "react-native";
-import Svg, { Path } from "react-native-svg";
-import { useTranslation } from "react-i18next";
 
 interface SecondaryButtonProps {
   label: string;
@@ -44,7 +43,7 @@ export function SecondaryButton({
 }: SecondaryButtonProps) {
   const { i18n } = useTranslation();
   const isRTL = i18n.language === 'ar';
-  
+
   // Use provided iconPosition or default to RTL-aware default
   const finalIconPosition = iconPosition || (isRTL ? 'right' : 'left');
 
@@ -59,32 +58,37 @@ export function SecondaryButton({
       activeOpacity={0.8}
       onPress={onPress}
       style={[
-        styles.container, 
-        { flexDirection: finalIconPosition === 'right' ? 'row-reverse' : 'row' },
-        style, 
+        styles.container,
+        {
+          flexDirection: finalIconPosition === 'right' ? 'row-reverse' : 'row',
+          gap: -1.5
+        },
+        style,
         isLoading && { opacity: 0.7 }
       ]}
       disabled={isLoading}
     >
       {/* Icon Section */}
-      <View style={[styles.iconWrapper, { width: scaledWidth, height: 46 }]}>
-        <Svg
-          width="100%"
-          height="100%"
-          viewBox="88.5 0 28 29"
-          fill="none"
-          preserveAspectRatio="xMidYMid meet"
-          style={{ transform: [{ scaleX: finalIconPosition === 'right' ? 1 : -1 }] }}
-        >
-          <Path
-            d="M102.5 0.5H93.1172C90.5673 0.500248 88.5002 2.5673 88.5 5.11719V23.8828C88.5002 26.4327 90.5673 28.4998 93.1172 28.5H102.5C110.232 28.5 116.5 22.232 116.5 14.5C116.5 6.76801 110.232 0.5 102.5 0.5Z"
-            fill={bgColor}
-            stroke={borderColor}
-            strokeWidth="1"
-          />
-        </Svg>
+      <View
+        style={[
+          styles.iconWrapper,
+          {
+            width: scaledWidth,
+            height: 46,
+            backgroundColor: bgColor,
+            borderColor: borderColor,
+            borderWidth: 1.5,
+            borderTopRightRadius: finalIconPosition === 'right' ? 23 : 14,
+            borderBottomRightRadius: finalIconPosition === 'right' ? 23 : 14,
+            borderTopLeftRadius: finalIconPosition === 'left' ? 8 : 8,
+            borderBottomLeftRadius: finalIconPosition === 'left' ? 8 : 8,
+            justifyContent: 'center',
+            alignItems: 'center'
+          }
+        ]}
+      >
         {!!(icon || iconLabel || isLoading) && (
-          <View style={styles.iconContainer}>
+          <View style={styles.iconContainerInternal}>
             {isLoading ? (
               <ActivityIndicator color={finalContentColor} size="small" />
             ) : iconLabel ? (
@@ -117,19 +121,17 @@ export function SecondaryButton({
             backgroundColor: bgColor,
             borderColor: borderColor,
             height: 46,
-            paddingHorizontal: 16,
-            // Match the SVG curves orientation
-            borderTopLeftRadius: finalIconPosition === 'right' ? 8.7 : 0,
-            borderBottomLeftRadius: finalIconPosition === 'right' ? 8.7 : 0,
-            borderTopRightRadius: finalIconPosition === 'left' ? 8.7 : 0,
-            borderBottomRightRadius: finalIconPosition === 'left' ? 8.7 : 0,
-            marginLeft: finalIconPosition === 'left' ? -1 : 0,
-            marginRight: finalIconPosition === 'right' ? -1 : 0,
+            paddingHorizontal: 20,
+            borderTopLeftRadius: finalIconPosition === 'right' ? 10 : 8,
+            borderBottomLeftRadius: finalIconPosition === 'right' ? 10 : 8,
+            borderTopRightRadius: finalIconPosition === 'left' ? 10 : 8,
+            borderBottomRightRadius: finalIconPosition === 'left' ? 10 : 8,
+            borderWidth: 1.5,
           },
         ]}
       >
         <ThemedText
-          style={[styles.text, { color: finalContentColor }, textStyle]}
+          style={[styles.text, { color: finalContentColor, fontSize: 18 }, textStyle]}
         >
           {label}
         </ThemedText>
@@ -145,21 +147,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   iconWrapper: {
-    position: "relative",
     justifyContent: "center",
     alignItems: "center",
   },
-  iconContainer: {
-    position: "absolute",
-    inset: 0,
+  iconContainerInternal: {
     justifyContent: "center",
     alignItems: "center",
   },
   textWrapper: {
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 12,
-    borderWidth: 1.5,
   },
   text: {
     fontSize: 18,
