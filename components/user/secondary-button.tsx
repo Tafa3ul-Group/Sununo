@@ -50,7 +50,7 @@ export function SecondaryButton({
 
   const bgColor = isActive ? activeColor : "white";
   const borderColor = isActive ? activeColor : "#E5E7EB";
-  const finalContentColor = isActive ? "white" : "#035DF9";
+  const finalContentColor = isActive ? activeTextColor : inactiveTextColor;
 
   const scaledWidth = 44.4;
 
@@ -97,7 +97,13 @@ export function SecondaryButton({
                 {iconLabel}
               </ThemedText>
             ) : icon ? (
-              icon
+              typeof icon === "string" ? (
+                <ThemedText style={[styles.text, { color: finalContentColor, fontSize: 12 }]}>
+                  {icon}
+                </ThemedText>
+              ) : (
+                icon
+              )
             ) : null}
           </View>
         )}
@@ -111,7 +117,7 @@ export function SecondaryButton({
             backgroundColor: bgColor,
             borderColor: borderColor,
             height: 46,
-            flex: 1,
+            paddingHorizontal: 16,
             // Match the SVG curves orientation
             borderTopLeftRadius: finalIconPosition === 'right' ? 8.7 : 0,
             borderBottomLeftRadius: finalIconPosition === 'right' ? 8.7 : 0,

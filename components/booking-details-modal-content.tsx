@@ -227,7 +227,7 @@ export const BookingDetailsModalContent = ({ id, isRTL, t, onRefresh, onClose }:
             onPress={handleCancelAction}
             isActive={true}
             activeColor="#EF4444"
-            icon="delete"
+            icon={<SolarDangerCircleBold size={18} color="white" />}
             style={{ width: '100%', height: 50 }}
             isLoading={isRejectLoading || isDeletingExternal}
           />

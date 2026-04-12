@@ -242,6 +242,23 @@ export const apiSlice = createApi({
         url: '/provider/bookings',
         params,
       }),
+      // Support for infinite scrolling
+      serializeQueryArgs: ({ queryArgs }) => {
+        const { page, ...rest } = queryArgs;
+        return rest;
+      },
+      merge: (currentCache, newItems, { arg }) => {
+        if (arg.page === 1) {
+          return newItems;
+        }
+        return {
+          ...newItems,
+          data: [...(currentCache.data || []), ...(newItems.data || [])]
+        };
+      },
+      forceRefetch({ currentArg, previousArg }) {
+        return currentArg !== previousArg;
+      },
       providesTags: ['Booking'],
     }),
 
