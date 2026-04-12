@@ -42,7 +42,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
     if (options.tabBarIcon) {
       return options.tabBarIcon({
         focused: isActive,
-        color: isIsolated ? 'white' : (isActive ? Colors.primary : 'white'),
+        color: isActive ? Colors.primary : 'white',
         size: normalize.width(24),
       });
     }
@@ -52,6 +52,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
   const isolatedTabName = 'bookings';
   const isolatedTab = visibleRoutes.find((r: any) => r.name === isolatedTabName) || visibleRoutes[0];
   const pillTabs = visibleRoutes.filter((r: any) => r.name !== isolatedTabName);
+  const isIsolatedActive = currentRouteName === isolatedTab.name;
 
   return (
     <View style={styles.container}>
@@ -69,7 +70,12 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
           onPress={() => navigation.navigate(isolatedTab.name)}
           activeOpacity={0.8}
         >
-          {renderIcon(isolatedTab, currentRouteName === isolatedTab.name, true)}
+          <View style={[
+            styles.tabIconCircle,
+            isIsolatedActive && styles.activeTabIndicator
+          ]}>
+            {renderIcon(isolatedTab, isIsolatedActive, true)}
+          </View>
         </TouchableOpacity>
 
         {/* Tab Capsule */}
