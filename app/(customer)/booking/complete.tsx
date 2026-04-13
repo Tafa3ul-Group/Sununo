@@ -15,25 +15,21 @@ import {
   SolarSunBold, 
   SolarMoonBold, 
   SolarAddCircleBold,
-  SolarAddBold,
-  SolarMinusBold,
-  SolarBedBold
 } from "@/components/icons/solar-icons";
 import * as Haptics from 'expo-haptics';
-import Svg, { Path } from 'react-native-svg';
 import { MainTabs, TabType } from '@/components/user/MainTabs';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CircleBackButton } from '@/components/ui/circle-back-button';
 import { Image as ExpoImage } from 'expo-image';
 import { useTranslation } from 'react-i18next';
+import { GuestCounter } from '@/components/user/guest-counter';
+import Svg, { Path } from 'react-native-svg';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // Helper to generate calendar days for March 2024 (1st is Friday)
 const generateMarchDays = () => {
     const days = [];
-    // Arabic/Standard Week: SAT(0), SUN(1), MON(2), TUE(3), WED(4), THU(5), FRI(6)
-    // March 1st 2024 is Friday -> Arabic index 6.
     const firstDayPadding = 6; 
     for (let i = 0; i < firstDayPadding; i++) days.push(null);
     for (let i = 1; i <= 31; i++) days.push(i);
@@ -56,21 +52,17 @@ export default function CompleteBookingScreen() {
   const [selectedDates, setSelectedDates] = useState<number[]>([15]);
   const [activeDateIdx, setActiveDateIdx] = useState(0);
   
-  // Who tab state
   const [adultCount, setAdultCount] = useState(2);
   const [childrenCount, setChildrenCount] = useState(1);
 
-  // Simulated booked dates
   const bookedDates = [2, 3, 4, 8, 9, 10, 11, 12, 31];
   const activeDate = selectedDates[activeDateIdx];
 
-  // Calendar generation
   const calendarDays = useMemo(() => generateMarchDays(), []);
   const dayHeaders = t('booking.days', { returnObjects: true }) as string[];
 
-  // Updated shifts state (Morning, Evening, Overnight)
-  const [dayShifts, setDayShifts] = useState<Record<number, { morning: boolean, evening: boolean, overnight: boolean }>>({
-    15: { morning: true, evening: false, overnight: false }
+  const [dayShifts, setDayShifts] = useState<Record<number, { morning: boolean, evening: boolean }>>({
+    15: { morning: true, evening: false }
   });
 
   const handleNext = () => {
@@ -99,12 +91,12 @@ export default function CompleteBookingScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
-  const toggleShift = (type: 'morning' | 'evening' | 'overnight') => {
+  const toggleShift = (type: 'morning' | 'evening') => {
       if (!activeDate) return;
       setDayShifts(prev => ({
           ...prev,
           [activeDate]: {
-              ...(prev[activeDate] || { morning: false, evening: false, overnight: false }),
+              ...(prev[activeDate] || { morning: false, evening: false }),
               [type]: !(prev[activeDate]?.[type])
           }
       }));
@@ -115,7 +107,6 @@ export default function CompleteBookingScreen() {
     if (day === null) return <View key={`empty-${index}`} style={styles.dayCell} />;
     const isBooked = bookedDates.includes(day);
     const isSelected = selectedDates.includes(day);
-    const isActive = activeDate === day;
     
     return (
       <TouchableOpacity 
@@ -123,8 +114,7 @@ export default function CompleteBookingScreen() {
         disabled={isBooked}
         style={[
           styles.dayCell,
-          isSelected && styles.activeDayCell, // Primary color for any chosen date
-          isActive && { borderWidth: 2, borderColor: 'rgba(255,255,255,0.7)' } 
+          isSelected && styles.activeDayCell,
         ]}
         onPress={() => {
             if (isSelected) setActiveDateIdx(selectedDates.indexOf(day));
@@ -145,7 +135,6 @@ export default function CompleteBookingScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <View style={styles.backBtnWrapper}>
           <CircleBackButton />
@@ -161,50 +150,52 @@ export default function CompleteBookingScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
-        {/* 1. Tabs */}
         <View style={styles.tabsContainer}>
             <MainTabs activeTab={activeTab} onChange={setActiveTab} />
         </View>
 
         {activeTab === 'SHOOKET' ? (
           <>
-            {/* SHOOKET CONTENT (Calendar) */}
-            <View style={styles.quickDatesRow}>
-                {selectedDates.map((day, idx) => (
-                    <TouchableOpacity 
-                        key={day} 
-                        onPress={() => setActiveDateIdx(idx)}
-                        style={[styles.dateBadge, activeDateIdx === idx && styles.dateBadgeActive]}
-                    >
-                        <ThemedText style={[styles.dateBadgeText, activeDateIdx === idx && styles.dateBadgeTextActive]}>{day}</ThemedText>
-                    </TouchableOpacity>
-                ))}
-                <TouchableOpacity 
-                    style={styles.addDateBtn}
-                    onPress={() => {
-                        const last = selectedDates[selectedDates.length-1] || 15;
-                        let next = last + 1;
-                        while(bookedDates.includes(next) && next <= 31) next++;
-                        if(next <= 31) toggleDayDate(next);
-                    }}
+            <View style={styles.swiperContainer}>
+                <ScrollView 
+                    horizontal 
+                    showsHorizontalScrollIndicator={false} 
+                    contentContainerStyle={styles.quickDatesRow}
                 >
-                    <SolarAddCircleBold size={24} color={Colors.primary} />
-                </TouchableOpacity>
+                    <TouchableOpacity 
+                        style={styles.addDateBtn}
+                        onPress={() => {
+                            const last = selectedDates[selectedDates.length-1] || 15;
+                            let next = last + 1;
+                            while(bookedDates.includes(next) && next <= 31) next++;
+                            if(next <= 31) toggleDayDate(next);
+                        }}
+                    >
+                        <SolarAddCircleBold size={24} color={Colors.primary} />
+                    </TouchableOpacity>
+                    {selectedDates.map((day, idx) => (
+                        <TouchableOpacity 
+                            key={day} 
+                            onPress={() => setActiveDateIdx(idx)}
+                            style={[styles.dateBadge, activeDateIdx === idx && styles.dateBadgeActive]}
+                        >
+                            <ThemedText style={[styles.dateBadgeText, activeDateIdx === idx && styles.dateBadgeTextActive]}>{day}</ThemedText>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
             </View>
 
             <View style={styles.calendarCard}>
                 <ThemedText style={styles.calendarMonthTitle}>{t('booking.months.march')}</ThemedText>
                 <View style={styles.daysHeader}>
-                    {dayHeaders.map(d => <ThemedText key={d} style={styles.dayHeaderCell}>{d}</ThemedText>)}
+                    {dayHeaders.map((d, i) => <ThemedText key={`${d}-${i}`} style={styles.dayHeaderCell}>{d}</ThemedText>)}
                 </View>
                 <View style={[styles.daysGrid, !isRTL && { flexDirection: 'row' }]}>
-                    {calendarDays.map(renderCalendarDay)}
+                    {calendarDays.map((day, index) => renderCalendarDay(day, index))}
                 </View>
             </View>
 
             <View style={styles.shiftsContainer}>
-                {/* Morning Shift */}
                 <TouchableOpacity 
                     style={[styles.shiftCard, dayShifts[activeDate]?.morning && { backgroundColor: '#F6420008', borderColor: '#F6420033' }]} 
                     onPress={() => toggleShift('morning')}
@@ -218,7 +209,6 @@ export default function CompleteBookingScreen() {
                     <ThemedText style={styles.shiftTime}>{t('booking.morningTime')}</ThemedText>
                 </TouchableOpacity>
 
-                {/* Evening Shift */}
                 <TouchableOpacity 
                     style={[styles.shiftCard, dayShifts[activeDate]?.evening && { backgroundColor: '#035DF908', borderColor: '#035DF933' }]} 
                     onPress={() => toggleShift('evening')}
@@ -230,20 +220,6 @@ export default function CompleteBookingScreen() {
                         <ThemedText style={styles.shiftTitle}>{t('booking.eveningShift')}</ThemedText>
                     </View>
                     <ThemedText style={styles.shiftTime}>{t('booking.eveningTime')}</ThemedText>
-                </TouchableOpacity>
-
-                {/* Overnight Shift */}
-                <TouchableOpacity 
-                    style={[styles.shiftCard, dayShifts[activeDate]?.overnight && { backgroundColor: '#15AB6408', borderColor: '#15AB6433' }]} 
-                    onPress={() => toggleShift('overnight')}
-                >
-                    <View style={styles.shiftLeft}>
-                        <View style={styles.shiftIconBox}>
-                            <SolarBedBold size={24} color={dayShifts[activeDate]?.overnight ? "#15AB64" : "#94A3B8"} />
-                        </View>
-                        <ThemedText style={styles.shiftTitle}>{t('booking.overnight')}</ThemedText>
-                    </View>
-                    <ThemedText style={styles.shiftTime}>{t('booking.overnightTime')}</ThemedText>
                 </TouchableOpacity>
             </View>
 
@@ -260,35 +236,27 @@ export default function CompleteBookingScreen() {
         ) : activeTab === 'MANO' ? (
           <View style={styles.whoContainer}>
                <View style={styles.whoCard}>
-                  <View style={[styles.whoRow, !isRTL && { flexDirection: 'row' }]}>
-                     <View style={[styles.counterGroup, !isRTL && { flexDirection: 'row-reverse' }]}>
-                        <TouchableOpacity style={styles.counterBtn} onPress={() => setAdultCount(prev => prev + 1)}>
-                           <SolarAddBold size={24} color="white" />
-                        </TouchableOpacity>
-                        <ThemedText style={styles.counterVal}>{adultCount}</ThemedText>
-                        <TouchableOpacity style={styles.counterBtn} onPress={() => setAdultCount(Math.max(0, adultCount - 1))}>
-                           <SolarMinusBold size={24} color="white" />
-                        </TouchableOpacity>
-                     </View>
-                     <View style={[styles.whoLabels, !isRTL && { alignItems: 'flex-start' }]}>
-                        <ThemedText style={styles.whoMainLabel}>{t('booking.adults')}</ThemedText>
-                        <ThemedText style={styles.whoSubLabel}>{t('booking.adultsDesc')}</ThemedText>
+                  <View style={styles.guestItem}>
+                     <GuestCounter
+                        value={adultCount}
+                        onIncrement={() => setAdultCount(adultCount + 1)}
+                        onDecrement={() => setAdultCount(Math.max(1, adultCount - 1))}
+                     />
+                     <View style={styles.guestInfo}>
+                        <ThemedText style={styles.guestLabel}>{t('booking.adults')}</ThemedText>
+                        <ThemedText style={styles.guestSubLabel}>{t('booking.adultsDesc')}</ThemedText>
                      </View>
                   </View>
 
-                  <View style={[styles.whoRow, !isRTL && { flexDirection: 'row' }, { borderBottomWidth: 0, marginTop: 15 }]}>
-                     <View style={[styles.counterGroup, !isRTL && { flexDirection: 'row-reverse' }]}>
-                        <TouchableOpacity style={styles.counterBtn} onPress={() => setChildrenCount(prev => prev + 1)}>
-                           <SolarAddBold size={24} color="white" />
-                        </TouchableOpacity>
-                        <ThemedText style={styles.counterVal}>{childrenCount}</ThemedText>
-                        <TouchableOpacity style={styles.counterBtn} onPress={() => setChildrenCount(Math.max(0, childrenCount - 1))}>
-                           <SolarMinusBold size={24} color="white" />
-                        </TouchableOpacity>
-                     </View>
-                     <View style={[styles.whoLabels, !isRTL && { alignItems: 'flex-start' }]}>
-                        <ThemedText style={styles.whoMainLabel}>{t('booking.children')}</ThemedText>
-                        <ThemedText style={styles.whoSubLabel}>{t('booking.childrenDesc')}</ThemedText>
+                  <View style={[styles.guestItem, { borderBottomWidth: 0, marginTop: 15 }]}>
+                     <GuestCounter
+                        value={childrenCount}
+                        onIncrement={() => setChildrenCount(childrenCount + 1)}
+                        onDecrement={() => setChildrenCount(Math.max(0, childrenCount - 1))}
+                     />
+                     <View style={styles.guestInfo}>
+                        <ThemedText style={styles.guestLabel}>{t('booking.children')}</ThemedText>
+                        <ThemedText style={styles.guestSubLabel}>{t('booking.childrenDesc')}</ThemedText>
                      </View>
                   </View>
                </View>
@@ -296,15 +264,14 @@ export default function CompleteBookingScreen() {
         ) : (
             <View style={{ marginTop: 50, alignItems: 'center' }}><ThemedText>Details Step Placeholder</ThemedText></View>
         )}
-
       </ScrollView>
 
-      {/* Footer */}
       <View style={styles.footer}>
          <PrimaryButton 
            label={t('booking.next')} 
            onPress={handleNext}
-           style={[styles.nextBtn, activeTab === 'MANO' && { backgroundColor: '#F64200' }]}
+           activeColor={activeTab === 'MANO' ? '#F64200' : '#035DF9'}
+           style={styles.nextBtn}
          />
       </View>
     </SafeAreaView>
@@ -332,7 +299,8 @@ const styles = StyleSheet.create({
   },
   logoHeaderImg: { width: '70%', height: '70%' },
   tabsContainer: { marginTop: 20, alignItems: 'center' },
-  quickDatesRow: { flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', marginTop: 30, gap: 12 },
+  swiperContainer: { marginTop: 30, height: 60 },
+  quickDatesRow: { flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 12, paddingHorizontal: 4 },
   dateBadge: { width: 48, height: 48, borderRadius: 12, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', justifyContent: 'center', alignItems: 'center' },
   dateBadgeActive: { borderColor: Colors.primary, borderWidth: 2 },
   dateBadgeText: { fontSize: 18, fontWeight: '700', color: '#94A3B8' },
@@ -342,7 +310,7 @@ const styles = StyleSheet.create({
   calendarMonthTitle: { textAlign: 'center', fontSize: 18, fontWeight: '900', color: '#1E293B', marginBottom: 20 },
   daysHeader: { flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between', paddingHorizontal: 5, marginBottom: 15, backgroundColor: '#F8FAFC', paddingVertical: 10, borderRadius: 12 },
   dayHeaderCell: { fontSize: 11, fontWeight: '900', color: '#94A3B8', width: (SCREEN_WIDTH - 120) / 7, textAlign: 'center' },
-  daysGrid: { flexDirection: 'row-reverse', flexWrap: 'wrap', justifyContent: 'center', gap: 4 }, // Added justifyContent: 'center' and gap
+  daysGrid: { flexDirection: 'row-reverse', flexWrap: 'wrap', justifyContent: 'center', gap: 4 },
   dayCell: { width: (SCREEN_WIDTH - 120) / 7, height: (SCREEN_WIDTH - 120) / 7, justifyContent: 'center', alignItems: 'center', marginBottom: 4, position: 'relative' },
   activeDayCell: { backgroundColor: Colors.primary, borderRadius: 12 },
   dayText: { fontSize: 15, fontWeight: '700', color: '#334155' },
@@ -359,13 +327,10 @@ const styles = StyleSheet.create({
   deleteDayText: { color: '#EF4444', fontSize: 16, fontWeight: '800', textDecorationLine: 'underline' },
   whoContainer: { marginTop: 30 },
   whoCard: { backgroundColor: '#FFFFFF', borderRadius: 32, padding: 25, borderWidth: 1, borderColor: '#F1F5F9' },
-  whoRow: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#F3F4F6', paddingBottom: 15 },
-  counterGroup: { flexDirection: 'row-reverse', alignItems: 'center', gap: 15 },
-  counterBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#F64200', justifyContent: 'center', alignItems: 'center' },
-  counterVal: { fontSize: 22, fontWeight: '900', color: '#1E293B', width: 30, textAlign: 'center' },
-  whoLabels: { alignItems: 'flex-end' },
-  whoMainLabel: { fontSize: 18, fontWeight: '900', color: '#111827' },
-  whoSubLabel: { fontSize: 13, color: '#9CA3AF', fontWeight: '600', marginTop: 2 },
+  guestItem: { flexDirection: isRTL ? 'row' : 'row-reverse', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#F3F4F6', paddingBottom: 15 },
+  guestInfo: { flex: 1, alignItems: isRTL ? 'flex-start' : 'flex-end', marginLeft: isRTL ? 12 : 0, marginRight: !isRTL ? 12 : 0 },
+  guestLabel: { fontSize: 18, fontWeight: '900', color: '#111827' },
+  guestSubLabel: { fontSize: 13, color: '#9CA3AF', fontWeight: '600', marginTop: 2 },
   footer: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#FFF', paddingHorizontal: 25, paddingTop: 15, paddingBottom: Platform.OS === 'ios' ? 40 : 25, borderTopWidth: 1, borderTopColor: '#F1F5F9', zIndex: 100 },
   nextBtn: { width: '100%', height: 60 }
 });
