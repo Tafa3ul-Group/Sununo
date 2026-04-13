@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Platform } from 'react-native';
+import { StyleSheet, View, ScrollView } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { normalize, Colors, isRTL } from '@/constants/theme';
@@ -7,10 +7,9 @@ import { HorizontalCard } from '@/components/user/horizontal-card';
 import { SolarMapPointBold } from '@/components/icons/solar-icons';
 import { Image as ExpoImage } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CircleBackButton } from '@/components/ui/circle-back-button';
 import { useTranslation } from 'react-i18next';
+import { HeaderSection } from '@/components/header-section';
 
-// Mock data to match screenshot
 const MOCK_CHALET = {
     id: '1',
     title: "شالية الاروع علةاالطلاق",
@@ -29,20 +28,8 @@ export default function BookingSuccessDetailsScreen() {
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.backBtnWrapper}>
-          <CircleBackButton />
-        </View>
-        <ThemedText style={styles.headerTitle}>{t('booking.bookingDetails') || 'تفاصيل الحجز'}</ThemedText>
-        <View style={styles.logoCircleHeader}>
-           <ExpoImage 
-             source={require('@/assets/arlogo.svg')} 
-             style={styles.logoHeaderImg} 
-             contentFit="contain" 
-           />
-        </View>
-      </View>
+      {/* Normalized Header */}
+      <HeaderSection title={t('booking.bookingDetails') || 'تفاصيل الحجز'} showBackButton showLogo />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Chalet Card */}
@@ -141,21 +128,6 @@ export default function BookingSuccessDetailsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   scrollContent: { paddingBottom: 40, paddingHorizontal: 20 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: '#FFFFFF',
-  },
-  backBtnWrapper: { width: 44, height: 44, justifyContent: 'center' },
-  headerTitle: { fontSize: normalize.font(16), fontWeight: '900', color: '#111827' },
-  logoCircleHeader: {
-    width: 44, height: 44, borderRadius: 22, backgroundColor: '#FFFFFF',
-    justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#F1F5F9',
-  },
-  logoHeaderImg: { width: '70%', height: '70%' },
   chaletCardInstance: { width: '100%', marginRight: 0, marginBottom: 16 },
   detailsMapCard: { 
     backgroundColor: '#FFFFFF', 

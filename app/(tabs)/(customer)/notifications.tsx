@@ -7,6 +7,7 @@ import { Colors, normalize, Shadows } from '../../../constants/theme';
 import { ThemedText } from '@/components/themed-text';
 import { SolarAltArrowRightBold } from "@/components/icons/solar-icons";
 import { useRouter } from 'expo-router';
+import { HeaderSection } from '@/components/header-section';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -76,15 +77,11 @@ export default function NotificationsScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            {/* Header */}
-            <View style={styles.header}>
-                <View style={styles.headerInner}>
-                    <ThemedText style={styles.headerTitle}>{isRTL ? 'الاشعارات' : 'Notifications'}</ThemedText>
-                    <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-                        <SolarAltArrowRightBold size={normalize.width(22)} color="#035DF9" />
-                    </TouchableOpacity>
-                </View>
-            </View>
+            <HeaderSection 
+                title={isRTL ? 'الاشعارات' : 'Notifications'} 
+                showBackButton 
+                showLogo 
+            />
 
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                 {/* Today Section */}
@@ -107,36 +104,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: 'white',
-    },
-    header: {
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        backgroundColor: 'white',
-    },
-    headerInner: {
-        flexDirection: 'row-reverse',
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'relative',
-        height: 48,
-    },
-    headerTitle: {
-        fontSize: 20,
-        fontWeight: '900',
-        color: '#111827',
-    },
-    backButton: {
-        position: 'absolute',
-        right: 0,
-        width: 44,
-        height: 44,
-        borderRadius: 22,
-        backgroundColor: 'white',
-        justifyContent: 'center',
-        alignItems: 'center',
-        ...Shadows.small,
-        borderWidth: 1,
-        borderColor: '#F3F4F6',
     },
     scrollContent: {
         paddingHorizontal: 20,

@@ -92,12 +92,7 @@ export default function HomeScreen() {
         
         {/* Header */}
         <HeaderSection 
-          userType={userType} 
-          showLogo 
-          showSearch={false} 
-          showCategories={false}
-          showProfile 
-          extraIcon="search" 
+          isHome
           onExtraIconPress={() => bottomSheetRef.current?.present()} 
         />
 
@@ -158,7 +153,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: Colors.background, paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0 },
-  scrollContent: { paddingBottom: 120, paddingTop: 5 },
+  scrollContent: { paddingBottom: 120 },
   sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginTop: 20, marginBottom: 10 },
   sectionTitle: { fontSize: 22, fontWeight: "900", color: Colors.text.primary, textAlign: 'right' },
   seeAll: { fontSize: 15, color: Colors.primary, fontWeight: "600", textDecorationLine: "underline" },

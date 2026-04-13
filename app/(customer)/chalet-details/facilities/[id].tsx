@@ -8,7 +8,9 @@ import {
 } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import Svg, { Path } from 'react-native-svg';
-import { CircleBackButton } from '@/components/ui/circle-back-button';
+import { HeaderSection } from '@/components/header-section';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -28,17 +30,14 @@ const FacilityCard = ({ label, subtext, color }: { label: string; subtext?: stri
 
 export default function FacilitiesScreen() {
   const router = useRouter();
+  const { userType } = useSelector((state: RootState) => state.auth);
 
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      {/* الهيدر الموحد باستخدام CircleBackButton */}
-      <View style={styles.header}>
-          <CircleBackButton />
-          <ThemedText style={styles.headerTitle}>المرافق</ThemedText>
-          <View style={{ width: 44 }} />
-      </View>
+      {/* Normalized Header */}
+      <HeaderSection title="المرافق" showBackButton showLogo userType={userType} />
 
       <ScrollView contentContainerStyle={{ paddingBottom: 50, paddingHorizontal: 20 }}>
           {/* الخدمات العامة */}
@@ -74,11 +73,6 @@ export default function FacilitiesScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
-  header: { 
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', 
-    paddingHorizontal: 20, paddingTop: 50, paddingBottom: 20 
-  },
-  headerTitle: { fontSize: 20, fontWeight: '900' },
   categoryTitle: { 
     fontSize: 16, fontWeight: '900', textAlign: 'right', 
     marginTop: 25, marginBottom: 15, color: '#374151' 

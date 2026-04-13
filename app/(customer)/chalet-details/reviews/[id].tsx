@@ -11,6 +11,7 @@ import { ThemedText } from "@/components/themed-text";
 import { CircleBackButton } from "@/components/ui/circle-back-button";
 import { Image } from "expo-image";
 import { Stack, useLocalSearchParams } from "expo-router";
+import { HeaderSection } from '@/components/header-section';
 import React, { useState } from "react";
 import {
   Dimensions,
@@ -53,13 +54,8 @@ export default function ReviewsScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <View style={styles.header}>
-        <View style={styles.backBtnWrapper}>
-          <CircleBackButton />
-        </View>
-        <ThemedText style={styles.headerTitle}>المراجعات</ThemedText>
-        <View style={{ width: 44 }} />
-      </View>
+      {/* Standard Header */}
+      <HeaderSection title="المراجعات" showBackButton showLogo />
 
       <ScrollView contentContainerStyle={{ paddingBottom: 180 }}>
         <View style={styles.summaryArea}>
@@ -171,18 +167,6 @@ export default function ReviewsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFFFFF" },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingTop: 55,
-    paddingBottom: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
-  },
-  backBtnWrapper: { width: 44, height: 44, justifyContent: "center" },
-  headerTitle: { fontSize: 20, fontWeight: "900" },
   summaryArea: { alignItems: "center", marginVertical: 35 },
   bigRatingText: {
     fontSize: 56,

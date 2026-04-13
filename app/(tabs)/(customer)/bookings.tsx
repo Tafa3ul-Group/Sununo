@@ -9,6 +9,7 @@ import { ThemedText } from '@/components/themed-text';
 import { SolarCalendarBold, SolarBanknoteBold, SolarCalendarAddBold, SolarStarBold } from "@/components/icons/solar-icons";
 import { formatPrice } from '@/utils/format';
 import { useRouter } from 'expo-router';
+import { HeaderSection } from '@/components/header-section';
 import Svg, { Path, Defs, ClipPath, Image as SvgImage } from 'react-native-svg';
 
 // Global isRTL for styles
@@ -129,17 +130,7 @@ export default function BookingsScreen() {
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerPlaceholder} />
-        <ThemedText style={styles.headerTitle}>{t('tabs.bookings') || 'الحجوزات'}</ThemedText>
-        <View style={styles.logoCircleHeader}>
-            <Image 
-                source={require('@/assets/arlogo.svg')} 
-                style={styles.logoHeaderImg} 
-                resizeMode="contain"
-            />
-        </View>
-      </View>
+      <HeaderSection title={t('tabs.bookings') || 'الحجوزات'} showLogo />
 
       <ScrollView 
         contentContainerStyle={styles.scrollContent}
@@ -166,21 +157,6 @@ export default function BookingsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: '#FFFFFF',
-  },
-  headerPlaceholder: { width: 44 },
-  headerTitle: { fontSize: 20, fontWeight: '900', color: '#1E293B' },
-  logoCircleHeader: {
-    width: 44, height: 44, borderRadius: 22, backgroundColor: '#FFFFFF',
-    borderWidth: 1.2, borderColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center'
-  },
-  logoHeaderImg: { width: '70%', height: '70%' },
   scrollContent: { paddingHorizontal: 20, paddingBottom: 40, paddingTop: 10 },
   
   bookingCardContainer: {
