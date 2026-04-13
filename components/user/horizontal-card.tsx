@@ -1,6 +1,6 @@
 import { SolarHeartBold, SolarStarBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
-import { Colors, normalize } from "@/constants/theme";
+import { Colors, normalize, isRTL } from "@/constants/theme";
 import React, { useState } from "react";
 import {
   Dimensions,
@@ -51,6 +51,7 @@ interface HorizontalCardProps {
   onPress?: () => void;
   style?: ViewStyle;
   shapeIndex?: number;
+  hideFavorite?: boolean;
 }
 
 export function HorizontalCard({
@@ -58,6 +59,7 @@ export function HorizontalCard({
   onPress,
   style,
   shapeIndex = 2,
+  hideFavorite = false,
 }: HorizontalCardProps) {
   const [isFavorite, setIsFavorite] = useState(false);
 
@@ -77,38 +79,45 @@ export function HorizontalCard({
       onPress={onPress}
       style={[styles.container, style]}
     >
-      {/* 1. الطرف الأيسر: القلب والتقييم */}
-      <View style={styles.leftColumn}>
-        <TouchableOpacity
-          style={styles.heartCircle}
-          onPress={() => setIsFavorite(!isFavorite)}
-        >
-          <SolarHeartBold
-            size={normalize.width(20)}
-            color={isFavorite ? "#EA2129" : "#9CA3AF"}
-          />
-        </TouchableOpacity>
+      {/* الجزء الأيسر: المعلومات (منقسم لصفين علوي وسفلي) */}
+      <View style={styles.contentAndLeft}>
+        {/* الصف العلوي: القلب + العنوان والموقع */}
+        <View style={styles.topRow}>
+          <View style={styles.leftColumn}>
+            {!hideFavorite && (
+              <TouchableOpacity
+                style={styles.heartCircle}
+                onPress={() => setIsFavorite(!isFavorite)}
+              >
+                <SolarHeartBold
+                  size={normalize.width(20)}
+                  color={isFavorite ? "#EA2129" : "#9CA3AF"}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
 
-        <View style={styles.ratingBox}>
-          <SolarStarBold size={normalize.width(16)} color={Colors.secondary} />
-          <ThemedText style={styles.ratingText}>
-            {chalet.rating || "4.5"}
-          </ThemedText>
+          <View style={styles.mainContent}>
+            <View style={styles.upperText}>
+              <ThemedText style={styles.title} numberOfLines={1}>
+                {chalet.title}
+              </ThemedText>
+              <ThemedText style={styles.location} numberOfLines={1}>
+                {chalet.location}
+              </ThemedText>
+            </View>
+          </View>
         </View>
-      </View>
 
-      {/* 2. المنتصف: العنوان والموقع والسعر */}
-      <View style={styles.content}>
-        <View style={styles.upperText}>
-          <ThemedText style={styles.title} numberOfLines={1}>
-            {chalet.title}
-          </ThemedText>
-          <ThemedText style={styles.location} numberOfLines={1}>
-            {chalet.location}
-          </ThemedText>
-        </View>
+        {/* الصف السفلي: التقييم + السعر */}
+        <View style={styles.bottomRow}>
+          <View style={styles.ratingBox}>
+            <SolarStarBold size={normalize.width(16)} color={Colors.secondary} />
+            <ThemedText style={styles.ratingText}>
+              {chalet.rating || "4.5"}
+            </ThemedText>
+          </View>
 
-        <View style={styles.footerRow}>
           <View style={styles.priceRow}>
             <ThemedText style={styles.price}>IQD {chalet.price}</ThemedText>
             <ThemedText style={styles.priceLabel}> / شفت</ThemedText>
@@ -116,7 +125,7 @@ export function HorizontalCard({
         </View>
       </View>
 
-      {/* 3. الطرف الأيمن: الصورة Blob */}
+      {/* الجزء الأيمن: الصورة */}
       <View style={styles.imageWrapper}>
         <Svg
           height={normalize.height(88)}
@@ -161,11 +170,24 @@ const styles = StyleSheet.create({
     marginBottom: normalize.height(12),
     height: normalize.height(115),
   },
-  leftColumn: {
-    width: normalize.width(42),
+  contentAndLeft: {
+    flex: 1,
     height: "100%",
     justifyContent: "space-between",
     paddingVertical: 2,
+  },
+  topRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  leftColumn: {
+    width: normalize.width(42),
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  mainContent: {
+    flex: 1,
+    paddingHorizontal: 4,
   },
   heartCircle: {
     width: normalize.width(36),
@@ -177,27 +199,25 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: "#E5E7EB",
   },
+  bottomRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingLeft: normalize.width(6), // لضبط موضع النجمة تحت القلب
+  },
   ratingBox: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    marginBottom: 4,
   },
   ratingText: {
     fontSize: normalize.font(14),
     fontWeight: "800",
     color: "#111827",
   },
-  content: {
-    flex: 1,
-    flexShrink: 1,
-    paddingHorizontal: normalize.width(10),
-    height: "100%",
-    justifyContent: "space-between",
-    paddingVertical: 4,
-  },
   upperText: {
     alignItems: "flex-end",
+    marginTop: 4,
   },
   title: {
     fontSize: normalize.font(16),
@@ -208,11 +228,6 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(12),
     color: "#6B7280",
     marginTop: 2,
-  },
-  footerRow: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    width: "100%",
   },
   priceRow: {
     flexDirection: "row-reverse",

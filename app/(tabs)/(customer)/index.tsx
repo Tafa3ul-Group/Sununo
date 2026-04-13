@@ -5,13 +5,13 @@ import { useTranslation } from "react-i18next";
 import {
   Dimensions,
   Platform,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { useSelector } from "react-redux";
 

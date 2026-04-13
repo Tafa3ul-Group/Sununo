@@ -12,7 +12,13 @@ import { CircleBackButton } from "@/components/ui/circle-back-button";
 import { Image } from "expo-image";
 import { Stack, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
-import { Dimensions, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import {
+  Dimensions,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 
 const SAMPLE_IMAGES = [
   "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=400",
@@ -142,7 +148,6 @@ export default function ReviewsScreen() {
         />
         <View style={styles.footerOverlayContent}>
           <View style={styles.whiteInputPill}>
-
             <ThemedText style={styles.questionTitle}>
               شكد تقيم تجربتك؟
             </ThemedText>
@@ -263,7 +268,6 @@ const styles = StyleSheet.create({
   dateWrapper: { marginTop: 20, alignItems: "flex-start" },
   dateTextLabel: { fontSize: 13, color: "#9CA3AF", fontWeight: "500" },
 
-  // تنسيق الفوتر الملتصق بالأسفل تماماً
   footerSticky: {
     position: "absolute",
     bottom: 0,
