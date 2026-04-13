@@ -90,5 +90,27 @@
     "fullPayment": "Full Payment",
     "depositPayment": "Deposit",
     "shift": "Shift"
+  },
+  "booking": {
+    "complete": "Booking Completion",
+    "shooket": "When",
+    "mano": "Who",
+    "details": "Details",
+    "deleteDay": "Delete Day",
+    "next": "Next",
+    "adults": "Adults",
+    "adultsDesc": "18 and more",
+    "children": "Children",
+    "childrenDesc": "0 - 18",
+    "morningShift": "Morning Shift",
+    "eveningShift": "Evening Shift",
+    "overnight": "Overnight",
+    "morningTime": "9:00 AM - 3:00 PM",
+    "eveningTime": "4:00 PM - 8:00 PM",
+    "overnightTime": "9:00 PM - 8:00 AM",
+    "days": ["SAT", "SUN", "MON", "TUE", "WED", "THU", "FRI"],
+    "months": {
+      "march": "MARCH 2024"
+    }
   }
 }
