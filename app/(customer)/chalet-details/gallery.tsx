@@ -18,6 +18,9 @@ import {
 import { SectionIcon } from '@/components/icons/section-icon';
 import { Colors, normalize } from '@/constants/theme';
 import { SecondaryButton } from '@/components/user/secondary-button';
+import { HeaderSection } from '@/components/header-section';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -65,6 +68,7 @@ const WavyHeader = ({ title, color }: { title: string, color: string }) => (
 
 export default function GalleryScreen() {
   const router = useRouter();
+  const { userType } = useSelector((state: RootState) => state.auth);
   const [activeFilter, setActiveFilter] = useState('all');
   const [viewerVisible, setViewerVisible] = useState(false);
   const [viewerImage, setViewerImage] = useState('');
@@ -98,17 +102,14 @@ export default function GalleryScreen() {
       </Modal>
 
       {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <View style={styles.blueLogo}>
-             <SolarWindBold size={24} color="#035DF9" />
-          </View>
-        </View>
-        <ThemedText style={styles.headerTitle}>الصور</ThemedText>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <SolarAltArrowLeftBold size={28} color="#000" />
-        </TouchableOpacity>
-      </View>
+      <HeaderSection 
+        title="الصور" 
+        showBackButton 
+        showLogo 
+        showSearch={false} 
+        showCategories={false}
+        userType={userType}
+      />
 
       {/* Categories Filter (Home Page Style) */}
       <View style={styles.catArea}>
@@ -163,33 +164,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    height: 60,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '900',
-  },
-  headerLeft: {
-    width: 44,
-  },
-  backBtn: {
-    width: 44,
-    alignItems: 'flex-end',
-  },
-  blueLogo: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   catArea: {
     paddingVertical: 10,
