@@ -54,7 +54,7 @@ export default function ProfileScreen() {
 
   const menuItems = [
     { id: 'wallet', title: isRTL ? 'المحفظة' : 'Wallet', shape: 'red' as const, icon: <SolarWalletBold size={20} color="white" />, route: '/(tabs)/(dashboard)/transactions' },
-    { id: 'bookings', title: isRTL ? 'الحجوزات' : 'Bookings', shape: 'red' as const, icon: <SolarCalendarBold size={20} color="white" />, route: '/(tabs)/bookings' },
+    { id: 'bookings', title: isRTL ? 'الحجوزات' : 'Bookings', shape: 'blue' as const, icon: <SolarCalendarBold size={20} color="white" />, route: '/(tabs)/(customer)/bookings' },
     { id: 'reviews', title: isRTL ? 'المراجعات' : 'Reviews', shape: 'blue' as const, icon: <SolarHeartBold size={20} color="white" /> },
     { id: 'language', title: isRTL ? 'اللغة' : 'Language', shape: 'pink' as const, icon: <SolarGlobalBold size={20} color="white" />, action: openLanguageSheet },
     { id: 'contact', title: isRTL ? 'تواصل معنا' : 'Contact Us', shape: 'green' as const, icon: <SolarPhoneBold size={20} color="white" /> },

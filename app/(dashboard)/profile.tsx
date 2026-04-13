@@ -61,6 +61,7 @@ export default function ProviderProfileScreen() {
 
   const menuItems = [
     { id: 'business', title: isRTL ? 'معلومات العمل والمصرف' : 'Business Info', shape: 'blue' as const, icon: <SolarBanknoteBold size={20} color="white" />, route: '/(dashboard)/edit-business' },
+    { id: 'bookings', title: isRTL ? 'الحجوزات' : 'Bookings', shape: 'red' as const, icon: <SolarCalendarBold size={20} color="white" />, route: '/(tabs)/(dashboard)/bookings' },
     { id: 'chalets', title: isRTL ? 'إدارة شاليهاتي' : 'Manage My Chalets', shape: 'green' as const, icon: <SolarHome2Bold size={20} color="white" />, route: '/(tabs)/(dashboard)/home' },
     { id: 'revenue', title: isRTL ? 'المالية والأرباح' : 'Revenue', shape: 'red' as const, icon: <SolarChartBold size={20} color="white" />, route: '/(tabs)/(dashboard)/revenue' },
     { id: 'notifications', title: isRTL ? 'الإشعارات' : 'Notifications', shape: 'pink' as const, icon: <SolarBellBold size={20} color="white" />, route: '/(tabs)/(dashboard)/notifications' },

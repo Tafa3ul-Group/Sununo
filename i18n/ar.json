@@ -137,9 +137,19 @@
     "bookingDetails": "تفاصيل الحجز",
     "bookingStatus": "حالة الحجز",
     "paymentStatus": "حالة الدفع",
+    "dateValue": "12 - 14 أكتوبر 2025",
+    "guestsValue": "2 بالغين، 2 اطفال",
+    "bookingDate": "تاريخ الحجز",
+    "finalAmount": "المبلغ النهائي",
+    "viewBookingDetails": "عرض تفاصيل الحجز",
+    "noBookings": "لا توجد حجوزات حتى الآن",
+    "noBookingsDesc": "ابدأ باستكشاف الشاليهات المتاحة واحجز رحلتك القادمة!",
+    "exploreNow": "اكتشف الآن",
     "status": {
       "accepted": "مقبول",
-      "deferred": "مؤجل"
+      "deferred": "مؤجل",
+      "paid": "مدفوع",
+      "pending": "قيد الانتظار"
     },
     "successTitle": "تم الحجز بنجاح!",
     "successMsg": "لقد تم تأكيد حجزك، يمكنك البدء الآن في متابعة التفاصيل.",
@@ -149,6 +159,12 @@
     "nameValue": "انسي انس",
     "phoneValue": "+496 7703409763",
     "dateValue": "12 - 14 أكتوبر 2025",
-    "guestsValue": "2 بالغين، 2 اطفال"
+    "guestsValue": "2 بالغين، 2 اطفال",
+    "bookingDate": "تاريخ الحجز",
+    "finalAmount": "المبلغ النهائي",
+    "viewBookingDetails": "عرض تفاصيل الحجز",
+    "noBookings": "لا توجد حجوزات حتى الآن",
+    "noBookingsDesc": "ابدأ باستكشاف الشاليهات المتاحة واحجز رحلتك القادمة!",
+    "exploreNow": "اكتشف الآن"
   }
 }

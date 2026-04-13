@@ -139,7 +139,9 @@
     "paymentStatus": "Payment Status",
     "status": {
       "accepted": "Accepted",
-      "deferred": "Deferred"
+      "deferred": "Deferred",
+      "paid": "Paid",
+      "pending": "Pending"
     },
     "successTitle": "Booking Completed!",
     "successMsg": "Your booking has been confirmed successfully, you can now check the details.",
@@ -149,6 +151,12 @@
     "nameValue": "Ansi Ans",
     "phoneValue": "+496 7703409763",
     "dateValue": "12 - 14 October 2025",
-    "guestsValue": "2 Adults, 2 Children"
+    "guestsValue": "2 Adults, 2 Children",
+    "bookingDate": "Booking Date",
+    "finalAmount": "Final Amount",
+    "viewBookingDetails": "View Booking Details",
+    "noBookings": "No bookings yet",
+    "noBookingsDesc": "Explore available chalets and book your next trip!",
+    "exploreNow": "Explore Now"
   }
 }
