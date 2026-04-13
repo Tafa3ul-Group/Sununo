@@ -19,6 +19,9 @@ import {
   SolarStarBold,
   SolarCardBold
 } from "@/components/icons/solar-icons";
+import { HeaderSection } from '@/components/header-section';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 import { TextInput } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { MainTabs, TabType } from '@/components/user/MainTabs';
@@ -70,7 +73,7 @@ const ScribbleIcon = () => (
 export default function CompleteBookingScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { id } = useLocalSearchParams();
+  const { userType } = useSelector((state: RootState) => state.auth);
   const [activeTab, setActiveTab] = useState<TabType>('SHOOKET');
   const [selectedDates, setSelectedDates] = useState<number[]>([15]);
   const [activeDateIdx, setActiveDateIdx] = useState(0);
@@ -419,19 +422,12 @@ export default function CompleteBookingScreen() {
   return (
     <BottomSheetModalProvider>
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.backBtnWrapper}>
-          <CircleBackButton />
-        </View>
-        <ThemedText style={styles.headerTitle}>{t('booking.complete')}</ThemedText>
-        <View style={styles.logoCircleHeader}>
-           <ExpoImage 
-             source={require('@/assets/arlogo.svg')} 
-             style={styles.logoHeaderImg} 
-             contentFit="contain" 
-           />
-        </View>
-      </View>
+      <HeaderSection 
+        title={t('booking.complete')} 
+        showBackButton 
+        showLogo 
+        userType={userType}
+      />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.tabsContainer}>
@@ -566,23 +562,6 @@ export default function CompleteBookingScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   scrollContent: { paddingBottom: 150, paddingHorizontal: 16 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
-  },
-  backBtnWrapper: { width: 36, height: 36, justifyContent: 'center' },
-  headerTitle: { fontSize: normalize.font(18), fontWeight: '900', color: '#111827' },
-  logoCircleHeader: {
-    width: 36, height: 36, borderRadius: 18, backgroundColor: '#FFFFFF',
-    justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#F1F5F9',
-  },
-  logoHeaderImg: { width: '70%', height: '70%' },
   tabsContainer: { marginTop: 15, alignItems: 'center' },
   swiperContainer: { marginTop: 20, height: 50 },
   quickDatesRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 4 },

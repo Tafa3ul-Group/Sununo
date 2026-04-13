@@ -122,14 +122,11 @@ export default function ExploreScreen() {
       <View style={[styles.topOverlay, { paddingTop: insets.top }]}>
         {/* Main Header */}
         <HeaderSection 
-          userType={userType} 
-          showLogo 
-          showSearch={false} 
-          showCategories={false}
-          showProfile 
-          extraIcon={<SolarMagnifierBold size={normalize.width(22)} color={Colors.text.primary} />} 
-          onExtraIconPress={() => {}} 
-          marginBottom={0}
+          isHome={true}
+          showLogo={true}
+          onExtraIconPress={() => {
+            // Usually this would open a search sheet
+          }}
         />
 
         {/* Filter Bar */}
