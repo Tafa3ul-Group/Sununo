@@ -35,6 +35,7 @@ import {
   BottomSheetBackdrop,
   BottomSheetModalProvider
 } from '@gorhom/bottom-sheet';
+import LottieView from 'lottie-react-native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -75,8 +76,8 @@ export default function CompleteBookingScreen() {
   const [activeDateIdx, setActiveDateIdx] = useState(0);
   const [paymentType, setPaymentType] = useState<'DEPOSIT' | 'FULL'>('DEPOSIT');
   
-  // Sheet reference
-  const paymentSheetRef = React.useRef<BottomSheetModal>(null);
+  // Ref for Success Sheet
+  const successSheetRef = React.useRef<BottomSheetModal>(null);
 
   // Card Details State
   const [cardNum, setCardNum] = useState('');
@@ -103,10 +104,9 @@ export default function CompleteBookingScreen() {
         setActiveTab('MANO');
     } else if (activeTab === 'MANO') {
         setActiveTab('DETAILS');
-    } else if (activeTab === 'DETAILS') {
-        paymentSheetRef.current?.present();
     } else {
-        router.push('/(customer)/booking/success');
+        // We are on DETAILS tab, which now includes the payment form
+        successSheetRef.current?.present();
     }
   };
 
@@ -165,11 +165,11 @@ export default function CompleteBookingScreen() {
             <View style={styles.divider} />
             <View style={styles.infoRow}>
                 <ThemedText style={styles.infoLabel}>{t('booking.name')}</ThemedText>
-                <ThemedText style={styles.infoValue}>انسي انس</ThemedText>
+                <ThemedText style={styles.infoValue}>{t('booking.nameValue')}</ThemedText>
             </View>
             <View style={styles.infoRow}>
                 <ThemedText style={styles.infoLabel}>{t('booking.phone')}</ThemedText>
-                <ThemedText style={[styles.infoValue, { direction: 'ltr' }]}>+496  7703409763</ThemedText>
+                <ThemedText style={[styles.infoValue, { direction: 'ltr' }]}>{t('booking.phoneValue')}</ThemedText>
             </View>
         </View>
 
@@ -184,7 +184,7 @@ export default function CompleteBookingScreen() {
             <View style={styles.divider} />
             <View style={styles.infoRow}>
                 <ThemedText style={styles.infoLabel}>{t('booking.date')}</ThemedText>
-                <ThemedText style={styles.infoValue}>12 - 14 أكتوبر 2025</ThemedText>
+                <ThemedText style={styles.infoValue}>{t('booking.dateValue')}</ThemedText>
             </View>
             <View style={styles.infoRow}>
                 <ThemedText style={styles.infoLabel}>{t('booking.shift')}</ThemedText>
@@ -192,11 +192,11 @@ export default function CompleteBookingScreen() {
             </View>
             <View style={styles.infoRow}>
                 <ThemedText style={styles.infoLabel}>{t('booking.guests')}</ThemedText>
-                <ThemedText style={styles.infoValue}>2 بالغين، 2 اطفال</ThemedText>
+                <ThemedText style={styles.infoValue}>{t('booking.guestsValue')}</ThemedText>
             </View>
             <View style={styles.infoRow}>
                 <ThemedText style={styles.infoLabel}>{t('booking.totalAmount')}</ThemedText>
-                <ThemedText style={styles.infoValue}>500,000 د.ع</ThemedText>
+                <ThemedText style={styles.infoValue}>500,000 {t('common.iqd')}</ThemedText>
             </View>
         </View>
 
@@ -208,7 +208,7 @@ export default function CompleteBookingScreen() {
             style={[styles.paymentOptionCard, paymentType === 'DEPOSIT' && styles.paymentOptionActive]}
             onPress={() => setPaymentType('DEPOSIT')}
         >
-            <ThemedText style={[styles.paymentVal, paymentType === 'DEPOSIT' && styles.paymentValActive]}>50,000 د.ع</ThemedText>
+            <ThemedText style={[styles.paymentVal, paymentType === 'DEPOSIT' && styles.paymentValActive]}>50,000 {t('common.iqd')}</ThemedText>
             <ThemedText style={[styles.paymentLabel, paymentType === 'DEPOSIT' && styles.paymentLabelActive]}>{t('booking.depositPay')}</ThemedText>
         </TouchableOpacity>
 
@@ -216,7 +216,7 @@ export default function CompleteBookingScreen() {
             style={[styles.paymentOptionCard, paymentType === 'FULL' && styles.paymentOptionActive]}
             onPress={() => setPaymentType('FULL')}
         >
-            <ThemedText style={[styles.paymentVal, paymentType === 'FULL' && styles.paymentValActive]}>500,000 د.ع</ThemedText>
+            <ThemedText style={[styles.paymentVal, paymentType === 'FULL' && styles.paymentValActive]}>500,000 {t('common.iqd')}</ThemedText>
             <ThemedText style={[styles.paymentLabel, paymentType === 'FULL' && styles.paymentLabelActive]}>{t('booking.fullPay')}</ThemedText>
         </TouchableOpacity>
 
@@ -226,25 +226,11 @@ export default function CompleteBookingScreen() {
                 {t('booking.agreement')} <ThemedText style={styles.agreementLink}>{t('booking.terms')}</ThemedText> و <ThemedText style={styles.agreementLink}>{t('booking.policy')}</ThemedText>
             </ThemedText>
         </View>
-    </View>
-  );
 
-  const renderPaymentTab = () => (
-    <BottomSheetModal
-        ref={paymentSheetRef}
-        index={0}
-        snapPoints={['80%']}
-        backdropComponent={(props) => (
-            <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
-        )}
-        handleIndicatorStyle={{ backgroundColor: '#CBD5E1', width: 40 }}
-        style={styles.sheetShadow}
-    >
-        <BottomSheetView style={styles.paymentDetailsContainer}>
-            <View style={styles.paymentHeader}>
-               <ThemedText style={styles.paymentDetailsTitle}>{t('booking.paymentDetails')}</ThemedText>
-            </View>
-
+        {/* Inline Card Details (New Addition) */}
+        <View style={styles.inlinePaymentSection}>
+            <ThemedText style={styles.inlinePaymentTitle}>{t('booking.paymentDetails')}</ThemedText>
+            
             <View style={styles.paymentForm}>
                 {/* Card Number */}
                 <View style={styles.inputGroup}>
@@ -298,22 +284,106 @@ export default function CompleteBookingScreen() {
                         onChangeText={setCardName}
                     />
                 </View>
+            </View>
+        </View>
+    </View>
+  );
 
-                {/* Final Complete Payment Button directly inside form */}
-                <View style={{ marginTop: 20 }}>
-                    <PrimaryButton 
-                        label={t('booking.completePayment')} 
-                        onPress={() => {
-                            paymentSheetRef.current?.dismiss();
-                            router.push('/(customer)/booking/success');
-                        }}
-                        activeColor="#15AB64"
-                        style={{ width: '100%', height: 62 }}
+  const renderSuccessSheet = () => (
+    <BottomSheetModal
+        ref={successSheetRef}
+        index={0}
+        snapPoints={['50%']}
+        backdropComponent={(props) => (
+            <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
+        )}
+        handleIndicatorStyle={{ backgroundColor: '#CBD5E1', width: 40 }}
+    >
+        <BottomSheetView style={styles.successSheetContent}>
+            <LottieView 
+                source={require('../../../components/icons/motions/secssuse.json')}
+                autoPlay
+                loop={false}
+                style={styles.lottieIcon}
+            />
+            <ThemedText style={styles.successTitle}>{t('booking.successTitle') || 'تم الحجز بنجاح!'}</ThemedText>
+            <ThemedText style={styles.successSub}>{t('booking.successMsg') || 'لقد تم تأكيد حجزك، يمكنك البدء الآن في متابعة التفاصيل.'}</ThemedText>
+            
+            <PrimaryButton 
+                label={t('booking.goToDetails') || 'استعراض تفاصيل الحجز'}
+                onPress={() => {
+                   successSheetRef.current?.dismiss();
+                   router.push('/(tabs)/(customer)/booking-success');
+                }}
+                activeColor="#15AB64"
+                style={styles.successBtn}
+            />
+        </BottomSheetView>
+    </BottomSheetModal>
+  );
+
+  const renderPaymentPage = () => (
+    <View style={styles.paymentPageContainer}>
+        <View style={styles.paymentHeaderInline}>
+           <SolarCardBold size={28} color="#1E293B" />
+           <ThemedText style={styles.paymentDetailsTitleInline}>{t('booking.paymentDetails')}</ThemedText>
+        </View>
+
+        <View style={styles.paymentForm}>
+            {/* Card Number */}
+            <View style={styles.inputGroup}>
+                <ThemedText style={styles.inputLabel}>{t('booking.cardNum')}</ThemedText>
+                <TextInput 
+                    style={styles.textInput}
+                    placeholder="**** **** **** ****"
+                    placeholderTextColor="#94A3B8"
+                    keyboardType="numeric"
+                    value={cardNum}
+                    onChangeText={setCardNum}
+                />
+            </View>
+
+            {/* Row Expiry and CVV */}
+            <View style={[styles.rowInputs, { gap: 15 }]}>
+                <View style={styles.inputGroupFull}>
+                    <ThemedText style={styles.inputLabel}>{t('booking.expiry')}</ThemedText>
+                    <TextInput 
+                        style={styles.textInput}
+                        placeholder="MM/YYYY"
+                        placeholderTextColor="#94A3B8"
+                        keyboardType="numeric"
+                        value={expiry}
+                        onChangeText={setExpiry}
+                    />
+                </View>
+                <View style={styles.inputGroupFixed}>
+                    <ThemedText style={styles.inputLabel}>{t('booking.cvv')}</ThemedText>
+                    <TextInput 
+                        style={styles.textInput}
+                        placeholder="***"
+                        placeholderTextColor="#94A3B8"
+                        keyboardType="numeric"
+                        secureTextEntry
+                        maxLength={4}
+                        value={cvv}
+                        onChangeText={setCvv}
                     />
                 </View>
             </View>
-        </BottomSheetView>
-    </BottomSheetModal>
+
+            {/* Card Holder Name */}
+            <View style={styles.inputGroup}>
+                <ThemedText style={styles.inputLabel}>{t('booking.cardName')}</ThemedText>
+                <TextInput 
+                    style={styles.textInput}
+                    placeholder={t('booking.enterName')}
+                    placeholderTextColor="#94A3B8"
+                    value={cardName}
+                    onChangeText={setCardName}
+                />
+            </View>
+        </View>
+    </View>
   );
 
   const renderCalendarDay = (day: number | null, index: number) => {
@@ -450,29 +520,27 @@ export default function CompleteBookingScreen() {
         ) : activeTab === 'MANO' ? (
           <View style={styles.whoContainer}>
                <View style={styles.whoCard}>
-                  <View style={styles.guestItem}>
-                     <GuestCounter
-                        value={adultCount}
-                        onIncrement={() => setAdultCount(adultCount + 1)}
-                        onDecrement={() => setAdultCount(Math.max(1, adultCount - 1))}
-                     />
-                     <View style={styles.guestInfo}>
-                        <ThemedText style={styles.guestLabel}>{t('booking.adults')}</ThemedText>
-                        <ThemedText style={styles.guestSubLabel}>{t('booking.adultsDesc')}</ThemedText>
-                     </View>
-                  </View>
+                   <View style={styles.guestInfo}>
+                      <ThemedText style={styles.guestLabel}>{t('booking.adults')}</ThemedText>
+                      <ThemedText style={styles.guestSubLabel}>{t('booking.adultsDesc')}</ThemedText>
+                   </View>
+                   <GuestCounter
+                      value={adultCount}
+                      onIncrement={() => setAdultCount(adultCount + 1)}
+                      onDecrement={() => setAdultCount(Math.max(1, adultCount - 1))}
+                   />
+               </View>
 
-                  <View style={[styles.guestItem, { borderBottomWidth: 0, marginTop: 15 }]}>
-                     <GuestCounter
-                        value={childrenCount}
-                        onIncrement={() => setChildrenCount(childrenCount + 1)}
-                        onDecrement={() => setChildrenCount(Math.max(0, childrenCount - 1))}
-                     />
-                     <View style={styles.guestInfo}>
-                        <ThemedText style={styles.guestLabel}>{t('booking.children')}</ThemedText>
-                        <ThemedText style={styles.guestSubLabel}>{t('booking.childrenDesc')}</ThemedText>
-                     </View>
-                  </View>
+               <View style={[styles.whoCard, { marginTop: 12 }]}>
+                   <View style={styles.guestInfo}>
+                      <ThemedText style={styles.guestLabel}>{t('booking.children')}</ThemedText>
+                      <ThemedText style={styles.guestSubLabel}>{t('booking.childrenDesc')}</ThemedText>
+                   </View>
+                   <GuestCounter
+                      value={childrenCount}
+                      onIncrement={() => setChildrenCount(childrenCount + 1)}
+                      onDecrement={() => setChildrenCount(Math.max(0, childrenCount - 1))}
+                   />
                </View>
             </View>
         ) : (
@@ -482,14 +550,14 @@ export default function CompleteBookingScreen() {
 
       <View style={styles.footer}>
          <PrimaryButton 
-           label={activeTab === 'DETAILS' ? 'تأكيد الحجز' : t('booking.next')} 
+           label={activeTab === 'DETAILS' ? t('booking.completePayment') : t('booking.next')} 
            onPress={handleNext}
            activeColor={activeTab === 'MANO' ? '#F64200' : (activeTab === 'DETAILS' ? '#15AB64' : '#035DF9')}
            style={styles.nextBtn}
          />
       </View>
 
-      {renderPaymentTab()}
+      {renderSuccessSheet()}
     </SafeAreaView>
     </BottomSheetModalProvider>
   );
@@ -497,140 +565,147 @@ export default function CompleteBookingScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
-  scrollContent: { paddingBottom: 150, paddingHorizontal: 20 },
+  scrollContent: { paddingBottom: 150, paddingHorizontal: 16 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 15,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
   },
-  backBtnWrapper: { width: 44, height: 44, justifyContent: 'center' },
-  headerTitle: { fontSize: 20, fontWeight: '900', color: '#111827' },
+  backBtnWrapper: { width: 36, height: 36, justifyContent: 'center' },
+  headerTitle: { fontSize: normalize.font(18), fontWeight: '900', color: '#111827' },
   logoCircleHeader: {
-    width: 44, height: 44, borderRadius: 22, backgroundColor: '#FFFFFF',
+    width: 36, height: 36, borderRadius: 18, backgroundColor: '#FFFFFF',
     justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#F1F5F9',
   },
   logoHeaderImg: { width: '70%', height: '70%' },
-  tabsContainer: { marginTop: 20, alignItems: 'center' },
-  swiperContainer: { marginTop: 30, height: 60 },
-  quickDatesRow: { flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 12, paddingHorizontal: 4 },
-  dateBadge: { width: 48, height: 48, borderRadius: 12, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', justifyContent: 'center', alignItems: 'center' },
+  tabsContainer: { marginTop: 15, alignItems: 'center' },
+  swiperContainer: { marginTop: 20, height: 50 },
+  quickDatesRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 4 },
+  dateBadge: { width: 42, height: 42, borderRadius: 10, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', justifyContent: 'center', alignItems: 'center' },
   dateBadgeActive: { borderColor: Colors.primary, borderWidth: 2 },
-  dateBadgeText: { fontSize: 18, fontWeight: '700', color: '#94A3B8' },
+  dateBadgeText: { fontSize: normalize.font(16), fontWeight: '700', color: '#94A3B8' },
   dateBadgeTextActive: { color: Colors.primary, fontWeight: '800' },
-  addDateBtn: { width: 48, height: 48, borderRadius: 12, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', justifyContent: 'center', alignItems: 'center' },
-  calendarCard: { backgroundColor: '#FFFFFF', borderRadius: 32, padding: 20, marginTop: 25, borderWidth: 1, borderColor: '#F1F5F9' },
-  calendarMonthTitle: { textAlign: 'center', fontSize: 18, fontWeight: '900', color: '#1E293B', marginBottom: 20 },
-  daysHeader: { flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between', paddingHorizontal: 5, marginBottom: 15, backgroundColor: '#F8FAFC', paddingVertical: 10, borderRadius: 12 },
-  dayHeaderCell: { fontSize: 11, fontWeight: '900', color: '#94A3B8', width: (SCREEN_WIDTH - 120) / 7, textAlign: 'center' },
-  daysGrid: { flexDirection: 'row-reverse', flexWrap: 'wrap', justifyContent: 'center', gap: 4 },
-  dayCell: { width: (SCREEN_WIDTH - 120) / 7, height: (SCREEN_WIDTH - 120) / 7, justifyContent: 'center', alignItems: 'center', marginBottom: 4, position: 'relative' },
-  activeDayCell: { backgroundColor: Colors.primary, borderRadius: 12 },
-  dayText: { fontSize: 15, fontWeight: '700', color: '#334155' },
+  addDateBtn: { width: 42, height: 42, borderRadius: 10, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', justifyContent: 'center', alignItems: 'center' },
+  calendarCard: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 15, marginTop: 20, borderWidth: 1, borderColor: '#F1F5F9' },
+  calendarMonthTitle: { textAlign: 'center', fontSize: normalize.font(16), fontWeight: '900', color: '#1E293B', marginBottom: 15 },
+  daysHeader: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 5, marginBottom: 12, backgroundColor: '#F8FAFC', paddingVertical: 8, borderRadius: 10 },
+  dayHeaderCell: { fontSize: normalize.font(10), fontWeight: '900', color: '#94A3B8', width: (SCREEN_WIDTH - 100) / 7, textAlign: 'center' },
+  daysGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 4 },
+  dayCell: { width: (SCREEN_WIDTH - 100) / 7, height: (SCREEN_WIDTH - 100) / 7, justifyContent: 'center', alignItems: 'center', marginBottom: 4, position: 'relative' },
+  activeDayCell: { backgroundColor: Colors.primary, borderRadius: 10 },
+  dayText: { fontSize: normalize.font(14), fontWeight: '700', color: '#334155' },
   activeDayText: { color: '#FFF', fontWeight: '900' },
   bookedDayText: { color: '#CBD5E1', fontWeight: '400' },
   scribbleOverlay: { position: 'absolute', width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center', zIndex: 2, opacity: 0.4 },
-  shiftsContainer: { marginTop: 25, gap: 12 },
-  shiftCard: { flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F8FAFC', borderRadius: 20, padding: 18, borderWidth: 1.5, borderColor: 'transparent' },
-  shiftLeft: { flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 12 },
-  shiftIconBox: { width: 48, height: 48, borderRadius: 12, backgroundColor: '#FFF', justifyContent: 'center', alignItems: 'center' },
-  shiftTitle: { fontSize: 17, fontWeight: '800', color: '#1E293B' },
-  shiftTime: { fontSize: 13, color: '#64748B', fontWeight: '700' },
-  deleteDayBtn: { alignItems: 'center', marginTop: 35, padding: 10 },
-  deleteDayText: { color: '#EF4444', fontSize: 16, fontWeight: '800', textDecorationLine: 'underline' },
-  whoContainer: { marginTop: 30 },
-  whoCard: { backgroundColor: '#FFFFFF', borderRadius: 32, padding: 25, borderWidth: 1, borderColor: '#F1F5F9' },
-  guestItem: { flexDirection: isRTL ? 'row' : 'row-reverse', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#F3F4F6', paddingBottom: 15 },
-  guestInfo: { flex: 1, alignItems: isRTL ? 'flex-start' : 'flex-end', marginLeft: isRTL ? 12 : 0, marginRight: !isRTL ? 12 : 0 },
-  guestLabel: { fontSize: 18, fontWeight: '900', color: '#111827' },
-  guestSubLabel: { fontSize: 13, color: '#9CA3AF', fontWeight: '600', marginTop: 2 },
-  footer: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#FFF', paddingHorizontal: 25, paddingTop: 15, paddingBottom: Platform.OS === 'ios' ? 40 : 25, borderTopWidth: 1, borderTopColor: '#F1F5F9', zIndex: 100 },
-  nextBtn: { width: '100%', height: 60 },
+  shiftsContainer: { marginTop: 20, gap: 10 },
+  shiftCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F8FAFC', borderRadius: 16, padding: 14, borderWidth: 1.5, borderColor: 'transparent' },
+  shiftLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  shiftIconBox: { width: 40, height: 40, borderRadius: 10, backgroundColor: '#FFF', justifyContent: 'center', alignItems: 'center' },
+  shiftTitle: { fontSize: normalize.font(15), fontWeight: '800', color: '#1E293B' },
+  shiftTime: { fontSize: normalize.font(12), color: '#64748B', fontWeight: '700' },
+  deleteDayBtn: { alignItems: 'center', marginTop: 30, padding: 8 },
+  deleteDayText: { color: '#EF4444', fontSize: normalize.font(14), fontWeight: '800', textDecorationLine: 'underline' },
+  whoContainer: { marginTop: 20 },
+  whoCard: { 
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF', 
+    borderRadius: 24, 
+    padding: 16, 
+    borderWidth: 1, 
+    borderColor: '#F1F5F9' 
+  },
+  guestInfo: { alignItems: isRTL ? 'flex-end' : 'flex-start' },
+  guestLabel: { fontSize: normalize.font(16), fontWeight: '900', color: '#111827' },
+  guestSubLabel: { fontSize: normalize.font(12), color: '#9CA3AF', fontWeight: '600', marginTop: 1 },
+  footer: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#FFF', paddingHorizontal: 20, paddingTop: 12, paddingBottom: Platform.OS === 'ios' ? 35 : 20, borderTopWidth: 1, borderTopColor: '#F1F5F9', zIndex: 100 },
+  nextBtn: { width: '100%', height: 54 },
 
-  // Payment Tab Styles
-  paymentDetailsContainer: { padding: 25, backgroundColor: '#FFFFFF' },
-  paymentHeader: { flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', marginBottom: 25, justifyContent: 'center' },
-  paymentDetailsTitle: { fontSize: 24, fontWeight: '900', color: '#1E293B' },
-  paymentForm: { gap: 15 },
-  inputGroup: { gap: 8 },
-  inputGroupFull: { flex: 1, gap: 8 },
-  inputGroupFixed: { width: 100, gap: 8 },
-  inputLabel: { fontSize: 16, fontWeight: '800', color: '#1E293B', textAlign: isRTL ? 'right' : 'left' },
+  // Inline Payment Styles
+  inlinePaymentSection: { marginTop: 20, borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingTop: 20, paddingBottom: 15 },
+  inlinePaymentTitle: { fontSize: normalize.font(18), fontWeight: '900', color: '#1E293B', marginBottom: 15, textAlign: isRTL ? 'right' : 'left' },
+  paymentForm: { gap: 12 },
+  inputGroup: { gap: 6 },
+  inputGroupFull: { flex: 1, gap: 6 },
+  inputGroupFixed: { width: 90, gap: 6 },
+  inputLabel: { fontSize: normalize.font(14), fontWeight: '800', color: '#1E293B', textAlign: isRTL ? 'right' : 'left' },
   textInput: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
     borderColor: '#F1F5F9',
-    borderRadius: 16,
-    height: 56,
-    paddingHorizontal: 20,
-    fontSize: 16,
+    borderRadius: 14,
+    height: 48,
+    paddingHorizontal: 16,
+    fontSize: normalize.font(14),
     fontWeight: '700',
     color: '#1E293B',
     textAlign: isRTL ? 'right' : 'left'
   },
   rowInputs: { flexDirection: isRTL ? 'row-reverse' : 'row' },
-  sheetShadow: {
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: -10 },
-      shadowOpacity: 0.1,
-      shadowRadius: 10,
-      elevation: 20
-  },
+
+  // Success Sheet Styles
+  successSheetContent: { padding: 25, alignItems: 'center', backgroundColor: '#FFFFFF' },
+  lottieIcon: { width: 110, height: 110, marginBottom: 15 },
+  successTitle: { fontSize: normalize.font(20), fontWeight: '900', color: '#1E293B', marginBottom: 8, textAlign: 'center' },
+  successSub: { fontSize: normalize.font(14), color: '#64748B', textAlign: 'center', marginBottom: 25, lineHeight: 22 },
+  successBtn: { width: '100%', height: 56 },
 
   // Details Styles
-  detailsContainer: { marginTop: 20 },
-  chaletCardInstance: { width: '100%', marginRight: 0, marginBottom: 16 },
+  detailsContainer: { marginTop: 15 },
+  chaletCardInstance: { width: '100%', marginRight: 0, marginBottom: 12 },
   detailsMapCard: { 
     backgroundColor: '#FFFFFF', 
-    borderRadius: 24, 
-    padding: 12, 
+    borderRadius: 20, 
+    padding: 10, 
     borderWidth: 1, 
     borderColor: '#F1F5F9',
-    marginBottom: 16
+    marginBottom: 12
   },
-  mapSnippetWrapper: { width: '100%', height: 140, borderRadius: 16, overflow: 'hidden', backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center' },
+  mapSnippetWrapper: { width: '100%', height: 120, borderRadius: 14, overflow: 'hidden', backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center' },
   mapSnippet: { width: '100%', height: '100%' },
   mapMarker: { position: 'absolute', zIndex: 5 },
-  mapAddressLabel: { textAlign: 'center', paddingVertical: 10, fontSize: 14, fontWeight: '800', color: '#1E293B' },
+  mapAddressLabel: { textAlign: 'center', paddingVertical: 8, fontSize: normalize.font(12), fontWeight: '800', color: '#1E293B' },
   infoSectionCard: { 
     backgroundColor: '#FFFFFF', 
-    borderRadius: 24, 
-    padding: 20, 
+    borderRadius: 20, 
+    padding: 16, 
     borderWidth: 1, 
     borderColor: '#F1F5F9',
-    marginBottom: 16
+    marginBottom: 12
   },
-  sectionTitle: { fontSize: 16, fontWeight: '900', color: '#15AB64', textAlign: isRTL ? 'right' : 'left' },
-  divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 12 },
-  infoRow: { flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between', marginBottom: 12 },
-  infoLabel: { fontSize: 15, fontWeight: '800', color: '#1E293B' },
-  infoValue: { fontSize: 15, fontWeight: '700', color: '#64748B' },
+  sectionTitle: { fontSize: normalize.font(14), fontWeight: '900', color: '#15AB64', textAlign: isRTL ? 'right' : 'left' },
+  divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 10 },
+  infoRow: { flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between', marginBottom: 10 },
+  infoLabel: { fontSize: normalize.font(13), fontWeight: '800', color: '#1E293B' },
+  infoValue: { fontSize: normalize.font(13), fontWeight: '700', color: '#64748B' },
   sectionHeaderRow: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center' },
-  editBtn: { backgroundColor: '#F0FDF4', paddingHorizontal: 16, paddingVertical: 6, borderRadius: 10, borderWidth: 1, borderColor: '#15AB6433' },
-  editBtnText: { color: '#15AB64', fontSize: 13, fontWeight: '800' },
-  paymentMainTitle: { fontSize: 16, fontWeight: '900', color: '#15AB64', marginVertical: 15, textAlign: isRTL ? 'right' : 'left' },
+  editBtn: { backgroundColor: '#F0FDF4', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 8, borderWidth: 1, borderColor: '#15AB6433' },
+  editBtnText: { color: '#15AB64', fontSize: normalize.font(12), fontWeight: '800' },
+  paymentMainTitle: { fontSize: normalize.font(14), fontWeight: '900', color: '#15AB64', marginVertical: 12, textAlign: isRTL ? 'right' : 'left' },
   paymentOptionCard: { 
     flexDirection: isRTL ? 'row-reverse' : 'row', 
     justifyContent: 'space-between', 
     alignItems: 'center', 
     backgroundColor: '#FFFFFF', 
-    borderRadius: 16, 
-    padding: 16, 
+    borderRadius: 14, 
+    padding: 14, 
     borderWidth: 1.5, 
     borderColor: '#F1F5F9',
-    marginBottom: 12
+    marginBottom: 10
   },
   paymentOptionActive: { borderColor: '#15AB64', backgroundColor: '#F0FDF4' },
-  paymentVal: { fontSize: 16, fontWeight: '900', color: '#64748B' },
+  paymentVal: { fontSize: normalize.font(15), fontWeight: '900', color: '#64748B' },
   paymentValActive: { color: '#1E293B' },
-  paymentLabel: { fontSize: 15, fontWeight: '800', color: '#64748B' },
+  paymentLabel: { fontSize: normalize.font(13), fontWeight: '800', color: '#64748B' },
   paymentLabelActive: { color: '#1E293B' },
-  agreementWrapper: { paddingVertical: 15, paddingBottom: 40 },
-  agreementText: { fontSize: 13, color: '#64748B', textAlign: 'center', lineHeight: 20 },
+  agreementWrapper: { paddingVertical: 12, paddingBottom: 35 },
+  agreementText: { fontSize: normalize.font(12), color: '#64748B', textAlign: 'center', lineHeight: 18 },
   agreementLink: { color: Colors.primary, textDecorationLine: 'underline', fontWeight: '800' }
 });
 

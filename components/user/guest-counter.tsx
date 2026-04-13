@@ -3,6 +3,7 @@ import { StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { SolarAddBold, SolarMinusBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
+import { normalize } from "../../constants/theme";
 
 interface GuestCounterProps {
   value: number;
@@ -21,42 +22,45 @@ export const GuestCounter: React.FC<GuestCounterProps> = ({
   onDecrement,
   style,
 }) => {
-  // SVG Path provided by the user for the side buttons
-  const leftPath =
-    "M0 14.5C0 6.49187 6.49187 0 14.5 0H25.375C27.377 0 29 1.62297 29 3.625V25.375C29 27.377 27.377 29 25.375 29H14.5C6.49187 29 0 22.5081 0 14.5Z";
+  const btnSize = 38;
+  const pathScale = 38/52; // Scale existing path to new size
 
   return (
     <View style={[styles.container, style]}>
-      {/* Plus Button (Left side in UI image) */}
+      {/* Plus Button */}
       <TouchableOpacity
         onPress={onIncrement}
         activeOpacity={0.8}
-        style={styles.buttonWrapper}
+        style={[styles.buttonWrapper, { width: btnSize, height: btnSize }]}
       >
-        <Svg width={52} height={52} viewBox="0 0 29 29" fill="none">
-          <Path d={leftPath} fill="#F64200" />
+        <Svg width={btnSize} height={btnSize} viewBox="0 0 29 29" fill="none">
+          <Path d="M0 14.5C0 6.49187 6.49187 0 14.5 0H25.375C27.377 0 29 1.62297 29 3.625V25.375C29 27.377 27.377 29 25.375 29H14.5C6.49187 29 0 22.5081 0 14.5Z" fill="#F64200" />
         </Svg>
         <View style={styles.iconOverlay}>
-            <SolarAddBold size={18} color="white" />
+            <View style={styles.iconCircle}>
+                <SolarAddBold size={14} color="white" />
+            </View>
         </View>
       </TouchableOpacity>
 
-      {/* Value Block (Square in the middle) */}
-      <View style={styles.valueBlock}>
+      {/* Value Block */}
+      <View style={[styles.valueBlock, { height: btnSize }]}>
         <ThemedText style={styles.valueText}>{value}</ThemedText>
       </View>
 
-      {/* Minus Button (Right side in UI image) */}
+      {/* Minus Button */}
       <TouchableOpacity
         onPress={onDecrement}
         activeOpacity={0.8}
-        style={[styles.buttonWrapper, styles.mirror]}
+        style={[styles.buttonWrapper, styles.mirror, { width: btnSize, height: btnSize }]}
       >
-        <Svg width={52} height={52} viewBox="0 0 29 29" fill="none">
-          <Path d={leftPath} fill="#F64200" />
+        <Svg width={btnSize} height={btnSize} viewBox="0 0 29 29" fill="none">
+          <Path d="M0 14.5C0 6.49187 6.49187 0 14.5 0H25.375C27.377 0 29 1.62297 29 3.625V25.375C29 27.377 27.377 29 25.375 29H14.5C6.49187 29 0 22.5081 0 14.5Z" fill="#F64200" />
         </Svg>
         <View style={styles.iconOverlay}>
-            <SolarMinusBold size={18} color="white" />
+            <View style={styles.iconCircle}>
+                <SolarMinusBold size={14} color="white" />
+            </View>
         </View>
       </TouchableOpacity>
     </View>
@@ -70,8 +74,6 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   buttonWrapper: {
-    width: 52,
-    height: 52,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -84,9 +86,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   iconCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     borderWidth: 1.5,
     borderColor: "rgba(255, 255, 255, 0.4)",
     justifyContent: "center",
@@ -94,14 +96,13 @@ const styles = StyleSheet.create({
   },
   valueBlock: {
     backgroundColor: "#F64200",
-    width: 60,
-    height: 52,
+    width: 42,
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 6,
   },
   valueText: {
-    fontSize: 24,
+    fontSize: normalize.font(16),
     fontWeight: "900",
     color: "white",
   },

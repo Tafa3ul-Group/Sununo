@@ -130,9 +130,25 @@
     "paymentDetails": "Card Details",
     "cardNum": "Card Number",
     "expiry": "Expiry Date",
-    "cardName": "Name on Card",
+    "cardName": "Cardholder Name",
     "cvv": "CVV/CVC",
     "enterName": "Enter Name",
-    "completePayment": "Complete Payment"
+    "completePayment": "Complete Payment",
+    "bookingDetails": "Booking Details",
+    "bookingStatus": "Booking Status",
+    "paymentStatus": "Payment Status",
+    "status": {
+      "accepted": "Accepted",
+      "deferred": "Deferred"
+    },
+    "successTitle": "Booking Completed!",
+    "successMsg": "Your booking has been confirmed successfully, you can now check the details.",
+    "goToDetails": "View Booking Details",
+    "depositAmount": "Deposit Amount",
+    "remainingAmount": "Remaining Amount",
+    "nameValue": "Ansi Ans",
+    "phoneValue": "+496 7703409763",
+    "dateValue": "12 - 14 October 2025",
+    "guestsValue": "2 Adults, 2 Children"
   }
 }

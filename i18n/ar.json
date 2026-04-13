@@ -133,6 +133,22 @@
     "cardName": "الاسم على البطاقة",
     "cvv": "CVV/CVC",
     "enterName": "ادخل الاسم",
-    "completePayment": "اتمام الدفع"
+    "completePayment": "اتمام الدفع",
+    "bookingDetails": "تفاصيل الحجز",
+    "bookingStatus": "حالة الحجز",
+    "paymentStatus": "حالة الدفع",
+    "status": {
+      "accepted": "مقبول",
+      "deferred": "مؤجل"
+    },
+    "successTitle": "تم الحجز بنجاح!",
+    "successMsg": "لقد تم تأكيد حجزك، يمكنك البدء الآن في متابعة التفاصيل.",
+    "goToDetails": "استعراض تفاصيل الحجز",
+    "depositAmount": "مبلغ العربون",
+    "remainingAmount": "المبلغ المتبقي",
+    "nameValue": "انسي انس",
+    "phoneValue": "+496 7703409763",
+    "dateValue": "12 - 14 أكتوبر 2025",
+    "guestsValue": "2 بالغين، 2 اطفال"
   }
 }
