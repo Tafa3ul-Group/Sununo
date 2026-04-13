@@ -69,6 +69,16 @@
       "balance": "Available Balance",
       "withdraw": "Withdraw Funds",
       "history": "Transaction History"
+    },
+    "menu": {
+      "title": "Management Menu",
+      "bookings": "Bookings",
+      "shifts": "Shifts",
+      "revenue": "Revenue",
+      "customers": "Customers",
+      "transactions": "Transactions",
+      "notifications": "Notifications",
+      "addChalet": "Add Chalet"
     }
   },
   "common": {
