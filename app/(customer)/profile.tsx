@@ -21,6 +21,7 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert, Image } fr
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { WalletCard } from '@/components/user/wallet-card';
 
 export default function ProfileScreen() {
   const dispatch = useDispatch();
@@ -53,7 +54,6 @@ export default function ProfileScreen() {
   };
 
   const menuItems = [
-    { id: 'wallet', title: isRTL ? 'المحفظة' : 'Wallet', shape: 'red' as const, icon: <SolarWalletBold size={20} color="white" />, route: '/(tabs)/(dashboard)/transactions' },
     { id: 'bookings', title: isRTL ? 'الحجوزات' : 'Bookings', shape: 'blue' as const, icon: <SolarCalendarBold size={20} color="white" />, route: '/(tabs)/(customer)/bookings' },
     { id: 'reviews', title: isRTL ? 'المراجعات' : 'Reviews', shape: 'blue' as const, icon: <SolarHeartBold size={20} color="white" /> },
     { id: 'language', title: isRTL ? 'اللغة' : 'Language', shape: 'pink' as const, icon: <SolarGlobalBold size={20} color="white" />, action: openLanguageSheet },
@@ -98,6 +98,14 @@ export default function ProfileScreen() {
             />
           </View>
         </TouchableOpacity>
+
+        {/* Wallet Card */}
+        <WalletCard 
+          balance="100,000" 
+          onWithdraw={() => {
+            router.push('/(tabs)/(dashboard)/transactions');
+          }}
+        />
 
         {/* Action Menu Items */}
         <View style={styles.menuGroup}>
