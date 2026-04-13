@@ -15,7 +15,11 @@ import {
   SolarSunBold, 
   SolarMoonBold, 
   SolarAddCircleBold,
+  SolarMapPointBold,
+  SolarStarBold,
+  SolarCardBold
 } from "@/components/icons/solar-icons";
+import { TextInput } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { MainTabs, TabType } from '@/components/user/MainTabs';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -23,9 +27,27 @@ import { CircleBackButton } from '@/components/ui/circle-back-button';
 import { Image as ExpoImage } from 'expo-image';
 import { useTranslation } from 'react-i18next';
 import { GuestCounter } from '@/components/user/guest-counter';
-import Svg, { Path } from 'react-native-svg';
+import { HorizontalCard } from '@/components/user/horizontal-card';
+import Svg, { Path, Defs, ClipPath } from 'react-native-svg';
+import { 
+  BottomSheetModal, 
+  BottomSheetView, 
+  BottomSheetBackdrop,
+  BottomSheetModalProvider
+} from '@gorhom/bottom-sheet';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+// Mock data for the chalet to match ChaletCard props
+const MOCK_CHALET = {
+    id: '1',
+    title: "شالية الاروع علةاالطلاق",
+    location: "البصرة - الجزائر",
+    rating: 4.5,
+    price: "30,000",
+    detailedLocation: "البصرة - ابي الخصيب",
+    image: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500&auto=format&fit=crop"
+};
 
 // Helper to generate calendar days for March 2024 (1st is Friday)
 const generateMarchDays = () => {
@@ -51,6 +73,16 @@ export default function CompleteBookingScreen() {
   const [activeTab, setActiveTab] = useState<TabType>('SHOOKET');
   const [selectedDates, setSelectedDates] = useState<number[]>([15]);
   const [activeDateIdx, setActiveDateIdx] = useState(0);
+  const [paymentType, setPaymentType] = useState<'DEPOSIT' | 'FULL'>('DEPOSIT');
+  
+  // Sheet reference
+  const paymentSheetRef = React.useRef<BottomSheetModal>(null);
+
+  // Card Details State
+  const [cardNum, setCardNum] = useState('');
+  const [expiry, setExpiry] = useState('');
+  const [cvv, setCvv] = useState('');
+  const [cardName, setCardName] = useState('');
   
   const [adultCount, setAdultCount] = useState(2);
   const [childrenCount, setChildrenCount] = useState(1);
@@ -71,6 +103,8 @@ export default function CompleteBookingScreen() {
         setActiveTab('MANO');
     } else if (activeTab === 'MANO') {
         setActiveTab('DETAILS');
+    } else if (activeTab === 'DETAILS') {
+        paymentSheetRef.current?.present();
     } else {
         router.push('/(customer)/booking/success');
     }
@@ -103,6 +137,185 @@ export default function CompleteBookingScreen() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
+  const renderDetailsTab = () => (
+    <View style={styles.detailsContainer}>
+        {/* Chalet Card */}
+        <HorizontalCard 
+            chalet={MOCK_CHALET} 
+            style={styles.chaletCardInstance} 
+            shapeIndex={2}
+            hideFavorite={true}
+            onPress={() => {}}
+        />
+
+        {/* Map Card */}
+        <View style={styles.detailsMapCard}>
+            <View style={styles.mapSnippetWrapper}>
+                <ExpoImage source={{ uri: 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/47.98,30.50,13,0/600x300?access_token=pk.dummy' }} style={styles.mapSnippet} />
+                <View style={styles.mapMarker}>
+                    <SolarMapPointBold size={32} color={Colors.primary} />
+                </View>
+            </View>
+            <ThemedText style={styles.mapAddressLabel}>{MOCK_CHALET.detailedLocation}</ThemedText>
+        </View>
+
+        {/* Customer Information */}
+        <View style={styles.infoSectionCard}>
+            <ThemedText style={styles.sectionTitle}>{t('booking.customerInfo')}</ThemedText>
+            <View style={styles.divider} />
+            <View style={styles.infoRow}>
+                <ThemedText style={styles.infoLabel}>{t('booking.name')}</ThemedText>
+                <ThemedText style={styles.infoValue}>انسي انس</ThemedText>
+            </View>
+            <View style={styles.infoRow}>
+                <ThemedText style={styles.infoLabel}>{t('booking.phone')}</ThemedText>
+                <ThemedText style={[styles.infoValue, { direction: 'ltr' }]}>+496  7703409763</ThemedText>
+            </View>
+        </View>
+
+        {/* Booking Information */}
+        <View style={styles.infoSectionCard}>
+            <View style={[styles.sectionHeaderRow, !isRTL && { flexDirection: 'row' }]}>
+               <TouchableOpacity style={styles.editBtn} onPress={() => setActiveTab('SHOOKET')}>
+                   <ThemedText style={styles.editBtnText}>{t('booking.edit')}</ThemedText>
+               </TouchableOpacity>
+               <ThemedText style={styles.sectionTitle}>{t('booking.bookingInfo')}</ThemedText>
+            </View>
+            <View style={styles.divider} />
+            <View style={styles.infoRow}>
+                <ThemedText style={styles.infoLabel}>{t('booking.date')}</ThemedText>
+                <ThemedText style={styles.infoValue}>12 - 14 أكتوبر 2025</ThemedText>
+            </View>
+            <View style={styles.infoRow}>
+                <ThemedText style={styles.infoLabel}>{t('booking.shift')}</ThemedText>
+                <ThemedText style={styles.infoValue}>{t('booking.morningShift')}</ThemedText>
+            </View>
+            <View style={styles.infoRow}>
+                <ThemedText style={styles.infoLabel}>{t('booking.guests')}</ThemedText>
+                <ThemedText style={styles.infoValue}>2 بالغين، 2 اطفال</ThemedText>
+            </View>
+            <View style={styles.infoRow}>
+                <ThemedText style={styles.infoLabel}>{t('booking.totalAmount')}</ThemedText>
+                <ThemedText style={styles.infoValue}>500,000 د.ع</ThemedText>
+            </View>
+        </View>
+
+        {/* Payment Summary Title */}
+        <ThemedText style={styles.paymentMainTitle}>{t('booking.paymentTitle')}</ThemedText>
+
+        {/* Payment Options Row */}
+        <TouchableOpacity 
+            style={[styles.paymentOptionCard, paymentType === 'DEPOSIT' && styles.paymentOptionActive]}
+            onPress={() => setPaymentType('DEPOSIT')}
+        >
+            <ThemedText style={[styles.paymentVal, paymentType === 'DEPOSIT' && styles.paymentValActive]}>50,000 د.ع</ThemedText>
+            <ThemedText style={[styles.paymentLabel, paymentType === 'DEPOSIT' && styles.paymentLabelActive]}>{t('booking.depositPay')}</ThemedText>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+            style={[styles.paymentOptionCard, paymentType === 'FULL' && styles.paymentOptionActive]}
+            onPress={() => setPaymentType('FULL')}
+        >
+            <ThemedText style={[styles.paymentVal, paymentType === 'FULL' && styles.paymentValActive]}>500,000 د.ع</ThemedText>
+            <ThemedText style={[styles.paymentLabel, paymentType === 'FULL' && styles.paymentLabelActive]}>{t('booking.fullPay')}</ThemedText>
+        </TouchableOpacity>
+
+        {/* Agreement Text */}
+        <View style={styles.agreementWrapper}>
+            <ThemedText style={styles.agreementText}>
+                {t('booking.agreement')} <ThemedText style={styles.agreementLink}>{t('booking.terms')}</ThemedText> و <ThemedText style={styles.agreementLink}>{t('booking.policy')}</ThemedText>
+            </ThemedText>
+        </View>
+    </View>
+  );
+
+  const renderPaymentTab = () => (
+    <BottomSheetModal
+        ref={paymentSheetRef}
+        index={0}
+        snapPoints={['80%']}
+        backdropComponent={(props) => (
+            <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
+        )}
+        handleIndicatorStyle={{ backgroundColor: '#CBD5E1', width: 40 }}
+        style={styles.sheetShadow}
+    >
+        <BottomSheetView style={styles.paymentDetailsContainer}>
+            <View style={styles.paymentHeader}>
+               <ThemedText style={styles.paymentDetailsTitle}>{t('booking.paymentDetails')}</ThemedText>
+            </View>
+
+            <View style={styles.paymentForm}>
+                {/* Card Number */}
+                <View style={styles.inputGroup}>
+                    <ThemedText style={styles.inputLabel}>{t('booking.cardNum')}</ThemedText>
+                    <TextInput 
+                        style={styles.textInput}
+                        placeholder="**** **** **** ****"
+                        placeholderTextColor="#94A3B8"
+                        keyboardType="numeric"
+                        value={cardNum}
+                        onChangeText={setCardNum}
+                    />
+                </View>
+
+                {/* Row Expiry and CVV */}
+                <View style={[styles.rowInputs, { gap: 15 }]}>
+                    <View style={styles.inputGroupFull}>
+                        <ThemedText style={styles.inputLabel}>{t('booking.expiry')}</ThemedText>
+                        <TextInput 
+                            style={styles.textInput}
+                            placeholder="MM/YYYY"
+                            placeholderTextColor="#94A3B8"
+                            keyboardType="numeric"
+                            value={expiry}
+                            onChangeText={setExpiry}
+                        />
+                    </View>
+                    <View style={styles.inputGroupFixed}>
+                        <ThemedText style={styles.inputLabel}>{t('booking.cvv')}</ThemedText>
+                        <TextInput 
+                            style={styles.textInput}
+                            placeholder="***"
+                            placeholderTextColor="#94A3B8"
+                            keyboardType="numeric"
+                            secureTextEntry
+                            maxLength={4}
+                            value={cvv}
+                            onChangeText={setCvv}
+                        />
+                    </View>
+                </View>
+
+                {/* Card Holder Name */}
+                <View style={styles.inputGroup}>
+                    <ThemedText style={styles.inputLabel}>{t('booking.cardName')}</ThemedText>
+                    <TextInput 
+                        style={styles.textInput}
+                        placeholder={t('booking.enterName')}
+                        placeholderTextColor="#94A3B8"
+                        value={cardName}
+                        onChangeText={setCardName}
+                    />
+                </View>
+
+                {/* Final Complete Payment Button directly inside form */}
+                <View style={{ marginTop: 20 }}>
+                    <PrimaryButton 
+                        label={t('booking.completePayment')} 
+                        onPress={() => {
+                            paymentSheetRef.current?.dismiss();
+                            router.push('/(customer)/booking/success');
+                        }}
+                        activeColor="#15AB64"
+                        style={{ width: '100%', height: 62 }}
+                    />
+                </View>
+            </View>
+        </BottomSheetView>
+    </BottomSheetModal>
+  );
+
   const renderCalendarDay = (day: number | null, index: number) => {
     if (day === null) return <View key={`empty-${index}`} style={styles.dayCell} />;
     const isBooked = bookedDates.includes(day);
@@ -134,6 +347,7 @@ export default function CompleteBookingScreen() {
   };
 
   return (
+    <BottomSheetModalProvider>
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <View style={styles.backBtnWrapper}>
@@ -262,19 +476,22 @@ export default function CompleteBookingScreen() {
                </View>
             </View>
         ) : (
-            <View style={{ marginTop: 50, alignItems: 'center' }}><ThemedText>Details Step Placeholder</ThemedText></View>
+            renderDetailsTab()
         )}
       </ScrollView>
 
       <View style={styles.footer}>
          <PrimaryButton 
-           label={t('booking.next')} 
+           label={activeTab === 'DETAILS' ? 'تأكيد الحجز' : t('booking.next')} 
            onPress={handleNext}
-           activeColor={activeTab === 'MANO' ? '#F64200' : '#035DF9'}
+           activeColor={activeTab === 'MANO' ? '#F64200' : (activeTab === 'DETAILS' ? '#15AB64' : '#035DF9')}
            style={styles.nextBtn}
          />
       </View>
+
+      {renderPaymentTab()}
     </SafeAreaView>
+    </BottomSheetModalProvider>
   );
 }
 
@@ -332,6 +549,88 @@ const styles = StyleSheet.create({
   guestLabel: { fontSize: 18, fontWeight: '900', color: '#111827' },
   guestSubLabel: { fontSize: 13, color: '#9CA3AF', fontWeight: '600', marginTop: 2 },
   footer: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#FFF', paddingHorizontal: 25, paddingTop: 15, paddingBottom: Platform.OS === 'ios' ? 40 : 25, borderTopWidth: 1, borderTopColor: '#F1F5F9', zIndex: 100 },
-  nextBtn: { width: '100%', height: 60 }
+  nextBtn: { width: '100%', height: 60 },
+
+  // Payment Tab Styles
+  paymentDetailsContainer: { padding: 25, backgroundColor: '#FFFFFF' },
+  paymentHeader: { flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', marginBottom: 25, justifyContent: 'center' },
+  paymentDetailsTitle: { fontSize: 24, fontWeight: '900', color: '#1E293B' },
+  paymentForm: { gap: 15 },
+  inputGroup: { gap: 8 },
+  inputGroupFull: { flex: 1, gap: 8 },
+  inputGroupFixed: { width: 100, gap: 8 },
+  inputLabel: { fontSize: 16, fontWeight: '800', color: '#1E293B', textAlign: isRTL ? 'right' : 'left' },
+  textInput: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#F1F5F9',
+    borderRadius: 16,
+    height: 56,
+    paddingHorizontal: 20,
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1E293B',
+    textAlign: isRTL ? 'right' : 'left'
+  },
+  rowInputs: { flexDirection: isRTL ? 'row-reverse' : 'row' },
+  sheetShadow: {
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: -10 },
+      shadowOpacity: 0.1,
+      shadowRadius: 10,
+      elevation: 20
+  },
+
+  // Details Styles
+  detailsContainer: { marginTop: 20 },
+  chaletCardInstance: { width: '100%', marginRight: 0, marginBottom: 16 },
+  detailsMapCard: { 
+    backgroundColor: '#FFFFFF', 
+    borderRadius: 24, 
+    padding: 12, 
+    borderWidth: 1, 
+    borderColor: '#F1F5F9',
+    marginBottom: 16
+  },
+  mapSnippetWrapper: { width: '100%', height: 140, borderRadius: 16, overflow: 'hidden', backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center' },
+  mapSnippet: { width: '100%', height: '100%' },
+  mapMarker: { position: 'absolute', zIndex: 5 },
+  mapAddressLabel: { textAlign: 'center', paddingVertical: 10, fontSize: 14, fontWeight: '800', color: '#1E293B' },
+  infoSectionCard: { 
+    backgroundColor: '#FFFFFF', 
+    borderRadius: 24, 
+    padding: 20, 
+    borderWidth: 1, 
+    borderColor: '#F1F5F9',
+    marginBottom: 16
+  },
+  sectionTitle: { fontSize: 16, fontWeight: '900', color: '#15AB64', textAlign: isRTL ? 'right' : 'left' },
+  divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 12 },
+  infoRow: { flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between', marginBottom: 12 },
+  infoLabel: { fontSize: 15, fontWeight: '800', color: '#1E293B' },
+  infoValue: { fontSize: 15, fontWeight: '700', color: '#64748B' },
+  sectionHeaderRow: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center' },
+  editBtn: { backgroundColor: '#F0FDF4', paddingHorizontal: 16, paddingVertical: 6, borderRadius: 10, borderWidth: 1, borderColor: '#15AB6433' },
+  editBtnText: { color: '#15AB64', fontSize: 13, fontWeight: '800' },
+  paymentMainTitle: { fontSize: 16, fontWeight: '900', color: '#15AB64', marginVertical: 15, textAlign: isRTL ? 'right' : 'left' },
+  paymentOptionCard: { 
+    flexDirection: isRTL ? 'row-reverse' : 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    backgroundColor: '#FFFFFF', 
+    borderRadius: 16, 
+    padding: 16, 
+    borderWidth: 1.5, 
+    borderColor: '#F1F5F9',
+    marginBottom: 12
+  },
+  paymentOptionActive: { borderColor: '#15AB64', backgroundColor: '#F0FDF4' },
+  paymentVal: { fontSize: 16, fontWeight: '900', color: '#64748B' },
+  paymentValActive: { color: '#1E293B' },
+  paymentLabel: { fontSize: 15, fontWeight: '800', color: '#64748B' },
+  paymentLabelActive: { color: '#1E293B' },
+  agreementWrapper: { paddingVertical: 15, paddingBottom: 40 },
+  agreementText: { fontSize: 13, color: '#64748B', textAlign: 'center', lineHeight: 20 },
+  agreementLink: { color: Colors.primary, textDecorationLine: 'underline', fontWeight: '800' }
 });
 

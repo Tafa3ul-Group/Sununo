@@ -111,6 +111,28 @@
     "days": ["SAT", "SUN", "MON", "TUE", "WED", "THU", "FRI"],
     "months": {
       "march": "MARCH 2024"
-    }
+    },
+    "customerInfo": "Customer Information",
+    "bookingInfo": "Booking Information",
+    "name": "Name",
+    "phone": "Phone Number",
+    "date": "Date",
+    "shift": "Shift",
+    "guests": "Guests",
+    "totalAmount": "Total Amount",
+    "edit": "Edit",
+    "paymentTitle": "Choose Payment Amount",
+    "depositPay": "Pay Deposit to Confirm Booking",
+    "fullPay": "Pay Full Amount",
+    "agreement": "By completing the booking, you agree to the Chalet Terms and Refund Policy",
+    "terms": "Chalet Terms",
+    "policy": "Refund Policy",
+    "paymentDetails": "Card Details",
+    "cardNum": "Card Number",
+    "expiry": "Expiry Date",
+    "cardName": "Name on Card",
+    "cvv": "CVV/CVC",
+    "enterName": "Enter Name",
+    "completePayment": "Complete Payment"
   }
 }

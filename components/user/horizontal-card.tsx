@@ -51,6 +51,7 @@ interface HorizontalCardProps {
   onPress?: () => void;
   style?: ViewStyle;
   shapeIndex?: number;
+  hideFavorite?: boolean;
 }
 
 export function HorizontalCard({
@@ -58,6 +59,7 @@ export function HorizontalCard({
   onPress,
   style,
   shapeIndex = 2,
+  hideFavorite = false,
 }: HorizontalCardProps) {
   const [isFavorite, setIsFavorite] = useState(false);
 
@@ -79,15 +81,17 @@ export function HorizontalCard({
     >
       {/* 1. الطرف الأيسر: القلب والتقييم */}
       <View style={styles.leftColumn}>
-        <TouchableOpacity
-          style={styles.heartCircle}
-          onPress={() => setIsFavorite(!isFavorite)}
-        >
-          <SolarHeartBold
-            size={normalize.width(20)}
-            color={isFavorite ? "#EA2129" : "#9CA3AF"}
-          />
-        </TouchableOpacity>
+        {!hideFavorite && (
+          <TouchableOpacity
+            style={styles.heartCircle}
+            onPress={() => setIsFavorite(!isFavorite)}
+          >
+            <SolarHeartBold
+              size={normalize.width(20)}
+              color={isFavorite ? "#EA2129" : "#9CA3AF"}
+            />
+          </TouchableOpacity>
+        )}
 
         <View style={styles.ratingBox}>
           <SolarStarBold size={normalize.width(16)} color={Colors.secondary} />
