@@ -1,25 +1,26 @@
+import React, { useState } from "react";
+import {
+  Dimensions,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { RatingBackground } from "@/components/icons/rating-background";
 import {
   SolarAltArrowDownLinear,
   SolarStarBold,
   SolarStarLinear,
 } from "@/components/icons/solar-icons";
-
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-
 import { ThemedText } from "@/components/themed-text";
 import { CircleBackButton } from "@/components/ui/circle-back-button";
 import { Image } from "expo-image";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { HeaderSection } from '@/components/header-section';
-import React, { useState } from "react";
-import {
-  Dimensions,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
+import { ReviewSubmissionSheet } from "@/components/user/review-submission-sheet";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const SAMPLE_IMAGES = [
   "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=400",
@@ -30,6 +31,17 @@ const SAMPLE_IMAGES = [
 export default function ReviewsScreen() {
   const { id } = useLocalSearchParams();
   const [userRating, setUserRating] = useState(0);
+  const reviewSheetRef = React.useRef<BottomSheetModal>(null);
+
+  const openReviewSheet = () => {
+    reviewSheetRef.current?.present();
+  };
+
+  const handleReviewSubmit = (rating: number, comment: string) => {
+    console.log('Submitted:', { rating, comment });
+    setUserRating(rating);
+  };
+
   const reviews = [
     {
       name: "انسة انس",
@@ -142,25 +154,27 @@ export default function ReviewsScreen() {
           height="100%"
           preserveAspectRatio="xMidYMax slice"
         />
-        <View style={styles.footerOverlayContent}>
+        <TouchableOpacity style={styles.footerOverlayContent} onPress={openReviewSheet} activeOpacity={0.9}>
           <View style={styles.whiteInputPill}>
             <ThemedText style={styles.questionTitle}>
               شكد تقيم تجربتك؟
             </ThemedText>
             <View style={styles.inputStarsRow}>
               {[1, 2, 3, 4, 5].map((i) => (
-                <Pressable key={i} onPress={() => setUserRating(i)}>
+                <View key={i}>
                   {i <= userRating ? (
                     <SolarStarBold size={32} color="#15AB64" />
                   ) : (
                     <SolarStarLinear size={32} color="#15AB64" />
                   )}
-                </Pressable>
+                </View>
               ))}
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
       </View>
+
+      <ReviewSubmissionSheet ref={reviewSheetRef} onSubmit={handleReviewSubmit} />
     </View>
   );
 }

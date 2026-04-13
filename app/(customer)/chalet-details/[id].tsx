@@ -28,6 +28,8 @@ import {
   View,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
+import { ReviewSubmissionSheet } from "@/components/user/review-submission-sheet";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -49,6 +51,11 @@ export default function ChaletDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const [activeImage, setActiveImage] = useState(0);
+  const reviewSheetRef = React.useRef<BottomSheetModal>(null);
+
+  const openReviewSheet = () => {
+    reviewSheetRef.current?.present();
+  };
 
   return (
     <View style={styles.container}>
@@ -277,7 +284,7 @@ export default function ChaletDetailScreen() {
           <View style={styles.addReviewAction}>
             <PrimaryButton
               label="إضافة مراجعة"
-              onPress={() => {}}
+              onPress={openReviewSheet}
               style={styles.addBtnFinal}
             />
           </View>
@@ -342,6 +349,13 @@ export default function ChaletDetailScreen() {
           </View>
         </View>
       </View>
+
+      <ReviewSubmissionSheet 
+        ref={reviewSheetRef} 
+        onSubmit={(rating, comment) => {
+          console.log('Detail Review Submit:', { rating, comment });
+        }} 
+      />
     </View>
   );
 }
