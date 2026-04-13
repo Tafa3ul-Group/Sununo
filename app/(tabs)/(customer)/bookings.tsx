@@ -227,8 +227,8 @@ const styles = StyleSheet.create({
   paidBadgeText: { color: '#FFF', fontSize: 13, fontWeight: '900' },
   
   dividerFull: { height: 1, backgroundColor: '#E2E8F0', marginVertical: 15, opacity: 0.6 },
-  viewDetailsBtn: { alignItems: 'center' },
-  viewDetailsText: { color: '#035DF9', fontSize: 15, fontWeight: '800' },
+  viewDetailsBtn: { width: '100%', alignItems: 'center', justifyContent: 'center', paddingVertical: 4 },
+  viewDetailsText: { color: '#035DF9', fontSize: 15, fontWeight: '800', textAlign: 'center' },
 
   emptyState: { alignItems: 'center', justifyContent: 'center', paddingTop: 80, paddingHorizontal: 40 },
   emptyTitle: { fontSize: 20, fontWeight: '700', color: '#1E293B', marginTop: 20 },
