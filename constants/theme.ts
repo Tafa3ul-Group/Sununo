@@ -92,37 +92,37 @@ interface TypeStyle {
 export const Typography: Record<string, TypeStyle> = {
   h1: {
     fontSize: normalize.font(28),
-    fontWeight: "700" as FontWeight,
+    fontFamily: "LamaSans-Bold",
     color: Colors.light.text,
   },
   h2: {
     fontSize: normalize.font(20),
-    fontWeight: "600" as FontWeight,
+    fontFamily: "LamaSans-SemiBold",
     color: Colors.light.text,
   },
   body: {
     fontSize: normalize.font(14),
-    fontWeight: "400" as FontWeight,
+    fontFamily: "LamaSans-Regular",
     color: Colors.light.text,
   },
   subtitle: {
     fontSize: normalize.font(13),
-    fontWeight: "400" as FontWeight,
+    fontFamily: "LamaSans-Regular",
     color: Colors.light.icon,
   },
   caption: {
     fontSize: normalize.font(12),
-    fontWeight: "500" as FontWeight,
+    fontFamily: "LamaSans-Medium",
     color: Colors.light.icon,
   },
   price: {
     fontSize: normalize.font(18),
-    fontWeight: "700" as FontWeight,
+    fontFamily: "LamaSans-Bold",
     color: Colors.light.primary,
   },
   rating: {
     fontSize: normalize.font(14),
-    fontWeight: "600" as FontWeight,
+    fontFamily: "LamaSans-SemiBold",
     color: Colors.light.text,
   },
 };
@@ -150,13 +150,10 @@ export const Shadows = {
   }),
 };
 
-export const Fonts = Platform.select({
-  ios: { sans: "system-ui", serif: "ui-serif", rounded: "ui-rounded", mono: "ui-monospace" },
-  default: { sans: "normal", serif: "serif", rounded: "normal", mono: "monospace" },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-  },
-});
+export const Fonts = {
+  bold: "LamaSans-Bold" as const,
+  regular: "LamaSans-Regular" as const,
+  medium: "LamaSans-Medium" as const,
+  semiBold: "LamaSans-SemiBold" as const,
+  black: "LamaSans-Black" as const,
+};

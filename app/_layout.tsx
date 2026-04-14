@@ -8,6 +8,9 @@ import 'react-native-reanimated';
 import Toast from 'react-native-toast-message';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
+import { useFonts } from 'expo-font';
+import * as SplashScreen from 'expo-splash-screen';
+import { useEffect } from 'react';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import '@/i18n';
@@ -16,6 +19,24 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+  
+  const [loaded, error] = useFonts({
+    'LamaSans-Bold': require('../assets/Arabic - English/LamaSans-BoldCondensed.otf'),
+    'LamaSans-Regular': require('../assets/Arabic - English/LamaSans-RegularCondensed.otf'),
+    'LamaSans-Medium': require('../assets/Arabic - English/LamaSans-MediumCondensed.otf'),
+    'LamaSans-SemiBold': require('../assets/Arabic - English/LamaSans-SemiBoldCondensed.otf'),
+    'LamaSans-Black': require('../assets/Arabic - English/LamaSans-BlackCondensed.otf'),
+  });
+
+  useEffect(() => {
+    if (loaded || error) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded, error]);
+
+  if (!loaded && !error) {
+    return null;
+  }
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>

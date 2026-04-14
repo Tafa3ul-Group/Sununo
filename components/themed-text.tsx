@@ -52,10 +52,10 @@ export function ThemedText({
 
 const styles = StyleSheet.create({
   base: {
-    fontFamily: 'System',
+    fontFamily: 'LamaSans-Regular',
   },
   defaultSemiBold: {
-    fontWeight: '600',
+    fontFamily: 'LamaSans-SemiBold',
   },
   link: {
     color: '#2B66FF',
