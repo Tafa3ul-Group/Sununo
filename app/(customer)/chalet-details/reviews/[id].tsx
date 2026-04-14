@@ -166,10 +166,7 @@ export default function ReviewsScreen() {
             </ThemedText>
             <View style={styles.inputStarsRow}>
               {[1, 2, 3, 4, 5].map((i) => (
-                <Pressable
-                  key={i}
-                  onPress={() => handleRatingPress(i)}
-                >
+                <Pressable key={i} onPress={() => handleRatingPress(i)}>
                   {i <= userRating ? (
                     <SolarStarBold size={normalize(32)} color="#15AB64" />
                   ) : (
@@ -309,7 +306,7 @@ const styles = StyleSheet.create({
   footerBgImage: {
     position: "absolute",
     bottom: normalize(-25),
-    left: -normalize(40),
+    left: -normalize(0),
     right: -normalize(40),
     height: "100%",
   },
@@ -323,7 +320,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F0F6F5",
     borderRadius: normalize(50),
     height: normalize(90),
-    width: "90%",
+    width: "100%",
     alignItems: "center",
     justifyContent: "center",
   },
