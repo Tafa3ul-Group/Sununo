@@ -161,20 +161,30 @@ export default function ReviewsScreen() {
             </ThemedText>
             <View style={styles.inputStarsRow}>
               {[1, 2, 3, 4, 5].map((i) => (
-                <View key={i}>
+                <TouchableOpacity 
+                  key={i} 
+                  onPress={() => {
+                    setUserRating(i);
+                    openReviewSheet();
+                  }}
+                >
                   {i <= userRating ? (
                     <SolarStarBold size={32} color="#15AB64" />
                   ) : (
                     <SolarStarLinear size={32} color="#15AB64" />
                   )}
-                </View>
+                </TouchableOpacity>
               ))}
             </View>
           </View>
         </TouchableOpacity>
       </View>
 
-      <ReviewSubmissionSheet ref={reviewSheetRef} onSubmit={handleReviewSubmit} />
+      <ReviewSubmissionSheet 
+        ref={reviewSheetRef} 
+        onSubmit={handleReviewSubmit} 
+        initialRating={userRating}
+      />
     </View>
   );
 }
@@ -289,7 +299,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F0F6F5",
     borderRadius: 50,
     height: 90,
-    width: "90%",
+    width: "100%",
     alignItems: "center",
     justifyContent: "center",
   },

@@ -1,20 +1,17 @@
-import { SolarStarBold, SolarStarLinear } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
-import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
-import React, { forwardRef, useMemo, useState } from "react";
 import {
-  Dimensions,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+  BottomSheetModal,
+  BottomSheetTextInput,
+  BottomSheetView,
+} from "@gorhom/bottom-sheet";
+import React, { forwardRef, useMemo, useState } from "react";
+import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
 import Svg, { Path } from "react-native-svg";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 // Base design width for normalization (e.g., iPhone 11/12 is ~390-414, but design units used 499 as container)
 const DESIGN_BASE_WIDTH = 499;
-const CONTAINER_WIDTH = SCREEN_WIDTH - 48; // Keeping 24px padding on sides
+const CONTAINER_WIDTH = SCREEN_WIDTH;
 const scale = CONTAINER_WIDTH / DESIGN_BASE_WIDTH;
 
 const normalize = (size: number) => size * scale;
@@ -28,10 +25,20 @@ const TOP_SCALLOP_PATH =
 
 const ReviewSubmissionSheet = forwardRef<
   BottomSheetModal,
-  { onSubmit: (rating: number, comment: string) => void }
+  {
+    onSubmit: (rating: number, comment: string) => void;
+    initialRating?: number;
+  }
 >((props, ref) => {
-  const [userRating, setUserRating] = useState(0);
+  const [userRating, setUserRating] = useState(props.initialRating || 0);
   const [comment, setComment] = useState("");
+
+  // Update rating if prop changes (when opening sheet)
+  React.useEffect(() => {
+    if (props.initialRating) {
+      setUserRating(props.initialRating);
+    }
+  }, [props.initialRating]);
 
   const snapPoints = useMemo(() => ["85%"], []);
 
@@ -53,12 +60,14 @@ const ReviewSubmissionSheet = forwardRef<
       snapPoints={snapPoints}
       backgroundStyle={styles.sheetBackground}
       handleIndicatorStyle={styles.indicator}
+      keyboardBehavior="extend"
+      keyboardBlurBehavior="restore"
     >
       <BottomSheetView style={styles.contentContainer}>
         {/* Wavy Background Wrapper */}
         <View style={styles.scallopedCard}>
           <Svg
-            width={normalize(499)}
+            width={normalize(600)}
             height={normalize(372)}
             viewBox="0 0 500 337"
             fill="none"
@@ -68,35 +77,18 @@ const ReviewSubmissionSheet = forwardRef<
             <Path d={TOP_SCALLOP_PATH} fill="#15AB64" />
           </Svg>
 
-          {/* Internal UI */}
+          {/* Internal UI - Only Input now */}
           <View style={styles.cardContent}>
-            {/* Question Pill */}
-            <View style={styles.questionPill}>
-              <ThemedText style={styles.questionTitle}>
-                شكد تقيم تجربتك؟
-              </ThemedText>
-              <View style={styles.starsRow}>
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <TouchableOpacity key={i} onPress={() => setUserRating(i)}>
-                    {i <= userRating ? (
-                      <SolarStarBold size={normalize(45)} color="#15AB64" />
-                    ) : (
-                      <SolarStarLinear size={normalize(45)} color="#15AB64" />
-                    )}
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-
             {/* Comments Input Area */}
             <View style={styles.inputArea}>
-              <TextInput
+              <BottomSheetTextInput
                 placeholder="اكتب ملاحظاتك ...."
                 placeholderTextColor="#9CA3AF"
                 multiline
                 style={styles.textInput}
                 value={comment}
                 onChangeText={setComment}
+                autoFocus={true}
               />
             </View>
           </View>
@@ -135,21 +127,16 @@ const styles = StyleSheet.create({
     width: 40,
   },
   contentContainer: {
-    paddingTop: 24,
-    paddingHorizontal: 24,
-    paddingBottom: 24, // Consistent padding at the bottom
     alignItems: "center",
     width: "100%",
+    flex: 1, // Ensure it fills the sheet
   },
   scallopedCard: {
-    width: normalize(499),
+    width: SCREEN_WIDTH, // Full width as requested
     height: normalize(372),
     justifyContent: "center",
     alignItems: "center",
     position: "relative",
-    // 94px total from bottom of shape to drawer bottom:
-    // 12px (gap) + 58px (button height) + 24px (bottom padding) = 94px
-    marginBottom: 12,
   },
   svgBg: {
     ...StyleSheet.absoluteFillObject,
@@ -158,7 +145,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     alignItems: "center",
     justifyContent: "center",
-    gap: normalize(19),
+    gap: normalize(10),
   },
   questionPill: {
     backgroundColor: "#F0F6F5",
@@ -181,12 +168,12 @@ const styles = StyleSheet.create({
   },
   inputArea: {
     backgroundColor: "white",
-    borderRadius: 16,
-    width: normalize(453),
-    height: normalize(198),
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "#EDEDED",
+    borderRadius: 24, // Matches your other pill designs
+    width: "100%",
+    height: normalize(200),
+    padding: 20,
+    borderWidth: 1.5,
+    borderColor: "#E5E7EB",
   },
   textInput: {
     flex: 1,
@@ -199,13 +186,16 @@ const styles = StyleSheet.create({
   actionsRow: {
     flexDirection: "row",
     width: "100%",
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+    paddingTop: 12,
     gap: 12,
     justifyContent: "center",
   },
   btn: {
     flex: 1,
     height: 58,
-    borderRadius: 29, // Perfect pill shape for 58px height
+    borderRadius: 29,
     justifyContent: "center",
     alignItems: "center",
   },
