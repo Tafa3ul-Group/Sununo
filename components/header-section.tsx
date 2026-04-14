@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: normalize.font(18),
-    fontWeight: "800",
+    fontWeight: "800", fontFamily: "LamaSans-Black",
     color: Colors.text.primary,
   },
   logoCircle: {
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
     marginHorizontal: Spacing.sm,
     fontSize: normalize.font(16),
     color: Colors.text.primary,
-  },
+   fontFamily: "LamaSans-Regular" },
   categoriesScroll: {
     paddingHorizontal: Spacing.md,
     marginBottom: Spacing.md,
@@ -396,10 +396,10 @@ const styles = StyleSheet.create({
   },
   categoryLabel: {
     fontSize: normalize.font(14),
-    fontWeight: "500",
+    fontWeight: "500", fontFamily: "LamaSans-Medium",
     color: Colors.text.primary,
   },
   categoryLabelActive: {
     color: Colors.background,
-  },
+   fontFamily: "LamaSans-Regular" },
 });

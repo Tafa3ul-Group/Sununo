@@ -60,5 +60,5 @@ const styles = StyleSheet.create({
   link: {
     color: '#2B66FF',
     textDecorationLine: 'underline',
-  },
+   fontFamily: "LamaSans-Regular" },
 });

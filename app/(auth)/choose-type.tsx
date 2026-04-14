@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   langButtonText: {
     ...Typography.caption,
     color: Colors.primary,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: "LamaSans-Bold",
     fontSize: normalize.font(12),
   },
   content: {
@@ -142,13 +142,13 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     textAlign: 'center',
     marginBottom: Spacing.xs,
-  },
+   fontFamily: "LamaSans-Regular" },
   subtitle: {
     ...Typography.body,
     color: Colors.text.secondary,
     textAlign: 'center',
     fontSize: normalize.font(16),
-  },
+   fontFamily: "LamaSans-Regular" },
   optionsContainer: {
     gap: Spacing.md,
   },
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   },
   emoji: {
     fontSize: normalize.font(24),
-  },
+   fontFamily: "LamaSans-Regular" },
   textContainer: {
     flex: 1,
   },
@@ -178,14 +178,14 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: normalize.height(4),
     fontSize: normalize.font(18),
-  },
+   fontFamily: "LamaSans-Regular" },
   cardDescription: {
     ...Typography.caption,
     width: '100%',
     color: Colors.text.secondary,
     lineHeight: normalize.font(18),
     fontSize: normalize.font(13),
-  },
+   fontFamily: "LamaSans-Regular" },
   guestButton: {
     marginTop: Spacing.xl,
     alignItems: 'center',
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
   guestButtonText: {
     ...Typography.body,
     color: Colors.primary,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: "LamaSans-Bold",
     textDecorationLine: 'underline',
     fontSize: normalize.font(14),
   },
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     ...Typography.caption,
     color: Colors.text.muted,
     fontSize: normalize.font(12),
-  },
+   fontFamily: "LamaSans-Regular" },
 });
 
 

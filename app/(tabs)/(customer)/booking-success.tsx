@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   mapSnippetWrapper: { width: '100%', height: 120, borderRadius: 14, overflow: 'hidden', backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center' },
   mapSnippet: { width: '100%', height: '100%' },
   mapMarker: { position: 'absolute', zIndex: 3 },
-  mapAddressLabel: { textAlign: 'center', paddingVertical: 8, fontSize: normalize.font(12), fontWeight: '800', color: '#1E293B' },
+  mapAddressLabel: { textAlign: 'center', paddingVertical: 8, fontSize: normalize.font(12), fontWeight: '800', fontFamily: "LamaSans-Black", color: '#1E293B' },
   infoSectionCard: { 
     backgroundColor: '#FFFFFF', 
     borderRadius: 20, 
@@ -149,13 +149,13 @@ const styles = StyleSheet.create({
     borderColor: '#F1F5F9',
     marginBottom: 12
   },
-  sectionTitle: { fontSize: normalize.font(14), fontWeight: '900', color: Colors.primary, textAlign: isRTL ? 'right' : 'left' },
+  sectionTitle: { fontSize: normalize.font(14), fontWeight: '900', fontFamily: "LamaSans-Black", color: Colors.primary, textAlign: isRTL ? 'right' : 'left' },
   divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 10 },
   infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  infoLabel: { fontSize: normalize.font(13), fontWeight: '800', color: '#1E293B' },
-  infoValue: { fontSize: normalize.font(13), fontWeight: '700', color: '#64748B' },
+  infoLabel: { fontSize: normalize.font(13), fontWeight: '800', fontFamily: "LamaSans-Black", color: '#1E293B' },
+  infoValue: { fontSize: normalize.font(13), fontWeight: '700', fontFamily: "LamaSans-Bold", color: '#64748B' },
   statusBadgeBlue: { backgroundColor: '#035DF9', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
-  statusBadgeTextBlue: { color: '#FFF', fontSize: normalize.font(12), fontWeight: '800' },
+  statusBadgeTextBlue: { color: '#FFF', fontSize: normalize.font(12), fontWeight: '800', fontFamily: "LamaSans-Black" },
   statusBadgeGray: { backgroundColor: '#94A3B8', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
-  statusBadgeTextGray: { color: '#FFF', fontSize: normalize.font(12), fontWeight: '800' },
+  statusBadgeTextGray: { color: '#FFF', fontSize: normalize.font(12), fontWeight: '800', fontFamily: "LamaSans-Black" },
 });

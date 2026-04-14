@@ -204,12 +204,12 @@ const styles = StyleSheet.create({
   },
   filterText: {
     fontSize: normalize.font(13),
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: "LamaSans-SemiBold",
     color: Colors.text.secondary,
   },
   filterTextActive: {
     color: Colors.white,
-  },
+   fontFamily: "LamaSans-Regular" },
   // List
   listContainer: {
     flex: 1,
@@ -236,24 +236,24 @@ const styles = StyleSheet.create({
   },
   transactionTitle: {
     fontSize: normalize.font(15),
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: "LamaSans-Bold",
     color: Colors.text.primary,
     marginBottom: 3,
   },
   transactionDate: {
     fontSize: normalize.font(11),
     color: Colors.text.muted,
-    fontWeight: '500',
+    fontWeight: '500', fontFamily: "LamaSans-Medium",
   },
   transactionAmount: {
     fontSize: normalize.font(16),
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     color: Colors.text.primary,
     marginBottom: 4,
   },
   currencySmall: {
     fontSize: normalize.font(11),
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: "LamaSans-SemiBold",
     color: Colors.text.muted,
   },
   statusBadge: {
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   },
   statusBadgeText: {
     fontSize: normalize.font(10),
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: "LamaSans-Bold",
   },
   separator: {
     height: 1,
@@ -294,13 +294,13 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: normalize.font(16),
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: "LamaSans-Bold",
     color: Colors.text.primary,
   },
   emptySubtitle: {
     fontSize: normalize.font(12),
     color: Colors.text.muted,
-    fontWeight: '500',
+    fontWeight: '500', fontFamily: "LamaSans-Medium",
     textAlign: 'center',
     paddingHorizontal: 40,
   },

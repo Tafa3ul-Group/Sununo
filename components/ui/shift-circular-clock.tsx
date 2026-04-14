@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
   legendText: {
     color: '#94A3B8',
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: 'bold', fontFamily: "LamaSans-Bold",
     textTransform: 'uppercase',
   },
 });

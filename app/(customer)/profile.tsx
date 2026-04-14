@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: normalize.font(16),
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     color: '#374151',
     textAlign: 'right',
   },
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
   },
   menuLabelText: {
     fontSize: normalize.font(16),
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: "LamaSans-Bold",
     color: '#374151',
     marginRight: normalize.width(15),
     textAlign: 'right',

@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
   },
   monthTitle: {
     fontSize: normalize.font(16),
-    fontWeight: "900",
+    fontWeight: "900", fontFamily: "LamaSans-Black",
     color: "#1A1A1A",
     letterSpacing: 0.5,
   },
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: "center",
     fontSize: normalize.font(12),
-    fontWeight: "800",
+    fontWeight: "800", fontFamily: "LamaSans-Black",
     color: "#15AB64",
   },
   grid: {
@@ -272,13 +272,13 @@ const styles = StyleSheet.create({
   },
   dayText: {
     fontSize: normalize.font(14),
-    fontWeight: "600",
+    fontWeight: "600", fontFamily: "LamaSans-SemiBold",
     color: "#1A1A1A",
   },
   disabledDayText: {
     color: "#D1D5DB",
     opacity: 0,
-  },
+   fontFamily: "LamaSans-Regular" },
   startDaySelected: {
     backgroundColor: Colors.primary,
     borderRadius: 12,
@@ -289,11 +289,11 @@ const styles = StyleSheet.create({
   },
   selectedDayText: {
     color: "white",
-    fontWeight: "700",
+    fontWeight: "700", fontFamily: "LamaSans-Bold",
   },
   inRangeDayText: {
     color: "#1A1A1A",
-  },
+   fontFamily: "LamaSans-Regular" },
   titleWrapper: {
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -323,19 +323,19 @@ const styles = StyleSheet.create({
   },
   yearText: {
     fontSize: normalize.font(16),
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: "LamaSans-Bold",
     color: '#1A1A1A',
   },
   yearTextSelected: {
     color: 'white',
-  },
+   fontFamily: "LamaSans-Regular" },
   closeYearBtn: {
     paddingVertical: 10,
     paddingHorizontal: 20,
   },
   closeYearText: {
     color: Colors.primary,
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     fontSize: normalize.font(14),
   },
 });

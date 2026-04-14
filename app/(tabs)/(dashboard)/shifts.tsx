@@ -100,7 +100,7 @@ function ShiftPricingView({ shift, isRTL, onEdit }: { shift: any; isRTL: boolean
             {isRTL ? 'لا توجد أسعار محددة للأيام' : 'No custom pricing set for days'}
           </Text>
           <TouchableOpacity onPress={() => onEdit(pricing)} style={{ marginTop: 8 }}>
-            <Text style={{ color: Colors.primary, fontWeight: '700' }}>{isRTL ? 'إعداد الأسعار' : 'Set Prices'}</Text>
+            <Text style={{ color: Colors.primary, fontWeight: '700', fontFamily: "LamaSans-Bold" }}>{isRTL ? 'إعداد الأسعار' : 'Set Prices'}</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -231,7 +231,7 @@ function DayVisualizer({
                   onPress={() => onAddShift(slot.h)}
                   activeOpacity={0.7}
                 >
-                  <Text style={[styles.hourText, slot.isCurrent && { color: Colors.primary, fontWeight: '900' }]}>
+                  <Text style={[styles.hourText, slot.isCurrent && { color: Colors.primary, fontWeight: '900', fontFamily: "LamaSans-Black" }]}>
                     {slot.h % 12 || 12}
                   </Text>
                 </TouchableOpacity>
@@ -1128,7 +1128,7 @@ export default function ShiftsAndPricesScreen() {
 
                     <View style={[styles.sectionDivider, { marginVertical: 12, marginBottom: 8 }]} />
                     <View style={[styles.row, { justifyContent: 'center' }]}>
-                      <Text style={{ color: Colors.primary, fontWeight: '700', fontSize: 13 }}>
+                      <Text style={{ color: Colors.primary, fontWeight: '700', fontFamily: "LamaSans-Bold", fontSize: 13 }}>
                         {isRTL ? 'تعديل سياسة الاسترجاع' : 'Edit Refund Policy'}
                       </Text>
                     </View>
@@ -1173,7 +1173,7 @@ export default function ShiftsAndPricesScreen() {
               {(!shiftForm.name || (!selectedShift && !shiftForm.price)) && (
                 <View style={[styles.fullDayWarning, { backgroundColor: '#FFF9F9', borderColor: '#FFE0E0', padding: 12, marginBottom: 16 }]}>
                   <SolarInfoCircleBold size={20} color="#FF3B30" />
-                  <Text style={{ fontSize: 13, color: '#FF3B30', fontWeight: '700', marginLeft: 8 }}>
+                  <Text style={{ fontSize: 13, color: '#FF3B30', fontWeight: '700', fontFamily: "LamaSans-Bold", marginLeft: 8 }}>
                     {isRTL ? 'يرجى ملء الاسم والسعر' : 'Please fill the Name & Price'}
                   </Text>
                 </View>
@@ -1219,7 +1219,7 @@ export default function ShiftsAndPricesScreen() {
                       value={shiftForm.price}
                       onChangeText={t => setShiftForm({ ...shiftForm, price: t })}
                     />
-                    <Text style={{ position: 'absolute', right: isRTL ? undefined : 16, left: isRTL ? 16 : undefined, top: 12, color: Colors.text.muted, fontWeight: '700' }}>
+                    <Text style={{ position: 'absolute', right: isRTL ? undefined : 16, left: isRTL ? 16 : undefined, top: 12, color: Colors.text.muted, fontWeight: '700', fontFamily: "LamaSans-Bold" }}>
                       {isRTL ? 'د.ع' : 'IQD'}
                     </Text>
                   </View>
@@ -1605,7 +1605,7 @@ export default function ShiftsAndPricesScreen() {
             {policyForm.map((policy, index) => (
               <View key={index} style={styles.policyFormCard}>
                 <View style={[styles.rowInputs, { flexDirection, justifyContent: 'space-between', marginBottom: 16 }]}>
-                  <Text style={{ fontWeight: '700', color: Colors.primary }}>{isRTL ? `قاعدة رقم ${index + 1}` : `Rule #${index + 1}`}</Text>
+                  <Text style={{ fontWeight: '700', fontFamily: "LamaSans-Bold", color: Colors.primary }}>{isRTL ? `قاعدة رقم ${index + 1}` : `Rule #${index + 1}`}</Text>
                   {policyForm.length > 1 && (
                     <TouchableOpacity onPress={() => removePolicyTier(index)} style={styles.policyDeleteBtn}>
                       <SolarTrashBinBold size={18} color="#FF3B30" />
@@ -1695,7 +1695,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: normalize.font(16),
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     color: '#000',
   },
   row: {
@@ -1718,7 +1718,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: normalize.font(16),
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     color: '#000',
   },
   timeBadge: {
@@ -1732,7 +1732,7 @@ const styles = StyleSheet.create({
   timeBadgeText: {
     color: Colors.primary,
     fontSize: normalize.font(12),
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
   },
   expandedContent: {
     padding: 14,
@@ -1761,14 +1761,14 @@ const styles = StyleSheet.create({
   },
   gridTitleLarge: {
     fontSize: normalize.font(18),
-    fontWeight: '900',
+    fontWeight: '900', fontFamily: "LamaSans-Black",
     color: '#000',
     textAlign: 'center',
   },
   legendText: {
     fontSize: normalize.font(12),
     color: Colors.text.muted,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: "LamaSans-Bold",
   },
   gridContent: {
     width: '100%',
@@ -1807,7 +1807,7 @@ const styles = StyleSheet.create({
   hourText: {
     fontSize: normalize.font(15),
     color: '#475467',
-    fontWeight: '900',
+    fontWeight: '900', fontFamily: "LamaSans-Black",
     textAlign: 'center',
   },
   hourTextMerged: {
@@ -1815,24 +1815,24 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.7)',
     position: 'absolute',
     bottom: 2,
-    fontWeight: '900',
+    fontWeight: '900', fontFamily: "LamaSans-Black",
     textAlign: 'center',
   },
   shiftOverlayText: {
     fontSize: normalize.font(14),
     color: '#fff',
-    fontWeight: '900',
+    fontWeight: '900', fontFamily: "LamaSans-Black",
     textAlign: 'center',
   },
   expandedTitle: {
     fontSize: normalize.font(14),
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     color: '#000',
   },
   editText: {
     fontSize: normalize.font(12),
     color: Colors.primary,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: "LamaSans-Bold",
     textDecorationLine: 'underline',
   },
   emptyPricing: {
@@ -1848,7 +1848,7 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(12),
     color: '#666',
     textAlign: 'center',
-  },
+   fontFamily: "LamaSans-Regular" },
   pricingContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -1869,10 +1869,10 @@ const styles = StyleSheet.create({
   },
   weekendText: {
     color: Colors.error,
-  },
+   fontFamily: "LamaSans-Regular" },
   pricingCardDay: {
     fontSize: normalize.font(10),
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: "LamaSans-Bold",
     color: '#666',
     marginBottom: 2,
   },
@@ -1882,14 +1882,14 @@ const styles = StyleSheet.create({
   },
   pricingCardPrice: {
     fontSize: normalize.font(12),
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     color: '#000',
   },
   pricingCardCurrency: {
     fontSize: normalize.font(8),
     color: '#666',
     marginLeft: 2,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: "LamaSans-Bold",
   },
   swipeableContainer: {
     marginBottom: 12,
@@ -1909,7 +1909,7 @@ const styles = StyleSheet.create({
   },
   swipeActionText: {
     fontSize: normalize.font(12),
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: "LamaSans-Bold",
     color: '#fff',
   },
   emptyCard: {
@@ -1934,7 +1934,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: normalize.font(18),
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     color: '#333',
     marginBottom: 8,
   },
@@ -1944,7 +1944,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
     paddingHorizontal: 20,
-  },
+   fontFamily: "LamaSans-Regular" },
   addInlineBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1956,12 +1956,12 @@ const styles = StyleSheet.create({
   },
   addInlineText: {
     color: '#fff',
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     fontSize: normalize.font(15),
   },
   modalTitle: {
     fontSize: normalize.font(20),
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     color: '#000',
     marginBottom: 24,
   },
@@ -1970,7 +1970,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: normalize.font(14),
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     color: '#333',
     marginBottom: 10,
     paddingHorizontal: 4,
@@ -1981,7 +1981,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 16,
     fontSize: normalize.font(15),
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: "LamaSans-SemiBold",
     borderWidth: 1,
     borderColor: 'transparent',
   },
@@ -1995,7 +1995,7 @@ const styles = StyleSheet.create({
   },
   cardTitleSmall: {
     fontSize: normalize.font(15),
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     color: '#000',
   },
   durationBadge: {
@@ -2011,7 +2011,7 @@ const styles = StyleSheet.create({
   },
   durationText: {
     fontSize: normalize.font(12),
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     color: Colors.primary,
   },
   timeSelectRow: {
@@ -2035,7 +2035,7 @@ const styles = StyleSheet.create({
   timeLabelText: {
     fontSize: normalize.font(12),
     color: '#999',
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: "LamaSans-Bold",
   },
   customTimeDisplay: {
     flexDirection: 'row',
@@ -2045,7 +2045,7 @@ const styles = StyleSheet.create({
   },
   customTimeText: {
     fontSize: normalize.font(15),
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     color: '#000',
   },
   timeSeparator: {
@@ -2081,11 +2081,11 @@ const styles = StyleSheet.create({
   wheelItemText: {
     fontSize: normalize.font(16),
     color: '#AAA',
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: "LamaSans-SemiBold",
   },
   wheelItemSelected: {
     color: Colors.primary,
-    fontWeight: '900',
+    fontWeight: '900', fontFamily: "LamaSans-Black",
     fontSize: normalize.font(20),
   },
   wheelItemTaken: {
@@ -2095,7 +2095,7 @@ const styles = StyleSheet.create({
   wheelItemTextTaken: {
     color: '#FF3B30',
     textDecorationLine: 'line-through',
-  },
+   fontFamily: "LamaSans-Regular" },
   wheelColCompact: {
     width: 90,
     justifyContent: 'center',
@@ -2119,12 +2119,12 @@ const styles = StyleSheet.create({
   },
   periodBtnText: {
     fontSize: normalize.font(13),
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     color: '#333',
   },
   periodBtnTextActive: {
     color: '#fff',
-  },
+   fontFamily: "LamaSans-Regular" },
   periodBtnTextTaken: {
     textDecorationLine: 'line-through',
   },
@@ -2137,7 +2137,7 @@ const styles = StyleSheet.create({
   },
   closePickerText: {
     color: Colors.primary,
-    fontWeight: '900',
+    fontWeight: '900', fontFamily: "LamaSans-Black",
     fontSize: normalize.font(15),
   },
   saveBtn: {
@@ -2149,7 +2149,7 @@ const styles = StyleSheet.create({
   },
   saveBtnText: {
     color: '#fff',
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     fontSize: normalize.font(17),
   },
   saveBtnDisabled: {
@@ -2162,7 +2162,7 @@ const styles = StyleSheet.create({
   },
   deleteTextBtnLabel: {
     color: Colors.error,
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     fontSize: normalize.font(15),
     textDecorationLine: 'underline',
   },
@@ -2180,7 +2180,7 @@ const styles = StyleSheet.create({
   },
   modalTitleCompact: {
     fontSize: normalize.font(19),
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     color: '#000',
   },
   shiftLabelBadge: {
@@ -2194,7 +2194,7 @@ const styles = StyleSheet.create({
   shiftLabelBadgeText: {
     fontSize: normalize.font(11),
     color: Colors.primary,
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
   },
   closeBtnCircle: {
     width: 36,
@@ -2221,20 +2221,20 @@ const styles = StyleSheet.create({
   },
   quickLabelNew: {
     fontSize: normalize.font(14),
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     color: '#fff',
   },
   quickInputNew: {
     flex: 1,
     fontSize: normalize.font(20),
-    fontWeight: '900',
+    fontWeight: '900', fontFamily: "LamaSans-Black",
     color: '#fff',
   },
   quickCurrencyNew: {
     fontSize: normalize.font(13),
     color: 'rgba(255, 255, 255, 0.8)',
     marginLeft: 6,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: "LamaSans-Bold",
   },
   pricingRowModern: {
     padding: 20,
@@ -2263,12 +2263,12 @@ const styles = StyleSheet.create({
   },
   dayInitial: {
     fontSize: normalize.font(13),
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     color: '#666',
   },
   dayFullName: {
     fontSize: normalize.font(16),
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     color: '#000',
   },
   statusDot: {
@@ -2279,7 +2279,7 @@ const styles = StyleSheet.create({
   },
   statusTextSmall: {
     fontSize: normalize.font(12),
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: "LamaSans-Bold",
   },
   priceAdjustmentSection: {
     flexDirection: 'row',
@@ -2305,13 +2305,13 @@ const styles = StyleSheet.create({
   },
   pricingInputModern: {
     fontSize: normalize.font(18),
-    fontWeight: '900',
+    fontWeight: '900', fontFamily: "LamaSans-Black",
     color: '#000',
   },
   innerCurrency: {
     fontSize: normalize.font(11),
     color: '#999',
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: "LamaSans-Bold",
   },
   stoppedMessage: {
     flexDirection: 'row',
@@ -2324,7 +2324,7 @@ const styles = StyleSheet.create({
   stoppedMessageText: {
     fontSize: normalize.font(12),
     color: Colors.error,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: "LamaSans-Bold",
   },
   pricingFloatingFooter: {
     padding: 16,
@@ -2344,7 +2344,7 @@ const styles = StyleSheet.create({
   applyBtnTextLarge: {
     color: '#fff',
     fontSize: normalize.font(16),
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
   },
   sheetHeaderCompact: {
     paddingVertical: 16,
@@ -2373,7 +2373,7 @@ const styles = StyleSheet.create({
   policyInputLabel: {
     fontSize: normalize.font(12),
     color: '#888',
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     marginBottom: 6,
     paddingHorizontal: 4,
   },
@@ -2391,7 +2391,7 @@ const styles = StyleSheet.create({
   policyNumberInput: {
     flex: 1,
     fontSize: normalize.font(16),
-    fontWeight: '900',
+    fontWeight: '900', fontFamily: "LamaSans-Black",
     color: Colors.text.primary,
   },
   addTierBtn: {
@@ -2408,7 +2408,7 @@ const styles = StyleSheet.create({
   },
   addTierText: {
     color: Colors.primary,
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     fontSize: normalize.font(15),
   },
   footerContainer: {
@@ -2426,7 +2426,7 @@ const styles = StyleSheet.create({
   saveBtnTextLarge: {
     color: Colors.white,
     fontSize: normalize.font(16),
-    fontWeight: '900',
+    fontWeight: '900', fontFamily: "LamaSans-Black",
   },
   chaletSelectCard: {
     flexDirection: 'row',
@@ -2454,13 +2454,13 @@ const styles = StyleSheet.create({
   },
   chaletSelectName: {
     fontSize: normalize.font(16),
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     color: Colors.text.primary,
   },
   chaletSelectLoc: {
     fontSize: normalize.font(13),
     color: '#888',
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: "LamaSans-SemiBold",
     marginTop: 2,
   },
   fullDayWarning: {
@@ -2476,14 +2476,14 @@ const styles = StyleSheet.create({
   },
   fullDayTitle: {
     fontSize: normalize.font(15),
-    fontWeight: '900',
+    fontWeight: '900', fontFamily: "LamaSans-Black",
     color: Colors.error,
   },
   fullDayText: {
     fontSize: normalize.font(13),
     color: '#666',
     lineHeight: 18,
-  },
+   fontFamily: "LamaSans-Regular" },
   timelineContainer: {
     marginTop: 20,
     padding: 20,
@@ -2494,7 +2494,7 @@ const styles = StyleSheet.create({
   },
   timelineLabel: {
     fontSize: normalize.font(14),
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     color: '#333',
   },
   legendItem: {
@@ -2505,7 +2505,7 @@ const styles = StyleSheet.create({
   timelineInfo: {
     fontSize: normalize.font(12),
     color: '#888',
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: "LamaSans-Bold",
   },
   timelineBar: {
     flexDirection: 'row',
@@ -2536,7 +2536,7 @@ const styles = StyleSheet.create({
   timelineTick: {
     fontSize: normalize.font(10),
     color: '#BBB',
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
   },
   centeredContent: {
     flex: 1,
@@ -2547,7 +2547,7 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(18),
     color: '#888',
     marginTop: 16,
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
   },
   iconCircleSmall: {
     width: 36,
@@ -2559,13 +2559,13 @@ const styles = StyleSheet.create({
   },
   detailTextLarge: {
     fontSize: normalize.font(15),
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     color: '#000',
   },
   detailLabelSmall: {
     fontSize: normalize.font(12),
     color: '#888',
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: "LamaSans-Bold",
     marginTop: 2,
   },
   sectionDivider: {

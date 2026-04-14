@@ -143,21 +143,21 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: normalize.font(18),
     color: Colors.text.primary,
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: "LamaSans-Bold",
   },
   info: {
     flex: 1,
   },
   customerName: {
     fontSize: normalize.font(16),
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     color: Colors.text.primary,
   },
   customerPhone: {
     fontSize: normalize.font(13),
     color: Colors.text.muted,
     marginTop: 2,
-  },
+   fontFamily: "LamaSans-Regular" },
   contactButton: {
     padding: Spacing.sm,
     backgroundColor: Colors.white,
@@ -180,12 +180,12 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(10),
     color: Colors.text.muted,
     marginBottom: 2,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: "LamaSans-SemiBold",
     textTransform: 'uppercase',
   },
   statValue: {
     fontSize: normalize.font(14),
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     color: Colors.text.primary,
   },
   emptyContainer: {
@@ -197,5 +197,5 @@ const styles = StyleSheet.create({
     ...Typography.body,
     marginTop: Spacing.md,
     color: Colors.text.secondary,
-  },
+   fontFamily: "LamaSans-Regular" },
 });

@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
   balanceLabel: {
     color: "white",
     fontSize: 16,
-    fontWeight: "800",
+    fontWeight: "800", fontFamily: "LamaSans-Black",
   },
   bottomRow: {
     flexDirection: "row",
@@ -127,12 +127,12 @@ const styles = StyleSheet.create({
   balanceValue: {
     color: "white",
     fontSize: 28,
-    fontWeight: "900",
+    fontWeight: "900", fontFamily: "LamaSans-Black",
   },
   currencyText: {
     color: "white",
     fontSize: 18,
-    fontWeight: "700",
+    fontWeight: "700", fontFamily: "LamaSans-Bold",
   },
   withdrawButton: {
     width: 128,
@@ -144,6 +144,6 @@ const styles = StyleSheet.create({
   withdrawText: {
     color: "white",
     fontSize: 20,
-    fontWeight: "800",
+    fontWeight: "800", fontFamily: "LamaSans-Black",
   },
 });

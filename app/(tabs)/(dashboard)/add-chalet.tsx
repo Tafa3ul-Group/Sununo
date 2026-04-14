@@ -571,7 +571,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: normalize.font(18),
-  },
+   fontFamily: "LamaSans-Regular" },
   scrollContent: {
     paddingHorizontal: 14,
     paddingTop: 12,
@@ -594,7 +594,7 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     fontSize: normalize.font(16),
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     color: Colors.text.primary,
     marginBottom: 2,
   },
@@ -602,7 +602,7 @@ const styles = StyleSheet.create({
     marginTop: normalize.height(4),
     color: Colors.text.muted,
     fontSize: normalize.font(12),
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: "LamaSans-SemiBold",
   },
   rowInputs: {
     gap: Spacing.sm,
@@ -678,7 +678,7 @@ const styles = StyleSheet.create({
   },
   modalOptionText: {
     ...Typography.body,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: "LamaSans-SemiBold",
   },
   modalCancel: {
     width: '100%',
@@ -690,7 +690,7 @@ const styles = StyleSheet.create({
   modalCancelText: {
     ...Typography.body,
     color: Colors.text.muted,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: "LamaSans-SemiBold",
   },
   pickerItem: {
     width: '100%',
@@ -703,7 +703,7 @@ const styles = StyleSheet.create({
     ...Typography.body,
     fontSize: normalize.font(16),
     color: Colors.text.primary,
-  },
+   fontFamily: "LamaSans-Regular" },
   form: {
     gap: Spacing.md,
   },
@@ -713,7 +713,7 @@ const styles = StyleSheet.create({
   label: {
     ...Typography.caption,
     color: Colors.text.primary,
-    fontWeight: '800',
+    fontWeight: '800', fontFamily: "LamaSans-Black",
     fontSize: normalize.font(14),
   },
   input: {
@@ -725,7 +725,7 @@ const styles = StyleSheet.create({
     borderColor: '#E8E8E8',
     fontSize: normalize.font(15),
     color: Colors.text.primary,
-  },
+   fontFamily: "LamaSans-Regular" },
   textArea: {
     height: normalize.height(100),
     paddingTop: 18,
@@ -779,6 +779,6 @@ const styles = StyleSheet.create({
   editLocText: {
     color: Colors.white,
     fontSize: normalize.font(12),
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: "LamaSans-Bold",
   }
 });

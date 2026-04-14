@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   },
 
   questionTitle: {
-    fontSize: normalize(24),
+    fontSize: normalize(16),
     fontFamily: "LamaSans-Black",
     color: "#111827",
   },

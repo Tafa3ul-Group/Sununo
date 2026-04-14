@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: normalize.font(18),
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: "LamaSans-Bold",
     color: Colors.text.primary,
     marginBottom: 16,
     textAlign: 'right',
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: normalize.font(14),
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: "LamaSans-SemiBold",
     color: Colors.text.secondary,
     marginBottom: 8,
     textAlign: 'right',
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(16),
     color: Colors.text.primary,
     height: '100%',
-  },
+   fontFamily: "LamaSans-Regular" },
   multilineInput: {
     textAlignVertical: 'top',
   },
@@ -256,6 +256,6 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: Colors.white,
     fontSize: normalize.font(16),
-    fontWeight: '700',
+    fontWeight: '700', fontFamily: "LamaSans-Bold",
   },
 });

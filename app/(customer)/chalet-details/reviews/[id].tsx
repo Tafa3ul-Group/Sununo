@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
   summaryArea: { alignItems: "center", marginVertical: 35 },
   bigRatingText: {
     fontSize: 56,
-    fontWeight: "900",
+    fontWeight: "900", fontFamily: "LamaSans-Black",
     color: "#111827",
     marginBottom: 5,
   },
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     borderRightWidth: 1,
     borderRightColor: "#E5E7EB",
   },
-  splitLabel: { fontSize: 15, fontWeight: "700", color: "#111827" },
+  splitLabel: { fontSize: 15, fontWeight: "700", fontFamily: "LamaSans-Bold", color: "#111827" },
   splitIconPart: {
     width: 48,
     height: 48,
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
     gap: 4,
     marginTop: 4,
   },
-  rateNumText: { fontSize: 16, fontWeight: "900", color: "#111827" },
+  rateNumText: { fontSize: 16, fontWeight: "900", fontFamily: "LamaSans-Black", color: "#111827" },
   userInfoRow: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -244,14 +244,14 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   nameAndBody: { alignItems: "flex-end", marginRight: 15, flex: 1 },
-  reviewerNameText: { fontSize: 16, fontWeight: "900", color: "#111827" },
+  reviewerNameText: { fontSize: 16, fontWeight: "900", fontFamily: "LamaSans-Black", color: "#111827" },
   revBodyText: {
     fontSize: 14,
     color: "#6B7280",
     marginTop: 8,
     textAlign: "right",
     lineHeight: 22,
-  },
+   fontFamily: "LamaSans-Regular" },
   avatarCircle: {
     width: 60,
     height: 60,
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
   imgGallery: { flexDirection: "row" },
   thumb: { width: 110, height: 85, borderRadius: 14, marginRight: 12 },
   dateWrapper: { marginTop: 20, alignItems: "flex-start" },
-  dateTextLabel: { fontSize: 13, color: "#9CA3AF", fontWeight: "500" },
+  dateTextLabel: { fontSize: 13, color: "#9CA3AF", fontWeight: "500", fontFamily: "LamaSans-Medium" },
 
   footerSticky: {
     position: "absolute",
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
   },
   questionTitle: {
     fontSize: 16,
-    fontWeight: "900",
+    fontWeight: "900", fontFamily: "LamaSans-Black",
     color: "#111827",
     marginBottom: 8,
   },

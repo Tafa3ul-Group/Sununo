@@ -255,13 +255,13 @@ const styles = StyleSheet.create({
     color: Colors.text.primary,
     textAlign: "right",
     marginBottom: Spacing.xs,
-  },
+   fontFamily: "LamaSans-Regular" },
   subtitle: {
     ...Typography.body,
     color: Colors.text.secondary,
     textAlign: "right",
     fontSize: normalize.font(16),
-  },
+   fontFamily: "LamaSans-Regular" },
   form: {
     gap: Spacing.lg,
   },
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     ...Typography.caption,
     textAlign: "right",
     color: Colors.text.primary,
-    fontWeight: "600",
+    fontWeight: "600", fontFamily: "LamaSans-SemiBold",
     marginBottom: normalize.height(4),
   },
   input: {
@@ -284,14 +284,14 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
     textAlign: "right",
     fontSize: normalize.font(16),
-  },
+   fontFamily: "LamaSans-Regular" },
   forgotPassword: {
     alignSelf: "flex-start",
   },
   forgotPasswordText: {
     ...Typography.caption,
     color: Colors.primary,
-  },
+   fontFamily: "LamaSans-Regular" },
   loginButton: {
     height: normalize.height(56),
     borderRadius: normalize.radius(16),
@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
     ...Typography.h2,
     color: Colors.text.onPrimary,
     fontSize: normalize.font(18),
-  },
+   fontFamily: "LamaSans-Regular" },
   registerContainer: {
     flexDirection: "row-reverse",
     justifyContent: "center",
@@ -314,10 +314,10 @@ const styles = StyleSheet.create({
   noAccountText: {
     ...Typography.body,
     color: Colors.text.secondary,
-  },
+   fontFamily: "LamaSans-Regular" },
   registerText: {
     ...Typography.body,
     color: Colors.primary,
-    fontWeight: "700",
+    fontWeight: "700", fontFamily: "LamaSans-Bold",
   },
 });

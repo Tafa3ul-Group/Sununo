@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
   },
   primaryText: {
     fontSize: 18,
-    fontWeight: "800",
+    fontWeight: "800", fontFamily: "LamaSans-Black",
     textAlign: "center",
   },
   textWithIcon: {

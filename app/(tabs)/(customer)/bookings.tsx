@@ -175,14 +175,14 @@ const styles = StyleSheet.create({
   },
   chaletInfoContent: { flex: 1, marginLeft: 15, height: 100, justifyContent: 'space-between' },
   titleSection: { alignItems: isRTL ? 'flex-end' : 'flex-start' },
-  chaletTitle: { fontSize: 16, fontWeight: '900', color: '#1E293B', textAlign: isRTL ? 'right' : 'left' },
-  locationText: { fontSize: 13, color: '#64748B', fontWeight: '700', marginTop: 4, textAlign: isRTL ? 'right' : 'left' },
+  chaletTitle: { fontSize: 16, fontWeight: '900', fontFamily: "LamaSans-Black", color: '#1E293B', textAlign: isRTL ? 'right' : 'left' },
+  locationText: { fontSize: 13, color: '#64748B', fontWeight: '700', fontFamily: "LamaSans-Bold", marginTop: 4, textAlign: isRTL ? 'right' : 'left' },
   
   priceRatingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   ratingBox: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  ratingText: { fontSize: 14, fontWeight: '800', color: '#1E293B' },
-  priceText: { fontSize: 13, fontWeight: '900', color: '#111827' },
-  priceLabel: { fontSize: 11, fontWeight: '700', color: '#64748B' },
+  ratingText: { fontSize: 14, fontWeight: '800', fontFamily: "LamaSans-Black", color: '#1E293B' },
+  priceText: { fontSize: 13, fontWeight: '900', fontFamily: "LamaSans-Black", color: '#111827' },
+  priceLabel: { fontSize: 11, fontWeight: '700', fontFamily: "LamaSans-Bold", color: '#64748B' },
   
   imageBlock: { width: 115, height: 100 },
   
@@ -196,19 +196,19 @@ const styles = StyleSheet.create({
      paddingVertical: 16,
   },
   detailRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-  detailLabel: { fontSize: normalize.font(15), fontWeight: '800', color: '#111827' },
-  detailValue: { fontSize: normalize.font(16), fontWeight: '700', color: '#94A3B8' },
+  detailLabel: { fontSize: normalize.font(15), fontWeight: '800', fontFamily: "LamaSans-Black", color: '#111827' },
+  detailValue: { fontSize: normalize.font(16), fontWeight: '700', fontFamily: "LamaSans-Bold", color: '#94A3B8' },
   
   paidBadge: { backgroundColor: '#035DF9', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10 },
-  paidBadgeText: { color: '#FFF', fontSize: 13, fontWeight: '900' },
+  paidBadgeText: { color: '#FFF', fontSize: 13, fontWeight: '900', fontFamily: "LamaSans-Black" },
   
   dividerFull: { height: 1, backgroundColor: '#E2E8F0', marginVertical: 15, opacity: 0.6 },
   viewDetailsBtn: { width: '100%', alignItems: 'center', justifyContent: 'center', paddingVertical: 4 },
-  viewDetailsText: { color: '#035DF9', fontSize: 15, fontWeight: '800', textAlign: 'center' },
+  viewDetailsText: { color: '#035DF9', fontSize: 15, fontWeight: '800', fontFamily: "LamaSans-Black", textAlign: 'center' },
 
   emptyState: { alignItems: 'center', justifyContent: 'center', paddingTop: 80, paddingHorizontal: 40 },
-  emptyTitle: { fontSize: 20, fontWeight: '700', color: '#1E293B', marginTop: 20 },
-  emptySubtitle: { fontSize: 14, color: '#64748B', textAlign: 'center', marginTop: 10, lineHeight: 20 },
+  emptyTitle: { fontSize: 20, fontWeight: '700', fontFamily: "LamaSans-Bold", color: '#1E293B', marginTop: 20 },
+  emptySubtitle: { fontSize: 14, color: '#64748B', textAlign: 'center', marginTop: 10, lineHeight: 20 , fontFamily: "LamaSans-Regular" },
   exploreBtn: { marginTop: 24, backgroundColor: '#035DF9', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 },
-  exploreBtnText: { color: 'white', fontWeight: '700' }
+  exploreBtnText: { color: 'white', fontWeight: '700', fontFamily: "LamaSans-Bold" }
 });
