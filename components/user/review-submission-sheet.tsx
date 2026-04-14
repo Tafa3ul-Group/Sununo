@@ -1,3 +1,4 @@
+import { SolarStarBold, SolarStarLinear } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import {
   BottomSheetModal,
@@ -77,8 +78,26 @@ const ReviewSubmissionSheet = forwardRef<
             <Path d={TOP_SCALLOP_PATH} fill="#15AB64" />
           </Svg>
 
-          {/* Internal UI - Only Input now */}
+          {/* Internal UI */}
           <View style={styles.cardContent}>
+            {/* Rating Stars Pill - matching footer design */}
+            <View style={styles.questionPill}>
+              <ThemedText style={styles.questionTitle}>
+                شكد تقيم تجربتك؟
+              </ThemedText>
+              <View style={styles.starsRow}>
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <TouchableOpacity key={i} onPress={() => setUserRating(i)}>
+                    {i <= userRating ? (
+                      <SolarStarBold size={normalize(32)} color="#15AB64" />
+                    ) : (
+                      <SolarStarLinear size={normalize(32)} color="#15AB64" />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
             {/* Comments Input Area */}
             <View style={styles.inputArea}>
               <BottomSheetTextInput
@@ -94,21 +113,24 @@ const ReviewSubmissionSheet = forwardRef<
           </View>
         </View>
 
-        {/* Action Buttons Row */}
-        <View style={styles.actionsRow}>
-          <TouchableOpacity
-            style={[styles.btn, styles.cancelBtn]}
-            onPress={handleCancel}
-          >
-            <ThemedText style={styles.cancelBtnText}>الغاء</ThemedText>
-          </TouchableOpacity>
+        {/* Bottom Extension to fill the drawer with green */}
+        <View style={styles.bottomExtension}>
+          {/* Action Buttons Row */}
+          <View style={styles.actionsRow}>
+            <TouchableOpacity
+              style={[styles.btn, styles.cancelBtn]}
+              onPress={handleCancel}
+            >
+              <ThemedText style={styles.cancelBtnText}>الغاء</ThemedText>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[styles.btn, styles.sendBtn]}
-            onPress={handleSend}
-          >
-            <ThemedText style={styles.sendBtnText}>ارسال</ThemedText>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.btn, styles.sendBtn]}
+              onPress={handleSend}
+            >
+              <ThemedText style={styles.sendBtnText}>ارسال</ThemedText>
+            </TouchableOpacity>
+          </View>
         </View>
       </BottomSheetView>
     </BottomSheetModal>
@@ -119,12 +141,11 @@ export { ReviewSubmissionSheet };
 
 const styles = StyleSheet.create({
   sheetBackground: {
-    backgroundColor: "white",
-    borderRadius: 30,
+    borderRadius: normalize(30),
   },
   indicator: {
     backgroundColor: "#E5E7EB",
-    width: 40,
+    width: normalize(40),
   },
   contentContainer: {
     alignItems: "center",
@@ -132,14 +153,19 @@ const styles = StyleSheet.create({
     flex: 1, // Ensure it fills the sheet
   },
   scallopedCard: {
-    width: SCREEN_WIDTH, // Full width as requested
+    width: "100%",
     height: normalize(372),
     justifyContent: "center",
     alignItems: "center",
     position: "relative",
+    marginHorizontal: 0,
   },
   svgBg: {
-    ...StyleSheet.absoluteFillObject,
+    position: "absolute",
+    left: -40,
+    right: -40,
+    top: 0,
+    bottom: 0,
   },
   cardContent: {
     ...StyleSheet.absoluteFillObject,
@@ -168,12 +194,23 @@ const styles = StyleSheet.create({
   },
   inputArea: {
     backgroundColor: "white",
-    borderRadius: 24, // Matches your other pill designs
-    width: "100%",
+    borderRadius: normalize(24),
+    width: "92%",
     height: normalize(200),
-    padding: 20,
-    borderWidth: 1.5,
+    padding: normalize(20),
+    borderWidth: normalize(1.5),
     borderColor: "#E5E7EB",
+    marginTop: normalize(10),
+    zIndex: 10,
+  },
+  bottomExtension: {
+    flex: 1,
+    width: "100%",
+    height: SCREEN_WIDTH + normalize(80),
+    marginTop: -normalize(10), // Significant overlap to ensure no white space is visible
+    backgroundColor: "#15AB64",
+    alignItems: "center",
+    justifyContent: "flex-start",
   },
   textInput: {
     flex: 1,
@@ -186,16 +223,16 @@ const styles = StyleSheet.create({
   actionsRow: {
     flexDirection: "row",
     width: "100%",
-    paddingHorizontal: 24,
-    paddingBottom: 24,
-    paddingTop: 12,
-    gap: 12,
+    paddingHorizontal: normalize(24),
+    paddingBottom: normalize(24),
+    paddingTop: normalize(12),
+    gap: normalize(12),
     justifyContent: "center",
   },
   btn: {
     flex: 1,
-    height: 58,
-    borderRadius: 29,
+    height: normalize(58),
+    borderRadius: normalize(29),
     justifyContent: "center",
     alignItems: "center",
   },
@@ -209,7 +246,7 @@ const styles = StyleSheet.create({
   },
   cancelBtn: {
     backgroundColor: "white",
-    borderWidth: 1,
+    borderWidth: normalize(1),
     borderColor: "#F3F4F6",
   },
   cancelBtnText: {
