@@ -32,11 +32,11 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
   
   const [loaded, error] = useFonts({
-    'LamaSans-Bold': require('../assets/Arabic - English/LamaSans-BoldCondensed.otf'),
-    'LamaSans-Regular': require('../assets/Arabic - English/LamaSans-RegularCondensed.otf'),
-    'LamaSans-Medium': require('../assets/Arabic - English/LamaSans-MediumCondensed.otf'),
-    'LamaSans-SemiBold': require('../assets/Arabic - English/LamaSans-SemiBoldCondensed.otf'),
-    'LamaSans-Black': require('../assets/Arabic - English/LamaSans-BlackCondensed.otf'),
+    'LamaSans-Bold': require('../assets/fonts/LamaSans/LamaSans-BoldCondensed.otf'),
+    'LamaSans-Regular': require('../assets/fonts/LamaSans/LamaSans-RegularCondensed.otf'),
+    'LamaSans-Medium': require('../assets/fonts/LamaSans/LamaSans-MediumCondensed.otf'),
+    'LamaSans-SemiBold': require('../assets/fonts/LamaSans/LamaSans-SemiBoldCondensed.otf'),
+    'LamaSans-Black': require('../assets/fonts/LamaSans/LamaSans-BlackCondensed.otf'),
   });
 
   useEffect(() => {

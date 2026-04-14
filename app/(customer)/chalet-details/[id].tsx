@@ -392,8 +392,8 @@ const styles = StyleSheet.create({
     gap: 6,
     marginRight: 15,
   },
-  ratingVal: { fontSize: 18, fontWeight: "800", fontFamily: "LamaSans-Black" },
-  mainTitle: { fontSize: 22, fontWeight: "900", fontFamily: "LamaSans-Black", textAlign: "right" },
+  ratingVal: { fontSize: 18, fontFamily: "LamaSans-Black" },
+  mainTitle: { fontSize: 22, fontFamily: "LamaSans-Black", textAlign: "right" },
   locationSub: { fontSize: 13, color: "#6B7280", textAlign: "right" , fontFamily: "LamaSans-Regular" },
   sectionHeaderContainer: {
     height: 60,
@@ -404,13 +404,13 @@ const styles = StyleSheet.create({
   sectionIconBg: { position: "absolute", right: -20, top: 0, opacity: 0.8 },
   sectionTitleText: {
     fontSize: 18,
-    fontWeight: "900", fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     textAlign: "right",
     paddingRight: 10,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "900", fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     marginVertical: 15,
     textAlign: "right",
   },
@@ -421,8 +421,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 12,
   },
-  specText: { fontSize: 13, fontWeight: "700", fontFamily: "LamaSans-Bold" },
-  viewAllText: { fontSize: 13, color: "#6B7280", fontWeight: "700", fontFamily: "LamaSans-Bold" },
+  specText: { fontSize: 13, fontFamily: "LamaSans-Bold" },
+  viewAllText: { fontSize: 13, color: "#6B7280", fontFamily: "LamaSans-Bold" },
   facilitiesHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -444,7 +444,7 @@ const styles = StyleSheet.create({
   iconInShape: { position: "absolute" },
   facilityLabelText: {
     fontSize: 12,
-    fontWeight: "700", fontFamily: "LamaSans-Bold",
+    fontFamily: "LamaSans-Bold",
     marginTop: 6,
     textAlign: "center",
   },
@@ -470,7 +470,7 @@ const styles = StyleSheet.create({
   mapImg: { width: "100%", height: "100%" },
   pinCenter: { position: "absolute", top: "40%", left: "46%" },
   mapLocLabel: { paddingVertical: 10, alignItems: "center" },
-  mapLocText: { fontSize: 15, fontWeight: "800", fontFamily: "LamaSans-Black" },
+  mapLocText: { fontSize: 15, fontFamily: "LamaSans-Black" },
 
   hostStampArea: { marginVertical: 20, width: "100%", alignItems: "center" },
   contactBanner: { width: SCREEN_WIDTH - 40, height: 100 },
@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
   customRatingText: {
     color: "white",
     fontSize: 22,
-    fontWeight: "800", fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
   },
 
   revComplexCardFlat: {
@@ -513,15 +513,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   reviewerMeta: { flexDirection: "row", alignItems: "center", gap: 12 },
-  reviewerName: { fontSize: 16, fontWeight: "900", fontFamily: "LamaSans-Black" },
+  reviewerName: { fontSize: 16, fontFamily: "LamaSans-Black" },
   revAvatarSmall: { width: 50, height: 50, borderRadius: 25 },
   revRatingCorner: { flexDirection: "row", alignItems: "center", gap: 4 },
-  revRateNum: { fontSize: 18, fontWeight: "900", fontFamily: "LamaSans-Black" },
+  revRateNum: { fontSize: 18, fontFamily: "LamaSans-Black" },
   revMessage: {
     fontSize: 14,
     color: "#6B7280",
     marginVertical: 15,
-    fontWeight: "600", fontFamily: "LamaSans-SemiBold",
+    fontFamily: "LamaSans-SemiBold",
     textAlign: "right",
   },
   revImgSwiper: { gap: 10 },
@@ -549,7 +549,7 @@ const styles = StyleSheet.create({
   infoGearIcon: { position: "absolute" },
   infoLabelText: {
     fontSize: 11,
-    fontWeight: "700", fontFamily: "LamaSans-Bold",
+    fontFamily: "LamaSans-Bold",
     marginTop: 8,
     textAlign: "center",
   },
@@ -575,7 +575,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  relChaletTitle: { fontSize: 16, fontWeight: "900", fontFamily: "LamaSans-Black", textAlign: "right" },
+  relChaletTitle: { fontSize: 16, fontFamily: "LamaSans-Black", textAlign: "right" },
   relChaletLoc: { fontSize: 12, color: "#6B7280", textAlign: "right" , fontFamily: "LamaSans-Regular" },
   relBottomMeta: {
     flexDirection: "row",
@@ -583,8 +583,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   relRatingBox: { flexDirection: "row", alignItems: "center", gap: 4 },
-  relRatingNum: { fontSize: 14, fontWeight: "800", fontFamily: "LamaSans-Black", color: "#15CB64" },
-  relChaletPrice: { fontSize: 13, fontWeight: "900", fontFamily: "LamaSans-Black" },
+  relRatingNum: { fontSize: 14, fontFamily: "LamaSans-Black", color: "#15CB64" },
+  relChaletPrice: { fontSize: 13, fontFamily: "LamaSans-Black" },
   relImgRight: { width: 100, height: 100, marginLeft: 10 },
   relImgBorder: {
     width: 100,
@@ -612,9 +612,9 @@ const styles = StyleSheet.create({
     borderTopColor: "#F3F4F6",
   },
   footerTextSide: { alignItems: "flex-end", flex: 1 },
-  footerPriceBig: { fontSize: 18, fontWeight: "900", fontFamily: "LamaSans-Black", marginBottom: 4 },
+  footerPriceBig: { fontSize: 18, fontFamily: "LamaSans-Black", marginBottom: 4 },
   footerMetaRow: { flexDirection: "row-reverse", alignItems: "center", gap: 6 },
-  footerMetaSmall: { fontSize: 10, color: "#9CA3AF", fontWeight: "600", fontFamily: "LamaSans-SemiBold" },
+  footerMetaSmall: { fontSize: 10, color: "#9CA3AF", fontFamily: "LamaSans-SemiBold" },
   vDivider: {
     width: 1,
     height: 10,

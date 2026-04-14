@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
   },
   monthTitle: {
     fontSize: normalize.font(16),
-    fontWeight: "900", fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     color: "#1A1A1A",
     textTransform: 'uppercase',
   },
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: "center",
     fontSize: normalize.font(12),
-    fontWeight: "800", fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     color: "#15AB64",
   },
   grid: {
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
   },
   dayText: {
     fontSize: normalize.font(14),
-    fontWeight: "600", fontFamily: "LamaSans-SemiBold",
+    fontFamily: "LamaSans-SemiBold",
     color: "#1A1A1A",
   },
   disabledDayText: {
@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
   },
   selectedDayText: {
     color: "white",
-    fontWeight: "700", fontFamily: "LamaSans-Bold",
+    fontFamily: "LamaSans-Bold",
   },
   inRangeDayText: {
     color: "#1A1A1A",
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
   },
   yearText: {
     fontSize: normalize.font(16),
-    fontWeight: '700', fontFamily: "LamaSans-Bold",
+    fontFamily: "LamaSans-Bold",
     color: '#1A1A1A',
   },
   yearTextSelected: {
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
   },
   closeYearText: {
     color: Colors.primary,
-    fontWeight: '800', fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     fontSize: normalize.font(14),
   },
 });

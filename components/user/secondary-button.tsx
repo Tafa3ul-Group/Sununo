@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 18,
-    fontWeight: "800", fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     textAlign: "center",
     lineHeight: 22,
   },

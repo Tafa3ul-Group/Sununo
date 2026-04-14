@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: '900', fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     color: '#111827',
   },
   backButton: {
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 20,
-    fontWeight: '700', fontFamily: "LamaSans-Bold",
+    fontFamily: "LamaSans-Bold",
     color: '#1E293B',
     marginTop: 20,
   },

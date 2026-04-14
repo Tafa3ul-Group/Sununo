@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 16,
-    fontWeight: '900', fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     textAlign: 'center',
   },
 });

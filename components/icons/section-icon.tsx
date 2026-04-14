@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   },
   titleText: {
     fontSize: 16,
-    fontWeight: "900", fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     color: "#171725",
   },
 });

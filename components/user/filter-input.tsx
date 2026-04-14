@@ -82,12 +82,12 @@ const styles = StyleSheet.create({
   label: {
     flex: 1,
     fontSize: normalize.font(16),
-    fontWeight: '500', fontFamily: "LamaSans-Medium",
+    fontFamily: "LamaSans-Medium",
     color: Colors.primary, // The text in the image is blue
     textAlign: 'center',
   },
   selectedText: {
-    fontWeight: '700', fontFamily: "LamaSans-Bold",
+    fontFamily: "LamaSans-Bold",
   },
   divider: {
     width: 1,

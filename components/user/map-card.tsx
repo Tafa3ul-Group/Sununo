@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    fontWeight: "900", fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     color: "#111827",
   },
   location: {
@@ -116,12 +116,12 @@ const styles = StyleSheet.create({
   },
   rating: {
     fontSize: 14,
-    fontWeight: "700", fontFamily: "LamaSans-Bold",
+    fontFamily: "LamaSans-Bold",
     color: "#111827",
   },
   price: {
     fontSize: 13,
-    fontWeight: "800", fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     color: Colors.primary,
   },
 });

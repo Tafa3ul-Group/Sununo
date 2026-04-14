@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: normalize.font(18),
-    fontWeight: '800', fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     color: '#1F2937',
   },
   logoCircle: {
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: normalize.font(16),
-    fontWeight: '800', fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     color: '#374151',
     textAlign: 'right',
   },
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
   avatarInitialText: {
     color: 'white',
     fontSize: normalize.font(24),
-    fontWeight: '800', fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
   },
   menuGroup: {
     gap: normalize.height(16),
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
   },
   menuLabelText: {
     fontSize: normalize.font(16),
-    fontWeight: '700', fontFamily: "LamaSans-Bold",
+    fontFamily: "LamaSans-Bold",
     color: '#374151',
     marginRight: normalize.width(15),
     textAlign: 'right',

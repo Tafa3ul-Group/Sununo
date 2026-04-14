@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: "900", fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     color: "#111827",
     marginBottom: 24,
   },
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    fontWeight: "700", fontFamily: "LamaSans-Bold",
+    fontFamily: "LamaSans-Bold",
     color: "#4B5563",
   },
   activeLabel: {

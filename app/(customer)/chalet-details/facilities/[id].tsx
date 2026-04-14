@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
   },
   scallopedTitle: {
     fontSize: 18,
-    fontWeight: '900', fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     color: '#374151',
   },
   topTabsScroll: {
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 15,
-    fontWeight: '900', fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     color: '#035DF9',
   },
   cardContainer: { 
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'flex-end'
   },
   textSide: { flex: 1, alignItems: 'flex-end', marginRight: 15 },
-  cardLabel: { fontSize: 16, fontWeight: '800', fontFamily: "LamaSans-Black", color: '#111827' },
+  cardLabel: { fontSize: 16, fontFamily: "LamaSans-Black", color: '#111827' },
   cardSubtext: { fontSize: 12, color: '#6B7280', marginTop: 4, textAlign: 'right' , fontFamily: "LamaSans-Regular" },
   iconBullet: {
     width: 22,

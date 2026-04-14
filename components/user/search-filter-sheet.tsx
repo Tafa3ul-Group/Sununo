@@ -392,7 +392,7 @@ const styles = StyleSheet.create({
   },
   cityName: {
     fontSize: 16,
-    fontWeight: "600", fontFamily: "LamaSans-SemiBold",
+    fontFamily: "LamaSans-SemiBold",
     color: Colors.text.primary,
     flex: 1,
     textAlign: isRTL ? "right" : "left",
@@ -426,7 +426,7 @@ const styles = StyleSheet.create({
   },
   legendText: {
     fontSize: 13,
-    fontWeight: "600", fontFamily: "LamaSans-SemiBold",
+    fontFamily: "LamaSans-SemiBold",
     color: "#1A1A1A",
   },
   dot: {
@@ -491,12 +491,12 @@ const styles = StyleSheet.create({
   },
   subTabTextActive: {
     fontSize: 18,
-    fontWeight: "700", fontFamily: "LamaSans-Bold",
+    fontFamily: "LamaSans-Bold",
     color: "#1A1A1A",
   },
   subTabTextInactive: {
     fontSize: 18,
-    fontWeight: "500", fontFamily: "LamaSans-Medium",
+    fontFamily: "LamaSans-Medium",
     color: "#717171",
   },
   periodList: {
@@ -519,7 +519,7 @@ const styles = StyleSheet.create({
   },
   periodLabel: {
     fontSize: 18,
-    fontWeight: "700", fontFamily: "LamaSans-Bold",
+    fontFamily: "LamaSans-Bold",
     color: "#1A1A1A",
     flex: 1,
     textAlign: "right",
@@ -542,7 +542,7 @@ const styles = StyleSheet.create({
   },
   guestLabel: {
     fontSize: 22,
-    fontWeight: "800", fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     color: "#1A1A1A",
     textAlign: "right",
   },

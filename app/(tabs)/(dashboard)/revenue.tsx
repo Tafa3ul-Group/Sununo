@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
   balanceLabel: {
     color: 'rgba(255,255,255,0.7)',
     fontSize: normalize.font(13),
-    fontWeight: '600', fontFamily: "LamaSans-SemiBold",
+    fontFamily: "LamaSans-SemiBold",
     marginBottom: 8,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
@@ -323,13 +323,13 @@ const styles = StyleSheet.create({
   balanceValue: {
     color: Colors.white,
     fontSize: normalize.font(36),
-    fontWeight: '800', fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     letterSpacing: -1,
   },
   balanceCurrency: {
     color: 'rgba(255,255,255,0.6)',
     fontSize: normalize.font(14),
-    fontWeight: '600', fontFamily: "LamaSans-SemiBold",
+    fontFamily: "LamaSans-SemiBold",
     marginBottom: 20,
     marginTop: 2,
   },
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
   },
   withdrawButtonText: {
     color: Colors.primary,
-    fontWeight: '700', fontFamily: "LamaSans-Bold",
+    fontFamily: "LamaSans-Bold",
     fontSize: normalize.font(14),
   },
   // Period Filter
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
   },
   periodText: {
     fontSize: normalize.font(13),
-    fontWeight: '600', fontFamily: "LamaSans-SemiBold",
+    fontFamily: "LamaSans-SemiBold",
     color: Colors.text.secondary,
   },
   periodTextActive: {
@@ -397,13 +397,13 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: normalize.font(16),
-    fontWeight: '800', fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     color: Colors.text.primary,
   },
   statLabel: {
     fontSize: normalize.font(10),
     color: Colors.text.muted,
-    fontWeight: '600', fontFamily: "LamaSans-SemiBold",
+    fontFamily: "LamaSans-SemiBold",
     marginTop: 2,
     textAlign: 'center',
   },
@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: normalize.font(18),
-    fontWeight: '800', fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     color: Colors.text.primary,
   },
   viewAllBtn: {
@@ -426,7 +426,7 @@ const styles = StyleSheet.create({
   viewAllText: {
     color: Colors.primary,
     fontSize: normalize.font(13),
-    fontWeight: '600', fontFamily: "LamaSans-SemiBold",
+    fontFamily: "LamaSans-SemiBold",
   },
   // Transactions
   transactionsCard: {
@@ -453,24 +453,24 @@ const styles = StyleSheet.create({
   },
   transactionTitle: {
     fontSize: normalize.font(14),
-    fontWeight: '700', fontFamily: "LamaSans-Bold",
+    fontFamily: "LamaSans-Bold",
     color: Colors.text.primary,
     marginBottom: 3,
   },
   transactionDate: {
     fontSize: normalize.font(11),
     color: Colors.text.muted,
-    fontWeight: '500', fontFamily: "LamaSans-Medium",
+    fontFamily: "LamaSans-Medium",
   },
   transactionAmount: {
     fontSize: normalize.font(14),
-    fontWeight: '800', fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     color: Colors.text.primary,
     marginBottom: 4,
   },
   currencySmall: {
     fontSize: normalize.font(11),
-    fontWeight: '600', fontFamily: "LamaSans-SemiBold",
+    fontFamily: "LamaSans-SemiBold",
     color: Colors.text.muted,
   },
   typeBadge: {
@@ -480,7 +480,7 @@ const styles = StyleSheet.create({
   },
   typeBadgeText: {
     fontSize: normalize.font(9),
-    fontWeight: '700', fontFamily: "LamaSans-Bold",
+    fontFamily: "LamaSans-Bold",
     textTransform: 'uppercase',
   },
   separator: {
@@ -497,7 +497,7 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: normalize.font(13),
     color: Colors.text.muted,
-    fontWeight: '600', fontFamily: "LamaSans-SemiBold",
+    fontFamily: "LamaSans-SemiBold",
   },
   // Withdraw Sheet
   sheetContent: {
@@ -505,7 +505,7 @@ const styles = StyleSheet.create({
   },
   sheetTitle: {
     fontSize: normalize.font(20),
-    fontWeight: '800', fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     color: Colors.text.primary,
     textAlign: 'center',
     marginBottom: 4,
@@ -513,7 +513,7 @@ const styles = StyleSheet.create({
   sheetSubtitle: {
     fontSize: normalize.font(13),
     color: Colors.text.muted,
-    fontWeight: '500', fontFamily: "LamaSans-Medium",
+    fontFamily: "LamaSans-Medium",
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -530,13 +530,13 @@ const styles = StyleSheet.create({
   amountInput: {
     flex: 1,
     fontSize: normalize.font(24),
-    fontWeight: '800', fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     color: Colors.text.primary,
     textAlign: 'center',
   },
   amountCurrency: {
     fontSize: normalize.font(16),
-    fontWeight: '700', fontFamily: "LamaSans-Bold",
+    fontFamily: "LamaSans-Bold",
     color: Colors.text.muted,
   },
 });

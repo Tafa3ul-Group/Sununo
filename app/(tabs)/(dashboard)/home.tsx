@@ -426,7 +426,7 @@ const styles = StyleSheet.create({
   walletLabel: {
     color: 'rgba(255,255,255,0.65)',
     fontSize: normalize.font(12),
-    fontWeight: '600', fontFamily: "LamaSans-SemiBold",
+    fontFamily: "LamaSans-SemiBold",
     marginBottom: 6,
     letterSpacing: 0.3,
     textTransform: 'uppercase',
@@ -437,13 +437,13 @@ const styles = StyleSheet.create({
   walletValue: {
     color: Colors.white,
     fontSize: normalize.font(32),
-    fontWeight: '800', fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     letterSpacing: -0.5,
   },
   walletCurrency: {
     color: 'rgba(255,255,255,0.5)',
     fontSize: normalize.font(14),
-    fontWeight: '600', fontFamily: "LamaSans-SemiBold",
+    fontFamily: "LamaSans-SemiBold",
   },
   eyeButton: {
     width: 44,
@@ -468,7 +468,7 @@ const styles = StyleSheet.create({
   },
   walletActionText: {
     color: Colors.primary,
-    fontWeight: '700', fontFamily: "LamaSans-Bold",
+    fontFamily: "LamaSans-Bold",
     fontSize: normalize.font(13),
   },
 
@@ -494,38 +494,38 @@ const styles = StyleSheet.create({
   },
   avatarLetter: {
     fontSize: normalize.font(18),
-    fontWeight: '700', fontFamily: "LamaSans-Bold",
+    fontFamily: "LamaSans-Bold",
   },
   bookingInfo: {
     flex: 1,
   },
   bookingName: {
     fontSize: normalize.font(14),
-    fontWeight: '700', fontFamily: "LamaSans-Bold",
+    fontFamily: "LamaSans-Bold",
     color: Colors.text.primary,
     marginBottom: 1,
   },
   bookingChalet: {
     fontSize: normalize.font(11),
     color: Colors.text.muted,
-    fontWeight: '500', fontFamily: "LamaSans-Medium",
+    fontFamily: "LamaSans-Medium",
   },
   bookingDate: {
     fontSize: normalize.font(10),
     color: Colors.text.muted,
-    fontWeight: '500', fontFamily: "LamaSans-Medium",
+    fontFamily: "LamaSans-Medium",
     marginTop: 2,
   },
   bookingAmount: {
     fontSize: normalize.font(14),
-    fontWeight: '800', fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     color: Colors.text.primary,
     marginBottom: 4,
   },
   bookingCurrency: {
     fontSize: normalize.font(10),
     color: Colors.text.muted,
-    fontWeight: '600', fontFamily: "LamaSans-SemiBold",
+    fontFamily: "LamaSans-SemiBold",
   },
   bookingStatusBadge: {
     paddingHorizontal: 8,
@@ -534,7 +534,7 @@ const styles = StyleSheet.create({
   },
   bookingStatusText: {
     fontSize: normalize.font(9),
-    fontWeight: '700', fontFamily: "LamaSans-Bold",
+    fontFamily: "LamaSans-Bold",
     textTransform: 'uppercase',
   },
 
@@ -552,13 +552,13 @@ const styles = StyleSheet.create({
   },
   bookingsTitle: {
     fontSize: normalize.font(17),
-    fontWeight: '800', fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     color: Colors.text.primary,
   },
   bookingsViewAll: {
     fontSize: normalize.font(14),
     color: Colors.text.primary,
-    fontWeight: '600', fontFamily: "LamaSans-SemiBold",
+    fontFamily: "LamaSans-SemiBold",
     textDecorationLine: 'underline',
   },
   headerActions: {
@@ -578,7 +578,7 @@ const styles = StyleSheet.create({
   },
   calendarTitle: {
     fontSize: normalize.font(18),
-    fontWeight: '800', fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     color: Colors.text.primary,
   },
   filterScroll: {
@@ -636,19 +636,19 @@ const styles = StyleSheet.create({
   },
   modernBookingName: {
     fontSize: normalize.font(16),
-    fontWeight: '800', fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     color: Colors.text.primary,
     marginBottom: 1,
   },
   modernBookingShift: {
     fontSize: normalize.font(12),
     color: Colors.text.muted,
-    fontWeight: '500', fontFamily: "LamaSans-Medium",
+    fontFamily: "LamaSans-Medium",
   },
   modernBookingChalet: {
     fontSize: normalize.font(13),
     color: Colors.primary,
-    fontWeight: '700', fontFamily: "LamaSans-Bold",
+    fontFamily: "LamaSans-Bold",
     marginBottom: 1,
   },
   modernBookingPriceWrap: {
@@ -657,7 +657,7 @@ const styles = StyleSheet.create({
   },
   modernBookingPrice: {
     fontSize: normalize.font(14),
-    fontWeight: '800', fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     color: Colors.text.primary,
   },
   fixedHeaderArea: {
@@ -674,7 +674,7 @@ const styles = StyleSheet.create({
   noBookingsText: {
     color: Colors.text.muted,
     fontSize: normalize.font(14),
-    fontWeight: '600', fontFamily: "LamaSans-SemiBold",
+    fontFamily: "LamaSans-SemiBold",
   },
 
 
@@ -696,13 +696,13 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: normalize.font(16),
-    fontWeight: '700', fontFamily: "LamaSans-Bold",
+    fontFamily: "LamaSans-Bold",
     color: Colors.text.primary,
   },
   emptySubtitle: {
     fontSize: normalize.font(12),
     color: Colors.text.muted,
-    fontWeight: '500', fontFamily: "LamaSans-Medium",
+    fontFamily: "LamaSans-Medium",
     textAlign: 'center',
     paddingHorizontal: 40,
   },

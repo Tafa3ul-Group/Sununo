@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: normalize.font(18),
-    fontWeight: '700', fontFamily: "LamaSans-Bold",
+    fontFamily: "LamaSans-Bold",
     color: Colors.text.primary,
     marginBottom: 16,
     textAlign: 'right',
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: normalize.font(14),
-    fontWeight: '600', fontFamily: "LamaSans-SemiBold",
+    fontFamily: "LamaSans-SemiBold",
     color: Colors.text.secondary,
     marginBottom: 8,
     textAlign: 'right',
@@ -256,6 +256,6 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: Colors.white,
     fontSize: normalize.font(16),
-    fontWeight: '700', fontFamily: "LamaSans-Bold",
+    fontFamily: "LamaSans-Bold",
   },
 });

@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
   },
   tabLabel: {
     fontSize: normalize.font(18),
-    fontWeight: "700", fontFamily: "LamaSans-Bold",
+    fontFamily: "LamaSans-Bold",
   },
   activeLabel: {
     color: "white",

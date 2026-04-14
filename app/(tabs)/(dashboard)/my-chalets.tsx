@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: normalize.font(18),
-    fontWeight: '800', fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
     color: Colors.text.primary,
   },
   countBadge: {
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
   countBadgeText: {
     color: Colors.white,
     fontSize: normalize.font(11),
-    fontWeight: '800', fontFamily: "LamaSans-Black",
+    fontFamily: "LamaSans-Black",
   },
   addChaletBtn: {
     width: 36,
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
   },
   chaletName: {
     fontSize: normalize.font(15),
-    fontWeight: '700', fontFamily: "LamaSans-Bold",
+    fontFamily: "LamaSans-Bold",
     color: Colors.text.primary,
   },
   locationRow: {
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
   locationLabel: {
     fontSize: normalize.font(11),
     color: Colors.text.muted,
-    fontWeight: '500', fontFamily: "LamaSans-Medium",
+    fontFamily: "LamaSans-Medium",
   },
   chipRow: {
     gap: 6,
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   },
   statChipText: {
     fontSize: normalize.font(11),
-    fontWeight: '700', fontFamily: "LamaSans-Bold",
+    fontFamily: "LamaSans-Bold",
   },
   editBtn: {
     width: 32,
@@ -304,13 +304,13 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: normalize.font(16),
-    fontWeight: '700', fontFamily: "LamaSans-Bold",
+    fontFamily: "LamaSans-Bold",
     color: Colors.text.primary,
   },
   emptySubtitle: {
     fontSize: normalize.font(12),
     color: Colors.text.muted,
-    fontWeight: '500', fontFamily: "LamaSans-Medium",
+    fontFamily: "LamaSans-Medium",
     textAlign: 'center',
     paddingHorizontal: 40,
   },
