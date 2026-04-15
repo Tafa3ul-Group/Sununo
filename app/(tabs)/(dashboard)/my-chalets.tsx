@@ -92,7 +92,7 @@ export default function MyChaletsScreen() {
             style={styles.editBtn}
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              router.push({ pathname: '/(tabs)/(dashboard)/edit-chalet', params: { id: item.id } });
+              router.push({ pathname: '/(dashboard)/edit-chalet', params: { id: item.id } });
             }}
           >
             <SolarPenBold size={18} color={Colors.text.muted} />
@@ -131,7 +131,7 @@ export default function MyChaletsScreen() {
             </View>
             <TouchableOpacity 
               style={styles.addChaletBtn}
-              onPress={() => router.push('/(tabs)/(dashboard)/add-chalet')}
+              onPress={() => router.push('/(dashboard)/add-chalet')}
             >
               <SolarAddSquareBold size={24} color={Colors.white} />
             </TouchableOpacity>

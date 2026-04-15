@@ -1122,7 +1122,7 @@ export default function ShiftsAndPricesScreen() {
                               : `Penalty amount: ${p.penaltyPercentage}%`}
                           </Text>
                         </View>
-                        <SolarAltArrowRightBold size={16} color={Colors.border} />
+                        <SolarAltArrowRightBold size={16} color={Colors.border} style={{ transform: [{ rotate: isRTL ? '180deg' : '0deg' }] }} />
                       </View>
                     ))}
 

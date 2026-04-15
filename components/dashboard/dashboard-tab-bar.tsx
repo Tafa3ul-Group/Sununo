@@ -1,5 +1,7 @@
 import {
-  SolarHome2Bold
+  SolarHome2Bold,
+  SolarAddSquareBold,
+  SolarMagnifierBold
 } from '@/components/icons/solar-icons';
 import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
@@ -17,12 +19,14 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from 'react-redux';
 
 /**
  * DashboardTabBar - Standardized with CustomTabBar design
  */
 export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors }) => {
+  const router = useRouter();
   const dispatch = useDispatch();
   const { userType, language, selectedChalet } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
@@ -39,6 +43,18 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
   // Fetch chalets
   const { data: chaletsResponse } = useGetOwnerChaletsQuery({}, { skip: userType !== 'owner' });
   const chalets = chaletsResponse?.data || chaletsResponse || [];
+  const hasChalets = chalets && chalets.length > 0;
+
+  // Auto-select first chalet if none selected or if 'all' is selected (legacy)
+  React.useEffect(() => {
+    if (hasChalets && (!selectedChalet || selectedChalet.id === 'all') && chalets[0]) {
+      dispatch(setSelectedChalet({
+        id: chalets[0].id,
+        name: isRTL ? (chalets[0].name?.ar || chalets[0].name) : (chalets[0].name?.en || chalets[0].name),
+        image: chalets[0].images?.[0]?.url || null
+      }));
+    }
+  }, [hasChalets, selectedChalet]);
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
@@ -111,11 +127,19 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
       ]}>
         <TouchableOpacity
           style={styles.roundButton}
-          onPress={togglePopover}
+          onPress={() => {
+            if (!hasChalets) {
+              router.push('/(dashboard)/add-chalet');
+            } else {
+              togglePopover();
+            }
+          }}
           activeOpacity={0.8}
         >
           <View style={styles.tabIconCircle}>
-            {selectedChalet?.image ? (
+            {!hasChalets ? (
+                <SolarAddSquareBold size={normalize.width(28)} color="white" />
+            ) : selectedChalet?.image ? (
                 <Image 
                     source={getImageSrc(selectedChalet.image)} 
                     style={styles.chaletAvatarImg}
@@ -170,17 +194,23 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
               ]}
             >
               <View style={styles.popoverContent}>
-                <View style={[styles.popoverHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <TouchableOpacity 
+                  style={[styles.popoverHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+                  onPress={() => { closePopover(); router.push('/(tabs)/(dashboard)/my-chalets'); }}
+                >
                   <SolarHome2Bold size={20} color={Colors.primary} />
                   <Text style={styles.popoverTitle}>{t('tabs.myChalets', 'شاليهاتي')}</Text>
-                </View>
+                </TouchableOpacity>
 
                 <ScrollView style={styles.popoverList}>
+
+
                   {chalets.map((item: any) => (
                     <TouchableOpacity
                       key={item.id}
                       style={[
                         styles.chaletItem,
+                        { flexDirection: isRTL ? 'row-reverse' : 'row' },
                         selectedChalet?.id === item.id && { backgroundColor: '#F0F7FF' }
                       ]}
                       onPress={() => {
@@ -198,13 +228,24 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
                           {isRTL ? (item.name?.ar || item.name) : (item.name?.en || item.name)}
                         </Text>
                       </View>
+                      
+                      <TouchableOpacity
+                        style={[styles.editItemBtn, { backgroundColor: '#EFF6FF', borderColor: '#DBEAFE' }]}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          closePopover();
+                          router.push({ pathname: '/(dashboard)/chalet-details', params: { id: item.id } });
+                        }}
+                      >
+                         <SolarMagnifierBold size={16} color={Colors.primary} />
+                      </TouchableOpacity>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
 
                 <TouchableOpacity
                   style={styles.addNewChaletBtn}
-                  onPress={() => { closePopover(); navigation.navigate('add-chalet'); }}
+                  onPress={() => { closePopover(); router.push('/(dashboard)/add-chalet'); }}
                 >
                   <Text style={styles.addNewChaletText}>{t('dashboard.addChalet', 'إضافة شاليه جديد')}</Text>
                 </TouchableOpacity>
@@ -245,7 +286,15 @@ const styles = StyleSheet.create({
   popoverHeader: { padding: 16, borderBottomWidth: 1, borderBottomColor: '#F0F0F0', alignItems: 'center', gap: 8 },
   popoverTitle: { fontSize: 14, fontWeight: '800', color: Colors.text.primary, flex: 1 },
   popoverList: { maxHeight: 260 },
-  chaletItem: { flexDirection: 'row', padding: 12, alignItems: 'center', gap: 12 },
+  chaletItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F8F9FA',
+  },
   chaletThumb: { width: 40, height: 40, borderRadius: 10, backgroundColor: '#F5F5F7' },
   chaletItemInfo: { flex: 1 },
   chaletItemName: { fontSize: 13, fontWeight: '700', color: '#333' },
@@ -258,5 +307,15 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 99,
+  },
+  editItemBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: '#F8F9FB',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
   },
 });

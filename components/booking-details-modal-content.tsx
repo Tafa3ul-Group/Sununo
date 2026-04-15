@@ -1,5 +1,5 @@
 import { Colors, normalize } from '@/constants/theme';
-import { useGetProviderBookingDetailsQuery, useRejectBookingMutation, useDeleteExternalBookingMutation } from '@/store/api/apiSlice';
+import { useGetProviderBookingDetailsQuery } from '@/store/api/apiSlice';
 import { 
   SolarDangerCircleBold, 
   SolarUserBold, 
@@ -42,14 +42,12 @@ interface BookingDetailsContentProps {
   t: any;
   onRefresh?: () => void;
   onClose?: () => void;
+  onOpenCancelSheet?: (data: any) => void;
+  isCancelLoading?: boolean;
 }
 
-export const BookingDetailsModalContent = ({ id, isRTL, t, onRefresh, onClose }: BookingDetailsContentProps) => {
+export const BookingDetailsModalContent = ({ id, isRTL, t, onRefresh, onClose, onOpenCancelSheet, isCancelLoading }: BookingDetailsContentProps) => {
   const { data: bookingDetailsData, isLoading, error } = useGetProviderBookingDetailsQuery(id);
-  const [rejectBooking, { isLoading: isRejectLoading }] = useRejectBookingMutation();
-  const [deleteExternalBooking, { isLoading: isDeletingExternal }] = useDeleteExternalBookingMutation();
-  const [cancelNote, setCancelNote] = React.useState('');
-  const [showCancelReason, setShowCancelReason] = React.useState(false);
 
   if (isLoading) return <View style={styles.sheetLoading}><ActivityIndicator size="large" color={IDENTITY_BLUE} /></View>;
 
@@ -80,40 +78,8 @@ export const BookingDetailsModalContent = ({ id, isRTL, t, onRefresh, onClose }:
   };
 
   const handleCancelAction = () => {
-    if (!showCancelReason && !bIsExternal) {
-      setShowCancelReason(true);
-      return;
-    }
-
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    Alert.alert(
-      isRTL ? 'تنبيه' : 'Attention',
-      bIsExternal
-        ? (isRTL ? 'هل أنت متأكد من إلغاء هذا الإغلاق الخارجي؟' : 'Are you sure you want to cancel this external closing?')
-        : (isRTL ? 'هل أنت متأكد من إلغاء هذا الحجز؟' : 'Are you sure you want to cancel this booking?'),
-      [
-        { text: isRTL ? 'تراجع' : 'Back', style: 'cancel' },
-        {
-          text: isRTL ? 'نعم، إلغاء' : 'Yes, Cancel',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              if (bIsExternal) {
-                await deleteExternalBooking(data.id).unwrap();
-              } else {
-                await rejectBooking({ id: data.id, reason: cancelNote || (isRTL ? 'إلغاء من قبل المشغل' : 'Cancelled by provider') }).unwrap();
-              }
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-              onRefresh?.();
-              onClose?.();
-              Alert.alert(isRTL ? 'تم بنجاح' : 'Success', isRTL ? 'تم الإلغاء بنجاح.' : 'Cancelled successfully.');
-            } catch (e: any) {
-              Alert.alert(isRTL ? 'خطأ' : 'Error', e?.data?.message || (isRTL ? 'فشل الإلغاء' : 'Failed to cancel'));
-            }
-          }
-        }
-      ]
-    );
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onOpenCancelSheet?.(data);
   };
 
   return (
@@ -204,32 +170,16 @@ export const BookingDetailsModalContent = ({ id, isRTL, t, onRefresh, onClose }:
         </View>
       )}
 
-      {showCancelReason && (
-        <View style={{ marginTop: 16 }}>
-          <Text style={[styles.inputLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'سبب الإلغاء' : 'Cancellation Reason'}</Text>
-          <BottomSheetTextInput
-            style={[styles.textInput, { textAlign: isRTL ? 'right' : 'left' }]}
-            placeholder={isRTL ? 'مثلاً: طلب الزبون إلغاء الحجز...' : 'e.g. Customer requested cancellation...'}
-            value={cancelNote}
-            onChangeText={setCancelNote}
-            multiline
-          />
-        </View>
-      )}
-
       <View style={{ marginTop: 24, gap: 12 }}>
         {(data.status === 'confirmed' || data.status === 'pending_payment' || data.status === 'external' || bIsExternal) && (
           <SecondaryButton
-            label={showCancelReason 
-              ? (isRTL ? 'تأكيد الإلغاء' : 'Confirm Cancellation') 
-              : bIsExternal ? (isRTL ? 'إلغاء الإغلاق الخارجي' : 'Cancel External') : (isRTL ? 'إلغاء الحجز' : 'Cancel Booking')
-            }
+            label={bIsExternal ? (isRTL ? 'إلغاء الإغلاق الخارجي' : 'Cancel External') : (isRTL ? 'إلغاء الحجز' : 'Cancel Booking')}
             onPress={handleCancelAction}
             isActive={true}
             activeColor="#EF4444"
             icon={<SolarDangerCircleBold size={18} color="white" />}
             style={{ width: '100%', height: 50 }}
-            isLoading={isRejectLoading || isDeletingExternal}
+            isLoading={isCancelLoading}
           />
         )}
       </View>

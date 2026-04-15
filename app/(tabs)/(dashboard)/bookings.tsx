@@ -1,5 +1,6 @@
 import { BookingDetailsModalContent } from '@/components/booking-details-modal-content';
 import { HeaderSection } from '@/components/header-section';
+import { BookingCancellationSheet, BookingCancellationSheetRef } from '@/components/booking-cancellation-modal';
 import { 
   SolarClockCircleLinear, 
   SolarLockBold, 
@@ -16,13 +17,10 @@ import { SecondaryButton } from '@/components/user/secondary-button';
 import { Colors, normalize } from '@/constants/theme';
 import { RootState } from '@/store';
 import {
-  useCancelBookingMutation,
-  useCreateExternalBookingMutation,
-  useDeleteExternalBookingMutation,
-  useGetOwnerChaletsQuery,
   useGetProviderBookingsQuery,
   useGetShiftAvailabilityQuery,
-  useMarkBookingCompletedMutation
+  useMarkBookingCompletedMutation,
+  useRejectBookingMutation
 } from '@/store/api/apiSlice';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput, BottomSheetView } from '@gorhom/bottom-sheet';
 import { FlashList } from '@shopify/flash-list';
@@ -85,8 +83,57 @@ export default function BookingsScreen() {
   const [selectedShiftForAction, setSelectedShiftForAction] = React.useState<any>(null);
 
   const detailsSheetRef = React.useRef<BottomSheetModal>(null);
+  const cancelSheetRef = React.useRef<BookingCancellationSheetRef>(null);
   const shiftSheetRef = React.useRef<BottomSheetModal>(null);
   const monthSheetRef = React.useRef<BottomSheetModal>(null);
+  const dayScrollRef = React.useRef<ScrollView>(null);
+  const chaletScrollRef = React.useRef<ScrollView>(null);
+
+  const [rejectBooking, { isLoading: isRejectLoading }] = useRejectBookingMutation();
+  const [cancellingBookingData, setCancellingBookingData] = React.useState<any>(null);
+
+  const handleOpenCancelSheet = (data: any) => {
+    setCancellingBookingData(data);
+    setTimeout(() => {
+      cancelSheetRef.current?.present();
+    }, 100);
+  };
+
+  const handleConfirmCancellation = async (reason: string) => {
+    if (!cancellingBookingData) return;
+    
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      const isExternal = cancellingBookingData.status === 'external' || cancellingBookingData.bIsExternal;
+      
+      if (isExternal) {
+        await deleteExternalBooking(cancellingBookingData.id).unwrap();
+      } else {
+        await rejectBooking({ 
+          id: cancellingBookingData.id, 
+          reason: reason || (isRTL ? 'إلغاء من قبل المشغل' : 'Cancelled by provider') 
+        }).unwrap();
+      }
+      
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      refreshAvailability();
+      
+      // Close details/shift sheet if it's open
+      detailsSheetRef.current?.dismiss();
+      shiftSheetRef.current?.dismiss();
+      
+      // Show success in cancellation sheet
+      cancelSheetRef.current?.showSuccess(
+        isRTL ? 'تم الإلغاء بنجاح.' : 'Cancelled successfully.'
+      );
+      
+    } catch (e: any) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      cancelSheetRef.current?.showError(
+        e?.data?.message || (isRTL ? 'فشل الإلغاء' : 'Failed to cancel')
+      );
+    }
+  };
 
   const years = React.useMemo(() => {
     const currentYear = new Date().getFullYear();
@@ -130,6 +177,24 @@ export default function BookingsScreen() {
 
   const dateString = React.useMemo(() => formatDate(selectedDate), [selectedDate]);
 
+  const [itemLayouts, setItemLayouts] = React.useState<Record<string, number>>({});
+
+  const handleDatePress = (date: Date, index: number) => {
+    setSelectedDate(date);
+    const key = `date-${index}`;
+    if (itemLayouts[key] !== undefined) {
+      dayScrollRef.current?.scrollTo({ x: itemLayouts[key] - 50, animated: true });
+    }
+  };
+
+  const handleChaletPress = (id: string, index: number) => {
+    setSelectedChaletId(id);
+    const key = index === -1 ? 'chalet-all' : `chalet-${index}`;
+    if (itemLayouts[key] !== undefined) {
+      chaletScrollRef.current?.scrollTo({ x: itemLayouts[key] - 50, animated: true });
+    }
+  };
+
   const { data: bookingsData, isLoading: isBookingsLoading, refetch: refetchBookings } = useGetProviderBookingsQuery({
     status: API_STATUS_MAP[activeTab],
     date: isFilterByDate ? dateString : undefined,
@@ -140,7 +205,7 @@ export default function BookingsScreen() {
     chaletId: selectedChaletId!,
     from: dateString,
     to: dateString
-  }, { skip: !selectedChaletId || !isFilterByDate, refetchOnMountOrArgChange: true });
+  }, { skip: !selectedChaletId || selectedChaletId === 'all' || !isFilterByDate, refetchOnMountOrArgChange: true });
 
   const refreshAvailability = () => {
     refetchBookings();
@@ -235,9 +300,9 @@ export default function BookingsScreen() {
                       {isAvailable ? (isRTL ? 'متاح' : 'Available') : (isRTL ? 'محجوز' : 'Booked')}
                     </Text>
                     {isAvailable ? (
-                      <SolarAddCircleBold size={14} color="#16A34A" style={{ marginLeft: 6 }} />
+                      <SolarAddCircleBold size={14} color="#16A34A" style={{ [isRTL ? 'marginRight' : 'marginLeft']: 6 }} />
                     ) : (
-                      <SolarLockBold size={14} color="#64748B" style={{ marginLeft: 6 }} />
+                      <SolarLockBold size={14} color="#64748B" style={{ [isRTL ? 'marginRight' : 'marginLeft']: 6 }} />
                     )}
                   </View>
                 </View>
@@ -268,12 +333,12 @@ export default function BookingsScreen() {
           <SolarCalendarMinimalisticBold size={16} color={IDENTITY_BLUE} />
           <Text style={styles.dateHighlightText}>{item.bookingDate} - {isRTL ? (item.shift?.name?.ar || item.shift?.name) : (item.shift?.name?.en || item.shift?.name)}</Text>
         </View>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
+        <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
           <View style={[styles.statusBadge, { backgroundColor: item.status === 'confirmed' ? '#DCFCE7' : '#FEF3C7' }]}><Text style={[styles.statusText, { color: item.status === 'confirmed' ? '#16A34A' : '#D97706' }]}>{t(`dashboard.bookings.status.${item.status}`)}</Text></View>
           <Text style={styles.codeText}>#{item.bookingCode}</Text>
         </View>
         {item.status === 'confirmed' && (
-          <View style={{ flexDirection: 'row', gap: 12, marginTop: 16 }}>
+          <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 12, marginTop: 16 }}>
             <SecondaryButton
               label={t('dashboard.bookings.complete')}
               onPress={async () => {
@@ -290,21 +355,8 @@ export default function BookingsScreen() {
             />
             <SecondaryButton
               label={t('dashboard.bookings.cancel')}
-              onPress={async () => {
-                Alert.alert(t('dashboard.bookings.cancel'), isRTL ? 'هل أنت متأكد؟' : 'Are you sure?', [
-                  { text: isRTL ? 'تراجع' : 'Back', style: 'cancel' },
-                  {
-                    text: isRTL ? 'إلغاء' : 'Cancel', style: 'destructive', onPress: async () => {
-                      try {
-                        await cancelBooking(item.id).unwrap();
-                        refreshAvailability();
-                        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                      } catch (e) { Alert.alert('Error', 'Update failed'); }
-                    }
-                  }
-                ]);
-              }}
-              isLoading={isCancelLoading}
+              onPress={() => handleOpenCancelSheet(item)}
+              isLoading={isRejectLoading || isDeletingExternal}
               isActive={true}
               activeColor="#EF4444"
               style={{ flex: 1, height: 44 }}
@@ -342,7 +394,7 @@ export default function BookingsScreen() {
             <Text style={styles.monthLabel}>
               {baseDate.toLocaleString(isRTL ? 'ar-IQ' : 'en-US', { month: 'long', year: 'numeric' })}
             </Text>
-            <SolarAltArrowDownLinear size={14} color={IDENTITY_BLUE} style={{ marginLeft: 4 }} />
+            <SolarAltArrowDownLinear size={14} color={IDENTITY_BLUE} style={{ [isRTL ? 'marginRight' : 'marginLeft']: 4 }} />
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => changeWeek(isRTL ? 'next' : 'prev')}>
@@ -354,11 +406,19 @@ export default function BookingsScreen() {
           </TouchableOpacity>
         </View>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.daysScroll, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <ScrollView ref={dayScrollRef} horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.daysScroll, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
           {weekDays.map((date, idx) => {
             const isSelected = selectedDate.toDateString() === date.toDateString();
             return (
-              <TouchableOpacity key={idx} style={[styles.dayItem, isSelected && styles.selectedDayItem]} onPress={() => setSelectedDate(date)}>
+              <TouchableOpacity
+                key={idx}
+                style={[styles.dayItem, isSelected && styles.selectedDayItem]}
+                onLayout={(e) => {
+                  const x = e.nativeEvent.layout.x;
+                  setItemLayouts(prev => ({ ...prev, [`date-${idx}`]: x }));
+                }}
+                onPress={() => handleDatePress(date, idx)}
+              >
                 <Text style={[styles.dayLabel, isSelected && styles.selectedDayLabel]}>{date.toLocaleString(isRTL ? 'ar-IQ' : 'en-US', { weekday: 'short' }).slice(0, 2)}</Text>
                 <View style={[styles.dateCircle, isSelected && styles.selectedDateCircle]}><Text style={[styles.dateText, isSelected && styles.selectedDateText]}>{date.getDate()}</Text></View>
               </TouchableOpacity>
@@ -369,9 +429,17 @@ export default function BookingsScreen() {
 
       {ownerChalets.length > 0 && selectedChaletId && (
         <View style={styles.availabilitySection}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chaletChipsScroll}>
-            {ownerChalets.map((chalet: any) => (
-              <TouchableOpacity key={chalet.id} style={[styles.chaletChip, selectedChaletId === chalet.id && styles.chaletChipActive]} onPress={() => setSelectedChaletId(selectedChaletId === chalet.id ? null : chalet.id)}>
+          <ScrollView ref={chaletScrollRef} horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chaletChipsScroll}>
+            {ownerChalets.map((chalet: any, index: number) => (
+              <TouchableOpacity
+                key={chalet.id}
+                style={[styles.chaletChip, selectedChaletId === chalet.id && styles.chaletChipActive]}
+                onLayout={(e) => {
+                  const x = e.nativeEvent.layout.x;
+                  setItemLayouts(prev => ({ ...prev, [`chalet-${index}`]: x }));
+                }}
+                onPress={() => handleChaletPress(chalet.id, index)}
+              >
                 <SolarHome2Bold size={14} color={selectedChaletId === chalet.id ? '#FFF' : Colors.primary} />
                 <Text style={[styles.chaletChipText, selectedChaletId === chalet.id && { color: '#FFF' }]}>{isRTL ? chalet.name?.ar : chalet.name?.en}</Text>
               </TouchableOpacity>
@@ -394,7 +462,16 @@ export default function BookingsScreen() {
       {/* Overlays */}
       <BottomSheetModal ref={detailsSheetRef} snapPoints={['85%']} backdropComponent={renderBackdrop} enablePanDownToClose onDismiss={() => setSelectedBookingId(null)}>
         <BottomSheetView style={{ flex: 1 }}>
-          {selectedBookingId && <BookingDetailsModalContent id={selectedBookingId} isRTL={isRTL} t={t} onRefresh={refreshAvailability} onClose={() => detailsSheetRef.current?.dismiss()} />}
+          {selectedBookingId && (
+            <BookingDetailsModalContent 
+              id={selectedBookingId} 
+              isRTL={isRTL} 
+              t={t} 
+              onRefresh={refreshAvailability} 
+              onClose={() => detailsSheetRef.current?.dismiss()} 
+              onOpenCancelSheet={handleOpenCancelSheet}
+            />
+          )}
         </BottomSheetView>
       </BottomSheetModal>
 
@@ -446,12 +523,22 @@ export default function BookingsScreen() {
                   t={t}
                   onRefresh={refreshAvailability}
                   onClose={() => shiftSheetRef.current?.dismiss()}
+                  onOpenCancelSheet={handleOpenCancelSheet}
                 />
               )}
             </>
           )}
         </BottomSheetView>
       </BottomSheetModal>
+
+      <BookingCancellationSheet
+        ref={cancelSheetRef}
+        onConfirm={handleConfirmCancellation}
+        isLoading={isRejectLoading || isDeletingExternal}
+        isRTL={isRTL}
+        isExternal={cancellingBookingData?.status === 'external' || cancellingBookingData?.bIsExternal}
+        depositAmount={cancellingBookingData?.downPayment || '50,000'}
+      />
 
       <BottomSheetModal ref={monthSheetRef} snapPoints={['50%']} backdropComponent={renderBackdrop} enablePanDownToClose>
         <BottomSheetView style={styles.sheetContent}>
@@ -658,5 +745,5 @@ const styles = StyleSheet.create({
     color: '#475569',
     lineHeight: 18,
    fontFamily: "LamaSans-Regular" },
-  row: { flexDirection: 'row', alignItems: 'center' },
+  row: { flexDirection: 'row' },
 });

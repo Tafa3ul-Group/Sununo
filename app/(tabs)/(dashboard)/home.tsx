@@ -12,8 +12,9 @@ import { PrimaryButton } from '@/components/user/primary-button';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { Colors, normalize } from '@/constants/theme';
 import { RootState } from '@/store';
-import { useGetProviderBookingsQuery, useGetProviderProfileQuery } from '@/store/api/apiSlice';
+import { useGetProviderBookingsQuery, useGetProviderProfileQuery, useRejectBookingMutation, useDeleteExternalBookingMutation } from '@/store/api/apiSlice';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import { BookingCancellationSheet, BookingCancellationSheetRef } from '@/components/booking-cancellation-modal';
 import * as Haptics from 'expo-haptics';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useRouter } from 'expo-router';
@@ -45,9 +46,66 @@ export default function HomeScreen() {
   const [isBalanceVisible, setIsBalanceVisible] = useState(false);
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
   const detailsSheetRef = React.useRef<BottomSheetModal>(null);
+  const cancelSheetRef = React.useRef<BookingCancellationSheetRef>(null);
   const calendarSheetRef = React.useRef<BottomSheetModal>(null);
+
+  const [rejectBooking, { isLoading: isRejectLoading }] = useRejectBookingMutation();
+  const [deleteExternalBooking, { isLoading: isDeletingExternal }] = useDeleteExternalBookingMutation();
+  const [cancellingBookingData, setCancellingBookingData] = useState<any>(null);
+
+  const handleOpenCancelSheet = (data: any) => {
+    setCancellingBookingData(data);
+    setTimeout(() => {
+      cancelSheetRef.current?.present();
+    }, 100);
+  };
+
+  const handleConfirmCancellation = async (reason: string) => {
+    if (!cancellingBookingData) return;
+    
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      const isExternal = cancellingBookingData.type === 'external' || cancellingBookingData.bIsExternal;
+      
+      if (isExternal) {
+        await deleteExternalBooking(cancellingBookingData.id).unwrap();
+      } else {
+        await rejectBooking({ 
+          id: cancellingBookingData.id, 
+          reason: reason || (isRTL ? 'إلغاء من قبل المشغل' : 'Cancelled by provider') 
+        }).unwrap();
+      }
+      
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      refetchBookings();
+      
+      // Close details sheet immediately
+      detailsSheetRef.current?.dismiss();
+      
+      // Show success in cancellation sheet
+      cancelSheetRef.current?.showSuccess(
+        isRTL ? 'تم الإلغاء بنجاح.' : 'Cancelled successfully.'
+      );
+      
+    } catch (e: any) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      cancelSheetRef.current?.showError(
+        e?.data?.message || (isRTL ? 'فشل الإلغاء' : 'Failed to cancel')
+      );
+    }
+  };
+
   const [selectedRange, setSelectedRange] = useState<{start: Date, end: Date} | null>(null);
   const [page, setPage] = useState(1);
+  const filterScrollRef = React.useRef<ScrollView>(null);
+  const [itemLayouts, setItemLayouts] = useState<Record<string, number>>({});
+
+  const handleFilterPress = (filterId: string) => {
+    setActiveFilter(filterId);
+    if (itemLayouts[filterId] !== undefined) {
+      filterScrollRef.current?.scrollTo({ x: itemLayouts[filterId] - 20, animated: true });
+    }
+  };
 
   const formatSelectedDate = (date: Date) => {
     return `${date.getMonth() + 1}/${date.getDate()}`;
@@ -79,7 +137,7 @@ export default function HomeScreen() {
     status: activeFilter !== 'all' ? statusMap[activeFilter] : undefined,
     from: selectedRange?.start ? selectedRange.start.toISOString().split('T')[0] : undefined,
     to: selectedRange?.end ? selectedRange.end.toISOString().split('T')[0] : undefined,
-    chalet_id: selectedChalet?.id,
+    chaletId: selectedChalet?.id || undefined,
   });
 
   // Reset pagination when filter changes
@@ -249,6 +307,7 @@ export default function HomeScreen() {
                   style={styles.filterWrapper}
                 >
                   <ScrollView
+                    ref={filterScrollRef}
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     style={styles.filterScroll}
@@ -271,7 +330,36 @@ export default function HomeScreen() {
                         label: t('dashboard.bookings.finished'),
                         icon: <SolarCalendarBold size={18} color={activeFilter === 'finished' ? 'white' : Colors.primary} />
                       },
-                    ].map(renderFilterButton)}
+                    ].map((filter, index) => {
+                      const isActive = activeFilter === filter.id;
+                      const isAll = filter.id === 'all';
+                  
+                      return (
+                        <View 
+                          key={filter.id} 
+                          style={{ transform: [{ scale: 0.92 }] }}
+                          onLayout={(event) => {
+                            const layout = event.nativeEvent.layout;
+                            setItemLayouts(prev => ({ ...prev, [filter.id]: layout.x }));
+                          }}
+                        >
+                          {isAll ? (
+                            <PrimaryButton
+                              label={filter.label}
+                              isActive={isActive}
+                              onPress={() => handleFilterPress(filter.id)}
+                            />
+                          ) : (
+                            <SecondaryButton
+                              label={filter.label}
+                              isActive={isActive}
+                              icon={filter.icon}
+                              onPress={() => handleFilterPress(filter.id)}
+                            />
+                          )}
+                        </View>
+                      );
+                    })}
                   </ScrollView>
                 </Animated.View>
               </View>
@@ -328,10 +416,21 @@ export default function HomeScreen() {
                 t={t}
                 onRefresh={refetchBookings}
                 onClose={() => detailsSheetRef.current?.dismiss()}
+                onOpenCancelSheet={handleOpenCancelSheet}
+                isCancelLoading={isRejectLoading || isDeletingExternal}
               />
             )}
           </BottomSheetView>
         </BottomSheetModal>
+
+        <BookingCancellationSheet
+          ref={cancelSheetRef}
+          onConfirm={handleConfirmCancellation}
+          isLoading={isRejectLoading || isDeletingExternal}
+          isRTL={isRTL}
+          isExternal={cancellingBookingData?.type === 'external' || cancellingBookingData?.bIsExternal}
+          depositAmount={cancellingBookingData?.downPayment || '50,000'}
+        />
         {/* Calendar Drawer */}
         <BottomSheetModal
           ref={calendarSheetRef}

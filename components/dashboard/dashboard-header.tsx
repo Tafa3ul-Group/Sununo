@@ -1,4 +1,4 @@
-import { SolarMagnifierBold, SolarUserBold } from "@/components/icons/solar-icons";
+import { SolarMagnifierBold, SolarUserBold, SolarTrashBinBold } from "@/components/icons/solar-icons";
 import { Colors, normalize } from "@/constants/theme";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -7,6 +7,8 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
 import { ThemedText } from "../themed-text";
 import { CircleBackButton } from "../ui/circle-back-button";
 
@@ -16,6 +18,8 @@ interface DashboardHeaderProps {
   showSearch?: boolean;
   onProfilePress?: () => void;
   onSearchPress?: () => void;
+  onDeletePress?: () => void;
+  customRightComponent?: React.ReactNode;
   marginBottom?: number;
 }
 
@@ -25,23 +29,25 @@ export function DashboardHeader({
   showSearch = true,
   onProfilePress,
   onSearchPress,
+  onDeletePress,
+  customRightComponent,
   marginBottom = 0,
 }: DashboardHeaderProps) {
   const router = useRouter();
-  const { i18n } = useTranslation();
+  const { language } = useSelector((state: RootState) => state.auth);
   const insets = useSafeAreaInsets();
-  const isRTL = i18n.language === "ar";
+  const isRTL = language === "ar";
 
   return (
     <View style={[styles.container, { marginBottom, paddingTop: insets.top }]}>
       <StatusBar style="dark" />
-      <View style={styles.topRow}>
+      <View style={[styles.topRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
         {/* Left Side: Profile Icon OR Back Button */}
-        <View style={styles.leftGroup}>
+        <View style={[styles.leftGroup, { alignItems: isRTL ? "flex-end" : "flex-start" }]}>
           {showBackButton ? (
             <CircleBackButton onPress={() => router.back()} />
           ) : !title ? (
-            <View style={styles.homeLeftGroup}>
+            <View style={[styles.homeLeftGroup, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
               <TouchableOpacity
                 onPress={onProfilePress || (() => router.push("/(dashboard)/profile"))}
                 style={styles.profileCircle}
@@ -76,19 +82,30 @@ export function DashboardHeader({
           </View>
         )}
 
-        {/* Right Side: Logo */}
-        <View style={styles.rightGroup}>
-          <View style={styles.logoContainer}>
-            <Image
-              source={
-                isRTL
-                  ? require("@/assets/arlogo.svg")
-                  : require("@/assets/logo.svg")
-              }
-              style={styles.logoImg}
-              contentFit="contain"
-            />
-          </View>
+        {/* Right Side: Logo or Actions */}
+        <View style={[styles.rightGroup, { alignItems: isRTL ? "flex-start" : "flex-end" }]}>
+          {onDeletePress ? (
+            <TouchableOpacity onPress={onDeletePress} style={styles.deleteCircle}>
+               <SolarTrashBinBold 
+                size={normalize.width(21)} 
+                color={Colors.error} 
+              />
+            </TouchableOpacity>
+          ) : customRightComponent ? (
+            customRightComponent
+          ) : (
+            <View style={styles.logoContainer}>
+              <Image
+                source={
+                  isRTL
+                    ? require("@/assets/arlogo.svg")
+                    : require("@/assets/logo.svg")
+                }
+                style={styles.logoImg}
+                contentFit="contain"
+              />
+            </View>
+          )}
         </View>
       </View>
     </View>
@@ -103,8 +120,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: normalize.width(10), // Reduced to almost edge
-    height: normalize.height(65), // Tighter height
+    paddingHorizontal: normalize.width(16),
+    paddingVertical: normalize.height(10),
   },
   leftGroup: {
     width: normalize.width(80),
@@ -128,7 +145,6 @@ const styles = StyleSheet.create({
   },
   rightGroup: {
     width: normalize.width(80),
-    alignItems: "flex-end",
     justifyContent: "center",
   },
   profileCircle: {
@@ -151,14 +167,24 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#FFFFFF",
   },
+  deleteCircle: {
+    width: normalize.width(42),
+    height: normalize.width(42),
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#FEE2E2",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFF5F5",
+  },
   logoContainer: {
     width: normalize.width(75),
     height: normalize.width(30),
     justifyContent: "center",
-    alignItems: "flex-end",
   },
   logoImg: {
     width: "100%",
     height: "100%",
   },
 });
+
