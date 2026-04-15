@@ -1,22 +1,24 @@
+import { BookingCancellationSheet, BookingCancellationSheetRef } from '@/components/booking-cancellation-modal';
 import { BookingDetailsModalContent } from '@/components/booking-details-modal-content';
 import { HeaderSection } from '@/components/header-section';
-import { BookingCancellationSheet, BookingCancellationSheetRef } from '@/components/booking-cancellation-modal';
-import { 
-  SolarClockCircleLinear, 
-  SolarLockBold, 
-  SolarAddCircleBold, 
-  SolarUserBold, 
-  SolarCalendarMinimalisticBold, 
-  SolarAltArrowLeftLinear, 
-  SolarAltArrowRightLinear, 
-  SolarAltArrowDownLinear, 
-  SolarHome2Bold, 
-  SolarCalendarBold 
+import {
+  SolarAddCircleBold,
+  SolarAltArrowDownLinear,
+  SolarAltArrowLeftLinear,
+  SolarAltArrowRightLinear,
+  SolarCalendarBold,
+  SolarCalendarMinimalisticBold,
+  SolarClockCircleLinear,
+  SolarHome2Bold,
+  SolarLockBold,
+  SolarUserBold
 } from "@/components/icons/solar-icons";
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { Colors, normalize } from '@/constants/theme';
 import { RootState } from '@/store';
 import {
+  useCreateExternalBookingMutation,
+  useDeleteExternalBookingMutation,
   useGetProviderBookingsQuery,
   useGetShiftAvailabilityQuery,
   useMarkBookingCompletedMutation,
@@ -24,6 +26,7 @@ import {
 } from '@/store/api/apiSlice';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput, BottomSheetView } from '@gorhom/bottom-sheet';
 import { FlashList } from '@shopify/flash-list';
+import LottieView from 'lottie-react-native';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import React from 'react';
@@ -70,7 +73,6 @@ export default function BookingsScreen() {
   const isRTL = language === 'ar';
 
   const [markAsCompleted, { isLoading: isStatusLoading }] = useMarkBookingCompletedMutation();
-  const [cancelBooking, { isLoading: isCancelLoading }] = useCancelBookingMutation();
   const [createExternalBooking, { isLoading: isCreatingExternal }] = useCreateExternalBookingMutation();
   const [deleteExternalBooking, { isLoading: isDeletingExternal }] = useDeleteExternalBookingMutation();
 
@@ -78,16 +80,15 @@ export default function BookingsScreen() {
   const [baseDate, setBaseDate] = React.useState(new Date());
   const [selectedDate, setSelectedDate] = React.useState(new Date());
   const [isFilterByDate] = React.useState(true);
-  const [selectedChaletId, setSelectedChaletId] = React.useState<string | null>(selectedChalet?.id || null);
   const [selectedBookingId, setSelectedBookingId] = React.useState<string | null>(null);
   const [selectedShiftForAction, setSelectedShiftForAction] = React.useState<any>(null);
+  const [showExternalSuccess, setShowExternalSuccess] = React.useState(false);
 
   const detailsSheetRef = React.useRef<BottomSheetModal>(null);
   const cancelSheetRef = React.useRef<BookingCancellationSheetRef>(null);
   const shiftSheetRef = React.useRef<BottomSheetModal>(null);
   const monthSheetRef = React.useRef<BottomSheetModal>(null);
   const dayScrollRef = React.useRef<ScrollView>(null);
-  const chaletScrollRef = React.useRef<ScrollView>(null);
 
   const [rejectBooking, { isLoading: isRejectLoading }] = useRejectBookingMutation();
   const [cancellingBookingData, setCancellingBookingData] = React.useState<any>(null);
@@ -101,32 +102,32 @@ export default function BookingsScreen() {
 
   const handleConfirmCancellation = async (reason: string) => {
     if (!cancellingBookingData) return;
-    
+
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       const isExternal = cancellingBookingData.status === 'external' || cancellingBookingData.bIsExternal;
-      
+
       if (isExternal) {
         await deleteExternalBooking(cancellingBookingData.id).unwrap();
       } else {
-        await rejectBooking({ 
-          id: cancellingBookingData.id, 
-          reason: reason || (isRTL ? 'إلغاء من قبل المشغل' : 'Cancelled by provider') 
+        await rejectBooking({
+          id: cancellingBookingData.id,
+          reason: reason || (isRTL ? 'إلغاء من قبل المشغل' : 'Cancelled by provider')
         }).unwrap();
       }
-      
+
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       refreshAvailability();
-      
+
       // Close details/shift sheet if it's open
       detailsSheetRef.current?.dismiss();
       shiftSheetRef.current?.dismiss();
-      
+
       // Show success in cancellation sheet
       cancelSheetRef.current?.showSuccess(
         isRTL ? 'تم الإلغاء بنجاح.' : 'Cancelled successfully.'
       );
-      
+
     } catch (e: any) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       cancelSheetRef.current?.showError(
@@ -160,21 +161,6 @@ export default function BookingsScreen() {
     });
   }, [baseDate]);
 
-  const { data: chaletsData } = useGetOwnerChaletsQuery(undefined);
-  const ownerChalets = React.useMemo(() => chaletsData?.data || [], [chaletsData]);
-
-  React.useEffect(() => {
-    if (selectedChalet?.id) {
-      setSelectedChaletId(selectedChalet.id);
-    }
-  }, [selectedChalet?.id]);
-
-  React.useEffect(() => {
-    if (!selectedChaletId && ownerChalets.length > 0) {
-      setSelectedChaletId(ownerChalets[0].id);
-    }
-  }, [ownerChalets, selectedChaletId]);
-
   const dateString = React.useMemo(() => formatDate(selectedDate), [selectedDate]);
 
   const [itemLayouts, setItemLayouts] = React.useState<Record<string, number>>({});
@@ -187,29 +173,21 @@ export default function BookingsScreen() {
     }
   };
 
-  const handleChaletPress = (id: string, index: number) => {
-    setSelectedChaletId(id);
-    const key = index === -1 ? 'chalet-all' : `chalet-${index}`;
-    if (itemLayouts[key] !== undefined) {
-      chaletScrollRef.current?.scrollTo({ x: itemLayouts[key] - 50, animated: true });
-    }
-  };
-
   const { data: bookingsData, isLoading: isBookingsLoading, refetch: refetchBookings } = useGetProviderBookingsQuery({
     status: API_STATUS_MAP[activeTab],
     date: isFilterByDate ? dateString : undefined,
-    chaletId: selectedChaletId || undefined,
+    chaletId: selectedChalet?.id || undefined,
   }, { refetchOnMountOrArgChange: true });
 
   const { data: availabilityData, isFetching: isAvailabilityFetching, refetch: refetchAvailabilityData } = useGetShiftAvailabilityQuery({
-    chaletId: selectedChaletId!,
+    chaletId: selectedChalet?.id!,
     from: dateString,
     to: dateString
-  }, { skip: !selectedChaletId || selectedChaletId === 'all' || !isFilterByDate, refetchOnMountOrArgChange: true });
+  }, { skip: !selectedChalet?.id || selectedChalet?.id === 'all' || !isFilterByDate, refetchOnMountOrArgChange: true });
 
   const refreshAvailability = () => {
     refetchBookings();
-    if (selectedChaletId) refetchAvailabilityData();
+    if (selectedChalet?.id) refetchAvailabilityData();
   };
 
   const changeWeek = (direction: 'prev' | 'next') => {
@@ -427,24 +405,8 @@ export default function BookingsScreen() {
         </ScrollView>
       </View>
 
-      {ownerChalets.length > 0 && selectedChaletId && (
+      {selectedChalet?.id && (
         <View style={styles.availabilitySection}>
-          <ScrollView ref={chaletScrollRef} horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chaletChipsScroll}>
-            {ownerChalets.map((chalet: any, index: number) => (
-              <TouchableOpacity
-                key={chalet.id}
-                style={[styles.chaletChip, selectedChaletId === chalet.id && styles.chaletChipActive]}
-                onLayout={(e) => {
-                  const x = e.nativeEvent.layout.x;
-                  setItemLayouts(prev => ({ ...prev, [`chalet-${index}`]: x }));
-                }}
-                onPress={() => handleChaletPress(chalet.id, index)}
-              >
-                <SolarHome2Bold size={14} color={selectedChaletId === chalet.id ? '#FFF' : Colors.primary} />
-                <Text style={[styles.chaletChipText, selectedChaletId === chalet.id && { color: '#FFF' }]}>{isRTL ? chalet.name?.ar : chalet.name?.en}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
           {renderShiftsGrid()}
         </View>
       )}
@@ -463,23 +425,48 @@ export default function BookingsScreen() {
       <BottomSheetModal ref={detailsSheetRef} snapPoints={['85%']} backdropComponent={renderBackdrop} enablePanDownToClose onDismiss={() => setSelectedBookingId(null)}>
         <BottomSheetView style={{ flex: 1 }}>
           {selectedBookingId && (
-            <BookingDetailsModalContent 
-              id={selectedBookingId} 
-              isRTL={isRTL} 
-              t={t} 
-              onRefresh={refreshAvailability} 
-              onClose={() => detailsSheetRef.current?.dismiss()} 
+            <BookingDetailsModalContent
+              id={selectedBookingId}
+              isRTL={isRTL}
+              t={t}
+              onRefresh={refreshAvailability}
+              onClose={() => detailsSheetRef.current?.dismiss()}
               onOpenCancelSheet={handleOpenCancelSheet}
             />
           )}
         </BottomSheetView>
       </BottomSheetModal>
 
-      <BottomSheetModal ref={shiftSheetRef} snapPoints={selectedShiftForAction?.isAvailable ? ['60%'] : ['85%']} backdropComponent={renderBackdrop} enablePanDownToClose onDismiss={() => { setSelectedShiftForAction(null); setExternalNotes(''); }}>
+      <BottomSheetModal
+        ref={shiftSheetRef}
+        snapPoints={selectedShiftForAction?.isAvailable ? ['60%'] : ['85%']}
+        backdropComponent={renderBackdrop}
+        enablePanDownToClose
+        onDismiss={() => {
+          setSelectedShiftForAction(null);
+          setExternalNotes('');
+          setShowExternalSuccess(false);
+        }}
+      >
         <BottomSheetView style={styles.sheetContent}>
           {selectedShiftForAction && (
             <>
-              {selectedShiftForAction.isAvailable ? (
+              {showExternalSuccess ? (
+                <View style={styles.successAnimationContainer}>
+                  <LottieView
+                    source={require('../../../components/icons/motions/secssuse.json')}
+                    autoPlay
+                    loop={false}
+                    onAnimationFinish={() => {
+                      shiftSheetRef.current?.dismiss();
+                    }}
+                    style={styles.successLottie}
+                  />
+                  <Text style={styles.successAnimationText}>
+                    {isRTL ? 'تم تأكيد الحجز الخارجي بنجاح' : 'External booking confirmed successfully'}
+                  </Text>
+                </View>
+              ) : selectedShiftForAction.isAvailable ? (
                 <View style={{ padding: 24 }}>
                   <Text style={[styles.sheetTitle, { textAlign: isRTL ? 'right' : 'left', marginBottom: 24 }]}>
                     {isRTL ? (selectedShiftForAction.shiftName?.ar || selectedShiftForAction.shiftName) : (selectedShiftForAction.shiftName?.en || selectedShiftForAction.shiftName)}
@@ -497,17 +484,28 @@ export default function BookingsScreen() {
                       label={isRTL ? 'تأكيد الإغلاق الخارجي' : 'Confirm External Closing'}
                       onPress={async () => {
                         try {
-                          await createExternalBooking({
-                            chaletId: selectedChaletId!,
+                          console.log('Starting external booking creation...');
+                          const result = await createExternalBooking({
+                            chaletId: selectedChalet?.id!,
                             shiftId: selectedShiftForAction.shiftId || selectedShiftForAction.id,
                             date: dateString,
                             notes: externalNotes
                           }).unwrap();
+                          console.log('Booking created successfully:', result);
+                          
                           refreshAvailability();
                           setExternalNotes('');
-                          shiftSheetRef.current?.dismiss();
+                          setShowExternalSuccess(true);
                           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                        } catch (e: any) { Alert.alert('Error', e?.data?.message || 'Failed'); }
+
+                          // Fallback: If animation doesn't finish or play, dismiss after 3 seconds
+                          setTimeout(() => {
+                            shiftSheetRef.current?.dismiss();
+                          }, 3500);
+                        } catch (e: any) { 
+                          console.error('External booking failed:', e);
+                          Alert.alert('Error', e?.data?.message || 'Failed'); 
+                        }
                       }}
                       isActive={true}
                       activeColor={IDENTITY_BLUE}
@@ -619,12 +617,12 @@ const styles = StyleSheet.create({
   daysScroll: { gap: 10 },
   dayItem: { alignItems: 'center', width: 45, paddingVertical: 10, borderRadius: 12 },
   selectedDayItem: { backgroundColor: IDENTITY_BLUE },
-  dayLabel: { fontSize: normalize.font(12), color: '#64748B', marginBottom: 4 , fontFamily: "LamaSans-Regular" },
-  selectedDayLabel: { color: '#FFF' , fontFamily: "LamaSans-Regular" },
+  dayLabel: { fontSize: normalize.font(12), color: '#64748B', marginBottom: 4, fontFamily: "LamaSans-Regular" },
+  selectedDayLabel: { color: '#FFF', fontFamily: "LamaSans-Regular" },
   dateCircle: { width: 30, height: 30, borderRadius: 15, justifyContent: 'center', alignItems: 'center' },
   selectedDateCircle: { backgroundColor: '#FFF' },
   dateText: { fontSize: normalize.font(14), fontFamily: "LamaSans-Bold" },
-  selectedDateText: { color: IDENTITY_BLUE , fontFamily: "LamaSans-Regular" },
+  selectedDateText: { color: IDENTITY_BLUE, fontFamily: "LamaSans-Regular" },
   availabilitySection: { paddingVertical: 12, borderTopWidth: 1, borderTopColor: '#F1F5F9' },
   chaletChipsScroll: { paddingHorizontal: 16, gap: 8, marginBottom: 16 },
   chaletChip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#E2E8F0' },
@@ -675,7 +673,7 @@ const styles = StyleSheet.create({
   customerSection: { gap: 10, alignItems: 'center' },
   avatarPlaceholder: { width: 40, height: 40, borderRadius: 12, backgroundColor: IDENTITY_BLUE, justifyContent: 'center', alignItems: 'center' },
   customerName: { fontSize: normalize.font(15), fontFamily: "LamaSans-Bold" },
-  chaletName: { fontSize: normalize.font(12), color: '#64748B' , fontFamily: "LamaSans-Regular" },
+  chaletName: { fontSize: normalize.font(12), color: '#64748B', fontFamily: "LamaSans-Regular" },
   priceText: { fontSize: normalize.font(15), fontFamily: "LamaSans-Black", color: IDENTITY_BLUE },
   dateHighlight: { backgroundColor: '#F8FAFC', padding: 10, borderRadius: 10, gap: 8, alignItems: 'center' },
   dateHighlightText: { fontSize: normalize.font(13), fontFamily: "LamaSans-SemiBold", color: '#1E293B' },
@@ -691,7 +689,7 @@ const styles = StyleSheet.create({
   customerAvatar: { width: 44, height: 44, borderRadius: 12, backgroundColor: IDENTITY_BLUE, justifyContent: 'center', alignItems: 'center' },
   customerAvatarImg: { width: 44, height: 44, borderRadius: 12 },
   customerNameSheet: { fontSize: normalize.font(15), fontFamily: "LamaSans-Bold" },
-  customerPhone: { fontSize: normalize.font(13), color: '#64748B' , fontFamily: "LamaSans-Regular" },
+  customerPhone: { fontSize: normalize.font(13), color: '#64748B', fontFamily: "LamaSans-Regular" },
   contactActions: { gap: 8 },
   contactBtn: { width: 36, height: 36, borderRadius: 10, justifyContent: 'center', alignItems: 'center', borderWidth: 1 },
   contactBtnCall: { backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' },
@@ -701,7 +699,7 @@ const styles = StyleSheet.create({
   detailIconCircle: { width: 32, height: 32, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
   detailCardTitle: { fontSize: normalize.font(15), fontFamily: "LamaSans-Bold", flex: 1 },
   detailSubRow: { paddingLeft: 40, alignItems: 'center', gap: 6, marginBottom: 12 },
-  detailSubText: { fontSize: normalize.font(12), color: '#64748B' , fontFamily: "LamaSans-Regular" },
+  detailSubText: { fontSize: normalize.font(12), color: '#64748B', fontFamily: "LamaSans-Regular" },
   scheduleBlock: { backgroundColor: '#F8FAFC', borderRadius: 10, overflow: 'hidden' },
   scheduleRow: { padding: 10, borderBottomWidth: 1, borderBottomColor: '#F1F5F9', alignItems: 'center', gap: 8 },
   scheduleDate: { fontSize: normalize.font(13), fontFamily: "LamaSans-Bold", flex: 1 },
@@ -744,6 +742,25 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(13),
     color: '#475569',
     lineHeight: 18,
-   fontFamily: "LamaSans-Regular" },
+    fontFamily: "LamaSans-Regular"
+  },
   row: { flexDirection: 'row' },
+  successAnimationContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+    minHeight: 300,
+  },
+  successLottie: {
+    width: 200,
+    height: 200,
+  },
+  successAnimationText: {
+    fontSize: normalize.font(18),
+    fontFamily: "LamaSans-Bold",
+    color: IDENTITY_BLUE,
+    marginTop: 16,
+    textAlign: 'center',
+  },
 });

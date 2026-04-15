@@ -1,7 +1,7 @@
+import { BookingCancellationSheet, BookingCancellationSheetRef } from '@/components/booking-cancellation-modal';
 import { BookingDetailsModalContent } from '@/components/booking-details-modal-content';
-import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { DashboardCalendar } from "@/components/dashboard/dashboard-calendar";
-import { HeaderSection } from '@/components/header-section';
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import {
   SolarCalendarBold,
   SolarCheckCircleBold,
@@ -12,13 +12,12 @@ import { PrimaryButton } from '@/components/user/primary-button';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { Colors, normalize } from '@/constants/theme';
 import { RootState } from '@/store';
-import { useGetProviderBookingsQuery, useGetProviderProfileQuery, useRejectBookingMutation, useDeleteExternalBookingMutation } from '@/store/api/apiSlice';
+import { useDeleteExternalBookingMutation, useGetProviderBookingsQuery, useGetProviderProfileQuery, useRejectBookingMutation } from '@/store/api/apiSlice';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
-import { BookingCancellationSheet, BookingCancellationSheetRef } from '@/components/booking-cancellation-modal';
 import * as Haptics from 'expo-haptics';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useRouter } from 'expo-router';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -32,9 +31,8 @@ import {
   View
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
 import Animated, { FadeIn, FadeInDown, FadeInRight, FadeInUp } from 'react-native-reanimated';
+import { useSelector } from 'react-redux';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -62,31 +60,31 @@ export default function HomeScreen() {
 
   const handleConfirmCancellation = async (reason: string) => {
     if (!cancellingBookingData) return;
-    
+
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       const isExternal = cancellingBookingData.type === 'external' || cancellingBookingData.bIsExternal;
-      
+
       if (isExternal) {
         await deleteExternalBooking(cancellingBookingData.id).unwrap();
       } else {
-        await rejectBooking({ 
-          id: cancellingBookingData.id, 
-          reason: reason || (isRTL ? 'إلغاء من قبل المشغل' : 'Cancelled by provider') 
+        await rejectBooking({
+          id: cancellingBookingData.id,
+          reason: reason || (isRTL ? 'إلغاء من قبل المشغل' : 'Cancelled by provider')
         }).unwrap();
       }
-      
+
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       refetchBookings();
-      
+
       // Close details sheet immediately
       detailsSheetRef.current?.dismiss();
-      
+
       // Show success in cancellation sheet
       cancelSheetRef.current?.showSuccess(
         isRTL ? 'تم الإلغاء بنجاح.' : 'Cancelled successfully.'
       );
-      
+
     } catch (e: any) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       cancelSheetRef.current?.showError(
@@ -95,7 +93,7 @@ export default function HomeScreen() {
     }
   };
 
-  const [selectedRange, setSelectedRange] = useState<{start: Date, end: Date} | null>(null);
+  const [selectedRange, setSelectedRange] = useState<{ start: Date, end: Date } | null>(null);
   const [page, setPage] = useState(1);
   const filterScrollRef = React.useRef<ScrollView>(null);
   const [itemLayouts, setItemLayouts] = useState<Record<string, number>>({});
@@ -194,7 +192,7 @@ export default function HomeScreen() {
     const chaletName = isRTL ? (item.chalet?.name?.ar || item.chalet?.name) : (item.chalet?.name?.en || item.chalet?.name);
 
     return (
-      <Animated.View 
+      <Animated.View
         entering={FadeInDown.delay(index * 30).duration(300).springify().damping(15)}
         key={item.id}
       >
@@ -211,9 +209,9 @@ export default function HomeScreen() {
             {/* 1. Avatar (Right part in RTL) */}
             <View style={styles.modernBookingAvatar}>
               {bIsExternal ? (
-                 <View style={[styles.modernBookingPlaceholder, { backgroundColor: Colors.primary }]}>
-                   <SolarUserBold size={24} color="#FFF" />
-                 </View>
+                <View style={[styles.modernBookingPlaceholder, { backgroundColor: Colors.primary }]}>
+                  <SolarUserBold size={24} color="#FFF" />
+                </View>
               ) : item.customer?.image ? (
                 <Image source={{ uri: item.customer.image }} style={styles.modernBookingImg} />
               ) : (
@@ -281,123 +279,123 @@ export default function HomeScreen() {
         />
         <View style={{ flex: 1 }}>
           <View style={{ flex: 1 }}>
-              {/* Fixed Section: Header + Filter */}
-              <View style={styles.fixedHeaderArea}>
-                <Animated.View 
-                  entering={FadeInUp.duration(400).springify().damping(18)}
-                  style={[styles.bookingsHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
-                >
-                  <Text style={styles.bookingsTitle}>{isRTL ? 'الحجوزات' : 'Bookings'}</Text>
-                  <View style={{ transform: [{ scale: 0.92 }] }}>
-                    <SecondaryButton
-                      label={getButtonLabel()}
-                      icon={<SolarCalendarBold size={18} color={Colors.black} />}
-                      inactiveTextColor={Colors.black}
-                      onPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        calendarSheetRef.current?.present();
-                      }}
-                    />
-                  </View>
-                </Animated.View>
+            {/* Fixed Section: Header + Filter */}
+            <View style={styles.fixedHeaderArea}>
+              <Animated.View
+                entering={FadeInUp.duration(400).springify().damping(18)}
+                style={[styles.bookingsHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+              >
+                <Text style={styles.bookingsTitle}>{isRTL ? 'الحجوزات' : 'Bookings'}</Text>
+                <View style={{ transform: [{ scale: 0.92 }] }}>
+                  <SecondaryButton
+                    label={getButtonLabel()}
+                    icon={<SolarCalendarBold size={18} color={Colors.black} />}
+                    inactiveTextColor={Colors.black}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      calendarSheetRef.current?.present();
+                    }}
+                  />
+                </View>
+              </Animated.View>
 
-                {/* Filter Bar */}
-                <Animated.View 
-                  entering={FadeInRight.delay(100).duration(400)}
-                  style={styles.filterWrapper}
+              {/* Filter Bar */}
+              <Animated.View
+                entering={FadeInRight.delay(100).duration(400)}
+                style={styles.filterWrapper}
+              >
+                <ScrollView
+                  ref={filterScrollRef}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.filterScroll}
+                  contentContainerStyle={[styles.filterContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
                 >
-                  <ScrollView
-                    ref={filterScrollRef}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    style={styles.filterScroll}
-                    contentContainerStyle={[styles.filterContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
-                  >
-                    {[
-                      { id: 'all', label: t('home.categories.all') },
-                      {
-                        id: 'pending',
-                        label: t('dashboard.bookings.new'),
-                        icon: <SolarClockCircleBold size={18} color={activeFilter === 'pending' ? 'white' : Colors.primary} />
-                      },
-                      {
-                        id: 'confirmed',
-                        label: t('dashboard.bookings.confirmed'),
-                        icon: <SolarCheckCircleBold size={18} color={activeFilter === 'confirmed' ? 'white' : Colors.primary} />
-                      },
-                      {
-                        id: 'finished',
-                        label: t('dashboard.bookings.finished'),
-                        icon: <SolarCalendarBold size={18} color={activeFilter === 'finished' ? 'white' : Colors.primary} />
-                      },
-                    ].map((filter, index) => {
-                      const isActive = activeFilter === filter.id;
-                      const isAll = filter.id === 'all';
-                  
-                      return (
-                        <View 
-                          key={filter.id} 
-                          style={{ transform: [{ scale: 0.92 }] }}
-                          onLayout={(event) => {
-                            const layout = event.nativeEvent.layout;
-                            setItemLayouts(prev => ({ ...prev, [filter.id]: layout.x }));
-                          }}
-                        >
-                          {isAll ? (
-                            <PrimaryButton
-                              label={filter.label}
-                              isActive={isActive}
-                              onPress={() => handleFilterPress(filter.id)}
-                            />
-                          ) : (
-                            <SecondaryButton
-                              label={filter.label}
-                              isActive={isActive}
-                              icon={filter.icon}
-                              onPress={() => handleFilterPress(filter.id)}
-                            />
-                          )}
-                        </View>
-                      );
-                    })}
-                  </ScrollView>
-                </Animated.View>
-              </View>
+                  {[
+                    { id: 'all', label: t('home.categories.all') },
+                    {
+                      id: 'pending',
+                      label: t('dashboard.bookings.new'),
+                      icon: <SolarClockCircleBold size={18} color={activeFilter === 'pending' ? 'white' : Colors.primary} />
+                    },
+                    {
+                      id: 'confirmed',
+                      label: t('dashboard.bookings.confirmed'),
+                      icon: <SolarCheckCircleBold size={18} color={activeFilter === 'confirmed' ? 'white' : Colors.primary} />
+                    },
+                    {
+                      id: 'finished',
+                      label: t('dashboard.bookings.finished'),
+                      icon: <SolarCalendarBold size={18} color={activeFilter === 'finished' ? 'white' : Colors.primary} />
+                    },
+                  ].map((filter, index) => {
+                    const isActive = activeFilter === filter.id;
+                    const isAll = filter.id === 'all';
 
-              {/* Scrollable Section: Only Cards */}
-              <FlatList
-                data={recentBookings}
-                renderItem={renderBookingCard}
-                keyExtractor={(item) => item.id.toString()}
-                style={styles.container}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.scrollContent}
-                onEndReached={handleLoadMore}
-                onEndReachedThreshold={0.5}
-                ListHeaderComponent={<View style={{ height: 5 }} />}
-                ListEmptyComponent={
-                  isBookingsFetching && recentBookings.length === 0 ? (
-                    <View style={styles.loadingContainer}>
-                      <ActivityIndicator size="large" color={Colors.primary} />
-                    </View>
-                  ) : !isBookingsFetching && recentBookings.length === 0 ? (
-                    <Animated.View entering={FadeIn.duration(300)} style={styles.noBookings}>
-                      <Text style={styles.noBookingsText}>
-                        {t('dashboard.noBookings') || (isRTL ? 'لا توجد حجوزات حالياً' : 'No bookings found')}
-                      </Text>
-                    </Animated.View>
-                  ) : null
-                }
-                ListFooterComponent={
-                  isBookingsFetching && recentBookings.length > 0 ? (
-                    <ActivityIndicator color={Colors.primary} style={{ marginVertical: 20 }} />
-                  ) : <View style={{ height: 40 }} />
-                }
-                refreshControl={
-                  <RefreshControl refreshing={isBookingsFetching && page === 1} onRefresh={() => { setPage(1); refetchBookings(); }} tintColor={Colors.primary} />
-                }
-              />
+                    return (
+                      <View
+                        key={filter.id}
+                        style={{ transform: [{ scale: 0.92 }] }}
+                        onLayout={(event) => {
+                          const layout = event.nativeEvent.layout;
+                          setItemLayouts(prev => ({ ...prev, [filter.id]: layout.x }));
+                        }}
+                      >
+                        {isAll ? (
+                          <PrimaryButton
+                            label={filter.label}
+                            isActive={isActive}
+                            onPress={() => handleFilterPress(filter.id)}
+                          />
+                        ) : (
+                          <SecondaryButton
+                            label={filter.label}
+                            isActive={isActive}
+                            icon={filter.icon}
+                            onPress={() => handleFilterPress(filter.id)}
+                          />
+                        )}
+                      </View>
+                    );
+                  })}
+                </ScrollView>
+              </Animated.View>
             </View>
+
+            {/* Scrollable Section: Only Cards */}
+            <FlatList
+              data={recentBookings}
+              renderItem={renderBookingCard}
+              keyExtractor={(item) => item.id.toString()}
+              style={styles.container}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.scrollContent}
+              onEndReached={handleLoadMore}
+              onEndReachedThreshold={0.5}
+              ListHeaderComponent={<View style={{ height: 5 }} />}
+              ListEmptyComponent={
+                isBookingsFetching && recentBookings.length === 0 ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={Colors.primary} />
+                  </View>
+                ) : !isBookingsFetching && recentBookings.length === 0 ? (
+                  <Animated.View entering={FadeIn.duration(300)} style={styles.noBookings}>
+                    <Text style={styles.noBookingsText}>
+                      {t('dashboard.noBookings') || (isRTL ? 'لا توجد حجوزات حالياً' : 'No bookings found')}
+                    </Text>
+                  </Animated.View>
+                ) : null
+              }
+              ListFooterComponent={
+                isBookingsFetching && recentBookings.length > 0 ? (
+                  <ActivityIndicator color={Colors.primary} style={{ marginVertical: 20 }} />
+                ) : <View style={{ height: 40 }} />
+              }
+              refreshControl={
+                <RefreshControl refreshing={isBookingsFetching && page === 1} onRefresh={() => { setPage(1); refetchBookings(); }} tintColor={Colors.primary} />
+              }
+            />
+          </View>
         </View>
 
         {/* Booking Details Drawer */}
@@ -443,17 +441,17 @@ export default function HomeScreen() {
               <Text style={styles.calendarTitle}>{isRTL ? 'التقويم' : 'Calendar'}</Text>
             </View>
             <View style={{ paddingVertical: 10 }}>
-              <DashboardCalendar 
+              <DashboardCalendar
                 initialStartDate={selectedRange?.start}
                 initialEndDate={selectedRange?.end}
                 onSelect={(s, e) => {
-                 if (s && e) {
-                   setSelectedRange({start: s, end: e});
-                   setTimeout(() => {
+                  if (s && e) {
+                    setSelectedRange({ start: s, end: e });
+                    setTimeout(() => {
                       calendarSheetRef.current?.dismiss();
-                   }, 300);
-                 }
-              }} />
+                    }, 300);
+                  }
+                }} />
             </View>
           </BottomSheetView>
         </BottomSheetModal>

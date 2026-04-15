@@ -27,7 +27,7 @@ export const apiSlice = createApi({
       }),
       providesTags: ['Chalet'],
     }),
-    
+
     // Example endpoint for user info
     getMe: builder.query({
       query: () => '/auth/me',
@@ -42,7 +42,7 @@ export const apiSlice = createApi({
         body: credentials,
       }),
     }),
-    
+
     // Example mutation for verifying OTP
     verifyPhone: builder.mutation({
       query: (data) => ({
@@ -120,7 +120,7 @@ export const apiSlice = createApi({
     getChaletRegions: builder.query<any[], string>({
       query: (cityId) => `/cities/${cityId}/regions`,
     }),
-    
+
 
     // Shift Mutations
     createShift: builder.mutation({
@@ -270,8 +270,8 @@ export const apiSlice = createApi({
 
     // Get shift availability
     getShiftAvailability: builder.query({
-      query: (params) => ({
-        url: '/provider/shifts/availability',
+      query: ({ chaletId, ...params }) => ({
+        url: `/provider/chalets/${chaletId}/shifts/availability`,
         params,
       }),
       providesTags: ['Chalet'],
@@ -297,8 +297,8 @@ export const apiSlice = createApi({
 
     // Create external booking
     createExternalBooking: builder.mutation({
-      query: (data) => ({
-        url: '/provider/bookings/external',
+      query: ({ chaletId, ...data }) => ({
+        url: `/provider/chalets/${chaletId}/external-bookings`,
         method: 'POST',
         body: data,
       }),
@@ -366,12 +366,12 @@ export const {
   useGetOwnerChaletsQuery,
   useGetOwnerChaletDetailsQuery,
   useGetChaletDetailsQuery,
-  
+
   useGetChaletShiftsQuery,
   useGetShiftPricingQuery,
   useGetChaletCancellationPoliciesQuery,
 
-  
+
   useCreateShiftMutation,
   useUpdateShiftMutation,
   useDeleteShiftMutation,
@@ -384,7 +384,7 @@ export const {
   useGetCitiesQuery,
   useGetChaletRegionsQuery,
   useLazyGetChaletRegionsQuery,
-  
+
   useGetAmenitiesQuery,
   useGetChaletAmenitiesQuery,
   useSetChaletAmenitiesMutation,
