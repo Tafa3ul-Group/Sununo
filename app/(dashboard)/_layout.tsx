@@ -11,6 +11,7 @@ export default function DashboardNonTabLayout() {
           <DashboardHeader 
             title={props.options.title}
             showBackButton={props.route.name !== "home"} 
+            onDeletePress={(props.options as any).onDeletePress}
           />
         ),
       }}
@@ -19,6 +20,18 @@ export default function DashboardNonTabLayout() {
       <Stack.Screen
         name="edit-business"
         options={{ title: "معلومات العمل" }}
+      />
+      <Stack.Screen
+        name="add-chalet"
+        options={{ title: "إضافة شاليه" }}
+      />
+      <Stack.Screen
+        name="edit-chalet"
+        options={{ title: "تعديل الشاليه" }}
+      />
+      <Stack.Screen
+        name="chalet-details"
+        options={{ headerShown: false }}
       />
     </Stack>
   );

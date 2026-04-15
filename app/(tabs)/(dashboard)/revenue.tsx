@@ -27,14 +27,17 @@ const PERIODS = [
 
 export default function RevenueScreen() {
   const router = useRouter();
-  const { user, userType, language } = useSelector((state: RootState) => state.auth);
+  const { user, userType, language, selectedChalet } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
   const isRTL = language === 'ar';
   const [selectedPeriod, setSelectedPeriod] = useState('month');
   const [withdrawAmount, setWithdrawAmount] = useState('');
 
   // API hooks
-  const { data: payoutsResponse, isLoading: isLoadingPayouts } = useGetPayoutsQuery({ limit: 5 });
+  const { data: payoutsResponse, isLoading: isLoadingPayouts } = useGetPayoutsQuery({ 
+    limit: 5,
+    chaletId: selectedChalet?.id
+  });
   const [requestPayout, { isLoading: isRequesting }] = useRequestPayoutMutation();
 
   const payouts = payoutsResponse?.data || payoutsResponse || [];
@@ -107,8 +110,8 @@ export default function RevenueScreen() {
         {/* Balance Card */}
         <View style={styles.balanceCard}>
           <View style={styles.balanceCardInner}>
-            <View style={[styles.decorCircle, styles.decorCircle1]} />
-            <View style={[styles.decorCircle, styles.decorCircle2]} />
+            <View style={[styles.decorCircle, styles.decorCircle1, { [isRTL ? 'left' : 'right']: -40 }]} />
+            <View style={[styles.decorCircle, styles.decorCircle2, { [isRTL ? 'right' : 'left']: -20 }]} />
             
             <Text style={styles.balanceLabel}>{isRTL ? 'إجمالي الرصيد' : 'Total Balance'}</Text>
             <Text style={styles.balanceValue}>{user?.walletBalance?.toLocaleString() || '0'}</Text>
@@ -175,7 +178,7 @@ export default function RevenueScreen() {
             activeOpacity={0.7}
           >
             <Text style={styles.viewAllText}>{isRTL ? 'عرض الكل' : 'View All'}</Text>
-            <SolarAltArrowRightLinear size={14} color={Colors.primary} />
+            <SolarAltArrowRightLinear size={14} color={Colors.primary} style={{ transform: [{ rotate: isRTL ? '180deg' : '0deg' }] }} />
           </TouchableOpacity>
         </View>
 
@@ -304,13 +307,11 @@ const styles = StyleSheet.create({
     width: 180,
     height: 180,
     top: -60,
-    right: -40,
   },
   decorCircle2: {
     width: 120,
     height: 120,
     bottom: -30,
-    left: -20,
   },
   balanceLabel: {
     color: 'rgba(255,255,255,0.7)',

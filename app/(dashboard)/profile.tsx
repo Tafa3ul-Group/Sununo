@@ -71,7 +71,7 @@ export default function ProviderProfileScreen() {
   ];
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {/* Custom Header */}
 
       {/* Profile Header & User Card - Fixed at top */}
@@ -81,9 +81,7 @@ export default function ProviderProfileScreen() {
           onPress={() => router.push('/(dashboard)/edit-business')}
           activeOpacity={0.9}
         >
-          <ProfileShape size={normalize.width(48)} type="green">
-            <SolarPenBold size={18} color="white" />
-          </ProfileShape>
+          
           
           <View style={[styles.userInfo, { textAlign: isRTL ? 'right' : 'left' }]}>
             <Text style={[styles.userName, { textAlign: isRTL ? 'right' : 'left' }]}>{profile?.business_name || user?.name || t('tabs.home')}</Text>
@@ -134,7 +132,7 @@ export default function ProviderProfileScreen() {
       </ScrollView>
 
       <LanguageSheet ref={languageSheetRef} />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -145,7 +143,7 @@ const styles = StyleSheet.create({
   },
   topSection: {
     paddingHorizontal: normalize.width(20),
-    paddingTop: normalize.height(10),
+    paddingTop: 0,
   },
   scrollView: {
     flex: 1,

@@ -51,8 +51,6 @@ export default function DashboardLayout() {
         }}
       />
       <Tabs.Screen name="shifts" options={{ href: null }} />
-      <Tabs.Screen name="add-chalet" options={{ href: null }} />
-      <Tabs.Screen name="edit-chalet" options={{ href: null }} />
       <Tabs.Screen name="chalet-details" options={{ href: null }} />
       <Tabs.Screen name="transactions" options={{ href: null }} />
       <Tabs.Screen name="notifications" options={{ href: null }} />

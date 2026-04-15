@@ -65,11 +65,11 @@ export function HeaderSection({
   isHome = false,
 }: HeaderSectionProps) {
   const router = useRouter();
-  const { i18n, t } = useTranslation();
-  const isRTL = i18n.language === "ar";
-  const { userType: stateUserType } = useSelector(
+  const { t } = useTranslation();
+  const { userType: stateUserType, language } = useSelector(
     (state: RootState) => state.auth,
   );
+  const isRTL = language === "ar";
   const [selectedCategory, setSelectedCategory] = React.useState("all");
 
   const finalUserType = userType || stateUserType;
@@ -187,10 +187,10 @@ export function HeaderSection({
           {!isHome && !showLogo && (showProfile || showExtra) && (
             <View
               style={{
-                flexDirection: "row",
+                flexDirection: isRTL ? "row-reverse" : "row",
                 gap: 8,
                 position: "absolute",
-                right: 0,
+                [isRTL ? "left" : "right"]: 0,
               }}
             >
               {showProfile && (

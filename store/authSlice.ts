@@ -8,6 +8,11 @@ interface AuthState {
   userType: UserType;
   isAuthenticated: boolean;
   language: 'ar' | 'en';
+  selectedChalet: {
+    id: string;
+    name: string;
+    image: string | null;
+  } | null;
 }
 
 const initialState: AuthState = {
@@ -16,6 +21,7 @@ const initialState: AuthState = {
   userType: null,
   isAuthenticated: false,
   language: 'ar',
+  selectedChalet: null,
 };
 
 const authSlice = createSlice({
@@ -38,15 +44,19 @@ const authSlice = createSlice({
     setLanguage: (state, action: PayloadAction<'ar' | 'en'>) => {
       state.language = action.payload;
     },
+    setSelectedChalet: (state, action: PayloadAction<AuthState['selectedChalet']>) => {
+      state.selectedChalet = action.payload;
+    },
     logout: (state) => {
       state.user = null;
       state.token = null;
       state.userType = null;
       state.isAuthenticated = false;
+      state.selectedChalet = null;
     },
   },
 });
 
-export const { setCredentials, setUserType, setLanguage, logout } = authSlice.actions;
+export const { setCredentials, setUserType, setLanguage, setSelectedChalet, logout } = authSlice.actions;
 
 export default authSlice.reducer;

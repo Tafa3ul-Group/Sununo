@@ -308,7 +308,7 @@ export const apiSlice = createApi({
     // Delete external booking
     deleteExternalBooking: builder.mutation({
       query: (id) => ({
-        url: `/provider/bookings/external/${id}`,
+        url: `/provider/bookings/${id}/external`,
         method: 'DELETE',
       }),
       invalidatesTags: ['Booking', 'Chalet'],
