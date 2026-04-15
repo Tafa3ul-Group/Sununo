@@ -1,5 +1,7 @@
 import { SolarStarBold, SolarStarLinear } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
+import { SecondaryButton } from "@/components/user/secondary-button";
+import { SecondaryButtonInverse } from "@/components/user/secondary-button-inverse";
 import {
   BottomSheetModal,
   BottomSheetTextInput,
@@ -117,19 +119,19 @@ const ReviewSubmissionSheet = forwardRef<
         <View style={styles.bottomExtension}>
           {/* Action Buttons Row */}
           <View style={styles.actionsRow}>
-            <TouchableOpacity
-              style={[styles.btn, styles.cancelBtn]}
-              onPress={handleCancel}
-            >
-              <ThemedText style={styles.cancelBtnText}>الغاء</ThemedText>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.btn, styles.sendBtn]}
+            <SecondaryButtonInverse
+              label="ارسال"
               onPress={handleSend}
-            >
-              <ThemedText style={styles.sendBtnText}>ارسال</ThemedText>
-            </TouchableOpacity>
+              isActive={true}
+              style={{ flex: 1 }}
+            />
+
+            <SecondaryButton
+              label="الغاء"
+              onPress={handleCancel}
+              isActive={false}
+              style={{ flex: 1 }}
+            />
           </View>
         </View>
       </BottomSheetView>
