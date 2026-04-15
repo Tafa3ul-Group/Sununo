@@ -47,7 +47,7 @@ export default function ProfileScreen() {
           style: 'destructive', 
           onPress: () => {
             dispatch(logout());
-            router.replace('/(auth)/choose-type');
+            router.replace('/(auth)/login');
           }
         }
       ]

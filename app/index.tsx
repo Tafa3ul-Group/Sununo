@@ -31,11 +31,11 @@ export default function Index() {
   }
 
   if (!userType) {
-    return <Redirect href="/(auth)/choose-type" />;
+    return <Redirect href="/(auth)/login" />;
   }
 
   if (userType === 'owner' && !isAuthenticated) {
-    return <Redirect href="/(auth)/choose-type" />;
+    return <Redirect href="/(auth)/login" />;
   }
 
   // Customers and Guests land on customer tabs
