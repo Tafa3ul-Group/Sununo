@@ -125,7 +125,9 @@
     "paymentMethod": "طريقة الدفع",
     "fullPayment": "دفع كامل",
     "depositPayment": "عربون",
-    "shift": "شفت"
+    "shift": "شفت",
+    "and": "و",
+    "error": "خطأ"
   },
   "booking": {
     "complete": "اكتمال الحجز",

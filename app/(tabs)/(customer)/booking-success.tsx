@@ -57,11 +57,11 @@ export default function BookingSuccessDetailsScreen() {
             <View style={styles.divider} />
             <View style={styles.infoRow}>
                 <ThemedText style={styles.infoLabel}>{t('booking.name')}</ThemedText>
-                <ThemedText style={styles.infoValue}>انسي انس</ThemedText>
+                <ThemedText style={styles.infoValue}>{t('booking.nameValue')}</ThemedText>
             </View>
             <View style={styles.infoRow}>
                 <ThemedText style={styles.infoLabel}>{t('booking.phone')}</ThemedText>
-                <ThemedText style={[styles.infoValue, { direction: 'ltr' }]}>+496  7703409763</ThemedText>
+                <ThemedText style={[styles.infoValue, { direction: 'ltr' }]}>{t('booking.phoneValue')}</ThemedText>
             </View>
         </View>
 

@@ -99,7 +99,7 @@ export default function BookingsScreen() {
         <View style={styles.bottomBlock}>
             <View style={styles.detailRow}>
                 <ThemedText style={styles.detailLabel}>{t('booking.bookingDate')}</ThemedText>
-                <ThemedText style={styles.detailValue}>12 - 14 اكتوبر 2025</ThemedText>
+                <ThemedText style={styles.detailValue}>{t('booking.dateValue')}</ThemedText>
             </View>
 
             <View style={styles.detailRow}>
