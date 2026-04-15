@@ -60,8 +60,15 @@
       "question": "How would you rate your experience?",
       "placeholder": "Write your comments here...",
       "send": "Send",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "noFavorites": "No favorites yet",
+      "noFavoritesDesc": "Any chalet you like can be added here for easy access later."
     }
+  },
+  "notifications": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "empty": "No notifications yet"
   },
   "dashboard": {
     "addChalet": "Add New Chalet",

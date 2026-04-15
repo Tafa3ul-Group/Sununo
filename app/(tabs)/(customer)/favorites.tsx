@@ -66,9 +66,9 @@ export default function FavoritesScreen() {
         ) : (
           <View style={styles.emptyState}>
             <SolarHeartBold size={80} color="#E2E8F0" />
-            <ThemedText style={styles.emptyTitle}>{isRTL ? 'لا توجد مفضلات حتى الآن' : 'No favorites yet'}</ThemedText>
+            <ThemedText style={styles.emptyTitle}>{t('profile.review.noFavorites')}</ThemedText>
             <ThemedText style={styles.emptySubtitle}>
-              {isRTL ? 'أي شاليه تعجبك، يمكنك إضافتها هنا للوصول إليها لاحقاً بسهولة.' : 'Any chalet you like can be added here for easy access later.'}
+              {t('profile.review.noFavoritesDesc')}
             </ThemedText>
           </View>
         )}

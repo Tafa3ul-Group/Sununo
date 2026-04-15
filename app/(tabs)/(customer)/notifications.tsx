@@ -70,9 +70,9 @@ export default function NotificationsScreen() {
             </View>
 
             {/* Content section */}
-            <View style={styles.cardContent}>
-                <ThemedText style={styles.titleText}>{item.title}</ThemedText>
-                <ThemedText style={styles.messageText}>{item.message}</ThemedText>
+            <View style={[styles.cardContent, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                <ThemedText style={styles.titleText}>{t('dashboard.revenue.history')}</ThemedText>
+                <ThemedText style={[styles.messageText, { textAlign: isRTL ? 'right' : 'left' }]}>{item.message}</ThemedText>
             </View>
         </View>
     );
@@ -87,14 +87,14 @@ export default function NotificationsScreen() {
 
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                 {/* Today Section */}
-                <View style={styles.sectionHeader}>
-                    <ThemedText style={styles.sectionTitle}>{isRTL ? 'اليوم' : 'Today'}</ThemedText>
+                <View style={[styles.sectionHeader, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                    <ThemedText style={styles.sectionTitle}>{t('notifications.today')}</ThemedText>
                 </View>
                 {MOCK_DATA.today.map(renderItem)}
 
                 {/* Yesterday Section */}
-                <View style={styles.sectionHeader}>
-                    <ThemedText style={styles.sectionTitle}>{isRTL ? 'امس' : 'Yesterday'}</ThemedText>
+                <View style={[styles.sectionHeader, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                    <ThemedText style={styles.sectionTitle}>{t('notifications.yesterday')}</ThemedText>
                 </View>
                 {MOCK_DATA.yesterday.map(renderItem)}
             </ScrollView>

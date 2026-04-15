@@ -20,8 +20,8 @@ export const WalletCard = ({
   const isRTL = i18n.language === 'ar';
   return (
     <View style={styles.container}>
-      {/* SVG Background - Cropped */}
-      <View style={styles.svgWrapper}>
+      {/* SVG Background - Mirrored for LTR to keep focal points consistent */}
+      <View style={[styles.svgWrapper, { transform: [{ scaleX: isRTL ? 1 : -1 }] }]}>
         <Svg width="100%" height={123} viewBox="0 24 370 123" fill="none">
           <G clipPath="url(#clip0_64103_857)">
             <Path
@@ -70,7 +70,9 @@ export const WalletCard = ({
       {/* Content Overlay */}
       <View style={styles.contentOverlay}>
         <View style={[styles.topRow, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-          <ThemedText style={[styles.balanceLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{t('profile.wallet.balance')}</ThemedText>
+          <ThemedText style={[styles.balanceLabel, { textAlign: isRTL ? 'right' : 'left' }]}>
+            {t('profile.wallet.balance')}
+          </ThemedText>
         </View>
 
         <View style={[styles.bottomRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
@@ -80,11 +82,13 @@ export const WalletCard = ({
           </View>
 
           <TouchableOpacity
-            style={[styles.withdrawButton, { paddingLeft: isRTL ? 59 : 0, paddingRight: isRTL ? 0 : 59 }]}
+            style={styles.withdrawButton}
             onPress={onWithdraw}
             activeOpacity={0.8}
           >
-            <ThemedText style={styles.withdrawText}>{t('profile.wallet.withdraw')}</ThemedText>
+            <ThemedText style={styles.withdrawText}>
+              {t('profile.wallet.withdraw')}
+            </ThemedText>
           </TouchableOpacity>
         </View>
       </View>
