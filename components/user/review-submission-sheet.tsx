@@ -8,7 +8,8 @@ import {
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import React, { forwardRef, useMemo, useState } from "react";
-import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Dimensions, StyleSheet, TouchableOpacity, View, I18nManager } from "react-native";
+import { useTranslation } from "react-i18next";
 import Svg, { Path } from "react-native-svg";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -33,6 +34,8 @@ const ReviewSubmissionSheet = forwardRef<
     initialRating?: number;
   }
 >((props, ref) => {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
   const [userRating, setUserRating] = useState(props.initialRating || 0);
   const [comment, setComment] = useState("");
 
@@ -85,7 +88,7 @@ const ReviewSubmissionSheet = forwardRef<
             {/* Rating Stars Pill - matching footer design */}
             <View style={styles.questionPill}>
               <ThemedText style={styles.questionTitle}>
-                شكد تقيم تجربتك؟
+                {t('review.question')}
               </ThemedText>
               <View style={styles.starsRow}>
                 {[1, 2, 3, 4, 5].map((i) => (
@@ -103,10 +106,10 @@ const ReviewSubmissionSheet = forwardRef<
             {/* Comments Input Area */}
             <View style={styles.inputArea}>
               <BottomSheetTextInput
-                placeholder="اكتب ملاحظاتك ...."
+                placeholder={t('review.placeholder')}
                 placeholderTextColor="#9CA3AF"
                 multiline
-                style={styles.textInput}
+                style={[styles.textInput, { textAlign: isRTL ? 'right' : 'left' }]}
                 value={comment}
                 onChangeText={setComment}
               />
@@ -117,16 +120,16 @@ const ReviewSubmissionSheet = forwardRef<
         {/* Bottom Extension to fill the drawer with green */}
         <View style={styles.bottomExtension}>
           {/* Action Buttons Row */}
-          <View style={styles.actionsRow}>
+          <View style={[styles.actionsRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
             <SecondaryButtonInverse
-              label="ارسال"
+              label={t('review.send')}
               onPress={handleSend}
               isActive={true}
               style={{ flex: 1 }}
             />
 
             <SecondaryButton
-              label="الغاء"
+              label={t('review.cancel')}
               onPress={handleCancel}
               isActive={false}
               style={{ flex: 1 }}
@@ -213,7 +216,6 @@ const styles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
-    textAlign: "right",
     fontSize: normalize(16),
     fontFamily: "LamaSans-Medium",
     color: "#111827",

@@ -60,6 +60,12 @@
       "birthDate": "تاريخ الميلاد",
       "changePhone": "تغيير رقم الهاتف",
       "confirm": "تأكيد"
+    },
+    "review": {
+      "question": "شكد تقيم تجربتك؟",
+      "placeholder": "اكتب ملاحظاتك ....",
+      "send": "ارسال",
+      "cancel": "الغاء"
     }
   },
   "dashboard": {

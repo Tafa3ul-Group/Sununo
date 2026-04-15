@@ -55,6 +55,12 @@
       "birthDate": "Birth Date",
       "changePhone": "Change Phone",
       "confirm": "Confirm"
+    },
+    "review": {
+      "question": "How would you rate your experience?",
+      "placeholder": "Write your comments here...",
+      "send": "Send",
+      "cancel": "Cancel"
     }
   },
   "dashboard": {

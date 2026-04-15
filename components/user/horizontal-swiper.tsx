@@ -1,5 +1,6 @@
 import { normalize } from "@/constants/theme";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
   Dimensions,
   FlatList,
@@ -18,6 +19,8 @@ interface HorizontalSwiperProps {
 }
 
 export function HorizontalSwiper({ data, onPressCard }: HorizontalSwiperProps) {
+  const { i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
   const renderItem = ({ item, index }: { item: any; index: number }) => (
     <View style={{ width: ITEM_WIDTH }}>
       <HorizontalCard
@@ -39,7 +42,7 @@ export function HorizontalSwiper({ data, onPressCard }: HorizontalSwiperProps) {
         showsHorizontalScrollIndicator={false}
         snapToInterval={ITEM_WIDTH + SEPARATOR_WIDTH}
         decelerationRate="fast"
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
         pagingEnabled={false}
         ItemSeparatorComponent={() => (
           <View style={{ width: SEPARATOR_WIDTH }} />
@@ -55,7 +58,6 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: 16,
-    flexDirection: "row-reverse", // Align items for Arabic
   },
   cardOverride: {
     width: "100%",
