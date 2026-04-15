@@ -120,7 +120,9 @@
     "paymentMethod": "Payment Method",
     "fullPayment": "Full Payment",
     "depositPayment": "Deposit",
-    "shift": "Shift"
+    "shift": "Shift",
+    "and": "and",
+    "error": "Error"
   },
   "booking": {
     "complete": "Booking Completion",

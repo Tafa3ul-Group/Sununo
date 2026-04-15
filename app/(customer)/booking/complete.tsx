@@ -226,7 +226,7 @@ export default function CompleteBookingScreen() {
         {/* Agreement Text */}
         <View style={styles.agreementWrapper}>
             <ThemedText style={styles.agreementText}>
-                {t('booking.agreement')} <ThemedText style={styles.agreementLink}>{t('booking.terms')}</ThemedText> و <ThemedText style={styles.agreementLink}>{t('booking.policy')}</ThemedText>
+                {t('booking.agreement')} <ThemedText style={styles.agreementLink}>{t('booking.terms')}</ThemedText> {t('common.and')} <ThemedText style={styles.agreementLink}>{t('booking.policy')}</ThemedText>
             </ThemedText>
         </View>
 

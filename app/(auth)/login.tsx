@@ -23,6 +23,8 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
+import { useLoginMutation, useVerifyPhoneMutation } from "@/store/api/apiSlice";
+import { ActivityIndicator, Alert } from "react-native";
 // import { normalize } from "@/constants/theme";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -34,38 +36,57 @@ const normalize = {
   radius: (size: number) => size * scale,
 };
 
-export default function LoginScreen() {
+export function LoginScreen() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const userType =
-    useSelector((state: RootState) => state.auth.userType) || "customer";
+  const [login, { isLoading: isLoginLoading }] = useLoginMutation();
+  const [verifyPhone, { isLoading: isVerifyLoading }] = useVerifyPhoneMutation();
+
+  const userType = useSelector((state: RootState) => state.auth.userType) || "customer";
   const isOwner = userType === "owner";
 
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [phone, setPhone] = useState("7700000001");
   const [code, setCode] = useState("123456");
 
-  const handleTypeChange = (type: "owner" | "customer") => {
+  function handleTypeChange(type: "owner" | "customer") {
     dispatch(setUserType(type));
-  };
+  }
 
-  const handleAction = () => {
+  async function handleAction() {
     if (step === "phone") {
-      setStep("otp");
+      try {
+        const res = await login({ phone }).unwrap();
+        if (res?.code) {
+          setCode(String(res.code));
+        }
+        setStep("otp");
+      } catch (err: any) {
+        const msg = err?.data?.message;
+        const displayMsg = Array.isArray(msg) ? msg.join(', ') : (msg || "Failed to send OTP");
+        Alert.alert(t('common.error'), String(displayMsg));
+      }
     } else {
-      dispatch(
-        setCredentials({
-          user: { name: isOwner ? "صاحب شاليه" : "زبون", phone },
-          token: "mock_token",
-          userType: userType,
-        }),
-      );
-      router.replace(isOwner ? "/(tabs)/(dashboard)/home" : "/(tabs)");
+      try {
+        const result = await verifyPhone({ phone, code }).unwrap();
+        dispatch(
+          setCredentials({
+            user: result.user,
+            token: result.token,
+            userType: userType,
+          }),
+        );
+        router.replace(isOwner ? "/(tabs)/(dashboard)/home" : "/(tabs)");
+      } catch (err: any) {
+        const msg = err?.data?.message;
+        const displayMsg = Array.isArray(msg) ? msg.join(', ') : (msg || "Invalid OTP");
+        Alert.alert(t('common.error'), String(displayMsg));
+      }
     }
-  };
+  }
 
   return (
     <View style={styles.container}>
@@ -139,6 +160,7 @@ export default function LoginScreen() {
               onPress={handleAction}
               style={styles.loginBtn}
               activeColor="#0061FE"
+              icon={(isLoginLoading || isVerifyLoading) ? <ActivityIndicator color="white" /> : undefined}
             />
           </View>
         </ScrollView>
@@ -239,3 +261,5 @@ const styles = StyleSheet.create({
     zIndex: 0,
   },
 });
+// Default export for Expo Router
+export default LoginScreen;
