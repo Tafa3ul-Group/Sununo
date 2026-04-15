@@ -3,11 +3,25 @@ import { persistor, store } from '@/store';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { Text, TextInput } from 'react-native';
 import 'react-native-reanimated';
 import Toast from 'react-native-toast-message';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
+import { useFonts } from 'expo-font';
+import * as SplashScreen from 'expo-splash-screen';
+
+// Set global font mapping for the entire app
+// @ts-ignore
+if (Text.defaultProps == null) Text.defaultProps = {};
+// @ts-ignore
+Text.defaultProps.style = { fontFamily: 'LamaSans-Regular' };
+
+// @ts-ignore
+if (TextInput.defaultProps == null) TextInput.defaultProps = {};
+// @ts-ignore
+TextInput.defaultProps.style = { fontFamily: 'LamaSans-Regular' };
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import '@/i18n';
@@ -16,6 +30,24 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+  
+  const [loaded, error] = useFonts({
+    'LamaSans-Bold': require('../assets/fonts/LamaSans/LamaSans-BoldCondensed.otf'),
+    'LamaSans-Regular': require('../assets/fonts/LamaSans/LamaSans-RegularCondensed.otf'),
+    'LamaSans-Medium': require('../assets/fonts/LamaSans/LamaSans-MediumCondensed.otf'),
+    'LamaSans-SemiBold': require('../assets/fonts/LamaSans/LamaSans-SemiBoldCondensed.otf'),
+    'LamaSans-Black': require('../assets/fonts/LamaSans/LamaSans-BlackCondensed.otf'),
+  });
+
+  useEffect(() => {
+    if (loaded || error) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded, error]);
+
+  if (!loaded && !error) {
+    return null;
+  }
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>

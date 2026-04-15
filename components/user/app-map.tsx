@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
   },
   markerTitle: {
     fontSize: 11,
-    fontWeight: '800',
+    fontFamily: "LamaSans-Black",
     color: '#111827',
     marginTop: 6,
     textAlign: 'center',
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
   fallbackText: {
     fontSize: 10,
     color: '#6B7280',
-    fontWeight: '600',
+    fontFamily: "LamaSans-SemiBold",
     textAlign: 'center',
   },
 });

@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.Sununo"
     },
     "android": {
       "adaptiveIcon": {
@@ -40,7 +41,19 @@
         }
       ],
       "@react-native-community/datetimepicker",
-      "@rnmapbox/maps"
+      "@rnmapbox/maps",
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/LamaSans/LamaSans-BoldCondensed.otf",
+            "./assets/fonts/LamaSans/LamaSans-RegularCondensed.otf",
+            "./assets/fonts/LamaSans/LamaSans-MediumCondensed.otf",
+            "./assets/fonts/LamaSans/LamaSans-SemiBoldCondensed.otf",
+            "./assets/fonts/LamaSans/LamaSans-BlackCondensed.otf"
+          ]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

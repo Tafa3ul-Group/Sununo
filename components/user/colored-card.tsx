@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: normalize.font(14),
-    fontWeight: "900",
+    fontFamily: "LamaSans-Black",
     color: "#FFFFFF",
     textAlign: "right",
     lineHeight: normalize.height(24),
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
   },
   location: {
     fontSize: normalize.font(12),
-    fontWeight: "400", // Not bold
+    fontFamily: "LamaSans-Regular", // Not bold
     color: "#FFFFFF",
     textAlign: "right",
     lineHeight: normalize.height(24),
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     color: "white",
-    fontWeight: "900", // Bold
+    fontFamily: "LamaSans-Black", // Bold
     fontSize: normalize.font(12),
   },
   priceContainer: {
@@ -246,14 +246,14 @@ const styles = StyleSheet.create({
   },
   price: {
     color: "white",
-    fontWeight: "900",
+    fontFamily: "LamaSans-Black",
     fontSize: normalize.font(12),
     textAlign: "right",
   },
   priceUnit: {
     fontSize: normalize.font(8),
     color: "white",
-    fontWeight: "900", // Bold
+    fontFamily: "LamaSans-Black", // Bold
     opacity: 0.9,
   },
 });

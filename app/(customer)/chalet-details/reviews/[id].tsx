@@ -1,17 +1,16 @@
+import { HeaderSection } from "@/components/header-section";
 import { RatingBackground } from "@/components/icons/rating-background";
 import {
   SolarAltArrowDownLinear,
   SolarStarBold,
   SolarStarLinear,
 } from "@/components/icons/solar-icons";
-
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-
 import { ThemedText } from "@/components/themed-text";
-import { CircleBackButton } from "@/components/ui/circle-back-button";
+import { ReviewSubmissionSheet } from "@/components/user/review-submission-sheet";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { Image } from "expo-image";
 import { Stack, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   Dimensions,
   Pressable,
@@ -19,6 +18,13 @@ import {
   StyleSheet,
   View,
 } from "react-native";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+// Base design width for normalization
+const DESIGN_BASE_WIDTH = 414; // Using iPhone Plus as base for more standard scaling
+const scale = SCREEN_WIDTH / DESIGN_BASE_WIDTH;
+const normalize = (size: number) => size * scale;
 
 const SAMPLE_IMAGES = [
   "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=400",
@@ -29,6 +35,18 @@ const SAMPLE_IMAGES = [
 export default function ReviewsScreen() {
   const { id } = useLocalSearchParams();
   const [userRating, setUserRating] = useState(0);
+  const reviewSheetRef = useRef<BottomSheetModal>(null);
+
+  const handleRatingPress = (rating: number) => {
+    setUserRating(rating);
+    reviewSheetRef.current?.present();
+  };
+
+  const handleReviewSubmit = (rating: number, comment: string) => {
+    console.log("Review Submitted:", { rating, comment });
+    // Add API logic here
+  };
+
   const reviews = [
     {
       name: "انسة انس",
@@ -53,13 +71,8 @@ export default function ReviewsScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <View style={styles.header}>
-        <View style={styles.backBtnWrapper}>
-          <CircleBackButton />
-        </View>
-        <ThemedText style={styles.headerTitle}>المراجعات</ThemedText>
-        <View style={{ width: 44 }} />
-      </View>
+      {/* Standard Header */}
+      <HeaderSection title="المراجعات" showBackButton showLogo />
 
       <ScrollView contentContainerStyle={{ paddingBottom: 180 }}>
         <View style={styles.summaryArea}>
@@ -68,7 +81,7 @@ export default function ReviewsScreen() {
             {[1, 2, 3, 4, 5].map((i) => (
               <SolarStarBold
                 key={i}
-                size={32}
+                size={normalize(32)}
                 color={i <= 4 ? "#15AB64" : "#E5E7EB"}
               />
             ))}
@@ -153,11 +166,11 @@ export default function ReviewsScreen() {
             </ThemedText>
             <View style={styles.inputStarsRow}>
               {[1, 2, 3, 4, 5].map((i) => (
-                <Pressable key={i} onPress={() => setUserRating(i)}>
+                <Pressable key={i} onPress={() => handleRatingPress(i)}>
                   {i <= userRating ? (
-                    <SolarStarBold size={32} color="#15AB64" />
+                    <SolarStarBold size={normalize(32)} color="#15AB64" />
                   ) : (
-                    <SolarStarLinear size={32} color="#15AB64" />
+                    <SolarStarLinear size={normalize(32)} color="#15AB64" />
                   )}
                 </Pressable>
               ))}
@@ -165,66 +178,64 @@ export default function ReviewsScreen() {
           </View>
         </View>
       </View>
+
+      <ReviewSubmissionSheet
+        ref={reviewSheetRef}
+        onSubmit={handleReviewSubmit}
+        initialRating={userRating}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFFFFF" },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingTop: 55,
-    paddingBottom: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
-  },
-  backBtnWrapper: { width: 44, height: 44, justifyContent: "center" },
-  headerTitle: { fontSize: 20, fontWeight: "900" },
-  summaryArea: { alignItems: "center", marginVertical: 35 },
+  summaryArea: { alignItems: "center", marginVertical: normalize(35) },
   bigRatingText: {
-    fontSize: 56,
-    fontWeight: "900",
+    fontSize: normalize(56),
+    fontFamily: "LamaSans-Black",
     color: "#111827",
-    marginBottom: 5,
+    marginBottom: normalize(5),
   },
-  starsRow: { flexDirection: "row", gap: 6 },
+  starsRow: { flexDirection: "row", gap: normalize(6) },
   filterContainer: {
-    paddingHorizontal: 20,
+    paddingHorizontal: normalize(20),
     alignItems: "flex-end",
-    marginBottom: 25,
+    marginBottom: normalize(25),
   },
   secondarySplitBtn: {
     flexDirection: "row-reverse",
-    height: 48,
-    borderRadius: 14,
-    borderWidth: 1,
+    height: normalize(48),
+    borderRadius: normalize(14),
+    borderWidth: normalize(1),
     borderColor: "#E5E7EB",
     backgroundColor: "#FFFFFF",
     overflow: "hidden",
   },
   splitTextPart: {
-    paddingHorizontal: 16,
+    paddingHorizontal: normalize(16),
     justifyContent: "center",
     alignItems: "center",
-    borderRightWidth: 1,
+    borderRightWidth: normalize(1),
     borderRightColor: "#E5E7EB",
   },
-  splitLabel: { fontSize: 15, fontWeight: "700", color: "#111827" },
+  splitLabel: {
+    fontSize: normalize(15),
+    fontFamily: "LamaSans-Bold",
+    color: "#111827",
+  },
   splitIconPart: {
-    width: 48,
-    height: 48,
+    width: normalize(48),
+    height: normalize(48),
     justifyContent: "center",
     alignItems: "center",
   },
   revCardFlat: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 24,
-    padding: 20,
-    marginBottom: 16,
-    borderWidth: 1,
+    borderRadius: normalize(24),
+    padding: normalize(20),
+    marginBottom: normalize(16),
+    borderWidth: normalize(1),
     borderColor: "#F3F4F6",
   },
   revHeader: {
@@ -235,71 +246,89 @@ const styles = StyleSheet.create({
   ratingBadge: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
-    marginTop: 4,
+    gap: normalize(4),
+    marginTop: normalize(4),
   },
-  rateNumText: { fontSize: 16, fontWeight: "900", color: "#111827" },
+  rateNumText: {
+    fontSize: normalize(16),
+    fontFamily: "LamaSans-Black",
+    color: "#111827",
+  },
   userInfoRow: {
     flexDirection: "row",
     alignItems: "flex-start",
     flex: 1,
     justifyContent: "flex-end",
   },
-  nameAndBody: { alignItems: "flex-end", marginRight: 15, flex: 1 },
-  reviewerNameText: { fontSize: 16, fontWeight: "900", color: "#111827" },
+  nameAndBody: { alignItems: "flex-end", marginRight: normalize(15), flex: 1 },
+  reviewerNameText: {
+    fontSize: normalize(16),
+    fontFamily: "LamaSans-Black",
+    color: "#111827",
+  },
   revBodyText: {
-    fontSize: 14,
+    fontSize: normalize(14),
     color: "#6B7280",
-    marginTop: 8,
+    marginTop: normalize(8),
     textAlign: "right",
-    lineHeight: 22,
+    lineHeight: normalize(22),
+    fontFamily: "LamaSans-Regular",
   },
   avatarCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: normalize(60),
+    height: normalize(60),
+    borderRadius: normalize(30),
     overflow: "hidden",
     backgroundColor: "#F3F4F6",
   },
   userAvatarImg: { width: "100%", height: "100%" },
-  galleryWrapper: { marginTop: 20 },
+  galleryWrapper: { marginTop: normalize(20) },
   imgGallery: { flexDirection: "row" },
-  thumb: { width: 110, height: 85, borderRadius: 14, marginRight: 12 },
-  dateWrapper: { marginTop: 20, alignItems: "flex-start" },
-  dateTextLabel: { fontSize: 13, color: "#9CA3AF", fontWeight: "500" },
-
+  thumb: {
+    width: normalize(110),
+    height: normalize(85),
+    borderRadius: normalize(14),
+    marginRight: normalize(12),
+  },
+  dateWrapper: { marginTop: normalize(20), alignItems: "flex-start" },
+  dateTextLabel: {
+    fontSize: normalize(13),
+    color: "#9CA3AF",
+    fontFamily: "LamaSans-Medium",
+  },
   footerSticky: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    height: 150,
+    height: normalize(150),
   },
   footerBgImage: {
     position: "absolute",
-    bottom: -25, // Push deeper to hide bottom whitespace
-    width: "100%",
+    bottom: normalize(-25),
+    left: -normalize(0),
+    right: -normalize(40),
     height: "100%",
   },
   footerOverlayContent: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: "center",
     alignItems: "center",
-    paddingTop: 35, // Adjust centering for the lower height
+    paddingTop: normalize(35),
   },
   whiteInputPill: {
     backgroundColor: "#F0F6F5",
-    borderRadius: 50,
-    height: 90,
-    width: "90%",
+    borderRadius: normalize(50),
+    height: normalize(90),
+    width: "100%",
     alignItems: "center",
     justifyContent: "center",
   },
   questionTitle: {
-    fontSize: 16,
-    fontWeight: "900",
+    fontSize: normalize(16),
+    fontFamily: "LamaSans-Black",
     color: "#111827",
-    marginBottom: 8,
+    marginBottom: normalize(8),
   },
   inputStarsRow: { flexDirection: "row", gap: 12 },
 });

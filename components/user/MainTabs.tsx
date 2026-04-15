@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 22,
-    fontWeight: "900",
+    fontFamily: "LamaSans-Black",
     textAlign: "center",
   },
 });

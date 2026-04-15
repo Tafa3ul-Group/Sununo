@@ -21,6 +21,8 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert, Image } fr
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { WalletCard } from '@/components/user/wallet-card';
+import { HeaderSection } from '@/components/header-section';
 
 export default function ProfileScreen() {
   const dispatch = useDispatch();
@@ -53,7 +55,6 @@ export default function ProfileScreen() {
   };
 
   const menuItems = [
-    { id: 'wallet', title: isRTL ? 'المحفظة' : 'Wallet', shape: 'red' as const, icon: <SolarWalletBold size={20} color="white" />, route: '/(tabs)/(dashboard)/transactions' },
     { id: 'bookings', title: isRTL ? 'الحجوزات' : 'Bookings', shape: 'blue' as const, icon: <SolarCalendarBold size={20} color="white" />, route: '/(tabs)/(customer)/bookings' },
     { id: 'reviews', title: isRTL ? 'المراجعات' : 'Reviews', shape: 'blue' as const, icon: <SolarHeartBold size={20} color="white" /> },
     { id: 'language', title: isRTL ? 'اللغة' : 'Language', shape: 'pink' as const, icon: <SolarGlobalBold size={20} color="white" />, action: openLanguageSheet },
@@ -64,18 +65,12 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Custom Header */}
-      <View style={styles.header}>
-        <CircleBackButton />
-        <Text style={styles.headerTitle}>{isRTL ? 'الملف الشخصي' : 'Profile'}</Text>
-        <View style={styles.logoCircle}>
-          <Image 
-            source={require('@/assets/arlogo.svg')} 
-            style={styles.logoImg}
-            resizeMode="contain"
-          />
-        </View>
-      </View>
+      <HeaderSection 
+        title={isRTL ? 'الملف الشخصي' : 'Profile'}
+        showBackButton 
+        showLogo 
+        userType={userType}
+      />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <TouchableOpacity 
@@ -98,6 +93,14 @@ export default function ProfileScreen() {
             />
           </View>
         </TouchableOpacity>
+
+        {/* Wallet Card */}
+        <WalletCard 
+          balance="100,000" 
+          onWithdraw={() => {
+            router.push('/(tabs)/(dashboard)/transactions');
+          }}
+        />
 
         {/* Action Menu Items */}
         <View style={styles.menuGroup}>
@@ -135,37 +138,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: normalize.width(20),
-    paddingVertical: normalize.height(15),
-    backgroundColor: '#FFFFFF',
-  },
-  headerBtn: {
-    padding: 4,
-  },
-  headerTitle: {
-    fontSize: normalize.font(18),
-    fontWeight: '800',
-    color: '#1F2937',
-  },
-  logoCircle: {
-    width: normalize.width(42),
-    height: normalize.width(42),
-    borderRadius: normalize.width(21),
-    backgroundColor: '#F9FAFB',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
-    overflow: 'hidden',
-  },
-  logoImg: {
-    width: '70%',
-    height: '70%',
-  },
   scrollContent: {
     paddingHorizontal: normalize.width(20),
     paddingTop: normalize.height(10),
@@ -188,7 +160,7 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: normalize.font(16),
-    fontWeight: '800',
+    fontFamily: "LamaSans-Black",
     color: '#374151',
     textAlign: 'right',
   },
@@ -223,7 +195,7 @@ const styles = StyleSheet.create({
   },
   menuLabelText: {
     fontSize: normalize.font(16),
-    fontWeight: '700',
+    fontFamily: "LamaSans-Bold",
     color: '#374151',
     marginRight: normalize.width(15),
     textAlign: 'right',

@@ -105,8 +105,7 @@ const styles = StyleSheet.create({
   },
   title: {
     ...Typography.h2,
-    fontSize: normalize.font(18),
-  },
+    fontSize: normalize.font(18) },
   mapWrapper: {
     flex: 1,
     position: 'relative',
@@ -126,8 +125,7 @@ const styles = StyleSheet.create({
   fallbackText: {
     ...Typography.body,
     marginTop: Spacing.md,
-    color: Colors.text.muted,
-  },
+    color: Colors.text.muted },
   markerFixed: {
     position: 'absolute',
     top: '50%',
@@ -150,6 +148,5 @@ const styles = StyleSheet.create({
   coordinateLabel: {
     ...Typography.caption,
     color: Colors.text.muted,
-    fontSize: normalize.font(12),
-  }
+    fontSize: normalize.font(12) }
 });

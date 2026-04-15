@@ -658,7 +658,7 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     fontSize: normalize.font(16),
-    fontWeight: '800',
+    fontFamily: "LamaSans-Black",
     color: Colors.text.primary,
     marginBottom: 2,
   },
@@ -666,7 +666,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
     color: Colors.text.muted,
     fontSize: normalize.font(12),
-    fontWeight: '600',
+    fontFamily: "LamaSans-SemiBold",
   },
   imageContainer: {
     gap: Spacing.sm,
@@ -728,7 +728,7 @@ const styles = StyleSheet.create({
   },
   modalOptionText: {
     ...Typography.body,
-    fontWeight: '600',
+    fontFamily: "LamaSans-SemiBold",
   },
   pickerItem: {
     width: '100%',
@@ -740,15 +740,14 @@ const styles = StyleSheet.create({
   pickerItemText: {
     ...Typography.body,
     fontSize: normalize.font(16),
-    color: Colors.text.primary,
-  },
+    color: Colors.text.primary },
   inputGroup: {
     gap: 6,
   },
   label: {
     ...Typography.caption,
     color: Colors.text.primary,
-    fontWeight: '800',
+    fontFamily: "LamaSans-Black",
     fontSize: normalize.font(14),
   },
   input: {
@@ -760,7 +759,7 @@ const styles = StyleSheet.create({
     borderColor: '#E8E8E8',
     fontSize: normalize.font(15),
     color: Colors.text.primary,
-  },
+   fontFamily: "LamaSans-Regular" },
   rowInputs: {
     gap: Spacing.sm,
   },
@@ -804,6 +803,6 @@ const styles = StyleSheet.create({
   editLocText: {
     color: Colors.white,
     fontSize: normalize.font(11),
-    fontWeight: '700',
+    fontFamily: "LamaSans-Bold",
   },
 });

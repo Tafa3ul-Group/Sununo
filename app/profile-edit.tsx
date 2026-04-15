@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: '900',
+    fontFamily: "LamaSans-Black",
     color: '#111827',
   },
   logoCircle: {
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: "LamaSans-Bold",
     color: '#374151',
     marginBottom: 8,
     textAlign: 'right',
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
   },
   input: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: "LamaSans-SemiBold",
     color: '#9CA3AF',
     flex: 1,
   },
@@ -268,12 +268,12 @@ const styles = StyleSheet.create({
   changePhoneText: {
     color: 'white',
     fontSize: 13,
-    fontWeight: '800',
+    fontFamily: "LamaSans-Black",
   },
   phoneInput: {
     flex: 1,
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: "LamaSans-SemiBold",
     color: '#9CA3AF',
     paddingHorizontal: 16,
   },
@@ -303,12 +303,12 @@ const styles = StyleSheet.create({
   },
   changeLocText: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: "LamaSans-Bold",
     color: '#035DF9',
   },
   locNameText: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: "LamaSans-Bold",
     color: '#9CA3AF',
   },
   footer: {

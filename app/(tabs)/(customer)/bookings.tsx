@@ -9,6 +9,7 @@ import { ThemedText } from '@/components/themed-text';
 import { SolarCalendarBold, SolarBanknoteBold, SolarCalendarAddBold, SolarStarBold } from "@/components/icons/solar-icons";
 import { formatPrice } from '@/utils/format';
 import { useRouter } from 'expo-router';
+import { HeaderSection } from '@/components/header-section';
 import Svg, { Path, Defs, ClipPath, Image as SvgImage } from 'react-native-svg';
 
 // Global isRTL for styles
@@ -129,17 +130,7 @@ export default function BookingsScreen() {
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerPlaceholder} />
-        <ThemedText style={styles.headerTitle}>{t('tabs.bookings') || 'الحجوزات'}</ThemedText>
-        <View style={styles.logoCircleHeader}>
-            <Image 
-                source={require('@/assets/arlogo.svg')} 
-                style={styles.logoHeaderImg} 
-                resizeMode="contain"
-            />
-        </View>
-      </View>
+      <HeaderSection title={t('tabs.bookings') || 'الحجوزات'} showLogo />
 
       <ScrollView 
         contentContainerStyle={styles.scrollContent}
@@ -166,21 +157,6 @@ export default function BookingsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: '#FFFFFF',
-  },
-  headerPlaceholder: { width: 44 },
-  headerTitle: { fontSize: 20, fontWeight: '900', color: '#1E293B' },
-  logoCircleHeader: {
-    width: 44, height: 44, borderRadius: 22, backgroundColor: '#FFFFFF',
-    borderWidth: 1.2, borderColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center'
-  },
-  logoHeaderImg: { width: '70%', height: '70%' },
   scrollContent: { paddingHorizontal: 20, paddingBottom: 40, paddingTop: 10 },
   
   bookingCardContainer: {
@@ -199,14 +175,14 @@ const styles = StyleSheet.create({
   },
   chaletInfoContent: { flex: 1, marginLeft: 15, height: 100, justifyContent: 'space-between' },
   titleSection: { alignItems: isRTL ? 'flex-end' : 'flex-start' },
-  chaletTitle: { fontSize: 16, fontWeight: '900', color: '#1E293B', textAlign: isRTL ? 'right' : 'left' },
-  locationText: { fontSize: 13, color: '#64748B', fontWeight: '700', marginTop: 4, textAlign: isRTL ? 'right' : 'left' },
+  chaletTitle: { fontSize: 16, fontFamily: "LamaSans-Black", color: '#1E293B', textAlign: isRTL ? 'right' : 'left' },
+  locationText: { fontSize: 13, color: '#64748B', fontFamily: "LamaSans-Bold", marginTop: 4, textAlign: isRTL ? 'right' : 'left' },
   
   priceRatingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   ratingBox: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  ratingText: { fontSize: 14, fontWeight: '800', color: '#1E293B' },
-  priceText: { fontSize: 13, fontWeight: '900', color: '#111827' },
-  priceLabel: { fontSize: 11, fontWeight: '700', color: '#64748B' },
+  ratingText: { fontSize: 14, fontFamily: "LamaSans-Black", color: '#1E293B' },
+  priceText: { fontSize: 13, fontFamily: "LamaSans-Black", color: '#111827' },
+  priceLabel: { fontSize: 11, fontFamily: "LamaSans-Bold", color: '#64748B' },
   
   imageBlock: { width: 115, height: 100 },
   
@@ -220,19 +196,19 @@ const styles = StyleSheet.create({
      paddingVertical: 16,
   },
   detailRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-  detailLabel: { fontSize: normalize.font(15), fontWeight: '800', color: '#111827' },
-  detailValue: { fontSize: normalize.font(16), fontWeight: '700', color: '#94A3B8' },
+  detailLabel: { fontSize: normalize.font(15), fontFamily: "LamaSans-Black", color: '#111827' },
+  detailValue: { fontSize: normalize.font(16), fontFamily: "LamaSans-Bold", color: '#94A3B8' },
   
   paidBadge: { backgroundColor: '#035DF9', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10 },
-  paidBadgeText: { color: '#FFF', fontSize: 13, fontWeight: '900' },
+  paidBadgeText: { color: '#FFF', fontSize: 13, fontFamily: "LamaSans-Black" },
   
   dividerFull: { height: 1, backgroundColor: '#E2E8F0', marginVertical: 15, opacity: 0.6 },
   viewDetailsBtn: { width: '100%', alignItems: 'center', justifyContent: 'center', paddingVertical: 4 },
-  viewDetailsText: { color: '#035DF9', fontSize: 15, fontWeight: '800', textAlign: 'center' },
+  viewDetailsText: { color: '#035DF9', fontSize: 15, fontFamily: "LamaSans-Black", textAlign: 'center' },
 
   emptyState: { alignItems: 'center', justifyContent: 'center', paddingTop: 80, paddingHorizontal: 40 },
-  emptyTitle: { fontSize: 20, fontWeight: '700', color: '#1E293B', marginTop: 20 },
-  emptySubtitle: { fontSize: 14, color: '#64748B', textAlign: 'center', marginTop: 10, lineHeight: 20 },
+  emptyTitle: { fontSize: 20, fontFamily: "LamaSans-Bold", color: '#1E293B', marginTop: 20 },
+  emptySubtitle: { fontSize: 14, color: '#64748B', textAlign: 'center', marginTop: 10, lineHeight: 20 , fontFamily: "LamaSans-Regular" },
   exploreBtn: { marginTop: 24, backgroundColor: '#035DF9', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 },
-  exploreBtnText: { color: 'white', fontWeight: '700' }
+  exploreBtnText: { color: 'white', fontFamily: "LamaSans-Bold" }
 });

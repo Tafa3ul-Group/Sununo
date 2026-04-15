@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   },
   valueText: {
     fontSize: normalize.font(16),
-    fontWeight: "900",
+    fontFamily: "LamaSans-Black",
     color: "white",
   },
 });

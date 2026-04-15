@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: normalize.font(14),
-    fontWeight: "800",
+    fontFamily: "LamaSans-Black",
     color: "#111827",
   },
   upperText: {
@@ -221,14 +221,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: normalize.font(16),
-    fontWeight: "900",
+    fontFamily: "LamaSans-Black",
     color: "#111827",
   },
   location: {
     fontSize: normalize.font(12),
     color: "#6B7280",
     marginTop: 2,
-  },
+   fontFamily: "LamaSans-Regular" },
   priceRow: {
     flexDirection: "row-reverse",
     alignItems: "center",
@@ -236,13 +236,13 @@ const styles = StyleSheet.create({
   },
   price: {
     fontSize: normalize.font(16),
-    fontWeight: "900",
+    fontFamily: "LamaSans-Black",
     color: "#111827",
   },
   priceLabel: {
     fontSize: normalize.font(11),
     color: "#6B7280",
-  },
+   fontFamily: "LamaSans-Regular" },
   imageWrapper: {
     width: normalize.width(98),
     height: normalize.height(88),

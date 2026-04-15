@@ -19,6 +19,9 @@ import {
   SolarStarBold,
   SolarCardBold
 } from "@/components/icons/solar-icons";
+import { HeaderSection } from '@/components/header-section';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 import { TextInput } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { MainTabs, TabType } from '@/components/user/MainTabs';
@@ -70,7 +73,7 @@ const ScribbleIcon = () => (
 export default function CompleteBookingScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { id } = useLocalSearchParams();
+  const { userType } = useSelector((state: RootState) => state.auth);
   const [activeTab, setActiveTab] = useState<TabType>('SHOOKET');
   const [selectedDates, setSelectedDates] = useState<number[]>([15]);
   const [activeDateIdx, setActiveDateIdx] = useState(0);
@@ -419,19 +422,12 @@ export default function CompleteBookingScreen() {
   return (
     <BottomSheetModalProvider>
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.backBtnWrapper}>
-          <CircleBackButton />
-        </View>
-        <ThemedText style={styles.headerTitle}>{t('booking.complete')}</ThemedText>
-        <View style={styles.logoCircleHeader}>
-           <ExpoImage 
-             source={require('@/assets/arlogo.svg')} 
-             style={styles.logoHeaderImg} 
-             contentFit="contain" 
-           />
-        </View>
-      </View>
+      <HeaderSection 
+        title={t('booking.complete')} 
+        showBackButton 
+        showLogo 
+        userType={userType}
+      />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.tabsContainer}>
@@ -566,50 +562,33 @@ export default function CompleteBookingScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   scrollContent: { paddingBottom: 150, paddingHorizontal: 16 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
-  },
-  backBtnWrapper: { width: 36, height: 36, justifyContent: 'center' },
-  headerTitle: { fontSize: normalize.font(18), fontWeight: '900', color: '#111827' },
-  logoCircleHeader: {
-    width: 36, height: 36, borderRadius: 18, backgroundColor: '#FFFFFF',
-    justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#F1F5F9',
-  },
-  logoHeaderImg: { width: '70%', height: '70%' },
   tabsContainer: { marginTop: 15, alignItems: 'center' },
   swiperContainer: { marginTop: 20, height: 50 },
   quickDatesRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 4 },
   dateBadge: { width: 42, height: 42, borderRadius: 10, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', justifyContent: 'center', alignItems: 'center' },
   dateBadgeActive: { borderColor: Colors.primary, borderWidth: 2 },
-  dateBadgeText: { fontSize: normalize.font(16), fontWeight: '700', color: '#94A3B8' },
-  dateBadgeTextActive: { color: Colors.primary, fontWeight: '800' },
+  dateBadgeText: { fontSize: normalize.font(16), fontFamily: "LamaSans-Bold", color: '#94A3B8' },
+  dateBadgeTextActive: { color: Colors.primary, fontFamily: "LamaSans-Black" },
   addDateBtn: { width: 42, height: 42, borderRadius: 10, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', justifyContent: 'center', alignItems: 'center' },
   calendarCard: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 15, marginTop: 20, borderWidth: 1, borderColor: '#F1F5F9' },
-  calendarMonthTitle: { textAlign: 'center', fontSize: normalize.font(16), fontWeight: '900', color: '#1E293B', marginBottom: 15 },
+  calendarMonthTitle: { textAlign: 'center', fontSize: normalize.font(16), fontFamily: "LamaSans-Black", color: '#1E293B', marginBottom: 15 },
   daysHeader: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 5, marginBottom: 12, backgroundColor: '#F8FAFC', paddingVertical: 8, borderRadius: 10 },
-  dayHeaderCell: { fontSize: normalize.font(10), fontWeight: '900', color: '#94A3B8', width: (SCREEN_WIDTH - 100) / 7, textAlign: 'center' },
+  dayHeaderCell: { fontSize: normalize.font(10), fontFamily: "LamaSans-Black", color: '#94A3B8', width: (SCREEN_WIDTH - 100) / 7, textAlign: 'center' },
   daysGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 4 },
   dayCell: { width: (SCREEN_WIDTH - 100) / 7, height: (SCREEN_WIDTH - 100) / 7, justifyContent: 'center', alignItems: 'center', marginBottom: 4, position: 'relative' },
   activeDayCell: { backgroundColor: Colors.primary, borderRadius: 10 },
-  dayText: { fontSize: normalize.font(14), fontWeight: '700', color: '#334155' },
-  activeDayText: { color: '#FFF', fontWeight: '900' },
-  bookedDayText: { color: '#CBD5E1', fontWeight: '400' },
+  dayText: { fontSize: normalize.font(14), fontFamily: "LamaSans-Bold", color: '#334155' },
+  activeDayText: { color: '#FFF', fontFamily: "LamaSans-Black" },
+  bookedDayText: { color: '#CBD5E1', fontFamily: "LamaSans-Regular" },
   scribbleOverlay: { position: 'absolute', width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center', zIndex: 2, opacity: 0.4 },
   shiftsContainer: { marginTop: 20, gap: 10 },
   shiftCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F8FAFC', borderRadius: 16, padding: 14, borderWidth: 1.5, borderColor: 'transparent' },
   shiftLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   shiftIconBox: { width: 40, height: 40, borderRadius: 10, backgroundColor: '#FFF', justifyContent: 'center', alignItems: 'center' },
-  shiftTitle: { fontSize: normalize.font(15), fontWeight: '800', color: '#1E293B' },
-  shiftTime: { fontSize: normalize.font(12), color: '#64748B', fontWeight: '700' },
+  shiftTitle: { fontSize: normalize.font(15), fontFamily: "LamaSans-Black", color: '#1E293B' },
+  shiftTime: { fontSize: normalize.font(12), color: '#64748B', fontFamily: "LamaSans-Bold" },
   deleteDayBtn: { alignItems: 'center', marginTop: 30, padding: 8 },
-  deleteDayText: { color: '#EF4444', fontSize: normalize.font(14), fontWeight: '800', textDecorationLine: 'underline' },
+  deleteDayText: { color: '#EF4444', fontSize: normalize.font(14), fontFamily: "LamaSans-Black", textDecorationLine: 'underline' },
   whoContainer: { marginTop: 20 },
   whoCard: { 
     flexDirection: 'row',
@@ -622,19 +601,19 @@ const styles = StyleSheet.create({
     borderColor: '#F1F5F9' 
   },
   guestInfo: { alignItems: isRTL ? 'flex-end' : 'flex-start' },
-  guestLabel: { fontSize: normalize.font(16), fontWeight: '900', color: '#111827' },
-  guestSubLabel: { fontSize: normalize.font(12), color: '#9CA3AF', fontWeight: '600', marginTop: 1 },
+  guestLabel: { fontSize: normalize.font(16), fontFamily: "LamaSans-Black", color: '#111827' },
+  guestSubLabel: { fontSize: normalize.font(12), color: '#9CA3AF', fontFamily: "LamaSans-SemiBold", marginTop: 1 },
   footer: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#FFF', paddingHorizontal: 20, paddingTop: 12, paddingBottom: Platform.OS === 'ios' ? 35 : 20, borderTopWidth: 1, borderTopColor: '#F1F5F9', zIndex: 100 },
   nextBtn: { width: '100%', height: 54 },
 
   // Inline Payment Styles
   inlinePaymentSection: { marginTop: 20, borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingTop: 20, paddingBottom: 15 },
-  inlinePaymentTitle: { fontSize: normalize.font(18), fontWeight: '900', color: '#1E293B', marginBottom: 15, textAlign: isRTL ? 'right' : 'left' },
+  inlinePaymentTitle: { fontSize: normalize.font(18), fontFamily: "LamaSans-Black", color: '#1E293B', marginBottom: 15, textAlign: isRTL ? 'right' : 'left' },
   paymentForm: { gap: 12 },
   inputGroup: { gap: 6 },
   inputGroupFull: { flex: 1, gap: 6 },
   inputGroupFixed: { width: 90, gap: 6 },
-  inputLabel: { fontSize: normalize.font(14), fontWeight: '800', color: '#1E293B', textAlign: isRTL ? 'right' : 'left' },
+  inputLabel: { fontSize: normalize.font(14), fontFamily: "LamaSans-Black", color: '#1E293B', textAlign: isRTL ? 'right' : 'left' },
   textInput: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
@@ -643,7 +622,7 @@ const styles = StyleSheet.create({
     height: 48,
     paddingHorizontal: 16,
     fontSize: normalize.font(14),
-    fontWeight: '700',
+    fontFamily: "LamaSans-Bold",
     color: '#1E293B',
     textAlign: isRTL ? 'right' : 'left'
   },
@@ -652,8 +631,8 @@ const styles = StyleSheet.create({
   // Success Sheet Styles
   successSheetContent: { padding: 25, alignItems: 'center', backgroundColor: '#FFFFFF' },
   lottieIcon: { width: 110, height: 110, marginBottom: 15 },
-  successTitle: { fontSize: normalize.font(20), fontWeight: '900', color: '#1E293B', marginBottom: 8, textAlign: 'center' },
-  successSub: { fontSize: normalize.font(14), color: '#64748B', textAlign: 'center', marginBottom: 25, lineHeight: 22 },
+  successTitle: { fontSize: normalize.font(20), fontFamily: "LamaSans-Black", color: '#1E293B', marginBottom: 8, textAlign: 'center' },
+  successSub: { fontSize: normalize.font(14), color: '#64748B', textAlign: 'center', marginBottom: 25, lineHeight: 22 , fontFamily: "LamaSans-Regular" },
   successBtn: { width: '100%', height: 56 },
 
   // Details Styles
@@ -670,7 +649,7 @@ const styles = StyleSheet.create({
   mapSnippetWrapper: { width: '100%', height: 120, borderRadius: 14, overflow: 'hidden', backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center' },
   mapSnippet: { width: '100%', height: '100%' },
   mapMarker: { position: 'absolute', zIndex: 5 },
-  mapAddressLabel: { textAlign: 'center', paddingVertical: 8, fontSize: normalize.font(12), fontWeight: '800', color: '#1E293B' },
+  mapAddressLabel: { textAlign: 'center', paddingVertical: 8, fontSize: normalize.font(12), fontFamily: "LamaSans-Black", color: '#1E293B' },
   infoSectionCard: { 
     backgroundColor: '#FFFFFF', 
     borderRadius: 20, 
@@ -679,15 +658,15 @@ const styles = StyleSheet.create({
     borderColor: '#F1F5F9',
     marginBottom: 12
   },
-  sectionTitle: { fontSize: normalize.font(14), fontWeight: '900', color: '#15AB64', textAlign: isRTL ? 'right' : 'left' },
+  sectionTitle: { fontSize: normalize.font(14), fontFamily: "LamaSans-Black", color: '#15AB64', textAlign: isRTL ? 'right' : 'left' },
   divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 10 },
   infoRow: { flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between', marginBottom: 10 },
-  infoLabel: { fontSize: normalize.font(13), fontWeight: '800', color: '#1E293B' },
-  infoValue: { fontSize: normalize.font(13), fontWeight: '700', color: '#64748B' },
+  infoLabel: { fontSize: normalize.font(13), fontFamily: "LamaSans-Black", color: '#1E293B' },
+  infoValue: { fontSize: normalize.font(13), fontFamily: "LamaSans-Bold", color: '#64748B' },
   sectionHeaderRow: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center' },
   editBtn: { backgroundColor: '#F0FDF4', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 8, borderWidth: 1, borderColor: '#15AB6433' },
-  editBtnText: { color: '#15AB64', fontSize: normalize.font(12), fontWeight: '800' },
-  paymentMainTitle: { fontSize: normalize.font(14), fontWeight: '900', color: '#15AB64', marginVertical: 12, textAlign: isRTL ? 'right' : 'left' },
+  editBtnText: { color: '#15AB64', fontSize: normalize.font(12), fontFamily: "LamaSans-Black" },
+  paymentMainTitle: { fontSize: normalize.font(14), fontFamily: "LamaSans-Black", color: '#15AB64', marginVertical: 12, textAlign: isRTL ? 'right' : 'left' },
   paymentOptionCard: { 
     flexDirection: isRTL ? 'row-reverse' : 'row', 
     justifyContent: 'space-between', 
@@ -700,12 +679,12 @@ const styles = StyleSheet.create({
     marginBottom: 10
   },
   paymentOptionActive: { borderColor: '#15AB64', backgroundColor: '#F0FDF4' },
-  paymentVal: { fontSize: normalize.font(15), fontWeight: '900', color: '#64748B' },
-  paymentValActive: { color: '#1E293B' },
-  paymentLabel: { fontSize: normalize.font(13), fontWeight: '800', color: '#64748B' },
-  paymentLabelActive: { color: '#1E293B' },
+  paymentVal: { fontSize: normalize.font(15), fontFamily: "LamaSans-Black", color: '#64748B' },
+  paymentValActive: { color: '#1E293B' , fontFamily: "LamaSans-Regular" },
+  paymentLabel: { fontSize: normalize.font(13), fontFamily: "LamaSans-Black", color: '#64748B' },
+  paymentLabelActive: { color: '#1E293B' , fontFamily: "LamaSans-Regular" },
   agreementWrapper: { paddingVertical: 12, paddingBottom: 35 },
-  agreementText: { fontSize: normalize.font(12), color: '#64748B', textAlign: 'center', lineHeight: 18 },
-  agreementLink: { color: Colors.primary, textDecorationLine: 'underline', fontWeight: '800' }
+  agreementText: { fontSize: normalize.font(12), color: '#64748B', textAlign: 'center', lineHeight: 18 , fontFamily: "LamaSans-Regular" },
+  agreementLink: { color: Colors.primary, textDecorationLine: 'underline', fontFamily: "LamaSans-Black" }
 });
 

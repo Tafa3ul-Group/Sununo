@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Platform } from 'react-native';
+import { StyleSheet, View, ScrollView } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { normalize, Colors, isRTL } from '@/constants/theme';
@@ -7,10 +7,9 @@ import { HorizontalCard } from '@/components/user/horizontal-card';
 import { SolarMapPointBold } from '@/components/icons/solar-icons';
 import { Image as ExpoImage } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CircleBackButton } from '@/components/ui/circle-back-button';
 import { useTranslation } from 'react-i18next';
+import { HeaderSection } from '@/components/header-section';
 
-// Mock data to match screenshot
 const MOCK_CHALET = {
     id: '1',
     title: "شالية الاروع علةاالطلاق",
@@ -29,20 +28,8 @@ export default function BookingSuccessDetailsScreen() {
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.backBtnWrapper}>
-          <CircleBackButton />
-        </View>
-        <ThemedText style={styles.headerTitle}>{t('booking.bookingDetails') || 'تفاصيل الحجز'}</ThemedText>
-        <View style={styles.logoCircleHeader}>
-           <ExpoImage 
-             source={require('@/assets/arlogo.svg')} 
-             style={styles.logoHeaderImg} 
-             contentFit="contain" 
-           />
-        </View>
-      </View>
+      {/* Normalized Header */}
+      <HeaderSection title={t('booking.bookingDetails') || 'تفاصيل الحجز'} showBackButton showLogo />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Chalet Card */}
@@ -141,21 +128,6 @@ export default function BookingSuccessDetailsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   scrollContent: { paddingBottom: 40, paddingHorizontal: 20 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: '#FFFFFF',
-  },
-  backBtnWrapper: { width: 44, height: 44, justifyContent: 'center' },
-  headerTitle: { fontSize: normalize.font(16), fontWeight: '900', color: '#111827' },
-  logoCircleHeader: {
-    width: 44, height: 44, borderRadius: 22, backgroundColor: '#FFFFFF',
-    justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#F1F5F9',
-  },
-  logoHeaderImg: { width: '70%', height: '70%' },
   chaletCardInstance: { width: '100%', marginRight: 0, marginBottom: 16 },
   detailsMapCard: { 
     backgroundColor: '#FFFFFF', 
@@ -168,7 +140,7 @@ const styles = StyleSheet.create({
   mapSnippetWrapper: { width: '100%', height: 120, borderRadius: 14, overflow: 'hidden', backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center' },
   mapSnippet: { width: '100%', height: '100%' },
   mapMarker: { position: 'absolute', zIndex: 3 },
-  mapAddressLabel: { textAlign: 'center', paddingVertical: 8, fontSize: normalize.font(12), fontWeight: '800', color: '#1E293B' },
+  mapAddressLabel: { textAlign: 'center', paddingVertical: 8, fontSize: normalize.font(12), fontFamily: "LamaSans-Black", color: '#1E293B' },
   infoSectionCard: { 
     backgroundColor: '#FFFFFF', 
     borderRadius: 20, 
@@ -177,13 +149,13 @@ const styles = StyleSheet.create({
     borderColor: '#F1F5F9',
     marginBottom: 12
   },
-  sectionTitle: { fontSize: normalize.font(14), fontWeight: '900', color: Colors.primary, textAlign: isRTL ? 'right' : 'left' },
+  sectionTitle: { fontSize: normalize.font(14), fontFamily: "LamaSans-Black", color: Colors.primary, textAlign: isRTL ? 'right' : 'left' },
   divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 10 },
   infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  infoLabel: { fontSize: normalize.font(13), fontWeight: '800', color: '#1E293B' },
-  infoValue: { fontSize: normalize.font(13), fontWeight: '700', color: '#64748B' },
+  infoLabel: { fontSize: normalize.font(13), fontFamily: "LamaSans-Black", color: '#1E293B' },
+  infoValue: { fontSize: normalize.font(13), fontFamily: "LamaSans-Bold", color: '#64748B' },
   statusBadgeBlue: { backgroundColor: '#035DF9', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
-  statusBadgeTextBlue: { color: '#FFF', fontSize: normalize.font(12), fontWeight: '800' },
+  statusBadgeTextBlue: { color: '#FFF', fontSize: normalize.font(12), fontFamily: "LamaSans-Black" },
   statusBadgeGray: { backgroundColor: '#94A3B8', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
-  statusBadgeTextGray: { color: '#FFF', fontSize: normalize.font(12), fontWeight: '800' },
+  statusBadgeTextGray: { color: '#FFF', fontSize: normalize.font(12), fontFamily: "LamaSans-Black" },
 });
