@@ -174,7 +174,13 @@
     "favorites": "Favorites",
     "explore": "Map",
     "reviews": "Reviews",
-    "facilities": "Facilities"
+    "facilities": "Facilities",
+    "bookings": "Bookings",
+    "gallery": "Gallery",
+    "bookingComplete": "Booking Completion",
+    "bookingDetails": "Booking Details",
+    "profile": "Profile",
+    "home": "Home"
   },
   "facilities": {
     "general": "General Services",

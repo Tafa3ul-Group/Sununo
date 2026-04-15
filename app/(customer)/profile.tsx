@@ -38,12 +38,12 @@ export default function ProfileScreen() {
 
   const handleLogout = () => {
     Alert.alert(
-      isRTL ? 'تسجيل الخروج' : 'Logout',
-      isRTL ? 'هل أنت متأكد من تسجيل الخروج؟' : 'Are you sure you want to logout?',
+      t('profile.logout'),
+      t('profile.logoutConfirm'),
       [
-        { text: isRTL ? 'إلغاء' : 'Cancel', style: 'cancel' },
+        { text: t('profile.cancel'), style: 'cancel' },
         { 
-          text: isRTL ? 'خروج' : 'Logout', 
+          text: t('profile.exit'), 
           style: 'destructive', 
           onPress: () => {
             dispatch(logout());
@@ -55,18 +55,18 @@ export default function ProfileScreen() {
   };
 
   const menuItems = [
-    { id: 'bookings', title: isRTL ? 'الحجوزات' : 'Bookings', shape: 'blue' as const, icon: <SolarCalendarBold size={20} color="white" />, route: '/(tabs)/(customer)/bookings' },
-    { id: 'reviews', title: isRTL ? 'المراجعات' : 'Reviews', shape: 'blue' as const, icon: <SolarHeartBold size={20} color="white" /> },
-    { id: 'language', title: isRTL ? 'اللغة' : 'Language', shape: 'pink' as const, icon: <SolarGlobalBold size={20} color="white" />, action: openLanguageSheet },
-    { id: 'contact', title: isRTL ? 'تواصل معنا' : 'Contact Us', shape: 'green' as const, icon: <SolarPhoneBold size={20} color="white" /> },
-    { id: 'privacy', title: isRTL ? 'سياسة الخصوصية' : 'Privacy Policy', shape: 'blue' as const, icon: <SolarShieldBold size={20} color="white" /> },
-    { id: 'logout', title: isRTL ? 'تسجيل الخروج' : 'Logout', shape: 'red' as const, icon: <SolarLogoutBold size={20} color="white" />, action: handleLogout },
+    { id: 'bookings', title: t('headers.bookings'), shape: 'blue' as const, icon: <SolarCalendarBold size={20} color="white" />, route: '/(tabs)/(customer)/bookings' },
+    { id: 'reviews', title: t('headers.reviews'), shape: 'blue' as const, icon: <SolarHeartBold size={20} color="white" /> },
+    { id: 'language', title: t('profile.language'), shape: 'pink' as const, icon: <SolarGlobalBold size={20} color="white" />, action: openLanguageSheet },
+    { id: 'contact', title: t('profile.contactUs'), shape: 'green' as const, icon: <SolarPhoneBold size={20} color="white" /> },
+    { id: 'privacy', title: t('profile.privacyPolicy'), shape: 'blue' as const, icon: <SolarShieldBold size={20} color="white" /> },
+    { id: 'logout', title: t('profile.logout'), shape: 'red' as const, icon: <SolarLogoutBold size={20} color="white" />, action: handleLogout },
   ];
 
   return (
     <SafeAreaView style={styles.container}>
       <HeaderSection 
-        title={isRTL ? 'الملف الشخصي' : 'Profile'}
+        title={t('headers.profile')}
         showBackButton 
         showLogo 
         userType={userType}

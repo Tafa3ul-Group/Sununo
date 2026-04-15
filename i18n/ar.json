@@ -40,7 +40,12 @@
     "editProfile": "تعديل البيانات",
     "notifications": "الإشعارات",
     "language": "اللغة",
-    "logout": "تسجيل الخروج"
+    "logout": "تسجيل الخروج",
+    "logoutConfirm": "هل أنت متأكد من تسجيل الخروج؟",
+    "cancel": "إلغاء",
+    "exit": "خروج",
+    "contactUs": "تواصل معنا",
+    "privacyPolicy": "سياسة الخصوصية"
   },
   "dashboard": {
     "addChalet": "إضافة شاليه جديد",
@@ -182,7 +187,13 @@
     "favorites": "المفضلات",
     "explore": "الخريطة",
     "reviews": "المراجعات",
-    "facilities": "المرافق"
+    "facilities": "المرافق",
+    "bookings": "الحجوزات",
+    "gallery": "معرض الصور",
+    "bookingComplete": "اكتمال الحجز",
+    "bookingDetails": "تفاصيل الحجز",
+    "profile": "الملف الشخصي",
+    "home": "الرئيسية"
   },
   "facilities": {
     "general": "الخدمات العامة",
