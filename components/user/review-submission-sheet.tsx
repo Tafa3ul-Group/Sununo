@@ -88,7 +88,7 @@ const ReviewSubmissionSheet = forwardRef<
             {/* Rating Stars Pill - matching footer design */}
             <View style={styles.questionPill}>
               <ThemedText style={styles.questionTitle}>
-                {t('review.question')}
+                {t('profile.review.question')}
               </ThemedText>
               <View style={styles.starsRow}>
                 {[1, 2, 3, 4, 5].map((i) => (
@@ -106,7 +106,7 @@ const ReviewSubmissionSheet = forwardRef<
             {/* Comments Input Area */}
             <View style={styles.inputArea}>
               <BottomSheetTextInput
-                placeholder={t('review.placeholder')}
+                placeholder={t('profile.review.placeholder')}
                 placeholderTextColor="#9CA3AF"
                 multiline
                 style={[styles.textInput, { textAlign: isRTL ? 'right' : 'left' }]}
@@ -122,14 +122,14 @@ const ReviewSubmissionSheet = forwardRef<
           {/* Action Buttons Row */}
           <View style={[styles.actionsRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
             <SecondaryButtonInverse
-              label={t('review.send')}
+              label={t('profile.review.send')}
               onPress={handleSend}
               isActive={true}
               style={{ flex: 1 }}
             />
 
             <SecondaryButton
-              label={t('review.cancel')}
+              label={t('profile.review.cancel')}
               onPress={handleCancel}
               isActive={false}
               style={{ flex: 1 }}

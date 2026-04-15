@@ -40,18 +40,20 @@ const SHAPES = {
 
 const SectionHeader = ({
   title,
+  isRTL
 }: {
   title: string;
+  isRTL: boolean;
 }) => (
-  <View style={styles.sectionHeaderContainer}>
-    <ThemedText style={styles.sectionTitle}>{title}</ThemedText>
+  <View style={[styles.sectionHeaderContainer, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+    <ThemedText style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{title}</ThemedText>
   </View>
 );
 
 export default function ChaletDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
   const [activeImage, setActiveImage] = useState(0);
   const reviewSheetRef = React.useRef<BottomSheetModal>(null);
@@ -102,7 +104,7 @@ export default function ChaletDetailScreen() {
                 />
             </TouchableOpacity>
           </ScrollView>
-          <CircleBackButton style={[styles.backBtnOriginal, isRTL ? { right: 20, left: undefined } : { left: 20, right: undefined }]} />
+          <CircleBackButton style={[styles.backBtnOriginal, isRTL ? { right: 20 } : { left: 20 }]} />
           <View style={styles.paginationDots}>
             {[1, 2, 3, 4, 5].map((_, i) => (
               <View
@@ -114,26 +116,26 @@ export default function ChaletDetailScreen() {
         </View>
 
         <View style={styles.infoWrapper}>
-          {/* العنوان (النجمة يساراً) */}
-          <View style={styles.titleSection}>
-            <View style={styles.ratingGroupLeft}>
+          {/* العنوان */}
+          <View style={[styles.titleSection, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+            <View style={[styles.ratingGroupLeft, { [isRTL ? 'marginRight' : 'marginLeft']: 15 }]}>
               <SolarStarBold size={14} color="#035DF9" />
               <ThemedText style={styles.ratingVal}>4.5</ThemedText>
             </View>
-            <View style={{ alignItems: "flex-end", flex: 1 }}>
-              <ThemedText style={styles.mainTitle}>
-                شالية الاروع علة الطلاق
+            <View style={{ alignItems: isRTL ? "flex-end" : "flex-start", flex: 1 }}>
+              <ThemedText style={[styles.mainTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
+                {isRTL ? "شالية الاروع على الاطلاق" : "Most Amazing Chalet"}
               </ThemedText>
-              <ThemedText style={styles.locationSub}>
-                البصرة - الجزائر
+              <ThemedText style={[styles.locationSub, { textAlign: isRTL ? 'right' : 'left' }]}>
+                {isRTL ? "البصرة - الجزائر" : "Basra - Algeria"}
               </ThemedText>
             </View>
           </View>
 
           {/* المواصفات الأساسية */}
-          <SectionHeader title="المواصفات الاساسية" />
-          <View style={styles.specsRow}>
-            {["بستان مع بيت", "300 م", "1 حمام", "3 غرف"].map((d, i) => (
+          <SectionHeader title={t('chalet.details.specs')} isRTL={isRTL} />
+          <View style={[styles.specsRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+            {(t('chalet.details.specsList', { returnObjects: true }) as string[]).map((d, i) => (
               <View key={i} style={styles.specTag}>
                 <ThemedText style={styles.specText}>{d}</ThemedText>
               </View>
@@ -141,24 +143,20 @@ export default function ChaletDetailScreen() {
           </View>
 
           {/* المرافق */}
-          <View style={styles.facilitiesHeader}>
+          <View style={[styles.facilitiesHeader, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
             <TouchableOpacity
               onPress={() => router.push(`/chalet-details/facilities/${id}`)}
             >
-              <ThemedText style={styles.viewAllText}>الكل</ThemedText>
+              <ThemedText style={styles.viewAllText}>{t('home.seeAll')}</ThemedText>
             </TouchableOpacity>
-            <SectionHeader title="المرافق" />
+            <SectionHeader title={t('chalet.details.facilities')} isRTL={isRTL} />
           </View>
-          <View style={styles.facilitiesGrid}>
+          <View style={[styles.facilitiesGrid, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
             {[
-              { label: "مسبح", Icon: SolarWaterBold, color: "#035DF9" },
-              { label: "واي فاي", Icon: SolarWifiBold, color: "#EF79D7" },
-              { label: "تكييف هواء", Icon: SolarWindBold, color: "#F64200" },
-              { label: "مطبخ", Icon: SolarHome2Bold, color: "#15AB64" },
-              { label: "تكييف هواء", Icon: SolarWindBold, color: "#F64200" },
-              { label: "مطبخ", Icon: SolarHome2Bold, color: "#15AB64" },
-              { label: "مسبح", Icon: SolarWaterBold, color: "#035DF9" },
-              { label: "واي فاي", Icon: SolarWifiBold, color: "#EF79D7" },
+              { label: t('facilities.privatePool'), Icon: SolarWaterBold, color: "#035DF9" },
+              { label: t('facilities.wifi'), Icon: SolarWifiBold, color: "#EF79D7" },
+              { label: t('facilities.generator'), Icon: SolarWindBold, color: "#F64200" },
+              { label: t('facilities.kitchen'), Icon: SolarHome2Bold, color: "#15AB64" },
             ].map((f, i) => (
               <View key={i} style={styles.facilityCell}>
                 <View style={styles.shapeCont}>
@@ -177,24 +175,23 @@ export default function ChaletDetailScreen() {
           </View>
 
           {/* نظرة عامة */}
-          <SectionHeader title="نظرة عامة" />
-          <ThemedText style={styles.descriptionText}>
-            هو ببساطة نص شكلي (بمعنى أن الغاية هي الشكل وليس المحتوى) ويُستخدم
-            في صناعات المطابع ودور النشر. كان لوريم إيبسوم ولايزال المعيار للنص
-            الشكلي منذ القرن الخامس عشر عندما قامت مطبعة مجهولة برص مجموعة من
-            الأحرف بشكل عشوائي أخذتها من نص، لتكوّن كتيّب بمثابة دليل أو مرجع
-            شكلي....
+          <SectionHeader title={t('chalet.details.overview')} isRTL={isRTL} />
+          <ThemedText style={[styles.descriptionText, { textAlign: isRTL ? "right" : "left" }]}>
+            {isRTL 
+              ? "هو ببساطة نص شكلي (بمعنى أن الغاية هي الشكل وليس المحتوى) ويُستخدم في صناعات المطابع ودور النشر. كان لوريم إيبسوم ولايزال المعيار للنص الشكلي..." 
+              : "Lorem ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text since the 1500s..."}
           </ThemedText>
           <View style={styles.readMoreWrapper}>
             <PrimaryButton
-              label="اقرأ المزيد"
+              label={t('chalet.details.readMore')}
               onPress={() => {}}
               style={styles.readMoreComp}
+              height={54}
             />
           </View>
 
           {/* الموقع */}
-          <SectionHeader title="الموقع" />
+          <SectionHeader title={t('chalet.details.location')} isRTL={isRTL} />
           <View style={styles.mapCardFlat}>
             <View style={styles.mapInner}>
               <Image
@@ -209,12 +206,12 @@ export default function ChaletDetailScreen() {
             </View>
             <View style={styles.mapLocLabel}>
               <ThemedText style={styles.mapLocText}>
-                البصرة - ابة الخصيب
+                {isRTL ? "البصرة - ابي الخصيب" : "Basra - Abu Al-Khaseeb"}
               </ThemedText>
             </View>
           </View>
 
-          {/* المضيف (استخدام صورة الكونتاكت) */}
+          {/* المضيف */}
           <View style={styles.hostStampArea}>
             <Image
               source={require("@/assets/tabs/contact.svg")}
@@ -224,8 +221,7 @@ export default function ChaletDetailScreen() {
           </View>
 
           {/* التقييم والمراجعات */}
-          <View style={styles.ctaRowReview}>
-            {/* حبة التقييم المصممة يدوياً حسب الصورة */}
+          <View style={[styles.ctaRowReview, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
             <TouchableOpacity
               style={styles.customRatingPill}
               onPress={() => router.push(`/chalet-details/reviews/${id}`)}
@@ -235,29 +231,30 @@ export default function ChaletDetailScreen() {
             </TouchableOpacity>
 
             <SecondaryButton
-              label="مراجعة"
+              label={t('chalet.details.reviews')}
               iconLabel="45"
-              iconPosition="right"
+              iconPosition={isRTL ? "right" : "left"}
               isActive={true}
               onPress={() => router.push(`/chalet-details/reviews/${id}`)}
-              style={{ width: 140 }}
+              style={{ width: 160 }}
+              height={50}
             />
           </View>
 
           {/* المراجعات */}
-          <SectionHeader title="المراجعات" />
+          <SectionHeader title={t('chalet.details.reviews')} isRTL={isRTL} />
           {[1, 2].map((_, i) => (
             <View key={i} style={styles.revComplexCardFlat}>
-              <View style={styles.revHeaderMerged}>
-                <View style={styles.revRatingCornerMerged}>
+              <View style={[styles.revHeaderMerged, { flexDirection: isRTL ? "row" : "row-reverse" }]}>
+                <View style={[styles.revRatingCornerMerged, { flexDirection: isRTL ? "row" : "row-reverse" }]}>
                   <SolarStarBold size={14} color="#035DF9" />
                   <ThemedText style={styles.revRateNumMerged}>4</ThemedText>
                 </View>
-                <View style={styles.userInfoRowMerged}>
-                  <View style={styles.nameAndBodyMerged}>
-                    <ThemedText style={styles.reviewerNameMerged}>انسة انس</ThemedText>
-                    <ThemedText style={styles.revMessageMerged}>
-                      خوش مكان ونضيف يستاهل، الهواء نقي بسبب التشجير
+                <View style={[styles.userInfoRowMerged, { flexDirection: isRTL ? "row" : "row-reverse" }]}>
+                  <View style={[styles.nameAndBodyMerged, { alignItems: isRTL ? "flex-end" : "flex-start", [isRTL ? 'marginRight' : 'marginLeft']: 15 }]}>
+                    <ThemedText style={styles.reviewerNameMerged}>{isRTL ? "انسة انس" : "Ansi Ans"}</ThemedText>
+                    <ThemedText style={[styles.revMessageMerged, { textAlign: isRTL ? "right" : "left" }]}>
+                      {isRTL ? "خوش مكان ونضيف يستاهل، الهواء نقي بسبب التشجير" : "Great place and clean, worth it. The air is fresh because of the trees."}
                     </ThemedText>
                   </View>
                   <View style={styles.avatarCircleMerged}>
@@ -273,10 +270,10 @@ export default function ChaletDetailScreen() {
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={{ flexDirection: "row", paddingRight: 5 }}
+                  contentContainerStyle={{ flexDirection: isRTL ? "row" : "row-reverse", paddingRight: 5 }}
                 >
                   {[1, 2, 3, 4].map((im) => (
-                    <TouchableOpacity key={im} onPress={() => router.push('/(customer)/chalet-details/gallery')} style={{ marginRight: 12 }}>
+                    <TouchableOpacity key={im} onPress={() => router.push('/(customer)/chalet-details/gallery')} style={{ [isRTL ? 'marginRight' : 'marginLeft']: 12 }}>
                       <Image
                         source={{
                           uri: "https://images.unsplash.com/photo-1502082559145?w=400",
@@ -288,7 +285,7 @@ export default function ChaletDetailScreen() {
                 </ScrollView>
               </View>
               
-              <View style={styles.dateWrapperMerged}>
+              <View style={[styles.dateWrapperMerged, { alignItems: isRTL ? "flex-start" : "flex-end" }]}>
                 <ThemedText style={styles.revTimeTextMerged}>2025/09/22</ThemedText>
               </View>
             </View>
@@ -296,20 +293,21 @@ export default function ChaletDetailScreen() {
 
           <View style={styles.addReviewAction}>
             <PrimaryButton
-              label="إضافة مراجعة"
+              label={t('chalet.details.addReview')}
               onPress={openReviewSheet}
               style={styles.addBtnFinal}
+              height={54}
             />
           </View>
 
           {/* معلومات تهمك */}
-          <SectionHeader title="معلومات تهمك" />
-          <View style={styles.infoIconsGrid}>
+          <SectionHeader title={t('common.details')} isRTL={isRTL} />
+          <View style={[styles.infoIconsGrid, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
             {[
-              { label: "شروط الشاليه", Icon: SolarKeyBold },
-              { label: "سياسة الالغاء", Icon: SolarForbiddenBold },
-              { label: "الامان", Icon: SolarShieldCheckBold },
-              { label: "وقت الدخول والخروج", Icon: SolarClockCircleBold },
+              { label: t('booking.terms'), Icon: SolarKeyBold },
+              { label: t('booking.policy'), Icon: SolarForbiddenBold },
+              { label: t('auth.verify'), Icon: SolarShieldCheckBold },
+              { label: t('booking.shift'), Icon: SolarClockCircleBold },
             ].map((item, i) => (
               <View key={i} style={styles.infoIconCell}>
                 <View style={styles.infoGearWrap}>
@@ -328,12 +326,12 @@ export default function ChaletDetailScreen() {
           </View>
 
           {/* قد يعجبك ايضا */}
-          <SectionHeader title="قد يعجبك ايضا" />
+          <SectionHeader title={t('chalet.details.related')} isRTL={isRTL} />
           <HorizontalSwiper
             data={[1, 2, 3].map((_, index) => ({
               id: `${index}`,
-              title: "شالية الاروع علة الطلاق",
-              location: "البصرة - الجزائر",
+              title: isRTL ? "شالية الاروع على الاطلاق" : "Most Amazing Chalet",
+              location: isRTL ? "البصرة - الجزائر" : "Basra - Algeria",
               price: "30,000",
               rating: 4.5,
               image:
@@ -345,20 +343,20 @@ export default function ChaletDetailScreen() {
         </View>
       </ScrollView>
 
-      {/* الفوتر Flat */}
-      <View style={styles.flatUltimateFooter}>
+      {/* الفوتر */}
+      <View style={[styles.flatUltimateFooter, { flexDirection: isRTL ? "row" : "row-reverse" }]}>
         <View style={styles.footerBtnSide}>
           <PrimaryButton
-            label="احجز الان"
+            label={t('chalet.details.bookNow')}
             onPress={() => router.push(`/(customer)/booking/complete?id=${id}`)}
             style={styles.footerFlatBtn}
           />
         </View>
-        <View style={styles.footerTextSide}>
-          <ThemedText style={styles.footerPriceBig}>30,000 IQD</ThemedText>
-          <View style={styles.footerMetaRow}>
+        <View style={[styles.footerTextSide, { alignItems: isRTL ? "flex-end" : "flex-start" }]}>
+          <ThemedText style={styles.footerPriceBig}>30,000 {t('common.iqd')}</ThemedText>
+          <View style={[styles.footerMetaRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
             <SolarClockCircleBold size={12} color="#9CA3AF" />
-            <ThemedText style={styles.footerMetaSmall}>شفت صباحي</ThemedText>
+            <ThemedText style={styles.footerMetaSmall}>{t('chalet.details.morningShift')}</ThemedText>
           </View>
         </View>
       </View>
@@ -377,7 +375,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFFFFF" },
   imageHeader: { width: SCREEN_WIDTH, height: 350, position: "relative" },
   headerImage: { width: SCREEN_WIDTH, height: "100%" },
-  backBtnOriginal: { position: "absolute", top: 50, left: 20, zIndex: 10 },
+  backBtnOriginal: { position: "absolute", top: 50, zIndex: 10 },
   paginationDots: {
     position: "absolute",
     bottom: 20,
@@ -395,7 +393,6 @@ const styles = StyleSheet.create({
   activeDot: { backgroundColor: "#035DF9", width: 20 },
   infoWrapper: { padding: 20 },
   titleSection: {
-    flexDirection: "row",
     alignItems: "center",
     marginBottom: 20,
   },
@@ -403,31 +400,22 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    marginRight: 15,
   },
   ratingVal: { fontSize: 18, fontFamily: "LamaSans-Black" },
-  mainTitle: { fontSize: 22, fontFamily: "LamaSans-Black", textAlign: "right" },
-  locationSub: { fontSize: 13, color: "#6B7280", textAlign: "right" , fontFamily: "LamaSans-Regular" },
+  mainTitle: { fontSize: 22, fontFamily: "LamaSans-Black" },
+  locationSub: { fontSize: 13, color: "#6B7280", fontFamily: "LamaSans-Regular" },
   sectionHeaderContainer: {
     height: 60,
     justifyContent: "center",
     marginBottom: 10,
     marginTop: 15,
   },
-  sectionIconBg: { position: "absolute", right: -20, top: 0, opacity: 0.8 },
-  sectionTitleText: {
-    fontSize: 18,
-    fontFamily: "LamaSans-Black",
-    textAlign: "right",
-    paddingRight: 10,
-  },
   sectionTitle: {
     fontSize: 18,
     fontFamily: "LamaSans-Black",
     marginVertical: 15,
-    textAlign: "right",
   },
-  specsRow: { flexDirection: "row-reverse", flexWrap: "wrap", gap: 8 },
+  specsRow: { flexWrap: "wrap", gap: 8 },
   specTag: {
     backgroundColor: "#F3F7FF",
     paddingHorizontal: 16,
@@ -437,12 +425,10 @@ const styles = StyleSheet.create({
   specText: { fontSize: 13, fontFamily: "LamaSans-Bold" },
   viewAllText: { fontSize: 13, color: "#6B7280", fontFamily: "LamaSans-Bold" },
   facilitiesHeader: {
-    flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
   facilitiesGrid: {
-    flexDirection: "row-reverse",
     flexWrap: "wrap",
     justifyContent: "space-between",
     marginVertical: 15,
@@ -465,11 +451,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#6B7280",
     lineHeight: 22,
-    textAlign: "right",
     marginTop: 5,
-   fontFamily: "LamaSans-Regular" },
+    fontFamily: "LamaSans-Regular" },
   readMoreWrapper: { alignItems: "center", marginTop: 15 },
-  readMoreComp: { width: "55%", height: 48, borderRadius: 24 },
+  readMoreComp: { width: "65%", borderRadius: 27 },
 
   mapCardFlat: {
     backgroundColor: "#F9FAFB",
@@ -489,7 +474,6 @@ const styles = StyleSheet.create({
   contactBanner: { width: SCREEN_WIDTH - 40, height: 100 },
 
   ctaRowReview: {
-    flexDirection: "row",
     marginTop: 20,
     alignItems: "center",
     justifyContent: "space-between",
@@ -500,10 +484,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#035DF9",
     height: 46,
     paddingHorizontal: 20,
-    borderTopLeftRadius: 23,
-    borderBottomLeftRadius: 23,
-    borderTopRightRadius: 8,
-    borderBottomRightRadius: 8,
+    borderRadius: 23,
     gap: 8,
   },
   customRatingText: {
@@ -521,12 +502,10 @@ const styles = StyleSheet.create({
     borderColor: "#F3F4F6",
   },
   revHeaderMerged: {
-    flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
   },
   revRatingCornerMerged: {
-    flexDirection: "row",
     alignItems: "center",
     gap: 4,
     marginTop: 4,
@@ -537,14 +516,10 @@ const styles = StyleSheet.create({
     color: "#111827",
   },
   userInfoRowMerged: {
-    flexDirection: "row",
     alignItems: "flex-start",
     flex: 1,
-    justifyContent: "flex-end",
   },
   nameAndBodyMerged: {
-    alignItems: "flex-end",
-    marginRight: 15,
     flex: 1,
   },
   reviewerNameMerged: {
@@ -556,7 +531,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#6B7280",
     marginTop: 8,
-    textAlign: "right",
     lineHeight: 22,
     fontFamily: "LamaSans-Regular",
   },
@@ -581,7 +555,6 @@ const styles = StyleSheet.create({
   },
   dateWrapperMerged: {
     marginTop: 20,
-    alignItems: "flex-start",
   },
   revTimeTextMerged: {
     fontSize: 13,
@@ -590,9 +563,8 @@ const styles = StyleSheet.create({
   },
 
   addReviewAction: { alignItems: "center", marginVertical: 20 },
-  addBtnFinal: { width: "80%", height: 48, borderRadius: 24 },
+  addBtnFinal: { width: "85%", borderRadius: 27 },
   infoIconsGrid: {
-    flexDirection: "row-reverse",
     justifyContent: "space-between",
   },
   infoIconCell: { width: "23%", alignItems: "center" },
@@ -610,48 +582,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
-  relatedRow: { marginTop: 10 },
-  relatedCardFlatFinal: {
-    width: SCREEN_WIDTH * 0.82,
-    height: 140,
-    backgroundColor: "white",
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: "#F3F4F6",
-    flexDirection: "row",
-    padding: 12,
-    marginRight: 20,
-  },
-  relInfoLeft: { flex: 1, justifyContent: "space-between" },
-  relFavBtn: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: "#F3F4F6",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  relChaletTitle: { fontSize: 16, fontFamily: "LamaSans-Black", textAlign: "right" },
-  relChaletLoc: { fontSize: 12, color: "#6B7280", textAlign: "right" , fontFamily: "LamaSans-Regular" },
-  relBottomMeta: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  relRatingBox: { flexDirection: "row", alignItems: "center", gap: 4 },
-  relRatingNum: { fontSize: 14, fontFamily: "LamaSans-Black", color: "#15CB64" },
-  relChaletPrice: { fontSize: 13, fontFamily: "LamaSans-Black" },
-  relImgRight: { width: 100, height: 100, marginLeft: 10 },
-  relImgBorder: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 3,
-    borderColor: "#15AB64",
-    overflow: "hidden",
-  },
-  relImgMain: { width: "100%", height: "100%" },
-
   flatUltimateFooter: {
     position: "absolute",
     bottom: 0,
@@ -660,23 +590,16 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderTopLeftRadius: 35,
     borderTopRightRadius: 35,
-    flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 25,
     borderTopWidth: 1,
     borderTopColor: "#F3F4F6",
   },
-  footerTextSide: { alignItems: "flex-end", flex: 1 },
+  footerTextSide: { flex: 1 },
   footerPriceBig: { fontSize: 18, fontFamily: "LamaSans-Black", marginBottom: 4 },
-  footerMetaRow: { flexDirection: "row-reverse", alignItems: "center", gap: 6 },
+  footerMetaRow: { alignItems: "center", gap: 6 },
   footerMetaSmall: { fontSize: 10, color: "#9CA3AF", fontFamily: "LamaSans-SemiBold" },
-  vDivider: {
-    width: 1,
-    height: 10,
-    backgroundColor: "#BDBDBD",
-    marginHorizontal: 4,
-  },
   footerBtnSide: { width: 180 },
   footerFlatBtn: {
     height: 76,

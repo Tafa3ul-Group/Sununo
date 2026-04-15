@@ -240,5 +240,20 @@
     "privatePool": "مسبح خاص",
     "bbqArea": "منطقة شواء",
     "outdoorSeating": "جلسة خارجية مظللة"
+  },
+  "chalet": {
+    "details": {
+      "specs": "المواصفات الاساسية",
+      "facilities": "المرافق",
+      "overview": "نظرة عامة",
+      "location": "الموقع",
+      "reviews": "المراجعات",
+      "addReview": "إضافة مراجعة",
+      "related": "قد يعجبك ايضا",
+      "bookNow": "احجز الان",
+      "readMore": "اقرأ المزيد",
+      "morningShift": "شفت صباحي",
+      "specsList": ["بستان مع بيت", "300 م", "1 حمام", "3 غرف"]
+    }
   }
 }

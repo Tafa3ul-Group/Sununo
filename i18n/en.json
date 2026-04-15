@@ -227,5 +227,20 @@
     "privatePool": "Private Pool",
     "bbqArea": "BBQ Area",
     "outdoorSeating": "Shaded Outdoor Seating"
+  },
+  "chalet": {
+    "details": {
+      "specs": "Basic Specifications",
+      "facilities": "Facilities",
+      "overview": "Overview",
+      "location": "Location",
+      "reviews": "Reviews",
+      "addReview": "Add Review",
+      "related": "You Might Also Like",
+      "bookNow": "Book Now",
+      "readMore": "Read More",
+      "morningShift": "Morning Shift",
+      "specsList": ["Garden with House", "300m", "1 Bathroom", "3 Rooms"]
+    }
   }
 }

@@ -24,6 +24,7 @@ interface SecondaryButtonProps {
   style?: ViewStyle;
   textStyle?: TextStyle;
   isLoading?: boolean;
+  height?: number;
 }
 
 export function SecondaryButton({
@@ -40,6 +41,7 @@ export function SecondaryButton({
   style,
   textStyle,
   isLoading = false,
+  height = 46,
 }: SecondaryButtonProps) {
   const { i18n } = useTranslation();
   const isRTL = i18n.language === 'ar';
@@ -74,14 +76,14 @@ export function SecondaryButton({
           styles.iconWrapper,
           {
             width: scaledWidth,
-            height: 46,
+            height: height,
             backgroundColor: bgColor,
             borderColor: borderColor,
             borderWidth: 1.5,
-            borderTopRightRadius: finalIconPosition === 'right' ? 23 : 8,
-            borderBottomRightRadius: finalIconPosition === 'right' ? 23 : 8,
-            borderTopLeftRadius: finalIconPosition === 'left' ? 23 : 8,
-            borderBottomLeftRadius: finalIconPosition === 'left' ? 23 : 8,
+            borderTopRightRadius: finalIconPosition === 'right' ? height / 2 : 8,
+            borderBottomRightRadius: finalIconPosition === 'right' ? height / 2 : 8,
+            borderTopLeftRadius: finalIconPosition === 'left' ? height / 2 : 8,
+            borderBottomLeftRadius: finalIconPosition === 'left' ? height / 2 : 8,
             justifyContent: 'center',
             alignItems: 'center'
           }
@@ -121,7 +123,7 @@ export function SecondaryButton({
             flex: 1,
             backgroundColor: bgColor,
             borderColor: borderColor,
-            height: 46,
+            height: height,
             paddingHorizontal: 20,
             borderTopLeftRadius: finalIconPosition === 'right' ? 10 : 8,
             borderBottomLeftRadius: finalIconPosition === 'right' ? 10 : 8,
@@ -143,7 +145,6 @@ export function SecondaryButton({
 
 const styles = StyleSheet.create({
   container: {
-    height: 46,
     alignItems: "center",
     justifyContent: "center",
   },

@@ -25,6 +25,7 @@ interface PrimaryButtonProps {
   border?: string;
   style?: ViewStyle;
   textStyle?: TextStyle;
+  height?: number;
 }
 
 /**
@@ -46,6 +47,7 @@ export function PrimaryButton({
   border = "#E5E7EB",
   style,
   textStyle,
+  height = 46,
 }: PrimaryButtonProps) {
   const isWhite = variant === "white";
   const defaultActiveColor = isWhite ? "white" : "#035DF9";
@@ -66,7 +68,7 @@ export function PrimaryButton({
     );
   }
 
-  const scaledPartHeight = 46;
+  const scaledPartHeight = height;
   const scaledPartWidth = (29 / 29) * scaledPartHeight; // Maintain aspect ratio of the 29x29 design
 
   const currentBorderColor = isActive ? "transparent" : border;
@@ -77,7 +79,7 @@ export function PrimaryButton({
       activeOpacity={0.8}
       onPress={onPress}
       disabled={disabled}
-      style={[styles.hybridContainer, style]}
+      style={[styles.hybridContainer, { height }, style]}
     >
       {/* Right Curve SVG */}
       <View style={{ width: scaledPartWidth, height: scaledPartHeight }}>
@@ -146,7 +148,6 @@ const styles = StyleSheet.create({
   },
   hybridContainer: {
     flexDirection: "row-reverse",
-    height: 46,
     alignItems: "center",
     justifyContent: "center",
   },
