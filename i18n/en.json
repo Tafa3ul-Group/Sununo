@@ -31,9 +31,15 @@
       "all": "All",
       "popular": "Popular",
       "nearby": "Nearby",
-      "luxury": "Luxury"
+      "luxury": "Luxury",
+      "pool": "Pool",
+      "bbq": "BBQ",
+      "garden": "Garden"
     },
-    "seeAll": "See All"
+    "seeAll": "See All",
+    "openMap": "Open Map",
+    "recentBookings": "Recent Bookings",
+    "recommended": "Recommended for you"
   },
   "profile": {
     "title": "Profile",
@@ -44,6 +50,11 @@
     "wallet": {
       "balance": "Current Balance",
       "withdraw": "Withdraw"
+    },
+    "edit": {
+      "birthDate": "Birth Date",
+      "changePhone": "Change Phone",
+      "confirm": "Confirm"
     }
   },
   "dashboard": {

@@ -83,7 +83,9 @@ export default function ProfileScreen() {
           </ProfileShape>
           
           <View style={[styles.userInfo, { textAlign: isRTL ? 'right' : 'left' }]}>
-            <Text style={[styles.userName, { textAlign: isRTL ? 'right' : 'left' }]}>{user?.name || 'انسي انس مؤنس'}</Text>
+            <Text style={[styles.userName, { textAlign: isRTL ? 'right' : 'left' }]}>
+              {user?.name || (isRTL ? 'انسي انس مؤنس' : 'Ansi Ans Mounis')}
+            </Text>
           </View>
 
           <View style={styles.avatarWrap}>

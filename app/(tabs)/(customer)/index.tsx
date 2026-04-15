@@ -36,55 +36,56 @@ import {
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-// --- تحديث الصور لتبدو كشاليهات حقيقية وفخمة ---
-const POPULAR_CHALETS = [
-  {
-    id: "1",
-    title: "شالية الؤلؤة البصرية",
-    location: "البصرة - شط العرب",
-    price: "45,000",
-    rating: 4.9,
-    color: Colors.primary,
-    image: "https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&q=80&w=600",
-  },
-  {
-    id: "2",
-    title: "شالية الورد والياسمين",
-    location: "البصرة - الجزائر",
-    price: "35,000",
-    rating: 4.8,
-    color: Colors.secondary,
-    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=600",
-  },
-  {
-    id: "3",
-    title: "شالية إطلالة الخليج",
-    location: "البصرة - القبلة",
-    price: "25,000",
-    rating: 4.2,
-    color: Colors.accent,
-    image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=600",
-  },
-];
-
-const FILTER_OPTIONS = [
-  { id: "all", label: "الكل", icon: (isActive: boolean) => <SolarWidgetBold size={18} color={isActive ? "white" : Colors.primary} />, activeColor: Colors.primary },
-  { id: "pool", label: "يحتوي مسبح", icon: (isActive: boolean) => <SolarWaterBold size={18} color={isActive ? "white" : Colors.secondary} />, activeColor: Colors.secondary },
-  { id: "bbq", label: "شواء", icon: (isActive: boolean) => <SolarFireBold size={18} color={isActive ? "white" : Colors.accent} />, activeColor: Colors.accent },
-  { id: "garden", label: "حديقة", icon: (isActive: boolean) => <SolarTreeBold size={18} color={isActive ? "white" : Colors.secondary} />, activeColor: Colors.secondary },
-];
-
 export default function HomeScreen() {
   const { userType } = useSelector((state: RootState) => state.auth);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
   const [activeFilter, setActiveFilter] = React.useState("all");
   const insets = useSafeAreaInsets();
 
   if (userType === "owner") return <Redirect href="/(tabs)/(dashboard)/home" />;
 
   const navigateToDetails = (id: string) => router.push(`/chalet-details/${id}`);
+
+  // Moved inside to use translations
+  const POPULAR_CHALETS = [
+    {
+      id: "1",
+      title: isRTL ? "شالية اللؤلؤة البصرية" : "Basra Pearl Chalet",
+      location: isRTL ? "البصرة - شط العرب" : "Basra - Shatt al-Arab",
+      price: "45,000",
+      rating: 4.9,
+      color: Colors.primary,
+      image: "https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&q=80&w=600",
+    },
+    {
+      id: "2",
+      title: isRTL ? "شالية الورد والياسمين" : "Jasmine Flower Chalet",
+      location: isRTL ? "البصرة - الجزائر" : "Basra - Al-Jaza'ir",
+      price: "35,000",
+      rating: 4.8,
+      color: Colors.secondary,
+      image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=600",
+    },
+    {
+      id: "3",
+      title: isRTL ? "شالية إطلالة الخليج" : "Gulf View Chalet",
+      location: isRTL ? "البصرة - القبلة" : "Basra - Al-Qibla",
+      price: "25,000",
+      rating: 4.2,
+      color: Colors.accent,
+      image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=600",
+    },
+  ];
+
+  const FILTER_OPTIONS = [
+    { id: "all", label: t("home.categories.all"), icon: (isActive: boolean) => <SolarWidgetBold size={18} color={isActive ? "white" : Colors.primary} />, activeColor: Colors.primary },
+    { id: "pool", label: t("home.categories.pool"), icon: (isActive: boolean) => <SolarWaterBold size={18} color={isActive ? "white" : Colors.secondary} />, activeColor: Colors.secondary },
+    { id: "bbq", label: t("home.categories.bbq"), icon: (isActive: boolean) => <SolarFireBold size={18} color={isActive ? "white" : Colors.accent} />, activeColor: Colors.accent },
+    { id: "garden", label: t("home.categories.garden"), icon: (isActive: boolean) => <SolarTreeBold size={18} color={isActive ? "white" : Colors.secondary} />, activeColor: Colors.secondary },
+  ];
 
   return (
     <View style={[styles.safeArea, { paddingTop: insets.top }]}>
@@ -100,19 +101,19 @@ export default function HomeScreen() {
         {/* Banners Swiper */}
         <BannerSwiper />
 
-        {/* الأقرب إليك */}
-        <View style={styles.sectionHeader}>
-          <TouchableOpacity><ThemedText style={styles.seeAll}>افتح الخارطة</ThemedText></TouchableOpacity>
-          <ThemedText style={styles.sectionTitle}>الاقرب اليك</ThemedText>
+        {/* Nearby / Map */}
+        <View style={[styles.sectionHeader, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+          <TouchableOpacity><ThemedText style={styles.seeAll}>{t('home.openMap')}</ThemedText></TouchableOpacity>
+          <ThemedText style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('home.categories.nearby')}</ThemedText>
         </View>
         <View style={styles.mapContainer}>
           <AppMap style={styles.map} showMarker onPressCard={navigateToDetails} />
         </View>
 
-        {/* الأفضل اليوم (Horizontal) */}
-        <View style={styles.sectionHeader}>
-          <TouchableOpacity><ThemedText style={styles.seeAll}>عرض الكل</ThemedText></TouchableOpacity>
-          <ThemedText style={styles.sectionTitle}>آخر الحجوزات</ThemedText>
+        {/* Popular / Recent */}
+        <View style={[styles.sectionHeader, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+          <TouchableOpacity><ThemedText style={styles.seeAll}>{t('home.seeAll')}</ThemedText></TouchableOpacity>
+          <ThemedText style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('home.recentBookings')}</ThemedText>
         </View>
         <View style={styles.swiperWrapper}>
           <HorizontalSwiper 
@@ -121,12 +122,12 @@ export default function HomeScreen() {
           />
         </View>
 
-        {/* مقترح لك */}
-        <View style={[styles.sectionHeader, { justifyContent: "flex-end" }]}>
-          <ThemedText style={styles.sectionTitle}>مقترح لك</ThemedText>
+        {/* Recommended */}
+        <View style={[styles.sectionHeader, { justifyContent: isRTL ? "flex-end" : "flex-start" }]}>
+          <ThemedText style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('home.recommended')}</ThemedText>
         </View>
         <GHScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsContainer}>
-           <View style={{ flexDirection: 'row-reverse', gap: 10 }}>
+           <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 10 }}>
              {FILTER_OPTIONS.map((filter) => (
                 <SecondaryButton 
                   key={filter.id} 
@@ -157,18 +158,16 @@ const styles = StyleSheet.create({
   scrollContent: { paddingBottom: 120 },
   sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginTop: 20, marginBottom: 10 },
   sectionTitle: { 
-    fontSize: normalize.font(22), 
+    fontSize: normalize.font(20), 
     fontFamily: "LamaSans-Black", 
     color: Colors.text.primary, 
-    textAlign: 'right' 
   },
   seeAll: { 
-    fontSize: normalize.font(15), 
+    fontSize: normalize.font(13), 
     color: Colors.primary, 
     fontFamily: "LamaSans-SemiBold", 
     textDecorationLine: "underline" 
   },
-  popularRow: { paddingHorizontal: 16, flexDirection: "row-reverse", gap: 12 },
   mapContainer: { height: 210, marginHorizontal: 16, borderRadius: 28, overflow: "hidden", backgroundColor: "#F3F4F6", marginTop: 10 },
   map: { flex: 1 },
   listPadding: { paddingHorizontal: 16 },

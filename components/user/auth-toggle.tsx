@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useTranslation } from "react-i18next";
 import Animated, {
   interpolate,
   interpolateColor,
@@ -51,6 +52,7 @@ export const AuthToggle: React.FC<AuthToggleProps> = ({
   activeType,
   onChange,
 }) => {
+  const { t } = useTranslation();
   const transition = useSharedValue(activeType === "owner" ? 0 : 1);
 
   useEffect(() => {
@@ -105,10 +107,10 @@ export const AuthToggle: React.FC<AuthToggleProps> = ({
 
       <View style={styles.buttonsContainer}>
         <TouchableOpacity onPress={() => onChange("owner")} style={styles.tabButton}>
-          <AnimatedText style={[styles.tabText, ownerTextStyle]}>صاحب شاليه</AnimatedText>
+          <AnimatedText style={[styles.tabText, ownerTextStyle]}>{t('auth.owner')}</AnimatedText>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => onChange("customer")} style={styles.tabButton}>
-          <AnimatedText style={[styles.tabText, customerTextStyle]}>زبون</AnimatedText>
+          <AnimatedText style={[styles.tabText, customerTextStyle]}>{t('auth.customer')}</AnimatedText>
         </TouchableOpacity>
       </View>
     </View>

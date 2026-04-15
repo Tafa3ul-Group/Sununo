@@ -28,12 +28,18 @@
     "welcome": "أهلاً بك",
     "searchPlaceholder": "ابحث عن شاليه...",
     "categories": {
-      "all": "الكل",
+      "all": "All",
       "popular": "الأكثر طلباً",
       "nearby": "قريب منك",
-      "luxury": "فاخر"
+      "luxury": "فاخر",
+      "pool": "يحتوي مسبح",
+      "bbq": "شواء",
+      "garden": "حديقة"
     },
-    "seeAll": "عرض الكل"
+    "seeAll": "عرض الكل",
+    "openMap": "افتح الخارطة",
+    "recentBookings": "آخر الحجوزات",
+    "recommended": "مقترح لك"
   },
   "profile": {
     "title": "الملف الشخصي",
@@ -49,6 +55,11 @@
     "wallet": {
       "balance": "رصيدك الحالي",
       "withdraw": "سحب"
+    },
+    "edit": {
+      "birthDate": "تاريخ الميلاد",
+      "changePhone": "تغيير رقم الهاتف",
+      "confirm": "تأكيد"
     }
   },
   "dashboard": {
