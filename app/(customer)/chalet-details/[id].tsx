@@ -245,39 +245,49 @@ export default function ChaletDetailScreen() {
           <SectionHeader title="المراجعات" />
           {[1, 2].map((_, i) => (
             <View key={i} style={styles.revComplexCardFlat}>
-              <View style={styles.revHeaderRow}>
-                <View style={styles.revRatingCorner}>
-                  <SolarStarBold size={16} color="#15CB64" />
-                  <ThemedText style={styles.revRateNum}>4</ThemedText>
+              <View style={styles.revHeaderMerged}>
+                <View style={styles.revRatingCornerMerged}>
+                  <SolarStarBold size={14} color="#035DF9" />
+                  <ThemedText style={styles.revRateNumMerged}>4</ThemedText>
                 </View>
-                <View style={styles.reviewerMeta}>
-                  <ThemedText style={styles.reviewerName}>انسة انس</ThemedText>
-                  <Image
-                    source={require("@/assets/profile.svg")}
-                    style={styles.revAvatarSmall}
-                  />
+                <View style={styles.userInfoRowMerged}>
+                  <View style={styles.nameAndBodyMerged}>
+                    <ThemedText style={styles.reviewerNameMerged}>انسة انس</ThemedText>
+                    <ThemedText style={styles.revMessageMerged}>
+                      خوش مكان ونضيف يستاهل، الهواء نقي بسبب التشجير
+                    </ThemedText>
+                  </View>
+                  <View style={styles.avatarCircleMerged}>
+                    <Image
+                      source={require("@/assets/profile.svg")}
+                      style={styles.userAvatarImgMerged}
+                    />
+                  </View>
                 </View>
               </View>
-              <ThemedText style={styles.revMessage}>
-                خوش مكان ونضيف يستاهل، الهواء نقي بسبب التشجير
-              </ThemedText>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={styles.revImgSwiper}
-              >
-                {[1, 2, 3, 4].map((im) => (
-                  <TouchableOpacity key={im} onPress={() => router.push('/(customer)/chalet-details/gallery')}>
-                    <Image
-                      source={{
-                        uri: "https://images.unsplash.com/photo-1502082559145?w=200",
-                      }}
-                      style={styles.revPhotoThumb}
-                    />
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-              <ThemedText style={styles.revTimeText}>2025/09/22</ThemedText>
+              
+              <View style={styles.galleryWrapperMerged}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ flexDirection: "row", paddingRight: 5 }}
+                >
+                  {[1, 2, 3, 4].map((im) => (
+                    <TouchableOpacity key={im} onPress={() => router.push('/(customer)/chalet-details/gallery')} style={{ marginRight: 12 }}>
+                      <Image
+                        source={{
+                          uri: "https://images.unsplash.com/photo-1502082559145?w=400",
+                        }}
+                        style={styles.revPhotoThumbMerged}
+                      />
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+              
+              <View style={styles.dateWrapperMerged}>
+                <ThemedText style={styles.revTimeTextMerged}>2025/09/22</ThemedText>
+              </View>
             </View>
           ))}
 
@@ -507,31 +517,74 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#F3F4F6",
   },
-  revHeaderRow: {
+  revHeaderMerged: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-start",
   },
-  reviewerMeta: { flexDirection: "row", alignItems: "center", gap: 12 },
-  reviewerName: { fontSize: 16, fontFamily: "LamaSans-Black" },
-  revAvatarSmall: { width: 50, height: 50, borderRadius: 25 },
-  revRatingCorner: { flexDirection: "row", alignItems: "center", gap: 4 },
-  revRateNum: { fontSize: 18, fontFamily: "LamaSans-Black" },
-  revMessage: {
+  revRatingCornerMerged: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginTop: 4,
+  },
+  revRateNumMerged: {
+    fontSize: 16,
+    fontFamily: "LamaSans-Black",
+    color: "#111827",
+  },
+  userInfoRowMerged: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    flex: 1,
+    justifyContent: "flex-end",
+  },
+  nameAndBodyMerged: {
+    alignItems: "flex-end",
+    marginRight: 15,
+    flex: 1,
+  },
+  reviewerNameMerged: {
+    fontSize: 16,
+    fontFamily: "LamaSans-Black",
+    color: "#111827",
+  },
+  revMessageMerged: {
     fontSize: 14,
     color: "#6B7280",
-    marginVertical: 15,
-    fontFamily: "LamaSans-SemiBold",
+    marginTop: 8,
     textAlign: "right",
+    lineHeight: 22,
+    fontFamily: "LamaSans-Regular",
   },
-  revImgSwiper: { gap: 10 },
-  revPhotoThumb: { width: 130, height: 90, borderRadius: 12, marginRight: 10 },
-  revTimeText: {
-    fontSize: 11,
+  avatarCircleMerged: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    overflow: "hidden",
+    backgroundColor: "#F3F4F6",
+  },
+  userAvatarImgMerged: {
+    width: "100%",
+    height: "100%",
+  },
+  galleryWrapperMerged: {
+    marginTop: 20,
+  },
+  revPhotoThumbMerged: {
+    width: 110,
+    height: 85,
+    borderRadius: 14,
+  },
+  dateWrapperMerged: {
+    marginTop: 20,
+    alignItems: "flex-start",
+  },
+  revTimeTextMerged: {
+    fontSize: 13,
     color: "#9CA3AF",
-    marginTop: 10,
-    textAlign: "left",
-   fontFamily: "LamaSans-Regular" },
+    fontFamily: "LamaSans-Medium",
+  },
 
   addReviewAction: { alignItems: "center", marginVertical: 20 },
   addBtnFinal: { width: "80%", height: 48, borderRadius: 24 },
