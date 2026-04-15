@@ -101,7 +101,9 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
   if (visibleRoutes.length === 0) return null;
 
   const renderIcon = (route: any, isActive: boolean) => {
-    const { options } = descriptors[route.key];
+    const descriptor = descriptors[route.key];
+    if (!descriptor) return null;
+    const { options } = descriptor;
     if (options.tabBarIcon) {
       return options.tabBarIcon({
         focused: isActive,
@@ -112,8 +114,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
     return null;
   };
 
-  const isolatedTabName = 'bookings';
-  const pillTabs = visibleRoutes.filter((r: any) => r.name !== isolatedTabName);
+  const pillTabs = visibleRoutes;
 
   return (
     <View style={styles.container}>
@@ -266,9 +267,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary, justifyContent: 'center', alignItems: 'center'
   },
   tabCapsule: {
-    width: normalize.width(110), height: normalize.height(52), borderRadius: 26,
+    width: normalize.width(165), height: normalize.height(52), borderRadius: 26,
     backgroundColor: Colors.primary, flexDirection: 'row', alignItems: 'center',
-    justifyContent: 'center', gap: 8, paddingHorizontal: 8
+    justifyContent: 'center', gap: 12, paddingHorizontal: 8
   },
   tabItemContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   tabIconCircle: {
