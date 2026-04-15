@@ -11,7 +11,7 @@ export default function DashboardLayout() {
   const { userType, isAuthenticated } = useSelector((state: RootState) => state.auth);
 
   if (!isAuthenticated) {
-    return <Redirect href="/(auth)/choose-type" />;
+    return <Redirect href="/(auth)/login" />;
   }
 
   if (userType === 'customer') {

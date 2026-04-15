@@ -51,7 +51,7 @@ export default function ProviderProfileScreen() {
           style: 'destructive', 
           onPress: () => {
             dispatch(logout());
-            router.replace('/(auth)/choose-type');
+            router.replace('/(auth)/login');
           }
         }
       ]
