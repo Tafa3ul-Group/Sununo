@@ -69,6 +69,16 @@
       "balance": "الرصيد المتاح",
       "withdraw": "سحب الأرباح",
       "history": "سجل المعاملات"
+    },
+    "menu": {
+      "title": "قائمة الإدارة",
+      "bookings": "الحجوزات",
+      "shifts": "الشفتات",
+      "revenue": "الأرباح",
+      "customers": "الزبائن",
+      "transactions": "المعاملات",
+      "notifications": "الإشعارات",
+      "addChalet": "إضافة شاليه"
     }
   },
   "common": {

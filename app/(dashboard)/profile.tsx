@@ -1,30 +1,29 @@
-import { Colors, normalize, Spacing, Typography } from '@/constants/theme';
-import { RootState } from '@/store';
-import { logout } from '@/store/authSlice';
+import { HeaderSection } from '@/components/header-section';
 import {
-  SolarLogoutBold,
-  SolarBanknoteBold,
-  SolarHome2Bold,
-  SolarChartBold,
-  SolarBellBold,
-  SolarAltArrowLeftLinear,
-  SolarAltArrowRightLinear,
-  SolarPenBold,
-  SolarGlobalBold,
-  SolarPhoneBold,
-  SolarShieldBold,
-  ProfileShape
+    ProfileShape,
+    SolarBanknoteBold,
+    SolarBellBold,
+    SolarCalendarBold,
+    SolarChartBold,
+    SolarGlobalBold,
+    SolarHome2Bold,
+    SolarLogoutBold,
+    SolarPenBold,
+    SolarPhoneBold,
+    SolarShieldBold
 } from "@/components/icons/solar-icons";
-import { CircleBackButton } from '@/components/ui/circle-back-button';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { LanguageSheet } from '@/components/user/language-sheet';
+import { Colors, normalize } from '@/constants/theme';
+import { RootState } from '@/store';
+import { useGetProviderProfileQuery } from '@/store/api/apiSlice';
+import { logout } from '@/store/authSlice';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert, Image } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
-import { useGetProviderProfileQuery } from '@/store/api/apiSlice';
 
 export default function ProviderProfileScreen() {
   const dispatch = useDispatch();
@@ -74,17 +73,6 @@ export default function ProviderProfileScreen() {
   return (
     <SafeAreaView style={styles.container}>
       {/* Custom Header */}
-      <View style={styles.header}>
-        <CircleBackButton />
-        <Text style={styles.headerTitle}>{isRTL ? 'الملف الشخصي' : 'Profile'}</Text>
-        <View style={styles.logoCircle}>
-          <Image 
-            source={require('@/assets/arlogo.svg')} 
-            style={styles.logoImg}
-            resizeMode="contain"
-          />
-        </View>
-      </View>
 
       {/* Profile Header & User Card - Fixed at top */}
       <View style={styles.topSection}>
@@ -154,34 +142,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: normalize.width(20),
-    paddingVertical: normalize.height(15),
-    backgroundColor: '#FFFFFF',
-  },
-  headerTitle: {
-    fontSize: normalize.font(18),
-    fontFamily: "LamaSans-Black",
-    color: '#1F2937',
-  },
-  logoCircle: {
-    width: normalize.width(42),
-    height: normalize.width(42),
-    borderRadius: normalize.width(21),
-    backgroundColor: '#F9FAFB',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
-    overflow: 'hidden',
-  },
-  logoImg: {
-    width: '70%',
-    height: '70%',
   },
   topSection: {
     paddingHorizontal: normalize.width(20),
