@@ -80,7 +80,7 @@ export function HorizontalCard({
     <TouchableOpacity
       activeOpacity={0.9}
       onPress={onPress}
-      style={[styles.container, { flexDirection: isRTL ? 'row' : 'row-reverse' }, style]}
+      style={[styles.container, { flexDirection: isRTL ? 'row-reverse' : 'row' }, style]}
     >
       {/* info side */}
       <View style={styles.contentAndLeft}>
@@ -113,7 +113,7 @@ export function HorizontalCard({
         </View>
 
         {/* Bottom Row: Rating + Price */}
-        <View style={[styles.bottomRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+        <View style={[styles.bottomRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
           <View style={[styles.ratingBox, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
             <SolarStarBold size={normalize.width(16)} color={Colors.secondary} />
             <ThemedText style={styles.ratingText}>
@@ -122,7 +122,7 @@ export function HorizontalCard({
           </View>
 
           <View style={[styles.priceRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-            <ThemedText style={styles.price}>IQD {chalet.price}</ThemedText>
+            <ThemedText style={styles.price}>{isRTL ? '' : 'IQD '}{chalet.price}{isRTL ? ' د.ع' : ''}</ThemedText>
             <ThemedText style={styles.priceLabel}> / {isRTL ? "شفت" : "Shift"}</ThemedText>
           </View>
         </View>

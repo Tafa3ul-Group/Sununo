@@ -75,7 +75,7 @@ export const WalletCard = ({
           </ThemedText>
         </View>
 
-        <View style={[styles.bottomRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+        <View style={[styles.bottomRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
           <View style={[styles.balanceContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             <ThemedText style={styles.balanceValue}>{balance}</ThemedText>
             <ThemedText style={styles.currencyText}>{t('common.iqd')}</ThemedText>

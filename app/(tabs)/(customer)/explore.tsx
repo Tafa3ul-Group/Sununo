@@ -83,6 +83,7 @@ const FILTER_OPTIONS = [
 export default function ExploreScreen() {
   const { t } = useTranslation();
   const { language } = useSelector((state: RootState) => state.auth);
+  const isRTL = language === 'ar';
   const { userType } = useSelector((state: RootState) => state.auth);
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -141,11 +142,14 @@ export default function ExploreScreen() {
             showsHorizontalScrollIndicator={false} 
             contentContainerStyle={styles.filterBar}
           >
-            <View style={{ flexDirection: 'row-reverse', gap: 10 }}>
+            <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 10 }}>
               {FILTER_OPTIONS.map((filter) => (
                 <SecondaryButton 
                   key={filter.id} 
-                  label={filter.label} 
+                  label={filter.id === 'all' ? t('home.categories.all') : 
+                         filter.id === 'pool' ? t('home.categories.pool') : 
+                         filter.id === 'bbq' ? t('home.categories.bbq') : 
+                         filter.id === 'garden' ? t('home.categories.garden') : filter.label} 
                   isActive={activeFilter === filter.id} 
                   activeColor="#035DF9" 
                   icon={filter.icon(activeFilter === filter.id)} 

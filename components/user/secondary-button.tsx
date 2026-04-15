@@ -70,6 +70,31 @@ export function SecondaryButton({
       ]}
       disabled={isLoading}
     >
+      {/* Label Section */}
+      <View
+        style={[
+          styles.textWrapper,
+          {
+            flex: 1,
+            backgroundColor: bgColor,
+            borderColor: borderColor,
+            height: height,
+            paddingHorizontal: 20,
+            borderTopLeftRadius: finalIconPosition === 'right' ? 8 : height / 2,
+            borderBottomLeftRadius: finalIconPosition === 'right' ? 8 : height / 2,
+            borderTopRightRadius: finalIconPosition === 'left' ? 8 : height / 2,
+            borderBottomRightRadius: finalIconPosition === 'left' ? 8 : height / 2,
+            borderWidth: 1.5,
+          },
+        ]}
+      >
+        <ThemedText
+          style={[styles.text, { color: finalContentColor, fontSize: 18 }, textStyle]}
+        >
+          {label}
+        </ThemedText>
+      </View>
+
       {/* Icon Section */}
       <View
         style={[
@@ -113,31 +138,6 @@ export function SecondaryButton({
             ) : null}
           </View>
         )}
-      </View>
-
-      {/* Label Section */}
-      <View
-        style={[
-          styles.textWrapper,
-          {
-            flex: 1,
-            backgroundColor: bgColor,
-            borderColor: borderColor,
-            height: height,
-            paddingHorizontal: 20,
-            borderTopLeftRadius: finalIconPosition === 'right' ? 10 : 8,
-            borderBottomLeftRadius: finalIconPosition === 'right' ? 10 : 8,
-            borderTopRightRadius: finalIconPosition === 'left' ? 10 : 8,
-            borderBottomRightRadius: finalIconPosition === 'left' ? 10 : 8,
-            borderWidth: 1.5,
-          },
-        ]}
-      >
-        <ThemedText
-          style={[styles.text, { color: finalContentColor, fontSize: 18 }, textStyle]}
-        >
-          {label}
-        </ThemedText>
       </View>
     </TouchableOpacity>
   );
