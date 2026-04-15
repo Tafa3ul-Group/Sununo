@@ -74,7 +74,7 @@ export default function ProfileScreen() {
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <TouchableOpacity 
-          style={styles.userCard}
+          style={[styles.userCard, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}
           onPress={() => router.push('/profile-edit')}
           activeOpacity={0.9}
         >
@@ -82,8 +82,8 @@ export default function ProfileScreen() {
             <SolarPenBold size={18} color="white" />
           </ProfileShape>
           
-          <View style={styles.userInfo}>
-            <Text style={styles.userName}>{user?.name || 'انسي انس مؤنس'}</Text>
+          <View style={[styles.userInfo, { textAlign: isRTL ? 'right' : 'left' }]}>
+            <Text style={[styles.userName, { textAlign: isRTL ? 'right' : 'left' }]}>{user?.name || 'انسي انس مؤنس'}</Text>
           </View>
 
           <View style={styles.avatarWrap}>
@@ -107,7 +107,7 @@ export default function ProfileScreen() {
           {menuItems.map((item) => (
             <TouchableOpacity 
               key={item.id} 
-              style={styles.menuRow} 
+              style={[styles.menuRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]} 
               onPress={() => {
                 if (item.action) {
                   item.action();
@@ -117,7 +117,7 @@ export default function ProfileScreen() {
               }}
               activeOpacity={0.7}
             >
-              <Text style={styles.menuLabelText}>{item.title}</Text>
+              <Text style={[styles.menuLabelText, { textAlign: isRTL ? 'right' : 'left' }]}>{item.title}</Text>
               <ProfileShape size={normalize.width(42)} type={item.shape}>
                 {item.icon}
               </ProfileShape>
@@ -156,13 +156,12 @@ const styles = StyleSheet.create({
   },
   userInfo: {
     flex: 1,
-    marginRight: normalize.width(15),
+    marginHorizontal: normalize.width(15),
   },
   userName: {
     fontSize: normalize.font(16),
     fontFamily: "LamaSans-Black",
     color: '#374151',
-    textAlign: 'right',
   },
   avatarWrap: {
     width: normalize.width(60),
@@ -183,7 +182,6 @@ const styles = StyleSheet.create({
   menuRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
     backgroundColor: '#FFFFFF',
     borderRadius: normalize.radius(18),
     paddingVertical: normalize.height(14),
@@ -194,10 +192,10 @@ const styles = StyleSheet.create({
     elevation: 0,
   },
   menuLabelText: {
+    flex: 1,
     fontSize: normalize.font(16),
     fontFamily: "LamaSans-Bold",
     color: '#374151',
-    marginRight: normalize.width(15),
-    textAlign: 'right',
+    marginHorizontal: normalize.width(15),
   },
 });

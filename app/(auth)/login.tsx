@@ -23,8 +23,16 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
+// import { normalize } from "@/constants/theme";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const scale = SCREEN_WIDTH / 375;
+const normalize = {
+  width: (size: number) => size * scale,
+  height: (size: number) => size * scale, // Using uniform scaling for simplicity
+  font: (size: number) => size * scale,
+  radius: (size: number) => size * scale,
+};
 
 export default function LoginScreen() {
   const { t } = useTranslation();
@@ -61,9 +69,9 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Background Logo Header - Further Reduced size */}
+      {/* Background Logo Header */}
       <View style={styles.topLogoContainer}>
-        <LoginHeaderLogo size={SCREEN_WIDTH * 1.0} color="#0061FE" />
+        <LoginHeaderLogo size={normalize.width(SCREEN_WIDTH)} color="#0061FE" />
       </View>
 
       <KeyboardAvoidingView
@@ -71,17 +79,17 @@ export default function LoginScreen() {
         style={{ flex: 1 }}
       >
         <ScrollView
-          contentContainerStyle={[styles.scrollContent, { paddingTop: 140 }]}
+          contentContainerStyle={[styles.scrollContent, { paddingTop: normalize.height(140) }]}
           showsVerticalScrollIndicator={false}
           bounces={false}
         >
-          {/* User Type Toggle using the Scalloped AuthToggle */}
+          {/* User Type Toggle */}
           <View style={styles.toggleWrapper}>
             <AuthToggle activeType={userType} onChange={handleTypeChange} />
 
             {/* Divider Shape below toggle */}
             <View style={styles.dividerShapeBox}>
-              <LoginDividerShape width={SCREEN_WIDTH * 0.45} />
+              <LoginDividerShape width={normalize.width(SCREEN_WIDTH * 0.45)} />
             </View>
           </View>
 
@@ -121,7 +129,7 @@ export default function LoginScreen() {
                   onChangeText={setCode}
                   keyboardType="number-pad"
                   textAlign="center"
-                  letterSpacing={5}
+                  letterSpacing={normalize.width(5)}
                 />
               </View>
             )}
@@ -150,24 +158,24 @@ const styles = StyleSheet.create({
   },
   topLogoContainer: {
     position: "absolute",
-    top: -60,
-    left: -SCREEN_WIDTH * 0.1,
-    width: SCREEN_WIDTH * 1.2,
+    top: normalize.height(-60),
+    left: normalize.width(-SCREEN_WIDTH * 0.1),
+    width: normalize.width(SCREEN_WIDTH * 1.2),
     alignItems: "center",
     zIndex: 0,
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 30,
-    paddingBottom: 150,
+    paddingHorizontal: normalize.width(30),
+    paddingBottom: normalize.height(150),
   },
   toggleWrapper: {
     alignItems: "center",
-    marginBottom: 20,
-    marginTop: 10,
+    marginBottom: normalize.height(20),
+    marginTop: normalize.height(10),
   },
   dividerShapeBox: {
-    marginTop: 12,
+    marginTop: normalize.height(12),
     alignItems: "center",
   },
   formContainer: {
@@ -175,53 +183,53 @@ const styles = StyleSheet.create({
   },
   headerRow: {
     alignItems: "flex-end",
-    marginBottom: 20, // Reduced from 30
+    marginBottom: normalize.height(20),
   },
   title: {
-    fontSize: 28,
+    fontSize: normalize.font(28),
     fontFamily: "LamaSans-Black",
     color: "#1E293B",
-    marginBottom: 5,
+    marginBottom: normalize.height(5),
   },
   subtextRow: {
     flexDirection: "row",
     alignItems: "center",
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: normalize.font(14),
     color: "#64748B",
     fontFamily: "LamaSans-Regular",
   },
   linkText: {
-    fontSize: 14,
+    fontSize: normalize.font(14),
     color: "#0061FE",
     fontFamily: "LamaSans-Bold",
-    marginRight: 5,
+    marginRight: normalize.width(5),
   },
   inputGroup: {
-    marginBottom: 15, // Reduced from 20
+    marginBottom: normalize.height(15),
   },
   label: {
-    fontSize: 14,
+    fontSize: normalize.font(14),
     fontFamily: "LamaSans-Bold",
     color: "#1E293B",
-    marginBottom: 8,
+    marginBottom: normalize.height(8),
     textAlign: "right",
   },
   input: {
     width: "100%",
-    height: 56,
+    height: normalize.height(56),
     backgroundColor: "#FFFFFF",
-    borderRadius: 16,
+    borderRadius: normalize.radius(16),
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    paddingHorizontal: 20,
-    fontSize: 18,
+    paddingHorizontal: normalize.width(20),
+    fontSize: normalize.font(18),
     fontFamily: "LamaSans-Medium",
   },
   loginBtn: {
-    marginTop: 10, // Reduced
-    height: 60,
+    marginTop: normalize.height(10),
+    height: normalize.height(60),
   },
   bottomWaveContainer: {
     position: "absolute",

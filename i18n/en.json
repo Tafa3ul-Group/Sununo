@@ -40,7 +40,11 @@
     "editProfile": "Edit Profile",
     "notifications": "Notifications",
     "language": "Language",
-    "logout": "Logout"
+    "logout": "Logout",
+    "wallet": {
+      "balance": "Current Balance",
+      "withdraw": "Withdraw"
+    }
   },
   "dashboard": {
     "addChalet": "Add New Chalet",

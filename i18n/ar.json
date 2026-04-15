@@ -45,7 +45,11 @@
     "cancel": "إلغاء",
     "exit": "خروج",
     "contactUs": "تواصل معنا",
-    "privacyPolicy": "سياسة الخصوصية"
+    "privacyPolicy": "سياسة الخصوصية",
+    "wallet": {
+      "balance": "رصيدك الحالي",
+      "withdraw": "سحب"
+    }
   },
   "dashboard": {
     "addChalet": "إضافة شاليه جديد",
