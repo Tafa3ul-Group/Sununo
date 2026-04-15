@@ -110,8 +110,7 @@ export function HeaderSection({
           { marginBottom, flexDirection: isRTL ? "row" : "row" },
         ]}
       >
-        {/* START SIDE (Left in LTR, Right in RTL? No, we force it to match the screenshot) */}
-        {/* Based on screenshot: Left always has Avatar/Back, Right always has Logo */}
+        {/* START SIDE (Left) - Avatar/Back + Search */}
         <View style={[styles.headerSide, { alignItems: "flex-start" }]}>
           {isHome ? (
             <View style={[styles.homeLeftGroup, { flexDirection: "row" }]}>
@@ -142,12 +141,25 @@ export function HeaderSection({
               </TouchableOpacity>
             </View>
           ) : (
-            showBackButton && <CircleBackButton onPress={onBackPress} />
+            <View style={[styles.homeLeftGroup, { flexDirection: "row" }]}>
+              {showBackButton && <CircleBackButton onPress={onBackPress} />}
+              {extraIcon === "search" && (
+                <TouchableOpacity
+                  onPress={onExtraIconPress}
+                  style={styles.searchPillHome}
+                >
+                  <SolarMagnifierBold
+                    size={normalize.width(24)}
+                    color="#94A3B8"
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
           )}
         </View>
 
-        {/* Center Title */}
-        {!isHome && (
+        {/* Center Title - only when no logo shown */}
+        {!isHome && !showLogo && (
           <View style={styles.titleWrapper}>
             <ThemedText style={styles.headerTitle} numberOfLines={1}>
               {title}
@@ -155,7 +167,7 @@ export function HeaderSection({
           </View>
         )}
 
-        {/* END SIDE (Right Side) - Logo is here */}
+        {/* END SIDE (Right Side) - Logo */}
         <View style={[styles.headerSide, { alignItems: "flex-end" }]}>
           {showLogo && (
             <View style={isHome ? styles.logoCircleHome : styles.logoCircle}>
@@ -172,7 +184,7 @@ export function HeaderSection({
           )}
 
           {/* Supporting extra actions for non-home pages */}
-          {!isHome && (showProfile || showExtra) && (
+          {!isHome && !showLogo && (showProfile || showExtra) && (
             <View
               style={{
                 flexDirection: "row",
@@ -374,7 +386,8 @@ const styles = StyleSheet.create({
     marginHorizontal: Spacing.sm,
     fontSize: normalize.font(16),
     color: Colors.text.primary,
-   fontFamily: "LamaSans-Regular" },
+    fontFamily: "LamaSans-Regular"
+  },
   categoriesScroll: {
     paddingHorizontal: Spacing.md,
     marginBottom: Spacing.md,
@@ -401,5 +414,6 @@ const styles = StyleSheet.create({
   },
   categoryLabelActive: {
     color: Colors.background,
-   fontFamily: "LamaSans-Regular" },
+    fontFamily: "LamaSans-Regular",
+  },
 });

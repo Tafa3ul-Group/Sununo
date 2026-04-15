@@ -1,6 +1,7 @@
 import { BookingDetailsModalContent } from '@/components/booking-details-modal-content';
-import { HeaderSection } from '@/components/header-section';
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { DashboardCalendar } from "@/components/dashboard/dashboard-calendar";
+import { HeaderSection } from '@/components/header-section';
 import {
   SolarCalendarBold,
   SolarCheckCircleBold,
@@ -213,18 +214,10 @@ export default function HomeScreen() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeArea}>
-        <HeaderSection
-          userType={userType}
-          userName={user?.name}
-          showSearch={false}
-          showCategories={false}
-          showProfile={true}
-          showLogo={true}
-          extraIcon="search"
-          onExtraIconPress={() => {
+        <DashboardHeader
+          onSearchPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           }}
-          marginBottom={4}
         />
         <View style={{ flex: 1 }}>
           <View style={{ flex: 1 }}>
