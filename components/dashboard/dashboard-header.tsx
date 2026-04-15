@@ -1,4 +1,4 @@
-import { SolarMagnifierBold } from "@/components/icons/solar-icons";
+import { SolarMagnifierBold, SolarUserBold } from "@/components/icons/solar-icons";
 import { Colors, normalize } from "@/constants/theme";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -6,12 +6,14 @@ import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ThemedText } from "../themed-text";
 import { CircleBackButton } from "../ui/circle-back-button";
 
 interface DashboardHeaderProps {
   title?: string;
   showBackButton?: boolean;
+  showSearch?: boolean;
   onProfilePress?: () => void;
   onSearchPress?: () => void;
   marginBottom?: number;
@@ -20,19 +22,21 @@ interface DashboardHeaderProps {
 export function DashboardHeader({
   title,
   showBackButton,
+  showSearch = true,
   onProfilePress,
   onSearchPress,
   marginBottom = 0,
 }: DashboardHeaderProps) {
   const router = useRouter();
   const { i18n } = useTranslation();
+  const insets = useSafeAreaInsets();
   const isRTL = i18n.language === "ar";
 
   return (
-    <View style={[styles.container, { marginBottom }]}>
+    <View style={[styles.container, { marginBottom, paddingTop: insets.top }]}>
       <StatusBar style="dark" />
       <View style={styles.topRow}>
-        {/* Left Side: Avatar & Search OR Back Button */}
+        {/* Left Side: Profile Icon OR Back Button */}
         <View style={styles.leftGroup}>
           {showBackButton ? (
             <CircleBackButton onPress={() => router.back()} />
@@ -40,25 +44,25 @@ export function DashboardHeader({
             <View style={styles.homeLeftGroup}>
               <TouchableOpacity
                 onPress={onProfilePress || (() => router.push("/(dashboard)/profile"))}
-                style={styles.avatarContainer}
+                style={styles.profileCircle}
               >
-                <View style={styles.avatarCircle}>
-                  <Image
-                    source={{ uri: "https://avatar.iran.liara.run/public/30" }}
-                    style={styles.avatarImg}
-                  />
-                </View>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={onSearchPress}
-                style={styles.searchCircle}
-              >
-                <SolarMagnifierBold
+                <SolarUserBold
                   size={normalize.width(22)}
                   color="#111827"
                 />
               </TouchableOpacity>
+
+              {showSearch && (
+                <TouchableOpacity
+                  onPress={onSearchPress}
+                  style={styles.searchCircle}
+                >
+                  <SolarMagnifierBold
+                    size={normalize.width(22)}
+                    color="#111827"
+                  />
+                </TouchableOpacity>
+              )}
             </View>
           ) : null}
         </View>
@@ -127,24 +131,15 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     justifyContent: "center",
   },
-  avatarContainer: {
+  profileCircle: {
     width: normalize.width(42),
     height: normalize.width(42),
     borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#F1F5F9",
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#FFFFFF",
-  },
-  avatarCircle: {
-    width: "82%",
-    height: "82%",
-    borderRadius: 999,
-    overflow: "hidden",
-    backgroundColor: "#FAFCFF",
-  },
-  avatarImg: {
-    width: "100%",
-    height: "100%",
   },
   searchCircle: {
     width: normalize.width(38),

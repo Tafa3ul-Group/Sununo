@@ -27,14 +27,17 @@ const PERIODS = [
 
 export default function RevenueScreen() {
   const router = useRouter();
-  const { user, userType, language } = useSelector((state: RootState) => state.auth);
+  const { user, userType, language, selectedChalet } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
   const isRTL = language === 'ar';
   const [selectedPeriod, setSelectedPeriod] = useState('month');
   const [withdrawAmount, setWithdrawAmount] = useState('');
 
   // API hooks
-  const { data: payoutsResponse, isLoading: isLoadingPayouts } = useGetPayoutsQuery({ limit: 5 });
+  const { data: payoutsResponse, isLoading: isLoadingPayouts } = useGetPayoutsQuery({ 
+    limit: 5,
+    chalet_id: selectedChalet?.id
+  });
   const [requestPayout, { isLoading: isRequesting }] = useRequestPayoutMutation();
 
   const payouts = payoutsResponse?.data || payoutsResponse || [];

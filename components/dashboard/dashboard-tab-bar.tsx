@@ -4,6 +4,7 @@ import {
 import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
 import { RootState } from '@/store';
+import { setSelectedChalet } from '@/store/authSlice';
 import { useGetOwnerChaletsQuery } from '@/store/api/apiSlice';
 import * as Haptics from 'expo-haptics';
 import React, { useState } from 'react';
@@ -16,13 +17,14 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 /**
  * DashboardTabBar - Standardized with CustomTabBar design
  */
 export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors }) => {
-  const { userType, language } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch();
+  const { userType, language, selectedChalet } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
   const isRTL = language === 'ar';
   const insets = useSafeAreaInsets();
@@ -113,7 +115,15 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
           activeOpacity={0.8}
         >
           <View style={styles.tabIconCircle}>
-            <SolarHome2Bold size={normalize.width(28)} color="white" />
+            {selectedChalet?.image ? (
+                <Image 
+                    source={getImageSrc(selectedChalet.image)} 
+                    style={styles.chaletAvatarImg}
+                    resizeMode="cover"
+                />
+            ) : (
+                <SolarHome2Bold size={normalize.width(28)} color="white" />
+            )}
           </View>
         </TouchableOpacity>
 
@@ -169,10 +179,17 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
                   {chalets.map((item: any) => (
                     <TouchableOpacity
                       key={item.id}
-                      style={styles.chaletItem}
+                      style={[
+                        styles.chaletItem,
+                        selectedChalet?.id === item.id && { backgroundColor: '#F0F7FF' }
+                      ]}
                       onPress={() => {
+                        dispatch(setSelectedChalet({
+                            id: item.id,
+                            name: isRTL ? (item.name?.ar || item.name) : (item.name?.en || item.name),
+                            image: item.images?.[0]?.url || null
+                        }));
                         closePopover();
-                        navigation.navigate('chalet-details', { id: item.id });
                       }}
                     >
                       <Image source={getImageSrc(item.images?.[0]?.url)} style={styles.chaletThumb} />
@@ -237,4 +254,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F9FB', alignItems: 'center',
   },
   addNewChaletText: { fontSize: 12, fontWeight: '700', color: Colors.primary },
+  chaletAvatarImg: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 99,
+  },
 });

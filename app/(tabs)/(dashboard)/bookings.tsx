@@ -66,7 +66,7 @@ const format12H = (time: string | undefined | null, isRTL: boolean) => {
 
 export default function BookingsScreen() {
   const router = useRouter();
-  const { language } = useSelector((state: RootState) => state.auth);
+  const { language, selectedChalet } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
   const [activeTab] = React.useState('new');
   const isRTL = language === 'ar';
@@ -80,7 +80,7 @@ export default function BookingsScreen() {
   const [baseDate, setBaseDate] = React.useState(new Date());
   const [selectedDate, setSelectedDate] = React.useState(new Date());
   const [isFilterByDate] = React.useState(true);
-  const [selectedChaletId, setSelectedChaletId] = React.useState<string | null>(null);
+  const [selectedChaletId, setSelectedChaletId] = React.useState<string | null>(selectedChalet?.id || null);
   const [selectedBookingId, setSelectedBookingId] = React.useState<string | null>(null);
   const [selectedShiftForAction, setSelectedShiftForAction] = React.useState<any>(null);
 
@@ -115,6 +115,12 @@ export default function BookingsScreen() {
 
   const { data: chaletsData } = useGetOwnerChaletsQuery(undefined);
   const ownerChalets = React.useMemo(() => chaletsData?.data || [], [chaletsData]);
+
+  React.useEffect(() => {
+    if (selectedChalet?.id) {
+      setSelectedChaletId(selectedChalet.id);
+    }
+  }, [selectedChalet?.id]);
 
   React.useEffect(() => {
     if (!selectedChaletId && ownerChalets.length > 0) {

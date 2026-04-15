@@ -30,7 +30,7 @@ export function CircleBackButton({ style, onPress }: CircleBackButtonProps) {
         viewBox="0 0 17 24" 
         fill="none"
       >
-        <Path d={isArabic ? AR_BACK_PATH : EN_BACK_PATH} fill="#035DF9" />
+        <Path d={isArabic ? EN_BACK_PATH : AR_BACK_PATH} fill="#035DF9" />
       </Svg>
     </TouchableOpacity>
   );

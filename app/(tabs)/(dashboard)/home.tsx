@@ -37,7 +37,7 @@ import Animated, { FadeIn, FadeInDown, FadeInRight, FadeInUp } from 'react-nativ
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { user, userType, language } = useSelector((state: RootState) => state.auth);
+  const { user, userType, language, selectedChalet } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
   const isRTL = language === 'ar';
   const isOwner = userType === 'owner';
@@ -79,12 +79,13 @@ export default function HomeScreen() {
     status: activeFilter !== 'all' ? statusMap[activeFilter] : undefined,
     from: selectedRange?.start ? selectedRange.start.toISOString().split('T')[0] : undefined,
     to: selectedRange?.end ? selectedRange.end.toISOString().split('T')[0] : undefined,
+    chalet_id: selectedChalet?.id,
   });
 
   // Reset pagination when filter changes
   useEffect(() => {
     setPage(1);
-  }, [activeFilter, selectedRange]);
+  }, [activeFilter, selectedRange, selectedChalet?.id]);
 
   const handleLoadMore = () => {
     if (!isBookingsFetching && bookingsResponse?.meta?.nextPage) {
@@ -213,8 +214,9 @@ export default function HomeScreen() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaView style={styles.safeArea}>
+      <View style={styles.safeArea}>
         <DashboardHeader
+          showSearch={false}
           onSearchPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           }}
@@ -356,7 +358,7 @@ export default function HomeScreen() {
             </View>
           </BottomSheetView>
         </BottomSheetModal>
-      </SafeAreaView>
+      </View>
     </GestureHandlerRootView>
   );
 }
