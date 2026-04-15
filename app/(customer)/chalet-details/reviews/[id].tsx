@@ -9,8 +9,13 @@ import { ThemedText } from "@/components/themed-text";
 import { ReviewSubmissionSheet } from "@/components/user/review-submission-sheet";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { Image } from "expo-image";
+import { SecondarySelect } from "@/components/user/secondary-select";
 import { Stack, useLocalSearchParams } from "expo-router";
 import React, { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
   Dimensions,
   Pressable,
@@ -33,9 +38,19 @@ const SAMPLE_IMAGES = [
 ];
 
 export default function ReviewsScreen() {
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams();
+  const { language } = useSelector((state: RootState) => state.auth);
+  const isRTL = language === 'ar';
   const [userRating, setUserRating] = useState(0);
+  const [filterValue, setFilterValue] = useState("latest");
   const reviewSheetRef = useRef<BottomSheetModal>(null);
+
+  const filterOptions = [
+    { label: "اخر التقييمات", value: "latest" },
+    { label: "الاعلى التقييمات", value: "highest" },
+    { label: "الادنى التقييمات", value: "lowest" },
+  ];
 
   const handleRatingPress = (rating: number) => {
     setUserRating(rating);
@@ -68,11 +83,11 @@ export default function ReviewsScreen() {
   ];
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* Standard Header */}
-      <HeaderSection title="المراجعات" showBackButton showLogo />
+      <HeaderSection title={t('headers.reviews')} showBackButton showLogo={false} />
 
       <ScrollView contentContainerStyle={{ paddingBottom: 180 }}>
         <View style={styles.summaryArea}>
@@ -89,14 +104,11 @@ export default function ReviewsScreen() {
         </View>
 
         <View style={styles.filterContainer}>
-          <View style={styles.secondarySplitBtn}>
-            <View style={styles.splitTextPart}>
-              <ThemedText style={styles.splitLabel}>اخر التقييمات</ThemedText>
-            </View>
-            <View style={styles.splitIconPart}>
-              <SolarAltArrowDownLinear size={18} color="#035DF9" />
-            </View>
-          </View>
+          <SecondarySelect
+            options={filterOptions}
+            value={filterValue}
+            onSelect={setFilterValue}
+          />
         </View>
 
         <View style={{ paddingHorizontal: 20 }}>
@@ -184,7 +196,7 @@ export default function ReviewsScreen() {
         onSubmit={handleReviewSubmit}
         initialRating={userRating}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -202,33 +214,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: normalize(20),
     alignItems: "flex-end",
     marginBottom: normalize(25),
-  },
-  secondarySplitBtn: {
-    flexDirection: "row-reverse",
-    height: normalize(48),
-    borderRadius: normalize(14),
-    borderWidth: normalize(1),
-    borderColor: "#E5E7EB",
-    backgroundColor: "#FFFFFF",
-    overflow: "hidden",
-  },
-  splitTextPart: {
-    paddingHorizontal: normalize(16),
-    justifyContent: "center",
-    alignItems: "center",
-    borderRightWidth: normalize(1),
-    borderRightColor: "#E5E7EB",
-  },
-  splitLabel: {
-    fontSize: normalize(15),
-    fontFamily: "LamaSans-Bold",
-    color: "#111827",
-  },
-  splitIconPart: {
-    width: normalize(48),
-    height: normalize(48),
-    justifyContent: "center",
-    alignItems: "center",
   },
   revCardFlat: {
     backgroundColor: "#FFFFFF",

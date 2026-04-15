@@ -2,6 +2,8 @@ import { ThemedText } from "@/components/themed-text";
 import React from "react";
 import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
 import Svg, { ClipPath, Defs, G, Path, Rect } from "react-native-svg";
+import { useTranslation } from "react-i18next";
+import { normalize } from "@/constants/theme";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -14,6 +16,8 @@ export const WalletCard = ({
   balance = "100,000",
   onWithdraw,
 }: WalletCardProps) => {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
   return (
     <View style={styles.container}>
       {/* SVG Background - Cropped */}
@@ -65,22 +69,22 @@ export const WalletCard = ({
 
       {/* Content Overlay */}
       <View style={styles.contentOverlay}>
-        <View style={styles.topRow}>
-          <ThemedText style={styles.balanceLabel}>رصيدك الحالي</ThemedText>
+        <View style={[styles.topRow, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+          <ThemedText style={[styles.balanceLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{t('profile.wallet.balance')}</ThemedText>
         </View>
 
-        <View style={styles.bottomRow}>
-          <View style={styles.balanceContainer}>
+        <View style={[styles.bottomRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+          <View style={[styles.balanceContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             <ThemedText style={styles.balanceValue}>{balance}</ThemedText>
-            <ThemedText style={styles.currencyText}>د.ع</ThemedText>
+            <ThemedText style={styles.currencyText}>{t('common.iqd')}</ThemedText>
           </View>
 
           <TouchableOpacity
-            style={styles.withdrawButton}
+            style={[styles.withdrawButton, { paddingLeft: isRTL ? 59 : 0, paddingRight: isRTL ? 0 : 59 }]}
             onPress={onWithdraw}
             activeOpacity={0.8}
           >
-            <ThemedText style={styles.withdrawText}>سحب</ThemedText>
+            <ThemedText style={styles.withdrawText}>{t('profile.wallet.withdraw')}</ThemedText>
           </TouchableOpacity>
         </View>
       </View>
@@ -115,12 +119,10 @@ const styles = StyleSheet.create({
     fontFamily: "LamaSans-Black",
   },
   bottomRow: {
-    flexDirection: "row",
     alignItems: "flex-end",
     justifyContent: "space-between",
   },
   balanceContainer: {
-    flexDirection: "row-reverse",
     alignItems: "baseline",
     gap: 6,
   },
@@ -139,7 +141,6 @@ const styles = StyleSheet.create({
     height: 35,
     justifyContent: "center",
     alignItems: "center",
-    paddingLeft: 59, // Shifted further to the right
   },
   withdrawText: {
     color: "white",

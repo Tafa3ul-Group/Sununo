@@ -9,6 +9,7 @@ import { ThemedText } from '@/components/themed-text';
 import { SolarAltArrowRightBold, SolarHeartBold } from "@/components/icons/solar-icons";
 import { useRouter } from 'expo-router';
 import { HorizontalCard } from '@/components/user/horizontal-card';
+import { HeaderSection } from '@/components/header-section';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -43,14 +44,12 @@ export default function FavoritesScreen() {
   return (
     <SafeAreaView style={styles.container}>
       {/* Header matching the design */}
-      <View style={styles.header}>
-         <View style={styles.headerInner}>
-            <ThemedText style={styles.headerTitle}>{isRTL ? 'المفضلات' : 'Favorites'}</ThemedText>
-            <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-                <SolarAltArrowRightBold size={normalize.width(22)} color="#035DF9" />
-            </TouchableOpacity>
-         </View>
-      </View>
+      {/* Header matching the design */}
+      <HeaderSection 
+        title={t('headers.favorites')} 
+        showBackButton 
+        showLogo={false} 
+      />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {favorites.length > 0 ? (
@@ -82,36 +81,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: 'white',
-  },
-  headerInner: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-    height: 48,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontFamily: "LamaSans-Black",
-    color: '#111827',
-  },
-  backButton: {
-    position: 'absolute',
-    right: 0,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...Shadows.small,
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
   },
   scrollContent: {
     padding: 16,

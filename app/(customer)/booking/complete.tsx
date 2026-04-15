@@ -423,9 +423,9 @@ export default function CompleteBookingScreen() {
     <BottomSheetModalProvider>
     <SafeAreaView style={styles.container}>
       <HeaderSection 
-        title={t('booking.complete')} 
+        title={t('headers.bookingComplete')} 
         showBackButton 
-        showLogo 
+        showLogo={false} 
         userType={userType}
       />
 

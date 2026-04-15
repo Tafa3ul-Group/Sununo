@@ -1,6 +1,7 @@
 import { SolarHeartBold, SolarStarBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
-import { Colors, normalize, isRTL } from "@/constants/theme";
+import { useTranslation } from "react-i18next";
+import { Colors, normalize } from "@/constants/theme";
 import React, { useState } from "react";
 import {
   Dimensions,
@@ -61,6 +62,8 @@ export function HorizontalCard({
   shapeIndex = 2,
   hideFavorite = false,
 }: HorizontalCardProps) {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
   const [isFavorite, setIsFavorite] = useState(false);
 
   if (!chalet) return null;
@@ -77,12 +80,12 @@ export function HorizontalCard({
     <TouchableOpacity
       activeOpacity={0.9}
       onPress={onPress}
-      style={[styles.container, style]}
+      style={[styles.container, { flexDirection: isRTL ? 'row' : 'row-reverse' }, style]}
     >
-      {/* الجزء الأيسر: المعلومات (منقسم لصفين علوي وسفلي) */}
+      {/* info side */}
       <View style={styles.contentAndLeft}>
-        {/* الصف العلوي: القلب + العنوان والموقع */}
-        <View style={styles.topRow}>
+        {/* Top Row: Heart + Title/Location */}
+        <View style={[styles.topRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
           <View style={styles.leftColumn}>
             {!hideFavorite && (
               <TouchableOpacity
@@ -98,34 +101,34 @@ export function HorizontalCard({
           </View>
 
           <View style={styles.mainContent}>
-            <View style={styles.upperText}>
-              <ThemedText style={styles.title} numberOfLines={1}>
+            <View style={[styles.upperText, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+              <ThemedText style={[styles.title, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
                 {chalet.title}
               </ThemedText>
-              <ThemedText style={styles.location} numberOfLines={1}>
+              <ThemedText style={[styles.location, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
                 {chalet.location}
               </ThemedText>
             </View>
           </View>
         </View>
 
-        {/* الصف السفلي: التقييم + السعر */}
-        <View style={styles.bottomRow}>
-          <View style={styles.ratingBox}>
+        {/* Bottom Row: Rating + Price */}
+        <View style={[styles.bottomRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+          <View style={[styles.ratingBox, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
             <SolarStarBold size={normalize.width(16)} color={Colors.secondary} />
             <ThemedText style={styles.ratingText}>
               {chalet.rating || "4.5"}
             </ThemedText>
           </View>
 
-          <View style={styles.priceRow}>
+          <View style={[styles.priceRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             <ThemedText style={styles.price}>IQD {chalet.price}</ThemedText>
-            <ThemedText style={styles.priceLabel}> / شفت</ThemedText>
+            <ThemedText style={styles.priceLabel}> / {isRTL ? "شفت" : "Shift"}</ThemedText>
           </View>
         </View>
       </View>
 
-      {/* الجزء الأيمن: الصورة */}
+      {/* Image side */}
       <View style={styles.imageWrapper}>
         <Svg
           height={normalize.height(88)}
@@ -216,7 +219,6 @@ const styles = StyleSheet.create({
     color: "#111827",
   },
   upperText: {
-    alignItems: "flex-end",
     marginTop: 4,
   },
   title: {
@@ -230,7 +232,6 @@ const styles = StyleSheet.create({
     marginTop: 2,
    fontFamily: "LamaSans-Regular" },
   priceRow: {
-    flexDirection: "row-reverse",
     alignItems: "center",
     gap: 4,
   },

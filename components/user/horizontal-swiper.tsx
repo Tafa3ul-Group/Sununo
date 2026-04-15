@@ -1,5 +1,6 @@
 import { normalize } from "@/constants/theme";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
   Dimensions,
   FlatList,
@@ -9,8 +10,8 @@ import {
 import { HorizontalCard } from "./horizontal-card";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const ITEM_WIDTH = SCREEN_WIDTH - normalize.width(40);
-const SEPARATOR_WIDTH = normalize.width(12);
+const ITEM_WIDTH = SCREEN_WIDTH - 32;
+const SEPARATOR_WIDTH = 12;
 
 interface HorizontalSwiperProps {
   data: any[];
@@ -18,6 +19,8 @@ interface HorizontalSwiperProps {
 }
 
 export function HorizontalSwiper({ data, onPressCard }: HorizontalSwiperProps) {
+  const { i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
   const renderItem = ({ item, index }: { item: any; index: number }) => (
     <View style={{ width: ITEM_WIDTH }}>
       <HorizontalCard
@@ -39,7 +42,7 @@ export function HorizontalSwiper({ data, onPressCard }: HorizontalSwiperProps) {
         showsHorizontalScrollIndicator={false}
         snapToInterval={ITEM_WIDTH + SEPARATOR_WIDTH}
         decelerationRate="fast"
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
         pagingEnabled={false}
         ItemSeparatorComponent={() => (
           <View style={{ width: SEPARATOR_WIDTH }} />
@@ -54,9 +57,7 @@ const styles = StyleSheet.create({
     // No default margins, managed by parent
   },
   listContent: {
-    paddingHorizontal: normalize.width(20),
-    flexDirection: "row-reverse", // Align items for Arabic
-    gap: SEPARATOR_WIDTH,
+    paddingHorizontal: 16,
   },
   cardOverride: {
     width: "100%",

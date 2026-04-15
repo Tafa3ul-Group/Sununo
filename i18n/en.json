@@ -31,16 +31,37 @@
       "all": "All",
       "popular": "Popular",
       "nearby": "Nearby",
-      "luxury": "Luxury"
+      "luxury": "Luxury",
+      "pool": "Pool",
+      "bbq": "BBQ",
+      "garden": "Garden"
     },
-    "seeAll": "See All"
+    "seeAll": "See All",
+    "openMap": "Open Map",
+    "recentBookings": "Recent Bookings",
+    "recommended": "Recommended for you"
   },
   "profile": {
     "title": "Profile",
     "editProfile": "Edit Profile",
     "notifications": "Notifications",
     "language": "Language",
-    "logout": "Logout"
+    "logout": "Logout",
+    "wallet": {
+      "balance": "Current Balance",
+      "withdraw": "Withdraw"
+    },
+    "edit": {
+      "birthDate": "Birth Date",
+      "changePhone": "Change Phone",
+      "confirm": "Confirm"
+    },
+    "review": {
+      "question": "How would you rate your experience?",
+      "placeholder": "Write your comments here...",
+      "send": "Send",
+      "cancel": "Cancel"
+    }
   },
   "dashboard": {
     "addChalet": "Add New Chalet",
@@ -168,5 +189,58 @@
     "noBookings": "No bookings yet",
     "noBookingsDesc": "Explore available chalets and book your next trip!",
     "exploreNow": "Explore Now"
+  },
+  "headers": {
+    "notifications": "Notifications",
+    "favorites": "Favorites",
+    "explore": "Map",
+    "reviews": "Reviews",
+    "facilities": "Facilities",
+    "bookings": "Bookings",
+    "gallery": "Gallery",
+    "bookingComplete": "Booking Completion",
+    "bookingDetails": "Booking Details",
+    "profile": "Profile",
+    "home": "Home"
+  },
+  "facilities": {
+    "general": "General Services",
+    "wifi": "Wi-Fi",
+    "garage": "Shaded Garage",
+    "generator": "Automatic Generator",
+    "bathroom": "Bathroom",
+    "essentials": "Basic Essentials",
+    "essentialsDesc": "Towels, soap, toilet paper",
+    "hairDryer": "Hair Dryer",
+    "shampoo": "Shampoo & Conditioner",
+    "soap": "Soap & Shower Gel",
+    "hotWater": "Hot Water",
+    "outdoorSinks": "Outdoor Sinks",
+    "kitchen": "Kitchen",
+    "fullKitchen": "Full Kitchen",
+    "kitchenDesc": "Stove, oven, large fridge",
+    "cookingTools": "Cooking Tools",
+    "toolsDesc": "Pots, pans, oil, salt & pepper",
+    "table": "Table",
+    "tableDesc": "Plates, spoons, tea & coffee cups",
+    "outdoorFeatures": "Outdoor Features",
+    "privatePool": "Private Pool",
+    "bbqArea": "BBQ Area",
+    "outdoorSeating": "Shaded Outdoor Seating"
+  },
+  "chalet": {
+    "details": {
+      "specs": "Basic Specifications",
+      "facilities": "Facilities",
+      "overview": "Overview",
+      "location": "Location",
+      "reviews": "Reviews",
+      "addReview": "Add Review",
+      "related": "You Might Also Like",
+      "bookNow": "Book Now",
+      "readMore": "Read More",
+      "morningShift": "Morning Shift",
+      "specsList": ["Garden with House", "300m", "1 Bathroom", "3 Rooms"]
+    }
   }
 }

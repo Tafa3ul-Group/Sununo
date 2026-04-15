@@ -130,7 +130,12 @@ export default function BookingsScreen() {
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
-      <HeaderSection title={t('tabs.bookings') || 'الحجوزات'} showLogo />
+      <HeaderSection 
+        title={t('tabs.bookings') || 'الحجوزات'} 
+        showLogo 
+        showBackButton={true}
+        onBackPress={() => router.back()}
+      />
 
       <ScrollView 
         contentContainerStyle={styles.scrollContent}

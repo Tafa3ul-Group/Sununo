@@ -6,12 +6,14 @@ export const isRTL = I18nManager.isRTL;
 /**
  * Normalization utilities to ensure consistent UI across different screen sizes and platforms.
  */
-export const normalize = {
+const scaleFunction = (size: number) => scale(size);
+
+export const normalize = Object.assign(scaleFunction, {
   width: (size: number) => scale(size),
   height: (size: number) => verticalScale(size),
   font: (size: number, factor: number = 0.5) => moderateScale(size, factor),
   radius: (size: number, factor: number = 0.5) => moderateScale(size, factor),
-};
+});
 
 const BrandColors = {
   blue: "#2B66FF",
