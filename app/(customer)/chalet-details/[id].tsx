@@ -19,6 +19,7 @@ import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize } from "@/constants/theme";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Dimensions,
   Image,
@@ -50,6 +51,8 @@ const SectionHeader = ({
 export default function ChaletDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const { i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
   const [activeImage, setActiveImage] = useState(0);
   const reviewSheetRef = React.useRef<BottomSheetModal>(null);
 
@@ -99,7 +102,7 @@ export default function ChaletDetailScreen() {
                 />
             </TouchableOpacity>
           </ScrollView>
-          <CircleBackButton style={styles.backBtnOriginal} />
+          <CircleBackButton style={[styles.backBtnOriginal, isRTL ? { right: 20, left: undefined } : { left: 20, right: undefined }]} />
           <View style={styles.paginationDots}>
             {[1, 2, 3, 4, 5].map((_, i) => (
               <View

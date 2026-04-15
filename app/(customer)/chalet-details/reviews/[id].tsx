@@ -12,6 +12,9 @@ import { Image } from "expo-image";
 import { SecondarySelect } from "@/components/user/secondary-select";
 import { Stack, useLocalSearchParams } from "expo-router";
 import React, { useRef, useState } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
   Dimensions,
   Pressable,
@@ -35,6 +38,8 @@ const SAMPLE_IMAGES = [
 
 export default function ReviewsScreen() {
   const { id } = useLocalSearchParams();
+  const { language } = useSelector((state: RootState) => state.auth);
+  const isRTL = language === 'ar';
   const [userRating, setUserRating] = useState(0);
   const [filterValue, setFilterValue] = useState("latest");
   const reviewSheetRef = useRef<BottomSheetModal>(null);
@@ -76,11 +81,11 @@ export default function ReviewsScreen() {
   ];
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* Standard Header */}
-      <HeaderSection title="المراجعات" showBackButton showLogo />
+      <HeaderSection title="المراجعات" showBackButton showLogo={false} />
 
       <ScrollView contentContainerStyle={{ paddingBottom: 180 }}>
         <View style={styles.summaryArea}>
@@ -189,7 +194,7 @@ export default function ReviewsScreen() {
         onSubmit={handleReviewSubmit}
         initialRating={userRating}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 

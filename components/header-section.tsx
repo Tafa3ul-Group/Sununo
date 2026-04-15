@@ -107,13 +107,13 @@ export function HeaderSection({
       <View
         style={[
           styles.topRow,
-          { marginBottom, flexDirection: isRTL ? "row" : "row" },
+          { marginBottom, flexDirection: isRTL ? "row-reverse" : "row" },
         ]}
       >
         {/* START SIDE (Left) - Avatar/Back + Search */}
-        <View style={[styles.headerSide, { alignItems: "flex-start" }]}>
+        <View style={[styles.headerSide, { alignItems: isRTL ? "flex-end" : "flex-start" }]}>
           {isHome ? (
-            <View style={[styles.homeLeftGroup, { flexDirection: "row" }]}>
+            <View style={[styles.homeLeftGroup, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
               <TouchableOpacity
                 onPress={
                   onProfilePress || (() => router.push("/(customer)/profile"))
@@ -141,7 +141,7 @@ export function HeaderSection({
               </TouchableOpacity>
             </View>
           ) : (
-            <View style={[styles.homeLeftGroup, { flexDirection: "row" }]}>
+            <View style={[styles.homeLeftGroup, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
               {showBackButton && <CircleBackButton onPress={onBackPress} />}
               {extraIcon === "search" && (
                 <TouchableOpacity
@@ -168,7 +168,7 @@ export function HeaderSection({
         )}
 
         {/* END SIDE (Right Side) - Logo */}
-        <View style={[styles.headerSide, { alignItems: "flex-end" }]}>
+        <View style={[styles.headerSide, { alignItems: isRTL ? "flex-start" : "flex-end" }]}>
           {showLogo && (
             <View style={isHome ? styles.logoCircleHome : styles.logoCircle}>
               <Image

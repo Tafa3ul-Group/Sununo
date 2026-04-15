@@ -80,7 +80,7 @@ export default function NotificationsScreen() {
             <HeaderSection 
                 title={isRTL ? 'الاشعارات' : 'Notifications'} 
                 showBackButton 
-                showLogo 
+                showLogo={false} 
             />
 
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>

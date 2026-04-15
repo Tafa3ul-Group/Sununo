@@ -122,8 +122,10 @@ export default function ExploreScreen() {
       <View style={[styles.topOverlay, { paddingTop: insets.top }]}>
         {/* Main Header */}
         <HeaderSection 
-          isHome={true}
-          showLogo={true}
+          title="الخريطة"
+          showBackButton={true}
+          isHome={false}
+          showLogo={false}
           onExtraIconPress={() => {
             // Usually this would open a search sheet
           }}
