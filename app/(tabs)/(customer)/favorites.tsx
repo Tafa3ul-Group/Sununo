@@ -46,7 +46,7 @@ export default function FavoritesScreen() {
       {/* Header matching the design */}
       {/* Header matching the design */}
       <HeaderSection 
-        title={isRTL ? 'المفضلات' : 'Favorites'} 
+        title={t('headers.favorites')} 
         showBackButton 
         showLogo={false} 
       />

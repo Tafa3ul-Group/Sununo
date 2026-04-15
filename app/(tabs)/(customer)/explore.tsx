@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import {
   StyleSheet,
   View,
@@ -80,6 +81,8 @@ const FILTER_OPTIONS = [
 ];
 
 export default function ExploreScreen() {
+  const { t } = useTranslation();
+  const { language } = useSelector((state: RootState) => state.auth);
   const { userType } = useSelector((state: RootState) => state.auth);
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -122,7 +125,7 @@ export default function ExploreScreen() {
       <View style={[styles.topOverlay, { paddingTop: insets.top }]}>
         {/* Main Header */}
         <HeaderSection 
-          title="الخريطة"
+          title={t('headers.explore')}
           showBackButton={true}
           isHome={false}
           showLogo={false}

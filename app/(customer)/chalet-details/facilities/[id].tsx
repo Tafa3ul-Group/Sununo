@@ -1,5 +1,6 @@
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dimensions,
   ScrollView,
@@ -64,7 +65,7 @@ const FacilityCard = ({ label, subtext, color, Icon }: { label: string; subtext?
 );
 
 export default function FacilitiesScreen() {
-  const router = useRouter();
+  const { t } = useTranslation();
   const { userType } = useSelector((state: RootState) => state.auth);
 
   return (
@@ -72,7 +73,7 @@ export default function FacilitiesScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       
       {/* Normalized Header */}
-      <HeaderSection title="المرافق" showBackButton showLogo={false} userType={userType} />
+      <HeaderSection title={t('headers.facilities')} showBackButton showLogo={false} userType={userType} />
 
        <ScrollView 
          style={{ backgroundColor: '#FFFFFF' }}
@@ -80,31 +81,31 @@ export default function FacilitiesScreen() {
        >
           <View style={{ paddingHorizontal: 20 }}>
               {/* الخدمات العامة */}
-              <SectionHeader title="الخدمات العامة" />
-              <FacilityCard label="واي فاي" color="#FF4500" Icon={SolarWifiBold} />
-              <FacilityCard label="كراج مظلل" color="#FF4500" Icon={SolarHome2Bold} />
-              <FacilityCard label="مولدة أوتوماتيكية" color="#FF4500" Icon={SolarWindBold} />
+              <SectionHeader title={t('facilities.general')} />
+              <FacilityCard label={t('facilities.wifi')} color="#FF4500" Icon={SolarWifiBold} />
+              <FacilityCard label={t('facilities.garage')} color="#FF4500" Icon={SolarHome2Bold} />
+              <FacilityCard label={t('facilities.generator')} color="#FF4500" Icon={SolarWindBold} />
 
               {/* الحمام */}
-              <SectionHeader title="الحمام" />
-              <FacilityCard label="المستلزمات الأساسية" subtext="مناشف، صابون، ورق حمام" color="#035DF9" Icon={SolarLockBold} />
-              <FacilityCard label="مجفف شعر" color="#035DF9" Icon={SolarWindBold} />
-              <FacilityCard label="شامبو وبلسم" color="#035DF9" Icon={SolarWaterBold} />
-              <FacilityCard label="صابون وجل استحمام" color="#035DF9" Icon={SolarWaterBold} />
-              <FacilityCard label="ماء حار" color="#035DF9" Icon={SolarWaterBold} />
-              <FacilityCard label="مغاسل خارجية" color="#035DF9" Icon={SolarWaterBold} />
+              <SectionHeader title={t('facilities.bathroom')} />
+              <FacilityCard label={t('facilities.essentials')} subtext={t('facilities.essentialsDesc')} color="#035DF9" Icon={SolarLockBold} />
+              <FacilityCard label={t('facilities.hairDryer')} color="#035DF9" Icon={SolarWindBold} />
+              <FacilityCard label={t('facilities.shampoo')} color="#035DF9" Icon={SolarWaterBold} />
+              <FacilityCard label={t('facilities.soap')} color="#035DF9" Icon={SolarWaterBold} />
+              <FacilityCard label={t('facilities.hotWater')} color="#035DF9" Icon={SolarWaterBold} />
+              <FacilityCard label={t('facilities.outdoorSinks')} color="#035DF9" Icon={SolarWaterBold} />
 
               {/* المطبخ */}
-              <SectionHeader title="المطبخ" />
-              <FacilityCard label="مطبخ متكامل" subtext="طباخ، فرن، ثلاجة كبيرة" color="#15AB64" Icon={SolarHome2Bold} />
-              <FacilityCard label="أدوات الطبخ" subtext="قدور، مقالي، زيت، ملح وفلفل" color="#15AB64" Icon={SolarSettingsBold} />
-              <FacilityCard label="مائدة" subtext="أطباق، ملاعق، أكواب شاي وقهوة" color="#15AB64" Icon={SolarWidgetBold} />
+              <SectionHeader title={t('facilities.kitchen')} />
+              <FacilityCard label={t('facilities.fullKitchen')} subtext={t('facilities.kitchenDesc')} color="#15AB64" Icon={SolarHome2Bold} />
+              <FacilityCard label={t('facilities.cookingTools')} subtext={t('facilities.toolsDesc')} color="#15AB64" Icon={SolarSettingsBold} />
+              <FacilityCard label={t('facilities.table')} subtext={t('facilities.tableDesc')} color="#15AB64" Icon={SolarWidgetBold} />
 
               {/* الميزات الخارجية */}
-              <SectionHeader title="الميزات الخارجية" />
-              <FacilityCard label="مسبح خاص" color="#FF69B4" Icon={SolarWaterBold} />
-              <FacilityCard label="منطقة شواء" color="#FF69B4" Icon={SolarFireBold} />
-              <FacilityCard label="جلسة خارجية مظللة" color="#FF69B4" Icon={SolarHome2Bold} />
+              <SectionHeader title={t('facilities.outdoorFeatures')} />
+              <FacilityCard label={t('facilities.privatePool')} color="#FF69B4" Icon={SolarWaterBold} />
+              <FacilityCard label={t('facilities.bbqArea')} color="#FF69B4" Icon={SolarFireBold} />
+              <FacilityCard label={t('facilities.outdoorSeating')} color="#FF69B4" Icon={SolarHome2Bold} />
           </View>
       </ScrollView>
     </SafeAreaView>

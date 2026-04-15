@@ -176,5 +176,37 @@
     "noBookings": "لا توجد حجوزات حتى الآن",
     "noBookingsDesc": "ابدأ باستكشاف الشاليهات المتاحة واحجز رحلتك القادمة!",
     "exploreNow": "اكتشف الآن"
+  },
+  "headers": {
+    "notifications": "الإشعارات",
+    "favorites": "المفضلات",
+    "explore": "الخريطة",
+    "reviews": "المراجعات",
+    "facilities": "المرافق"
+  },
+  "facilities": {
+    "general": "الخدمات العامة",
+    "wifi": "واي فاي",
+    "garage": "كراج مظلل",
+    "generator": "مولدة أوتوماتيكية",
+    "bathroom": "الحمام",
+    "essentials": "المستلزمات الأساسية",
+    "essentialsDesc": "مناشف، صابون، ورق حمام",
+    "hairDryer": "مجفف شعر",
+    "shampoo": "شامبو وبلسم",
+    "soap": "صابون وجل استحمام",
+    "hotWater": "ماء حار",
+    "outdoorSinks": "مغاسل خارجية",
+    "kitchen": "المطبخ",
+    "fullKitchen": "مطبخ متكامل",
+    "kitchenDesc": "طباخ، فرن، ثلاجة كبيرة",
+    "cookingTools": "أدوات الطبخ",
+    "toolsDesc": "قدور، مقالي، زيت، ملح وفلفل",
+    "table": "مائدة",
+    "tableDesc": "أطباق، ملاعق، أكواب شاي وقهوة",
+    "outdoorFeatures": "الميزات الخارجية",
+    "privatePool": "مسبح خاص",
+    "bbqArea": "منطقة شواء",
+    "outdoorSeating": "جلسة خارجية مظللة"
   }
 }

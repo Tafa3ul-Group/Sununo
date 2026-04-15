@@ -12,6 +12,7 @@ import { Image } from "expo-image";
 import { SecondarySelect } from "@/components/user/secondary-select";
 import { Stack, useLocalSearchParams } from "expo-router";
 import React, { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -37,6 +38,7 @@ const SAMPLE_IMAGES = [
 ];
 
 export default function ReviewsScreen() {
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams();
   const { language } = useSelector((state: RootState) => state.auth);
   const isRTL = language === 'ar';
@@ -85,7 +87,7 @@ export default function ReviewsScreen() {
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* Standard Header */}
-      <HeaderSection title="المراجعات" showBackButton showLogo={false} />
+      <HeaderSection title={t('headers.reviews')} showBackButton showLogo={false} />
 
       <ScrollView contentContainerStyle={{ paddingBottom: 180 }}>
         <View style={styles.summaryArea}>

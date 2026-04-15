@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
@@ -55,6 +56,7 @@ const MOCK_DATA = {
 };
 
 export default function NotificationsScreen() {
+    const { t } = useTranslation();
     const { language } = useSelector((state: RootState) => state.auth);
     const isRTL = language === 'ar';
     const router = useRouter();
@@ -78,7 +80,7 @@ export default function NotificationsScreen() {
     return (
         <SafeAreaView style={styles.container}>
             <HeaderSection 
-                title={isRTL ? 'الاشعارات' : 'Notifications'} 
+                title={t('headers.notifications')} 
                 showBackButton 
                 showLogo={false} 
             />
