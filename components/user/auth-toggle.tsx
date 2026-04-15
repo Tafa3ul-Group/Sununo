@@ -1,20 +1,20 @@
 import React, { useEffect } from "react";
 import {
-    Dimensions,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import Animated, {
-    interpolate,
-    interpolateColor,
-    useAnimatedProps,
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring,
+  interpolate,
+  interpolateColor,
+  useAnimatedProps,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
 } from "react-native-reanimated";
-import Svg, { Path, G } from "react-native-svg";
+import Svg, { G, Path } from "react-native-svg";
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 const AnimatedG = Animated.createAnimatedComponent(G);
@@ -23,12 +23,15 @@ const AnimatedText = Animated.createAnimatedComponent(Text);
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 interface AuthToggleProps {
-  activeType: 'owner' | 'customer';
-  onChange: (type: 'owner' | 'customer') => void;
+  activeType: "owner" | "customer";
+  onChange: (type: "owner" | "customer") => void;
 }
 
-export const AuthToggle: React.FC<AuthToggleProps> = ({ activeType, onChange }) => {
-  const transition = useSharedValue(activeType === 'owner' ? 0 : 1);
+export const AuthToggle: React.FC<AuthToggleProps> = ({
+  activeType,
+  onChange,
+}) => {
+  const transition = useSharedValue(activeType === "owner" ? 0 : 1);
 
   const springConfig = {
     damping: 18,
@@ -37,7 +40,7 @@ export const AuthToggle: React.FC<AuthToggleProps> = ({ activeType, onChange }) 
   };
 
   useEffect(() => {
-    transition.value = withSpring(activeType === 'owner' ? 0 : 1, springConfig);
+    transition.value = withSpring(activeType === "owner" ? 0 : 1, springConfig);
   }, [activeType]);
 
   const circleGroupProps = useAnimatedProps(() => {
@@ -45,7 +48,7 @@ export const AuthToggle: React.FC<AuthToggleProps> = ({ activeType, onChange }) 
     return {
       transform: [
         { translateX: xOffset },
-        { translateX: 140 }, // Center of the 280 width
+        { translateX: 140 },
         { translateY: 40 },
         { scale: 1 },
         { translateX: -140 },
@@ -76,10 +79,11 @@ export const AuthToggle: React.FC<AuthToggleProps> = ({ activeType, onChange }) 
             strokeWidth={1.5}
           />
           <AnimatedG animatedProps={circleGroupProps}>
-             <AnimatedPath 
-               d="M140 10C156.569 10 170 23.4315 170 40C170 56.5685 156.569 70 140 70C123.4315 70 110 56.5685 110 40C110 23.4315 123.4315 10 140 10Z" 
-               fill="#F64200" 
-             />
+            {/* Fully Rounded Capsule Pill Shape */}
+            <AnimatedPath
+              d="M114 8C96.3269 8 82 22.3269 82 40C82 57.6731 96.3269 72 114 72H166C183.673 72 198 57.6731 198 40C198 22.3269 183.673 8 166 8H114Z"
+              fill="#F64200"
+            />
           </AnimatedG>
         </Svg>
       </View>
