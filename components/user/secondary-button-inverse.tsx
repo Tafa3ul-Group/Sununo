@@ -2,21 +2,21 @@ import { ThemedText } from "@/components/themed-text";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ActivityIndicator,
-  StyleSheet,
-  TextStyle,
-  TouchableOpacity,
-  View,
-  ViewStyle,
+    ActivityIndicator,
+    StyleSheet,
+    TextStyle,
+    TouchableOpacity,
+    View,
+    ViewStyle,
 } from "react-native";
 
-interface SecondaryButtonProps {
+interface SecondaryButtonInverseProps {
   label: string;
   onPress: () => void;
   isActive?: boolean;
   icon?: React.ReactNode;
   iconLabel?: string;
-  iconPosition?: 'left' | 'right';
+  iconPosition?: "left" | "right";
   activeColor?: string;
   inactiveColor?: string;
   activeTextColor?: string;
@@ -26,7 +26,7 @@ interface SecondaryButtonProps {
   isLoading?: boolean;
 }
 
-export function SecondaryButton({
+export function SecondaryButtonInverse({
   label,
   onPress,
   isActive = false,
@@ -40,12 +40,12 @@ export function SecondaryButton({
   style,
   textStyle,
   isLoading = false,
-}: SecondaryButtonProps) {
+}: SecondaryButtonInverseProps) {
   const { i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
+  const isRTL = i18n.language === "ar";
 
-  // Use provided iconPosition or default to RTL-aware default
-  const finalIconPosition = iconPosition || (isRTL ? 'right' : 'left');
+  // Opposite side from SecondaryButton
+  const finalIconPosition = iconPosition || (isRTL ? "left" : "right");
 
   const bgColor = isActive ? activeColor : "white";
   const borderColor = isActive ? activeColor : "#E5E7EB";
@@ -60,11 +60,11 @@ export function SecondaryButton({
       style={[
         styles.container,
         {
-          flexDirection: finalIconPosition === 'right' ? 'row-reverse' : 'row',
-          gap: -1.5
+          flexDirection: finalIconPosition === "right" ? "row-reverse" : "row",
+          gap: -1.5,
         },
         style,
-        isLoading && { opacity: 0.7 }
+        isLoading && { opacity: 0.7 },
       ]}
       disabled={isLoading}
     >
@@ -78,13 +78,13 @@ export function SecondaryButton({
             backgroundColor: bgColor,
             borderColor: borderColor,
             borderWidth: 1.5,
-            borderTopRightRadius: finalIconPosition === 'right' ? 23 : 8,
-            borderBottomRightRadius: finalIconPosition === 'right' ? 23 : 8,
-            borderTopLeftRadius: finalIconPosition === 'left' ? 23 : 8,
-            borderBottomLeftRadius: finalIconPosition === 'left' ? 23 : 8,
-            justifyContent: 'center',
-            alignItems: 'center'
-          }
+            borderTopRightRadius: finalIconPosition === "right" ? 23 : 8,
+            borderBottomRightRadius: finalIconPosition === "right" ? 23 : 8,
+            borderTopLeftRadius: finalIconPosition === "left" ? 23 : 8,
+            borderBottomLeftRadius: finalIconPosition === "left" ? 23 : 8,
+            justifyContent: "center",
+            alignItems: "center",
+          },
         ]}
       >
         {!!(icon || iconLabel || isLoading) && (
@@ -93,10 +93,7 @@ export function SecondaryButton({
               <ActivityIndicator color={finalContentColor} size="small" />
             ) : iconLabel ? (
               <ThemedText
-                style={[
-                  styles.text,
-                  { color: finalContentColor, fontSize: 16 },
-                ]}
+                style={[styles.text, { color: finalContentColor, fontSize: 16 }]}
               >
                 {iconLabel}
               </ThemedText>
@@ -123,10 +120,10 @@ export function SecondaryButton({
             borderColor: borderColor,
             height: 46,
             paddingHorizontal: 20,
-            borderTopLeftRadius: finalIconPosition === 'right' ? 10 : 8,
-            borderBottomLeftRadius: finalIconPosition === 'right' ? 10 : 8,
-            borderTopRightRadius: finalIconPosition === 'left' ? 10 : 8,
-            borderBottomRightRadius: finalIconPosition === 'left' ? 10 : 8,
+            borderTopLeftRadius: finalIconPosition === "right" ? 10 : 8,
+            borderBottomLeftRadius: finalIconPosition === "right" ? 10 : 8,
+            borderTopRightRadius: finalIconPosition === "left" ? 10 : 8,
+            borderBottomRightRadius: finalIconPosition === "left" ? 10 : 8,
             borderWidth: 1.5,
           },
         ]}

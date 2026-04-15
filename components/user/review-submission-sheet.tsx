@@ -1,5 +1,7 @@
 import { SolarStarBold, SolarStarLinear } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
+import { SecondaryButton } from "@/components/user/secondary-button";
+import { SecondaryButtonInverse } from "@/components/user/secondary-button-inverse";
 import {
   BottomSheetModal,
   BottomSheetTextInput,
@@ -41,7 +43,7 @@ const ReviewSubmissionSheet = forwardRef<
     }
   }, [props.initialRating]);
 
-  const snapPoints = useMemo(() => ["85%"], []);
+  const snapPoints = useMemo(() => [normalize(520)], []);
 
   const handleSend = () => {
     props.onSubmit(userRating, comment);
@@ -61,7 +63,7 @@ const ReviewSubmissionSheet = forwardRef<
       snapPoints={snapPoints}
       backgroundStyle={styles.sheetBackground}
       handleIndicatorStyle={styles.indicator}
-      keyboardBehavior="extend"
+      keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
     >
       <BottomSheetView style={styles.contentContainer}>
@@ -107,7 +109,6 @@ const ReviewSubmissionSheet = forwardRef<
                 style={styles.textInput}
                 value={comment}
                 onChangeText={setComment}
-                autoFocus={true}
               />
             </View>
           </View>
@@ -117,19 +118,19 @@ const ReviewSubmissionSheet = forwardRef<
         <View style={styles.bottomExtension}>
           {/* Action Buttons Row */}
           <View style={styles.actionsRow}>
-            <TouchableOpacity
-              style={[styles.btn, styles.cancelBtn]}
-              onPress={handleCancel}
-            >
-              <ThemedText style={styles.cancelBtnText}>الغاء</ThemedText>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.btn, styles.sendBtn]}
+            <SecondaryButtonInverse
+              label="ارسال"
               onPress={handleSend}
-            >
-              <ThemedText style={styles.sendBtnText}>ارسال</ThemedText>
-            </TouchableOpacity>
+              isActive={true}
+              style={{ flex: 1 }}
+            />
+
+            <SecondaryButton
+              label="الغاء"
+              onPress={handleCancel}
+              isActive={false}
+              style={{ flex: 1 }}
+            />
           </View>
         </View>
       </BottomSheetView>
@@ -150,7 +151,6 @@ const styles = StyleSheet.create({
   contentContainer: {
     alignItems: "center",
     width: "100%",
-    flex: 1, // Ensure it fills the sheet
   },
   scallopedCard: {
     width: "100%",
@@ -204,9 +204,8 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   bottomExtension: {
-    flex: 1,
     width: "100%",
-    height: SCREEN_WIDTH + normalize(80),
+    paddingBottom: normalize(40),
     marginTop: -normalize(10), // Significant overlap to ensure no white space is visible
     backgroundColor: "#15AB64",
     alignItems: "center",
