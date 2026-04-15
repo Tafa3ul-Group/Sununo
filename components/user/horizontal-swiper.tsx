@@ -9,8 +9,8 @@ import {
 import { HorizontalCard } from "./horizontal-card";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const ITEM_WIDTH = SCREEN_WIDTH - normalize.width(40);
-const SEPARATOR_WIDTH = normalize.width(12);
+const ITEM_WIDTH = SCREEN_WIDTH - 32;
+const SEPARATOR_WIDTH = 12;
 
 interface HorizontalSwiperProps {
   data: any[];
@@ -54,9 +54,8 @@ const styles = StyleSheet.create({
     // No default margins, managed by parent
   },
   listContent: {
-    paddingHorizontal: normalize.width(20),
+    paddingHorizontal: 16,
     flexDirection: "row-reverse", // Align items for Arabic
-    gap: SEPARATOR_WIDTH,
   },
   cardOverride: {
     width: "100%",

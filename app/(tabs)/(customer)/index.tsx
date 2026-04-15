@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { useSelector } from "react-redux";
 
@@ -80,13 +80,14 @@ export default function HomeScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const [activeFilter, setActiveFilter] = React.useState("all");
+  const insets = useSafeAreaInsets();
 
   if (userType === "owner") return <Redirect href="/(tabs)/(dashboard)/home" />;
 
   const navigateToDetails = (id: string) => router.push(`/chalet-details/${id}`);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={[styles.safeArea, { paddingTop: insets.top }]}>
       <StatusBar barStyle="dark-content" />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         
@@ -121,7 +122,7 @@ export default function HomeScreen() {
         </View>
 
         {/* مقترح لك */}
-        <View style={styles.sectionHeader}>
+        <View style={[styles.sectionHeader, { justifyContent: "flex-end" }]}>
           <ThemedText style={styles.sectionTitle}>مقترح لك</ThemedText>
         </View>
         <GHScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsContainer}>
@@ -147,12 +148,12 @@ export default function HomeScreen() {
       </ScrollView>
 
       <SearchFilterSheet ref={bottomSheetRef} />
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: Colors.background, paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0 },
+  safeArea: { flex: 1, backgroundColor: Colors.background },
   scrollContent: { paddingBottom: 120 },
   sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginTop: 20, marginBottom: 10 },
   sectionTitle: { 

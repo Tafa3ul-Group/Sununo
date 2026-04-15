@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: normalize.width(20),
-    height: normalize.height(110),
+    height: normalize.height(60),
     justifyContent: "space-between",
   },
   headerSide: {
