@@ -7,10 +7,12 @@ import React, { useEffect } from 'react';
 import { Text, TextInput } from 'react-native';
 import 'react-native-reanimated';
 import Toast from 'react-native-toast-message';
-import { Provider } from 'react-redux';
+import { Provider, useSelector } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
+import { useTranslation } from 'react-i18next';
+import { RootState } from '@/store';
 
 // Set global font mapping for the entire app
 // @ts-ignore
@@ -30,6 +32,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+  const { i18n } = useTranslation();
+  const { language } = useSelector((state: RootState) => state.auth);
   
   const [loaded, error] = useFonts({
     'LamaSans-Bold': require('../assets/fonts/LamaSans/LamaSans-BoldCondensed.otf'),
@@ -44,6 +48,13 @@ function RootLayoutNav() {
       SplashScreen.hideAsync();
     }
   }, [loaded, error]);
+
+  // Sync language with persisted Redux state
+  useEffect(() => {
+    if (language && i18n.language !== language) {
+      i18n.changeLanguage(language);
+    }
+  }, [language, i18n]);
 
   if (!loaded && !error) {
     return null;

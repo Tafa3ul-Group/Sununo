@@ -9,6 +9,9 @@ import { useTranslation } from "react-i18next";
 import { ThemedText } from "@/components/themed-text";
 import { Colors, normalize, Spacing } from "@/constants/theme";
 import { SolarCheckCircleBold } from "@/components/icons/solar-icons";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/store";
+import { setLanguage } from "@/store/authSlice";
 
 interface LanguageSheetProps {
   onSelect?: (lang: string) => void;
@@ -17,6 +20,7 @@ interface LanguageSheetProps {
 export const LanguageSheet = React.forwardRef<BottomSheetModal, LanguageSheetProps>(
   ({ onSelect }, ref) => {
     const { i18n, t } = useTranslation();
+    const dispatch = useDispatch();
     const currentLang = i18n.language;
 
     const snapPoints = useMemo(() => ["35%"], []);
@@ -48,6 +52,7 @@ export const LanguageSheet = React.forwardRef<BottomSheetModal, LanguageSheetPro
 
     const handleSelect = (lang: string) => {
       i18n.changeLanguage(lang);
+      dispatch(setLanguage(lang as 'ar' | 'en'));
       if (onSelect) onSelect(lang);
       // @ts-ignore
       ref.current?.dismiss();
