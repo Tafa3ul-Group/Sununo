@@ -133,6 +133,7 @@ export default function GalleryScreen() {
         showSearch={false} 
         showCategories={false}
         userType={userType}
+        onBackPress={() => router.back()}
       />
 
       {/* Categories Filter (Home Page Style) */}

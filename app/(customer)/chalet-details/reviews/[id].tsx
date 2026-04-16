@@ -10,7 +10,7 @@ import { ReviewSubmissionSheet } from "@/components/user/review-submission-sheet
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { Image } from "expo-image";
 import { SecondarySelect } from "@/components/user/secondary-select";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
@@ -38,18 +38,19 @@ const SAMPLE_IMAGES = [
 ];
 
 export default function ReviewsScreen() {
-  const { t } = useTranslation();
+  const router = useRouter();
+  const { t, i18n } = useTranslation();
   const { id } = useLocalSearchParams();
-  const { language } = useSelector((state: RootState) => state.auth);
-  const isRTL = language === 'ar';
+  const isArabic = i18n.language === 'ar';
+  const isRTL = isArabic;
   const [userRating, setUserRating] = useState(0);
   const [filterValue, setFilterValue] = useState("latest");
   const reviewSheetRef = useRef<BottomSheetModal>(null);
 
   const filterOptions = [
-    { label: "اخر التقييمات", value: "latest" },
-    { label: "الاعلى التقييمات", value: "highest" },
-    { label: "الادنى التقييمات", value: "lowest" },
+    { label: isArabic ? "اخر التقييمات" : "Latest Reviews", value: "latest" },
+    { label: isArabic ? "الاعلى التقييمات" : "Highest Rated", value: "highest" },
+    { label: isArabic ? "الادنى التقييمات" : "Lowest Rated", value: "lowest" },
   ];
 
   const handleRatingPress = (rating: number) => {
@@ -64,18 +65,24 @@ export default function ReviewsScreen() {
 
   const reviews = [
     {
-      name: "انسة انس",
+      name: { ar: "انسة انس", en: "Ansi Ans" },
       rating: 4,
-      body: "خوش مكان ونضيف يستاهل، الهواء نقي بسبب التشجير",
+      body: { 
+         ar: "خوش مكان ونضيف يستاهل، الهواء نقي بسبب التشجير", 
+         en: "Great place and clean, worth it. The air is fresh because of the trees." 
+      },
       date: "2025/09/22",
       avatar:
         "https://www.svgrepo.com/show/341481/web-internet-seo-browser-network-website-url.svg",
       images: SAMPLE_IMAGES,
     },
     {
-      name: "انسة انس",
+      name: { ar: "انسة انس", en: "Ansi Ans" },
       rating: 5,
-      body: "المكان خرافي والخدمة ممتازة، انصح بيه وبشدة",
+      body: { 
+         ar: "المكان خرافي والخدمة ممتازة، انصح بيه وبشدة", 
+         en: "The place is legendary and the service is excellent, highly recommend it." 
+      },
       date: "2025/09/22",
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
       images: [],
@@ -87,9 +94,9 @@ export default function ReviewsScreen() {
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* Standard Header */}
-      <HeaderSection title={t('headers.reviews')} showBackButton showLogo={false} />
+      <HeaderSection title={t('headers.reviews')} showBackButton={true} showLogo={false} onBackPress={() => router.back()} />
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 180 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 180 }} showsVerticalScrollIndicator={false}>
         <View style={styles.summaryArea}>
           <ThemedText style={styles.bigRatingText}>4.6</ThemedText>
           <View style={styles.starsRow}>
@@ -103,7 +110,7 @@ export default function ReviewsScreen() {
           </View>
         </View>
 
-        <View style={styles.filterContainer}>
+        <View style={[styles.filterContainer, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
           <SecondarySelect
             options={filterOptions}
             value={filterValue}
@@ -112,54 +119,59 @@ export default function ReviewsScreen() {
         </View>
 
         <View style={{ paddingHorizontal: 20 }}>
-          {reviews.map((rev, idx) => (
-            <View key={idx} style={styles.revCardFlat}>
-              <View style={styles.revHeader}>
-                <View style={styles.ratingBadge}>
-                  <SolarStarBold size={14} color="#035DF9" />
-                  <ThemedText style={styles.rateNumText}>
-                    {rev.rating}
-                  </ThemedText>
-                </View>
-                <View style={styles.userInfoRow}>
-                  <View style={styles.nameAndBody}>
-                    <ThemedText style={styles.reviewerNameText}>
-                      {rev.name}
-                    </ThemedText>
-                    <ThemedText style={styles.revBodyText}>
-                      {rev.body}
-                    </ThemedText>
+          {reviews.map((rev, idx) => {
+            const reviewerName = isArabic ? rev.name.ar : rev.name.en;
+            const reviewBody = isArabic ? rev.body.ar : rev.body.en;
+
+            return (
+                <View key={idx} style={styles.revCardFlat}>
+                  <View style={[styles.revHeader, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+                    <View style={[styles.ratingBadge, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+                      <SolarStarBold size={14} color="#035DF9" />
+                      <ThemedText style={styles.rateNumText}>
+                        {rev.rating}
+                      </ThemedText>
+                    </View>
+                    <View style={[styles.userInfoRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+                      <View style={[styles.nameAndBody, { alignItems: isRTL ? "flex-end" : "flex-start", [isRTL ? 'marginRight' : 'marginLeft']: 15 }]}>
+                        <ThemedText style={styles.reviewerNameText}>
+                          {reviewerName}
+                        </ThemedText>
+                        <ThemedText style={[styles.revBodyText, { textAlign: isRTL ? 'right' : 'left' }]}>
+                          {reviewBody}
+                        </ThemedText>
+                      </View>
+                      <View style={styles.avatarCircle}>
+                        <Image
+                          source={{ uri: rev.avatar }}
+                          style={styles.userAvatarImg}
+                        />
+                      </View>
+                    </View>
                   </View>
-                  <View style={styles.avatarCircle}>
-                    <Image
-                      source={{ uri: rev.avatar }}
-                      style={styles.userAvatarImg}
-                    />
+                  {rev.images.length > 0 && (
+                    <View style={styles.galleryWrapper}>
+                      <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        style={[styles.imgGallery, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+                      >
+                        {rev.images.map((imgUri, imIdx) => (
+                          <Image
+                            key={imIdx}
+                            source={{ uri: imgUri }}
+                            style={[styles.thumb, { [isRTL ? 'marginLeft' : 'marginRight']: 12 }]}
+                          />
+                        ))}
+                      </ScrollView>
+                    </View>
+                  )}
+                  <View style={[styles.dateWrapper, { alignItems: 'flex-end' }]}>
+                    <ThemedText style={[styles.dateTextLabel, { alignSelf: 'flex-end' }]}>{rev.date}</ThemedText>
                   </View>
                 </View>
-              </View>
-              {rev.images.length > 0 && (
-                <View style={styles.galleryWrapper}>
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    style={styles.imgGallery}
-                  >
-                    {rev.images.map((imgUri, imIdx) => (
-                      <Image
-                        key={imIdx}
-                        source={{ uri: imgUri }}
-                        style={styles.thumb}
-                      />
-                    ))}
-                  </ScrollView>
-                </View>
-              )}
-              <View style={styles.dateWrapper}>
-                <ThemedText style={styles.dateTextLabel}>{rev.date}</ThemedText>
-              </View>
-            </View>
-          ))}
+            );
+          })}
         </View>
       </ScrollView>
 
@@ -174,7 +186,7 @@ export default function ReviewsScreen() {
         <View style={styles.footerOverlayContent}>
           <View style={styles.whiteInputPill}>
             <ThemedText style={styles.questionTitle}>
-              شكد تقيم تجربتك؟
+              {t('profile.review.question')}
             </ThemedText>
             <View style={styles.inputStarsRow}>
               {[1, 2, 3, 4, 5].map((i) => (
@@ -212,7 +224,6 @@ const styles = StyleSheet.create({
   starsRow: { flexDirection: "row", gap: normalize(6) },
   filterContainer: {
     paddingHorizontal: normalize(20),
-    alignItems: "flex-end",
     marginBottom: normalize(25),
   },
   revCardFlat: {
@@ -224,12 +235,10 @@ const styles = StyleSheet.create({
     borderColor: "#F3F4F6",
   },
   revHeader: {
-    flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
   },
   ratingBadge: {
-    flexDirection: "row",
     alignItems: "center",
     gap: normalize(4),
     marginTop: normalize(4),
@@ -240,12 +249,10 @@ const styles = StyleSheet.create({
     color: "#111827",
   },
   userInfoRow: {
-    flexDirection: "row",
     alignItems: "flex-start",
     flex: 1,
-    justifyContent: "flex-end",
   },
-  nameAndBody: { alignItems: "flex-end", marginRight: normalize(15), flex: 1 },
+  nameAndBody: { flex: 1 },
   reviewerNameText: {
     fontSize: normalize(16),
     fontFamily: "LamaSans-Black",
@@ -255,7 +262,6 @@ const styles = StyleSheet.create({
     fontSize: normalize(14),
     color: "#6B7280",
     marginTop: normalize(8),
-    textAlign: "right",
     lineHeight: normalize(22),
     fontFamily: "LamaSans-Regular",
   },
@@ -268,14 +274,13 @@ const styles = StyleSheet.create({
   },
   userAvatarImg: { width: "100%", height: "100%" },
   galleryWrapper: { marginTop: normalize(20) },
-  imgGallery: { flexDirection: "row" },
+  imgGallery: { },
   thumb: {
     width: normalize(110),
     height: normalize(85),
     borderRadius: normalize(14),
-    marginRight: normalize(12),
   },
-  dateWrapper: { marginTop: normalize(20), alignItems: "flex-start" },
+  dateWrapper: { marginTop: normalize(20) },
   dateTextLabel: {
     fontSize: normalize(13),
     color: "#9CA3AF",

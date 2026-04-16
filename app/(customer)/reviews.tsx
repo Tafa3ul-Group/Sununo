@@ -9,9 +9,10 @@ import {
   FlatList,
   StyleSheet,
   View,
-  SafeAreaView,
   Dimensions,
 } from "react-native";
+import { useRouter } from "expo-router";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 
@@ -65,9 +66,11 @@ const MOCK_REVIEWS = [
 ];
 
 export default function ReviewsScreen() {
+  const router = useRouter();
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === 'ar';
   const [activeTab, setActiveTab] = useState<"pending" | "reviewed">("pending");
+  const insets = useSafeAreaInsets();
 
   const filteredReviews = MOCK_REVIEWS.filter(r => r.status === activeTab);
 
@@ -89,90 +92,34 @@ export default function ReviewsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <HeaderSection 
         title={t('headers.reviews')} 
         showBackButton 
         showLogo={false} 
+        onBackPress={() => router.back()} 
       />
 
-      {/* Tabs matching the design using the same buttons as review drawer */}
-      <View style={[styles.tabsWrapper, { flexDirection: isRTL ? 'row' : 'row' }]}>
-        {isRTL ? (
-          <>
-            <View style={styles.tabItem}>
-              {activeTab === 'pending' ? (
-                <SecondaryButtonInverse
-                  label={t('reviews.pending')}
-                  onPress={() => setActiveTab('pending')}
-                  isActive={true}
-                  style={{ width: '100%' }}
-                />
-              ) : (
-                <SecondaryButton
-                  label={t('reviews.pending')}
-                  onPress={() => setActiveTab('pending')}
-                  isActive={false}
-                  style={{ width: '100%' }}
-                />
-              )}
-            </View>
-            <View style={styles.tabItem}>
-              {activeTab === 'reviewed' ? (
-                <SecondaryButtonInverse
-                  label={t('reviews.reviewed')}
-                  onPress={() => setActiveTab('reviewed')}
-                  isActive={true}
-                  style={{ width: '100%' }}
-                />
-              ) : (
-                <SecondaryButton
-                  label={t('reviews.reviewed')}
-                  onPress={() => setActiveTab('reviewed')}
-                  isActive={false}
-                  style={{ width: '100%' }}
-                />
-              )}
-            </View>
-          </>
-        ) : (
-          <>
-            <View style={styles.tabItem}>
-              {activeTab === 'pending' ? (
-                <SecondaryButtonInverse
-                  label={t('reviews.pending')}
-                  onPress={() => setActiveTab('pending')}
-                  isActive={true}
-                  style={{ width: '100%' }}
-                />
-              ) : (
-                <SecondaryButton
-                  label={t('reviews.pending')}
-                  onPress={() => setActiveTab('pending')}
-                  isActive={false}
-                  style={{ width: '100%' }}
-                />
-              )}
-            </View>
-            <View style={styles.tabItem}>
-              {activeTab === 'reviewed' ? (
-                <SecondaryButtonInverse
-                  label={t('reviews.reviewed')}
-                  onPress={() => setActiveTab('reviewed')}
-                  isActive={true}
-                  style={{ width: '100%' }}
-                />
-              ) : (
-                <SecondaryButton
-                  label={t('reviews.reviewed')}
-                  onPress={() => setActiveTab('reviewed')}
-                  isActive={false}
-                  style={{ width: '100%' }}
-                />
-              )}
-            </View>
-          </>
-        )}
+      {/* Tabs with fixed components to prevent shape shifting */}
+      <View style={[styles.tabsWrapper, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <View style={styles.tabItem}>
+          <SecondaryButton
+            label={t('reviews.pending')}
+            onPress={() => setActiveTab('pending')}
+            isActive={activeTab === 'pending'}
+            style={{ width: '100%' }}
+            iconPosition={isRTL ? 'right' : 'left'}
+          />
+        </View>
+        <View style={styles.tabItem}>
+          <SecondaryButtonInverse
+            label={t('reviews.reviewed')}
+            onPress={() => setActiveTab('reviewed')}
+            isActive={activeTab === 'reviewed'}
+            style={{ width: '100%' }}
+            iconPosition={isRTL ? 'left' : 'right'}
+          />
+        </View>
       </View>
 
       <FlatList
@@ -182,7 +129,7 @@ export default function ReviewsScreen() {
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 

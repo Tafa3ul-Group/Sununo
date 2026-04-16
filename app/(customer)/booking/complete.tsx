@@ -11,7 +11,7 @@ import { GuestCounter } from '@/components/user/guest-counter';
 import { HorizontalCard } from '@/components/user/horizontal-card';
 import { MainTabs, TabType } from '@/components/user/MainTabs';
 import { PrimaryButton } from '@/components/user/primary-button';
-import { Colors, isRTL, normalize } from '@/constants/theme';
+import { Colors, normalize } from '@/constants/theme';
 import { RootState } from '@/store';
 import {
     BottomSheetBackdrop,
@@ -69,7 +69,8 @@ const ScribbleIcon = () => (
 );
 
 export default function CompleteBookingScreen() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const isRTL = i18n.language === 'ar';
     const router = useRouter();
     const { userType } = useSelector((state: RootState) => state.auth);
     const [activeTab, setActiveTab] = useState<TabType>('SHOOKET');
@@ -162,13 +163,13 @@ export default function CompleteBookingScreen() {
 
             {/* Customer Information */}
             <View style={styles.infoSectionCard}>
-                <ThemedText style={styles.sectionTitle}>{t('booking.customerInfo')}</ThemedText>
+                <ThemedText style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('booking.customerInfo')}</ThemedText>
                 <View style={styles.divider} />
-                <View style={styles.infoRow}>
+                <View style={[styles.infoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                     <ThemedText style={styles.infoLabel}>{t('booking.name')}</ThemedText>
                     <ThemedText style={styles.infoValue}>{t('booking.nameValue')}</ThemedText>
                 </View>
-                <View style={styles.infoRow}>
+                <View style={[styles.infoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                     <ThemedText style={styles.infoLabel}>{t('booking.phone')}</ThemedText>
                     <ThemedText style={[styles.infoValue, { direction: 'ltr' }]}>{t('booking.phoneValue')}</ThemedText>
                 </View>
@@ -176,49 +177,49 @@ export default function CompleteBookingScreen() {
 
             {/* Booking Information */}
             <View style={styles.infoSectionCard}>
-                <View style={[styles.sectionHeaderRow, !isRTL && { flexDirection: 'row' }]}>
+                <View style={[styles.sectionHeaderRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                     <TouchableOpacity style={styles.editBtn} onPress={() => setActiveTab('SHOOKET')}>
                         <ThemedText style={styles.editBtnText}>{t('booking.edit')}</ThemedText>
                     </TouchableOpacity>
-                    <ThemedText style={styles.sectionTitle}>{t('booking.bookingInfo')}</ThemedText>
+                    <ThemedText style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('booking.bookingInfo')}</ThemedText>
                 </View>
                 <View style={styles.divider} />
-                <View style={styles.infoRow}>
+                <View style={[styles.infoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                     <ThemedText style={styles.infoLabel}>{t('booking.date')}</ThemedText>
                     <ThemedText style={styles.infoValue}>{t('booking.dateValue')}</ThemedText>
                 </View>
-                <View style={styles.infoRow}>
+                <View style={[styles.infoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                     <ThemedText style={styles.infoLabel}>{t('booking.shift')}</ThemedText>
                     <ThemedText style={styles.infoValue}>{t('booking.morningShift')}</ThemedText>
                 </View>
-                <View style={styles.infoRow}>
+                <View style={[styles.infoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                     <ThemedText style={styles.infoLabel}>{t('booking.guests')}</ThemedText>
                     <ThemedText style={styles.infoValue}>{t('booking.guestsValue')}</ThemedText>
                 </View>
-                <View style={styles.infoRow}>
+                <View style={[styles.infoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                     <ThemedText style={styles.infoLabel}>{t('booking.totalAmount')}</ThemedText>
                     <ThemedText style={styles.infoValue}>500,000 {t('common.iqd')}</ThemedText>
                 </View>
             </View>
 
             {/* Payment Summary Title */}
-            <ThemedText style={styles.paymentMainTitle}>{t('booking.paymentTitle')}</ThemedText>
+            <ThemedText style={[styles.paymentMainTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('booking.paymentTitle')}</ThemedText>
 
             {/* Payment Options Row */}
             <TouchableOpacity
-                style={[styles.paymentOptionCard, paymentType === 'DEPOSIT' && styles.paymentOptionActive]}
+                style={[styles.paymentOptionCard, paymentType === 'DEPOSIT' && styles.paymentOptionActive, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
                 onPress={() => setPaymentType('DEPOSIT')}
             >
-                <ThemedText style={[styles.paymentVal, paymentType === 'DEPOSIT' && styles.paymentValActive]}>50,000 {t('common.iqd')}</ThemedText>
                 <ThemedText style={[styles.paymentLabel, paymentType === 'DEPOSIT' && styles.paymentLabelActive]}>{t('booking.depositPay')}</ThemedText>
+                <ThemedText style={[styles.paymentVal, paymentType === 'DEPOSIT' && styles.paymentValActive]}>50,000 {t('common.iqd')}</ThemedText>
             </TouchableOpacity>
 
             <TouchableOpacity
-                style={[styles.paymentOptionCard, paymentType === 'FULL' && styles.paymentOptionActive]}
+                style={[styles.paymentOptionCard, paymentType === 'FULL' && styles.paymentOptionActive, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
                 onPress={() => setPaymentType('FULL')}
             >
-                <ThemedText style={[styles.paymentVal, paymentType === 'FULL' && styles.paymentValActive]}>500,000 {t('common.iqd')}</ThemedText>
                 <ThemedText style={[styles.paymentLabel, paymentType === 'FULL' && styles.paymentLabelActive]}>{t('booking.fullPay')}</ThemedText>
+                <ThemedText style={[styles.paymentVal, paymentType === 'FULL' && styles.paymentValActive]}>500,000 {t('common.iqd')}</ThemedText>
             </TouchableOpacity>
 
             {/* Agreement Text */}
@@ -230,14 +231,14 @@ export default function CompleteBookingScreen() {
 
             {/* Inline Card Details (New Addition) */}
             <View style={styles.inlinePaymentSection}>
-                <ThemedText style={styles.inlinePaymentTitle}>{t('booking.paymentDetails')}</ThemedText>
+                <ThemedText style={[styles.inlinePaymentTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('booking.paymentDetails')}</ThemedText>
 
                 <View style={styles.paymentForm}>
                     {/* Card Number */}
                     <View style={styles.inputGroup}>
-                        <ThemedText style={styles.inputLabel}>{t('booking.cardNum')}</ThemedText>
+                        <ThemedText style={[styles.inputLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{t('booking.cardNum')}</ThemedText>
                         <TextInput
-                            style={styles.textInput}
+                            style={[styles.textInput, { textAlign: isRTL ? 'right' : 'left' }]}
                             placeholder="**** **** **** ****"
                             placeholderTextColor="#94A3B8"
                             keyboardType="numeric"
@@ -247,11 +248,11 @@ export default function CompleteBookingScreen() {
                     </View>
 
                     {/* Row Expiry and CVV */}
-                    <View style={[styles.rowInputs, { gap: 15 }]}>
+                    <View style={[styles.rowInputs, { gap: 15, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                         <View style={styles.inputGroupFull}>
-                            <ThemedText style={styles.inputLabel}>{t('booking.expiry')}</ThemedText>
+                            <ThemedText style={[styles.inputLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{t('booking.expiry')}</ThemedText>
                             <TextInput
-                                style={styles.textInput}
+                                style={[styles.textInput, { textAlign: isRTL ? 'right' : 'left' }]}
                                 placeholder="MM/YYYY"
                                 placeholderTextColor="#94A3B8"
                                 keyboardType="numeric"
@@ -260,9 +261,9 @@ export default function CompleteBookingScreen() {
                             />
                         </View>
                         <View style={styles.inputGroupFixed}>
-                            <ThemedText style={styles.inputLabel}>{t('booking.cvv')}</ThemedText>
+                            <ThemedText style={[styles.inputLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{t('booking.cvv')}</ThemedText>
                             <TextInput
-                                style={styles.textInput}
+                                style={[styles.textInput, { textAlign: isRTL ? 'right' : 'left' }]}
                                 placeholder="***"
                                 placeholderTextColor="#94A3B8"
                                 keyboardType="numeric"
@@ -276,9 +277,9 @@ export default function CompleteBookingScreen() {
 
                     {/* Card Holder Name */}
                     <View style={styles.inputGroup}>
-                        <ThemedText style={styles.inputLabel}>{t('booking.cardName')}</ThemedText>
+                        <ThemedText style={[styles.inputLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{t('booking.cardName')}</ThemedText>
                         <TextInput
-                            style={styles.textInput}
+                            style={[styles.textInput, { textAlign: isRTL ? 'right' : 'left' }]}
                             placeholder={t('booking.enterName')}
                             placeholderTextColor="#94A3B8"
                             value={cardName}
@@ -305,7 +306,7 @@ export default function CompleteBookingScreen() {
                     source={require('../../../components/icons/motions/success.json')}
                     autoPlay
                     loop={false}
-                    style={[styles.lottieIcon, { height: 300 }]}
+                    style={[styles.lottieIcon, { height: normalize.height(120) }]}
                     resizeMode="contain"
                 />
                 <ThemedText style={styles.successTitle}>{t('booking.successTitle') || 'تم الحجز بنجاح!'}</ThemedText>
@@ -326,7 +327,7 @@ export default function CompleteBookingScreen() {
 
     const renderPaymentPage = () => (
         <View style={styles.paymentPageContainer}>
-            <View style={styles.paymentHeaderInline}>
+            <View style={[styles.paymentHeaderInline, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 <SolarCardBold size={28} color="#1E293B" />
                 <ThemedText style={styles.paymentDetailsTitleInline}>{t('booking.paymentDetails')}</ThemedText>
             </View>
@@ -346,7 +347,7 @@ export default function CompleteBookingScreen() {
                 </View>
 
                 {/* Row Expiry and CVV */}
-                <View style={[styles.rowInputs, { gap: 15 }]}>
+                <View style={[styles.rowInputs, { gap: 15, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                     <View style={styles.inputGroupFull}>
                         <ThemedText style={styles.inputLabel}>{t('booking.expiry')}</ThemedText>
                         <TextInput
@@ -439,7 +440,7 @@ export default function CompleteBookingScreen() {
                                 <ScrollView
                                     horizontal
                                     showsHorizontalScrollIndicator={false}
-                                    contentContainerStyle={styles.quickDatesRow}
+                                    contentContainerStyle={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 10, paddingHorizontal: 4 }}
                                 >
                                     <TouchableOpacity
                                         style={styles.addDateBtn}
@@ -466,40 +467,40 @@ export default function CompleteBookingScreen() {
 
                             <View style={styles.calendarCard}>
                                 <ThemedText style={styles.calendarMonthTitle}>{t('booking.months.march')}</ThemedText>
-                                <View style={styles.daysHeader}>
+                                <View style={[styles.daysHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                                     {dayHeaders.map((d, i) => <ThemedText key={`${d}-${i}`} style={styles.dayHeaderCell}>{d}</ThemedText>)}
                                 </View>
-                                <View style={[styles.daysGrid, !isRTL && { flexDirection: 'row' }]}>
+                                <View style={[styles.daysGrid, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                                     {calendarDays.map((day, index) => renderCalendarDay(day, index))}
                                 </View>
                             </View>
 
                             <View style={styles.shiftsContainer}>
-                                <TouchableOpacity
-                                    style={[styles.shiftCard, dayShifts[activeDate]?.morning && { backgroundColor: '#F6420008', borderColor: '#F6420033' }]}
-                                    onPress={() => toggleShift('morning')}
-                                >
-                                    <View style={styles.shiftLeft}>
-                                        <View style={styles.shiftIconBox}>
-                                            <SolarSunBold size={24} color={dayShifts[activeDate]?.morning ? "#F64200" : "#94A3B8"} />
+                                    <TouchableOpacity
+                                        style={[styles.shiftCard, dayShifts[activeDate]?.morning && { backgroundColor: '#F6420008', borderColor: '#F6420033' }, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+                                        onPress={() => toggleShift('morning')}
+                                    >
+                                        <View style={[styles.shiftLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                                            <ThemedText style={styles.shiftTitle}>{t('booking.morningShift')}</ThemedText>
+                                            <View style={styles.shiftIconBox}>
+                                                <SolarSunBold size={24} color={dayShifts[activeDate]?.morning ? "#F64200" : "#94A3B8"} />
+                                            </View>
                                         </View>
-                                        <ThemedText style={styles.shiftTitle}>{t('booking.morningShift')}</ThemedText>
-                                    </View>
-                                    <ThemedText style={styles.shiftTime}>{t('booking.morningTime')}</ThemedText>
-                                </TouchableOpacity>
+                                        <ThemedText style={styles.shiftTime}>{t('booking.morningTime')}</ThemedText>
+                                    </TouchableOpacity>
 
-                                <TouchableOpacity
-                                    style={[styles.shiftCard, dayShifts[activeDate]?.evening && { backgroundColor: '#035DF908', borderColor: '#035DF933' }]}
-                                    onPress={() => toggleShift('evening')}
-                                >
-                                    <View style={styles.shiftLeft}>
-                                        <View style={styles.shiftIconBox}>
-                                            <SolarMoonBold size={24} color={dayShifts[activeDate]?.evening ? "#035DF9" : "#94A3B8"} />
+                                    <TouchableOpacity
+                                        style={[styles.shiftCard, dayShifts[activeDate]?.evening && { backgroundColor: '#035DF908', borderColor: '#035DF933' }, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+                                        onPress={() => toggleShift('evening')}
+                                    >
+                                        <View style={[styles.shiftLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                                            <ThemedText style={styles.shiftTitle}>{t('booking.eveningShift')}</ThemedText>
+                                            <View style={styles.shiftIconBox}>
+                                                <SolarMoonBold size={24} color={dayShifts[activeDate]?.evening ? "#035DF9" : "#94A3B8"} />
+                                            </View>
                                         </View>
-                                        <ThemedText style={styles.shiftTitle}>{t('booking.eveningShift')}</ThemedText>
-                                    </View>
-                                    <ThemedText style={styles.shiftTime}>{t('booking.eveningTime')}</ThemedText>
-                                </TouchableOpacity>
+                                        <ThemedText style={styles.shiftTime}>{t('booking.eveningTime')}</ThemedText>
+                                    </TouchableOpacity>
                             </View>
 
                             <TouchableOpacity
@@ -514,10 +515,10 @@ export default function CompleteBookingScreen() {
                         </>
                     ) : activeTab === 'MANO' ? (
                         <View style={styles.whoContainer}>
-                            <View style={styles.whoCard}>
-                                <View style={styles.guestInfo}>
+                            <View style={[styles.whoCard, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                                <View style={[styles.guestInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
                                     <ThemedText style={styles.guestLabel}>{t('booking.adults')}</ThemedText>
-                                    <ThemedText style={styles.guestSubLabel}>{t('booking.adultsDesc')}</ThemedText>
+                                    <ThemedText style={[styles.guestSubLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{t('booking.adultsDesc')}</ThemedText>
                                 </View>
                                 <GuestCounter
                                     value={adultCount}
@@ -526,10 +527,10 @@ export default function CompleteBookingScreen() {
                                 />
                             </View>
 
-                            <View style={[styles.whoCard, { marginTop: 12 }]}>
-                                <View style={styles.guestInfo}>
+                            <View style={[styles.whoCard, { marginTop: 12, flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                                <View style={[styles.guestInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
                                     <ThemedText style={styles.guestLabel}>{t('booking.children')}</ThemedText>
-                                    <ThemedText style={styles.guestSubLabel}>{t('booking.childrenDesc')}</ThemedText>
+                                    <ThemedText style={[styles.guestSubLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{t('booking.childrenDesc')}</ThemedText>
                                 </View>
                                 <GuestCounter
                                     value={childrenCount}
@@ -576,7 +577,7 @@ const styles = StyleSheet.create({
     daysGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 4 },
     dayCell: { width: (SCREEN_WIDTH - 100) / 7, height: (SCREEN_WIDTH - 100) / 7, justifyContent: 'center', alignItems: 'center', marginBottom: 4, position: 'relative' },
     activeDayCell: { backgroundColor: Colors.primary, borderRadius: 10 },
-    dayText: { fontSize: normalize.font(14), fontFamily: "LamaSans-Bold", color: '#334155' },
+    dayText: { fontSize: normalize.font(14), fontFamily: "LamaSans-Bold", color: '#334155', textAlign: 'center' },
     activeDayText: { color: '#FFF', fontFamily: "LamaSans-Black" },
     bookedDayText: { color: '#CBD5E1', fontFamily: "LamaSans-Regular" },
     scribbleOverlay: { position: 'absolute', width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center', zIndex: 2, opacity: 0.4 },
@@ -599,7 +600,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#F1F5F9'
     },
-    guestInfo: { alignItems: isRTL ? 'flex-end' : 'flex-start' },
+    guestInfo: { flex: 1, alignItems: 'flex-start' },
     guestLabel: { fontSize: normalize.font(16), fontFamily: "LamaSans-Black", color: '#111827' },
     guestSubLabel: { fontSize: normalize.font(12), color: '#9CA3AF', fontFamily: "LamaSans-SemiBold", marginTop: 1 },
     footer: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#FFF', paddingHorizontal: 20, paddingTop: 12, paddingBottom: Platform.OS === 'ios' ? 35 : 20, borderTopWidth: 1, borderTopColor: '#F1F5F9', zIndex: 100 },
@@ -607,12 +608,12 @@ const styles = StyleSheet.create({
 
     // Inline Payment Styles
     inlinePaymentSection: { marginTop: 20, borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingTop: 20, paddingBottom: 15 },
-    inlinePaymentTitle: { fontSize: normalize.font(18), fontFamily: "LamaSans-Black", color: '#1E293B', marginBottom: 15, textAlign: isRTL ? 'right' : 'left' },
+    inlinePaymentTitle: { fontSize: normalize.font(18), fontFamily: "LamaSans-Black", color: '#1E293B', marginBottom: 15 },
     paymentForm: { gap: 12 },
     inputGroup: { gap: 6 },
     inputGroupFull: { flex: 1, gap: 6 },
     inputGroupFixed: { width: 90, gap: 6 },
-    inputLabel: { fontSize: normalize.font(14), fontFamily: "LamaSans-Black", color: '#1E293B', textAlign: isRTL ? 'right' : 'left' },
+    inputLabel: { fontSize: normalize.font(14), fontFamily: "LamaSans-Black", color: '#1E293B' },
     textInput: {
         backgroundColor: '#FFFFFF',
         borderWidth: 1.5,
@@ -622,14 +623,13 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         fontSize: normalize.font(14),
         fontFamily: "LamaSans-Bold",
-        color: '#1E293B',
-        textAlign: isRTL ? 'right' : 'left'
+        color: '#1E293B'
     },
-    rowInputs: { flexDirection: isRTL ? 'row-reverse' : 'row' },
+    rowInputs: { flexDirection: 'row' },
 
     // Success Sheet Styles
     successSheetContent: { padding: 25, alignItems: 'center', backgroundColor: '#FFFFFF' },
-    lottieIcon: { width: '100%', height: 400, marginBottom: 15 },
+    lottieIcon: { width: 140, height: 140, alignSelf: 'center', marginBottom: 15 },
     successTitle: { fontSize: normalize.font(20), fontFamily: "LamaSans-Black", color: '#1E293B', marginBottom: 8, textAlign: 'center' },
     successSub: { fontSize: normalize.font(14), color: '#64748B', textAlign: 'center', marginBottom: 25, lineHeight: 22, fontFamily: "LamaSans-Regular" },
     successBtn: { width: '100%', height: 56 },
@@ -648,7 +648,7 @@ const styles = StyleSheet.create({
     mapSnippetWrapper: { width: '100%', height: 120, borderRadius: 14, overflow: 'hidden', backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center' },
     mapSnippet: { width: '100%', height: '100%' },
     mapMarker: { position: 'absolute', zIndex: 5 },
-    mapAddressLabel: { textAlign: 'center', paddingVertical: 8, fontSize: normalize.font(12), fontFamily: "LamaSans-Black", color: '#1E293B' },
+    mapAddressLabel: { textAlign: 'center', paddingVertical: 8, fontSize: normalize.font(12), fontFamily: "LamaSans-Black", color: '#1E293B', width: '100%' },
     infoSectionCard: {
         backgroundColor: '#FFFFFF',
         borderRadius: 20,
@@ -657,25 +657,24 @@ const styles = StyleSheet.create({
         borderColor: '#F1F5F9',
         marginBottom: 12
     },
-    sectionTitle: { fontSize: normalize.font(14), fontFamily: "LamaSans-Black", color: '#15AB64', textAlign: isRTL ? 'right' : 'left' },
+    sectionTitle: { fontSize: normalize.font(14), fontFamily: "LamaSans-Black", color: '#15AB64' },
     divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 10 },
-    infoRow: { flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between', marginBottom: 10 },
+    infoRow: { justifyContent: 'space-between', marginBottom: 10 },
     infoLabel: { fontSize: normalize.font(13), fontFamily: "LamaSans-Black", color: '#1E293B' },
     infoValue: { fontSize: normalize.font(13), fontFamily: "LamaSans-Bold", color: '#64748B' },
-    sectionHeaderRow: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center' },
+    sectionHeaderRow: { justifyContent: 'space-between', alignItems: 'center' },
     editBtn: { backgroundColor: '#F0FDF4', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 8, borderWidth: 1, borderColor: '#15AB6433' },
     editBtnText: { color: '#15AB64', fontSize: normalize.font(12), fontFamily: "LamaSans-Black" },
-    paymentMainTitle: { fontSize: normalize.font(14), fontFamily: "LamaSans-Black", color: '#15AB64', marginVertical: 12, textAlign: isRTL ? 'right' : 'left' },
+    paymentMainTitle: { fontSize: normalize.font(14), fontFamily: "LamaSans-Black", color: '#15AB64', marginVertical: 12 },
     paymentOptionCard: {
-        flexDirection: isRTL ? 'row-reverse' : 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
+        marginBottom: 10,
         backgroundColor: '#FFFFFF',
-        borderRadius: 14,
-        padding: 14,
+        borderRadius: 16,
+        padding: 16,
         borderWidth: 1.5,
         borderColor: '#F1F5F9',
-        marginBottom: 10
+        justifyContent: 'space-between',
+        alignItems: 'center'
     },
     paymentOptionActive: { borderColor: '#15AB64', backgroundColor: '#F0FDF4' },
     paymentVal: { fontSize: normalize.font(15), fontFamily: "LamaSans-Black", color: '#64748B' },
@@ -684,6 +683,7 @@ const styles = StyleSheet.create({
     paymentLabelActive: { color: '#1E293B', fontFamily: "LamaSans-Regular" },
     agreementWrapper: { paddingVertical: 12, paddingBottom: 35 },
     agreementText: { fontSize: normalize.font(12), color: '#64748B', textAlign: 'center', lineHeight: 18, fontFamily: "LamaSans-Regular" },
-    agreementLink: { color: Colors.primary, textDecorationLine: 'underline', fontFamily: "LamaSans-Black" }
+    agreementLink: { color: Colors.primary, textDecorationLine: 'underline', fontFamily: "LamaSans-Black" },
 });
+
 

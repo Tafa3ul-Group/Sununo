@@ -12,7 +12,11 @@
     "verify": "تحقق",
     "otpSent": "تم إرسال رمز التحقق إلى رقم هاتفك",
     "enterOtp": "أدخل رمز التحقق",
-    "fullName": "الاسم الكامل"
+    "fullName": "الاسم الكامل",
+    "dontHaveAccount": "ليس لديك حساب ؟",
+    "registerNow": "سجل الان",
+    "phonePlaceholder": "077XXXXXXXX",
+    "verificationCode": "رمز التحقق"
   },
   "tabs": {
     "home": "الرئيسية",

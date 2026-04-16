@@ -51,8 +51,8 @@ export default function CustomersScreen() {
         </View>
         
         <View style={[styles.info, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-          <ThemedText type="h2" style={styles.customerName}>{item.name}</ThemedText>
-          <ThemedText style={styles.customerPhone}>{item.phone}</ThemedText>
+          <ThemedText type="h2" style={[styles.customerName, { textAlign: isRTL ? 'right' : 'left' }]}>{item.name}</ThemedText>
+          <ThemedText style={[styles.customerPhone, { textAlign: isRTL ? 'right' : 'left' }]}>{item.phone}</ThemedText>
         </View>
 
         <TouchableOpacity style={styles.contactButton}>
@@ -62,12 +62,12 @@ export default function CustomersScreen() {
 
       <View style={[styles.statsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
         <View style={[styles.stat, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-          <Text style={styles.statLabel}>{t('dashboard.stats.totalBookings')}</Text>
-          <Text style={styles.statValue}>{item.totalBookings}</Text>
+          <Text style={[styles.statLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{t('dashboard.stats.totalBookings')}</Text>
+          <Text style={[styles.statValue, { textAlign: isRTL ? 'right' : 'left' }]}>{item.totalBookings}</Text>
         </View>
         <View style={[styles.stat, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-          <Text style={styles.statLabel}>آخر زيارة</Text>
-          <Text style={styles.statValue}>{item.lastVisit}</Text>
+          <Text style={[styles.statLabel, { textAlign: isRTL ? 'right' : 'left' }]}>آخر زيارة</Text>
+          <Text style={[styles.statValue, { textAlign: isRTL ? 'right' : 'left' }]}>{item.lastVisit}</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -157,7 +157,8 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(13),
     color: Colors.text.muted,
     marginTop: 2,
-   fontFamily: "LamaSans-Regular" },
+    fontFamily: "LamaSans-Regular",
+  },
   contactButton: {
     padding: Spacing.sm,
     backgroundColor: Colors.white,
@@ -196,5 +197,6 @@ const styles = StyleSheet.create({
   emptyText: {
     ...Typography.body,
     marginTop: Spacing.md,
-    color: Colors.text.secondary },
+    color: Colors.text.secondary,
+  },
 });

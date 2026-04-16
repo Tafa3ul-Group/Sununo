@@ -12,7 +12,11 @@
     "verify": "Verify",
     "otpSent": "Verification code sent to your phone",
     "enterOtp": "Enter verification code",
-    "fullName": "Full Name"
+    "fullName": "Full Name",
+    "dontHaveAccount": "Don't have an account?",
+    "registerNow": "Register now",
+    "phonePlaceholder": "077XXXXXXXX",
+    "verificationCode": "Verification Code"
   },
   "tabs": {
     "home": "Home",

@@ -55,26 +55,8 @@ export function ReviewCard({ review, onDelete, onPressChalet }: ReviewCardProps)
 
   return (
     <View style={styles.card}>
-      {/* Top Section: Delete icon + Chalet Info + Image */}
+      {/* Top Section: Photo (Leading) + Chalet Info + Delete icon */}
       <View style={[styles.topSection, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-        <TouchableOpacity style={styles.deleteBtn} onPress={onDelete}>
-            <View style={styles.deleteCircle}>
-               <SolarTrashBinMinimalisticLinear size={24} color="#F64200" />
-            </View>
-        </TouchableOpacity>
-
-        <View style={[styles.chaletInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-          <ThemedText style={[styles.chaletTitle, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>{review.chaletTitle}</ThemedText>
-          <ThemedText style={[styles.chaletLocation, { textAlign: isRTL ? 'right' : 'left' }]}>{review.chaletLocation}</ThemedText>
-          <ThemedText style={[styles.priceText, { textAlign: isRTL ? 'right' : 'left' }]}>
-            {isRTL ? (
-                `${t('common.iqd')} ${review.price} / ${t('common.shift')}`
-            ) : (
-                `${review.price} ${t('common.iqd')} / ${t('common.shift')}`
-            )}
-          </ThemedText>
-        </View>
-
         <TouchableOpacity onPress={onPressChalet}>
           <Svg
             width={normalize.width(100)}
@@ -97,6 +79,24 @@ export function ReviewCard({ review, onDelete, onPressChalet }: ReviewCardProps)
             {/* Border path - optional if you want a stroke */}
             <Path d={config.path} stroke="#035DF9" strokeWidth="2" fill="none" />
           </Svg>
+        </TouchableOpacity>
+
+        <View style={[styles.chaletInfo, { [isRTL ? 'marginRight' : 'marginLeft']: 15, alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+          <ThemedText style={[styles.chaletTitle, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>{review.chaletTitle}</ThemedText>
+          <ThemedText style={[styles.chaletLocation, { textAlign: isRTL ? 'right' : 'left' }]}>{review.chaletLocation}</ThemedText>
+          <ThemedText style={[styles.priceText, { textAlign: isRTL ? 'right' : 'left' }]}>
+            {isRTL ? (
+                `${t('common.iqd')} ${review.price} / ${t('common.shift')}`
+            ) : (
+                `${review.price} ${t('common.iqd')} / ${t('common.shift')}`
+            )}
+          </ThemedText>
+        </View>
+
+        <TouchableOpacity style={styles.deleteBtn} onPress={onDelete}>
+            <View style={styles.deleteCircle}>
+               <SolarTrashBinMinimalisticLinear size={24} color="#F64200" />
+            </View>
         </TouchableOpacity>
       </View>
 
@@ -132,7 +132,7 @@ export function ReviewCard({ review, onDelete, onPressChalet }: ReviewCardProps)
           ))}
         </ScrollView>
 
-        <ThemedText style={styles.dateText}>{review.date}</ThemedText>
+        <ThemedText style={[styles.dateText, { alignSelf: 'flex-end' }]}>{review.date}</ThemedText>
       </View>
     </View>
   );
