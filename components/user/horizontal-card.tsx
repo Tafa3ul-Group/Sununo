@@ -103,10 +103,10 @@ export function HorizontalCard({
           <View style={styles.mainContent}>
             <View style={[styles.upperText, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
               <ThemedText style={[styles.title, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
-                {chalet.title}
+                {typeof chalet.title === 'object' ? (isRTL ? chalet.title.ar : chalet.title.en) : chalet.title}
               </ThemedText>
               <ThemedText style={[styles.location, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
-                {chalet.location}
+                {typeof chalet.location === 'object' ? (isRTL ? chalet.location.ar : chalet.location.en) : chalet.location}
               </ThemedText>
             </View>
           </View>

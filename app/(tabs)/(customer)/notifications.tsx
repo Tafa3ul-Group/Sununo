@@ -60,19 +60,18 @@ export default function NotificationsScreen() {
     const { language } = useSelector((state: RootState) => state.auth);
     const isRTL = language === 'ar';
     const router = useRouter();
-
     const renderItem = (item: Notification) => (
-        <View key={item.id} style={styles.notificationCard}>
-            {/* Header section with orange dot and time */}
-            <View style={styles.cardLeft}>
-                <View style={styles.orangeDot} />
-                <ThemedText style={styles.timeText}>{item.time}</ThemedText>
-            </View>
-
+        <View key={item.id} style={[styles.notificationCard, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             {/* Content section */}
             <View style={[styles.cardContent, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
                 <ThemedText style={styles.titleText}>{t('dashboard.revenue.history')}</ThemedText>
                 <ThemedText style={[styles.messageText, { textAlign: isRTL ? 'right' : 'left' }]}>{item.message}</ThemedText>
+            </View>
+
+            {/* Header section with orange dot and time */}
+            <View style={[styles.cardLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <ThemedText style={styles.timeText}>{item.time}</ThemedText>
+                <View style={styles.orangeDot} />
             </View>
         </View>
     );
@@ -114,7 +113,6 @@ const styles = StyleSheet.create({
     sectionHeader: {
         marginTop: 20,
         marginBottom: 10,
-        alignItems: 'flex-end',
     },
     sectionTitle: {
         fontSize: 14,
@@ -149,7 +147,6 @@ const styles = StyleSheet.create({
     },
     cardContent: {
         flex: 1,
-        alignItems: 'flex-end',
     },
     titleText: {
         fontSize: 16,

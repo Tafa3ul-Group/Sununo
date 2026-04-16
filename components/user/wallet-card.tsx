@@ -1,9 +1,9 @@
 import { ThemedText } from "@/components/themed-text";
+import { normalize } from "@/constants/theme";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
 import Svg, { ClipPath, Defs, G, Path, Rect } from "react-native-svg";
-import { useTranslation } from "react-i18next";
-import { normalize } from "@/constants/theme";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -17,11 +17,13 @@ export const WalletCard = ({
   onWithdraw,
 }: WalletCardProps) => {
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
+  const isRTL = i18n.language === "ar";
   return (
     <View style={styles.container}>
       {/* SVG Background - Mirrored for LTR to keep focal points consistent */}
-      <View style={[styles.svgWrapper, { transform: [{ scaleX: isRTL ? 1 : -1 }] }]}>
+      <View
+        style={[styles.svgWrapper, { transform: [{ scaleX: isRTL ? 1 : -1 }] }]}
+      >
         <Svg width="100%" height={123} viewBox="0 24 370 123" fill="none">
           <G clipPath="url(#clip0_64103_857)">
             <Path
@@ -69,25 +71,50 @@ export const WalletCard = ({
 
       {/* Content Overlay */}
       <View style={styles.contentOverlay}>
-        <View style={[styles.topRow, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-          <ThemedText style={[styles.balanceLabel, { textAlign: isRTL ? 'right' : 'left' }]}>
-            {t('profile.wallet.balance')}
+        <View
+          style={[
+            styles.topRow,
+            { alignItems: isRTL ? "flex-end" : "flex-start" },
+          ]}
+        >
+          <ThemedText
+            style={[
+              styles.balanceLabel,
+              { textAlign: isRTL ? "right" : "left" },
+            ]}
+          >
+            {t("profile.wallet.balance")}
           </ThemedText>
         </View>
 
-        <View style={[styles.bottomRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-          <View style={[styles.balanceContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <View
+          style={[
+            styles.bottomRow,
+            { flexDirection: isRTL ? "row" : "row-reverse" },
+          ]}
+        >
+          <View
+            style={[
+              styles.balanceContainer,
+              { flexDirection: isRTL ? "row-reverse" : "row" },
+            ]}
+          >
             <ThemedText style={styles.balanceValue}>{balance}</ThemedText>
-            <ThemedText style={styles.currencyText}>{t('common.iqd')}</ThemedText>
+            <ThemedText style={styles.currencyText}>
+              {t("common.iqd")}
+            </ThemedText>
           </View>
 
           <TouchableOpacity
-            style={styles.withdrawButton}
+            style={[
+              styles.withdrawButton,
+              { [isRTL ? "paddingLeft" : "paddingRight"]: normalize.width(60) },
+            ]}
             onPress={onWithdraw}
             activeOpacity={0.8}
           >
             <ThemedText style={styles.withdrawText}>
-              {t('profile.wallet.withdraw')}
+              {t("profile.wallet.withdraw")}
             </ThemedText>
           </TouchableOpacity>
         </View>
@@ -98,10 +125,10 @@ export const WalletCard = ({
 
 const styles = StyleSheet.create({
   container: {
-    width: SCREEN_WIDTH - 40,
-    height: 122,
+    width: SCREEN_WIDTH - normalize.width(20),
+    height: normalize.height(115),
     alignSelf: "center",
-    marginVertical: 4,
+    marginVertical: normalize.height(4),
     overflow: "hidden",
   },
   svgWrapper: {
@@ -109,9 +136,9 @@ const styles = StyleSheet.create({
   },
   contentOverlay: {
     flex: 1,
-    paddingHorizontal: 25,
-    paddingTop: 18,
-    paddingBottom: 15,
+    paddingHorizontal: normalize.width(25),
+    paddingTop: normalize.height(18),
+    paddingBottom: normalize.height(15),
     justifyContent: "space-between",
   },
   topRow: {
@@ -119,7 +146,7 @@ const styles = StyleSheet.create({
   },
   balanceLabel: {
     color: "white",
-    fontSize: 16,
+    fontSize: normalize.font(16),
     fontFamily: "LamaSans-Black",
   },
   bottomRow: {
@@ -128,27 +155,27 @@ const styles = StyleSheet.create({
   },
   balanceContainer: {
     alignItems: "baseline",
-    gap: 6,
+    gap: normalize.width(6),
   },
   balanceValue: {
     color: "white",
-    fontSize: 28,
+    fontSize: normalize.font(28),
     fontFamily: "LamaSans-Black",
   },
   currencyText: {
     color: "white",
-    fontSize: 18,
+    fontSize: normalize.font(18),
     fontFamily: "LamaSans-Bold",
   },
   withdrawButton: {
-    width: 128,
-    height: 35,
+    width: normalize.width(128),
+    height: normalize.height(35),
     justifyContent: "center",
     alignItems: "center",
   },
   withdrawText: {
     color: "white",
-    fontSize: 20,
+    fontSize: normalize.font(14),
     fontFamily: "LamaSans-Black",
   },
 });
