@@ -44,8 +44,8 @@ export function SecondaryButtonInverse({
   const { i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
 
-  // Aligned with SecondaryButton to prevent flipping on state change
-  const finalIconPosition = iconPosition || (isRTL ? "right" : "left");
+  // Mirror logic for inverse direction
+  const finalIconPosition = iconPosition || (isRTL ? "left" : "right");
 
   const bgColor = isActive ? activeColor : "white";
   const borderColor = isActive ? activeColor : "#E5E7EB";

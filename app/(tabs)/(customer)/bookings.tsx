@@ -25,12 +25,12 @@ const SHAPES_CONFIG = [
 ];
 
 export default function BookingsScreen() {
-  const { t } = useTranslation();
-  const { language } = useSelector((state: RootState) => state.auth);
-  const isArabic = language === 'ar';
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === 'ar';
+  const isRTL = isArabic;
   const router = useRouter();
 
-  // Mock data to match screenshot more closely for UI development
+  // Mock data with localized names
   const bookings = [
     {
       id: '1',
@@ -56,8 +56,8 @@ export default function BookingsScreen() {
 
     return (
       <View key={booking.id} style={styles.bookingCardContainer}>
-        {/* Top Block: Chalet Info */}
-        <View style={styles.topBlock}>
+        {/* Top Block: Image + Chalet Info */}
+        <View style={[styles.topBlock, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             <View style={styles.imageBlock}>
                 <Svg width={115} height={100} viewBox={shape.viewBox}>
                     <Defs>
@@ -76,18 +76,18 @@ export default function BookingsScreen() {
                 </Svg>
             </View>
 
-            <View style={styles.chaletInfoContent}>
-                <View style={styles.titleSection}>
-                    <ThemedText style={styles.chaletTitle}>{chaletName}</ThemedText>
-                    <ThemedText style={styles.locationText}>{location}</ThemedText>
+            <View style={[styles.chaletInfoContent, { [isRTL ? 'marginRight' : 'marginLeft']: 15 }]}>
+                <View style={{ alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
+                    <ThemedText style={[styles.chaletTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{chaletName}</ThemedText>
+                    <ThemedText style={[styles.locationText, { textAlign: isRTL ? 'right' : 'left' }]}>{location}</ThemedText>
                 </View>
                 
-                <View style={styles.priceRatingRow}>
+                <View style={[styles.priceRatingRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                    <ThemedText style={styles.priceText}>
                        <ThemedText style={styles.priceLabel}>{isArabic ? "شفت / " : "Shift / "}</ThemedText>
                        {formatPrice(booking.chalet?.price)}
                    </ThemedText>
-                   <View style={styles.ratingBox}>
+                   <View style={[styles.ratingBox, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                        <ThemedText style={styles.ratingText}>{booking.chalet?.rating}</ThemedText>
                        <SolarStarBold size={14} color="#EA2129" />
                    </View>
@@ -97,17 +97,17 @@ export default function BookingsScreen() {
 
         {/* Bottom Block: Booking Details */}
         <View style={styles.bottomBlock}>
-            <View style={styles.detailRow}>
+            <View style={[styles.detailRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 <ThemedText style={styles.detailLabel}>{t('booking.bookingDate')}</ThemedText>
                 <ThemedText style={styles.detailValue}>{t('booking.dateValue')}</ThemedText>
             </View>
 
-            <View style={styles.detailRow}>
+            <View style={[styles.detailRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 <ThemedText style={styles.detailLabel}>{t('booking.finalAmount')}</ThemedText>
                 <ThemedText style={styles.detailValue}>{formatPrice(booking.totalPrice)}</ThemedText>
             </View>
 
-            <View style={styles.detailRow}>
+            <View style={[styles.detailRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 <ThemedText style={styles.detailLabel}>{t('booking.paymentStatus')}</ThemedText>
                 <View style={styles.paidBadge}>
                     <ThemedText style={styles.paidBadgeText}>{t('booking.status.paid')}</ThemedText>
@@ -173,18 +173,15 @@ const styles = StyleSheet.create({
     ...Shadows.small,
   },
   topBlock: {
-    flexDirection: 'row',
     padding: 16,
-    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  chaletInfoContent: { flex: 1, marginLeft: 15, height: 100, justifyContent: 'space-between' },
-  titleSection: { alignItems: isRTL ? 'flex-end' : 'flex-start' },
-  chaletTitle: { fontSize: 16, fontFamily: "LamaSans-Black", color: '#1E293B', textAlign: isRTL ? 'right' : 'left' },
-  locationText: { fontSize: 13, color: '#64748B', fontFamily: "LamaSans-Bold", marginTop: 4, textAlign: isRTL ? 'right' : 'left' },
+  chaletInfoContent: { flex: 1, height: 100, justifyContent: 'space-between' },
+  chaletTitle: { fontSize: 16, fontFamily: "LamaSans-Black", color: '#1E293B' },
+  locationText: { fontSize: 13, color: '#64748B', fontFamily: "LamaSans-Bold", marginTop: 4 },
   
-  priceRatingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  ratingBox: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  priceRatingRow: { justifyContent: 'space-between', alignItems: 'center' },
+  ratingBox: { alignItems: 'center', gap: 4 },
   ratingText: { fontSize: 14, fontFamily: "LamaSans-Black", color: '#1E293B' },
   priceText: { fontSize: 13, fontFamily: "LamaSans-Black", color: '#111827' },
   priceLabel: { fontSize: 11, fontFamily: "LamaSans-Bold", color: '#64748B' },
@@ -200,7 +197,7 @@ const styles = StyleSheet.create({
      paddingHorizontal: 20,
      paddingVertical: 16,
   },
-  detailRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  detailRow: { justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   detailLabel: { fontSize: normalize.font(15), fontFamily: "LamaSans-Black", color: '#111827' },
   detailValue: { fontSize: normalize.font(16), fontFamily: "LamaSans-Bold", color: '#94A3B8' },
   
@@ -210,7 +207,7 @@ const styles = StyleSheet.create({
   dividerFull: { height: 1, backgroundColor: '#E2E8F0', marginVertical: 15, opacity: 0.6 },
   viewDetailsBtn: { width: '100%', alignItems: 'center', justifyContent: 'center', paddingVertical: 4 },
   viewDetailsText: { color: '#035DF9', fontSize: 15, fontFamily: "LamaSans-Black", textAlign: 'center' },
-
+ 
   emptyState: { alignItems: 'center', justifyContent: 'center', paddingTop: 80, paddingHorizontal: 40 },
   emptyTitle: { fontSize: 20, fontFamily: "LamaSans-Bold", color: '#1E293B', marginTop: 20 },
   emptySubtitle: { fontSize: 14, color: '#64748B', textAlign: 'center', marginTop: 10, lineHeight: 20 , fontFamily: "LamaSans-Regular" },
