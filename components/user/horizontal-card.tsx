@@ -80,7 +80,7 @@ export function HorizontalCard({
     <TouchableOpacity
       activeOpacity={0.9}
       onPress={onPress}
-      style={[styles.container, { flexDirection: isRTL ? 'row-reverse' : 'row' }, style]}
+      style={[styles.container, { flexDirection: isRTL ? 'row' : 'row-reverse' }, style]}
     >
       {/* info side */}
       <View style={styles.contentAndLeft}>
@@ -113,8 +113,8 @@ export function HorizontalCard({
         </View>
 
         {/* Bottom Row: Rating + Price */}
-        <View style={[styles.bottomRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-          <View style={[styles.ratingBox, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+        <View style={[styles.bottomRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+          <View style={[styles.ratingBox, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             <SolarStarBold size={normalize.width(16)} color={Colors.secondary} />
             <ThemedText style={styles.ratingText}>
               {chalet.rating || "4.5"}
