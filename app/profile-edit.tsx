@@ -19,8 +19,8 @@ import {
   SolarMenuDotsBold, 
   SolarPenBold, 
   SolarMapPointBold,
-  SolarArrowLeftLinear,
-  SolarArrowRightLinear
+  SolarAltArrowLeftLinear,
+  SolarAltArrowRightLinear
 } from "@/components/icons/solar-icons";
 import { PrimaryButton } from '@/components/user/primary-button';
 import { useSelector } from 'react-redux';
@@ -47,9 +47,9 @@ export default function ProfileEditScreen() {
       <View style={[styles.header, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
         <TouchableOpacity style={styles.headerIconBtn} onPress={() => router.back()}>
           {isRTL ? (
-            <SolarArrowRightLinear size={24} color="#6B7280" />
+            <SolarAltArrowRightLinear size={24} color="#6B7280" />
           ) : (
-            <SolarArrowLeftLinear size={24} color="#6B7280" />
+            <SolarAltArrowLeftLinear size={24} color="#6B7280" />
           )}
         </TouchableOpacity>
         

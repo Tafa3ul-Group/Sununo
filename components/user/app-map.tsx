@@ -4,6 +4,9 @@ import * as Location from 'expo-location';
 import * as Theme from '@/constants/theme';
 import { ThemedText } from '@/components/themed-text';
 import { SolarMapPointBold } from '@/components/icons/solar-icons';
+import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 
 const { Colors, normalize, Shadows } = Theme;
 const SafeShadows = Shadows || { small: {}, medium: {}, large: {} };
@@ -24,7 +27,7 @@ try {
 
 interface MarkerData {
   id: string;
-  title: string;
+  title: string | { ar: string; en: string };
   image: string;
   coordinates: [number, number];
   [key: string]: any;
@@ -53,6 +56,9 @@ export const AppMap = ({
   onSelectMarker,
   onPressCard
 }: AppMapProps) => {
+  const { i18n } = useTranslation();
+  const { language } = useSelector((state: RootState) => state.auth);
+  const isRTL = language === 'ar' || i18n.language === 'ar';
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasNativeMap, setHasNativeMap] = useState(false);
@@ -118,7 +124,9 @@ export const AppMap = ({
             <View style={styles.markerCircle}>
               <Image source={{ uri: marker.image }} style={styles.markerImage} />
             </View>
-            <ThemedText style={styles.markerTitle}>{marker.title}</ThemedText>
+            <ThemedText style={styles.markerTitle}>
+              {typeof marker.title === 'object' ? (isRTL ? marker.title.ar : marker.title.en) : marker.title}
+            </ThemedText>
           </TouchableOpacity>
         ))}
 
@@ -160,7 +168,9 @@ export const AppMap = ({
               <View style={styles.markerCircle}>
                 <Image source={{ uri: marker.image }} style={styles.markerImage} resizeMode="cover" />
               </View>
-              <ThemedText style={styles.markerTitle}>{marker.title}</ThemedText>
+              <ThemedText style={styles.markerTitle}>
+                {typeof marker.title === 'object' ? (isRTL ? marker.title.ar : marker.title.en) : marker.title}
+              </ThemedText>
             </View>
           </Mapbox.PointAnnotation>
         ))}

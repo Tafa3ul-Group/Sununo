@@ -103,10 +103,10 @@ export function HorizontalCard({
           <View style={styles.mainContent}>
             <View style={[styles.upperText, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
               <ThemedText style={[styles.title, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
-                {chalet.title}
+                {typeof chalet.title === 'object' ? (isRTL ? chalet.title.ar : chalet.title.en) : chalet.title}
               </ThemedText>
               <ThemedText style={[styles.location, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
-                {chalet.location}
+                {typeof chalet.location === 'object' ? (isRTL ? chalet.location.ar : chalet.location.en) : chalet.location}
               </ThemedText>
             </View>
           </View>
@@ -114,7 +114,7 @@ export function HorizontalCard({
 
         {/* Bottom Row: Rating + Price */}
         <View style={[styles.bottomRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
-          <View style={[styles.ratingBox, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+          <View style={[styles.ratingBox, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             <SolarStarBold size={normalize.width(16)} color={Colors.secondary} />
             <ThemedText style={styles.ratingText}>
               {chalet.rating || "4.5"}
@@ -122,7 +122,7 @@ export function HorizontalCard({
           </View>
 
           <View style={[styles.priceRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-            <ThemedText style={styles.price}>IQD {chalet.price}</ThemedText>
+            <ThemedText style={styles.price}>{isRTL ? '' : 'IQD '}{chalet.price}{isRTL ? ' د.ع' : ''}</ThemedText>
             <ThemedText style={styles.priceLabel}> / {isRTL ? "شفت" : "Shift"}</ThemedText>
           </View>
         </View>

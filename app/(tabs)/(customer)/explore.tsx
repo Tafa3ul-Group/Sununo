@@ -33,8 +33,8 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const MOCK_CHALETS = [
   {
     id: "1",
-    title: "شالية الاروع علة الطلاق",
-    location: "البصرة - الجزائر",
+    title: { ar: "شالية الاروع علة الطلاق", en: "Absolute Best Chalet" },
+    location: { ar: "البصرة - الجزائر", en: "Basra - Algeria" },
     price: "30,000",
     rating: 4.5,
     color: Colors.primary,
@@ -43,8 +43,8 @@ const MOCK_CHALETS = [
   },
   {
     id: "2",
-    title: "جنة الوطن",
-    location: "البصرة - شط العرب",
+    title: { ar: "جنة الوطن", en: "Homeland Paradise" },
+    location: { ar: "البصرة - شط العرب", en: "Basra - Shatt Al-Arab" },
     price: "45,000",
     rating: 4.8,
     color: Colors.secondary,
@@ -53,8 +53,8 @@ const MOCK_CHALETS = [
   },
   {
     id: "3",
-    title: "شالية الملك",
-    location: "البصرة - القبلة",
+    title: { ar: "شالية الملك", en: "King's Chalet" },
+    location: { ar: "البصرة - القبلة", en: "Basra - Al-Qibla" },
     price: "25,000",
     rating: 4.2,
     color: Colors.accent,
@@ -63,8 +63,8 @@ const MOCK_CHALETS = [
   },
   {
     id: "4",
-    title: "شالية محسن",
-    location: "البصرة - الزبير",
+    title: { ar: "شالية محسن", en: "Mohsen's Chalet" },
+    location: { ar: "البصرة - الزبير", en: "Basra - Al-Zubair" },
     price: "35,000",
     rating: 4.9,
     color: Colors.secondary,
@@ -83,6 +83,7 @@ const FILTER_OPTIONS = [
 export default function ExploreScreen() {
   const { t } = useTranslation();
   const { language } = useSelector((state: RootState) => state.auth);
+  const isRTL = language === 'ar';
   const { userType } = useSelector((state: RootState) => state.auth);
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -141,11 +142,14 @@ export default function ExploreScreen() {
             showsHorizontalScrollIndicator={false} 
             contentContainerStyle={styles.filterBar}
           >
-            <View style={{ flexDirection: 'row-reverse', gap: 10 }}>
+            <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 10 }}>
               {FILTER_OPTIONS.map((filter) => (
                 <SecondaryButton 
                   key={filter.id} 
-                  label={filter.label} 
+                  label={filter.id === 'all' ? t('home.categories.all') : 
+                         filter.id === 'pool' ? t('home.categories.pool') : 
+                         filter.id === 'bbq' ? t('home.categories.bbq') : 
+                         filter.id === 'garden' ? t('home.categories.garden') : filter.label} 
                   isActive={activeFilter === filter.id} 
                   activeColor="#035DF9" 
                   icon={filter.icon(activeFilter === filter.id)} 

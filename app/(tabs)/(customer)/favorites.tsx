@@ -23,8 +23,8 @@ export default function FavoritesScreen() {
   const favorites = [
     {
       id: '1',
-      title: 'شالية الاروع علة الطلاق',
-      location: 'البصرة - الجزائر',
+      title: { ar: 'شالية الاروع علة الطلاق', en: 'Absolute Best Chalet' },
+      location: { ar: 'البصرة - الجزائر', en: 'Basra - Algeria' },
       price: '30,000',
       rating: '4.5',
       image: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=400',
@@ -32,8 +32,8 @@ export default function FavoritesScreen() {
     },
     {
         id: '2',
-        title: 'شالية منتجع النخيل',
-        location: 'البصرة - شط العرب',
+        title: { ar: 'شالية منتجع النخيل', en: 'Palm Resort Chalet' },
+        location: { ar: 'البصرة - شط العرب', en: 'Basra - Shatt Al-Arab' },
         price: '45,000',
         rating: '4.8',
         image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=400',
@@ -66,9 +66,9 @@ export default function FavoritesScreen() {
         ) : (
           <View style={styles.emptyState}>
             <SolarHeartBold size={80} color="#E2E8F0" />
-            <ThemedText style={styles.emptyTitle}>{isRTL ? 'لا توجد مفضلات حتى الآن' : 'No favorites yet'}</ThemedText>
+            <ThemedText style={styles.emptyTitle}>{t('profile.review.noFavorites')}</ThemedText>
             <ThemedText style={styles.emptySubtitle}>
-              {isRTL ? 'أي شاليه تعجبك، يمكنك إضافتها هنا للوصول إليها لاحقاً بسهولة.' : 'Any chalet you like can be added here for easy access later.'}
+              {t('profile.review.noFavoritesDesc')}
             </ThemedText>
           </View>
         )}

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { 
   StyleSheet, 
   View, 
@@ -13,6 +13,7 @@ import { normalize } from '@/constants/theme';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const BANNER_WIDTH = SCREEN_WIDTH - normalize.width(32);
 const BANNER_HEIGHT = normalize.height(150);
+const AUTO_PLAY_INTERVAL = 4000; // 4 seconds
 
 const BANNER_ASSETS = [
   require('@/assets/banrs/first.png'),
@@ -22,6 +23,33 @@ const BANNER_ASSETS = [
 
 export function BannerSwiper() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const flatListRef = useRef<FlatList>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Auto-play logic
+  const startTimer = () => {
+    stopTimer();
+    timerRef.current = setInterval(() => {
+      const nextIndex = (activeIndex + 1) % BANNER_ASSETS.length;
+      flatListRef.current?.scrollToIndex({
+        index: nextIndex,
+        animated: true,
+      });
+      setActiveIndex(nextIndex);
+    }, AUTO_PLAY_INTERVAL);
+  };
+
+  const stopTimer = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    startTimer();
+    return () => stopTimer();
+  }, [activeIndex]);
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const scrollOffset = event.nativeEvent.contentOffset.x;
@@ -36,7 +64,7 @@ export function BannerSwiper() {
       <Image 
         source={item} 
         style={styles.bannerImage} 
-        resizeMode="contain" // Prevents stretching (rubbery effect)
+        resizeMode="contain" 
       />
     </View>
   );
@@ -44,6 +72,7 @@ export function BannerSwiper() {
   return (
     <View style={styles.container}>
       <FlatList
+        ref={flatListRef}
         data={BANNER_ASSETS}
         renderItem={renderItem}
         keyExtractor={(_, index) => index.toString()}
@@ -57,6 +86,10 @@ export function BannerSwiper() {
         scrollEventThrottle={16}
         contentContainerStyle={styles.listContent}
         ItemSeparatorComponent={() => <View style={{ width: normalize.width(10) }} />}
+        onTouchStart={stopTimer}
+        onTouchEnd={startTimer}
+        onScrollBeginDrag={stopTimer}
+        onScrollEndDrag={startTimer}
       />
 
       {/* Pagination Dots */}

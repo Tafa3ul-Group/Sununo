@@ -1,4 +1,4 @@
-import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, ScrollView, TouchableOpacity, Dimensions, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
@@ -54,22 +54,23 @@ const MOCK_DATA = {
 };
 
 export default function NotificationsScreen() {
+    const { t } = useTranslation();
     const { language } = useSelector((state: RootState) => state.auth);
     const isRTL = language === 'ar';
     const router = useRouter();
 
     const renderItem = (item: Notification) => (
-        <View key={item.id} style={styles.notificationCard}>
-            {/* Header section with orange dot and time */}
-            <View style={styles.cardLeft}>
-                <View style={styles.orangeDot} />
-                <ThemedText style={styles.timeText}>{item.time}</ThemedText>
+        <View key={item.id} style={[styles.notificationCard, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            {/* Content section */}
+            <View style={[styles.cardContent, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                <ThemedText style={[styles.titleText, { textAlign: isRTL ? 'right' : 'left' }]}>{t('dashboard.revenue.history')}</ThemedText>
+                <ThemedText style={[styles.messageText, { textAlign: isRTL ? 'right' : 'left' }]}>{item.message}</ThemedText>
             </View>
 
-            {/* Content section */}
-            <View style={styles.cardContent}>
-                <ThemedText style={styles.titleText}>{item.title}</ThemedText>
-                <ThemedText style={styles.messageText}>{item.message}</ThemedText>
+            {/* Header section with orange dot and time */}
+            <View style={[styles.cardLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <ThemedText style={styles.timeText}>{item.time}</ThemedText>
+                <View style={styles.orangeDot} />
             </View>
         </View>
     );
@@ -78,24 +79,31 @@ export default function NotificationsScreen() {
         <SafeAreaView style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
-                <View style={styles.headerInner}>
-                    <ThemedText style={styles.headerTitle}>{isRTL ? 'الاشعارات' : 'Notifications'}</ThemedText>
-                    <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-                        <SolarAltArrowRightBold size={normalize.width(22)} color="#035DF9" />
+                <View style={[styles.headerInner, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <ThemedText style={styles.headerTitle}>{t('headers.notifications')}</ThemedText>
+                    <TouchableOpacity 
+                        style={[styles.backButton, isRTL ? { right: 0 } : { left: 0 }]} 
+                        onPress={() => router.back()}
+                    >
+                        <SolarAltArrowRightBold 
+                            size={normalize.width(22)} 
+                            color="#035DF9" 
+                            style={{ transform: [{ rotate: isRTL ? '0deg' : '180deg' }] }}
+                        />
                     </TouchableOpacity>
                 </View>
             </View>
 
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                 {/* Today Section */}
-                <View style={styles.sectionHeader}>
-                    <ThemedText style={styles.sectionTitle}>{isRTL ? 'اليوم' : 'Today'}</ThemedText>
+                <View style={[styles.sectionHeader, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                    <ThemedText style={styles.sectionTitle}>{t('notifications.today')}</ThemedText>
                 </View>
                 {MOCK_DATA.today.map(renderItem)}
 
                 {/* Yesterday Section */}
-                <View style={styles.sectionHeader}>
-                    <ThemedText style={styles.sectionTitle}>{isRTL ? 'امس' : 'Yesterday'}</ThemedText>
+                <View style={[styles.sectionHeader, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                    <ThemedText style={styles.sectionTitle}>{t('notifications.yesterday')}</ThemedText>
                 </View>
                 {MOCK_DATA.yesterday.map(renderItem)}
             </ScrollView>
@@ -145,7 +153,6 @@ const styles = StyleSheet.create({
     sectionHeader: {
         marginTop: 20,
         marginBottom: 10,
-        alignItems: 'flex-end',
     },
     sectionTitle: {
         fontSize: 14,
@@ -180,7 +187,6 @@ const styles = StyleSheet.create({
     },
     cardContent: {
         flex: 1,
-        alignItems: 'flex-end',
     },
     titleText: {
         fontSize: 16,
