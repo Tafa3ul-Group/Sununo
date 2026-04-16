@@ -120,7 +120,6 @@ export function SecondaryButton({
         style={[
           styles.textWrapper,
           {
-            flex: 1,
             backgroundColor: bgColor,
             borderColor: borderColor,
             height: height,

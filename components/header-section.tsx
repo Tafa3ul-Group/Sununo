@@ -302,6 +302,8 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(18),
     fontFamily: "LamaSans-Black",
     color: Colors.text.primary,
+    lineHeight: normalize.font(24),
+    paddingVertical: normalize.height(2),
   },
   logoCircle: {
     width: normalize.width(42),
@@ -411,6 +413,8 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(14),
     fontFamily: "LamaSans-Medium",
     color: Colors.text.primary,
+    lineHeight: normalize.font(20),
+    paddingVertical: normalize.height(1),
   },
   categoryLabelActive: {
     color: Colors.background,

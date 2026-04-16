@@ -1,3 +1,4 @@
+import { ThemedText } from "@/components/themed-text";
 import React from "react";
 import {
   ActivityIndicator,
@@ -8,7 +9,6 @@ import {
   ViewStyle,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
-import { ThemedText } from "@/components/themed-text";
 
 interface PrimaryButtonProps {
   label: string;
@@ -106,7 +106,6 @@ export function PrimaryButton({
             borderWidth: currentBorderWidth,
             backgroundColor: color,
             height: scaledPartHeight,
-            flex: 1,
             marginHorizontal: -2, // Slight overlap to fix pixel gaps
           },
         ]}

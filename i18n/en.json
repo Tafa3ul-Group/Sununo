@@ -93,6 +93,8 @@
       "cancelled": "Cancelled",
       "accept": "Accept",
       "decline": "Decline",
+      "records": "Records",
+      "calendar": "Calendar",
       "cancellationReason": "Cancellation Reason"
     },
     "revenue": {

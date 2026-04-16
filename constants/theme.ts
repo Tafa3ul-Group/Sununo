@@ -87,8 +87,9 @@ type FontWeight = "normal" | "bold" | "100" | "200" | "300" | "400" | "500" | "6
 
 interface TypeStyle {
   fontSize: number;
-  fontWeight: FontWeight;
+  fontFamily?: string;
   color: string;
+  lineHeight?: number;
 }
 
 export const Typography: Record<string, TypeStyle> = {
@@ -96,36 +97,43 @@ export const Typography: Record<string, TypeStyle> = {
     fontSize: normalize.font(28),
     fontFamily: "LamaSans-Bold",
     color: Colors.light.text,
+    lineHeight: normalize.font(36),
   },
   h2: {
     fontSize: normalize.font(20),
     fontFamily: "LamaSans-SemiBold",
     color: Colors.light.text,
+    lineHeight: normalize.font(28),
   },
   body: {
     fontSize: normalize.font(14),
     fontFamily: "LamaSans-Regular",
     color: Colors.light.text,
+    lineHeight: normalize.font(20),
   },
   subtitle: {
     fontSize: normalize.font(13),
     fontFamily: "LamaSans-Regular",
     color: Colors.light.icon,
+    lineHeight: normalize.font(18),
   },
   caption: {
     fontSize: normalize.font(12),
     fontFamily: "LamaSans-Medium",
     color: Colors.light.icon,
+    lineHeight: normalize.font(16),
   },
   price: {
     fontSize: normalize.font(18),
     fontFamily: "LamaSans-Bold",
     color: Colors.light.primary,
+    lineHeight: normalize.font(24),
   },
   rating: {
     fontSize: normalize.font(14),
     fontFamily: "LamaSans-SemiBold",
     color: Colors.light.text,
+    lineHeight: normalize.font(20),
   },
 };
 

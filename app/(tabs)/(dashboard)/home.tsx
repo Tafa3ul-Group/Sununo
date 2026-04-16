@@ -111,12 +111,15 @@ export default function HomeScreen() {
 
   const getButtonLabel = () => {
     if (selectedRange?.start && selectedRange?.end) {
+      if (selectedRange.start.getTime() === selectedRange.end.getTime()) {
+        return formatSelectedDate(selectedRange.start);
+      }
       if (isRTL) {
         return `${formatSelectedDate(selectedRange.end)} - ${formatSelectedDate(selectedRange.start)}`;
       }
       return `${formatSelectedDate(selectedRange.start)} - ${formatSelectedDate(selectedRange.end)}`;
     }
-    return isRTL ? 'السجل' : 'Records';
+    return t('dashboard.bookings.records') || (isRTL ? 'السجل' : 'Records');
   };
 
 
@@ -225,7 +228,11 @@ export default function HomeScreen() {
             <View style={[styles.modernBookingInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
               <Text style={[styles.modernBookingName, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>{customerName}</Text>
               {chaletName && <Text style={[styles.modernBookingChalet, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>{chaletName}</Text>}
-              <Text style={[styles.modernBookingShift, { textAlign: isRTL ? 'right' : 'left' }]}>{t('common.shift')} {shiftName}</Text>
+              <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 4 }}>
+                <Text style={[styles.modernBookingShift, { textAlign: isRTL ? 'right' : 'left' }]}>{t('common.shift')} {shiftName}</Text>
+                <Text style={styles.modernBookingDot}>•</Text>
+                <Text style={styles.modernBookingDate}>{item.date || item.createdAt?.split('T')[0]}</Text>
+              </View>
             </View>
 
             {/* 3. Price (Left part in RTL) */}
@@ -470,58 +477,59 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   scrollContent: {
-    paddingHorizontal: 14,
-    paddingTop: 5,
-    paddingBottom: 10,
+    paddingHorizontal: normalize.width(14),
+    paddingTop: normalize.height(5),
+    paddingBottom: normalize.height(10),
   },
   loadingContainer: {
     flex: 1,
-    height: 400,
+    height: normalize.height(400),
     justifyContent: 'center',
     alignItems: 'center',
   },
 
   // Wallet Card
   walletCard: {
-    marginBottom: 20,
-    borderRadius: 24,
+    marginBottom: normalize.height(20),
+    borderRadius: normalize.radius(24),
     overflow: 'hidden',
   },
   walletCardInner: {
     backgroundColor: Colors.primary,
-    padding: 24,
+    padding: normalize.width(24),
     position: 'relative',
     overflow: 'hidden',
   },
   decorCircle: {
     position: 'absolute',
-    borderRadius: 999,
+    borderRadius: normalize.radius(999),
     backgroundColor: 'rgba(255,255,255,0.06)',
   },
   decorCircle1: {
-    width: 180,
-    height: 180,
-    top: -60,
-    right: -40,
+    width: normalize.width(180),
+    height: normalize.width(180),
+    top: normalize.height(-60),
+    right: normalize.width(-40),
   },
   decorCircle2: {
-    width: 120,
-    height: 120,
-    bottom: -30,
-    left: -20,
+    width: normalize.width(120),
+    height: normalize.width(120),
+    bottom: normalize.height(-30),
+    left: normalize.width(-20),
   },
   walletTop: {
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 20,
+    marginBottom: normalize.height(20),
   },
   walletLabel: {
     color: 'rgba(255,255,255,0.65)',
     fontSize: normalize.font(12),
     fontFamily: "LamaSans-SemiBold",
-    marginBottom: 6,
-    letterSpacing: 0.3,
+    marginBottom: normalize.height(6),
+    letterSpacing: normalize.width(0.3),
     textTransform: 'uppercase',
+    lineHeight: normalize.font(16),
   },
   walletAmountRow: {
     alignItems: 'baseline',
@@ -530,38 +538,41 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontSize: normalize.font(32),
     fontFamily: "LamaSans-Black",
-    letterSpacing: -0.5,
+    letterSpacing: normalize.width(-0.5),
+    lineHeight: normalize.font(38),
   },
   walletCurrency: {
     color: 'rgba(255,255,255,0.5)',
     fontSize: normalize.font(14),
     fontFamily: "LamaSans-SemiBold",
+    lineHeight: normalize.font(20),
   },
   eyeButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: normalize.width(44),
+    height: normalize.width(44),
+    borderRadius: normalize.radius(22),
     backgroundColor: 'rgba(255,255,255,0.12)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   walletActions: {
-    gap: 10,
+    gap: normalize.width(10),
   },
   walletActionBtn: {
     flex: 1,
     backgroundColor: Colors.white,
-    paddingVertical: 10,
-    borderRadius: 14,
+    paddingVertical: normalize.height(10),
+    borderRadius: normalize.radius(14),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: normalize.width(6),
   },
   walletActionText: {
     color: Colors.primary,
     fontFamily: "LamaSans-Bold",
     fontSize: normalize.font(13),
+    lineHeight: normalize.font(18),
   },
 
 
@@ -569,24 +580,25 @@ const styles = StyleSheet.create({
   // Booking Cards
   bookingCard: {
     backgroundColor: Colors.white,
-    padding: 14,
-    borderRadius: 16,
-    marginBottom: 10,
+    padding: normalize.width(14),
+    borderRadius: normalize.radius(16),
+    marginBottom: normalize.height(10),
     alignItems: 'center',
-    gap: 12,
+    gap: normalize.width(12),
     borderWidth: 1,
     borderColor: '#F0F0F0',
   },
   bookingAvatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
+    width: normalize.width(44),
+    height: normalize.width(44),
+    borderRadius: normalize.radius(14),
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarLetter: {
     fontSize: normalize.font(18),
     fontFamily: "LamaSans-Bold",
+    lineHeight: normalize.font(24),
   },
   bookingInfo: {
     flex: 1,
@@ -595,39 +607,45 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(14),
     fontFamily: "LamaSans-Bold",
     color: Colors.text.primary,
-    marginBottom: 1,
+    marginBottom: normalize.height(1),
+    lineHeight: normalize.font(20),
   },
   bookingChalet: {
     fontSize: normalize.font(11),
     color: Colors.text.muted,
     fontFamily: "LamaSans-Medium",
+    lineHeight: normalize.font(16),
   },
   bookingDate: {
     fontSize: normalize.font(10),
     color: Colors.text.muted,
     fontFamily: "LamaSans-Medium",
-    marginTop: 2,
+    marginTop: normalize.height(2),
+    lineHeight: normalize.font(14),
   },
   bookingAmount: {
     fontSize: normalize.font(14),
     fontFamily: "LamaSans-Black",
     color: Colors.text.primary,
-    marginBottom: 4,
+    marginBottom: normalize.height(4),
+    lineHeight: normalize.font(20),
   },
   bookingCurrency: {
     fontSize: normalize.font(10),
     color: Colors.text.muted,
     fontFamily: "LamaSans-SemiBold",
+    lineHeight: normalize.font(14),
   },
   bookingStatusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
+    paddingHorizontal: normalize.width(8),
+    paddingVertical: normalize.height(2),
+    borderRadius: normalize.radius(6),
   },
   bookingStatusText: {
     fontSize: normalize.font(9),
     fontFamily: "LamaSans-Bold",
     textTransform: 'uppercase',
+    lineHeight: normalize.font(13),
   },
 
   // New Modern Bookings Section
@@ -638,20 +656,22 @@ const styles = StyleSheet.create({
   bookingsHeader: {
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
-    paddingHorizontal: 16,
+    marginBottom: normalize.height(10),
+    paddingHorizontal: normalize.width(16),
     marginTop: 0,
   },
   bookingsTitle: {
     fontSize: normalize.font(17),
     fontFamily: "LamaSans-Black",
     color: Colors.text.primary,
+    lineHeight: normalize.font(23),
   },
   bookingsViewAll: {
     fontSize: normalize.font(14),
     color: Colors.text.primary,
     fontFamily: "LamaSans-SemiBold",
     textDecorationLine: 'underline',
+    lineHeight: normalize.font(20),
   },
   headerActions: {
     flexDirection: 'row',
@@ -660,10 +680,10 @@ const styles = StyleSheet.create({
   },
   calendarSheetContent: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: normalize.width(20),
   },
   calendarHeader: {
-    paddingVertical: 15,
+    paddingVertical: normalize.height(15),
     borderBottomWidth: 1,
     borderBottomColor: '#F1F3F5',
     alignItems: 'center',
@@ -672,17 +692,18 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(18),
     fontFamily: "LamaSans-Black",
     color: Colors.text.primary,
+    lineHeight: normalize.font(24),
   },
   filterScroll: {
     marginBottom: 0,
   },
   filterContainer: {
-    gap: 8,
-    paddingHorizontal: 16,
+    gap: normalize.width(8),
+    paddingHorizontal: normalize.width(16),
     alignItems: 'center',
   },
   filterWrapper: {
-    height: 55,
+    height: normalize.height(55),
     justifyContent: 'center',
   },
   bookingList: {
@@ -690,22 +711,22 @@ const styles = StyleSheet.create({
   },
   modernBookingCard: {
     backgroundColor: Colors.white,
-    borderRadius: 20,
+    borderRadius: normalize.radius(20),
     borderWidth: 1.1,
     borderColor: '#F1F3F5',
     overflow: 'hidden',
-    padding: 10,
-    marginBottom: 12, // Increased from 4
+    padding: normalize.width(10),
+    marginBottom: normalize.height(12), // Increased from 4
   },
   modernBookingInner: {
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 10,
+    gap: normalize.width(10),
   },
   modernBookingAvatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 15,
+    width: normalize.width(52),
+    height: normalize.width(52),
+    borderRadius: normalize.radius(15),
     backgroundColor: '#F8F9FA',
     justifyContent: 'center',
     alignItems: 'center',
@@ -730,18 +751,31 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(16),
     fontFamily: "LamaSans-Black",
     color: Colors.text.primary,
-    marginBottom: 1,
+    marginBottom: normalize.height(1),
+    lineHeight: normalize.font(22),
   },
   modernBookingShift: {
     fontSize: normalize.font(12),
     color: Colors.text.muted,
     fontFamily: "LamaSans-Medium",
+    lineHeight: normalize.font(16),
   },
   modernBookingChalet: {
     fontSize: normalize.font(13),
     color: Colors.primary,
     fontFamily: "LamaSans-Bold",
-    marginBottom: 1,
+    marginBottom: normalize.height(1),
+    lineHeight: normalize.font(18),
+  },
+  modernBookingDate: {
+    fontSize: normalize.font(11),
+    color: Colors.text.muted,
+    fontFamily: "LamaSans-Medium",
+    lineHeight: normalize.font(16),
+  },
+  modernBookingDot: {
+    color: Colors.text.muted,
+    fontSize: normalize.font(11),
   },
   modernBookingPriceWrap: {
     alignItems: 'flex-start',
@@ -751,22 +785,24 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(14),
     fontFamily: "LamaSans-Black",
     color: Colors.text.primary,
+    lineHeight: normalize.font(20),
   },
   fixedHeaderArea: {
     backgroundColor: Colors.white,
     zIndex: 10,
-    paddingBottom: 5,
+    paddingBottom: normalize.height(5),
   },
   noBookings: {
-    padding: 30,
+    padding: normalize.width(30),
     alignItems: 'center',
     backgroundColor: '#F8F9FA',
-    borderRadius: 16,
+    borderRadius: normalize.radius(16),
   },
   noBookingsText: {
     color: Colors.text.muted,
     fontSize: normalize.font(14),
     fontFamily: "LamaSans-SemiBold",
+    lineHeight: normalize.font(20),
   },
 
 
@@ -774,28 +810,30 @@ const styles = StyleSheet.create({
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 60,
-    gap: 8,
+    paddingVertical: normalize.height(60),
+    gap: normalize.width(8),
   },
   emptyIconWrap: {
-    width: 80,
-    height: 80,
-    borderRadius: 24,
+    width: normalize.width(80),
+    height: normalize.width(80),
+    borderRadius: normalize.radius(24),
     backgroundColor: '#F8F9FB',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: normalize.height(8),
   },
   emptyTitle: {
     fontSize: normalize.font(16),
     fontFamily: "LamaSans-Bold",
     color: Colors.text.primary,
+    lineHeight: normalize.font(22),
   },
   emptySubtitle: {
     fontSize: normalize.font(12),
     color: Colors.text.muted,
     fontFamily: "LamaSans-Medium",
     textAlign: 'center',
-    paddingHorizontal: 40,
+    paddingHorizontal: normalize.width(40),
+    lineHeight: normalize.font(18),
   },
 });

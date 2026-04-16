@@ -28,7 +28,7 @@
     "welcome": "أهلاً بك",
     "searchPlaceholder": "ابحث عن شاليه...",
     "categories": {
-      "all": "All",
+      "all": "الكل",
       "popular": "الأكثر طلباً",
       "nearby": "قريب منك",
       "luxury": "فاخر",
@@ -96,6 +96,8 @@
       "cancelled": "ملغاة",
       "accept": "قبول",
       "decline": "رفض",
+      "records": "السجل",
+      "calendar": "التقويم",
       "cancellationReason": "سبب الإلغاء"
     },
     "revenue": {
