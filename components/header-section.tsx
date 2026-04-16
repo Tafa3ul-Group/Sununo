@@ -107,13 +107,40 @@ export function HeaderSection({
       <View
         style={[
           styles.topRow,
-          { marginBottom, flexDirection: isRTL ? "row-reverse" : "row" },
+          {
+            marginBottom,
+            flexDirection: isHome
+              ? isRTL
+                ? "row"
+                : "row-reverse"
+              : isRTL
+                ? "row-reverse"
+                : "row",
+          },
         ]}
       >
-        {/* START SIDE (Left) - Avatar/Back + Search */}
-        <View style={[styles.headerSide, { alignItems: isRTL ? "flex-end" : "flex-start" }]}>
+        {/* START SIDE (Left in LTR Standard, Right in RTL Standard) - Avatar/Back + Search */}
+        <View
+          style={[
+            styles.headerSide,
+            {
+              alignItems: isHome
+                ? isRTL
+                  ? "flex-start"
+                  : "flex-end"
+                : isRTL
+                  ? "flex-end"
+                  : "flex-start",
+            },
+          ]}
+        >
           {isHome ? (
-            <View style={[styles.homeLeftGroup, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+            <View
+              style={[
+                styles.homeLeftGroup,
+                { flexDirection: isRTL ? "row-reverse" : "row" },
+              ]}
+            >
               <TouchableOpacity
                 onPress={
                   onProfilePress || (() => router.push("/(customer)/profile"))
@@ -141,7 +168,12 @@ export function HeaderSection({
               </TouchableOpacity>
             </View>
           ) : (
-            <View style={[styles.homeLeftGroup, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+            <View
+              style={[
+                styles.homeLeftGroup,
+                { flexDirection: isRTL ? "row-reverse" : "row" },
+              ]}
+            >
               {showBackButton && <CircleBackButton onPress={onBackPress} />}
               {extraIcon === "search" && (
                 <TouchableOpacity
@@ -167,8 +199,21 @@ export function HeaderSection({
           </View>
         )}
 
-        {/* END SIDE (Right Side) - Logo */}
-        <View style={[styles.headerSide, { alignItems: isRTL ? "flex-start" : "flex-end" }]}>
+        {/* END SIDE (Right in LTR Standard, Left in RTL Standard) - Logo */}
+        <View
+          style={[
+            styles.headerSide,
+            {
+              alignItems: isHome
+                ? isRTL
+                  ? "flex-end"
+                  : "flex-start"
+                : isRTL
+                  ? "flex-start"
+                  : "flex-end",
+            },
+          ]}
+        >
           {showLogo && (
             <View style={isHome ? styles.logoCircleHome : styles.logoCircle}>
               <Image
@@ -386,7 +431,7 @@ const styles = StyleSheet.create({
     marginHorizontal: Spacing.sm,
     fontSize: normalize.font(16),
     color: Colors.text.primary,
-    fontFamily: "LamaSans-Regular"
+    fontFamily: "LamaSans-Regular",
   },
   categoriesScroll: {
     paddingHorizontal: Spacing.md,

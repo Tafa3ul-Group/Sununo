@@ -120,20 +120,38 @@ const ReviewSubmissionSheet = forwardRef<
         {/* Bottom Extension to fill the drawer with green */}
         <View style={styles.bottomExtension}>
           {/* Action Buttons Row */}
-          <View style={[styles.actionsRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
-            <SecondaryButtonInverse
-              label={t('profile.review.send')}
-              onPress={handleSend}
-              isActive={true}
-              style={{ flex: 1 }}
-            />
-
-            <SecondaryButton
-              label={t('profile.review.cancel')}
-              onPress={handleCancel}
-              isActive={false}
-              style={{ flex: 1 }}
-            />
+          <View style={[styles.actionsRow, { flexDirection: isRTL ? 'row' : 'row' }]}>
+            {isRTL ? (
+              <>
+                <SecondaryButtonInverse
+                  label={t('profile.review.send')}
+                  onPress={handleSend}
+                  isActive={true}
+                  style={{ flex: 1 }}
+                />
+                <SecondaryButton
+                  label={t('profile.review.cancel')}
+                  onPress={handleCancel}
+                  isActive={false}
+                  style={{ flex: 1 }}
+                />
+              </>
+            ) : (
+              <>
+                <SecondaryButton
+                  label={t('profile.review.cancel')}
+                  onPress={handleCancel}
+                  isActive={false}
+                  style={{ flex: 1 }}
+                />
+                <SecondaryButtonInverse
+                  label={t('profile.review.send')}
+                  onPress={handleSend}
+                  isActive={true}
+                  style={{ flex: 1 }}
+                />
+              </>
+            )}
           </View>
         </View>
       </BottomSheetView>

@@ -56,14 +56,14 @@ export function ReviewCard({ review, onDelete, onPressChalet }: ReviewCardProps)
   return (
     <View style={styles.card}>
       {/* Top Section: Delete icon + Chalet Info + Image */}
-      <View style={[styles.topSection, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+      <View style={[styles.topSection, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
         <TouchableOpacity style={styles.deleteBtn} onPress={onDelete}>
             <View style={styles.deleteCircle}>
                <SolarTrashBinMinimalisticLinear size={24} color="#F64200" />
             </View>
         </TouchableOpacity>
 
-        <View style={[styles.chaletInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+        <View style={[styles.chaletInfo, { alignItems: isRTL ? 'flex-start' : 'flex-end' }]}>
           <ThemedText style={styles.chaletTitle} numberOfLines={1}>{review.chaletTitle}</ThemedText>
           <ThemedText style={styles.chaletLocation}>{review.chaletLocation}</ThemedText>
           <ThemedText style={styles.priceText}>
@@ -99,13 +99,13 @@ export function ReviewCard({ review, onDelete, onPressChalet }: ReviewCardProps)
       <View style={styles.divider} />
 
       {/* Middle Section: User Info + Rating */}
-      <View style={[styles.userSection, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
-         <View style={[styles.userInfo, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+      <View style={[styles.userSection, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+         <View style={[styles.userInfo, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             <Image source={{ uri: review.userAvatar }} style={styles.avatar} />
             <ThemedText style={styles.userName}>{review.userName}</ThemedText>
          </View>
          
-         <View style={[styles.ratingPill, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+         <View style={[styles.ratingPill, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             <SolarStarBold size={16} color="#035DF9" />
             <ThemedText style={styles.ratingText}>{review.rating}</ThemedText>
          </View>
@@ -142,11 +142,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1,
     borderColor: "#F3F4F6",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
   },
   topSection: {
     alignItems: "center",
