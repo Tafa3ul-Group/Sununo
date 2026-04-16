@@ -259,5 +259,16 @@
     "title": "Reviews",
     "pending": "Pending",
     "reviewed": "Reviewed"
+  },
+  "gallery": {
+    "title": "Gallery",
+    "categories": {
+      "all": "All",
+      "pool": "Pool",
+      "bbq": "BBQ",
+      "kitchen": "Kitchen",
+      "bath": "Bath"
+    },
+    "empty": "No images available in this section"
   }
 }

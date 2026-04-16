@@ -18,7 +18,7 @@ import { PrimaryButton } from "@/components/user/primary-button";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize } from "@/constants/theme";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Dimensions,
@@ -60,10 +60,36 @@ export default function ChaletDetailScreen() {
   const isRTL = i18n.language === "ar";
   const [activeImage, setActiveImage] = useState(0);
   const reviewSheetRef = React.useRef<BottomSheetModal>(null);
+  const bannerScrollRef = useRef<ScrollView>(null);
+  const totalImages = 5;
+
+  // Auto Play Banner
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveImage((prev) => {
+        const next = (prev + 1) % totalImages;
+        bannerScrollRef.current?.scrollTo({ 
+          x: next * SCREEN_WIDTH, 
+          animated: true 
+        });
+        return next;
+      });
+    }, 4000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   const openReviewSheet = () => {
     reviewSheetRef.current?.present();
   };
+
+  const images = [
+    "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+    "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800",
+    "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800",
+    "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800",
+    "https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800",
+  ];
 
   return (
     <View style={styles.container}>
@@ -76,40 +102,33 @@ export default function ChaletDetailScreen() {
         {/* صور الشاليه */}
         <View style={styles.imageHeader}>
           <ScrollView
+            ref={bannerScrollRef}
             horizontal
             pagingEnabled
+            showsHorizontalScrollIndicator={false}
             onScroll={(e) =>
               setActiveImage(
-                Math.ceil(e.nativeEvent.contentOffset.x / SCREEN_WIDTH),
+                Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH),
               )
             }
+            scrollEventThrottle={16}
           >
-            <TouchableOpacity 
-                activeOpacity={0.9} 
-                onPress={() => router.push({ pathname: '/(customer)/chalet-details/gallery', params: { startIndex: 0 } })}
-            >
-                <Image
-                    source={{
-                        uri: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
-                    }}
-                    style={styles.headerImage}
-                />
-            </TouchableOpacity>
-            <TouchableOpacity 
-                activeOpacity={0.9} 
-                onPress={() => router.push({ pathname: '/(customer)/chalet-details/gallery', params: { startIndex: 1 } })}
-            >
-                <Image
-                    source={{
-                        uri: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800",
-                    }}
-                    style={styles.headerImage}
-                />
-            </TouchableOpacity>
+            {images.map((img, i) => (
+                <TouchableOpacity 
+                    key={i}
+                    activeOpacity={0.9} 
+                    onPress={() => router.push({ pathname: '/(customer)/chalet-details/gallery', params: { startIndex: i } })}
+                >
+                    <Image
+                        source={{ uri: img }}
+                        style={styles.headerImage}
+                    />
+                </TouchableOpacity>
+            ))}
           </ScrollView>
           <CircleBackButton style={[styles.backBtnOriginal, isRTL ? { right: 20 } : { left: 20 }]} />
           <View style={styles.paginationDots}>
-            {[1, 2, 3, 4, 5].map((_, i) => (
+            {images.map((_, i) => (
               <View
                 key={i}
                 style={[styles.dot, activeImage === i && styles.activeDot]}

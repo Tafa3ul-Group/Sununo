@@ -63,11 +63,15 @@ export function ReviewCard({ review, onDelete, onPressChalet }: ReviewCardProps)
             </View>
         </TouchableOpacity>
 
-        <View style={[styles.chaletInfo, { alignItems: isRTL ? 'flex-start' : 'flex-end' }]}>
-          <ThemedText style={styles.chaletTitle} numberOfLines={1}>{review.chaletTitle}</ThemedText>
-          <ThemedText style={styles.chaletLocation}>{review.chaletLocation}</ThemedText>
-          <ThemedText style={styles.priceText}>
-            {t('common.iqd')} {review.price} / {t('common.shift')}
+        <View style={[styles.chaletInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+          <ThemedText style={[styles.chaletTitle, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>{review.chaletTitle}</ThemedText>
+          <ThemedText style={[styles.chaletLocation, { textAlign: isRTL ? 'right' : 'left' }]}>{review.chaletLocation}</ThemedText>
+          <ThemedText style={[styles.priceText, { textAlign: isRTL ? 'right' : 'left' }]}>
+            {isRTL ? (
+                `${t('common.iqd')} ${review.price} / ${t('common.shift')}`
+            ) : (
+                `${review.price} ${t('common.iqd')} / ${t('common.shift')}`
+            )}
           </ThemedText>
         </View>
 
