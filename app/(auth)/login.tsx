@@ -162,6 +162,19 @@ export function LoginScreen() {
               activeColor="#0061FE"
               icon={(isLoginLoading || isVerifyLoading) ? <ActivityIndicator color="white" /> : undefined}
             />
+
+            {/* Browse as Guest Option */}
+            <TouchableOpacity 
+              style={styles.guestLink}
+              onPress={() => {
+                dispatch(setUserType('guest'));
+                router.replace("/(tabs)");
+              }}
+            >
+              <ThemedText style={styles.guestLinkText}>
+                {t('auth.browseAsGuest')}
+              </ThemedText>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -251,6 +264,18 @@ const styles = StyleSheet.create({
   loginBtn: {
     marginTop: normalize.height(10),
     height: normalize.height(60),
+  },
+  guestLink: {
+    marginTop: normalize.height(20),
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  guestLinkText: {
+    fontSize: normalize.font(14),
+    color: "#64748B",
+    fontFamily: "LamaSans-Bold",
+    textDecorationLine: "underline",
   },
   bottomWaveContainer: {
     position: "absolute",
