@@ -141,21 +141,23 @@ export function HeaderSection({
                 { flexDirection: isRTL ? "row-reverse" : "row" },
               ]}
             >
-              <TouchableOpacity
-                onPress={
-                  onProfilePress || (() => router.push("/(customer)/profile"))
-                }
-                style={styles.avatarContainerHome}
-              >
-                <View style={styles.avatarCircleHome}>
-                  <Image
-                    source={{
-                      uri: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
-                    }}
-                    style={styles.avatarImgHome}
-                  />
-                </View>
-              </TouchableOpacity>
+              {stateUserType !== "guest" && (
+                <TouchableOpacity
+                  onPress={
+                    onProfilePress || (() => router.push("/(customer)/profile"))
+                  }
+                  style={styles.avatarContainerHome}
+                >
+                  <View style={styles.avatarCircleHome}>
+                    <Image
+                      source={{
+                        uri: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
+                      }}
+                      style={styles.avatarImgHome}
+                    />
+                  </View>
+                </TouchableOpacity>
+              )}
 
               <TouchableOpacity
                 onPress={onExtraIconPress}
@@ -238,7 +240,7 @@ export function HeaderSection({
                 [isRTL ? "left" : "right"]: 0,
               }}
             >
-              {showProfile && (
+              {showProfile && stateUserType !== "guest" && (
                 <TouchableOpacity
                   style={styles.actionButton}
                   onPress={

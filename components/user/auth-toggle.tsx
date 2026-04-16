@@ -1,6 +1,6 @@
 /**
  * AuthToggle - User type selection component
- * Created with local normalization for stability.
+ * Enhanced with Liquid Stretch animation while maintaining MainTabs visual style.
  */
 import React, { useEffect } from "react";
 import {
@@ -21,27 +21,21 @@ import Animated, {
 } from "react-native-reanimated";
 import Svg, { G, Path } from "react-native-svg";
 
-// Get dimensions early
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const scale = SCREEN_WIDTH / 375;
 
-// Local internal scale logic
 const normalize = {
-  width: (size: number) => size * (SCREEN_WIDTH / 375),
-  height: (size: number) => size * (SCREEN_WIDTH / 375),
-  font: (size: number) => size * (SCREEN_WIDTH / 375),
+  width: (size: number) => size * scale,
+  height: (size: number) => size * scale,
+  font: (size: number) => size * scale,
 };
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 const AnimatedG = Animated.createAnimatedComponent(G);
 const AnimatedText = Animated.createAnimatedComponent(Text);
 
-// Base dimensions
 const TOGGLE_WIDTH = normalize.width(280);
 const TOGGLE_HEIGHT = normalize.height(80);
-
-// Pre-calculate animated values for UI Thread safety
-const FONT_16 = normalize.font(16);
-const FONT_14 = normalize.font(14);
 
 interface AuthToggleProps {
   activeType: "owner" | "customer";
@@ -52,38 +46,70 @@ export const AuthToggle: React.FC<AuthToggleProps> = ({
   activeType,
   onChange,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
+
+  // 0: owner, 1: customer
   const transition = useSharedValue(activeType === "owner" ? 0 : 1);
 
   useEffect(() => {
     transition.value = withSpring(activeType === "owner" ? 0 : 1, {
-      damping: 18,
-      stiffness: 120,
+      damping: 20,
+      stiffness: 150,
+      mass: 0.8, 
     });
   }, [activeType]);
 
+  const xOffsets = isRTL ? [70, -70] : [-70, 70];
+  const rtlTextOffsets = [2, -2];
+  const ltrTextOffsets = [0, 0];
+  const currentTextOffsets = isRTL ? rtlTextOffsets : ltrTextOffsets;
+
   const circleGroupProps = useAnimatedProps(() => {
-    const xOffset = interpolate(transition.value, [0, 1], [-70, 70]);
+    const xPos = interpolate(transition.value, [0, 1], xOffsets);
+    
+    // أنميشن التمدد السائل (Liquid Stretch)
+    // يتمدد الشكل في المنتصف (0.5) ثم يعود لحجمه
+    const stretchX = interpolate(
+      transition.value,
+      [0, 0.5, 1],
+      [1, 1.25, 1]
+    );
+    
+    // تقليل الارتفاع قليلاً أثناء التمدد لتعزيز الواقعية
+    const stretchY = interpolate(
+      transition.value,
+      [0, 0.5, 1],
+      [1, 0.9, 1]
+    );
+
     return {
       transform: [
-        { translateX: xOffset },
-        { translateX: 140 },
+        { translateX: xPos },
+        { translateX: 140 }, // مركز الـ SVG
         { translateY: 40 },
-        { scale: 1 },
+        { scaleX: stretchX * 0.85 }, // تصغير العرض بنسبة 15%
+        { scaleY: stretchY * 0.85 }, // تصغير الارتفاع بنسبة 15%
         { translateX: -140 },
         { translateY: -40 },
       ],
     };
   });
 
-  const ownerTextStyle = useAnimatedStyle(() => ({
-    color: interpolateColor(transition.value, [0, 0.4], ["#FFFFFF", "#F64200"]),
-    fontSize: interpolate(transition.value, [0, 1], [FONT_16, FONT_14]),
+  const tab0Style = useAnimatedStyle(() => ({
+    color: interpolateColor(transition.value, [0, 0.4], ["#FFFFFF", "#64748B"]),
+    transform: [
+      { scale: interpolate(transition.value, [0, 1], [1.1, 1]) },
+      { translateX: currentTextOffsets[0] },
+    ],
   }));
 
-  const customerTextStyle = useAnimatedStyle(() => ({
-    color: interpolateColor(transition.value, [0.6, 1], ["#F64200", "#FFFFFF"]),
-    fontSize: interpolate(transition.value, [0, 1], [FONT_14, FONT_16]),
+  const tab1Style = useAnimatedStyle(() => ({
+    color: interpolateColor(transition.value, [0.6, 1], ["#64748B", "#FFFFFF"]),
+    transform: [
+      { scale: interpolate(transition.value, [0, 1], [1, 1.1]) },
+      { translateX: currentTextOffsets[1] },
+    ],
   }));
 
   return (
@@ -98,19 +124,19 @@ export const AuthToggle: React.FC<AuthToggleProps> = ({
           />
           <AnimatedG animatedProps={circleGroupProps}>
             <AnimatedPath
-              d="M114 8C96.3269 8 82 22.3269 82 40C82 57.6731 96.3269 72 114 72H166C183.673 72 198 57.6731 198 40C198 22.3269 183.673 8 166 8H114Z"
-              fill="#F64200"
+              d="M100 8C82.3269 8 68 22.3269 68 40C68 57.6731 82.3269 72 100 72H180C197.673 72 212 57.6731 212 40C212 22.3269 197.673 8 180 8H100Z"
+              fill="#0061FE"
             />
           </AnimatedG>
         </Svg>
       </View>
 
-      <View style={styles.buttonsContainer}>
-        <TouchableOpacity onPress={() => onChange("owner")} style={styles.tabButton}>
-          <AnimatedText style={[styles.tabText, ownerTextStyle]}>{t('auth.owner')}</AnimatedText>
+      <View style={[styles.buttonsContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <TouchableOpacity onPress={() => onChange("owner")} style={styles.tabButton} activeOpacity={1}>
+          <AnimatedText style={[styles.tabText, tab0Style]}>{t('auth.owner')}</AnimatedText>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => onChange("customer")} style={styles.tabButton}>
-          <AnimatedText style={[styles.tabText, customerTextStyle]}>{t('auth.customer')}</AnimatedText>
+        <TouchableOpacity onPress={() => onChange("customer")} style={styles.tabButton} activeOpacity={1}>
+          <AnimatedText style={[styles.tabText, tab1Style]}>{t('auth.customer')}</AnimatedText>
         </TouchableOpacity>
       </View>
     </View>
@@ -126,7 +152,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 12,
+    paddingHorizontal: 0,
   },
   tabButton: {
     flex: 1,
@@ -136,5 +162,6 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontFamily: "LamaSans-Black",
+    fontSize: normalize.font(16),
   },
 });

@@ -33,6 +33,7 @@ export default function CustomerLayout() {
       <Tabs.Screen
         name="favorites"
         options={{
+          href: userType === 'guest' ? null : undefined,
           tabBarIcon: ({ color, size }) => (
             <SolarHeartBold size={size} color={color} />
           ),
@@ -41,6 +42,7 @@ export default function CustomerLayout() {
       <Tabs.Screen
         name="notifications"
         options={{
+          href: userType === 'guest' ? null : undefined,
           tabBarIcon: ({ color, size }) => (
             <SolarBellBingBoldDuotone size={size} color={color} />
           ),

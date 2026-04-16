@@ -1,8 +1,8 @@
 {
   "auth": {
     "chooseType": "Choose Account Type",
-    "owner": "Chalet Owner",
-    "customer": "Customer / Guest",
+    "owner": "Chaleh Owner",
+    "customer": "Customer",
     "ownerDesc": "List your chalet and manage bookings easily",
     "customerDesc": "Explore and book the best chalets for your trip",
     "browseAsGuest": "Browse as Guest",
@@ -120,7 +120,7 @@
     "iqd": "IQD",
     "details": "Details",
     "viewDetails": "View Details",
-    "customer": "Customer / Guest",
+    "customer": "Customer",
     "location": "Location",
     "time": "Time",
     "guests": "Guests",
