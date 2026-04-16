@@ -125,7 +125,7 @@ export const AuthToggle: React.FC<AuthToggleProps> = ({
           <AnimatedG animatedProps={circleGroupProps}>
             <AnimatedPath
               d="M100 8C82.3269 8 68 22.3269 68 40C68 57.6731 82.3269 72 100 72H180C197.673 72 212 57.6731 212 40C212 22.3269 197.673 8 180 8H100Z"
-              fill="#0061FE"
+              fill="#F64200"
             />
           </AnimatedG>
         </Svg>
