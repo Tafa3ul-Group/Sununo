@@ -43,11 +43,11 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 // Mock data for the chalet to match ChaletCard props
 const MOCK_CHALET = {
     id: '1',
-    title: "شالية الاروع علةاالطلاق",
-    location: "البصرة - الجزائر",
+    title: { ar: "شالية الاروع على الاطلاق", en: "Most Amazing Chalet" },
+    location: { ar: "البصرة - الجزائر", en: "Basra - Algeria" },
     rating: 4.5,
     price: "30,000",
-    detailedLocation: "البصرة - ابي الخصيب",
+    detailedLocation: { ar: "البصرة - ابي الخصيب", en: "Basra - Abu Al-Khaseeb" },
     image: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500&auto=format&fit=crop"
 };
 
@@ -143,7 +143,11 @@ export default function CompleteBookingScreen() {
         <View style={styles.detailsContainer}>
             {/* Chalet Card */}
             <HorizontalCard
-                chalet={MOCK_CHALET}
+                chalet={{
+                    ...MOCK_CHALET,
+                    title: isRTL ? MOCK_CHALET.title.ar : MOCK_CHALET.title.en,
+                    location: isRTL ? MOCK_CHALET.location.ar : MOCK_CHALET.location.en,
+                }}
                 style={styles.chaletCardInstance}
                 shapeIndex={2}
                 hideFavorite={true}
@@ -158,7 +162,9 @@ export default function CompleteBookingScreen() {
                         <SolarMapPointBold size={32} color={Colors.primary} />
                     </View>
                 </View>
-                <ThemedText style={styles.mapAddressLabel}>{MOCK_CHALET.detailedLocation}</ThemedText>
+                <ThemedText style={styles.mapAddressLabel}>
+                    {isRTL ? MOCK_CHALET.detailedLocation.ar : MOCK_CHALET.detailedLocation.en}
+                </ThemedText>
             </View>
 
             {/* Customer Information */}
@@ -178,10 +184,10 @@ export default function CompleteBookingScreen() {
             {/* Booking Information */}
             <View style={styles.infoSectionCard}>
                 <View style={[styles.sectionHeaderRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <ThemedText style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('booking.bookingInfo')}</ThemedText>
                     <TouchableOpacity style={styles.editBtn} onPress={() => setActiveTab('SHOOKET')}>
                         <ThemedText style={styles.editBtnText}>{t('booking.edit')}</ThemedText>
                     </TouchableOpacity>
-                    <ThemedText style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('booking.bookingInfo')}</ThemedText>
                 </View>
                 <View style={styles.divider} />
                 <View style={[styles.infoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
@@ -481,10 +487,10 @@ export default function CompleteBookingScreen() {
                                         onPress={() => toggleShift('morning')}
                                     >
                                         <View style={[styles.shiftLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                                            <ThemedText style={styles.shiftTitle}>{t('booking.morningShift')}</ThemedText>
                                             <View style={styles.shiftIconBox}>
                                                 <SolarSunBold size={24} color={dayShifts[activeDate]?.morning ? "#F64200" : "#94A3B8"} />
                                             </View>
+                                            <ThemedText style={styles.shiftTitle}>{t('booking.morningShift')}</ThemedText>
                                         </View>
                                         <ThemedText style={styles.shiftTime}>{t('booking.morningTime')}</ThemedText>
                                     </TouchableOpacity>
@@ -494,10 +500,10 @@ export default function CompleteBookingScreen() {
                                         onPress={() => toggleShift('evening')}
                                     >
                                         <View style={[styles.shiftLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                                            <ThemedText style={styles.shiftTitle}>{t('booking.eveningShift')}</ThemedText>
                                             <View style={styles.shiftIconBox}>
                                                 <SolarMoonBold size={24} color={dayShifts[activeDate]?.evening ? "#035DF9" : "#94A3B8"} />
                                             </View>
+                                            <ThemedText style={styles.shiftTitle}>{t('booking.eveningShift')}</ThemedText>
                                         </View>
                                         <ThemedText style={styles.shiftTime}>{t('booking.eveningTime')}</ThemedText>
                                     </TouchableOpacity>
