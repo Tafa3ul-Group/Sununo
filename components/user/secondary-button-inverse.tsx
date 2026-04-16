@@ -44,8 +44,8 @@ export function SecondaryButtonInverse({
   const { i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
 
-  // Opposite side from SecondaryButton
-  const finalIconPosition = iconPosition || (isRTL ? "left" : "right");
+  // Aligned with SecondaryButton to prevent flipping on state change
+  const finalIconPosition = iconPosition || (isRTL ? "right" : "left");
 
   const bgColor = isActive ? activeColor : "white";
   const borderColor = isActive ? activeColor : "#E5E7EB";
@@ -93,7 +93,7 @@ export function SecondaryButtonInverse({
               <ActivityIndicator color={finalContentColor} size="small" />
             ) : iconLabel ? (
               <ThemedText
-                style={[styles.text, { color: finalContentColor, fontSize: 16 }]}
+                style={[styles.text, { color: finalContentColor, fontSize: 14 }]}
               >
                 {iconLabel}
               </ThemedText>
@@ -129,7 +129,7 @@ export function SecondaryButtonInverse({
         ]}
       >
         <ThemedText
-          style={[styles.text, { color: finalContentColor, fontSize: 18 }, textStyle]}
+          style={[styles.text, { color: finalContentColor, fontSize: 14 }, textStyle]}
         >
           {label}
         </ThemedText>

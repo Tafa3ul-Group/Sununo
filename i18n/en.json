@@ -212,7 +212,8 @@
     "bookingComplete": "Booking Completion",
     "bookingDetails": "Booking Details",
     "profile": "Profile",
-    "home": "Home"
+    "home": "Home",
+    "reviews": "Reviews"
   },
   "facilities": {
     "general": "General Services",
@@ -253,5 +254,10 @@
       "morningShift": "Morning Shift",
       "specsList": ["Garden with House", "300m", "1 Bathroom", "3 Rooms"]
     }
+  },
+  "reviews": {
+    "title": "Reviews",
+    "pending": "Pending",
+    "reviewed": "Reviewed"
   }
 }
