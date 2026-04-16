@@ -1,26 +1,25 @@
-import React, { useState, forwardRef, useImperativeHandle, useRef, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
-import { Colors, normalize } from '@/constants/theme';
 import { SolarDangerCircleBold } from '@/components/icons/solar-icons';
-import { 
-  BottomSheetModal, 
-  BottomSheetView, 
+import { normalize } from '@/constants/theme';
+import {
   BottomSheetBackdrop,
-  BottomSheetTextInput
+  BottomSheetModal,
+  BottomSheetTextInput,
+  BottomSheetView
 } from '@gorhom/bottom-sheet';
+import LottieView from 'lottie-react-native';
+import React, { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react';
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
 import { SecondaryButton } from './user/secondary-button';
 import { SecondaryButtonInverse } from './user/secondary-button-inverse';
-import LottieView from 'lottie-react-native';
 
 // Static imports for Lottie files
-import successAnim from './icons/motions/secssuse.json';
-import errorAnim from './icons/motions/faild.json';
+import errorAnim from './icons/motions/fail.json';
+import successAnim from './icons/motions/success.json';
 
 interface BookingCancellationSheetProps {
   onConfirm: (reason: string) => void;
@@ -101,7 +100,7 @@ export const BookingCancellationSheet = forwardRef<BookingCancellationSheetRef, 
         </View>
 
         <Text style={styles.title}>
-          {isExternal 
+          {isExternal
             ? (isRTL ? 'تأكيد إلغاء الإغلاق الخارجي' : 'Confirm External Cancellation')
             : (isRTL ? 'تأكيد إلغاء الحجز' : 'Confirm Cancellation')}
         </Text>
@@ -117,12 +116,13 @@ export const BookingCancellationSheet = forwardRef<BookingCancellationSheetRef, 
               source={internalStatus === 'success' ? successAnim : errorAnim}
               autoPlay={false}
               loop={false}
-              style={styles.lottie}
+              style={[styles.lottie, { height: 300 }]}
+              resizeMode="contain"
             />
             <Text style={styles.feedbackText}>{feedbackMessage}</Text>
             {internalStatus === 'error' && (
-              <TouchableOpacity 
-                style={styles.retryButton} 
+              <TouchableOpacity
+                style={styles.retryButton}
                 onPress={() => setInternalStatus('idle')}
               >
                 <Text style={styles.retryButtonText}>{isRTL ? 'محاولة مرة أخرى' : 'Try Again'}</Text>
@@ -151,15 +151,15 @@ export const BookingCancellationSheet = forwardRef<BookingCancellationSheetRef, 
             )}
             {!isExternal && (
               <Text style={[styles.noteText, { textAlign: isRTL ? 'right' : 'left' }]}>
-                {isRTL 
+                {isRTL
                   ? `عند الإلغاء سيتم استرداد مبلغ العربون (${depositAmount} د.ع) تلقائياً لمحفظة الزبون`
                   : `Upon cancellation, the deposit amount (${depositAmount} IQD) will be automatically refunded to the customer's wallet.`
                 }
               </Text>
             )}
             {isExternal && (
-               <Text style={[styles.noteText, { textAlign: isRTL ? 'right' : 'left' }]}>
-                {isRTL 
+              <Text style={[styles.noteText, { textAlign: isRTL ? 'right' : 'left' }]}>
+                {isRTL
                   ? 'عند الإلغاء سيتم فتح هذا الموعد مرة أخرى في التطبيق للحجوزات العامة.'
                   : 'Upon cancellation, this slot will be opened again in the app for public bookings.'
                 }
@@ -177,7 +177,7 @@ export const BookingCancellationSheet = forwardRef<BookingCancellationSheetRef, 
                 isLoading={isLoading}
               />
             </View>
-            
+
             <View style={{ flex: 1 }}>
               <SecondaryButtonInverse
                 label={isRTL ? 'تجاهل' : 'Ignore'}
@@ -291,8 +291,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   lottie: {
-    width: 250,
-    height: 250,
+    width: '100%',
+    height: 400,
   },
   feedbackText: {
     fontSize: normalize.font(16),

@@ -9,7 +9,6 @@ import {
   SolarCalendarBold,
   SolarCalendarMinimalisticBold,
   SolarClockCircleLinear,
-  SolarHome2Bold,
   SolarLockBold,
   SolarUserBold
 } from "@/components/icons/solar-icons";
@@ -26,9 +25,9 @@ import {
 } from '@/store/api/apiSlice';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput, BottomSheetView } from '@gorhom/bottom-sheet';
 import { FlashList } from '@shopify/flash-list';
-import LottieView from 'lottie-react-native';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
+import LottieView from 'lottie-react-native';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -454,13 +453,14 @@ export default function BookingsScreen() {
               {showExternalSuccess ? (
                 <View style={styles.successAnimationContainer}>
                   <LottieView
-                    source={require('../../../components/icons/motions/secssuse.json')}
+                    source={require('../../../components/icons/motions/success.json')}
                     autoPlay
                     loop={false}
                     onAnimationFinish={() => {
                       shiftSheetRef.current?.dismiss();
                     }}
-                    style={styles.successLottie}
+                    style={[styles.successLottie, { height: 300 }]}
+                    resizeMode="contain"
                   />
                   <Text style={styles.successAnimationText}>
                     {isRTL ? 'تم تأكيد الحجز الخارجي بنجاح' : 'External booking confirmed successfully'}
@@ -492,7 +492,7 @@ export default function BookingsScreen() {
                             notes: externalNotes
                           }).unwrap();
                           console.log('Booking created successfully:', result);
-                          
+
                           refreshAvailability();
                           setExternalNotes('');
                           setShowExternalSuccess(true);
@@ -502,9 +502,9 @@ export default function BookingsScreen() {
                           setTimeout(() => {
                             shiftSheetRef.current?.dismiss();
                           }, 3500);
-                        } catch (e: any) { 
+                        } catch (e: any) {
                           console.error('External booking failed:', e);
-                          Alert.alert('Error', e?.data?.message || 'Failed'); 
+                          Alert.alert('Error', e?.data?.message || 'Failed');
                         }
                       }}
                       isActive={true}
@@ -753,8 +753,8 @@ const styles = StyleSheet.create({
     minHeight: 300,
   },
   successLottie: {
-    width: 200,
-    height: 200,
+    width: '100%',
+    height: 400,
   },
   successAnimationText: {
     fontSize: normalize.font(18),

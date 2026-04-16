@@ -1,10 +1,10 @@
-import React, { forwardRef, useImperativeHandle, useRef } from 'react';
 import LottieView, { LottieViewProps } from 'lottie-react-native';
+import React, { forwardRef, useImperativeHandle, useRef } from 'react';
 
 const MOTIONS = {
   loading: require('./motions/loading.json'),
-  success: require('./motions/secssuse.json'),
-  failed: require('./motions/faild.json'),
+  success: require('./motions/success.json'),
+  failed: require('./motions/fail.json'),
   splash: require('./motions/splash.json'),
 };
 
