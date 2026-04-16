@@ -30,17 +30,12 @@ export default function BookingSuccessDetailsScreen() {
   const detailedLocation = isRTL ? MOCK_CHALET.detailedLocation.ar : MOCK_CHALET.detailedLocation.en;
 
   const renderInfoRow = (label: string, value: string | React.ReactNode) => (
-    <View style={[styles.infoRow, { flexDirection: isRTL ? 'row' : 'row' }]}>
-        {isRTL ? (
-            <>
-                <ThemedText style={styles.infoValue}>{value}</ThemedText>
-                <ThemedText style={styles.infoLabel}>{label}</ThemedText>
-            </>
+    <View style={[styles.infoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <ThemedText style={styles.infoLabel}>{label}</ThemedText>
+        {typeof value === 'string' ? (
+          <ThemedText style={styles.infoValue}>{value}</ThemedText>
         ) : (
-            <>
-                <ThemedText style={styles.infoLabel}>{label}</ThemedText>
-                <ThemedText style={styles.infoValue}>{value}</ThemedText>
-            </>
+          value
         )}
     </View>
   );
@@ -85,22 +80,11 @@ export default function BookingSuccessDetailsScreen() {
             <ThemedText style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('booking.bookingInfo')}</ThemedText>
             <View style={styles.divider} />
             
-            <View style={[styles.infoRow, { flexDirection: isRTL ? 'row' : 'row' }]}>
-                {isRTL ? (
-                    <>
-                        <View style={styles.statusBadgeBlue}>
-                            <ThemedText style={styles.statusBadgeTextBlue}>{t('booking.status.accepted')}</ThemedText>
-                        </View>
-                        <ThemedText style={styles.infoLabel}>{t('booking.bookingStatus')}</ThemedText>
-                    </>
-                ) : (
-                    <>
-                        <ThemedText style={styles.infoLabel}>{t('booking.bookingStatus')}</ThemedText>
-                        <View style={styles.statusBadgeBlue}>
-                            <ThemedText style={styles.statusBadgeTextBlue}>{t('booking.status.accepted')}</ThemedText>
-                        </View>
-                    </>
-                )}
+            <View style={[styles.infoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <ThemedText style={styles.infoLabel}>{t('booking.bookingStatus')}</ThemedText>
+                <View style={styles.statusBadgeBlue}>
+                    <ThemedText style={styles.statusBadgeTextBlue}>{t('booking.status.accepted')}</ThemedText>
+                </View>
             </View>
 
             {renderInfoRow(t('booking.date'), t('booking.dateValue'))}
@@ -114,22 +98,11 @@ export default function BookingSuccessDetailsScreen() {
             <ThemedText style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('booking.paymentDetails')}</ThemedText>
             <View style={styles.divider} />
             
-            <View style={[styles.infoRow, { flexDirection: isRTL ? 'row' : 'row' }]}>
-                {isRTL ? (
-                    <>
-                        <View style={styles.statusBadgeGray}>
-                            <ThemedText style={styles.statusBadgeTextGray}>{t('booking.status.deferred')}</ThemedText>
-                        </View>
-                        <ThemedText style={styles.infoLabel}>{t('booking.paymentStatus')}</ThemedText>
-                    </>
-                ) : (
-                    <>
-                        <ThemedText style={styles.infoLabel}>{t('booking.paymentStatus')}</ThemedText>
-                        <View style={styles.statusBadgeGray}>
-                            <ThemedText style={styles.statusBadgeTextGray}>{t('booking.status.deferred')}</ThemedText>
-                        </View>
-                    </>
-                )}
+            <View style={[styles.infoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <ThemedText style={styles.infoLabel}>{t('booking.paymentStatus')}</ThemedText>
+                <View style={styles.statusBadgeGray}>
+                    <ThemedText style={styles.statusBadgeTextGray}>{t('booking.status.deferred')}</ThemedText>
+                </View>
             </View>
 
             {renderInfoRow(t('booking.totalAmount'), `500,000 ${t('common.iqd')}`)}
@@ -176,3 +149,4 @@ const styles = StyleSheet.create({
   statusBadgeGray: { backgroundColor: '#94A3B8', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
   statusBadgeTextGray: { color: '#FFF', fontSize: normalize.font(12), fontFamily: "LamaSans-Black" },
 });
+

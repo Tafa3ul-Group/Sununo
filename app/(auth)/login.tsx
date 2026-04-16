@@ -37,7 +37,8 @@ const normalize = {
 };
 
 export function LoginScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
   const dispatch = useDispatch();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -115,34 +116,33 @@ export function LoginScreen() {
           </View>
 
           {/* Login Form */}
-          <View style={styles.formContainer}>
-            <View style={styles.headerRow}>
-              <ThemedText style={styles.title}>تسجيل الدخول</ThemedText>
-              <View style={styles.subtextRow}>
+          <View style={[styles.formContainer, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+            <View style={[styles.headerRow, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+              <ThemedText style={[styles.title, { textAlign: isRTL ? 'right' : 'left' }]}>{t('auth.login')}</ThemedText>
+              <View style={[styles.subtextRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 <TouchableOpacity>
-                  <ThemedText style={styles.linkText}>سجل الان</ThemedText>
+                  <ThemedText style={styles.linkText}>{t('auth.registerNow')}</ThemedText>
                 </TouchableOpacity>
                 <ThemedText style={styles.subtitle}>
-                  ليس لديك حساب ؟{" "}
+                  {t('auth.dontHaveAccount')}
                 </ThemedText>
               </View>
             </View>
 
             {step === "phone" ? (
-              <View style={styles.inputGroup}>
-                <ThemedText style={styles.label}>رقم الهاتف</ThemedText>
+              <View style={[styles.inputGroup, { width: '100%' }]}>
+                <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('auth.phone')}</ThemedText>
                 <TextInput
-                  style={styles.input}
-                  placeholder="077XXXXXXXX"
+                  style={[styles.input, { textAlign: isRTL ? 'right' : 'left' }]}
+                  placeholder={t('auth.phonePlaceholder')}
                   value={phone}
                   onChangeText={setPhone}
                   keyboardType="phone-pad"
-                  textAlign="right"
                 />
               </View>
             ) : (
-              <View style={styles.inputGroup}>
-                <ThemedText style={styles.label}>رمز التحقق</ThemedText>
+              <View style={[styles.inputGroup, { width: '100%' }]}>
+                <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('auth.verificationCode')}</ThemedText>
                 <TextInput
                   style={styles.input}
                   placeholder="123456"
@@ -156,7 +156,7 @@ export function LoginScreen() {
             )}
 
             <PrimaryButton
-              label={step === "phone" ? "المتابعة" : "تسجيل دخول"}
+              label={step === "phone" ? t('auth.continue') : t('auth.verify')}
               onPress={handleAction}
               style={styles.loginBtn}
               activeColor="#0061FE"
@@ -236,7 +236,6 @@ const styles = StyleSheet.create({
     fontFamily: "LamaSans-Bold",
     color: "#1E293B",
     marginBottom: normalize.height(8),
-    textAlign: "right",
   },
   input: {
     width: "100%",

@@ -131,7 +131,7 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({ onSelect, initialS
 
       {showYearPicker ? (
         <View style={styles.yearPicker}>
-            <View style={styles.yearGrid}>
+            <View style={[styles.yearGrid, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 {years.map(y => (
                     <TouchableOpacity 
                         key={y} 
@@ -150,7 +150,7 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({ onSelect, initialS
         </View>
       ) : (
         <>
-          <View style={styles.daysHeader}>
+          <View style={[styles.daysHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             {DAYS.map((day) => (
               <ThemedText key={day} style={styles.dayHeaderText}>
                 {day}
@@ -158,7 +158,7 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({ onSelect, initialS
             ))}
           </View>
 
-          <View style={styles.grid}>
+          <View style={[styles.grid, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             {calendarDays.map((item, index) => {
               const time = item.date.getTime();
               const isStart = !!startDate && time === startDate.getTime();
@@ -208,7 +208,6 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   header: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 20,
@@ -229,7 +228,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   daysHeader: {
-    flexDirection: "row",
     backgroundColor: "#F7FCF9",
     borderRadius: 12,
     paddingVertical: 10,
@@ -243,7 +241,6 @@ const styles = StyleSheet.create({
     color: "#15AB64",
   },
   grid: {
-    flexDirection: "row",
     flexWrap: "wrap",
   },
   dayCellContainer: {
@@ -278,7 +275,8 @@ const styles = StyleSheet.create({
   disabledDayText: {
     color: "#D1D5DB",
     opacity: 0,
-   fontFamily: "LamaSans-Regular" },
+    fontFamily: "LamaSans-Regular"
+  },
   startDaySelected: {
     backgroundColor: Colors.primary,
     borderRadius: 12,
@@ -293,7 +291,8 @@ const styles = StyleSheet.create({
   },
   inRangeDayText: {
     color: "#1A1A1A",
-   fontFamily: "LamaSans-Regular" },
+    fontFamily: "LamaSans-Regular"
+  },
   titleWrapper: {
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -305,7 +304,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   yearGrid: {
-    flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
     gap: 10,
@@ -328,7 +326,8 @@ const styles = StyleSheet.create({
   },
   yearTextSelected: {
     color: 'white',
-   fontFamily: "LamaSans-Regular" },
+    fontFamily: "LamaSans-Regular"
+  },
   closeYearBtn: {
     paddingVertical: 10,
     paddingHorizontal: 20,
@@ -339,3 +338,4 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(14),
   },
 });
+

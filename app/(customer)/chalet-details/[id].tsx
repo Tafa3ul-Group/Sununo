@@ -105,7 +105,8 @@ export default function ChaletDetailScreen() {
             ref={bannerScrollRef}
             horizontal
             pagingEnabled
-            showsHorizontalScrollIndicator={false}
+            style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }}
+            contentContainerStyle={{ flexDirection: 'row' }}
             onScroll={(e) =>
               setActiveImage(
                 Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH),
@@ -118,6 +119,7 @@ export default function ChaletDetailScreen() {
                     key={i}
                     activeOpacity={0.9} 
                     onPress={() => router.push({ pathname: '/(customer)/chalet-details/gallery', params: { startIndex: i } })}
+                    style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }}
                 >
                     <Image
                         source={{ uri: img }}
@@ -127,7 +129,7 @@ export default function ChaletDetailScreen() {
             ))}
           </ScrollView>
           <CircleBackButton style={[styles.backBtnOriginal, isRTL ? { right: 20 } : { left: 20 }]} />
-          <View style={styles.paginationDots}>
+          <View style={[styles.paginationDots, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             {images.map((_, i) => (
               <View
                 key={i}
@@ -140,7 +142,7 @@ export default function ChaletDetailScreen() {
         <View style={styles.infoWrapper}>
           {/* العنوان */}
           <View style={[styles.titleSection, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
-            <View style={[styles.ratingGroupLeft, { [isRTL ? 'marginRight' : 'marginLeft']: 15 }]}>
+            <View style={[styles.ratingGroupLeft, isRTL ? { marginRight: 15 } : { marginLeft: 15 }]}>
               <SolarStarBold size={14} color="#035DF9" />
               <ThemedText style={styles.ratingVal}>4.5</ThemedText>
             </View>
@@ -273,7 +275,7 @@ export default function ChaletDetailScreen() {
                   <ThemedText style={styles.revRateNumMerged}>4</ThemedText>
                 </View>
                 <View style={[styles.userInfoRowMerged, { flexDirection: isRTL ? "row" : "row-reverse" }]}>
-                  <View style={[styles.nameAndBodyMerged, { alignItems: isRTL ? "flex-end" : "flex-start", [isRTL ? 'marginRight' : 'marginLeft']: 15 }]}>
+                  <View style={[styles.nameAndBodyMerged, { alignItems: isRTL ? "flex-end" : "flex-start" }, isRTL ? { marginRight: 15 } : { marginLeft: 15 }]}>
                     <ThemedText style={styles.reviewerNameMerged}>{isRTL ? "انسة انس" : "Ansi Ans"}</ThemedText>
                     <ThemedText style={[styles.revMessageMerged, { textAlign: isRTL ? "right" : "left" }]}>
                       {isRTL ? "خوش مكان ونضيف يستاهل، الهواء نقي بسبب التشجير" : "Great place and clean, worth it. The air is fresh because of the trees."}
