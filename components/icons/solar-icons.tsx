@@ -1493,3 +1493,15 @@ export function SolarIcon({
   }
   return <Icon {...props} />;
 }
+export function SolarTrashBinMinimalisticLinear({ size = 24, color, ...props }: SolarIconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+      <Path
+        d="M20.5 6H3.5M20.5 6L18.724 19.3179C18.625 20.0619 18.016 20.6139 17.268 20.6139H6.732C5.984 20.6139 5.375 20.0619 5.276 19.3179L3.5 6M20.5 6L18.5 6V4.5C18.5 3.395 17.605 2.5 16.5 2.5H7.5C6.395 2.5 5.5 3.395 5.5 4.5V6M9.5 11V15M14.5 11V15"
+        stroke={color || "currentColor"}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}

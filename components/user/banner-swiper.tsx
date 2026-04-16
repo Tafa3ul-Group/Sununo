@@ -80,7 +80,7 @@ export function BannerSwiper() {
         showsHorizontalScrollIndicator={false}
         pagingEnabled={false}
         snapToInterval={BANNER_WIDTH + normalize.width(10)}
-        snapToAlignment="start"
+        snapToAlignment="center"
         decelerationRate="fast"
         onScroll={handleScroll}
         scrollEventThrottle={16}

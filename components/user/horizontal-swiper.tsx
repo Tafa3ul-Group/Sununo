@@ -82,6 +82,7 @@ export function HorizontalSwiper({ data, onPressCard }: HorizontalSwiperProps) {
         horizontal
         showsHorizontalScrollIndicator={false}
         snapToInterval={ITEM_WIDTH + SEPARATOR_WIDTH}
+        snapToAlignment="center"
         decelerationRate="fast"
         contentContainerStyle={[styles.listContent, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
         pagingEnabled={false}

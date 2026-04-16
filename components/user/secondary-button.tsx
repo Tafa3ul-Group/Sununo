@@ -134,7 +134,7 @@ export function SecondaryButton({
         ]}
       >
         <ThemedText
-          style={[styles.text, { color: finalContentColor, fontSize: 18 }, textStyle]}
+          style={[styles.text, { color: finalContentColor, fontSize: 14 }, textStyle]}
         >
           {label}
         </ThemedText>
