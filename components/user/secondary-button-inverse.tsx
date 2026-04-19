@@ -53,6 +53,10 @@ export function SecondaryButtonInverse({
 
   const scaledWidth = 44.4;
 
+  // Dynamic flex check
+  const flattenedStyle = StyleSheet.flatten(style);
+  const isFlex = flattenedStyle?.flex === 1 || flattenedStyle?.flexGrow === 1;
+
   return (
     <TouchableOpacity
       activeOpacity={0.8}
@@ -115,7 +119,7 @@ export function SecondaryButtonInverse({
         style={[
           styles.textWrapper,
           {
-            flex: 1,
+            flex: isFlex ? 1 : undefined,
             backgroundColor: bgColor,
             borderColor: borderColor,
             height: 46,
@@ -130,6 +134,7 @@ export function SecondaryButtonInverse({
       >
         <ThemedText
           style={[styles.text, { color: finalContentColor, fontSize: 14 }, textStyle]}
+          numberOfLines={1}
         >
           {label}
         </ThemedText>

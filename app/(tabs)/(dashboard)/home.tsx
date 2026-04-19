@@ -43,7 +43,6 @@ export default function HomeScreen() {
   const [activeFilter, setActiveFilter] = useState('all');
   const [isBalanceVisible, setIsBalanceVisible] = useState(false);
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
-  const detailsSheetRef = React.useRef<BottomSheetModal>(null);
   const cancelSheetRef = React.useRef<BookingCancellationSheetRef>(null);
   const calendarSheetRef = React.useRef<BottomSheetModal>(null);
 
@@ -77,8 +76,8 @@ export default function HomeScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       refetchBookings();
 
-      // Close details sheet immediately
-      detailsSheetRef.current?.dismiss();
+      // Refetch bookings
+      refetchBookings();
 
       // Show success in cancellation sheet
       cancelSheetRef.current?.showSuccess(
@@ -204,8 +203,7 @@ export default function HomeScreen() {
           activeOpacity={0.8}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            setSelectedBookingId(item.id);
-            detailsSheetRef.current?.present();
+            router.push({ pathname: '/(dashboard)/booking-details', params: { id: item.id } });
           }}
         >
           <View style={[styles.modernBookingInner, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
@@ -405,28 +403,6 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Booking Details Drawer */}
-        <BottomSheetModal
-          ref={detailsSheetRef}
-          snapPoints={['85%']}
-          backdropComponent={renderBackdrop}
-          enablePanDownToClose
-          onDismiss={() => setSelectedBookingId(null)}
-        >
-          <BottomSheetView style={{ flex: 1 }}>
-            {selectedBookingId && (
-              <BookingDetailsModalContent
-                id={selectedBookingId}
-                isRTL={isRTL}
-                t={t}
-                onRefresh={refetchBookings}
-                onClose={() => detailsSheetRef.current?.dismiss()}
-                onOpenCancelSheet={handleOpenCancelSheet}
-                isCancelLoading={isRejectLoading || isDeletingExternal}
-              />
-            )}
-          </BottomSheetView>
-        </BottomSheetModal>
 
         <BookingCancellationSheet
           ref={cancelSheetRef}
@@ -454,6 +430,11 @@ export default function HomeScreen() {
                 onSelect={(s, e) => {
                   if (s && e) {
                     setSelectedRange({ start: s, end: e });
+                    setTimeout(() => {
+                      calendarSheetRef.current?.dismiss();
+                    }, 300);
+                  } else if (s === null && e === null) {
+                    setSelectedRange(null);
                     setTimeout(() => {
                       calendarSheetRef.current?.dismiss();
                     }, 300);

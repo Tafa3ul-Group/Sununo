@@ -14,50 +14,24 @@ import { HorizontalCard } from "./horizontal-card";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const ITEM_WIDTH = SCREEN_WIDTH - 32;
 const SEPARATOR_WIDTH = 12;
-const AUTO_PLAY_INTERVAL = 5000;
-
 interface HorizontalSwiperProps {
   data: any[];
   onPressCard?: (id: string) => void;
+  onIndexChange?: (index: number) => void;
 }
 
-export function HorizontalSwiper({ data, onPressCard }: HorizontalSwiperProps) {
+export function HorizontalSwiper({ data, onPressCard, onIndexChange }: HorizontalSwiperProps) {
   const { i18n } = useTranslation();
   const isRTL = i18n.language === 'ar';
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  const startTimer = () => {
-    stopTimer();
-    if (data.length <= 1) return;
-    timerRef.current = setInterval(() => {
-      const nextIndex = (activeIndex + 1) % data.length;
-      flatListRef.current?.scrollToIndex({
-        index: nextIndex,
-        animated: true,
-      });
-      setActiveIndex(nextIndex);
-    }, AUTO_PLAY_INTERVAL);
-  };
-
-  const stopTimer = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-  };
-
-  useEffect(() => {
-    startTimer();
-    return () => stopTimer();
-  }, [activeIndex, data.length]);
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const scrollOffset = event.nativeEvent.contentOffset.x;
     const index = Math.round(scrollOffset / (ITEM_WIDTH + SEPARATOR_WIDTH));
     if (index !== activeIndex && index >= 0 && index < data.length) {
       setActiveIndex(index);
+      if (onIndexChange) onIndexChange(index);
     }
   };
 
@@ -91,8 +65,6 @@ export function HorizontalSwiper({ data, onPressCard }: HorizontalSwiperProps) {
         )}
         onScroll={handleScroll}
         scrollEventThrottle={16}
-        onScrollBeginDrag={stopTimer}
-        onScrollEndDrag={startTimer}
       />
     </View>
   );

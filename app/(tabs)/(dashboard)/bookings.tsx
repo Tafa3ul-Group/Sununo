@@ -83,7 +83,6 @@ export default function BookingsScreen() {
   const [selectedShiftForAction, setSelectedShiftForAction] = React.useState<any>(null);
   const [showExternalSuccess, setShowExternalSuccess] = React.useState(false);
 
-  const detailsSheetRef = React.useRef<BottomSheetModal>(null);
   const cancelSheetRef = React.useRef<BookingCancellationSheetRef>(null);
   const shiftSheetRef = React.useRef<BottomSheetModal>(null);
   const monthSheetRef = React.useRef<BottomSheetModal>(null);
@@ -118,8 +117,7 @@ export default function BookingsScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       refreshAvailability();
 
-      // Close details/shift sheet if it's open
-      detailsSheetRef.current?.dismiss();
+      // Close sheet if it's open
       shiftSheetRef.current?.dismiss();
 
       // Show success in cancellation sheet
@@ -213,8 +211,7 @@ export default function BookingsScreen() {
   };
 
   const openBookingDetails = (id: string) => {
-    setSelectedBookingId(id);
-    detailsSheetRef.current?.present();
+    router.push({ pathname: '/(dashboard)/booking-details', params: { id } });
   };
 
   const openShiftActions = (shift: any) => {
@@ -420,21 +417,6 @@ export default function BookingsScreen() {
         refreshing={isBookingsLoading}
       />
 
-      {/* Overlays */}
-      <BottomSheetModal ref={detailsSheetRef} snapPoints={['85%']} backdropComponent={renderBackdrop} enablePanDownToClose onDismiss={() => setSelectedBookingId(null)}>
-        <BottomSheetView style={{ flex: 1 }}>
-          {selectedBookingId && (
-            <BookingDetailsModalContent
-              id={selectedBookingId}
-              isRTL={isRTL}
-              t={t}
-              onRefresh={refreshAvailability}
-              onClose={() => detailsSheetRef.current?.dismiss()}
-              onOpenCancelSheet={handleOpenCancelSheet}
-            />
-          )}
-        </BottomSheetView>
-      </BottomSheetModal>
 
       <BottomSheetModal
         ref={shiftSheetRef}
@@ -515,14 +497,21 @@ export default function BookingsScreen() {
                   </View>
                 </View>
               ) : (
-                <BookingDetailsModalContent
-                  id={selectedShiftForAction.booking?.id || selectedShiftForAction.bookingId}
-                  isRTL={isRTL}
-                  t={t}
-                  onRefresh={refreshAvailability}
-                  onClose={() => shiftSheetRef.current?.dismiss()}
-                  onOpenCancelSheet={handleOpenCancelSheet}
-                />
+                <View style={{ padding: 24, alignItems: 'center' }}>
+                    <Text style={[styles.sheetTitle, { textAlign: 'center', marginBottom: 24 }]}>
+                      {isRTL ? 'الحجز موجود' : 'Booking Exists'}
+                    </Text>
+                    <SecondaryButton 
+                      label={isRTL ? 'عرض تفاصيل الحجز' : 'View Booking Details'}
+                      onPress={() => {
+                        shiftSheetRef.current?.dismiss();
+                        openBookingDetails(selectedShiftForAction.booking?.id || selectedShiftForAction.bookingId);
+                      }}
+                      isActive={true}
+                      activeColor={IDENTITY_BLUE}
+                      style={{ height: 50, width: '100%' }}
+                    />
+                </View>
               )}
             </>
           )}

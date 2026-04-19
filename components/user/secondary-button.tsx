@@ -55,6 +55,10 @@ export function SecondaryButton({
 
   const scaledWidth = 44.4;
 
+  // Dynamic flex check: only flex internally if the component itself is told to flex
+  const flattenedStyle = StyleSheet.flatten(style);
+  const isFlex = flattenedStyle?.flex === 1 || flattenedStyle?.flexGrow === 1;
+
   return (
     <TouchableOpacity
       activeOpacity={0.8}
@@ -120,6 +124,7 @@ export function SecondaryButton({
         style={[
           styles.textWrapper,
           {
+            flex: isFlex ? 1 : undefined,
             backgroundColor: bgColor,
             borderColor: borderColor,
             height: height,
@@ -134,6 +139,7 @@ export function SecondaryButton({
       >
         <ThemedText
           style={[styles.text, { color: finalContentColor, fontSize: 14 }, textStyle]}
+          numberOfLines={1}
         >
           {label}
         </ThemedText>

@@ -9,7 +9,7 @@ let Mapbox: any = null;
 try {
   Mapbox = require('@rnmapbox/maps').default;
   if (Mapbox) {
-    Mapbox.setAccessToken('sk.eyJ1Ijoibm92YWl0aCIsImEiOiJjbXNneHdhd2YwYXZwMmtxeGZnb3l0OG0zIn0.n-s6o_-wXo_-w');
+    Mapbox.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN || '');
   }
 } catch (e) {
   console.log('Mapbox could not be initialized:', e);
@@ -23,16 +23,32 @@ interface LocationPickerModalProps {
 }
 
 export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocation }: LocationPickerModalProps) => {
-  const [region, setRegion] = useState(initialLocation || { latitude: 33.3152, longitude: 44.3661 });
+  const [region, setRegion] = useState({ latitude: 33.3152, longitude: 44.3661 });
   const [hasNativeMap] = useState(!!Mapbox);
+  const cameraRef = React.useRef<any>(null);
+
+  // Sync with initialLocation when modal opens
+  React.useEffect(() => {
+    if (visible) {
+      const startLoc = initialLocation || { latitude: 33.3152, longitude: 44.3661 };
+      setRegion(startLoc);
+      if (cameraRef.current) {
+        cameraRef.current.setCamera({
+          centerCoordinate: [startLoc.longitude, startLoc.latitude],
+          zoomLevel: 14,
+          animationDuration: 0,
+        });
+      }
+    }
+  }, [visible, initialLocation]);
 
   const handleConfirm = () => {
     onSelect(region.latitude, region.longitude);
     onClose();
   };
 
-  const onRegionChange = (feature: any) => {
-    const [lng, lat] = feature.geometry.coordinates;
+  const onCameraChanged = (state: any) => {
+    const [lng, lat] = state.geometry.coordinates;
     setRegion({ latitude: lat, longitude: lng });
   };
 
@@ -52,11 +68,14 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
             <Mapbox.MapView 
                 style={styles.map} 
                 styleURL={Mapbox.StyleURL.Light}
-                onRegionIsChanging={onRegionChange}
+                onCameraChanged={onCameraChanged}
             >
               <Mapbox.Camera
-                zoomLevel={14}
-                centerCoordinate={[region.longitude, region.latitude]}
+                ref={cameraRef}
+                defaultSettings={{
+                  zoomLevel: 14,
+                  centerCoordinate: [region.longitude, region.latitude],
+                }}
               />
             </Mapbox.MapView>
           ) : (

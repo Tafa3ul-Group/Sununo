@@ -35,7 +35,7 @@ export const DashboardCalendar: React.FC<DashboardCalendarProps> = ({ onSelect, 
     const currentYear = new Date().getFullYear();
     const result = [];
     for (let i = currentYear - 5; i <= currentYear + 5; i++) {
-        result.push(i);
+      result.push(i);
     }
     return result;
   }, []);
@@ -102,6 +102,12 @@ export const DashboardCalendar: React.FC<DashboardCalendarProps> = ({ onSelect, 
     setShowYearPicker(false);
   };
 
+  const handleReset = () => {
+    setStartDate(null);
+    setEndDate(null);
+    onSelect?.(null, null);
+  };
+
   return (
     <View style={styles.container}>
       {/* Month Navigation Header - Space Between for spacing arrows to ends */}
@@ -124,6 +130,15 @@ export const DashboardCalendar: React.FC<DashboardCalendarProps> = ({ onSelect, 
           </Svg>
         </TouchableOpacity>
       </View>
+
+      {/* Reset Button at the Top */}
+      {(startDate || endDate) && (
+        <TouchableOpacity onPress={handleReset} style={styles.resetBtn}>
+          <ThemedText style={styles.resetText}>
+            {isRTL ? 'إعادة تعيين / الكل' : 'Reset / All'}
+          </ThemedText>
+        </TouchableOpacity>
+      )}
 
       {showYearPicker ? (
         <View style={styles.yearPicker}>
@@ -190,6 +205,7 @@ export const DashboardCalendar: React.FC<DashboardCalendarProps> = ({ onSelect, 
               );
             })}
           </View>
+
         </>
       )}
     </View>
@@ -205,7 +221,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between', 
+    justifyContent: 'space-between',
     marginBottom: 20,
     paddingHorizontal: 5,
   },
@@ -218,13 +234,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   titleWrapper: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 25,
     paddingVertical: 10,
     borderRadius: 14,
     backgroundColor: '#F9FAFB',
+    minWidth: 160,
+    alignItems: 'center',
   },
   monthTitle: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontFamily: "LamaSans-Black",
     color: "#1A1A1A",
     textTransform: 'uppercase',
@@ -278,7 +296,8 @@ const styles = StyleSheet.create({
   disabledDayText: {
     color: "#D1D5DB",
     opacity: 0,
-   fontFamily: "LamaSans-Regular" },
+    fontFamily: "LamaSans-Regular"
+  },
   startDaySelected: {
     backgroundColor: Colors.primary,
     borderRadius: 12,
@@ -293,7 +312,8 @@ const styles = StyleSheet.create({
   },
   inRangeDayText: {
     color: "#1A1A1A",
-   fontFamily: "LamaSans-Regular" },
+    fontFamily: "LamaSans-Regular"
+  },
   yearPicker: {
     padding: 10,
     alignItems: 'center',
@@ -322,7 +342,8 @@ const styles = StyleSheet.create({
   },
   yearTextSelected: {
     color: 'white',
-   fontFamily: "LamaSans-Regular" },
+    fontFamily: "LamaSans-Regular"
+  },
   closeYearBtn: {
     paddingVertical: 10,
     paddingHorizontal: 20,
@@ -331,5 +352,20 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontFamily: "LamaSans-Black",
     fontSize: normalize.font(14),
+  },
+  resetBtn: {
+    marginBottom: 20,
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#F3F4F6',
+    borderRadius: 12,
+    borderStyle: 'dashed',
+  },
+  resetText: {
+    color: Colors.text.muted,
+    fontFamily: "LamaSans-Bold",
+    fontSize: normalize.font(12),
   },
 });

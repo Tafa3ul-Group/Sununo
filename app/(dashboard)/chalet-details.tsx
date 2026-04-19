@@ -303,7 +303,7 @@ export default function ChaletDetailsScreen() {
                 <View style={styles.detailCard}>
                   <SolarUsersGroupBold size={20} color={Colors.primary} />
                   <View style={{ alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
-                    <Text style={styles.detailValue}>{chalet?.maxGuests}</Text>
+                    <Text style={styles.detailValue}>{(chalet?.maxAdults || chalet?.maxGuests || 0) + (chalet?.maxChildren || 0)}</Text>
                     <Text style={styles.detailLabel}>{isRTL ? 'أقصى عدد' : 'Max Guests'}</Text>
                   </View>
                 </View>

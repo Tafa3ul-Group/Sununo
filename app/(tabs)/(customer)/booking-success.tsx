@@ -59,7 +59,7 @@ export default function BookingSuccessDetailsScreen() {
         {/* Map Card */}
         <View style={styles.detailsMapCard}>
             <View style={styles.mapSnippetWrapper}>
-                <ExpoImage source={{ uri: 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/47.98,30.50,13,0/600x300?access_token=pk.dummy' }} style={styles.mapSnippet} />
+                <ExpoImage source={{ uri: `https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/47.98,30.50,13,0/600x300?access_token=${process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN}` }} style={styles.mapSnippet} />
                 <View style={styles.mapMarker}>
                     <SolarMapPointBold size={32} color={Colors.primary} />
                 </View>

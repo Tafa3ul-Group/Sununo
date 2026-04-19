@@ -51,12 +51,14 @@ export const apiSlice = createApi({
         body: data,
       }),
     }),
-    // Mutation for creating a new chalet
+    // Mutation for creating a new chalet (multipart/form-data)
     createChalet: builder.mutation({
-      query: (data) => ({
+      query: (formData) => ({
         url: '/provider/chalets',
         method: 'POST',
-        body: data,
+        body: formData,
+        // Don't set Content-Type — FormData adds it automatically with boundary
+        headers: {},
       }),
       invalidatesTags: ['Chalet'],
     }),
@@ -68,6 +70,11 @@ export const apiSlice = createApi({
         method: 'POST',
         body: formData,
       }),
+    }),
+
+    // Get amenity categories for image categorization
+    getAmenityCategories: builder.query<any[], void>({
+      query: () => '/provider/chalets/amenity-categories',
     }),
 
 
@@ -388,6 +395,7 @@ export const {
   useGetAmenitiesQuery,
   useGetChaletAmenitiesQuery,
   useSetChaletAmenitiesMutation,
+  useGetAmenityCategoriesQuery,
 
   useGetProviderProfileQuery,
   useUpdateProviderProfileMutation,

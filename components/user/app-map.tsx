@@ -1,18 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, ActivityIndicator, Image, Platform, TouchableOpacity, Linking } from 'react-native';
-import * as Location from 'expo-location';
-import * as Theme from '@/constants/theme';
 import { ThemedText } from '@/components/themed-text';
-import { SolarMapPointBold } from '@/components/icons/solar-icons';
-import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
+import * as Theme from '@/constants/theme';
 import { RootState } from '@/store';
+import * as Location from 'expo-location';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ActivityIndicator, Image, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useSelector } from 'react-redux';
 
 const { Colors, normalize, Shadows } = Theme;
 const SafeShadows = Shadows || { small: {}, medium: {}, large: {} };
 
 // Mapbox Token
-const MAPBOX_ACCESS_TOKEN = 'sk.eyJ1Ijoibm92YWl0aCIsImEiOiJjbXNneHdhd2YwYXZwMmtxeGZnb3l0OG0zIn0.n-s6o_-wXo_-w';
+const MAPBOX_ACCESS_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN || '';
 
 // Lazy load Mapbox
 let Mapbox: any = null;
@@ -41,27 +40,34 @@ interface AppMapProps {
   showMarker?: boolean;
   selectedChalet?: any;
   markers?: MarkerData[];
+  route?: any;
+  isNavigating?: boolean;
   onSelectMarker?: (chalet: any) => void;
   onPressCard?: (id: string) => void;
 }
 
-export const AppMap = ({ 
-  style, 
-  centerCoordinate, 
-  zoomLevel = 12, 
+export const AppMap = ({
+  style,
+  centerCoordinate,
+  zoomLevel = 12,
   interactive = true,
   showMarker = false,
   selectedChalet,
   markers = [],
+  route,
+  isNavigating = false,
   onSelectMarker,
   onPressCard
 }: AppMapProps) => {
   const { i18n } = useTranslation();
   const { language } = useSelector((state: RootState) => state.auth);
   const isRTL = language === 'ar' || i18n.language === 'ar';
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [selectedChaletState, setSelectedChaletState] = useState<any>(selectedChalet);
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasNativeMap, setHasNativeMap] = useState(false);
+  const cameraRef = React.useRef<any>(null);
 
   useEffect(() => {
     // Check if native Mapbox is truly ready
@@ -73,7 +79,9 @@ export const AppMap = ({
       try {
         let { status } = await Location.requestForegroundPermissionsAsync();
         if (status === 'granted') {
-          let currentLocation = await Location.getCurrentPositionAsync({});
+          let currentLocation = await Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.Highest,
+          });
           setLocation(currentLocation);
         }
       } catch (err) {
@@ -100,23 +108,23 @@ export const AppMap = ({
     return (
       <View style={[styles.container, style, styles.fallbackContainer]}>
         <View style={styles.abstractMapBackground}>
-           <Image 
-              source={{ uri: `https://api.mapbox.com/styles/v1/mapbox/light-v10/static/${fallbackLng},${fallbackLat},${zoomLevel}/800x800?access_token=${MAPBOX_ACCESS_TOKEN}` }}
-              style={styles.fallbackImage}
-              resizeMode="cover"
-            />
+          <Image
+            source={{ uri: `https://api.mapbox.com/styles/v1/mapbox/light-v10/static/${fallbackLng},${fallbackLat},${zoomLevel}/800x800?access_token=${MAPBOX_ACCESS_TOKEN}` }}
+            style={styles.fallbackImage}
+            resizeMode="cover"
+          />
         </View>
-        
+
         {/* Render markers */}
         {markers.map((marker, idx) => (
-          <TouchableOpacity 
+          <TouchableOpacity
             key={marker.id}
             onPress={() => onSelectMarker?.(marker)}
             style={[
-              styles.customMarkerUI, 
-              { 
+              styles.customMarkerUI,
+              {
                 position: 'absolute',
-                top: 150 + (idx * 100), 
+                top: 150 + (idx * 100),
                 left: 50 + (idx * 40 * (idx % 2 === 0 ? 1 : -1)),
               }
             ]}
@@ -141,39 +149,73 @@ export const AppMap = ({
 
   const finalCenter: [number, number] = centerCoordinate || (location 
     ? [location.coords.longitude, location.coords.latitude] 
-    : [47.85, 30.50]);
+    : [47.82, 30.51]); // Default to a central Basra point
 
   return (
     <View style={[styles.container, style]}>
-      <Mapbox.MapView 
-        style={styles.map} 
+      <Mapbox.MapView
+        style={styles.map}
         styleURL={Mapbox.StyleURL.Light}
         logoEnabled={false}
         attributionEnabled={false}
       >
         <Mapbox.Camera
+          ref={cameraRef}
           zoomLevel={zoomLevel}
           centerCoordinate={finalCenter}
           animationMode="flyTo"
+          animationDuration={1000}
+          followUserLocation={isNavigating}
+          followUserMode={isNavigating ? "course" : undefined}
+          followPitch={isNavigating ? 45 : 0}
         />
 
+        <Mapbox.UserLocation
+          visible={true}
+          showsUserHeadingIndicator={true}
+          renderMode="compass"
+        />
+
+        {/* Render all active markers */}
         {markers.map((marker) => (
-          <Mapbox.PointAnnotation
+          <Mapbox.MarkerView
             key={marker.id}
             id={marker.id}
             coordinate={marker.coordinates}
-            onSelected={() => onSelectMarker?.(marker)}
           >
-            <View style={styles.customMarkerUI}>
+            <TouchableOpacity
+              activeOpacity={0.9}
+              onPress={() => {
+                onSelectMarker?.(marker);
+              }}
+              style={styles.customMarkerUI}
+            >
               <View style={styles.markerCircle}>
                 <Image source={{ uri: marker.image }} style={styles.markerImage} resizeMode="cover" />
               </View>
               <ThemedText style={styles.markerTitle}>
                 {typeof marker.title === 'object' ? (isRTL ? marker.title.ar : marker.title.en) : marker.title}
               </ThemedText>
-            </View>
-          </Mapbox.PointAnnotation>
+            </TouchableOpacity>
+          </Mapbox.MarkerView>
         ))}
+
+
+
+        {route && (
+          <Mapbox.ShapeSource id="routeSource" shape={route}>
+            <Mapbox.LineLayer
+              id="routeLine"
+              style={{
+                lineColor: Colors.primary,
+                lineWidth: 5,
+                lineCap: 'round',
+                lineJoin: 'round',
+                lineOpacity: 0.8,
+              }}
+            />
+          </Mapbox.ShapeSource>
+        )}
       </Mapbox.MapView>
     </View>
   );
@@ -256,5 +298,58 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontFamily: "LamaSans-SemiBold",
     textAlign: 'center',
+  },
+  fabContainer: {
+    position: 'absolute',
+    bottom: normalize.height(100),
+    right: normalize.width(16),
+    left: normalize.width(16),
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  fab: {
+    backgroundColor: 'white',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 30,
+    flexDirection: 'row',
+    alignItems: 'center',
+    ...SafeShadows.medium,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    gap: 8,
+  },
+  fabActive: {
+    backgroundColor: Theme.Colors.primary,
+    borderColor: Theme.Colors.primary,
+  },
+  fabText: {
+    fontSize: 14,
+    fontFamily: "LamaSans-Bold",
+  },
+  userLocationMarker: {
+    width: 30,
+    height: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  userLocationDot: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: Theme.Colors.primary,
+    borderWidth: 2,
+    borderColor: 'white',
+    zIndex: 2,
+    ...SafeShadows.small,
+  },
+  userLocationPulse: {
+    position: 'absolute',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: Theme.Colors.primary,
+    opacity: 0.2,
+    zIndex: 1,
   },
 });

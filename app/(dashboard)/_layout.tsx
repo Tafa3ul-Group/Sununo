@@ -33,6 +33,10 @@ export default function DashboardNonTabLayout() {
         name="chalet-details"
         options={{ headerShown: false }}
       />
+      <Stack.Screen
+        name="booking-details"
+        options={{ headerShown: false }}
+      />
     </Stack>
   );
 }

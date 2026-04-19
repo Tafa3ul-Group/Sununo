@@ -12,29 +12,18 @@ import {
   SolarSunBold, 
   SolarAltArrowLeftLinear, 
   SolarAltArrowRightLinear, 
-  SolarNotesBoldDuotone 
+  SolarNotesBoldDuotone,
+  SolarMenuDotsBold,
+  SolarStarBold
 } from '@/components/icons/solar-icons';
-import { SecondaryButton } from '@/components/user/secondary-button';
+import { PrimaryButton } from '@/components/user/primary-button';
 import { ThemedText } from '@/components/themed-text';
-import { BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
 import React from 'react';
-import { ActivityIndicator, Alert, Image, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const IDENTITY_BLUE = '#035DF9';
-
-const format12H = (time: string | undefined | null, isRTL: boolean) => {
-  if (!time) return '';
-  const timePart = time.includes(' ') ? time.split(' ')[1] : time;
-  const parts = timePart.split(':');
-  if (parts.length < 2) return time;
-  let h = parseInt(parts[0]);
-  const m = parts[1];
-  const ampm = h >= 12 ? (isRTL ? 'م' : 'PM') : (isRTL ? 'ص' : 'AM');
-  h = h % 12;
-  h = h ? h : 12;
-  return `${h}:${m.padStart(2, '0')} ${ampm}`;
-};
 
 interface BookingDetailsContentProps {
   id: string;
@@ -46,7 +35,7 @@ interface BookingDetailsContentProps {
   isCancelLoading?: boolean;
 }
 
-export const BookingDetailsModalContent = ({ id, isRTL, t, onRefresh, onClose, onOpenCancelSheet, isCancelLoading }: BookingDetailsContentProps) => {
+export const BookingDetailsModalContent = ({ id, isRTL, t, onClose, onOpenCancelSheet, isCancelLoading }: BookingDetailsContentProps) => {
   const { data: bookingDetailsData, isLoading, error } = useGetProviderBookingDetailsQuery(id);
 
   if (isLoading) return <View style={styles.sheetLoading}><ActivityIndicator size="large" color={IDENTITY_BLUE} /></View>;
@@ -67,164 +56,324 @@ export const BookingDetailsModalContent = ({ id, isRTL, t, onRefresh, onClose, o
   const bChaletAddress = isRTL ? (data.chalet?.address?.ar || data.chalet?.address) : (data.chalet?.address?.en || data.chalet?.address);
   const bCustomerName = bIsExternal ? (isRTL ? 'حجز خارجي' : 'External Booking') : (data.customer?.name || t('common.user'));
   const bShiftName = isRTL ? (data.shift?.name?.ar || data.shift?.name) : (data.shift?.name?.en || data.shift?.name);
-  const bIsNightShift = data.shift?.isOvernight || (data.shift?.name?.en?.toLowerCase().includes('evening'));
 
-  const bHandleCall = () => data.customer?.phone && Linking.openURL(`tel:${data.customer.phone}`);
-  const bHandleWhatsApp = () => {
-    if (data.customer?.phone) {
-      const phone = data.customer.phone.replace(/[^0-9]/g, '');
-      Linking.openURL(`whatsapp://send?phone=${phone}`);
-    }
-  };
-
-  const handleCancelAction = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    onOpenCancelSheet?.(data);
-  };
+  const remainingAmount = data.totalPrice - (data.paidAmount || 0);
 
   return (
-    <BottomSheetScrollView contentContainerStyle={styles.sheetScroll}>
-      <View style={[styles.sheetTopRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-        <Text style={[styles.sheetHeroTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
-          {isRTL ? 'تفاصيل الحجز' : 'Booking Details'}
-        </Text>
+    <View style={styles.mainContainer}>
+      {/* Custom Header */}
+      <View style={[styles.header, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <TouchableOpacity style={styles.headerBtn} onPress={onClose}>
+          {isRTL ? <SolarAltArrowRightLinear size={24} color={Colors.text.primary} /> : <SolarAltArrowLeftLinear size={24} color={Colors.text.primary} />}
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{isRTL ? 'تفاصيل الحجز' : 'Booking Details'}</Text>
+        <TouchableOpacity style={styles.headerBtn}>
+          <SolarMenuDotsBold size={24} color={Colors.text.muted} />
+        </TouchableOpacity>
       </View>
 
-      <View style={styles.customerCard}>
-        <View style={[styles.customerRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-          <View style={styles.customerAvatar}>
-            {data.customer?.image ? (
-              <Image source={{ uri: data.customer.image }} style={styles.customerAvatarImg} />
-            ) : (
-              <SolarUserBold size={18} color="#FFF" />
-            )}
-          </View>
-          <View style={{ flex: 1, marginHorizontal: 10, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
-            <Text style={styles.customerNameSheet}>{bCustomerName}</Text>
-            <Text style={styles.customerPhone}>{data.customer?.phone || '--'}</Text>
-          </View>
-          <View style={[styles.contactActions, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-            <TouchableOpacity style={[styles.contactBtn, styles.contactBtnCall]} onPress={bHandleCall}>
-              <SolarPhoneBold size={16} color="#16A34A" />
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.contactBtn, styles.contactBtnChat]} onPress={bHandleWhatsApp}>
-              <SolarChatLineLinear size={16} color="#0284C7" />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
+      <BottomSheetScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {/* Chalet Card */}
+        <View style={styles.sectionCard}>
+          <View style={[styles.chaletRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.chaletInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+              <Text style={[styles.chaletName, { textAlign: isRTL ? 'right' : 'left' }]}>{bChaletName}</Text>
+              <Text style={[styles.chaletLocation, { textAlign: isRTL ? 'right' : 'left' }]}>{bChaletAddress || (isRTL ? 'البصرة - الجزائر' : 'Basra - Algeria')}</Text>
+              
+              <View style={[styles.ratingRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <SolarStarBold size={14} color="#EF4444" />
+                <Text style={styles.ratingText}>4.5</Text>
+              </View>
 
-      <View style={styles.detailCard}>
-        <View style={[styles.detailCardHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-          <View style={[styles.detailIconCircle, { backgroundColor: '#EEF2FF' }]}>
-            <SolarHome2Bold size={16} color={Colors.primary} />
+              <Text style={[styles.priceTag, { textAlign: isRTL ? 'right' : 'left' }]}>
+                {isRTL ? `IQD ${Number(data.totalPrice).toLocaleString()} / شفت` : `IQD ${Number(data.totalPrice).toLocaleString()} / Shift`}
+              </Text>
+            </View>
+            
+            <View style={styles.organicImageContainer}>
+              <Image 
+                source={{ uri: data.chalet?.image || data.chalet?.images?.[0] || 'https://images.unsplash.com/photo-1582719508461-905c673771fd?q=80&w=2050&auto=format&fit=crop' }} 
+                style={styles.organicImage} 
+              />
+            </View>
           </View>
-          <Text style={[styles.detailCardTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{bChaletName}</Text>
         </View>
-        {bChaletAddress && (
-          <View style={[styles.detailSubRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-            <SolarMapPointLinear size={13} color="#94A3B8" />
-            <Text style={styles.detailSubText}>{bChaletAddress}</Text>
+
+        {/* Customer Information */}
+        <View style={styles.sectionCard}>
+          <Text style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
+            {isRTL ? 'معلومات الزبون' : 'Customer Information'}
+          </Text>
+          <View style={styles.divider} />
+          
+          <View style={[styles.detailRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <Text style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'الاسم' : 'Name'}</Text>
+            <Text style={[styles.value, { textAlign: isRTL ? 'left' : 'right' }]}>{bCustomerName}</Text>
+          </View>
+
+          {!bIsExternal && (
+            <View style={[styles.detailRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+              <Text style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'رقم الهاتف' : 'Phone'}</Text>
+              <Text style={[styles.value, { textAlign: isRTL ? 'left' : 'right' }]}>{data.customer?.phone || '--'}</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Booking Information */}
+        <View style={styles.sectionCard}>
+          <Text style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
+            {isRTL ? 'معلومات الحجز' : 'Booking Information'}
+          </Text>
+          <View style={styles.divider} />
+          
+          <View style={[styles.detailRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <Text style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'التاريخ' : 'Date'}</Text>
+            <Text style={[styles.value, { textAlign: isRTL ? 'left' : 'right' }]}>{data.bookingDate}</Text>
+          </View>
+
+          <View style={[styles.detailRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <Text style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'الفترة' : 'Period'}</Text>
+            <Text style={[styles.value, { textAlign: isRTL ? 'left' : 'right' }]}>{bShiftName}</Text>
+          </View>
+
+          <View style={[styles.detailRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <Text style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'الاشخاص' : 'Persons'}</Text>
+            <Text style={[styles.value, { textAlign: isRTL ? 'left' : 'right' }]}>
+              {isRTL ? `${data.adults || 2} بالغين، ${data.children || 2} اطفال` : `${data.adults || 2} Adults, ${data.children || 2} Children`}
+            </Text>
+          </View>
+        </View>
+
+        {/* Payment Information */}
+        <View style={styles.sectionCard}>
+          <Text style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
+            {isRTL ? 'معلومات الدفع' : 'Payment Information'}
+          </Text>
+          <View style={styles.divider} />
+          
+          <View style={[styles.detailRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <Text style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'المبلغ المدفوع' : 'Amount Paid'}</Text>
+            <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 4 }}>
+              <Text style={[styles.value, { color: Colors.text.muted }]}>{Number(data.paidAmount || 0).toLocaleString()}</Text>
+              <Text style={[styles.currency, { color: Colors.text.muted }]}>{isRTL ? 'د.ع' : 'IQD'}</Text>
+            </View>
+          </View>
+
+          <View style={[styles.detailRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <Text style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'المبلغ المتبقي' : 'Remaining Amount'}</Text>
+            <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 4 }}>
+              <Text style={[styles.value, { color: IDENTITY_BLUE }]}>{Number(remainingAmount).toLocaleString()}</Text>
+              <Text style={[styles.currency, { color: IDENTITY_BLUE }]}>{isRTL ? 'د.ع' : 'IQD'}</Text>
+            </View>
+          </View>
+        </View>
+
+        {data.notes && (
+          <View style={styles.sectionCard}>
+            <Text style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
+              {isRTL ? 'ملاحظات' : 'Notes'}
+            </Text>
+            <View style={styles.divider} />
+            <Text style={[styles.notesText, { textAlign: isRTL ? 'right' : 'left' }]}>{data.notes}</Text>
           </View>
         )}
 
-        <View style={styles.scheduleBlock}>
-          <View style={[styles.scheduleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-            <SolarCalendarMinimalisticBold size={16} color={Colors.primary} />
-            <Text style={styles.scheduleDate}>{data.bookingDate}</Text>
-            <View style={[styles.shiftChip, { backgroundColor: bIsNightShift ? '#F5F3FF' : '#FFF7ED' }]}>
-              {bIsNightShift ? <SolarMoonBold size={11} color="#7C3AED" /> : <SolarSunBold size={11} color="#EA580C" />}
-              <Text style={[styles.shiftChipText, { color: bIsNightShift ? "#7C3AED" : "#EA580C" }]}>{bShiftName}</Text>
-            </View>
-          </View>
-          <View style={[styles.detailCardHeader, { flexDirection: isRTL ? 'row-reverse' : 'row', padding: 12, justifyContent: 'space-around' }]}>
-            <View style={[styles.timeBlock, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-              <Text style={styles.timeLabel}>{isRTL ? 'الدخول' : 'Check-in'}</Text>
-              <Text style={styles.timeValue}>{format12H(data.shiftStartTime, isRTL)}</Text>
-            </View>
-            <View style={styles.timeArrow}>
-              {isRTL ? <SolarAltArrowLeftLinear size={14} color="#CBD5E1" /> : <SolarAltArrowRightLinear size={14} color="#CBD5E1" />}
-            </View>
-            <View style={[styles.timeBlock, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-              <Text style={styles.timeLabel}>{isRTL ? 'الخروج' : 'Check-out'}</Text>
-              <Text style={styles.timeValue}>{format12H(data.shiftEndTime, isRTL)}</Text>
-            </View>
-          </View>
+        {/* Cancellation for providers */}
+        <View style={{ marginVertical: 20 }}>
+          <TouchableOpacity 
+            style={styles.cancelLink} 
+            onPress={() => onOpenCancelSheet?.(data)}
+            disabled={isCancelLoading}
+          >
+            <Text style={styles.cancelLinkText}>
+              {bIsExternal ? (isRTL ? 'إلغاء الإغلاق الخارجي' : 'Cancel External') : (isRTL ? 'إلغاء هذا الحجز' : 'Cancel this booking')}
+            </Text>
+          </TouchableOpacity>
         </View>
-      </View>
 
-      <View style={[styles.paymentCard, { marginTop: 10 }]}>
-        <View style={[styles.paymentTotalRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-          <Text style={styles.paymentTotalLabel}>{isRTL ? 'إجمالي السعر' : 'Total Price'}</Text>
-          <Text style={styles.paymentTotalValue}>{Number(data.totalPrice).toLocaleString()} {t('common.iqd')}</Text>
-        </View>
-      </View>
+        <View style={{ height: 100 }} />
+      </BottomSheetScrollView>
 
-      {data.notes && (
-        <View style={[styles.notesContainer, { marginTop: 12, alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-          <View style={[styles.row, { flexDirection: isRTL ? 'row-reverse' : 'row', gap: 6, marginBottom: 4 }]}>
-            <SolarNotesBoldDuotone size={16} color={IDENTITY_BLUE} />
-            <Text style={styles.notesLabel}>{isRTL ? 'ملاحظات الحجز' : 'Booking Notes'}</Text>
-          </View>
-          <Text style={[styles.notesText, { textAlign: isRTL ? 'right' : 'left' }]}>{data.notes}</Text>
-        </View>
-      )}
-
-      <View style={{ marginTop: 24, gap: 12 }}>
-        {(data.status === 'confirmed' || data.status === 'pending_payment' || data.status === 'external' || bIsExternal) && (
-          <SecondaryButton
-            label={bIsExternal ? (isRTL ? 'إلغاء الإغلاق الخارجي' : 'Cancel External') : (isRTL ? 'إلغاء الحجز' : 'Cancel Booking')}
-            onPress={handleCancelAction}
-            isActive={true}
-            activeColor="#EF4444"
-            icon={<SolarDangerCircleBold size={18} color="white" />}
-            style={{ width: '100%', height: 50 }}
-            isLoading={isCancelLoading}
-          />
-        )}
+      {/* Bottom Payment Button */}
+      <View style={styles.bottomActions}>
+         <PrimaryButton 
+          label={isRTL ? `تسديد المبلغ المتبقي ( ${Number(remainingAmount).toLocaleString()} د.ع )` : `Pay Remaining Balance ( ${Number(remainingAmount).toLocaleString()} IQD )`}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            // Action for payment
+          }}
+          style={styles.payButton}
+         />
       </View>
-    </BottomSheetScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  sheetLoading: { padding: 50, alignItems: 'center' },
-  sheetScroll: { padding: 20 },
-  sheetTopRow: { marginBottom: 20 },
-  sheetHeroTitle: { fontSize: normalize.font(18), fontFamily: "LamaSans-Black" },
-  customerCard: { backgroundColor: '#F8FAFC', borderRadius: 12, padding: 12, marginBottom: 16 },
-  customerRow: { alignItems: 'center' },
-  customerAvatar: { width: 44, height: 44, borderRadius: 12, backgroundColor: IDENTITY_BLUE, justifyContent: 'center', alignItems: 'center' },
-  customerAvatarImg: { width: 44, height: 44, borderRadius: 12 },
-  customerNameSheet: { fontSize: normalize.font(15), fontFamily: "LamaSans-Bold" },
-  customerPhone: { fontSize: normalize.font(13), color: '#64748B' , fontFamily: "LamaSans-Regular" },
-  contactActions: { gap: 8 },
-  contactBtn: { width: 36, height: 36, borderRadius: 10, justifyContent: 'center', alignItems: 'center', borderWidth: 1 },
-  contactBtnCall: { backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' },
-  contactBtnChat: { backgroundColor: '#F0F9FF', borderColor: '#BAE6FD' },
-  detailCard: { backgroundColor: '#FFF', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: '#F1F5F9' },
-  detailCardHeader: { alignItems: 'center', gap: 8, marginBottom: 8 },
-  detailIconCircle: { width: 32, height: 32, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
-  detailCardTitle: { fontSize: normalize.font(15), fontFamily: "LamaSans-Bold", flex: 1 },
-  detailSubRow: { paddingLeft: 40, alignItems: 'center', gap: 6, marginBottom: 12 },
-  detailSubText: { fontSize: normalize.font(12), color: '#64748B' , fontFamily: "LamaSans-Regular" },
-  scheduleBlock: { backgroundColor: '#F8FAFC', borderRadius: 10, overflow: 'hidden' },
-  scheduleRow: { padding: 10, borderBottomWidth: 1, borderBottomColor: '#F1F5F9', alignItems: 'center', gap: 8 },
-  scheduleDate: { fontSize: normalize.font(13), fontFamily: "LamaSans-Bold", flex: 1 },
-  shiftChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
-  shiftChipText: { fontSize: normalize.font(10), fontFamily: "LamaSans-Bold" },
-  timeBlock: { flex: 1 },
-  timeLabel: { fontSize: normalize.font(10), color: '#94A3B8', fontFamily: "LamaSans-Bold", textTransform: 'uppercase' },
-  timeValue: { fontSize: normalize.font(14), fontFamily: "LamaSans-Black" },
-  timeArrow: { paddingHorizontal: 8 },
-  paymentCard: { padding: 12, backgroundColor: '#F8FAFC', borderRadius: 10 },
-  paymentTotalRow: { justifyContent: 'space-between', alignItems: 'center' },
-  paymentTotalLabel: { fontSize: normalize.font(13), fontFamily: "LamaSans-SemiBold" },
-  paymentTotalValue: { fontSize: normalize.font(16), fontFamily: "LamaSans-Black", color: IDENTITY_BLUE },
-  notesContainer: { padding: 12, backgroundColor: '#F8FAFC', borderRadius: 10 },
-  row: { alignItems: 'center' },
-  notesLabel: { fontSize: normalize.font(13), fontFamily: "LamaSans-Bold", color: Colors.text.primary },
-  notesText: { fontSize: normalize.font(13), color: Colors.text.muted, lineHeight: 18 , fontFamily: "LamaSans-Regular" },
-  inputLabel: { fontSize: normalize.font(14), fontFamily: "LamaSans-Bold", marginBottom: 8, color: Colors.text.primary },
-  textInput: { backgroundColor: '#F8FAFC', borderRadius: 12, padding: 16, height: 100, borderWidth: 1, borderColor: '#F1F5F9', marginBottom: 20 },
+  mainContainer: {
+    flex: 1,
+    backgroundColor: '#F8F9FB',
+  },
+  header: {
+    height: normalize.height(60),
+    paddingHorizontal: normalize.width(16),
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F8F9FB',
+  },
+  headerBtn: {
+    width: normalize.width(40),
+    height: normalize.width(40),
+    borderRadius: normalize.radius(20),
+    backgroundColor: Colors.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 2,
+  },
+  headerTitle: {
+    fontSize: normalize.font(18),
+    fontFamily: "LamaSans-Bold",
+    color: Colors.text.primary,
+  },
+  scrollContent: {
+    padding: normalize.width(16),
+  },
+  sectionCard: {
+    backgroundColor: Colors.white,
+    borderRadius: normalize.radius(20),
+    padding: normalize.width(16),
+    marginBottom: normalize.height(16),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.03,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  chaletRow: {
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  chaletInfo: {
+    flex: 1,
+  },
+  chaletName: {
+    fontSize: normalize.font(16),
+    fontFamily: "LamaSans-Black",
+    color: Colors.text.primary,
+    marginBottom: 4,
+  },
+  chaletLocation: {
+    fontSize: normalize.font(13),
+    fontFamily: "LamaSans-Medium",
+    color: Colors.text.muted,
+    marginBottom: 8,
+  },
+  ratingRow: {
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 12,
+  },
+  ratingText: {
+    fontSize: normalize.font(12),
+    fontFamily: "LamaSans-Bold",
+    color: Colors.text.primary,
+    paddingTop: 2,
+  },
+  priceTag: {
+    fontSize: normalize.font(14),
+    fontFamily: "LamaSans-Bold",
+    color: Colors.text.primary,
+  },
+  organicImageContainer: {
+    width: normalize.width(100),
+    height: normalize.width(100),
+    borderRadius: normalize.radius(30),
+    overflow: 'hidden',
+    marginLeft: normalize.width(12),
+  },
+  organicImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: normalize.radius(30), // Can be made more organic with complex radii
+    borderTopLeftRadius: 50,
+    borderBottomRightRadius: 50,
+  },
+  sectionTitle: {
+    fontSize: normalize.font(14),
+    fontFamily: "LamaSans-Bold",
+    color: IDENTITY_BLUE,
+    marginBottom: 12,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#F1F3F5',
+    marginBottom: 16,
+  },
+  detailRow: {
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: normalize.font(14),
+    fontFamily: "LamaSans-Medium",
+    color: Colors.text.primary,
+    flex: 1,
+  },
+  value: {
+    fontSize: normalize.font(15),
+    fontFamily: "LamaSans-Bold",
+    color: Colors.text.primary,
+    flex: 2,
+  },
+  currency: {
+    fontSize: normalize.font(13),
+    fontFamily: "LamaSans-Bold",
+  },
+  notesText: {
+    fontSize: normalize.font(14),
+    fontFamily: "LamaSans-Regular",
+    color: Colors.text.muted,
+    lineHeight: 20,
+  },
+  bottomActions: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: Colors.white,
+    paddingHorizontal: normalize.width(16),
+    paddingTop: normalize.height(12),
+    paddingBottom: normalize.height(30),
+    borderTopLeftRadius: normalize.radius(24),
+    borderTopRightRadius: normalize.radius(24),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  payButton: {
+    height: normalize.height(56),
+    borderRadius: normalize.radius(28),
+  },
+  cancelLink: {
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  cancelLinkText: {
+    color: '#EF4444',
+    fontFamily: "LamaSans-SemiBold",
+    fontSize: normalize.font(14),
+    textDecorationLine: 'underline',
+  },
+  sheetLoading: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });

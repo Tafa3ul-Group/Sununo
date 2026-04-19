@@ -74,6 +74,10 @@ export function PrimaryButton({
   const currentBorderColor = isActive ? "transparent" : border;
   const currentBorderWidth = isActive ? 0 : 1;
 
+  // Dynamic flex check
+  const flattenedStyle = StyleSheet.flatten(style);
+  const isFlex = flattenedStyle?.flex === 1 || flattenedStyle?.flexGrow === 1;
+
   return (
     <TouchableOpacity
       activeOpacity={0.8}
@@ -102,6 +106,7 @@ export function PrimaryButton({
         style={[
           styles.middleSection,
           {
+            flex: isFlex ? 1 : undefined,
             borderColor: currentBorderColor,
             borderWidth: currentBorderWidth,
             backgroundColor: color,
@@ -114,6 +119,7 @@ export function PrimaryButton({
           {icon}
           <ThemedText
             style={[styles.primaryText, { color: textColor }, textStyle]}
+            numberOfLines={1}
           >
             {label}
           </ThemedText>
@@ -154,12 +160,14 @@ const styles = StyleSheet.create({
   middleSection: {
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 4,
+    paddingHorizontal: 12,
   },
   primaryText: {
     fontSize: 18,
     fontFamily: "LamaSans-Black",
     textAlign: "center",
+    lineHeight: 25,
+    paddingVertical: 2,
   },
   textWithIcon: {
     flexDirection: "row",
