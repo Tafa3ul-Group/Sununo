@@ -94,46 +94,46 @@ interface TypeStyle {
 
 export const Typography: Record<string, TypeStyle> = {
   h1: {
-    fontSize: normalize.font(28),
+    fontSize: normalize.font(26),
     fontFamily: "LamaSans-Bold",
     color: Colors.light.text,
-    lineHeight: normalize.font(36),
+    lineHeight: normalize.font(34),
   },
   h2: {
-    fontSize: normalize.font(20),
+    fontSize: normalize.font(18),
     fontFamily: "LamaSans-SemiBold",
     color: Colors.light.text,
-    lineHeight: normalize.font(28),
+    lineHeight: normalize.font(24),
   },
   body: {
-    fontSize: normalize.font(14),
-    fontFamily: "LamaSans-Regular",
-    color: Colors.light.text,
-    lineHeight: normalize.font(20),
-  },
-  subtitle: {
     fontSize: normalize.font(13),
     fontFamily: "LamaSans-Regular",
-    color: Colors.light.icon,
+    color: Colors.light.text,
     lineHeight: normalize.font(18),
   },
-  caption: {
+  subtitle: {
     fontSize: normalize.font(12),
-    fontFamily: "LamaSans-Medium",
+    fontFamily: "LamaSans-Regular",
     color: Colors.light.icon,
     lineHeight: normalize.font(16),
   },
+  caption: {
+    fontSize: normalize.font(11),
+    fontFamily: "LamaSans-Medium",
+    color: Colors.light.icon,
+    lineHeight: normalize.font(15),
+  },
   price: {
-    fontSize: normalize.font(18),
+    fontSize: normalize.font(17),
     fontFamily: "LamaSans-Bold",
     color: Colors.light.primary,
-    lineHeight: normalize.font(24),
+    lineHeight: normalize.font(22),
   },
   rating: {
-    fontSize: normalize.font(14),
+    fontSize: normalize.font(13),
     fontFamily: "LamaSans-SemiBold",
     color: Colors.light.text,
-    lineHeight: normalize.font(20),
+    lineHeight: normalize.font(18),
   },
 };
 

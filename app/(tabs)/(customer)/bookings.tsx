@@ -12,6 +12,7 @@ import { useRouter } from 'expo-router';
 import { HeaderSection } from '@/components/header-section';
 import Svg, { Path, Defs, ClipPath, Image as SvgImage } from 'react-native-svg';
 import { useGetCustomerBookingsQuery } from '@/store/api/customerApiSlice';
+import { getImageSrc } from '@/hooks/useImageSrc';
 
 // Global isRTL for styles
 const isRTL = I18nManager.isRTL;
@@ -76,7 +77,7 @@ export default function BookingsScreen() {
                     </Defs>
                     <Path d={shape.path} stroke="#035DF9" strokeWidth="4" />
                     <SvgImage
-                        href={booking.chalet?.images?.[0]?.url}
+                        href={getImageSrc(booking.chalet?.images?.[0]?.url)}
                         width="100%"
                         height="100%"
                         preserveAspectRatio="xMidYMid slice"

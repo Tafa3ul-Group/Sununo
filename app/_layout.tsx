@@ -1,7 +1,7 @@
 // @@iconify-code-gen
 import { persistor, store } from '@/store';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
 import { Text, TextInput } from 'react-native';
@@ -18,12 +18,20 @@ import { RootState } from '@/store';
 // @ts-ignore
 if (Text.defaultProps == null) Text.defaultProps = {};
 // @ts-ignore
-Text.defaultProps.style = { fontFamily: 'LamaSans-Regular' };
+Text.defaultProps.style = { 
+  fontFamily: 'LamaSans-Regular',
+  includeFontPadding: false,
+  textAlignVertical: 'center',
+};
 
 // @ts-ignore
 if (TextInput.defaultProps == null) TextInput.defaultProps = {};
 // @ts-ignore
-TextInput.defaultProps.style = { fontFamily: 'LamaSans-Regular' };
+TextInput.defaultProps.style = { 
+  fontFamily: 'LamaSans-Regular',
+  includeFontPadding: false,
+  textAlignVertical: 'center',
+};
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import '@/i18n';
@@ -33,7 +41,15 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const { i18n } = useTranslation();
-  const { language } = useSelector((state: RootState) => state.auth);
+  const router = useRouter();
+  const { language, isAuthenticated, userType } = useSelector((state: RootState) => state.auth);
+
+  // Global Auth Guard: Redirect to index if auth is lost
+  useEffect(() => {
+    if (!isAuthenticated && userType !== 'guest') {
+      router.replace('/');
+    }
+  }, [isAuthenticated, userType]);
   
   const [loaded, error] = useFonts({
     'LamaSans-Bold': require('../assets/fonts/LamaSans/LamaSans-BoldCondensed.otf'),

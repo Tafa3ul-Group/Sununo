@@ -35,6 +35,7 @@ import {
   SolarTreeBold 
 } from "@/components/icons/solar-icons";
 import { useBrowseCustomerChaletsQuery, useGetBannersQuery } from "@/store/api/customerApiSlice";
+import { getImageSrc } from "@/hooks/useImageSrc";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -88,7 +89,7 @@ export default function HomeScreen() {
         : chalet.basePrice ? Number(chalet.basePrice).toLocaleString() : '0',
       rating: chalet.averageRating || 0,
       color: CARD_COLORS[index % CARD_COLORS.length],
-      image: chalet.images?.[0]?.url || 'https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&q=80&w=600',
+      image: getImageSrc(chalet.images?.[0]?.url),
     }));
   }, [chaletsResponse, isRTL]);
 

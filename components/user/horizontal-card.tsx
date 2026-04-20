@@ -2,6 +2,7 @@ import { SolarHeartBold, SolarStarBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { useTranslation } from "react-i18next";
 import { Colors, normalize } from "@/constants/theme";
+import { getImageSrc } from "@/hooks/useImageSrc";
 import React, { useState } from "react";
 import {
   Dimensions,
@@ -68,10 +69,7 @@ export function HorizontalCard({
 
   if (!chalet) return null;
 
-  const imageUrl =
-    chalet.images?.[0] ||
-    chalet.image ||
-    "https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=400";
+  const imageSource = chalet.image || getImageSrc(chalet.images?.[0]?.url || chalet.images?.[0]);
   const borderColor = chalet.color || Colors.secondary;
 
   const config = SHAPES_CONFIG[shapeIndex % SHAPES_CONFIG.length];
@@ -142,7 +140,7 @@ export function HorizontalCard({
           </Defs>
           <G clipPath={`url(#clip-blob-${shapeIndex})`}>
             <SvgImage
-              href={{ uri: imageUrl }}
+              href={imageSource}
               width={config.width}
               height={config.height}
               preserveAspectRatio="xMidYMid slice"

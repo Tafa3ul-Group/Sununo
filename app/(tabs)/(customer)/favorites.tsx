@@ -11,6 +11,7 @@ import { useRouter } from 'expo-router';
 import { HorizontalCard } from '@/components/user/horizontal-card';
 import { HeaderSection } from '@/components/header-section';
 import { useGetCustomerFavoritesQuery } from '@/store/api/customerApiSlice';
+import { getImageSrc } from '@/hooks/useImageSrc';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -38,7 +39,7 @@ export default function FavoritesScreen() {
           : (chalet.region?.name?.en || chalet.region?.nameEn || chalet.region?.name || ''),
         price: chalet.basePrice ? Number(chalet.basePrice).toLocaleString() : '0',
         rating: chalet.averageRating?.toFixed(1) || '0',
-        image: chalet.images?.[0]?.url || 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=400',
+        image: getImageSrc(chalet.images?.[0]?.url),
         color: '#22C55E',
       };
     });

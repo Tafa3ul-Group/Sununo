@@ -10,6 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { HeaderSection } from '@/components/header-section';
 import { useGetCustomerBookingDetailsQuery } from '@/store/api/customerApiSlice';
+import { getImageSrc } from '@/hooks/useImageSrc';
 
 export default function BookingSuccessDetailsScreen() {
   const { t, i18n } = useTranslation();
@@ -32,7 +33,7 @@ export default function BookingSuccessDetailsScreen() {
     ? (chalet.region?.name?.ar || chalet.region?.nameAr || chalet.region?.name || '') 
     : (chalet.region?.name?.en || chalet.region?.nameEn || chalet.region?.name || '');
   const detailedLocation = chaletLocation;
-  const chaletImage = chalet.images?.[0]?.url || 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500';
+  const chaletImage = getImageSrc(chalet.images?.[0]?.url);
   const totalPrice = booking?.totalPrice ? Number(booking.totalPrice).toLocaleString() : '0';
   const depositAmount = booking?.depositAmount ? Number(booking.depositAmount).toLocaleString() : '0';
   const remainingAmount = booking?.remainingAmount ? Number(booking.remainingAmount).toLocaleString() : '0';

@@ -25,6 +25,7 @@ import { WalletCard } from '@/components/user/wallet-card';
 import { HeaderSection } from '@/components/header-section';
 import { useGetMeQuery } from '@/store/api/apiSlice';
 import { useGetCustomerWalletQuery, useLogoutUserMutation, useDeleteCustomerAccountMutation } from '@/store/api/customerApiSlice';
+import { getImageSrc } from '@/hooks/useImageSrc';
 
 export default function ProfileScreen() {
   const dispatch = useDispatch();
@@ -107,7 +108,7 @@ export default function ProfileScreen() {
 
           <View style={styles.avatarWrap}>
             <Image 
-              source={{ uri: userData?.imageUrl || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png' }} 
+              source={getImageSrc(userData?.imageUrl)} 
               style={styles.avatarImg} 
             />
           </View>

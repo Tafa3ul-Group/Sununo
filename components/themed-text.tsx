@@ -53,6 +53,7 @@ export function ThemedText({
 const styles = StyleSheet.create({
   base: {
     fontFamily: 'LamaSans-Regular',
+    paddingVertical: 2,
   },
   defaultSemiBold: {
     fontFamily: 'LamaSans-SemiBold',

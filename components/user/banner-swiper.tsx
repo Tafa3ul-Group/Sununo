@@ -12,8 +12,8 @@ import { normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const BANNER_WIDTH = SCREEN_WIDTH - normalize.width(32);
-const BANNER_HEIGHT = normalize.height(150);
+const BANNER_WIDTH = SCREEN_WIDTH - normalize.width(20);
+const BANNER_HEIGHT = normalize.height(160);
 const AUTO_PLAY_INTERVAL = 4000; // 4 seconds
 
 const BANNER_ASSETS = [
@@ -66,7 +66,7 @@ export function BannerSwiper({ data }: { data?: any[] }) {
       <Image 
         source={item.image ? getImageSrc(item.image) : item} 
         style={styles.bannerImage} 
-        resizeMode="cover" 
+        resizeMode="stretch" 
       />
     </View>
   );
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   listContent: {
-    paddingHorizontal: normalize.width(16),
+    paddingHorizontal: normalize.width(10),
   },
   bannerContainer: {
     width: BANNER_WIDTH,
@@ -132,8 +132,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: normalize.height(-4), 
-    gap: 6,
+    marginTop: normalize.height(12),
+    gap: 8,
   },
   dot: {
     height: 8,

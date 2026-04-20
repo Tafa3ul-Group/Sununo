@@ -34,6 +34,7 @@ import Svg, { Path } from "react-native-svg";
 import { ReviewSubmissionSheet } from "@/components/user/review-submission-sheet";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useGetCustomerChaletDetailsQuery, useGetChaletReviewsQuery, useCreateReviewMutation, useAddFavoriteMutation, useRemoveFavoriteMutation } from "@/store/api/customerApiSlice";
+import { getImageSrc } from "@/hooks/useImageSrc";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -89,12 +90,10 @@ export default function ChaletDetailScreen() {
   // Use chalet images from API or fallback
   const images = useMemo(() => {
     if (chalet.images && chalet.images.length > 0) {
-      return chalet.images.map((img: any) => img.url);
+      return chalet.images.map((img: any) => getImageSrc(img.url));
     }
     return [
-      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
-      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800",
-      "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800",
+      getImageSrc(null), // Placeholder
     ];
   }, [chalet.images]);
 
@@ -180,7 +179,7 @@ export default function ChaletDetailScreen() {
                     style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }}
                 >
                     <Image
-                        source={{ uri: img }}
+                        source={img}
                         style={styles.headerImage}
                     />
                 </TouchableOpacity>

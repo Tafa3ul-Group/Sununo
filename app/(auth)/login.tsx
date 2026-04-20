@@ -158,7 +158,7 @@ export function LoginScreen() {
             <PrimaryButton
               label={step === "phone" ? t('auth.continue') : t('auth.verify')}
               onPress={handleAction}
-              style={styles.loginBtn}
+              style={[styles.loginBtn, { width: '100%' }]}
               activeColor="#0061FE"
               icon={(isLoginLoading || isVerifyLoading) ? <ActivityIndicator color="white" /> : undefined}
             />
@@ -264,6 +264,7 @@ const styles = StyleSheet.create({
   loginBtn: {
     marginTop: normalize.height(10),
     height: normalize.height(60),
+    width: "100%",
   },
   guestLink: {
     marginTop: normalize.height(20),
