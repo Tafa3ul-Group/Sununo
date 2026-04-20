@@ -24,6 +24,15 @@ try {
   console.log('Mapbox native module not found:', e);
 }
 
+import Animated, { 
+  useAnimatedStyle, 
+  withRepeat, 
+  withTiming, 
+  withSequence,
+  useSharedValue,
+  withDelay
+} from 'react-native-reanimated';
+
 interface MarkerData {
   id: string;
   title: string | { ar: string; en: string };
@@ -69,7 +78,24 @@ export const AppMap = ({
   const [hasNativeMap, setHasNativeMap] = useState(false);
   const cameraRef = React.useRef<any>(null);
 
+  const pulseScale = useSharedValue(1);
+  const pulseOpacity = useSharedValue(0.4);
+
   useEffect(() => {
+    pulseScale.value = withRepeat(
+      withTiming(2, { duration: 2000 }),
+      -1,
+      false
+    );
+    pulseOpacity.value = withRepeat(
+      withSequence(
+        withTiming(0.4, { duration: 0 }),
+        withTiming(0, { duration: 2000 })
+      ),
+      -1,
+      false
+    );
+
     // Check if native Mapbox is truly ready
     if (Mapbox && Platform.OS !== 'web') {
       setHasNativeMap(true);
@@ -92,6 +118,11 @@ export const AppMap = ({
     })();
   }, []);
 
+  const pulseStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pulseScale.value }],
+    opacity: pulseOpacity.value,
+  }));
+
   if (loading) {
     return (
       <View style={[styles.container, style, styles.loading]}>
@@ -104,12 +135,14 @@ export const AppMap = ({
   if (!hasNativeMap || Platform.OS === 'web') {
     const fallbackLng = centerCoordinate?.[0] || 47.85;
     const fallbackLat = centerCoordinate?.[1] || 30.50;
+    const showStaticMarker = showMarker && centerCoordinate && !isNaN(centerCoordinate[0]) && !isNaN(centerCoordinate[1]);
+    const markerOverlay = showStaticMarker ? `pin-l+${Colors.primary.replace('#', '')}(${fallbackLng},${fallbackLat})/` : '';
 
     return (
       <View style={[styles.container, style, styles.fallbackContainer]}>
         <View style={styles.abstractMapBackground}>
           <Image
-            source={{ uri: `https://api.mapbox.com/styles/v1/mapbox/light-v10/static/${fallbackLng},${fallbackLat},${zoomLevel}/800x800?access_token=${MAPBOX_ACCESS_TOKEN}` }}
+            source={{ uri: `https://api.mapbox.com/styles/v1/mapbox/light-v10/static/${markerOverlay}${fallbackLng},${fallbackLat},${zoomLevel}/800x800?access_token=${MAPBOX_ACCESS_TOKEN}` }}
             style={styles.fallbackImage}
             resizeMode="cover"
           />
@@ -147,7 +180,9 @@ export const AppMap = ({
     );
   }
 
-  const finalCenter: [number, number] = centerCoordinate || (location 
+  const hasValidCenter = centerCoordinate && !isNaN(centerCoordinate[0]) && !isNaN(centerCoordinate[1]);
+
+  const finalCenter: [number, number] = hasValidCenter ? centerCoordinate : (location 
     ? [location.coords.longitude, location.coords.latitude] 
     : [47.82, 30.51]); // Default to a central Basra point
 
@@ -167,14 +202,26 @@ export const AppMap = ({
           animationDuration={1000}
           followUserLocation={isNavigating}
           followUserMode={isNavigating ? "course" : undefined}
-          followPitch={isNavigating ? 45 : 0}
+          followPitch={isNavigating ? 60 : 0}
+          followZoomLevel={isNavigating ? 17 : undefined}
         />
 
         <Mapbox.UserLocation
           visible={true}
           showsUserHeadingIndicator={true}
-          renderMode="compass"
+          renderMode={isNavigating ? "gps" : "compass"}
+          androidRenderMode={isNavigating ? "gps" : "compass"}
         />
+
+        {/* Single Marker for center coordinate if requested and no markers provided */}
+        {showMarker && hasValidCenter && markers.length === 0 && (
+          <Mapbox.MarkerView id="centerMarker" coordinate={centerCoordinate}>
+            <View style={styles.simpleMarker}>
+              <View style={[styles.markerPin, { backgroundColor: Colors.primary }]} />
+              <View style={[styles.markerDot, { backgroundColor: Colors.primary }]} />
+            </View>
+          </Mapbox.MarkerView>
+        )}
 
         {/* Render all active markers */}
         {markers.map((marker) => (
@@ -345,11 +392,31 @@ const styles = StyleSheet.create({
   },
   userLocationPulse: {
     position: 'absolute',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: Theme.Colors.primary,
+    zIndex: 1,
+  },
+  simpleMarker: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  markerPin: {
     width: 24,
     height: 24,
     borderRadius: 12,
     backgroundColor: Theme.Colors.primary,
-    opacity: 0.2,
-    zIndex: 1,
+    borderWidth: 3,
+    borderColor: 'white',
+    ...SafeShadows.medium,
   },
+  markerDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: Theme.Colors.primary,
+    position: 'absolute',
+    bottom: -10,
+  }
 });

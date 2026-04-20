@@ -230,8 +230,10 @@ export default function ExploreScreen() {
         <TouchableOpacity 
           style={styles.myLocationFab} 
           onPress={() => {
-            setSelectedChalet(null);
+            setSelectedChalet({ coordinates: [location.coords.longitude, location.coords.latitude], id: 'temp-loc' });
             setZoom(15);
+            // Clear the temp-loc after a short delay so it behaves like a "center on me" action
+            setTimeout(() => setSelectedChalet(null), 100);
           }}
         >
           <SolarMapBoldDuotone size={24} color={Colors.primary} />
