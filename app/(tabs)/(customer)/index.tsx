@@ -52,11 +52,20 @@ export default function HomeScreen() {
   const [filters, setFilters] = React.useState<any>({});
   const insets = useSafeAreaInsets();
 
+  // Map categories to amenity names/ids for filtering
+  const amenityIds = useMemo(() => {
+    if (activeFilter === 'pool') return ['poo-id-placeholder']; // Ideally these would come from an amenities API
+    if (activeFilter === 'bbq') return ['bbq-id-placeholder'];
+    if (activeFilter === 'garden') return ['garden-id-placeholder'];
+    return undefined;
+  }, [activeFilter]);
+
   // Fetch data from the backend
   const { data: bannersResponse } = useGetBannersQuery(undefined);
   const { data: chaletsResponse, isLoading: chaletsLoading } = useBrowseCustomerChaletsQuery({ 
     page: 1, 
     limit: 10,
+    amenityIds,
     ...filters
   });
 

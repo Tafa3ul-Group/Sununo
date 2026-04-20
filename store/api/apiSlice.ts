@@ -37,7 +37,10 @@ export const apiSlice = createApi({
     getChalets: builder.query({
       query: (params) => ({
         url: '/customer/chalets',
-        params,
+        params: {
+          ...params,
+          amenityIds: params?.amenityIds ? params.amenityIds.join(',') : undefined
+        },
       }),
       providesTags: ['Chalet'],
     }),
@@ -231,6 +234,16 @@ export const apiSlice = createApi({
       query: (id) => `/customer/chalets/${id}`,
       providesTags: (result, error, id) => [{ type: 'Chalet' as const, id }],
     }),
+    
+    getSimilarChalets: builder.query({
+      query: (id) => `/customer/chalets/${id}/similar`,
+      providesTags: (result, error, id) => [{ type: 'Chalet' as const, id }],
+    }),
+
+    getChaletAddons: builder.query({
+      query: (id) => `/customer/chalets/${id}/addons`,
+      providesTags: (result, error, id) => [{ type: 'Chalet' as const, id }],
+    }),
 
     setChaletAmenities: builder.mutation({
       query: ({ chaletId, data }) => ({
@@ -387,6 +400,8 @@ export const {
   useGetOwnerChaletsQuery,
   useGetOwnerChaletDetailsQuery,
   useGetChaletDetailsQuery,
+  useGetSimilarChaletsQuery,
+  useGetChaletAddonsQuery,
 
   useGetChaletShiftsQuery,
   useGetShiftPricingQuery,

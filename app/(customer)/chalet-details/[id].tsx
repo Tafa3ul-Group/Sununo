@@ -16,7 +16,7 @@ import { CircleBackButton } from "@/components/ui/circle-back-button";
 import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { SecondaryButton } from "@/components/user/secondary-button";
-import { Colors, normalize } from "@/constants/theme";
+import { Colors, normalize, Shadows } from "@/constants/theme";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -56,6 +56,8 @@ function SectionHeader({
   );
 }
 
+const CARD_COLORS = ["#035DF9", "#15AB64", "#F64300"];
+
 export default function ChaletDetailScreen() {
   const { id } = useLocalSearchParams();
   const chaletId = id as string;
@@ -72,6 +74,10 @@ export default function ChaletDetailScreen() {
   const [createReview] = useCreateReviewMutation();
   const [addFavorite] = useAddFavoriteMutation();
   const [removeFavorite] = useRemoveFavoriteMutation();
+
+  // New queries for similar chalets and addons
+  const { data: similarResponse } = useGetSimilarChaletsQuery(chaletId);
+  const { data: addons = [] } = useGetChaletAddonsQuery(chaletId);
 
   // Extract chalet info from API response
   const chalet = chaletData || {} as any;
@@ -399,20 +405,50 @@ export default function ChaletDetailScreen() {
                 </ThemedText>
               </TouchableOpacity>
             ))}
+            ))}
           </View>
+
+          {/* الاضافات الخاصة (Addons) */}
+          {addons.length > 0 && (
+            <>
+              <SectionHeader title={t('chalet.details.addons') || "الاضافات الخاصة"} isRTL={isRTL} />
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.addonsList}>
+                {addons.map((addon: any, i: number) => (
+                  <View key={addon.id || i} style={styles.addonCard}>
+                    <ExpoImage 
+                      source={getImageSrc(addon.image)} 
+                      style={styles.addonImg} 
+                      contentFit="cover"
+                    />
+                    <View style={styles.addonInfo}>
+                      <ThemedText style={styles.addonName}>
+                        {isRTL ? (addon.name?.ar || addon.name) : (addon.name?.en || addon.name)}
+                      </ThemedText>
+                      <ThemedText style={styles.addonPrice}>
+                        {Number(addon.price).toLocaleString()} {t('common.iqd')}
+                      </ThemedText>
+                    </View>
+                  </View>
+                ))}
+              </ScrollView>
+            </>
+          )}
 
           {/* قد يعجبك ايضا */}
           <SectionHeader title={t('chalet.details.related')} isRTL={isRTL} />
           <HorizontalSwiper
-            data={[1, 2, 3].map((_, index) => ({
-              id: `${index}`,
-              title: isRTL ? "شالية الاروع على الاطلاق" : "Most Amazing Chalet",
-              location: isRTL ? "البصرة - الجزائر" : "Basra - Algeria",
-              price: "30,000",
-              rating: 4.5,
-              image:
-                "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=400",
-              color: ["#035DF9", "#15AB64", "#F64300"][index % 3],
+            data={(similarResponse || []).map((item: any, index: number) => ({
+              id: item.id,
+              title: isRTL 
+                ? (item.name?.ar || item.nameAr || item.name || '') 
+                : (item.name?.en || item.nameEn || item.name || ''),
+              location: isRTL 
+                ? (item.city?.name || '') 
+                : (item.city?.enName || item.city?.name || ''),
+              price: item.basePrice ? Number(item.basePrice).toLocaleString() : '0',
+              rating: item.rating || 0,
+              image: getImageSrc(item.images?.[0]?.url),
+              color: CARD_COLORS[index % CARD_COLORS.length],
             }))}
             onPressCard={(id) => router.push(`/chalet-details/${id}`)}
           />
@@ -679,5 +715,35 @@ const styles = StyleSheet.create({
     height: 76,
     borderRadius: normalize.radius(38),
     alignSelf: "stretch",
+  },
+  addonsList: {
+    paddingRight: 20,
+    gap: 12,
+  },
+  addonCard: {
+    width: 140,
+    backgroundColor: "white",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#F3F4F6",
+    overflow: "hidden",
+    ...Shadows.small,
+  },
+  addonImg: {
+    width: "100%",
+    height: 100,
+  },
+  addonInfo: {
+    padding: 8,
+  },
+  addonName: {
+    fontSize: 13,
+    fontFamily: "LamaSans-SemiBold",
+    marginBottom: 4,
+  },
+  addonPrice: {
+    fontSize: 12,
+    color: Colors.primary,
+    fontFamily: "LamaSans-Black",
   },
 });
