@@ -23,6 +23,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { WalletCard } from '@/components/user/wallet-card';
 import { HeaderSection } from '@/components/header-section';
+import { useGetMeQuery } from '@/store/api/apiSlice';
+import { useGetCustomerWalletQuery, useLogoutUserMutation, useDeleteCustomerAccountMutation } from '@/store/api/customerApiSlice';
 
 export default function ProfileScreen() {
   const dispatch = useDispatch();
@@ -31,6 +33,16 @@ export default function ProfileScreen() {
   const { user, userType } = useSelector((state: RootState) => state.auth);
   const router = useRouter();
   const languageSheetRef = React.useRef<BottomSheetModal>(null);
+
+  // Fetch user data and wallet from the backend
+  const { data: meData } = useGetMeQuery(undefined);
+  const { data: walletData } = useGetCustomerWalletQuery(undefined);
+  const [logoutApi] = useLogoutUserMutation();
+  const [deleteAccount] = useDeleteCustomerAccountMutation();
+
+  // Use backend user data with fallback to store
+  const userData = meData || user;
+  const walletBalance = walletData?.balance ? Number(walletData.balance).toLocaleString() : '0';
 
   const openLanguageSheet = () => {
     languageSheetRef.current?.present();
@@ -45,7 +57,12 @@ export default function ProfileScreen() {
         { 
           text: t('profile.exit'), 
           style: 'destructive', 
-          onPress: () => {
+          onPress: async () => {
+            try {
+              await logoutApi(undefined).unwrap();
+            } catch (e) {
+              // Even if server logout fails, clear local state
+            }
             dispatch(logout());
             router.replace('/(auth)/login');
           }
@@ -84,13 +101,13 @@ export default function ProfileScreen() {
           
           <View style={[styles.userInfo, { textAlign: isRTL ? 'right' : 'left' }]}>
             <Text style={[styles.userName, { textAlign: isRTL ? 'right' : 'left' }]}>
-              {user?.name || (isRTL ? 'انسي انس مؤنس' : 'Ansi Ans Mounis')}
+              {userData?.name || (isRTL ? 'انسي انس مؤنس' : 'Ansi Ans Mounis')}
             </Text>
           </View>
 
           <View style={styles.avatarWrap}>
             <Image 
-              source={{ uri: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png' }} 
+              source={{ uri: userData?.imageUrl || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png' }} 
               style={styles.avatarImg} 
             />
           </View>
@@ -98,9 +115,9 @@ export default function ProfileScreen() {
 
         {/* Wallet Card */}
         <WalletCard 
-          balance="100,000" 
+          balance={walletBalance} 
           onWithdraw={() => {
-            router.push('/(tabs)/(dashboard)/transactions');
+            router.push('/(tabs)/(customer)/bookings');
           }}
         />
 

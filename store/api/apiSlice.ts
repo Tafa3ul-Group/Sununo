@@ -17,7 +17,7 @@ export const apiSlice = createApi({
       return headers;
     },
   }),
-  tagTypes: ['Chalet', 'User', 'Booking'],
+  tagTypes: ['Chalet', 'User', 'Booking', 'Favorite', 'Review', 'Notification', 'Wallet'],
   endpoints: (builder) => ({
     // Example endpoint for getting chalets
     getChalets: builder.query({

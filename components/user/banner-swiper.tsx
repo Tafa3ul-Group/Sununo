@@ -9,6 +9,7 @@ import {
   NativeSyntheticEvent 
 } from 'react-native';
 import { normalize } from '@/constants/theme';
+import { getImageSrc } from '@/hooks/useImageSrc';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const BANNER_WIDTH = SCREEN_WIDTH - normalize.width(32);
@@ -21,7 +22,8 @@ const BANNER_ASSETS = [
   require('@/assets/banrs/third.png'),
 ];
 
-export function BannerSwiper() {
+export function BannerSwiper({ data }: { data?: any[] }) {
+  const displayData = data && data.length > 0 ? data : BANNER_ASSETS;
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -30,7 +32,7 @@ export function BannerSwiper() {
   const startTimer = () => {
     stopTimer();
     timerRef.current = setInterval(() => {
-      const nextIndex = (activeIndex + 1) % BANNER_ASSETS.length;
+      const nextIndex = (activeIndex + 1) % displayData.length;
       flatListRef.current?.scrollToIndex({
         index: nextIndex,
         animated: true,
@@ -54,7 +56,7 @@ export function BannerSwiper() {
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const scrollOffset = event.nativeEvent.contentOffset.x;
     const index = Math.round(scrollOffset / (BANNER_WIDTH + normalize.width(10)));
-    if (index !== activeIndex && index >= 0 && index < BANNER_ASSETS.length) {
+    if (index !== activeIndex && index >= 0 && index < displayData.length) {
       setActiveIndex(index);
     }
   };
@@ -62,9 +64,9 @@ export function BannerSwiper() {
   const renderItem = ({ item }: { item: any }) => (
     <View style={styles.bannerContainer}>
       <Image 
-        source={item} 
+        source={item.image ? getImageSrc(item.image) : item} 
         style={styles.bannerImage} 
-        resizeMode="contain" 
+        resizeMode="cover" 
       />
     </View>
   );
@@ -73,7 +75,7 @@ export function BannerSwiper() {
     <View style={styles.container}>
       <FlatList
         ref={flatListRef}
-        data={BANNER_ASSETS}
+        data={displayData}
         renderItem={renderItem}
         keyExtractor={(_, index) => index.toString()}
         horizontal
@@ -94,7 +96,7 @@ export function BannerSwiper() {
 
       {/* Pagination Dots */}
       <View style={styles.pagination}>
-        {BANNER_ASSETS.map((_, index) => (
+        {displayData.map((_, index) => (
           <View 
             key={index} 
             style={[

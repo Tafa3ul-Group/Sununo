@@ -1,6 +1,8 @@
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
 import { apiSlice } from './api/apiSlice';
+// Import customerApiSlice to ensure endpoints are injected into apiSlice
+import './api/customerApiSlice';
 import authReducer from './authSlice';
 import { 
   persistStore, 

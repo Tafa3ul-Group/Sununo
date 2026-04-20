@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView, RefreshControl, Image, TouchableOpacity, I18nManager } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, StyleSheet, ScrollView, RefreshControl, Image, TouchableOpacity, I18nManager, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -11,6 +11,7 @@ import { formatPrice } from '@/utils/format';
 import { useRouter } from 'expo-router';
 import { HeaderSection } from '@/components/header-section';
 import Svg, { Path, Defs, ClipPath, Image as SvgImage } from 'react-native-svg';
+import { useGetCustomerBookingsQuery } from '@/store/api/customerApiSlice';
 
 // Global isRTL for styles
 const isRTL = I18nManager.isRTL;
@@ -30,28 +31,36 @@ export default function BookingsScreen() {
   const isRTL = isArabic;
   const router = useRouter();
 
-  // Mock data with localized names
-  const bookings = [
-    {
-      id: '1',
-      chaletId: '1',
-      status: 'confirmed',
-      startDate: '2025-10-12',
-      endDate: '2025-10-14',
-      totalPrice: 500000,
+  // Fetch bookings from the backend
+  const { data: bookingsResponse, isLoading, refetch } = useGetCustomerBookingsQuery({ page: 1, limit: 20 });
+
+  // Transform API data to match UI format
+  const bookings = useMemo(() => {
+    const items = bookingsResponse?.data || [];
+    return items.map((booking: any) => ({
+      id: booking.id,
+      chaletId: booking.chalet?.id || '',
+      status: booking.status,
+      startDate: booking.bookingDate,
+      endDate: booking.bookingDate,
+      totalPrice: booking.totalPrice || booking.amount || 0,
       chalet: {
-        name: { ar: "شالية الاروع علةاالطلاق", en: "Most Amazing Chalet" },
-        location: { ar: "البصرة - الجزائر", en: "Basra - Algeria" },
-        rating: 4.5,
-        price: 30000,
-        images: [{ url: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500' }]
-      }
-    }
-  ];
+        name: isArabic 
+          ? (booking.chalet?.name?.ar || booking.chalet?.nameAr || booking.chalet?.name || '') 
+          : (booking.chalet?.name?.en || booking.chalet?.nameEn || booking.chalet?.name || ''),
+        location: isArabic 
+          ? (booking.chalet?.region?.name?.ar || booking.chalet?.region?.nameAr || booking.chalet?.region?.name || '') 
+          : (booking.chalet?.region?.name?.en || booking.chalet?.region?.nameEn || booking.chalet?.region?.name || ''),
+        rating: booking.chalet?.averageRating || 0,
+        price: booking.chalet?.basePrice || booking.totalPrice || 0,
+        images: booking.chalet?.images || [],
+      },
+    }));
+  }, [bookingsResponse, isArabic]);
 
   const renderBookingItem = (booking: any) => {
-    const chaletName = isArabic ? (booking.chalet?.name?.ar || booking.chalet?.name) : (booking.chalet?.name?.en || booking.chalet?.name);
-    const location = isArabic ? (booking.chalet?.location?.ar || booking.chalet?.location) : (booking.chalet?.location?.en || booking.chalet?.location);
+    const chaletName = booking.chalet?.name || '';
+    const location = booking.chalet?.location || '';
     const shape = SHAPES_CONFIG[0];
 
     return (

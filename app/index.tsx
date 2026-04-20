@@ -14,12 +14,14 @@ export default function Index() {
 
   useEffect(() => {
     if (isAnimationDone) {
-      let targetPath: any = "/(tabs)/(customer)";
-      
-      if (!userType) {
+      let targetPath: any;
+
+      if (!isAuthenticated && userType !== 'guest') {
         targetPath = "/(auth)/login";
-      } else if (userType === 'owner' && !isAuthenticated) {
-        targetPath = "/(auth)/login";
+      } else if (userType === 'owner') {
+        targetPath = "/(tabs)/(dashboard)/home";
+      } else {
+        targetPath = "/(tabs)/(customer)";
       }
 
       const navTimer = setTimeout(() => {

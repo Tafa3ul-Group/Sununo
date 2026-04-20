@@ -1,6 +1,6 @@
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { Redirect, useRouter } from "expo-router";
-import React, { useRef } from "react";
+import React, { useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Dimensions,
@@ -10,6 +10,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
@@ -33,8 +34,12 @@ import {
   SolarFireBold, 
   SolarTreeBold 
 } from "@/components/icons/solar-icons";
+import { useBrowseCustomerChaletsQuery, useGetBannersQuery } from "@/store/api/customerApiSlice";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+// Fallback colors for chalet cards
+const CARD_COLORS = [Colors.primary, Colors.secondary, Colors.accent];
 
 export default function HomeScreen() {
   const { userType } = useSelector((state: RootState) => state.auth);
@@ -43,42 +48,49 @@ export default function HomeScreen() {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === 'ar';
   const [activeFilter, setActiveFilter] = React.useState("all");
+  const [filters, setFilters] = React.useState<any>({});
   const insets = useSafeAreaInsets();
+
+  // Fetch data from the backend
+  const { data: bannersResponse } = useGetBannersQuery(undefined);
+  const { data: chaletsResponse, isLoading: chaletsLoading } = useBrowseCustomerChaletsQuery({ 
+    page: 1, 
+    limit: 10,
+    ...filters
+  });
+
+  // Transform banners
+  const banners = useMemo(() => {
+    return (bannersResponse || []).map((b: any) => ({
+      id: b.id,
+      image: b.imageUrl,
+      title: isRTL ? (b.title?.ar || b.title) : (b.title?.en || b.title),
+    }));
+  }, [bannersResponse, isRTL]);
 
   if (userType === "owner") return <Redirect href="/(tabs)/(dashboard)/home" />;
 
   const navigateToDetails = (id: string) => router.push(`/chalet-details/${id}`);
 
-  // Moved inside to use translations
-  const POPULAR_CHALETS = [
-    {
-      id: "1",
-      title: isRTL ? "شالية اللؤلؤة البصرية" : "Basra Pearl Chalet",
-      location: isRTL ? "البصرة - شط العرب" : "Basra - Shatt al-Arab",
-      price: "45,000",
-      rating: 4.9,
-      color: Colors.primary,
-      image: "https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&q=80&w=600",
-    },
-    {
-      id: "2",
-      title: isRTL ? "شالية الورد والياسمين" : "Jasmine Flower Chalet",
-      location: isRTL ? "البصرة - الجزائر" : "Basra - Al-Jaza'ir",
-      price: "35,000",
-      rating: 4.8,
-      color: Colors.secondary,
-      image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=600",
-    },
-    {
-      id: "3",
-      title: isRTL ? "شالية إطلالة الخليج" : "Gulf View Chalet",
-      location: isRTL ? "البصرة - القبلة" : "Basra - Al-Qibla",
-      price: "25,000",
-      rating: 4.2,
-      color: Colors.accent,
-      image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=600",
-    },
-  ];
+  // Transform API data to match card format, with fallback to empty array
+  const POPULAR_CHALETS = useMemo(() => {
+    const chalets = chaletsResponse?.data || [];
+    return chalets.map((chalet: any, index: number) => ({
+      id: chalet.id,
+      title: isRTL 
+        ? (chalet.name?.ar || chalet.nameAr || chalet.name || '') 
+        : (chalet.name?.en || chalet.nameEn || chalet.name || ''),
+      location: isRTL 
+        ? (chalet.region?.name?.ar || chalet.region?.nameAr || chalet.region?.name || '') 
+        : (chalet.region?.name?.en || chalet.region?.nameEn || chalet.region?.name || ''),
+      price: chalet.shifts?.[0]?.pricing?.[0]?.price 
+        ? Number(chalet.shifts[0].pricing[0].price).toLocaleString() 
+        : chalet.basePrice ? Number(chalet.basePrice).toLocaleString() : '0',
+      rating: chalet.averageRating || 0,
+      color: CARD_COLORS[index % CARD_COLORS.length],
+      image: chalet.images?.[0]?.url || 'https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&q=80&w=600',
+    }));
+  }, [chaletsResponse, isRTL]);
 
   const FILTER_OPTIONS = [
     { id: "all", label: t("home.categories.all"), icon: (isActive: boolean) => <SolarWidgetBold size={18} color={isActive ? "white" : Colors.primary} />, activeColor: Colors.primary },
@@ -99,7 +111,7 @@ export default function HomeScreen() {
         />
 
         {/* Banners Swiper */}
-        <BannerSwiper />
+        <BannerSwiper data={banners} />
 
         {/* Nearby / Map */}
         <View style={[styles.sectionHeader, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
@@ -115,12 +127,19 @@ export default function HomeScreen() {
           <TouchableOpacity><ThemedText style={styles.seeAll}>{t('home.seeAll')}</ThemedText></TouchableOpacity>
           <ThemedText style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('home.recentBookings')}</ThemedText>
         </View>
-        <View style={styles.swiperWrapper}>
-          <HorizontalSwiper 
-            data={POPULAR_CHALETS} 
-            onPressCard={navigateToDetails} 
-          />
-        </View>
+        
+        {chaletsLoading ? (
+          <View style={styles.loaderContainer}>
+            <ActivityIndicator size="large" color={Colors.primary} />
+          </View>
+        ) : (
+          <View style={styles.swiperWrapper}>
+            <HorizontalSwiper 
+              data={POPULAR_CHALETS} 
+              onPressCard={navigateToDetails} 
+            />
+          </View>
+        )}
 
         {/* Recommended */}
         <View style={[styles.sectionHeader, { justifyContent: isRTL ? "flex-end" : "flex-start" }]}>
@@ -142,13 +161,24 @@ export default function HomeScreen() {
         </GHScrollView>
 
         <View style={styles.listPadding}>
-           {[...POPULAR_CHALETS, ...POPULAR_CHALETS].map((item, index) => (
-             <HorizontalCard key={index} chalet={item} onPress={() => navigateToDetails(item.id)} />
-           ))}
+           {chaletsLoading ? (
+             <ActivityIndicator size="small" color={Colors.primary} style={{ marginTop: 20 }} />
+           ) : POPULAR_CHALETS.length > 0 ? (
+             POPULAR_CHALETS.map((item, index) => (
+               <HorizontalCard key={index} chalet={item} onPress={() => navigateToDetails(item.id)} />
+             ))
+           ) : (
+             <View style={styles.emptyContainer}>
+                <ThemedText style={styles.emptyText}>{t('common.noData') || 'لا توجد بيانات'}</ThemedText>
+             </View>
+           )}
         </View>
       </ScrollView>
 
-      <SearchFilterSheet ref={bottomSheetRef} />
+      <SearchFilterSheet 
+        ref={bottomSheetRef} 
+        onApply={(newFilters) => setFilters(newFilters)}
+      />
     </View>
   );
 }

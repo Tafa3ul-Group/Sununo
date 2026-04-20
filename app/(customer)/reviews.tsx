@@ -3,67 +3,22 @@ import { ReviewCard } from "@/components/user/review-card";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { SecondaryButtonInverse } from "@/components/user/secondary-button-inverse";
 import { normalize } from "@/constants/theme";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
   FlatList,
   StyleSheet,
   View,
   Dimensions,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
+import { useGetCustomerBookingsQuery } from "@/store/api/customerApiSlice";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-
-const MOCK_REVIEWS = [
-  {
-    id: "1",
-    chaletId: "1",
-    chaletTitle: { ar: "شالية الاروع علة الطلاق", en: "Most Amazing Chalet" },
-    chaletLocation: { ar: "البصرة - الجزائر", en: "Basra - Algeria" },
-    price: "30,000",
-    chaletImage: "https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800",
-    userName: "آنسة آنس",
-    userAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200",
-    rating: 4,
-    comment: { 
-        ar: "خوش مكان ونظيف يستاهل، الهواء نقي بسبب التشجير", 
-        en: "Nice and clean place, worth it. Fresh air due to the trees." 
-    },
-    gallery: [
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=200",
-      "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=200",
-      "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=200",
-      "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=200",
-    ],
-    date: "2025/09/22",
-    status: "pending"
-  },
-  {
-    id: "2",
-    chaletId: "2",
-    chaletTitle: { ar: "شالية منتجع النخيل", en: "Palm Resort Chalet" },
-    chaletLocation: { ar: "البصرة - شط العرب", en: "Basra - Shatt al-Arab" },
-    price: "45,000",
-    chaletImage: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800",
-    userName: "علي محمد",
-    userAvatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200",
-    rating: 5,
-    comment: { 
-        ar: "تجربة رائعة جداً، الخدمات متكاملة والمسبح نظيف جداً.", 
-        en: "Very wonderful experience, complete services and the pool is very clean." 
-    },
-    gallery: [
-      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=200",
-      "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=200",
-    ],
-    date: "2025/10/05",
-    status: "reviewed"
-  }
-];
 
 export default function ReviewsScreen() {
   const router = useRouter();
@@ -72,20 +27,74 @@ export default function ReviewsScreen() {
   const [activeTab, setActiveTab] = useState<"pending" | "reviewed">("pending");
   const insets = useSafeAreaInsets();
 
-  const filteredReviews = MOCK_REVIEWS.filter(r => r.status === activeTab);
+  // Fetch completed bookings (pending review) and all bookings
+  const { data: completedBookings, isLoading: loadingCompleted } = useGetCustomerBookingsQuery({ status: 'completed', page: 1, limit: 50 });
+  const { data: allBookings, isLoading: loadingAll } = useGetCustomerBookingsQuery({ page: 1, limit: 50 });
 
-  const renderReviewItem = ({ item }: { item: typeof MOCK_REVIEWS[0] }) => {
-    const title = isRTL ? item.chaletTitle.ar : item.chaletTitle.en;
-    const location = isRTL ? item.chaletLocation.ar : item.chaletLocation.en;
-    const comment = isRTL ? item.comment.ar : item.comment.en;
+  // Transform API data to review format
+  const reviews = useMemo(() => {
+    const completed = completedBookings?.data || [];
+    const all = allBookings?.data || [];
 
+    // Pending: completed bookings without reviews
+    const pending = completed
+      .filter((b: any) => !b.review)
+      .map((booking: any) => ({
+        id: booking.id,
+        chaletId: booking.chalet?.id || '',
+        chaletTitle: isRTL 
+          ? (booking.chalet?.name?.ar || booking.chalet?.nameAr || booking.chalet?.name || '') 
+          : (booking.chalet?.name?.en || booking.chalet?.nameEn || booking.chalet?.name || ''),
+        chaletLocation: isRTL
+          ? (booking.chalet?.region?.name?.ar || booking.chalet?.region?.nameAr || booking.chalet?.region?.name || '')
+          : (booking.chalet?.region?.name?.en || booking.chalet?.region?.nameEn || booking.chalet?.region?.name || ''),
+        price: booking.chalet?.basePrice ? Number(booking.chalet.basePrice).toLocaleString() : '0',
+        chaletImage: booking.chalet?.images?.[0]?.url || 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800',
+        userName: booking.customer?.name || '',
+        userAvatar: booking.customer?.imageUrl || '',
+        rating: 0,
+        comment: '',
+        gallery: [],
+        date: booking.bookingDate || '',
+        status: 'pending' as const,
+      }));
+
+    // Reviewed: bookings that have reviews
+    const reviewed = all
+      .filter((b: any) => b.review)
+      .map((booking: any) => ({
+        id: booking.review?.id || booking.id,
+        chaletId: booking.chalet?.id || '',
+        chaletTitle: isRTL
+          ? (booking.chalet?.nameAr || booking.chalet?.name || '')
+          : (booking.chalet?.nameEn || booking.chalet?.name || ''),
+        chaletLocation: isRTL
+          ? (booking.chalet?.region?.nameAr || booking.chalet?.region?.name || '')
+          : (booking.chalet?.region?.nameEn || booking.chalet?.region?.name || ''),
+        price: booking.chalet?.basePrice ? Number(booking.chalet.basePrice).toLocaleString() : '0',
+        chaletImage: booking.chalet?.images?.[0]?.url || 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800',
+        userName: booking.customer?.name || '',
+        userAvatar: booking.customer?.imageUrl || '',
+        rating: booking.review?.rating || 0,
+        comment: booking.review?.comment || '',
+        gallery: [],
+        date: booking.review?.createdAt ? new Date(booking.review.createdAt).toLocaleDateString() : '',
+        status: 'reviewed' as const,
+      }));
+
+    return { pending, reviewed };
+  }, [completedBookings, allBookings, isRTL]);
+
+  const filteredReviews = activeTab === 'pending' ? reviews.pending : reviews.reviewed;
+
+  const renderReviewItem = ({ item }: { item: any }) => {
     return (
       <ReviewCard 
         review={{
           ...item,
-          chaletTitle: title,
-          chaletLocation: location,
-          comment: comment
+          chaletTitle: item.chaletTitle,
+          chaletLocation: item.chaletLocation,
+          comment: item.comment,
         }} 
       />
     );
