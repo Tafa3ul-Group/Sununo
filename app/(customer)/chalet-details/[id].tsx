@@ -32,7 +32,6 @@ import {
 } from "react-native";
 import { Image as ExpoImage } from 'expo-image';
 import Svg, { Path } from "react-native-svg";
-import { ReviewSubmissionSheet } from "@/components/user/review-submission-sheet";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useGetCustomerChaletDetailsQuery, useGetChaletReviewsQuery, useCreateReviewMutation, useAddFavoriteMutation, useRemoveFavoriteMutation, useGetSimilarChaletsQuery, useGetChaletAddonsQuery } from "@/store/api/customerApiSlice";
 import { getImageSrc } from "@/hooks/useImageSrc";
@@ -126,7 +125,7 @@ export default function ChaletDetailScreen() {
   }, [totalImages]);
 
   const openReviewSheet = () => {
-    reviewSheetRef.current?.present();
+    router.push(`/chalet-details/add-review/${chaletId}`);
   };
 
   // Amenities/Facilities from API
@@ -395,12 +394,12 @@ export default function ChaletDetailScreen() {
               { 
                 label: t('booking.terms'), 
                 Icon: SolarKeyBold, 
-                onPress: () => Alert.alert(t('booking.terms'), isRTL ? (chalet.terms?.ar || chalet.terms || '') : (chalet.terms?.en || chalet.terms || ''))
+                onPress: () => router.push({ pathname: `/chalet-details/info/${chaletId}`, params: { type: 'terms' } })
               },
               { 
                 label: t('booking.policy'), 
                 Icon: SolarForbiddenBold,
-                onPress: () => Alert.alert(t('booking.policy'), isRTL ? (chalet.cancellationPolicy?.ar || chalet.cancellationPolicy || '') : (chalet.cancellationPolicy?.en || chalet.cancellationPolicy || ''))
+                onPress: () => router.push({ pathname: `/chalet-details/info/${chaletId}`, params: { type: 'policies' } })
               },
               { label: t('auth.verify'), Icon: SolarShieldCheckBold },
               { label: t('booking.shift'), Icon: SolarClockCircleBold },
@@ -485,17 +484,6 @@ export default function ChaletDetailScreen() {
           </View>
         </View>
       </View>
-
-      <ReviewSubmissionSheet 
-        ref={reviewSheetRef} 
-        onSubmit={async (rating, comment) => {
-          try {
-            // Note: createReview requires a bookingId which should come from a completed booking
-            console.log('Review Submit:', { rating, comment, chaletId });
-          } catch (e) {
-            console.error('Review submission error:', e);
-          }
-        }} 
       />
     </View>
   );

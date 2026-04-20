@@ -162,6 +162,9 @@ export default function CompleteBookingScreen() {
             chaletId,
             shiftId,
             bookingDate,
+            adultsCount: adultCount,
+            childrenCount: childrenCount,
+            paymentModel: paymentType, // "DEPOSIT" | "FULL"
             useWalletBalance: paymentType === "FULL",
           }).unwrap();
           

@@ -46,6 +46,14 @@ export const customerApi = apiSlice.injectEndpoints({
       providesTags: (result: any, error: any, id: string) => [{ type: 'Chalet' as const, id }],
     }),
 
+    getChaletTerms: builder.query({
+      query: (id: string) => `/customer/chalets/${id}/terms`,
+    }),
+
+    getChaletPolicies: builder.query({
+      query: (id: string) => `/customer/chalets/${id}/policies`,
+    }),
+
     /** Get chalet images (public) */
     getChaletImages: builder.query({
       query: (id: string) => `/chalets/${id}/images`,
@@ -348,6 +356,8 @@ export const {
   useGetCustomerChaletDetailsQuery,
   useGetSimilarChaletsQuery,
   useGetChaletAddonsQuery,
+  useGetChaletTermsQuery,
+  useGetChaletPoliciesQuery,
   useGetChaletImagesQuery,
 
   // Bookings
