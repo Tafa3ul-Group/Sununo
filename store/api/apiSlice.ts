@@ -235,16 +235,6 @@ export const apiSlice = createApi({
       providesTags: (result, error, id) => [{ type: 'Chalet' as const, id }],
     }),
     
-    getSimilarChalets: builder.query({
-      query: (id) => `/customer/chalets/${id}/similar`,
-      providesTags: (result, error, id) => [{ type: 'Chalet' as const, id }],
-    }),
-
-    getChaletAddons: builder.query({
-      query: (id) => `/customer/chalets/${id}/addons`,
-      providesTags: (result, error, id) => [{ type: 'Chalet' as const, id }],
-    }),
-
     setChaletAmenities: builder.mutation({
       query: ({ chaletId, data }) => ({
         url: `/provider/chalets/${chaletId}/amenities`,
@@ -400,8 +390,6 @@ export const {
   useGetOwnerChaletsQuery,
   useGetOwnerChaletDetailsQuery,
   useGetChaletDetailsQuery,
-  useGetSimilarChaletsQuery,
-  useGetChaletAddonsQuery,
 
   useGetChaletShiftsQuery,
   useGetShiftPricingQuery,

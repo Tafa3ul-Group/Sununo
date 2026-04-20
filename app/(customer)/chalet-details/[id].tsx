@@ -28,12 +28,13 @@ import {
   TouchableOpacity,
   View,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { Image as ExpoImage } from 'expo-image';
 import Svg, { Path } from "react-native-svg";
 import { ReviewSubmissionSheet } from "@/components/user/review-submission-sheet";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { useGetCustomerChaletDetailsQuery, useGetChaletReviewsQuery, useCreateReviewMutation, useAddFavoriteMutation, useRemoveFavoriteMutation } from "@/store/api/customerApiSlice";
+import { useGetCustomerChaletDetailsQuery, useGetChaletReviewsQuery, useCreateReviewMutation, useAddFavoriteMutation, useRemoveFavoriteMutation, useGetSimilarChaletsQuery, useGetChaletAddonsQuery } from "@/store/api/customerApiSlice";
 import { getImageSrc } from "@/hooks/useImageSrc";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -106,6 +107,7 @@ export default function ChaletDetailScreen() {
   const totalImages = images.length;
   const reviews = reviewsResponse?.data || [];
   const reviewCount = reviewsResponse?.meta?.total || reviews.length || 0;
+  const hostName = chalet.owner?.name || (isRTL ? "مضيف عراقي" : "Iraqi Host");
 
   // Auto Play Banner
   useEffect(() => {
@@ -299,6 +301,18 @@ export default function ChaletDetailScreen() {
 
           {/* المضيف */}
           <View style={styles.hostStampArea}>
+            <View style={[styles.hostHeaderFixed, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+               <View style={[styles.hostInfoSide, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                  <ThemedText style={styles.hostLabelFixed}>{isRTL ? 'المضيف' : 'Host'}</ThemedText>
+                  <ThemedText style={styles.hostNameFixed}>{hostName}</ThemedText>
+               </View>
+               <View style={styles.hostAvatarWrap}>
+                  <ExpoImage 
+                    source={require("@/assets/profile.svg")} 
+                    style={styles.hostAvatarImgFixed} 
+                  />
+               </View>
+            </View>
             <ExpoImage
               source={require("@/assets/tabs/contact.svg")}
               style={styles.contactBanner}
@@ -404,7 +418,6 @@ export default function ChaletDetailScreen() {
                   {item.label}
                 </ThemedText>
               </TouchableOpacity>
-            ))}
             ))}
           </View>
 
@@ -745,5 +758,40 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.primary,
     fontFamily: "LamaSans-Black",
+  },
+  hostHeaderFixed: {
+    width: '100%',
+    padding: 15,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 20,
+    marginBottom: 15,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+  },
+  hostAvatarWrap: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    overflow: 'hidden',
+    backgroundColor: '#E5E7EB',
+  },
+  hostAvatarImgFixed: {
+    width: '100%',
+    height: '100%',
+  },
+  hostInfoSide: {
+    flex: 1,
+    marginHorizontal: 12,
+  },
+  hostLabelFixed: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    fontFamily: 'LamaSans-Medium',
+  },
+  hostNameFixed: {
+    fontSize: 15,
+    color: '#111827',
+    fontFamily: 'LamaSans-Black',
   },
 });
