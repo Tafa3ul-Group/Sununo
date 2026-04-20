@@ -35,6 +35,7 @@ import Svg, { Path } from "react-native-svg";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useGetCustomerChaletDetailsQuery, useGetChaletReviewsQuery, useCreateReviewMutation, useAddFavoriteMutation, useRemoveFavoriteMutation, useGetSimilarChaletsQuery, useGetChaletAddonsQuery } from "@/store/api/customerApiSlice";
 import { getImageSrc } from "@/hooks/useImageSrc";
+import { ReviewSubmissionSheet } from "@/components/user/review-submission-sheet";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -125,7 +126,16 @@ export default function ChaletDetailScreen() {
   }, [totalImages]);
 
   const openReviewSheet = () => {
-    router.push(`/chalet-details/add-review/${chaletId}`);
+    reviewSheetRef.current?.present();
+  };
+
+  const handleReviewSubmit = async (rating: number, comment: string) => {
+    try {
+      await createReview({ chaletId, rating, comment }).unwrap();
+      Alert.alert(isRTL ? "تم بنجاح" : "Success", isRTL ? "تم إضافة تقييمك بنجاح" : "Review submitted successfully");
+    } catch (error) {
+      Alert.alert(isRTL ? "خطأ" : "Error", isRTL ? "فشل إضافة التقييم" : "Failed to add review");
+    }
   };
 
   // Amenities/Facilities from API
@@ -484,6 +494,11 @@ export default function ChaletDetailScreen() {
           </View>
         </View>
       </View>
+
+      <ReviewSubmissionSheet
+        ref={reviewSheetRef}
+        onSubmit={handleReviewSubmit}
+      />
     </View>
   );
 }

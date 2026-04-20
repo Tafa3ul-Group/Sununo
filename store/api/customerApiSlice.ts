@@ -161,9 +161,9 @@ export const customerApi = apiSlice.injectEndpoints({
 
     // ── Reviews (Customer) ─────────────────────────────────────────────────
 
-    /** Create a review for a completed booking */
+    /** Create a review for a completed booking or chalet */
     createReview: builder.mutation({
-      query: (data: { bookingId: string; rating: number; comment?: string }) => ({
+      query: (data: { bookingId?: string; chaletId?: string; rating: number; comment?: string }) => ({
         url: '/customer/reviews',
         method: 'POST',
         body: data,
