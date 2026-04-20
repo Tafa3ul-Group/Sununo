@@ -421,7 +421,7 @@ export default function ChaletDetailScreen() {
           </View>
 
           {/* الاضافات الخاصة (Addons) */}
-          {addons.length > 0 && (
+          {addons && addons.length > 0 ? (
             <>
               <SectionHeader title={t('chalet.details.addons') || "الاضافات الخاصة"} isRTL={isRTL} />
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.addonsList}>
@@ -444,7 +444,7 @@ export default function ChaletDetailScreen() {
                 ))}
               </ScrollView>
             </>
-          )}
+          ) : null}
 
           {/* قد يعجبك ايضا */}
           <SectionHeader title={t('chalet.details.related')} isRTL={isRTL} />
@@ -484,7 +484,6 @@ export default function ChaletDetailScreen() {
           </View>
         </View>
       </View>
-      />
     </View>
   );
 }

@@ -24,7 +24,13 @@ export const WalletCard = ({
       <View
         style={[styles.svgWrapper, { transform: [{ scaleX: isRTL ? 1 : -1 }] }]}
       >
-        <Svg width="100%" height={123} viewBox="0 24 370 123" fill="none">
+        <Svg
+          width="100%"
+          height={normalize.height(130)}
+          viewBox="0 24 370 123"
+          preserveAspectRatio="none"
+          fill="none"
+        >
           <G clipPath="url(#clip0_64103_857)">
             <Path
               d="M15.9961 24.5L354.022 24.5049C362.559 24.5049 369.393 31.8833 369.393 40.4678L369.401 61.7578C369.401 62.4459 369.408 63.2383 369.416 64.0996V64.1465C369.416 64.151 369.417 64.1553 369.417 64.1592V64.2129C369.44 66.7202 369.468 69.8026 369.356 72.6953C369.251 75.4211 369.023 77.9292 368.567 79.6211L368.473 79.9482C366.611 85.986 360.189 91.7732 353.28 93.5449C347.93 94.9167 340.858 94.813 334.498 94.7158C333.015 94.6931 331.571 94.6709 330.204 94.6689H330.203L283.588 94.6641H283.589L269.688 94.6523H269.688C269.053 94.6526 268.431 94.6508 267.819 94.6484H267.807C261.437 94.6239 256.161 94.5966 250.064 97.667C247.139 99.1364 244.598 101.148 242.612 103.568L242.223 104.058C238.023 109.481 237.638 115.041 237.239 120.655C237 124.025 236.759 127.409 235.729 130.879C234.119 136.201 230.053 140.937 224.638 143.661C218.94 146.527 212.003 146.474 205.344 146.414C204.411 146.406 203.484 146.397 202.57 146.397L184.519 146.392L129.489 146.388L58.793 146.39L38.2588 146.397C37.2743 146.398 36.2148 146.408 35.1094 146.418C29.2699 146.472 22.1773 146.535 17.5068 145.356L17.5059 145.355L16.9482 145.21C11.2179 143.642 6.41323 140.136 3.56445 135.455L3.56152 135.451L3.27734 134.981C0.435788 130.144 0.46462 125.797 0.510742 120.372V40.4678C0.510742 32.0221 7.23937 24.7318 15.5967 24.5059L15.9961 24.5Z"
@@ -126,7 +132,7 @@ export const WalletCard = ({
 const styles = StyleSheet.create({
   container: {
     width: SCREEN_WIDTH - normalize.width(20),
-    height: normalize.height(115),
+    height: normalize.height(145),
     alignSelf: "center",
     marginVertical: normalize.height(4),
     overflow: "hidden",
@@ -137,8 +143,8 @@ const styles = StyleSheet.create({
   contentOverlay: {
     flex: 1,
     paddingHorizontal: normalize.width(25),
-    paddingTop: normalize.height(18),
-    paddingBottom: normalize.height(15),
+    paddingTop: normalize.height(25),
+    paddingBottom: normalize.height(35),
     justifyContent: "space-between",
   },
   topRow: {
@@ -161,6 +167,8 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: normalize.font(28),
     fontFamily: "LamaSans-Black",
+    lineHeight: normalize.font(36),
+    paddingVertical: normalize.height(4),
   },
   currencyText: {
     color: "white",
@@ -168,14 +176,14 @@ const styles = StyleSheet.create({
     fontFamily: "LamaSans-Bold",
   },
   withdrawButton: {
-    width: normalize.width(128),
-    height: normalize.height(35),
+    width: normalize.width(120),
+    height: normalize.height(20),
     justifyContent: "center",
     alignItems: "center",
   },
   withdrawText: {
     color: "white",
-    fontSize: normalize.font(14),
+    fontSize: normalize.font(20),
     fontFamily: "LamaSans-Black",
   },
 });

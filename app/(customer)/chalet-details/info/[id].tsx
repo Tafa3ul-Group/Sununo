@@ -27,22 +27,26 @@ export default function ChaletInfoScreen() {
 
   const getContent = () => {
     if (type === 'terms') {
-      return isRTL ? (terms?.ar || terms) : (terms?.en || terms);
+      const val = isRTL ? (terms?.ar || terms) : (terms?.en || terms);
+      return typeof val === 'string' ? val : (val?.ar || val?.en || '');
     } else {
       const p = policiesData?.policies;
       const cp = policiesData?.cancellationPolicy;
       const policiesText = isRTL ? (p?.ar || p) : (p?.en || p);
       const cancelText = isRTL ? (cp?.ar || cp) : (cp?.en || cp);
       
+      const pStr = typeof policiesText === 'string' ? policiesText : (policiesText?.ar || policiesText?.en || '');
+      const cStr = typeof cancelText === 'string' ? cancelText : (cancelText?.ar || cancelText?.en || '');
+
       return (
         <View>
           <ThemedText style={styles.sectionTitle}>{isRTL ? "سياسات عامة" : "General Policies"}</ThemedText>
-          <ThemedText style={styles.content}>{policiesText || t('common.noData')}</ThemedText>
+          <ThemedText style={styles.content}>{pStr || t('common.noData')}</ThemedText>
           
           <View style={styles.divider} />
           
           <ThemedText style={styles.sectionTitle}>{isRTL ? "سياسة الإلغاء" : "Cancellation Policy"}</ThemedText>
-          <ThemedText style={styles.content}>{cancelText || t('common.noData')}</ThemedText>
+          <ThemedText style={styles.content}>{cStr || t('common.noData')}</ThemedText>
         </View>
       );
     }
