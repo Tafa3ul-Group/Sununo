@@ -26,11 +26,10 @@ try {
 
 import Animated, {
   useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  withSequence,
   useSharedValue,
-  withDelay
+  withRepeat,
+  withSequence,
+  withTiming
 } from 'react-native-reanimated';
 
 interface MarkerData {
@@ -277,14 +276,14 @@ export const AppMap = ({
             ]}>
               {/* Premium Pulse for driving mode */}
               <Animated.View style={[styles.userLocationPulse, pulseStyle, { backgroundColor: isNavigating ? 'rgba(59, 130, 246, 0.4)' : Colors.primary }]} />
-              
+
               {/* Navigation Puck style to match screenshot */}
               <View style={[styles.userLocationDot, isNavigating && styles.navPuck]}>
                 {isNavigating && (
-                   <View style={styles.puckArrow} />
+                  <View style={styles.puckArrow} />
                 )}
               </View>
-              
+
               {/* Static Heading Arrow (for non-navigation) */}
               {!isNavigating && location.coords.heading !== null && location.coords.heading >= 0 && (
                 <View style={[styles.headingArrowContainer, { transform: [{ rotate: `${location.coords.heading}deg` }] }]}>
@@ -333,9 +332,9 @@ export const AppMap = ({
 
         {/* Route Source - Moved to bottom for max z-index */}
         {routeShape && (
-          <Mapbox.ShapeSource 
-            id="routeSource" 
-            key={route ? 'route-active' : 'route-inactive'} 
+          <Mapbox.ShapeSource
+            id="routeSource"
+            key={route ? 'route-active' : 'route-inactive'}
             shape={routeShape}
           >
             <Mapbox.LineLayer

@@ -113,6 +113,7 @@ export default function ExploreScreen() {
   const [isNavigating, setIsNavigating] = useState(false);
   const [showMapTools, setShowMapTools] = useState(false);
   const showMapToolsRef = useRef(false);
+  const browsingRegionRef = useRef<{ center: [number, number], zoom: number }>({ center: [47.85, 30.52], zoom: 13 });
   
   const toggleMapTools = (val: boolean) => {
     setShowMapTools(val);
@@ -160,10 +161,8 @@ export default function ExploreScreen() {
     if (!chalet) return;
     const fullChalet = MOCK_CHALETS.find(c => c.id === chalet.id) || chalet;
     
-    // Save current map region before selecting if we don't have one saved
-    if (!selectedChalet) {
-      setPreSelectionRegion(currentMapRegion);
-    }
+    // Save current map region (which is being tracked only during browsing)
+    setPreSelectionRegion({ ...browsingRegionRef.current });
     
     // Completely reset map tools and routes when a new chalet is selected
     setRoute(null);
@@ -255,6 +254,10 @@ export default function ExploreScreen() {
           onSelectMarker={handleSelectChalet}
           onCameraChanged={(center, zoomLvl) => {
             setCurrentMapRegion({ center, zoom: zoomLvl });
+            // Only update "browsing position" if we aren't in tools/nav mode
+            if (!showMapToolsRef.current && !selectedChalet) {
+              browsingRegionRef.current = { center, zoom: zoomLvl };
+            }
           }}
         />
       </View>
