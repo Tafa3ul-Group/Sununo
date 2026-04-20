@@ -1479,7 +1479,40 @@ const IconMap: Record<string, React.FC<SolarIconProps>> = {
   "alt-arrow-right-low-bold": SolarAltArrowRightLowBold,
   "lightbulb-bold": SolarLightbulbBold,
   "close-bold": SolarCloseBold,
+  "wheel-bold": SolarWheelBold,
+  "square-share-line-bold-duotone": SolarSquareShareLineBoldDuotone,
 };
+
+export function SolarWheelBold({ size = 24, color, ...props }: SolarIconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" {...props}>
+      <Path
+        fill={color || SafeColors.primary}
+        fillRule="evenodd"
+        d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2S2 6.477 2 12s4.477 10 10 10m5.954-9.25h-3.049a3 3 0 0 1-.803 1.39l1.524 2.64a6 6 0 0 0 2.328-4.03m-3.626 4.782l-1.525-2.64a3 3 0 0 1-1.606 0l-1.525 2.64A6 6 0 0 0 12 18c.825 0 1.612-.167 2.328-.468m-5.954-.751l1.524-2.64a3 3 0 0 1-.804-1.391H6.046a6 6 0 0 0 2.328 4.03m9.58-5.531h-3.049a3 3 0 0 0-.803-1.39l1.524-2.64a6 6 0 0 1 2.328 4.03m-3.626-4.782A6 6 0 0 0 12 6c-.825 0-1.612.167-2.328.468l1.525 2.64a3 3 0 0 1 1.606 0zM9.898 9.86L8.374 7.22a6 6 0 0 0-2.328 4.03h3.049c.138-.535.42-1.013.803-1.39"
+        clipRule="evenodd"
+      />
+    </Svg>
+  );
+}
+
+export function SolarSquareShareLineBoldDuotone({ size = 24, color, ...props }: SolarIconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" {...props}>
+      <Path
+        fill={color || SafeColors.primary}
+        d="M3.464 3.464C4.93 2 7.286 2 12 2s7.071 0 8.535 1.464C22 4.93 22 7.286 22 12s0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12s0-7.071 1.464-8.536"
+        opacity=".5"
+      />
+      <Path
+        fill={color || SafeColors.primary}
+        fillRule="evenodd"
+        d="M16.47 1.47a.75.75 0 0 1 1.06 0l5 5a.75.75 0 0 1 0 1.06l-5 5a.75.75 0 1 1-1.06-1.06l3.72-3.72H14c-1.552 0-2.467.757-2.788 1.08l-.19.191l-.193.191c-.322.32-1.079 1.236-1.079 2.788v3a.75.75 0 0 1-1.5 0v-3c0-2.084 1.027-3.36 1.521-3.851l.19-.189l.188-.189C10.64 7.277 11.916 6.25 14 6.25h6.19l-3.72-3.72a.75.75 0 0 1 0-1.06"
+        clipRule="evenodd"
+      />
+    </Svg>
+  );
+}
 
 export type IconName = keyof typeof IconMap;
 

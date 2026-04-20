@@ -24,10 +24,10 @@ try {
   console.log('Mapbox native module not found:', e);
 }
 
-import Animated, { 
-  useAnimatedStyle, 
-  withRepeat, 
-  withTiming, 
+import Animated, {
+  useAnimatedStyle,
+  withRepeat,
+  withTiming,
   withSequence,
   useSharedValue,
   withDelay
@@ -53,6 +53,7 @@ interface AppMapProps {
   isNavigating?: boolean;
   onSelectMarker?: (chalet: any) => void;
   onPressCard?: (id: string) => void;
+  onCameraChanged?: (center: [number, number], zoom: number) => void;
 }
 
 export const AppMap = ({
@@ -66,7 +67,8 @@ export const AppMap = ({
   route,
   isNavigating = false,
   onSelectMarker,
-  onPressCard
+  onPressCard,
+  onCameraChanged
 }: AppMapProps) => {
   const { i18n } = useTranslation();
   const { language } = useSelector((state: RootState) => state.auth);
@@ -101,14 +103,29 @@ export const AppMap = ({
       setHasNativeMap(true);
     }
 
+    let locationSubscription: any = null;
+
     (async () => {
       try {
         let { status } = await Location.requestForegroundPermissionsAsync();
         if (status === 'granted') {
+          // Get initial position
           let currentLocation = await Location.getCurrentPositionAsync({
-            accuracy: Location.Accuracy.Highest,
+            accuracy: Location.Accuracy.Balanced,
           });
           setLocation(currentLocation);
+
+          // Watch for changes
+          locationSubscription = await Location.watchPositionAsync(
+            {
+              accuracy: Location.Accuracy.High,
+              distanceInterval: 5, // update every 5 meters
+              timeInterval: 1000,   // or every second
+            },
+            (newLocation) => {
+              setLocation(newLocation);
+            }
+          );
         }
       } catch (err) {
         console.warn('Location error:', err);
@@ -116,12 +133,30 @@ export const AppMap = ({
         setLoading(false);
       }
     })();
+
+    return () => {
+      if (locationSubscription) {
+        locationSubscription.remove();
+      }
+    };
   }, []);
 
   const pulseStyle = useAnimatedStyle(() => ({
     transform: [{ scale: pulseScale.value }],
     opacity: pulseOpacity.value,
   }));
+
+  const routeShape = React.useMemo(() => {
+    if (!route) return null;
+    return {
+      type: 'FeatureCollection',
+      features: [{
+        type: 'Feature',
+        properties: {},
+        geometry: route
+      }]
+    };
+  }, [route]);
 
   if (loading) {
     return (
@@ -182,36 +217,83 @@ export const AppMap = ({
 
   const hasValidCenter = centerCoordinate && !isNaN(centerCoordinate[0]) && !isNaN(centerCoordinate[1]);
 
-  const finalCenter: [number, number] = hasValidCenter ? centerCoordinate : (location 
-    ? [location.coords.longitude, location.coords.latitude] 
+  const finalCenter: [number, number] = hasValidCenter ? centerCoordinate : (location
+    ? [location.coords.longitude, location.coords.latitude]
     : [47.82, 30.51]); // Default to a central Basra point
 
   return (
     <View style={[styles.container, style]}>
       <Mapbox.MapView
         style={styles.map}
-        styleURL={Mapbox.StyleURL.Light}
+        styleURL={isNavigating ? Mapbox.StyleURL.NavigationDay : Mapbox.StyleURL.Light}
         logoEnabled={false}
         attributionEnabled={false}
+        onRegionDidChange={(feature: any) => {
+          if (onCameraChanged && feature.geometry && feature.geometry.coordinates) {
+            onCameraChanged(
+              feature.geometry.coordinates as [number, number],
+              feature.properties.zoomLevel
+            );
+          }
+        }}
       >
+        {/* Immersive 3D Buildings - Temporarily disabled for debugging route */}
+        {/*
+        {isNavigating && (
+          <Mapbox.FillExtrusionLayer
+            id="3d-buildings"
+            sourceID="composite"
+            sourceLayerID="building"
+            filter={['==', 'extrude', 'true']}
+            style={{
+              fillExtrusionColor: '#D1D5DB',
+              fillExtrusionHeight: ['get', 'height'],
+              fillExtrusionBase: ['get', 'min_height'],
+              fillExtrusionOpacity: 0.6,
+            }}
+          />
+        )}
+        */}
         <Mapbox.Camera
           ref={cameraRef}
-          zoomLevel={zoomLevel}
-          centerCoordinate={finalCenter}
-          animationMode="flyTo"
-          animationDuration={1000}
+          zoomLevel={isNavigating ? 18 : zoomLevel}
+          centerCoordinate={isNavigating ? undefined : finalCenter}
           followUserLocation={isNavigating}
-          followUserMode={isNavigating ? "course" : undefined}
-          followPitch={isNavigating ? 60 : 0}
-          followZoomLevel={isNavigating ? 17 : undefined}
+          followUserMode={isNavigating ? "course" : "normal"}
+          followPitch={isNavigating ? 70 : 0}
+          animationMode="flyTo"
+          animationDuration={1500}
         />
 
-        <Mapbox.UserLocation
-          visible={true}
-          showsUserHeadingIndicator={true}
-          renderMode={isNavigating ? "gps" : "compass"}
-          androidRenderMode={isNavigating ? "gps" : "compass"}
-        />
+        {/* User Location Marker - Using MarkerView for custom UI and reliability */}
+        {location && (
+          <Mapbox.MarkerView
+            id="user-location"
+            coordinate={[location.coords.longitude, location.coords.latitude]}
+          >
+            <View style={[
+              styles.userLocationMarker,
+              isNavigating && location.coords.heading !== null && { transform: [{ rotate: `${location.coords.heading}deg` }] }
+            ]}>
+              {/* Premium Pulse for driving mode */}
+              <Animated.View style={[styles.userLocationPulse, pulseStyle, { backgroundColor: isNavigating ? 'rgba(59, 130, 246, 0.4)' : Colors.primary }]} />
+              
+              {/* Navigation Puck style to match screenshot */}
+              <View style={[styles.userLocationDot, isNavigating && styles.navPuck]}>
+                {isNavigating && (
+                   <View style={styles.puckArrow} />
+                )}
+              </View>
+              
+              {/* Static Heading Arrow (for non-navigation) */}
+              {!isNavigating && location.coords.heading !== null && location.coords.heading >= 0 && (
+                <View style={[styles.headingArrowContainer, { transform: [{ rotate: `${location.coords.heading}deg` }] }]}>
+                  <View style={styles.headingArrow} />
+                </View>
+              )}
+            </View>
+          </Mapbox.MarkerView>
+        )}
 
         {/* Single Marker for center coordinate if requested and no markers provided */}
         {showMarker && hasValidCenter && markers.length === 0 && (
@@ -249,16 +331,21 @@ export const AppMap = ({
 
 
 
-        {route && (
-          <Mapbox.ShapeSource id="routeSource" shape={route}>
+        {/* Route Source - Moved to bottom for max z-index */}
+        {routeShape && (
+          <Mapbox.ShapeSource 
+            id="routeSource" 
+            key={route ? 'route-active' : 'route-inactive'} 
+            shape={routeShape}
+          >
             <Mapbox.LineLayer
               id="routeLine"
               style={{
-                lineColor: Colors.primary,
-                lineWidth: 5,
+                lineColor: '#3B82F6',
+                lineWidth: 10,
                 lineCap: 'round',
                 lineJoin: 'round',
-                lineOpacity: 0.8,
+                lineOpacity: 1,
               }}
             />
           </Mapbox.ShapeSource>
@@ -411,6 +498,29 @@ const styles = StyleSheet.create({
     borderColor: 'white',
     ...SafeShadows.medium,
   },
+  navPuck: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#3B82F6',
+    borderWidth: 3,
+    borderColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  puckArrow: {
+    width: 0,
+    height: 0,
+    backgroundColor: 'transparent',
+    borderStyle: 'solid',
+    borderLeftWidth: 6,
+    borderRightWidth: 6,
+    borderBottomWidth: 10,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderBottomColor: 'white',
+    transform: [{ translateY: -2 }],
+  },
   markerDot: {
     width: 6,
     height: 6,
@@ -418,5 +528,26 @@ const styles = StyleSheet.create({
     backgroundColor: Theme.Colors.primary,
     position: 'absolute',
     bottom: -10,
-  }
+  },
+  headingArrowContainer: {
+    position: 'absolute',
+    top: -10,
+    width: 20,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    zIndex: 10,
+  },
+  headingArrow: {
+    width: 0,
+    height: 0,
+    backgroundColor: 'transparent',
+    borderStyle: 'solid',
+    borderLeftWidth: 10,
+    borderRightWidth: 10,
+    borderBottomWidth: 16,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderBottomColor: Theme.Colors.primary,
+  },
 });

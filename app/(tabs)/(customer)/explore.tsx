@@ -1,12 +1,14 @@
 import {
   SolarAltArrowRightBold,
+  SolarCloseBold,
   SolarFireBold,
   SolarMapBoldDuotone,
   SolarMapPointBold,
-  SolarMapPointLinear,
+  SolarSquareShareLineBoldDuotone,
   SolarStarBold,
   SolarTreeBold,
   SolarWaterBold,
+  SolarWheelBold,
   SolarWidgetBold
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
@@ -29,7 +31,8 @@ import {
   Share,
   StyleSheet,
   TouchableOpacity,
-  View
+  View,
+  Alert
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
@@ -98,25 +101,48 @@ export default function ExploreScreen() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [selectedChalet, setSelectedChalet] = useState<any>(null);
   const [zoom, setZoom] = useState(13);
+  const [cameraPosition, setCameraPosition] = useState<[number, number]>([47.85, 30.52]);
+  
+  // Track Current Map State for restoration
+  const [currentMapRegion, setCurrentMapRegion] = useState({ center: [47.85, 30.52] as [number, number], zoom: 13 });
+  const [preSelectionRegion, setPreSelectionRegion] = useState<{ center: [number, number], zoom: number } | null>(null);
 
   // Navigation & Routing State
   const [route, setRoute] = useState<any>(null);
+  const [routeInfo, setRouteInfo] = useState<any>(null);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [showMapTools, setShowMapTools] = useState(false);
+  const showMapToolsRef = useRef(false);
+  
+  const toggleMapTools = (val: boolean) => {
+    setShowMapTools(val);
+    showMapToolsRef.current = val;
+  };
+
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
 
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ["38%"], []);
 
   useEffect(() => {
+    let subscription: any = null;
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status === 'granted') {
-        const currentLocation = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.High,
-        });
-        setLocation(currentLocation);
+        // Initial location
+        try {
+          const currentLocation = await Location.getCurrentPositionAsync({});
+          setLocation(currentLocation);
+        } catch (e) {}
+
+        // Watch location for routing
+        subscription = await Location.watchPositionAsync(
+          { accuracy: Location.Accuracy.High, distanceInterval: 10 },
+          (newLoc) => setLocation(newLoc)
+        );
       }
     })();
+    return () => subscription?.remove();
   }, []);
 
   const filteredChalets = activeFilter === "all"
@@ -133,21 +159,47 @@ export default function ExploreScreen() {
   const handleSelectChalet = (chalet: any) => {
     if (!chalet) return;
     const fullChalet = MOCK_CHALETS.find(c => c.id === chalet.id) || chalet;
-    setSelectedChalet(fullChalet);
-    setZoom(17);
+    
+    // Save current map region before selecting if we don't have one saved
+    if (!selectedChalet) {
+      setPreSelectionRegion(currentMapRegion);
+    }
+    
+    // Completely reset map tools and routes when a new chalet is selected
     setRoute(null);
+    setRouteInfo(null);
     setIsNavigating(false);
+    toggleMapTools(false);
+    
+    setSelectedChalet(fullChalet);
+    setCameraPosition(fullChalet.coordinates);
+    setZoom(17);
     bottomSheetRef.current?.present();
   };
 
   const handleDismissSheet = () => {
-    setSelectedChalet(null);
-    setZoom(13);
+    if (!showMapToolsRef.current) {
+      setSelectedChalet(null);
+      setZoom(13);
+    }
   };
 
   const getRoute = async () => {
-    if (!location || !selectedChalet) return;
-    const start = [location.coords.longitude, location.coords.latitude];
+    if (!selectedChalet) return;
+    
+    // If no location yet, try to get it quickly
+    let currentLoc = location;
+    if (!currentLoc) {
+       try {
+         currentLoc = await Location.getCurrentPositionAsync({});
+         setLocation(currentLoc);
+       } catch (e) {
+         Alert.alert('Location Error', 'Please enable location services to see the route.');
+         return;
+       }
+    }
+
+    const start = [currentLoc.coords.longitude, currentLoc.coords.latitude];
     const end = selectedChalet.coordinates;
 
     try {
@@ -156,8 +208,13 @@ export default function ExploreScreen() {
       );
       const data = await resp.json();
       if (data.routes && data.routes[0]) {
+        console.log('Route found:', data.routes[0].duration);
         setRoute(data.routes[0].geometry);
-        bottomSheetRef.current?.dismiss(); // Hide sheet to show map/route
+        setRouteInfo({
+          distance: data.routes[0].distance,
+          duration: data.routes[0].duration
+        });
+        bottomSheetRef.current?.dismiss();
       }
     } catch (e) {
       console.error('Routing error:', e);
@@ -186,9 +243,9 @@ export default function ExploreScreen() {
 
       {/* Background Map */}
       <View style={styles.mapBackground}>
-        <AppMap 
-          style={styles.map} 
-          centerCoordinate={selectedChalet?.coordinates}
+        <AppMap
+          style={styles.map}
+          centerCoordinate={cameraPosition}
           zoomLevel={zoom}
           showMarker={true}
           markers={filteredChalets}
@@ -196,6 +253,9 @@ export default function ExploreScreen() {
           route={route}
           isNavigating={isNavigating}
           onSelectMarker={handleSelectChalet}
+          onCameraChanged={(center, zoomLvl) => {
+            setCurrentMapRegion({ center, zoom: zoomLvl });
+          }}
         />
       </View>
 
@@ -225,48 +285,44 @@ export default function ExploreScreen() {
         </View>
       </View>
 
-      {/* Navigation Overlays (FABs) */}
-      {!route && !selectedChalet && location && (
-        <TouchableOpacity 
-          style={styles.myLocationFab} 
-          onPress={() => {
-            setSelectedChalet({ coordinates: [location.coords.longitude, location.coords.latitude], id: 'temp-loc' });
-            setZoom(15);
-            // Clear the temp-loc after a short delay so it behaves like a "center on me" action
-            setTimeout(() => setSelectedChalet(null), 100);
-          }}
-        >
-          <SolarMapBoldDuotone size={24} color={Colors.primary} />
-        </TouchableOpacity>
-      )}
+      {/* My Location FAB removed as per user request */}
 
-      {route && (
-        <View style={styles.navFabContainer}>
-          <TouchableOpacity
-            style={[styles.navFab, isNavigating && styles.navFabActive]}
-            onPress={() => setIsNavigating(!isNavigating)}
-          >
-            <SolarMapBoldDuotone size={24} color={isNavigating ? "white" : Colors.primary} />
-            <ThemedText style={[styles.navFabText, isNavigating && { color: 'white' }]}>
-              {isRTL ? 'وضعية القيادة' : 'Driving Mode'}
-            </ThemedText>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.navFab} onPress={shareChalet}>
-            <SolarMapPointLinear size={24} color={Colors.primary} />
-            <ThemedText style={styles.navFabText}>{isRTL ? 'المشاركة' : 'Share'}</ThemedText>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.navFab, { backgroundColor: '#FEE2E2', borderColor: '#FECACA' }]}
+      {showMapTools && selectedChalet && (
+        <View style={styles.navStackContainer}>
+          <TouchableOpacity 
+            style={[styles.navCircleFab, isNavigating && styles.navFabActive]} 
             onPress={() => {
-              setRoute(null);
-              setIsNavigating(false);
+              if (!route) getRoute();
+              setIsNavigating(!isNavigating);
             }}
           >
-            <ThemedText style={[styles.navFabText, { color: '#EF4444' }]}>
-              {isRTL ? 'إلغاء' : 'Cancel'}
-            </ThemedText>
+            <SolarWheelBold size={26} color={isNavigating ? "white" : Colors.primary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.navCircleFab} onPress={shareChalet}>
+            <SolarSquareShareLineBoldDuotone size={24} color={Colors.primary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.navCircleFab, { backgroundColor: '#FEE2E2', borderColor: '#FECACA' }]} 
+            onPress={() => {
+              setRoute(null);
+              setRouteInfo(null);
+              setIsNavigating(false);
+              toggleMapTools(false);
+              setSelectedChalet(null);
+              
+              // Restore map to pre-selection view immediately
+              if (preSelectionRegion) {
+                setZoom(preSelectionRegion.zoom);
+                setCameraPosition(preSelectionRegion.center);
+                setPreSelectionRegion(null);
+              } else {
+                setZoom(13);
+              }
+            }}
+          >
+            <SolarCloseBold size={20} color="#EF4444" />
           </TouchableOpacity>
         </View>
       )}
@@ -288,21 +344,48 @@ export default function ExploreScreen() {
                 <Image source={{ uri: selectedChalet.image }} style={styles.chaletThumb} />
                 <View style={[styles.headerInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
                   <ThemedText style={styles.chaletTitle}>
-                    {isRTL ? selectedChalet.title.ar : selectedChalet.title.en}
+                    {typeof selectedChalet?.title === 'string' ? selectedChalet.title : (isRTL ? selectedChalet?.title?.ar : selectedChalet?.title?.en) || ''}
                   </ThemedText>
                   <View style={[styles.locationRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                     <SolarMapPointBold size={14} color="#6B7280" />
                     <ThemedText style={styles.chaletLocation}>
-                      {isRTL ? selectedChalet.location.ar : selectedChalet.location.en}
+                      {typeof selectedChalet?.location === 'string' ? selectedChalet.location : (isRTL ? selectedChalet?.location?.ar : selectedChalet?.location?.en) || ''}
                     </ThemedText>
                   </View>
                   <View style={[styles.ratingRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                    <ThemedText style={styles.priceText}>{selectedChalet.price} د.ع</ThemedText>
+                    <ThemedText style={styles.priceText}>{selectedChalet.price} د.ع / ليلة</ThemedText>
                     <View style={[styles.dot, { marginHorizontal: 8 }]} />
                     <SolarStarBold size={14} color="#F59E0B" />
                     <ThemedText style={styles.ratingText}>{selectedChalet.rating}</ThemedText>
                   </View>
-                </View>
+
+                  {/* Additional Info Mockup */}
+                  <View style={[styles.infoGrid, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <View style={[styles.infoItem, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                      <SolarWidgetBold size={14} color={Colors.primary} />
+                      <ThemedText style={styles.infoValue}>600 م²</ThemedText>
+                    </View>
+                    <View style={[styles.infoItem, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                      <SolarTreeBold size={14} color={Colors.secondary} />
+                      <ThemedText style={styles.infoValue}>حديقة</ThemedText>
+                    </View>
+                    <View style={[styles.infoItem, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                      <SolarWaterBold size={14} color={Colors.accent} />
+                      <ThemedText style={styles.infoValue}>مسبح</ThemedText>
+                    </View>
+                  </View>
+                  <TouchableOpacity 
+                  style={styles.navActionBtn}
+                  onPress={() => {
+                    toggleMapTools(true);
+                    getRoute();
+                    bottomSheetRef.current?.dismiss();
+                  }}
+                >
+                  <SolarMapPointBold size={20} color="white" />
+                  <ThemedText style={styles.navActionText}>{isRTL ? 'الذهاب للمسار' : 'Go to Route'}</ThemedText>
+                </TouchableOpacity>
+              </View>
                 <TouchableOpacity
                   onPress={() => {
                     bottomSheetRef.current?.dismiss();
@@ -314,43 +397,13 @@ export default function ExploreScreen() {
                 </TouchableOpacity>
               </View>
 
-              <View style={[styles.actionGrid, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                <TouchableOpacity
-                  style={[styles.actionBtn, route && styles.actionBtnActive]}
-                  onPress={() => route ? setRoute(null) : getRoute()}
-                >
-                  <SolarMapPointBold size={22} color={route ? "white" : Colors.primary} />
-                  <ThemedText style={[styles.actionText, route && { color: 'white' }]}>
-                    {isRTL ? 'تتبع المسار' : 'Track Route'}
-                  </ThemedText>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.actionBtn, isNavigating && styles.actionBtnActive]}
-                  onPress={() => {
-                    if (!route) getRoute();
-                    setIsNavigating(!isNavigating);
-                  }}
-                >
-                  <SolarMapBoldDuotone size={22} color={isNavigating ? "white" : Colors.primary} />
-                  <ThemedText style={[styles.actionText, isNavigating && { color: 'white' }]}>
-                    {isRTL ? 'وضعية القيادة' : 'Driving Mode'}
-                  </ThemedText>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.actionBtn} onPress={shareChalet}>
-                  <SolarMapPointLinear size={22} color={Colors.primary} />
-                  <ThemedText style={styles.actionText}>{isRTL ? 'المشاركة' : 'Share'}</ThemedText>
-                </TouchableOpacity>
-              </View>
-
               <PrimaryButton
-                label={isRTL ? "مشاهدة المزيد من التفاصيل" : "View More Details"}
+                label={isRTL ? "ﺣﺠﺰ اﻵن" : "Book Now"}
                 onPress={() => {
                   bottomSheetRef.current?.dismiss();
                   router.push(`/(customer)/chalet/${selectedChalet.id}`);
                 }}
-                style={styles.fullDetailBtn}
+                style={{ marginTop: 8 }}
               />
             </View>
           )}
@@ -487,25 +540,20 @@ const styles = StyleSheet.create({
     height: 54,
     borderRadius: 18,
   },
-  navFabContainer: {
+  navStackContainer: {
     position: 'absolute',
-    bottom: normalize.height(40),
-    left: 20,
+    bottom: normalize.height(115),
     right: 20,
-    flexDirection: 'row',
-    justifyContent: 'center',
     gap: 12,
     zIndex: 100,
   },
-  navFab: {
-    flex: 1,
+  navCircleFab: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
     backgroundColor: 'white',
-    paddingVertical: 12,
-    borderRadius: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    alignItems: 'center',
     ...Shadows.medium,
     borderWidth: 1,
     borderColor: '#F3F4F6',
@@ -514,14 +562,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     borderColor: Colors.primary,
   },
-  navFabText: {
-    fontSize: 12,
-    fontFamily: "LamaSans-Bold",
-    color: Colors.primary,
-  },
   myLocationFab: {
     position: 'absolute',
-    bottom: normalize.height(40),
+    bottom: normalize.height(110),
     right: 20,
     width: 54,
     height: 54,
@@ -533,5 +576,58 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F3F4F6',
     zIndex: 100,
-  }
+  },
+  tripInfoBar: {
+    position: 'absolute',
+    left: 20,
+    right: 84,
+    backgroundColor: 'white',
+    padding: 14,
+    borderRadius: 20,
+    ...Shadows.large,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    zIndex: 100,
+  },
+  tripInfoRow: {
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  tripInfoItem: {
+    alignItems: 'center',
+    paddingHorizontal: 10,
+  },
+  tripInfoLabel: {
+    fontSize: 10,
+    fontFamily: "LamaSans-Medium",
+    color: "#6B7280",
+    marginBottom: 2,
+    textTransform: 'uppercase',
+  },
+  tripInfoValue: {
+    fontSize: 15,
+    fontFamily: "LamaSans-Bold",
+    color: Colors.primary,
+  },
+  tripVerticalDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: '#E5E7EB',
+  },
+  navActionBtn: {
+    backgroundColor: Colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    marginTop: 12,
+    alignSelf: 'flex-start',
+  },
+  navActionText: {
+    color: 'white',
+    fontSize: 13,
+    fontFamily: "LamaSans-Bold",
+  },
 });
