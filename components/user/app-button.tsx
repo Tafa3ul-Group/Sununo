@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   },
   primaryText: {
     fontSize: 14,
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     textAlign: 'center',
     lineHeight: 20,
     includeFontPadding: false,
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
   },
   secondaryText: {
     fontSize: 16,
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     textAlign: 'center',
   },
 });

@@ -53,17 +53,17 @@ export function ThemedText({
 
 const styles = StyleSheet.create({
   base: {
-    fontFamily: "LamaSans-Regular",
+    fontFamily: "Tajawal-Regular",
     includeFontPadding: false,
     textAlignVertical: "center",
     paddingVertical: 2,
   },
   defaultSemiBold: {
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "Tajawal-SemiBold",
   },
   link: {
     color: "#2B66FF",
     textDecorationLine: "underline",
-    fontFamily: "LamaSans-Regular",
+    fontFamily: "Tajawal-Regular",
   },
 });

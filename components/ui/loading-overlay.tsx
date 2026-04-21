@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
   message: {
     marginTop: 10,
     fontSize: 16,
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: '#1E293B',
     textAlign: 'center',
   },

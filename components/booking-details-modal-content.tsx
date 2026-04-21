@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: normalize.font(18),
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: Colors.text.primary,
   },
   scrollContent: {
@@ -262,13 +262,13 @@ const styles = StyleSheet.create({
   },
   chaletName: {
     fontSize: normalize.font(16),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: Colors.text.primary,
     marginBottom: 4,
   },
   chaletLocation: {
     fontSize: normalize.font(13),
-    fontFamily: "LamaSans-Medium",
+    fontFamily: "Tajawal-Medium",
     color: Colors.text.muted,
     marginBottom: 8,
   },
@@ -279,13 +279,13 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: normalize.font(12),
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: Colors.text.primary,
     paddingTop: 2,
   },
   priceTag: {
     fontSize: normalize.font(14),
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: Colors.text.primary,
   },
   organicImageContainer: {
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: IDENTITY_BLUE,
     marginBottom: 12,
   },
@@ -320,23 +320,23 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: normalize.font(14),
-    fontFamily: "LamaSans-Medium",
+    fontFamily: "Tajawal-Medium",
     color: Colors.text.primary,
     flex: 1,
   },
   value: {
     fontSize: normalize.font(15),
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: Colors.text.primary,
     flex: 2,
   },
   currency: {
     fontSize: normalize.font(13),
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
   },
   notesText: {
     fontSize: normalize.font(14),
-    fontFamily: "LamaSans-Regular",
+    fontFamily: "Tajawal-Regular",
     color: Colors.text.muted,
     lineHeight: 20,
   },
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
   },
   cancelLinkText: {
     color: '#EF4444',
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "Tajawal-SemiBold",
     fontSize: normalize.font(14),
     textDecorationLine: 'underline',
   },

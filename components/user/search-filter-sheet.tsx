@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
     textAlign: isRTL ? "right" : "left",
     fontSize: 16,
     color: Colors.text.primary,
-   fontFamily: "LamaSans-Regular" },
+   fontFamily: "Tajawal-Regular" },
   cityItem: {
     flexDirection: isRTL ? "row" : "row-reverse",
     alignItems: "center",
@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
   },
   cityName: {
     fontSize: 16,
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "Tajawal-SemiBold",
     color: Colors.text.primary,
     flex: 1,
     textAlign: isRTL ? "right" : "left",
@@ -455,7 +455,7 @@ const styles = StyleSheet.create({
   },
   legendText: {
     fontSize: 13,
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "Tajawal-SemiBold",
     color: "#1A1A1A",
   },
   dot: {
@@ -520,12 +520,12 @@ const styles = StyleSheet.create({
   },
   subTabTextActive: {
     fontSize: 18,
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: "#1A1A1A",
   },
   subTabTextInactive: {
     fontSize: 18,
-    fontFamily: "LamaSans-Medium",
+    fontFamily: "Tajawal-Medium",
     color: "#717171",
   },
   periodList: {
@@ -548,7 +548,7 @@ const styles = StyleSheet.create({
   },
   periodLabel: {
     fontSize: 18,
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: "#1A1A1A",
     flex: 1,
     textAlign: "right",
@@ -571,7 +571,7 @@ const styles = StyleSheet.create({
   },
   guestLabel: {
     fontSize: 22,
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: "#1A1A1A",
     textAlign: "right",
   },
@@ -580,5 +580,5 @@ const styles = StyleSheet.create({
     color: "#9CA3AF",
     textAlign: "right",
     marginTop: 2,
-   fontFamily: "LamaSans-Regular" },
+   fontFamily: "Tajawal-Regular" },
 });

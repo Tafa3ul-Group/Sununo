@@ -204,12 +204,12 @@ const styles = StyleSheet.create({
   },
   filterText: {
     fontSize: normalize.font(13),
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "Tajawal-SemiBold",
     color: Colors.text.secondary,
   },
   filterTextActive: {
     color: Colors.white,
-   fontFamily: "LamaSans-Regular" },
+   fontFamily: "Tajawal-Regular" },
   // List
   listContainer: {
     flex: 1,
@@ -236,24 +236,24 @@ const styles = StyleSheet.create({
   },
   transactionTitle: {
     fontSize: normalize.font(15),
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: Colors.text.primary,
     marginBottom: 3,
   },
   transactionDate: {
     fontSize: normalize.font(11),
     color: Colors.text.muted,
-    fontFamily: "LamaSans-Medium",
+    fontFamily: "Tajawal-Medium",
   },
   transactionAmount: {
     fontSize: normalize.font(16),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: Colors.text.primary,
     marginBottom: 4,
   },
   currencySmall: {
     fontSize: normalize.font(11),
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "Tajawal-SemiBold",
     color: Colors.text.muted,
   },
   statusBadge: {
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   },
   statusBadgeText: {
     fontSize: normalize.font(10),
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
   },
   separator: {
     height: 1,
@@ -294,13 +294,13 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: normalize.font(16),
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: Colors.text.primary,
   },
   emptySubtitle: {
     fontSize: normalize.font(12),
     color: Colors.text.muted,
-    fontFamily: "LamaSans-Medium",
+    fontFamily: "Tajawal-Medium",
     textAlign: 'center',
     paddingHorizontal: 40,
   },

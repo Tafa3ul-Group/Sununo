@@ -533,9 +533,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 6,
   },
-  ratingVal: { fontSize: 18, fontFamily: "LamaSans-Black" },
-  mainTitle: { fontSize: 22, fontFamily: "LamaSans-Black" },
-  locationSub: { fontSize: 13, color: "#6B7280", fontFamily: "LamaSans-Regular" },
+  ratingVal: { fontSize: 18, fontFamily: "Tajawal-Black" },
+  mainTitle: { fontSize: 22, fontFamily: "Tajawal-Black" },
+  locationSub: { fontSize: 13, color: "#6B7280", fontFamily: "Tajawal-Regular" },
   sectionHeaderContainer: {
     height: 60,
     justifyContent: "center",
@@ -544,7 +544,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     marginVertical: 15,
   },
   specsRow: { flexWrap: "wrap", gap: 8 },
@@ -554,8 +554,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 12,
   },
-  specText: { fontSize: 13, fontFamily: "LamaSans-Bold" },
-  viewAllText: { fontSize: 13, color: "#6B7280", fontFamily: "LamaSans-Bold" },
+  specText: { fontSize: 13, fontFamily: "Tajawal-Bold" },
+  viewAllText: { fontSize: 13, color: "#6B7280", fontFamily: "Tajawal-Bold" },
   facilitiesHeader: {
     justifyContent: "space-between",
     alignItems: "center",
@@ -575,7 +575,7 @@ const styles = StyleSheet.create({
   iconInShape: { position: "absolute" },
   facilityLabelText: {
     fontSize: 12,
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     marginTop: 6,
     textAlign: "center",
   },
@@ -584,7 +584,7 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     lineHeight: 22,
     marginTop: 5,
-    fontFamily: "LamaSans-Regular" },
+    fontFamily: "Tajawal-Regular" },
   readMoreWrapper: { alignItems: "center", marginTop: 15 },
   readMoreComp: { width: "65%", borderRadius: 27 },
 
@@ -600,7 +600,7 @@ const styles = StyleSheet.create({
   mapImg: { width: "100%", height: "100%" },
   pinCenter: { position: "absolute", top: "40%", left: "46%" },
   mapLocLabel: { paddingVertical: 10, alignItems: "center" },
-  mapLocText: { fontSize: 15, fontFamily: "LamaSans-Black" },
+  mapLocText: { fontSize: 15, fontFamily: "Tajawal-Black" },
 
   hostStampArea: { marginVertical: 20, width: "100%", alignItems: "center" },
   contactBanner: { width: SCREEN_WIDTH - 40, height: 100 },
@@ -622,7 +622,7 @@ const styles = StyleSheet.create({
   customRatingText: {
     color: "white",
     fontSize: 22,
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
   },
 
   revComplexCardFlat: {
@@ -644,7 +644,7 @@ const styles = StyleSheet.create({
   },
   revRateNumMerged: {
     fontSize: 16,
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: "#111827",
   },
   userInfoRowMerged: {
@@ -656,7 +656,7 @@ const styles = StyleSheet.create({
   },
   reviewerNameMerged: {
     fontSize: 16,
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: "#111827",
   },
   revMessageMerged: {
@@ -664,7 +664,7 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     marginTop: 8,
     lineHeight: 22,
-    fontFamily: "LamaSans-Regular",
+    fontFamily: "Tajawal-Regular",
   },
   avatarCircleMerged: {
     width: 60,
@@ -684,7 +684,7 @@ const styles = StyleSheet.create({
   revTimeTextMerged: {
     fontSize: 13,
     color: "#9CA3AF",
-    fontFamily: "LamaSans-Medium",
+    fontFamily: "Tajawal-Medium",
   },
 
   addReviewAction: { alignItems: "center", marginVertical: 20 },
@@ -702,7 +702,7 @@ const styles = StyleSheet.create({
   infoGearIcon: { position: "absolute" },
   infoLabelText: {
     fontSize: 11,
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     marginTop: 8,
     textAlign: "center",
   },
@@ -722,9 +722,9 @@ const styles = StyleSheet.create({
     borderTopColor: "#F3F4F6",
   },
   footerTextSide: { flex: 1 },
-  footerPriceBig: { fontSize: 18, fontFamily: "LamaSans-Black", marginBottom: 4 },
+  footerPriceBig: { fontSize: 18, fontFamily: "Tajawal-Black", marginBottom: 4 },
   footerMetaRow: { alignItems: "center", gap: 6 },
-  footerMetaSmall: { fontSize: 10, color: "#9CA3AF", fontFamily: "LamaSans-SemiBold" },
+  footerMetaSmall: { fontSize: 10, color: "#9CA3AF", fontFamily: "Tajawal-SemiBold" },
   footerBtnSide: { width: 180 },
   footerFlatBtn: {
     height: 76,
@@ -753,13 +753,13 @@ const styles = StyleSheet.create({
   },
   addonName: {
     fontSize: 13,
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "Tajawal-SemiBold",
     marginBottom: 4,
   },
   addonPrice: {
     fontSize: 12,
     color: Colors.primary,
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
   },
   hostHeaderFixed: {
     width: '100%',
@@ -789,11 +789,11 @@ const styles = StyleSheet.create({
   hostLabelFixed: {
     fontSize: 11,
     color: '#9CA3AF',
-    fontFamily: 'LamaSans-Medium',
+    fontFamily: 'Tajawal-Medium',
   },
   hostNameFixed: {
     fontSize: 15,
     color: '#111827',
-    fontFamily: 'LamaSans-Black',
+    fontFamily: 'Tajawal-Black',
   },
 });

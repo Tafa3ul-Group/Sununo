@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
   summaryArea: { alignItems: "center", marginVertical: normalize(35) },
   bigRatingText: {
     fontSize: normalize(56),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: "#111827",
     marginBottom: normalize(5),
   },
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
   },
   rateNumText: {
     fontSize: normalize(16),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: "#111827",
   },
   userInfoRow: {
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
   nameAndBody: { flex: 1 },
   reviewerNameText: {
     fontSize: normalize(16),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: "#111827",
   },
   revBodyText: {
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     marginTop: normalize(8),
     lineHeight: normalize(22),
-    fontFamily: "LamaSans-Regular",
+    fontFamily: "Tajawal-Regular",
   },
   avatarCircle: {
     width: normalize(60),
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
   dateTextLabel: {
     fontSize: normalize(13),
     color: "#9CA3AF",
-    fontFamily: "LamaSans-Medium",
+    fontFamily: "Tajawal-Medium",
   },
   footerSticky: {
     position: "absolute",
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
   },
   questionTitle: {
     fontSize: normalize(16),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: "#111827",
     marginBottom: normalize(8),
   },

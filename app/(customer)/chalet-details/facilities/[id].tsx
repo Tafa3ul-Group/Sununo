@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: '#111827',
   },
   cardContainer: { 
@@ -123,8 +123,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   textSide: { flex: 1 },
-  cardLabel: { fontSize: 16, fontFamily: "LamaSans-Black", color: '#111827' },
-  cardSubtext: { fontSize: 12, color: '#6B7280', marginTop: 4, fontFamily: "LamaSans-Regular" },
+  cardLabel: { fontSize: 16, fontFamily: "Tajawal-Black", color: '#111827' },
+  cardSubtext: { fontSize: 12, color: '#6B7280', marginTop: 4, fontFamily: "Tajawal-Regular" },
   iconSideScalloped: {
     width: 44,
     height: 44,

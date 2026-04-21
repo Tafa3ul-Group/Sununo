@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: '#111827',
   },
   logoCircle: {
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 15,
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: '#374151',
     marginBottom: 8,
   },
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
   },
   input: {
     fontSize: 16,
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "Tajawal-SemiBold",
     color: '#9CA3AF',
     flex: 1,
   },
@@ -276,12 +276,12 @@ const styles = StyleSheet.create({
   changePhoneText: {
     color: 'white',
     fontSize: 12,
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
   },
   phoneInput: {
     flex: 1,
     fontSize: 16,
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "Tajawal-SemiBold",
     color: '#9CA3AF',
     paddingHorizontal: 16,
   },
@@ -310,12 +310,12 @@ const styles = StyleSheet.create({
   },
   changeLocText: {
     fontSize: 14,
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: '#035DF9',
   },
   locNameText: {
     fontSize: 14,
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: '#9CA3AF',
   },
   footer: {

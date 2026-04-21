@@ -14,12 +14,11 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useTranslation } from 'react-i18next';
 import { RootState } from '@/store';
 
-// Set global font mapping for the entire app
 // @ts-ignore
 if (Text.defaultProps == null) Text.defaultProps = {};
 // @ts-ignore
 Text.defaultProps.style = { 
-  fontFamily: 'LamaSans-Regular',
+  fontFamily: 'Tajawal-Regular',
   includeFontPadding: false,
   textAlignVertical: 'center',
 };
@@ -28,7 +27,7 @@ Text.defaultProps.style = {
 if (TextInput.defaultProps == null) TextInput.defaultProps = {};
 // @ts-ignore
 TextInput.defaultProps.style = { 
-  fontFamily: 'LamaSans-Regular',
+  fontFamily: 'Tajawal-Regular',
   includeFontPadding: false,
   textAlignVertical: 'center',
 };
@@ -52,11 +51,12 @@ function RootLayoutNav() {
   }, [isAuthenticated, userType]);
   
   const [loaded, error] = useFonts({
-    'LamaSans-Bold': require('../assets/fonts/LamaSans/LamaSans-BoldCondensed.otf'),
-    'LamaSans-Regular': require('../assets/fonts/LamaSans/LamaSans-RegularCondensed.otf'),
-    'LamaSans-Medium': require('../assets/fonts/LamaSans/LamaSans-MediumCondensed.otf'),
-    'LamaSans-SemiBold': require('../assets/fonts/LamaSans/LamaSans-SemiBoldCondensed.otf'),
-    'LamaSans-Black': require('../assets/fonts/LamaSans/LamaSans-BlackCondensed.otf'),
+    'Tajawal-Bold': require('../assets/fonts/Tajawal/Tajawal-Bold.ttf'),
+    'Tajawal-SemiBold': require('../assets/fonts/Tajawal/Tajawal-Bold.ttf'),
+    'Tajawal-Regular': require('../assets/fonts/Tajawal/Tajawal-Regular.ttf'),
+    'Tajawal-Medium': require('../assets/fonts/Tajawal/Tajawal-Medium.ttf'),
+    'Tajawal-Black': require('../assets/fonts/Tajawal/Tajawal-Black.ttf'),
+    'Tajawal-Light': require('../assets/fonts/Tajawal/Tajawal-Light.ttf'),
   });
 
   useEffect(() => {

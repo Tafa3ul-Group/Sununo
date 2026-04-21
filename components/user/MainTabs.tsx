@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 17,
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     textAlign: "center",
   },
 });

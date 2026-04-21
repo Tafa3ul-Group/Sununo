@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 20,
-        fontFamily: "LamaSans-Black",
+        fontFamily: "Tajawal-Black",
         color: '#111827',
     },
     backButton: {
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     },
     sectionTitle: {
         fontSize: 14,
-        fontFamily: "LamaSans-Bold",
+        fontFamily: "Tajawal-Bold",
         color: '#9CA3AF', // Gray color as in image
     },
     notificationCard: {
@@ -183,19 +183,19 @@ const styles = StyleSheet.create({
     timeText: {
         fontSize: 12,
         color: '#9CA3AF',
-        fontFamily: "LamaSans-SemiBold",
+        fontFamily: "Tajawal-SemiBold",
     },
     cardContent: {
         flex: 1,
     },
     titleText: {
         fontSize: 16,
-        fontFamily: "LamaSans-Black",
+        fontFamily: "Tajawal-Black",
         color: '#111827',
     },
     messageText: {
         fontSize: 13,
         color: '#6B7280',
         marginTop: 2,
-     fontFamily: "LamaSans-Regular" }
+     fontFamily: "Tajawal-Regular" }
 });

@@ -569,7 +569,7 @@ const styles = StyleSheet.create({
   },
   filterChipText: {
     fontSize: 13,
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "Tajawal-SemiBold",
     color: "#1F2937",
   },
   bottomSheet: {
@@ -617,7 +617,7 @@ const styles = StyleSheet.create({
   imageCountText: {
     color: 'white',
     fontSize: 11,
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
   },
   headerInfo: {
     flex: 1,
@@ -626,7 +626,7 @@ const styles = StyleSheet.create({
   },
   chaletTitle: {
     fontSize: 18,
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: "#111827",
   },
   locationRow: {
@@ -636,7 +636,7 @@ const styles = StyleSheet.create({
   chaletLocation: {
     fontSize: 13,
     color: "#6B7280",
-    fontFamily: "LamaSans-Medium",
+    fontFamily: "Tajawal-Medium",
   },
   ratingRow: {
     alignItems: "center",
@@ -644,7 +644,7 @@ const styles = StyleSheet.create({
   },
   priceText: {
     fontSize: 15,
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: Colors.primary,
   },
   dot: {
@@ -655,7 +655,7 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: 14,
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: "#1F2937",
     marginLeft: 4,
   },
@@ -682,13 +682,13 @@ const styles = StyleSheet.create({
   },
   navInfoVal: {
     fontSize: 18,
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: Colors.primary,
   },
   navInfoLbl: {
     fontSize: 10,
     color: '#9CA3AF',
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     textTransform: 'uppercase',
   },
   navCircleFab: {
@@ -720,7 +720,7 @@ const styles = StyleSheet.create({
   navActionText: {
     color: 'white',
     fontSize: 13,
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
   },
   enhancedInfoGrid: {
     marginTop: 20,
@@ -738,13 +738,13 @@ const styles = StyleSheet.create({
   },
   enhancedInfoValue: {
     fontSize: 14,
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: '#111827',
     marginTop: 6,
   },
   enhancedInfoLabel: {
     fontSize: 10,
-    fontFamily: "LamaSans-Medium",
+    fontFamily: "Tajawal-Medium",
     color: '#6B7280',
     marginTop: 2,
   },
@@ -768,7 +768,7 @@ const styles = StyleSheet.create({
   },
   navOutlineText: {
     fontSize: 14,
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: Colors.primary,
   },
   loaderOverlay: {
@@ -801,7 +801,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 15,
-    fontFamily: "LamaSans-Medium",
+    fontFamily: "Tajawal-Medium",
     color: "#1F2937",
   },
   filterButtonCircle: {
@@ -832,7 +832,7 @@ const styles = StyleSheet.create({
   },
   filterModalTitle: {
     fontSize: 20,
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: '#111827',
     marginBottom: 24,
     textAlign: 'center',
@@ -842,7 +842,7 @@ const styles = StyleSheet.create({
   },
   filterSectionLabel: {
     fontSize: 14,
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: '#374151',
     marginBottom: 12,
   },
@@ -852,7 +852,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingHorizontal: 16,
     fontSize: 15,
-    fontFamily: "LamaSans-Medium",
+    fontFamily: "Tajawal-Medium",
     color: '#111827',
     borderWidth: 1,
     borderColor: '#E5E7EB',
