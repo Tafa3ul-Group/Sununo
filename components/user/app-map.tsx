@@ -53,6 +53,7 @@ interface AppMapProps {
   onSelectMarker?: (chalet: any) => void;
   onPressCard?: (id: string) => void;
   onCameraChanged?: (center: [number, number], zoom: number) => void;
+  onPress?: () => void;
 }
 
 export const AppMap = ({
@@ -67,7 +68,8 @@ export const AppMap = ({
   isNavigating = false,
   onSelectMarker,
   onPressCard,
-  onCameraChanged
+  onCameraChanged,
+  onPress
 }: AppMapProps) => {
   const { i18n } = useTranslation();
   const { language } = useSelector((state: RootState) => state.auth);
@@ -140,6 +142,37 @@ export const AppMap = ({
     };
   }, []);
 
+  // Automatically fit map to markers when they load
+  useEffect(() => {
+    if (markers && markers.length > 0 && cameraRef.current) {
+      // Small delay to ensure map is ready
+      const timer = setTimeout(() => {
+        if (markers.length === 1) {
+          cameraRef.current?.setCamera({
+            centerCoordinate: markers[0].coordinates,
+            zoomLevel: 12,
+            animationDuration: 1500,
+          });
+        } else {
+          const lats = markers.map(m => m.coordinates[1]);
+          const lngs = markers.map(m => m.coordinates[0]);
+          const minLat = Math.min(...lats);
+          const maxLat = Math.max(...lats);
+          const minLng = Math.min(...lngs);
+          const maxLng = Math.max(...lngs);
+
+          cameraRef.current?.fitBounds(
+            [maxLng, maxLat], // North East
+            [minLng, minLat], // South West
+            Platform.OS === 'ios' ? 80 : 100, // Padding
+            1500 // Duration
+          );
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [markers?.length]);
+
   const pulseStyle = useAnimatedStyle(() => ({
     transform: [{ scale: pulseScale.value }],
     opacity: pulseOpacity.value,
@@ -197,7 +230,7 @@ export const AppMap = ({
             ]}
           >
             <View style={styles.markerCircle}>
-              <Image source={{ uri: marker.image }} style={styles.markerImage} />
+              <Image source={typeof marker.image === 'string' ? { uri: marker.image } : marker.image} style={styles.markerImage} />
             </View>
             <ThemedText style={styles.markerTitle}>
               {typeof marker.title === 'object' ? (isRTL ? marker.title.ar : marker.title.en) : marker.title}
@@ -227,6 +260,7 @@ export const AppMap = ({
         styleURL={isNavigating ? Mapbox.StyleURL.NavigationDay : Mapbox.StyleURL.Light}
         logoEnabled={false}
         attributionEnabled={false}
+        onPress={() => onPress?.()}
         onRegionDidChange={(feature: any) => {
           if (onCameraChanged && feature.geometry && feature.geometry.coordinates) {
             onCameraChanged(
@@ -319,7 +353,7 @@ export const AppMap = ({
               style={styles.customMarkerUI}
             >
               <View style={styles.markerCircle}>
-                <Image source={{ uri: marker.image }} style={styles.markerImage} resizeMode="cover" />
+                <Image source={typeof marker.image === 'string' ? { uri: marker.image } : marker.image} style={styles.markerImage} resizeMode="cover" />
               </View>
               <ThemedText style={styles.markerTitle}>
                 {typeof marker.title === 'object' ? (isRTL ? marker.title.ar : marker.title.en) : marker.title}
