@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
@@ -9,6 +9,7 @@ import { ThemedText } from '@/components/themed-text';
 import { SolarAltArrowRightBold } from "@/components/icons/solar-icons";
 import { useRouter } from 'expo-router';
 import { HeaderSection } from '@/components/header-section';
+import { useGetNotificationsQuery, useMarkNotificationAsReadMutation } from '@/store/api/customerApiSlice';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -20,60 +21,74 @@ interface Notification {
   isRead: boolean;
 }
 
-const MOCK_DATA = {
-  today: [
-    {
-      id: '1',
-      title: 'تخفيضات عملاقة',
-      message: 'هذا مثال للإشعارات',
-      time: '3:06 PM',
-      isRead: false
-    },
-    {
-      id: '2',
-      title: 'تخفيضات عملاقة',
-      message: 'هذا مثال للإشعارات',
-      time: '3:06 PM',
-      isRead: false
-    }
-  ],
-  yesterday: [
-    {
-      id: '3',
-      title: 'تخفيضات عملاقة',
-      message: 'هذا مثال للإشعارات',
-      time: '3:06 PM',
-      isRead: true
-    },
-    {
-      id: '4',
-      title: 'تخفيضات عملاقة',
-      message: 'هذا مثال للإشعارات',
-      time: '3:06 PM',
-      isRead: true
-    }
-  ]
-};
-
 export default function NotificationsScreen() {
     const { t } = useTranslation();
     const { language } = useSelector((state: RootState) => state.auth);
     const isRTL = language === 'ar';
     const router = useRouter();
+
+    // Fetch notifications from the backend
+    const { data: notificationsResponse, isLoading, refetch } = useGetNotificationsQuery({ page: 1, limit: 50 });
+    const [markAsRead] = useMarkNotificationAsReadMutation();
+
+    // Transform API data and group by date
+    const groupedNotifications = useMemo(() => {
+      const items = notificationsResponse?.data || [];
+      const today: Notification[] = [];
+      const yesterday: Notification[] = [];
+      const older: Notification[] = [];
+      const now = new Date();
+      const todayStr = now.toDateString();
+      const yesterdayDate = new Date(now);
+      yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+      const yesterdayStr = yesterdayDate.toDateString();
+
+      items.forEach((item: any) => {
+        const notif: Notification = {
+          id: item.id,
+          title: item.title || t('notifications.newNotification'),
+          message: item.body || item.message || '',
+          time: new Date(item.createdAt).toLocaleTimeString(isRTL ? 'ar' : 'en', { hour: '2-digit', minute: '2-digit' }),
+          isRead: item.isRead || false,
+        };
+
+        const notifDate = new Date(item.createdAt).toDateString();
+        if (notifDate === todayStr) {
+          today.push(notif);
+        } else if (notifDate === yesterdayStr) {
+          yesterday.push(notif);
+        } else {
+          older.push(notif);
+        }
+      });
+
+      return { today, yesterday, older };
+    }, [notificationsResponse, isRTL, t]);
+    const handleNotificationPress = (item: Notification) => {
+        if (!item.isRead) {
+            markAsRead(item.id);
+        }
+    };
+
     const renderItem = (item: Notification) => (
-        <View key={item.id} style={[styles.notificationCard, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <TouchableOpacity 
+            key={item.id} 
+            style={[styles.notificationCard, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+            onPress={() => handleNotificationPress(item)}
+            activeOpacity={0.7}
+        >
             {/* Content section */}
             <View style={[styles.cardContent, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                <ThemedText style={styles.titleText}>{t('dashboard.revenue.history')}</ThemedText>
+                <ThemedText style={styles.titleText}>{item.title}</ThemedText>
                 <ThemedText style={[styles.messageText, { textAlign: isRTL ? 'right' : 'left' }]}>{item.message}</ThemedText>
             </View>
 
             {/* Header section with orange dot and time */}
             <View style={[styles.cardLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 <ThemedText style={styles.timeText}>{item.time}</ThemedText>
-                <View style={styles.orangeDot} />
+                {!item.isRead && <View style={styles.orangeDot} />}
             </View>
-        </View>
+        </TouchableOpacity>
     );
 
     return (
@@ -84,18 +99,49 @@ export default function NotificationsScreen() {
                 showLogo={false} 
             />
 
-            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+            <ScrollView 
+                contentContainerStyle={styles.scrollContent} 
+                showsVerticalScrollIndicator={false}
+                refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} />}
+            >
                 {/* Today Section */}
-                <View style={[styles.sectionHeader, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                    <ThemedText style={styles.sectionTitle}>{t('notifications.today')}</ThemedText>
-                </View>
-                {MOCK_DATA.today.map(renderItem)}
+                {groupedNotifications.today.length > 0 && (
+                    <>
+                        <View style={[styles.sectionHeader, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                            <ThemedText style={styles.sectionTitle}>{t('notifications.today')}</ThemedText>
+                        </View>
+                        {groupedNotifications.today.map(renderItem)}
+                    </>
+                )}
 
                 {/* Yesterday Section */}
-                <View style={[styles.sectionHeader, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                    <ThemedText style={styles.sectionTitle}>{t('notifications.yesterday')}</ThemedText>
-                </View>
-                {MOCK_DATA.yesterday.map(renderItem)}
+                {groupedNotifications.yesterday.length > 0 && (
+                    <>
+                        <View style={[styles.sectionHeader, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                            <ThemedText style={styles.sectionTitle}>{t('notifications.yesterday')}</ThemedText>
+                        </View>
+                        {groupedNotifications.yesterday.map(renderItem)}
+                    </>
+                )}
+
+                {/* Older Section */}
+                {groupedNotifications.older.length > 0 && (
+                    <>
+                        <View style={[styles.sectionHeader, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                            <ThemedText style={styles.sectionTitle}>{t('notifications.older') || (isRTL ? 'أقدم' : 'Older')}</ThemedText>
+                        </View>
+                        {groupedNotifications.older.map(renderItem)}
+                    </>
+                )}
+
+                {/* Empty state */}
+                {!isLoading && groupedNotifications.today.length === 0 && groupedNotifications.yesterday.length === 0 && groupedNotifications.older.length === 0 && (
+                    <View style={{ alignItems: 'center', paddingTop: 80 }}>
+                        <ThemedText style={{ fontSize: 16, color: '#9CA3AF', fontFamily: 'LamaSans-Bold' }}>
+                            {isRTL ? 'لا توجد إشعارات' : 'No notifications'}
+                        </ThemedText>
+                    </View>
+                )}
             </ScrollView>
         </SafeAreaView>
     );

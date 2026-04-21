@@ -59,6 +59,15 @@ const ReviewSubmissionSheet = forwardRef<
     ref.current?.dismiss();
   };
 
+  const renderBackdrop = React.useCallback(
+    (props: any) => (
+      <View style={StyleSheet.absoluteFill}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} />
+      </View>
+    ),
+    []
+  );
+
   return (
     <BottomSheetModal
       ref={ref}
@@ -68,12 +77,13 @@ const ReviewSubmissionSheet = forwardRef<
       handleIndicatorStyle={styles.indicator}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
+      enablePanDownToClose={true}
     >
       <BottomSheetView style={styles.contentContainer}>
         {/* Wavy Background Wrapper */}
         <View style={styles.scallopedCard}>
           <Svg
-            width={normalize(600)}
+            width={SCREEN_WIDTH + 80}
             height={normalize(372)}
             viewBox="0 0 500 337"
             fill="none"

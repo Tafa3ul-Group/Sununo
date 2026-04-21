@@ -23,6 +23,7 @@ import { GuestCounter } from "./guest-counter";
 import { MainTabs, TabType } from "./MainTabs";
 import { RangeCalendar } from "./range-calendar";
 import { SolarMagnifierBold, SolarMapPointBold, SolarSunBold, SolarMoonBold, SolarBedBold, SolarIcon } from "@/components/icons/solar-icons";
+import { useGetCityNamesQuery } from "@/store/api/customerApiSlice";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -37,14 +38,33 @@ const CITIES = [
   { id: "babylon", name: "بابل", icon: "map" },
 ];
 
-export const SearchFilterSheet = forwardRef<BottomSheetModal>((props, ref) => {
+export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filters: any) => void }>((props, ref) => {
+  const { onApply } = props;
   const { dismiss } = useBottomSheetModal();
   const [activeTab, setActiveTab] = useState<TabType>("WHERE");
-  const [selectedCity, setSelectedCity] = useState("basra");
+  const [searchText, setSearchText] = useState("");
+  const [selectedCity, setSelectedCity] = useState("");
   const [whenStep, setWhenStep] = useState(1); // 1: Calendar, 2: Periods
   const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null);
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(1);
+
+  // Fetch cities from backend
+  const { data: citiesData, isLoading: citiesLoading } = useGetCityNamesQuery(undefined);
+  const cities = useMemo(() => {
+    if (!citiesData) return [];
+    return citiesData.map((city: any) => ({
+      id: city.id,
+      name: isRTL ? (city.nameAr || city.name) : (city.nameEn || city.name),
+    }));
+  }, [citiesData, isRTL]);
+
+  // Update selected city once data is loaded if not set
+  React.useEffect(() => {
+    if (cities.length > 0 && !selectedCity) {
+      setSelectedCity(cities[0].id);
+    }
+  }, [cities, selectedCity]);
 
   // The sheet takes 85% of screen height
   const snapPoints = useMemo(() => ["85%"], []);
@@ -61,9 +81,16 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal>((props, ref) => {
         setActiveTab("WHO");
       }
     } else {
+      if (onApply) {
+        onApply({
+          cityId: selectedCity,
+          search: searchText,
+          maxGuests: adults + children,
+        });
+      }
       dismiss();
     }
-  }, [activeTab, whenStep, dismiss]);
+  }, [activeTab, whenStep, dismiss, onApply, selectedCity, searchText, adults, children]);
 
   const renderBackdrop = useCallback(
     (backdropProps: any) => (
@@ -85,11 +112,13 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal>((props, ref) => {
           placeholder="ابحث"
           style={styles.searchInput}
           placeholderTextColor={Colors.text.muted}
+          value={searchText}
+          onChangeText={setSearchText}
         />
         <SolarMagnifierBold size={22} color={Colors.text.muted} />
       </View>
 
-      {CITIES.map((city) => (
+      {cities.map((city) => (
         <TouchableOpacity
           key={city.id}
           onPress={() => setSelectedCity(city.id)}

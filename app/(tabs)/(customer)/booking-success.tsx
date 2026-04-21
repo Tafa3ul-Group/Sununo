@@ -1,6 +1,6 @@
-import React from 'react';
-import { StyleSheet, View, ScrollView } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import React, { useMemo } from 'react';
+import { StyleSheet, View, ScrollView, ActivityIndicator } from 'react-native';
+import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { normalize, Colors, isRTL } from '@/constants/theme';
 import { HorizontalCard } from '@/components/user/horizontal-card';
@@ -9,25 +9,34 @@ import { Image as ExpoImage } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { HeaderSection } from '@/components/header-section';
-
-const MOCK_CHALET = {
-    id: '1',
-    title: { ar: "شالية الاروع علةاالطلاق", en: "Most Amazing Chalet" },
-    location: { ar: "البصرة - الجزائر", en: "Basra - Algeria" },
-    rating: 4.5,
-    price: "30,000",
-    detailedLocation: { ar: "البصرة - ابي الخصيب", en: "Basra - Abi Al-Khasib" },
-    image: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500&auto=format&fit=crop"
-};
+import { useGetCustomerBookingDetailsQuery } from '@/store/api/customerApiSlice';
+import { getImageSrc } from '@/hooks/useImageSrc';
 
 export default function BookingSuccessDetailsScreen() {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === 'ar';
   const router = useRouter();
+  const { id } = useLocalSearchParams();
+  const bookingId = id as string;
 
-  const chaletTitle = isRTL ? MOCK_CHALET.title.ar : MOCK_CHALET.title.en;
-  const chaletLocation = isRTL ? MOCK_CHALET.location.ar : MOCK_CHALET.location.en;
-  const detailedLocation = isRTL ? MOCK_CHALET.detailedLocation.ar : MOCK_CHALET.detailedLocation.en;
+  // Fetch booking details from the backend
+  const { data: booking, isLoading } = useGetCustomerBookingDetailsQuery(bookingId, {
+    skip: !bookingId,
+  });
+
+  // Extract data from API response with fallbacks
+  const chalet = booking?.chalet || {} as any;
+  const chaletTitle = isRTL 
+    ? (chalet.name?.ar || chalet.nameAr || chalet.name || '') 
+    : (chalet.name?.en || chalet.nameEn || chalet.name || '');
+  const chaletLocation = isRTL 
+    ? (chalet.region?.name?.ar || chalet.region?.nameAr || chalet.region?.name || '') 
+    : (chalet.region?.name?.en || chalet.region?.nameEn || chalet.region?.name || '');
+  const detailedLocation = chaletLocation;
+  const chaletImage = getImageSrc(chalet.images?.[0]?.url);
+  const totalPrice = booking?.totalPrice ? Number(booking.totalPrice).toLocaleString() : '0';
+  const depositAmount = booking?.depositAmount ? Number(booking.depositAmount).toLocaleString() : '0';
+  const remainingAmount = booking?.remainingAmount ? Number(booking.remainingAmount).toLocaleString() : '0';
 
   const renderInfoRow = (label: string, value: string | React.ReactNode) => (
     <View style={[styles.infoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
@@ -40,6 +49,14 @@ export default function BookingSuccessDetailsScreen() {
     </View>
   );
 
+  if (isLoading) {
+    return (
+      <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -50,7 +67,14 @@ export default function BookingSuccessDetailsScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Chalet Card */}
         <HorizontalCard 
-            chalet={{...MOCK_CHALET, title: chaletTitle, location: chaletLocation}} 
+            chalet={{
+              id: chalet.id || '',
+              title: chaletTitle,
+              location: chaletLocation,
+              rating: chalet.averageRating || 0,
+              price: chalet.basePrice ? Number(chalet.basePrice).toLocaleString() : '0',
+              image: chaletImage,
+            }} 
             style={styles.chaletCardInstance}
             hideFavorite={true}
             onPress={() => {}}
@@ -87,10 +111,10 @@ export default function BookingSuccessDetailsScreen() {
                 </View>
             </View>
 
-            {renderInfoRow(t('booking.date'), t('booking.dateValue'))}
-            {renderInfoRow(t('booking.shift'), t('booking.morningShift'))}
-            {renderInfoRow(t('booking.guests'), t('booking.guestsValue'))}
-            {renderInfoRow(t('booking.totalAmount'), `500,000 ${t('common.iqd')}`)}
+            {renderInfoRow(t('booking.date'), booking?.bookingDate || t('booking.dateValue'))}
+            {renderInfoRow(t('booking.shift'), booking?.shift?.name || t('booking.morningShift'))}
+            {renderInfoRow(t('booking.guests'), booking?.guestCount?.toString() || t('booking.guestsValue'))}
+            {renderInfoRow(t('booking.totalAmount'), `${totalPrice} ${t('common.iqd')}`)}
         </View>
 
         {/* Payment Information */}
@@ -101,13 +125,15 @@ export default function BookingSuccessDetailsScreen() {
             <View style={[styles.infoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 <ThemedText style={styles.infoLabel}>{t('booking.paymentStatus')}</ThemedText>
                 <View style={styles.statusBadgeGray}>
-                    <ThemedText style={styles.statusBadgeTextGray}>{t('booking.status.deferred')}</ThemedText>
+                    <ThemedText style={styles.statusBadgeTextGray}>
+                      {booking?.paymentStatus === 'paid' ? t('booking.status.paid') : t('booking.status.deferred')}
+                    </ThemedText>
                 </View>
             </View>
 
-            {renderInfoRow(t('booking.totalAmount'), `500,000 ${t('common.iqd')}`)}
-            {renderInfoRow(t('booking.depositAmount'), `50,000 ${t('common.iqd')}`)}
-            {renderInfoRow(t('booking.remainingAmount'), `450,000 ${t('common.iqd')}`)}
+            {renderInfoRow(t('booking.totalAmount'), `${totalPrice} ${t('common.iqd')}`)}
+            {renderInfoRow(t('booking.depositAmount'), `${depositAmount} ${t('common.iqd')}`)}
+            {renderInfoRow(t('booking.remainingAmount'), `${remainingAmount} ${t('common.iqd')}`)}
         </View>
       </ScrollView>
     </SafeAreaView>

@@ -9,10 +9,11 @@ import {
   NativeSyntheticEvent 
 } from 'react-native';
 import { normalize } from '@/constants/theme';
+import { getImageSrc } from '@/hooks/useImageSrc';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const BANNER_WIDTH = SCREEN_WIDTH - normalize.width(32);
-const BANNER_HEIGHT = normalize.height(150);
+const BANNER_WIDTH = SCREEN_WIDTH - normalize.width(20);
+const BANNER_HEIGHT = normalize.height(160);
 const AUTO_PLAY_INTERVAL = 4000; // 4 seconds
 
 const BANNER_ASSETS = [
@@ -21,7 +22,8 @@ const BANNER_ASSETS = [
   require('@/assets/banrs/third.png'),
 ];
 
-export function BannerSwiper() {
+export function BannerSwiper({ data }: { data?: any[] }) {
+  const displayData = data && data.length > 0 ? data : BANNER_ASSETS;
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -30,7 +32,7 @@ export function BannerSwiper() {
   const startTimer = () => {
     stopTimer();
     timerRef.current = setInterval(() => {
-      const nextIndex = (activeIndex + 1) % BANNER_ASSETS.length;
+      const nextIndex = (activeIndex + 1) % displayData.length;
       flatListRef.current?.scrollToIndex({
         index: nextIndex,
         animated: true,
@@ -54,7 +56,7 @@ export function BannerSwiper() {
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const scrollOffset = event.nativeEvent.contentOffset.x;
     const index = Math.round(scrollOffset / (BANNER_WIDTH + normalize.width(10)));
-    if (index !== activeIndex && index >= 0 && index < BANNER_ASSETS.length) {
+    if (index !== activeIndex && index >= 0 && index < displayData.length) {
       setActiveIndex(index);
     }
   };
@@ -62,9 +64,9 @@ export function BannerSwiper() {
   const renderItem = ({ item }: { item: any }) => (
     <View style={styles.bannerContainer}>
       <Image 
-        source={item} 
+        source={item.image ? getImageSrc(item.image) : item} 
         style={styles.bannerImage} 
-        resizeMode="contain" 
+        resizeMode="stretch" 
       />
     </View>
   );
@@ -73,7 +75,7 @@ export function BannerSwiper() {
     <View style={styles.container}>
       <FlatList
         ref={flatListRef}
-        data={BANNER_ASSETS}
+        data={displayData}
         renderItem={renderItem}
         keyExtractor={(_, index) => index.toString()}
         horizontal
@@ -94,7 +96,7 @@ export function BannerSwiper() {
 
       {/* Pagination Dots */}
       <View style={styles.pagination}>
-        {BANNER_ASSETS.map((_, index) => (
+        {displayData.map((_, index) => (
           <View 
             key={index} 
             style={[
@@ -114,7 +116,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   listContent: {
-    paddingHorizontal: normalize.width(16),
+    paddingHorizontal: normalize.width(10),
   },
   bannerContainer: {
     width: BANNER_WIDTH,
@@ -130,8 +132,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: normalize.height(-4), 
-    gap: 6,
+    marginTop: normalize.height(12),
+    gap: 8,
   },
   dot: {
     height: 8,

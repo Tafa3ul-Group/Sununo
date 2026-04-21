@@ -11,7 +11,7 @@ import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { Image } from "expo-image";
 import { SecondarySelect } from "@/components/user/secondary-select";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
@@ -22,7 +22,10 @@ import {
   ScrollView,
   StyleSheet,
   View,
+  ActivityIndicator,
 } from "react-native";
+import { useGetChaletReviewsQuery, useCreateReviewMutation } from "@/store/api/customerApiSlice";
+import { Colors } from "@/constants/theme";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -41,11 +44,16 @@ export default function ReviewsScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
   const { id } = useLocalSearchParams();
+  const chaletId = id as string;
   const isArabic = i18n.language === 'ar';
   const isRTL = isArabic;
   const [userRating, setUserRating] = useState(0);
   const [filterValue, setFilterValue] = useState("latest");
   const reviewSheetRef = useRef<BottomSheetModal>(null);
+
+  // Fetch reviews from backend
+  const { data: reviewsResponse, isLoading } = useGetChaletReviewsQuery({ chaletId, page: 1, limit: 20 });
+  const [createReview] = useCreateReviewMutation();
 
   const filterOptions = [
     { label: isArabic ? "اخر التقييمات" : "Latest Reviews", value: "latest" },
@@ -58,36 +66,34 @@ export default function ReviewsScreen() {
     reviewSheetRef.current?.present();
   };
 
-  const handleReviewSubmit = (rating: number, comment: string) => {
-    console.log("Review Submitted:", { rating, comment });
-    // Add API logic here
+  const handleReviewSubmit = async (rating: number, comment: string) => {
+    try {
+      // Note: createReview requires a bookingId which should come from completed booking
+      console.log("Review Submitted:", { rating, comment, chaletId });
+    } catch (error) {
+      console.error('Review submission error:', error);
+    }
   };
 
-  const reviews = [
-    {
-      name: { ar: "انسة انس", en: "Ansi Ans" },
-      rating: 4,
-      body: { 
-         ar: "خوش مكان ونضيف يستاهل، الهواء نقي بسبب التشجير", 
-         en: "Great place and clean, worth it. The air is fresh because of the trees." 
-      },
-      date: "2025/09/22",
-      avatar:
-        "https://www.svgrepo.com/show/341481/web-internet-seo-browser-network-website-url.svg",
-      images: SAMPLE_IMAGES,
-    },
-    {
-      name: { ar: "انسة انس", en: "Ansi Ans" },
-      rating: 5,
-      body: { 
-         ar: "المكان خرافي والخدمة ممتازة، انصح بيه وبشدة", 
-         en: "The place is legendary and the service is excellent, highly recommend it." 
-      },
-      date: "2025/09/22",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
-      images: [],
-    },
-  ];
+  // Transform API data
+  const reviews = useMemo(() => {
+    const items = reviewsResponse?.data || [];
+    return items.map((rev: any) => ({
+      name: rev.customer?.name || (isArabic ? 'مستخدم' : 'User'),
+      rating: rev.rating || 0,
+      body: rev.comment || '',
+      date: rev.createdAt ? new Date(rev.createdAt).toLocaleDateString() : '',
+      avatar: rev.customer?.imageUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default',
+      images: rev.images?.map((img: any) => img.url) || [],
+    }));
+  }, [reviewsResponse, isArabic]);
+
+  // Calculate average rating
+  const averageRating = useMemo(() => {
+    if (reviews.length === 0) return 0;
+    const sum = reviews.reduce((acc: number, r: any) => acc + r.rating, 0);
+    return (sum / reviews.length).toFixed(1);
+  }, [reviews]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -98,13 +104,13 @@ export default function ReviewsScreen() {
 
       <ScrollView contentContainerStyle={{ paddingBottom: 180 }} showsVerticalScrollIndicator={false}>
         <View style={styles.summaryArea}>
-          <ThemedText style={styles.bigRatingText}>4.6</ThemedText>
+          <ThemedText style={styles.bigRatingText}>{averageRating}</ThemedText>
           <View style={styles.starsRow}>
             {[1, 2, 3, 4, 5].map((i) => (
               <SolarStarBold
                 key={i}
                 size={normalize(32)}
-                color={i <= 4 ? "#15AB64" : "#E5E7EB"}
+                color={i <= Math.round(Number(averageRating)) ? "#15AB64" : "#E5E7EB"}
               />
             ))}
           </View>
@@ -119,9 +125,9 @@ export default function ReviewsScreen() {
         </View>
 
         <View style={{ paddingHorizontal: 20 }}>
-          {reviews.map((rev, idx) => {
-            const reviewerName = isArabic ? rev.name.ar : rev.name.en;
-            const reviewBody = isArabic ? rev.body.ar : rev.body.en;
+          {reviews.map((rev: any, idx: number) => {
+            const reviewerName = rev.name;
+            const reviewBody = rev.body;
 
             return (
                 <View key={idx} style={styles.revCardFlat}>

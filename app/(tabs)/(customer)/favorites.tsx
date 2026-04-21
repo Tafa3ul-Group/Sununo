@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -10,6 +10,8 @@ import { SolarAltArrowRightBold, SolarHeartBold } from "@/components/icons/solar
 import { useRouter } from 'expo-router';
 import { HorizontalCard } from '@/components/user/horizontal-card';
 import { HeaderSection } from '@/components/header-section';
+import { useGetCustomerFavoritesQuery } from '@/store/api/customerApiSlice';
+import { getImageSrc } from '@/hooks/useImageSrc';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -19,31 +21,32 @@ export default function FavoritesScreen() {
   const isRTL = language === 'ar';
   const router = useRouter();
 
-  // Mock favorites that look like the design
-  const favorites = [
-    {
-      id: '1',
-      title: { ar: 'شالية الاروع علة الطلاق', en: 'Absolute Best Chalet' },
-      location: { ar: 'البصرة - الجزائر', en: 'Basra - Algeria' },
-      price: '30,000',
-      rating: '4.5',
-      image: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=400',
-      color: '#22C55E' // Green squiggly for the one in image
-    },
-    {
-        id: '2',
-        title: { ar: 'شالية منتجع النخيل', en: 'Palm Resort Chalet' },
-        location: { ar: 'البصرة - شط العرب', en: 'Basra - Shatt Al-Arab' },
-        price: '45,000',
-        rating: '4.8',
-        image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=400',
-        color: '#FF69B4'
-    }
-  ];
+  // Fetch favorites from the backend
+  const { data: favoritesResponse, isLoading, refetch } = useGetCustomerFavoritesQuery({ page: 1, limit: 50 });
+
+  // Transform API data to match card format
+  const favorites = useMemo(() => {
+    const items = favoritesResponse?.data || [];
+    return items.map((fav: any) => {
+      const chalet = fav.chalet || fav;
+      return {
+        id: chalet.id,
+        title: isRTL 
+          ? (chalet.name?.ar || chalet.nameAr || chalet.name || '') 
+          : (chalet.name?.en || chalet.nameEn || chalet.name || ''),
+        location: isRTL
+          ? (chalet.region?.name?.ar || chalet.region?.nameAr || chalet.region?.name || '')
+          : (chalet.region?.name?.en || chalet.region?.nameEn || chalet.region?.name || ''),
+        price: chalet.basePrice ? Number(chalet.basePrice).toLocaleString() : '0',
+        rating: chalet.averageRating?.toFixed(1) || '0',
+        image: getImageSrc(chalet.images?.[0]?.url),
+        color: '#22C55E',
+      };
+    });
+  }, [favoritesResponse, isRTL]);
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header matching the design */}
       {/* Header matching the design */}
       <HeaderSection 
         title={t('headers.favorites')} 

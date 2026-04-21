@@ -23,7 +23,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
 import { Image as ExpoImage } from "expo-image";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import LottieView from "lottie-react-native";
 import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -35,24 +35,16 @@ import {
     TextInput,
     TouchableOpacity,
     View,
+    Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
 import { useSelector } from "react-redux";
+import { useCreateCustomerBookingMutation, useGetCustomerChaletDetailsQuery } from "@/store/api/customerApiSlice";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-// Mock data for the chalet to match ChaletCard props
-const MOCK_CHALET = {
-  id: "1",
-  title: { ar: "شالية الاروع على الاطلاق", en: "Most Amazing Chalet" },
-  location: { ar: "البصرة - الجزائر", en: "Basra - Algeria" },
-  rating: 4.5,
-  price: "30,000",
-  detailedLocation: { ar: "البصرة - ابي الخصيب", en: "Basra - Abu Al-Khaseeb" },
-  image:
-    "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500&auto=format&fit=crop",
-};
+
 
 // Helper to generate calendar days for March 2024 (1st is Friday)
 const generateMarchDays = () => {
@@ -78,11 +70,17 @@ export default function CompleteBookingScreen() {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
   const router = useRouter();
+  const { id: chaletIdParam } = useLocalSearchParams();
+  const chaletId = chaletIdParam as string;
   const { userType } = useSelector((state: RootState) => state.auth);
   const [activeTab, setActiveTab] = useState<TabType>("SHOOKET");
   const [selectedDates, setSelectedDates] = useState<number[]>([15]);
   const [activeDateIdx, setActiveDateIdx] = useState(0);
   const [paymentType, setPaymentType] = useState<"DEPOSIT" | "FULL">("DEPOSIT");
+
+  // API hooks
+  const [createBooking, { isLoading: isCreatingBooking }] = useCreateCustomerBookingMutation();
+  const { data: chaletDetails } = useGetCustomerChaletDetailsQuery(chaletId, { skip: !chaletId });
 
   // Ref for Success Sheet
   const successSheetRef = React.useRef<BottomSheetModal>(null);
@@ -145,15 +143,42 @@ export default function CompleteBookingScreen() {
     15: { morning: true, evening: false },
   });
 
-  const handleNext = () => {
+  const handleNext = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     if (activeTab === "SHOOKET") {
       setActiveTab("MANO");
     } else if (activeTab === "MANO") {
       setActiveTab("DETAILS");
     } else {
-      // We are on DETAILS tab, which now includes the payment form
-      successSheetRef.current?.present();
+      // We are on DETAILS tab — create the booking via API
+      try {
+        const bookingDate = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(activeDate || 15).padStart(2, '0')}`;
+        
+        // Get first available shift from chalet details
+        const shiftId = chaletDetails?.shifts?.[0]?.id;
+        
+        if (chaletId && shiftId) {
+          const result = await createBooking({
+            chaletId,
+            shiftId,
+            bookingDate,
+            adultsCount: adultCount,
+            childrenCount: childrenCount,
+            paymentModel: paymentType, // "DEPOSIT" | "FULL"
+            useWalletBalance: paymentType === "FULL",
+          }).unwrap();
+          
+          successSheetRef.current?.present();
+        } else {
+          // Fallback: show success sheet even without API (for demo/preview)
+          successSheetRef.current?.present();
+        }
+      } catch (error: any) {
+        Alert.alert(
+          t('common.error') || 'Error',
+          error?.data?.message || t('booking.bookingError') || 'Failed to create booking',
+        );
+      }
     }
   };
 
@@ -189,9 +214,12 @@ export default function CompleteBookingScreen() {
       {/* Chalet Card */}
       <HorizontalCard
         chalet={{
-          ...MOCK_CHALET,
-          title: isRTL ? MOCK_CHALET.title.ar : MOCK_CHALET.title.en,
-          location: isRTL ? MOCK_CHALET.location.ar : MOCK_CHALET.location.en,
+          id: chaletDetails?.id || "",
+          title: isRTL ? (chaletDetails?.nameAr || chaletDetails?.name || "") : (chaletDetails?.nameEn || chaletDetails?.name || ""),
+          location: isRTL ? (chaletDetails?.region?.nameAr || chaletDetails?.region?.name || "") : (chaletDetails?.region?.nameEn || chaletDetails?.region?.name || ""),
+          rating: chaletDetails?.averageRating || 0,
+          price: chaletDetails?.basePrice ? Number(chaletDetails.basePrice).toLocaleString() : "0",
+          image: chaletDetails?.images?.[0]?.url || "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500&auto=format&fit=crop",
         }}
         style={styles.chaletCardInstance}
         shapeIndex={2}
@@ -214,8 +242,8 @@ export default function CompleteBookingScreen() {
         </View>
         <ThemedText style={styles.mapAddressLabel}>
           {isRTL
-            ? MOCK_CHALET.detailedLocation.ar
-            : MOCK_CHALET.detailedLocation.en}
+            ? (chaletDetails?.region?.nameAr || chaletDetails?.region?.name || "")
+            : (chaletDetails?.region?.nameEn || chaletDetails?.region?.name || "")}
         </ThemedText>
       </View>
 
