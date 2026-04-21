@@ -67,6 +67,10 @@ export const customerApi = apiSlice.injectEndpoints({
         chaletId: string;
         shiftId: string;
         bookingDate: string;
+        adultsCount?: number;
+        childrenCount?: number;
+        addonIds?: string[];
+        paymentModel: 'DEPOSIT' | 'FULL';
         useWalletBalance?: boolean;
       }) => ({
         url: '/customer/bookings',

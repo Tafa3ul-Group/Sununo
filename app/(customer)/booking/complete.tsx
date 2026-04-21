@@ -85,6 +85,8 @@ export default function CompleteBookingScreen() {
   // Ref for Success Sheet
   const successSheetRef = React.useRef<BottomSheetModal>(null);
 
+  const [createdBookingId, setCreatedBookingId] = useState<string | null>(null);
+
   // Card Details State
   const [cardNum, setCardNum] = useState("");
   const [expiry, setExpiry] = useState("");
@@ -143,6 +145,27 @@ export default function CompleteBookingScreen() {
     15: { morning: true, evening: false },
   });
 
+  const selectedShiftType = dayShifts[activeDate]?.morning ? 'MORNING' : (dayShifts[activeDate]?.evening ? 'EVENING' : null);
+  const selectedShift = chaletDetails?.shifts?.find((s: any) => s.type === selectedShiftType);
+  const dayOfWeek = useMemo(() => {
+    const d = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), activeDate || 1);
+    return d.getDay();
+  }, [currentMonth, activeDate]);
+  
+  const shiftPrice = useMemo(() => {
+    if (!selectedShift) return 0;
+    const pricing = selectedShift.pricing?.find((p: any) => p.dayOfWeek === dayOfWeek);
+    return pricing ? Number(pricing.price) : Number(chaletDetails?.basePrice || 0);
+  }, [selectedShift, dayOfWeek, chaletDetails]);
+
+  const totalPrice = shiftPrice; 
+  const depositPercentage = Number(chaletDetails?.depositPercentage || 0);
+  const depositAmount = Math.round((totalPrice * depositPercentage) / 100);
+  const remainingAmount = totalPrice - depositAmount;
+
+  const bookingDateString = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(activeDate || 15).padStart(2, '0')}`;
+
+
   const handleNext = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     if (activeTab === "SHOOKET") {
@@ -154,8 +177,17 @@ export default function CompleteBookingScreen() {
       try {
         const bookingDate = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(activeDate || 15).padStart(2, '0')}`;
         
-        // Get first available shift from chalet details
-        const shiftId = chaletDetails?.shifts?.[0]?.id;
+        // Find the selected shift from chalet data
+        const selectedShiftType = dayShifts[activeDate]?.morning ? 'MORNING' : (dayShifts[activeDate]?.evening ? 'EVENING' : null);
+        
+        if (!selectedShiftType) {
+          Alert.alert(isRTL ? "تنبيه" : "Alert", isRTL ? "يرجى اختيار وقت الحجز (صباحي او مسائي)" : "Please select a shift (Morning or Evening)");
+          setActiveTab("SHOOKET");
+          return;
+        }
+
+        const shift = chaletDetails?.shifts?.find((s: any) => s.type === selectedShiftType);
+        const shiftId = shift?.id;
         
         if (chaletId && shiftId) {
           const result = await createBooking({
@@ -166,12 +198,13 @@ export default function CompleteBookingScreen() {
             childrenCount: childrenCount,
             paymentModel: paymentType, // "DEPOSIT" | "FULL"
             useWalletBalance: paymentType === "FULL",
+            // addonIds: [], // Addon selection could be added here if implemented in UI
           }).unwrap();
           
+          setCreatedBookingId(result.booking.id);
           successSheetRef.current?.present();
         } else {
-          // Fallback: show success sheet even without API (for demo/preview)
-          successSheetRef.current?.present();
+          Alert.alert(isRTL ? "خطأ" : "Error", isRTL ? "معلومات الشاليه غير مكتملة" : "Chalet information is incomplete");
         }
       } catch (error: any) {
         Alert.alert(
@@ -313,7 +346,7 @@ export default function CompleteBookingScreen() {
         >
           <ThemedText style={styles.infoLabel}>{t("booking.date")}</ThemedText>
           <ThemedText style={styles.infoValue}>
-            {t("booking.dateValue")}
+            {bookingDateString}
           </ThemedText>
         </View>
         <View
@@ -324,7 +357,7 @@ export default function CompleteBookingScreen() {
         >
           <ThemedText style={styles.infoLabel}>{t("booking.shift")}</ThemedText>
           <ThemedText style={styles.infoValue}>
-            {t("booking.morningShift")}
+            {selectedShiftType === 'MORNING' ? t("booking.morningShift") : t("booking.eveningShift")}
           </ThemedText>
         </View>
         <View
@@ -337,7 +370,7 @@ export default function CompleteBookingScreen() {
             {t("booking.guests")}
           </ThemedText>
           <ThemedText style={styles.infoValue}>
-            {t("booking.guestsValue")}
+            {`${adultCount} ${t("booking.adults")}, ${childrenCount} ${t("booking.children")}`}
           </ThemedText>
         </View>
         <View
@@ -350,7 +383,7 @@ export default function CompleteBookingScreen() {
             {t("booking.totalAmount")}
           </ThemedText>
           <ThemedText style={styles.infoValue}>
-            500,000 {t("common.iqd")}
+            {totalPrice.toLocaleString()} {t("common.iqd")}
           </ThemedText>
         </View>
       </View>
@@ -388,7 +421,7 @@ export default function CompleteBookingScreen() {
             paymentType === "DEPOSIT" && styles.paymentValActive,
           ]}
         >
-          50,000 {t("common.iqd")}
+          {depositAmount.toLocaleString()} {t("common.iqd")}
         </ThemedText>
       </TouchableOpacity>
 
@@ -414,7 +447,7 @@ export default function CompleteBookingScreen() {
             paymentType === "FULL" && styles.paymentValActive,
           ]}
         >
-          500,000 {t("common.iqd")}
+          {totalPrice.toLocaleString()} {t("common.iqd")}
         </ThemedText>
       </TouchableOpacity>
 
@@ -580,7 +613,10 @@ export default function CompleteBookingScreen() {
           label={t("booking.goToDetails") || "استعراض تفاصيل الحجز"}
           onPress={() => {
             successSheetRef.current?.dismiss();
-            router.push("/(tabs)/(customer)/booking-success");
+            router.push({
+              pathname: "/(tabs)/(customer)/booking-success",
+              params: { id: createdBookingId }
+            });
           }}
           activeColor="#15AB64"
           style={styles.successBtn}
