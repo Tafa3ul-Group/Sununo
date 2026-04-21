@@ -21,7 +21,7 @@ import { PrimaryButton } from "@/components/user/primary-button";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize, Shadows } from "@/constants/theme";
 import { RootState } from "@/store";
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView, BottomSheetTextInput, BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import * as Location from "expo-location";
 import { Redirect, useRouter } from "expo-router";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
@@ -456,7 +456,11 @@ export default function ExploreScreen() {
                 <View style={[styles.mainActionsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                   <PrimaryButton
                     label={isRTL ? 'احجز الآن' : 'Book Now'}
-                    onPress={() => router.push(`/(customer)/booking/complete?id=${selectedChalet.id}`)}
+                    icon={<SolarAltArrowRightBold size={20} color="white" />}
+                    onPress={() => {
+                      bottomSheetRef.current?.dismiss();
+                      router.push(`/(customer)/booking/complete?id=${selectedChalet.id}`);
+                    }}
                     style={{ flex: 1 }}
                     height={54}
                   />
@@ -464,12 +468,12 @@ export default function ExploreScreen() {
 
                 <SecondaryButton
                   label={isRTL ? 'عرض كامل التفاصيل' : 'View Full Details'}
+                  icon={<SolarSquareShareLineBoldDuotone size={20} color={Colors.primary} />}
                   onPress={() => {
                     bottomSheetRef.current?.dismiss();
                     router.push(`/(customer)/chalet-details/${selectedChalet.id}`);
                   }}
-                  isActive={true}
-                  activeColor="#F3F4F6"
+                  isActive={false} // Uses inactive styles which have better contrast
                   style={{ marginTop: 12 }}
                   height={54}
                 />
@@ -486,13 +490,15 @@ export default function ExploreScreen() {
         snapPoints={["65%"]}
         backdropComponent={renderBackdrop}
         enablePanDownToClose
+        keyboardBehavior="extend"
+        keyboardBlurBehavior="restore"
       >
-        <BottomSheetView style={styles.filterModalContent}>
+        <BottomSheetScrollView contentContainerStyle={styles.filterModalContent}>
           <Text style={styles.filterModalTitle}>{isRTL ? 'تصفية النتائج' : 'Filter Results'}</Text>
-
+          
           <View style={styles.filterSection}>
             <Text style={styles.filterSectionLabel}>{isRTL ? 'عدد البالغين' : 'Max Adults'}</Text>
-            <TextInput
+            <BottomSheetTextInput
               style={[styles.modalInput, { textAlign: isRTL ? 'right' : 'left' }]}
               placeholder={isRTL ? "مثلاً: 5" : "e.g. 5"}
               keyboardType="numeric"
@@ -504,7 +510,7 @@ export default function ExploreScreen() {
           <View style={styles.filterSection}>
             <Text style={styles.filterSectionLabel}>{isRTL ? 'نطاق السعر (د.ع)' : 'Price Range (IQD)'}</Text>
             <View style={[styles.priceRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-              <TextInput
+              <BottomSheetTextInput
                 style={[styles.modalInput, { flex: 1, textAlign: isRTL ? 'right' : 'left' }]}
                 placeholder={isRTL ? "من" : "Min"}
                 keyboardType="numeric"
@@ -512,7 +518,7 @@ export default function ExploreScreen() {
                 onChangeText={setMinPrice}
               />
               <View style={styles.priceSpacer} />
-              <TextInput
+              <BottomSheetTextInput
                 style={[styles.modalInput, { flex: 1, textAlign: isRTL ? 'right' : 'left' }]}
                 placeholder={isRTL ? "إلى" : "Max"}
                 keyboardType="numeric"
@@ -536,7 +542,7 @@ export default function ExploreScreen() {
               height={50}
             />
           </View>
-        </BottomSheetView>
+        </BottomSheetScrollView>
       </BottomSheetModal>
     </View>
   );
@@ -723,30 +729,32 @@ const styles = StyleSheet.create({
     fontFamily: "Tajawal-Bold",
   },
   enhancedInfoGrid: {
-    marginTop: 20,
-    justifyContent: 'space-between',
-    paddingHorizontal: 4,
+    marginTop: 24,
+    paddingHorizontal: 0,
+    gap: 8,
   },
   enhancedInfoItem: {
+    flex: 1,
     alignItems: 'center',
-    backgroundColor: '#F9FAFB',
-    paddingVertical: 12,
+    backgroundColor: '#F8FAFC',
+    paddingVertical: 14,
     borderRadius: 16,
-    width: (SCREEN_WIDTH - 64) / 4,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
+    borderColor: '#F1F5F9',
+    ...Shadows.small,
   },
   enhancedInfoValue: {
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: "Tajawal-Black",
-    color: '#111827',
+    color: '#1E293B',
     marginTop: 6,
   },
   enhancedInfoLabel: {
     fontSize: 10,
     fontFamily: "Tajawal-Medium",
-    color: '#6B7280',
+    color: '#64748B',
     marginTop: 2,
+    textTransform: 'uppercase',
   },
   cardActionsWrapper: {
     marginTop: 24,
