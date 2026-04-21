@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { useTranslation } from 'react-i18next';
 import { useGetPayoutsQuery, useRequestPayoutMutation } from '@/store/api/apiSlice';
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { PrimaryButton } from '@/components/user/primary-button';
 import Toast from 'react-native-toast-message';
 import { 
@@ -241,7 +241,7 @@ export default function RevenueScreen() {
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustResize"
       >
-        <BottomSheetView style={styles.sheetContent}>
+        <BottomSheetScrollView contentContainerStyle={styles.sheetContent} keyboardShouldPersistTaps="handled">
           <Text style={styles.sheetTitle}>{isRTL ? 'طلب سحب أرباح' : 'Request Payout'}</Text>
           <Text style={styles.sheetSubtitle}>
             {isRTL ? 'أدخل المبلغ المراد سحبه' : 'Enter the amount to withdraw'}
@@ -265,7 +265,7 @@ export default function RevenueScreen() {
             loading={isRequesting}
             style={{ marginTop: 16 }}
           />
-        </BottomSheetView>
+        </BottomSheetScrollView>
       </BottomSheetModal>
     </SafeAreaView>
   );

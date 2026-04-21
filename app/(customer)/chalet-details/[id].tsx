@@ -85,10 +85,13 @@ export default function ChaletDetailScreen() {
   const chaletName = isRTL 
     ? (chalet.name?.ar || chalet.nameAr || chalet.name || '') 
     : (chalet.name?.en || chalet.nameEn || chalet.name || '');
-  const chaletLocation = isRTL 
-    ? (chalet.region?.name?.ar || chalet.region?.nameAr || chalet.region?.name || '') 
-    : (chalet.region?.name?.en || chalet.region?.nameEn || chalet.region?.name || '');
-  const chaletRating = chalet.averageRating || 0;
+    const chaletLocation = isRTL 
+      ? (chalet.region?.name?.ar || chalet.region?.nameAr || chalet.region?.name || chalet.city?.name || '') 
+      : (chalet.region?.name?.en || chalet.region?.nameEn || chalet.region?.name || chalet.city?.enName || chalet.city?.name || '');
+    const chaletCategory = isRTL 
+      ? (chalet.category?.ar || '') 
+      : (chalet.category?.en || '');
+    const chaletRating = chalet.rating || chalet.averageRating || 0;
   const chaletPrice = chalet.basePrice ? Number(chalet.basePrice).toLocaleString() : '0';
   const chaletDescription = isRTL 
     ? (chalet.description?.ar || chalet.descriptionAr || chalet.description || '') 
@@ -141,12 +144,12 @@ export default function ChaletDetailScreen() {
   // Amenities/Facilities from API
   const facilities = useMemo(() => {
     if (chalet.amenities && chalet.amenities.length > 0) {
-      return chalet.amenities.slice(0, 4).map((amenity: any) => ({
+      return chalet.amenities.slice(0, 4).map((amenity: any, idx: number) => ({
         label: isRTL 
           ? (amenity.name?.ar || amenity.nameAr || amenity.name || '') 
           : (amenity.name?.en || amenity.nameEn || amenity.name || ''),
-        Icon: SolarWaterBold,
-        color: '#035DF9',
+        Icon: SolarWaterBold, // You might map amenity.icon to actual icons here
+        color: CARD_COLORS[idx % CARD_COLORS.length],
       }));
     }
     return [
@@ -225,7 +228,7 @@ export default function ChaletDetailScreen() {
                 {chaletName}
               </ThemedText>
               <ThemedText style={[styles.locationSub, { textAlign: isRTL ? 'right' : 'left' }]}>
-                {chaletLocation}
+                {chaletCategory ? `${chaletCategory} • ` : ''}{chaletLocation}
               </ThemedText>
             </View>
           </View>

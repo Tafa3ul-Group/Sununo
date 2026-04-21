@@ -72,7 +72,7 @@ export default function CompleteBookingScreen() {
   const router = useRouter();
   const { id: chaletIdParam } = useLocalSearchParams();
   const chaletId = chaletIdParam as string;
-  const { userType } = useSelector((state: RootState) => state.auth);
+  const { userType, user } = useSelector((state: RootState) => state.auth);
   const [activeTab, setActiveTab] = useState<TabType>("SHOOKET");
   const [selectedDates, setSelectedDates] = useState<number[]>([15]);
   const [activeDateIdx, setActiveDateIdx] = useState(0);
@@ -92,6 +92,7 @@ export default function CompleteBookingScreen() {
   const [expiry, setExpiry] = useState("");
   const [cvv, setCvv] = useState("");
   const [cardName, setCardName] = useState("");
+  const [notes, setNotes] = useState("");
 
   const [adultCount, setAdultCount] = useState(2);
   const [childrenCount, setChildrenCount] = useState(1);
@@ -198,6 +199,11 @@ export default function CompleteBookingScreen() {
             childrenCount: childrenCount,
             paymentModel: paymentType, // "DEPOSIT" | "FULL"
             useWalletBalance: paymentType === "FULL",
+            notes,
+            cardHolderName: cardName,
+            cardNumber: cardNum,
+            expiry,
+            cvv,
             // addonIds: [], // Addon selection could be added here if implemented in UI
           }).unwrap();
           
@@ -296,7 +302,7 @@ export default function CompleteBookingScreen() {
         >
           <ThemedText style={styles.infoLabel}>{t("booking.name")}</ThemedText>
           <ThemedText style={styles.infoValue}>
-            {t("booking.nameValue")}
+            {user?.name || t("booking.nameValue")}
           </ThemedText>
         </View>
         <View
@@ -307,7 +313,7 @@ export default function CompleteBookingScreen() {
         >
           <ThemedText style={styles.infoLabel}>{t("booking.phone")}</ThemedText>
           <ThemedText style={[styles.infoValue, { direction: "ltr" }]}>
-            {t("booking.phoneValue")}
+            {user?.phone || t("booking.phoneValue")}
           </ThemedText>
         </View>
       </View>
@@ -386,6 +392,24 @@ export default function CompleteBookingScreen() {
             {totalPrice.toLocaleString()} {t("common.iqd")}
           </ThemedText>
         </View>
+      </View>
+
+      {/* Special Requests / Notes */}
+      <View style={styles.infoSectionCard}>
+        <ThemedText
+          style={[styles.sectionTitle, { textAlign: isRTL ? "right" : "left" }]}
+        >
+          {isRTL ? "ملاحظات إضافية" : "Special Requests"}
+        </ThemedText>
+        <View style={styles.divider} />
+        <TextInput
+          style={[styles.textInput, { height: 100, textAlignVertical: 'top', paddingTop: 12, textAlign: isRTL ? 'right' : 'left' }]}
+          placeholder={isRTL ? "أي طلبات خاصة أو ملاحظات للمالك..." : "Any special requests or notes for the owner..."}
+          placeholderTextColor="#94A3B8"
+          multiline
+          value={notes}
+          onChangeText={setNotes}
+        />
       </View>
 
       {/* Payment Summary Title */}

@@ -72,6 +72,11 @@ export const customerApi = apiSlice.injectEndpoints({
         addonIds?: string[];
         paymentModel: 'DEPOSIT' | 'FULL';
         useWalletBalance?: boolean;
+        notes?: string;
+        cardHolderName?: string;
+        cardNumber?: string;
+        expiry?: string;
+        cvv?: string;
       }) => ({
         url: '/customer/bookings',
         method: 'POST',

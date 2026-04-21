@@ -1370,7 +1370,7 @@ export default function ShiftsAndPricesScreen() {
                   <Text style={styles.deleteTextBtnLabel}>{isRTL ? 'حذف هذه الفترة نهائياً' : 'Delete this shift permanently'}</Text>
                 </TouchableOpacity>
               )}
-            </View>
+            </BottomSheetView>
           </BottomSheetScrollView>
         </BottomSheetModal>
 
@@ -1382,7 +1382,7 @@ export default function ShiftsAndPricesScreen() {
           backdropComponent={renderBackdrop}
           backgroundStyle={{ borderRadius: 32, backgroundColor: '#F8F9FA' }}
         >
-          <View style={{ flex: 1, paddingHorizontal: 20 }}>
+        <BottomSheetView style={{ flex: 1, paddingHorizontal: 20 }}>
             {/* 1. Header & Quick Apply Section */}
             <View style={styles.pricingHeaderNew}>
               <View style={[styles.row, { justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }]}>
@@ -1526,8 +1526,7 @@ export default function ShiftsAndPricesScreen() {
                   </View>
                 )}
               </TouchableOpacity>
-            </View>
-          </View>
+            </BottomSheetView>
         </BottomSheetModal>
 
         {/* Chalet Selection Bottom Sheet */}
@@ -1589,7 +1588,7 @@ export default function ShiftsAndPricesScreen() {
         backdropComponent={renderBackdrop}
         backgroundStyle={{ borderRadius: 32, backgroundColor: '#F8F9FB' }}
       >
-        <View style={{ flex: 1, paddingHorizontal: 20 }}>
+        <BottomSheetView style={{ flex: 1, paddingHorizontal: 20 }}>
           <View style={styles.sheetHeaderCompact}>
             <View style={styles.sheetHeaderHandle} />
             <Text style={styles.modalTitleCompact}>{isRTL ? 'سياسة الاسترجاع' : 'Refund Policy'}</Text>
@@ -1663,7 +1662,7 @@ export default function ShiftsAndPricesScreen() {
               )}
             </TouchableOpacity>
           </View>
-        </View>
+        </BottomSheetView>
       </BottomSheetModal>
     </GestureHandlerRootView>
   );

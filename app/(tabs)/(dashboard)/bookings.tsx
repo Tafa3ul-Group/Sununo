@@ -429,7 +429,7 @@ export default function BookingsScreen() {
           setShowExternalSuccess(false);
         }}
       >
-        <BottomSheetView style={styles.sheetContent}>
+        <BottomSheetScrollView contentContainerStyle={styles.sheetContent} keyboardShouldPersistTaps="handled">
           {selectedShiftForAction && (
             <>
               {showExternalSuccess ? (
@@ -515,7 +515,7 @@ export default function BookingsScreen() {
               )}
             </>
           )}
-        </BottomSheetView>
+        </BottomSheetScrollView>
       </BottomSheetModal>
 
       <BookingCancellationSheet

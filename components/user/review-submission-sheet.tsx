@@ -5,7 +5,7 @@ import { SecondaryButtonInverse } from "@/components/user/secondary-button-inver
 import {
   BottomSheetModal,
   BottomSheetTextInput,
-  BottomSheetView,
+  BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import React, { forwardRef, useMemo, useState } from "react";
 import { Dimensions, StyleSheet, TouchableOpacity, View, I18nManager } from "react-native";
@@ -79,7 +79,7 @@ const ReviewSubmissionSheet = forwardRef<
       keyboardBlurBehavior="restore"
       enablePanDownToClose={true}
     >
-      <BottomSheetView style={styles.contentContainer}>
+      <BottomSheetScrollView contentContainerStyle={styles.contentContainer} keyboardShouldPersistTaps="handled">
         {/* Wavy Background Wrapper */}
         <View style={styles.scallopedCard}>
           <Svg
@@ -145,7 +145,7 @@ const ReviewSubmissionSheet = forwardRef<
             />
           </View>
         </View>
-      </BottomSheetView>
+      </BottomSheetScrollView>
     </BottomSheetModal>
   );
 });
