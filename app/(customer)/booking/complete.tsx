@@ -1098,10 +1098,10 @@ const styles = StyleSheet.create({
   dateBadgeActive: { borderColor: Colors.primary, borderWidth: 2 },
   dateBadgeText: {
     fontSize: normalize.font(16),
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: "#94A3B8",
   },
-  dateBadgeTextActive: { color: Colors.primary, fontFamily: "LamaSans-Black" },
+  dateBadgeTextActive: { color: Colors.primary, fontFamily: "Tajawal-Black" },
   addDateBtn: {
     width: 42,
     height: 42,
@@ -1122,7 +1122,7 @@ const styles = StyleSheet.create({
   },
   calendarMonthTitle: {
     fontSize: normalize.font(16),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: "#1E293B",
   },
   calendarMonthHeader: {
@@ -1136,7 +1136,7 @@ const styles = StyleSheet.create({
   navArrow: {
     fontSize: 20,
     color: Colors.primary,
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
   },
   daysHeader: {
     flexDirection: "row",
@@ -1149,7 +1149,7 @@ const styles = StyleSheet.create({
   },
   dayHeaderCell: {
     fontSize: normalize.font(10),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: "#94A3B8",
     width: (SCREEN_WIDTH - 100) / 7,
     textAlign: "center",
@@ -1171,12 +1171,12 @@ const styles = StyleSheet.create({
   activeDayCell: { backgroundColor: Colors.primary, borderRadius: 10 },
   dayText: {
     fontSize: normalize.font(14),
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: "#334155",
     textAlign: "center",
   },
-  activeDayText: { color: "#FFF", fontFamily: "LamaSans-Black" },
-  bookedDayText: { color: "#CBD5E1", fontFamily: "LamaSans-Regular" },
+  activeDayText: { color: "#FFF", fontFamily: "Tajawal-Black" },
+  bookedDayText: { color: "#CBD5E1", fontFamily: "Tajawal-Regular" },
   scribbleOverlay: {
     position: "absolute",
     width: "100%",
@@ -1208,19 +1208,19 @@ const styles = StyleSheet.create({
   },
   shiftTitle: {
     fontSize: normalize.font(15),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: "#1E293B",
   },
   shiftTime: {
     fontSize: normalize.font(12),
     color: "#64748B",
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
   },
   deleteDayBtn: { alignItems: "center", marginTop: 30, padding: 8 },
   deleteDayText: {
     color: "#EF4444",
     fontSize: normalize.font(14),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     textDecorationLine: "underline",
   },
   whoContainer: { marginTop: 20 },
@@ -1237,13 +1237,13 @@ const styles = StyleSheet.create({
   guestInfo: { flex: 1, alignItems: "flex-start" },
   guestLabel: {
     fontSize: normalize.font(16),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: "#111827",
   },
   guestSubLabel: {
     fontSize: normalize.font(12),
     color: "#9CA3AF",
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "Tajawal-SemiBold",
     marginTop: 1,
   },
   footer: {
@@ -1271,7 +1271,7 @@ const styles = StyleSheet.create({
   },
   inlinePaymentTitle: {
     fontSize: normalize.font(18),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: "#1E293B",
     marginBottom: 15,
   },
@@ -1281,7 +1281,7 @@ const styles = StyleSheet.create({
   inputGroupFixed: { width: 90, gap: 6 },
   inputLabel: {
     fontSize: normalize.font(14),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: "#1E293B",
   },
   textInput: {
@@ -1292,7 +1292,7 @@ const styles = StyleSheet.create({
     height: 48,
     paddingHorizontal: 16,
     fontSize: normalize.font(14),
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: "#1E293B",
   },
   rowInputs: { flexDirection: "row" },
@@ -1311,7 +1311,7 @@ const styles = StyleSheet.create({
   },
   successTitle: {
     fontSize: normalize.font(20),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: "#1E293B",
     marginBottom: 8,
     textAlign: "center",
@@ -1322,7 +1322,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 25,
     lineHeight: 22,
-    fontFamily: "LamaSans-Regular",
+    fontFamily: "Tajawal-Regular",
   },
   successBtn: { width: "100%", height: 56 },
 
@@ -1352,7 +1352,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingVertical: 8,
     fontSize: normalize.font(12),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: "#1E293B",
     width: "100%",
   },
@@ -1366,19 +1366,19 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: "#15AB64",
   },
   divider: { height: 1, backgroundColor: "#F1F5F9", marginVertical: 10 },
   infoRow: { justifyContent: "space-between", marginBottom: 10 },
   infoLabel: {
     fontSize: normalize.font(13),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: "#1E293B",
   },
   infoValue: {
     fontSize: normalize.font(13),
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: "#64748B",
   },
   sectionHeaderRow: { justifyContent: "space-between", alignItems: "center" },
@@ -1393,11 +1393,11 @@ const styles = StyleSheet.create({
   editBtnText: {
     color: "#15AB64",
     fontSize: normalize.font(12),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
   },
   paymentMainTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: "#15AB64",
     marginVertical: 12,
   },
@@ -1414,27 +1414,27 @@ const styles = StyleSheet.create({
   paymentOptionActive: { borderColor: "#15AB64", backgroundColor: "#F0FDF4" },
   paymentVal: {
     fontSize: normalize.font(15),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: "#64748B",
   },
-  paymentValActive: { color: "#1E293B", fontFamily: "LamaSans-Regular" },
+  paymentValActive: { color: "#1E293B", fontFamily: "Tajawal-Regular" },
   paymentLabel: {
     fontSize: normalize.font(13),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: "#64748B",
   },
-  paymentLabelActive: { color: "#1E293B", fontFamily: "LamaSans-Regular" },
+  paymentLabelActive: { color: "#1E293B", fontFamily: "Tajawal-Regular" },
   agreementWrapper: { paddingVertical: 12, paddingBottom: 35 },
   agreementText: {
     fontSize: normalize.font(12),
     color: "#64748B",
     textAlign: "center",
     lineHeight: 18,
-    fontFamily: "LamaSans-Regular",
+    fontFamily: "Tajawal-Regular",
   },
   agreementLink: {
     color: Colors.primary,
     textDecorationLine: "underline",
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
   },
 });

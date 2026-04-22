@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: normalize.font(16),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: '#374151',
   },
   avatarWrap: {
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   avatarInitialText: {
     color: 'white',
     fontSize: normalize.font(24),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
   },
   menuGroup: {
     gap: normalize.height(16),
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
   menuLabelText: {
     flex: 1,
     fontSize: normalize.font(16),
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: '#374151',
     marginHorizontal: normalize.width(15),
   },

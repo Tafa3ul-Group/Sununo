@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
   },
   monthTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: "#1A1A1A",
     textTransform: 'uppercase',
   },
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: "center",
     fontSize: normalize.font(12),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: "#15AB64",
   },
   grid: {
@@ -290,13 +290,13 @@ const styles = StyleSheet.create({
   },
   dayText: {
     fontSize: normalize.font(14),
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "Tajawal-SemiBold",
     color: "#1A1A1A",
   },
   disabledDayText: {
     color: "#D1D5DB",
     opacity: 0,
-    fontFamily: "LamaSans-Regular"
+    fontFamily: "Tajawal-Regular"
   },
   startDaySelected: {
     backgroundColor: Colors.primary,
@@ -308,11 +308,11 @@ const styles = StyleSheet.create({
   },
   selectedDayText: {
     color: "white",
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
   },
   inRangeDayText: {
     color: "#1A1A1A",
-    fontFamily: "LamaSans-Regular"
+    fontFamily: "Tajawal-Regular"
   },
   yearPicker: {
     padding: 10,
@@ -337,12 +337,12 @@ const styles = StyleSheet.create({
   },
   yearText: {
     fontSize: normalize.font(16),
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: '#1A1A1A',
   },
   yearTextSelected: {
     color: 'white',
-    fontFamily: "LamaSans-Regular"
+    fontFamily: "Tajawal-Regular"
   },
   closeYearBtn: {
     paddingVertical: 10,
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
   },
   closeYearText: {
     color: Colors.primary,
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     fontSize: normalize.font(14),
   },
   resetBtn: {
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
   },
   resetText: {
     color: Colors.text.muted,
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     fontSize: normalize.font(12),
   },
 });

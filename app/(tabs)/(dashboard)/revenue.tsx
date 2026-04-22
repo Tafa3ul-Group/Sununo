@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
   balanceLabel: {
     color: 'rgba(255,255,255,0.7)',
     fontSize: normalize.font(13),
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "Tajawal-SemiBold",
     marginBottom: 8,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
@@ -324,13 +324,13 @@ const styles = StyleSheet.create({
   balanceValue: {
     color: Colors.white,
     fontSize: normalize.font(36),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     letterSpacing: -1,
   },
   balanceCurrency: {
     color: 'rgba(255,255,255,0.6)',
     fontSize: normalize.font(14),
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "Tajawal-SemiBold",
     marginBottom: 20,
     marginTop: 2,
   },
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
   },
   withdrawButtonText: {
     color: Colors.primary,
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     fontSize: normalize.font(14),
   },
   // Period Filter
@@ -368,12 +368,12 @@ const styles = StyleSheet.create({
   },
   periodText: {
     fontSize: normalize.font(13),
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "Tajawal-SemiBold",
     color: Colors.text.secondary,
   },
   periodTextActive: {
     color: Colors.white,
-   fontFamily: "LamaSans-Regular" },
+   fontFamily: "Tajawal-Regular" },
   // Stats
   statsRow: {
     gap: 10,
@@ -398,13 +398,13 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: normalize.font(16),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: Colors.text.primary,
   },
   statLabel: {
     fontSize: normalize.font(10),
     color: Colors.text.muted,
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "Tajawal-SemiBold",
     marginTop: 2,
     textAlign: 'center',
   },
@@ -416,7 +416,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: normalize.font(18),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: Colors.text.primary,
   },
   viewAllBtn: {
@@ -427,7 +427,7 @@ const styles = StyleSheet.create({
   viewAllText: {
     color: Colors.primary,
     fontSize: normalize.font(13),
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "Tajawal-SemiBold",
   },
   // Transactions
   transactionsCard: {
@@ -454,24 +454,24 @@ const styles = StyleSheet.create({
   },
   transactionTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: Colors.text.primary,
     marginBottom: 3,
   },
   transactionDate: {
     fontSize: normalize.font(11),
     color: Colors.text.muted,
-    fontFamily: "LamaSans-Medium",
+    fontFamily: "Tajawal-Medium",
   },
   transactionAmount: {
     fontSize: normalize.font(14),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: Colors.text.primary,
     marginBottom: 4,
   },
   currencySmall: {
     fontSize: normalize.font(11),
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "Tajawal-SemiBold",
     color: Colors.text.muted,
   },
   typeBadge: {
@@ -481,7 +481,7 @@ const styles = StyleSheet.create({
   },
   typeBadgeText: {
     fontSize: normalize.font(9),
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     textTransform: 'uppercase',
   },
   separator: {
@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: normalize.font(13),
     color: Colors.text.muted,
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "Tajawal-SemiBold",
   },
   // Withdraw Sheet
   sheetContent: {
@@ -506,7 +506,7 @@ const styles = StyleSheet.create({
   },
   sheetTitle: {
     fontSize: normalize.font(20),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: Colors.text.primary,
     textAlign: 'center',
     marginBottom: 4,
@@ -514,7 +514,7 @@ const styles = StyleSheet.create({
   sheetSubtitle: {
     fontSize: normalize.font(13),
     color: Colors.text.muted,
-    fontFamily: "LamaSans-Medium",
+    fontFamily: "Tajawal-Medium",
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -531,13 +531,13 @@ const styles = StyleSheet.create({
   amountInput: {
     flex: 1,
     fontSize: normalize.font(24),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: Colors.text.primary,
     textAlign: 'center',
   },
   amountCurrency: {
     fontSize: normalize.font(16),
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: Colors.text.muted,
   },
 });

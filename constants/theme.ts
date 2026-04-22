@@ -95,43 +95,43 @@ interface TypeStyle {
 export const Typography: Record<string, TypeStyle> = {
   h1: {
     fontSize: normalize.font(26),
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: Colors.light.text,
     lineHeight: normalize.font(36),
   },
   h2: {
     fontSize: normalize.font(18),
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "Tajawal-Bold",
     color: Colors.light.text,
     lineHeight: normalize.font(26),
   },
   body: {
     fontSize: normalize.font(13),
-    fontFamily: "LamaSans-Regular",
+    fontFamily: "Tajawal-Regular",
     color: Colors.light.text,
     lineHeight: normalize.font(20),
   },
   subtitle: {
     fontSize: normalize.font(12),
-    fontFamily: "LamaSans-Regular",
+    fontFamily: "Tajawal-Regular",
     color: Colors.light.icon,
     lineHeight: normalize.font(18),
   },
   caption: {
     fontSize: normalize.font(11),
-    fontFamily: "LamaSans-Medium",
+    fontFamily: "Tajawal-Medium",
     color: Colors.light.icon,
     lineHeight: normalize.font(16),
   },
   price: {
     fontSize: normalize.font(17),
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: Colors.light.primary,
     lineHeight: normalize.font(24),
   },
   rating: {
     fontSize: normalize.font(13),
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "Tajawal-Bold",
     color: Colors.light.text,
     lineHeight: normalize.font(20),
   },
@@ -161,9 +161,9 @@ export const Shadows = {
 };
 
 export const Fonts = {
-  bold: "LamaSans-Bold" as const,
-  regular: "LamaSans-Regular" as const,
-  medium: "LamaSans-Medium" as const,
-  semiBold: "LamaSans-SemiBold" as const,
-  black: "LamaSans-Black" as const,
+  bold: "Tajawal-Bold" as const,
+  regular: "Tajawal-Regular" as const,
+  medium: "Tajawal-Medium" as const,
+  semiBold: "Tajawal-Bold" as const,
+  black: "Tajawal-Black" as const,
 };

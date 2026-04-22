@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: normalize.font(28),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: "#1E293B",
     marginBottom: normalize.height(5),
   },
@@ -233,12 +233,12 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: normalize.font(14),
     color: "#64748B",
-    fontFamily: "LamaSans-Regular",
+    fontFamily: "Tajawal-Regular",
   },
   linkText: {
     fontSize: normalize.font(14),
     color: "#0061FE",
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     marginRight: normalize.width(5),
   },
   inputGroup: {
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: normalize.font(14),
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: "#1E293B",
     marginBottom: normalize.height(8),
   },
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
     borderColor: "#E2E8F0",
     paddingHorizontal: normalize.width(20),
     fontSize: normalize.font(18),
-    fontFamily: "LamaSans-Medium",
+    fontFamily: "Tajawal-Medium",
   },
   loginBtn: {
     marginTop: normalize.height(10),
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
   guestLinkText: {
     fontSize: normalize.font(14),
     color: "#64748B",
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     textDecorationLine: "underline",
   },
   bottomWaveContainer: {

@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: normalize.font(10),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: '#111827',
   },
   content: {
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: normalize.font(16),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: '#111827',
     marginBottom: 4,
   },
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(12),
     color: Colors.text.secondary,
     flex: 1,
-   fontFamily: "LamaSans-Regular" },
+   fontFamily: "Tajawal-Regular" },
   actionGrid: {
     gap: 8,
   },
@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
   },
   editBtnText: {
     fontSize: normalize.font(13),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: Colors.primary,
   },
   revenueBtn: {
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
   },
   revenueBtnText: {
     fontSize: normalize.font(13),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: '#FFFFFF',
   },
 });

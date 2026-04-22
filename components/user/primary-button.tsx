@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   },
   primaryText: {
     fontSize: 18,
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     textAlign: "center",
     lineHeight: 25,
     paddingVertical: 2,

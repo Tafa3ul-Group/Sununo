@@ -400,7 +400,7 @@ const styles = StyleSheet.create({
   },
   navBarTitle: {
     fontSize: normalize.font(16),
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     color: Colors.text.primary,
     maxWidth: '65%',
     textAlign: 'center',
@@ -477,7 +477,7 @@ const styles = StyleSheet.create({
   },
   chaletName: {
     fontSize: normalize.font(26),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: Colors.text.primary,
     letterSpacing: -0.5,
   },
@@ -488,7 +488,7 @@ const styles = StyleSheet.create({
   },
   approvalText: {
     fontSize: normalize.font(11),
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
     textTransform: 'uppercase',
   },
   locationRow: {
@@ -499,7 +499,7 @@ const styles = StyleSheet.create({
   locationText: {
     fontSize: normalize.font(15),
     color: Colors.text.secondary,
-    fontFamily: "LamaSans-Medium",
+    fontFamily: "Tajawal-Medium",
   },
   statusBox: {
     alignItems: 'center',
@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
   },
   statusLabel: {
     fontSize: normalize.font(10),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     textTransform: 'uppercase',
   },
   statsRow: {
@@ -533,13 +533,13 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: normalize.font(17),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: Colors.text.primary,
   },
   statLabel: {
     fontSize: normalize.font(11),
     color: Colors.text.muted,
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "Tajawal-SemiBold",
     marginTop: 2,
   },
   statDivider: {
@@ -571,7 +571,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: normalize.font(18),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: Colors.text.primary,
     marginBottom: 16,
   },
@@ -593,10 +593,10 @@ const styles = StyleSheet.create({
   },
   amenityEmoji: {
     fontSize: 18,
-   fontFamily: "LamaSans-Regular" },
+   fontFamily: "Tajawal-Regular" },
   amenityText: {
     fontSize: normalize.font(14),
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "Tajawal-SemiBold",
     color: Colors.text.primary,
   },
   detailsRow: {
@@ -615,20 +615,20 @@ const styles = StyleSheet.create({
   },
   detailValue: {
     fontSize: normalize.font(16),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: Colors.text.primary,
   },
   detailLabel: {
     fontSize: normalize.font(11),
     color: Colors.text.muted,
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "Tajawal-SemiBold",
   },
   descriptionText: {
     fontSize: normalize.font(15),
     color: Colors.text.secondary,
     lineHeight: 24,
     opacity: 0.9,
-   fontFamily: "LamaSans-Regular" },
+   fontFamily: "Tajawal-Regular" },
   footerContent: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -637,17 +637,17 @@ const styles = StyleSheet.create({
   footerPriceLabel: {
     fontSize: normalize.font(12),
     color: Colors.text.muted,
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "Tajawal-SemiBold",
   },
   footerPriceValue: {
     fontSize: normalize.font(20),
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Tajawal-Black",
     color: Colors.text.primary,
   },
   footerCurrency: {
     fontSize: normalize.font(14),
     color: Colors.primary,
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Tajawal-Bold",
   },
   footerButtonOverride: {
     flex: 1,
