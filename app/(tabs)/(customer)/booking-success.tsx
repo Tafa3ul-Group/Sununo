@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { HeaderSection } from '@/components/header-section';
 import { useGetCustomerBookingDetailsQuery } from '@/store/api/customerApiSlice';
 import { getImageSrc } from '@/hooks/useImageSrc';
+import { useFormatTime } from '@/hooks/useFormatTime';
 
 export default function BookingSuccessDetailsScreen() {
   const { t, i18n } = useTranslation();
@@ -18,6 +19,7 @@ export default function BookingSuccessDetailsScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const bookingId = id as string;
+  const { formatShiftTime } = useFormatTime();
 
   // Fetch booking details from the backend
   const { data: booking, isLoading } = useGetCustomerBookingDetailsQuery(bookingId, {
@@ -37,6 +39,13 @@ export default function BookingSuccessDetailsScreen() {
   const totalPrice = booking?.totalPrice ? Number(booking.totalPrice).toLocaleString() : '0';
   const depositAmount = booking?.depositAmount ? Number(booking.depositAmount).toLocaleString() : '0';
   const remainingAmount = booking?.remainingAmount ? Number(booking.remainingAmount).toLocaleString() : '0';
+
+  const shiftInfo = useMemo(() => {
+    if (!booking?.shift) return t('booking.morningShift');
+    const name = isRTL ? (booking.shift.name?.ar || booking.shift.name) : (booking.shift.name?.en || booking.shift.name);
+    const time = `${formatShiftTime(booking.shift.startTime)} - ${formatShiftTime(booking.shift.endTime)}`;
+    return `${name} (${time})`;
+  }, [booking, isRTL, t]);
 
   const renderInfoRow = (label: string, value: string | React.ReactNode) => (
     <View style={[styles.infoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
@@ -112,7 +121,7 @@ export default function BookingSuccessDetailsScreen() {
             </View>
 
             {renderInfoRow(t('booking.date'), booking?.bookingDate || t('booking.dateValue'))}
-            {renderInfoRow(t('booking.shift'), booking?.shift?.name || t('booking.morningShift'))}
+            {renderInfoRow(t('booking.shift'), shiftInfo)}
             {renderInfoRow(t('booking.guests'), booking?.guestCount?.toString() || t('booking.guestsValue'))}
             {renderInfoRow(t('booking.totalAmount'), `${totalPrice} ${t('common.iqd')}`)}
         </View>

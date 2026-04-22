@@ -10,7 +10,7 @@ import { SolarAltArrowRightBold, SolarHeartBold } from "@/components/icons/solar
 import { useRouter } from 'expo-router';
 import { HorizontalCard } from '@/components/user/horizontal-card';
 import { HeaderSection } from '@/components/header-section';
-import { useGetCustomerFavoritesQuery } from '@/store/api/customerApiSlice';
+import { useGetCustomerFavoritesQuery, useToggleFavoriteMutation } from '@/store/api/customerApiSlice';
 import { getImageSrc } from '@/hooks/useImageSrc';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -23,6 +23,16 @@ export default function FavoritesScreen() {
 
   // Fetch favorites from the backend
   const { data: favoritesResponse, isLoading, refetch } = useGetCustomerFavoritesQuery({ page: 1, limit: 50 });
+  const [toggleFavorite] = useToggleFavoriteMutation();
+
+  const handleToggleFavorite = async (id: string) => {
+    try {
+      await toggleFavorite(id).unwrap();
+      refetch();
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error);
+    }
+  };
 
   // Transform API data to match card format
   const favorites = useMemo(() => {
@@ -63,6 +73,8 @@ export default function FavoritesScreen() {
                     shapeIndex={index + 1} 
                     onPress={() => router.push({ pathname: '/chalet-details', params: { id: chalet.id } })}
                     style={styles.customCard}
+                    isFavorite={true}
+                    onToggleFavorite={() => handleToggleFavorite(chalet.id)}
                  />
             </View>
           ))

@@ -59,6 +59,14 @@ export const customerApi = apiSlice.injectEndpoints({
       query: (id: string) => `/customer/chalets/${id}/policies`,
     }),
 
+    /** Get chalet occupancy by month */
+    getChaletAvailability: builder.query({
+      query: ({ id, month, year }: { id: string; month: number; year: number }) => ({
+        url: `/customer/chalets/${id}/availability`,
+        params: { month, year },
+      }),
+    }),
+
     /** Get chalet images (public) */
     getChaletImages: builder.query({
       query: (id: string) => `/chalets/${id}/images`,
@@ -159,6 +167,15 @@ export const customerApi = apiSlice.injectEndpoints({
 
     // ── Favorites (Customer) ───────────────────────────────────────────────
 
+    /** Toggle chalet in favorites */
+    toggleFavorite: builder.mutation({
+      query: (chaletId: string) => ({
+        url: `/customer/favorites/toggle/${chaletId}`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Chalet"],
+    }),
+
     /** Add chalet to favorites */
     addFavorite: builder.mutation({
       query: (chaletId: string) => ({
@@ -175,6 +192,12 @@ export const customerApi = apiSlice.injectEndpoints({
         method: "DELETE",
       }),
       invalidatesTags: ["Chalet"],
+    }),
+
+    /** Get list of favorited chalet IDs */
+    getFavoriteIds: builder.query<string[], void>({
+      query: () => "/customer/favorites/ids",
+      providesTags: ["Chalet"],
     }),
 
     /** List my favorite chalets (paginated) */
@@ -410,6 +433,7 @@ export const {
   useGetChaletTermsQuery,
   useGetChaletPoliciesQuery,
   useGetChaletImagesQuery,
+  useGetChaletAvailabilityQuery,
 
   // Bookings
   useCreateCustomerBookingMutation,
@@ -423,7 +447,9 @@ export const {
   // Favorites
   useAddFavoriteMutation,
   useRemoveFavoriteMutation,
+  useToggleFavoriteMutation,
   useGetCustomerFavoritesQuery,
+  useGetFavoriteIdsQuery,
 
   // Reviews
   useCreateReviewMutation,

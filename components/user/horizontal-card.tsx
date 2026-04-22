@@ -54,6 +54,8 @@ interface HorizontalCardProps {
   style?: ViewStyle;
   shapeIndex?: number;
   hideFavorite?: boolean;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 }
 
 export function HorizontalCard({
@@ -62,10 +64,11 @@ export function HorizontalCard({
   style,
   shapeIndex = 2,
   hideFavorite = false,
+  isFavorite = false,
+  onToggleFavorite,
 }: HorizontalCardProps) {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === 'ar';
-  const [isFavorite, setIsFavorite] = useState(false);
 
   if (!chalet) return null;
 
@@ -90,7 +93,7 @@ export function HorizontalCard({
             {!hideFavorite && (
               <TouchableOpacity
                 style={styles.heartCircle}
-                onPress={() => setIsFavorite(!isFavorite)}
+                onPress={onToggleFavorite}
               >
                 <SolarHeartBold
                   size={normalize.width(20)}

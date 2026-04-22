@@ -67,6 +67,8 @@ interface ColoredCardProps {
   shapeIndex?: number;
   onPress?: () => void;
   style?: ViewStyle;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 }
 
 export function ColoredCard({
@@ -79,6 +81,8 @@ export function ColoredCard({
   shapeIndex = 0,
   onPress,
   style,
+  isFavorite = false,
+  onToggleFavorite,
 }: ColoredCardProps) {
   const currentIndex = shapeIndex % SHAPES_CONFIG.length;
   const config = SHAPES_CONFIG[currentIndex];
@@ -90,11 +94,11 @@ export function ColoredCard({
       style={[styles.container, { backgroundColor: color }, style]}
     >
       {/* Favorite Button */}
-      <View style={styles.favoriteButton}>
+      <TouchableOpacity style={styles.favoriteButton} onPress={onToggleFavorite}>
         <View style={styles.favoriteCircle}>
-          <SolarHeartBold size={14} color="#EA2129" />
+          <SolarHeartBold size={14} color={isFavorite ? "#EA2129" : "#9CA3AF"} />
         </View>
-      </View>
+      </TouchableOpacity>
 
       {/* Organic Shape Section */}
       <View style={styles.imageContainer}>

@@ -34,7 +34,7 @@ import {
   SolarFireBold, 
   SolarTreeBold 
 } from "@/components/icons/solar-icons";
-import { useBrowseCustomerChaletsQuery, useGetBannersQuery } from "@/store/api/customerApiSlice";
+import { useBrowseCustomerChaletsQuery, useGetBannersQuery, useGetFavoriteIdsQuery, useToggleFavoriteMutation } from "@/store/api/customerApiSlice";
 import { getImageSrc } from "@/hooks/useImageSrc";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -68,6 +68,18 @@ export default function HomeScreen() {
     amenityIds,
     ...filters
   });
+
+  const { data: favoriteIds = [], refetch: refetchFavorites } = useGetFavoriteIdsQuery();
+  const [toggleFavorite] = useToggleFavoriteMutation();
+
+  const handleToggleFavorite = async (id: string) => {
+    try {
+      await toggleFavorite(id).unwrap();
+      refetchFavorites();
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error);
+    }
+  };
 
   // Transform banners
   const banners = useMemo(() => {
@@ -146,7 +158,9 @@ export default function HomeScreen() {
           <View style={styles.swiperWrapper}>
             <HorizontalSwiper 
               data={POPULAR_CHALETS} 
-              onPressCard={navigateToDetails} 
+              onPressCard={navigateToDetails}
+              favoriteIds={favoriteIds}
+              onToggleFavorite={handleToggleFavorite}
             />
           </View>
         )}
@@ -175,7 +189,13 @@ export default function HomeScreen() {
              <ActivityIndicator size="small" color={Colors.primary} style={{ marginTop: 20 }} />
            ) : POPULAR_CHALETS.length > 0 ? (
              POPULAR_CHALETS.map((item, index) => (
-               <HorizontalCard key={index} chalet={item} onPress={() => navigateToDetails(item.id)} />
+               <HorizontalCard 
+                  key={index} 
+                  chalet={item} 
+                  onPress={() => navigateToDetails(item.id)}
+                  isFavorite={favoriteIds.includes(item.id)}
+                  onToggleFavorite={() => handleToggleFavorite(item.id)}
+               />
              ))
            ) : (
              <View style={styles.emptyContainer}>

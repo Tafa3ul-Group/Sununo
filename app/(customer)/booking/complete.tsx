@@ -25,7 +25,7 @@ import * as Haptics from "expo-haptics";
 import { Image as ExpoImage } from "expo-image";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import LottieView from "lottie-react-native";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
     Dimensions,
@@ -40,7 +40,12 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
 import { useSelector } from "react-redux";
-import { useCreateCustomerBookingMutation, useGetCustomerChaletDetailsQuery } from "@/store/api/customerApiSlice";
+import { 
+    useCreateCustomerBookingMutation, 
+    useGetCustomerChaletDetailsQuery,
+    useGetChaletAvailabilityQuery 
+} from "@/store/api/customerApiSlice";
+import { useFormatTime } from "../../../hooks/useFormatTime";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -74,15 +79,45 @@ export default function CompleteBookingScreen() {
   const chaletId = chaletIdParam as string;
   const { userType, user } = useSelector((state: RootState) => state.auth);
   const [activeTab, setActiveTab] = useState<TabType>("SHOOKET");
-  const [selectedDates, setSelectedDates] = useState<number[]>([15]);
+  const [selectedDates, setSelectedDates] = useState<number[]>([new Date().getDate()]);
   const [activeDateIdx, setActiveDateIdx] = useState(0);
   const [paymentType, setPaymentType] = useState<"DEPOSIT" | "FULL">("DEPOSIT");
+  const { formatShiftTime } = useFormatTime();
+
+  // Selected Shift ID
+  const [selectedShiftId, setSelectedShiftId] = useState<string | null>(null);
 
   // API hooks
   const [createBooking, { isLoading: isCreatingBooking }] = useCreateCustomerBookingMutation();
   const { data: chaletDetails } = useGetCustomerChaletDetailsQuery(chaletId, { skip: !chaletId });
+  
+  const [currentMonth, setCurrentMonth] = useState(new Date()); 
+  
+  const { data: availabilityData = [] } = useGetChaletAvailabilityQuery({
+    id: chaletId,
+    month: currentMonth.getMonth() + 1,
+    year: currentMonth.getFullYear()
+  }, { skip: !chaletId });
 
-  // Ref for Success Sheet
+  // Map availability to fully booked dates
+  const bookedDates = useMemo(() => {
+    if (!availabilityData || !Array.isArray(availabilityData) || !chaletDetails?.shifts) return [];
+    
+    const dateCounts: Record<number, number> = {};
+    availabilityData.forEach((b: any) => {
+      const d = new Date(b.bookingDate).getDate();
+      dateCounts[d] = (dateCounts[d] || 0) + 1;
+    });
+
+    const totalShifts = chaletDetails.shifts.length;
+    if (totalShifts === 0) return [];
+
+    return Object.keys(dateCounts)
+      .filter(d => dateCounts[Number(d)] >= totalShifts)
+      .map(Number);
+  }, [availabilityData, chaletDetails]);
+
+  // Success Sheet Ref
   const successSheetRef = React.useRef<BottomSheetModal>(null);
 
   const [createdBookingId, setCreatedBookingId] = useState<string | null>(null);
@@ -97,10 +132,9 @@ export default function CompleteBookingScreen() {
   const [adultCount, setAdultCount] = useState(2);
   const [childrenCount, setChildrenCount] = useState(1);
 
-  const bookedDates = [2, 3, 4, 8, 9, 10, 11, 12, 31];
   const activeDate = selectedDates[activeDateIdx];
 
-  const [currentMonth, setCurrentMonth] = useState(new Date()); // Current Date
+
 
   const handleNextShift = () => {
     const next = new Date(currentMonth);
@@ -141,14 +175,18 @@ export default function CompleteBookingScreen() {
   const dayHeadersRaw = t("booking.days", { returnObjects: true });
   const dayHeaders = Array.isArray(dayHeadersRaw) ? dayHeadersRaw : [];
 
-  const [dayShifts, setDayShifts] = useState<
-    Record<number, { morning: boolean; evening: boolean }>
-  >({
-    15: { morning: true, evening: false },
-  });
+  const selectedShift = useMemo(() => {
+    return chaletDetails?.shifts?.find((s: any) => s.id === selectedShiftId);
+  }, [selectedShiftId, chaletDetails]);
 
-  const selectedShiftType = dayShifts[activeDate]?.morning ? 'MORNING' : (dayShifts[activeDate]?.evening ? 'EVENING' : null);
-  const selectedShift = chaletDetails?.shifts?.find((s: any) => s.type === selectedShiftType);
+  const isShiftBooked = useCallback((shiftId: string) => {
+    if (!activeDate) return false;
+    const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(activeDate).padStart(2, '0')}`;
+    return availabilityData.some((b: any) => {
+      const bDate = new Date(b.bookingDate).toISOString().split('T')[0];
+      return bDate === dateStr && b.shift?.id === shiftId;
+    });
+  }, [activeDate, availabilityData, currentMonth]);
   const dayOfWeek = useMemo(() => {
     const d = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), activeDate || 1);
     return d.getDay();
@@ -160,15 +198,7 @@ export default function CompleteBookingScreen() {
     return pricing ? Number(pricing.price) : Number(chaletDetails?.basePrice || 0);
   }, [selectedShift, dayOfWeek, chaletDetails]);
 
-  const extraGuestsPrice = useMemo(() => {
-    if (!chaletDetails) return 0;
-    const totalGuests = adultCount + childrenCount;
-    if (totalGuests > (chaletDetails.baseCapacity || 2)) {
-      const extraCount = totalGuests - (chaletDetails.baseCapacity || 2);
-      return extraCount * Number(chaletDetails.extraPersonPrice || 0);
-    }
-    return 0;
-  }, [adultCount, childrenCount, chaletDetails]);
+  const extraGuestsPrice = 0;
 
   const totalPrice = selectedShiftPrice + extraGuestsPrice;
   const depositPercentage = Number(chaletDetails?.depositPercentage || 0);
@@ -189,17 +219,14 @@ export default function CompleteBookingScreen() {
       try {
         const bookingDate = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(activeDate || 15).padStart(2, '0')}`;
         
-        // Find the selected shift from chalet data
-        const selectedShiftType = dayShifts[activeDate]?.morning ? 'MORNING' : (dayShifts[activeDate]?.evening ? 'EVENING' : null);
+        const selectedShift = chaletDetails?.shifts?.find((s: any) => s.id === selectedShiftId);
+        const shiftId = selectedShift?.id;
         
-        if (!selectedShiftType) {
-          Alert.alert(isRTL ? "تنبيه" : "Alert", isRTL ? "يرجى اختيار وقت الحجز (صباحي او مسائي)" : "Please select a shift (Morning or Evening)");
+        if (!shiftId) {
+          Alert.alert(isRTL ? "تنبيه" : "Alert", isRTL ? "يرجى اختيار وقت الحجز" : "Please select a shift");
           setActiveTab("SHOOKET");
           return;
         }
-
-        const shift = chaletDetails?.shifts?.find((s: any) => s.type === selectedShiftType);
-        const shiftId = shift?.id;
         
         if (chaletId && shiftId) {
           const result = await createBooking({
@@ -208,14 +235,13 @@ export default function CompleteBookingScreen() {
             bookingDate,
             adultsCount: adultCount,
             childrenCount: childrenCount,
-            paymentModel: paymentType, // "DEPOSIT" | "FULL"
+            paymentModel: paymentType.toLowerCase() as any, // "deposit" | "full"
             useWalletBalance: paymentType === "FULL",
             notes,
             cardHolderName: cardName,
             cardNumber: cardNum,
             expiry,
             cvv,
-            // addonIds: [], // Addon selection could be added here if implemented in UI
           }).unwrap();
           
           setCreatedBookingId(result.booking.id);
@@ -247,15 +273,9 @@ export default function CompleteBookingScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
-  const toggleShift = (type: "morning" | "evening") => {
-    if (!activeDate) return;
-    setDayShifts((prev) => ({
-      ...prev,
-      [activeDate]: {
-        ...(prev[activeDate] || { morning: false, evening: false }),
-        [type]: !prev[activeDate]?.[type],
-      },
-    }));
+  const toggleShift = (id: string) => {
+    if (isShiftBooked(id)) return;
+    setSelectedShiftId(prev => prev === id ? null : id);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
@@ -374,7 +394,7 @@ export default function CompleteBookingScreen() {
         >
           <ThemedText style={styles.infoLabel}>{t("booking.shift")}</ThemedText>
           <ThemedText style={styles.infoValue}>
-            {selectedShiftType === 'MORNING' ? t("booking.morningShift") : t("booking.eveningShift")}
+            {selectedShift ? (isRTL ? (selectedShift.name?.ar || selectedShift.name) : (selectedShift.name?.en || selectedShift.name)) : t("booking.morningShift")}
           </ThemedText>
         </View>
         <View
@@ -927,73 +947,63 @@ export default function CompleteBookingScreen() {
               </View>
 
               <View style={styles.shiftsContainer}>
-                <TouchableOpacity
-                  style={[
-                    styles.shiftCard,
-                    dayShifts[activeDate]?.morning && {
-                      backgroundColor: "#F6420008",
-                      borderColor: "#F6420033",
-                    },
-                    { flexDirection: isRTL ? "row-reverse" : "row" },
-                  ]}
-                  onPress={() => toggleShift("morning")}
-                >
-                  <View
-                    style={[
-                      styles.shiftLeft,
-                      { flexDirection: isRTL ? "row-reverse" : "row" },
-                    ]}
-                  >
-                    <View style={styles.shiftIconBox}>
-                      <SolarSunBold
-                        size={24}
-                        color={
-                          dayShifts[activeDate]?.morning ? "#F64200" : "#94A3B8"
-                        }
-                      />
-                    </View>
-                    <ThemedText style={styles.shiftTitle}>
-                      {t("booking.morningShift")}
-                    </ThemedText>
-                  </View>
-                  <ThemedText style={styles.shiftTime}>
-                    {t("booking.morningTime")}
-                  </ThemedText>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[
-                    styles.shiftCard,
-                    dayShifts[activeDate]?.evening && {
-                      backgroundColor: "#035DF908",
-                      borderColor: "#035DF933",
-                    },
-                    { flexDirection: isRTL ? "row-reverse" : "row" },
-                  ]}
-                  onPress={() => toggleShift("evening")}
-                >
-                  <View
-                    style={[
-                      styles.shiftLeft,
-                      { flexDirection: isRTL ? "row-reverse" : "row" },
-                    ]}
-                  >
-                    <View style={styles.shiftIconBox}>
-                      <SolarMoonBold
-                        size={24}
-                        color={
-                          dayShifts[activeDate]?.evening ? "#035DF9" : "#94A3B8"
-                        }
-                      />
-                    </View>
-                    <ThemedText style={styles.shiftTitle}>
-                      {t("booking.eveningShift")}
-                    </ThemedText>
-                  </View>
-                  <ThemedText style={styles.shiftTime}>
-                    {t("booking.eveningTime")}
-                  </ThemedText>
-                </TouchableOpacity>
+                {chaletDetails?.shifts?.map((shift: any) => {
+                  const isSelected = selectedShiftId === shift.id;
+                  const isBooked = isShiftBooked(shift.id);
+                  const shiftName = isRTL ? (shift.name?.ar || shift.name) : (shift.name?.en || shift.name);
+                  const isMorning = (shift.type === 'MORNING');
+                  
+                  return (
+                    <TouchableOpacity
+                      key={shift.id}
+                      disabled={isBooked}
+                      style={[
+                        styles.shiftCard,
+                        isSelected && {
+                          backgroundColor: isMorning ? "#F6420008" : "#035DF908",
+                          borderColor: isMorning ? "#F6420033" : "#035DF933",
+                        },
+                        isBooked && { opacity: 0.5, backgroundColor: '#F1F5F9' },
+                        { flexDirection: isRTL ? "row-reverse" : "row" },
+                      ]}
+                      onPress={() => toggleShift(shift.id)}
+                    >
+                      <View
+                        style={[
+                          styles.shiftLeft,
+                          { flexDirection: isRTL ? "row-reverse" : "row" },
+                        ]}
+                      >
+                        <View style={styles.shiftIconBox}>
+                          {isMorning ? (
+                            <SolarSunBold
+                              size={24}
+                              color={isSelected ? "#F64200" : "#94A3B8"}
+                            />
+                          ) : (
+                            <SolarMoonBold
+                              size={24}
+                              color={isSelected ? "#035DF9" : "#94A3B8"}
+                            />
+                          )}
+                        </View>
+                        <View style={{ alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
+                          <ThemedText style={styles.shiftTitle}>
+                            {shiftName}
+                          </ThemedText>
+                          {isBooked && (
+                            <ThemedText style={{ fontSize: 10, color: '#EF4444', fontFamily: 'Tajawal-Bold' }}>
+                              {isRTL ? 'محجوز' : 'Booked'}
+                            </ThemedText>
+                          )}
+                        </View>
+                      </View>
+                      <ThemedText style={styles.shiftTime}>
+                        {formatShiftTime(shift.startTime)} - {formatShiftTime(shift.endTime)}
+                      </ThemedText>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
 
               <TouchableOpacity

@@ -12,13 +12,15 @@ import {
   SolarWaterBold,
   SolarWidgetBold,
   SolarWifiBold,
-  SolarWindBold
+  SolarWindBold,
+  SolarHeartBold
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { CircleBackButton } from "@/components/ui/circle-back-button";
 import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { SecondaryButton } from "@/components/user/secondary-button";
+import { useFormatTime } from '../../../hooks/useFormatTime';
 import { Colors, normalize, Shadows } from "@/constants/theme";
 import Constants from 'expo-constants';
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -37,7 +39,7 @@ import {
 import { Image as ExpoImage } from 'expo-image';
 import Svg, { Path } from "react-native-svg";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { useGetCustomerChaletDetailsQuery, useGetChaletReviewsQuery, useCreateReviewMutation, useAddFavoriteMutation, useRemoveFavoriteMutation, useGetSimilarChaletsQuery, useGetChaletAddonsQuery, useCheckCanReviewQuery } from "@/store/api/customerApiSlice";
+import { useGetCustomerChaletDetailsQuery, useGetChaletReviewsQuery, useCreateReviewMutation, useAddFavoriteMutation, useRemoveFavoriteMutation, useGetSimilarChaletsQuery, useGetChaletAddonsQuery, useCheckCanReviewQuery, useToggleFavoriteMutation, useGetFavoriteIdsQuery } from "@/store/api/customerApiSlice";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { ReviewSubmissionSheet } from "@/components/user/review-submission-sheet";
 import { HostContactCard } from "@/components/user/host-contact-card";
@@ -99,6 +101,19 @@ export default function ChaletDetailScreen() {
   const { data: similarResponse } = useGetSimilarChaletsQuery(chaletId);
   const { data: addons = [] } = useGetChaletAddonsQuery(chaletId);
   const { data: canReviewData } = useCheckCanReviewQuery(chaletId);
+  const { data: favoriteIds = [], refetch: refetchFavorites } = useGetFavoriteIdsQuery();
+  const [toggleFavorite] = useToggleFavoriteMutation();
+
+  const isFavorite = useMemo(() => favoriteIds.includes(chaletId), [favoriteIds, chaletId]);
+
+  const handleToggleFavorite = async () => {
+    try {
+      await toggleFavorite(chaletId).unwrap();
+      refetchFavorites();
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error);
+    }
+  };
 
   const isExpoGo = Constants.appOwnership === 'expo';
   const showMap = !isExpoGo;
@@ -136,6 +151,8 @@ export default function ChaletDetailScreen() {
   const chaletDescription = isRTL 
     ? (chalet.description?.ar || chalet.descriptionAr || chalet.description || '') 
     : (chalet.description?.en || chalet.descriptionEn || chalet.description || '');
+
+  const { formatShiftTime } = useFormatTime();
 
   // Use chalet images from API or fallback
   const images = useMemo(() => {
@@ -261,6 +278,13 @@ export default function ChaletDetailScreen() {
             ))}
           </ScrollView>
           <CircleBackButton style={[styles.backBtnOriginal, isRTL ? { right: 20 } : { left: 20 }]} />
+          
+          <TouchableOpacity 
+            style={[styles.favoriteBtn, isRTL ? { left: 20 } : { right: 20 }]} 
+            onPress={handleToggleFavorite}
+          >
+            <SolarHeartBold size={24} color={isFavorite ? "#EA2129" : "#FFFFFF"} />
+          </TouchableOpacity>
           <View style={[styles.paginationDots, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             {images.map((_: string, i: number) => (
               <View
@@ -302,18 +326,7 @@ export default function ChaletDetailScreen() {
             ))}
           </View>
 
-          {/* سعة الشاليه وسياسة الضيوف */}
-          <View style={[styles.capacityPolicyCard, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-            <View style={styles.capacityCardItem}>
-               <ThemedText style={styles.capacityValue}>{chalet.baseCapacity || 2}</ThemedText>
-               <ThemedText style={styles.capacityLabel}>{isRTL ? "سعة السعر الأساسي" : "Base Capacity"}</ThemedText>
-            </View>
-            <View style={styles.capacityDivider} />
-            <View style={styles.capacityCardItem}>
-               <ThemedText style={styles.capacityValue}>{Number(chalet.extraPersonPrice || 0).toLocaleString()} <ThemedText style={{fontSize: 10}}>{t('common.iqd')}</ThemedText></ThemedText>
-               <ThemedText style={styles.capacityLabel}>{isRTL ? "للشخص الإضافي" : "Per Extra Person"}</ThemedText>
-            </View>
-          </View>
+
 
           {/* الشفتات المتوفرة */}
           <SectionHeader title={isRTL ? "الشفتات المتوفرة" : "Available Shifts"} isRTL={isRTL} />
@@ -328,7 +341,7 @@ export default function ChaletDetailScreen() {
                     {isRTL ? (shift.name?.ar || shift.name) : (shift.name?.en || shift.name)}
                   </ThemedText>
                   <ThemedText style={styles.shiftTime}>
-                    {shift.startTime} - {shift.endTime}
+                    {formatShiftTime(shift.startTime)} - {formatShiftTime(shift.endTime)}
                   </ThemedText>
                 </View>
               </View>
@@ -582,6 +595,8 @@ export default function ChaletDetailScreen() {
               color: CARD_COLORS[index % CARD_COLORS.length],
             }))}
             onPressCard={(id) => router.push(`/chalet-details/${id}`)}
+            favoriteIds={favoriteIds}
+            onToggleFavorite={handleToggleFavorite}
           />
         </View>
       </ScrollView>
@@ -621,6 +636,17 @@ const styles = StyleSheet.create({
   imageHeader: { width: SCREEN_WIDTH, height: 350, position: "relative" },
   headerImage: { width: SCREEN_WIDTH, height: "100%" },
   backBtnOriginal: { position: "absolute", top: 50, zIndex: 10 },
+  favoriteBtn: {
+    position: "absolute",
+    top: 50,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10,
+  },
   paginationDots: {
     position: "absolute",
     bottom: 20,

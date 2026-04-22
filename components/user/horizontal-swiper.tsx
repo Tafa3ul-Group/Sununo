@@ -18,9 +18,11 @@ interface HorizontalSwiperProps {
   data: any[];
   onPressCard?: (id: string) => void;
   onIndexChange?: (index: number) => void;
+  favoriteIds?: string[];
+  onToggleFavorite?: (id: string) => void;
 }
 
-export function HorizontalSwiper({ data, onPressCard, onIndexChange }: HorizontalSwiperProps) {
+export function HorizontalSwiper({ data, onPressCard, onIndexChange, favoriteIds = [], onToggleFavorite }: HorizontalSwiperProps) {
   const { i18n } = useTranslation();
   const isRTL = i18n.language === 'ar';
   const [activeIndex, setActiveIndex] = useState(0);
@@ -42,6 +44,8 @@ export function HorizontalSwiper({ data, onPressCard, onIndexChange }: Horizonta
         shapeIndex={index}
         onPress={() => onPressCard && onPressCard(item.id)}
         style={styles.cardOverride}
+        isFavorite={favoriteIds.includes(item.id)}
+        onToggleFavorite={() => onToggleFavorite && onToggleFavorite(item.id)}
       />
     </View>
   );
