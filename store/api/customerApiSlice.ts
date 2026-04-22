@@ -1,4 +1,4 @@
-import { apiSlice } from './apiSlice';
+import { apiSlice } from "./apiSlice";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Customer-specific API endpoints — injected into the shared apiSlice.
@@ -7,43 +7,48 @@ import { apiSlice } from './apiSlice';
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const customerApi = apiSlice.injectEndpoints({
-  overrideExisting: false,
+  overrideExisting: true,
   endpoints: (builder) => ({
-
     // ── Chalets (Customer) ─────────────────────────────────────────────────
 
     /** Browse approved & active chalets (public) */
     browseCustomerChalets: builder.query({
       query: (params) => ({
-        url: '/customer/chalets',
+        url: "/customer/chalets",
         params,
       }),
-      providesTags: ['Chalet'],
+      providesTags: ["Chalet"],
     }),
 
     /** Elasticsearch-powered search with fallback */
     searchChalets: builder.query({
       query: (params) => ({
-        url: '/customer/chalets/search',
+        url: "/customer/chalets/search",
         params,
       }),
-      providesTags: ['Chalet'],
+      providesTags: ["Chalet"],
     }),
 
     /** Full chalet detail (shifts, pricing, images, amenities) */
     getCustomerChaletDetails: builder.query({
       query: (id: string) => `/customer/chalets/${id}`,
-      providesTags: (result: any, error: any, id: string) => [{ type: 'Chalet' as const, id }],
+      providesTags: (result: any, error: any, id: string) => [
+        { type: "Chalet" as const, id },
+      ],
     }),
-    
+
     getSimilarChalets: builder.query({
       query: (id: string) => `/customer/chalets/${id}/similar`,
-      providesTags: (result: any, error: any, id: string) => [{ type: 'Chalet' as const, id }],
+      providesTags: (result: any, error: any, id: string) => [
+        { type: "Chalet" as const, id },
+      ],
     }),
 
     getChaletAddons: builder.query({
       query: (id: string) => `/customer/chalets/${id}/addons`,
-      providesTags: (result: any, error: any, id: string) => [{ type: 'Chalet' as const, id }],
+      providesTags: (result: any, error: any, id: string) => [
+        { type: "Chalet" as const, id },
+      ],
     }),
 
     getChaletTerms: builder.query({
@@ -70,7 +75,7 @@ export const customerApi = apiSlice.injectEndpoints({
         adultsCount?: number;
         childrenCount?: number;
         addonIds?: string[];
-        paymentModel: 'DEPOSIT' | 'FULL';
+        paymentModel: "DEPOSIT" | "FULL";
         useWalletBalance?: boolean;
         notes?: string;
         cardHolderName?: string;
@@ -78,21 +83,26 @@ export const customerApi = apiSlice.injectEndpoints({
         expiry?: string;
         cvv?: string;
       }) => ({
-        url: '/customer/bookings',
-        method: 'POST',
+        url: "/customer/bookings",
+        method: "POST",
         body: data,
       }),
-      invalidatesTags: ['Booking', 'Chalet'],
+      invalidatesTags: ["Booking", "Chalet"],
     }),
 
     /** List my bookings (paginated, filterable by status) */
     getCustomerBookings: builder.query({
       query: (params?: {
-        status?: 'pending_payment' | 'confirmed' | 'completed' | 'cancelled' | 'refunded';
+        status?:
+          | "pending_payment"
+          | "confirmed"
+          | "completed"
+          | "cancelled"
+          | "refunded";
         page?: number;
         limit?: number;
       }) => ({
-        url: '/customer/bookings',
+        url: "/customer/bookings",
         params,
       }),
       // Support for infinite scrolling
@@ -109,16 +119,24 @@ export const customerApi = apiSlice.injectEndpoints({
           data: [...(currentCache.data || []), ...(newItems.data || [])],
         };
       },
-      forceRefetch({ currentArg, previousArg }: { currentArg: any; previousArg: any }) {
+      forceRefetch({
+        currentArg,
+        previousArg,
+      }: {
+        currentArg: any;
+        previousArg: any;
+      }) {
         return currentArg !== previousArg;
       },
-      providesTags: ['Booking'],
+      providesTags: ["Booking"],
     }),
 
     /** Get booking detail with chalet, shift, and payment info */
     getCustomerBookingDetails: builder.query({
       query: (id: string) => `/customer/bookings/${id}`,
-      providesTags: (result: any, error: any, id: string) => [{ type: 'Booking' as const, id }],
+      providesTags: (result: any, error: any, id: string) => [
+        { type: "Booking" as const, id },
+      ],
     }),
 
     /** Preview cancellation penalty and refund amounts */
@@ -130,12 +148,12 @@ export const customerApi = apiSlice.injectEndpoints({
     cancelCustomerBooking: builder.mutation({
       query: ({ id, reason }: { id: string; reason?: string }) => ({
         url: `/customer/bookings/${id}/cancel`,
-        method: 'POST',
+        method: "POST",
         body: { reason },
       }),
       invalidatesTags: (result: any, error: any, { id }: { id: string }) => [
-        'Booking',
-        { type: 'Booking' as const, id },
+        "Booking",
+        { type: "Booking" as const, id },
       ],
     }),
 
@@ -145,90 +163,114 @@ export const customerApi = apiSlice.injectEndpoints({
     addFavorite: builder.mutation({
       query: (chaletId: string) => ({
         url: `/customer/favorites/${chaletId}`,
-        method: 'POST',
+        method: "POST",
       }),
-      invalidatesTags: ['Chalet'],
+      invalidatesTags: ["Chalet"],
     }),
 
     /** Remove chalet from favorites */
     removeFavorite: builder.mutation({
       query: (chaletId: string) => ({
         url: `/customer/favorites/${chaletId}`,
-        method: 'DELETE',
+        method: "DELETE",
       }),
-      invalidatesTags: ['Chalet'],
+      invalidatesTags: ["Chalet"],
     }),
 
     /** List my favorite chalets (paginated) */
     getCustomerFavorites: builder.query({
       query: (params?: { page?: number; limit?: number }) => ({
-        url: '/customer/favorites',
+        url: "/customer/favorites",
         params,
       }),
-      providesTags: ['Chalet'],
+      providesTags: ["Chalet"],
     }),
 
     // ── Reviews (Customer) ─────────────────────────────────────────────────
 
     /** Create a review for a completed booking or chalet */
     createReview: builder.mutation({
-      query: (data: { bookingId?: string; chaletId?: string; rating: number; comment?: string }) => ({
-        url: '/customer/reviews',
-        method: 'POST',
+      query: (data: {
+        bookingId?: string;
+        chaletId?: string;
+        rating: number;
+        comment?: string;
+      }) => ({
+        url: "/customer/reviews",
+        method: "POST",
         body: data,
       }),
-      invalidatesTags: ['Chalet'],
+      invalidatesTags: ["Chalet"],
     }),
 
     /** Update own review */
     updateReview: builder.mutation({
-      query: ({ id, ...data }: { id: string; rating?: number; comment?: string }) => ({
+      query: ({
+        id,
+        ...data
+      }: {
+        id: string;
+        rating?: number;
+        comment?: string;
+      }) => ({
         url: `/customer/reviews/${id}`,
-        method: 'PATCH',
+        method: "PATCH",
         body: data,
       }),
-      invalidatesTags: ['Chalet'],
+      invalidatesTags: ["Chalet"],
     }),
 
     /** Delete own review */
     deleteReview: builder.mutation({
       query: (id: string) => ({
         url: `/customer/reviews/${id}`,
-        method: 'DELETE',
+        method: "DELETE",
       }),
-      invalidatesTags: ['Chalet'],
+      invalidatesTags: ["Chalet"],
     }),
 
     /** Get paginated reviews for a chalet */
     getChaletReviews: builder.query({
-      query: ({ chaletId, ...params }: { chaletId: string; page?: number; limit?: number }) => ({
+      query: ({
+        chaletId,
+        ...params
+      }: {
+        chaletId: string;
+        page?: number;
+        limit?: number;
+      }) => ({
         url: `/customer/chalets/${chaletId}/reviews`,
         params,
       }),
-      providesTags: ['Chalet'],
+      providesTags: ["Chalet"],
+    }),
+
+    /** Check if user can review a specific chalet */
+    checkCanReview: builder.query({
+      query: (chaletId: string) => `/customer/chalets/${chaletId}/can-review`,
     }),
 
     // ── Wallet (Customer) ──────────────────────────────────────────────────
 
     /** View customer wallet balance */
     getCustomerWallet: builder.query({
-      query: () => '/customer/wallet',
-      providesTags: ['User'],
+      query: () => "/customer/wallet",
+      providesTags: ["User"],
     }),
 
     /** View customer wallet transaction history */
     getCustomerTransactions: builder.query({
       query: (params?: { page?: number; limit?: number }) => ({
-        url: '/customer/wallet/transactions',
+        url: "/customer/wallet/transactions",
         params,
       }),
-      providesTags: ['User'],
+      providesTags: ["User"],
     }),
 
     /** Get my wallet (shared endpoint) */
     getMyWallet: builder.query({
-      query: () => '/wallet/my-wallet',
-      providesTags: ['User'],
+      query: () => "/wallet/my-wallet",
+      providesTags: ["User"],
     }),
 
     // ── Account (Customer) ─────────────────────────────────────────────────
@@ -236,8 +278,8 @@ export const customerApi = apiSlice.injectEndpoints({
     /** Delete my account (Apple/Google compliance) */
     deleteCustomerAccount: builder.mutation({
       query: () => ({
-        url: '/customer/account',
-        method: 'DELETE',
+        url: "/customer/account",
+        method: "DELETE",
       }),
     }),
 
@@ -246,29 +288,29 @@ export const customerApi = apiSlice.injectEndpoints({
     /** Update my profile information */
     updateUserProfile: builder.mutation({
       query: (data: { name?: string; email?: string }) => ({
-        url: '/users/profile',
-        method: 'PUT',
+        url: "/users/profile",
+        method: "PUT",
         body: data,
       }),
-      invalidatesTags: ['User'],
+      invalidatesTags: ["User"],
     }),
 
     /** Update my profile image */
     updateProfileImage: builder.mutation({
       query: (formData: FormData) => ({
-        url: '/users/profile/image',
-        method: 'PUT',
+        url: "/users/profile/image",
+        method: "PUT",
         body: formData,
         headers: {},
       }),
-      invalidatesTags: ['User'],
+      invalidatesTags: ["User"],
     }),
 
     /** Request phone number change */
     changePhoneNumber: builder.mutation({
       query: (data: { phone: string }) => ({
-        url: '/users/change-phone',
-        method: 'POST',
+        url: "/users/change-phone",
+        method: "POST",
         body: data,
       }),
     }),
@@ -276,11 +318,11 @@ export const customerApi = apiSlice.injectEndpoints({
     /** Verify and complete phone number change */
     verifyPhoneNumberChange: builder.mutation({
       query: (data: { code: string }) => ({
-        url: '/users/verify-phone',
-        method: 'POST',
+        url: "/users/verify-phone",
+        method: "POST",
         body: data,
       }),
-      invalidatesTags: ['User'],
+      invalidatesTags: ["User"],
     }),
 
     // ── Notifications ──────────────────────────────────────────────────────
@@ -288,7 +330,7 @@ export const customerApi = apiSlice.injectEndpoints({
     /** Get all notifications (paginated) */
     getNotifications: builder.query({
       query: (params?: { page?: number; limit?: number }) => ({
-        url: '/notifications',
+        url: "/notifications",
         params,
       }),
     }),
@@ -297,20 +339,20 @@ export const customerApi = apiSlice.injectEndpoints({
     markNotificationAsRead: builder.mutation({
       query: (id: string) => ({
         url: `/notifications/${id}/mark-as-read`,
-        method: 'PUT',
+        method: "PUT",
       }),
     }),
 
     /** Get notification settings */
     getNotificationSettings: builder.query({
-      query: () => '/notifications/settings',
+      query: () => "/notifications/settings",
     }),
 
     /** Update notification settings */
     updateNotificationSettings: builder.mutation({
       query: (data: any) => ({
-        url: '/notifications/settings',
-        method: 'PUT',
+        url: "/notifications/settings",
+        method: "PUT",
         body: data,
       }),
     }),
@@ -318,8 +360,8 @@ export const customerApi = apiSlice.injectEndpoints({
     /** Register Firebase token */
     registerFirebaseToken: builder.mutation({
       query: (data: { token: string; platform?: string }) => ({
-        url: '/notifications/firebase-token',
-        method: 'POST',
+        url: "/notifications/firebase-token",
+        method: "POST",
         body: data,
       }),
     }),
@@ -329,8 +371,8 @@ export const customerApi = apiSlice.injectEndpoints({
     /** Logout */
     logoutUser: builder.mutation({
       query: () => ({
-        url: '/auth/logout',
-        method: 'POST',
+        url: "/auth/logout",
+        method: "POST",
       }),
     }),
 
@@ -338,7 +380,7 @@ export const customerApi = apiSlice.injectEndpoints({
 
     /** Get list of all city names */
     getCityNames: builder.query({
-      query: () => '/cities/names',
+      query: () => "/cities/names",
     }),
 
     /** Get regions for a specific city */
@@ -350,7 +392,7 @@ export const customerApi = apiSlice.injectEndpoints({
 
     /** Get active banners for home screen */
     getBanners: builder.query({
-      query: () => '/banners',
+      query: () => "/banners",
     }),
   }),
 });
@@ -388,6 +430,7 @@ export const {
   useUpdateReviewMutation,
   useDeleteReviewMutation,
   useGetChaletReviewsQuery,
+  useCheckCanReviewQuery,
 
   // Wallet
   useGetCustomerWalletQuery,

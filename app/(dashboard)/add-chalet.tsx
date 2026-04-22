@@ -107,6 +107,10 @@ export default function AddChaletScreen() {
     policiesEn: '',
     latitude: '',
     longitude: '',
+    basePrice: '',
+    area: '',
+    bedrooms: '',
+    bathrooms: '',
   });
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -288,6 +292,10 @@ export default function AddChaletScreen() {
       if (form.phone) formData.append('phone', form.phone);
       if (form.whatsapp) formData.append('whatsapp', form.whatsapp);
       if (form.depositPercentage) formData.append('depositPercentage', form.depositPercentage);
+      if (form.basePrice) formData.append('basePrice', form.basePrice);
+      if (form.area) formData.append('area', form.area);
+      if (form.bedrooms) formData.append('bedrooms', form.bedrooms);
+      if (form.bathrooms) formData.append('bathrooms', form.bathrooms);
 
       // ── Features ──
       if (selectedFeatures.length > 0) {
@@ -492,6 +500,37 @@ export default function AddChaletScreen() {
                       </View>
                     </View>
                   </TouchableOpacity>
+                </View>
+              </View>
+
+              <View style={styles.sectionCard}>
+                {/* السعر الأساسي */}
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.label, { textAlign }]}>{isRTL ? 'السعر التجريبي / الأساسي (د.ع)' : 'Base Price (IQD)'}</Text>
+                  <TextInput
+                    style={[styles.input, { textAlign: 'left' }]}
+                    placeholder="e.g. 150000"
+                    placeholderTextColor="#BCBCBC"
+                    keyboardType="numeric"
+                    value={form.basePrice}
+                    onChangeText={(val) => setForm({ ...form, basePrice: val })}
+                  />
+                </View>
+
+                {/* المواصفات الأساسية */}
+                <View style={[styles.rowInputs, { flexDirection }]}>
+                  <View style={[styles.inputGroup, { flex: 1 }]}>
+                    <Text style={[styles.label, { textAlign }]}>{isRTL ? 'المساحة (م²)' : 'Area (m²)'}</Text>
+                    <TextInput style={[styles.input, { textAlign: 'center' }]} placeholder="300" placeholderTextColor="#BCBCBC" keyboardType="numeric" value={form.area} onChangeText={(val) => setForm({ ...form, area: val })} />
+                  </View>
+                  <View style={[styles.inputGroup, { flex: 1 }]}>
+                    <Text style={[styles.label, { textAlign }]}>{isRTL ? 'الغرف' : 'Bedrooms'}</Text>
+                    <TextInput style={[styles.input, { textAlign: 'center' }]} placeholder="2" placeholderTextColor="#BCBCBC" keyboardType="numeric" value={form.bedrooms} onChangeText={(val) => setForm({ ...form, bedrooms: val })} />
+                  </View>
+                  <View style={[styles.inputGroup, { flex: 1 }]}>
+                    <Text style={[styles.label, { textAlign }]}>{isRTL ? 'الحمامات' : 'Bathrooms'}</Text>
+                    <TextInput style={[styles.input, { textAlign: 'center' }]} placeholder="1" placeholderTextColor="#BCBCBC" keyboardType="numeric" value={form.bathrooms} onChangeText={(val) => setForm({ ...form, bathrooms: val })} />
+                  </View>
                 </View>
               </View>
 

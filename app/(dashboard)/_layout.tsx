@@ -30,6 +30,10 @@ export default function DashboardNonTabLayout() {
         options={{ title: "تعديل الشاليه" }}
       />
       <Stack.Screen
+        name="edit-details/[id]"
+        options={{ title: "تفاصيل الشاليه" }}
+      />
+      <Stack.Screen
         name="chalet-details"
         options={{ headerShown: false }}
       />

@@ -20,6 +20,7 @@ import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize, Shadows } from "@/constants/theme";
+import Constants from 'expo-constants';
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -36,7 +37,7 @@ import {
 import { Image as ExpoImage } from 'expo-image';
 import Svg, { Path } from "react-native-svg";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { useGetCustomerChaletDetailsQuery, useGetChaletReviewsQuery, useCreateReviewMutation, useAddFavoriteMutation, useRemoveFavoriteMutation, useGetSimilarChaletsQuery, useGetChaletAddonsQuery } from "@/store/api/customerApiSlice";
+import { useGetCustomerChaletDetailsQuery, useGetChaletReviewsQuery, useCreateReviewMutation, useAddFavoriteMutation, useRemoveFavoriteMutation, useGetSimilarChaletsQuery, useGetChaletAddonsQuery, useCheckCanReviewQuery } from "@/store/api/customerApiSlice";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { ReviewSubmissionSheet } from "@/components/user/review-submission-sheet";
 import { HostContactCard } from "@/components/user/host-contact-card";
@@ -97,6 +98,24 @@ export default function ChaletDetailScreen() {
   // New queries for similar chalets and addons
   const { data: similarResponse } = useGetSimilarChaletsQuery(chaletId);
   const { data: addons = [] } = useGetChaletAddonsQuery(chaletId);
+  const { data: canReviewData } = useCheckCanReviewQuery(chaletId);
+
+  const isExpoGo = Constants.appOwnership === 'expo';
+  const showMap = !isExpoGo;
+
+  // Dynamically require Mapbox only if we are not in Expo Go to prevent crashes
+  const MapboxRef = useRef<any>(null);
+  useEffect(() => {
+    if (showMap) {
+      try {
+        MapboxRef.current = require("@rnmapbox/maps").default;
+      } catch (e) {
+        console.error("Mapbox could not be initialized:", e);
+      }
+    }
+  }, [showMap]);
+
+  const MapboxComponent = MapboxRef.current;
 
   // Extract chalet info from API response
   const chalet = chaletData || {} as any;
@@ -327,19 +346,51 @@ export default function ChaletDetailScreen() {
           <SectionHeader title={t('chalet.details.location')} isRTL={isRTL} />
           <View style={styles.mapCardFlat}>
             <View style={styles.mapInner}>
-              <Image
-                source={{
-                  uri: "https://miro.medium.com/v2/resize:fit:1400/1*qV3uDpS9mZc6jS1j75n6oA.png",
-                }}
-                style={styles.mapImg}
-              />
-              <View style={styles.pinCenter}>
-                <SolarMapPointBold size={32} color="#035DF9" />
-              </View>
+              {showMap && MapboxComponent ? (
+                <MapboxComponent.MapView
+                  style={styles.mapView}
+                  scrollEnabled={false}
+                  zoomEnabled={false}
+                  rotateEnabled={false}
+                  pitchEnabled={false}
+                  logoEnabled={false}
+                  attributionEnabled={false}
+                >
+                  <MapboxComponent.Camera
+                    zoomLevel={15}
+                    centerCoordinate={[chalet.longitude || 44.3661, chalet.latitude || 33.3152]}
+                  />
+                  <MapboxComponent.PointAnnotation
+                    id="chaletLocation"
+                    coordinate={[chalet.longitude || 44.3661, chalet.latitude || 33.3152]}
+                  >
+                    <View style={styles.customPin}>
+                      <SolarMapPointBold size={32} color="#035DF9" />
+                    </View>
+                  </MapboxComponent.PointAnnotation>
+                </MapboxComponent.MapView>
+              ) : (
+                <View style={[styles.mapInner, { backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center' }]}>
+                  <Image
+                    source={{
+                      uri: `https://tiles.stadiamaps.com/static/alidade_smooth/${chalet.longitude || 44.3661},${chalet.latitude || 33.3152},15/600x300@2x.png?api_key=YOUR_KEY`
+                    }}
+                    style={styles.mapImg}
+                  />
+                  <View style={styles.pinCenterFallback}>
+                    <SolarMapPointBold size={32} color="#035DF9" />
+                  </View>
+                  <View style={styles.expoGoBanner}>
+                    <ThemedText style={styles.expoGoText}>
+                      {isRTL ? "الخريطة التفاعلية تتطلب Build خاص" : "Interactive map requires Dev Build"}
+                    </ThemedText>
+                  </View>
+                </View>
+              )}
             </View>
             <View style={styles.mapLocLabel}>
               <ThemedText style={styles.mapLocText}>
-                {isRTL ? "البصرة - ابي الخصيب" : "Basra - Abu Al-Khaseeb"}
+                {chaletLocation}
               </ThemedText>
             </View>
           </View>
@@ -410,14 +461,24 @@ export default function ChaletDetailScreen() {
             );
           })}
 
-          <View style={styles.addReviewAction}>
-            <PrimaryButton
-              label={t('chalet.details.addReview')}
-              onPress={openReviewSheet}
-              style={styles.addBtnFinal}
-              height={54}
-            />
-          </View>
+          {canReviewData?.canReview && (
+            <View style={styles.addReviewAction}>
+              <PrimaryButton
+                label={t('chalet.details.addReview')}
+                onPress={openReviewSheet}
+                style={styles.addBtnFinal}
+                height={54}
+              />
+            </View>
+          )}
+
+          {!canReviewData?.canReview && canReviewData?.reason === 'NO_COMPLETED_BOOKING' && (
+             <View style={styles.unverifiedReviewMsg}>
+               <ThemedText style={styles.unverifiedText}>
+                 {isRTL ? "فقط المستخدمين الذين حجزوا هذا الشاليه يمكنهم التقييم" : "Only users who have booked this chalet can review"}
+               </ThemedText>
+             </View>
+          )}
 
           {/* معلومات تهمك */}
           <SectionHeader title={t('common.details')} isRTL={isRTL} />
@@ -452,31 +513,6 @@ export default function ChaletDetailScreen() {
             ))}
           </View>
 
-          {/* الاضافات الخاصة (Addons) */}
-          {addons && addons.length > 0 ? (
-            <>
-              <SectionHeader title={t('chalet.details.addons') || "الاضافات الخاصة"} isRTL={isRTL} />
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.addonsList}>
-                {addons.map((addon: any, i: number) => (
-                  <View key={addon.id || i} style={styles.addonCard}>
-                    <ExpoImage 
-                      source={getImageSrc(addon.image)} 
-                      style={styles.addonImg} 
-                      contentFit="cover"
-                    />
-                    <View style={styles.addonInfo}>
-                      <ThemedText style={styles.addonName}>
-                        {isRTL ? (addon.name?.ar || addon.name) : (addon.name?.en || addon.name)}
-                      </ThemedText>
-                      <ThemedText style={styles.addonPrice}>
-                        {Number(addon.price).toLocaleString()} {t('common.iqd')}
-                      </ThemedText>
-                    </View>
-                  </View>
-                ))}
-              </ScrollView>
-            </>
-          ) : null}
 
           {/* قد يعجبك ايضا */}
           <SectionHeader title={t('chalet.details.related')} isRTL={isRTL} />
@@ -618,11 +654,40 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#F3F4F6",
   },
-  mapInner: { height: 180, borderRadius: 15, overflow: "hidden" },
+  mapInner: { height: 220, borderRadius: 24, overflow: "hidden" },
+  mapView: { flex: 1 },
   mapImg: { width: "100%", height: "100%" },
-  pinCenter: { position: "absolute", top: "40%", left: "46%" },
-  mapLocLabel: { paddingVertical: 10, alignItems: "center" },
-  mapLocText: { fontSize: 15, fontFamily: "LamaSans-Black" },
+  customPin: { 
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pinCenterFallback: { position: "absolute", top: "40%", left: "46%" },
+  expoGoBanner: {
+    position: 'absolute',
+    bottom: 15,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  expoGoText: { color: 'white', fontSize: 10, fontFamily: 'LamaSans-Medium' },
+  mapLocLabel: { paddingVertical: 12, alignItems: "center" },
+  mapLocText: { fontSize: 16, fontFamily: "LamaSans-Black" },
+  unverifiedReviewMsg: {
+    padding: 20,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 16,
+    marginVertical: 10,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+  },
+  unverifiedText: {
+    color: '#9CA3AF',
+    fontSize: 13,
+    fontFamily: 'LamaSans-Medium',
+    textAlign: 'center',
+  },
 
   hostStampArea: { 
     marginVertical: 20, 

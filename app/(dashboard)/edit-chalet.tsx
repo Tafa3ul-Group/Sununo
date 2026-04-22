@@ -107,6 +107,7 @@ export default function EditChaletScreen() {
     maxAdults: '4', maxChildren: '2', cityId: '', cityName: '',
     depositPercentage: '25', phone: '', whatsapp: '',
     policiesAr: '', policiesEn: '', latitude: '', longitude: '',
+    basePrice: '', area: '', bedrooms: '', bathrooms: '',
   });
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -159,6 +160,10 @@ export default function EditChaletScreen() {
         phone: chalet.phone || '', whatsapp: chalet.whatsapp || '',
         policiesAr: chalet.policies?.ar || '', policiesEn: chalet.policies?.en || '',
         latitude: chalet.latitude?.toString() || '', longitude: chalet.longitude?.toString() || '',
+        basePrice: chalet.basePrice?.toString() || '',
+        area: chalet.area?.toString() || '',
+        bedrooms: chalet.bedrooms?.toString() || '',
+        bathrooms: chalet.bathrooms?.toString() || '',
       });
       setExistingImages(chalet.images || []);
     }
@@ -266,6 +271,10 @@ export default function EditChaletScreen() {
         phone: form.phone || null, whatsapp: form.whatsapp || null,
         maxAdults: parseInt(form.maxAdults) || 1, maxChildren: parseInt(form.maxChildren) || 0,
         depositPercentage: parseFloat(form.depositPercentage) || 0,
+        basePrice: parseFloat(form.basePrice) || 0,
+        area: parseInt(form.area) || 0,
+        bedrooms: parseInt(form.bedrooms) || 0,
+        bathrooms: parseInt(form.bathrooms) || 0,
       };
       if (form.policiesAr) payload.policies = { ar: form.policiesAr, en: form.policiesEn || form.policiesAr };
 
@@ -428,6 +437,28 @@ export default function EditChaletScreen() {
                       </View>
                     </View>
                   </TouchableOpacity>
+                </View>
+              </View>
+
+              <View style={styles.sectionCard}>
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.label, { textAlign }]}>{isRTL ? 'السعر التجريبي / الأساسي (د.ع)' : 'Base Price (IQD)'}</Text>
+                  <TextInput style={[styles.input, { textAlign: 'left' }]} placeholder="e.g. 150000" placeholderTextColor="#BCBCBC" keyboardType="numeric" value={form.basePrice} onChangeText={(val) => setForm({ ...form, basePrice: val })} />
+                </View>
+
+                <View style={[styles.rowInputs, { flexDirection }]}>
+                  <View style={[styles.inputGroup, { flex: 1 }]}>
+                    <Text style={[styles.label, { textAlign }]}>{isRTL ? 'المساحة (م²)' : 'Area (m²)'}</Text>
+                    <TextInput style={[styles.input, { textAlign: 'center' }]} placeholder="300" placeholderTextColor="#BCBCBC" keyboardType="numeric" value={form.area} onChangeText={(val) => setForm({ ...form, area: val })} />
+                  </View>
+                  <View style={[styles.inputGroup, { flex: 1 }]}>
+                    <Text style={[styles.label, { textAlign }]}>{isRTL ? 'الغرف' : 'Bedrooms'}</Text>
+                    <TextInput style={[styles.input, { textAlign: 'center' }]} placeholder="2" placeholderTextColor="#BCBCBC" keyboardType="numeric" value={form.bedrooms} onChangeText={(val) => setForm({ ...form, bedrooms: val })} />
+                  </View>
+                  <View style={[styles.inputGroup, { flex: 1 }]}>
+                    <Text style={[styles.label, { textAlign }]}>{isRTL ? 'الحمامات' : 'Bathrooms'}</Text>
+                    <TextInput style={[styles.input, { textAlign: 'center' }]} placeholder="1" placeholderTextColor="#BCBCBC" keyboardType="numeric" value={form.bathrooms} onChangeText={(val) => setForm({ ...form, bathrooms: val })} />
+                  </View>
                 </View>
               </View>
 

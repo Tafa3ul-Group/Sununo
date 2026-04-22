@@ -14,7 +14,8 @@ import {
   SolarStarBold,
   SolarPenBold,
   SolarAddSquareBold,
-  SolarHome2Bold
+  SolarHome2Bold,
+  SolarNotebookBold
 } from "@/components/icons/solar-icons";
 import {
   ActivityIndicator,
@@ -88,15 +89,27 @@ export default function MyChaletsScreen() {
           </View>
 
           {/* Actions */}
-          <TouchableOpacity
-            style={styles.editBtn}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              router.push({ pathname: '/(dashboard)/edit-chalet', params: { id: item.id } });
-            }}
-          >
-            <SolarPenBold size={18} color={Colors.text.muted} />
-          </TouchableOpacity>
+          <View style={[styles.actionsColumn, { alignItems: isRTL ? 'flex-start' : 'flex-end' }]}>
+            <TouchableOpacity
+              style={styles.editBtn}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                router.push({ pathname: '/(dashboard)/edit-chalet', params: { id: item.id } });
+              }}
+            >
+              <SolarPenBold size={18} color={Colors.text.muted} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.editBtn, { marginTop: 8 }]}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                router.push({ pathname: '/(dashboard)/edit-details', params: { id: item.id } });
+              }}
+            >
+              <SolarNotebookBold size={18} color={Colors.primary} />
+            </TouchableOpacity>
+          </View>
         </View>
       </TouchableOpacity>
     );
@@ -286,6 +299,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F9FB',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  actionsColumn: {
+    justifyContent: 'center',
+    gap: 8,
   },
   emptyContainer: {
     alignItems: 'center',

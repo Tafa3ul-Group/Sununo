@@ -1,7 +1,7 @@
 // @@iconify-code-gen
 import { persistor, store } from '@/store';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
 import { Text, TextInput } from 'react-native';
@@ -13,6 +13,10 @@ import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { useTranslation } from 'react-i18next';
 import { RootState } from '@/store';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import '@/i18n';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 // @ts-ignore
 if (Text.defaultProps == null) Text.defaultProps = {};
@@ -32,24 +36,13 @@ TextInput.defaultProps.style = {
   textAlignVertical: 'center',
 };
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import '@/i18n';
-import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const { i18n } = useTranslation();
+  const segments = useSegments();
   const router = useRouter();
   const { language, isAuthenticated, userType } = useSelector((state: RootState) => state.auth);
 
-  // Global Auth Guard: Redirect to index if auth is lost
-  useEffect(() => {
-    if (!isAuthenticated && userType !== 'guest') {
-      router.replace('/');
-    }
-  }, [isAuthenticated, userType]);
-  
   const [loaded, error] = useFonts({
     'Tajawal-Bold': require('../assets/fonts/Tajawal/Tajawal-Bold.ttf'),
     'Tajawal-SemiBold': require('../assets/fonts/Tajawal/Tajawal-Bold.ttf'),
@@ -58,6 +51,18 @@ function RootLayoutNav() {
     'Tajawal-Black': require('../assets/fonts/Tajawal/Tajawal-Black.ttf'),
     'Tajawal-Light': require('../assets/fonts/Tajawal/Tajawal-Light.ttf'),
   });
+
+  // Global Auth Guard: Redirect to index if auth is lost
+  useEffect(() => {
+    if (!loaded) return;
+
+    const inAuthGroup = segments[0] === '(auth)';
+    const isIndex = segments.length === 0 || (segments.length === 1 && segments[0] === 'index');
+
+    if (!isAuthenticated && userType !== 'guest' && !inAuthGroup && !isIndex) {
+      router.replace('/');
+    }
+  }, [isAuthenticated, userType, segments, loaded]);
 
   useEffect(() => {
     if (loaded || error) {
