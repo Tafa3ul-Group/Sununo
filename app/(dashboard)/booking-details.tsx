@@ -57,13 +57,25 @@ export default function BookingDetailsPage() {
     );
   }
 
-  const bIsExternal = data.bookingStatus === 'EXTERNAL' || data.status === 'external';
-  const bChaletName = isRTL ? (data.chalet?.name?.ar || data.chalet?.name) : (data.chalet?.name?.en || data.chalet?.name);
-  const bChaletAddress = isRTL ? (data.chalet?.address?.ar || data.chalet?.address) : (data.chalet?.address?.en || data.chalet?.address);
-  const bCustomerName = bIsExternal ? (isRTL ? 'حجز خارجي' : 'External Booking') : (data.customer?.name || t('common.user'));
-  const bShiftName = isRTL ? (data.shift?.name?.ar || data.shift?.name) : (data.shift?.name?.en || data.shift?.name);
+  const bIsExternal = data.status === "external";
+  const bChaletName = isRTL
+    ? data.chalet?.name?.ar || data.chalet?.name
+    : data.chalet?.name?.en || data.chalet?.name;
+  const bChaletAddress = isRTL
+    ? data.chalet?.address?.ar || data.chalet?.address
+    : data.chalet?.address?.en || data.chalet?.address;
+  const bCustomerName = bIsExternal
+    ? isRTL
+      ? "حجز خارجي"
+      : "External Booking"
+    : data.customer?.name || t("common.user");
+  const bShiftName = isRTL
+    ? data.shift?.name?.ar || data.shift?.name
+    : data.shift?.name?.en || data.shift?.name;
 
-  const remainingAmount = data.totalPrice - (data.paidAmount || 0);
+  const depositAmount = Number(data.depositAmount || 0);
+  const remainingAmount = Number(data.remainingAmount || 0);
+  const totalPrice = Number(data.totalPrice || 0);
 
   const handleConfirmCancellation = async (reason: string) => {
     try {
@@ -190,9 +202,14 @@ export default function BookingDetailsPage() {
                 <Text style={styles.sectionTitle}>{isRTL ? 'معلومات الحجز' : 'Booking Information'}</Text>
             </View>
             <View style={styles.divider} />
-            {renderInfoRow(isRTL ? 'التاريخ' : 'Date', data.bookingDate)}
-            {renderInfoRow(isRTL ? 'الفترة' : 'Period', bShiftName)}
-            {renderInfoRow(isRTL ? 'الاشخاص' : 'Persons', isRTL ? `${data.adults || 2} بالغين، ${data.children || 2} اطفال` : `${data.adults || 2} Adults, ${data.children || 2} Children`)}
+            {renderInfoRow(isRTL ? "التاريخ" : "Date", data.bookingDate)}
+            {renderInfoRow(isRTL ? "الفترة" : "Period", bShiftName)}
+            {renderInfoRow(
+              isRTL ? "الاشخاص" : "Persons",
+              isRTL
+                ? `${data.adultsCount || 0} بالغين، ${data.childrenCount || 0} اطفال`
+                : `${data.adultsCount || 0} Adults, ${data.childrenCount || 0} Children`,
+            )}
         </View>
 
         {/* Payment Information */}
@@ -201,8 +218,19 @@ export default function BookingDetailsPage() {
                 <Text style={styles.sectionTitle}>{isRTL ? 'معلومات الدفع' : 'Payment Information'}</Text>
             </View>
             <View style={styles.divider} />
-            {renderInfoRow(isRTL ? 'المبلغ المدفوع' : 'Amount Paid', `${Number(data.paidAmount || 0).toLocaleString()} ${isRTL ? 'د.ع' : 'IQD'}`)}
-            {renderInfoRow(isRTL ? 'المبلغ المتبقي' : 'Remaining Amount', `${Number(remainingAmount).toLocaleString()} ${isRTL ? 'د.ع' : 'IQD'}`, true)}
+            {renderInfoRow(
+              isRTL ? "المبلغ الكلي" : "Total Price",
+              `${totalPrice.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
+            )}
+            {renderInfoRow(
+              isRTL ? "المبلغ المدفوع (العربون)" : "Paid (Deposit)",
+              `${depositAmount.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
+            )}
+            {renderInfoRow(
+              isRTL ? "المبلغ المتبقي" : "Remaining Amount",
+              `${remainingAmount.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
+              true,
+            )}
         </View>
 
         <View style={{ height: 180 }} />
