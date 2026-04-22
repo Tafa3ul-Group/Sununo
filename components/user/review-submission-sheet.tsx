@@ -79,7 +79,7 @@ const ReviewSubmissionSheet = forwardRef<
       keyboardBlurBehavior="restore"
       enablePanDownToClose={true}
     >
-      <BottomSheetScrollView contentContainerStyle={styles.contentContainer} keyboardShouldPersistTaps="handled">
+      <View style={styles.contentContainer}>
         {/* Wavy Background Wrapper */}
         <View style={styles.scallopedCard}>
           <Svg
@@ -98,7 +98,7 @@ const ReviewSubmissionSheet = forwardRef<
             {/* Rating Stars Pill - matching footer design */}
             <View style={styles.questionPill}>
               <ThemedText style={styles.questionTitle}>
-                {t('profile.review.question')}
+                {t("profile.review.question")}
               </ThemedText>
               <View style={styles.starsRow}>
                 {[1, 2, 3, 4, 5].map((i) => (
@@ -116,10 +116,13 @@ const ReviewSubmissionSheet = forwardRef<
             {/* Comments Input Area */}
             <View style={styles.inputArea}>
               <BottomSheetTextInput
-                placeholder={t('profile.review.placeholder')}
+                placeholder={t("profile.review.placeholder")}
                 placeholderTextColor="#9CA3AF"
                 multiline
-                style={[styles.textInput, { textAlign: isRTL ? 'right' : 'left' }]}
+                style={[
+                  styles.textInput,
+                  { textAlign: isRTL ? "right" : "left" },
+                ]}
                 value={comment}
                 onChangeText={setComment}
               />
@@ -130,22 +133,27 @@ const ReviewSubmissionSheet = forwardRef<
         {/* Bottom Extension to fill the drawer with green */}
         <View style={styles.bottomExtension}>
           {/* Action Buttons Row */}
-          <View style={[styles.actionsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <View
+            style={[
+              styles.actionsRow,
+              { flexDirection: isRTL ? "row-reverse" : "row" },
+            ]}
+          >
             <SecondaryButton
-              label={t('profile.review.cancel')}
+              label={t("profile.review.cancel")}
               onPress={handleCancel}
               isActive={false}
               style={{ flex: 1 }}
             />
             <SecondaryButtonInverse
-              label={t('profile.review.send')}
+              label={t("profile.review.send")}
               onPress={handleSend}
               isActive={true}
               style={{ flex: 1 }}
             />
           </View>
         </View>
-      </BottomSheetScrollView>
+      </View>
     </BottomSheetModal>
   );
 });
