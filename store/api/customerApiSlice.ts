@@ -167,6 +167,15 @@ export const customerApi = apiSlice.injectEndpoints({
 
     // ── Favorites (Customer) ───────────────────────────────────────────────
 
+    /** Toggle chalet in favorites */
+    toggleFavorite: builder.mutation({
+      query: (chaletId: string) => ({
+        url: `/customer/favorites/toggle/${chaletId}`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Chalet"],
+    }),
+
     /** Add chalet to favorites */
     addFavorite: builder.mutation({
       query: (chaletId: string) => ({
@@ -183,6 +192,12 @@ export const customerApi = apiSlice.injectEndpoints({
         method: "DELETE",
       }),
       invalidatesTags: ["Chalet"],
+    }),
+
+    /** Get list of favorited chalet IDs */
+    getFavoriteIds: builder.query<string[], void>({
+      query: () => "/customer/favorites/ids",
+      providesTags: ["Chalet"],
     }),
 
     /** List my favorite chalets (paginated) */
@@ -432,7 +447,9 @@ export const {
   // Favorites
   useAddFavoriteMutation,
   useRemoveFavoriteMutation,
+  useToggleFavoriteMutation,
   useGetCustomerFavoritesQuery,
+  useGetFavoriteIdsQuery,
 
   // Reviews
   useCreateReviewMutation,

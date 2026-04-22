@@ -25,7 +25,7 @@ import * as Haptics from "expo-haptics";
 import { Image as ExpoImage } from "expo-image";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import LottieView from "lottie-react-native";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
     Dimensions,
@@ -79,7 +79,7 @@ export default function CompleteBookingScreen() {
   const chaletId = chaletIdParam as string;
   const { userType, user } = useSelector((state: RootState) => state.auth);
   const [activeTab, setActiveTab] = useState<TabType>("SHOOKET");
-  const [selectedDates, setSelectedDates] = useState<number[]>([15]);
+  const [selectedDates, setSelectedDates] = useState<number[]>([new Date().getDate()]);
   const [activeDateIdx, setActiveDateIdx] = useState(0);
   const [paymentType, setPaymentType] = useState<"DEPOSIT" | "FULL">("DEPOSIT");
   const { formatShiftTime } = useFormatTime();
@@ -134,7 +134,7 @@ export default function CompleteBookingScreen() {
 
   const activeDate = selectedDates[activeDateIdx];
 
-  const [currentMonth, setCurrentMonth] = useState(new Date()); // Current Date
+
 
   const handleNextShift = () => {
     const next = new Date(currentMonth);
@@ -198,15 +198,7 @@ export default function CompleteBookingScreen() {
     return pricing ? Number(pricing.price) : Number(chaletDetails?.basePrice || 0);
   }, [selectedShift, dayOfWeek, chaletDetails]);
 
-  const extraGuestsPrice = useMemo(() => {
-    if (!chaletDetails) return 0;
-    const totalGuests = adultCount + childrenCount;
-    if (totalGuests > (chaletDetails.baseCapacity || 2)) {
-      const extraCount = totalGuests - (chaletDetails.baseCapacity || 2);
-      return extraCount * Number(chaletDetails.extraPersonPrice || 0);
-    }
-    return 0;
-  }, [adultCount, childrenCount, chaletDetails]);
+  const extraGuestsPrice = 0;
 
   const totalPrice = selectedShiftPrice + extraGuestsPrice;
   const depositPercentage = Number(chaletDetails?.depositPercentage || 0);
@@ -243,14 +235,13 @@ export default function CompleteBookingScreen() {
             bookingDate,
             adultsCount: adultCount,
             childrenCount: childrenCount,
-            paymentModel: paymentType, // "DEPOSIT" | "FULL"
+            paymentModel: paymentType.toLowerCase() as any, // "deposit" | "full"
             useWalletBalance: paymentType === "FULL",
             notes,
             cardHolderName: cardName,
             cardNumber: cardNum,
             expiry,
             cvv,
-            // addonIds: [], // Addon selection could be added here if implemented in UI
           }).unwrap();
           
           setCreatedBookingId(result.booking.id);
