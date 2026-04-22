@@ -138,7 +138,8 @@ export default function CompleteBookingScreen() {
     month: "long",
     year: "numeric",
   });
-  const dayHeaders = t("booking.days", { returnObjects: true }) as string[];
+  const dayHeadersRaw = t("booking.days", { returnObjects: true });
+  const dayHeaders = Array.isArray(dayHeadersRaw) ? dayHeadersRaw : [];
 
   const [dayShifts, setDayShifts] = useState<
     Record<number, { morning: boolean; evening: boolean }>
@@ -872,7 +873,7 @@ export default function CompleteBookingScreen() {
                     { flexDirection: isRTL ? "row-reverse" : "row" },
                   ]}
                 >
-                  {dayHeaders.map((d, i) => (
+                  {Array.isArray(dayHeaders) && dayHeaders.map((d, i) => (
                     <ThemedText key={`${d}-${i}`} style={styles.dayHeaderCell}>
                       {d}
                     </ThemedText>

@@ -1,13 +1,16 @@
 import { SectionIcon } from "@/components/icons/section-icon";
 import {
   SolarClockCircleBold,
+  SolarFireBold,
   SolarForbiddenBold,
   SolarHome2Bold,
   SolarKeyBold,
   SolarMapPointBold,
+  SolarSettingsBold,
   SolarShieldCheckBold,
   SolarStarBold,
   SolarWaterBold,
+  SolarWidgetBold,
   SolarWifiBold,
   SolarWindBold
 } from "@/components/icons/solar-icons";
@@ -68,6 +71,20 @@ export default function ChaletDetailScreen() {
   const [activeImage, setActiveImage] = useState(0);
   const reviewSheetRef = React.useRef<BottomSheetModal>(null);
   const bannerScrollRef = useRef<ScrollView>(null);
+
+  const FEATURE_ICON_MAP: Record<string, any> = useMemo(() => ({
+    'bbq': SolarFireBold,
+    'heater': SolarWindBold,
+    'toilet-western': SolarWaterBold,
+    'wifi': SolarWifiBold,
+    'fridge': SolarHome2Bold,
+    'tv': SolarWidgetBold,
+    'kitchen': SolarHome2Bold,
+    'bathroom': SolarWaterBold,
+    'entertainment': SolarWidgetBold,
+    'services': SolarSettingsBold,
+    'default': SolarWidgetBold
+  }), []);
 
   // Fetch chalet details from the backend
   const { data: chaletData, isLoading } = useGetCustomerChaletDetailsQuery(chaletId);
@@ -143,22 +160,31 @@ export default function ChaletDetailScreen() {
 
   // Amenities/Facilities from API
   const facilities = useMemo(() => {
-    if (chalet.amenities && chalet.amenities.length > 0) {
-      return chalet.amenities.slice(0, 4).map((amenity: any, idx: number) => ({
-        label: isRTL 
-          ? (amenity.name?.ar || amenity.nameAr || amenity.name || '') 
-          : (amenity.name?.en || amenity.nameEn || amenity.name || ''),
-        Icon: SolarWaterBold, // You might map amenity.icon to actual icons here
-        color: CARD_COLORS[idx % CARD_COLORS.length],
-      }));
+    const apiFeatures = chalet.chaletFeatures || chalet.amenities || [];
+    
+    if (apiFeatures.length > 0) {
+      return apiFeatures.slice(0, 4).map((item: any, idx: number) => {
+        const feature = item.feature || item; // Fallback for old structure
+        const iconName = feature.icon || 'default';
+        const IconComponent = FEATURE_ICON_MAP[iconName] || FEATURE_ICON_MAP.default;
+        
+        return {
+          label: isRTL 
+            ? (feature.name?.ar || feature.nameAr || feature.name || '') 
+            : (feature.name?.en || feature.nameEn || feature.name || ''),
+          Icon: IconComponent,
+          color: CARD_COLORS[idx % CARD_COLORS.length],
+        };
+      });
     }
+    
     return [
       { label: t('facilities.privatePool'), Icon: SolarWaterBold, color: "#035DF9" },
       { label: t('facilities.wifi'), Icon: SolarWifiBold, color: "#EF79D7" },
       { label: t('facilities.generator'), Icon: SolarWindBold, color: "#F64200" },
       { label: t('facilities.kitchen'), Icon: SolarHome2Bold, color: "#15AB64" },
     ];
-  }, [chalet.amenities, isRTL, t]);
+  }, [chalet.chaletFeatures, chalet.amenities, isRTL, t]);
 
   if (isLoading) {
     return (
@@ -312,25 +338,25 @@ export default function ChaletDetailScreen() {
           </View>
 
           {/* المضيف */}
-          <View style={styles.hostStampArea}>
-            <View style={[styles.hostHeaderFixed, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
-               <View style={[styles.hostInfoSide, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                  <ThemedText style={styles.hostLabelFixed}>{isRTL ? 'المضيف' : 'Host'}</ThemedText>
-                  <ThemedText style={styles.hostNameFixed}>{hostName}</ThemedText>
+          <TouchableOpacity style={styles.hostStampArea} activeOpacity={0.9}>
+            <ExpoImage
+              source={require("@/assets/tabs/contact.svg")}
+              style={styles.contactBanner}
+              contentFit="cover"
+            />
+            <View style={[styles.hostOverlayFixed, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+               <View style={[styles.hostInfoSideOverlay, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                  <ThemedText style={styles.hostLabelOverlay}>{isRTL ? 'المضيف' : 'Host'}</ThemedText>
+                  <ThemedText style={styles.hostNameOverlay}>{hostName}</ThemedText>
                </View>
-               <View style={styles.hostAvatarWrap}>
+               <View style={styles.hostAvatarWrapOverlay}>
                   <ExpoImage 
                     source={require("@/assets/profile.svg")} 
                     style={styles.hostAvatarImgFixed} 
                   />
                </View>
             </View>
-            <ExpoImage
-              source={require("@/assets/tabs/contact.svg")}
-              style={styles.contactBanner}
-              contentFit="contain"
-            />
-          </View>
+          </TouchableOpacity>
 
           {/* التقييم والمراجعات */}
           <View style={[styles.ctaRowReview, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
@@ -605,8 +631,21 @@ const styles = StyleSheet.create({
   mapLocLabel: { paddingVertical: 10, alignItems: "center" },
   mapLocText: { fontSize: 15, fontFamily: "LamaSans-Black" },
 
-  hostStampArea: { marginVertical: 20, width: "100%", alignItems: "center" },
-  contactBanner: { width: SCREEN_WIDTH - 40, height: 100 },
+  hostStampArea: { 
+    marginVertical: 20, 
+    width: "100%", 
+    height: 100, 
+    borderRadius: 24, 
+    overflow: 'hidden',
+    position: 'relative'
+  },
+  contactBanner: { 
+    width: "100%", 
+    height: "100%",
+    position: 'absolute',
+    top: 0,
+    left: 0,
+  },
 
   ctaRowReview: {
     marginTop: 20,
@@ -764,39 +803,38 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontFamily: "LamaSans-Black",
   },
-  hostHeaderFixed: {
+  hostOverlayFixed: {
+    position: 'absolute',
     width: '100%',
-    padding: 15,
-    backgroundColor: '#F9FAFB',
-    borderRadius: 20,
-    marginBottom: 15,
+    height: '100%',
+    paddingHorizontal: 25,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
+    justifyContent: 'space-between',
   },
-  hostAvatarWrap: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+  hostAvatarWrapOverlay: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     overflow: 'hidden',
-    backgroundColor: '#E5E7EB',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderWidth: 2,
+    borderColor: 'white',
   },
   hostAvatarImgFixed: {
     width: '100%',
     height: '100%',
   },
-  hostInfoSide: {
+  hostInfoSideOverlay: {
     flex: 1,
-    marginHorizontal: 12,
   },
-  hostLabelFixed: {
-    fontSize: 11,
-    color: '#9CA3AF',
+  hostLabelOverlay: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.7)',
     fontFamily: 'LamaSans-Medium',
   },
-  hostNameFixed: {
-    fontSize: 15,
-    color: '#111827',
+  hostNameOverlay: {
+    fontSize: 20,
+    color: 'white',
     fontFamily: 'LamaSans-Black',
   },
 });

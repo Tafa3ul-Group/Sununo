@@ -69,7 +69,9 @@ export function HorizontalCard({
 
   if (!chalet) return null;
 
-  const imageSource = chalet.image || getImageSrc(chalet.images?.[0]?.url || chalet.images?.[0]);
+  const imageSource = typeof chalet.image === 'string' && !chalet.image.startsWith('http') 
+    ? getImageSrc(chalet.image) 
+    : (chalet.image || getImageSrc(chalet.images?.[0]?.url || chalet.images?.[0]));
   const borderColor = chalet.color || Colors.secondary;
 
   const config = SHAPES_CONFIG[shapeIndex % SHAPES_CONFIG.length];

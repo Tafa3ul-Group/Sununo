@@ -1370,7 +1370,7 @@ export default function ShiftsAndPricesScreen() {
                   <Text style={styles.deleteTextBtnLabel}>{isRTL ? 'حذف هذه الفترة نهائياً' : 'Delete this shift permanently'}</Text>
                 </TouchableOpacity>
               )}
-            </BottomSheetView>
+            </View>
           </BottomSheetScrollView>
         </BottomSheetModal>
 
@@ -1526,7 +1526,8 @@ export default function ShiftsAndPricesScreen() {
                   </View>
                 )}
               </TouchableOpacity>
-            </BottomSheetView>
+            </View>
+          </BottomSheetView>
         </BottomSheetModal>
 
         {/* Chalet Selection Bottom Sheet */}
