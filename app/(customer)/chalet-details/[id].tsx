@@ -104,18 +104,21 @@ export default function ChaletDetailScreen() {
   const showMap = !isExpoGo;
 
   // Dynamically require Mapbox only if we are not in Expo Go to prevent crashes
-  const MapboxRef = useRef<any>(null);
+  const [MapboxComponent, setMapboxComponent] = useState<any>(null);
   useEffect(() => {
     if (showMap) {
       try {
-        MapboxRef.current = require("@rnmapbox/maps").default;
+        const mb = require("@rnmapbox/maps");
+        // Handle both default and direct exports
+        const Mapbox = mb.default || mb;
+        if (Mapbox && Mapbox.MapView) {
+          setMapboxComponent(Mapbox);
+        }
       } catch (e) {
         console.error("Mapbox could not be initialized:", e);
       }
     }
   }, [showMap]);
-
-  const MapboxComponent = MapboxRef.current;
 
   // Extract chalet info from API response
   const chalet = chaletData || {} as any;
@@ -316,7 +319,7 @@ export default function ChaletDetailScreen() {
                     <Path d={SHAPES.blue} fill={f.color} />
                   </Svg>
                   <View style={styles.iconInShape}>
-                    <f.Icon size={22} color="white" />
+                    {f.Icon && <f.Icon size={22} color="white" />}
                   </View>
                 </View>
                 <ThemedText style={styles.facilityLabelText}>
@@ -346,7 +349,7 @@ export default function ChaletDetailScreen() {
           <SectionHeader title={t('chalet.details.location')} isRTL={isRTL} />
           <View style={styles.mapCardFlat}>
             <View style={styles.mapInner}>
-              {showMap && MapboxComponent ? (
+              {showMap && MapboxComponent?.MapView && MapboxComponent?.Camera && MapboxComponent?.PointAnnotation ? (
                 <MapboxComponent.MapView
                   style={styles.mapView}
                   scrollEnabled={false}

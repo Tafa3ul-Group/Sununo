@@ -111,7 +111,11 @@ export default function AddChaletScreen() {
     area: '',
     bedrooms: '',
     bathrooms: '',
+    latitude: '33.3152',
+    longitude: '44.3661',
   });
+
+  const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
 
   const [currentStep, setCurrentStep] = useState(0);
   const steps = [
@@ -813,6 +817,14 @@ export default function AddChaletScreen() {
           )}
         </BottomSheetView>
       </BottomSheetModal>
+      <LocationPickerModal
+        visible={isLocationModalVisible}
+        onClose={() => setIsLocationModalVisible(false)}
+        initialLocation={{ latitude: parseFloat(form.latitude), longitude: parseFloat(form.longitude) }}
+        onSelect={(lat, lng) => {
+          setForm({ ...form, latitude: lat.toString(), longitude: lng.toString() });
+        }}
+      />
     </View>
   );
 }

@@ -110,6 +110,8 @@ export default function EditChaletScreen() {
     basePrice: '', area: '', bedrooms: '', bathrooms: '',
   });
 
+  const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
+
   const [currentStep, setCurrentStep] = useState(0);
   const steps = [
     { id: 'details', title: isRTL ? 'التفاصيل' : 'Details' },
@@ -164,6 +166,8 @@ export default function EditChaletScreen() {
         area: chalet.area?.toString() || '',
         bedrooms: chalet.bedrooms?.toString() || '',
         bathrooms: chalet.bathrooms?.toString() || '',
+        latitude: chalet.latitude?.toString() || '',
+        longitude: chalet.longitude?.toString() || '',
       });
       setExistingImages(chalet.images || []);
     }
@@ -709,6 +713,17 @@ export default function EditChaletScreen() {
           )}
         </BottomSheetView>
       </BottomSheetModal>
+      <LocationPickerModal
+        visible={isLocationModalVisible}
+        onClose={() => setIsLocationModalVisible(false)}
+        initialLocation={{ 
+          latitude: parseFloat(form.latitude) || 33.3152, 
+          longitude: parseFloat(form.longitude) || 44.3661 
+        }}
+        onSelect={(lat, lng) => {
+          setForm({ ...form, latitude: lat.toString(), longitude: lng.toString() });
+        }}
+      />
     </View>
   );
 }
@@ -837,4 +852,26 @@ const styles = StyleSheet.create({
   modalOptionText: { ...Typography.body, fontFamily: "Tajawal-SemiBold" },
   pickerItem: { width: '100%', paddingVertical: Spacing.md, paddingHorizontal: Spacing.lg, borderBottomWidth: 1, borderBottomColor: Colors.border },
   pickerItemText: { ...Typography.body, fontSize: normalize.font(16), color: Colors.text.primary },
+  locationPickerBtn: {
+    backgroundColor: "#F9FAFB",
+    borderRadius: 20,
+    padding: 20,
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: "#F3F4F6",
+  },
+  locationBtnInner: {
+    alignItems: "center",
+  },
+  locationBtnTitle: {
+    fontSize: 16,
+    fontFamily: "Tajawal-Bold",
+    color: "#111827",
+  },
+  locationBtnCoords: {
+    fontSize: 12,
+    color: "#6B7280",
+    fontFamily: "Tajawal-Medium",
+    marginTop: 4,
+  },
 });

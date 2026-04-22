@@ -24,7 +24,7 @@ import {
   View,
   ActivityIndicator,
 } from "react-native";
-import { useGetChaletReviewsQuery, useCreateReviewMutation } from "@/store/api/customerApiSlice";
+import { useGetChaletReviewsQuery, useCreateReviewMutation, useCheckCanReviewQuery } from "@/store/api/customerApiSlice";
 import { Colors } from "@/constants/theme";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -54,6 +54,7 @@ export default function ReviewsScreen() {
   // Fetch reviews from backend
   const { data: reviewsResponse, isLoading } = useGetChaletReviewsQuery({ chaletId, page: 1, limit: 20 });
   const [createReview] = useCreateReviewMutation();
+  const { data: canReviewData } = useCheckCanReviewQuery(chaletId);
 
   const filterOptions = [
     { label: isArabic ? "اخر التقييمات" : "Latest Reviews", value: "latest" },
@@ -190,6 +191,7 @@ export default function ReviewsScreen() {
           preserveAspectRatio="xMidYMax slice"
         />
         <View style={styles.footerOverlayContent}>
+        {canReviewData?.canReview ? (
           <View style={styles.whiteInputPill}>
             <ThemedText style={styles.questionTitle}>
               {t('profile.review.question')}
@@ -206,6 +208,15 @@ export default function ReviewsScreen() {
               ))}
             </View>
           </View>
+        ) : (
+          <View style={styles.unverifiedFooterMsg}>
+            <ThemedText style={styles.unverifiedText}>
+              {isArabic 
+                ? "التقييم متاح فقط لمن قاموا بحجز هذا الشاليه مسبقاً" 
+                : "Rating is only available for users who have booked this chalet"}
+            </ThemedText>
+          </View>
+        )}
         </View>
       </View>
 
@@ -326,5 +337,22 @@ const styles = StyleSheet.create({
     color: "#111827",
     marginBottom: normalize(8),
   },
-  inputStarsRow: { flexDirection: "row", gap: 12 },
+  inputStarsRow: { flexDirection: "row", gap: normalize(12) },
+  unverifiedFooterMsg: {
+    backgroundColor: "rgba(255,255,255,0.95)",
+    borderRadius: normalize(25),
+    paddingHorizontal: normalize(20),
+    height: normalize(80),
+    width: "90%",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+  unverifiedText: {
+    fontSize: normalize(13),
+    color: "#6B7280",
+    fontFamily: "Tajawal-Medium",
+    textAlign: "center",
+  },
 });
