@@ -39,6 +39,7 @@ import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useGetCustomerChaletDetailsQuery, useGetChaletReviewsQuery, useCreateReviewMutation, useAddFavoriteMutation, useRemoveFavoriteMutation, useGetSimilarChaletsQuery, useGetChaletAddonsQuery } from "@/store/api/customerApiSlice";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { ReviewSubmissionSheet } from "@/components/user/review-submission-sheet";
+import { HostContactCard } from "@/components/user/host-contact-card";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -128,6 +129,12 @@ export default function ChaletDetailScreen() {
   const reviews = reviewsResponse?.data || [];
   const reviewCount = reviewsResponse?.meta?.total || reviews.length || 0;
   const hostName = chalet.owner?.name || (isRTL ? "مضيف عراقي" : "Iraqi Host");
+  const hostAvatar = useMemo(() => {
+    if (chalet.owner?.image) {
+      return getImageSrc(chalet.owner.image);
+    }
+    return require("@/assets/profile.svg");
+  }, [chalet.owner?.image]);
 
   // Auto Play Banner
   useEffect(() => {
@@ -338,25 +345,11 @@ export default function ChaletDetailScreen() {
           </View>
 
           {/* المضيف */}
-          <TouchableOpacity style={styles.hostStampArea} activeOpacity={0.9}>
-            <ExpoImage
-              source={require("@/assets/tabs/contact.svg")}
-              style={styles.contactBanner}
-              contentFit="cover"
-            />
-            <View style={[styles.hostOverlayFixed, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-               <View style={[styles.hostInfoSideOverlay, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                  <ThemedText style={styles.hostLabelOverlay}>{isRTL ? 'المضيف' : 'Host'}</ThemedText>
-                  <ThemedText style={styles.hostNameOverlay}>{hostName}</ThemedText>
-               </View>
-               <View style={styles.hostAvatarWrapOverlay}>
-                  <ExpoImage 
-                    source={require("@/assets/profile.svg")} 
-                    style={styles.hostAvatarImgFixed} 
-                  />
-               </View>
-            </View>
-          </TouchableOpacity>
+          <HostContactCard 
+            name={hostName}
+            avatar={hostAvatar}
+            isRTL={isRTL}
+          />
 
           {/* التقييم والمراجعات */}
           <View style={[styles.ctaRowReview, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
@@ -802,39 +795,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.primary,
     fontFamily: "LamaSans-Black",
-  },
-  hostOverlayFixed: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    paddingHorizontal: 25,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  hostAvatarWrapOverlay: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    overflow: 'hidden',
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    borderWidth: 2,
-    borderColor: 'white',
-  },
-  hostAvatarImgFixed: {
-    width: '100%',
-    height: '100%',
-  },
-  hostInfoSideOverlay: {
-    flex: 1,
-  },
-  hostLabelOverlay: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.7)',
-    fontFamily: 'LamaSans-Medium',
-  },
-  hostNameOverlay: {
-    fontSize: 20,
-    color: 'white',
-    fontFamily: 'LamaSans-Black',
   },
 });
