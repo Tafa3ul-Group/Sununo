@@ -1,5 +1,6 @@
 import { ChaletProgressTabs } from '@/components/chalet-progress-tabs';
 import { ThemedText } from '@/components/themed-text';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { AppMap } from '@/components/user/app-map';
 import { LocationPickerModal } from '@/components/user/location-picker-modal';
 import { PrimaryButton } from '@/components/user/primary-button';
@@ -11,12 +12,13 @@ import {
   useCreateChaletMutation,
   useGetAmenityCategoriesQuery,
   useGetCitiesQuery,
+  useGetShiftDefaultsQuery,
 } from '@/store/api/apiSlice';
 import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   SolarMapPointBold, 
@@ -67,20 +69,10 @@ const SHIFT_TYPES = [
   { value: 'OVERNIGHT' as const, labelAr: 'مبيت', labelEn: 'Overnight', defaultStart: '20:00', defaultEnd: '08:00' },
 ];
 
-const createDefaultShift = (type: 'MORNING' | 'EVENING' | 'OVERNIGHT'): ShiftData => {
-  const shiftType = SHIFT_TYPES.find(s => s.value === type)!;
-  return {
-    name: { ar: shiftType.labelAr, en: shiftType.labelEn },
-    startTime: shiftType.defaultStart,
-    endTime: shiftType.defaultEnd,
-    type,
-    isActive: true,
-    pricing: Array.from({ length: 7 }, (_, i) => ({
-      dayOfWeek: i,
-      price: i >= 5 ? 150000 : 100000,
-    })),
-  };
-};
+const createDefaultPricing = () => Array.from({ length: 7 }, (_, i) => ({
+  dayOfWeek: i,
+  price: i >= 5 ? 150000 : 100000,
+}));
 
 export default function AddChaletScreen() {
   const router = useRouter();
@@ -113,30 +105,41 @@ export default function AddChaletScreen() {
     bathrooms: '',
     latitude: '33.3152',
     longitude: '44.3661',
+    baseCapacity: '4',
+    extraPersonPrice: '10000',
   });
 
   const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
 
-  const [currentStep, setCurrentStep] = useState(0);
-  const steps = [
+  const { data: amenityCategories } = useGetAmenityCategoriesQuery();
+
+  const steps = useMemo(() => [
     { id: 'details', title: isRTL ? 'التفاصيل' : 'Details' },
     { id: 'extra', title: isRTL ? 'تفاصيل اضافية' : 'More Info' },
-    { id: 'amenities', title: isRTL ? 'المرافق' : 'Amenities' },
-  ];
+    { id: 'amenities', title: isRTL ? 'المرافق والخدمات' : 'Amenities' },
+  ], [isRTL]);
+
+  const [currentStep, setCurrentStep] = useState(0);
+  const [currentAmenitySubStep, setCurrentAmenitySubStep] = useState(0);
 
   const [showMap, setShowMap] = useState(false);
   
-  // Pre-fixed 3 shifts
-  const [shifts, setShifts] = useState<ShiftData[]>([
-    createDefaultShift('MORNING'),
-    createDefaultShift('EVENING'),
-    createDefaultShift('OVERNIGHT'),
-  ]);
+  const [shifts, setShifts] = useState<ShiftData[]>([]);
+  const { data: defaultShifts } = useGetShiftDefaultsQuery();
 
-  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  useEffect(() => {
+    if (defaultShifts && shifts.length === 0) {
+      setShifts(defaultShifts.map(s => ({
+        ...s,
+        pricing: createDefaultPricing()
+      })));
+    }
+  }, [defaultShifts]);
+
+  const [imagesByCategory, setImagesByCategory] = useState<Record<string, string[]>>({});
   const { data: cities, isLoading: loadingCities } = useGetCitiesQuery();
-  const { data: amenityCategories } = useGetAmenityCategoriesQuery();
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+  const [uploadingCategoryId, setUploadingCategoryId] = useState<string | null>(null);
 
   // Bottom Sheet Refs
   const citySheetRef = useRef<BottomSheetModal>(null);
@@ -144,6 +147,49 @@ export default function AddChaletScreen() {
   const editShiftSheetRef = useRef<BottomSheetModal>(null);
 
   const [editingShiftIndex, setEditingShiftIndex] = useState<number | null>(null);
+  const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+  const [bulkPrice, setBulkPrice] = useState('');
+
+  const formatTime12h = (timeStr: string) => {
+    if (!timeStr) return '';
+    const [h, m] = timeStr.split(':').map(Number);
+    const period = h >= 12 ? (isRTL ? 'مساءً' : 'PM') : (isRTL ? 'صباحاً' : 'AM');
+    const hours12 = h % 12 || 12;
+    return `${hours12}:${m.toString().padStart(2, '0')} ${period}`;
+  };
+
+  const getTimeDate = (timeStr: string) => {
+    const [hours, minutes] = (timeStr || '08:00').split(':').map(Number);
+    const d = new Date();
+    d.setHours(hours || 0, minutes || 0, 0, 0);
+    return d;
+  };
+
+  const onTimeChange = (event: any, selectedDate?: Date, type: 'start' | 'end' = 'start') => {
+    if (Platform.OS === 'android') {
+      if (type === 'start') setShowStartTimePicker(false);
+      else setShowEndTimePicker(false);
+    }
+
+    if (selectedDate && editingShiftIndex !== null) {
+      const hours = selectedDate.getHours().toString().padStart(2, '0');
+      const minutes = selectedDate.getMinutes().toString().padStart(2, '0');
+      const timeStr = `${hours}:${minutes}`;
+      updateShiftField(editingShiftIndex, type === 'start' ? 'startTime' : 'endTime', timeStr);
+    }
+  };
+
+  const handleApplyBulkPrice = (type: 'weekdays' | 'weekends' | 'all') => {
+    if (editingShiftIndex === null || !bulkPrice) return;
+    if (type === 'weekdays') setWeekdayPrice(editingShiftIndex, bulkPrice);
+    else if (type === 'weekends') setWeekendPrice(editingShiftIndex, bulkPrice);
+    else {
+      setWeekdayPrice(editingShiftIndex, bulkPrice);
+      setWeekendPrice(editingShiftIndex, bulkPrice);
+    }
+    Toast.show({ type: 'info', text1: isRTL ? 'تم التطبيق' : 'Applied', text2: isRTL ? 'تم تحديث الأسعار بنجاح' : 'Prices updated successfully' });
+  };
 
   // Snap Points
   const snapPoints = useMemo(() => ['65%', '90%'], []);
@@ -230,9 +276,13 @@ export default function AddChaletScreen() {
       allowsMultipleSelection: true,
       quality: 0.8,
     });
-
+    
     if (!result.canceled) {
-      setSelectedImages([...selectedImages, ...result.assets.map(a => a.uri)]);
+      const catId = uploadingCategoryId || 'general';
+      setImagesByCategory(prev => ({
+        ...prev,
+        [catId]: [...(prev[catId] || []), ...result.assets.map(a => a.uri)]
+      }));
     }
   };
 
@@ -247,14 +297,21 @@ export default function AddChaletScreen() {
       mediaTypes: ['images'],
       quality: 0.8,
     });
-
+ 
     if (!result.canceled) {
-      setSelectedImages([...selectedImages, result.assets[0].uri]);
+      const catId = uploadingCategoryId || 'general';
+      setImagesByCategory(prev => ({
+        ...prev,
+        [catId]: [...(prev[catId] || []), result.assets[0].uri]
+      }));
     }
   };
 
-  const removeImage = (index: number) => {
-    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+  const removeImage = (index: number, categoryId: string = 'general') => {
+    setImagesByCategory(prev => ({
+      ...prev,
+      [categoryId]: prev[categoryId].filter((_, i) => i !== index)
+    }));
   };
 
   const handleSave = async () => {
@@ -281,6 +338,8 @@ export default function AddChaletScreen() {
       formData.append('longitude', form.longitude || '44.3661');
       formData.append('maxAdults', form.maxAdults || '1');
       formData.append('maxChildren', form.maxChildren || '0');
+      formData.append('baseCapacity', form.baseCapacity || '1');
+      formData.append('extraPersonPrice', form.extraPersonPrice || '0');
       
       // Filter only active shifts for submission
       const activeShifts = shifts.filter(s => s.isActive);
@@ -307,16 +366,17 @@ export default function AddChaletScreen() {
       }
 
       // ── Images ──
-      if (selectedImages.length > 0) {
-        for (const uri of selectedImages) {
+      Object.entries(imagesByCategory).forEach(([catId, uris]) => {
+        const backendCatId = catId === 'general' ? '' : catId;
+        uris.forEach(uri => {
           const filename = uri.split('/').pop() || 'image.jpg';
           const match = /\.(\w+)$/.exec(filename);
           const type = match ? `image/${match[1]}` : 'image/jpeg';
           // @ts-ignore
           formData.append('images', { uri, name: filename, type });
-          formData.append('imageCategoryIds', '');
-        }
-      }
+          formData.append('imageCategoryIds', backendCatId);
+        });
+      });
 
       await createChalet(formData).unwrap();
 
@@ -350,11 +410,32 @@ export default function AddChaletScreen() {
 
   const nextStep = () => {
     if (!isStepValid) return;
-    if (currentStep < steps.length - 1) setCurrentStep(currentStep + 1);
+    
+    // Internal Amenity sub-steps
+    if (currentStep === 2 && amenityCategories) {
+      if (currentAmenitySubStep < amenityCategories.length - 1) {
+        setCurrentAmenitySubStep(currentAmenitySubStep + 1);
+        return;
+      }
+    }
+
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      handleSave();
+    }
   };
 
   const prevStep = () => {
-    if (currentStep > 0) setCurrentStep(currentStep - 1);
+    // Internal Amenity sub-steps
+    if (currentStep === 2 && currentAmenitySubStep > 0) {
+      setCurrentAmenitySubStep(currentAmenitySubStep - 1);
+      return;
+    }
+    
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
   };
 
   const textAlign = isRTL ? 'right' : 'left';
@@ -454,17 +535,31 @@ export default function AddChaletScreen() {
                   />
                 </View>
 
-                {/* وصف الشاليه */}
+                {/* وصف الشاليه عربي */}
                 <View style={styles.inputGroup}>
-                  <Text style={[styles.label, { textAlign }]}>{isRTL ? 'وصف الشاليه' : 'Description'}</Text>
+                  <Text style={[styles.label, { textAlign }]}>{isRTL ? 'وصف الشاليه (عربي)' : 'Description (AR)'}</Text>
                   <TextInput
                     style={[styles.input, styles.textArea, { textAlign }]}
-                    placeholder={isRTL ? "ادخل وصفاً للشاليه" : "Enter description..."}
+                    placeholder={isRTL ? "ادخل وصفاً للشاليه بالعربي" : "Enter description in Arabic..."}
                     placeholderTextColor="#BCBCBC"
                     multiline
                     numberOfLines={4}
                     value={form.descriptionAr}
                     onChangeText={(val) => setForm({ ...form, descriptionAr: val })}
+                  />
+                </View>
+
+                {/* وصف الشاليه إنجليزي */}
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.label, { textAlign }]}>{isRTL ? 'وصف الشاليه (إنجليزي)' : 'Description (EN)'}</Text>
+                  <TextInput
+                    style={[styles.input, styles.textArea, { textAlign: 'left' }]}
+                    placeholder="Enter description in English..."
+                    placeholderTextColor="#BCBCBC"
+                    multiline
+                    numberOfLines={4}
+                    value={form.descriptionEn}
+                    onChangeText={(val) => setForm({ ...form, descriptionEn: val })}
                   />
                 </View>
               </View>
@@ -609,89 +704,145 @@ export default function AddChaletScreen() {
                       onIncrement={() => setForm({ ...form, maxChildren: (parseInt(form.maxChildren || '0') + 1).toString() })}
                       onDecrement={() => setForm({ ...form, maxChildren: Math.max(0, parseInt(form.maxChildren || '0') - 1).toString() })}
                     />
+                    <View style={[styles.capacityInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                      <Text style={styles.capacityLabel}>{isRTL ? 'الأطفال' : 'Children'}</Text>
+                      <Text style={styles.capacitySubLabel}>{isRTL ? 'تحت 18 سنة' : 'Under 18'}</Text>
+                    </View>
+                  </View>
+
+                  <View style={[styles.rowInputs, { flexDirection, marginTop: 12 }]}>
+                    <View style={[styles.inputGroup, { flex: 1 }]}>
+                      <Text style={[styles.label, { textAlign }]}>{isRTL ? 'السعة الأساسية' : 'Base Cap.'}</Text>
+                      <TextInput style={[styles.input, { textAlign: 'center' }]} keyboardType="numeric" value={form.baseCapacity} onChangeText={(val) => setForm({ ...form, baseCapacity: val })} />
+                      <Text style={[styles.smallLabel, { textAlign }]}>{isRTL ? 'مشمولة بالسعر' : 'Incl. in price'}</Text>
+                    </View>
+                    <View style={[styles.inputGroup, { flex: 2 }]}>
+                      <Text style={[styles.label, { textAlign }]}>{isRTL ? 'سعر الشخص الإضافي' : 'Extra Person Price'}</Text>
+                      <TextInput style={[styles.input, { textAlign: 'center' }]} keyboardType="numeric" value={form.extraPersonPrice} onChangeText={(val) => setForm({ ...form, extraPersonPrice: val })} />
+                      <Text style={[styles.smallLabel, { textAlign }]}>{isRTL ? 'لكل شخص فوق السعة' : 'Per person above cap'}</Text>
+                    </View>
                   </View>
                 </View>
               </View>
             </>
           )}
 
-          {/* ═══════════ Step 2: المرافق ═══════════ */}
-          {currentStep === 2 && (
-            <>
-              {/* Amenity Categories with nested Features */}
-              {amenityCategories?.map((category: any) => (
-                <View key={category.id} style={styles.sectionCard}>
-                  <Text style={[styles.categorySectionTitle, { textAlign }]}>
-                    {isRTL ? category.name?.ar : category.name?.en}
-                  </Text>
-                  <View style={styles.featuresList}>
-                    {category.features?.map((feature: any) => {
-                      const isSelected = selectedFeatures.includes(feature.id);
-                      return (
-                        <TouchableOpacity
-                          key={feature.id}
-                          style={[styles.featureRow, isSelected && styles.featureRowActive]}
-                          onPress={() => toggleFeature(feature.id)}
-                          activeOpacity={0.7}
-                        >
-                          <View style={[styles.featureRowInner, { flexDirection }]}>
-                            {/* Icon + Name */}
-                            <View style={[styles.featureInfo, { flexDirection }]}>
-                              <View style={styles.featureIconContainer}>
-                                <Text style={styles.featureIconText}>
-                                  {feature.icon === 'wifi' ? '📶' : 
-                                   feature.icon === 'parking' ? '🚗' : 
-                                   feature.icon === 'generator' ? '⚡' : 
-                                   feature.icon === 'pool' ? '🏊' : 
-                                   feature.icon === 'ac' ? '❄️' : 
-                                   feature.icon === 'playstation' ? '🎮' : 
-                                   feature.icon === 'billiards' ? '🎱' : 
-                                   feature.icon === 'bbq' ? '🔥' : '✨'}
-                                </Text>
-                              </View>
+          {/* ═══════════ Step 2: المرافق والخدمات (Internal Wizard) ═══════════ */}
+          {currentStep === 2 && amenityCategories && amenityCategories[currentAmenitySubStep] && (
+            <View key={amenityCategories[currentAmenitySubStep].id}>
+              {/* Category Card */}
+              <View style={styles.sectionCard}>
+                <Text style={[styles.categorySectionTitle, { textAlign }]}>
+                  {isRTL ? amenityCategories[currentAmenitySubStep].name?.ar : amenityCategories[currentAmenitySubStep].name?.en}
+                </Text>
+                
+                <View style={styles.featuresList}>
+                  {amenityCategories[currentAmenitySubStep].features?.map((feature: any) => {
+                    const isSelected = selectedFeatures.includes(feature.id);
+                    return (
+                      <TouchableOpacity
+                        key={feature.id}
+                        style={[styles.featureRow, isSelected && styles.featureRowActive]}
+                        onPress={() => toggleFeature(feature.id)}
+                        activeOpacity={0.7}
+                      >
+                        <View style={[styles.featureRowInner, { flexDirection }]}>
+                          <View style={[styles.featureInfo, { flexDirection }]}>
+                            <View style={[styles.featureIconContainer, { backgroundColor: isSelected ? Colors.primary : '#F1F5F9' }]}>
+                              <Text style={styles.featureIconText}>
+                                {feature.icon === 'wifi' ? '📶' : 
+                                 feature.icon === 'parking' ? '🚗' : 
+                                 feature.icon === 'generator' ? '⚡' : 
+                                 feature.icon === 'pool' ? '🏊' : 
+                                 feature.icon === 'ac' ? '❄️' : 
+                                 feature.icon === 'playstation' ? '🎮' : 
+                                 feature.icon === 'billiards' ? '🎱' : 
+                                 feature.icon === 'bbq' ? '🔥' : '✨'}
+                              </Text>
+                            </View>
+                            <View style={{ flex: 1, gap: 2 }}>
                               <Text style={[styles.featureName, { textAlign }]}>
                                 {isRTL ? feature.name?.ar : feature.name?.en}
                               </Text>
                             </View>
-                            {/* Checkbox */}
-                            <View style={[styles.checkbox, isSelected && styles.checkboxActive]}>
-                              {isSelected && <Text style={styles.checkboxCheck}>✓</Text>}
-                            </View>
                           </View>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
+                          <View style={[styles.checkbox, isSelected && styles.checkboxActive]}>
+                            {isSelected && <Text style={styles.checkboxCheck}>✓</Text>}
+                          </View>
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
-              ))}
 
-              {/* Photos */}
-              <View style={styles.sectionCard}>
-                <ThemedText type="h2" style={styles.sectionHeader}>{isRTL ? 'صور الشاليه' : 'Chalet Photos'}</ThemedText>
-                <Text style={[styles.photoHint, { textAlign }]}>
-                  {isRTL ? 'أول صورة ستكون صورة الغلاف تلقائياً' : 'First photo will be the cover image'}
-                </Text>
+                {/* Section Specific Photos */}
+                <View style={{ marginTop: 20 }}>
+                  <Text style={[styles.photoHint, { textAlign }]}>
+                    {isRTL ? 'صور هذا المرفق' : 'Photos for this section'}
+                  </Text>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.imageContainer, { flexDirection }]}>
+                    {(imagesByCategory[amenityCategories[currentAmenitySubStep].id] || []).map((uri, index) => (
+                      <View key={index} style={styles.imageItem}>
+                        <Image source={{ uri }} style={styles.uploadedImage} />
+                        <TouchableOpacity 
+                          style={styles.removeImageButton} 
+                          onPress={() => removeImage(index, amenityCategories[currentAmenitySubStep].id)}
+                        >
+                          <SolarCloseCircleBold size={24} color={Colors.error} />
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                    <TouchableOpacity 
+                      style={styles.imageUpload} 
+                      onPress={() => {
+                        setUploadingCategoryId(amenityCategories[currentAmenitySubStep].id);
+                        imageSourceSheetRef.current?.present();
+                      }}
+                    >
+                      <SolarCameraBold size={32} color={Colors.text.muted} />
+                      <Text style={styles.uploadText}>{isRTL ? 'إضافة صور' : 'Add Photos'}</Text>
+                    </TouchableOpacity>
+                  </ScrollView>
+                </View>
+
+                {/* Progress Dots (Clickable) */}
+                <View style={styles.amenityProgressContainer}>
+                  {amenityCategories.map((_, idx) => (
+                    <TouchableOpacity
+                      key={idx}
+                      onPress={() => setCurrentAmenitySubStep(idx)}
+                      hitSlop={{ top: 15, bottom: 15, left: 10, right: 10 }}
+                      style={[
+                        styles.amenityDot, 
+                        currentAmenitySubStep === idx && styles.amenityDotActive,
+                        currentAmenitySubStep > idx && styles.amenityDotPassed
+                      ]} 
+                    />
+                  ))}
+                </View>
+              </View>
+            </View>
+          )}
+
+          {/* General Photos (Optional extra step or inside first/last?) */}
+          {currentStep === 2 && currentAmenitySubStep === 0 && (
+             <View style={styles.sectionCard}>
+                <ThemedText type="h2" style={styles.sectionHeader}>{isRTL ? 'صور الشاليه العامة' : 'General Photos'}</ThemedText>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.imageContainer, { flexDirection }]}>
-                  {selectedImages.map((uri, index) => (
+                  {(imagesByCategory['general'] || []).map((uri, index) => (
                     <View key={index} style={styles.imageItem}>
                       <Image source={{ uri }} style={styles.uploadedImage} />
-                      {index === 0 && (
-                        <View style={styles.coverBadge}>
-                          <Text style={styles.coverBadgeText}>{isRTL ? 'غلاف' : 'Cover'}</Text>
-                        </View>
-                      )}
-                      <TouchableOpacity style={styles.removeImageButton} onPress={() => removeImage(index)}>
+                      <TouchableOpacity style={styles.removeImageButton} onPress={() => removeImage(index, 'general')}>
                         <SolarCloseCircleBold size={24} color={Colors.error} />
                       </TouchableOpacity>
                     </View>
                   ))}
-                  <TouchableOpacity style={styles.imageUpload} onPress={() => imageSourceSheetRef.current?.present()}>
+                  <TouchableOpacity style={styles.imageUpload} onPress={() => { setUploadingCategoryId('general'); imageSourceSheetRef.current?.present(); }}>
                     <SolarGalleryBold size={32} color={Colors.text.muted} />
-                    <Text style={styles.uploadText}>{isRTL ? 'إضافة صور' : 'Add Photos'}</Text>
+                    <Text style={styles.uploadText}>{isRTL ? 'إضافة صور' : 'Add'}</Text>
                   </TouchableOpacity>
                 </ScrollView>
-              </View>
-            </>
+             </View>
           )}
         </ScrollView>
 
@@ -700,24 +851,36 @@ export default function AddChaletScreen() {
           {currentStep > 0 && (
             <SecondaryButton label={isRTL ? 'السابق' : 'Back'} onPress={prevStep} style={{ flex: 1 }} />
           )}
-          {currentStep < steps.length - 1 ? (
-            <PrimaryButton
-              label={isRTL ? 'التالي' : 'Next'}
-              onPress={nextStep}
-              disabled={!isStepValid}
-              activeColor={isStepValid ? Colors.primary : '#CBD5E1'}
-              style={{ flex: 2 }}
-            />
-          ) : (
-            <PrimaryButton
-              label={isRTL ? 'حفظ ونشر الشاليه' : 'Save & Publish'}
-              onPress={handleSave}
-              loading={isLoading}
-              disabled={!isStepValid}
-              activeColor={isStepValid ? Colors.primary : '#CBD5E1'}
-              style={{ flex: 2 }}
-            />
-          )}
+          
+          {/* Logic to determine if we should show 'Next' or 'Save' */}
+          {(() => {
+            const isOnLastMainStep = currentStep === steps.length - 1;
+            const hasMoreAmenities = amenityCategories && currentAmenitySubStep < amenityCategories.length - 1;
+            const shouldShowNext = !isOnLastMainStep || (isOnLastMainStep && hasMoreAmenities);
+
+            if (shouldShowNext) {
+              return (
+                <PrimaryButton
+                  label={isRTL ? 'التالي' : 'Next'}
+                  onPress={nextStep}
+                  disabled={!isStepValid}
+                  activeColor={isStepValid ? Colors.primary : '#CBD5E1'}
+                  style={{ flex: 2 }}
+                />
+              );
+            } else {
+              return (
+                <PrimaryButton
+                  label={isRTL ? 'حفظ ونشر الشاليه' : 'Save & Publish'}
+                  onPress={handleSave}
+                  loading={isLoading}
+                  disabled={!isStepValid}
+                  activeColor={isStepValid ? Colors.primary : '#CBD5E1'}
+                  style={{ flex: 2 }}
+                />
+              );
+            }
+          })()}
         </View>
       </KeyboardAvoidingView>
 
@@ -781,26 +944,34 @@ export default function AddChaletScreen() {
               <Text style={styles.modalTitle}>{isRTL ? 'تعديل الفترة' : 'Edit Shift'}</Text>
               
               <View style={styles.shiftModalCard}>
-                <View style={[styles.shiftRow, { flexDirection }]}>
-                  <View style={[styles.inputGroup, { flex: 1 }]}>
-                    <Text style={[styles.label, { textAlign }]}>{isRTL ? 'اسم الشفت (عربي)' : 'Name (AR)'}</Text>
-                    <TextInput style={[styles.input, { textAlign }]} value={shifts[editingShiftIndex].name.ar} onChangeText={(val) => updateShiftField(editingShiftIndex, 'nameAr', val)} />
-                  </View>
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.label, { textAlign }]}>{isRTL ? 'اسم الشفت (عربي)' : 'Name (AR)'}</Text>
+                  <TextInput style={[styles.input, { textAlign }]} value={shifts[editingShiftIndex].name.ar} onChangeText={(val) => updateShiftField(editingShiftIndex, 'nameAr', val)} />
                 </View>
 
-                <View style={[styles.shiftRow, { flexDirection }]}>
-                  <View style={[styles.inputGroup, { flex: 1 }]}>
-                    <Text style={[styles.label, { textAlign }]}>{isRTL ? 'وقت البداية' : 'Start'}</Text>
-                    <TextInput style={[styles.input, { textAlign: 'center' }]} value={shifts[editingShiftIndex].startTime} onChangeText={(val) => updateShiftField(editingShiftIndex, 'startTime', val)} keyboardType="numbers-and-punctuation" />
+                <View style={[styles.shiftRow, { flexDirection, gap: 12, paddingHorizontal: 0 }]}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.label, { textAlign, marginBottom: 8 }]}>{isRTL ? 'وقت البداية' : 'Start Time'}</Text>
+                    <TouchableOpacity style={styles.timeSelectBtn} onPress={() => setShowStartTimePicker(true)}>
+                      <Text style={styles.timeSelectText}>{formatTime12h(shifts[editingShiftIndex].startTime)}</Text>
+                    </TouchableOpacity>
                   </View>
-                  <View style={[styles.inputGroup, { flex: 1 }]}>
-                    <Text style={[styles.label, { textAlign }]}>{isRTL ? 'وقت النهاية' : 'End'}</Text>
-                    <TextInput style={[styles.input, { textAlign: 'center' }]} value={shifts[editingShiftIndex].endTime} onChangeText={(val) => updateShiftField(editingShiftIndex, 'endTime', val)} keyboardType="numbers-and-punctuation" />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.label, { textAlign, marginBottom: 8 }]}>{isRTL ? 'وقت النهاية' : 'End Time'}</Text>
+                    <TouchableOpacity style={styles.timeSelectBtn} onPress={() => setShowEndTimePicker(true)}>
+                      <Text style={styles.timeSelectText}>{formatTime12h(shifts[editingShiftIndex].endTime)}</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
 
                 <View style={styles.pricingSectionModal}>
                   <Text style={[styles.pricingTitle, { textAlign }]}>{isRTL ? 'الأسعار (د.ع)' : 'Pricing (IQD)'}</Text>
+                  <View style={styles.bulkPricingRow}>
+                    <TextInput style={[styles.input, { flex: 1, height: 40 }]} placeholder={isRTL ? 'السعر...' : 'Price...'} keyboardType="numeric" value={bulkPrice} onChangeText={setBulkPrice} />
+                    <TouchableOpacity style={styles.bulkBtn} onPress={() => handleApplyBulkPrice('all')}><Text style={styles.bulkBtnText}>{isRTL ? 'الكل' : 'All'}</Text></TouchableOpacity>
+                    <TouchableOpacity style={styles.bulkBtn} onPress={() => handleApplyBulkPrice('weekdays')}><Text style={styles.bulkBtnText}>{isRTL ? 'الأسبوع' : 'Week'}</Text></TouchableOpacity>
+                    <TouchableOpacity style={styles.bulkBtn} onPress={() => handleApplyBulkPrice('weekends')}><Text style={styles.bulkBtnText}>{isRTL ? 'الجمعة' : 'W.E'}</Text></TouchableOpacity>
+                  </View>
                   <View style={[styles.dayPricingGrid]}>
                     {shifts[editingShiftIndex].pricing.map((p) => (
                       <View key={p.dayOfWeek} style={styles.dayPriceItem}>
@@ -955,6 +1126,19 @@ const styles = StyleSheet.create({
   },
   coverBadge: { position: 'absolute', bottom: 6, left: 6, backgroundColor: Colors.primary, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
   coverBadgeText: { color: '#FFFFFF', fontSize: normalize.font(9), fontFamily: "Tajawal-Bold" },
+  // Amenity Wizard Progress
+  amenityProgressContainer: {
+    flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 24, marginBottom: 12,
+  },
+  amenityDot: {
+    width: 8, height: 8, borderRadius: 4, backgroundColor: '#E2E8F0',
+  },
+  amenityDotActive: {
+    width: 24, backgroundColor: Colors.primary,
+  },
+  amenityDotPassed: {
+    backgroundColor: Colors.primary + '60',
+  },
   // Bottom sheets
   sheetContent: { padding: Spacing.lg, alignItems: 'center', flex: 1 },
   modalTitle: { ...Typography.h2, marginBottom: Spacing.lg, textAlign: 'center' },

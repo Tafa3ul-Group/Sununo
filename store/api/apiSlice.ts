@@ -140,6 +140,11 @@ export const apiSlice = createApi({
       query: () => '/cities/names',
     }),
 
+    // Get default shift templates
+    getShiftDefaults: builder.query<any[], void>({
+      query: () => '/shifts/defaults',
+    }),
+
     // Get regions for a specific city
     getChaletRegions: builder.query<any[], string>({
       query: (cityId) => `/cities/${cityId}/regions`,
@@ -406,6 +411,7 @@ export const {
   useUpdateShiftPricingDayMutation,
 
   useGetCitiesQuery,
+  useGetShiftDefaultsQuery,
   useGetChaletRegionsQuery,
   useLazyGetChaletRegionsQuery,
 

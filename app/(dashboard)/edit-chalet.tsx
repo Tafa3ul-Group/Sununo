@@ -26,11 +26,13 @@ import {
   useGetCitiesQuery,
   useGetOwnerChaletDetailsQuery,
   useGetChaletShiftsQuery,
+  useGetShiftDefaultsQuery,
   useSetChaletAmenitiesMutation,
   useUpdateChaletMutation,
   useUploadChaletImageMutation
 } from '@/store/api/apiSlice';
 import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter, useNavigation } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -73,17 +75,7 @@ const SHIFT_TYPES = [
   { value: 'OVERNIGHT' as const, labelAr: 'مبيت', labelEn: 'Overnight', defaultStart: '20:00', defaultEnd: '08:00' },
 ];
 
-const createDefaultShift = (type: 'MORNING' | 'EVENING' | 'OVERNIGHT'): ShiftData => {
-  const shiftType = SHIFT_TYPES.find(s => s.value === type)!;
-  return {
-    name: { ar: shiftType.labelAr, en: shiftType.labelEn },
-    startTime: shiftType.defaultStart,
-    endTime: shiftType.defaultEnd,
-    type,
-    isActive: true,
-    pricing: Array.from({ length: 7 }, (_, i) => ({ dayOfWeek: i, price: i >= 5 ? 150000 : 100000 })),
-  };
-};
+const createDefaultPricing = () => Array.from({ length: 7 }, (_, i) => ({ dayOfWeek: i, price: 100000 }));
 
 export default function EditChaletScreen() {
   const router = useRouter();
@@ -128,6 +120,7 @@ export default function EditChaletScreen() {
   const { data: amenityCategories } = useGetAmenityCategoriesQuery();
   const { data: currentAmenities } = useGetChaletAmenitiesQuery(id as string);
   const { data: chaletShifts } = useGetChaletShiftsQuery(id as string);
+  const { data: defaultShifts } = useGetShiftDefaultsQuery();
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
 
   const citySheetRef = useRef<BottomSheetModal>(null);
@@ -136,6 +129,50 @@ export default function EditChaletScreen() {
   const editShiftSheetRef = useRef<BottomSheetModal>(null);
 
   const [editingShiftIndex, setEditingShiftIndex] = useState<number | null>(null);
+  const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+  const [bulkPrice, setBulkPrice] = useState('');
+
+  const formatTime12h = (timeStr: string) => {
+    if (!timeStr) return '';
+    const [h, m] = timeStr.split(':').map(Number);
+    const period = h >= 12 ? (isRTL ? 'مساءً' : 'PM') : (isRTL ? 'صباحاً' : 'AM');
+    const hours12 = h % 12 || 12;
+    return `${hours12}:${m.toString().padStart(2, '0')} ${period}`;
+  };
+
+  const getTimeDate = (timeStr: string) => {
+    const [hours, minutes] = (timeStr || '08:00').split(':').map(Number);
+    const d = new Date();
+    d.setHours(hours || 0, minutes || 0, 0, 0);
+    return d;
+  };
+
+  const onTimeChange = (event: any, selectedDate?: Date, type: 'start' | 'end' = 'start') => {
+    if (Platform.OS === 'android') {
+      if (type === 'start') setShowStartTimePicker(false);
+      else setShowEndTimePicker(false);
+    }
+
+    if (selectedDate && editingShiftIndex !== null) {
+      const hours = selectedDate.getHours().toString().padStart(2, '0');
+      const minutes = selectedDate.getMinutes().toString().padStart(2, '0');
+      const timeStr = `${hours}:${minutes}`;
+      updateShiftField(editingShiftIndex, type === 'start' ? 'startTime' : 'endTime', timeStr);
+    }
+  };
+
+  const handleApplyBulkPrice = (type: 'weekdays' | 'weekends' | 'all') => {
+    if (editingShiftIndex === null || !bulkPrice) return;
+    const price = parseInt(bulkPrice) || 0;
+    if (type === 'weekdays') setWeekdayPrice(editingShiftIndex, bulkPrice);
+    else if (type === 'weekends') setWeekendPrice(editingShiftIndex, bulkPrice);
+    else {
+      setWeekdayPrice(editingShiftIndex, bulkPrice);
+      setWeekendPrice(editingShiftIndex, bulkPrice);
+    }
+    Toast.show({ type: 'info', text1: isRTL ? 'تم التطبيق' : 'Applied', text2: isRTL ? 'تم تحديث الأسعار بنجاح' : 'Prices updated successfully' });
+  };
 
   const snapPoints = useMemo(() => ['65%', '90%'], []);
   const imageSnapPoints = useMemo(() => ['30%'], []);
@@ -166,16 +203,13 @@ export default function EditChaletScreen() {
         area: chalet.area?.toString() || '',
         bedrooms: chalet.bedrooms?.toString() || '',
         bathrooms: chalet.bathrooms?.toString() || '',
-        latitude: chalet.latitude?.toString() || '',
-        longitude: chalet.longitude?.toString() || '',
       });
       setExistingImages(chalet.images || []);
     }
   }, [chalet]);
 
   useEffect(() => {
-    if (chaletShifts && Array.isArray(chaletShifts)) {
-      // Ensure we have exactly the 3 standard shifts by merging or filtering
+    if (chaletShifts && Array.isArray(chaletShifts) && chaletShifts.length > 0) {
       const standardTypes = ['MORNING', 'EVENING', 'OVERNIGHT'];
       const mapped: ShiftData[] = standardTypes.map(type => {
         const existing = (chaletShifts as any[]).find(s => s.type === type);
@@ -189,16 +223,28 @@ export default function EditChaletScreen() {
             isActive: existing.isActive !== false,
             pricing: existing.pricing?.length > 0
               ? existing.pricing.map((p: any) => ({ dayOfWeek: p.dayOfWeek, price: p.price }))
-              : Array.from({ length: 7 }, (_, i) => ({ dayOfWeek: i, price: 100000 })),
+              : createDefaultPricing(),
           };
         }
-        return createDefaultShift(type as any); // Fallback for missing type
+        const def = defaultShifts?.find(s => s.type === type);
+        return {
+          name: def?.name || { ar: type, en: type },
+          startTime: def?.startTime || '08:00',
+          endTime: def?.endTime || '14:00',
+          type: type as any,
+          isActive: false,
+          pricing: createDefaultPricing(),
+        };
       });
       setShifts(mapped);
-    } else if (chalet && shifts.length === 0) {
-      setShifts(SHIFT_TYPES.map(s => createDefaultShift(s.value)));
+    } else if (chalet && shifts.length === 0 && defaultShifts) {
+      setShifts(defaultShifts.map(s => ({
+        ...s,
+        isActive: true,
+        pricing: createDefaultPricing()
+      })));
     }
-  }, [chaletShifts, chalet]);
+  }, [chaletShifts, chalet, defaultShifts]);
 
   useEffect(() => {
     if (currentAmenities) {
@@ -212,6 +258,7 @@ export default function EditChaletScreen() {
 
   const openEditShift = (index: number) => {
     setEditingShiftIndex(index);
+    setBulkPrice('');
     editShiftSheetRef.current?.present();
   };
 
@@ -261,6 +308,10 @@ export default function EditChaletScreen() {
 
   const removeSelectedImage = (index: number) => { setSelectedImages(prev => prev.filter((_, i) => i !== index)); };
 
+  const toggleFeature = (id: string) => {
+    setSelectedFeatures(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]);
+  };
+
   const handleUpdate = async () => {
     if (!form.nameAr) { Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: isRTL ? 'يرجى ملء اسم الشاليه' : 'Please fill Chalet name', position: 'bottom' }); return; }
     if (!form.cityId) { Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: isRTL ? 'يرجى اختيار المدينة' : 'Please select a city', position: 'bottom' }); return; }
@@ -279,6 +330,7 @@ export default function EditChaletScreen() {
         area: parseInt(form.area) || 0,
         bedrooms: parseInt(form.bedrooms) || 0,
         bathrooms: parseInt(form.bathrooms) || 0,
+        shifts: JSON.stringify(shifts.filter(s => s.isActive)),
       };
       if (form.policiesAr) payload.policies = { ar: form.policiesAr, en: form.policiesEn || form.policiesAr };
 
@@ -344,50 +396,25 @@ export default function EditChaletScreen() {
   const textAlign = isRTL ? 'right' : 'left';
   const flexDirection = isRTL ? 'row-reverse' : 'row';
 
-  // ── Shift Row (Matching Screenshot) ──
   const renderShiftRow = (shift: ShiftData, index: number) => {
     const isActive = shift.isActive;
     const weekdayPrice = shift.pricing.find(p => p.dayOfWeek === 0)?.price || 0;
-    
     let icon = '☀️';
     if (shift.type === 'EVENING') icon = '🌙';
     if (shift.type === 'OVERNIGHT') icon = '🌙💤';
-
     const flexDirection = isRTL ? 'row-reverse' : 'row';
 
     return (
-      <TouchableOpacity 
-        key={index} 
-        activeOpacity={0.8}
-        onPress={() => toggleShiftActive(index)}
-        style={[styles.shiftCardRow, isActive && styles.shiftCardRowActive]}
-      >
+      <TouchableOpacity key={index} activeOpacity={0.8} onPress={() => toggleShiftActive(index)} style={[styles.shiftCardRow, isActive && styles.shiftCardRowActive]}>
         <View style={[styles.shiftRowInner, { flexDirection }]}>
-          {/* Edit & Checkbox */}
           <View style={[styles.shiftActions, { flexDirection }]}>
-            <TouchableOpacity 
-              onPress={(e) => { 
-                e.stopPropagation();
-                openEditShift(index);
-              }} 
-              style={styles.shiftEditBtn}
-            >
+            <TouchableOpacity onPress={(e) => { e.stopPropagation(); openEditShift(index); }} style={styles.shiftEditBtn}>
               <SolarPenBold size={18} color="#94A3B8" />
             </TouchableOpacity>
-            
-            <View style={[styles.checkbox, isActive && styles.checkboxActive]}>
-              {isActive && <Text style={styles.checkboxCheck}>✓</Text>}
-            </View>
+            <View style={[styles.checkbox, isActive && styles.checkboxActive]}>{isActive && <Text style={styles.checkboxCheck}>✓</Text>}</View>
           </View>
-
-          {/* Name & Price */}
           <View style={[styles.shiftInfo, { flexDirection }]}>
-            <Text style={styles.shiftValueName}>
-              {isRTL ? shift.name.ar : shift.name.en}
-              {isActive && weekdayPrice > 0 && (
-                <Text style={styles.shiftPriceText}> ({weekdayPrice.toLocaleString()})</Text>
-              )}
-            </Text>
+            <Text style={styles.shiftValueName}>{isRTL ? shift.name.ar : shift.name.en}{isActive && weekdayPrice > 0 && <Text style={styles.shiftPriceText}> ({weekdayPrice.toLocaleString()})</Text>}</Text>
             <Text style={styles.shiftIconLarge}>{icon}</Text>
           </View>
         </View>
@@ -406,7 +433,6 @@ export default function EditChaletScreen() {
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <ChaletProgressTabs steps={steps} currentStep={currentStep} onStepPress={(index) => { if (index <= currentStep) setCurrentStep(index); }} isRTL={isRTL} />
 
-          {/* ═══════════ Step 0: التفاصيل ═══════════ */}
           {currentStep === 0 && (
             <>
               <View style={styles.sectionCard}>
@@ -449,7 +475,6 @@ export default function EditChaletScreen() {
                   <Text style={[styles.label, { textAlign }]}>{isRTL ? 'السعر التجريبي / الأساسي (د.ع)' : 'Base Price (IQD)'}</Text>
                   <TextInput style={[styles.input, { textAlign: 'left' }]} placeholder="e.g. 150000" placeholderTextColor="#BCBCBC" keyboardType="numeric" value={form.basePrice} onChangeText={(val) => setForm({ ...form, basePrice: val })} />
                 </View>
-
                 <View style={[styles.rowInputs, { flexDirection }]}>
                   <View style={[styles.inputGroup, { flex: 1 }]}>
                     <Text style={[styles.label, { textAlign }]}>{isRTL ? 'المساحة (م²)' : 'Area (m²)'}</Text>
@@ -479,110 +504,44 @@ export default function EditChaletScreen() {
             </>
           )}
 
-          {/* ═══════════ Step 1: تفاصيل اضافية ═══════════ */}
           {currentStep === 1 && (
             <>
               <View style={styles.sectionCard}>
-                <View style={[styles.shiftsHeaderRow, { flexDirection }]}>
-                  <ThemedText type="h2" style={styles.sectionHeader}>{isRTL ? 'الفترات' : 'Shifts'}</ThemedText>
-                </View>
-
-                <View style={styles.shiftListContainer}>
-                  {shifts.map((shift, index) => renderShiftRow(shift, index))}
-                </View>
+                <ThemedText type="h2" style={styles.sectionHeader}>{isRTL ? 'الفترات' : 'Shifts'}</ThemedText>
+                <View style={styles.shiftListContainer}>{shifts.map((shift, index) => renderShiftRow(shift, index))}</View>
               </View>
-
-              {/* Max Adults / Children (Matching Screenshot) */}
               <View style={styles.sectionCard}>
                 <ThemedText type="h2" style={[styles.sectionHeader, { textAlign }]}>{isRTL ? 'السعة الأقصى للأشخاص' : 'Maximum Capacity'}</ThemedText>
-                
                 <View style={styles.capacityList}>
-                  {/* Adults Card */}
                   <View style={[styles.capacityCard, { flexDirection }]}>
-                    <GuestCounter 
-                      value={parseInt(form.maxAdults) || 1} 
-                      onIncrement={() => setForm({ ...form, maxAdults: (parseInt(form.maxAdults || '1') + 1).toString() })}
-                      onDecrement={() => setForm({ ...form, maxAdults: Math.max(1, parseInt(form.maxAdults || '1') - 1).toString() })}
-                    />
-                    <View style={[styles.capacityInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                      <Text style={styles.capacityLabel}>{isRTL ? 'البالغين' : 'Adults'}</Text>
-                      <Text style={styles.capacitySubLabel}>{isRTL ? '18 وأكبر' : '18 and above'}</Text>
-                    </View>
+                    <GuestCounter value={parseInt(form.maxAdults) || 1} onIncrement={() => setForm({ ...form, maxAdults: (parseInt(form.maxAdults || '1') + 1).toString() })} onDecrement={() => setForm({ ...form, maxAdults: Math.max(1, parseInt(form.maxAdults || '1') - 1).toString() })} />
+                    <View style={[styles.capacityInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}><Text style={styles.capacityLabel}>{isRTL ? 'البالغين' : 'Adults'}</Text><Text style={styles.capacitySubLabel}>{isRTL ? '18 وأكبر' : '18 and above'}</Text></View>
                   </View>
-
-                  {/* Children Card */}
                   <View style={[styles.capacityCard, { flexDirection }]}>
-                    <GuestCounter 
-                      value={parseInt(form.maxChildren) || 0} 
-                      onIncrement={() => setForm({ ...form, maxChildren: (parseInt(form.maxChildren || '0') + 1).toString() })}
-                      onDecrement={() => setForm({ ...form, maxChildren: Math.max(0, parseInt(form.maxChildren || '0') - 1).toString() })}
-                    />
-                    <View style={[styles.capacityInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                      <Text style={styles.capacityLabel}>{isRTL ? 'الاطفال' : 'Children'}</Text>
-                      <Text style={styles.capacitySubLabel}>{isRTL ? '0 - 18' : '0 - 18 years'}</Text>
-                    </View>
-                  </View>
-                </View>
-              </View>
-
-              <View style={styles.sectionCard}>
-                <ThemedText type="h2" style={styles.sectionHeader}>{isRTL ? 'سعة الشاليه' : 'Capacity'}</ThemedText>
-                <View style={[styles.rowInputs, { flexDirection }]}>
-                  <View style={[styles.inputGroup, { flex: 1 }]}>
-                    <Text style={[styles.label, { textAlign }]}>{isRTL ? 'أقصى عدد بالغين' : 'Max Adults'}</Text>
-                    <TextInput style={[styles.input, { textAlign: 'left' }]} placeholder="8" placeholderTextColor="#BCBCBC" keyboardType="numeric" value={form.maxAdults} onChangeText={(val) => setForm({ ...form, maxAdults: val })} />
-                  </View>
-                  <View style={[styles.inputGroup, { flex: 1 }]}>
-                    <Text style={[styles.label, { textAlign }]}>{isRTL ? 'أقصى عدد أطفال' : 'Max Children'}</Text>
-                    <TextInput style={[styles.input, { textAlign: 'left' }]} placeholder="4" placeholderTextColor="#BCBCBC" keyboardType="numeric" value={form.maxChildren} onChangeText={(val) => setForm({ ...form, maxChildren: val })} />
+                    <GuestCounter value={parseInt(form.maxChildren) || 0} onIncrement={() => setForm({ ...form, maxChildren: (parseInt(form.maxChildren || '0') + 1).toString() })} onDecrement={() => setForm({ ...form, maxChildren: Math.max(0, parseInt(form.maxChildren || '0') - 1).toString() })} />
+                    <View style={[styles.capacityInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}><Text style={styles.capacityLabel}>{isRTL ? 'الاطفال' : 'Children'}</Text><Text style={styles.capacitySubLabel}>{isRTL ? '0 - 18' : '0 - 18 years'}</Text></View>
                   </View>
                 </View>
               </View>
             </>
           )}
 
-          {/* ═══════════ Step 2: المرافق ═══════════ */}
           {currentStep === 2 && (
             <>
-              {/* Amenity Categories with nested Features */}
               {amenityCategories?.map((category: any) => (
                 <View key={category.id} style={styles.sectionCard}>
-                  <Text style={[styles.categorySectionTitle, { textAlign }]}>
-                    {isRTL ? category.name?.ar : category.name?.en}
-                  </Text>
+                  <Text style={[styles.categorySectionTitle, { textAlign }]}>{isRTL ? category.name?.ar : category.name?.en}</Text>
                   <View style={styles.featuresList}>
                     {category.features?.map((feature: any) => {
                       const isSelected = selectedFeatures.includes(feature.id);
                       return (
-                        <TouchableOpacity
-                          key={feature.id}
-                          style={[styles.featureRow, isSelected && styles.featureRowActive]}
-                          onPress={() => toggleFeature(feature.id)}
-                          activeOpacity={0.7}
-                        >
+                        <TouchableOpacity key={feature.id} style={[styles.featureRow, isSelected && styles.featureRowActive]} onPress={() => toggleFeature(feature.id)} activeOpacity={0.7}>
                           <View style={[styles.featureRowInner, { flexDirection }]}>
-                            {/* Icon + Name */}
                             <View style={[styles.featureInfo, { flexDirection }]}>
-                              <View style={styles.featureIconContainer}>
-                                <Text style={styles.featureIconText}>
-                                  {feature.icon === 'wifi' ? '📶' : 
-                                   feature.icon === 'parking' ? '🚗' : 
-                                   feature.icon === 'generator' ? '⚡' : 
-                                   feature.icon === 'pool' ? '🏊' : 
-                                   feature.icon === 'ac' ? '❄️' : 
-                                   feature.icon === 'playstation' ? '🎮' : 
-                                   feature.icon === 'billiards' ? '🎱' : 
-                                   feature.icon === 'bbq' ? '🔥' : '✨'}
-                                </Text>
-                              </View>
-                              <Text style={[styles.featureName, { textAlign }]}>
-                                {isRTL ? feature.name?.ar : feature.name?.en}
-                              </Text>
+                              <View style={styles.featureIconContainer}><Text style={styles.featureIconText}>{feature.icon === 'wifi' ? '📶' : feature.icon === 'parking' ? '🚗' : feature.icon === 'generator' ? '⚡' : feature.icon === 'pool' ? '🏊' : feature.icon === 'ac' ? '❄️' : feature.icon === 'playstation' ? '🎮' : feature.icon === 'billiards' ? '🎱' : feature.icon === 'bbq' ? '🔥' : '✨'}</Text></View>
+                              <Text style={[styles.featureName, { textAlign }]}>{isRTL ? feature.name?.ar : feature.name?.en}</Text>
                             </View>
-                            {/* Checkbox */}
-                            <View style={[styles.checkbox, isSelected && styles.checkboxActive]}>
-                              {isSelected && <Text style={styles.checkboxCheck}>✓</Text>}
-                            </View>
+                            <View style={[styles.checkbox, isSelected && styles.checkboxActive]}>{isSelected && <Text style={styles.checkboxCheck}>✓</Text>}</View>
                           </View>
                         </TouchableOpacity>
                       );
@@ -590,7 +549,6 @@ export default function EditChaletScreen() {
                   </View>
                 </View>
               ))}
-
               <View style={styles.sectionCard}>
                 <ThemedText type="h2" style={styles.sectionHeader}>{isRTL ? 'صور الشاليه' : 'Chalet Photos'}</ThemedText>
                 {existingImages.length > 0 && (
@@ -609,23 +567,14 @@ export default function EditChaletScreen() {
                 <Text style={[styles.label, { textAlign, marginBottom: 8 }]}>{isRTL ? 'إضافة صور جديدة' : 'Add New Photos'}</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.imageContainer, { flexDirection }]}>
                   {selectedImages.map((uri, index) => (
-                    <View key={index} style={styles.imageItem}>
-                      <Image source={{ uri }} style={styles.uploadedImage} />
-                      <TouchableOpacity style={styles.removeImageButton} onPress={() => removeSelectedImage(index)}>
-                        <SolarCloseCircleBold size={24} color={Colors.error} />
-                      </TouchableOpacity>
-                    </View>
+                    <View key={index} style={styles.imageItem}><Image source={{ uri }} style={styles.uploadedImage} /><TouchableOpacity style={styles.removeImageButton} onPress={() => removeSelectedImage(index)}><SolarCloseCircleBold size={24} color={Colors.error} /></TouchableOpacity></View>
                   ))}
-                  <TouchableOpacity style={styles.imageUpload} onPress={() => imageSourceSheetRef.current?.present()}>
-                    <SolarCameraAddBold size={32} color={Colors.text.muted} />
-                    <Text style={styles.uploadText}>{isRTL ? 'إضافة صور' : 'Add Photos'}</Text>
-                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.imageUpload} onPress={() => imageSourceSheetRef.current?.present()}><SolarCameraAddBold size={32} color={Colors.text.muted} /><Text style={styles.uploadText}>{isRTL ? 'إضافة صور' : 'Add Photos'}</Text></TouchableOpacity>
                 </ScrollView>
               </View>
             </>
           )}
         </ScrollView>
-
         <View style={[styles.footer, { flexDirection }]}>
           {currentStep > 0 && <SecondaryButton label={isRTL ? 'السابق' : 'Back'} onPress={prevStep} style={{ flex: 1 }} />}
           {currentStep < steps.length - 1 ? (
@@ -636,68 +585,59 @@ export default function EditChaletScreen() {
         </View>
       </KeyboardAvoidingView>
 
-      {/* ── Bottom Sheets ── */}
       <BottomSheetModal ref={citySheetRef} index={0} snapPoints={snapPoints} backdropComponent={renderBackdrop} backgroundStyle={{ borderRadius: normalize.radius(24) }}>
         <BottomSheetView style={styles.sheetContent}>
-          <BottomSheetFlatList data={cities} keyExtractor={(item: any) => item.id} style={{ width: '100%' }}
-            ListHeaderComponent={<Text style={styles.modalTitle}>{isRTL ? 'اختر المدينة' : 'Select City'}</Text>}
-            renderItem={({ item }: { item: any }) => (
-              <TouchableOpacity style={styles.pickerItem} onPress={() => handleCitySelect(item)}>
-                <Text style={[styles.pickerItemText, { textAlign }]}>{item.name}</Text>
-              </TouchableOpacity>
-            )}
-            contentContainerStyle={{ paddingBottom: Spacing.xl }}
-          />
+          <BottomSheetFlatList data={cities} keyExtractor={(item: any) => item.id} style={{ width: '100%' }} ListHeaderComponent={<Text style={styles.modalTitle}>{isRTL ? 'اختر المدينة' : 'Select City'}</Text>} renderItem={({ item }: { item: any }) => (
+            <TouchableOpacity style={styles.pickerItem} onPress={() => handleCitySelect(item)}><Text style={[styles.pickerItemText, { textAlign }]}>{item.name}</Text></TouchableOpacity>
+          )} contentContainerStyle={{ paddingBottom: Spacing.xl }} />
         </BottomSheetView>
       </BottomSheetModal>
-
-
 
       <BottomSheetModal ref={imageSourceSheetRef} index={0} snapPoints={imageSnapPoints} backdropComponent={renderBackdrop} backgroundStyle={{ borderRadius: normalize.radius(24) }}>
         <BottomSheetView style={styles.sheetContent}>
           <Text style={styles.modalTitle}>{isRTL ? 'اختر مصدر الصورة' : 'Select Image Source'}</Text>
           <View style={styles.modalOptions}>
-            <TouchableOpacity style={styles.modalOption} onPress={() => { takePhoto(); imageSourceSheetRef.current?.dismiss(); }}>
-              <View style={[styles.modalIcon, { backgroundColor: '#E3F2FD' }]}><SolarCameraBold size={30} color={Colors.primary} /></View>
-              <Text style={styles.modalOptionText}>{isRTL ? 'الكاميرا' : 'Camera'}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.modalOption} onPress={() => { pickImage(); imageSourceSheetRef.current?.dismiss(); }}>
-              <View style={[styles.modalIcon, { backgroundColor: '#F3E5F5' }]}><SolarGalleryBold size={30} color="#9C27B0" /></View>
-              <Text style={styles.modalOptionText}>{isRTL ? 'الأستوديو' : 'Gallery'}</Text>
-            </TouchableOpacity>
+            <TouchableOpacity style={styles.modalOption} onPress={() => { takePhoto(); imageSourceSheetRef.current?.dismiss(); }}><View style={[styles.modalIcon, { backgroundColor: '#E3F2FD' }]}><SolarCameraBold size={30} color={Colors.primary} /></View><Text style={styles.modalOptionText}>{isRTL ? 'الكاميرا' : 'Camera'}</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.modalOption} onPress={() => { pickImage(); imageSourceSheetRef.current?.dismiss(); }}><View style={[styles.modalIcon, { backgroundColor: '#F3E5F5' }]}><SolarGalleryBold size={30} color="#9C27B0" /></View><Text style={styles.modalOptionText}>{isRTL ? 'الأستوديو' : 'Gallery'}</Text></TouchableOpacity>
           </View>
         </BottomSheetView>
       </BottomSheetModal>
 
-      {/* Edit Shift Modal */}
       <BottomSheetModal ref={editShiftSheetRef} index={0} snapPoints={editShiftSnapPoints} backdropComponent={renderBackdrop} backgroundStyle={{ borderRadius: normalize.radius(24) }}>
         <BottomSheetView style={styles.sheetContent}>
           {editingShiftIndex !== null && (
             <ScrollView style={{ width: '100%' }} showsVerticalScrollIndicator={false}>
               <Text style={styles.modalTitle}>{isRTL ? 'تعديل الفترة' : 'Edit Shift'}</Text>
-              
               <View style={styles.shiftModalCard}>
-                <View style={[styles.shiftRow, { flexDirection }]}>
-                  <View style={[styles.inputGroup, { flex: 1 }]}>
-                    <Text style={[styles.label, { textAlign }]}>{isRTL ? 'اسم الشفت (عربي)' : 'Name (AR)'}</Text>
-                    <TextInput style={[styles.input, { textAlign }]} value={shifts[editingShiftIndex].name.ar} onChangeText={(val) => updateShiftField(editingShiftIndex, 'nameAr', val)} />
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.label, { textAlign }]}>{isRTL ? 'اسم الشفت (عربي)' : 'Name (AR)'}</Text>
+                  <TextInput style={[styles.input, { textAlign }]} value={shifts[editingShiftIndex].name.ar} onChangeText={(val) => updateShiftField(editingShiftIndex, 'nameAr', val)} />
+                </View>
+                <View style={[styles.shiftRow, { flexDirection, gap: 12, paddingHorizontal: 0 }]}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.label, { textAlign, marginBottom: 8 }]}>{isRTL ? 'وقت البداية' : 'Start Time'}</Text>
+                    <TouchableOpacity style={styles.timeSelectBtn} onPress={() => setShowStartTimePicker(true)}>
+                      <Text style={styles.timeSelectText}>{formatTime12h(shifts[editingShiftIndex].startTime)}</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.label, { textAlign, marginBottom: 8 }]}>{isRTL ? 'وقت النهاية' : 'End Time'}</Text>
+                    <TouchableOpacity style={styles.timeSelectBtn} onPress={() => setShowEndTimePicker(true)}>
+                      <Text style={styles.timeSelectText}>{formatTime12h(shifts[editingShiftIndex].endTime)}</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
-
-                <View style={[styles.shiftRow, { flexDirection }]}>
-                  <View style={[styles.inputGroup, { flex: 1 }]}>
-                    <Text style={[styles.label, { textAlign }]}>{isRTL ? 'وقت البداية' : 'Start'}</Text>
-                    <TextInput style={[styles.input, { textAlign: 'center' }]} value={shifts[editingShiftIndex].startTime} onChangeText={(val) => updateShiftField(editingShiftIndex, 'startTime', val)} keyboardType="numbers-and-punctuation" />
-                  </View>
-                  <View style={[styles.inputGroup, { flex: 1 }]}>
-                    <Text style={[styles.label, { textAlign }]}>{isRTL ? 'وقت النهاية' : 'End'}</Text>
-                    <TextInput style={[styles.input, { textAlign: 'center' }]} value={shifts[editingShiftIndex].endTime} onChangeText={(val) => updateShiftField(editingShiftIndex, 'endTime', val)} keyboardType="numbers-and-punctuation" />
-                  </View>
-                </View>
-
                 <View style={styles.pricingSectionModal}>
-                  <Text style={[styles.pricingTitle, { textAlign }]}>{isRTL ? 'الأسعار (د.ع)' : 'Pricing (IQD)'}</Text>
-                  <View style={[styles.dayPricingGrid]}>
+                  <View style={[styles.row, { justifyContent: 'space-between', alignItems: 'center' }]}>
+                    <Text style={styles.pricingTitle}>{isRTL ? 'الأسعار (د.ع)' : 'Pricing (IQD)'}</Text>
+                  </View>
+                  <View style={styles.bulkPricingRow}>
+                    <TextInput style={[styles.input, { flex: 1, height: 40 }]} placeholder={isRTL ? 'السعر...' : 'Price...'} keyboardType="numeric" value={bulkPrice} onChangeText={setBulkPrice} />
+                    <TouchableOpacity style={styles.bulkBtn} onPress={() => handleApplyBulkPrice('all')}><Text style={styles.bulkBtnText}>{isRTL ? 'الكل' : 'All'}</Text></TouchableOpacity>
+                    <TouchableOpacity style={styles.bulkBtn} onPress={() => handleApplyBulkPrice('weekdays')}><Text style={styles.bulkBtnText}>{isRTL ? 'الأسبوع' : 'Week'}</Text></TouchableOpacity>
+                    <TouchableOpacity style={styles.bulkBtn} onPress={() => handleApplyBulkPrice('weekends')}><Text style={styles.bulkBtnText}>{isRTL ? 'الجمعة' : 'W.E'}</Text></TouchableOpacity>
+                  </View>
+                  <View style={styles.dayPricingGrid}>
                     {shifts[editingShiftIndex].pricing.map((p) => (
                       <View key={p.dayOfWeek} style={styles.dayPriceItem}>
                         <Text style={styles.dayLabel}>{isRTL ? DAY_NAMES_AR[p.dayOfWeek] : DAY_NAMES_EN[p.dayOfWeek]}</Text>
@@ -707,23 +647,17 @@ export default function EditChaletScreen() {
                   </View>
                 </View>
               </View>
-
               <PrimaryButton label={isRTL ? 'تم' : 'Done'} onPress={() => editShiftSheetRef.current?.dismiss()} style={{ marginTop: 20 }} />
             </ScrollView>
           )}
         </BottomSheetView>
       </BottomSheetModal>
-      <LocationPickerModal
-        visible={isLocationModalVisible}
-        onClose={() => setIsLocationModalVisible(false)}
-        initialLocation={{ 
-          latitude: parseFloat(form.latitude) || 33.3152, 
-          longitude: parseFloat(form.longitude) || 44.3661 
-        }}
-        onSelect={(lat, lng) => {
-          setForm({ ...form, latitude: lat.toString(), longitude: lng.toString() });
-        }}
-      />
+
+      {showStartTimePicker && <DateTimePicker value={getTimeDate(shifts[editingShiftIndex!]?.startTime)} mode="time" display="default" is24Hour={false} onChange={(e, d) => onTimeChange(e, d, 'start')} />}
+      {showEndTimePicker && <DateTimePicker value={getTimeDate(shifts[editingShiftIndex!]?.endTime)} mode="time" display="default" is24Hour={false} onChange={(e, d) => onTimeChange(e, d, 'end')} />}
+
+      <LocationPickerModal visible={isLocationModalVisible} onClose={() => setIsLocationModalVisible(false)} initialLocation={{ latitude: parseFloat(form.latitude) || 33.3152, longitude: parseFloat(form.longitude) || 44.3661 }} onSelect={(lat, lng) => setForm({ ...form, latitude: lat.toString(), longitude: lng.toString() })} />
+      {showMap && <View style={StyleSheet.absoluteFill}><AppMap centerCoordinate={[parseFloat(form.longitude || '44.3661'), parseFloat(form.latitude || '33.3152')]} interactive={true} onCameraChanged={(state) => { const coords = state.geometry?.coordinates; if (coords) setForm({ ...form, longitude: coords[0].toString(), latitude: coords[1].toString() }); }} /><TouchableOpacity style={styles.closeMapBtn} onPress={() => setShowMap(false)}><SolarCloseCircleBold size={32} color={Colors.white} /></TouchableOpacity></View>}
     </View>
   );
 }
@@ -732,39 +666,22 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.white },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.white },
   scrollContent: { paddingHorizontal: 16, paddingTop: 20, paddingBottom: Spacing.xl },
-  footer: {
-    flexDirection: 'row', gap: Spacing.md, padding: Spacing.md,
-    backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#F1F5F9',
-    paddingBottom: Platform.OS === 'ios' ? 34 : Spacing.md,
-  },
+  footer: { flexDirection: 'row', gap: Spacing.md, padding: Spacing.md, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingBottom: Platform.OS === 'ios' ? 34 : Spacing.md },
   sectionCard: { backgroundColor: 'transparent', padding: 0, gap: Spacing.md, marginBottom: Spacing.md },
   sectionHeader: { fontSize: normalize.font(16), fontFamily: "Tajawal-Black", color: Colors.text.primary, marginBottom: 2 },
   rowInputs: { gap: Spacing.sm },
   inputGroup: { gap: 6 },
   label: { ...Typography.caption, color: Colors.text.primary, fontFamily: "Tajawal-Black", fontSize: normalize.font(14) },
-  smallLabel: { ...Typography.caption, color: Colors.text.muted, fontFamily: "Tajawal-SemiBold", fontSize: normalize.font(12) },
-  input: {
-    height: normalize.height(48), backgroundColor: '#FFFFFF', borderRadius: normalize.radius(12),
-    paddingHorizontal: Spacing.md, borderWidth: 1, borderColor: '#E8E8E8',
-    fontSize: normalize.font(15), color: Colors.text.primary, fontFamily: "Tajawal-Regular",
-  },
+  input: { height: normalize.height(48), backgroundColor: '#FFFFFF', borderRadius: normalize.radius(12), paddingHorizontal: Spacing.md, borderWidth: 1, borderColor: '#E8E8E8', fontSize: normalize.font(15), color: Colors.text.primary, fontFamily: "Tajawal-Regular" },
   textArea: { height: normalize.height(100), paddingTop: 18, textAlignVertical: 'top' },
   mapPreviewContainer: { height: normalize.height(140), borderRadius: normalize.radius(16), overflow: 'hidden', marginTop: 4 },
   miniMap: { flex: 1 },
   mapOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.1)', justifyContent: 'center', alignItems: 'center' },
   editLocBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.6)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
   editLocText: { color: Colors.white, fontSize: normalize.font(12), fontFamily: "Tajawal-Bold" },
-  // Shifts
   shiftsHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  addShiftBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#EFF6FF', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 },
-  addShiftText: { color: Colors.primary, fontSize: normalize.font(14), fontFamily: "Tajawal-Bold" },
-  shiftHint: { fontSize: normalize.font(13), color: Colors.text.muted, fontFamily: "Tajawal-Regular", marginBottom: 4 },
-  // Shift Card Row (Matches Screenshot)
   shiftListContainer: { gap: 12, marginBottom: 16 },
-  shiftCardRow: {
-    backgroundColor: '#FFFFFF', borderRadius: normalize.radius(16),
-    borderWidth: 1.5, borderColor: '#F1F5F9', paddingHorizontal: 16, paddingVertical: 14,
-  },
+  shiftCardRow: { backgroundColor: '#FFFFFF', borderRadius: normalize.radius(16), borderWidth: 1.5, borderColor: '#F1F5F9', paddingHorizontal: 16, paddingVertical: 14 },
   shiftCardRowActive: { borderColor: Colors.primary + '20' },
   shiftRowInner: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   shiftActions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
@@ -773,66 +690,29 @@ const styles = StyleSheet.create({
   shiftIconLarge: { fontSize: 24 },
   shiftValueName: { fontSize: normalize.font(15), fontFamily: "Tajawal-Bold", color: Colors.text.primary },
   shiftPriceText: { color: Colors.text.primary, fontFamily: "Tajawal-Black" },
-  addShiftBtnFull: {
-    flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center',
-    paddingVertical: 12, borderStyle: 'dashed', borderWidth: 1.5, borderColor: Colors.primary + '40',
-    borderRadius: 14, marginTop: 8,
-  },
-  addShiftBtnFullText: { color: Colors.primary, fontFamily: "Tajawal-Bold" },
-  // Capacity (Matches Screenshot)
   capacityList: { gap: 12, marginTop: 8 },
-  capacityCard: {
-    backgroundColor: '#FFFFFF', borderRadius: normalize.radius(16),
-    borderWidth: 1.5, borderColor: '#F1F5F9', padding: 16,
-    justifyContent: 'space-between', alignItems: 'center',
-  },
+  capacityCard: { backgroundColor: '#FFFFFF', borderRadius: normalize.radius(16), borderWidth: 1.5, borderColor: '#F1F5F9', padding: 16, justifyContent: 'space-between', alignItems: 'center' },
   capacityInfo: { flex: 1, gap: 2 },
   capacityLabel: { fontSize: normalize.font(18), fontFamily: "Tajawal-Bold", color: Colors.text.primary },
   capacitySubLabel: { fontSize: normalize.font(14), fontFamily: "Tajawal-Regular", color: Colors.text.muted },
-  // Modal Edit
   shiftModalCard: { backgroundColor: '#F8FAFC', borderRadius: 16, padding: 16, gap: 16 },
   pricingSectionModal: { gap: 12 },
   pricingTitle: { fontSize: normalize.font(14), fontFamily: "Tajawal-Bold", color: Colors.text.primary },
-  modalDeleteBtn: { paddingVertical: 16, alignItems: 'center' },
-  modalDeleteText: { color: Colors.error, fontFamily: "Tajawal-Bold" },
   dayPricingGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
   dayPriceItem: { alignItems: 'center', gap: 4, width: '13%' },
   dayLabel: { fontSize: normalize.font(10), fontFamily: "Tajawal-Bold", color: Colors.text.muted },
   dayPriceInput: { width: '100%', height: 36, backgroundColor: '#F8FAFC', borderRadius: 8, borderWidth: 1, borderColor: '#E2E8F0', textAlign: 'center', fontSize: normalize.font(11), color: Colors.text.primary, fontFamily: "Tajawal-Medium", paddingHorizontal: 2 },
   shiftRow: { flexDirection: 'row', gap: Spacing.sm, paddingHorizontal: 14, marginBottom: 10 },
-  shiftTypeDot: { width: 12, height: 12, borderRadius: 6 },
-  // Amenity Categories & Feature Rows
-  categorySectionTitle: {
-    fontSize: normalize.font(16), fontFamily: "Tajawal-Black", color: Colors.text.primary,
-    textAlign: 'center', marginBottom: 8,
-  },
+  categorySectionTitle: { fontSize: normalize.font(16), fontFamily: "Tajawal-Black", color: Colors.text.primary, textAlign: 'center', marginBottom: 8 },
   featuresList: { gap: 8 },
-  featureRow: {
-    backgroundColor: '#FFFFFF', borderRadius: normalize.radius(14),
-    borderWidth: 1.5, borderColor: '#E8E8E8', paddingHorizontal: 16, paddingVertical: 14,
-  },
+  featureRow: { backgroundColor: '#FFFFFF', borderRadius: normalize.radius(14), borderWidth: 1.5, borderColor: '#E8E8E8', paddingHorizontal: 16, paddingVertical: 14 },
   featureRowActive: { borderColor: Colors.primary + '40', backgroundColor: '#F8FAFF' },
   featureRowInner: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   featureInfo: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
-  featureIconContainer: {
-    width: 40, height: 40, borderRadius: 10,
-    backgroundColor: '#FF5722', justifyContent: 'center', alignItems: 'center',
-    // Adding a subtle "badge" feel like the screenshot
-    shadowColor: "#FF5722",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-  },
+  featureIconContainer: { width: 40, height: 40, borderRadius: 10, backgroundColor: '#FF5722', justifyContent: 'center', alignItems: 'center' },
   featureIconText: { fontSize: normalize.font(20), color: '#FFFFFF' },
-  featureName: {
-    fontSize: normalize.font(14), fontFamily: "Tajawal-Bold", color: Colors.text.primary,
-    flex: 1,
-  },
-  checkbox: {
-    width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: '#D1D5DB',
-    justifyContent: 'center', alignItems: 'center',
-  },
+  featureName: { fontSize: normalize.font(14), fontFamily: "Tajawal-Bold", color: Colors.text.primary, flex: 1 },
+  checkbox: { width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: '#D1D5DB', justifyContent: 'center', alignItems: 'center' },
   checkboxActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
   checkboxCheck: { color: '#FFFFFF', fontSize: normalize.font(14), fontFamily: "Tajawal-Bold" },
   uploadText: { marginTop: 4, color: Colors.text.muted, fontSize: normalize.font(12), fontFamily: "Tajawal-SemiBold" },
@@ -843,7 +723,6 @@ const styles = StyleSheet.create({
   imageUpload: { width: normalize.width(100), height: normalize.width(100), backgroundColor: Colors.surface, borderRadius: normalize.radius(16), borderWidth: 2, borderColor: Colors.border, borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center' },
   coverBadge: { position: 'absolute', bottom: 6, left: 6, backgroundColor: Colors.primary, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
   coverBadgeText: { color: '#FFFFFF', fontSize: normalize.font(9), fontFamily: "Tajawal-Bold" },
-  // Bottom sheets
   sheetContent: { padding: Spacing.lg, alignItems: 'center' },
   modalTitle: { ...Typography.h2, marginBottom: Spacing.lg, textAlign: 'center' },
   modalOptions: { flexDirection: 'row', justifyContent: 'space-around', width: '100%', marginBottom: Spacing.lg },
@@ -852,26 +731,11 @@ const styles = StyleSheet.create({
   modalOptionText: { ...Typography.body, fontFamily: "Tajawal-SemiBold" },
   pickerItem: { width: '100%', paddingVertical: Spacing.md, paddingHorizontal: Spacing.lg, borderBottomWidth: 1, borderBottomColor: Colors.border },
   pickerItemText: { ...Typography.body, fontSize: normalize.font(16), color: Colors.text.primary },
-  locationPickerBtn: {
-    backgroundColor: "#F9FAFB",
-    borderRadius: 20,
-    padding: 20,
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: "#F3F4F6",
-  },
-  locationBtnInner: {
-    alignItems: "center",
-  },
-  locationBtnTitle: {
-    fontSize: 16,
-    fontFamily: "Tajawal-Bold",
-    color: "#111827",
-  },
-  locationBtnCoords: {
-    fontSize: 12,
-    color: "#6B7280",
-    fontFamily: "Tajawal-Medium",
-    marginTop: 4,
-  },
+  timeSelectBtn: { height: 48, backgroundColor: '#FFFFFF', borderRadius: 12, borderWidth: 1, borderColor: '#E2E8F0', justifyContent: 'center', alignItems: 'center' },
+  timeSelectText: { fontSize: normalize.font(15), fontFamily: "Tajawal-Bold", color: Colors.text.primary },
+  bulkPricingRow: { flexDirection: 'row', gap: 8, alignItems: 'center', marginBottom: 8 },
+  bulkBtn: { paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#EFF6FF', borderRadius: 8, borderWidth: 1, borderColor: '#DBEAFE' },
+  bulkBtnText: { color: Colors.primary, fontSize: normalize.font(12), fontFamily: "Tajawal-Bold" },
+  row: { flexDirection: 'row', gap: 8 },
+  closeMapBtn: { position: 'absolute', top: 50, right: 20 },
 });

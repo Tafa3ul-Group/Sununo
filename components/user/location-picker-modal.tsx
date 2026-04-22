@@ -48,8 +48,10 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
   };
 
   const onCameraChanged = (state: any) => {
-    const [lng, lat] = state.geometry.coordinates;
-    setRegion({ latitude: lat, longitude: lng });
+    if (state?.geometry?.coordinates) {
+      const [lng, lat] = state.geometry.coordinates;
+      setRegion({ latitude: lat, longitude: lng });
+    }
   };
 
   return (
