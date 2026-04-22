@@ -1,0 +1,47 @@
+59:    <View style={[styles.sectionHeaderContainer, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+220:      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+227:    <View style={styles.container}>
+235:        <View style={styles.imageHeader}>
+264:          <View style={[styles.paginationDots, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+266:              <View
+274:        <View style={styles.infoWrapper}>
+276:          <View style={[styles.titleSection, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+277:            <View style={[styles.ratingGroupLeft, isRTL ? { marginRight: 15 } : { marginLeft: 15 }]}>
+281:            <View style={{ alignItems: isRTL ? "flex-end" : "flex-start", flex: 1 }}>
+293:          <View style={[styles.specsRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+299:              <View key={i} style={styles.specTag}>
+306:          <View style={[styles.capacityPolicyCard, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+307:            <View style={styles.capacityCardItem}>
+311:            <View style={styles.capacityDivider} />
+312:            <View style={styles.capacityCardItem}>
+319:          <View style={[styles.facilitiesHeader, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+327:          <View style={[styles.facilitiesGrid, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+329:              <View key={i} style={styles.facilityCell}>
+330:                <View style={styles.shapeCont}>
+334:                  <View style={styles.iconInShape}>
+347:          <View style={[styles.descriptionContainer, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+354:          <View style={styles.readMoreWrapper}>
+365:          <View style={styles.mapCardFlat}>
+366:            <View style={styles.mapInner}>
+385:                    <View style={styles.customPin}>
+391:                <View style={[styles.mapInner, { backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center' }]}>
+398:                  <View style={styles.pinCenterFallback}>
+401:                  <View style={styles.expoGoBanner}>
+409:            <View style={styles.mapLocLabel}>
+424:          <View style={[styles.ctaRowReview, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+452:            <View key={reviewItem?.id || i} style={styles.revComplexCardFlat}>
+453:              <View style={[styles.revHeaderMerged, { flexDirection: isRTL ? "row" : "row-reverse" }]}>
+454:                <View style={[styles.revRatingCornerMerged, { flexDirection: isRTL ? "row" : "row-reverse" }]}>
+458:                <View style={[styles.userInfoRowMerged, { flexDirection: isRTL ? "row" : "row-reverse" }]}>
+459:                  <View style={[styles.nameAndBodyMerged, { alignItems: isRTL ? "flex-end" : "flex-start" }, isRTL ? { marginRight: 15 } : { marginLeft: 15 }]}>
+465:                  <View style={styles.avatarCircleMerged}>
+475:              <View style={[styles.dateWrapperMerged, { alignItems: isRTL ? "flex-start" : "flex-end" }]}>
+483:            <View style={styles.addReviewAction}>
+494:             <View style={styles.unverifiedReviewMsg}>
+503:           <View style={[styles.infoIconsGrid, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+519:                <View style={styles.infoGearWrap}>
+523:                  <View style={styles.infoGearIcon}>
+557:      <View style={[styles.flatUltimateFooter, { flexDirection: isRTL ? "row" : "row-reverse" }]}>
+558:        <View style={styles.footerBtnSide}>
+565:        <View style={[styles.footerTextSide, { alignItems: isRTL ? "flex-end" : "flex-start" }]}>
+567:          <View style={[styles.footerMetaRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>

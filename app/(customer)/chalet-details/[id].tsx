@@ -131,7 +131,7 @@ export default function ChaletDetailScreen() {
     const chaletCategory = isRTL 
       ? (chalet.category?.ar || '') 
       : (chalet.category?.en || '');
-    const chaletRating = chalet.rating || chalet.averageRating || 0;
+    const chaletRating = chalet.averageRating || chalet.rating || 0;
   const chaletPrice = chalet.basePrice ? Number(chalet.basePrice).toLocaleString() : '0';
   const chaletDescription = isRTL 
     ? (chalet.description?.ar || chalet.descriptionAr || chalet.description || '') 
@@ -149,7 +149,7 @@ export default function ChaletDetailScreen() {
 
   const totalImages = images.length;
   const reviews = reviewsResponse?.data || [];
-  const reviewCount = reviewsResponse?.meta?.total || reviews.length || 0;
+  const reviewCount = chalet.reviewsCount || reviewsResponse?.meta?.total || reviews.length || 0;
   const hostName = chalet.owner?.name || (isRTL ? "مضيف عراقي" : "Iraqi Host");
   const hostAvatar = useMemo(() => {
     if (chalet.owner?.image) {
@@ -302,6 +302,39 @@ export default function ChaletDetailScreen() {
             ))}
           </View>
 
+          {/* سعة الشاليه وسياسة الضيوف */}
+          <View style={[styles.capacityPolicyCard, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <View style={styles.capacityCardItem}>
+               <ThemedText style={styles.capacityValue}>{chalet.baseCapacity || 2}</ThemedText>
+               <ThemedText style={styles.capacityLabel}>{isRTL ? "سعة السعر الأساسي" : "Base Capacity"}</ThemedText>
+            </View>
+            <View style={styles.capacityDivider} />
+            <View style={styles.capacityCardItem}>
+               <ThemedText style={styles.capacityValue}>{Number(chalet.extraPersonPrice || 0).toLocaleString()} <ThemedText style={{fontSize: 10}}>{t('common.iqd')}</ThemedText></ThemedText>
+               <ThemedText style={styles.capacityLabel}>{isRTL ? "للشخص الإضافي" : "Per Extra Person"}</ThemedText>
+            </View>
+          </View>
+
+          {/* الشفتات المتوفرة */}
+          <SectionHeader title={isRTL ? "الشفتات المتوفرة" : "Available Shifts"} isRTL={isRTL} />
+          <View style={styles.shiftsGrid}>
+            {(chalet.shifts || []).map((shift: any, index: number) => (
+              <View key={shift.id || index} style={[styles.shiftCard, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <View style={styles.shiftIconCircle}>
+                  <SolarClockCircleBold size={20} color="#035DF9" />
+                </View>
+                <View style={[styles.shiftInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                  <ThemedText style={styles.shiftName}>
+                    {isRTL ? (shift.name?.ar || shift.name) : (shift.name?.en || shift.name)}
+                  </ThemedText>
+                  <ThemedText style={styles.shiftTime}>
+                    {shift.startTime} - {shift.endTime}
+                  </ThemedText>
+                </View>
+              </View>
+            ))}
+          </View>
+
           {/* المرافق */}
           <View style={[styles.facilitiesHeader, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
             <TouchableOpacity
@@ -331,11 +364,13 @@ export default function ChaletDetailScreen() {
 
           {/* نظرة عامة */}
           <SectionHeader title={t('chalet.details.overview')} isRTL={isRTL} />
-          <ThemedText style={[styles.descriptionText, { textAlign: isRTL ? "right" : "left" }]}>
-            {chaletDescription || (isRTL 
-              ? "هو ببساطة نص شكلي (بمعنى أن الغاية هي الشكل وليس المحتوى) ويُستخدم في صناعات المطابع ودور النشر..." 
-              : "Lorem ipsum is simply dummy text of the printing and typesetting industry...")}
-          </ThemedText>
+          <View style={[styles.descriptionContainer, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+            <ThemedText style={[styles.descriptionText, { textAlign: isRTL ? "right" : "left" }]}>
+              {chaletDescription || (isRTL 
+                ? "هو ببساطة نص شكلي (بمعنى أن الغاية هي الشكل وليس المحتوى) ويُستخدم في صناعات المطابع ودور النشر..." 
+                : "Lorem ipsum is simply dummy text of the printing and typesetting industry...")}
+            </ThemedText>
+          </View>
           <View style={styles.readMoreWrapper}>
             <PrimaryButton
               label={t('chalet.details.readMore')}
@@ -406,13 +441,26 @@ export default function ChaletDetailScreen() {
           />
 
           {/* التقييم والمراجعات */}
-          <View style={[styles.ctaRowReview, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+          <View style={[styles.ctaRowReviewMerged, { flexDirection: 'row' }]}>
             <TouchableOpacity
-              style={styles.customRatingPill}
+              style={styles.pillTouch}
               onPress={() => router.push(`/chalet-details/reviews/${chaletId}`)}
             >
-              <SolarStarBold size={20} color="white" />
-              <ThemedText style={styles.customRatingText}>{chaletRating.toFixed(1)}</ThemedText>
+              <Svg
+                width={86}
+                height={46}
+                viewBox="0 0 54 29"
+                style={StyleSheet.absoluteFill}
+              >
+                <Path 
+                  d={isRTL ? "M52 14.5C52 6.49187 45.5081 0 37.5 0H6C2.68629 0 0 2.68629 0 6V23C0 26.3137 2.68629 29 6 29H37.5C45.5081 29 52 22.5081 52 14.5V14.5Z" : "M0 14.5C0 6.49187 6.49187 0 14.5 0H46C49.3137 0 52 2.68629 52 6V23C52 26.3137 49.3137 29 46 29H14.5C6.49187 29 0 22.5081 0 14.5Z"} 
+                  fill="#035DF9" 
+                />
+              </Svg>
+              <View style={styles.pillContent}>
+                <SolarStarBold size={18} color="white" />
+                <ThemedText style={styles.customRatingText}>{chaletRating.toFixed(1)}</ThemedText>
+              </View>
             </TouchableOpacity>
 
             <SecondaryButton
@@ -421,8 +469,8 @@ export default function ChaletDetailScreen() {
               iconPosition={isRTL ? "right" : "left"}
               isActive={true}
               onPress={() => router.push(`/chalet-details/reviews/${chaletId}`)}
-              style={{ width: 160 }}
-              height={50}
+              style={{ width: 175 }}
+              height={46}
             />
           </View>
 
@@ -551,7 +599,11 @@ export default function ChaletDetailScreen() {
           <ThemedText style={styles.footerPriceBig}>{chaletPrice} {t('common.iqd')}</ThemedText>
           <View style={[styles.footerMetaRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
             <SolarClockCircleBold size={12} color="#9CA3AF" />
-            <ThemedText style={styles.footerMetaSmall}>{t('chalet.details.morningShift')}</ThemedText>
+            <ThemedText style={styles.footerMetaSmall}>
+              {chalet.shifts?.[0] 
+                ? (isRTL ? (chalet.shifts[0].name?.ar || chalet.shifts[0].name) : (chalet.shifts[0].name?.en || chalet.shifts[0].name))
+                : t('chalet.details.morningShift')}
+            </ThemedText>
           </View>
         </View>
       </View>
@@ -584,7 +636,43 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.6)",
   },
   activeDot: { backgroundColor: "#035DF9", width: 20 },
-  infoWrapper: { padding: 20 },
+  infoWrapper: {
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+  },
+  shiftsGrid: {
+    gap: 10,
+    marginBottom: 10,
+  },
+  shiftCard: {
+    backgroundColor: "#F3F7FF",
+    borderRadius: 12,
+    padding: 12,
+    alignItems: "center",
+    gap: 12,
+  },
+  shiftIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "white",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  shiftInfo: {
+    flex: 1,
+  },
+  shiftName: {
+    fontFamily: "LamaSans-Bold",
+    fontSize: 14,
+    color: "#1F2937",
+  },
+  shiftTime: {
+    fontFamily: "LamaSans-Medium",
+    fontSize: 12,
+    color: "#6B7280",
+    marginTop: 2,
+  },
   titleSection: {
     alignItems: "center",
     marginBottom: 20,
@@ -645,7 +733,8 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     lineHeight: 22,
     marginTop: 5,
-    fontFamily: "LamaSans-Regular" },
+    fontFamily: "LamaSans-Regular" 
+  },
   readMoreWrapper: { alignItems: "center", marginTop: 15 },
   readMoreComp: { width: "65%", borderRadius: 27 },
 
@@ -708,23 +797,26 @@ const styles = StyleSheet.create({
     left: 0,
   },
 
-  ctaRowReview: {
+  ctaRowReviewMerged: {
     marginTop: 20,
     alignItems: "center",
     justifyContent: "space-between",
   },
-  customRatingPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#035DF9",
+  pillTouch: {
+    width: 86,
     height: 46,
-    paddingHorizontal: 20,
-    borderRadius: 23,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pillContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
+    paddingHorizontal: 12,
   },
   customRatingText: {
     color: "white",
-    fontSize: 22,
+    fontSize: 16,
     fontFamily: "LamaSans-Black",
   },
 
@@ -863,5 +955,36 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.primary,
     fontFamily: "LamaSans-Black",
+  },
+  capacityPolicyCard: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 15,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+  },
+  capacityCardItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  capacityValue: {
+    fontSize: 16,
+    fontFamily: 'Tajawal-Bold',
+    color: Colors.primary,
+  },
+  capacityLabel: {
+    fontSize: 10,
+    fontFamily: 'Tajawal-Medium',
+    color: '#64748B',
+    marginTop: 2,
+  },
+  capacityDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: '#CBD5E1',
+    marginHorizontal: 10,
   },
 });

@@ -154,13 +154,23 @@ export default function CompleteBookingScreen() {
     return d.getDay();
   }, [currentMonth, activeDate]);
   
-  const shiftPrice = useMemo(() => {
+  const selectedShiftPrice = useMemo(() => {
     if (!selectedShift) return 0;
     const pricing = selectedShift.pricing?.find((p: any) => p.dayOfWeek === dayOfWeek);
     return pricing ? Number(pricing.price) : Number(chaletDetails?.basePrice || 0);
   }, [selectedShift, dayOfWeek, chaletDetails]);
 
-  const totalPrice = shiftPrice; 
+  const extraGuestsPrice = useMemo(() => {
+    if (!chaletDetails) return 0;
+    const totalGuests = adultCount + childrenCount;
+    if (totalGuests > (chaletDetails.baseCapacity || 2)) {
+      const extraCount = totalGuests - (chaletDetails.baseCapacity || 2);
+      return extraCount * Number(chaletDetails.extraPersonPrice || 0);
+    }
+    return 0;
+  }, [adultCount, childrenCount, chaletDetails]);
+
+  const totalPrice = selectedShiftPrice + extraGuestsPrice;
   const depositPercentage = Number(chaletDetails?.depositPercentage || 0);
   const depositAmount = Math.round((totalPrice * depositPercentage) / 100);
   const remainingAmount = totalPrice - depositAmount;
@@ -377,19 +387,44 @@ export default function CompleteBookingScreen() {
             {t("booking.guests")}
           </ThemedText>
           <ThemedText style={styles.infoValue}>
-            {`${adultCount} ${t("booking.adults")}, ${childrenCount} ${t("booking.children")}`}
+            {adultCount + childrenCount}
           </ThemedText>
         </View>
+        <View style={styles.divider} />
         <View
           style={[
             styles.infoRow,
             { flexDirection: isRTL ? "row-reverse" : "row" },
           ]}
         >
-          <ThemedText style={styles.infoLabel}>
+          <ThemedText style={styles.infoLabel}>{t("booking.shiftPrice") || (isRTL ? "سعر الفترة" : "Shift Price")}</ThemedText>
+          <ThemedText style={styles.infoValue}>
+            {selectedShiftPrice.toLocaleString()} {t("common.iqd")}
+          </ThemedText>
+        </View>
+        {extraGuestsPrice > 0 && (
+          <View
+            style={[
+              styles.infoRow,
+              { flexDirection: isRTL ? "row-reverse" : "row" },
+            ]}
+          >
+            <ThemedText style={styles.infoLabel}>{isRTL ? "رسوم الأشخاص الإضافيين" : "Extra Guest Fees"}</ThemedText>
+            <ThemedText style={styles.infoValue}>
+              {extraGuestsPrice.toLocaleString()} {t("common.iqd")}
+            </ThemedText>
+          </View>
+        )}
+        <View
+          style={[
+            styles.infoRow,
+            { flexDirection: isRTL ? "row-reverse" : "row" },
+          ]}
+        >
+          <ThemedText style={[styles.infoLabel, { fontWeight: '700' }]}>
             {t("booking.totalAmount")}
           </ThemedText>
-          <ThemedText style={styles.infoValue}>
+          <ThemedText style={[styles.infoValue, { fontWeight: '700', color: Colors.primary }]}>
             {totalPrice.toLocaleString()} {t("common.iqd")}
           </ThemedText>
         </View>
@@ -1003,7 +1038,11 @@ export default function CompleteBookingScreen() {
                 </View>
                 <GuestCounter
                   value={adultCount}
-                  onIncrement={() => setAdultCount(adultCount + 1)}
+                  onIncrement={() => {
+                    const max = Number(chaletDetails?.maxAdults || 10);
+                    if (adultCount < max) setAdultCount(adultCount + 1);
+                    else Alert.alert(isRTL ? "تنبيه" : "Alert", isRTL ? `الحد الاقصى للبالغين هو ${max}` : `Max adults is ${max}`);
+                  }}
                   onDecrement={() => setAdultCount(Math.max(1, adultCount - 1))}
                 />
               </View>
@@ -1037,7 +1076,11 @@ export default function CompleteBookingScreen() {
                 </View>
                 <GuestCounter
                   value={childrenCount}
-                  onIncrement={() => setChildrenCount(childrenCount + 1)}
+                  onIncrement={() => {
+                    const max = Number(chaletDetails?.maxChildren || 10);
+                    if (childrenCount < max) setChildrenCount(childrenCount + 1);
+                    else Alert.alert(isRTL ? "تنبيه" : "Alert", isRTL ? `الحد الاقصى للأطفال هو ${max}` : `Max children is ${max}`);
+                  }}
                   onDecrement={() =>
                     setChildrenCount(Math.max(0, childrenCount - 1))
                   }
