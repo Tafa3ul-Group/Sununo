@@ -19,6 +19,7 @@ import { CircleBackButton } from "@/components/ui/circle-back-button";
 import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { SecondaryButton } from "@/components/user/secondary-button";
+import { useFormatTime } from '../../../hooks/useFormatTime';
 import { Colors, normalize, Shadows } from "@/constants/theme";
 import Constants from 'expo-constants';
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -136,6 +137,8 @@ export default function ChaletDetailScreen() {
   const chaletDescription = isRTL 
     ? (chalet.description?.ar || chalet.descriptionAr || chalet.description || '') 
     : (chalet.description?.en || chalet.descriptionEn || chalet.description || '');
+
+  const { formatShiftTime } = useFormatTime();
 
   // Use chalet images from API or fallback
   const images = useMemo(() => {
@@ -328,7 +331,7 @@ export default function ChaletDetailScreen() {
                     {isRTL ? (shift.name?.ar || shift.name) : (shift.name?.en || shift.name)}
                   </ThemedText>
                   <ThemedText style={styles.shiftTime}>
-                    {shift.startTime} - {shift.endTime}
+                    {formatShiftTime(shift.startTime)} - {formatShiftTime(shift.endTime)}
                   </ThemedText>
                 </View>
               </View>

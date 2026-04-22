@@ -59,6 +59,14 @@ export const customerApi = apiSlice.injectEndpoints({
       query: (id: string) => `/customer/chalets/${id}/policies`,
     }),
 
+    /** Get chalet occupancy by month */
+    getChaletAvailability: builder.query({
+      query: ({ id, month, year }: { id: string; month: number; year: number }) => ({
+        url: `/customer/chalets/${id}/availability`,
+        params: { month, year },
+      }),
+    }),
+
     /** Get chalet images (public) */
     getChaletImages: builder.query({
       query: (id: string) => `/chalets/${id}/images`,
@@ -410,6 +418,7 @@ export const {
   useGetChaletTermsQuery,
   useGetChaletPoliciesQuery,
   useGetChaletImagesQuery,
+  useGetChaletAvailabilityQuery,
 
   // Bookings
   useCreateCustomerBookingMutation,
