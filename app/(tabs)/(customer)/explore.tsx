@@ -14,6 +14,7 @@ import {
   SolarCloseCircleBold,
   SolarFireBold,
   SolarUsersGroupBold,
+  SolarHeartBold,
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { AppMap } from "@/components/user/app-map";
@@ -135,7 +136,7 @@ export default function ExploreScreen() {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
 
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const snapPoints = useMemo(() => ["55%", "92%"], []);
+  const snapPoints = useMemo(() => ["92%"], []);
 
   useEffect(() => {
     let subscription: any = null;
@@ -163,9 +164,11 @@ export default function ExploreScreen() {
   }, []);
 
   const [selectedChalet, setSelectedChalet] = useState<any>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const handleSelectChalet = (chalet: any) => {
     Keyboard.dismiss();
+    setActiveImageIndex(0); // Reset index
     // Save previous camera state if not already in selection mode
     if (!selectedChalet) {
       setPreSelectionRegion({ center: currentMapRegion.center, zoom: currentMapRegion.zoom });
@@ -356,6 +359,7 @@ export default function ExploreScreen() {
         ref={bottomSheetRef}
         index={0}
         snapPoints={snapPoints}
+        enableDynamicSizing={true}
         backdropComponent={renderBackdrop}
         onDismiss={handleDismissSheet}
         enablePanDownToClose
@@ -371,8 +375,9 @@ export default function ExploreScreen() {
                   horizontal 
                   pagingEnabled 
                   showsHorizontalScrollIndicator={false}
-                  onScroll={(e) => {
-                    // Potential indicator logic here if needed
+                  onMomentumScrollEnd={(e) => {
+                    const index = Math.round(e.nativeEvent.contentOffset.x / (SCREEN_WIDTH - 40));
+                    setActiveImageIndex(index);
                   }}
                   scrollEventThrottle={16}
                   style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }}
@@ -385,98 +390,92 @@ export default function ExploreScreen() {
                     />
                   ))}
                 </ScrollView>
-                <View style={styles.imageCountBadge}>
-                  <ThemedText style={styles.imageCountText}>
-                    {(selectedChalet.allImages?.length || 1)} {isRTL ? 'صور' : 'Photos'}
+                
+                {/* Heart / Favorite Button */}
+                <TouchableOpacity style={styles.favoriteBtn}>
+                  <SolarHeartBold size={24} color="#FF4B4B" />
+                </TouchableOpacity>
+
+                {/* Pagination Dots */}
+                <View style={styles.paginationDots}>
+                  {(selectedChalet.allImages || [selectedChalet.image]).map((_: any, index: number) => (
+                    <View 
+                      key={index} 
+                      style={[
+                        styles.dot, 
+                        { 
+                          backgroundColor: activeImageIndex === index ? Colors.primary : "rgba(255,255,255,0.5)",
+                          width: activeImageIndex === index ? 10 : 8,
+                          height: activeImageIndex === index ? 10 : 8,
+                        }
+                      ]} 
+                    />
+                  ))}
+                </View>
+              </View>
+
+              <View style={[styles.mainInfoRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+                {/* Rating */}
+                <View style={styles.ratingSection}>
+                   <SolarStarBold size={20} color={Colors.primary} />
+                   <ThemedText style={styles.ratingValue}>{selectedChalet.rating || '4.5'}</ThemedText>
+                </View>
+
+                {/* Title and Location */}
+                <View style={[styles.titleSection, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                  <ThemedText style={styles.chaletTitleMain}>
+                    {typeof selectedChalet?.title === 'string' ? selectedChalet.title : (isRTL ? selectedChalet?.title?.ar : selectedChalet?.title?.en) || ''}
+                  </ThemedText>
+                  <ThemedText style={styles.chaletLocationSub}>
+                    {typeof selectedChalet?.location === 'string' ? selectedChalet.location : (isRTL ? selectedChalet?.location?.ar : selectedChalet?.location?.en) || ''}
                   </ThemedText>
                 </View>
               </View>
 
-              <View style={[styles.cardHeader, { flexDirection: isRTL ? 'row-reverse' : 'row', marginTop: 16 }]}>
-                <View style={[styles.headerInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                  <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
-                    <ThemedText style={styles.chaletTitle}>
-                      {typeof selectedChalet?.title === 'string' ? selectedChalet.title : (isRTL ? selectedChalet?.title?.ar : selectedChalet?.title?.en) || ''}
-                    </ThemedText>
-                    <TouchableOpacity 
-                      style={styles.navActionBtn}
-                      onPress={() => {
-                        toggleMapTools(true);
-                        getRoute();
-                        bottomSheetRef.current?.dismiss();
-                      }}
-                    >
-                      <SolarMapPointBold size={18} color="white" />
-                      <ThemedText style={styles.navActionText}>{isRTL ? 'المسار' : 'Route'}</ThemedText>
-                    </TouchableOpacity>
+              {/* Specifications Section */}
+              <View style={[styles.specsSection, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                <ThemedText style={styles.sectionLabel}>{isRTL ? 'المواصفات الاساسية' : 'Basic Specifications'}</ThemedText>
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={[styles.specsContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+                >
+                  <View style={styles.specChip}>
+                    <ThemedText style={styles.specText}>{isRTL ? 'بستان مع بيت' : 'Garden with house'}</ThemedText>
                   </View>
-                  
-                  <View style={[styles.locationRow, { flexDirection: isRTL ? 'row-reverse' : 'row', marginTop: 4 }]}>
-                    <SolarMapPointBold size={14} color="#6B7280" />
-                    <ThemedText style={styles.chaletLocation}>
-                      {typeof selectedChalet?.location === 'string' ? selectedChalet.location : (isRTL ? selectedChalet?.location?.ar : selectedChalet?.location?.en) || ''}
-                    </ThemedText>
+                  <View style={styles.specChip}>
+                    <ThemedText style={styles.specText}>{selectedChalet.area || 0} م</ThemedText>
                   </View>
-
-                  <View style={[styles.ratingRow, { flexDirection: isRTL ? 'row-reverse' : 'row', marginTop: 8 }]}>
-                    <ThemedText style={styles.priceText}>{selectedChalet.price} د.ع / ليلة</ThemedText>
-                    <View style={[styles.dot, { marginHorizontal: 8 }]} />
-                    <SolarStarBold size={14} color="#F59E0B" />
-                    <ThemedText style={styles.ratingText}>{selectedChalet.rating}</ThemedText>
+                  <View style={styles.specChip}>
+                    <ThemedText style={styles.specText}>{selectedChalet.bathrooms || 0} حمام</ThemedText>
                   </View>
-                </View>
+                  <View style={styles.specChip}>
+                    <ThemedText style={styles.specText}>{selectedChalet.bedrooms || 0} غرف</ThemedText>
+                  </View>
+                </ScrollView>
               </View>
-
-              {/* Enhanced Info Grid */}
-              <View style={[styles.enhancedInfoGrid, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                <View style={styles.enhancedInfoItem}>
-                  <SolarWidgetBold size={18} color={Colors.primary} />
-                  <ThemedText style={styles.enhancedInfoValue}>{selectedChalet.area || 0} م²</ThemedText>
-                  <ThemedText style={styles.enhancedInfoLabel}>{isRTL ? 'المساحة' : 'Area'}</ThemedText>
-                </View>
-                <View style={styles.enhancedInfoItem}>
-                  <SolarUsersGroupBold size={18} color={Colors.secondary} />
-                  <ThemedText style={styles.enhancedInfoValue}>{selectedChalet.maxAdults || 0}</ThemedText>
-                  <ThemedText style={styles.enhancedInfoLabel}>{isRTL ? 'بالغين' : 'Adults'}</ThemedText>
-                </View>
-                <View style={styles.enhancedInfoItem}>
-                  <SolarWaterBold size={18} color={Colors.accent} />
-                  <ThemedText style={styles.enhancedInfoValue}>{selectedChalet.bedrooms || 0}</ThemedText>
-                  <ThemedText style={styles.enhancedInfoLabel}>{isRTL ? 'غرف' : 'Rooms'}</ThemedText>
-                </View>
-                <View style={styles.enhancedInfoItem}>
-                  <SolarStarBold size={18} color="#F59E0B" />
-                  <ThemedText style={styles.enhancedInfoValue}>{selectedChalet.bathrooms || 0}</ThemedText>
-                  <ThemedText style={styles.enhancedInfoLabel}>{isRTL ? 'حمامات' : 'Baths'}</ThemedText>
-                </View>
-              </View>
-
-              {/* Actions Section */}
-              <View style={styles.cardActionsWrapper}>
-                <View style={[styles.mainActionsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                  <PrimaryButton
-                    label={isRTL ? 'احجز الآن' : 'Book Now'}
-                    icon={<SolarAltArrowRightBold size={20} color="white" />}
-                    onPress={() => {
-                      bottomSheetRef.current?.dismiss();
-                      router.push(`/(customer)/booking/complete?id=${selectedChalet.id}`);
-                    }}
-                    style={{ flex: 1 }}
-                    height={54}
-                  />
-                </View>
-
-                <SecondaryButton
-                  label={isRTL ? 'عرض كامل التفاصيل' : 'View Full Details'}
-                  icon={<SolarSquareShareLineBoldDuotone size={20} color={Colors.primary} />}
+            </View>
+          )}
+          {selectedChalet && (
+            <View style={[styles.footerContentInFlow, { paddingBottom: insets.bottom + 20 }]}>
+              <View style={[styles.footerContent, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+                <TouchableOpacity 
+                  style={styles.bookButtonCustom}
                   onPress={() => {
-                    bottomSheetRef.current?.dismiss();
-                    router.push(`/(customer)/chalet-details/${selectedChalet.id}`);
+                     bottomSheetRef.current?.dismiss();
+                     router.push(`/(customer)/booking/complete?id=${selectedChalet.id}`);
                   }}
-                  isActive={false} // Uses inactive styles which have better contrast
-                  style={{ marginTop: 12 }}
-                  height={54}
-                />
+                >
+                  <View style={styles.buttonSideShape} />
+                  <View style={styles.buttonMainShape}>
+                     <ThemedText style={styles.bookButtonText}>{isRTL ? 'احجز الان' : 'Book Now'}</ThemedText>
+                  </View>
+                  <View style={styles.buttonSideShape} />
+                </TouchableOpacity>
+
+                <View style={styles.priceContainer}>
+                  <ThemedText style={styles.footerPrice}>{selectedChalet.price} IQD</ThemedText>
+                </View>
               </View>
             </View>
           )}
@@ -601,14 +600,14 @@ const styles = StyleSheet.create({
   },
   imageCarouselContainer: {
     width: '100%',
-    height: 180,
-    borderRadius: 20,
+    height: 250,
+    borderRadius: 24,
     overflow: 'hidden',
     backgroundColor: '#F3F4F6',
   },
   carouselImage: {
-    width: SCREEN_WIDTH - 40, // Parent padding adjustment
-    height: 180,
+    width: SCREEN_WIDTH - 40,
+    height: 250,
     resizeMode: 'cover',
   },
   imageCountBadge: {
@@ -778,6 +777,143 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Tajawal-Bold",
     color: Colors.primary,
+  },
+
+  // New Design Styles
+  mainInfoRow: {
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginTop: 20,
+    paddingHorizontal: 4,
+  },
+  ratingSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  ratingValue: {
+    fontSize: 16,
+    fontFamily: "Tajawal-Bold",
+    color: "#1E293B",
+  },
+  titleSection: {
+    flex: 1,
+    paddingHorizontal: 12,
+  },
+  chaletTitleMain: {
+    fontSize: 22,
+    fontFamily: "Tajawal-Black",
+    color: "#111827",
+    textAlign: 'right',
+  },
+  chaletLocationSub: {
+    fontSize: 15,
+    color: "#6B7280",
+    fontFamily: "Tajawal-Medium",
+    marginTop: 2,
+  },
+  specsSection: {
+    marginTop: 24,
+  },
+  sectionLabel: {
+    fontSize: 18,
+    fontFamily: "Tajawal-Bold",
+    color: "#1E293B",
+    marginBottom: 12,
+    paddingHorizontal: 4,
+  },
+  specsContainer: {
+    gap: 8,
+    paddingHorizontal: 4,
+  },
+  specChip: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  specText: {
+    fontSize: 14,
+    fontFamily: "Tajawal-Bold",
+    color: "#334155",
+  },
+  favoriteBtn: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    backgroundColor: 'white',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...Shadows.medium,
+  },
+  paginationDots: {
+    position: 'absolute',
+    bottom: 16,
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+  },
+  footerSpacer: {
+    height: 0,
+  },
+  footerContentInFlow: {
+    backgroundColor: 'white',
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    marginTop: 20,
+  },
+  footerContent: {
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 20,
+  },
+  priceContainer: {
+    flex: 1,
+  },
+  footerPrice: {
+    fontSize: 24,
+    fontFamily: "Tajawal-Black",
+    color: "#000000",
+    textAlign: 'right',
+  },
+  bookButtonCustom: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 54,
+  },
+  buttonMainShape: {
+    backgroundColor: Colors.primary,
+    height: 54,
+    paddingHorizontal: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 16,
+    zIndex: 2,
+    minWidth: 100,
+  },
+  buttonSideShape: {
+    backgroundColor: Colors.primary,
+    width: 34,
+    height: 44,
+    borderRadius: 17,
+    marginHorizontal: -12,
+    zIndex: 1,
+  },
+  bookButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontFamily: "Tajawal-Bold",
   },
   loaderOverlay: {
     ...StyleSheet.absoluteFillObject,
