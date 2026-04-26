@@ -15,14 +15,38 @@ import {
   SolarFireBold,
   SolarUsersGroupBold,
   SolarHeartBold,
+  SolarClockCircleBold,
+  SolarForbiddenBold,
+  SolarHome2Bold,
+  SolarKeyBold,
+  SolarSettingsBold,
+  SolarShieldCheckBold,
+  SolarWifiBold,
+  SolarWindBold,
 } from "@/components/icons/solar-icons";
+import { 
+  useGetCustomerChaletDetailsQuery, 
+  useGetChaletReviewsQuery, 
+  useGetSimilarChaletsQuery,
+  useGetFavoriteIdsQuery,
+  useToggleFavoriteMutation
+} from "@/store/api/customerApiSlice";
+import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
+
+
 import { ThemedText } from "@/components/themed-text";
 import { AppMap } from "@/components/user/app-map";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize, Shadows } from "@/constants/theme";
 import { RootState } from "@/store";
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView, BottomSheetTextInput, BottomSheetScrollView } from "@gorhom/bottom-sheet";
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView, BottomSheetTextInput, BottomSheetScrollView, BottomSheetFooter } from "@gorhom/bottom-sheet";
+import Animated, { FadeInUp, FadeInDown, SlideInRight } from "react-native-reanimated";
+
+import { useFormatTime } from '@/hooks/useFormatTime';
+import { HostContactCard } from "@/components/user/host-contact-card";
+import Svg, { Path } from "react-native-svg";
+
 import * as Location from "expo-location";
 import { Redirect, useRouter } from "expo-router";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
@@ -58,6 +82,41 @@ const FILTER_OPTIONS = [
   { id: "bbq", label: "شواء", icon: (isActive: boolean) => <SolarFireBold size={18} color={isActive ? "white" : Colors.accent} />, activeColor: Colors.accent },
   { id: "garden", label: "حديقة", icon: (isActive: boolean) => <SolarTreeBold size={18} color={isActive ? "white" : Colors.secondary} />, activeColor: Colors.secondary },
 ];
+
+const SHAPES = {
+  blue: "M29.4165 59.9929C32.7707 60.1573 33.8516 57.4154 36.6494 56.5727C39.068 55.844 42.1373 57.9136 44.602 56.1435C46.9761 54.4385 47.1003 51.1778 49.39 49.5262C50.4402 48.7686 52.2285 48.273 53.3904 47.6556C57.9159 45.2507 55.39 40.9854 56.6649 37.1198C57.1904 35.527 59.1812 33.5316 59.751 31.5682C61.0163 27.2086 57.083 25.3948 56.3847 21.7944C55.9755 19.6849 56.7103 16.6837 55.7598 14.6214C54.353 11.5687 50.787 11.9068 48.8393 9.92411C46.9162 7.96647 46.7071 4.83632 44.0101 3.40727C41.8302 2.25218 38.8321 3.99511 36.9305 3.46716C34.6099 2.82303 33.5786 0.936956 30.7928 0.00846604C26.7125 -0.17205 26.2613 2.58433 22.9082 3.49519C20.8505 4.05394 17.7655 1.94318 15.3255 3.77446C12.937 5.5671 12.9572 8.61484 10.6792 10.3017C9.69816 11.028 7.80148 11.597 6.71476 12.167C2.02929 14.6248 4.47819 18.6917 3.31327 22.6894C2.84735 24.2881 0.782415 26.4167 0.259212 28.2376C-0.909281 32.3028 2.18416 34.1827 3.35303 37.3834C4.22685 39.776 3.04536 42.7163 4.19953 45.2418C5.67644 48.4732 9.28102 47.9739 11.2678 50.1348C13.0367 52.0591 13.2797 55.0582 15.8605 56.4423C18.0647 57.6243 21.3307 55.8827 23.1837 56.5279C25.7251 57.4128 26.4182 58.9797 29.4165 59.9929Z",
+};
+
+const FEATURE_ICON_MAP: Record<string, any> = {
+  'bbq': SolarFireBold,
+  'heater': SolarWindBold,
+  'toilet-western': SolarWaterBold,
+  'wifi': SolarWifiBold,
+  'fridge': SolarHome2Bold,
+  'tv': SolarWidgetBold,
+  'kitchen': SolarHome2Bold,
+  'bathroom': SolarWaterBold,
+  'entertainment': SolarWidgetBold,
+  'services': SolarSettingsBold,
+  'default': SolarWidgetBold
+};
+
+const CARD_COLORS = ["#035DF9", "#15AB64", "#F64300"];
+
+function SectionHeader({
+  title,
+  isRTL
+}: {
+  title: string;
+  isRTL: boolean;
+}) {
+  return (
+    <View style={{ height: 60, justifyContent: "center", marginBottom: 10, marginTop: 15, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
+      <ThemedText style={{ fontSize: 18, fontFamily: "Tajawal-Black", color: "#111827" }}>{title}</ThemedText>
+    </View>
+  );
+}
+
 
 export default function ExploreScreen() {
   const router = useRouter();
@@ -136,7 +195,7 @@ export default function ExploreScreen() {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
 
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const snapPoints = useMemo(() => ["92%"], []);
+  const snapPoints = useMemo(() => ["100%"], []);
 
   useEffect(() => {
     let subscription: any = null;
@@ -163,8 +222,76 @@ export default function ExploreScreen() {
     };
   }, []);
 
+  const { formatShiftTime } = useFormatTime();
   const [selectedChalet, setSelectedChalet] = useState<any>(null);
+
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // Fetch full details when a chalet is selected
+  const { data: chaletFullDetails, isLoading: isDetailsLoading } = useGetCustomerChaletDetailsQuery(selectedChalet?.id, {
+    skip: !selectedChalet?.id
+  });
+
+  const { data: reviewsResponse } = useGetChaletReviewsQuery({ chaletId: selectedChalet?.id, page: 1, limit: 5 }, {
+    skip: !selectedChalet?.id
+  });
+
+  const { data: similarResponse } = useGetSimilarChaletsQuery(selectedChalet?.id, {
+    skip: !selectedChalet?.id
+  });
+
+  const { data: favoriteIds = [], refetch: refetchFavorites } = useGetFavoriteIdsQuery(undefined, {
+    skip: !isAuthenticated
+  });
+
+  const [toggleFavorite] = useToggleFavoriteMutation();
+
+  const handleToggleFavorite = async (chaletId: string) => {
+    try {
+      await toggleFavorite(chaletId).unwrap();
+      refetchFavorites();
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error);
+    }
+  };
+
+  const chaletDetails = chaletFullDetails || {} as any;
+  const reviews = reviewsResponse?.data || [];
+  const chaletRating = chaletDetails.averageRating || selectedChalet?.rating || 0;
+
+
+  const renderFooter = useCallback(
+    (props: any) => {
+      if (!selectedChalet) return null;
+      return (
+        <BottomSheetFooter {...props} bottomInset={0}>
+          <View style={[styles.stickyFooterMain, { paddingBottom: insets.bottom + 20 }]}>
+            <View style={[styles.footerContent, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+              <TouchableOpacity 
+                style={styles.bookButtonCustom}
+                onPress={() => {
+                   bottomSheetRef.current?.dismiss();
+                   router.push(`/(customer)/booking/complete?id=${selectedChalet.id}`);
+                }}
+              >
+                <View style={styles.buttonSideShape} />
+                <View style={styles.buttonMainShape}>
+                   <ThemedText style={styles.bookButtonText}>{isRTL ? 'احجز الان' : 'Book Now'}</ThemedText>
+                </View>
+                <View style={styles.buttonSideShape} />
+              </TouchableOpacity>
+
+              <View style={styles.priceContainer}>
+                <ThemedText style={styles.footerPrice}>{selectedChalet.price} IQD</ThemedText>
+              </View>
+            </View>
+          </View>
+        </BottomSheetFooter>
+      );
+    },
+    [selectedChalet, isRTL, insets.bottom]
+  );
 
   const handleSelectChalet = (chalet: any) => {
     Keyboard.dismiss();
@@ -361,12 +488,20 @@ export default function ExploreScreen() {
         snapPoints={snapPoints}
         enableDynamicSizing={true}
         backdropComponent={renderBackdrop}
+        footerComponent={renderFooter}
         onDismiss={handleDismissSheet}
         enablePanDownToClose
         handleIndicatorStyle={{ backgroundColor: '#E5E7EB', width: 40 }}
         style={styles.bottomSheet}
+        onChange={(index) => {
+          setIsExpanded(index >= 1);
+        }}
       >
-        <BottomSheetView style={styles.sheetContent}>
+        <BottomSheetScrollView 
+          style={styles.sheetContent}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 120 }}
+        >
+
           {selectedChalet && (
             <View style={styles.cardContainer}>
               {/* Image Carousel Swiper */}
@@ -454,32 +589,164 @@ export default function ExploreScreen() {
                   </View>
                 </ScrollView>
               </View>
-            </View>
-          )}
-          {selectedChalet && (
-            <View style={[styles.footerContentInFlow, { paddingBottom: insets.bottom + 20 }]}>
-              <View style={[styles.footerContent, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
-                <TouchableOpacity 
-                  style={styles.bookButtonCustom}
-                  onPress={() => {
-                     bottomSheetRef.current?.dismiss();
-                     router.push(`/(customer)/booking/complete?id=${selectedChalet.id}`);
-                  }}
-                >
-                  <View style={styles.buttonSideShape} />
-                  <View style={styles.buttonMainShape}>
-                     <ThemedText style={styles.bookButtonText}>{isRTL ? 'احجز الان' : 'Book Now'}</ThemedText>
-                  </View>
-                  <View style={styles.buttonSideShape} />
-                </TouchableOpacity>
 
-                <View style={styles.priceContainer}>
-                  <ThemedText style={styles.footerPrice}>{selectedChalet.price} IQD</ThemedText>
+              {/* Seamless Full Details Content (Visible when expanded) */}
+              {isExpanded && (
+                <View style={{ marginTop: 20 }}>
+                  {isDetailsLoading ? (
+                    <ActivityIndicator size="small" color={Colors.primary} style={{ marginTop: 20 }} />
+                  ) : (
+                    <>
+                      {/* Shifts Section */}
+                      <Animated.View entering={FadeInUp.delay(100).duration(500)}>
+                        <SectionHeader title={isRTL ? "الشفتات المتوفرة" : "Available Shifts"} isRTL={isRTL} />
+                        <View style={{ gap: 10, marginBottom: 10 }}>
+                          {(chaletDetails.shifts || []).map((shift: any, index: number) => (
+                            <View key={shift.id || index} style={{ backgroundColor: "#F3F7FF", borderRadius: 12, padding: 12, alignItems: "center", gap: 12, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
+                              <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: "white", justifyContent: "center", alignItems: "center" }}>
+                                <SolarClockCircleBold size={20} color={Colors.primary} />
+                              </View>
+                              <View style={{ flex: 1, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
+                                <ThemedText style={{ fontSize: 14, fontFamily: "Tajawal-Bold", color: "#1F2937" }}>
+                                  {isRTL ? (shift.name?.ar || shift.name) : (shift.name?.en || shift.name)}
+                                </ThemedText>
+                                <ThemedText style={{ fontSize: 12, fontFamily: "Tajawal-Medium", color: "#6B7280", marginTop: 2 }}>
+                                  {formatShiftTime(shift.startTime)} - {formatShiftTime(shift.endTime)}
+                                </ThemedText>
+                              </View>
+                            </View>
+                          ))}
+                        </View>
+                      </Animated.View>
+
+                      {/* Facilities Section */}
+                      <Animated.View entering={FadeInUp.delay(200).duration(500)}>
+                        <SectionHeader title={isRTL ? "المرافق" : "Facilities"} isRTL={isRTL} />
+                        <View style={{ flexDirection: isRTL ? "row-reverse" : "row", flexWrap: 'wrap', justifyContent: 'space-between', marginVertical: 15 }}>
+                          {(chaletDetails.chaletFeatures || []).map((item: any, idx: number) => {
+                            const feature = item.feature || item;
+                            const Icon = FEATURE_ICON_MAP[feature.icon] || SolarWidgetBold;
+                            return (
+                              <View key={idx} style={{ width: "23%", alignItems: "center", marginBottom: 20 }}>
+                                <View style={{ width: 55, height: 55, justifyContent: "center", alignItems: "center" }}>
+                                  <Svg height={55} width={55} viewBox="0 0 60 60">
+                                    <Path d={SHAPES.blue} fill={CARD_COLORS[idx % CARD_COLORS.length]} />
+                                  </Svg>
+                                  <View style={{ position: "absolute" }}>
+                                    <Icon size={22} color="white" />
+                                  </View>
+                                </View>
+                                <ThemedText style={{ fontSize: 11, fontFamily: "Tajawal-Bold", marginTop: 6, textAlign: 'center' }}>
+                                  {isRTL ? feature.name?.ar : feature.name?.en}
+                                </ThemedText>
+                              </View>
+                            );
+                          })}
+                        </View>
+                      </Animated.View>
+
+                      {/* Overview Section */}
+                      <Animated.View entering={FadeInUp.delay(300).duration(500)}>
+                        <SectionHeader title={isRTL ? "نظرة عامة" : "Overview"} isRTL={isRTL} />
+                        <View style={{ alignItems: isRTL ? 'flex-end' : 'flex-start', marginBottom: 10 }}>
+                          <ThemedText style={{ fontSize: 14, color: "#64748B", lineHeight: 22, textAlign: isRTL ? 'right' : 'left' }}>
+                            {isRTL ? chaletDetails.description?.ar : chaletDetails.description?.en}
+                          </ThemedText>
+                        </View>
+                      </Animated.View>
+
+                      {/* Host Section */}
+                      <Animated.View entering={FadeInUp.delay(400).duration(500)}>
+                        <HostContactCard 
+                          name={chaletDetails.owner?.name || (isRTL ? "مضيف عراقي" : "Iraqi Host")}
+                          avatar={chaletDetails.owner?.image ? getImageSrc(chaletDetails.owner.image) : null}
+                          isRTL={isRTL}
+                        />
+                      </Animated.View>
+
+                      {/* Location Section */}
+                      <Animated.View entering={FadeInUp.delay(500).duration(500)}>
+                        <SectionHeader title={isRTL ? "الموقع" : "Location"} isRTL={isRTL} />
+                        <View style={styles.mapCardFlat}>
+                          <View style={styles.mapInner}>
+                             <Image 
+                               source={{ uri: `https://tiles.stadiamaps.com/static/alidade_smooth/${chaletDetails.longitude || 44.3661},${chaletDetails.latitude || 33.3152},15/600x300@2x.png?api_key=YOUR_KEY` }} 
+                               style={{ width: '100%', height: '100%' }} 
+                             />
+                             <View style={{ position: 'absolute', top: '40%', left: '46%' }}>
+                                <SolarMapPointBold size={32} color={Colors.primary} />
+                             </View>
+                          </View>
+                          <View style={{ paddingVertical: 12, alignItems: 'center' }}>
+                             <ThemedText style={{ fontSize: 16, fontFamily: "Tajawal-Black" }}>
+                               {isRTL ? chaletDetails.region?.name?.ar : chaletDetails.region?.name?.en}
+                             </ThemedText>
+                          </View>
+                        </View>
+                      </Animated.View>
+
+                      {/* Reviews Section */}
+                      <Animated.View entering={FadeInUp.delay(600).duration(500)}>
+                        <SectionHeader title={isRTL ? "التقييمات" : "Reviews"} isRTL={isRTL} />
+                        {reviews.length > 0 ? (
+                          reviews.slice(0, 2).map((reviewItem: any, i: number) => (
+                            <View key={reviewItem.id || i} style={styles.revComplexCardFlat}>
+                              <View style={[styles.revHeaderMerged, { flexDirection: isRTL ? "row" : "row-reverse" }]}>
+                                <View style={[styles.revRatingCornerMerged, { flexDirection: isRTL ? "row" : "row-reverse" }]}>
+                                  <SolarStarBold size={14} color={Colors.primary} />
+                                  <ThemedText style={styles.revRateNumMerged}>{reviewItem.rating}</ThemedText>
+                                </View>
+                                <View style={[styles.userInfoRowMerged, { flexDirection: isRTL ? "row" : "row-reverse" }]}>
+                                  <View style={[styles.nameAndBodyMerged, { alignItems: isRTL ? "flex-end" : "flex-start" }, isRTL ? { marginRight: 15 } : { marginLeft: 15 }]}>
+                                    <ThemedText style={styles.reviewerNameMerged}>{reviewItem.customer?.name}</ThemedText>
+                                    <ThemedText style={[styles.revMessageMerged, { textAlign: isRTL ? "right" : "left" }]}>
+                                      {reviewItem.comment}
+                                    </ThemedText>
+                                  </View>
+                                  <View style={styles.avatarCircleMerged}>
+                                    <Image
+                                      source={require("@/assets/profile.svg")}
+                                      style={styles.userAvatarImgMerged}
+                                    />
+                                  </View>
+                                </View>
+                              </View>
+                            </View>
+                          ))
+                        ) : (
+                          <ThemedText style={{ textAlign: 'center', color: '#94A3B8', marginTop: 10 }}>
+                            {isRTL ? "لا توجد تقييمات بعد" : "No reviews yet"}
+                          </ThemedText>
+                        )}
+                      </Animated.View>
+
+                      {/* Similar Chalets Section */}
+                      <Animated.View entering={FadeInUp.delay(700).duration(500)}>
+                        <SectionHeader title={isRTL ? "قد يعجبك أيضاً" : "You might also like"} isRTL={isRTL} />
+                        <HorizontalSwiper
+                          data={(similarResponse || []).map((item: any, index: number) => ({
+                            id: item.id,
+                            title: isRTL ? (item.name?.ar || item.name) : (item.name?.en || item.name),
+                            location: isRTL ? (item.city?.name || '') : (item.city?.enName || item.city?.name || ''),
+                            price: item.basePrice ? Number(item.basePrice).toLocaleString() : '0',
+                            rating: item.rating || 0,
+                            image: getImageSrc(item.images?.[0]?.url),
+                            color: CARD_COLORS[index % CARD_COLORS.length],
+                          }))}
+                          onPressCard={(id) => {
+                            router.push(`/chalet-details/${id}`);
+                          }}
+                          favoriteIds={favoriteIds}
+                          onToggleFavorite={handleToggleFavorite}
+                        />
+                      </Animated.View>
+                    </>
+                  )}
                 </View>
-              </View>
+              )}
             </View>
           )}
-        </BottomSheetView>
+        </BottomSheetScrollView>
       </BottomSheetModal>
 
       {/* Advanced Filter Sheet */}
@@ -867,16 +1134,36 @@ const styles = StyleSheet.create({
   },
   footerContentInFlow: {
     backgroundColor: 'white',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    marginTop: 20,
+  },
+  stickyFooterMain: {
+    backgroundColor: 'white',
     borderTopWidth: 1,
     borderTopColor: '#F1F5F9',
     paddingHorizontal: 20,
     paddingTop: 16,
-    marginTop: 20,
+    ...Shadows.large,
   },
   footerContent: {
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 20,
+  },
+  mapCardFlat: {
+    backgroundColor: "#F9FAFB",
+    borderRadius: 24,
+    padding: 10,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#F3F4F6",
+  },
+  mapInner: { 
+    height: 180, 
+    borderRadius: 24, 
+    overflow: "hidden", 
+    position: 'relative' 
   },
   priceContainer: {
     flex: 1,
@@ -1016,5 +1303,52 @@ const styles = StyleSheet.create({
     gap: 12,
     marginTop: 10,
     paddingBottom: 20,
+  },
+  revComplexCardFlat: {
+    backgroundColor: "#F8FAFC",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+  },
+  revHeaderMerged: {
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+  },
+  revRatingCornerMerged: {
+    alignItems: "center",
+    gap: 4,
+  },
+  revRateNumMerged: {
+    fontSize: 14,
+    fontFamily: "Tajawal-Bold",
+  },
+  userInfoRowMerged: {
+    flex: 1,
+    alignItems: "flex-start",
+  },
+  nameAndBodyMerged: {
+    flex: 1,
+  },
+  reviewerNameMerged: {
+    fontSize: 15,
+    fontFamily: "Tajawal-Bold",
+    color: "#1E293B",
+  },
+  revMessageMerged: {
+    fontSize: 13,
+    fontFamily: "Tajawal-Medium",
+    color: "#64748B",
+    marginTop: 4,
+  },
+  avatarCircleMerged: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    overflow: "hidden",
+    backgroundColor: "#E2E8F0",
+  },
+  userAvatarImgMerged: {
+    width: "100%",
+    height: "100%",
   },
 });
