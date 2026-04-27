@@ -485,38 +485,28 @@ export default function ChaletDetailScreen() {
                   : null;
 
               return (
-                <TouchableOpacity
+                <View
                   key={shift.id || index}
-                  onPress={() => setSelectedShiftId(shift.id)}
                   style={[
                     styles.shiftCard,
                     { flexDirection: isRTL ? "row-reverse" : "row" },
-                    isSelected && {
-                      borderColor: "#035DF9",
-                      borderWidth: 1.5,
-                      backgroundColor: "#EBF3FF",
-                    },
                   ]}
-                  activeOpacity={0.8}
                 >
                   {(() => {
                     const isMorning = shift.type === 'MORNING' || (shift.name?.en?.toLowerCase().includes('morning')) || (shift.name?.ar?.includes('صباح'));
                     return (
                       <View
-                        style={[
-                          styles.shiftIconCircle,
-                          isSelected && { backgroundColor: "#035DF9" },
-                        ]}
+                        style={styles.shiftIconCircle}
                       >
                         {isMorning ? (
                           <SolarSunBold
                             size={22}
-                            color={isSelected ? "white" : "#FBBF24"}
+                            color="#FBBF24"
                           />
                         ) : (
                           <SolarMoonBold
                             size={22}
-                            color={isSelected ? "white" : "#6366F1"}
+                            color="#6366F1"
                           />
                         )}
                       </View>
@@ -529,10 +519,7 @@ export default function ChaletDetailScreen() {
                     ]}
                   >
                     <ThemedText
-                      style={[
-                        styles.shiftName,
-                        isSelected && { color: "#035DF9" },
-                      ]}
+                      style={styles.shiftName}
                     >
                       {isRTL
                         ? shift.name?.ar || shift.name
@@ -548,16 +535,13 @@ export default function ChaletDetailScreen() {
                       style={{ alignItems: isRTL ? "flex-start" : "flex-end" }}
                     >
                       <ThemedText
-                        style={[
-                          styles.shiftPrice,
-                          isSelected && { color: "#035DF9" },
-                        ]}
+                        style={styles.shiftPrice}
                       >
                         {minShiftPrice} {t("common.iqd")}
                       </ThemedText>
                     </View>
                   )}
-                </TouchableOpacity>
+                </View>
               );
             })}
           </View>

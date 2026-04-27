@@ -24,6 +24,7 @@ import {
 import { useBrowseCustomerChaletsQuery } from '@/store/api/customerApiSlice';
 import { HorizontalCard } from '@/components/user/horizontal-card';
 import { getImageSrc } from '@/hooks/useImageSrc';
+import { HeaderSection } from '@/components/header-section';
 
 export default function SearchScreen() {
   const { t, i18n } = useTranslation();
@@ -49,7 +50,7 @@ export default function SearchScreen() {
         : (chalet.region?.name?.en || chalet.region?.nameEn || chalet.region?.name || ''),
       price: chalet.basePrice ? Number(chalet.basePrice).toLocaleString() : '0',
       rating: chalet.averageRating || 0,
-      image: getImageSrc(chalet.images?.[0]?.url),
+      image: chalet.images?.[0]?.url || "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500&auto=format&fit=crop",
     }));
   }, [chaletsResponse, isRTL]);
 
@@ -58,20 +59,24 @@ export default function SearchScreen() {
       <HorizontalCard 
         chalet={item} 
         onPress={() => router.push(`/chalet-details/${item.id}`)}
+        shapeIndex={1}
       />
     </View>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Search Header */}
-      <View style={[styles.header, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          {isRTL ? <SolarAltArrowRightBold size={24} color={Colors.text.primary} /> : <SolarAltArrowLeftBold size={24} color={Colors.text.primary} />}
-        </TouchableOpacity>
-        
+    <View style={styles.container}>
+      <HeaderSection 
+        title={t('home.search')}
+        isHome={false}
+        showBackButton={true}
+        onBackPress={() => router.back()}
+        showLogo={false}
+      />
+
+      <View style={styles.searchContainer}>
         <View style={[styles.searchBar, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-          <SolarMagnifierBold size={20} color={Colors.text.muted} />
+          <SolarMagnifierBold size={20} color={Colors.primary} />
           <TextInput
             placeholder={t('home.searchPlaceholder')}
             style={[styles.searchInput, { textAlign: isRTL ? 'right' : 'left' }]}
@@ -94,7 +99,9 @@ export default function SearchScreen() {
         </View>
       ) : searchQuery.length === 0 ? (
         <View style={styles.centerContainer}>
-          <SolarMagnifierBold size={80} color="#E2E8F0" />
+          <View style={styles.emptyIconCircle}>
+            <SolarMagnifierBold size={40} color={Colors.primary} />
+          </View>
           <ThemedText style={styles.emptyText}>
             {isRTL ? 'ابدأ البحث عن الشاليهات المفضلة لديك' : 'Start searching for your favorite chalets'}
           </ThemedText>
@@ -114,7 +121,7 @@ export default function SearchScreen() {
           showsVerticalScrollIndicator={false}
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -134,14 +141,19 @@ const styles = StyleSheet.create({
   backButton: {
     padding: 4,
   },
+  searchContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
   searchBar: {
-    flex: 1,
-    height: 48,
+    height: 52,
     backgroundColor: '#F8FAFC',
-    borderRadius: 12,
-    paddingHorizontal: 12,
+    borderRadius: 16,
+    paddingHorizontal: 16,
     alignItems: 'center',
-    gap: 8,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   searchInput: {
     flex: 1,
@@ -162,11 +174,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 40,
   },
+  emptyIconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#F0F7FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
   emptyText: {
     fontSize: 16,
     color: Colors.text.muted,
     textAlign: 'center',
-    marginTop: 20,
     fontFamily: 'Tajawal-Medium',
+    lineHeight: 24,
   },
 });
