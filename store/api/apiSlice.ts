@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 // Define the base URL for the API
-const BASE_URL = 'https://k4wwso0cwg480c480oo0owg4.rakiza.dev/api/v1';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 // Force reload hooks
 
 const baseQuery = fetchBaseQuery({
