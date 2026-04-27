@@ -51,6 +51,14 @@ export default function CustomerLayout() {
           }}
         />
         <Tabs.Screen
+          name="explore"
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <SolarMapBoldDuotone size={size} color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
           name="profile"
           options={{
             tabBarIcon: ({ color, size, focused }) => {
@@ -72,14 +80,6 @@ export default function CustomerLayout() {
                 </View>
               );
             },
-          }}
-        />
-        <Tabs.Screen
-          name="explore"
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <SolarMapBoldDuotone size={size} color={color} />
-            ),
           }}
         />
       </Tabs>

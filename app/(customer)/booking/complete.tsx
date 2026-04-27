@@ -19,7 +19,6 @@ import { RootState } from "@/store";
 import {
     BottomSheetBackdrop,
     BottomSheetModal,
-    BottomSheetModalProvider,
     BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
@@ -79,7 +78,7 @@ export default function CompleteBookingScreen() {
   const { id: chaletIdParam } = useLocalSearchParams();
   const chaletId = chaletIdParam as string;
   const { userType, user } = useSelector((state: RootState) => state.auth);
-  const [activeTab, setActiveTab] = useState<TabType>("SHOOKET");
+  const [activeTab, setActiveTab] = useState<TabType>("WHEN");
   const [selectedDates, setSelectedDates] = useState<number[]>([]);
   const [paymentType, setPaymentType] = useState<"DEPOSIT" | "FULL">("DEPOSIT");
   const { formatShiftTime } = useFormatTime();
@@ -238,23 +237,23 @@ export default function CompleteBookingScreen() {
 
   const handleNext = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    if (activeTab === "SHOOKET") {
-      setActiveTab("MANO");
-    } else if (activeTab === "MANO") {
-      setActiveTab("DETAILS");
+    if (activeTab === "WHEN") {
+      setActiveTab("WHO");
+    } else if (activeTab === "WHO") {
+      setActiveTab("WHERE");
     } else {
       // We are on DETAILS tab — create the booking via API
       try {
       if (selectedDates.length === 0) {
         Alert.alert(isRTL ? "تنبيه" : "Alert", isRTL ? "يرجى اختيار تاريخ الحجز" : "Please select a booking date");
-        setActiveTab("SHOOKET");
+        setActiveTab("WHEN");
         return;
       }
 
       const allDaysHaveShifts = selectedDates.every(day => selectedShifts[day]);
       if (!allDaysHaveShifts) {
         Alert.alert(isRTL ? "تنبيه" : "Alert", isRTL ? "يرجى اختيار فترة لكل يوم مختار" : "Please select a shift for every selected day");
-        setActiveTab("SHOOKET");
+        setActiveTab("WHEN");
         return;
       }
 
@@ -322,7 +321,6 @@ export default function CompleteBookingScreen() {
       return updated;
     });
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    calendarSheetRef.current?.dismiss();
   };
 
   const toggleShiftForDay = (day: number, shiftId: string) => {
@@ -418,7 +416,7 @@ export default function CompleteBookingScreen() {
           </ThemedText>
           <TouchableOpacity
             style={styles.editBtn}
-            onPress={() => setActiveTab("SHOOKET")}
+            onPress={() => setActiveTab("WHEN")}
           >
             <ThemedText style={styles.editBtnText}>
               {t("booking.edit")}
@@ -770,6 +768,13 @@ export default function CompleteBookingScreen() {
           >
             {calendarDays.map((day, index) => renderCalendarDay(day, index))}
           </View>
+          <View style={{ marginTop: 20 }}>
+            <PrimaryButton
+              label={isRTL ? "تم" : "Done"}
+              onPress={() => calendarSheetRef.current?.dismiss()}
+              style={{ shadowOpacity: 0, elevation: 0, height: 56 }}
+            />
+          </View>
         </View>
       </BottomSheetView>
     </BottomSheetModal>
@@ -851,8 +856,7 @@ export default function CompleteBookingScreen() {
   };
 
   return (
-    <BottomSheetModalProvider>
-      <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container}>
         <HeaderSection
           title={t("headers.bookingComplete")}
           showBackButton
@@ -868,39 +872,9 @@ export default function CompleteBookingScreen() {
             <MainTabs activeTab={activeTab} onChange={setActiveTab} />
           </View>
 
-          {activeTab === "SHOOKET" ? (
+          {activeTab === "WHEN" ? (
             <>
-              <View style={styles.swiperContainer}>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={[
-                    styles.quickDatesRow,
-                    {
-                      flexDirection: isRTL ? "row-reverse" : "row",
-                      minWidth: "100%",
-                    },
-                  ]}
-                >
-                  {selectedDates.map((day) => (
-                    <TouchableOpacity
-                      key={day}
-                      onPress={() => toggleDayDate(day)}
-                      style={styles.dateBadge}
-                    >
-                      <ThemedText style={styles.dateBadgeText}>
-                        {day}
-                      </ThemedText>
-                    </TouchableOpacity>
-                  ))}
-                  <TouchableOpacity
-                    style={styles.addDateBtn}
-                    onPress={() => calendarSheetRef.current?.present()}
-                  >
-                    <SolarAddCircleBold size={24} color={Colors.primary} />
-                  </TouchableOpacity>
-                </ScrollView>
-              </View>
+              {/* Date badges removed */}
 
               {selectedDates.length === 0 && (
                 <View style={styles.daySelectionSection}>
@@ -941,6 +915,11 @@ export default function CompleteBookingScreen() {
                       );
                     })}
                   </View>
+                  <PrimaryButton
+                    label={isRTL ? "اختيار يوم" : "Choose a Day"}
+                    onPress={() => calendarSheetRef.current?.present()}
+                    style={{ width: "100%", marginTop: 20, shadowOpacity: 0, elevation: 0 }}
+                  />
                 </View>
               )}
 
@@ -1030,8 +1009,18 @@ export default function CompleteBookingScreen() {
                   </View>
                 </View>
               ))}
+
+              {selectedDates.length > 0 && (
+                <View style={{ paddingHorizontal: 32, marginTop: 10 }}>
+                  <PrimaryButton
+                    label={isRTL ? "إضافة يوم آخر" : "Add Another Day"}
+                    onPress={() => calendarSheetRef.current?.present()}
+                    style={{ width: "100%", shadowOpacity: 0, elevation: 0 }}
+                  />
+                </View>
+              )}
             </>
-          ) : activeTab === "MANO" ? (
+          ) : activeTab === "WHO" ? (
             <View style={styles.whoContainer}>
               <View
                 style={[
@@ -1116,15 +1105,15 @@ export default function CompleteBookingScreen() {
         <View style={styles.footer}>
           <PrimaryButton
             label={
-              activeTab === "DETAILS"
+              activeTab === "WHERE"
                 ? t("booking.completePayment")
                 : t("booking.next")
             }
             onPress={handleNext}
             activeColor={
-              activeTab === "MANO"
+              activeTab === "WHO"
                 ? "#F64200"
-                : activeTab === "DETAILS"
+                : activeTab === "WHERE"
                   ? "#15AB64"
                   : "#035DF9"
             }
@@ -1135,7 +1124,6 @@ export default function CompleteBookingScreen() {
         {renderCalendarSheet()}
         {renderSuccessSheet()}
       </SafeAreaView>
-    </BottomSheetModalProvider>
   );
 }
 
@@ -1368,14 +1356,14 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: "#FFF",
-    paddingHorizontal: 0,
+    paddingHorizontal: 16,
     paddingTop: 15,
-    paddingBottom: Platform.OS === "ios" ? 45 : 25,
+    paddingBottom: Platform.OS === "ios" ? 40 : 25,
     borderTopWidth: 1,
     borderTopColor: "#F1F5F9",
     zIndex: 100,
   },
-  nextBtn: { width: "100%", height: 64, flex: 1 },
+  nextBtn: { width: "100%", height: 56 },
 
   // Inline Payment Styles
   inlinePaymentSection: {
