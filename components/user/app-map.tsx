@@ -144,14 +144,15 @@ export const AppMap = ({
 
   // Automatically fit map to markers when they load
   useEffect(() => {
-    if (markers && markers.length > 0 && cameraRef.current) {
+    // Only auto-fit if we don't have a specific chalet selected
+    if (markers && markers.length > 0 && cameraRef.current && !selectedChalet) {
       // Small delay to ensure map is ready
       const timer = setTimeout(() => {
         if (markers.length === 1) {
           cameraRef.current?.setCamera({
             centerCoordinate: markers[0].coordinates,
-            zoomLevel: 12,
-            animationDuration: 1500,
+            zoomLevel: 14,
+            animationDuration: 1000,
           });
         } else {
           const lats = markers.map(m => m.coordinates[1]);
@@ -165,13 +166,13 @@ export const AppMap = ({
             [maxLng, maxLat], // North East
             [minLng, minLat], // South West
             Platform.OS === 'ios' ? 80 : 100, // Padding
-            1500 // Duration
+            1000 // Duration
           );
         }
-      }, 500);
+      }, 800); // Increased delay for better stability
       return () => clearTimeout(timer);
     }
-  }, [markers?.length]);
+  }, [markers?.length, !!selectedChalet]);
 
   const pulseStyle = useAnimatedStyle(() => ({
     transform: [{ scale: pulseScale.value }],
@@ -340,10 +341,11 @@ export const AppMap = ({
 
         {/* Render all active markers */}
         {markers.map((marker) => (
-          <Mapbox.MarkerView
+          <Mapbox.PointAnnotation
             key={marker.id}
             id={marker.id}
             coordinate={marker.coordinates}
+            onSelected={() => onSelectMarker?.(marker)}
           >
             <TouchableOpacity
               activeOpacity={0.9}
@@ -353,13 +355,17 @@ export const AppMap = ({
               style={styles.customMarkerUI}
             >
               <View style={styles.markerCircle}>
-                <Image source={typeof marker.image === 'string' ? { uri: marker.image } : marker.image} style={styles.markerImage} resizeMode="cover" />
+                <Image 
+                  source={typeof marker.image === 'string' ? { uri: marker.image } : marker.image} 
+                  style={styles.markerImage} 
+                  resizeMode="cover" 
+                />
               </View>
               <ThemedText style={styles.markerTitle}>
                 {typeof marker.title === 'object' ? (isRTL ? marker.title.ar : marker.title.en) : marker.title}
               </ThemedText>
             </TouchableOpacity>
-          </Mapbox.MarkerView>
+          </Mapbox.PointAnnotation>
         ))}
 
 
