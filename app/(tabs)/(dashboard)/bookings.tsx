@@ -518,87 +518,45 @@ export default function BookingsScreen() {
               : item.shift?.name?.en || item.shift?.name}
           </Text>
         </View>
+
+
+        {item.paymentModel === "deposit" && (
           <View
             style={{
               flexDirection: isRTL ? "row-reverse" : "row",
               justifyContent: "space-between",
-              alignItems: "center",
-              marginTop: 12,
+              marginTop: 8,
+              paddingTop: 8,
+              borderTopWidth: 1,
+              borderTopColor: "#F1F5F9",
             }}
           >
-            <View
-              style={[
-                styles.statusBadge,
-                {
-                  backgroundColor:
-                    item.status === "confirmed"
-                      ? "#DCFCE7"
-                      : item.status === "completed"
-                        ? "#DBEAFE"
-                        : item.status === "cancelled"
-                          ? "#FEE2E2"
-                          : "#FEF3C7",
-                },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.statusText,
-                  {
-                    color:
-                      item.status === "confirmed"
-                        ? "#16A34A"
-                        : item.status === "completed"
-                          ? "#1E40AF"
-                          : item.status === "cancelled"
-                            ? "#EF4444"
-                            : "#D97706",
-                  },
-                ]}
-              >
-                {t(`dashboard.bookings.status.${item.status}`)}
-              </Text>
-            </View>
-            <Text style={styles.codeText}>#{item.bookingCode}</Text>
-          </View>
-
-          {item.paymentModel === "deposit" && (
-            <View
+            <Text
               style={{
-                flexDirection: isRTL ? "row-reverse" : "row",
-                justifyContent: "space-between",
-                marginTop: 8,
-                paddingTop: 8,
-                borderTopWidth: 1,
-                borderTopColor: "#F1F5F9",
+                fontSize: normalize.font(11),
+                fontFamily: "Tajawal-Regular",
+                color: "#64748B",
               }}
             >
-              <Text
-                style={{
-                  fontSize: normalize.font(11),
-                  fontFamily: "Tajawal-Regular",
-                  color: "#64748B",
-                }}
-              >
-                {isRTL ? "العربون:" : "Deposit:"}{" "}
-                <Text style={{ fontFamily: "Tajawal-Bold" }}>
-                  {Number(item.depositAmount).toLocaleString()}
-                </Text>
+              {isRTL ? "العربون:" : "Deposit:"}{" "}
+              <Text style={{ fontFamily: "Tajawal-Bold" }}>
+                {Number(item.depositAmount).toLocaleString()}
               </Text>
-              <Text
-                style={{
-                  fontSize: normalize.font(11),
-                  fontFamily: "Tajawal-Regular",
-                  color: "#64748B",
-                }}
-              >
-                {isRTL ? "المتبقي:" : "Remaining:"}{" "}
-                <Text style={{ fontFamily: "Tajawal-Bold", color: "#EF4444" }}>
-                  {Number(item.remainingAmount).toLocaleString()}
-                </Text>
+            </Text>
+            <Text
+              style={{
+                fontSize: normalize.font(11),
+                fontFamily: "Tajawal-Regular",
+                color: "#64748B",
+              }}
+            >
+              {isRTL ? "المتبقي:" : "Remaining:"}{" "}
+              <Text style={{ fontFamily: "Tajawal-Bold", color: "#EF4444" }}>
+                {Number(item.remainingAmount).toLocaleString()}
               </Text>
-            </View>
-          )}
+            </Text>
+          </View>
+        )}
         {item.status === "confirmed" && (
           <View
             style={{
@@ -863,9 +821,9 @@ export default function BookingsScreen() {
                   >
                     {isRTL
                       ? selectedShiftForAction.shiftName?.ar ||
-                        selectedShiftForAction.shiftName
+                      selectedShiftForAction.shiftName
                       : selectedShiftForAction.shiftName?.en ||
-                        selectedShiftForAction.shiftName}
+                      selectedShiftForAction.shiftName}
                   </Text>
                   <View style={{ width: "100%" }}>
                     <Text
@@ -950,7 +908,7 @@ export default function BookingsScreen() {
                       shiftSheetRef.current?.dismiss();
                       openBookingDetails(
                         selectedShiftForAction.booking?.id ||
-                          selectedShiftForAction.bookingId,
+                        selectedShiftForAction.bookingId,
                       );
                     }}
                     isActive={true}

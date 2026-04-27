@@ -1,5 +1,5 @@
 const IMAGE_BASE_URL = 'https://blob.rakiza.dev';
-const IMAGE_ACCOUNT_HASH = 'token';
+const IMAGE_ACCOUNT_HASH = 'k4wwso0cwg480c480oo0owg4';
 
 // Placeholder image path
 const PLACEHOLDER_IMAGE = require('../assets/placeholder.png');

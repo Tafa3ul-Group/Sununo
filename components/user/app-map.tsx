@@ -2,9 +2,10 @@ import { ThemedText } from '@/components/themed-text';
 import * as Theme from '@/constants/theme';
 import { RootState } from '@/store';
 import * as Location from 'expo-location';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Image, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
 import { useSelector } from 'react-redux';
 
 const { Colors, normalize, Shadows } = Theme;
@@ -142,6 +143,23 @@ export const AppMap = ({
     };
   }, []);
 
+  const handlePress = useCallback(() => {
+    onPress?.();
+  }, [onPress]);
+
+  const handleMapLoadingError = useCallback((err: any) => {
+    console.warn('Mapbox Load Error:', err);
+  }, []);
+
+  const handleMapIdle = useCallback((feature: any) => {
+    if (onCameraChanged && feature.geometry && feature.geometry.coordinates) {
+      onCameraChanged(
+        feature.geometry.coordinates as [number, number],
+        feature.properties.zoomLevel
+      );
+    }
+  }, [onCameraChanged]);
+
   // Automatically fit map to markers when they load
   useEffect(() => {
     // Only auto-fit if we don't have a specific chalet selected
@@ -199,7 +217,8 @@ export const AppMap = ({
     );
   }
 
-  // Fallback for Expo Go / Web / Error
+// Fallback for Expo Go / Web / Error
+
   if (!hasNativeMap || Platform.OS === 'web') {
     const fallbackLng = centerCoordinate?.[0] || 47.85;
     const fallbackLat = centerCoordinate?.[1] || 30.50;
@@ -210,9 +229,9 @@ export const AppMap = ({
       <View style={[styles.container, style, styles.fallbackContainer]}>
         <View style={styles.abstractMapBackground}>
           <Image
-            source={{ uri: `https://api.mapbox.com/styles/v1/mapbox/light-v10/static/${markerOverlay}${fallbackLng},${fallbackLat},${zoomLevel}/800x800?access_token=${MAPBOX_ACCESS_TOKEN}` }}
+            source={{ uri: `https://api.mapbox.com/styles/v1/mapbox/light-v11/static/${markerOverlay}${fallbackLng},${fallbackLat},${zoomLevel}/800x800?access_token=${MAPBOX_ACCESS_TOKEN}` }}
             style={styles.fallbackImage}
-            resizeMode="cover"
+            contentFit="cover"
           />
         </View>
 
@@ -231,7 +250,7 @@ export const AppMap = ({
             ]}
           >
             <View style={styles.markerCircle}>
-              <Image source={typeof marker.image === 'string' ? { uri: marker.image } : marker.image} style={styles.markerImage} />
+              <Image source={marker.image} style={styles.markerImage} contentFit="cover" transition={200} />
             </View>
             <ThemedText style={styles.markerTitle}>
               {typeof marker.title === 'object' ? (isRTL ? marker.title.ar : marker.title.en) : marker.title}
@@ -261,15 +280,9 @@ export const AppMap = ({
         styleURL={isNavigating ? Mapbox.StyleURL.NavigationDay : Mapbox.StyleURL.Light}
         logoEnabled={false}
         attributionEnabled={false}
-        onPress={() => onPress?.()}
-        onRegionDidChange={(feature: any) => {
-          if (onCameraChanged && feature.geometry && feature.geometry.coordinates) {
-            onCameraChanged(
-              feature.geometry.coordinates as [number, number],
-              feature.properties.zoomLevel
-            );
-          }
-        }}
+        onPress={handlePress}
+        onMapLoadingError={handleMapLoadingError}
+        onMapIdle={handleMapIdle}
       >
         {/* Immersive 3D Buildings - Temporarily disabled for debugging route */}
         {/*
@@ -341,11 +354,11 @@ export const AppMap = ({
 
         {/* Render all active markers */}
         {markers.map((marker) => (
-          <Mapbox.PointAnnotation
+          <Mapbox.MarkerView
             key={marker.id}
             id={marker.id}
             coordinate={marker.coordinates}
-            onSelected={() => onSelectMarker?.(marker)}
+            anchor={{ x: 0.5, y: 0.5 }}
           >
             <TouchableOpacity
               activeOpacity={0.9}
@@ -356,16 +369,17 @@ export const AppMap = ({
             >
               <View style={styles.markerCircle}>
                 <Image 
-                  source={typeof marker.image === 'string' ? { uri: marker.image } : marker.image} 
+                  source={marker.image} 
                   style={styles.markerImage} 
-                  resizeMode="cover" 
+                  contentFit="cover" 
+                  transition={300}
                 />
               </View>
               <ThemedText style={styles.markerTitle}>
                 {typeof marker.title === 'object' ? (isRTL ? marker.title.ar : marker.title.en) : marker.title}
               </ThemedText>
             </TouchableOpacity>
-          </Mapbox.PointAnnotation>
+          </Mapbox.MarkerView>
         ))}
 
 
@@ -437,7 +451,11 @@ const styles = StyleSheet.create({
     borderColor: 'white',
     backgroundColor: '#F3F4F6',
     overflow: 'hidden',
-    ...SafeShadows.medium,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 3,
   },
   markerImage: {
     width: '100%',

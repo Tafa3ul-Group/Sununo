@@ -69,7 +69,7 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
           {hasNativeMap && Platform.OS !== 'web' ? (
             <Mapbox.MapView 
                 style={styles.map} 
-                styleURL={Mapbox.StyleURL.Light}
+                styleURL={"mapbox://styles/mapbox/light-v11"}
                 onCameraChanged={onCameraChanged}
             >
               <Mapbox.Camera

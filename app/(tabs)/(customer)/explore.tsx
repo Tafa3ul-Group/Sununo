@@ -1,37 +1,29 @@
 import {
-  SolarAltArrowRightBold,
+  SolarClockCircleBold,
   SolarCloseBold,
+  SolarCloseCircleBold,
   SolarFilterBold,
+  SolarFireBold,
+  SolarHeartBold,
+  SolarHome2Bold,
   SolarMagnifierBold,
   SolarMapBoldDuotone,
-  SolarMapPointBold,
-  SolarSquareShareLineBoldDuotone,
+  SolarSettingsBold,
   SolarStarBold,
   SolarTreeBold,
   SolarWaterBold,
-  SolarWheelBold,
   SolarWidgetBold,
-  SolarCloseCircleBold,
-  SolarFireBold,
-  SolarUsersGroupBold,
-  SolarHeartBold,
-  SolarClockCircleBold,
-  SolarForbiddenBold,
-  SolarHome2Bold,
-  SolarKeyBold,
-  SolarSettingsBold,
-  SolarShieldCheckBold,
   SolarWifiBold,
-  SolarWindBold,
+  SolarWindBold
 } from "@/components/icons/solar-icons";
-import { 
-  useGetCustomerChaletDetailsQuery, 
-  useGetChaletReviewsQuery, 
-  useGetSimilarChaletsQuery,
+import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
+import {
+  useGetChaletReviewsQuery,
+  useGetCustomerChaletDetailsQuery,
   useGetFavoriteIdsQuery,
+  useGetSimilarChaletsQuery,
   useToggleFavoriteMutation
 } from "@/store/api/customerApiSlice";
-import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
 
 
 import { ThemedText } from "@/components/themed-text";
@@ -40,34 +32,30 @@ import { PrimaryButton } from "@/components/user/primary-button";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize, Shadows } from "@/constants/theme";
 import { RootState } from "@/store";
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView, BottomSheetTextInput, BottomSheetScrollView, BottomSheetFooter } from "@gorhom/bottom-sheet";
-import Animated, { FadeInUp, FadeInDown, SlideInRight } from "react-native-reanimated";
+import { BottomSheetBackdrop, BottomSheetFooter, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput } from "@gorhom/bottom-sheet";
+import Animated, { FadeInUp } from "react-native-reanimated";
 
-import { useFormatTime } from '@/hooks/useFormatTime';
 import { HostContactCard } from "@/components/user/host-contact-card";
+import { useFormatTime } from '@/hooks/useFormatTime';
 import Svg, { Path } from "react-native-svg";
 
+import { getImageSrc } from "@/hooks/useImageSrc";
 import * as Location from "expo-location";
-import { Redirect, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
 import {
+  ActivityIndicator,
   Dimensions,
   Image,
-  Platform,
+  Keyboard,
   ScrollView,
-  Share,
   StyleSheet,
-  TouchableOpacity,
-  View,
-  Alert,
-  ActivityIndicator,
-  TextInput,
   Text,
-  Keyboard
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native";
-import { getImageSrc } from "@/hooks/useImageSrc";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 
@@ -142,7 +130,7 @@ export default function ExploreScreen() {
   const { data: chaletsResponse, isLoading: isChaletsLoading } = useGetChaletsQuery({
     isActive: true,
     isApproved: true,
-    limit: 100,
+    limit: zoom >= 14 ? 300 : zoom >= 10 ? 150 : zoom >= 6 ? 80 : 40,
     search: search || undefined,
     maxAdults: maxAdults ? parseInt(maxAdults) : undefined,
     minPrice: minPrice ? parseInt(minPrice) : undefined,
@@ -152,32 +140,47 @@ export default function ExploreScreen() {
   const chaletsRaw = chaletsResponse?.data || [];
 
   const MOCK_CHALETS = useMemo(() => {
-    return chaletsRaw.map((item: any) => {
-      const mainImage = item.images?.find((img: any) => img.isMain) || item.images?.[0];
-      
-      return {
-        id: item.id,
-        title: item.name,
-        location: item.address,
-        price: (item.basePrice || "0").toLocaleString(),
-        rating: item.rating || 0,
-        color: Colors.primary,
-        image: getImageSrc(mainImage?.url),
-        allImages: (item.images || []).map((img: any) => getImageSrc(img.url)),
-        coordinates: [item.longitude, item.latitude] as [number, number],
-        description: isRTL ? item.description?.ar : item.description?.en,
-        area: item.area,
-        maxAdults: item.maxAdults,
-        maxChildren: item.maxChildren,
-        bedrooms: item.bedrooms,
-        bathrooms: item.bathrooms,
-      };
-    });
-  }, [chaletsRaw]);
-  
+    return chaletsRaw
+      .filter((item: any) => {
+        const lng = Number(item.longitude);
+        const lat = Number(item.latitude);
+        return lng && lat && lng !== 0 && lat !== 0;
+      })
+      .map((item: any) => {
+        const mainImage = item.images?.find((img: any) => img.isMain) || item.images?.[0];
+
+        return {
+          id: item.id,
+          title: item.name,
+          location: item.address,
+          price: (item.basePrice || "0").toLocaleString(),
+          rating: item.rating || 0,
+          color: Colors.primary,
+          image: getImageSrc(mainImage?.url),
+          allImages: (item.images || []).map((img: any) => getImageSrc(img.url)),
+          coordinates: [item.longitude, item.latitude] as [number, number],
+          description: isRTL ? item.description?.ar : item.description?.en,
+          area: item.area,
+          maxAdults: item.maxAdults,
+          maxChildren: item.maxChildren,
+          bedrooms: item.bedrooms,
+          bathrooms: item.bathrooms,
+        };
+      });
+  }, [chaletsRaw, isRTL]);
+
   // Track Current Map State for restoration
   const [currentMapRegion, setCurrentMapRegion] = useState({ center: [44.36, 33.31] as [number, number], zoom: 6 });
   const [preSelectionRegion, setPreSelectionRegion] = useState<{ center: [number, number], zoom: number } | null>(null);
+
+  const handleCameraChanged = useCallback((center: [number, number], zoomLevel: number) => {
+    setCurrentMapRegion({ center, zoom: zoomLevel });
+    setZoom(zoomLevel);
+    setCameraPosition(center);
+    if (!selectedChalet) {
+      browsingRegionRef.current = { center, zoom: zoomLevel };
+    }
+  }, [selectedChalet]);
 
   // Navigation & Routing State
   const [route, setRoute] = useState<any>(null);
@@ -186,7 +189,7 @@ export default function ExploreScreen() {
   const [showMapTools, setShowMapTools] = useState(false);
   const showMapToolsRef = useRef(false);
   const browsingRegionRef = useRef<{ center: [number, number], zoom: number }>({ center: [44.36, 33.31], zoom: 6 });
-  
+
   const toggleMapTools = (val: boolean) => {
     setShowMapTools(val);
     showMapToolsRef.current = val;
@@ -268,19 +271,14 @@ export default function ExploreScreen() {
         <BottomSheetFooter {...props} bottomInset={0}>
           <View style={[styles.stickyFooterMain, { paddingBottom: insets.bottom + 20 }]}>
             <View style={[styles.footerContent, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
-              <TouchableOpacity 
-                style={styles.bookButtonCustom}
+              <PrimaryButton
+                label={isRTL ? 'احجز الان' : 'Book Now'}
                 onPress={() => {
-                   bottomSheetRef.current?.dismiss();
-                   router.push(`/(customer)/booking/complete?id=${selectedChalet.id}`);
+                  bottomSheetRef.current?.dismiss();
+                  router.push(`/(customer)/booking/complete?id=${selectedChalet.id}`);
                 }}
-              >
-                <View style={styles.buttonSideShape} />
-                <View style={styles.buttonMainShape}>
-                   <ThemedText style={styles.bookButtonText}>{isRTL ? 'احجز الان' : 'Book Now'}</ThemedText>
-                </View>
-                <View style={styles.buttonSideShape} />
-              </TouchableOpacity>
+                style={{ width: normalize.width(140) }}
+              />
 
               <View style={styles.priceContainer}>
                 <ThemedText style={styles.footerPrice}>{selectedChalet.price} IQD</ThemedText>
@@ -302,20 +300,20 @@ export default function ExploreScreen() {
     }
 
     setSelectedChalet(chalet);
-    
+
     // Zoom in on chalet
     setZoom(15);
     setCameraPosition(chalet.coordinates);
-    
+
     bottomSheetRef.current?.present();
   };
 
   const handleDismissSheet = () => {
     // If not navigating, restore pre-selection zoom
     if (!showMapToolsRef.current && preSelectionRegion) {
-       setZoom(preSelectionRegion.zoom);
-       setCameraPosition(preSelectionRegion.center);
-       setPreSelectionRegion(null);
+      setZoom(preSelectionRegion.zoom);
+      setCameraPosition(preSelectionRegion.center);
+      setPreSelectionRegion(null);
     }
     // We don't nullify selectedChalet here to keep route active if navigating
   };
@@ -373,7 +371,7 @@ export default function ExploreScreen() {
   return (
     <View style={styles.container}>
       <ExpoStatusBar style="dark" />
-      
+
       {isChaletsLoading && !chaletsRaw.length && (
         <View style={styles.loaderOverlay}>
           <ActivityIndicator size="large" color={Colors.primary} />
@@ -391,12 +389,7 @@ export default function ExploreScreen() {
         zoomLevel={zoom}
         centerCoordinate={cameraPosition}
         onPress={() => Keyboard.dismiss()}
-        onRegionChange={(region) => {
-           setCurrentMapRegion(region);
-           if (!selectedChalet) {
-              browsingRegionRef.current = region;
-           }
-        }}
+        onCameraChanged={handleCameraChanged}
       />
 
       {/* Conditional Interface Elements */}
@@ -417,8 +410,8 @@ export default function ExploreScreen() {
               </TouchableOpacity>
             )}
           </View>
-          <TouchableOpacity 
-            style={styles.filterButtonCircle} 
+          <TouchableOpacity
+            style={styles.filterButtonCircle}
             onPress={handleFilterPress}
             activeOpacity={0.8}
           >
@@ -452,22 +445,22 @@ export default function ExploreScreen() {
       {/* Vertical Navigation Actions - Fixed on the right */}
       {showMapTools && (
         <View style={styles.rightNavActions}>
-          <TouchableOpacity 
-            style={[styles.navCircleFab, { backgroundColor: Colors.primary }]} 
+          <TouchableOpacity
+            style={[styles.navCircleFab, { backgroundColor: Colors.primary }]}
             onPress={() => setIsNavigating(!isNavigating)}
           >
             <SolarMapBoldDuotone size={26} color="white" />
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={[styles.navCircleFab, { backgroundColor: '#FEE2E2', borderColor: '#EF4444', borderWidth: 1 }]} 
+          <TouchableOpacity
+            style={[styles.navCircleFab, { backgroundColor: '#FEE2E2', borderColor: '#EF4444', borderWidth: 1 }]}
             onPress={() => {
               setRoute(null);
               setRouteInfo(null);
               setIsNavigating(false);
               toggleMapTools(false);
               setSelectedChalet(null);
-              
+
               if (preSelectionRegion) {
                 setZoom(preSelectionRegion.zoom);
                 setCameraPosition(preSelectionRegion.center);
@@ -497,7 +490,7 @@ export default function ExploreScreen() {
           setIsExpanded(index >= 1);
         }}
       >
-        <BottomSheetScrollView 
+        <BottomSheetScrollView
           style={styles.sheetContent}
           contentContainerStyle={{ paddingBottom: insets.bottom + 120 }}
         >
@@ -506,9 +499,9 @@ export default function ExploreScreen() {
             <View style={styles.cardContainer}>
               {/* Image Carousel Swiper */}
               <View style={styles.imageCarouselContainer}>
-                <ScrollView 
-                  horizontal 
-                  pagingEnabled 
+                <ScrollView
+                  horizontal
+                  pagingEnabled
                   showsHorizontalScrollIndicator={false}
                   onMomentumScrollEnd={(e) => {
                     const index = Math.round(e.nativeEvent.contentOffset.x / (SCREEN_WIDTH - 40));
@@ -518,14 +511,14 @@ export default function ExploreScreen() {
                   style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }}
                 >
                   {(selectedChalet.allImages || [selectedChalet.image]).map((img: any, index: number) => (
-                    <Image 
-                      key={index} 
-                      source={img} 
-                      style={[styles.carouselImage, { transform: [{ scaleX: isRTL ? -1 : 1 }] }]} 
+                    <Image
+                      key={index}
+                      source={img}
+                      style={[styles.carouselImage, { transform: [{ scaleX: isRTL ? -1 : 1 }] }]}
                     />
                   ))}
                 </ScrollView>
-                
+
                 {/* Heart / Favorite Button */}
                 <TouchableOpacity style={styles.favoriteBtn}>
                   <SolarHeartBold size={24} color="#FF4B4B" />
@@ -534,16 +527,16 @@ export default function ExploreScreen() {
                 {/* Pagination Dots */}
                 <View style={styles.paginationDots}>
                   {(selectedChalet.allImages || [selectedChalet.image]).map((_: any, index: number) => (
-                    <View 
-                      key={index} 
+                    <View
+                      key={index}
                       style={[
-                        styles.dot, 
-                        { 
+                        styles.dot,
+                        {
                           backgroundColor: activeImageIndex === index ? Colors.primary : "rgba(255,255,255,0.5)",
                           width: activeImageIndex === index ? 10 : 8,
                           height: activeImageIndex === index ? 10 : 8,
                         }
-                      ]} 
+                      ]}
                     />
                   ))}
                 </View>
@@ -552,8 +545,8 @@ export default function ExploreScreen() {
               <View style={[styles.mainInfoRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
                 {/* Rating */}
                 <View style={styles.ratingSection}>
-                   <SolarStarBold size={20} color={Colors.primary} />
-                   <ThemedText style={styles.ratingValue}>{selectedChalet.rating || '4.5'}</ThemedText>
+                  <SolarStarBold size={20} color={Colors.primary} />
+                  <ThemedText style={styles.ratingValue}>{selectedChalet.rating || '4.5'}</ThemedText>
                 </View>
 
                 {/* Title and Location */}
@@ -570,8 +563,8 @@ export default function ExploreScreen() {
               {/* Specifications Section */}
               <View style={[styles.specsSection, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
                 <ThemedText style={styles.sectionLabel}>{isRTL ? 'المواصفات الاساسية' : 'Basic Specifications'}</ThemedText>
-                <ScrollView 
-                  horizontal 
+                <ScrollView
+                  horizontal
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={[styles.specsContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
                 >
@@ -598,7 +591,7 @@ export default function ExploreScreen() {
                   ) : (
                     <>
                       {/* Shifts Section */}
-                      <Animated.View entering={FadeInUp.delay(100).duration(500)}>
+                      <Animated.View entering={FadeInUp.delay(50).duration(300)}>
                         <SectionHeader title={isRTL ? "الشفتات المتوفرة" : "Available Shifts"} isRTL={isRTL} />
                         <View style={{ gap: 10, marginBottom: 10 }}>
                           {(chaletDetails.shifts || []).map((shift: any, index: number) => (
@@ -620,7 +613,7 @@ export default function ExploreScreen() {
                       </Animated.View>
 
                       {/* Facilities Section */}
-                      <Animated.View entering={FadeInUp.delay(200).duration(500)}>
+                      <Animated.View entering={FadeInUp.delay(100).duration(300)}>
                         <SectionHeader title={isRTL ? "المرافق" : "Facilities"} isRTL={isRTL} />
                         <View style={{ flexDirection: isRTL ? "row-reverse" : "row", flexWrap: 'wrap', justifyContent: 'space-between', marginVertical: 15 }}>
                           {(chaletDetails.chaletFeatures || []).map((item: any, idx: number) => {
@@ -646,7 +639,7 @@ export default function ExploreScreen() {
                       </Animated.View>
 
                       {/* Overview Section */}
-                      <Animated.View entering={FadeInUp.delay(300).duration(500)}>
+                      <Animated.View entering={FadeInUp.delay(150).duration(300)}>
                         <SectionHeader title={isRTL ? "نظرة عامة" : "Overview"} isRTL={isRTL} />
                         <View style={{ alignItems: isRTL ? 'flex-end' : 'flex-start', marginBottom: 10 }}>
                           <ThemedText style={{ fontSize: 14, color: "#64748B", lineHeight: 22, textAlign: isRTL ? 'right' : 'left' }}>
@@ -656,8 +649,8 @@ export default function ExploreScreen() {
                       </Animated.View>
 
                       {/* Host Section */}
-                      <Animated.View entering={FadeInUp.delay(400).duration(500)}>
-                        <HostContactCard 
+                      <Animated.View entering={FadeInUp.delay(200).duration(300)}>
+                        <HostContactCard
                           name={chaletDetails.owner?.name || (isRTL ? "مضيف عراقي" : "Iraqi Host")}
                           avatar={chaletDetails.owner?.image ? getImageSrc(chaletDetails.owner.image) : null}
                           isRTL={isRTL}
@@ -665,28 +658,31 @@ export default function ExploreScreen() {
                       </Animated.View>
 
                       {/* Location Section */}
-                      <Animated.View entering={FadeInUp.delay(500).duration(500)}>
+                      <Animated.View entering={FadeInUp.delay(250).duration(300)}>
                         <SectionHeader title={isRTL ? "الموقع" : "Location"} isRTL={isRTL} />
                         <View style={styles.mapCardFlat}>
                           <View style={styles.mapInner}>
-                             <Image 
-                               source={{ uri: `https://tiles.stadiamaps.com/static/alidade_smooth/${chaletDetails.longitude || 44.3661},${chaletDetails.latitude || 33.3152},15/600x300@2x.png?api_key=YOUR_KEY` }} 
-                               style={{ width: '100%', height: '100%' }} 
-                             />
-                             <View style={{ position: 'absolute', top: '40%', left: '46%' }}>
-                                <SolarMapPointBold size={32} color={Colors.primary} />
-                             </View>
+                            <Image
+                              source={{
+                                uri: `https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+${Colors.primary.replace('#', '')}(${chaletDetails.longitude || 44.3661},${chaletDetails.latitude || 33.3152})/${chaletDetails.longitude || 44.3661},${chaletDetails.latitude || 33.3152},14/600x300@2x?access_token=${MAPBOX_ACCESS_TOKEN}`
+                              }}
+                              style={{ width: '100%', height: '100%' }}
+                              resizeMode="cover"
+                            />
                           </View>
-                          <View style={{ paddingVertical: 12, alignItems: 'center' }}>
-                             <ThemedText style={{ fontSize: 16, fontFamily: "Tajawal-Black" }}>
-                               {isRTL ? chaletDetails.region?.name?.ar : chaletDetails.region?.name?.en}
-                             </ThemedText>
+                          <View style={{ paddingVertical: 14, alignItems: 'center', backgroundColor: 'white', borderBottomLeftRadius: 20, borderBottomRightRadius: 20 }}>
+                            <ThemedText style={{ fontSize: 16, fontFamily: "Tajawal-Black", color: Colors.primary }}>
+                              {isRTL ? chaletDetails.region?.name?.ar : chaletDetails.region?.name?.en || chaletDetails.address?.ar || chaletDetails.address?.en || ''}
+                            </ThemedText>
+                            <ThemedText style={{ fontSize: 12, color: "#64748B", fontFamily: "Tajawal-Medium", marginTop: 2 }}>
+                              {isRTL ? "انقر لرؤية الموقع بدقة" : "Click to see precise location"}
+                            </ThemedText>
                           </View>
                         </View>
                       </Animated.View>
 
                       {/* Reviews Section */}
-                      <Animated.View entering={FadeInUp.delay(600).duration(500)}>
+                      <Animated.View entering={FadeInUp.delay(300).duration(300)}>
                         <SectionHeader title={isRTL ? "التقييمات" : "Reviews"} isRTL={isRTL} />
                         {reviews.length > 0 ? (
                           reviews.slice(0, 2).map((reviewItem: any, i: number) => (
@@ -721,7 +717,7 @@ export default function ExploreScreen() {
                       </Animated.View>
 
                       {/* Similar Chalets Section */}
-                      <Animated.View entering={FadeInUp.delay(700).duration(500)}>
+                      <Animated.View entering={FadeInUp.delay(350).duration(300)}>
                         <SectionHeader title={isRTL ? "قد يعجبك أيضاً" : "You might also like"} isRTL={isRTL} />
                         <HorizontalSwiper
                           data={(similarResponse || []).map((item: any, index: number) => ({
@@ -761,7 +757,7 @@ export default function ExploreScreen() {
       >
         <BottomSheetScrollView contentContainerStyle={styles.filterModalContent}>
           <Text style={styles.filterModalTitle}>{isRTL ? 'تصفية النتائج' : 'Filter Results'}</Text>
-          
+
           <View style={styles.filterSection}>
             <Text style={styles.filterSectionLabel}>{isRTL ? 'عدد البالغين' : 'Max Adults'}</Text>
             <BottomSheetTextInput
@@ -795,7 +791,7 @@ export default function ExploreScreen() {
           </View>
 
           <View style={styles.modalActions}>
-             <SecondaryButton
+            <SecondaryButton
               label={isRTL ? 'إعادة ضبط' : 'Reset'}
               onPress={handleResetFilters}
               style={{ flex: 1 }}
@@ -1152,18 +1148,18 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   mapCardFlat: {
-    backgroundColor: "#F9FAFB",
-    borderRadius: 24,
-    padding: 10,
-    marginBottom: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    overflow: 'hidden',
+    ...Shadows.medium,
+    marginVertical: 10,
     borderWidth: 1,
-    borderColor: "#F3F4F6",
+    borderColor: '#F1F5F9',
   },
-  mapInner: { 
-    height: 180, 
-    borderRadius: 24, 
-    overflow: "hidden", 
-    position: 'relative' 
+  mapInner: {
+    width: '100%',
+    height: 180,
+    backgroundColor: '#F3F4F6',
   },
   priceContainer: {
     flex: 1,

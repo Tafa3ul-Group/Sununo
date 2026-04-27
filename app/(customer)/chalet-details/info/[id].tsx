@@ -108,10 +108,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 15,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 15,
+    boxShadow: {
+      offsetX: 0,
+      offsetY: 10,
+      blurRadius: 15,
+      color: 'rgba(43, 102, 255, 0.3)', // Colors.primary with 0.3 opacity
+    },
     elevation: 8,
   },
   pageTitle: {
@@ -123,10 +125,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 24,
     padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
+    boxShadow: {
+      offsetX: 0,
+      offsetY: 2,
+      blurRadius: 10,
+      color: 'rgba(0, 0, 0, 0.05)',
+    },
     elevation: 2,
     borderWidth: 1,
     borderColor: '#F3F4F6',
