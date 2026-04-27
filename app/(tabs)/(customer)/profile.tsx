@@ -75,6 +75,7 @@ export default function ProfileScreen() {
   const menuItems = [
     { id: 'bookings', title: t('headers.bookings'), shape: 'blue' as const, icon: <SolarCalendarBold size={20} color="white" />, route: '/(tabs)/(customer)/bookings' },
     { id: 'reviews', title: t('headers.reviews'), shape: 'blue' as const, icon: <SolarHeartBold size={20} color="white" />, route: '/reviews' },
+    { id: 'favorites', title: t('headers.favorites'), shape: 'blue' as const, icon: <SolarHeartBold size={20} color="white" />, route: '/favorites' },
     { id: 'language', title: t('profile.language'), shape: 'pink' as const, icon: <SolarGlobalBold size={20} color="white" />, action: openLanguageSheet },
     { id: 'contact', title: t('profile.contactUs'), shape: 'green' as const, icon: <SolarPhoneBold size={20} color="white" /> },
     { id: 'privacy', title: t('profile.privacyPolicy'), shape: 'blue' as const, icon: <SolarShieldBold size={20} color="white" /> },

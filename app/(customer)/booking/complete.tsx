@@ -7,6 +7,7 @@ import {
     SolarMapPointBold,
     SolarMoonBold,
     SolarSunBold,
+    SolarClockCircleBold,
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { GuestCounter } from "@/components/user/guest-counter";
@@ -65,7 +66,7 @@ const ScribbleIcon = () => (
     <Svg width="27" height="17" viewBox="0 0 27 17" fill="none">
       <Path
         d="M0 16.3342C2.99573 15.595 6.40062 12.1931 8.87516 10.3499C10.7539 8.95056 12.5344 7.38786 14.3058 5.85133C15.4503 4.82162 19.3351 1.01248 20.5624 0.694205L20.6631 0.77428C20.0331 2.22304 14.0786 6.36758 12.7559 7.86821C11.9412 8.79263 7.05325 13.2599 7.16689 14.3823C8.4238 14.2945 20.3323 4.32336 22.0845 3.05699C22.8235 2.52284 25.1521 0.00923939 26.0467 0C25.8574 0.789872 23.2059 2.65758 22.4706 3.29904C20.984 4.59612 19.5563 5.88203 18.1625 7.28613C15.947 9.51811 13.851 11.1722 12.8732 14.3075C17.2857 12.4915 22.1018 7.57582 25.5124 4.21528C25.6825 4.04772 26.0097 3.8791 26.2404 3.85331L26.2836 3.96158C25.6618 5.40745 23.6597 6.68258 22.4926 7.82798C20.8697 9.42081 19.4171 10.9377 17.8686 12.5976C16.584 13.9747 15.835 14.5322 14.6548 16.1655C17.1806 14.0611 19.7304 11.9904 22.3426 9.9975C23.6692 8.98521 25.5394 7.29498 27 6.61685C26.3425 7.94963 24.3386 10.0783 23.3023 11.287C22.466 12.2624 20.8583 14.7933 20.0165 15.4373C20.7405 13.701 23.3785 10.5202 24.6847 9.04787L24.3797 8.92814C22.5227 10.2836 20.7462 11.839 18.9151 13.2C17.789 14.0368 14.9222 16.7536 13.7398 17L13.6411 16.9076C14.0857 15.7752 16.6737 13.1961 17.661 12.3097L17.6004 11.9123C16.9492 12.4276 16.274 12.9107 15.5771 13.36C14.9133 13.7883 13.7034 14.5621 12.9276 14.3859C11.7642 13.343 15.6221 9.27202 16.3942 8.42632L16.5078 7.99092C16.4879 8.0041 16.468 8.017 16.4482 8.03038C14.9312 9.05922 8.00045 15.1758 6.80779 14.882C6.77373 14.8736 6.7407 14.8611 6.70711 14.8507C6.35217 14.031 8.37052 11.9017 8.9202 11.2266L8.66679 10.9995C7.57776 11.9989 1.29986 17.3668 0 16.3342Z"
-        fill="#334155"
+        fill="#1E293B"
       />
     </Svg>
   </View>
@@ -79,19 +80,21 @@ export default function CompleteBookingScreen() {
   const chaletId = chaletIdParam as string;
   const { userType, user } = useSelector((state: RootState) => state.auth);
   const [activeTab, setActiveTab] = useState<TabType>("SHOOKET");
-  const [selectedDates, setSelectedDates] = useState<number[]>([new Date().getDate()]);
-  const [activeDateIdx, setActiveDateIdx] = useState(0);
+  const [selectedDates, setSelectedDates] = useState<number[]>([]);
   const [paymentType, setPaymentType] = useState<"DEPOSIT" | "FULL">("DEPOSIT");
   const { formatShiftTime } = useFormatTime();
 
-  // Selected Shift ID
-  const [selectedShiftId, setSelectedShiftId] = useState<string | null>(null);
+  // Mapping of Day -> Selected Shift ID
+  const [selectedShifts, setSelectedShifts] = useState<Record<number, string>>({});
 
   // API hooks
   const [createBooking, { isLoading: isCreatingBooking }] = useCreateCustomerBookingMutation();
   const { data: chaletDetails } = useGetCustomerChaletDetailsQuery(chaletId, { skip: !chaletId });
   
-  const [currentMonth, setCurrentMonth] = useState(new Date()); 
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const getDayOfWeek = (day: number) => {
+    return new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day).getDay();
+  }; 
   
   const { data: availabilityData = [] } = useGetChaletAvailabilityQuery({
     id: chaletId,
@@ -104,21 +107,28 @@ export default function CompleteBookingScreen() {
     if (!availabilityData || !Array.isArray(availabilityData) || !chaletDetails?.shifts) return [];
     
     const dateCounts: Record<number, number> = {};
+    const viewedMonth = currentMonth.getMonth();
+    const viewedYear = currentMonth.getFullYear();
+
     availabilityData.forEach((b: any) => {
-      const d = new Date(b.bookingDate).getDate();
-      dateCounts[d] = (dateCounts[d] || 0) + 1;
+      const bDate = new Date(b.bookingDate);
+      if (bDate.getMonth() === viewedMonth && bDate.getFullYear() === viewedYear) {
+        const d = bDate.getDate();
+        dateCounts[d] = (dateCounts[d] || 0) + 1;
+      }
     });
 
     const totalShifts = chaletDetails.shifts.length;
     if (totalShifts === 0) return [];
 
     return Object.keys(dateCounts)
-      .filter(d => dateCounts[Number(d)] >= totalShifts)
+      .filter((d) => dateCounts[Number(d)] >= totalShifts)
       .map(Number);
-  }, [availabilityData, chaletDetails]);
+  }, [availabilityData, chaletDetails, currentMonth]);
 
   // Success Sheet Ref
   const successSheetRef = React.useRef<BottomSheetModal>(null);
+  const calendarSheetRef = React.useRef<BottomSheetModal>(null);
 
   const [createdBookingId, setCreatedBookingId] = useState<string | null>(null);
 
@@ -132,17 +142,14 @@ export default function CompleteBookingScreen() {
   const [adultCount, setAdultCount] = useState(2);
   const [childrenCount, setChildrenCount] = useState(1);
 
-  const activeDate = selectedDates[activeDateIdx];
 
-
-
-  const handleNextShift = () => {
+  const handleNextMonth = () => {
     const next = new Date(currentMonth);
     next.setMonth(next.getMonth() + 1);
     setCurrentMonth(next);
   };
 
-  const handlePrevShift = () => {
+  const handlePrevMonth = () => {
     const prev = new Date(currentMonth);
     prev.setMonth(prev.getMonth() - 1);
     setCurrentMonth(prev);
@@ -171,41 +178,62 @@ export default function CompleteBookingScreen() {
   const monthLabel = currentMonth.toLocaleString(i18n.language, {
     month: "long",
     year: "numeric",
-  });
+  }).toUpperCase();
   const dayHeadersRaw = t("booking.days", { returnObjects: true });
   const dayHeaders = Array.isArray(dayHeadersRaw) ? dayHeadersRaw : [];
 
-  const selectedShift = useMemo(() => {
-    return chaletDetails?.shifts?.find((s: any) => s.id === selectedShiftId);
-  }, [selectedShiftId, chaletDetails]);
 
-  const isShiftBooked = useCallback((shiftId: string) => {
-    if (!activeDate) return false;
-    const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(activeDate).padStart(2, '0')}`;
+  const selectedShiftPrice = useMemo(() => {
+    let total = 0;
+    selectedDates.forEach(day => {
+        const shiftId = selectedShifts[day];
+        if (shiftId) {
+          const shift = chaletDetails?.shifts?.find((s: any) => s.id === shiftId);
+          if (shift) {
+            const dayOfWeek = getDayOfWeek(day);
+            const pricing = shift.pricing?.find((p: any) => p.dayOfWeek === dayOfWeek);
+            total += pricing ? Number(pricing.price) : Number(chaletDetails?.basePrice || 0);
+          }
+        }
+    });
+    return total;
+  }, [selectedShifts, selectedDates, chaletDetails, currentMonth]);
+
+  const extraGuestsPrice = 0;
+
+  const isShiftBookedForDay = useCallback((day: number, shiftId: string) => {
+    const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     return availabilityData.some((b: any) => {
       const bDate = new Date(b.bookingDate).toISOString().split('T')[0];
       return bDate === dateStr && b.shift?.id === shiftId;
     });
-  }, [activeDate, availabilityData, currentMonth]);
-  const dayOfWeek = useMemo(() => {
-    const d = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), activeDate || 1);
-    return d.getDay();
-  }, [currentMonth, activeDate]);
-  
-  const selectedShiftPrice = useMemo(() => {
-    if (!selectedShift) return 0;
-    const pricing = selectedShift.pricing?.find((p: any) => p.dayOfWeek === dayOfWeek);
-    return pricing ? Number(pricing.price) : Number(chaletDetails?.basePrice || 0);
-  }, [selectedShift, dayOfWeek, chaletDetails]);
+  }, [availabilityData, currentMonth]);
 
-  const extraGuestsPrice = 0;
 
-  const totalPrice = selectedShiftPrice + extraGuestsPrice;
+  const calculateTotalPrice = () => {
+    let total = 0;
+    selectedDates.forEach(day => {
+      const shiftId = selectedShifts[day];
+      if (shiftId) {
+        const shift = chaletDetails?.shifts?.find((s: any) => s.id === shiftId);
+        if (shift) {
+          const dayOfWeek = getDayOfWeek(day);
+          const pricing = shift.pricing?.find((p: any) => p.dayOfWeek === dayOfWeek);
+          total += pricing ? Number(pricing.price) : Number(chaletDetails?.basePrice || 0);
+        }
+      }
+    });
+    return total;
+  };
+
+  const totalPrice = calculateTotalPrice();
   const depositPercentage = Number(chaletDetails?.depositPercentage || 0);
   const depositAmount = Math.round((totalPrice * depositPercentage) / 100);
   const remainingAmount = totalPrice - depositAmount;
 
-  const bookingDateString = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(activeDate || 15).padStart(2, '0')}`;
+  const bookingDateString = selectedDates.length > 0 
+    ? selectedDates.map(d => `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`).join(", ")
+    : t("booking.noDate");
 
 
   const handleNext = async () => {
@@ -217,32 +245,39 @@ export default function CompleteBookingScreen() {
     } else {
       // We are on DETAILS tab — create the booking via API
       try {
-        const bookingDate = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(activeDate || 15).padStart(2, '0')}`;
-        
-        const selectedShift = chaletDetails?.shifts?.find((s: any) => s.id === selectedShiftId);
-        const shiftId = selectedShift?.id;
-        
-        if (!shiftId) {
-          Alert.alert(isRTL ? "تنبيه" : "Alert", isRTL ? "يرجى اختيار وقت الحجز" : "Please select a shift");
-          setActiveTab("SHOOKET");
-          return;
-        }
-        
-        if (chaletId && shiftId) {
-          const result = await createBooking({
-            chaletId,
-            shiftId,
-            bookingDate,
-            adultsCount: adultCount,
-            childrenCount: childrenCount,
-            paymentModel: paymentType.toLowerCase() as any, // "deposit" | "full"
-            useWalletBalance: paymentType === "FULL",
-            notes,
-            cardHolderName: cardName,
-            cardNumber: cardNum,
-            expiry,
-            cvv,
-          }).unwrap();
+      if (selectedDates.length === 0) {
+        Alert.alert(isRTL ? "تنبيه" : "Alert", isRTL ? "يرجى اختيار تاريخ الحجز" : "Please select a booking date");
+        setActiveTab("SHOOKET");
+        return;
+      }
+
+      const allDaysHaveShifts = selectedDates.every(day => selectedShifts[day]);
+      if (!allDaysHaveShifts) {
+        Alert.alert(isRTL ? "تنبيه" : "Alert", isRTL ? "يرجى اختيار فترة لكل يوم مختار" : "Please select a shift for every selected day");
+        setActiveTab("SHOOKET");
+        return;
+      }
+
+      if (chaletId) {
+        const bookings = selectedDates.map(day => ({
+          bookingDate: `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+          shiftId: selectedShifts[day]
+        }));
+
+        const result = await createBooking({
+          chaletId,
+          shiftId: bookings[0].shiftId,
+          bookingDate: bookings[0].bookingDate,
+          adultsCount: adultCount,
+          childrenCount: childrenCount,
+          paymentModel: paymentType.toLowerCase() as any,
+          useWalletBalance: paymentType === "FULL",
+          notes,
+          cardHolderName: cardName,
+          cardNumber: cardNum,
+          expiry,
+          cvv,
+        }).unwrap();
           
           setCreatedBookingId(result.booking.id);
           successSheetRef.current?.present();
@@ -262,26 +297,45 @@ export default function CompleteBookingScreen() {
     if (bookedDates.includes(day)) return;
     setSelectedDates((prev) => {
       if (prev.includes(day)) {
-        const filtered = prev.filter((d) => d !== day);
-        if (filtered.length > 0) setActiveDateIdx(0);
-        return filtered;
+        Alert.alert(
+          isRTL ? "حذف اليوم" : "Delete Day",
+          isRTL ? "هل أنت متأكد من حذف هذا اليوم؟" : "Are you sure you want to delete this day?",
+          [
+            { text: isRTL ? "إلغاء" : "Cancel", style: "cancel" },
+            {
+              text: isRTL ? "حذف" : "Delete",
+              style: "destructive",
+              onPress: () => {
+                setSelectedDates(curr => curr.filter(d => d !== day));
+                setSelectedShifts(prevShifts => {
+                  const next = { ...prevShifts };
+                  delete next[day];
+                  return next;
+                });
+              }
+            }
+          ]
+        );
+        return prev; // Deletion handled in Alert onPress
       }
       const updated = [...prev, day].sort((a, b) => a - b);
-      setActiveDateIdx(updated.indexOf(day));
       return updated;
     });
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    calendarSheetRef.current?.dismiss();
   };
 
-  const toggleShift = (id: string) => {
-    if (isShiftBooked(id)) return;
-    setSelectedShiftId(prev => prev === id ? null : id);
+  const toggleShiftForDay = (day: number, shiftId: string) => {
+    if (isShiftBookedForDay(day, shiftId)) return;
+    setSelectedShifts(prev => ({
+      ...prev,
+      [day]: prev[day] === shiftId ? "" : shiftId
+    }));
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
   const renderDetailsTab = () => (
     <View style={styles.detailsContainer}>
-      {/* Chalet Card */}
       <HorizontalCard
         chalet={{
           id: chaletDetails?.id || "",
@@ -297,7 +351,6 @@ export default function CompleteBookingScreen() {
         onPress={() => {}}
       />
 
-      {/* Map Card */}
       <View style={styles.detailsMapCard}>
         <View style={styles.mapSnippetWrapper}>
           <ExpoImage
@@ -317,7 +370,6 @@ export default function CompleteBookingScreen() {
         </ThemedText>
       </View>
 
-      {/* Customer Information */}
       <View style={styles.infoSectionCard}>
         <ThemedText
           style={[styles.sectionTitle, { textAlign: isRTL ? "right" : "left" }]}
@@ -349,7 +401,6 @@ export default function CompleteBookingScreen() {
         </View>
       </View>
 
-      {/* Booking Information */}
       <View style={styles.infoSectionCard}>
         <View
           style={[
@@ -394,7 +445,15 @@ export default function CompleteBookingScreen() {
         >
           <ThemedText style={styles.infoLabel}>{t("booking.shift")}</ThemedText>
           <ThemedText style={styles.infoValue}>
-            {selectedShift ? (isRTL ? (selectedShift.name?.ar || selectedShift.name) : (selectedShift.name?.en || selectedShift.name)) : t("booking.morningShift")}
+            {selectedDates.length > 1 
+              ? (isRTL ? "فترات متعددة" : "Multiple Shifts")
+              : (function() {
+                  const day = selectedDates[0];
+                  const shiftId = selectedShifts[day];
+                  const shift = chaletDetails?.shifts?.find((s: any) => s.id === shiftId);
+                  return shift ? (isRTL ? (shift.name?.ar || shift.name) : (shift.name?.en || shift.name)) : t("booking.noShift");
+                })()
+            }
           </ThemedText>
         </View>
         <View
@@ -450,7 +509,6 @@ export default function CompleteBookingScreen() {
         </View>
       </View>
 
-      {/* Special Requests / Notes */}
       <View style={styles.infoSectionCard}>
         <ThemedText
           style={[styles.sectionTitle, { textAlign: isRTL ? "right" : "left" }]}
@@ -468,7 +526,6 @@ export default function CompleteBookingScreen() {
         />
       </View>
 
-      {/* Payment Summary Title */}
       <ThemedText
         style={[
           styles.paymentMainTitle,
@@ -478,7 +535,6 @@ export default function CompleteBookingScreen() {
         {t("booking.paymentTitle")}
       </ThemedText>
 
-      {/* Payment Options Row */}
       <TouchableOpacity
         style={[
           styles.paymentOptionCard,
@@ -531,7 +587,6 @@ export default function CompleteBookingScreen() {
         </ThemedText>
       </TouchableOpacity>
 
-      {/* Agreement Text */}
       <View style={styles.agreementWrapper}>
         <ThemedText style={styles.agreementText}>
           {t("booking.agreement")}{" "}
@@ -545,7 +600,6 @@ export default function CompleteBookingScreen() {
         </ThemedText>
       </View>
 
-      {/* Inline Card Details (New Addition) */}
       <View style={styles.inlinePaymentSection}>
         <ThemedText
           style={[
@@ -557,7 +611,6 @@ export default function CompleteBookingScreen() {
         </ThemedText>
 
         <View style={styles.paymentForm}>
-          {/* Card Number */}
           <View style={styles.inputGroup}>
             <ThemedText
               style={[
@@ -580,7 +633,6 @@ export default function CompleteBookingScreen() {
             />
           </View>
 
-          {/* Row Expiry and CVV */}
           <View
             style={[
               styles.rowInputs,
@@ -633,7 +685,6 @@ export default function CompleteBookingScreen() {
             </View>
           </View>
 
-          {/* Card Holder Name */}
           <View style={styles.inputGroup}>
             <ThemedText
               style={[
@@ -657,6 +708,71 @@ export default function CompleteBookingScreen() {
         </View>
       </View>
     </View>
+  );
+
+  const renderCalendarSheet = () => (
+    <BottomSheetModal
+      ref={calendarSheetRef}
+      snapPoints={["60%"]}
+      backdropComponent={(props) => (
+        <BottomSheetBackdrop
+          {...props}
+          disappearsOnIndex={-1}
+          appearsOnIndex={0}
+        />
+      )}
+      handleIndicatorStyle={{ backgroundColor: "#CBD5E1", width: 40 }}
+    >
+      <BottomSheetView style={styles.calendarSheetContent}>
+        <View style={styles.calendarCardDrawer}>
+          <View
+            style={[
+              styles.calendarMonthHeader,
+              { flexDirection: isRTL ? "row-reverse" : "row" },
+            ]}
+          >
+            <TouchableOpacity onPress={handlePrevMonth} style={styles.monthNavBtn}>
+              {isRTL ? (
+                <SolarAltArrowRightBold size={20} color={Colors.primary} />
+              ) : (
+                <SolarAltArrowLeftBold size={20} color={Colors.primary} />
+              )}
+            </TouchableOpacity>
+            <ThemedText style={styles.calendarMonthTitle}>
+              {monthLabel}
+            </ThemedText>
+            <TouchableOpacity onPress={handleNextMonth} style={styles.monthNavBtn}>
+              {isRTL ? (
+                <SolarAltArrowLeftBold size={20} color={Colors.primary} />
+              ) : (
+                <SolarAltArrowRightBold size={20} color={Colors.primary} />
+              )}
+            </TouchableOpacity>
+          </View>
+          <View
+            style={[
+              styles.daysHeader,
+              { flexDirection: isRTL ? "row-reverse" : "row" },
+            ]}
+          >
+            {Array.isArray(dayHeaders) &&
+              dayHeaders.map((d, i) => (
+                <ThemedText key={`${d}-${i}`} style={styles.dayHeaderCell}>
+                  {d}
+                </ThemedText>
+              ))}
+          </View>
+          <View
+            style={[
+              styles.daysGrid,
+              { flexDirection: isRTL ? "row-reverse" : "row" },
+            ]}
+          >
+            {calendarDays.map((day, index) => renderCalendarDay(day, index))}
+          </View>
+        </View>
+      </BottomSheetView>
+    </BottomSheetModal>
   );
 
   const renderSuccessSheet = () => (
@@ -705,90 +821,6 @@ export default function CompleteBookingScreen() {
     </BottomSheetModal>
   );
 
-  const renderPaymentPage = () => (
-    <View style={styles.paymentPageContainer}>
-      <View
-        style={[
-          styles.paymentHeaderInline,
-          { flexDirection: isRTL ? "row-reverse" : "row" },
-        ]}
-      >
-        <SolarCardBold size={28} color="#1E293B" />
-        <ThemedText style={styles.paymentDetailsTitleInline}>
-          {t("booking.paymentDetails")}
-        </ThemedText>
-      </View>
-
-      <View style={styles.paymentForm}>
-        {/* Card Number */}
-        <View style={styles.inputGroup}>
-          <ThemedText style={styles.inputLabel}>
-            {t("booking.cardNum")}
-          </ThemedText>
-          <TextInput
-            style={styles.textInput}
-            placeholder="**** **** **** ****"
-            placeholderTextColor="#94A3B8"
-            keyboardType="numeric"
-            value={cardNum}
-            onChangeText={setCardNum}
-          />
-        </View>
-
-        {/* Row Expiry and CVV */}
-        <View
-          style={[
-            styles.rowInputs,
-            { gap: 15, flexDirection: isRTL ? "row-reverse" : "row" },
-          ]}
-        >
-          <View style={styles.inputGroupFull}>
-            <ThemedText style={styles.inputLabel}>
-              {t("booking.expiry")}
-            </ThemedText>
-            <TextInput
-              style={styles.textInput}
-              placeholder="MM/YYYY"
-              placeholderTextColor="#94A3B8"
-              keyboardType="numeric"
-              value={expiry}
-              onChangeText={setExpiry}
-            />
-          </View>
-          <View style={styles.inputGroupFixed}>
-            <ThemedText style={styles.inputLabel}>
-              {t("booking.cvv")}
-            </ThemedText>
-            <TextInput
-              style={styles.textInput}
-              placeholder="***"
-              placeholderTextColor="#94A3B8"
-              keyboardType="numeric"
-              secureTextEntry
-              maxLength={4}
-              value={cvv}
-              onChangeText={setCvv}
-            />
-          </View>
-        </View>
-
-        {/* Card Holder Name */}
-        <View style={styles.inputGroup}>
-          <ThemedText style={styles.inputLabel}>
-            {t("booking.cardName")}
-          </ThemedText>
-          <TextInput
-            style={styles.textInput}
-            placeholder={t("booking.enterName")}
-            placeholderTextColor="#94A3B8"
-            value={cardName}
-            onChangeText={setCardName}
-          />
-        </View>
-      </View>
-    </View>
-  );
-
   const renderCalendarDay = (day: number | null, index: number) => {
     if (day === null)
       return <View key={`empty-${index}`} style={styles.dayCell} />;
@@ -801,8 +833,7 @@ export default function CompleteBookingScreen() {
         disabled={isBooked}
         style={[styles.dayCell, isSelected && styles.activeDayCell]}
         onPress={() => {
-          if (isSelected) setActiveDateIdx(selectedDates.indexOf(day));
-          else toggleDayDate(day);
+          if (!isSelected) toggleDayDate(day);
         }}
       >
         <ThemedText
@@ -851,174 +882,154 @@ export default function CompleteBookingScreen() {
                     },
                   ]}
                 >
-                  {selectedDates.map((day, idx) => (
+                  {selectedDates.map((day) => (
                     <TouchableOpacity
                       key={day}
-                      onPress={() => setActiveDateIdx(idx)}
-                      style={[
-                        styles.dateBadge,
-                        activeDateIdx === idx && styles.dateBadgeActive,
-                      ]}
+                      onPress={() => toggleDayDate(day)}
+                      style={styles.dateBadge}
                     >
-                      <ThemedText
-                        style={[
-                          styles.dateBadgeText,
-                          activeDateIdx === idx && styles.dateBadgeTextActive,
-                        ]}
-                      >
+                      <ThemedText style={styles.dateBadgeText}>
                         {day}
                       </ThemedText>
                     </TouchableOpacity>
                   ))}
                   <TouchableOpacity
                     style={styles.addDateBtn}
-                    onPress={() => {
-                      const last =
-                        selectedDates[selectedDates.length - 1] || 15;
-                      let next = last + 1;
-                      while (bookedDates.includes(next) && next <= 31) next++;
-                      if (next <= 31) toggleDayDate(next);
-                    }}
+                    onPress={() => calendarSheetRef.current?.present()}
                   >
                     <SolarAddCircleBold size={24} color={Colors.primary} />
                   </TouchableOpacity>
                 </ScrollView>
               </View>
 
-              <View style={styles.calendarCard}>
-                <View
-                  style={[
-                    styles.calendarMonthHeader,
-                    { flexDirection: isRTL ? "row-reverse" : "row" },
-                  ]}
-                >
-                  <TouchableOpacity
-                    onPress={handlePrevShift}
-                    style={styles.monthNavBtn}
-                  >
-                    {isRTL ? (
-                      <SolarAltArrowRightBold
-                        size={20}
-                        color={Colors.primary}
-                      />
-                    ) : (
-                      <SolarAltArrowLeftBold size={20} color={Colors.primary} />
-                    )}
-                  </TouchableOpacity>
-                  <ThemedText style={styles.calendarMonthTitle}>
-                    {monthLabel}
-                  </ThemedText>
-                  <TouchableOpacity
-                    onPress={handleNextShift}
-                    style={styles.monthNavBtn}
-                  >
-                    {isRTL ? (
-                      <SolarAltArrowLeftBold size={20} color={Colors.primary} />
-                    ) : (
-                      <SolarAltArrowRightBold
-                        size={20}
-                        color={Colors.primary}
-                      />
-                    )}
-                  </TouchableOpacity>
-                </View>
-                <View
-                  style={[
-                    styles.daysHeader,
-                    { flexDirection: isRTL ? "row-reverse" : "row" },
-                  ]}
-                >
-                  {Array.isArray(dayHeaders) && dayHeaders.map((d, i) => (
-                    <ThemedText key={`${d}-${i}`} style={styles.dayHeaderCell}>
-                      {d}
+              {selectedDates.length === 0 && (
+                <View style={styles.daySelectionSection}>
+                  <View style={[styles.dayHeaderRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+                    <ThemedText style={styles.dayHeaderText}>
+                      {isRTL ? "اختر يوماً للبدء" : "Select a day to start"}
                     </ThemedText>
-                  ))}
-                </View>
-                <View
-                  style={[
-                    styles.daysGrid,
-                    { flexDirection: isRTL ? "row-reverse" : "row" },
-                  ]}
-                >
-                  {calendarDays.map((day, index) =>
-                    renderCalendarDay(day, index),
-                  )}
-                </View>
-              </View>
+                  </View>
+                  <View style={styles.shiftsContainer}>
+                    {chaletDetails?.shifts?.map((shift: any) => {
+                      const shiftName = isRTL
+                        ? shift.name?.ar || shift.name
+                        : shift.name?.en || shift.name;
+                      const isMorning = shift.type === 'MORNING' || (shift.name?.en?.toLowerCase().includes('morning')) || (shift.name?.ar?.includes('صباح'));
 
-              <View style={styles.shiftsContainer}>
-                {chaletDetails?.shifts?.map((shift: any) => {
-                  const isSelected = selectedShiftId === shift.id;
-                  const isBooked = isShiftBooked(shift.id);
-                  const shiftName = isRTL ? (shift.name?.ar || shift.name) : (shift.name?.en || shift.name);
-                  const isMorning = (shift.type === 'MORNING');
-                  
-                  return (
-                    <TouchableOpacity
-                      key={shift.id}
-                      disabled={isBooked}
-                      style={[
-                        styles.shiftCard,
-                        isSelected && {
-                          backgroundColor: isMorning ? "#F6420008" : "#035DF908",
-                          borderColor: isMorning ? "#F6420033" : "#035DF933",
-                        },
-                        isBooked && { opacity: 0.5, backgroundColor: '#F1F5F9' },
-                        { flexDirection: isRTL ? "row-reverse" : "row" },
-                      ]}
-                      onPress={() => toggleShift(shift.id)}
-                    >
-                      <View
-                        style={[
-                          styles.shiftLeft,
-                          { flexDirection: isRTL ? "row-reverse" : "row" },
-                        ]}
-                      >
-                        <View style={styles.shiftIconBox}>
-                          {isMorning ? (
-                            <SolarSunBold
-                              size={24}
-                              color={isSelected ? "#F64200" : "#94A3B8"}
-                            />
-                          ) : (
-                            <SolarMoonBold
-                              size={24}
-                              color={isSelected ? "#035DF9" : "#94A3B8"}
-                            />
-                          )}
-                        </View>
-                        <View style={{ alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
-                          <ThemedText style={styles.shiftTitle}>
-                            {shiftName}
-                          </ThemedText>
-                          {isBooked && (
-                            <ThemedText style={{ fontSize: 10, color: '#EF4444', fontFamily: 'Tajawal-Bold' }}>
-                              {isRTL ? 'محجوز' : 'Booked'}
+                      return (
+                        <View
+                          key={`preview-${shift.id}`}
+                          style={[
+                            styles.shiftCardFlat,
+                            { flexDirection: isRTL ? "row-reverse" : "row", opacity: 0.6, backgroundColor: '#fff' },
+                          ]}
+                        >
+                          <View style={styles.shiftIconCircleFlat}>
+                            {isMorning ? (
+                              <SolarSunBold size={22} color="#FBBF24" />
+                            ) : (
+                              <SolarMoonBold size={22} color="#6366F1" />
+                            )}
+                          </View>
+                          <View style={[styles.shiftInfoFlat, { alignItems: isRTL ? "flex-end" : "flex-start" }]}>
+                            <ThemedText style={styles.shiftNameFlat}>{shiftName}</ThemedText>
+                            <ThemedText style={styles.shiftTimeFlat}>
+                              {formatShiftTime(shift.startTime)} - {formatShiftTime(shift.endTime)}
                             </ThemedText>
-                          )}
+                          </View>
                         </View>
-                      </View>
-                      <ThemedText style={styles.shiftTime}>
-                        {formatShiftTime(shift.startTime)} - {formatShiftTime(shift.endTime)}
-                      </ThemedText>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
+                      );
+                    })}
+                  </View>
+                </View>
+              )}
 
-              <TouchableOpacity
-                style={styles.deleteDayBtn}
-                onPress={() => {
-                  setSelectedDates((prev) =>
-                    prev.filter((_, i) => i !== activeDateIdx),
-                  );
-                  setActiveDateIdx(0);
-                }}
-              >
-                <ThemedText style={styles.deleteDayText}>
-                  {t("booking.deleteDay")}
-                </ThemedText>
-              </TouchableOpacity>
+              {selectedDates.map((day) => (
+                <View key={day} style={styles.daySelectionSection}>
+                  <View style={[styles.dayHeaderRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+                    <ThemedText style={styles.dayHeaderText}>
+                      {isRTL ? `يوم ${day}` : `Day ${day}`}
+                    </ThemedText>
+                    <TouchableOpacity onPress={() => {
+                        Alert.alert(
+                          isRTL ? "تأكيد" : "Confirm",
+                          isRTL ? "هل أنت متأكد من حذف هذا اليوم؟" : "Are you sure you want to delete this day?",
+                          [{ text: isRTL ? "إلغاء" : "Cancel" }, { text: isRTL ? "حذف" : "Delete", onPress: () => toggleDayDate(day), style: 'destructive' }]
+                        );
+                    }}>
+                      <ThemedText style={{ color: "#EF4444", fontFamily: 'Tajawal-Bold' }}>{t("common.delete")}</ThemedText>
+                    </TouchableOpacity>
+                  </View>
+                  
+                  <View style={styles.shiftsContainer}>
+                    {chaletDetails?.shifts?.map((shift: any) => {
+                      const isSelected = selectedShifts[day] === shift.id;
+                      const isBooked = isShiftBookedForDay(day, shift.id);
+                      const shiftName = isRTL
+                        ? shift.name?.ar || shift.name
+                        : shift.name?.en || shift.name;
+
+                      const isMorning = shift.type === 'MORNING' || (shift.name?.en?.toLowerCase().includes('morning')) || (shift.name?.ar?.includes('صباح'));
+                      
+                      return (
+                        <TouchableOpacity
+                          key={`${day}-${shift.id}`}
+                          disabled={isBooked}
+                          style={[
+                            styles.shiftCardFlat,
+                            { flexDirection: isRTL ? "row-reverse" : "row", backgroundColor: '#fff' },
+                            isSelected && {
+                              borderColor: "#035DF9",
+                              borderWidth: 1.5,
+                              backgroundColor: "#EBF3FF",
+                            },
+                            isBooked && { opacity: 0.5, backgroundColor: "#F1F5F9" },
+                          ]}
+                          onPress={() => toggleShiftForDay(day, shift.id)}
+                        >
+                          <View
+                            style={[
+                              styles.shiftIconCircleFlat,
+                              isSelected && { backgroundColor: "#035DF9" },
+                            ]}
+                          >
+                            {isMorning ? (
+                              <SolarSunBold
+                                size={22}
+                                color={isSelected ? "white" : "#FBBF24"}
+                              />
+                            ) : (
+                              <SolarMoonBold
+                                size={22}
+                                color={isSelected ? "white" : "#6366F1"}
+                              />
+                            )}
+                          </View>
+                          <View
+                            style={[
+                              styles.shiftInfoFlat,
+                              { alignItems: isRTL ? "flex-end" : "flex-start" },
+                            ]}
+                          >
+                            <ThemedText
+                              style={[
+                                styles.shiftNameFlat,
+                                isSelected && { color: "#035DF9" },
+                              ]}
+                            >
+                              {shiftName}
+                            </ThemedText>
+                            <ThemedText style={styles.shiftTimeFlat}>
+                              {formatShiftTime(shift.startTime)} -{" "}
+                              {formatShiftTime(shift.endTime)}
+                            </ThemedText>
+                          </View>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                </View>
+              ))}
             </>
           ) : activeTab === "MANO" ? (
             <View style={styles.whoContainer}>
@@ -1121,6 +1132,7 @@ export default function CompleteBookingScreen() {
           />
         </View>
 
+        {renderCalendarSheet()}
         {renderSuccessSheet()}
       </SafeAreaView>
     </BottomSheetModalProvider>
@@ -1153,6 +1165,9 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(16),
     fontFamily: "Tajawal-Bold",
     color: "#94A3B8",
+    textAlign: "center",
+    includeFontPadding: false,
+    lineHeight: 42, 
   },
   dateBadgeTextActive: { color: Colors.primary, fontFamily: "Tajawal-Black" },
   addDateBtn: {
@@ -1165,40 +1180,30 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  calendarCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 24,
-    padding: 15,
-    marginTop: 20,
-    borderWidth: 1,
-    borderColor: "#F1F5F9",
-  },
-  calendarMonthTitle: {
-    fontSize: normalize.font(16),
-    fontFamily: "Tajawal-Black",
-    color: "#1E293B",
-  },
   calendarMonthHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 15,
+    marginBottom: 20,
     paddingHorizontal: 10,
   },
-  monthNavBtn: { padding: 5 },
-  navArrow: {
-    fontSize: 20,
-    color: Colors.primary,
+  calendarMonthTitle: {
+    fontSize: normalize.font(18),
     fontFamily: "Tajawal-Black",
+    color: "#1E293B",
+    textAlign: "center",
+    letterSpacing: 2,
+    flex: 1,
   },
+  monthNavBtn: { padding: 5 },
   daysHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     paddingHorizontal: 5,
-    marginBottom: 12,
-    backgroundColor: "#F8FAFC",
-    paddingVertical: 8,
-    borderRadius: 10,
+    marginBottom: 20,
+    backgroundColor: "#F1F5F9",
+    paddingVertical: 12,
+    borderRadius: 12,
   },
   dayHeaderCell: {
     fontSize: normalize.font(10),
@@ -1232,17 +1237,10 @@ const styles = StyleSheet.create({
   bookedDayText: { color: "#CBD5E1", fontFamily: "Tajawal-Regular" },
   scribbleOverlay: {
     position: "absolute",
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
+    top: "50%",
+    left: "50%",
+    transform: [{ translateX: -13.5 }, { translateY: -8.5 }],
     zIndex: 2,
-    opacity: 0.4,
-  },
-  shiftsContainer: { marginTop: 20, gap: 10 },
-  shiftCard: {
-    flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: "#F8FAFC",
     borderRadius: 16,
@@ -1269,12 +1267,77 @@ const styles = StyleSheet.create({
     color: "#64748B",
     fontFamily: "Tajawal-Bold",
   },
-  deleteDayBtn: { alignItems: "center", marginTop: 30, padding: 8 },
   deleteDayText: {
     color: "#EF4444",
     fontSize: normalize.font(14),
     fontFamily: "Tajawal-Black",
     textDecorationLine: "underline",
+  },
+  calendarSheetContent: {
+    padding: 20,
+    flex: 1,
+  },
+  calendarCardDrawer: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 24,
+    padding: 15,
+  },
+  daySelectionSection: {
+    marginTop: 15,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#F1F5F9'
+  },
+  dayHeaderRow: {
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+    paddingHorizontal: 4
+  },
+  dayHeaderText: {
+    fontSize: normalize.font(15),
+    fontFamily: 'Tajawal-Black',
+    color: '#1E293B'
+  },
+  shiftCardFlat: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "transparent",
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1.5,
+    borderColor: "#F1F5F9",
+    marginBottom: 10,
+  },
+  shiftIconCircleFlat: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#FFF",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  shiftInfoFlat: {
+    flex: 1,
+    marginHorizontal: 12,
+  },
+  shiftNameFlat: {
+    fontSize: normalize.font(15),
+    fontFamily: "Tajawal-Black",
+    color: "#1E293B",
+  },
+  shiftTimeFlat: {
+    fontSize: normalize.font(12),
+    color: "#64748B",
+    fontFamily: "Tajawal-Bold",
+  },
+  shiftPriceFlat: {
+    fontSize: normalize.font(14),
+    fontFamily: "Tajawal-Black",
+    color: "#1E293B",
   },
   whoContainer: { marginTop: 20 },
   whoCard: {
@@ -1305,14 +1368,14 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: "#FFF",
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: Platform.OS === "ios" ? 35 : 20,
+    paddingHorizontal: 0,
+    paddingTop: 15,
+    paddingBottom: Platform.OS === "ios" ? 45 : 25,
     borderTopWidth: 1,
     borderTopColor: "#F1F5F9",
     zIndex: 100,
   },
-  nextBtn: { width: "100%", height: 54 },
+  nextBtn: { width: "100%", height: 64, flex: 1 },
 
   // Inline Payment Styles
   inlinePaymentSection: {

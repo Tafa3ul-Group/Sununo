@@ -27,7 +27,7 @@ const WHO_COLOR = "#F64200";
 const WHEN_COLOR = "#15AB64";
 const WHERE_COLOR = "#035DF9";
 
-export type TabType = "DETAILS" | "MANO" | "SHOOKET";
+export type TabType = "WHERE" | "WHEN" | "WHO";
 
 interface MainTabsProps {
   activeTab: TabType;
@@ -39,12 +39,12 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
   const isRTL = i18n.language === "ar";
 
   const transition = useSharedValue(0);
-  const tabList: TabType[] = ["SHOOKET", "MANO", "DETAILS"];
+  const tabList: TabType[] = ["WHERE", "WHEN", "WHO"];
 
   useEffect(() => {
     let target = 0;
-    if (activeTab === "SHOOKET") target = 0;
-    else if (activeTab === "MANO") target = 1;
+    if (activeTab === "WHERE") target = 0;
+    else if (activeTab === "WHEN") target = 1;
     else target = 2;
 
     transition.value = withSpring(target, {
@@ -90,7 +90,7 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
       fill: interpolateColor(
         transition.value,
         [0, 1, 2],
-        [WHERE_COLOR, WHO_COLOR, WHEN_COLOR],
+        [WHERE_COLOR, WHEN_COLOR, WHO_COLOR],
       ),
     };
   });
@@ -114,7 +114,7 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
       color: interpolateColor(
         transition.value,
         [0.4, 1, 1.6],
-        [WHO_COLOR, "#FFFFFF", WHO_COLOR],
+        [WHEN_COLOR, "#FFFFFF", WHEN_COLOR],
       ),
       transform: [
         { scale: interpolate(transition.value, [0, 1, 2], [1, 1.1, 1]) },
@@ -128,7 +128,7 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
       color: interpolateColor(
         transition.value,
         [1.6, 2],
-        [WHEN_COLOR, "#FFFFFF"],
+        [WHO_COLOR, "#FFFFFF"],
       ),
       transform: [
         { scale: interpolate(transition.value, [1, 2], [1, 1.1]) },
@@ -165,12 +165,11 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
       >
         {tabList.map(function (tab, idx) {
           const textStyle = tabStyles[idx];
-          const currentTextOffset = isRTL ? [0, 0, 0][idx] : [0, 0, 0][idx]; // سنعرّف الفرق هنا
 
           let label = "";
-          if (tab === "DETAILS") label = t("booking.details");
-          else if (tab === "MANO") label = t("booking.mano");
-          else label = t("booking.shooket");
+          if (tab === "WHERE") label = t("booking.details");
+          else if (tab === "WHEN") label = t("booking.shooket");
+          else label = t("booking.mano");
 
           return (
             <TouchableOpacity

@@ -5,6 +5,7 @@ import {
   SolarMapPointBold,
   SolarStarBold,
   SolarUserBold,
+  SolarBellBingBoldDuotone,
 } from "@/components/icons/solar-icons";
 import { Colors, normalize, Spacing } from "@/constants/theme";
 import { RootState } from "@/store";
@@ -143,29 +144,23 @@ export function HeaderSection({
             >
               {stateUserType !== "guest" && (
                 <TouchableOpacity
-                  onPress={
-                    onProfilePress || (() => router.push("/(customer)/profile"))
-                  }
+                  onPress={() => router.push("/(customer)/notifications")}
                   style={styles.avatarContainerHome}
                 >
-                  <View style={styles.avatarCircleHome}>
-                    <Image
-                      source={{
-                        uri: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
-                      }}
-                      style={styles.avatarImgHome}
-                    />
-                  </View>
+                  <SolarBellBingBoldDuotone
+                    size={normalize.width(28)}
+                    color={Colors.primary}
+                  />
                 </TouchableOpacity>
               )}
 
               <TouchableOpacity
-                onPress={onExtraIconPress}
+                onPress={() => router.push("/(customer)/search")}
                 style={styles.searchPillHome}
               >
                 <SolarMagnifierBold
                   size={normalize.width(24)}
-                  color="#94A3B8"
+                  color={Colors.primary}
                 />
               </TouchableOpacity>
             </View>
@@ -179,12 +174,12 @@ export function HeaderSection({
               {showBackButton && <CircleBackButton onPress={onBackPress} />}
               {extraIcon === "search" && (
                 <TouchableOpacity
-                  onPress={onExtraIconPress}
+                  onPress={() => router.push("/(customer)/search")}
                   style={styles.searchPillHome}
                 >
                   <SolarMagnifierBold
                     size={normalize.width(24)}
-                    color="#94A3B8"
+                    color={Colors.primary}
                   />
                 </TouchableOpacity>
               )}
@@ -201,7 +196,7 @@ export function HeaderSection({
           </View>
         )}
 
-        {/* END SIDE (Right in LTR Standard, Left in RTL Standard) - Logo */}
+        {/* END SIDE (Right in LTR Standard, Right in RTL Standard) - Logo */}
         <View
           style={[
             styles.headerSide,
@@ -243,12 +238,10 @@ export function HeaderSection({
               {showProfile && stateUserType !== "guest" && (
                 <TouchableOpacity
                   style={styles.actionButton}
-                  onPress={
-                    onProfilePress || (() => router.push("/(customer)/profile"))
-                  }
+                  onPress={() => router.push("/(customer)/notifications")}
                 >
-                  <SolarUserBold
-                    size={normalize.width(22)}
+                  <SolarBellBingBoldDuotone
+                    size={normalize.width(28)}
                     color={Colors.text.primary}
                   />
                 </TouchableOpacity>
@@ -356,11 +349,10 @@ const styles = StyleSheet.create({
     width: normalize.width(42),
     height: normalize.width(42),
     borderRadius: normalize.width(21),
-    backgroundColor: "#F9FAFB",
+    backgroundColor: "transparent",
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#F3F4F6",
+    borderWidth: 0,
     overflow: "hidden",
   },
   logoImg: {
@@ -380,12 +372,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   avatarContainerHome: {
-    width: normalize.width(50),
-    height: normalize.width(50),
+    width: normalize.width(48),
+    height: normalize.width(48),
     borderRadius: 999,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#F1F5F9",
+    // Transition and cursor are handled by TouchableOpacity/React Native
   },
   avatarCircleHome: {
     width: "82%",
@@ -400,7 +395,7 @@ const styles = StyleSheet.create({
   },
   searchPillHome: {
     width: normalize.width(48),
-    height: normalize.width(50),
+    height: normalize.width(48),
     borderRadius: 999,
     borderWidth: 1,
     borderColor: "#F1F5F9",

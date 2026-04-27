@@ -1,12 +1,12 @@
 import React, { useMemo } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
-import { Colors, normalize, Shadows } from '@/constants/theme';
+import { normalize } from '@/constants/theme';
 import { ThemedText } from '@/components/themed-text';
-import { SolarAltArrowRightBold, SolarHeartBold } from "@/components/icons/solar-icons";
+import { SolarHeartBold } from "@/components/icons/solar-icons";
 import { useRouter } from 'expo-router';
 import { HorizontalCard } from '@/components/user/horizontal-card';
 import { HeaderSection } from '@/components/header-section';
@@ -61,6 +61,7 @@ export default function FavoritesScreen() {
       <HeaderSection 
         title={t('headers.favorites')} 
         showBackButton 
+        onBackPress={() => router.back()}
         showLogo={false} 
       />
 
@@ -71,7 +72,7 @@ export default function FavoritesScreen() {
                  <HorizontalCard 
                     chalet={chalet} 
                     shapeIndex={index + 1} 
-                    onPress={() => router.push({ pathname: '/chalet-details', params: { id: chalet.id } })}
+                    onPress={() => router.push(`/chalet-details/${chalet.id}`)}
                     style={styles.customCard}
                     isFavorite={true}
                     onToggleFavorite={() => handleToggleFavorite(chalet.id)}
@@ -127,5 +128,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 10,
     lineHeight: 20,
-   fontFamily: "Tajawal-Regular" },
+    fontFamily: "Tajawal-Regular" 
+  },
 });
