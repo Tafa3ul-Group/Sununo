@@ -11,6 +11,16 @@ interface SolarIconProps extends SvgProps {
   size?: number | string;
 }
 
+export function SolarFiltersBoldDuotone({ size = 24, color, ...props }: SolarIconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+      <Path fill={color || "currentColor"} d="M18 8A6 6 0 1 1 6 8a6 6 0 0 1 12 0" />
+      <Path fill={color || "currentColor"} d="M13.58 13.79a6 6 0 0 1-7.16-3.58a6 6 0 1 0 7.16 3.58" opacity=".7" />
+      <Path fill={color || "currentColor"} d="M13.58 13.79c.271.684.42 1.43.42 2.21a6 6 0 0 1-2 4.472a6 6 0 1 0 5.58-10.262a6.01 6.01 0 0 1-4 3.58" opacity=".4" />
+    </Svg>
+  );
+}
+
 export function SolarHomeSmileBoldDuotone({
   size = 24,
   color,

@@ -1,4 +1,3 @@
-import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { Redirect, useRouter } from "expo-router";
 import React, { useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -24,7 +23,6 @@ import { HorizontalCard } from "@/components/user/horizontal-card";
 import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
 import { BannerSwiper } from "@/components/user/banner-swiper";
 import { PrimaryButton } from "@/components/user/primary-button";
-import { SearchFilterSheet } from "@/components/user/search-filter-sheet";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize } from "@/constants/theme";
 import { RootState } from "@/store";
@@ -44,7 +42,6 @@ const CARD_COLORS = [Colors.primary, Colors.secondary, Colors.accent];
 
 export default function HomeScreen() {
   const { userType } = useSelector((state: RootState) => state.auth);
-  const bottomSheetRef = useRef<BottomSheetModal>(null);
   const router = useRouter();
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === 'ar';
@@ -129,7 +126,6 @@ export default function HomeScreen() {
         {/* Header */}
         <HeaderSection 
           isHome
-          onExtraIconPress={() => bottomSheetRef.current?.present()} 
         />
 
         {/* Banners Swiper */}
@@ -204,11 +200,6 @@ export default function HomeScreen() {
            )}
         </View>
       </ScrollView>
-
-      <SearchFilterSheet 
-        ref={bottomSheetRef} 
-        onApply={(newFilters) => setFilters(newFilters)}
-      />
     </View>
   );
 }

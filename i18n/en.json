@@ -137,7 +137,8 @@
     "depositPayment": "Deposit",
     "shift": "Shift",
     "and": "and",
-    "error": "Error"
+    "error": "Error",
+    "delete": "Delete"
   },
   "booking": {
     "complete": "Booking Completion",

@@ -140,7 +140,8 @@
     "depositPayment": "عربون",
     "shift": "شفت",
     "and": "و",
-    "error": "خطأ"
+    "error": "خطأ",
+    "delete": "حذف"
   },
   "booking": {
     "complete": "اكتمال الحجز",

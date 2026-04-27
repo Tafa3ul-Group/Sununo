@@ -4,7 +4,7 @@ import { StyleSheet, View, ScrollView, TouchableOpacity, Dimensions, ActivityInd
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
-import { Colors, normalize, Shadows } from '../../../constants/theme';
+import { Colors, normalize, Shadows } from '../../constants/theme';
 import { ThemedText } from '@/components/themed-text';
 import { SolarAltArrowRightBold } from "@/components/icons/solar-icons";
 import { useRouter } from 'expo-router';

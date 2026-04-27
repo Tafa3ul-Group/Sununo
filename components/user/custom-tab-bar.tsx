@@ -67,7 +67,17 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
         {/* Isolated Button (Map for Customer) */}
         <TouchableOpacity
           style={styles.roundButton}
-          onPress={() => navigation.navigate(isolatedTab.name)}
+          onPress={() => {
+            const event = navigation.emit({
+              type: 'tabPress',
+              target: isolatedTab.key,
+              canPreventDefault: true,
+            });
+
+            if (currentRouteName !== isolatedTab.name && !event.defaultPrevented) {
+              navigation.navigate(isolatedTab.name);
+            }
+          }}
           activeOpacity={0.8}
         >
           {renderIcon(isolatedTab, currentRouteName === isolatedTab.name, true)}
@@ -80,7 +90,17 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
             return (
               <View key={route.key} style={styles.tabItemContainer}>
                 <TouchableOpacity
-                  onPress={() => navigation.navigate(route.name)}
+                  onPress={() => {
+                    const event = navigation.emit({
+                      type: 'tabPress',
+                      target: route.key,
+                      canPreventDefault: true,
+                    });
+
+                    if (!isActive && !event.defaultPrevented) {
+                      navigation.navigate(route.name);
+                    }
+                  }}
                   style={[
                     styles.tabIconCircle,
                     isActive && styles.activeTabIndicator
