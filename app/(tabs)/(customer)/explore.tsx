@@ -1,73 +1,73 @@
 import {
-  SolarClockCircleBold,
+  SolarAltArrowRightBold,
   SolarCloseBold,
-  SolarCloseCircleBold,
   SolarFilterBold,
-  SolarFireBold,
-  SolarHeartBold,
-  SolarHome2Bold,
   SolarMagnifierBold,
   SolarMapBoldDuotone,
   SolarMapPointBold,
-  SolarSettingsBold,
+  SolarSquareShareLineBoldDuotone,
   SolarStarBold,
   SolarTreeBold,
   SolarWaterBold,
+  SolarWheelBold,
   SolarWidgetBold,
-<<<<<<< Updated upstream
   SolarCloseCircleBold,
   SolarFireBold,
   SolarUsersGroupBold,
-} from "@/components/icons/solar-icons";
-=======
+  SolarHeartBold,
+  SolarClockCircleBold,
+  SolarForbiddenBold,
+  SolarHome2Bold,
+  SolarKeyBold,
+  SolarSettingsBold,
+  SolarShieldCheckBold,
   SolarWifiBold,
-  SolarWindBold
+  SolarWindBold,
 } from "@/components/icons/solar-icons";
-import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
-import {
-  useGetChaletReviewsQuery,
-  useGetCustomerChaletDetailsQuery,
-  useGetFavoriteIdsQuery,
+import { 
+  useGetCustomerChaletDetailsQuery, 
+  useGetChaletReviewsQuery, 
   useGetSimilarChaletsQuery,
+  useGetFavoriteIdsQuery,
   useToggleFavoriteMutation
 } from "@/store/api/customerApiSlice";
+import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
 
 
->>>>>>> Stashed changes
 import { ThemedText } from "@/components/themed-text";
 import { AppMap } from "@/components/user/app-map";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize, Shadows } from "@/constants/theme";
 import { RootState } from "@/store";
-<<<<<<< Updated upstream
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView, BottomSheetTextInput, BottomSheetScrollView } from "@gorhom/bottom-sheet";
-=======
-import { BottomSheetBackdrop, BottomSheetFooter, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput } from "@gorhom/bottom-sheet";
-import Animated, { FadeInUp } from "react-native-reanimated";
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView, BottomSheetTextInput, BottomSheetScrollView, BottomSheetFooter } from "@gorhom/bottom-sheet";
+import Animated, { FadeInUp, FadeInDown, SlideInRight } from "react-native-reanimated";
 
-import { HostContactCard } from "@/components/user/host-contact-card";
 import { useFormatTime } from '@/hooks/useFormatTime';
+import { HostContactCard } from "@/components/user/host-contact-card";
 import Svg, { Path } from "react-native-svg";
 
-import { getImageSrc } from "@/hooks/useImageSrc";
->>>>>>> Stashed changes
 import * as Location from "expo-location";
-import { useRouter } from "expo-router";
+import { Redirect, useRouter } from "expo-router";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  ActivityIndicator,
   Dimensions,
   Image,
-  Keyboard,
+  Platform,
   ScrollView,
+  Share,
   StyleSheet,
-  Text,
-  TextInput,
   TouchableOpacity,
-  View
+  View,
+  Alert,
+  ActivityIndicator,
+  TextInput,
+  Text,
+  Keyboard
 } from "react-native";
+import { getImageSrc } from "@/hooks/useImageSrc";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 
@@ -82,6 +82,41 @@ const FILTER_OPTIONS = [
   { id: "bbq", label: "شواء", icon: (isActive: boolean) => <SolarFireBold size={18} color={isActive ? "white" : Colors.accent} />, activeColor: Colors.accent },
   { id: "garden", label: "حديقة", icon: (isActive: boolean) => <SolarTreeBold size={18} color={isActive ? "white" : Colors.secondary} />, activeColor: Colors.secondary },
 ];
+
+const SHAPES = {
+  blue: "M29.4165 59.9929C32.7707 60.1573 33.8516 57.4154 36.6494 56.5727C39.068 55.844 42.1373 57.9136 44.602 56.1435C46.9761 54.4385 47.1003 51.1778 49.39 49.5262C50.4402 48.7686 52.2285 48.273 53.3904 47.6556C57.9159 45.2507 55.39 40.9854 56.6649 37.1198C57.1904 35.527 59.1812 33.5316 59.751 31.5682C61.0163 27.2086 57.083 25.3948 56.3847 21.7944C55.9755 19.6849 56.7103 16.6837 55.7598 14.6214C54.353 11.5687 50.787 11.9068 48.8393 9.92411C46.9162 7.96647 46.7071 4.83632 44.0101 3.40727C41.8302 2.25218 38.8321 3.99511 36.9305 3.46716C34.6099 2.82303 33.5786 0.936956 30.7928 0.00846604C26.7125 -0.17205 26.2613 2.58433 22.9082 3.49519C20.8505 4.05394 17.7655 1.94318 15.3255 3.77446C12.937 5.5671 12.9572 8.61484 10.6792 10.3017C9.69816 11.028 7.80148 11.597 6.71476 12.167C2.02929 14.6248 4.47819 18.6917 3.31327 22.6894C2.84735 24.2881 0.782415 26.4167 0.259212 28.2376C-0.909281 32.3028 2.18416 34.1827 3.35303 37.3834C4.22685 39.776 3.04536 42.7163 4.19953 45.2418C5.67644 48.4732 9.28102 47.9739 11.2678 50.1348C13.0367 52.0591 13.2797 55.0582 15.8605 56.4423C18.0647 57.6243 21.3307 55.8827 23.1837 56.5279C25.7251 57.4128 26.4182 58.9797 29.4165 59.9929Z",
+};
+
+const FEATURE_ICON_MAP: Record<string, any> = {
+  'bbq': SolarFireBold,
+  'heater': SolarWindBold,
+  'toilet-western': SolarWaterBold,
+  'wifi': SolarWifiBold,
+  'fridge': SolarHome2Bold,
+  'tv': SolarWidgetBold,
+  'kitchen': SolarHome2Bold,
+  'bathroom': SolarWaterBold,
+  'entertainment': SolarWidgetBold,
+  'services': SolarSettingsBold,
+  'default': SolarWidgetBold
+};
+
+const CARD_COLORS = ["#035DF9", "#15AB64", "#F64300"];
+
+function SectionHeader({
+  title,
+  isRTL
+}: {
+  title: string;
+  isRTL: boolean;
+}) {
+  return (
+    <View style={{ height: 60, justifyContent: "center", marginBottom: 10, marginTop: 15, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
+      <ThemedText style={{ fontSize: 18, fontFamily: "Tajawal-Black", color: "#111827" }}>{title}</ThemedText>
+    </View>
+  );
+}
+
 
 export default function ExploreScreen() {
   const router = useRouter();
@@ -107,7 +142,7 @@ export default function ExploreScreen() {
   const { data: chaletsResponse, isLoading: isChaletsLoading } = useGetChaletsQuery({
     isActive: true,
     isApproved: true,
-    limit: zoom >= 14 ? 300 : zoom >= 10 ? 150 : zoom >= 6 ? 80 : 40,
+    limit: 100,
     search: search || undefined,
     maxAdults: maxAdults ? parseInt(maxAdults) : undefined,
     minPrice: minPrice ? parseInt(minPrice) : undefined,
@@ -117,35 +152,29 @@ export default function ExploreScreen() {
   const chaletsRaw = chaletsResponse?.data || [];
 
   const MOCK_CHALETS = useMemo(() => {
-    return chaletsRaw
-      .filter((item: any) => {
-        const lng = Number(item.longitude);
-        const lat = Number(item.latitude);
-        return lng && lat && lng !== 0 && lat !== 0;
-      })
-      .map((item: any) => {
-        const mainImage = item.images?.find((img: any) => img.isMain) || item.images?.[0];
-
-        return {
-          id: item.id,
-          title: item.name,
-          location: item.address,
-          price: (item.basePrice || "0").toLocaleString(),
-          rating: item.rating || 0,
-          color: Colors.primary,
-          image: getImageSrc(mainImage?.url),
-          allImages: (item.images || []).map((img: any) => getImageSrc(img.url)),
-          coordinates: [item.longitude, item.latitude] as [number, number],
-          description: isRTL ? item.description?.ar : item.description?.en,
-          area: item.area,
-          maxAdults: item.maxAdults,
-          maxChildren: item.maxChildren,
-          bedrooms: item.bedrooms,
-          bathrooms: item.bathrooms,
-        };
-      });
-  }, [chaletsRaw, isRTL]);
-
+    return chaletsRaw.map((item: any) => {
+      const mainImage = item.images?.find((img: any) => img.isMain) || item.images?.[0];
+      
+      return {
+        id: item.id,
+        title: item.name,
+        location: item.address,
+        price: (item.basePrice || "0").toLocaleString(),
+        rating: item.rating || 0,
+        color: Colors.primary,
+        image: getImageSrc(mainImage?.url),
+        allImages: (item.images || []).map((img: any) => getImageSrc(img.url)),
+        coordinates: [item.longitude, item.latitude] as [number, number],
+        description: isRTL ? item.description?.ar : item.description?.en,
+        area: item.area,
+        maxAdults: item.maxAdults,
+        maxChildren: item.maxChildren,
+        bedrooms: item.bedrooms,
+        bathrooms: item.bathrooms,
+      };
+    });
+  }, [chaletsRaw]);
+  
   // Track Current Map State for restoration
   const [currentMapRegion, setCurrentMapRegion] = useState({ center: [44.36, 33.31] as [number, number], zoom: 6 });
   const [preSelectionRegion, setPreSelectionRegion] = useState<{ center: [number, number], zoom: number } | null>(null);
@@ -157,7 +186,7 @@ export default function ExploreScreen() {
   const [showMapTools, setShowMapTools] = useState(false);
   const showMapToolsRef = useRef(false);
   const browsingRegionRef = useRef<{ center: [number, number], zoom: number }>({ center: [44.36, 33.31], zoom: 6 });
-
+  
   const toggleMapTools = (val: boolean) => {
     setShowMapTools(val);
     showMapToolsRef.current = val;
@@ -166,7 +195,7 @@ export default function ExploreScreen() {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
 
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const snapPoints = useMemo(() => ["55%", "92%"], []);
+  const snapPoints = useMemo(() => ["100%"], []);
 
   useEffect(() => {
     let subscription: any = null;
@@ -193,10 +222,9 @@ export default function ExploreScreen() {
     };
   }, []);
 
+  const { formatShiftTime } = useFormatTime();
   const [selectedChalet, setSelectedChalet] = useState<any>(null);
 
-<<<<<<< Updated upstream
-=======
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -240,16 +268,16 @@ export default function ExploreScreen() {
         <BottomSheetFooter {...props} bottomInset={0}>
           <View style={[styles.stickyFooterMain, { paddingBottom: insets.bottom + 20 }]}>
             <View style={[styles.footerContent, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
-              <TouchableOpacity
+              <TouchableOpacity 
                 style={styles.bookButtonCustom}
                 onPress={() => {
-                  bottomSheetRef.current?.dismiss();
-                  router.push(`/(customer)/booking/complete?id=${selectedChalet.id}`);
+                   bottomSheetRef.current?.dismiss();
+                   router.push(`/(customer)/booking/complete?id=${selectedChalet.id}`);
                 }}
               >
                 <View style={styles.buttonSideShape} />
                 <View style={styles.buttonMainShape}>
-                  <ThemedText style={styles.bookButtonText}>{isRTL ? 'احجز الان' : 'Book Now'}</ThemedText>
+                   <ThemedText style={styles.bookButtonText}>{isRTL ? 'احجز الان' : 'Book Now'}</ThemedText>
                 </View>
                 <View style={styles.buttonSideShape} />
               </TouchableOpacity>
@@ -265,29 +293,29 @@ export default function ExploreScreen() {
     [selectedChalet, isRTL, insets.bottom]
   );
 
->>>>>>> Stashed changes
   const handleSelectChalet = (chalet: any) => {
     Keyboard.dismiss();
+    setActiveImageIndex(0); // Reset index
     // Save previous camera state if not already in selection mode
     if (!selectedChalet) {
       setPreSelectionRegion({ center: currentMapRegion.center, zoom: currentMapRegion.zoom });
     }
 
     setSelectedChalet(chalet);
-
+    
     // Zoom in on chalet
     setZoom(15);
     setCameraPosition(chalet.coordinates);
-
+    
     bottomSheetRef.current?.present();
   };
 
   const handleDismissSheet = () => {
     // If not navigating, restore pre-selection zoom
     if (!showMapToolsRef.current && preSelectionRegion) {
-      setZoom(preSelectionRegion.zoom);
-      setCameraPosition(preSelectionRegion.center);
-      setPreSelectionRegion(null);
+       setZoom(preSelectionRegion.zoom);
+       setCameraPosition(preSelectionRegion.center);
+       setPreSelectionRegion(null);
     }
     // We don't nullify selectedChalet here to keep route active if navigating
   };
@@ -345,7 +373,7 @@ export default function ExploreScreen() {
   return (
     <View style={styles.container}>
       <ExpoStatusBar style="dark" />
-
+      
       {isChaletsLoading && !chaletsRaw.length && (
         <View style={styles.loaderOverlay}>
           <ActivityIndicator size="large" color={Colors.primary} />
@@ -363,13 +391,11 @@ export default function ExploreScreen() {
         zoomLevel={zoom}
         centerCoordinate={cameraPosition}
         onPress={() => Keyboard.dismiss()}
-        onCameraChanged={(center, zoomLevel) => {
-          setCurrentMapRegion({ center, zoom: zoomLevel });
-          setZoom(zoomLevel);
-          setCameraPosition(center);
-          if (!selectedChalet) {
-            browsingRegionRef.current = { center, zoom: zoomLevel };
-          }
+        onRegionChange={(region) => {
+           setCurrentMapRegion(region);
+           if (!selectedChalet) {
+              browsingRegionRef.current = region;
+           }
         }}
       />
 
@@ -391,8 +417,8 @@ export default function ExploreScreen() {
               </TouchableOpacity>
             )}
           </View>
-          <TouchableOpacity
-            style={styles.filterButtonCircle}
+          <TouchableOpacity 
+            style={styles.filterButtonCircle} 
             onPress={handleFilterPress}
             activeOpacity={0.8}
           >
@@ -426,22 +452,22 @@ export default function ExploreScreen() {
       {/* Vertical Navigation Actions - Fixed on the right */}
       {showMapTools && (
         <View style={styles.rightNavActions}>
-          <TouchableOpacity
-            style={[styles.navCircleFab, { backgroundColor: Colors.primary }]}
+          <TouchableOpacity 
+            style={[styles.navCircleFab, { backgroundColor: Colors.primary }]} 
             onPress={() => setIsNavigating(!isNavigating)}
           >
             <SolarMapBoldDuotone size={26} color="white" />
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[styles.navCircleFab, { backgroundColor: '#FEE2E2', borderColor: '#EF4444', borderWidth: 1 }]}
+          <TouchableOpacity 
+            style={[styles.navCircleFab, { backgroundColor: '#FEE2E2', borderColor: '#EF4444', borderWidth: 1 }]} 
             onPress={() => {
               setRoute(null);
               setRouteInfo(null);
               setIsNavigating(false);
               toggleMapTools(false);
               setSelectedChalet(null);
-
+              
               if (preSelectionRegion) {
                 setZoom(preSelectionRegion.zoom);
                 setCameraPosition(preSelectionRegion.center);
@@ -460,49 +486,46 @@ export default function ExploreScreen() {
         ref={bottomSheetRef}
         index={0}
         snapPoints={snapPoints}
+        enableDynamicSizing={true}
         backdropComponent={renderBackdrop}
+        footerComponent={renderFooter}
         onDismiss={handleDismissSheet}
         enablePanDownToClose
         handleIndicatorStyle={{ backgroundColor: '#E5E7EB', width: 40 }}
         style={styles.bottomSheet}
+        onChange={(index) => {
+          setIsExpanded(index >= 1);
+        }}
       >
-<<<<<<< Updated upstream
-        <BottomSheetView style={styles.sheetContent}>
-=======
-        <BottomSheetScrollView
+        <BottomSheetScrollView 
           style={styles.sheetContent}
           contentContainerStyle={{ paddingBottom: insets.bottom + 120 }}
         >
 
->>>>>>> Stashed changes
           {selectedChalet && (
             <View style={styles.cardContainer}>
               {/* Image Carousel Swiper */}
               <View style={styles.imageCarouselContainer}>
-                <ScrollView
-                  horizontal
-                  pagingEnabled
+                <ScrollView 
+                  horizontal 
+                  pagingEnabled 
                   showsHorizontalScrollIndicator={false}
-                  onScroll={(e) => {
-                    // Potential indicator logic here if needed
+                  onMomentumScrollEnd={(e) => {
+                    const index = Math.round(e.nativeEvent.contentOffset.x / (SCREEN_WIDTH - 40));
+                    setActiveImageIndex(index);
                   }}
                   scrollEventThrottle={16}
                   style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }}
                 >
                   {(selectedChalet.allImages || [selectedChalet.image]).map((img: any, index: number) => (
-                    <Image
-                      key={index}
-                      source={img}
-                      style={[styles.carouselImage, { transform: [{ scaleX: isRTL ? -1 : 1 }] }]}
+                    <Image 
+                      key={index} 
+                      source={img} 
+                      style={[styles.carouselImage, { transform: [{ scaleX: isRTL ? -1 : 1 }] }]} 
                     />
                   ))}
                 </ScrollView>
-<<<<<<< Updated upstream
-                <View style={styles.imageCountBadge}>
-                  <ThemedText style={styles.imageCountText}>
-                    {(selectedChalet.allImages?.length || 1)} {isRTL ? 'صور' : 'Photos'}
-=======
-
+                
                 {/* Heart / Favorite Button */}
                 <TouchableOpacity style={styles.favoriteBtn}>
                   <SolarHeartBold size={24} color="#FF4B4B" />
@@ -511,16 +534,16 @@ export default function ExploreScreen() {
                 {/* Pagination Dots */}
                 <View style={styles.paginationDots}>
                   {(selectedChalet.allImages || [selectedChalet.image]).map((_: any, index: number) => (
-                    <View
-                      key={index}
+                    <View 
+                      key={index} 
                       style={[
-                        styles.dot,
-                        {
+                        styles.dot, 
+                        { 
                           backgroundColor: activeImageIndex === index ? Colors.primary : "rgba(255,255,255,0.5)",
                           width: activeImageIndex === index ? 10 : 8,
                           height: activeImageIndex === index ? 10 : 8,
                         }
-                      ]}
+                      ]} 
                     />
                   ))}
                 </View>
@@ -529,8 +552,8 @@ export default function ExploreScreen() {
               <View style={[styles.mainInfoRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
                 {/* Rating */}
                 <View style={styles.ratingSection}>
-                  <SolarStarBold size={20} color={Colors.primary} />
-                  <ThemedText style={styles.ratingValue}>{selectedChalet.rating || '4.5'}</ThemedText>
+                   <SolarStarBold size={20} color={Colors.primary} />
+                   <ThemedText style={styles.ratingValue}>{selectedChalet.rating || '4.5'}</ThemedText>
                 </View>
 
                 {/* Title and Location */}
@@ -540,67 +563,33 @@ export default function ExploreScreen() {
                   </ThemedText>
                   <ThemedText style={styles.chaletLocationSub}>
                     {typeof selectedChalet?.location === 'string' ? selectedChalet.location : (isRTL ? selectedChalet?.location?.ar : selectedChalet?.location?.en) || ''}
->>>>>>> Stashed changes
                   </ThemedText>
                 </View>
               </View>
 
-<<<<<<< Updated upstream
-              <View style={[styles.cardHeader, { flexDirection: isRTL ? 'row-reverse' : 'row', marginTop: 16 }]}>
-                <View style={[styles.headerInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                  <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
-                    <ThemedText style={styles.chaletTitle}>
-                      {typeof selectedChalet?.title === 'string' ? selectedChalet.title : (isRTL ? selectedChalet?.title?.ar : selectedChalet?.title?.en) || ''}
-                    </ThemedText>
-                    <TouchableOpacity 
-                      style={styles.navActionBtn}
-                      onPress={() => {
-                        toggleMapTools(true);
-                        getRoute();
-                        bottomSheetRef.current?.dismiss();
-                      }}
-                    >
-                      <SolarMapPointBold size={18} color="white" />
-                      <ThemedText style={styles.navActionText}>{isRTL ? 'المسار' : 'Route'}</ThemedText>
-                    </TouchableOpacity>
-=======
               {/* Specifications Section */}
               <View style={[styles.specsSection, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
                 <ThemedText style={styles.sectionLabel}>{isRTL ? 'المواصفات الاساسية' : 'Basic Specifications'}</ThemedText>
-                <ScrollView
-                  horizontal
+                <ScrollView 
+                  horizontal 
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={[styles.specsContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
                 >
                   <View style={styles.specChip}>
                     <ThemedText style={styles.specText}>{isRTL ? 'بستان مع بيت' : 'Garden with house'}</ThemedText>
->>>>>>> Stashed changes
                   </View>
-                  
-                  <View style={[styles.locationRow, { flexDirection: isRTL ? 'row-reverse' : 'row', marginTop: 4 }]}>
-                    <SolarMapPointBold size={14} color="#6B7280" />
-                    <ThemedText style={styles.chaletLocation}>
-                      {typeof selectedChalet?.location === 'string' ? selectedChalet.location : (isRTL ? selectedChalet?.location?.ar : selectedChalet?.location?.en) || ''}
-                    </ThemedText>
+                  <View style={styles.specChip}>
+                    <ThemedText style={styles.specText}>{selectedChalet.area || 0} م</ThemedText>
                   </View>
-
-                  <View style={[styles.ratingRow, { flexDirection: isRTL ? 'row-reverse' : 'row', marginTop: 8 }]}>
-                    <ThemedText style={styles.priceText}>{selectedChalet.price} د.ع / ليلة</ThemedText>
-                    <View style={[styles.dot, { marginHorizontal: 8 }]} />
-                    <SolarStarBold size={14} color="#F59E0B" />
-                    <ThemedText style={styles.ratingText}>{selectedChalet.rating}</ThemedText>
+                  <View style={styles.specChip}>
+                    <ThemedText style={styles.specText}>{selectedChalet.bathrooms || 0} حمام</ThemedText>
                   </View>
-                </View>
+                  <View style={styles.specChip}>
+                    <ThemedText style={styles.specText}>{selectedChalet.bedrooms || 0} غرف</ThemedText>
+                  </View>
+                </ScrollView>
               </View>
 
-<<<<<<< Updated upstream
-              {/* Enhanced Info Grid */}
-              <View style={[styles.enhancedInfoGrid, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                <View style={styles.enhancedInfoItem}>
-                  <SolarWidgetBold size={18} color={Colors.primary} />
-                  <ThemedText style={styles.enhancedInfoValue}>{selectedChalet.area || 0} م²</ThemedText>
-                  <ThemedText style={styles.enhancedInfoLabel}>{isRTL ? 'المساحة' : 'Area'}</ThemedText>
-=======
               {/* Seamless Full Details Content (Visible when expanded) */}
               {isExpanded && (
                 <View style={{ marginTop: 20 }}>
@@ -609,7 +598,7 @@ export default function ExploreScreen() {
                   ) : (
                     <>
                       {/* Shifts Section */}
-                      <Animated.View entering={FadeInUp.delay(50).duration(300)}>
+                      <Animated.View entering={FadeInUp.delay(100).duration(500)}>
                         <SectionHeader title={isRTL ? "الشفتات المتوفرة" : "Available Shifts"} isRTL={isRTL} />
                         <View style={{ gap: 10, marginBottom: 10 }}>
                           {(chaletDetails.shifts || []).map((shift: any, index: number) => (
@@ -631,7 +620,7 @@ export default function ExploreScreen() {
                       </Animated.View>
 
                       {/* Facilities Section */}
-                      <Animated.View entering={FadeInUp.delay(100).duration(300)}>
+                      <Animated.View entering={FadeInUp.delay(200).duration(500)}>
                         <SectionHeader title={isRTL ? "المرافق" : "Facilities"} isRTL={isRTL} />
                         <View style={{ flexDirection: isRTL ? "row-reverse" : "row", flexWrap: 'wrap', justifyContent: 'space-between', marginVertical: 15 }}>
                           {(chaletDetails.chaletFeatures || []).map((item: any, idx: number) => {
@@ -657,7 +646,7 @@ export default function ExploreScreen() {
                       </Animated.View>
 
                       {/* Overview Section */}
-                      <Animated.View entering={FadeInUp.delay(150).duration(300)}>
+                      <Animated.View entering={FadeInUp.delay(300).duration(500)}>
                         <SectionHeader title={isRTL ? "نظرة عامة" : "Overview"} isRTL={isRTL} />
                         <View style={{ alignItems: isRTL ? 'flex-end' : 'flex-start', marginBottom: 10 }}>
                           <ThemedText style={{ fontSize: 14, color: "#64748B", lineHeight: 22, textAlign: isRTL ? 'right' : 'left' }}>
@@ -667,8 +656,8 @@ export default function ExploreScreen() {
                       </Animated.View>
 
                       {/* Host Section */}
-                      <Animated.View entering={FadeInUp.delay(200).duration(300)}>
-                        <HostContactCard
+                      <Animated.View entering={FadeInUp.delay(400).duration(500)}>
+                        <HostContactCard 
                           name={chaletDetails.owner?.name || (isRTL ? "مضيف عراقي" : "Iraqi Host")}
                           avatar={chaletDetails.owner?.image ? getImageSrc(chaletDetails.owner.image) : null}
                           isRTL={isRTL}
@@ -676,31 +665,28 @@ export default function ExploreScreen() {
                       </Animated.View>
 
                       {/* Location Section */}
-                      <Animated.View entering={FadeInUp.delay(250).duration(300)}>
+                      <Animated.View entering={FadeInUp.delay(500).duration(500)}>
                         <SectionHeader title={isRTL ? "الموقع" : "Location"} isRTL={isRTL} />
                         <View style={styles.mapCardFlat}>
                           <View style={styles.mapInner}>
-                            <Image 
-                              source={{ 
-                                uri: `https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+${Colors.primary.replace('#', '')}(${chaletDetails.longitude || 44.3661},${chaletDetails.latitude || 33.3152})/${chaletDetails.longitude || 44.3661},${chaletDetails.latitude || 33.3152},14/600x300@2x?access_token=${MAPBOX_ACCESS_TOKEN}` 
-                              }} 
-                              style={{ width: '100%', height: '100%' }} 
-                              resizeMode="cover"
-                            />
+                             <Image 
+                               source={{ uri: `https://tiles.stadiamaps.com/static/alidade_smooth/${chaletDetails.longitude || 44.3661},${chaletDetails.latitude || 33.3152},15/600x300@2x.png?api_key=YOUR_KEY` }} 
+                               style={{ width: '100%', height: '100%' }} 
+                             />
+                             <View style={{ position: 'absolute', top: '40%', left: '46%' }}>
+                                <SolarMapPointBold size={32} color={Colors.primary} />
+                             </View>
                           </View>
-                          <View style={{ paddingVertical: 14, alignItems: 'center', backgroundColor: 'white', borderBottomLeftRadius: 20, borderBottomRightRadius: 20 }}>
-                             <ThemedText style={{ fontSize: 16, fontFamily: "Tajawal-Black", color: Colors.primary }}>
-                               {isRTL ? chaletDetails.region?.name?.ar : chaletDetails.region?.name?.en || chaletDetails.address?.ar || chaletDetails.address?.en || ''}
-                             </ThemedText>
-                             <ThemedText style={{ fontSize: 12, color: "#64748B", fontFamily: "Tajawal-Medium", marginTop: 2 }}>
-                               {isRTL ? "انقر لرؤية الموقع بدقة" : "Click to see precise location"}
+                          <View style={{ paddingVertical: 12, alignItems: 'center' }}>
+                             <ThemedText style={{ fontSize: 16, fontFamily: "Tajawal-Black" }}>
+                               {isRTL ? chaletDetails.region?.name?.ar : chaletDetails.region?.name?.en}
                              </ThemedText>
                           </View>
                         </View>
                       </Animated.View>
 
                       {/* Reviews Section */}
-                      <Animated.View entering={FadeInUp.delay(300).duration(300)}>
+                      <Animated.View entering={FadeInUp.delay(600).duration(500)}>
                         <SectionHeader title={isRTL ? "التقييمات" : "Reviews"} isRTL={isRTL} />
                         {reviews.length > 0 ? (
                           reviews.slice(0, 2).map((reviewItem: any, i: number) => (
@@ -735,7 +721,7 @@ export default function ExploreScreen() {
                       </Animated.View>
 
                       {/* Similar Chalets Section */}
-                      <Animated.View entering={FadeInUp.delay(350).duration(300)}>
+                      <Animated.View entering={FadeInUp.delay(700).duration(500)}>
                         <SectionHeader title={isRTL ? "قد يعجبك أيضاً" : "You might also like"} isRTL={isRTL} />
                         <HorizontalSwiper
                           data={(similarResponse || []).map((item: any, index: number) => ({
@@ -756,55 +742,11 @@ export default function ExploreScreen() {
                       </Animated.View>
                     </>
                   )}
->>>>>>> Stashed changes
                 </View>
-                <View style={styles.enhancedInfoItem}>
-                  <SolarUsersGroupBold size={18} color={Colors.secondary} />
-                  <ThemedText style={styles.enhancedInfoValue}>{selectedChalet.maxAdults || 0}</ThemedText>
-                  <ThemedText style={styles.enhancedInfoLabel}>{isRTL ? 'بالغين' : 'Adults'}</ThemedText>
-                </View>
-                <View style={styles.enhancedInfoItem}>
-                  <SolarWaterBold size={18} color={Colors.accent} />
-                  <ThemedText style={styles.enhancedInfoValue}>{selectedChalet.bedrooms || 0}</ThemedText>
-                  <ThemedText style={styles.enhancedInfoLabel}>{isRTL ? 'غرف' : 'Rooms'}</ThemedText>
-                </View>
-                <View style={styles.enhancedInfoItem}>
-                  <SolarStarBold size={18} color="#F59E0B" />
-                  <ThemedText style={styles.enhancedInfoValue}>{selectedChalet.bathrooms || 0}</ThemedText>
-                  <ThemedText style={styles.enhancedInfoLabel}>{isRTL ? 'حمامات' : 'Baths'}</ThemedText>
-                </View>
-              </View>
-
-              {/* Actions Section */}
-              <View style={styles.cardActionsWrapper}>
-                <View style={[styles.mainActionsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                  <PrimaryButton
-                    label={isRTL ? 'احجز الآن' : 'Book Now'}
-                    icon={<SolarAltArrowRightBold size={20} color="white" />}
-                    onPress={() => {
-                      bottomSheetRef.current?.dismiss();
-                      router.push(`/(customer)/booking/complete?id=${selectedChalet.id}`);
-                    }}
-                    style={{ flex: 1 }}
-                    height={54}
-                  />
-                </View>
-
-                <SecondaryButton
-                  label={isRTL ? 'عرض كامل التفاصيل' : 'View Full Details'}
-                  icon={<SolarSquareShareLineBoldDuotone size={20} color={Colors.primary} />}
-                  onPress={() => {
-                    bottomSheetRef.current?.dismiss();
-                    router.push(`/(customer)/chalet-details/${selectedChalet.id}`);
-                  }}
-                  isActive={false} // Uses inactive styles which have better contrast
-                  style={{ marginTop: 12 }}
-                  height={54}
-                />
-              </View>
+              )}
             </View>
           )}
-        </BottomSheetView>
+        </BottomSheetScrollView>
       </BottomSheetModal>
 
       {/* Advanced Filter Sheet */}
@@ -819,7 +761,7 @@ export default function ExploreScreen() {
       >
         <BottomSheetScrollView contentContainerStyle={styles.filterModalContent}>
           <Text style={styles.filterModalTitle}>{isRTL ? 'تصفية النتائج' : 'Filter Results'}</Text>
-
+          
           <View style={styles.filterSection}>
             <Text style={styles.filterSectionLabel}>{isRTL ? 'عدد البالغين' : 'Max Adults'}</Text>
             <BottomSheetTextInput
@@ -853,7 +795,7 @@ export default function ExploreScreen() {
           </View>
 
           <View style={styles.modalActions}>
-            <SecondaryButton
+             <SecondaryButton
               label={isRTL ? 'إعادة ضبط' : 'Reset'}
               onPress={handleResetFilters}
               style={{ flex: 1 }}
@@ -925,14 +867,14 @@ const styles = StyleSheet.create({
   },
   imageCarouselContainer: {
     width: '100%',
-    height: 180,
-    borderRadius: 20,
+    height: 250,
+    borderRadius: 24,
     overflow: 'hidden',
     backgroundColor: '#F3F4F6',
   },
   carouselImage: {
-    width: SCREEN_WIDTH - 40, // Parent padding adjustment
-    height: 180,
+    width: SCREEN_WIDTH - 40,
+    height: 250,
     resizeMode: 'cover',
   },
   imageCountBadge: {
@@ -1103,8 +1045,6 @@ const styles = StyleSheet.create({
     fontFamily: "Tajawal-Bold",
     color: Colors.primary,
   },
-<<<<<<< Updated upstream
-=======
 
   // New Design Styles
   mainInfoRow: {
@@ -1212,18 +1152,18 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   mapCardFlat: {
-    backgroundColor: "white",
-    borderRadius: 20,
-    overflow: 'hidden',
-    ...Shadows.medium,
-    marginVertical: 10,
+    backgroundColor: "#F9FAFB",
+    borderRadius: 24,
+    padding: 10,
+    marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: "#F3F4F6",
   },
-  mapInner: {
-    width: '100%',
-    height: 180,
-    backgroundColor: '#F3F4F6',
+  mapInner: { 
+    height: 180, 
+    borderRadius: 24, 
+    overflow: "hidden", 
+    position: 'relative' 
   },
   priceContainer: {
     flex: 1,
@@ -1262,7 +1202,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "Tajawal-Bold",
   },
->>>>>>> Stashed changes
   loaderOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(255,255,255,0.3)',
@@ -1364,5 +1303,52 @@ const styles = StyleSheet.create({
     gap: 12,
     marginTop: 10,
     paddingBottom: 20,
+  },
+  revComplexCardFlat: {
+    backgroundColor: "#F8FAFC",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+  },
+  revHeaderMerged: {
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+  },
+  revRatingCornerMerged: {
+    alignItems: "center",
+    gap: 4,
+  },
+  revRateNumMerged: {
+    fontSize: 14,
+    fontFamily: "Tajawal-Bold",
+  },
+  userInfoRowMerged: {
+    flex: 1,
+    alignItems: "flex-start",
+  },
+  nameAndBodyMerged: {
+    flex: 1,
+  },
+  reviewerNameMerged: {
+    fontSize: 15,
+    fontFamily: "Tajawal-Bold",
+    color: "#1E293B",
+  },
+  revMessageMerged: {
+    fontSize: 13,
+    fontFamily: "Tajawal-Medium",
+    color: "#64748B",
+    marginTop: 4,
+  },
+  avatarCircleMerged: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    overflow: "hidden",
+    backgroundColor: "#E2E8F0",
+  },
+  userAvatarImgMerged: {
+    width: "100%",
+    height: "100%",
   },
 });
