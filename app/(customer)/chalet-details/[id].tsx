@@ -737,11 +737,12 @@ export default function ChaletDetailScreen() {
             <SecondaryButton
               label={t("chalet.details.reviews")}
               iconLabel={String(reviewCount)}
-              iconPosition={isRTL ? "left" : "right"}
+              iconPosition="right"
               isActive={true}
               onPress={() => router.push(`/chalet-details/reviews/${chaletId}`)}
               style={{ width: 175 }}
               height={46}
+              variant={!isRTL ? "inverse" : undefined}
             />
           </View>
 
@@ -768,13 +769,13 @@ export default function ChaletDetailScreen() {
                   <View
                     style={[
                       styles.revHeaderMerged,
-                      { flexDirection: isRTL ? "row" : "row-reverse" },
+                      { flexDirection: isRTL ? "row-reverse" : "row" },
                     ]}
                   >
                     <View
                       style={[
                         styles.revRatingCornerMerged,
-                        { flexDirection: isRTL ? "row" : "row-reverse" },
+                        { flexDirection: isRTL ? "row-reverse" : "row" },
                       ]}
                     >
                       <SolarStarBold size={14} color="#035DF9" />

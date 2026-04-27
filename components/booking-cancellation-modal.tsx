@@ -15,7 +15,6 @@ import {
   View
 } from 'react-native';
 import { SecondaryButton } from './user/secondary-button';
-import { SecondaryButtonInverse } from './user/secondary-button-inverse';
 
 // Static imports for Lottie files
 import errorAnim from './icons/motions/fail.json';
@@ -179,11 +178,12 @@ export const BookingCancellationSheet = forwardRef<BookingCancellationSheetRef, 
             </View>
 
             <View style={{ flex: 1 }}>
-              <SecondaryButtonInverse
+              <SecondaryButton
                 label={isRTL ? 'تجاهل' : 'Ignore'}
                 onPress={() => bottomSheetModalRef.current?.dismiss()}
                 inactiveTextColor="#1C1C1C"
                 isActive={false}
+                variant={!isRTL ? "inverse" : "default"}
               />
             </View>
           </View>

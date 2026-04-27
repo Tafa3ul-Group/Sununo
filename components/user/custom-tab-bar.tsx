@@ -84,7 +84,7 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
         </TouchableOpacity>
 
         {/* Tab Capsule */}
-        <View style={styles.tabCapsule}>
+        <View style={[styles.tabCapsule, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
           {pillTabs.map((route: any) => {
             const isActive = currentRouteName === route.name;
             return (

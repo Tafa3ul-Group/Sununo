@@ -16,7 +16,7 @@ interface SecondaryButtonProps {
   isActive?: boolean;
   icon?: React.ReactNode;
   iconLabel?: string;
-  iconPosition?: 'left' | 'right';
+  iconPosition?: "left" | "right";
   activeColor?: string;
   inactiveColor?: string;
   activeTextColor?: string;
@@ -25,6 +25,7 @@ interface SecondaryButtonProps {
   textStyle?: TextStyle;
   isLoading?: boolean;
   height?: number;
+  variant?: "default" | "inverse"; // Added to let you choose the logic
 }
 
 export function SecondaryButton({
@@ -42,12 +43,17 @@ export function SecondaryButton({
   textStyle,
   isLoading = false,
   height = 46,
+  variant = "default",
 }: SecondaryButtonProps) {
   const { i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
+  const isRTL = i18n.language === "ar";
 
-  // Use provided iconPosition or default to RTL-aware default
-  const finalIconPosition = iconPosition || (isRTL ? 'right' : 'left');
+  // Use EXACT original logic based on variant
+  const finalIconPosition =
+    iconPosition ||
+    (variant === "default"
+      ? isRTL ? "right" : "left"
+      : isRTL ? "left" : "right");
 
   const bgColor = isActive ? activeColor : "white";
   const borderColor = isActive ? activeColor : "#E5E7EB";
@@ -55,7 +61,6 @@ export function SecondaryButton({
 
   const scaledWidth = 44.4;
 
-  // Dynamic flex check: only flex internally if the component itself is told to flex
   const flattenedStyle = StyleSheet.flatten(style);
   const isFlex = flattenedStyle?.flex === 1 || flattenedStyle?.flexGrow === 1;
 
@@ -66,15 +71,15 @@ export function SecondaryButton({
       style={[
         styles.container,
         {
-          flexDirection: finalIconPosition === 'right' ? 'row-reverse' : 'row',
-          gap: -1.5
+          flexDirection: finalIconPosition === "right" ? "row-reverse" : "row",
+          gap: -1.5,
         },
         style,
-        isLoading && { opacity: 0.7 }
+        isLoading && { opacity: 0.7 },
       ]}
       disabled={isLoading}
     >
-      {/* Icon Section */}
+      {/* Icon Section - Kept EXACTLY as original */}
       <View
         style={[
           styles.iconWrapper,
@@ -84,13 +89,16 @@ export function SecondaryButton({
             backgroundColor: bgColor,
             borderColor: borderColor,
             borderWidth: 1.5,
-            borderTopRightRadius: finalIconPosition === 'right' ? height / 2 : 8,
-            borderBottomRightRadius: finalIconPosition === 'right' ? height / 2 : 8,
-            borderTopLeftRadius: finalIconPosition === 'left' ? height / 2 : 8,
-            borderBottomLeftRadius: finalIconPosition === 'left' ? height / 2 : 8,
-            justifyContent: 'center',
-            alignItems: 'center'
-          }
+            borderTopRightRadius:
+              finalIconPosition === "right" ? height / 2 : 8,
+            borderBottomRightRadius:
+              finalIconPosition === "right" ? height / 2 : 8,
+            borderTopLeftRadius: finalIconPosition === "left" ? height / 2 : 8,
+            borderBottomLeftRadius:
+              finalIconPosition === "left" ? height / 2 : 8,
+            justifyContent: "center",
+            alignItems: "center",
+          },
         ]}
       >
         {!!(icon || iconLabel || isLoading) && (
@@ -99,16 +107,18 @@ export function SecondaryButton({
               <ActivityIndicator color={finalContentColor} size="small" />
             ) : iconLabel ? (
               <ThemedText
-                style={[
-                  styles.text,
-                  { color: finalContentColor, fontSize: 16 },
-                ]}
+                style={[styles.text, { color: finalContentColor, fontSize: 16 }]}
               >
                 {iconLabel}
               </ThemedText>
             ) : icon ? (
               typeof icon === "string" ? (
-                <ThemedText style={[styles.text, { color: finalContentColor, fontSize: 12 }]}>
+                <ThemedText
+                  style={[
+                    styles.text,
+                    { color: finalContentColor, fontSize: 12 },
+                  ]}
+                >
                   {icon}
                 </ThemedText>
               ) : (
@@ -119,7 +129,7 @@ export function SecondaryButton({
         )}
       </View>
 
-      {/* Label Section */}
+      {/* Label Section - Kept EXACTLY as original */}
       <View
         style={[
           styles.textWrapper,
@@ -129,16 +139,20 @@ export function SecondaryButton({
             borderColor: borderColor,
             height: height,
             paddingHorizontal: 20,
-            borderTopLeftRadius: finalIconPosition === 'right' ? 10 : 8,
-            borderBottomLeftRadius: finalIconPosition === 'right' ? 10 : 8,
-            borderTopRightRadius: finalIconPosition === 'left' ? 10 : 8,
-            borderBottomRightRadius: finalIconPosition === 'left' ? 10 : 8,
+            borderTopLeftRadius: finalIconPosition === "right" ? 10 : 8,
+            borderBottomLeftRadius: finalIconPosition === "right" ? 10 : 8,
+            borderTopRightRadius: finalIconPosition === "left" ? 10 : 8,
+            borderBottomRightRadius: finalIconPosition === "left" ? 10 : 8,
             borderWidth: 1.5,
           },
         ]}
       >
         <ThemedText
-          style={[styles.text, { color: finalContentColor, fontSize: 14 }, textStyle]}
+          style={[
+            styles.text,
+            { color: finalContentColor, fontSize: 14 },
+            textStyle,
+          ]}
           numberOfLines={1}
         >
           {label}

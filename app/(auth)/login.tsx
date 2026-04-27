@@ -119,7 +119,9 @@ export function LoginScreen() {
                   {t('auth.dontHaveAccount')}
                 </ThemedText>
                 <TouchableOpacity>
-                  <ThemedText style={styles.linkText}>{t('auth.registerNow')}</ThemedText>
+                  <ThemedText style={[styles.linkText, isRTL ? { marginRight: normalize.width(6) } : { marginLeft: normalize.width(6) }]}>
+                    {t('auth.registerNow')}
+                  </ThemedText>
                 </TouchableOpacity>
               </View>
             </View>
@@ -191,8 +193,8 @@ const styles = StyleSheet.create({
   topLogoContainer: {
     alignItems: "center",
     justifyContent: "center",
-    marginTop: normalize.height(40),
-    marginBottom: normalize.height(20),
+    marginTop: normalize.height(60),
+    marginBottom: normalize.height(30),
   },
   scrollContent: {
     flexGrow: 1,
@@ -201,19 +203,19 @@ const styles = StyleSheet.create({
   },
   toggleWrapper: {
     alignItems: "center",
-    marginBottom: normalize.height(40),
+    marginBottom: normalize.height(50),
   },
   formContainer: {
     width: "100%",
   },
   headerRow: {
-    marginBottom: normalize.height(25),
+    marginBottom: normalize.height(45),
   },
   title: {
     fontSize: normalize.font(24),
     fontFamily: "Alexandria-Black",
     color: "#1E293B",
-    marginBottom: normalize.height(2),
+    marginBottom: normalize.height(4),
   },
   subtextRow: {
     alignItems: "center",
@@ -227,43 +229,42 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(14),
     color: "#0061FE",
     fontFamily: "Alexandria-Bold",
-    marginLeft: normalize.width(5),
   },
   inputGroup: {
-    marginBottom: normalize.height(20),
+    marginBottom: normalize.height(25),
   },
   label: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Bold",
     color: "#1E293B",
-    marginBottom: normalize.height(8),
+    marginBottom: normalize.height(10),
   },
   input: {
     width: "100%",
-    height: normalize.height(56),
+    height: normalize.height(60),
     backgroundColor: "#FFFFFF",
     borderRadius: normalize.radius(12),
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    paddingHorizontal: normalize.width(16),
+    paddingHorizontal: normalize.width(18),
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-Medium",
     color: "#1E293B",
   },
   loginBtn: {
-    marginTop: normalize.height(10),
-    height: normalize.height(56),
+    marginTop: normalize.height(20),
+    height: normalize.height(60),
     width: "100%",
     shadowOpacity: 0,
     elevation: 0,
   },
   guestLink: {
-    marginTop: normalize.height(25),
+    marginTop: normalize.height(35),
     width: "100%",
     alignItems: "center",
   },
   guestLinkText: {
-    fontSize: normalize.font(14),
+    fontSize: normalize.font(15),
     color: "#94A3B8",
     fontFamily: "Alexandria-Bold",
   },

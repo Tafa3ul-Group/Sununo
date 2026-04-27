@@ -64,6 +64,7 @@ export function SecondarySelect({
         isActive={false}
         onPress={handlePress}
         style={style}
+        variant={!isRTL ? "inverse" : "default"}
       />
 
       <BottomSheetModal

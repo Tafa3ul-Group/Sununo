@@ -772,7 +772,7 @@ export default function CompleteBookingScreen() {
             <PrimaryButton
               label={isRTL ? "تم" : "Done"}
               onPress={() => calendarSheetRef.current?.dismiss()}
-              style={{ shadowOpacity: 0, elevation: 0, height: 56 }}
+              style={{ width: "100%", shadowOpacity: 0, elevation: 0, height: 56 }}
             />
           </View>
         </View>
@@ -1011,7 +1011,7 @@ export default function CompleteBookingScreen() {
               ))}
 
               {selectedDates.length > 0 && (
-                <View style={{ paddingHorizontal: 32, marginTop: 10 }}>
+                <View style={{ paddingHorizontal: 12, marginTop: 10 }}>
                   <PrimaryButton
                     label={isRTL ? "إضافة يوم آخر" : "Add Another Day"}
                     onPress={() => calendarSheetRef.current?.present()}

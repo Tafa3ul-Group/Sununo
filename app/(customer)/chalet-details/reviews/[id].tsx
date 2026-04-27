@@ -236,9 +236,9 @@ const styles = StyleSheet.create({
     fontSize: normalize(56),
     fontFamily: "Alexandria-Black",
     color: "#111827",
-    marginBottom: normalize(5),
+    marginBottom: normalize(20), // Increased from 5 to 20
   },
-  starsRow: { flexDirection: "row", gap: normalize(6) },
+  starsRow: { flexDirection: "row", gap: normalize(10) }, // Increased gap from 6 to 10
   filterContainer: {
     paddingHorizontal: normalize(20),
     marginBottom: normalize(25),

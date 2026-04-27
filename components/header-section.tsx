@@ -328,7 +328,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   headerSide: {
-    width: normalize.width(110),
     height: "100%",
     justifyContent: "center",
     alignItems: "center",
