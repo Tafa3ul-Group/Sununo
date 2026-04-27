@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 18,
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     textAlign: "center",
     lineHeight: 22,
   },

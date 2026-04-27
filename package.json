@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.29.2",
+    "@expo-google-fonts/alexandria": "^0.4.2",
     "@expo/vector-icons": "^15.0.3",
     "@gorhom/bottom-sheet": "^5",
     "@lottiefiles/dotlottie-react": "^0.18.10",

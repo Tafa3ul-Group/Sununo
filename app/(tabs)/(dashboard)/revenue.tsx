@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
   balanceLabel: {
     color: 'rgba(255,255,255,0.7)',
     fontSize: normalize.font(13),
-    fontFamily: "Tajawal-SemiBold",
+    fontFamily: "Alexandria-SemiBold",
     marginBottom: 8,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
@@ -324,13 +324,13 @@ const styles = StyleSheet.create({
   balanceValue: {
     color: Colors.white,
     fontSize: normalize.font(36),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     letterSpacing: -1,
   },
   balanceCurrency: {
     color: 'rgba(255,255,255,0.6)',
     fontSize: normalize.font(14),
-    fontFamily: "Tajawal-SemiBold",
+    fontFamily: "Alexandria-SemiBold",
     marginBottom: 20,
     marginTop: 2,
   },
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
   },
   withdrawButtonText: {
     color: Colors.primary,
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     fontSize: normalize.font(14),
   },
   // Period Filter
@@ -368,12 +368,12 @@ const styles = StyleSheet.create({
   },
   periodText: {
     fontSize: normalize.font(13),
-    fontFamily: "Tajawal-SemiBold",
+    fontFamily: "Alexandria-SemiBold",
     color: Colors.text.secondary,
   },
   periodTextActive: {
     color: Colors.white,
-   fontFamily: "Tajawal-Regular" },
+   fontFamily: "Alexandria-Regular" },
   // Stats
   statsRow: {
     gap: 10,
@@ -398,13 +398,13 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: normalize.font(16),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
   },
   statLabel: {
     fontSize: normalize.font(10),
     color: Colors.text.muted,
-    fontFamily: "Tajawal-SemiBold",
+    fontFamily: "Alexandria-SemiBold",
     marginTop: 2,
     textAlign: 'center',
   },
@@ -416,7 +416,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: normalize.font(18),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
   },
   viewAllBtn: {
@@ -427,7 +427,7 @@ const styles = StyleSheet.create({
   viewAllText: {
     color: Colors.primary,
     fontSize: normalize.font(13),
-    fontFamily: "Tajawal-SemiBold",
+    fontFamily: "Alexandria-SemiBold",
   },
   // Transactions
   transactionsCard: {
@@ -454,24 +454,24 @@ const styles = StyleSheet.create({
   },
   transactionTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: Colors.text.primary,
     marginBottom: 3,
   },
   transactionDate: {
     fontSize: normalize.font(11),
     color: Colors.text.muted,
-    fontFamily: "Tajawal-Medium",
+    fontFamily: "Alexandria-Medium",
   },
   transactionAmount: {
     fontSize: normalize.font(14),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
     marginBottom: 4,
   },
   currencySmall: {
     fontSize: normalize.font(11),
-    fontFamily: "Tajawal-SemiBold",
+    fontFamily: "Alexandria-SemiBold",
     color: Colors.text.muted,
   },
   typeBadge: {
@@ -481,7 +481,7 @@ const styles = StyleSheet.create({
   },
   typeBadgeText: {
     fontSize: normalize.font(9),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     textTransform: 'uppercase',
   },
   separator: {
@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: normalize.font(13),
     color: Colors.text.muted,
-    fontFamily: "Tajawal-SemiBold",
+    fontFamily: "Alexandria-SemiBold",
   },
   // Withdraw Sheet
   sheetContent: {
@@ -506,7 +506,7 @@ const styles = StyleSheet.create({
   },
   sheetTitle: {
     fontSize: normalize.font(20),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
     textAlign: 'center',
     marginBottom: 4,
@@ -514,7 +514,7 @@ const styles = StyleSheet.create({
   sheetSubtitle: {
     fontSize: normalize.font(13),
     color: Colors.text.muted,
-    fontFamily: "Tajawal-Medium",
+    fontFamily: "Alexandria-Medium",
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -531,13 +531,13 @@ const styles = StyleSheet.create({
   amountInput: {
     flex: 1,
     fontSize: normalize.font(24),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
     textAlign: 'center',
   },
   amountCurrency: {
     fontSize: normalize.font(16),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: Colors.text.muted,
   },
 });

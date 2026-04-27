@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: normalize.font(20),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: '#1E293B',
     textAlign: 'center',
     lineHeight: normalize.font(28),
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
   },
   feedbackText: {
     fontSize: normalize.font(16),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: '#1C1C1C',
     textAlign: 'center',
     marginTop: 10,

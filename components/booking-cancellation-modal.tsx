@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: normalize.font(18),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: '#FF4D17',
     marginBottom: 24,
   },
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: normalize.font(14),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: '#1C1C1C',
     marginBottom: 8,
   },
@@ -267,13 +267,13 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     fontSize: normalize.font(14),
-    fontFamily: "Tajawal-Regular",
+    fontFamily: "Alexandria-Regular",
     color: '#1C1C1C',
     textAlignVertical: 'top',
   },
   noteText: {
     fontSize: normalize.font(11),
-    fontFamily: "Tajawal-Medium",
+    fontFamily: "Alexandria-Medium",
     color: '#64748B',
     marginTop: 12,
     lineHeight: 18,
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
   },
   feedbackText: {
     fontSize: normalize.font(16),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: '#1C1C1C',
     textAlign: 'center',
     marginTop: 10,
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     fontSize: normalize.font(14),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: '#FF4D17',
   },
 });

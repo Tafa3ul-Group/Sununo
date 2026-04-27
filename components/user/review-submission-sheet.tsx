@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
 
   questionTitle: {
     fontSize: normalize(16),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: "#111827",
   },
   starsRow: {
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     fontSize: normalize(16),
-    fontFamily: "Tajawal-Medium",
+    fontFamily: "Alexandria-Medium",
     color: "#111827",
     textAlignVertical: "top",
   },
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   sendBtnText: {
     color: "white",
     fontSize: normalize(17),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
   },
   cancelBtn: {
     backgroundColor: "white",
@@ -270,6 +270,6 @@ const styles = StyleSheet.create({
   cancelBtnText: {
     color: "#035DF9",
     fontSize: normalize(17),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
   },
 });

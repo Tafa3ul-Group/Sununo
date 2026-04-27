@@ -143,21 +143,21 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: normalize.font(18),
     color: Colors.text.primary,
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
   },
   info: {
     flex: 1,
   },
   customerName: {
     fontSize: normalize.font(16),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
   },
   customerPhone: {
     fontSize: normalize.font(13),
     color: Colors.text.muted,
     marginTop: 2,
-    fontFamily: "Tajawal-Regular",
+    fontFamily: "Alexandria-Regular",
   },
   contactButton: {
     padding: Spacing.sm,
@@ -181,12 +181,12 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(10),
     color: Colors.text.muted,
     marginBottom: 2,
-    fontFamily: "Tajawal-SemiBold",
+    fontFamily: "Alexandria-SemiBold",
     textTransform: 'uppercase',
   },
   statValue: {
     fontSize: normalize.font(14),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
   },
   emptyContainer: {

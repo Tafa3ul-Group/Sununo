@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   },
   valueText: {
     fontSize: normalize.font(16),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: "white",
   },
 });

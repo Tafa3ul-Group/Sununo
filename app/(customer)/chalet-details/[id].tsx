@@ -1042,17 +1042,17 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
   },
   shiftName: {
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     fontSize: 15,
     color: "#1E293B",
   },
   shiftTime: {
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     fontSize: 12,
     color: "#64748B",
   },
   shiftPrice: {
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     fontSize: 14,
     color: "#1E293B",
   },
@@ -1367,12 +1367,12 @@ const styles = StyleSheet.create({
   },
   capacityValue: {
     fontSize: 16,
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: Colors.primary,
   },
   capacityLabel: {
     fontSize: 10,
-    fontFamily: "Tajawal-Medium",
+    fontFamily: "Alexandria-Medium",
     color: "#64748B",
     marginTop: 2,
   },

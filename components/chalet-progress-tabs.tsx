@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 16,
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     textAlign: 'center',
   },
 });

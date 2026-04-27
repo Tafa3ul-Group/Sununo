@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: Colors.text.primary,
-    fontFamily: 'Tajawal-Medium',
+    fontFamily: 'Alexandria-Medium',
   },
   listContent: {
     padding: 16,
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.text.muted,
     textAlign: 'center',
-    fontFamily: 'Tajawal-Medium',
+    fontFamily: 'Alexandria-Medium',
     lineHeight: 24,
   },
 });

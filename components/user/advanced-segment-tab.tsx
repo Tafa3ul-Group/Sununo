@@ -45,7 +45,7 @@ export function AdvancedSegmentTab({
               <ThemedText
                 style={[
                   styles.tabLabel,
-                  isActive ? styles.activeLabel : { color: tab.color , fontFamily: "Tajawal-Regular" },
+                  isActive ? styles.activeLabel : { color: tab.color , fontFamily: "Alexandria-Regular" },
                 ]}
               >
                 {tab.label}
@@ -84,9 +84,9 @@ const styles = StyleSheet.create({
   },
   tabLabel: {
     fontSize: normalize.font(18),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
   },
   activeLabel: {
     color: "white",
-   fontFamily: "Tajawal-Regular" },
+   fontFamily: "Alexandria-Regular" },
 });

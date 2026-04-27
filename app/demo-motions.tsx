@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: '#1E293B',
     alignSelf: 'flex-end',
     marginTop: 30,
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   itemLabel: {
     marginTop: 10,
     fontSize: 14,
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: '#64748B',
   },
   btn: {
@@ -118,6 +118,6 @@ const styles = StyleSheet.create({
   btnText: {
     color: '#FFF',
     fontSize: 16,
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
   }
 });

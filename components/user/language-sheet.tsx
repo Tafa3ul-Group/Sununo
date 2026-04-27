@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: "#111827",
     marginBottom: 24,
   },
@@ -149,12 +149,12 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: "#4B5563",
   },
   activeLabel: {
     color: "#035DF9",
-   fontFamily: "Tajawal-Regular" },
+   fontFamily: "Alexandria-Regular" },
   flag: {
     width: 28,
     height: 28,

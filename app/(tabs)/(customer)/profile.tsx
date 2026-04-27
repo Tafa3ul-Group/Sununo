@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: normalize.font(16),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: '#374151',
   },
   avatarWrap: {
@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
   menuLabelText: {
     flex: 1,
     fontSize: normalize.font(16),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: '#374151',
     marginHorizontal: normalize.width(15),
   },

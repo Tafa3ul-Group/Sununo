@@ -112,7 +112,7 @@ function SectionHeader({
 }) {
   return (
     <View style={{ height: 60, justifyContent: "center", marginBottom: 10, marginTop: 15, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
-      <ThemedText style={{ fontSize: 18, fontFamily: "Tajawal-Black", color: "#111827" }}>{title}</ThemedText>
+      <ThemedText style={{ fontSize: 18, fontFamily: "Alexandria-Black", color: "#111827" }}>{title}</ThemedText>
     </View>
   );
 }
@@ -607,10 +607,10 @@ export default function ExploreScreen() {
                                 <SolarClockCircleBold size={20} color={Colors.primary} />
                               </View>
                               <View style={{ flex: 1, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
-                                <ThemedText style={{ fontSize: 14, fontFamily: "Tajawal-Bold", color: "#1F2937" }}>
+                                <ThemedText style={{ fontSize: 14, fontFamily: "Alexandria-Bold", color: "#1F2937" }}>
                                   {isRTL ? (shift.name?.ar || shift.name) : (shift.name?.en || shift.name)}
                                 </ThemedText>
-                                <ThemedText style={{ fontSize: 12, fontFamily: "Tajawal-Medium", color: "#6B7280", marginTop: 2 }}>
+                                <ThemedText style={{ fontSize: 12, fontFamily: "Alexandria-Medium", color: "#6B7280", marginTop: 2 }}>
                                   {formatShiftTime(shift.startTime)} - {formatShiftTime(shift.endTime)}
                                 </ThemedText>
                               </View>
@@ -636,7 +636,7 @@ export default function ExploreScreen() {
                                     <Icon size={22} color="white" />
                                   </View>
                                 </View>
-                                <ThemedText style={{ fontSize: 11, fontFamily: "Tajawal-Bold", marginTop: 6, textAlign: 'center' }}>
+                                <ThemedText style={{ fontSize: 11, fontFamily: "Alexandria-Bold", marginTop: 6, textAlign: 'center' }}>
                                   {isRTL ? feature.name?.ar : feature.name?.en}
                                 </ThemedText>
                               </View>
@@ -678,7 +678,7 @@ export default function ExploreScreen() {
                              </View>
                           </View>
                           <View style={{ paddingVertical: 12, alignItems: 'center' }}>
-                             <ThemedText style={{ fontSize: 16, fontFamily: "Tajawal-Black" }}>
+                             <ThemedText style={{ fontSize: 16, fontFamily: "Alexandria-Black" }}>
                                {isRTL ? chaletDetails.region?.name?.ar : chaletDetails.region?.name?.en}
                              </ThemedText>
                           </View>
@@ -841,7 +841,7 @@ const styles = StyleSheet.create({
   },
   filterChipText: {
     fontSize: 13,
-    fontFamily: "Tajawal-SemiBold",
+    fontFamily: "Alexandria-SemiBold",
     color: "#1F2937",
   },
   bottomSheet: {
@@ -889,7 +889,7 @@ const styles = StyleSheet.create({
   imageCountText: {
     color: 'white',
     fontSize: 11,
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
   },
   headerInfo: {
     flex: 1,
@@ -898,7 +898,7 @@ const styles = StyleSheet.create({
   },
   chaletTitle: {
     fontSize: 18,
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: "#111827",
   },
   locationRow: {
@@ -908,7 +908,7 @@ const styles = StyleSheet.create({
   chaletLocation: {
     fontSize: 13,
     color: "#6B7280",
-    fontFamily: "Tajawal-Medium",
+    fontFamily: "Alexandria-Medium",
   },
   ratingRow: {
     alignItems: "center",
@@ -916,7 +916,7 @@ const styles = StyleSheet.create({
   },
   priceText: {
     fontSize: 15,
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: Colors.primary,
   },
   dot: {
@@ -927,7 +927,7 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: 14,
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: "#1F2937",
     marginLeft: 4,
   },
@@ -954,13 +954,13 @@ const styles = StyleSheet.create({
   },
   navInfoVal: {
     fontSize: 18,
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: Colors.primary,
   },
   navInfoLbl: {
     fontSize: 10,
     color: '#9CA3AF',
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     textTransform: 'uppercase',
   },
   navCircleFab: {
@@ -992,7 +992,7 @@ const styles = StyleSheet.create({
   navActionText: {
     color: 'white',
     fontSize: 13,
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
   },
   enhancedInfoGrid: {
     marginTop: 24,
@@ -1011,13 +1011,13 @@ const styles = StyleSheet.create({
   },
   enhancedInfoValue: {
     fontSize: 15,
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: '#1E293B',
     marginTop: 6,
   },
   enhancedInfoLabel: {
     fontSize: 10,
-    fontFamily: "Tajawal-Medium",
+    fontFamily: "Alexandria-Medium",
     color: '#64748B',
     marginTop: 2,
     textTransform: 'uppercase',
@@ -1042,7 +1042,7 @@ const styles = StyleSheet.create({
   },
   navOutlineText: {
     fontSize: 14,
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: Colors.primary,
   },
 
@@ -1064,7 +1064,7 @@ const styles = StyleSheet.create({
   },
   ratingValue: {
     fontSize: 16,
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: "#1E293B",
   },
   titleSection: {
@@ -1073,14 +1073,14 @@ const styles = StyleSheet.create({
   },
   chaletTitleMain: {
     fontSize: 22,
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: "#111827",
     textAlign: 'right',
   },
   chaletLocationSub: {
     fontSize: 15,
     color: "#6B7280",
-    fontFamily: "Tajawal-Medium",
+    fontFamily: "Alexandria-Medium",
     marginTop: 2,
   },
   specsSection: {
@@ -1088,7 +1088,7 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     fontSize: 18,
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: "#1E293B",
     marginBottom: 12,
     paddingHorizontal: 4,
@@ -1105,7 +1105,7 @@ const styles = StyleSheet.create({
   },
   specText: {
     fontSize: 14,
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: "#334155",
   },
   favoriteBtn: {
@@ -1170,7 +1170,7 @@ const styles = StyleSheet.create({
   },
   footerPrice: {
     fontSize: 24,
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: "#000000",
     textAlign: 'right',
   },
@@ -1200,7 +1200,7 @@ const styles = StyleSheet.create({
   bookButtonText: {
     color: 'white',
     fontSize: 16,
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
   },
   loaderOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -1232,7 +1232,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 15,
-    fontFamily: "Tajawal-Medium",
+    fontFamily: "Alexandria-Medium",
     color: "#1F2937",
   },
   filterButtonCircle: {
@@ -1263,7 +1263,7 @@ const styles = StyleSheet.create({
   },
   filterModalTitle: {
     fontSize: 20,
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: '#111827',
     marginBottom: 24,
     textAlign: 'center',
@@ -1273,7 +1273,7 @@ const styles = StyleSheet.create({
   },
   filterSectionLabel: {
     fontSize: 14,
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: '#374151',
     marginBottom: 12,
   },
@@ -1283,7 +1283,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingHorizontal: 16,
     fontSize: 15,
-    fontFamily: "Tajawal-Medium",
+    fontFamily: "Alexandria-Medium",
     color: '#111827',
     borderWidth: 1,
     borderColor: '#E5E7EB',
@@ -1320,7 +1320,7 @@ const styles = StyleSheet.create({
   },
   revRateNumMerged: {
     fontSize: 14,
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
   },
   userInfoRowMerged: {
     flex: 1,
@@ -1331,12 +1331,12 @@ const styles = StyleSheet.create({
   },
   reviewerNameMerged: {
     fontSize: 15,
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: "#1E293B",
   },
   revMessageMerged: {
     fontSize: 13,
-    fontFamily: "Tajawal-Medium",
+    fontFamily: "Alexandria-Medium",
     color: "#64748B",
     marginTop: 4,
   },

@@ -210,13 +210,13 @@ const styles = StyleSheet.create({
   sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginTop: 20, marginBottom: 10 },
   sectionTitle: { 
     fontSize: normalize.font(20), 
-    fontFamily: "Tajawal-Black", 
+    fontFamily: "Alexandria-Black", 
     color: Colors.text.primary, 
   },
   seeAll: { 
     fontSize: normalize.font(13), 
     color: Colors.primary, 
-    fontFamily: "Tajawal-SemiBold", 
+    fontFamily: "Alexandria-SemiBold", 
     textDecorationLine: "underline" 
   },
   mapContainer: { height: 210, marginHorizontal: 16, borderRadius: 28, overflow: "hidden", backgroundColor: "#F3F4F6", marginTop: 10 },

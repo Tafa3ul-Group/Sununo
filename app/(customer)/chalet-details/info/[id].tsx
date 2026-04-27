@@ -58,7 +58,7 @@ export default function ChaletInfoScreen() {
         options={{
           headerShown: true,
           headerTitle: title,
-          headerTitleStyle: { fontFamily: 'Tajawal-Black', fontSize: 18 },
+          headerTitleStyle: { fontFamily: 'Alexandria-Black', fontSize: 18 },
           headerLeft: () => <CircleBackButton onPress={() => router.back()} />,
         }}
       />
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   },
   pageTitle: {
     fontSize: 22,
-    fontFamily: 'Tajawal-Black',
+    fontFamily: 'Alexandria-Black',
     color: '#111827',
   },
   card: {
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontFamily: 'Tajawal-Black',
+    fontFamily: 'Alexandria-Black',
     color: Colors.primary,
     marginBottom: 12,
   },
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 24,
     color: '#4B5563',
-    fontFamily: 'Tajawal-Medium',
+    fontFamily: 'Alexandria-Medium',
     textAlign: 'justify',
   },
   divider: {

@@ -164,10 +164,8 @@ const styles = StyleSheet.create({
   },
   primaryText: {
     fontSize: 18,
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     textAlign: "center",
-    lineHeight: 25,
-    paddingVertical: 2,
   },
   textWithIcon: {
     flexDirection: "row",

@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
   },
   markerTitle: {
     fontSize: 11,
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: '#111827',
     marginTop: 6,
     textAlign: 'center',
@@ -463,7 +463,7 @@ const styles = StyleSheet.create({
   fallbackText: {
     fontSize: 10,
     color: '#6B7280',
-    fontFamily: "Tajawal-SemiBold",
+    fontFamily: "Alexandria-SemiBold",
     textAlign: 'center',
   },
   fabContainer: {
@@ -492,7 +492,7 @@ const styles = StyleSheet.create({
   },
   fabText: {
     fontSize: 14,
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
   },
   userLocationMarker: {
     width: 30,

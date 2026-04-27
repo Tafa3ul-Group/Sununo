@@ -400,7 +400,7 @@ const styles = StyleSheet.create({
   },
   navBarTitle: {
     fontSize: normalize.font(16),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: Colors.text.primary,
     maxWidth: '65%',
     textAlign: 'center',
@@ -477,7 +477,7 @@ const styles = StyleSheet.create({
   },
   chaletName: {
     fontSize: normalize.font(26),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
     letterSpacing: -0.5,
   },
@@ -488,7 +488,7 @@ const styles = StyleSheet.create({
   },
   approvalText: {
     fontSize: normalize.font(11),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     textTransform: 'uppercase',
   },
   locationRow: {
@@ -499,7 +499,7 @@ const styles = StyleSheet.create({
   locationText: {
     fontSize: normalize.font(15),
     color: Colors.text.secondary,
-    fontFamily: "Tajawal-Medium",
+    fontFamily: "Alexandria-Medium",
   },
   statusBox: {
     alignItems: 'center',
@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
   },
   statusLabel: {
     fontSize: normalize.font(10),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     textTransform: 'uppercase',
   },
   statsRow: {
@@ -533,13 +533,13 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: normalize.font(17),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
   },
   statLabel: {
     fontSize: normalize.font(11),
     color: Colors.text.muted,
-    fontFamily: "Tajawal-SemiBold",
+    fontFamily: "Alexandria-SemiBold",
     marginTop: 2,
   },
   statDivider: {
@@ -571,7 +571,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: normalize.font(18),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
     marginBottom: 16,
   },
@@ -593,10 +593,10 @@ const styles = StyleSheet.create({
   },
   amenityEmoji: {
     fontSize: 18,
-   fontFamily: "Tajawal-Regular" },
+   fontFamily: "Alexandria-Regular" },
   amenityText: {
     fontSize: normalize.font(14),
-    fontFamily: "Tajawal-SemiBold",
+    fontFamily: "Alexandria-SemiBold",
     color: Colors.text.primary,
   },
   detailsRow: {
@@ -615,20 +615,20 @@ const styles = StyleSheet.create({
   },
   detailValue: {
     fontSize: normalize.font(16),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
   },
   detailLabel: {
     fontSize: normalize.font(11),
     color: Colors.text.muted,
-    fontFamily: "Tajawal-SemiBold",
+    fontFamily: "Alexandria-SemiBold",
   },
   descriptionText: {
     fontSize: normalize.font(15),
     color: Colors.text.secondary,
     lineHeight: 24,
     opacity: 0.9,
-   fontFamily: "Tajawal-Regular" },
+   fontFamily: "Alexandria-Regular" },
   footerContent: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -637,17 +637,17 @@ const styles = StyleSheet.create({
   footerPriceLabel: {
     fontSize: normalize.font(12),
     color: Colors.text.muted,
-    fontFamily: "Tajawal-SemiBold",
+    fontFamily: "Alexandria-SemiBold",
   },
   footerPriceValue: {
     fontSize: normalize.font(20),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
   },
   footerCurrency: {
     fontSize: normalize.font(14),
     color: Colors.primary,
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
   },
   footerButtonOverride: {
     flex: 1,

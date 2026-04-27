@@ -340,7 +340,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: normalize.font(18),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
     lineHeight: normalize.font(24),
     paddingVertical: normalize.height(2),
@@ -430,7 +430,7 @@ const styles = StyleSheet.create({
     marginHorizontal: Spacing.sm,
     fontSize: normalize.font(16),
     color: Colors.text.primary,
-    fontFamily: "Tajawal-Regular",
+    fontFamily: "Alexandria-Regular",
   },
   categoriesScroll: {
     paddingHorizontal: Spacing.md,
@@ -453,13 +453,13 @@ const styles = StyleSheet.create({
   },
   categoryLabel: {
     fontSize: normalize.font(14),
-    fontFamily: "Tajawal-Medium",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     lineHeight: normalize.font(20),
     paddingVertical: normalize.height(1),
   },
   categoryLabelActive: {
     color: Colors.background,
-    fontFamily: "Tajawal-Regular",
+    fontFamily: "Alexandria-Regular",
   },
 });

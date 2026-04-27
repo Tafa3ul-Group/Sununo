@@ -1009,15 +1009,15 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === 'ios' ? 34 : Spacing.md,
   },
   sectionCard: { backgroundColor: 'transparent', padding: 0, gap: Spacing.md, marginBottom: Spacing.md },
-  sectionHeader: { fontSize: normalize.font(16), fontFamily: "Tajawal-Black", color: Colors.text.primary, marginBottom: 2 },
+  sectionHeader: { fontSize: normalize.font(16), fontFamily: "Alexandria-Black", color: Colors.text.primary, marginBottom: 2 },
   rowInputs: { gap: Spacing.sm },
   inputGroup: { gap: 6 },
-  label: { ...Typography.caption, color: Colors.text.primary, fontFamily: "Tajawal-Black", fontSize: normalize.font(14) },
-  smallLabel: { ...Typography.caption, color: Colors.text.muted, fontFamily: "Tajawal-SemiBold", fontSize: normalize.font(12) },
+  label: { ...Typography.caption, color: Colors.text.primary, fontFamily: "Alexandria-Black", fontSize: normalize.font(14) },
+  smallLabel: { ...Typography.caption, color: Colors.text.muted, fontFamily: "Alexandria-SemiBold", fontSize: normalize.font(12) },
   input: {
     height: normalize.height(48), backgroundColor: '#FFFFFF', borderRadius: normalize.radius(12),
     paddingHorizontal: Spacing.md, borderWidth: 1, borderColor: '#E8E8E8',
-    fontSize: normalize.font(15), color: Colors.text.primary, fontFamily: "Tajawal-Regular",
+    fontSize: normalize.font(15), color: Colors.text.primary, fontFamily: "Alexandria-Regular",
   },
   textArea: { height: normalize.height(100), paddingTop: 18, textAlignVertical: 'top' },
   // Map
@@ -1031,18 +1031,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 6,
     backgroundColor: 'rgba(3, 93, 249, 0.9)', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 100,
   },
-  editLocText: { color: Colors.white, fontSize: normalize.font(12), fontFamily: "Tajawal-Bold" },
+  editLocText: { color: Colors.white, fontSize: normalize.font(12), fontFamily: "Alexandria-Bold" },
   // Shifts
   shiftsHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  shiftHint: { fontSize: normalize.font(13), color: Colors.text.muted, fontFamily: "Tajawal-Regular", marginBottom: 4 },
-  pricingTitle: { fontSize: normalize.font(14), fontFamily: "Tajawal-Bold", color: Colors.text.primary },
+  shiftHint: { fontSize: normalize.font(13), color: Colors.text.muted, fontFamily: "Alexandria-Regular", marginBottom: 4 },
+  pricingTitle: { fontSize: normalize.font(14), fontFamily: "Alexandria-Bold", color: Colors.text.primary },
   dayPricingGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
   dayPriceItem: { alignItems: 'center', gap: 4, width: '13%' },
-  dayLabel: { fontSize: normalize.font(10), fontFamily: "Tajawal-Black", color: Colors.text.muted },
+  dayLabel: { fontSize: normalize.font(10), fontFamily: "Alexandria-Black", color: Colors.text.muted },
   dayPriceInput: {
     width: '100%', height: 36, backgroundColor: '#F8FAFC', borderRadius: 8,
     borderWidth: 1, borderColor: '#E2E8F0', textAlign: 'center',
-    fontSize: normalize.font(11), color: Colors.text.primary, fontFamily: "Tajawal-Medium", paddingHorizontal: 2,
+    fontSize: normalize.font(11), color: Colors.text.primary, fontFamily: "Alexandria-Medium", paddingHorizontal: 2,
   },
   // Shift Card Row (Matches Screenshot)
   shiftListContainer: { gap: 12, marginBottom: 16 },
@@ -1056,14 +1056,14 @@ const styles = StyleSheet.create({
   shiftEditBtn: { width: 32, height: 32, justifyContent: 'center', alignItems: 'center' },
   shiftInfo: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, justifyContent: 'flex-end' },
   shiftIconLarge: { fontSize: 24 },
-  shiftValueName: { fontSize: normalize.font(15), fontFamily: "Tajawal-Bold", color: Colors.text.primary },
-  shiftPriceText: { color: Colors.text.primary, fontFamily: "Tajawal-Black" },
+  shiftValueName: { fontSize: normalize.font(15), fontFamily: "Alexandria-Bold", color: Colors.text.primary },
+  shiftPriceText: { color: Colors.text.primary, fontFamily: "Alexandria-Black" },
   addShiftBtnFull: {
     flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center',
     paddingVertical: 12, borderStyle: 'dashed', borderWidth: 1.5, borderColor: Colors.primary + '40',
     borderRadius: 14, marginTop: 8,
   },
-  addShiftBtnFullText: { color: Colors.primary, fontFamily: "Tajawal-Bold" },
+  addShiftBtnFullText: { color: Colors.primary, fontFamily: "Alexandria-Bold" },
   // Capacity (Matches Screenshot)
   capacityList: { gap: 12, marginTop: 8 },
   capacityCard: {
@@ -1072,16 +1072,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between', alignItems: 'center',
   },
   capacityInfo: { flex: 1, gap: 2 },
-  capacityLabel: { fontSize: normalize.font(18), fontFamily: "Tajawal-Bold", color: Colors.text.primary },
-  capacitySubLabel: { fontSize: normalize.font(14), fontFamily: "Tajawal-Regular", color: Colors.text.muted },
+  capacityLabel: { fontSize: normalize.font(18), fontFamily: "Alexandria-Bold", color: Colors.text.primary },
+  capacitySubLabel: { fontSize: normalize.font(14), fontFamily: "Alexandria-Regular", color: Colors.text.muted },
   // Modal Edit
   shiftModalCard: { backgroundColor: '#F8FAFC', borderRadius: 16, padding: 16, gap: 16 },
   pricingSectionModal: { gap: 12 },
   modalDeleteBtn: { paddingVertical: 16, alignItems: 'center' },
-  modalDeleteText: { color: Colors.error, fontFamily: "Tajawal-Bold" },
+  modalDeleteText: { color: Colors.error, fontFamily: "Alexandria-Bold" },
   // Amenity Categories & Feature Rows
   categorySectionTitle: {
-    fontSize: normalize.font(16), fontFamily: "Tajawal-Black", color: Colors.text.primary,
+    fontSize: normalize.font(16), fontFamily: "Alexandria-Black", color: Colors.text.primary,
     textAlign: 'center', marginBottom: 8,
   },
   featuresList: { gap: 8 },
@@ -1104,7 +1104,7 @@ const styles = StyleSheet.create({
   },
   featureIconText: { fontSize: normalize.font(20), color: '#FFFFFF' },
   featureName: {
-    fontSize: normalize.font(14), fontFamily: "Tajawal-Bold", color: Colors.text.primary,
+    fontSize: normalize.font(14), fontFamily: "Alexandria-Bold", color: Colors.text.primary,
     flex: 1,
   },
   checkbox: {
@@ -1112,9 +1112,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center', alignItems: 'center',
   },
   checkboxActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
-  checkboxCheck: { color: '#FFFFFF', fontSize: normalize.font(14), fontFamily: "Tajawal-Bold" },
-  uploadText: { marginTop: normalize.height(4), color: Colors.text.muted, fontSize: normalize.font(12), fontFamily: "Tajawal-SemiBold" },
-  photoHint: { fontSize: normalize.font(12), color: Colors.text.muted, fontFamily: "Tajawal-Regular", marginBottom: 4 },
+  checkboxCheck: { color: '#FFFFFF', fontSize: normalize.font(14), fontFamily: "Alexandria-Bold" },
+  uploadText: { marginTop: normalize.height(4), color: Colors.text.muted, fontSize: normalize.font(12), fontFamily: "Alexandria-SemiBold" },
+  photoHint: { fontSize: normalize.font(12), color: Colors.text.muted, fontFamily: "Alexandria-Regular", marginBottom: 4 },
   imageContainer: { gap: Spacing.sm },
   imageItem: { width: normalize.width(100), height: normalize.width(100), borderRadius: normalize.radius(16), overflow: 'hidden', position: 'relative' },
   uploadedImage: { width: '100%', height: '100%' },
@@ -1125,7 +1125,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center', alignItems: 'center',
   },
   coverBadge: { position: 'absolute', bottom: 6, left: 6, backgroundColor: Colors.primary, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
-  coverBadgeText: { color: '#FFFFFF', fontSize: normalize.font(9), fontFamily: "Tajawal-Bold" },
+  coverBadgeText: { color: '#FFFFFF', fontSize: normalize.font(9), fontFamily: "Alexandria-Bold" },
   // Amenity Wizard Progress
   amenityProgressContainer: {
     flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 24, marginBottom: 12,
@@ -1145,7 +1145,7 @@ const styles = StyleSheet.create({
   modalOptions: { flexDirection: 'row', justifyContent: 'space-around', width: '100%', marginBottom: Spacing.lg },
   modalOption: { alignItems: 'center', gap: Spacing.sm },
   modalIcon: { width: normalize.width(70), height: normalize.width(70), borderRadius: normalize.radius(35), justifyContent: 'center', alignItems: 'center' },
-  modalOptionText: { ...Typography.body, fontFamily: "Tajawal-SemiBold" },
+  modalOptionText: { ...Typography.body, fontFamily: "Alexandria-SemiBold" },
   pickerItem: { width: '100%', paddingVertical: Spacing.md, paddingHorizontal: Spacing.lg, borderBottomWidth: 1, borderBottomColor: Colors.border },
   pickerItemText: { ...Typography.body, fontSize: normalize.font(16), color: Colors.text.primary },
 });

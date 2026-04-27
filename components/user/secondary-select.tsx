@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   },
   sheetTitle: {
     fontSize: 20,
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     textAlign: "right",
     marginBottom: 20,
     color: "#111827",
@@ -145,13 +145,13 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 16,
-    fontFamily: "Tajawal-Medium",
+    fontFamily: "Alexandria-Medium",
     color: "#6B7280",
     textAlign: "right",
   },
   optionTextSelected: {
     color: "#035DF9",
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     marginRight: 10,
   },
   dotSelection: {

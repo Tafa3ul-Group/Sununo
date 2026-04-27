@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   tabText: {
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     fontSize: normalize.font(16),
   },
 });

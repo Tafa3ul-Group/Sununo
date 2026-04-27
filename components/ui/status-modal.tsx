@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: '#1E293B',
     textAlign: 'center',
     marginBottom: 10,
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     color: '#64748B',
     textAlign: 'center',
     lineHeight: 22,
-    fontFamily: "Tajawal-SemiBold",
+    fontFamily: "Alexandria-SemiBold",
     marginBottom: 25,
   },
   button: {

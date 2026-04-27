@@ -91,9 +91,9 @@ export function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Background Logo Header */}
+      {/* Top Logo */}
       <View style={styles.topLogoContainer}>
-        <LoginHeaderLogo size={normalize.width(SCREEN_WIDTH)} color="#0061FE" />
+        <LoginHeaderLogo size={normalize.width(200)} color="#0061FE" />
       </View>
 
       <KeyboardAvoidingView
@@ -101,36 +101,31 @@ export function LoginScreen() {
         style={{ flex: 1 }}
       >
         <ScrollView
-          contentContainerStyle={[styles.scrollContent, { paddingTop: normalize.height(140) }]}
+          contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           bounces={false}
         >
           {/* User Type Toggle */}
           <View style={styles.toggleWrapper}>
             <AuthToggle activeType={userType} onChange={handleTypeChange} />
-
-            {/* Divider Shape below toggle */}
-            <View style={styles.dividerShapeBox}>
-              <LoginDividerShape width={normalize.width(SCREEN_WIDTH * 0.45)} />
-            </View>
           </View>
 
           {/* Login Form */}
-          <View style={[styles.formContainer, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+          <View style={styles.formContainer}>
             <View style={[styles.headerRow, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
               <ThemedText style={[styles.title, { textAlign: isRTL ? 'right' : 'left' }]}>{t('auth.login')}</ThemedText>
               <View style={[styles.subtextRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                <TouchableOpacity>
-                  <ThemedText style={styles.linkText}>{t('auth.registerNow')}</ThemedText>
-                </TouchableOpacity>
                 <ThemedText style={styles.subtitle}>
                   {t('auth.dontHaveAccount')}
                 </ThemedText>
+                <TouchableOpacity>
+                  <ThemedText style={styles.linkText}>{t('auth.registerNow')}</ThemedText>
+                </TouchableOpacity>
               </View>
             </View>
 
             {step === "phone" ? (
-              <View style={[styles.inputGroup, { width: '100%' }]}>
+              <View style={styles.inputGroup}>
                 <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('auth.phone')}</ThemedText>
                 <TextInput
                   style={[styles.input, { textAlign: isRTL ? 'right' : 'left' }]}
@@ -138,10 +133,11 @@ export function LoginScreen() {
                   value={phone}
                   onChangeText={setPhone}
                   keyboardType="phone-pad"
+                  placeholderTextColor="#94A3B8"
                 />
               </View>
             ) : (
-              <View style={[styles.inputGroup, { width: '100%' }]}>
+              <View style={styles.inputGroup}>
                 <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('auth.verificationCode')}</ThemedText>
                 <TextInput
                   style={styles.input}
@@ -151,19 +147,19 @@ export function LoginScreen() {
                   keyboardType="number-pad"
                   textAlign="center"
                   letterSpacing={normalize.width(5)}
+                  placeholderTextColor="#94A3B8"
                 />
               </View>
             )}
 
             <PrimaryButton
-              label={step === "phone" ? t('auth.continue') : t('auth.verify')}
+              label={step === "phone" ? t('auth.login') : t('auth.verify')}
               onPress={handleAction}
-              style={[styles.loginBtn, { width: '100%' }]}
+              style={styles.loginBtn}
               activeColor="#0061FE"
-              icon={(isLoginLoading || isVerifyLoading) ? <ActivityIndicator color="white" /> : undefined}
+              loading={isLoginLoading || isVerifyLoading}
             />
 
-            {/* Browse as Guest Option */}
             <TouchableOpacity 
               style={styles.guestLink}
               onPress={() => {
@@ -179,6 +175,7 @@ export function LoginScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
 
+      {/* Footer Wave */}
       <View style={styles.bottomWaveContainer}>
         <LoginBottomBackground width={SCREEN_WIDTH} />
       </View>
@@ -192,61 +189,52 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
   },
   topLogoContainer: {
-    position: "absolute",
-    top: normalize.height(-60),
-    left: normalize.width(-SCREEN_WIDTH * 0.1),
-    width: normalize.width(SCREEN_WIDTH * 1.2),
     alignItems: "center",
-    zIndex: 0,
+    justifyContent: "center",
+    marginTop: normalize.height(40),
+    marginBottom: normalize.height(20),
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: normalize.width(30),
-    paddingBottom: normalize.height(150),
+    paddingHorizontal: normalize.width(24),
+    paddingBottom: normalize.height(100),
   },
   toggleWrapper: {
     alignItems: "center",
-    marginBottom: normalize.height(20),
-    marginTop: normalize.height(10),
-  },
-  dividerShapeBox: {
-    marginTop: normalize.height(12),
-    alignItems: "center",
+    marginBottom: normalize.height(40),
   },
   formContainer: {
     width: "100%",
   },
   headerRow: {
-    alignItems: "flex-end",
-    marginBottom: normalize.height(20),
+    marginBottom: normalize.height(25),
   },
   title: {
-    fontSize: normalize.font(28),
-    fontFamily: "Tajawal-Black",
+    fontSize: normalize.font(24),
+    fontFamily: "Alexandria-Black",
     color: "#1E293B",
-    marginBottom: normalize.height(5),
+    marginBottom: normalize.height(2),
   },
   subtextRow: {
-    flexDirection: "row",
     alignItems: "center",
   },
   subtitle: {
     fontSize: normalize.font(14),
     color: "#64748B",
-    fontFamily: "Tajawal-Regular",
+    fontFamily: "Alexandria-Medium",
   },
   linkText: {
     fontSize: normalize.font(14),
     color: "#0061FE",
-    fontFamily: "Tajawal-Bold",
-    marginRight: normalize.width(5),
+    fontFamily: "Alexandria-Bold",
+    marginLeft: normalize.width(5),
   },
   inputGroup: {
-    marginBottom: normalize.height(15),
+    marginBottom: normalize.height(20),
   },
   label: {
     fontSize: normalize.font(14),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: "#1E293B",
     marginBottom: normalize.height(8),
   },
@@ -254,36 +242,37 @@ const styles = StyleSheet.create({
     width: "100%",
     height: normalize.height(56),
     backgroundColor: "#FFFFFF",
-    borderRadius: normalize.radius(16),
+    borderRadius: normalize.radius(12),
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    paddingHorizontal: normalize.width(20),
-    fontSize: normalize.font(18),
-    fontFamily: "Tajawal-Medium",
+    paddingHorizontal: normalize.width(16),
+    fontSize: normalize.font(16),
+    fontFamily: "Alexandria-Medium",
+    color: "#1E293B",
   },
   loginBtn: {
     marginTop: normalize.height(10),
-    height: normalize.height(60),
+    height: normalize.height(56),
     width: "100%",
+    shadowOpacity: 0,
+    elevation: 0,
   },
   guestLink: {
-    marginTop: normalize.height(20),
+    marginTop: normalize.height(25),
     width: "100%",
     alignItems: "center",
-    justifyContent: "center",
   },
   guestLinkText: {
     fontSize: normalize.font(14),
-    color: "#64748B",
-    fontFamily: "Tajawal-Bold",
-    textDecorationLine: "underline",
+    color: "#94A3B8",
+    fontFamily: "Alexandria-Bold",
   },
   bottomWaveContainer: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    zIndex: 0,
+    zIndex: -1,
   },
 });
 // Default export for Expo Router

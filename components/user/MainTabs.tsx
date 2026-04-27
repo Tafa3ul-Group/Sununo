@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 17,
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     textAlign: "center",
   },
 });

@@ -255,13 +255,13 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: normalize.font(20),
-    fontFamily: 'Tajawal-Black',
+    fontFamily: 'Alexandria-Black',
     color: Colors.text.primary,
     marginTop: 12,
   },
   headerSub: {
     fontSize: normalize.font(14),
-    fontFamily: 'Tajawal-Medium',
+    fontFamily: 'Alexandria-Medium',
     color: Colors.text.muted,
     textAlign: 'center',
     marginTop: 8,
@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: normalize.font(16),
-    fontFamily: 'Tajawal-Black',
+    fontFamily: 'Alexandria-Black',
     color: Colors.text.primary,
   },
   inputGroup: {
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: normalize.font(13),
-    fontFamily: 'Tajawal-Bold',
+    fontFamily: 'Alexandria-Bold',
     color: '#64748B',
     marginBottom: 8,
   },
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E2E8F0',
     fontSize: normalize.font(15),
-    fontFamily: 'Tajawal-Medium',
+    fontFamily: 'Alexandria-Medium',
     color: Colors.text.primary,
   },
   textArea: {
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E2E8F0',
     fontSize: normalize.font(15),
-    fontFamily: 'Tajawal-Medium',
+    fontFamily: 'Alexandria-Medium',
     color: Colors.text.primary,
     textAlignVertical: 'top',
   },
