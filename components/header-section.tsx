@@ -6,6 +6,7 @@ import {
   SolarStarBold,
   SolarUserBold,
   SolarBellBingBoldDuotone,
+  SolarWidgetBold,
 } from "@/components/icons/solar-icons";
 import { Colors, normalize, Spacing } from "@/constants/theme";
 import { RootState } from "@/store";
@@ -39,6 +40,7 @@ interface HeaderSectionProps {
   onExtraIconPress?: () => void;
   showProfile?: boolean;
   onProfilePress?: () => void;
+  onMenuPress?: () => void;
   onDeletePress?: () => void;
   showLogo?: boolean;
   showExtra?: boolean;
@@ -59,6 +61,7 @@ export function HeaderSection({
   onExtraIconPress,
   showProfile = false,
   onProfilePress,
+  onMenuPress,
   onDeletePress,
   showLogo = true,
   showExtra = false,

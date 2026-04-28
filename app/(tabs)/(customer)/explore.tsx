@@ -24,12 +24,12 @@ import {
   useGetSimilarChaletsQuery,
   useToggleFavoriteMutation
 } from "@/store/api/customerApiSlice";
-
-
+import { SecondaryButton } from "@/components/user/secondary-button";
+import { AppDrawer, AppDrawerRef } from "@/components/user/app-drawer";
+import { useTranslation } from "react-i18next";
 import { ThemedText } from "@/components/themed-text";
 import { AppMap } from "@/components/user/app-map";
 import { PrimaryButton } from "@/components/user/primary-button";
-import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize, Shadows } from "@/constants/theme";
 import { RootState } from "@/store";
 import { BottomSheetBackdrop, BottomSheetFooter, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput } from "@gorhom/bottom-sheet";
@@ -63,13 +63,6 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const MAPBOX_ACCESS_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
 import { useGetChaletsQuery } from "@/store/api/apiSlice";
-
-const FILTER_OPTIONS = [
-  { id: "all", label: "الكل", icon: (isActive: boolean) => <SolarWidgetBold size={18} color={isActive ? "white" : Colors.primary} />, activeColor: Colors.primary },
-  { id: "pool", label: "يحتوي مسبح", icon: (isActive: boolean) => <SolarWaterBold size={18} color={isActive ? "white" : Colors.secondary} />, activeColor: Colors.secondary },
-  { id: "bbq", label: "شواء", icon: (isActive: boolean) => <SolarFireBold size={18} color={isActive ? "white" : Colors.accent} />, activeColor: Colors.accent },
-  { id: "garden", label: "حديقة", icon: (isActive: boolean) => <SolarTreeBold size={18} color={isActive ? "white" : Colors.secondary} />, activeColor: Colors.secondary },
-];
 
 const SHAPES = {
   blue: "M29.4165 59.9929C32.7707 60.1573 33.8516 57.4154 36.6494 56.5727C39.068 55.844 42.1373 57.9136 44.602 56.1435C46.9761 54.4385 47.1003 51.1778 49.39 49.5262C50.4402 48.7686 52.2285 48.273 53.3904 47.6556C57.9159 45.2507 55.39 40.9854 56.6649 37.1198C57.1904 35.527 59.1812 33.5316 59.751 31.5682C61.0163 27.2086 57.083 25.3948 56.3847 21.7944C55.9755 19.6849 56.7103 16.6837 55.7598 14.6214C54.353 11.5687 50.787 11.9068 48.8393 9.92411C46.9162 7.96647 46.7071 4.83632 44.0101 3.40727C41.8302 2.25218 38.8321 3.99511 36.9305 3.46716C34.6099 2.82303 33.5786 0.936956 30.7928 0.00846604C26.7125 -0.17205 26.2613 2.58433 22.9082 3.49519C20.8505 4.05394 17.7655 1.94318 15.3255 3.77446C12.937 5.5671 12.9572 8.61484 10.6792 10.3017C9.69816 11.028 7.80148 11.597 6.71476 12.167C2.02929 14.6248 4.47819 18.6917 3.31327 22.6894C2.84735 24.2881 0.782415 26.4167 0.259212 28.2376C-0.909281 32.3028 2.18416 34.1827 3.35303 37.3834C4.22685 39.776 3.04536 42.7163 4.19953 45.2418C5.67644 48.4732 9.28102 47.9739 11.2678 50.1348C13.0367 52.0591 13.2797 55.0582 15.8605 56.4423C18.0647 57.6243 21.3307 55.8827 23.1837 56.5279C25.7251 57.4128 26.4182 58.9797 29.4165 59.9929Z",
@@ -107,6 +100,7 @@ function SectionHeader({
 
 export default function ExploreScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { language, isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const isRTL = language === 'ar';
@@ -120,10 +114,12 @@ export default function ExploreScreen() {
   const [maxAdults, setMaxAdults] = useState<string>("");
   const [minPrice, setMinPrice] = useState<string>("");
   const [maxPrice, setMaxPrice] = useState<string>("");
+  const [activeFilter, setActiveFilter] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
 
   // Bottom Sheet Ref for Filters
   const filterSheetRef = useRef<BottomSheetModal>(null);
+  const drawerRef = useRef<AppDrawerRef>(null);
 
   // API Data
   const { data: chaletsResponse, isLoading: isChaletsLoading } = useGetChaletsQuery({
@@ -141,6 +137,14 @@ export default function ExploreScreen() {
   const [selectedChalet, setSelectedChalet] = useState<any>(null);
   const browsingRegionRef = useRef<{ center: [number, number], zoom: number }>({ center: [44.36, 33.31], zoom: 6 });
   const [currentMapRegion, setCurrentMapRegion] = useState({ center: [44.36, 33.31] as [number, number], zoom: 6 });
+  // Moved FILTER_OPTIONS inside component to use translations
+  const FILTER_OPTIONS = useMemo(() => [
+    { id: "all", label: t("home.categories.all"), icon: (isActive: boolean) => <SolarWidgetBold size={18} color={isActive ? "white" : Colors.primary} />, activeColor: Colors.primary },
+    { id: "pool", label: t("home.categories.pool"), icon: (isActive: boolean) => <SolarWaterBold size={18} color={isActive ? "white" : Colors.secondary} />, activeColor: Colors.secondary },
+    { id: "bbq", label: t("home.categories.bbq"), icon: (isActive: boolean) => <SolarFireBold size={18} color={isActive ? "white" : Colors.accent} />, activeColor: Colors.accent },
+    { id: "garden", label: t("home.categories.garden"), icon: (isActive: boolean) => <SolarTreeBold size={18} color={isActive ? "white" : Colors.secondary} />, activeColor: Colors.secondary },
+  ], [t]);
+
   const [preSelectionRegion, setPreSelectionRegion] = useState<{ center: [number, number], zoom: number } | null>(null);
   const showMapToolsRef = useRef(false);
 
@@ -407,36 +411,9 @@ export default function ExploreScreen() {
               </TouchableOpacity>
             )}
           </View>
-          <TouchableOpacity
-            style={styles.filterButtonCircle}
-            onPress={handleFilterPress}
-            activeOpacity={0.8}
-          >
-            <SolarFilterBold size={24} color="white" />
-            {hasActiveFilters && <View style={styles.filterActiveDot} />}
-          </TouchableOpacity>
         </View>
 
-        {!selectedChalet && (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filterChips}
-          >
-            {FILTER_OPTIONS.map((opt) => (
-              <TouchableOpacity
-                key={opt.id}
-                style={[
-                  styles.filterChip,
-                  { flexDirection: isRTL ? 'row-reverse' : 'row' }
-                ]}
-              >
-                {opt.icon(false)}
-                <ThemedText style={styles.filterChipText}>{opt.label}</ThemedText>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )}
+        {/* Removed CategoryTabs from here as requested to be moved to filter sheet */}
       </View>
 
       {/* Vertical Navigation Actions - Fixed on the right */}
@@ -755,6 +732,27 @@ export default function ExploreScreen() {
         <BottomSheetScrollView contentContainerStyle={styles.filterModalContent}>
           <Text style={styles.filterModalTitle}>{isRTL ? 'تصفية النتائج' : 'Filter Results'}</Text>
 
+          {/* Categories Tab Section (Moved from Home page style) */}
+          <View style={styles.filterSection}>
+            <Text style={styles.filterSectionLabel}>{isRTL ? 'الأقسام' : 'Categories'}</Text>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false} 
+              contentContainerStyle={{ paddingVertical: 10, gap: 10, flexDirection: isRTL ? 'row-reverse' : 'row' }}
+            >
+              {FILTER_OPTIONS.map((filter) => (
+                <SecondaryButton
+                  key={filter.id}
+                  label={filter.label}
+                  isActive={activeFilter === filter.id}
+                  activeColor={filter.activeColor}
+                  icon={filter.icon(activeFilter === filter.id)}
+                  onPress={() => setActiveFilter(filter.id)}
+                />
+              ))}
+            </ScrollView>
+          </View>
+
           <View style={styles.filterSection}>
             <Text style={styles.filterSectionLabel}>{isRTL ? 'عدد البالغين' : 'Max Adults'}</Text>
             <BottomSheetTextInput
@@ -803,6 +801,7 @@ export default function ExploreScreen() {
           </View>
         </BottomSheetScrollView>
       </BottomSheetModal>
+      <AppDrawer ref={drawerRef} />
     </View>
   );
 }
@@ -1208,24 +1207,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    marginBottom: 8,
+    marginBottom: 12,
+    width: '100%',
   },
   searchInputWrapper: {
     flex: 1,
-    height: 52,
+    height: 56,
     backgroundColor: 'white',
-    borderRadius: 16,
+    borderRadius: 28,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     gap: 12,
+    borderWidth: 1.5,
+    borderColor: '#F1F5F9',
     ...Shadows.medium,
   },
   searchInput: {
     flex: 1,
     fontSize: 15,
-    fontFamily: "Tajawal-Medium",
+    fontFamily: "Alexandria-Medium",
     color: "#1F2937",
   },
   filterButtonCircle: {

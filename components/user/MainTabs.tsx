@@ -39,13 +39,14 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
   const isRTL = i18n.language === "ar";
 
   const transition = useSharedValue(0);
-  const tabList: TabType[] = ["WHEN", "WHO", "WHERE"];
+  // Re-ordered to start with WHERE (Details) as the first tab
+  const tabList: TabType[] = ["WHERE", "WHEN", "WHO"];
 
   useEffect(() => {
     let target = 0;
-    if (activeTab === "WHEN") target = 0;
-    else if (activeTab === "WHO") target = 1;
-    else target = 2; // WHERE
+    if (activeTab === "WHERE") target = 0;
+    else if (activeTab === "WHEN") target = 1;
+    else target = 2; // WHO
 
     transition.value = withSpring(target, {
       damping: 18,
@@ -56,7 +57,7 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
 
   // ==========================================
   // --- مصفوفات التحكم (عدل الأرقام هنا) ---
-  // الترتيب الصحيح: [SHOOKET, MANO, DETAILS]
+  // الترتيب الجديد: [DETAILS, SHOOKET, MANO]
   // ==========================================
   const xOffsets = isRTL ? [120, 0, -120] : [-120, 0, 120];
   const yOffsets = [0, 0, 0];
@@ -90,7 +91,7 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
       fill: interpolateColor(
         transition.value,
         [0, 1, 2],
-        [WHEN_COLOR, WHO_COLOR, WHERE_COLOR],
+        [WHERE_COLOR, WHEN_COLOR, WHO_COLOR],
       ),
     };
   });
@@ -100,7 +101,7 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
       color: interpolateColor(
         transition.value,
         [0, 0.4],
-        ["#FFFFFF", WHEN_COLOR],
+        ["#FFFFFF", WHERE_COLOR],
       ),
       transform: [
         { scale: interpolate(transition.value, [0, 1], [1.1, 1]) },
@@ -114,7 +115,7 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
       color: interpolateColor(
         transition.value,
         [0.4, 1, 1.6],
-        [WHO_COLOR, "#FFFFFF", WHO_COLOR],
+        [WHEN_COLOR, "#FFFFFF", WHEN_COLOR],
       ),
       transform: [
         { scale: interpolate(transition.value, [0, 1, 2], [1, 1.1, 1]) },
@@ -128,7 +129,7 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
       color: interpolateColor(
         transition.value,
         [1.6, 2],
-        [WHERE_COLOR, "#FFFFFF"],
+        [WHO_COLOR, "#FFFFFF"],
       ),
       transform: [
         { scale: interpolate(transition.value, [1, 2], [1, 1.1]) },
