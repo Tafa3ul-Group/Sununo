@@ -115,7 +115,10 @@ export default function ChaletDetailsScreen() {
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
       
       {/* Persistent Nav Bar (Sticky title only) */}
-      <Animated.View style={[styles.navBar, { opacity: navBarOpacity }]}>
+      <Animated.View 
+        style={[styles.navBar, { opacity: navBarOpacity }]}
+        pointerEvents="box-none"
+      >
         <SafeAreaView edges={['top']} style={[styles.navBarContent, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
           <View style={styles.navBarButtonPlaceholder} />
           <Text style={styles.navBarTitle} numberOfLines={1}>
@@ -125,60 +128,9 @@ export default function ChaletDetailsScreen() {
         </SafeAreaView>
       </Animated.View>
 
-      {/* Hero Background - Static (Content slides over this) */}
-      <View style={styles.imageContainer}>
-        <ScrollView 
-          horizontal 
-          pagingEnabled 
-          showsHorizontalScrollIndicator={false}
-          onScroll={(e) => {
-            const x = e.nativeEvent.contentOffset.x;
-            setActiveImageIndex(Math.floor(x / SCREEN_WIDTH));
-          }}
-          scrollEventThrottle={16}
-        >
-          {chalet.images && chalet.images.length > 0 ? (
-            chalet.images.map((img: any, index: number) => (
-              <Image 
-                key={img.id || index}
-                source={getImageSrc(img.url)} 
-                style={styles.heroImage} 
-                resizeMode="cover"
-              />
-            ))
-          ) : (
-            <Image 
-              source={getImageSrc('')} 
-              style={styles.heroImage} 
-              resizeMode="cover"
-            />
-          )}
-        </ScrollView>
-        <View style={styles.imageOverlayDarken} />
-        
-        {/* Pagination Dots */}
-        {chalet.images && chalet.images.length > 1 && (
-          <View style={styles.pagination}>
-            {chalet.images.map((_: any, i: number) => (
-              <View 
-                key={i} 
-                style={[
-                  styles.dot, 
-                  { 
-                    width: i === activeImageIndex ? 18 : 6, 
-                    backgroundColor: i === activeImageIndex ? Colors.white : 'rgba(255,255,255,0.4)',
-                    opacity: i === activeImageIndex ? 1 : 0.7
-                  }
-                ]} 
-              />
-            ))}
-          </View>
-        )}
-      </View>
-
       {/* Persistent Header Actions (Always in the same place & design) */}
-      <View style={styles.fixedHeaderActions}>
-        <SafeAreaView edges={['top']} style={[styles.headerActions, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+      <View style={styles.fixedHeaderActions} pointerEvents="box-none">
+        <SafeAreaView edges={['top']} style={[styles.headerActions, { flexDirection: isRTL ? 'row-reverse' : 'row' }]} pointerEvents="box-none">
           <CircleBackButton 
             onPress={() => router.back()} 
             style={{ width: 42, height: 42, borderRadius: 21 }} 
@@ -208,7 +160,84 @@ export default function ChaletDetailsScreen() {
         contentContainerStyle={styles.scrollContent}
         bounces={false}
       >
-        <View style={styles.heroSpacer} />
+        {/* Hero Background - Parallax Effect */}
+        <Animated.View 
+          style={[
+            styles.imageContainer, 
+            { 
+              transform: [
+                { 
+                  translateY: scrollY.interpolate({
+                    inputRange: [-HERO_HEIGHT, 0, HERO_HEIGHT],
+                    outputRange: [HERO_HEIGHT / 2, 0, HERO_HEIGHT * 0.75],
+                  }) 
+                },
+                {
+                  scale: scrollY.interpolate({
+                    inputRange: [-HERO_HEIGHT, 0],
+                    outputRange: [2, 1],
+                    extrapolate: 'clamp',
+                  })
+                }
+              ] 
+            }
+          ]}
+        >
+          <ScrollView 
+            horizontal 
+            pagingEnabled 
+            showsHorizontalScrollIndicator={false}
+            onScroll={(e) => {
+              const x = e.nativeEvent.contentOffset.x;
+              setActiveImageIndex(Math.round(x / SCREEN_WIDTH));
+            }}
+            scrollEventThrottle={16}
+            decelerationRate="fast"
+            snapToInterval={SCREEN_WIDTH}
+            disableIntervalMomentum={true}
+          >
+            {chalet.images && chalet.images.length > 0 ? (
+              chalet.images.map((img: any, index: number) => (
+                <Image 
+                  key={img.id || index}
+                  source={getImageSrc(img.url)} 
+                  style={styles.heroImage} 
+                  resizeMode="cover"
+                />
+              ))
+            ) : (
+              <Image 
+                source={getImageSrc('')} 
+                style={styles.heroImage} 
+                resizeMode="cover"
+              />
+            )}
+          </ScrollView>
+          <View style={styles.imageOverlayDarken} pointerEvents="none" />
+          
+          {/* Pagination Dots */}
+          {chalet.images && chalet.images.length > 1 && (
+            <View style={styles.pagination} pointerEvents="none">
+              {chalet.images.map((_: any, i: number) => (
+                <View 
+                  key={i} 
+                  style={[
+                    styles.dot, 
+                    { 
+                      width: i === activeImageIndex ? 18 : 6, 
+                      backgroundColor: i === activeImageIndex ? Colors.white : 'rgba(255,255,255,0.4)',
+                      opacity: i === activeImageIndex ? 1 : 0.7
+                    }
+                  ]} 
+                />
+              ))}
+            </View>
+          )}
+        </Animated.View>
+        
+        {/* Spacer for the overlapping effect - Must be pointerEvents="none" to let touches through to images */}
+        <View style={{ height: HERO_HEIGHT - 60 }} pointerEvents="none" />
+
         
         <View style={styles.contentCard}>
           <View style={styles.contentBody}>

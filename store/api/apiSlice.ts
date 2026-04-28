@@ -45,6 +45,15 @@ export const apiSlice = createApi({
       providesTags: ['Chalet'],
     }),
 
+    // Get chalets optimized for map display
+    getChaletsMap: builder.query({
+      query: (params) => ({
+        url: '/customer/chalets/map',
+        params,
+      }),
+      providesTags: ['Chalet'],
+    }),
+
     // Example endpoint for user info
     getMe: builder.query({
       query: () => '/auth/me',
@@ -385,6 +394,7 @@ export const apiSlice = createApi({
 
 export const {
   useGetChaletsQuery,
+  useGetChaletsMapQuery,
   useGetMeQuery,
   useLazyGetMeQuery,
   useLoginMutation,

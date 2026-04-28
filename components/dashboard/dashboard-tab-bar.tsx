@@ -122,7 +122,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
         styles.navWrapper,
         {
           bottom: Math.max(insets.bottom, 24),
-          paddingHorizontal: normalize.width(16),
+          paddingHorizontal: normalize.width(23),
           flexDirection: isRTL ? 'row-reverse' : 'row'
         }
       ]}>
@@ -263,18 +263,31 @@ const styles = StyleSheet.create({
   container: { position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 1000 },
   navWrapper: { width: '100%', alignItems: 'center', justifyContent: 'space-between' },
   roundButton: {
-    width: normalize.height(52), height: normalize.height(52), borderRadius: 26,
-    backgroundColor: Colors.primary, justifyContent: 'center', alignItems: 'center'
+    width: normalize.height(52), 
+    height: normalize.height(52), 
+    borderRadius: normalize.height(26),
+    backgroundColor: Colors.primary, 
+    justifyContent: 'center', 
+    alignItems: 'center'
   },
   tabCapsule: {
-    width: normalize.width(165), height: normalize.height(52), borderRadius: 26,
-    backgroundColor: Colors.primary, flexDirection: 'row', alignItems: 'center',
-    justifyContent: 'center', gap: 12, paddingHorizontal: 8
+    width: normalize.width(180), 
+    height: normalize.height(52), 
+    borderRadius: normalize.height(26),
+    backgroundColor: Colors.primary, 
+    flexDirection: 'row', 
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    flexDirection: 'row',
+    paddingHorizontal: 8
   },
   tabItemContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   tabIconCircle: {
-    width: normalize.height(40), height: normalize.height(40), borderRadius: 20,
-    justifyContent: 'center', alignItems: 'center',
+    width: normalize.height(40), 
+    height: normalize.height(40), 
+    borderRadius: normalize.height(20),
+    justifyContent: 'center', 
+    alignItems: 'center',
   },
   activeTabIndicator: { backgroundColor: 'white' },
   popoverOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.1)' },
