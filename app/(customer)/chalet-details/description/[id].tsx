@@ -1,39 +1,45 @@
-import React from "react";
 import { View, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ThemedText } from "@/components/themed-text";
 import { Colors } from "@/constants/theme";
-import { CircleBackButton } from "@/components/ui/circle-back-button";
-import { useGetChaletByIdQuery } from "@/store/api/customerApiSlice";
-import { SolarDocumentTextBold } from "@/components/icons/solar-icons";
+import { useGetCustomerChaletDetailsQuery } from "@/store/api/customerApiSlice";
+import { SolarNotesBoldDuotone } from "@/components/icons/solar-icons";
+import { HeaderSection } from "@/components/header-section";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
 
 export default function ChaletDescriptionScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === 'ar';
   const router = useRouter();
+  const { userType } = useSelector((state: RootState) => state.auth);
 
-  const { data: chalet, isLoading } = useGetChaletByIdQuery(id);
+  const { data: chalet, isLoading } = useGetCustomerChaletDetailsQuery(id);
 
   const title = t('chalet.details.overview');
-  const description = isRTL ? (chalet?.descriptionAr || chalet?.description) : (chalet?.descriptionEn || chalet?.description);
+  const description = isRTL
+    ? chalet?.description?.ar || chalet?.descriptionAr || chalet?.description || ""
+    : chalet?.description?.en || chalet?.descriptionEn || chalet?.description || "";
 
   return (
-    <View style={styles.container}>
-      <Stack.Screen
-        options={{
-          headerShown: true,
-          headerTitle: title,
-          headerTitleStyle: { fontFamily: 'Alexandria-Black', fontSize: 18 },
-          headerLeft: () => <CircleBackButton onPress={() => router.back()} />,
-        }}
+    <SafeAreaView style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
+      
+      <HeaderSection 
+        title={title} 
+        showBackButton={true} 
+        onBackPress={() => router.back()}
+        showLogo={false} 
+        userType={userType} 
       />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.headerIconContainer}>
           <View style={styles.iconCircle}>
-            <SolarDocumentTextBold size={40} color="white" />
+            <SolarNotesBoldDuotone size={40} color="white" />
           </View>
           <ThemedText style={styles.pageTitle}>{title}</ThemedText>
         </View>
@@ -48,14 +54,14 @@ export default function ChaletDescriptionScreen() {
           </View>
         )}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F9FAFB",
+    backgroundColor: "white",
   },
   scrollContent: {
     padding: 20,
@@ -73,6 +79,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 15,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 15,
     elevation: 8,
   },
   pageTitle: {

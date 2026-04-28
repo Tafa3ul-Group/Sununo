@@ -542,8 +542,8 @@ export default function ExploreScreen() {
               <View style={[styles.mainInfoRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
                 {/* Rating */}
                 <View style={styles.ratingSection}>
-                  <SolarStarBold size={20} color={Colors.primary} />
                   <ThemedText style={styles.ratingValue}>{selectedChalet.rating || '4.5'}</ThemedText>
+                  <SolarStarBold size={20} color={Colors.primary} />
                 </View>
 
                 {/* Title and Location */}
@@ -686,8 +686,8 @@ export default function ExploreScreen() {
                             <View key={reviewItem.id || i} style={styles.revComplexCardFlat}>
                               <View style={[styles.revHeaderMerged, { flexDirection: isRTL ? "row" : "row-reverse" }]}>
                                 <View style={[styles.revRatingCornerMerged, { flexDirection: isRTL ? "row" : "row-reverse" }]}>
-                                  <SolarStarBold size={14} color={Colors.primary} />
                                   <ThemedText style={styles.revRateNumMerged}>{reviewItem.rating}</ThemedText>
+                                  <SolarStarBold size={14} color={Colors.primary} />
                                 </View>
                                 <View style={[styles.userInfoRowMerged, { flexDirection: isRTL ? "row" : "row-reverse" }]}>
                                   <View style={[styles.nameAndBodyMerged, { alignItems: isRTL ? "flex-end" : "flex-start" }, isRTL ? { marginRight: 15 } : { marginLeft: 15 }]}>

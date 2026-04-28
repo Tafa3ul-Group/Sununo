@@ -118,10 +118,10 @@ export function HorizontalCard({
         {/* Bottom Row: Rating + Price */}
         <View style={[styles.bottomRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
           <View style={[styles.ratingBox, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-            <SolarStarBold size={normalize.width(16)} color={Colors.secondary} />
             <ThemedText style={styles.ratingText}>
               {chalet.rating || "4.5"}
             </ThemedText>
+            <SolarStarBold size={normalize.width(16)} color={Colors.secondary} />
           </View>
 
           <View style={[styles.priceRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>

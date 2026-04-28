@@ -419,10 +419,10 @@ export default function ChaletDetailScreen() {
                 isRTL ? { marginRight: 15 } : { marginLeft: 15 },
               ]}
             >
-              <SolarStarBold size={14} color="#035DF9" />
               <ThemedText style={styles.ratingVal}>
                 {chaletRating.toFixed(1)}
               </ThemedText>
+              <SolarStarBold size={14} color="#035DF9" />
             </View>
             <View
               style={{ alignItems: isRTL ? "flex-end" : "flex-start", flex: 1 }}
@@ -727,10 +727,10 @@ export default function ChaletDetailScreen() {
                   { flexDirection: isRTL ? "row-reverse" : "row" },
                 ]}
               >
-                <SolarStarBold size={18} color="white" />
                 <ThemedText style={styles.customRatingText}>
                   {chaletRating.toFixed(1)}
                 </ThemedText>
+                <SolarStarBold size={18} color="white" />
               </View>
             </TouchableOpacity>
 
@@ -769,7 +769,7 @@ export default function ChaletDetailScreen() {
                   <View
                     style={[
                       styles.revHeaderMerged,
-                      { flexDirection: isRTL ? "row-reverse" : "row" },
+                      { flexDirection: isRTL ? "row" : "row-reverse" },
                     ]}
                   >
                     <View
@@ -778,10 +778,10 @@ export default function ChaletDetailScreen() {
                         { flexDirection: isRTL ? "row" : "row-reverse" },
                       ]}
                     >
-                      <SolarStarBold size={14} color="#035DF9" />
                       <ThemedText style={styles.revRateNumMerged}>
                         {reviewRating}
                       </ThemedText>
+                      <SolarStarBold size={14} color="#035DF9" />
                     </View>
                     <View
                       style={[
@@ -833,7 +833,7 @@ export default function ChaletDetailScreen() {
             },
           )}
 
-          {canReviewData?.canReview && (
+          {(canReviewData?.canReview || !canReviewData) && (
             <View style={styles.addReviewAction}>
               <PrimaryButton
                 label={t("chalet.details.addReview")}
@@ -844,8 +844,8 @@ export default function ChaletDetailScreen() {
             </View>
           )}
 
-          {!canReviewData?.canReview &&
-            canReviewData?.reason === "NO_COMPLETED_BOOKING" && (
+          {canReviewData && !canReviewData.canReview &&
+            canReviewData.reason === "NO_COMPLETED_BOOKING" && (
               <View style={styles.unverifiedReviewMsg}>
                 <ThemedText style={styles.unverifiedText}>
                   {isRTL
@@ -869,7 +869,7 @@ export default function ChaletDetailScreen() {
                 Icon: SolarKeyBold,
                 onPress: () =>
                   router.push({
-                    pathname: `/chalet-details/info/${chaletId}`,
+                    pathname: `/(customer)/chalet-details/info/${chaletId}`,
                     params: { type: "terms" },
                   }),
               },
@@ -878,7 +878,7 @@ export default function ChaletDetailScreen() {
                 Icon: SolarForbiddenBold,
                 onPress: () =>
                   router.push({
-                    pathname: `/chalet-details/info/${chaletId}`,
+                    pathname: `/(customer)/chalet-details/info/${chaletId}`,
                     params: { type: "policies" },
                   }),
               },
