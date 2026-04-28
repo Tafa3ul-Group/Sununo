@@ -175,7 +175,11 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
             <TouchableOpacity
               key={tab}
               onPress={function () {
-                onChange(tab);
+                if (typeof onChange === "function") {
+                  onChange(tab);
+                } else {
+                  console.warn("MainTabs: onChange prop is missing or not a function", { tab, onChange });
+                }
               }}
               style={styles.tabButton}
               activeOpacity={1}

@@ -17,7 +17,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 import { ThemedText } from "@/components/themed-text";
-import { Colors, Shadows, Spacing } from "@/constants/theme";
+import { Colors, isRTL, Shadows, Spacing } from "@/constants/theme";
 import { AppButton } from "./app-button";
 import { GuestCounter } from "./guest-counter";
 import { MainTabs, TabType } from "./MainTabs";
@@ -27,32 +27,42 @@ import { useGetCityNamesQuery } from "@/store/api/customerApiSlice";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
+const STATIC_CITIES = [
+  { id: "basra", name: "البصرة", icon: "map" },
+  { id: "baghdad", name: "بغداد", icon: "map" },
+  { id: "erbil", name: "اربيل", icon: "map" },
+  { id: "duhok", name: "دهوك", icon: "map" },
+  { id: "dhiqar", name: "ذي قار", icon: "map" },
+  { id: "najaf", name: "النجف", icon: "map" },
+  { id: "karbala", name: "كربلاء", icon: "map" },
+  { id: "babylon", name: "بابل", icon: "map" },
+];
+
 export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filters: any) => void }>((props, ref) => {
   const { onApply } = props;
   const { dismiss } = useBottomSheetModal();
   const { i18n } = useTranslation();
-  const isRTL = i18n.language === "ar";
-  
+  const isArabic = i18n.language === "ar";
+
   const [activeTab, setActiveTab] = useState<TabType>("WHERE");
+  const [selectedCity, setSelectedCity] = useState("basra");
   const [searchText, setSearchText] = useState("");
-  const [selectedCity, setSelectedCity] = useState("");
   const [whenStep, setWhenStep] = useState(1); // 1: Calendar, 2: Periods
   const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null);
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(1);
 
-  const styles = useMemo(() => makeStyles(isRTL), [isRTL]);
-
   // Fetch cities from backend
   const { data: citiesData } = useGetCityNamesQuery(undefined);
   const cities = useMemo(() => {
-    if (!citiesData) return [];
+    if (!citiesData || citiesData.length === 0) return STATIC_CITIES;
     return citiesData.map((city: any) => ({
       id: city.id,
-      name: isRTL ? (city.nameAr || city.name) : (city.nameEn || city.name),
+      name: isArabic ? (city.nameAr || city.name) : (city.nameEn || city.name),
     }));
-  }, [citiesData, isRTL]);
+  }, [citiesData, isArabic]);
 
+  // The sheet takes 85% of screen height
   const snapPoints = useMemo(() => ["85%"], []);
 
   const handleNext = useCallback(() => {
@@ -72,18 +82,21 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
           cityId: selectedCity,
           search: searchText,
           maxGuests: adults + children,
+          period: selectedPeriod,
         });
       }
       dismiss();
     }
-  }, [activeTab, whenStep, dismiss, onApply, selectedCity, searchText, adults, children]);
+  }, [activeTab, whenStep, dismiss, onApply, selectedCity, searchText, adults, children, selectedPeriod]);
 
   const renderBackdrop = useCallback(
     (backdropProps: any) => (
       <BottomSheetBackdrop
         {...backdropProps}
-        appearsOnIndex={0}
         disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        opacity={0.4}
+        pressBehavior="close"
       />
     ),
     []
@@ -92,7 +105,6 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
   const renderWhereContent = () => (
     <View style={styles.tabContent}>
       <View style={styles.searchBar}>
-        <SolarMagnifierBold size={22} color={Colors.text.muted} />
         <TextInput
           placeholder="ابحث"
           style={styles.searchInput}
@@ -100,6 +112,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
           value={searchText}
           onChangeText={setSearchText}
         />
+        <SolarMagnifierBold size={22} color={Colors.text.muted} />
       </View>
 
       {cities.map((city) => (
@@ -111,13 +124,13 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
             selectedCity === city.id && styles.selectedCityItem,
           ]}
         >
+          <ThemedText style={styles.cityName}>{city.name}</ThemedText>
           <View style={styles.cityRight}>
             <SolarMapPointBold
               size={24}
               color={Colors.primary}
             />
           </View>
-          <ThemedText style={styles.cityName}>{city.name}</ThemedText>
         </TouchableOpacity>
       ))}
     </View>
@@ -129,12 +142,12 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
       <View style={styles.calendarFooter}>
         <View style={styles.legendWrapper}>
           <View style={styles.legendItem}>
+            <ThemedText style={styles.legendText}>وقت النهاية</ThemedText>
             <View style={[styles.dot, { backgroundColor: "#15AB64" }]} />
-            <ThemedText style={styles.legendText}>متاح</ThemedText>
           </View>
           <View style={styles.legendItem}>
-            <View style={[styles.dot, { backgroundColor: "#FF4D4D" }]} />
-            <ThemedText style={styles.legendText}>محجوز</ThemedText>
+            <ThemedText style={styles.legendText}>وقت البداية</ThemedText>
+            <View style={[styles.dot, { backgroundColor: "#035DF9" }]} />
           </View>
         </View>
       </View>
@@ -144,41 +157,68 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
   const renderWhenPeriodsContent = () => (
     <View style={styles.tabContent}>
       <View style={styles.periodsContainer}>
-        <ThemedText style={styles.periodsTitle}>اختر الفترة</ThemedText>
-        
-        {/* Custom Toggle Sub-tabs */}
+        {/* Sub-tabs: Period / Custom Hours */}
         <View style={styles.subTabsContainer}>
-          <TouchableOpacity style={[styles.subTabItem, styles.subTabItemActive]}>
-            <ThemedText style={styles.subTabTextActive}>فترات</ThemedText>
+          <TouchableOpacity style={styles.subTabItem}>
+            <ThemedText style={styles.subTabTextInactive}>
+              ساعات مخصصة
+            </ThemedText>
           </TouchableOpacity>
           <View style={styles.subTabDivider} />
-          <TouchableOpacity style={styles.subTabItem}>
-            <ThemedText style={styles.subTabTextInactive}>ساعات مخصصة</ThemedText>
+          <TouchableOpacity
+            style={[styles.subTabItem, styles.subTabItemActive]}
+          >
+            <ThemedText style={styles.subTabTextActive}>فترة</ThemedText>
           </TouchableOpacity>
         </View>
 
+        {/* Period List */}
         <View style={styles.periodList}>
-          {[
-            { id: "morning", name: "صباحية", icon: SolarSunBold, time: "8:00 ص - 12:00 م" },
-            { id: "evening", name: "مسائية", icon: SolarMoonBold, time: "2:00 م - 10:00 م" },
-            { id: "overnight", name: "مبيت", icon: SolarBedBold, time: "8:00 م - 8:00 ص" },
-          ].map((period) => {
-            const Icon = period.icon;
-            return (
-              <TouchableOpacity
-                key={period.id}
-                onPress={() => setSelectedPeriod(period.id)}
-                style={[
-                  styles.periodItem,
-                  selectedPeriod === period.id && styles.selectedPeriodItem,
-                ]}
-              >
-                <Icon size={24} color={selectedPeriod === period.id ? "#15AB64" : "#6B7280"} />
-                <ThemedText style={styles.periodLabel}>{period.name}</ThemedText>
-                <ThemedText style={{ color: "#9CA3AF" }}>{period.time}</ThemedText>
-              </TouchableOpacity>
-            );
-          })}
+          <TouchableOpacity
+            style={[
+              styles.periodItem,
+              selectedPeriod === "morning" && styles.selectedPeriodItem,
+            ]}
+            onPress={() => setSelectedPeriod("morning")}
+          >
+            <SolarSunBold
+              size={34}
+              color={selectedPeriod === "morning" ? "#F64200" : Colors.text.muted}
+            />
+            <ThemedText style={styles.periodLabel}>
+              الفترة الصباحية
+            </ThemedText>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.periodItem,
+              selectedPeriod === "evening" && styles.selectedPeriodItem,
+            ]}
+            onPress={() => setSelectedPeriod("evening")}
+          >
+            <SolarMoonBold
+              size={34}
+              color={selectedPeriod === "evening" ? "#035DF9" : Colors.text.muted}
+            />
+            <ThemedText style={styles.periodLabel}>
+              الفترة المسائية
+            </ThemedText>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.periodItem,
+              selectedPeriod === "overnight" && styles.selectedPeriodItem,
+            ]}
+            onPress={() => setSelectedPeriod("overnight")}
+          >
+            <SolarBedBold
+              size={34}
+              color={selectedPeriod === "overnight" ? "#15AB64" : Colors.text.muted}
+            />
+            <ThemedText style={styles.periodLabel}>المبيت</ThemedText>
+          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -189,28 +229,28 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
       <View style={styles.whoContainer}>
         {/* Adults Counter */}
         <View style={styles.guestItem}>
-          <View style={styles.guestInfo}>
-            <ThemedText style={styles.guestLabel}>البالغين</ThemedText>
-            <ThemedText style={styles.guestSubLabel}>18 واكبر</ThemedText>
-          </View>
           <GuestCounter
             value={adults}
             onIncrement={() => setAdults(adults + 1)}
             onDecrement={() => setAdults(Math.max(1, adults - 1))}
           />
+          <View style={styles.guestInfo}>
+            <ThemedText style={styles.guestLabel}>البالغين</ThemedText>
+            <ThemedText style={styles.guestSubLabel}>18 واكبر</ThemedText>
+          </View>
         </View>
 
         {/* Children Counter */}
         <View style={styles.guestItem}>
-          <View style={styles.guestInfo}>
-            <ThemedText style={styles.guestLabel}>الاطفال</ThemedText>
-            <ThemedText style={styles.guestSubLabel}>0 - 18</ThemedText>
-          </View>
           <GuestCounter
             value={children}
             onIncrement={() => setChildren(children + 1)}
             onDecrement={() => setChildren(Math.max(0, children - 1))}
           />
+          <View style={styles.guestInfo}>
+            <ThemedText style={styles.guestLabel}>الاطفال</ThemedText>
+            <ThemedText style={styles.guestSubLabel}>0 - 18</ThemedText>
+          </View>
         </View>
       </View>
     </View>
@@ -233,27 +273,71 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
       snapPoints={snapPoints}
       backdropComponent={renderBackdrop}
       backgroundStyle={styles.sheetBackground}
-      enablePanDownToClose
-      handleComponent={() => (
+      handleComponent={() => null}
+      enablePanDownToClose={true}
+      enableDynamicSizing={false}
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
+      android_keyboardInputMode="adjustResize"
+    >
+      {/* Tabs Header - sits at the top of the sheet */}
+      <View style={styles.headerWrapper}>
+        <MainTabs activeTab={activeTab} onChange={setActiveTab} />
+      </View>
+
+      {/* Content Area - White card with rounded corners */}
+      <View style={styles.contentCard}>
+        {/* Step Indicators (Green Dots) - Visible in WHEN tab */}
+        {activeTab === "WHEN" && (
+          <View style={styles.stepIndicators}>
+            <TouchableOpacity
+              onPress={() => setWhenStep(2)}
+              activeOpacity={0.7}
+              style={[
+                styles.stepDot,
+                {
+                  backgroundColor:
+                    whenStep === 2 ? "#15AB64" : "#15AB6433",
+                },
+              ]}
+            />
+            <TouchableOpacity
+              onPress={() => setWhenStep(1)}
+              activeOpacity={0.7}
+              style={[
+                styles.stepDot,
+                {
+                  backgroundColor:
+                    whenStep === 1 ? "#15AB64" : "#15AB6433",
+                },
+              ]}
+            />
+          </View>
+        )}
+
+        {/* Drag Handle */}
         <View style={styles.dragHandleContainer}>
           <View style={styles.dragHandle} />
         </View>
-      )}
-    >
-      <View style={{ flex: 1, backgroundColor: "white" }}>
-        <View style={styles.headerWrapper}>
-          <MainTabs activeTab={activeTab} onTabChange={setActiveTab} />
-        </View>
 
-        <BottomSheetScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+        {/* Scrollable inner content */}
+        <BottomSheetScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          bounces={true}
+          keyboardShouldPersistTaps="handled"
+        >
           {renderContent()}
         </BottomSheetScrollView>
 
+        {/* Fixed Footer Button */}
         <View style={styles.mainFooter}>
           <AppButton
             label={activeTab === "WHO" ? "بحث" : "التالية"}
             onPress={handleNext}
-            variant="primary"
+            isActive={true}
+            activeColor={activeTab === "WHO" ? "#F64200" : "#15AB64"}
             style={styles.nextButton}
           />
         </View>
@@ -262,7 +346,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
   );
 });
 
-const makeStyles = (isRTL: boolean) => StyleSheet.create({
+const styles = StyleSheet.create({
   sheetBackground: {
     backgroundColor: "transparent",
   },
@@ -272,6 +356,13 @@ const makeStyles = (isRTL: boolean) => StyleSheet.create({
     marginVertical: Spacing.md,
     zIndex: 10,
     ...Shadows.medium,
+  },
+  contentCard: {
+    flex: 1,
+    backgroundColor: "white",
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
+    overflow: "hidden",
   },
   dragHandleContainer: {
     width: "100%",
@@ -296,7 +387,7 @@ const makeStyles = (isRTL: boolean) => StyleSheet.create({
     paddingHorizontal: 24,
   },
   searchBar: {
-    flexDirection: isRTL ? "row-reverse" : "row",
+    flexDirection: isRTL ? "row" : "row-reverse",
     alignItems: "center",
     backgroundColor: "#F8F9FB",
     borderRadius: 12,
@@ -309,10 +400,10 @@ const makeStyles = (isRTL: boolean) => StyleSheet.create({
     textAlign: isRTL ? "right" : "left",
     fontSize: 16,
     color: Colors.text.primary,
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "LamaSans-Regular",
   },
   cityItem: {
-    flexDirection: isRTL ? "row-reverse" : "row",
+    flexDirection: isRTL ? "row" : "row-reverse",
     alignItems: "center",
     padding: 12,
     borderRadius: 12,
@@ -327,7 +418,7 @@ const makeStyles = (isRTL: boolean) => StyleSheet.create({
   },
   cityName: {
     fontSize: 16,
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "LamaSans-SemiBold",
     color: Colors.text.primary,
     flex: 1,
     textAlign: isRTL ? "right" : "left",
@@ -344,7 +435,7 @@ const makeStyles = (isRTL: boolean) => StyleSheet.create({
   },
   calendarFooter: {
     marginTop: 10,
-    alignItems: isRTL ? "flex-start" : "flex-end",
+    alignItems: "flex-end",
   },
   legendWrapper: {
     flexDirection: "row",
@@ -361,7 +452,7 @@ const makeStyles = (isRTL: boolean) => StyleSheet.create({
   },
   legendText: {
     fontSize: 13,
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "LamaSans-SemiBold",
     color: "#1A1A1A",
   },
   dot: {
@@ -398,18 +489,10 @@ const makeStyles = (isRTL: boolean) => StyleSheet.create({
     borderRadius: 7,
   },
   periodsContainer: {
-    marginTop: 24,
-    paddingBottom: 20,
-  },
-  periodsTitle: {
-    fontSize: 18,
-    fontFamily: "Alexandria-Bold",
-    color: "#1A1A1A",
-    textAlign: isRTL ? "right" : "left",
-    marginBottom: 16,
+    paddingTop: 10,
   },
   subTabsContainer: {
-    flexDirection: isRTL ? "row-reverse" : "row",
+    flexDirection: "row-reverse",
     backgroundColor: "#F8F9FB",
     borderRadius: 20,
     height: 56,
@@ -434,19 +517,19 @@ const makeStyles = (isRTL: boolean) => StyleSheet.create({
   },
   subTabTextActive: {
     fontSize: 18,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "LamaSans-Bold",
     color: "#1A1A1A",
   },
   subTabTextInactive: {
     fontSize: 18,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "LamaSans-Medium",
     color: "#717171",
   },
   periodList: {
     gap: 12,
   },
   periodItem: {
-    flexDirection: isRTL ? "row-reverse" : "row",
+    flexDirection: "row-reverse",
     alignItems: "center",
     backgroundColor: "#F7FCF9",
     borderRadius: 16,
@@ -462,13 +545,13 @@ const makeStyles = (isRTL: boolean) => StyleSheet.create({
   },
   periodLabel: {
     fontSize: 18,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "LamaSans-Bold",
     color: "#1A1A1A",
     flex: 1,
-    textAlign: isRTL ? "right" : "left",
+    textAlign: "right",
   },
   guestItem: {
-    flexDirection: isRTL ? "row-reverse" : "row",
+    flexDirection: "row-reverse",
     alignItems: "center",
     backgroundColor: "white",
     borderRadius: 20,
@@ -485,15 +568,15 @@ const makeStyles = (isRTL: boolean) => StyleSheet.create({
   },
   guestLabel: {
     fontSize: 22,
-    fontFamily: "Alexandria-Black",
+    fontFamily: "LamaSans-Black",
     color: "#1A1A1A",
-    textAlign: isRTL ? "right" : "left",
+    textAlign: "right",
   },
   guestSubLabel: {
     fontSize: 16,
     color: "#9CA3AF",
-    textAlign: isRTL ? "right" : "left",
+    textAlign: "right",
     marginTop: 2,
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "LamaSans-Regular",
   },
 });
