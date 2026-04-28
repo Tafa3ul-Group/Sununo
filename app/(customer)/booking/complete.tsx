@@ -110,10 +110,14 @@ export default function CompleteBookingScreen() {
     const viewedYear = currentMonth.getFullYear();
 
     availabilityData.forEach((b: any) => {
-      const bDate = new Date(b.bookingDate);
-      if (bDate.getMonth() === viewedMonth && bDate.getFullYear() === viewedYear) {
-        const d = bDate.getDate();
-        dateCounts[d] = (dateCounts[d] || 0) + 1;
+      // Expecting YYYY-MM-DD format from backend
+      const parts = b.bookingDate.split('T')[0].split('-');
+      const bYear = parseInt(parts[0], 10);
+      const bMonth = parseInt(parts[1], 10) - 1;
+      const bDay = parseInt(parts[2], 10);
+
+      if (bMonth === viewedMonth && bYear === viewedYear) {
+        dateCounts[bDay] = (dateCounts[bDay] || 0) + 1;
       }
     });
 
@@ -203,7 +207,7 @@ export default function CompleteBookingScreen() {
   const isShiftBookedForDay = useCallback((day: number, shiftId: string) => {
     const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     return availabilityData.some((b: any) => {
-      const bDate = new Date(b.bookingDate).toISOString().split('T')[0];
+      const bDate = b.bookingDate.split('T')[0];
       return bDate === dateStr && b.shift?.id === shiftId;
     });
   }, [availabilityData, currentMonth]);

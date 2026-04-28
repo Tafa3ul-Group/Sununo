@@ -613,7 +613,7 @@ export default function ChaletDetailScreen() {
           <View style={styles.readMoreWrapper}>
             <PrimaryButton
               label={t("chalet.details.readMore")}
-              onPress={() => {}}
+              onPress={() => router.push(`/(customer)/chalet-details/description/${chaletId}`)}
               style={styles.readMoreComp}
               height={54}
             />
@@ -775,7 +775,7 @@ export default function ChaletDetailScreen() {
                     <View
                       style={[
                         styles.revRatingCornerMerged,
-                        { flexDirection: isRTL ? "row-reverse" : "row" },
+                        { flexDirection: isRTL ? "row" : "row-reverse" },
                       ]}
                     >
                       <SolarStarBold size={14} color="#035DF9" />
