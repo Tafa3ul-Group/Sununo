@@ -699,7 +699,7 @@ export default function ChaletDetailScreen() {
           <View
             style={[
               styles.ctaRowReviewMerged,
-              { flexDirection: isRTL ? "row-reverse" : "row" },
+              { flexDirection: isRTL ? "row" : "row-reverse" },
             ]}
           >
             <TouchableOpacity
@@ -742,7 +742,7 @@ export default function ChaletDetailScreen() {
               onPress={() => router.push(`/chalet-details/reviews/${chaletId}`)}
               style={{ width: 175 }}
               height={46}
-              variant={!isRTL ? "inverse" : undefined}
+              variant={isRTL ? "inverse" : undefined}
             />
           </View>
 

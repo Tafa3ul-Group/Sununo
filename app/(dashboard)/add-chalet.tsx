@@ -138,6 +138,18 @@ export default function AddChaletScreen() {
 
   const [imagesByCategory, setImagesByCategory] = useState<Record<string, string[]>>({});
   const { data: cities, isLoading: loadingCities } = useGetCitiesQuery();
+  const [citySearch, setCitySearch] = useState('');
+
+  const filteredCities = useMemo(() => {
+    if (!cities) return [];
+    if (!citySearch) return cities;
+    return cities.filter((city: any) => 
+      city.name?.toLowerCase().includes(citySearch.toLowerCase()) ||
+      (city.nameAr && city.nameAr.includes(citySearch)) ||
+      (city.nameEn && city.nameEn.toLowerCase().includes(citySearch.toLowerCase()))
+    );
+  }, [cities, citySearch]);
+
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const [uploadingCategoryId, setUploadingCategoryId] = useState<string | null>(null);
 
@@ -892,18 +904,35 @@ export default function AddChaletScreen() {
           {loadingCities ? (
             <ActivityIndicator color={Colors.primary} style={{ margin: 20 }} />
           ) : (
-            <BottomSheetFlatList
-              data={cities}
-              keyExtractor={(item: any) => item.id}
-              style={{ width: '100%' }}
-              ListHeaderComponent={<Text style={styles.modalTitle}>{isRTL ? 'اختر المدينة' : 'Select City'}</Text>}
-              renderItem={({ item }: { item: any }) => (
-                <TouchableOpacity style={styles.pickerItem} onPress={() => handleCitySelect(item)}>
-                  <Text style={[styles.pickerItemText, { textAlign }]}>{item.name}</Text>
-                </TouchableOpacity>
-              )}
-              contentContainerStyle={{ paddingBottom: Spacing.xl }}
-            />
+            <View style={{ width: '100%', flex: 1 }}>
+              <View style={[styles.modalSearchContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <SolarMagnifierBold size={20} color={Colors.text.muted} />
+                <TextInput
+                  style={[styles.modalSearchInput, { textAlign }]}
+                  placeholder={isRTL ? 'ابحث عن مدينة...' : 'Search for a city...'}
+                  value={citySearch}
+                  onChangeText={setCitySearch}
+                />
+              </View>
+              <BottomSheetFlatList
+                data={filteredCities}
+                keyExtractor={(item: any) => item.id}
+                style={{ width: '100%' }}
+                ListHeaderComponent={<Text style={styles.modalTitle}>{isRTL ? 'اختر المدينة' : 'Select City'}</Text>}
+                renderItem={({ item }: { item: any }) => (
+                  <TouchableOpacity style={[styles.pickerItem, { flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 10 }]} onPress={() => handleCitySelect(item)}>
+                    <SolarMapPointBold size={20} color={Colors.primary} />
+                    <Text style={[styles.pickerItemText, { textAlign, flex: 1 }]}>{item.name}</Text>
+                  </TouchableOpacity>
+                )}
+                contentContainerStyle={{ paddingBottom: Spacing.xl }}
+                ListEmptyComponent={
+                  <View style={{ padding: 20, alignItems: 'center' }}>
+                    <Text style={{ color: Colors.text.muted }}>{isRTL ? 'لا توجد نتائج' : 'No results found'}</Text>
+                  </View>
+                }
+              />
+            </View>
           )}
         </BottomSheetView>
       </BottomSheetModal>
@@ -1148,4 +1177,21 @@ const styles = StyleSheet.create({
   modalOptionText: { ...Typography.body, fontFamily: "Alexandria-SemiBold" },
   pickerItem: { width: '100%', paddingVertical: Spacing.md, paddingHorizontal: Spacing.lg, borderBottomWidth: 1, borderBottomColor: Colors.border },
   pickerItemText: { ...Typography.body, fontSize: normalize.font(16), color: Colors.text.primary },
+  modalSearchContainer: {
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    height: 48,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  modalSearchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: Colors.text.primary,
+    fontFamily: "Alexandria-Regular",
+  },
 });

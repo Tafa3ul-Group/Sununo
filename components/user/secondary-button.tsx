@@ -52,8 +52,12 @@ export function SecondaryButton({
   const finalIconPosition =
     iconPosition ||
     (variant === "default"
-      ? isRTL ? "right" : "left"
-      : isRTL ? "left" : "right");
+      ? isRTL
+        ? "right"
+        : "left"
+      : isRTL
+        ? "left"
+        : "right");
 
   const bgColor = isActive ? activeColor : "white";
   const borderColor = isActive ? activeColor : "#E5E7EB";
@@ -107,7 +111,10 @@ export function SecondaryButton({
               <ActivityIndicator color={finalContentColor} size="small" />
             ) : iconLabel ? (
               <ThemedText
-                style={[styles.text, { color: finalContentColor, fontSize: 16 }]}
+                style={[
+                  styles.text,
+                  { color: finalContentColor, fontSize: 16 },
+                ]}
               >
                 {iconLabel}
               </ThemedText>

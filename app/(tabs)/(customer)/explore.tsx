@@ -105,7 +105,6 @@ function SectionHeader({
   );
 }
 
-
 export default function ExploreScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -139,6 +138,12 @@ export default function ExploreScreen() {
 
   const chaletsRaw = chaletsResponse?.data || [];
 
+  const [selectedChalet, setSelectedChalet] = useState<any>(null);
+  const browsingRegionRef = useRef<{ center: [number, number], zoom: number }>({ center: [44.36, 33.31], zoom: 6 });
+  const [currentMapRegion, setCurrentMapRegion] = useState({ center: [44.36, 33.31] as [number, number], zoom: 6 });
+  const [preSelectionRegion, setPreSelectionRegion] = useState<{ center: [number, number], zoom: number } | null>(null);
+  const showMapToolsRef = useRef(false);
+
   const MOCK_CHALETS = useMemo(() => {
     return chaletsRaw
       .filter((item: any) => {
@@ -169,10 +174,6 @@ export default function ExploreScreen() {
       });
   }, [chaletsRaw, isRTL]);
 
-  // Track Current Map State for restoration
-  const [currentMapRegion, setCurrentMapRegion] = useState({ center: [44.36, 33.31] as [number, number], zoom: 6 });
-  const [preSelectionRegion, setPreSelectionRegion] = useState<{ center: [number, number], zoom: number } | null>(null);
-
   const handleCameraChanged = useCallback((center: [number, number], zoomLevel: number) => {
     setCurrentMapRegion({ center, zoom: zoomLevel });
     setZoom(zoomLevel);
@@ -187,8 +188,6 @@ export default function ExploreScreen() {
   const [routeInfo, setRouteInfo] = useState<any>(null);
   const [isNavigating, setIsNavigating] = useState(false);
   const [showMapTools, setShowMapTools] = useState(false);
-  const showMapToolsRef = useRef(false);
-  const browsingRegionRef = useRef<{ center: [number, number], zoom: number }>({ center: [44.36, 33.31], zoom: 6 });
 
   const toggleMapTools = (val: boolean) => {
     setShowMapTools(val);
@@ -226,8 +225,6 @@ export default function ExploreScreen() {
   }, []);
 
   const { formatShiftTime } = useFormatTime();
-  const [selectedChalet, setSelectedChalet] = useState<any>(null);
-
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
 
