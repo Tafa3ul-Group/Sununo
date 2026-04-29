@@ -8,6 +8,7 @@ import { AuthToggle } from "@/components/user/auth-toggle";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { RootState } from "@/store";
 import { setCredentials, setUserType } from "@/store/authSlice";
+import { OtpInput } from "@/components/user/otp-input";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -141,15 +142,10 @@ export function LoginScreen() {
             ) : (
               <View style={styles.inputGroup}>
                 <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('auth.verificationCode')}</ThemedText>
-                <TextInput
-                  style={styles.input}
-                  placeholder="123456"
-                  value={code}
-                  onChangeText={setCode}
-                  keyboardType="number-pad"
-                  textAlign="center"
-                  letterSpacing={normalize.width(5)}
-                  placeholderTextColor="#94A3B8"
+                <OtpInput 
+                  code={code} 
+                  setCode={setCode} 
+                  length={6} 
                 />
               </View>
             )}
@@ -241,19 +237,19 @@ const styles = StyleSheet.create({
   },
   input: {
     width: "100%",
-    height: normalize.height(60),
+    height: normalize.height(52),
     backgroundColor: "#FFFFFF",
-    borderRadius: normalize.radius(12),
+    borderRadius: normalize.radius(10),
     borderWidth: 1,
     borderColor: "#E2E8F0",
     paddingHorizontal: normalize.width(18),
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(15),
     fontFamily: "Alexandria-Medium",
     color: "#1E293B",
   },
   loginBtn: {
     marginTop: normalize.height(20),
-    height: normalize.height(60),
+    height: normalize.height(52),
     width: "100%",
     shadowOpacity: 0,
     elevation: 0,

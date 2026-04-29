@@ -79,6 +79,7 @@ export default function ProfileScreen() {
     { id: 'language', title: t('profile.language'), shape: 'pink' as const, icon: <SolarGlobalBold size={20} color="white" />, action: openLanguageSheet },
     { id: 'contact', title: t('profile.contactUs'), shape: 'green' as const, icon: <SolarPhoneBold size={20} color="white" /> },
     { id: 'privacy', title: t('profile.privacyPolicy'), shape: 'blue' as const, icon: <SolarShieldBold size={20} color="white" /> },
+    { id: 'logout', title: t('profile.logout'), shape: 'pink' as const, icon: <SolarLogoutBold size={20} color="white" />, action: handleLogout, isDestructive: true },
   ];
 
   return (

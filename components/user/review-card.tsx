@@ -220,6 +220,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Alexandria-Bold",
     color: "#035DF9",
+    lineHeight: 18,
   },
   bottomSection: {
     marginTop: 4,

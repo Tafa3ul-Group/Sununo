@@ -1,21 +1,27 @@
-import { Tabs, Redirect } from "expo-router";
-import React, { useRef } from "react";
+import {
+  SolarFiltersBoldDuotone,
+  SolarHomeSmileBoldDuotone,
+  SolarMapBoldDuotone,
+  SolarUserBold,
+} from "@/components/icons/solar-icons";
 import { CustomTabBar } from "@/components/user/custom-tab-bar";
-import { SolarHomeSmileBoldDuotone, SolarMapBoldDuotone, SolarFiltersBoldDuotone, SolarUserBold } from "@/components/icons/solar-icons";
-import { useTranslation } from "react-i18next";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store";
 import { SearchFilterSheet } from "@/components/user/search-filter-sheet";
-import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { TouchableOpacity, Image, View } from "react-native";
 import { getImageSrc } from "@/hooks/useImageSrc";
+import { RootState } from "@/store";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import { Redirect, Tabs, useRouter } from "expo-router";
+import React, { useRef } from "react";
+import { useTranslation } from "react-i18next";
+import { Image, View } from "react-native";
+import { useSelector } from "react-redux";
 
 export default function CustomerLayout() {
   const { t } = useTranslation();
   const { userType, user } = useSelector((state: RootState) => state.auth);
+  const router = useRouter();
   const filterSheetRef = useRef<BottomSheetModal>(null);
 
-  if (userType === 'owner') {
+  if (userType === "owner") {
     return <Redirect href="/(tabs)/(dashboard)/home" />;
   }
 
@@ -62,26 +68,43 @@ export default function CustomerLayout() {
           name="profile"
           options={{
             tabBarIcon: ({ color, size, focused }) => {
-              const avatarUrl = user?.imageUrl || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+              if (userType === "guest") {
+                return <SolarUserBold size={size} color={color} />;
+              }
+              const avatarUrl =
+                user?.imageUrl ||
+                "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
               return (
-                <View style={{ 
-                  width: size + 4, 
-                  height: size + 4, 
-                  borderRadius: (size + 4) / 2, 
-                  overflow: 'hidden', 
-                  borderWidth: focused ? 2 : 1, 
-                  borderColor: focused ? color : '#E5E7EB',
-                  backgroundColor: '#F3F4F6'
-                }}>
-                  <Image 
-                    source={getImageSrc(user?.imageUrl || avatarUrl)} 
-                    style={{ width: '100%', height: '100%' }} 
+                <View
+                  style={{
+                    width: size + 4,
+                    height: size + 4,
+                    borderRadius: (size + 4) / 2,
+                    overflow: "hidden",
+                    borderWidth: focused ? 2 : 1,
+                    borderColor: focused ? color : "#E5E7EB",
+                    backgroundColor: "#F3F4F6",
+                  }}
+                >
+                  <Image
+                    source={getImageSrc(user?.imageUrl || avatarUrl)}
+                    style={{ width: "100%", height: "100%" }}
                   />
                 </View>
               );
             },
           }}
+          listeners={{
+            tabPress: (e) => {
+              if (userType === "guest") {
+                e.preventDefault();
+                router.push("/(auth)/login");
+              }
+            },
+          }}
         />
+        <Tabs.Screen name="bookings" options={{ href: null }} />
+        <Tabs.Screen name="booking-success" options={{ href: null }} />
       </Tabs>
       <SearchFilterSheet ref={filterSheetRef} />
     </>

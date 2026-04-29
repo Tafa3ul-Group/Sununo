@@ -39,7 +39,7 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
   const isRTL = i18n.language === "ar";
 
   const transition = useSharedValue(0);
-  // Re-ordered to start with WHERE (Details) as the first tab
+  // Re-ordered to start with SHOOKET (WHEN), then MANO (WHO), then DETAILS (WHERE)
   const tabList: TabType[] = ["WHEN", "WHO", "WHERE"];
 
   useEffect(() => {
@@ -57,13 +57,13 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
 
   // ==========================================
   // --- مصفوفات التحكم (عدل الأرقام هنا) ---
-  // الترتيب الجديد: [DETAILS, SHOOKET, MANO]
+  // الترتيب: [SHOOKET, MANO, DETAILS]
   // ==========================================
   const xOffsets = isRTL ? [120, 0, -120] : [-120, 0, 120];
   const yOffsets = [0, 0, 0];
-  const rtlTextOffsets = [5, 0, -5]; // إزاحة النص للعربي
-  const ltrTextOffsets = [-5, 0, 5]; // إزاحة النص للإنجليزي
-  const scales = [0.95, 0.95, 0.95];
+  const rtlTextOffsets = [2, 0, -2]; // إزاحة النص للعربي لتوسيط أفضل
+  const ltrTextOffsets = [-2, 0, 2]; // إزاحة النص للإنجليزي لتوسيط أفضل
+  const scales = [1, 1, 1];
 
   const currentTextOffsets = isRTL ? rtlTextOffsets : ltrTextOffsets;
   // ==========================================
@@ -104,7 +104,7 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
         ["#FFFFFF", WHEN_COLOR],
       ),
       transform: [
-        { scale: interpolate(transition.value, [0, 1], [1.1, 1]) },
+        { scale: interpolate(transition.value, [0, 1], [1.05, 1]) },
         { translateX: currentTextOffsets[0] },
       ],
     };
@@ -118,7 +118,7 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
         [WHO_COLOR, "#FFFFFF", WHO_COLOR],
       ),
       transform: [
-        { scale: interpolate(transition.value, [0, 1, 2], [1, 1.1, 1]) },
+        { scale: interpolate(transition.value, [0, 1, 2], [1, 1.05, 1]) },
         { translateX: currentTextOffsets[1] },
       ],
     };
@@ -132,7 +132,7 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
         [WHERE_COLOR, "#FFFFFF"],
       ),
       transform: [
-        { scale: interpolate(transition.value, [1, 2], [1, 1.1]) },
+        { scale: interpolate(transition.value, [1, 2], [1, 1.05]) },
         { translateX: currentTextOffsets[2] },
       ],
     };
@@ -168,9 +168,9 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
           const textStyle = tabStyles[idx];
 
           let label = "";
-          if (tab === "WHERE") label = t("booking.details");
-          else if (tab === "WHEN") label = t("booking.shooket");
-          else label = t("booking.mano");
+          if (tab === "WHEN") label = t("booking.shooket");
+          else if (tab === "WHO") label = t("booking.mano");
+          else label = t("booking.details");
 
           return (
             <TouchableOpacity
@@ -178,8 +178,6 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
               onPress={function () {
                 if (typeof onChange === "function") {
                   onChange(tab);
-                } else {
-                  console.warn("MainTabs: onChange prop is missing or not a function", { tab, onChange });
                 }
               }}
               style={styles.tabButton}

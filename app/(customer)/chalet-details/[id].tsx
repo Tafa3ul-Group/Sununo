@@ -23,6 +23,7 @@ import { HostContactCard } from "@/components/user/host-contact-card";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { ReviewSubmissionSheet } from "@/components/user/review-submission-sheet";
 import { SecondaryButton } from "@/components/user/secondary-button";
+import { LoginPromptModal } from "@/components/user/login-prompt-modal";
 import { Colors, normalize, Shadows } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import {
@@ -43,6 +44,8 @@ import { Image as ExpoImage } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
 import {
   ActivityIndicator,
   Alert,
@@ -90,6 +93,8 @@ export default function ChaletDetailScreen() {
   const [activeImage, setActiveImage] = useState(0);
   const reviewSheetRef = React.useRef<BottomSheetModal>(null);
   const bannerScrollRef = useRef<ScrollView>(null);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const { userType } = useSelector((state: RootState) => state.auth);
 
   const FEATURE_ICON_MAP: Record<string, any> = useMemo(
     () => ({
@@ -123,9 +128,13 @@ export default function ChaletDetailScreen() {
   // New queries for similar chalets and addons
   const { data: similarResponse } = useGetSimilarChaletsQuery(chaletId);
   const { data: addons = [] } = useGetChaletAddonsQuery(chaletId);
-  const { data: canReviewData } = useCheckCanReviewQuery(chaletId);
+  const { data: canReviewData } = useCheckCanReviewQuery(chaletId, {
+    skip: userType === "guest",
+  });
   const { data: favoriteIds = [], refetch: refetchFavorites } =
-    useGetFavoriteIdsQuery();
+    useGetFavoriteIdsQuery(undefined, {
+      skip: userType === "guest",
+    });
   const [toggleFavorite] = useToggleFavoriteMutation();
 
   const [selectedShiftId, setSelectedShiftId] = useState<string | null>(null);
@@ -136,6 +145,10 @@ export default function ChaletDetailScreen() {
   );
 
   const handleToggleFavorite = async () => {
+    if (userType === "guest") {
+      setShowLoginPrompt(true);
+      return;
+    }
     try {
       await toggleFavorite(chaletId).unwrap();
       refetchFavorites();
@@ -940,9 +953,13 @@ export default function ChaletDetailScreen() {
         <View style={styles.footerBtnSide}>
           <PrimaryButton
             label={t("chalet.details.bookNow")}
-            onPress={() =>
-              router.push(`/(customer)/booking/complete?id=${chaletId}`)
-            }
+            onPress={() => {
+              if (userType === "guest") {
+                setShowLoginPrompt(true);
+              } else {
+                router.push(`/(customer)/booking/complete?id=${chaletId}`);
+              }
+            }}
             style={styles.footerFlatBtn}
           />
         </View>
@@ -976,6 +993,14 @@ export default function ChaletDetailScreen() {
       <ReviewSubmissionSheet
         ref={reviewSheetRef}
         onSubmit={handleReviewSubmit}
+      />
+      <LoginPromptModal
+        isVisible={showLoginPrompt}
+        onClose={() => setShowLoginPrompt(false)}
+        onLogin={() => {
+          setShowLoginPrompt(false);
+          router.push("/(auth)/login");
+        }}
       />
     </View>
   );

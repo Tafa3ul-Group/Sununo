@@ -13,8 +13,6 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
   const isRTL = language === 'ar';
   const insets = useSafeAreaInsets();
 
-  if (!userType) return null;
-
   const currentRouteIndex = state.index;
   const currentRouteName = state.routes[currentRouteIndex].name;
   const currentOptions = descriptors[state.routes[currentRouteIndex].key]?.options;
@@ -29,6 +27,7 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
 
   const visibleRoutes = state.routes.filter((route: any) => {
     const options = descriptors[route.key]?.options;
+    // In Expo Router, if href is null it's hidden. If not specified, it's usually visible.
     return options?.href !== null;
   });
 

@@ -233,10 +233,12 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFFFFF" },
   summaryArea: { alignItems: "center", marginVertical: normalize(35) },
   bigRatingText: {
-    fontSize: normalize(56),
+    fontSize: normalize(64), // Slightly larger
     fontFamily: "Alexandria-Black",
     color: "#111827",
-    marginBottom: normalize(20), // Increased from 5 to 20
+    lineHeight: normalize(72), // Explicit lineHeight to prevent cutoff
+    paddingVertical: 5,
+    textAlign: "center",
   },
   starsRow: { flexDirection: "row", gap: normalize(10) }, // Increased gap from 6 to 10
   filterContainer: {
@@ -264,6 +266,8 @@ const styles = StyleSheet.create({
     fontSize: normalize(16),
     fontFamily: "Alexandria-Black",
     color: "#111827",
+    lineHeight: normalize(20),
+    paddingVertical: 2,
   },
   userInfoRow: {
     alignItems: "flex-start",

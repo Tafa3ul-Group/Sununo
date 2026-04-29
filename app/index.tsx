@@ -1,24 +1,26 @@
-import { MotionIcon } from '@/components/icons/motion-icons';
-import { RootState } from '@/store';
-import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Dimensions } from 'react-native';
-import { useSelector } from 'react-redux';
+import { MotionIcon } from "@/components/icons/motion-icons";
+import { RootState } from "@/store";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { Dimensions, StyleSheet, View } from "react-native";
+import { useSelector } from "react-redux";
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window");
 
 export default function Index() {
   const router = useRouter();
   const [isAnimationDone, setIsAnimationDone] = useState(false);
-  const { isAuthenticated, userType } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, userType } = useSelector(
+    (state: RootState) => state.auth,
+  );
 
   useEffect(() => {
     if (isAnimationDone) {
       let targetPath: any;
 
-      if (!isAuthenticated && userType !== 'guest') {
+      if (!isAuthenticated && userType !== "guest") {
         targetPath = "/(auth)/login";
-      } else if (userType === 'owner') {
+      } else if (userType === "owner") {
         targetPath = "/(tabs)/(dashboard)/home";
       } else {
         targetPath = "/(tabs)/(customer)";
@@ -50,12 +52,12 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
   },
   lottie: {
     width: width,
     height: height,
-  }
+  },
 });
