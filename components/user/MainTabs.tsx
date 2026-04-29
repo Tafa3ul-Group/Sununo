@@ -40,13 +40,13 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
 
   const transition = useSharedValue(0);
   // Re-ordered to start with WHERE (Details) as the first tab
-  const tabList: TabType[] = ["WHERE", "WHEN", "WHO"];
+  const tabList: TabType[] = ["WHEN", "WHO", "WHERE"];
 
   useEffect(() => {
     let target = 0;
-    if (activeTab === "WHERE") target = 0;
-    else if (activeTab === "WHEN") target = 1;
-    else target = 2; // WHO
+    if (activeTab === "WHEN") target = 0;
+    else if (activeTab === "WHO") target = 1;
+    else target = 2; // WHERE
 
     transition.value = withSpring(target, {
       damping: 18,
@@ -91,7 +91,7 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
       fill: interpolateColor(
         transition.value,
         [0, 1, 2],
-        [WHERE_COLOR, WHEN_COLOR, WHO_COLOR],
+        [WHEN_COLOR, WHO_COLOR, WHERE_COLOR],
       ),
     };
   });
@@ -101,7 +101,7 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
       color: interpolateColor(
         transition.value,
         [0, 0.4],
-        ["#FFFFFF", WHERE_COLOR],
+        ["#FFFFFF", WHEN_COLOR],
       ),
       transform: [
         { scale: interpolate(transition.value, [0, 1], [1.1, 1]) },
@@ -115,7 +115,7 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
       color: interpolateColor(
         transition.value,
         [0.4, 1, 1.6],
-        [WHEN_COLOR, "#FFFFFF", WHEN_COLOR],
+        [WHO_COLOR, "#FFFFFF", WHO_COLOR],
       ),
       transform: [
         { scale: interpolate(transition.value, [0, 1, 2], [1, 1.1, 1]) },
@@ -129,7 +129,7 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
       color: interpolateColor(
         transition.value,
         [1.6, 2],
-        [WHO_COLOR, "#FFFFFF"],
+        [WHERE_COLOR, "#FFFFFF"],
       ),
       transform: [
         { scale: interpolate(transition.value, [1, 2], [1, 1.1]) },
