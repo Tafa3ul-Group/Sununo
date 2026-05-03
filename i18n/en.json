@@ -16,7 +16,8 @@
     "dontHaveAccount": "Don't have an account?",
     "registerNow": "Register now",
     "phonePlaceholder": "077XXXXXXXX",
-    "verificationCode": "Verification Code"
+    "verificationCode": "Verification Code",
+    "joinAsOwner": "Join as Owner"
   },
   "tabs": {
     "home": "Home",
@@ -43,7 +44,10 @@
     "seeAll": "See All",
     "openMap": "Open Map",
     "recentBookings": "Recent Bookings",
-    "recommended": "Recommended for you"
+    "recommended": "Recommended for you",
+    "noChalets": "No chalets available currently",
+    "noChaletsDesc": "Try changing filters or searching for something else",
+    "clearFilters": "Clear Filters"
   },
   "profile": {
     "title": "Profile",
@@ -138,7 +142,8 @@
     "shift": "Shift",
     "and": "and",
     "error": "Error",
-    "delete": "Delete"
+    "delete": "Delete",
+    "noData": "No data available"
   },
   "booking": {
     "complete": "Booking Completion",

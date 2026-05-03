@@ -158,6 +158,19 @@ export function LoginScreen() {
               loading={isLoginLoading || isVerifyLoading}
             />
 
+            {isOwner && step === "phone" && (
+              <TouchableOpacity 
+                style={styles.joinOwnerBtn}
+                onPress={() => {
+                  router.push("/(auth)/join-as-owner");
+                }}
+              >
+                <ThemedText style={styles.joinOwnerText}>
+                  {t('auth.joinAsOwner')}
+                </ThemedText>
+              </TouchableOpacity>
+            )}
+
             <TouchableOpacity 
               style={styles.guestLink}
               onPress={() => {
@@ -263,6 +276,18 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(15),
     color: "#94A3B8",
     fontFamily: "Alexandria-Bold",
+  },
+  joinOwnerBtn: {
+    marginTop: normalize.height(20),
+    width: "100%",
+    alignItems: "center",
+    paddingVertical: normalize.height(10),
+  },
+  joinOwnerText: {
+    fontSize: normalize.font(16),
+    color: "#0061FE",
+    fontFamily: "Alexandria-Bold",
+    textDecorationLine: "underline",
   },
   bottomWaveContainer: {
     position: "absolute",

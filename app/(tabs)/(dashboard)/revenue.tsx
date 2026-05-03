@@ -1,13 +1,13 @@
 import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'expo-router';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, TextInput, Alert, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing, normalize } from '@/constants/theme';
 import { HeaderSection } from '@/components/header-section';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { useTranslation } from 'react-i18next';
-import { useGetPayoutsQuery, useRequestPayoutMutation } from '@/store/api/apiSlice';
+import { useGetPayoutsQuery, useRequestPayoutMutation, useGetProviderStatsQuery, useGetProviderProfileQuery } from '@/store/api/apiSlice';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { PrimaryButton } from '@/components/user/primary-button';
 import Toast from 'react-native-toast-message';
@@ -34,13 +34,23 @@ export default function RevenueScreen() {
   const [withdrawAmount, setWithdrawAmount] = useState('');
 
   // API hooks
-  const { data: payoutsResponse, isLoading: isLoadingPayouts } = useGetPayoutsQuery({ 
+  const { data: payoutsResponse, isLoading: isLoadingPayouts, refetch: refetchPayouts } = useGetPayoutsQuery({ 
     limit: 5,
     chaletId: selectedChalet?.id
   });
+  const { data: profileResponse, isLoading: isLoadingProfile, refetch: refetchProfile } = useGetProviderProfileQuery(undefined);
+  const { data: statsData, isLoading: isLoadingStats, refetch: refetchStats } = useGetProviderStatsQuery(undefined);
   const [requestPayout, { isLoading: isRequesting }] = useRequestPayoutMutation();
 
+  const handleRefresh = async () => {
+    refetchPayouts();
+    refetchProfile();
+    refetchStats();
+  };
+
   const payouts = payoutsResponse?.data || payoutsResponse || [];
+  const profile = profileResponse?.data || profileResponse;
+  const stats = statsData || { monthBookings: 0, monthRevenue: 0, occupancyRate: 0 };
 
   // Bottom sheet
   const withdrawSheetRef = useRef<BottomSheetModal>(null);
@@ -105,7 +115,18 @@ export default function RevenueScreen() {
         showBackButton={true}
         showExtra={false}
       />
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+      <ScrollView 
+        style={styles.container} 
+        showsVerticalScrollIndicator={false} 
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl 
+            refreshing={isLoadingPayouts || isLoadingProfile || isLoadingStats} 
+            onRefresh={handleRefresh}
+            tintColor={Colors.primary}
+          />
+        }
+      >
         
         {/* Balance Card */}
         <View style={styles.balanceCard}>
@@ -114,7 +135,7 @@ export default function RevenueScreen() {
             <View style={[styles.decorCircle, styles.decorCircle2, { [isRTL ? 'right' : 'left']: -20 }]} />
             
             <Text style={styles.balanceLabel}>{isRTL ? 'إجمالي الرصيد' : 'Total Balance'}</Text>
-            <Text style={styles.balanceValue}>{user?.walletBalance?.toLocaleString() || '0'}</Text>
+            <Text style={styles.balanceValue}>{profile?.wallet?.balance?.toLocaleString() || '0'}</Text>
             <Text style={styles.balanceCurrency}>{isRTL ? 'دينار عراقي' : 'IQD'}</Text>
             
             <TouchableOpacity 
@@ -150,21 +171,21 @@ export default function RevenueScreen() {
             <View style={[styles.statIconWrap, { backgroundColor: '#EFF6FF' }]}>  
               <SolarCalendarBold size={20} color={Colors.primary} />
             </View>
-            <Text style={styles.statValue}>14</Text>
+            <Text style={styles.statValue}>{isLoadingStats ? '...' : stats.monthBookings}</Text>
             <Text style={styles.statLabel}>{isRTL ? 'حجوزات الشهر' : "Month's Bookings"}</Text>
           </View>
           <View style={styles.statCard}>
             <View style={[styles.statIconWrap, { backgroundColor: '#ECFDF5' }]}>
               <SolarBanknoteBold size={20} color="#10B981" />
             </View>
-            <Text style={styles.statValue}>900,000</Text>
+            <Text style={styles.statValue}>{isLoadingStats ? '...' : stats.monthRevenue?.toLocaleString()}</Text>
             <Text style={styles.statLabel}>{isRTL ? 'دخل الشهر' : "Month's Income"}</Text>
           </View>
           <View style={styles.statCard}>
             <View style={[styles.statIconWrap, { backgroundColor: '#FFF7ED' }]}>
               <SolarUsersGroupBold size={20} color="#F97316" />
             </View>
-            <Text style={styles.statValue}>92%</Text>
+            <Text style={styles.statValue}>{isLoadingStats ? '...' : `${stats.occupancyRate}%`}</Text>
             <Text style={styles.statLabel}>{isRTL ? 'نسبة الإشغال' : 'Occupancy'}</Text>
           </View>
         </View>

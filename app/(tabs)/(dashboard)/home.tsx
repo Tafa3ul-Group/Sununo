@@ -11,6 +11,7 @@ import {
 import { PrimaryButton } from '@/components/user/primary-button';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { Colors, normalize } from '@/constants/theme';
+import { PendingApprovalScreen } from '@/components/dashboard/pending-approval';
 import { RootState } from '@/store';
 import { useDeleteExternalBookingMutation, useGetProviderBookingsQuery, useGetProviderProfileQuery, useRejectBookingMutation } from '@/store/api/apiSlice';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
@@ -39,6 +40,11 @@ export default function HomeScreen() {
   const { user, userType, language, selectedChalet } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
   const isRTL = language === 'ar';
+
+  // API hooks
+  const { data: profileResponse, refetch: refetchProfile } = useGetProviderProfileQuery(undefined);
+  const profile = profileResponse?.data || profileResponse;
+
   const isOwner = userType === 'owner';
   const [activeFilter, setActiveFilter] = useState('all');
   const [isBalanceVisible, setIsBalanceVisible] = useState(false);
@@ -122,8 +128,6 @@ export default function HomeScreen() {
   };
 
 
-  // API hooks
-  const { data: profileResponse } = useGetProviderProfileQuery(undefined);
 
   const statusMap: Record<string, string> = {
     pending: 'pending_payment',
@@ -151,8 +155,8 @@ export default function HomeScreen() {
     }
   };
 
-  const profile = profileResponse?.data || profileResponse;
   const recentBookings = bookingsResponse?.data || bookingsResponse || [];
+
 
   const handleToggleBalance = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -272,6 +276,10 @@ export default function HomeScreen() {
       </View>
     );
   };
+
+  if (userType === 'owner' && (profile ? !profile.isApproved : !user?.isApproved)) {
+    return <PendingApprovalScreen onRefresh={refetchProfile} />;
+  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

@@ -16,7 +16,8 @@
     "dontHaveAccount": "ليس لديك حساب ؟",
     "registerNow": "سجل الان",
     "phonePlaceholder": "077XXXXXXXX",
-    "verificationCode": "رمز التحقق"
+    "verificationCode": "رمز التحقق",
+    "joinAsOwner": "انضم كصاحب شاليه"
   },
   "tabs": {
     "home": "الرئيسية",
@@ -43,7 +44,10 @@
     "seeAll": "عرض الكل",
     "openMap": "افتح الخارطة",
     "recentBookings": "آخر الحجوزات",
-    "recommended": "مقترح لك"
+    "recommended": "مقترح لك",
+    "noChalets": "لا توجد شاليهات متاحة حالياً",
+    "noChaletsDesc": "جرب تغيير الفلاتر أو البحث عن شيء آخر",
+    "clearFilters": "مسح الفلاتر"
   },
   "profile": {
     "title": "الملف الشخصي",
@@ -141,7 +145,8 @@
     "shift": "شفت",
     "and": "و",
     "error": "خطأ",
-    "delete": "حذف"
+    "delete": "حذف",
+    "noData": "لا توجد بيانات"
   },
   "booking": {
     "complete": "اكتمال الحجز",

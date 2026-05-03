@@ -2,6 +2,8 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 // Define the base URL for the API
 const BASE_URL = 'https://k4wwso0cwg480c480oo0owg4.rakiza.dev/api/v1';
+// const BASE_URL = 'http://192.168.0.167:4646/api/v1';
+
 // Force reload hooks
 
 const baseQuery = fetchBaseQuery({
@@ -18,13 +20,13 @@ const baseQuery = fetchBaseQuery({
 
 const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
   let result = await baseQuery(args, api, extraOptions);
-  
+
   if (result.error && result.error.status === 401) {
     // Force logout if 401 Unauthorized
     const { logout } = require('../authSlice');
     api.dispatch(logout());
   }
-  
+
   return result;
 };
 
@@ -73,6 +75,14 @@ export const apiSlice = createApi({
     verifyPhone: builder.mutation({
       query: (data) => ({
         url: '/auth/verify',
+        method: 'POST',
+        body: data,
+      }),
+    }),
+    // Mutation for registering as a provider
+    registerProvider: builder.mutation({
+      query: (data) => ({
+        url: '/auth/register-provider',
         method: 'POST',
         body: data,
       }),
@@ -248,7 +258,7 @@ export const apiSlice = createApi({
       query: (id) => `/customer/chalets/${id}`,
       providesTags: (result, error, id) => [{ type: 'Chalet' as const, id }],
     }),
-    
+
     setChaletAmenities: builder.mutation({
       query: ({ chaletId, data }) => ({
         url: `/provider/chalets/${chaletId}/amenities`,
@@ -262,6 +272,12 @@ export const apiSlice = createApi({
     getProviderProfile: builder.query({
       query: () => '/provider/profile',
       providesTags: ['User'],
+    }),
+
+    // Get provider stats
+    getProviderStats: builder.query({
+      query: () => '/provider/profile/stats',
+      providesTags: ['Booking', 'Chalet'],
     }),
 
     // Update provider profile
@@ -399,6 +415,7 @@ export const {
   useLazyGetMeQuery,
   useLoginMutation,
   useVerifyPhoneMutation,
+  useRegisterProviderMutation,
   useCreateChaletMutation,
   useUpdateChaletMutation,
   useUploadChaletImageMutation,
@@ -431,6 +448,7 @@ export const {
   useGetAmenityCategoriesQuery,
 
   useGetProviderProfileQuery,
+  useGetProviderStatsQuery,
   useUpdateProviderProfileMutation,
   useGetProviderBookingsQuery,
   useGetProviderBookingDetailsQuery,
