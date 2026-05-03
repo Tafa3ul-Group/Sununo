@@ -1,8 +1,8 @@
 {
   "auth": {
     "chooseType": "Choose Account Type",
-    "owner": "Chalet Owner",
-    "customer": "Customer / Guest",
+    "owner": "Chaleh Owner",
+    "customer": "Customer",
     "ownerDesc": "List your chalet and manage bookings easily",
     "customerDesc": "Explore and book the best chalets for your trip",
     "browseAsGuest": "Browse as Guest",
@@ -12,7 +12,11 @@
     "verify": "Verify",
     "otpSent": "Verification code sent to your phone",
     "enterOtp": "Enter verification code",
-    "fullName": "Full Name"
+    "fullName": "Full Name",
+    "dontHaveAccount": "Don't have an account?",
+    "registerNow": "Register now",
+    "phonePlaceholder": "077XXXXXXXX",
+    "verificationCode": "Verification Code"
   },
   "tabs": {
     "home": "Home",
@@ -31,16 +35,46 @@
       "all": "All",
       "popular": "Popular",
       "nearby": "Nearby",
-      "luxury": "Luxury"
+      "luxury": "Luxury",
+      "pool": "Pool",
+      "bbq": "BBQ",
+      "garden": "Garden"
     },
-    "seeAll": "See All"
+    "seeAll": "See All",
+    "openMap": "Open Map",
+    "recentBookings": "Recent Bookings",
+    "recommended": "Recommended for you"
   },
   "profile": {
     "title": "Profile",
     "editProfile": "Edit Profile",
     "notifications": "Notifications",
     "language": "Language",
-    "logout": "Logout"
+    "logout": "Logout",
+    "wallet": {
+      "balance": "Current Balance",
+      "withdraw": "Withdraw"
+    },
+    "contactUs": "Contact Us",
+    "privacyPolicy": "Privacy Policy",
+    "edit": {
+      "birthDate": "Birth Date",
+      "changePhone": "Change Phone",
+      "confirm": "Confirm"
+    },
+    "review": {
+      "question": "How would you rate your experience?",
+      "placeholder": "Write your comments here...",
+      "send": "Send",
+      "cancel": "Cancel",
+      "noFavorites": "No favorites yet",
+      "noFavoritesDesc": "Any chalet you like can be added here for easy access later."
+    }
+  },
+  "notifications": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "empty": "No notifications yet"
   },
   "dashboard": {
     "addChalet": "Add New Chalet",
@@ -63,12 +97,24 @@
       "cancelled": "Cancelled",
       "accept": "Accept",
       "decline": "Decline",
+      "records": "Records",
+      "calendar": "Calendar",
       "cancellationReason": "Cancellation Reason"
     },
     "revenue": {
       "balance": "Available Balance",
       "withdraw": "Withdraw Funds",
       "history": "Transaction History"
+    },
+    "menu": {
+      "title": "Management Menu",
+      "bookings": "Bookings",
+      "shifts": "Shifts",
+      "revenue": "Revenue",
+      "customers": "Customers",
+      "transactions": "Transactions",
+      "notifications": "Notifications",
+      "addChalet": "Add Chalet"
     }
   },
   "common": {
@@ -76,7 +122,7 @@
     "iqd": "IQD",
     "details": "Details",
     "viewDetails": "View Details",
-    "customer": "Customer / Guest",
+    "customer": "Customer",
     "location": "Location",
     "time": "Time",
     "guests": "Guests",
@@ -89,7 +135,10 @@
     "paymentMethod": "Payment Method",
     "fullPayment": "Full Payment",
     "depositPayment": "Deposit",
-    "shift": "Shift"
+    "shift": "Shift",
+    "and": "and",
+    "error": "Error",
+    "delete": "Delete"
   },
   "booking": {
     "complete": "Booking Completion",
@@ -158,5 +207,75 @@
     "noBookings": "No bookings yet",
     "noBookingsDesc": "Explore available chalets and book your next trip!",
     "exploreNow": "Explore Now"
+  },
+  "headers": {
+    "notifications": "Notifications",
+    "favorites": "Favorites",
+    "explore": "Map",
+    "reviews": "Reviews",
+    "facilities": "Facilities",
+    "bookings": "Bookings",
+    "gallery": "Gallery",
+    "bookingComplete": "Booking Completion",
+    "bookingDetails": "Booking Details",
+    "profile": "Profile",
+    "home": "Home",
+    "reviews": "Reviews"
+  },
+  "facilities": {
+    "general": "General Services",
+    "wifi": "Wi-Fi",
+    "garage": "Shaded Garage",
+    "generator": "Automatic Generator",
+    "bathroom": "Bathroom",
+    "essentials": "Basic Essentials",
+    "essentialsDesc": "Towels, soap, toilet paper",
+    "hairDryer": "Hair Dryer",
+    "shampoo": "Shampoo & Conditioner",
+    "soap": "Soap & Shower Gel",
+    "hotWater": "Hot Water",
+    "outdoorSinks": "Outdoor Sinks",
+    "kitchen": "Kitchen",
+    "fullKitchen": "Full Kitchen",
+    "kitchenDesc": "Stove, oven, large fridge",
+    "cookingTools": "Cooking Tools",
+    "toolsDesc": "Pots, pans, oil, salt & pepper",
+    "table": "Table",
+    "tableDesc": "Plates, spoons, tea & coffee cups",
+    "outdoorFeatures": "Outdoor Features",
+    "privatePool": "Private Pool",
+    "bbqArea": "BBQ Area",
+    "outdoorSeating": "Shaded Outdoor Seating"
+  },
+  "chalet": {
+    "details": {
+      "specs": "Basic Specifications",
+      "facilities": "Facilities",
+      "overview": "Overview",
+      "location": "Location",
+      "reviews": "Reviews",
+      "addReview": "Add Review",
+      "related": "You Might Also Like",
+      "bookNow": "Book Now",
+      "readMore": "Read More",
+      "morningShift": "Morning Shift",
+      "specsList": ["Garden with House", "300m", "1 Bathroom", "3 Rooms"]
+    }
+  },
+  "reviews": {
+    "title": "Reviews",
+    "pending": "Pending",
+    "reviewed": "Reviewed"
+  },
+  "gallery": {
+    "title": "Gallery",
+    "categories": {
+      "all": "All",
+      "pool": "Pool",
+      "bbq": "BBQ",
+      "kitchen": "Kitchen",
+      "bath": "Bath"
+    },
+    "empty": "No images available in this section"
   }
 }

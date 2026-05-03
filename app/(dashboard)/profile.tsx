@@ -1,30 +1,29 @@
-import { Colors, normalize, Spacing, Typography } from '@/constants/theme';
-import { RootState } from '@/store';
-import { logout } from '@/store/authSlice';
+import { HeaderSection } from '@/components/header-section';
 import {
-  SolarLogoutBold,
-  SolarBanknoteBold,
-  SolarHome2Bold,
-  SolarChartBold,
-  SolarBellBold,
-  SolarAltArrowLeftLinear,
-  SolarAltArrowRightLinear,
-  SolarPenBold,
-  SolarGlobalBold,
-  SolarPhoneBold,
-  SolarShieldBold,
-  ProfileShape
+    ProfileShape,
+    SolarBanknoteBold,
+    SolarBellBold,
+    SolarCalendarBold,
+    SolarChartBold,
+    SolarGlobalBold,
+    SolarHome2Bold,
+    SolarLogoutBold,
+    SolarPenBold,
+    SolarPhoneBold,
+    SolarShieldBold
 } from "@/components/icons/solar-icons";
-import { CircleBackButton } from '@/components/ui/circle-back-button';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { LanguageSheet } from '@/components/user/language-sheet';
+import { Colors, normalize } from '@/constants/theme';
+import { RootState } from '@/store';
+import { useGetProviderProfileQuery } from '@/store/api/apiSlice';
+import { logout } from '@/store/authSlice';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert, Image } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
-import { useGetProviderProfileQuery } from '@/store/api/apiSlice';
 
 export default function ProviderProfileScreen() {
   const dispatch = useDispatch();
@@ -52,7 +51,7 @@ export default function ProviderProfileScreen() {
           style: 'destructive', 
           onPress: () => {
             dispatch(logout());
-            router.replace('/(auth)/choose-type');
+            router.replace('/(auth)/login');
           }
         }
       ]
@@ -72,33 +71,20 @@ export default function ProviderProfileScreen() {
   ];
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {/* Custom Header */}
-      <View style={styles.header}>
-        <CircleBackButton />
-        <Text style={styles.headerTitle}>{isRTL ? 'الملف الشخصي' : 'Profile'}</Text>
-        <View style={styles.logoCircle}>
-          <Image 
-            source={require('@/assets/arlogo.svg')} 
-            style={styles.logoImg}
-            resizeMode="contain"
-          />
-        </View>
-      </View>
 
       {/* Profile Header & User Card - Fixed at top */}
       <View style={styles.topSection}>
         <TouchableOpacity 
-          style={styles.userCard}
+          style={[styles.userCard, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}
           onPress={() => router.push('/(dashboard)/edit-business')}
           activeOpacity={0.9}
         >
-          <ProfileShape size={normalize.width(48)} type="green">
-            <SolarPenBold size={18} color="white" />
-          </ProfileShape>
           
-          <View style={styles.userInfo}>
-            <Text style={styles.userName}>{profile?.business_name || user?.name || t('tabs.home')}</Text>
+          
+          <View style={[styles.userInfo, { textAlign: isRTL ? 'right' : 'left' }]}>
+            <Text style={[styles.userName, { textAlign: isRTL ? 'right' : 'left' }]}>{profile?.business_name || user?.name || t('tabs.home')}</Text>
           </View>
 
           <View style={styles.avatarWrap}>
@@ -126,7 +112,7 @@ export default function ProviderProfileScreen() {
           {menuItems.map((item) => (
             <TouchableOpacity 
               key={item.id} 
-              style={styles.menuRow} 
+              style={[styles.menuRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]} 
               onPress={() => {
                 if (item.action) {
                   item.action();
@@ -136,7 +122,7 @@ export default function ProviderProfileScreen() {
               }}
               activeOpacity={0.7}
             >
-              <Text style={styles.menuLabelText}>{item.title}</Text>
+              <Text style={[styles.menuLabelText, { textAlign: isRTL ? 'right' : 'left' }]}>{item.title}</Text>
               <ProfileShape size={normalize.width(42)} type={item.shape}>
                 {item.icon}
               </ProfileShape>
@@ -146,7 +132,7 @@ export default function ProviderProfileScreen() {
       </ScrollView>
 
       <LanguageSheet ref={languageSheetRef} />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -155,37 +141,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: normalize.width(20),
-    paddingVertical: normalize.height(15),
-    backgroundColor: '#FFFFFF',
-  },
-  headerTitle: {
-    fontSize: normalize.font(18),
-    fontWeight: '800',
-    color: '#1F2937',
-  },
-  logoCircle: {
-    width: normalize.width(42),
-    height: normalize.width(42),
-    borderRadius: normalize.width(21),
-    backgroundColor: '#F9FAFB',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
-    overflow: 'hidden',
-  },
-  logoImg: {
-    width: '70%',
-    height: '70%',
-  },
   topSection: {
     paddingHorizontal: normalize.width(20),
-    paddingTop: normalize.height(10),
+    paddingTop: 0,
   },
   scrollView: {
     flex: 1,
@@ -208,13 +166,12 @@ const styles = StyleSheet.create({
   },
   userInfo: {
     flex: 1,
-    marginRight: normalize.width(15),
+    marginHorizontal: normalize.width(15),
   },
   userName: {
     fontSize: normalize.font(16),
-    fontWeight: '800',
+    fontFamily: "Alexandria-Black",
     color: '#374151',
-    textAlign: 'right',
   },
   avatarWrap: {
     width: normalize.width(60),
@@ -241,7 +198,7 @@ const styles = StyleSheet.create({
   avatarInitialText: {
     color: 'white',
     fontSize: normalize.font(24),
-    fontWeight: '800',
+    fontFamily: "Alexandria-Black",
   },
   menuGroup: {
     gap: normalize.height(16),
@@ -249,7 +206,6 @@ const styles = StyleSheet.create({
   menuRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
     backgroundColor: '#FFFFFF',
     borderRadius: normalize.radius(18),
     paddingVertical: normalize.height(14),
@@ -260,10 +216,10 @@ const styles = StyleSheet.create({
     elevation: 0,
   },
   menuLabelText: {
+    flex: 1,
     fontSize: normalize.font(16),
-    fontWeight: '700',
+    fontFamily: "Alexandria-Bold",
     color: '#374151',
-    marginRight: normalize.width(15),
-    textAlign: 'right',
+    marginHorizontal: normalize.width(15),
   },
 });

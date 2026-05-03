@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   },
   titleText: {
     fontSize: 16,
-    fontWeight: "900",
+    fontFamily: "Alexandria-Black",
     color: "#171725",
   },
 });

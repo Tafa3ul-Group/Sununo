@@ -1,44 +1,109 @@
-import { normalize, Colors } from '@/constants/theme';
+import {
+  SolarHome2Bold,
+  SolarAddSquareBold,
+  SolarMagnifierBold
+} from '@/components/icons/solar-icons';
+import { Colors, normalize } from '@/constants/theme';
+import { getImageSrc } from '@/hooks/useImageSrc';
 import { RootState } from '@/store';
-import React from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { setSelectedChalet } from '@/store/authSlice';
+import { useGetOwnerChaletsQuery } from '@/store/api/apiSlice';
+import * as Haptics from 'expo-haptics';
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import Animated, {
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
+import { useRouter } from "expo-router";
+import { useDispatch, useSelector } from 'react-redux';
 
 /**
  * DashboardTabBar - Standardized with CustomTabBar design
  */
 export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors }) => {
-  const { userType, language } = useSelector((state: RootState) => state.auth);
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const { userType, language, selectedChalet } = useSelector((state: RootState) => state.auth);
+  const { t } = useTranslation();
   const isRTL = language === 'ar';
   const insets = useSafeAreaInsets();
+
+  const [showPopover, setShowPopover] = useState(false);
+
+  // Animation values
+  const scale = useSharedValue(0.95);
+  const opacity = useSharedValue(0);
+  const translateY = useSharedValue(5);
+
+  // Fetch chalets
+  const { data: chaletsResponse } = useGetOwnerChaletsQuery({}, { skip: userType !== 'owner' });
+  const chalets = chaletsResponse?.data || chaletsResponse || [];
+  const hasChalets = chalets && chalets.length > 0;
+
+  // Auto-select first chalet if none selected or if 'all' is selected (legacy)
+  React.useEffect(() => {
+    if (hasChalets && (!selectedChalet || selectedChalet.id === 'all') && chalets[0]) {
+      dispatch(setSelectedChalet({
+        id: chalets[0].id,
+        name: isRTL ? (chalets[0].name?.ar || chalets[0].name) : (chalets[0].name?.en || chalets[0].name),
+        image: chalets[0].images?.[0]?.url || null
+      }));
+    }
+  }, [hasChalets, selectedChalet]);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: opacity.value,
+      transform: [
+        { scale: scale.value },
+        { translateY: translateY.value }
+      ],
+    };
+  });
+
+  const togglePopover = () => {
+    if (showPopover) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      scale.value = withTiming(0.95, { duration: 100 });
+      opacity.value = withTiming(0, { duration: 100 }, () => {
+        runOnJS(setShowPopover)(false);
+      });
+      translateY.value = withTiming(5, { duration: 100 });
+    } else {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      setShowPopover(true);
+      scale.value = withTiming(1, { duration: 150 });
+      opacity.value = withTiming(1, { duration: 150 });
+      translateY.value = withTiming(0, { duration: 150 });
+    }
+  };
+
+  const closePopover = () => {
+    if (showPopover) togglePopover();
+  };
 
   if (userType !== 'owner') return null;
 
   const currentRouteIndex = state.index;
   const currentOptions = descriptors[state.routes[currentRouteIndex].key]?.options;
 
-  if (currentOptions?.href === null) {
-    return null;
-  }
+  if (currentOptions?.href === null) return null;
 
   const currentRouteName = state.routes[currentRouteIndex].name;
-  
-  // Routes to show in the tab bar
   const visibleRouteNames = ['home', 'bookings', 'revenue'];
-  
-  const visibleRoutes = state.routes.filter((route: any) => 
-    visibleRouteNames.includes(route.name)
-  );
+  const visibleRoutes = state.routes.filter((route: any) => visibleRouteNames.includes(route.name));
 
   if (visibleRoutes.length === 0) return null;
 
-  const NAV_HEIGHT = normalize.height(52);
-  const PILL_WIDTH = normalize.width(170);
-  const SIDE_PADDING = normalize.width(16);
-
-  const renderIcon = (route: any, isActive: boolean, isIsolated: boolean = false) => {
-    const { options } = descriptors[route.key];
+  const renderIcon = (route: any, isActive: boolean) => {
+    const descriptor = descriptors[route.key];
+    if (!descriptor) return null;
+    const { options } = descriptor;
     if (options.tabBarIcon) {
       return options.tabBarIcon({
         focused: isActive,
@@ -49,38 +114,46 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
     return null;
   };
 
-  const isolatedTabName = 'bookings';
-  const isolatedTab = visibleRoutes.find((r: any) => r.name === isolatedTabName) || visibleRoutes[0];
-  const pillTabs = visibleRoutes.filter((r: any) => r.name !== isolatedTabName);
-  const isIsolatedActive = currentRouteName === isolatedTab.name;
+  const pillTabs = visibleRoutes;
 
   return (
     <View style={styles.container}>
       <View style={[
-        styles.navWrapper, 
-        { 
+        styles.navWrapper,
+        {
           bottom: Math.max(insets.bottom, 24),
-          paddingHorizontal: SIDE_PADDING,
+          paddingHorizontal: normalize.width(23),
           flexDirection: isRTL ? 'row-reverse' : 'row'
         }
       ]}>
-        {/* Isolated Button */}
         <TouchableOpacity
           style={styles.roundButton}
-          onPress={() => navigation.navigate(isolatedTab.name)}
+          onPress={() => {
+            if (!hasChalets) {
+              router.push('/(dashboard)/add-chalet');
+            } else {
+              togglePopover();
+            }
+          }}
           activeOpacity={0.8}
         >
-          <View style={[
-            styles.tabIconCircle,
-            isIsolatedActive && styles.activeTabIndicator
-          ]}>
-            {renderIcon(isolatedTab, isIsolatedActive, true)}
+          <View style={styles.tabIconCircle}>
+            {!hasChalets ? (
+                <SolarAddSquareBold size={normalize.width(28)} color="white" />
+            ) : selectedChalet?.image ? (
+                <Image 
+                    source={getImageSrc(selectedChalet.image)} 
+                    style={styles.chaletAvatarImg}
+                    resizeMode="cover"
+                />
+            ) : (
+                <SolarHome2Bold size={normalize.width(28)} color="white" />
+            )}
           </View>
         </TouchableOpacity>
 
-        {/* Tab Capsule */}
         <View style={[
-          styles.tabCapsule, 
+          styles.tabCapsule,
           { flexDirection: isRTL ? 'row-reverse' : 'row' }
         ]}>
           {pillTabs.map((route: any) => {
@@ -102,48 +175,161 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
           })}
         </View>
       </View>
+
+      <Modal
+        visible={showPopover}
+        transparent={true}
+        animationType="none"
+        onRequestClose={closePopover}
+      >
+        <TouchableWithoutFeedback onPress={closePopover}>
+          <View style={styles.popoverOverlay}>
+            <Animated.View
+              style={[
+                styles.popoverContainer,
+                animatedStyle,
+                {
+                  bottom: Math.max(insets.bottom, 24) + normalize.height(58),
+                  [isRTL ? 'right' : 'left']: normalize.width(16)
+                }
+              ]}
+            >
+              <View style={styles.popoverContent}>
+                <TouchableOpacity 
+                  style={[styles.popoverHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+                  onPress={() => { closePopover(); router.push('/(tabs)/(dashboard)/my-chalets'); }}
+                >
+                  <SolarHome2Bold size={20} color={Colors.primary} />
+                  <Text style={styles.popoverTitle}>{t('tabs.myChalets', 'شاليهاتي')}</Text>
+                </TouchableOpacity>
+
+                <ScrollView style={styles.popoverList}>
+
+
+                  {chalets.map((item: any) => (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={[
+                        styles.chaletItem,
+                        { flexDirection: isRTL ? 'row-reverse' : 'row' },
+                        selectedChalet?.id === item.id && { backgroundColor: '#F0F7FF' }
+                      ]}
+                      onPress={() => {
+                        dispatch(setSelectedChalet({
+                            id: item.id,
+                            name: isRTL ? (item.name?.ar || item.name) : (item.name?.en || item.name),
+                            image: item.images?.[0]?.url || null
+                        }));
+                        closePopover();
+                      }}
+                    >
+                      <Image source={getImageSrc(item.images?.[0]?.url)} style={styles.chaletThumb} />
+                      <View style={[styles.chaletItemInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                        <Text style={styles.chaletItemName} numberOfLines={1}>
+                          {isRTL ? (item.name?.ar || item.name) : (item.name?.en || item.name)}
+                        </Text>
+                      </View>
+                      
+                      <TouchableOpacity
+                        style={[styles.editItemBtn, { backgroundColor: '#EFF6FF', borderColor: '#DBEAFE' }]}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          closePopover();
+                          router.push({ pathname: '/(dashboard)/chalet-details', params: { id: item.id } });
+                        }}
+                      >
+                         <SolarMagnifierBold size={16} color={Colors.primary} />
+                      </TouchableOpacity>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+
+                <TouchableOpacity
+                  style={styles.addNewChaletBtn}
+                  onPress={() => { closePopover(); router.push('/(dashboard)/add-chalet'); }}
+                >
+                  <Text style={styles.addNewChaletText}>{t('dashboard.addChalet', 'إضافة شاليه جديد')}</Text>
+                </TouchableOpacity>
+              </View>
+            </Animated.View>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: { position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 1000 },
-  navWrapper: {
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  roundButton: { 
+  navWrapper: { width: '100%', alignItems: 'center', justifyContent: 'space-between' },
+  roundButton: {
     width: normalize.height(52), 
     height: normalize.height(52), 
     borderRadius: normalize.height(26),
     backgroundColor: Colors.primary, 
     justifyContent: 'center', 
-    alignItems: 'center' 
+    alignItems: 'center'
   },
-  tabCapsule: { 
-    width: normalize.width(110), // Reduced for a more compact and balanced look with 2 icons
+  tabCapsule: {
+    width: normalize.width(180), 
     height: normalize.height(52), 
     borderRadius: normalize.height(26),
     backgroundColor: Colors.primary, 
-    alignItems: 'center', 
-    justifyContent: 'center',
-    gap: 8,
+    flexDirection: 'row', 
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    flexDirection: 'row',
     paddingHorizontal: 8
   },
-  tabItemContainer: { 
-    flex: 1, 
-    alignItems: 'center', 
-    justifyContent: 'center' 
-  },
+  tabItemContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   tabIconCircle: {
-    width: normalize.height(40),
-    height: normalize.height(40),
+    width: normalize.height(40), 
+    height: normalize.height(40), 
     borderRadius: normalize.height(20),
-    justifyContent: 'center',
+    justifyContent: 'center', 
     alignItems: 'center',
   },
-  activeTabIndicator: { 
-    backgroundColor: 'white',
+  activeTabIndicator: { backgroundColor: 'white' },
+  popoverOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.1)' },
+  popoverContainer: { position: 'absolute', width: normalize.width(240), zIndex: 2000 },
+  popoverContent: {
+    backgroundColor: 'white', borderRadius: 24, shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.15,
+    shadowRadius: 16, elevation: 10, overflow: 'hidden', paddingBottom: 8,
+  },
+  popoverHeader: { padding: 16, borderBottomWidth: 1, borderBottomColor: '#F0F0F0', alignItems: 'center', gap: 8 },
+  popoverTitle: { fontSize: 14, fontWeight: '800', color: Colors.text.primary, flex: 1 },
+  popoverList: { maxHeight: 260 },
+  chaletItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F8F9FA',
+  },
+  chaletThumb: { width: 40, height: 40, borderRadius: 10, backgroundColor: '#F5F5F7' },
+  chaletItemInfo: { flex: 1 },
+  chaletItemName: { fontSize: 13, fontWeight: '700', color: '#333' },
+  addNewChaletBtn: {
+    padding: 12, marginHorizontal: 12, marginTop: 4, borderRadius: 12,
+    backgroundColor: '#F8F9FB', alignItems: 'center',
+  },
+  addNewChaletText: { fontSize: 12, fontWeight: '700', color: Colors.primary },
+  chaletAvatarImg: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 99,
+  },
+  editItemBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: '#F8F9FB',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
   },
 });

@@ -93,14 +93,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    fontWeight: "900",
+    fontFamily: "Alexandria-Black",
     color: "#111827",
   },
   location: {
     fontSize: 12,
     color: "#6B7280",
     marginTop: 2,
-  },
+   fontFamily: "Alexandria-Regular" },
   closeButton: {
     padding: 2,
   },
@@ -116,12 +116,12 @@ const styles = StyleSheet.create({
   },
   rating: {
     fontSize: 14,
-    fontWeight: "700",
+    fontFamily: "Alexandria-Bold",
     color: "#111827",
   },
   price: {
     fontSize: 13,
-    fontWeight: "800",
+    fontFamily: "Alexandria-Black",
     color: Colors.primary,
   },
 });

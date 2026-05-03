@@ -12,22 +12,31 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, Stack } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { ThemedText } from '@/components/themed-text';
 import { Colors, normalize, Spacing } from '@/constants/theme';
 import { 
   SolarMenuDotsBold, 
   SolarPenBold, 
-  SolarMapPointBold 
+  SolarMapPointBold,
+  SolarAltArrowLeftLinear,
+  SolarAltArrowRightLinear
 } from "@/components/icons/solar-icons";
 import { PrimaryButton } from '@/components/user/primary-button';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function ProfileEditScreen() {
   const router = useRouter();
-  const [name, setName] = useState('انسة انس');
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
+  const { user } = useSelector((state: RootState) => state.auth);
+  
+  const [name, setName] = useState(user?.name || (isRTL ? 'انسة انس' : 'Ansi Ans'));
   const [birthDate, setBirthDate] = useState('2000-04-21');
-  const [phone, setPhone] = useState('07735409876');
+  const [phone, setPhone] = useState(user?.phone || '07735409876');
 
   return (
     <SafeAreaView style={styles.container}>
@@ -35,16 +44,20 @@ export default function ProfileEditScreen() {
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.headerIconBtn}>
-          <SolarMenuDotsBold size={24} color="#6B7280" />
+      <View style={[styles.header, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+        <TouchableOpacity style={styles.headerIconBtn} onPress={() => router.back()}>
+          {isRTL ? (
+            <SolarAltArrowRightLinear size={24} color="#6B7280" />
+          ) : (
+            <SolarAltArrowLeftLinear size={24} color="#6B7280" />
+          )}
         </TouchableOpacity>
         
-        <ThemedText style={styles.headerTitle}>الملف الشخصي</ThemedText>
+        <ThemedText style={styles.headerTitle}>{t('headers.profile')}</ThemedText>
 
         <View style={styles.logoCircle}>
           <Image 
-            source={require('@/assets/arlogo.svg')} 
+            source={isRTL ? require('@/assets/arlogo.svg') : require('@/assets/logo.svg')} 
             style={styles.logoImg}
             resizeMode="contain"
           />
@@ -59,10 +72,10 @@ export default function ProfileEditScreen() {
         <View style={styles.avatarSection}>
           <View style={styles.avatarContainer}>
             <Image 
-              source={{ uri: 'https://api.dicebear.com/7.x/avataaars/png?seed=Mimi' }} 
+              source={{ uri: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png' }} 
               style={styles.avatarImg} 
             />
-            <TouchableOpacity style={styles.editIconBadge}>
+            <TouchableOpacity style={[styles.editIconBadge, { [isRTL ? 'right' : 'left']: 5 }]}>
               <SolarPenBold size={20} color="white" />
             </TouchableOpacity>
           </View>
@@ -72,50 +85,47 @@ export default function ProfileEditScreen() {
         <View style={styles.form}>
           {/* الاسم الكامل */}
           <View style={styles.fieldGroup}>
-            <ThemedText style={styles.label}>الاسم الكامل</ThemedText>
+            <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('auth.fullName')}</ThemedText>
             <View style={styles.inputWrapper}>
               <TextInput 
-                style={styles.input}
+                style={[styles.input, { textAlign: isRTL ? 'right' : 'left' }]}
                 value={name}
                 onChangeText={setName}
-                textAlign="right"
               />
             </View>
           </View>
 
           {/* تاريخ الميلاد */}
           <View style={styles.fieldGroup}>
-            <ThemedText style={styles.label}>تاريخ الميلاد</ThemedText>
+            <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('profile.edit.birthDate')}</ThemedText>
             <View style={styles.inputWrapper}>
               <TextInput 
-                style={styles.input}
+                style={[styles.input, { textAlign: isRTL ? 'right' : 'left' }]}
                 value={birthDate}
                 onChangeText={setBirthDate}
-                textAlign="right"
               />
             </View>
           </View>
 
           {/* رقم الهاتف */}
           <View style={styles.fieldGroup}>
-            <ThemedText style={styles.label}>رقم الهاتف</ThemedText>
-            <View style={styles.phoneInputRow}>
+            <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('auth.phone')}</ThemedText>
+            <View style={[styles.phoneInputRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
                <TextInput 
-                style={styles.phoneInput}
+                style={[styles.phoneInput, { textAlign: isRTL ? 'right' : 'left' }]}
                 value={phone}
                 onChangeText={setPhone}
                 keyboardType="phone-pad"
-                textAlign="right"
               />
                <TouchableOpacity style={styles.changePhoneBtn}>
-                  <ThemedText style={styles.changePhoneText}>تغيير رقم الهاتف</ThemedText>
+                  <ThemedText style={styles.changePhoneText}>{t('profile.edit.changePhone')}</ThemedText>
                </TouchableOpacity>
             </View>
           </View>
 
           {/* موقعك */}
           <View style={styles.fieldGroup}>
-            <ThemedText style={styles.label}>موقعك</ThemedText>
+            <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('common.location')}</ThemedText>
             <View style={styles.mapCard}>
               <Image 
                 source={{ uri: 'https://miro.medium.com/v2/resize:fit:1400/1*qV3uDpS9mZc6jS1j75n6oA.png' }} 
@@ -124,11 +134,13 @@ export default function ProfileEditScreen() {
               <View style={styles.mapPinOverlay}>
                  <SolarMapPointBold size={32} color="#035DF9" />
               </View>
-              <View style={styles.mapFooter}>
+              <View style={[styles.mapFooter, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
                  <TouchableOpacity>
-                   <ThemedText style={styles.changeLocText}>تغيير</ThemedText>
+                   <ThemedText style={styles.changeLocText}>{t('common.edit') || t('booking.edit')}</ThemedText>
                  </TouchableOpacity>
-                 <ThemedText style={styles.locNameText}>البصرة -ابة الخصيب</ThemedText>
+                 <ThemedText style={styles.locNameText}>
+                   {isRTL ? 'البصرة - ابي الخصيب' : 'Basra - Abu Al-Khaseeb'}
+                 </ThemedText>
               </View>
             </View>
           </View>
@@ -140,7 +152,7 @@ export default function ProfileEditScreen() {
       {/* Footer Submit Button */}
       <View style={styles.footer}>
         <PrimaryButton 
-          label="تاكيد" 
+          label={t('profile.edit.confirm')} 
           onPress={() => router.back()} 
           style={styles.submitBtn}
         />
@@ -155,7 +167,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   header: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
@@ -169,7 +180,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: '900',
+    fontFamily: "Alexandria-Black",
     color: '#111827',
   },
   logoCircle: {
@@ -210,7 +221,6 @@ const styles = StyleSheet.create({
   editIconBadge: {
     position: 'absolute',
     bottom: 5,
-    right: 5,
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -228,10 +238,9 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: "Alexandria-Bold",
     color: '#374151',
     marginBottom: 8,
-    textAlign: 'right',
   },
   inputWrapper: {
     backgroundColor: '#FFFFFF',
@@ -244,12 +253,11 @@ const styles = StyleSheet.create({
   },
   input: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: "Alexandria-SemiBold",
     color: '#9CA3AF',
     flex: 1,
   },
   phoneInputRow: {
-    flexDirection: 'row',
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     borderWidth: 1,
@@ -267,13 +275,13 @@ const styles = StyleSheet.create({
   },
   changePhoneText: {
     color: 'white',
-    fontSize: 13,
-    fontWeight: '800',
+    fontSize: 12,
+    fontFamily: "Alexandria-Black",
   },
   phoneInput: {
     flex: 1,
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: "Alexandria-SemiBold",
     color: '#9CA3AF',
     paddingHorizontal: 16,
   },
@@ -295,7 +303,6 @@ const styles = StyleSheet.create({
     left: '46%',
   },
   mapFooter: {
-    flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     marginTop: 12,
@@ -303,12 +310,12 @@ const styles = StyleSheet.create({
   },
   changeLocText: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: "Alexandria-Bold",
     color: '#035DF9',
   },
   locNameText: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: "Alexandria-Bold",
     color: '#9CA3AF',
   },
   footer: {

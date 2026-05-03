@@ -2,17 +2,21 @@
   "auth": {
     "chooseType": "اختر نوع الحساب",
     "owner": "صاحب شاليه",
-    "customer": "مستأجر / ضيف",
+    "customer": "مستأجر",
     "ownerDesc": "أضف شاليهك وأدر حجوزاتك بسهولة",
     "customerDesc": "استكشف واحجز أفضل الشاليهات لرحلتك",
-    "browseAsGuest": "تصفح كضيف",
+    "browseAsGuest": "تصفح كـ زائر",
     "login": "تسجيل الدخول",
     "phone": "رقم الهاتف",
     "continue": "المتابعة",
     "verify": "تحقق",
     "otpSent": "تم إرسال رمز التحقق إلى رقم هاتفك",
     "enterOtp": "أدخل رمز التحقق",
-    "fullName": "الاسم الكامل"
+    "fullName": "الاسم الكامل",
+    "dontHaveAccount": "ليس لديك حساب ؟",
+    "registerNow": "سجل الان",
+    "phonePlaceholder": "077XXXXXXXX",
+    "verificationCode": "رمز التحقق"
   },
   "tabs": {
     "home": "الرئيسية",
@@ -31,16 +35,49 @@
       "all": "الكل",
       "popular": "الأكثر طلباً",
       "nearby": "قريب منك",
-      "luxury": "فاخر"
+      "luxury": "فاخر",
+      "pool": "يحتوي مسبح",
+      "bbq": "شواء",
+      "garden": "حديقة"
     },
-    "seeAll": "عرض الكل"
+    "seeAll": "عرض الكل",
+    "openMap": "افتح الخارطة",
+    "recentBookings": "آخر الحجوزات",
+    "recommended": "مقترح لك"
   },
   "profile": {
     "title": "الملف الشخصي",
     "editProfile": "تعديل البيانات",
     "notifications": "الإشعارات",
     "language": "اللغة",
-    "logout": "تسجيل الخروج"
+    "logout": "تسجيل الخروج",
+    "logoutConfirm": "هل أنت متأكد من تسجيل الخروج؟",
+    "cancel": "إلغاء",
+    "exit": "خروج",
+    "contactUs": "تواصل معنا",
+    "privacyPolicy": "سياسة الخصوصية",
+    "wallet": {
+      "balance": "رصيدك الحالي",
+      "withdraw": "سحب"
+    },
+    "edit": {
+      "birthDate": "تاريخ الميلاد",
+      "changePhone": "تغيير رقم الهاتف",
+      "confirm": "تأكيد"
+    },
+    "review": {
+      "question": "شكد تقيم تجربتك؟",
+      "placeholder": "اكتب ملاحظاتك ....",
+      "send": "ارسال",
+      "cancel": "الغاء",
+      "noFavorites": "لا توجد مفضلات حتى الآن",
+      "noFavoritesDesc": "أي شاليه تعجبك، يمكنك إضافتها هنا للوصول إليها لاحقاً بسهولة."
+    }
+  },
+  "notifications": {
+    "today": "اليوم",
+    "yesterday": "امس",
+    "empty": "لا توجد اشعارات حتى الآن"
   },
   "dashboard": {
     "addChalet": "إضافة شاليه جديد",
@@ -63,12 +100,24 @@
       "cancelled": "ملغاة",
       "accept": "قبول",
       "decline": "رفض",
+      "records": "السجل",
+      "calendar": "التقويم",
       "cancellationReason": "سبب الإلغاء"
     },
     "revenue": {
       "balance": "الرصيد المتاح",
       "withdraw": "سحب الأرباح",
       "history": "سجل المعاملات"
+    },
+    "menu": {
+      "title": "قائمة الإدارة",
+      "bookings": "الحجوزات",
+      "shifts": "الشفتات",
+      "revenue": "الأرباح",
+      "customers": "الزبائن",
+      "transactions": "المعاملات",
+      "notifications": "الإشعارات",
+      "addChalet": "إضافة شاليه"
     }
   },
   "common": {
@@ -89,13 +138,16 @@
     "paymentMethod": "طريقة الدفع",
     "fullPayment": "دفع كامل",
     "depositPayment": "عربون",
-    "shift": "شفت"
+    "shift": "شفت",
+    "and": "و",
+    "error": "خطأ",
+    "delete": "حذف"
   },
   "booking": {
     "complete": "اكتمال الحجز",
     "shooket": "شوكت",
     "mano": "منو",
-    "details": "التفصيل",
+    "details": "التفاصيل",
     "deleteDay": "حذف اليوم",
     "next": "التالي",
     "adults": "البالغين",
@@ -108,7 +160,15 @@
     "morningTime": "9:00 ص - 3:00 م",
     "eveningTime": "4:00 م - 8:00 م",
     "overnightTime": "9:00 م - 8:00 ص",
-    "days": ["السبت", "الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"],
+    "days": [
+      "السبت",
+      "الأحد",
+      "الاثنين",
+      "الثلاثاء",
+      "الأربعاء",
+      "الخميس",
+      "الجمعة"
+    ],
     "months": {
       "march": "مارس 2024"
     },
@@ -166,5 +226,74 @@
     "noBookings": "لا توجد حجوزات حتى الآن",
     "noBookingsDesc": "ابدأ باستكشاف الشاليهات المتاحة واحجز رحلتك القادمة!",
     "exploreNow": "اكتشف الآن"
+  },
+  "headers": {
+    "notifications": "الإشعارات",
+    "favorites": "المفضلات",
+    "explore": "الخريطة",
+    "reviews": "المراجعات",
+    "facilities": "المرافق",
+    "bookings": "الحجوزات",
+    "gallery": "معرض الصور",
+    "bookingComplete": "اكتمال الحجز",
+    "bookingDetails": "تفاصيل الحجز",
+    "profile": "الملف الشخصي",
+    "home": "الرئيسية"
+  },
+  "facilities": {
+    "general": "الخدمات العامة",
+    "wifi": "واي فاي",
+    "garage": "كراج مظلل",
+    "generator": "مولدة أوتوماتيكية",
+    "bathroom": "الحمام",
+    "essentials": "المستلزمات الأساسية",
+    "essentialsDesc": "مناشف، صابون، ورق حمام",
+    "hairDryer": "مجفف شعر",
+    "shampoo": "شامبو وبلسم",
+    "soap": "صابون وجل استحمام",
+    "hotWater": "ماء حار",
+    "outdoorSinks": "مغاسل خارجية",
+    "kitchen": "المطبخ",
+    "fullKitchen": "مطبخ متكامل",
+    "kitchenDesc": "طباخ، فرن، ثلاجة كبيرة",
+    "cookingTools": "أدوات الطبخ",
+    "toolsDesc": "قدور، مقالي، زيت، ملح وفلفل",
+    "table": "مائدة",
+    "tableDesc": "أطباق، ملاعق، أكواب شاي وقهوة",
+    "outdoorFeatures": "الميزات الخارجية",
+    "privatePool": "مسبح خاص",
+    "bbqArea": "منطقة شواء",
+    "outdoorSeating": "جلسة خارجية مظللة"
+  },
+  "chalet": {
+    "details": {
+      "specs": "المواصفات الاساسية",
+      "facilities": "المرافق",
+      "overview": "نظرة عامة",
+      "location": "الموقع",
+      "reviews": "المراجعات",
+      "addReview": "إضافة مراجعة",
+      "related": "قد يعجبك ايضا",
+      "bookNow": "احجز الان",
+      "readMore": "اقرأ المزيد",
+      "morningShift": "شفت صباحي",
+      "specsList": ["بستان مع بيت", "300 م", "1 حمام", "3 غرف"]
+    }
+  },
+  "reviews": {
+    "title": "المراجعات",
+    "pending": "قيد المراجعة",
+    "reviewed": "تمت المراجعة"
+  },
+  "gallery": {
+    "title": "معرض الصور",
+    "categories": {
+      "all": "الكل",
+      "pool": "المسبح",
+      "bbq": "الشواء",
+      "kitchen": "المطبخ",
+      "bath": "الحمام"
+    },
+    "empty": "لا توجد صور في هذا القسم حالياً"
   }
 }

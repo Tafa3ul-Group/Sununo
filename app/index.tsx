@@ -1,52 +1,63 @@
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Redirect } from 'expo-router';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
-import { MotionIcon } from '@/components/icons/motion-icons';
+import { MotionIcon } from "@/components/icons/motion-icons";
+import { RootState } from "@/store";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { Dimensions, StyleSheet, View } from "react-native";
+import { useSelector } from "react-redux";
+
+const { width, height } = Dimensions.get("window");
 
 export default function Index() {
+  const router = useRouter();
   const [isAnimationDone, setIsAnimationDone] = useState(false);
-  const { isAuthenticated, userType } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, userType } = useSelector(
+    (state: RootState) => state.auth,
+  );
 
   useEffect(() => {
-    // Show splash animation for 3 seconds
-    const timer = setTimeout(() => {
-      setIsAnimationDone(true);
-    }, 3000);
+    if (isAnimationDone) {
+      let targetPath: any;
 
-    return () => clearTimeout(timer);
-  }, []);
+      if (!isAuthenticated && userType !== "guest") {
+        targetPath = "/(auth)/login";
+      } else if (userType === "owner") {
+        targetPath = "/(tabs)/(dashboard)/home";
+      } else {
+        targetPath = "/(tabs)/(customer)";
+      }
 
-  if (!isAnimationDone) {
-    return (
-      <View style={styles.container}>
-        <MotionIcon 
-          name="splash" 
-          size={300}
-          loop={false}
-        />
-      </View>
-    );
-  }
+      const navTimer = setTimeout(() => {
+        router.replace(targetPath);
+      }, 100);
 
-  if (!userType) {
-    return <Redirect href="/(auth)/choose-type" />;
-  }
+      return () => clearTimeout(navTimer);
+    }
+  }, [isAnimationDone, isAuthenticated, userType]);
 
-  if (userType === 'owner' && !isAuthenticated) {
-    return <Redirect href="/(auth)/choose-type" />;
-  }
-
-  // Customers and Guests land on customer tabs
-  return <Redirect href="/(tabs)/(customer)" />;
+  return (
+    <View style={styles.container}>
+      <MotionIcon
+        name="splash"
+        size={Math.max(width, height)}
+        loop={false}
+        autoPlay={true}
+        resizeMode="cover"
+        onAnimationFinish={() => setIsAnimationDone(true)}
+        style={styles.lottie}
+      />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  lottie: {
+    width: width,
+    height: height,
   },
 });

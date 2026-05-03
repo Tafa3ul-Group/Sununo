@@ -4,30 +4,56 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 const BASE_URL = 'https://k4wwso0cwg480c480oo0owg4.rakiza.dev/api/v1';
 // Force reload hooks
 
+const baseQuery = fetchBaseQuery({
+  baseUrl: BASE_URL,
+  prepareHeaders: (headers, { getState }) => {
+    // If we have a token in the state, use it for authenticated requests
+    const token = (getState() as any).auth.token;
+    if (token) {
+      headers.set('authorization', `Bearer ${token}`);
+    }
+    return headers;
+  },
+});
+
+const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
+  let result = await baseQuery(args, api, extraOptions);
+  
+  if (result.error && result.error.status === 401) {
+    // Force logout if 401 Unauthorized
+    const { logout } = require('../authSlice');
+    api.dispatch(logout());
+  }
+  
+  return result;
+};
+
 export const apiSlice = createApi({
   reducerPath: 'api',
-  baseQuery: fetchBaseQuery({
-    baseUrl: BASE_URL,
-    prepareHeaders: (headers, { getState }) => {
-      // If we have a token in the state, use it for authenticated requests
-      const token = (getState() as any).auth.token;
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
-  tagTypes: ['Chalet', 'User', 'Booking'],
+  baseQuery: baseQueryWithReauth,
+  tagTypes: ['Chalet', 'User', 'Booking', 'Favorite', 'Review', 'Notification', 'Wallet'],
   endpoints: (builder) => ({
     // Example endpoint for getting chalets
     getChalets: builder.query({
       query: (params) => ({
         url: '/customer/chalets',
+        params: {
+          ...params,
+          amenityIds: params?.amenityIds ? params.amenityIds.join(',') : undefined
+        },
+      }),
+      providesTags: ['Chalet'],
+    }),
+
+    // Get chalets optimized for map display
+    getChaletsMap: builder.query({
+      query: (params) => ({
+        url: '/customer/chalets/map',
         params,
       }),
       providesTags: ['Chalet'],
     }),
-    
+
     // Example endpoint for user info
     getMe: builder.query({
       query: () => '/auth/me',
@@ -42,7 +68,7 @@ export const apiSlice = createApi({
         body: credentials,
       }),
     }),
-    
+
     // Example mutation for verifying OTP
     verifyPhone: builder.mutation({
       query: (data) => ({
@@ -51,12 +77,14 @@ export const apiSlice = createApi({
         body: data,
       }),
     }),
-    // Mutation for creating a new chalet
+    // Mutation for creating a new chalet (multipart/form-data)
     createChalet: builder.mutation({
-      query: (data) => ({
+      query: (formData) => ({
         url: '/provider/chalets',
         method: 'POST',
-        body: data,
+        body: formData,
+        // Don't set Content-Type — FormData adds it automatically with boundary
+        headers: {},
       }),
       invalidatesTags: ['Chalet'],
     }),
@@ -68,6 +96,11 @@ export const apiSlice = createApi({
         method: 'POST',
         body: formData,
       }),
+    }),
+
+    // Get amenity categories for image categorization
+    getAmenityCategories: builder.query<any[], void>({
+      query: () => '/provider/chalets/amenity-categories',
     }),
 
 
@@ -116,11 +149,16 @@ export const apiSlice = createApi({
       query: () => '/cities/names',
     }),
 
+    // Get default shift templates
+    getShiftDefaults: builder.query<any[], void>({
+      query: () => '/shifts/defaults',
+    }),
+
     // Get regions for a specific city
     getChaletRegions: builder.query<any[], string>({
       query: (cityId) => `/cities/${cityId}/regions`,
     }),
-    
+
 
     // Shift Mutations
     createShift: builder.mutation({
@@ -210,7 +248,7 @@ export const apiSlice = createApi({
       query: (id) => `/customer/chalets/${id}`,
       providesTags: (result, error, id) => [{ type: 'Chalet' as const, id }],
     }),
-
+    
     setChaletAmenities: builder.mutation({
       query: ({ chaletId, data }) => ({
         url: `/provider/chalets/${chaletId}/amenities`,
@@ -270,8 +308,8 @@ export const apiSlice = createApi({
 
     // Get shift availability
     getShiftAvailability: builder.query({
-      query: (params) => ({
-        url: '/provider/shifts/availability',
+      query: ({ chaletId, ...params }) => ({
+        url: `/provider/chalets/${chaletId}/shifts/availability`,
         params,
       }),
       providesTags: ['Chalet'],
@@ -297,8 +335,8 @@ export const apiSlice = createApi({
 
     // Create external booking
     createExternalBooking: builder.mutation({
-      query: (data) => ({
-        url: '/provider/bookings/external',
+      query: ({ chaletId, ...data }) => ({
+        url: `/provider/chalets/${chaletId}/external-bookings`,
         method: 'POST',
         body: data,
       }),
@@ -308,7 +346,7 @@ export const apiSlice = createApi({
     // Delete external booking
     deleteExternalBooking: builder.mutation({
       query: (id) => ({
-        url: `/provider/bookings/external/${id}`,
+        url: `/provider/bookings/${id}/external`,
         method: 'DELETE',
       }),
       invalidatesTags: ['Booking', 'Chalet'],
@@ -356,6 +394,7 @@ export const apiSlice = createApi({
 
 export const {
   useGetChaletsQuery,
+  useGetChaletsMapQuery,
   useGetMeQuery,
   useLazyGetMeQuery,
   useLoginMutation,
@@ -366,12 +405,12 @@ export const {
   useGetOwnerChaletsQuery,
   useGetOwnerChaletDetailsQuery,
   useGetChaletDetailsQuery,
-  
+
   useGetChaletShiftsQuery,
   useGetShiftPricingQuery,
   useGetChaletCancellationPoliciesQuery,
 
-  
+
   useCreateShiftMutation,
   useUpdateShiftMutation,
   useDeleteShiftMutation,
@@ -382,12 +421,14 @@ export const {
   useUpdateShiftPricingDayMutation,
 
   useGetCitiesQuery,
+  useGetShiftDefaultsQuery,
   useGetChaletRegionsQuery,
   useLazyGetChaletRegionsQuery,
-  
+
   useGetAmenitiesQuery,
   useGetChaletAmenitiesQuery,
   useSetChaletAmenitiesMutation,
+  useGetAmenityCategoriesQuery,
 
   useGetProviderProfileQuery,
   useUpdateProviderProfileMutation,

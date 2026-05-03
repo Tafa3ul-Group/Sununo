@@ -16,7 +16,7 @@ interface SecondaryButtonProps {
   isActive?: boolean;
   icon?: React.ReactNode;
   iconLabel?: string;
-  iconPosition?: 'left' | 'right';
+  iconPosition?: "left" | "right";
   activeColor?: string;
   inactiveColor?: string;
   activeTextColor?: string;
@@ -24,6 +24,8 @@ interface SecondaryButtonProps {
   style?: ViewStyle;
   textStyle?: TextStyle;
   isLoading?: boolean;
+  height?: number;
+  variant?: "default" | "inverse"; // Added to let you choose the logic
 }
 
 export function SecondaryButton({
@@ -40,18 +42,31 @@ export function SecondaryButton({
   style,
   textStyle,
   isLoading = false,
+  height = 46,
+  variant = "default",
 }: SecondaryButtonProps) {
   const { i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
+  const isRTL = i18n.language === "ar";
 
-  // Use provided iconPosition or default to RTL-aware default
-  const finalIconPosition = iconPosition || (isRTL ? 'right' : 'left');
+  // Use EXACT original logic based on variant
+  const finalIconPosition =
+    iconPosition ||
+    (variant === "default"
+      ? isRTL
+        ? "right"
+        : "left"
+      : isRTL
+        ? "left"
+        : "right");
 
   const bgColor = isActive ? activeColor : "white";
   const borderColor = isActive ? activeColor : "#E5E7EB";
   const finalContentColor = isActive ? activeTextColor : inactiveTextColor;
 
   const scaledWidth = 44.4;
+
+  const flattenedStyle = StyleSheet.flatten(style);
+  const isFlex = flattenedStyle?.flex === 1 || flattenedStyle?.flexGrow === 1;
 
   return (
     <TouchableOpacity
@@ -60,31 +75,34 @@ export function SecondaryButton({
       style={[
         styles.container,
         {
-          flexDirection: finalIconPosition === 'right' ? 'row-reverse' : 'row',
-          gap: -1.5
+          flexDirection: finalIconPosition === "right" ? "row-reverse" : "row",
+          gap: -1.5,
         },
         style,
-        isLoading && { opacity: 0.7 }
+        isLoading && { opacity: 0.7 },
       ]}
       disabled={isLoading}
     >
-      {/* Icon Section */}
+      {/* Icon Section - Kept EXACTLY as original */}
       <View
         style={[
           styles.iconWrapper,
           {
             width: scaledWidth,
-            height: 46,
+            height: height,
             backgroundColor: bgColor,
             borderColor: borderColor,
             borderWidth: 1.5,
-            borderTopRightRadius: finalIconPosition === 'right' ? 23 : 14,
-            borderBottomRightRadius: finalIconPosition === 'right' ? 23 : 14,
-            borderTopLeftRadius: finalIconPosition === 'left' ? 8 : 8,
-            borderBottomLeftRadius: finalIconPosition === 'left' ? 8 : 8,
-            justifyContent: 'center',
-            alignItems: 'center'
-          }
+            borderTopRightRadius:
+              finalIconPosition === "right" ? height / 2 : 8,
+            borderBottomRightRadius:
+              finalIconPosition === "right" ? height / 2 : 8,
+            borderTopLeftRadius: finalIconPosition === "left" ? height / 2 : 8,
+            borderBottomLeftRadius:
+              finalIconPosition === "left" ? height / 2 : 8,
+            justifyContent: "center",
+            alignItems: "center",
+          },
         ]}
       >
         {!!(icon || iconLabel || isLoading) && (
@@ -102,7 +120,12 @@ export function SecondaryButton({
               </ThemedText>
             ) : icon ? (
               typeof icon === "string" ? (
-                <ThemedText style={[styles.text, { color: finalContentColor, fontSize: 12 }]}>
+                <ThemedText
+                  style={[
+                    styles.text,
+                    { color: finalContentColor, fontSize: 12 },
+                  ]}
+                >
                   {icon}
                 </ThemedText>
               ) : (
@@ -113,25 +136,31 @@ export function SecondaryButton({
         )}
       </View>
 
-      {/* Label Section */}
+      {/* Label Section - Kept EXACTLY as original */}
       <View
         style={[
           styles.textWrapper,
           {
+            flex: isFlex ? 1 : undefined,
             backgroundColor: bgColor,
             borderColor: borderColor,
-            height: 46,
+            height: height,
             paddingHorizontal: 20,
-            borderTopLeftRadius: finalIconPosition === 'right' ? 10 : 8,
-            borderBottomLeftRadius: finalIconPosition === 'right' ? 10 : 8,
-            borderTopRightRadius: finalIconPosition === 'left' ? 10 : 8,
-            borderBottomRightRadius: finalIconPosition === 'left' ? 10 : 8,
+            borderTopLeftRadius: finalIconPosition === "right" ? 10 : 8,
+            borderBottomLeftRadius: finalIconPosition === "right" ? 10 : 8,
+            borderTopRightRadius: finalIconPosition === "left" ? 10 : 8,
+            borderBottomRightRadius: finalIconPosition === "left" ? 10 : 8,
             borderWidth: 1.5,
           },
         ]}
       >
         <ThemedText
-          style={[styles.text, { color: finalContentColor, fontSize: 18 }, textStyle]}
+          style={[
+            styles.text,
+            { color: finalContentColor, fontSize: 14 },
+            textStyle,
+          ]}
+          numberOfLines={1}
         >
           {label}
         </ThemedText>
@@ -142,7 +171,6 @@ export function SecondaryButton({
 
 const styles = StyleSheet.create({
   container: {
-    height: 46,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -160,7 +188,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 18,
-    fontWeight: "800",
+    fontFamily: "Alexandria-Black",
     textAlign: "center",
     lineHeight: 22,
   },

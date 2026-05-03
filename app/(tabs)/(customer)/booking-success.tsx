@@ -1,6 +1,6 @@
-import React from 'react';
-import { StyleSheet, View, ScrollView } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import React, { useMemo } from 'react';
+import { StyleSheet, View, ScrollView, ActivityIndicator } from 'react-native';
+import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { normalize, Colors, isRTL } from '@/constants/theme';
 import { HorizontalCard } from '@/components/user/horizontal-card';
@@ -9,20 +9,62 @@ import { Image as ExpoImage } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { HeaderSection } from '@/components/header-section';
-
-const MOCK_CHALET = {
-    id: '1',
-    title: "شالية الاروع علةاالطلاق",
-    location: "البصرة - الجزائر",
-    rating: 4.5,
-    price: "30,000",
-    detailedLocation: "البصرة - ابي الخصيب",
-    image: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500&auto=format&fit=crop"
-};
+import { useGetCustomerBookingDetailsQuery } from '@/store/api/customerApiSlice';
+import { getImageSrc } from '@/hooks/useImageSrc';
+import { useFormatTime } from '@/hooks/useFormatTime';
 
 export default function BookingSuccessDetailsScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
   const router = useRouter();
+  const { id } = useLocalSearchParams();
+  const bookingId = id as string;
+  const { formatShiftTime } = useFormatTime();
+
+  // Fetch booking details from the backend
+  const { data: booking, isLoading } = useGetCustomerBookingDetailsQuery(bookingId, {
+    skip: !bookingId,
+  });
+
+  // Extract data from API response with fallbacks
+  const chalet = booking?.chalet || {} as any;
+  const chaletTitle = isRTL 
+    ? (chalet.name?.ar || chalet.nameAr || chalet.name || '') 
+    : (chalet.name?.en || chalet.nameEn || chalet.name || '');
+  const chaletLocation = isRTL 
+    ? (chalet.region?.name?.ar || chalet.region?.nameAr || chalet.region?.name || '') 
+    : (chalet.region?.name?.en || chalet.region?.nameEn || chalet.region?.name || '');
+  const detailedLocation = chaletLocation;
+  const chaletImage = getImageSrc(chalet.images?.[0]?.url);
+  const totalPrice = booking?.totalPrice ? Number(booking.totalPrice).toLocaleString() : '0';
+  const depositAmount = booking?.depositAmount ? Number(booking.depositAmount).toLocaleString() : '0';
+  const remainingAmount = booking?.remainingAmount ? Number(booking.remainingAmount).toLocaleString() : '0';
+
+  const shiftInfo = useMemo(() => {
+    if (!booking?.shift) return t('booking.morningShift');
+    const name = isRTL ? (booking.shift.name?.ar || booking.shift.name) : (booking.shift.name?.en || booking.shift.name);
+    const time = `${formatShiftTime(booking.shift.startTime)} - ${formatShiftTime(booking.shift.endTime)}`;
+    return `${name} (${time})`;
+  }, [booking, isRTL, t]);
+
+  const renderInfoRow = (label: string, value: string | React.ReactNode) => (
+    <View style={[styles.infoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <ThemedText style={styles.infoLabel}>{label}</ThemedText>
+        {typeof value === 'string' ? (
+          <ThemedText style={styles.infoValue}>{value}</ThemedText>
+        ) : (
+          value
+        )}
+    </View>
+  );
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -34,7 +76,14 @@ export default function BookingSuccessDetailsScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Chalet Card */}
         <HorizontalCard 
-            chalet={MOCK_CHALET} 
+            chalet={{
+              id: chalet.id || '',
+              title: chaletTitle,
+              location: chaletLocation,
+              rating: chalet.averageRating || 0,
+              price: chalet.basePrice ? Number(chalet.basePrice).toLocaleString() : '0',
+              image: chaletImage,
+            }} 
             style={styles.chaletCardInstance}
             hideFavorite={true}
             onPress={() => {}}
@@ -43,82 +92,57 @@ export default function BookingSuccessDetailsScreen() {
         {/* Map Card */}
         <View style={styles.detailsMapCard}>
             <View style={styles.mapSnippetWrapper}>
-                <ExpoImage source={{ uri: 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/47.98,30.50,13,0/600x300?access_token=pk.dummy' }} style={styles.mapSnippet} />
+                <ExpoImage source={{ uri: `https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/47.98,30.50,13,0/600x300?access_token=${process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN}` }} style={styles.mapSnippet} />
                 <View style={styles.mapMarker}>
                     <SolarMapPointBold size={32} color={Colors.primary} />
                 </View>
             </View>
-            <ThemedText style={styles.mapAddressLabel}>{MOCK_CHALET.detailedLocation}</ThemedText>
+            <ThemedText style={styles.mapAddressLabel}>{detailedLocation}</ThemedText>
         </View>
 
         {/* Customer Information */}
         <View style={styles.infoSectionCard}>
-            <ThemedText style={styles.sectionTitle}>{t('booking.customerInfo')}</ThemedText>
+            <ThemedText style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('booking.customerInfo')}</ThemedText>
             <View style={styles.divider} />
-            <View style={styles.infoRow}>
-                <ThemedText style={styles.infoLabel}>{t('booking.name')}</ThemedText>
-                <ThemedText style={styles.infoValue}>انسي انس</ThemedText>
-            </View>
-            <View style={styles.infoRow}>
-                <ThemedText style={styles.infoLabel}>{t('booking.phone')}</ThemedText>
-                <ThemedText style={[styles.infoValue, { direction: 'ltr' }]}>+496  7703409763</ThemedText>
-            </View>
+            {renderInfoRow(t('booking.name'), t('booking.nameValue'))}
+            {renderInfoRow(t('booking.phone'), <ThemedText style={[styles.infoValue, { direction: 'ltr' }]}>{t('booking.phoneValue')}</ThemedText>)}
         </View>
 
         {/* Booking Information */}
         <View style={styles.infoSectionCard}>
-            <ThemedText style={styles.sectionTitle}>{t('booking.bookingInfo')}</ThemedText>
+            <ThemedText style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('booking.bookingInfo')}</ThemedText>
             <View style={styles.divider} />
             
-            <View style={styles.infoRow}>
+            <View style={[styles.infoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <ThemedText style={styles.infoLabel}>{t('booking.bookingStatus')}</ThemedText>
                 <View style={styles.statusBadgeBlue}>
                     <ThemedText style={styles.statusBadgeTextBlue}>{t('booking.status.accepted')}</ThemedText>
                 </View>
-                <ThemedText style={styles.infoLabel}>{t('booking.bookingStatus')}</ThemedText>
             </View>
 
-            <View style={styles.infoRow}>
-                <ThemedText style={styles.infoValue}>{t('booking.dateValue')}</ThemedText>
-                <ThemedText style={styles.infoLabel}>{t('booking.date')}</ThemedText>
-            </View>
-            <View style={styles.infoRow}>
-                <ThemedText style={styles.infoValue}>{t('booking.morningShift')}</ThemedText>
-                <ThemedText style={styles.infoLabel}>{t('booking.shift')}</ThemedText>
-            </View>
-            <View style={styles.infoRow}>
-                <ThemedText style={styles.infoValue}>{t('booking.guestsValue')}</ThemedText>
-                <ThemedText style={styles.infoLabel}>{t('booking.guests')}</ThemedText>
-            </View>
-            <View style={styles.infoRow}>
-                <ThemedText style={styles.infoValue}>500,000 {t('common.iqd')}</ThemedText>
-                <ThemedText style={styles.infoLabel}>{t('booking.totalAmount')}</ThemedText>
-            </View>
+            {renderInfoRow(t('booking.date'), booking?.bookingDate || t('booking.dateValue'))}
+            {renderInfoRow(t('booking.shift'), shiftInfo)}
+            {renderInfoRow(t('booking.guests'), booking?.guestCount?.toString() || t('booking.guestsValue'))}
+            {renderInfoRow(t('booking.totalAmount'), `${totalPrice} ${t('common.iqd')}`)}
         </View>
 
         {/* Payment Information */}
         <View style={styles.infoSectionCard}>
-            <ThemedText style={styles.sectionTitle}>{t('booking.paymentDetails')}</ThemedText>
+            <ThemedText style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('booking.paymentDetails')}</ThemedText>
             <View style={styles.divider} />
             
-            <View style={styles.infoRow}>
-                <View style={styles.statusBadgeGray}>
-                    <ThemedText style={styles.statusBadgeTextGray}>{t('booking.status.deferred')}</ThemedText>
-                </View>
+            <View style={[styles.infoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 <ThemedText style={styles.infoLabel}>{t('booking.paymentStatus')}</ThemedText>
+                <View style={styles.statusBadgeGray}>
+                    <ThemedText style={styles.statusBadgeTextGray}>
+                      {booking?.paymentStatus === 'paid' ? t('booking.status.paid') : t('booking.status.deferred')}
+                    </ThemedText>
+                </View>
             </View>
 
-            <View style={styles.infoRow}>
-                <ThemedText style={styles.infoValue}>500,000 {t('common.iqd')}</ThemedText>
-                <ThemedText style={styles.infoLabel}>{t('booking.totalAmount')}</ThemedText>
-            </View>
-            <View style={styles.infoRow}>
-                <ThemedText style={styles.infoValue}>50,000 {t('common.iqd')}</ThemedText>
-                <ThemedText style={styles.infoLabel}>{t('booking.depositAmount')}</ThemedText>
-            </View>
-            <View style={styles.infoRow}>
-                <ThemedText style={styles.infoValue}>450,000 {t('common.iqd')}</ThemedText>
-                <ThemedText style={styles.infoLabel}>{t('booking.remainingAmount')}</ThemedText>
-            </View>
+            {renderInfoRow(t('booking.totalAmount'), `${totalPrice} ${t('common.iqd')}`)}
+            {renderInfoRow(t('booking.depositAmount'), `${depositAmount} ${t('common.iqd')}`)}
+            {renderInfoRow(t('booking.remainingAmount'), `${remainingAmount} ${t('common.iqd')}`)}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -140,22 +164,24 @@ const styles = StyleSheet.create({
   mapSnippetWrapper: { width: '100%', height: 120, borderRadius: 14, overflow: 'hidden', backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center' },
   mapSnippet: { width: '100%', height: '100%' },
   mapMarker: { position: 'absolute', zIndex: 3 },
-  mapAddressLabel: { textAlign: 'center', paddingVertical: 8, fontSize: normalize.font(12), fontWeight: '800', color: '#1E293B' },
+  mapAddressLabel: { textAlign: 'center', paddingVertical: 8, fontSize: normalize.font(12), fontFamily: "Alexandria-Black", color: '#1E293B' },
   infoSectionCard: { 
     backgroundColor: '#FFFFFF', 
     borderRadius: 20, 
     padding: 16, 
     borderWidth: 1, 
     borderColor: '#F1F5F9',
-    marginBottom: 12
+    marginBottom: 12,
+    paddingBottom: 24, // Add more padding at bottom
   },
-  sectionTitle: { fontSize: normalize.font(14), fontWeight: '900', color: Colors.primary, textAlign: isRTL ? 'right' : 'left' },
+  sectionTitle: { fontSize: normalize.font(14), fontFamily: "Alexandria-Black", color: Colors.primary },
   divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 10 },
-  infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  infoLabel: { fontSize: normalize.font(13), fontWeight: '800', color: '#1E293B' },
-  infoValue: { fontSize: normalize.font(13), fontWeight: '700', color: '#64748B' },
+  infoRow: { justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  infoLabel: { fontSize: normalize.font(13), fontFamily: "Alexandria-Black", color: '#1E293B' },
+  infoValue: { fontSize: normalize.font(13), fontFamily: "Alexandria-Bold", color: '#64748B' },
   statusBadgeBlue: { backgroundColor: '#035DF9', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
-  statusBadgeTextBlue: { color: '#FFF', fontSize: normalize.font(12), fontWeight: '800' },
+  statusBadgeTextBlue: { color: '#FFF', fontSize: normalize.font(12), fontFamily: "Alexandria-Black" },
   statusBadgeGray: { backgroundColor: '#94A3B8', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
-  statusBadgeTextGray: { color: '#FFF', fontSize: normalize.font(12), fontWeight: '800' },
+  statusBadgeTextGray: { color: '#FFF', fontSize: normalize.font(12), fontFamily: "Alexandria-Black" },
 });
+

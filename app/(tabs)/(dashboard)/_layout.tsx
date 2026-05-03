@@ -1,17 +1,17 @@
-import { Tabs, Redirect } from "expo-router";
-import React from "react";
 import { DashboardTabBar } from "@/components/dashboard/dashboard-tab-bar";
+import { SolarBanknoteBold, SolarHomeSmileBoldDuotone, SolarNotesBoldDuotone } from "@/components/icons/solar-icons";
+import { RootState } from "@/store";
+import { Redirect, Tabs } from "expo-router";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
-import { RootState } from "@/store";
-import { SolarHomeSmileBoldDuotone, SolarNotesBoldDuotone, SolarBanknoteBold } from "@/components/icons/solar-icons";
 
 export default function DashboardLayout() {
   const { t } = useTranslation();
   const { userType, isAuthenticated } = useSelector((state: RootState) => state.auth);
 
   if (!isAuthenticated) {
-    return <Redirect href="/(auth)/choose-type" />;
+    return <Redirect href="/(auth)/login" />;
   }
 
   if (userType === 'customer') {
@@ -51,8 +51,6 @@ export default function DashboardLayout() {
         }}
       />
       <Tabs.Screen name="shifts" options={{ href: null }} />
-      <Tabs.Screen name="add-chalet" options={{ href: null }} />
-      <Tabs.Screen name="edit-chalet" options={{ href: null }} />
       <Tabs.Screen name="chalet-details" options={{ href: null }} />
       <Tabs.Screen name="transactions" options={{ href: null }} />
       <Tabs.Screen name="notifications" options={{ href: null }} />

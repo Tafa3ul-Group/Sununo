@@ -1,323 +1,276 @@
-import { SolarAltArrowRightLinear } from "@/components/icons/solar-icons";
-import { Colors, Spacing, Typography, normalize } from "@/constants/theme";
-import { RootState } from "@/store";
-import { setCredentials } from "@/store/authSlice";
-import { useRouter } from "expo-router";
-import React from "react";
 import {
+  LoginBottomBackground,
+  LoginDividerShape,
+} from "@/components/icons/login-design-elements";
+import { LoginHeaderLogo } from "@/components/icons/login-header-logo";
+import { ThemedText } from "@/components/themed-text";
+import { AuthToggle } from "@/components/user/auth-toggle";
+import { PrimaryButton } from "@/components/user/primary-button";
+import { RootState } from "@/store";
+import { setCredentials, setUserType } from "@/store/authSlice";
+import { OtpInput } from "@/components/user/otp-input";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  Dimensions,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
-  Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
+import { useLoginMutation, useVerifyPhoneMutation } from "@/store/api/apiSlice";
+import { ActivityIndicator, Alert } from "react-native";
+// import { normalize } from "@/constants/theme";
 
-import {
-  useLazyGetMeQuery,
-  useLoginMutation,
-  useVerifyPhoneMutation,
-} from "@/store/api/apiSlice";
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const scale = SCREEN_WIDTH / 375;
+const normalize = {
+  width: (size: number) => size * scale,
+  height: (size: number) => size * scale, // Using uniform scaling for simplicity
+  font: (size: number) => size * scale,
+  radius: (size: number) => size * scale,
+};
 
-export default function LoginScreen() {
-  const router = useRouter();
+export function LoginScreen() {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
   const dispatch = useDispatch();
-  const userType = useSelector((state: RootState) => state.auth.userType);
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
 
-  const [step, setStep] = React.useState<"phone" | "otp">("phone");
-  const [phone, setPhone] = React.useState("7700000001");
-  const [code, setCode] = React.useState("");
-  const [name, setName] = React.useState("");
-  const [needsName, setNeedsName] = React.useState(false);
-  const [errorText, setErrorText] = React.useState("");
+  const [login, { isLoading: isLoginLoading }] = useLoginMutation();
+  const [verifyPhone, { isLoading: isVerifyLoading }] = useVerifyPhoneMutation();
 
-  const [loginMutation, { isLoading: isLoginLoading }] = useLoginMutation();
-  const [verifyPhoneMutation, { isLoading: isVerifyLoading }] =
-    useVerifyPhoneMutation();
-  const [triggerGetMe] = useLazyGetMeQuery();
-
-  const handleSendCode = async () => {
-    setErrorText("");
-    try {
-      if (phone.length < 10 || phone.length > 11) {
-        setErrorText("يرجى إدخال رقم هاتف صحيح (10-11 رقم)");
-        return;
-      }
-      const res = await loginMutation({ phone }).unwrap();
-      if (res.haveName === false) {
-        setNeedsName(true);
-      }
-      // Auto-fill OTP if provided in the response (useful for testing)
-      if (res.code) {
-        setCode(res.code.toString());
-      }
-      setStep("otp");
-    } catch (err: any) {
-      console.error(err);
-      setErrorText(
-        err?.data?.message?.[0] || err?.data?.message || "حدث خطأ غير متوقع",
-      );
-    }
-  };
-
-  const handleVerify = async () => {
-    setErrorText("");
-    try {
-      if (!code) {
-        setErrorText("يرجى إدخال رمز التحقق");
-        return;
-      }
-      if (needsName && !name) {
-        setErrorText("يرجى إدخال اسمك");
-        return;
-      }
-
-      const data: any = { phone, code: Number(code) };
-      if (needsName) data.name = name;
-
-      const res = await verifyPhoneMutation(data).unwrap();
-
-      // Store token first to authorize next request
-      dispatch(
-        setCredentials({
-          user: res.user,
-          token: res.token,
-          userType: userType || "customer",
-        }),
-      );
-
-      // Fetch full profile info
-      try {
-        const fullUser = await triggerGetMe({}).unwrap();
-        dispatch(
-          setCredentials({
-            user: fullUser,
-            token: res.token,
-            userType: userType || "customer",
-          }),
-        );
-      } catch (meErr) {
-        console.error("Me fetch failed", meErr);
-      }
-
-      router.replace(
-        userType === "owner" ? "/(tabs)/(dashboard)/home" : "/(tabs)",
-      );
-    } catch (err: any) {
-      console.error(err);
-      setErrorText(err?.data?.message || "رمز التحقق غير صحيح");
-    }
-  };
-
+  const userType = useSelector((state: RootState) => state.auth.userType) || "customer";
   const isOwner = userType === "owner";
 
+  const [step, setStep] = useState<"phone" | "otp">("phone");
+  const [phone, setPhone] = useState("7700000001");
+  const [code, setCode] = useState("123456");
+
+  function handleTypeChange(type: "owner" | "customer") {
+    dispatch(setUserType(type));
+  }
+
+  async function handleAction() {
+    if (step === "phone") {
+      try {
+        const res = await login({ phone }).unwrap();
+        if (res?.code) {
+          setCode(String(res.code));
+        }
+        setStep("otp");
+      } catch (err: any) {
+        const msg = err?.data?.message;
+        const displayMsg = Array.isArray(msg) ? msg.join(', ') : (msg || "Failed to send OTP");
+        Alert.alert(t('common.error'), String(displayMsg));
+      }
+    } else {
+      try {
+        const result = await verifyPhone({ phone, code }).unwrap();
+        dispatch(
+          setCredentials({
+            user: result.user,
+            token: result.token,
+            userType: userType,
+          }),
+        );
+        router.replace(isOwner ? "/(tabs)/(dashboard)/home" : "/(tabs)");
+      } catch (err: any) {
+        const msg = err?.data?.message;
+        const displayMsg = Array.isArray(msg) ? msg.join(', ') : (msg || "Invalid OTP");
+        Alert.alert(t('common.error'), String(displayMsg));
+      }
+    }
+  }
+
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
+      {/* Top Logo */}
+      <View style={styles.topLogoContainer}>
+        <LoginHeaderLogo size={normalize.width(200)} color="#0061FE" />
+      </View>
+
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => {
-              if (step === "otp") setStep("phone");
-              else router.back();
-            }}
-            disabled={isLoginLoading || isVerifyLoading}
-          >
-            <SolarAltArrowRightLinear size={24} color={Colors.text.primary} />
-          </TouchableOpacity>
-
-          <View style={styles.header}>
-            <Text style={styles.title}>تسجيل الدخول</Text>
-            <Text style={styles.subtitle}>
-              {step === "phone"
-                ? isOwner
-                  ? "أهلاً بك مجدداً، صاحب الشاليه"
-                  : "أهلاً بك مجدداً، يسعدنا انضمامك"
-                : "أدخل رمز التحقق المرسل إلى رقم هاتفك"}
-            </Text>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+        >
+          {/* User Type Toggle */}
+          <View style={styles.toggleWrapper}>
+            <AuthToggle activeType={userType} onChange={handleTypeChange} />
           </View>
 
-          <View style={styles.form}>
-            {errorText ? (
-              <Text
-                style={{ color: "red", textAlign: "right", marginBottom: 10 }}
-              >
-                {errorText}
-              </Text>
-            ) : null}
+          {/* Login Form */}
+          <View style={styles.formContainer}>
+            <View style={[styles.headerRow, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+              <ThemedText style={[styles.title, { textAlign: isRTL ? 'right' : 'left' }]}>{t('auth.login')}</ThemedText>
+              <View style={[styles.subtextRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <ThemedText style={styles.subtitle}>
+                  {t('auth.dontHaveAccount')}
+                </ThemedText>
+                <TouchableOpacity>
+                  <ThemedText style={[styles.linkText, isRTL ? { marginRight: normalize.width(6) } : { marginLeft: normalize.width(6) }]}>
+                    {t('auth.registerNow')}
+                  </ThemedText>
+                </TouchableOpacity>
+              </View>
+            </View>
 
             {step === "phone" ? (
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>رقم الهاتف</Text>
+                <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('auth.phone')}</ThemedText>
                 <TextInput
-                  style={[styles.input, { textAlign: "left" }]}
-                  placeholder="770 000 0000"
+                  style={[styles.input, { textAlign: isRTL ? 'right' : 'left' }]}
+                  placeholder={t('auth.phonePlaceholder')}
                   value={phone}
                   onChangeText={setPhone}
                   keyboardType="phone-pad"
-                  maxLength={11}
-                  editable={!isLoginLoading}
+                  placeholderTextColor="#94A3B8"
                 />
               </View>
             ) : (
-              <>
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>رمز التحقق</Text>
-                  <TextInput
-                    style={[
-                      styles.input,
-                      { textAlign: "center", letterSpacing: 5 },
-                    ]}
-                    placeholder="123456"
-                    value={code}
-                    onChangeText={setCode}
-                    keyboardType="number-pad"
-                    maxLength={6}
-                    editable={!isVerifyLoading}
-                  />
-                </View>
-
-                {needsName && (
-                  <View style={styles.inputGroup}>
-                    <Text style={styles.label}>اسمك الكامل</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="محمد أحمد"
-                      value={name}
-                      onChangeText={setName}
-                      editable={!isVerifyLoading}
-                    />
-                  </View>
-                )}
-              </>
-            )}
-
-            <TouchableOpacity
-              style={[styles.loginButton, { backgroundColor: Colors.primary }]}
-              onPress={step === "phone" ? handleSendCode : handleVerify}
-              activeOpacity={0.8}
-              disabled={isLoginLoading || isVerifyLoading}
-            >
-              <Text style={styles.loginButtonText}>
-                {step === "phone"
-                  ? isLoginLoading
-                    ? "جاري الإرسال..."
-                    : "المتابعة"
-                  : isVerifyLoading
-                    ? "جاري التحقق..."
-                    : "تسجيل الدخول"}
-              </Text>
-            </TouchableOpacity>
-
-            {step === "phone" && (
-              <View style={styles.registerContainer}>
-                <Text style={styles.noAccountText}>ليس لديك حساب؟</Text>
-                <TouchableOpacity>
-                  <Text style={styles.registerText}>إنشاء حساب جديد</Text>
-                </TouchableOpacity>
+              <View style={styles.inputGroup}>
+                <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('auth.verificationCode')}</ThemedText>
+                <OtpInput 
+                  code={code} 
+                  setCode={setCode} 
+                  length={6} 
+                />
               </View>
             )}
+
+            <PrimaryButton
+              label={step === "phone" ? t('auth.login') : t('auth.verify')}
+              onPress={handleAction}
+              style={styles.loginBtn}
+              activeColor="#0061FE"
+              loading={isLoginLoading || isVerifyLoading}
+            />
+
+            <TouchableOpacity 
+              style={styles.guestLink}
+              onPress={() => {
+                dispatch(setUserType('guest'));
+                router.replace("/(tabs)");
+              }}
+            >
+              <ThemedText style={styles.guestLinkText}>
+                {t('auth.browseAsGuest')}
+              </ThemedText>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+
+      {/* Footer Wave */}
+      <View style={styles.bottomWaveContainer}>
+        <LoginBottomBackground width={SCREEN_WIDTH} />
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: "white",
+  },
+  topLogoContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: normalize.height(60),
+    marginBottom: normalize.height(30),
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.xl,
+    paddingHorizontal: normalize.width(24),
+    paddingBottom: normalize.height(100),
   },
-  backButton: {
-    marginTop: Spacing.md,
-    marginBottom: Spacing.xl,
+  toggleWrapper: {
+    alignItems: "center",
+    marginBottom: normalize.height(50),
   },
-  header: {
-    marginBottom: Spacing.xl * 2,
-    alignItems: "flex-end",
+  formContainer: {
+    width: "100%",
+  },
+  headerRow: {
+    marginBottom: normalize.height(45),
   },
   title: {
-    ...Typography.h1,
-    fontSize: normalize.font(32),
-    color: Colors.text.primary,
-    textAlign: "right",
-    marginBottom: Spacing.xs,
-  },
-  subtitle: {
-    ...Typography.body,
-    color: Colors.text.secondary,
-    textAlign: "right",
-    fontSize: normalize.font(16),
-  },
-  form: {
-    gap: Spacing.lg,
-  },
-  inputGroup: {
-    gap: Spacing.xs,
-  },
-  label: {
-    ...Typography.caption,
-    textAlign: "right",
-    color: Colors.text.primary,
-    fontWeight: "600",
+    fontSize: normalize.font(24),
+    fontFamily: "Alexandria-Black",
+    color: "#1E293B",
     marginBottom: normalize.height(4),
   },
+  subtextRow: {
+    alignItems: "center",
+  },
+  subtitle: {
+    fontSize: normalize.font(14),
+    color: "#64748B",
+    fontFamily: "Alexandria-Medium",
+  },
+  linkText: {
+    fontSize: normalize.font(14),
+    color: "#0061FE",
+    fontFamily: "Alexandria-Bold",
+  },
+  inputGroup: {
+    marginBottom: normalize.height(25),
+  },
+  label: {
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Bold",
+    color: "#1E293B",
+    marginBottom: normalize.height(10),
+  },
   input: {
-    height: normalize.height(56),
-    backgroundColor: Colors.surface,
-    borderRadius: normalize.radius(16),
-    paddingHorizontal: Spacing.md,
+    width: "100%",
+    height: normalize.height(52),
+    backgroundColor: "#FFFFFF",
+    borderRadius: normalize.radius(10),
     borderWidth: 1,
-    borderColor: Colors.border,
-    textAlign: "right",
-    fontSize: normalize.font(16),
+    borderColor: "#E2E8F0",
+    paddingHorizontal: normalize.width(18),
+    fontSize: normalize.font(15),
+    fontFamily: "Alexandria-Medium",
+    color: "#1E293B",
   },
-  forgotPassword: {
-    alignSelf: "flex-start",
+  loginBtn: {
+    marginTop: normalize.height(20),
+    height: normalize.height(52),
+    width: "100%",
+    shadowOpacity: 0,
+    elevation: 0,
   },
-  forgotPasswordText: {
-    ...Typography.caption,
-    color: Colors.primary,
-  },
-  loginButton: {
-    height: normalize.height(56),
-    borderRadius: normalize.radius(16),
-    justifyContent: "center",
+  guestLink: {
+    marginTop: normalize.height(35),
+    width: "100%",
     alignItems: "center",
-    marginTop: Spacing.md,
   },
-  loginButtonText: {
-    ...Typography.h2,
-    color: Colors.text.onPrimary,
-    fontSize: normalize.font(18),
+  guestLinkText: {
+    fontSize: normalize.font(15),
+    color: "#94A3B8",
+    fontFamily: "Alexandria-Bold",
   },
-  registerContainer: {
-    flexDirection: "row-reverse",
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: Spacing.xl,
-    gap: Spacing.xs,
-  },
-  noAccountText: {
-    ...Typography.body,
-    color: Colors.text.secondary,
-  },
-  registerText: {
-    ...Typography.body,
-    color: Colors.primary,
-    fontWeight: "700",
+  bottomWaveContainer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: -1,
   },
 });
+// Default export for Expo Router
+export default LoginScreen;

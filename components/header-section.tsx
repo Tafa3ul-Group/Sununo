@@ -5,6 +5,8 @@ import {
   SolarMapPointBold,
   SolarStarBold,
   SolarUserBold,
+  SolarBellBingBoldDuotone,
+  SolarWidgetBold,
 } from "@/components/icons/solar-icons";
 import { Colors, normalize, Spacing } from "@/constants/theme";
 import { RootState } from "@/store";
@@ -38,6 +40,7 @@ interface HeaderSectionProps {
   onExtraIconPress?: () => void;
   showProfile?: boolean;
   onProfilePress?: () => void;
+  onMenuPress?: () => void;
   onDeletePress?: () => void;
   showLogo?: boolean;
   showExtra?: boolean;
@@ -58,6 +61,7 @@ export function HeaderSection({
   onExtraIconPress,
   showProfile = false,
   onProfilePress,
+  onMenuPress,
   onDeletePress,
   showLogo = true,
   showExtra = false,
@@ -65,11 +69,11 @@ export function HeaderSection({
   isHome = false,
 }: HeaderSectionProps) {
   const router = useRouter();
-  const { i18n, t } = useTranslation();
-  const isRTL = i18n.language === "ar";
-  const { userType: stateUserType } = useSelector(
+  const { t } = useTranslation();
+  const { userType: stateUserType, language } = useSelector(
     (state: RootState) => state.auth,
   );
+  const isRTL = language === "ar";
   const [selectedCategory, setSelectedCategory] = React.useState("all");
 
   const finalUserType = userType || stateUserType;
@@ -107,47 +111,87 @@ export function HeaderSection({
       <View
         style={[
           styles.topRow,
-          { marginBottom, flexDirection: isRTL ? "row" : "row" },
+          {
+            marginBottom,
+            flexDirection: isHome
+              ? isRTL
+                ? "row"
+                : "row-reverse"
+              : isRTL
+                ? "row-reverse"
+                : "row",
+          },
         ]}
       >
-        {/* START SIDE (Left in LTR, Right in RTL? No, we force it to match the screenshot) */}
-        {/* Based on screenshot: Left always has Avatar/Back, Right always has Logo */}
-        <View style={[styles.headerSide, { alignItems: "flex-start" }]}>
+        {/* START SIDE (Left in LTR Standard, Right in RTL Standard) - Avatar/Back + Search */}
+        <View
+          style={[
+            styles.headerSide,
+            {
+              alignItems: isHome
+                ? isRTL
+                  ? "flex-start"
+                  : "flex-end"
+                : isRTL
+                  ? "flex-end"
+                  : "flex-start",
+            },
+          ]}
+        >
           {isHome ? (
-            <View style={[styles.homeLeftGroup, { flexDirection: "row" }]}>
-              <TouchableOpacity
-                onPress={
-                  onProfilePress || (() => router.push("/(customer)/profile"))
-                }
-                style={styles.avatarContainerHome}
-              >
-                <View style={styles.avatarCircleHome}>
-                  <Image
-                    source={{
-                      uri: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
-                    }}
-                    style={styles.avatarImgHome}
+            <View
+              style={[
+                styles.homeLeftGroup,
+                { flexDirection: isRTL ? "row-reverse" : "row" },
+              ]}
+            >
+              {stateUserType !== "guest" && (
+                <TouchableOpacity
+                  onPress={() => router.push("/(customer)/notifications")}
+                  style={styles.avatarContainerHome}
+                >
+                  <SolarBellBingBoldDuotone
+                    size={normalize.width(28)}
+                    color={Colors.primary}
                   />
-                </View>
-              </TouchableOpacity>
+                </TouchableOpacity>
+              )}
 
               <TouchableOpacity
-                onPress={onExtraIconPress}
+                onPress={() => router.push("/(customer)/search")}
                 style={styles.searchPillHome}
               >
                 <SolarMagnifierBold
                   size={normalize.width(24)}
-                  color="#94A3B8"
+                  color={Colors.primary}
                 />
               </TouchableOpacity>
             </View>
           ) : (
-            showBackButton && <CircleBackButton onPress={onBackPress} />
+            <View
+              style={[
+                styles.homeLeftGroup,
+                { flexDirection: isRTL ? "row-reverse" : "row" },
+              ]}
+            >
+              {showBackButton && <CircleBackButton onPress={onBackPress} />}
+              {extraIcon === "search" && (
+                <TouchableOpacity
+                  onPress={() => router.push("/(customer)/search")}
+                  style={styles.searchPillHome}
+                >
+                  <SolarMagnifierBold
+                    size={normalize.width(24)}
+                    color={Colors.primary}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
           )}
         </View>
 
-        {/* Center Title */}
-        {!isHome && (
+        {/* Center Title - only when no logo shown */}
+        {!isHome && !showLogo && (
           <View style={styles.titleWrapper}>
             <ThemedText style={styles.headerTitle} numberOfLines={1}>
               {title}
@@ -155,8 +199,21 @@ export function HeaderSection({
           </View>
         )}
 
-        {/* END SIDE (Right Side) - Logo is here */}
-        <View style={[styles.headerSide, { alignItems: "flex-end" }]}>
+        {/* END SIDE (Right in LTR Standard, Right in RTL Standard) - Logo */}
+        <View
+          style={[
+            styles.headerSide,
+            {
+              alignItems: isHome
+                ? isRTL
+                  ? "flex-end"
+                  : "flex-start"
+                : isRTL
+                  ? "flex-start"
+                  : "flex-end",
+            },
+          ]}
+        >
           {showLogo && (
             <View style={isHome ? styles.logoCircleHome : styles.logoCircle}>
               <Image
@@ -172,24 +229,22 @@ export function HeaderSection({
           )}
 
           {/* Supporting extra actions for non-home pages */}
-          {!isHome && (showProfile || showExtra) && (
+          {!isHome && !showLogo && (showProfile || showExtra) && (
             <View
               style={{
-                flexDirection: "row",
+                flexDirection: isRTL ? "row-reverse" : "row",
                 gap: 8,
                 position: "absolute",
-                right: 0,
+                [isRTL ? "left" : "right"]: 0,
               }}
             >
-              {showProfile && (
+              {showProfile && stateUserType !== "guest" && (
                 <TouchableOpacity
                   style={styles.actionButton}
-                  onPress={
-                    onProfilePress || (() => router.push("/(customer)/profile"))
-                  }
+                  onPress={() => router.push("/(customer)/notifications")}
                 >
-                  <SolarUserBold
-                    size={normalize.width(22)}
+                  <SolarBellBingBoldDuotone
+                    size={normalize.width(28)}
                     color={Colors.text.primary}
                   />
                 </TouchableOpacity>
@@ -272,11 +327,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: normalize.width(20),
-    height: normalize.height(110),
+    height: normalize.height(60),
     justifyContent: "space-between",
   },
   headerSide: {
-    width: normalize.width(110),
     height: "100%",
     justifyContent: "center",
     alignItems: "center",
@@ -288,18 +342,19 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: normalize.font(18),
-    fontWeight: "800",
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
+    lineHeight: normalize.font(24),
+    paddingVertical: normalize.height(2),
   },
   logoCircle: {
     width: normalize.width(42),
     height: normalize.width(42),
     borderRadius: normalize.width(21),
-    backgroundColor: "#F9FAFB",
+    backgroundColor: "transparent",
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#F3F4F6",
+    borderWidth: 0,
     overflow: "hidden",
   },
   logoImg: {
@@ -319,12 +374,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   avatarContainerHome: {
-    width: normalize.width(50),
-    height: normalize.width(50),
+    width: normalize.width(48),
+    height: normalize.width(48),
     borderRadius: 999,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#F1F5F9",
+    // Transition and cursor are handled by TouchableOpacity/React Native
   },
   avatarCircleHome: {
     width: "82%",
@@ -339,7 +397,7 @@ const styles = StyleSheet.create({
   },
   searchPillHome: {
     width: normalize.width(48),
-    height: normalize.width(50),
+    height: normalize.width(48),
     borderRadius: 999,
     borderWidth: 1,
     borderColor: "#F1F5F9",
@@ -374,6 +432,7 @@ const styles = StyleSheet.create({
     marginHorizontal: Spacing.sm,
     fontSize: normalize.font(16),
     color: Colors.text.primary,
+    fontFamily: "Alexandria-Regular",
   },
   categoriesScroll: {
     paddingHorizontal: Spacing.md,
@@ -396,10 +455,13 @@ const styles = StyleSheet.create({
   },
   categoryLabel: {
     fontSize: normalize.font(14),
-    fontWeight: "500",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
+    lineHeight: normalize.font(20),
+    paddingVertical: normalize.height(1),
   },
   categoryLabelActive: {
     color: Colors.background,
+    fontFamily: "Alexandria-Regular",
   },
 });

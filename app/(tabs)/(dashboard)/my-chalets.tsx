@@ -14,7 +14,8 @@ import {
   SolarStarBold,
   SolarPenBold,
   SolarAddSquareBold,
-  SolarHome2Bold
+  SolarHome2Bold,
+  SolarNotebookBold
 } from "@/components/icons/solar-icons";
 import {
   ActivityIndicator,
@@ -88,15 +89,27 @@ export default function MyChaletsScreen() {
           </View>
 
           {/* Actions */}
-          <TouchableOpacity
-            style={styles.editBtn}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              router.push({ pathname: '/(tabs)/(dashboard)/edit-chalet', params: { id: item.id } });
-            }}
-          >
-            <SolarPenBold size={18} color={Colors.text.muted} />
-          </TouchableOpacity>
+          <View style={[styles.actionsColumn, { alignItems: isRTL ? 'flex-start' : 'flex-end' }]}>
+            <TouchableOpacity
+              style={styles.editBtn}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                router.push({ pathname: '/(dashboard)/edit-chalet', params: { id: item.id } });
+              }}
+            >
+              <SolarPenBold size={18} color={Colors.text.muted} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.editBtn, { marginTop: 8 }]}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                router.push({ pathname: '/(dashboard)/edit-details', params: { id: item.id } });
+              }}
+            >
+              <SolarNotebookBold size={18} color={Colors.primary} />
+            </TouchableOpacity>
+          </View>
         </View>
       </TouchableOpacity>
     );
@@ -131,7 +144,7 @@ export default function MyChaletsScreen() {
             </View>
             <TouchableOpacity 
               style={styles.addChaletBtn}
-              onPress={() => router.push('/(tabs)/(dashboard)/add-chalet')}
+              onPress={() => router.push('/(dashboard)/add-chalet')}
             >
               <SolarAddSquareBold size={24} color={Colors.white} />
             </TouchableOpacity>
@@ -185,7 +198,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: normalize.font(18),
-    fontWeight: '800',
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
   },
   countBadge: {
@@ -199,7 +212,7 @@ const styles = StyleSheet.create({
   countBadgeText: {
     color: Colors.white,
     fontSize: normalize.font(11),
-    fontWeight: '800',
+    fontFamily: "Alexandria-Black",
   },
   addChaletBtn: {
     width: 36,
@@ -251,7 +264,7 @@ const styles = StyleSheet.create({
   },
   chaletName: {
     fontSize: normalize.font(15),
-    fontWeight: '700',
+    fontFamily: "Alexandria-Bold",
     color: Colors.text.primary,
   },
   locationRow: {
@@ -261,7 +274,7 @@ const styles = StyleSheet.create({
   locationLabel: {
     fontSize: normalize.font(11),
     color: Colors.text.muted,
-    fontWeight: '500',
+    fontFamily: "Alexandria-Medium",
   },
   chipRow: {
     gap: 6,
@@ -277,7 +290,7 @@ const styles = StyleSheet.create({
   },
   statChipText: {
     fontSize: normalize.font(11),
-    fontWeight: '700',
+    fontFamily: "Alexandria-Bold",
   },
   editBtn: {
     width: 32,
@@ -286,6 +299,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F9FB',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  actionsColumn: {
+    justifyContent: 'center',
+    gap: 8,
   },
   emptyContainer: {
     alignItems: 'center',
@@ -304,13 +321,13 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: normalize.font(16),
-    fontWeight: '700',
+    fontFamily: "Alexandria-Bold",
     color: Colors.text.primary,
   },
   emptySubtitle: {
     fontSize: normalize.font(12),
     color: Colors.text.muted,
-    fontWeight: '500',
+    fontFamily: "Alexandria-Medium",
     textAlign: 'center',
     paddingHorizontal: 40,
   },

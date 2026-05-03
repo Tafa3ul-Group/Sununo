@@ -1,3 +1,4 @@
+import { ThemedText } from "@/components/themed-text";
 import React from "react";
 import {
   ActivityIndicator,
@@ -8,7 +9,6 @@ import {
   ViewStyle,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
-import { ThemedText } from "@/components/themed-text";
 
 interface PrimaryButtonProps {
   label: string;
@@ -25,6 +25,7 @@ interface PrimaryButtonProps {
   border?: string;
   style?: ViewStyle;
   textStyle?: TextStyle;
+  height?: number;
 }
 
 /**
@@ -46,6 +47,7 @@ export function PrimaryButton({
   border = "#E5E7EB",
   style,
   textStyle,
+  height = 46,
 }: PrimaryButtonProps) {
   const isWhite = variant === "white";
   const defaultActiveColor = isWhite ? "white" : "#035DF9";
@@ -66,27 +68,26 @@ export function PrimaryButton({
     );
   }
 
-  const scaledPartHeight = 46;
+  const scaledPartHeight = height;
   const scaledPartWidth = (29 / 29) * scaledPartHeight; // Maintain aspect ratio of the 29x29 design
 
   const currentBorderColor = isActive ? "transparent" : border;
   const currentBorderWidth = isActive ? 0 : 1;
+
+  // Dynamic flex check
+  const flattenedStyle = StyleSheet.flatten(style);
+  const isFlex = flattenedStyle?.flex === 1 || flattenedStyle?.flexGrow === 1;
 
   return (
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={onPress}
       disabled={disabled}
-      style={[styles.hybridContainer, style]}
+      style={[styles.hybridContainer, { height }, style]}
     >
       {/* Right Curve SVG */}
       <View style={{ width: scaledPartWidth, height: scaledPartHeight }}>
-        <Svg
-          width="100%"
-          height="100%"
-          viewBox="62 0 29 29"
-          fill="none"
-        >
+        <Svg width="100%" height="100%" viewBox="62 0 29 29" fill="none">
           <Path
             d="M91 14.5C91 6.49187 84.5081 0 76.5 0H67.1176C64.2912 0 62 2.29125 62 5.11765V23.8824C62 26.7088 64.2912 29 67.1176 29H76.5C84.5081 29 91 22.5081 91 14.5Z"
             fill={color}
@@ -100,11 +101,11 @@ export function PrimaryButton({
         style={[
           styles.middleSection,
           {
+            flex: isFlex ? 1 : undefined,
             borderColor: currentBorderColor,
             borderWidth: currentBorderWidth,
             backgroundColor: color,
             height: scaledPartHeight,
-            flex: 1,
             marginHorizontal: -2, // Slight overlap to fix pixel gaps
           },
         ]}
@@ -113,6 +114,7 @@ export function PrimaryButton({
           {icon}
           <ThemedText
             style={[styles.primaryText, { color: textColor }, textStyle]}
+            numberOfLines={1}
           >
             {label}
           </ThemedText>
@@ -121,12 +123,7 @@ export function PrimaryButton({
 
       {/* Left Curve SVG */}
       <View style={{ width: scaledPartWidth, height: scaledPartHeight }}>
-        <Svg
-          width="100%"
-          height="100%"
-          viewBox="0 0 29 29"
-          fill="none"
-        >
+        <Svg width="100%" height="100%" viewBox="0 0 29 29" fill="none">
           <Path
             d="M0 14.5C0 6.49187 6.49187 0 14.5 0H23.8824C26.7088 0 29 2.29125 29 5.11765V23.8824C29 26.7088 26.7088 29 23.8824 29H14.5C6.49187 29 0 22.5081 0 14.5Z"
             fill={color}
@@ -146,7 +143,6 @@ const styles = StyleSheet.create({
   },
   hybridContainer: {
     flexDirection: "row-reverse",
-    height: 46,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -154,11 +150,11 @@ const styles = StyleSheet.create({
   middleSection: {
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 4,
+    paddingHorizontal: 12,
   },
   primaryText: {
     fontSize: 18,
-    fontWeight: "800",
+    fontFamily: "Alexandria-Black",
     textAlign: "center",
   },
   textWithIcon: {

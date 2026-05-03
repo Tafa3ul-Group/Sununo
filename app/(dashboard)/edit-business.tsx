@@ -1,31 +1,30 @@
-import { 
-  SolarShopBold, 
-  SolarMapPointBold, 
-  SolarPenBold, 
-  SolarBanknoteBold, 
-  SolarCardBold 
-} from "@/components/icons/solar-icons";
-import React, { useState, useEffect } from 'react';
-import { 
-  StyleSheet, 
-  View, 
-  ScrollView, 
-  TextInput, 
-  TouchableOpacity, 
-  ActivityIndicator, 
-  Alert,
-  KeyboardAvoidingView,
-  Platform
-} from 'react-native';
-import { Stack, useRouter } from 'expo-router';
-import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
-import { logout } from '@/store/authSlice';
-import { useGetProviderProfileQuery, useUpdateProviderProfileMutation } from '@/store/api/apiSlice';
-import { Colors, Spacing, Typography, normalize } from '@/constants/theme';
-import { ThemedText } from '@/components/themed-text';
 import { HeaderSection } from '@/components/header-section';
+import {
+    SolarBanknoteBold,
+    SolarCardBold,
+    SolarMapPointBold,
+    SolarPenBold,
+    SolarShopBold
+} from "@/components/icons/solar-icons";
+import { ThemedText } from '@/components/themed-text';
+import { Colors, normalize } from '@/constants/theme';
+import { useGetProviderProfileQuery, useUpdateProviderProfileMutation } from '@/store/api/apiSlice';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+    ActivityIndicator,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    TextInput,
+    TouchableOpacity,
+    View
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useDispatch } from 'react-redux';
 
 export default function ProviderProfileScreen() {
   const { t, i18n } = useTranslation();
@@ -100,14 +99,7 @@ export default function ProviderProfileScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <HeaderSection 
-        userType="owner"
-        title={isRTL ? 'معلومات العمل والمصرف' : 'Business & Bank Info'}
-        showSearch={false}
-        showCategories={false}
-        showBackButton={true}
-      />
+    <View style={styles.container}>
 
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -179,7 +171,7 @@ export default function ProviderProfileScreen() {
 
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -203,7 +195,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: normalize.font(18),
-    fontWeight: '700',
+    fontFamily: "Alexandria-Bold",
     color: Colors.text.primary,
     marginBottom: 16,
     textAlign: 'right',
@@ -213,7 +205,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: normalize.font(14),
-    fontWeight: '600',
+    fontFamily: "Alexandria-SemiBold",
     color: Colors.text.secondary,
     marginBottom: 8,
     textAlign: 'right',
@@ -238,7 +230,7 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(16),
     color: Colors.text.primary,
     height: '100%',
-  },
+   fontFamily: "Alexandria-Regular" },
   multilineInput: {
     textAlignVertical: 'top',
   },
@@ -256,6 +248,6 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: Colors.white,
     fontSize: normalize.font(16),
-    fontWeight: '700',
+    fontFamily: "Alexandria-Bold",
   },
 });

@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
   message: {
     marginTop: 10,
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: "Alexandria-Bold",
     color: '#1E293B',
     textAlign: 'center',
   },

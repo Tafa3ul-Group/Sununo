@@ -1,6 +1,8 @@
 import { SolarHeartBold, SolarStarBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
-import { Colors, normalize, isRTL } from "@/constants/theme";
+import { useTranslation } from "react-i18next";
+import { Colors, normalize } from "@/constants/theme";
+import { getImageSrc } from "@/hooks/useImageSrc";
 import React, { useState } from "react";
 import {
   Dimensions,
@@ -52,6 +54,8 @@ interface HorizontalCardProps {
   style?: ViewStyle;
   shapeIndex?: number;
   hideFavorite?: boolean;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 }
 
 export function HorizontalCard({
@@ -60,15 +64,17 @@ export function HorizontalCard({
   style,
   shapeIndex = 2,
   hideFavorite = false,
+  isFavorite = false,
+  onToggleFavorite,
 }: HorizontalCardProps) {
-  const [isFavorite, setIsFavorite] = useState(false);
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
 
   if (!chalet) return null;
 
-  const imageUrl =
-    chalet.images?.[0] ||
-    chalet.image ||
-    "https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=400";
+  const imageSource = typeof chalet.image === 'string' && !chalet.image.startsWith('http') 
+    ? getImageSrc(chalet.image) 
+    : (chalet.image || getImageSrc(chalet.images?.[0]?.url || chalet.images?.[0]));
   const borderColor = chalet.color || Colors.secondary;
 
   const config = SHAPES_CONFIG[shapeIndex % SHAPES_CONFIG.length];
@@ -77,17 +83,17 @@ export function HorizontalCard({
     <TouchableOpacity
       activeOpacity={0.9}
       onPress={onPress}
-      style={[styles.container, style]}
+      style={[styles.container, { flexDirection: isRTL ? 'row' : 'row-reverse' }, style]}
     >
-      {/* الجزء الأيسر: المعلومات (منقسم لصفين علوي وسفلي) */}
+      {/* info side */}
       <View style={styles.contentAndLeft}>
-        {/* الصف العلوي: القلب + العنوان والموقع */}
-        <View style={styles.topRow}>
+        {/* Top Row: Heart + Title/Location */}
+        <View style={[styles.topRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
           <View style={styles.leftColumn}>
             {!hideFavorite && (
               <TouchableOpacity
                 style={styles.heartCircle}
-                onPress={() => setIsFavorite(!isFavorite)}
+                onPress={onToggleFavorite}
               >
                 <SolarHeartBold
                   size={normalize.width(20)}
@@ -98,34 +104,34 @@ export function HorizontalCard({
           </View>
 
           <View style={styles.mainContent}>
-            <View style={styles.upperText}>
-              <ThemedText style={styles.title} numberOfLines={1}>
-                {chalet.title}
+            <View style={[styles.upperText, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+              <ThemedText style={[styles.title, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
+                {typeof chalet.title === 'object' ? (isRTL ? chalet.title.ar : chalet.title.en) : chalet.title}
               </ThemedText>
-              <ThemedText style={styles.location} numberOfLines={1}>
-                {chalet.location}
+              <ThemedText style={[styles.location, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
+                {typeof chalet.location === 'object' ? (isRTL ? chalet.location.ar : chalet.location.en) : chalet.location}
               </ThemedText>
             </View>
           </View>
         </View>
 
-        {/* الصف السفلي: التقييم + السعر */}
-        <View style={styles.bottomRow}>
-          <View style={styles.ratingBox}>
-            <SolarStarBold size={normalize.width(16)} color={Colors.secondary} />
+        {/* Bottom Row: Rating + Price */}
+        <View style={[styles.bottomRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+          <View style={[styles.ratingBox, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             <ThemedText style={styles.ratingText}>
               {chalet.rating || "4.5"}
             </ThemedText>
+            <SolarStarBold size={normalize.width(16)} color={Colors.secondary} />
           </View>
 
-          <View style={styles.priceRow}>
-            <ThemedText style={styles.price}>IQD {chalet.price}</ThemedText>
-            <ThemedText style={styles.priceLabel}> / شفت</ThemedText>
+          <View style={[styles.priceRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <ThemedText style={styles.price}>{isRTL ? '' : 'IQD '}{chalet.price}{isRTL ? ' د.ع' : ''}</ThemedText>
+            <ThemedText style={styles.priceLabel}> / {isRTL ? "شفت" : "Shift"}</ThemedText>
           </View>
         </View>
       </View>
 
-      {/* الجزء الأيمن: الصورة */}
+      {/* Image side */}
       <View style={styles.imageWrapper}>
         <Svg
           height={normalize.height(88)}
@@ -139,7 +145,7 @@ export function HorizontalCard({
           </Defs>
           <G clipPath={`url(#clip-blob-${shapeIndex})`}>
             <SvgImage
-              href={{ uri: imageUrl }}
+              href={imageSource}
               width={config.width}
               height={config.height}
               preserveAspectRatio="xMidYMid slice"
@@ -212,37 +218,35 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: normalize.font(14),
-    fontWeight: "800",
+    fontFamily: "Alexandria-Black",
     color: "#111827",
   },
   upperText: {
-    alignItems: "flex-end",
     marginTop: 4,
   },
   title: {
     fontSize: normalize.font(16),
-    fontWeight: "900",
+    fontFamily: "Alexandria-Black",
     color: "#111827",
   },
   location: {
     fontSize: normalize.font(12),
     color: "#6B7280",
     marginTop: 2,
-  },
+   fontFamily: "Alexandria-Regular" },
   priceRow: {
-    flexDirection: "row-reverse",
     alignItems: "center",
     gap: 4,
   },
   price: {
     fontSize: normalize.font(16),
-    fontWeight: "900",
+    fontFamily: "Alexandria-Black",
     color: "#111827",
   },
   priceLabel: {
     fontSize: normalize.font(11),
     color: "#6B7280",
-  },
+   fontFamily: "Alexandria-Regular" },
   imageWrapper: {
     width: normalize.width(98),
     height: normalize.height(88),

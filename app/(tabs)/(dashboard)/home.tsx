@@ -1,6 +1,7 @@
+import { BookingCancellationSheet, BookingCancellationSheetRef } from '@/components/booking-cancellation-modal';
 import { BookingDetailsModalContent } from '@/components/booking-details-modal-content';
-import { HeaderSection } from '@/components/header-section';
 import { DashboardCalendar } from "@/components/dashboard/dashboard-calendar";
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import {
   SolarCalendarBold,
   SolarCheckCircleBold,
@@ -11,12 +12,12 @@ import { PrimaryButton } from '@/components/user/primary-button';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { Colors, normalize } from '@/constants/theme';
 import { RootState } from '@/store';
-import { useGetProviderBookingsQuery, useGetProviderProfileQuery } from '@/store/api/apiSlice';
+import { useDeleteExternalBookingMutation, useGetProviderBookingsQuery, useGetProviderProfileQuery, useRejectBookingMutation } from '@/store/api/apiSlice';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useRouter } from 'expo-router';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -30,23 +31,78 @@ import {
   View
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
 import Animated, { FadeIn, FadeInDown, FadeInRight, FadeInUp } from 'react-native-reanimated';
+import { useSelector } from 'react-redux';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { user, userType, language } = useSelector((state: RootState) => state.auth);
+  const { user, userType, language, selectedChalet } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
   const isRTL = language === 'ar';
   const isOwner = userType === 'owner';
   const [activeFilter, setActiveFilter] = useState('all');
   const [isBalanceVisible, setIsBalanceVisible] = useState(false);
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
-  const detailsSheetRef = React.useRef<BottomSheetModal>(null);
+  const cancelSheetRef = React.useRef<BookingCancellationSheetRef>(null);
   const calendarSheetRef = React.useRef<BottomSheetModal>(null);
-  const [selectedRange, setSelectedRange] = useState<{start: Date, end: Date} | null>(null);
+
+  const [rejectBooking, { isLoading: isRejectLoading }] = useRejectBookingMutation();
+  const [deleteExternalBooking, { isLoading: isDeletingExternal }] = useDeleteExternalBookingMutation();
+  const [cancellingBookingData, setCancellingBookingData] = useState<any>(null);
+
+  const handleOpenCancelSheet = (data: any) => {
+    setCancellingBookingData(data);
+    setTimeout(() => {
+      cancelSheetRef.current?.present();
+    }, 100);
+  };
+
+  const handleConfirmCancellation = async (reason: string) => {
+    if (!cancellingBookingData) return;
+
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      const isExternal = cancellingBookingData.type === 'external' || cancellingBookingData.bIsExternal;
+
+      if (isExternal) {
+        await deleteExternalBooking(cancellingBookingData.id).unwrap();
+      } else {
+        await rejectBooking({
+          id: cancellingBookingData.id,
+          reason: reason || (isRTL ? 'إلغاء من قبل المشغل' : 'Cancelled by provider')
+        }).unwrap();
+      }
+
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      refetchBookings();
+
+      // Refetch bookings
+      refetchBookings();
+
+      // Show success in cancellation sheet
+      cancelSheetRef.current?.showSuccess(
+        isRTL ? 'تم الإلغاء بنجاح.' : 'Cancelled successfully.'
+      );
+
+    } catch (e: any) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      cancelSheetRef.current?.showError(
+        e?.data?.message || (isRTL ? 'فشل الإلغاء' : 'Failed to cancel')
+      );
+    }
+  };
+
+  const [selectedRange, setSelectedRange] = useState<{ start: Date, end: Date } | null>(null);
   const [page, setPage] = useState(1);
+  const filterScrollRef = React.useRef<ScrollView>(null);
+  const [itemLayouts, setItemLayouts] = useState<Record<string, number>>({});
+
+  const handleFilterPress = (filterId: string) => {
+    setActiveFilter(filterId);
+    if (itemLayouts[filterId] !== undefined) {
+      filterScrollRef.current?.scrollTo({ x: itemLayouts[filterId] - 20, animated: true });
+    }
+  };
 
   const formatSelectedDate = (date: Date) => {
     return `${date.getMonth() + 1}/${date.getDate()}`;
@@ -54,12 +110,15 @@ export default function HomeScreen() {
 
   const getButtonLabel = () => {
     if (selectedRange?.start && selectedRange?.end) {
+      if (selectedRange.start.getTime() === selectedRange.end.getTime()) {
+        return formatSelectedDate(selectedRange.start);
+      }
       if (isRTL) {
         return `${formatSelectedDate(selectedRange.end)} - ${formatSelectedDate(selectedRange.start)}`;
       }
       return `${formatSelectedDate(selectedRange.start)} - ${formatSelectedDate(selectedRange.end)}`;
     }
-    return isRTL ? 'السجل' : 'Records';
+    return t('dashboard.bookings.records') || (isRTL ? 'السجل' : 'Records');
   };
 
 
@@ -78,12 +137,13 @@ export default function HomeScreen() {
     status: activeFilter !== 'all' ? statusMap[activeFilter] : undefined,
     from: selectedRange?.start ? selectedRange.start.toISOString().split('T')[0] : undefined,
     to: selectedRange?.end ? selectedRange.end.toISOString().split('T')[0] : undefined,
+    chaletId: selectedChalet?.id || undefined,
   });
 
   // Reset pagination when filter changes
   useEffect(() => {
     setPage(1);
-  }, [activeFilter, selectedRange]);
+  }, [activeFilter, selectedRange, selectedChalet?.id]);
 
   const handleLoadMore = () => {
     if (!isBookingsFetching && bookingsResponse?.meta?.nextPage) {
@@ -134,7 +194,7 @@ export default function HomeScreen() {
     const chaletName = isRTL ? (item.chalet?.name?.ar || item.chalet?.name) : (item.chalet?.name?.en || item.chalet?.name);
 
     return (
-      <Animated.View 
+      <Animated.View
         entering={FadeInDown.delay(index * 30).duration(300).springify().damping(15)}
         key={item.id}
       >
@@ -143,17 +203,16 @@ export default function HomeScreen() {
           activeOpacity={0.8}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            setSelectedBookingId(item.id);
-            detailsSheetRef.current?.present();
+            router.push({ pathname: '/(dashboard)/booking-details', params: { id: item.id } });
           }}
         >
           <View style={[styles.modernBookingInner, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             {/* 1. Avatar (Right part in RTL) */}
             <View style={styles.modernBookingAvatar}>
               {bIsExternal ? (
-                 <View style={[styles.modernBookingPlaceholder, { backgroundColor: Colors.primary }]}>
-                   <SolarUserBold size={24} color="#FFF" />
-                 </View>
+                <View style={[styles.modernBookingPlaceholder, { backgroundColor: Colors.primary }]}>
+                  <SolarUserBold size={24} color="#FFF" />
+                </View>
               ) : item.customer?.image ? (
                 <Image source={{ uri: item.customer.image }} style={styles.modernBookingImg} />
               ) : (
@@ -167,7 +226,11 @@ export default function HomeScreen() {
             <View style={[styles.modernBookingInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
               <Text style={[styles.modernBookingName, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>{customerName}</Text>
               {chaletName && <Text style={[styles.modernBookingChalet, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>{chaletName}</Text>}
-              <Text style={[styles.modernBookingShift, { textAlign: isRTL ? 'right' : 'left' }]}>{t('common.shift')} {shiftName}</Text>
+              <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 4 }}>
+                <Text style={[styles.modernBookingShift, { textAlign: isRTL ? 'right' : 'left' }]}>{t('common.shift')} {shiftName}</Text>
+                <Text style={styles.modernBookingDot}>•</Text>
+                <Text style={styles.modernBookingDate}>{item.date || item.createdAt?.split('T')[0]}</Text>
+              </View>
             </View>
 
             {/* 3. Price (Left part in RTL) */}
@@ -212,131 +275,143 @@ export default function HomeScreen() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaView style={styles.safeArea}>
-        <HeaderSection
-          userType={userType}
-          userName={user?.name}
+      <View style={styles.safeArea}>
+        <DashboardHeader
           showSearch={false}
-          showCategories={false}
-          showProfile={true}
-          showLogo={true}
-          extraIcon="search"
-          onExtraIconPress={() => {
+          onSearchPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           }}
-          marginBottom={4}
         />
         <View style={{ flex: 1 }}>
           <View style={{ flex: 1 }}>
-              {/* Fixed Section: Header + Filter */}
-              <View style={styles.fixedHeaderArea}>
-                <Animated.View 
-                  entering={FadeInUp.duration(400).springify().damping(18)}
-                  style={[styles.bookingsHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
-                >
-                  <Text style={styles.bookingsTitle}>{isRTL ? 'الحجوزات' : 'Bookings'}</Text>
-                  <View style={{ transform: [{ scale: 0.92 }] }}>
-                    <SecondaryButton
-                      label={getButtonLabel()}
-                      icon={<SolarCalendarBold size={18} color={Colors.black} />}
-                      inactiveTextColor={Colors.black}
-                      onPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        calendarSheetRef.current?.present();
-                      }}
-                    />
-                  </View>
-                </Animated.View>
+            {/* Fixed Section: Header + Filter */}
+            <View style={styles.fixedHeaderArea}>
+              <Animated.View
+                entering={FadeInUp.duration(400).springify().damping(18)}
+                style={[styles.bookingsHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+              >
+                <Text style={styles.bookingsTitle}>{isRTL ? 'الحجوزات' : 'Bookings'}</Text>
+                <View style={{ transform: [{ scale: 0.92 }] }}>
+                  <SecondaryButton
+                    label={getButtonLabel()}
+                    icon={<SolarCalendarBold size={18} color={Colors.black} />}
+                    inactiveTextColor={Colors.black}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      calendarSheetRef.current?.present();
+                    }}
+                  />
+                </View>
+              </Animated.View>
 
-                {/* Filter Bar */}
-                <Animated.View 
-                  entering={FadeInRight.delay(100).duration(400)}
-                  style={styles.filterWrapper}
+              {/* Filter Bar */}
+              <Animated.View
+                entering={FadeInRight.delay(100).duration(400)}
+                style={styles.filterWrapper}
+              >
+                <ScrollView
+                  ref={filterScrollRef}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.filterScroll}
+                  contentContainerStyle={[styles.filterContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
                 >
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    style={styles.filterScroll}
-                    contentContainerStyle={[styles.filterContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
-                  >
-                    {[
-                      { id: 'all', label: t('home.categories.all') },
-                      {
-                        id: 'pending',
-                        label: t('dashboard.bookings.new'),
-                        icon: <SolarClockCircleBold size={18} color={activeFilter === 'pending' ? 'white' : Colors.primary} />
-                      },
-                      {
-                        id: 'confirmed',
-                        label: t('dashboard.bookings.confirmed'),
-                        icon: <SolarCheckCircleBold size={18} color={activeFilter === 'confirmed' ? 'white' : Colors.primary} />
-                      },
-                      {
-                        id: 'finished',
-                        label: t('dashboard.bookings.finished'),
-                        icon: <SolarCalendarBold size={18} color={activeFilter === 'finished' ? 'white' : Colors.primary} />
-                      },
-                    ].map(renderFilterButton)}
-                  </ScrollView>
-                </Animated.View>
-              </View>
+                  {[
+                    { id: 'all', label: t('home.categories.all') },
+                    {
+                      id: 'pending',
+                      label: t('dashboard.bookings.new'),
+                      icon: <SolarClockCircleBold size={18} color={activeFilter === 'pending' ? 'white' : Colors.primary} />
+                    },
+                    {
+                      id: 'confirmed',
+                      label: t('dashboard.bookings.confirmed'),
+                      icon: <SolarCheckCircleBold size={18} color={activeFilter === 'confirmed' ? 'white' : Colors.primary} />
+                    },
+                    {
+                      id: 'finished',
+                      label: t('dashboard.bookings.finished'),
+                      icon: <SolarCalendarBold size={18} color={activeFilter === 'finished' ? 'white' : Colors.primary} />
+                    },
+                  ].map((filter, index) => {
+                    const isActive = activeFilter === filter.id;
+                    const isAll = filter.id === 'all';
 
-              {/* Scrollable Section: Only Cards */}
-              <FlatList
-                data={recentBookings}
-                renderItem={renderBookingCard}
-                keyExtractor={(item) => item.id.toString()}
-                style={styles.container}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.scrollContent}
-                onEndReached={handleLoadMore}
-                onEndReachedThreshold={0.5}
-                ListHeaderComponent={<View style={{ height: 5 }} />}
-                ListEmptyComponent={
-                  isBookingsFetching && recentBookings.length === 0 ? (
-                    <View style={styles.loadingContainer}>
-                      <ActivityIndicator size="large" color={Colors.primary} />
-                    </View>
-                  ) : !isBookingsFetching && recentBookings.length === 0 ? (
-                    <Animated.View entering={FadeIn.duration(300)} style={styles.noBookings}>
-                      <Text style={styles.noBookingsText}>
-                        {t('dashboard.noBookings') || (isRTL ? 'لا توجد حجوزات حالياً' : 'No bookings found')}
-                      </Text>
-                    </Animated.View>
-                  ) : null
-                }
-                ListFooterComponent={
-                  isBookingsFetching && recentBookings.length > 0 ? (
-                    <ActivityIndicator color={Colors.primary} style={{ marginVertical: 20 }} />
-                  ) : <View style={{ height: 40 }} />
-                }
-                refreshControl={
-                  <RefreshControl refreshing={isBookingsFetching && page === 1} onRefresh={() => { setPage(1); refetchBookings(); }} tintColor={Colors.primary} />
-                }
-              />
+                    return (
+                      <View
+                        key={filter.id}
+                        style={{ transform: [{ scale: 0.92 }] }}
+                        onLayout={(event) => {
+                          const layout = event.nativeEvent.layout;
+                          setItemLayouts(prev => ({ ...prev, [filter.id]: layout.x }));
+                        }}
+                      >
+                        {isAll ? (
+                          <PrimaryButton
+                            label={filter.label}
+                            isActive={isActive}
+                            onPress={() => handleFilterPress(filter.id)}
+                          />
+                        ) : (
+                          <SecondaryButton
+                            label={filter.label}
+                            isActive={isActive}
+                            icon={filter.icon}
+                            onPress={() => handleFilterPress(filter.id)}
+                          />
+                        )}
+                      </View>
+                    );
+                  })}
+                </ScrollView>
+              </Animated.View>
             </View>
+
+            {/* Scrollable Section: Only Cards */}
+            <FlatList
+              data={recentBookings}
+              renderItem={renderBookingCard}
+              keyExtractor={(item) => item.id.toString()}
+              style={styles.container}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.scrollContent}
+              onEndReached={handleLoadMore}
+              onEndReachedThreshold={0.5}
+              ListHeaderComponent={<View style={{ height: 5 }} />}
+              ListEmptyComponent={
+                isBookingsFetching && recentBookings.length === 0 ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={Colors.primary} />
+                  </View>
+                ) : !isBookingsFetching && recentBookings.length === 0 ? (
+                  <Animated.View entering={FadeIn.duration(300)} style={styles.noBookings}>
+                    <Text style={styles.noBookingsText}>
+                      {t('dashboard.noBookings') || (isRTL ? 'لا توجد حجوزات حالياً' : 'No bookings found')}
+                    </Text>
+                  </Animated.View>
+                ) : null
+              }
+              ListFooterComponent={
+                isBookingsFetching && recentBookings.length > 0 ? (
+                  <ActivityIndicator color={Colors.primary} style={{ marginVertical: 20 }} />
+                ) : <View style={{ height: 40 }} />
+              }
+              refreshControl={
+                <RefreshControl refreshing={isBookingsFetching && page === 1} onRefresh={() => { setPage(1); refetchBookings(); }} tintColor={Colors.primary} />
+              }
+            />
+          </View>
         </View>
 
-        {/* Booking Details Drawer */}
-        <BottomSheetModal
-          ref={detailsSheetRef}
-          snapPoints={['85%']}
-          backdropComponent={renderBackdrop}
-          enablePanDownToClose
-          onDismiss={() => setSelectedBookingId(null)}
-        >
-          <BottomSheetView style={{ flex: 1 }}>
-            {selectedBookingId && (
-              <BookingDetailsModalContent
-                id={selectedBookingId}
-                isRTL={isRTL}
-                t={t}
-                onRefresh={refetchBookings}
-                onClose={() => detailsSheetRef.current?.dismiss()}
-              />
-            )}
-          </BottomSheetView>
-        </BottomSheetModal>
+
+        <BookingCancellationSheet
+          ref={cancelSheetRef}
+          onConfirm={handleConfirmCancellation}
+          isLoading={isRejectLoading || isDeletingExternal}
+          isRTL={isRTL}
+          isExternal={cancellingBookingData?.type === 'external' || cancellingBookingData?.bIsExternal}
+          depositAmount={cancellingBookingData?.downPayment || '50,000'}
+        />
         {/* Calendar Drawer */}
         <BottomSheetModal
           ref={calendarSheetRef}
@@ -349,21 +424,26 @@ export default function HomeScreen() {
               <Text style={styles.calendarTitle}>{isRTL ? 'التقويم' : 'Calendar'}</Text>
             </View>
             <View style={{ paddingVertical: 10 }}>
-              <DashboardCalendar 
+              <DashboardCalendar
                 initialStartDate={selectedRange?.start}
                 initialEndDate={selectedRange?.end}
                 onSelect={(s, e) => {
-                 if (s && e) {
-                   setSelectedRange({start: s, end: e});
-                   setTimeout(() => {
+                  if (s && e) {
+                    setSelectedRange({ start: s, end: e });
+                    setTimeout(() => {
                       calendarSheetRef.current?.dismiss();
-                   }, 300);
-                 }
-              }} />
+                    }, 300);
+                  } else if (s === null && e === null) {
+                    setSelectedRange(null);
+                    setTimeout(() => {
+                      calendarSheetRef.current?.dismiss();
+                    }, 300);
+                  }
+                }} />
             </View>
           </BottomSheetView>
         </BottomSheetModal>
-      </SafeAreaView>
+      </View>
     </GestureHandlerRootView>
   );
 }
@@ -378,58 +458,59 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   scrollContent: {
-    paddingHorizontal: 14,
-    paddingTop: 5,
-    paddingBottom: 10,
+    paddingHorizontal: normalize.width(14),
+    paddingTop: normalize.height(5),
+    paddingBottom: normalize.height(10),
   },
   loadingContainer: {
     flex: 1,
-    height: 400,
+    height: normalize.height(400),
     justifyContent: 'center',
     alignItems: 'center',
   },
 
   // Wallet Card
   walletCard: {
-    marginBottom: 20,
-    borderRadius: 24,
+    marginBottom: normalize.height(20),
+    borderRadius: normalize.radius(24),
     overflow: 'hidden',
   },
   walletCardInner: {
     backgroundColor: Colors.primary,
-    padding: 24,
+    padding: normalize.width(24),
     position: 'relative',
     overflow: 'hidden',
   },
   decorCircle: {
     position: 'absolute',
-    borderRadius: 999,
+    borderRadius: normalize.radius(999),
     backgroundColor: 'rgba(255,255,255,0.06)',
   },
   decorCircle1: {
-    width: 180,
-    height: 180,
-    top: -60,
-    right: -40,
+    width: normalize.width(180),
+    height: normalize.width(180),
+    top: normalize.height(-60),
+    right: normalize.width(-40),
   },
   decorCircle2: {
-    width: 120,
-    height: 120,
-    bottom: -30,
-    left: -20,
+    width: normalize.width(120),
+    height: normalize.width(120),
+    bottom: normalize.height(-30),
+    left: normalize.width(-20),
   },
   walletTop: {
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 20,
+    marginBottom: normalize.height(20),
   },
   walletLabel: {
     color: 'rgba(255,255,255,0.65)',
     fontSize: normalize.font(12),
-    fontWeight: '600',
-    marginBottom: 6,
-    letterSpacing: 0.3,
+    fontFamily: "Alexandria-SemiBold",
+    marginBottom: normalize.height(6),
+    letterSpacing: normalize.width(0.3),
     textTransform: 'uppercase',
+    lineHeight: normalize.font(16),
   },
   walletAmountRow: {
     alignItems: 'baseline',
@@ -437,39 +518,42 @@ const styles = StyleSheet.create({
   walletValue: {
     color: Colors.white,
     fontSize: normalize.font(32),
-    fontWeight: '800',
-    letterSpacing: -0.5,
+    fontFamily: "Alexandria-Black",
+    letterSpacing: normalize.width(-0.5),
+    lineHeight: normalize.font(38),
   },
   walletCurrency: {
     color: 'rgba(255,255,255,0.5)',
     fontSize: normalize.font(14),
-    fontWeight: '600',
+    fontFamily: "Alexandria-SemiBold",
+    lineHeight: normalize.font(20),
   },
   eyeButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: normalize.width(44),
+    height: normalize.width(44),
+    borderRadius: normalize.radius(22),
     backgroundColor: 'rgba(255,255,255,0.12)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   walletActions: {
-    gap: 10,
+    gap: normalize.width(10),
   },
   walletActionBtn: {
     flex: 1,
     backgroundColor: Colors.white,
-    paddingVertical: 10,
-    borderRadius: 14,
+    paddingVertical: normalize.height(10),
+    borderRadius: normalize.radius(14),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: normalize.width(6),
   },
   walletActionText: {
     color: Colors.primary,
-    fontWeight: '700',
+    fontFamily: "Alexandria-Bold",
     fontSize: normalize.font(13),
+    lineHeight: normalize.font(18),
   },
 
 
@@ -477,65 +561,72 @@ const styles = StyleSheet.create({
   // Booking Cards
   bookingCard: {
     backgroundColor: Colors.white,
-    padding: 14,
-    borderRadius: 16,
-    marginBottom: 10,
+    padding: normalize.width(14),
+    borderRadius: normalize.radius(16),
+    marginBottom: normalize.height(10),
     alignItems: 'center',
-    gap: 12,
+    gap: normalize.width(12),
     borderWidth: 1,
     borderColor: '#F0F0F0',
   },
   bookingAvatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
+    width: normalize.width(44),
+    height: normalize.width(44),
+    borderRadius: normalize.radius(14),
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarLetter: {
     fontSize: normalize.font(18),
-    fontWeight: '700',
+    fontFamily: "Alexandria-Bold",
+    lineHeight: normalize.font(24),
   },
   bookingInfo: {
     flex: 1,
   },
   bookingName: {
     fontSize: normalize.font(14),
-    fontWeight: '700',
+    fontFamily: "Alexandria-Bold",
     color: Colors.text.primary,
-    marginBottom: 1,
+    marginBottom: normalize.height(1),
+    lineHeight: normalize.font(20),
   },
   bookingChalet: {
     fontSize: normalize.font(11),
     color: Colors.text.muted,
-    fontWeight: '500',
+    fontFamily: "Alexandria-Medium",
+    lineHeight: normalize.font(16),
   },
   bookingDate: {
     fontSize: normalize.font(10),
     color: Colors.text.muted,
-    fontWeight: '500',
-    marginTop: 2,
+    fontFamily: "Alexandria-Medium",
+    marginTop: normalize.height(2),
+    lineHeight: normalize.font(14),
   },
   bookingAmount: {
     fontSize: normalize.font(14),
-    fontWeight: '800',
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
-    marginBottom: 4,
+    marginBottom: normalize.height(4),
+    lineHeight: normalize.font(20),
   },
   bookingCurrency: {
     fontSize: normalize.font(10),
     color: Colors.text.muted,
-    fontWeight: '600',
+    fontFamily: "Alexandria-SemiBold",
+    lineHeight: normalize.font(14),
   },
   bookingStatusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
+    paddingHorizontal: normalize.width(8),
+    paddingVertical: normalize.height(2),
+    borderRadius: normalize.radius(6),
   },
   bookingStatusText: {
     fontSize: normalize.font(9),
-    fontWeight: '700',
+    fontFamily: "Alexandria-Bold",
     textTransform: 'uppercase',
+    lineHeight: normalize.font(13),
   },
 
   // New Modern Bookings Section
@@ -546,20 +637,22 @@ const styles = StyleSheet.create({
   bookingsHeader: {
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
-    paddingHorizontal: 16,
+    marginBottom: normalize.height(10),
+    paddingHorizontal: normalize.width(16),
     marginTop: 0,
   },
   bookingsTitle: {
     fontSize: normalize.font(17),
-    fontWeight: '800',
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
+    lineHeight: normalize.font(23),
   },
   bookingsViewAll: {
     fontSize: normalize.font(14),
     color: Colors.text.primary,
-    fontWeight: '600',
+    fontFamily: "Alexandria-SemiBold",
     textDecorationLine: 'underline',
+    lineHeight: normalize.font(20),
   },
   headerActions: {
     flexDirection: 'row',
@@ -568,29 +661,30 @@ const styles = StyleSheet.create({
   },
   calendarSheetContent: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: normalize.width(20),
   },
   calendarHeader: {
-    paddingVertical: 15,
+    paddingVertical: normalize.height(15),
     borderBottomWidth: 1,
     borderBottomColor: '#F1F3F5',
     alignItems: 'center',
   },
   calendarTitle: {
     fontSize: normalize.font(18),
-    fontWeight: '800',
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
+    lineHeight: normalize.font(24),
   },
   filterScroll: {
     marginBottom: 0,
   },
   filterContainer: {
-    gap: 8,
-    paddingHorizontal: 16,
+    gap: normalize.width(8),
+    paddingHorizontal: normalize.width(16),
     alignItems: 'center',
   },
   filterWrapper: {
-    height: 55,
+    height: normalize.height(55),
     justifyContent: 'center',
   },
   bookingList: {
@@ -598,22 +692,22 @@ const styles = StyleSheet.create({
   },
   modernBookingCard: {
     backgroundColor: Colors.white,
-    borderRadius: 20,
+    borderRadius: normalize.radius(20),
     borderWidth: 1.1,
     borderColor: '#F1F3F5',
     overflow: 'hidden',
-    padding: 10,
-    marginBottom: 12, // Increased from 4
+    padding: normalize.width(10),
+    marginBottom: normalize.height(12), // Increased from 4
   },
   modernBookingInner: {
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 10,
+    gap: normalize.width(10),
   },
   modernBookingAvatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 15,
+    width: normalize.width(52),
+    height: normalize.width(52),
+    borderRadius: normalize.radius(15),
     backgroundColor: '#F8F9FA',
     justifyContent: 'center',
     alignItems: 'center',
@@ -636,20 +730,33 @@ const styles = StyleSheet.create({
   },
   modernBookingName: {
     fontSize: normalize.font(16),
-    fontWeight: '800',
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
-    marginBottom: 1,
+    marginBottom: normalize.height(1),
+    lineHeight: normalize.font(22),
   },
   modernBookingShift: {
     fontSize: normalize.font(12),
     color: Colors.text.muted,
-    fontWeight: '500',
+    fontFamily: "Alexandria-Medium",
+    lineHeight: normalize.font(16),
   },
   modernBookingChalet: {
     fontSize: normalize.font(13),
     color: Colors.primary,
-    fontWeight: '700',
-    marginBottom: 1,
+    fontFamily: "Alexandria-Bold",
+    marginBottom: normalize.height(1),
+    lineHeight: normalize.font(18),
+  },
+  modernBookingDate: {
+    fontSize: normalize.font(11),
+    color: Colors.text.muted,
+    fontFamily: "Alexandria-Medium",
+    lineHeight: normalize.font(16),
+  },
+  modernBookingDot: {
+    color: Colors.text.muted,
+    fontSize: normalize.font(11),
   },
   modernBookingPriceWrap: {
     alignItems: 'flex-start',
@@ -657,24 +764,26 @@ const styles = StyleSheet.create({
   },
   modernBookingPrice: {
     fontSize: normalize.font(14),
-    fontWeight: '800',
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
+    lineHeight: normalize.font(20),
   },
   fixedHeaderArea: {
     backgroundColor: Colors.white,
     zIndex: 10,
-    paddingBottom: 5,
+    paddingBottom: normalize.height(5),
   },
   noBookings: {
-    padding: 30,
+    padding: normalize.width(30),
     alignItems: 'center',
     backgroundColor: '#F8F9FA',
-    borderRadius: 16,
+    borderRadius: normalize.radius(16),
   },
   noBookingsText: {
     color: Colors.text.muted,
     fontSize: normalize.font(14),
-    fontWeight: '600',
+    fontFamily: "Alexandria-SemiBold",
+    lineHeight: normalize.font(20),
   },
 
 
@@ -682,28 +791,30 @@ const styles = StyleSheet.create({
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 60,
-    gap: 8,
+    paddingVertical: normalize.height(60),
+    gap: normalize.width(8),
   },
   emptyIconWrap: {
-    width: 80,
-    height: 80,
-    borderRadius: 24,
+    width: normalize.width(80),
+    height: normalize.width(80),
+    borderRadius: normalize.radius(24),
     backgroundColor: '#F8F9FB',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: normalize.height(8),
   },
   emptyTitle: {
     fontSize: normalize.font(16),
-    fontWeight: '700',
+    fontFamily: "Alexandria-Bold",
     color: Colors.text.primary,
+    lineHeight: normalize.font(22),
   },
   emptySubtitle: {
     fontSize: normalize.font(12),
     color: Colors.text.muted,
-    fontWeight: '500',
+    fontFamily: "Alexandria-Medium",
     textAlign: 'center',
-    paddingHorizontal: 40,
+    paddingHorizontal: normalize.width(40),
+    lineHeight: normalize.font(18),
   },
 });

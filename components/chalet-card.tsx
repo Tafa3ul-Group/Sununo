@@ -1,4 +1,5 @@
 import { Colors, normalize, Spacing } from '@/constants/theme';
+import { getImageSrc } from '@/hooks/useImageSrc';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React from 'react';
@@ -31,7 +32,7 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
 
   if (!chalet) return null;
 
-  const imageUrl = chalet.images?.[0] || chalet.image || "https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=400";
+  const imageSource = getImageSrc(chalet.images?.[0]?.url || chalet.image);
 
   return (
     <TouchableOpacity
@@ -41,7 +42,7 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
     >
       <View style={styles.imageContainer}>
         <Image 
-          source={{ uri: imageUrl }} 
+          source={imageSource} 
           style={styles.image} 
           contentFit="cover" 
         />
@@ -131,7 +132,7 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: normalize.font(14),
-    fontWeight: '800',
+    fontFamily: "Alexandria-Black",
     color: '#111827',
   },
   heartContainer: {
@@ -153,7 +154,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: normalize.font(16),
-    fontWeight: "900",
+    fontFamily: "Alexandria-Black",
     color: "#111827",
   },
   locationRow: {
@@ -166,7 +167,7 @@ const styles = StyleSheet.create({
   location: {
     fontSize: normalize.font(12),
     color: "#6B7280",
-  },
+   fontFamily: "Alexandria-Regular" },
   priceContainer: {
     marginTop: normalize.height(12),
     alignItems: 'flex-end',
@@ -178,11 +179,11 @@ const styles = StyleSheet.create({
   },
   price: {
     fontSize: normalize.font(16),
-    fontWeight: "900",
+    fontFamily: "Alexandria-Black",
     color: "#111827",
   },
   priceLabel: {
     fontSize: normalize.font(12),
     color: "#6B7280",
-  },
+   fontFamily: "Alexandria-Regular" },
 });

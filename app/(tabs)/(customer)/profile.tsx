@@ -23,6 +23,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { WalletCard } from '@/components/user/wallet-card';
 import { HeaderSection } from '@/components/header-section';
+import { useGetMeQuery } from '@/store/api/apiSlice';
+import { useGetCustomerWalletQuery, useLogoutUserMutation, useDeleteCustomerAccountMutation } from '@/store/api/customerApiSlice';
+import { getImageSrc } from '@/hooks/useImageSrc';
 
 export default function ProfileScreen() {
   const dispatch = useDispatch();
@@ -32,22 +35,37 @@ export default function ProfileScreen() {
   const router = useRouter();
   const languageSheetRef = React.useRef<BottomSheetModal>(null);
 
+  // Fetch user data and wallet from the backend
+  const { data: meData } = useGetMeQuery(undefined);
+  const { data: walletData } = useGetCustomerWalletQuery(undefined);
+  const [logoutApi] = useLogoutUserMutation();
+  const [deleteAccount] = useDeleteCustomerAccountMutation();
+
+  // Use backend user data with fallback to store
+  const userData = meData || user;
+  const walletBalance = walletData?.balance ? Number(walletData.balance).toLocaleString() : '0';
+
   const openLanguageSheet = () => {
     languageSheetRef.current?.present();
   };
 
   const handleLogout = () => {
     Alert.alert(
-      isRTL ? 'تسجيل الخروج' : 'Logout',
-      isRTL ? 'هل أنت متأكد من تسجيل الخروج؟' : 'Are you sure you want to logout?',
+      t('profile.logout'),
+      t('profile.logoutConfirm'),
       [
-        { text: isRTL ? 'إلغاء' : 'Cancel', style: 'cancel' },
+        { text: t('profile.cancel'), style: 'cancel' },
         { 
-          text: isRTL ? 'خروج' : 'Logout', 
+          text: t('profile.exit'), 
           style: 'destructive', 
-          onPress: () => {
+          onPress: async () => {
+            try {
+              await logoutApi(undefined).unwrap();
+            } catch (e) {
+              // Even if server logout fails, clear local state
+            }
             dispatch(logout());
-            router.replace('/(auth)/choose-type');
+            router.replace('/(auth)/login');
           }
         }
       ]
@@ -55,18 +73,19 @@ export default function ProfileScreen() {
   };
 
   const menuItems = [
-    { id: 'bookings', title: isRTL ? 'الحجوزات' : 'Bookings', shape: 'blue' as const, icon: <SolarCalendarBold size={20} color="white" />, route: '/(tabs)/(customer)/bookings' },
-    { id: 'reviews', title: isRTL ? 'المراجعات' : 'Reviews', shape: 'blue' as const, icon: <SolarHeartBold size={20} color="white" /> },
-    { id: 'language', title: isRTL ? 'اللغة' : 'Language', shape: 'pink' as const, icon: <SolarGlobalBold size={20} color="white" />, action: openLanguageSheet },
-    { id: 'contact', title: isRTL ? 'تواصل معنا' : 'Contact Us', shape: 'green' as const, icon: <SolarPhoneBold size={20} color="white" /> },
-    { id: 'privacy', title: isRTL ? 'سياسة الخصوصية' : 'Privacy Policy', shape: 'blue' as const, icon: <SolarShieldBold size={20} color="white" /> },
-    { id: 'logout', title: isRTL ? 'تسجيل الخروج' : 'Logout', shape: 'red' as const, icon: <SolarLogoutBold size={20} color="white" />, action: handleLogout },
+    { id: 'bookings', title: t('headers.bookings'), shape: 'blue' as const, icon: <SolarCalendarBold size={20} color="white" />, route: '/(tabs)/(customer)/bookings' },
+    { id: 'reviews', title: t('headers.reviews'), shape: 'blue' as const, icon: <SolarHeartBold size={20} color="white" />, route: '/reviews' },
+    { id: 'favorites', title: t('headers.favorites'), shape: 'blue' as const, icon: <SolarHeartBold size={20} color="white" />, route: '/favorites' },
+    { id: 'language', title: t('profile.language'), shape: 'pink' as const, icon: <SolarGlobalBold size={20} color="white" />, action: openLanguageSheet },
+    { id: 'contact', title: t('profile.contactUs'), shape: 'green' as const, icon: <SolarPhoneBold size={20} color="white" /> },
+    { id: 'privacy', title: t('profile.privacyPolicy'), shape: 'blue' as const, icon: <SolarShieldBold size={20} color="white" /> },
+    { id: 'logout', title: t('profile.logout'), shape: 'pink' as const, icon: <SolarLogoutBold size={20} color="white" />, action: handleLogout, isDestructive: true },
   ];
 
   return (
     <SafeAreaView style={styles.container}>
       <HeaderSection 
-        title={isRTL ? 'الملف الشخصي' : 'Profile'}
+        title={t('headers.profile')}
         showBackButton 
         showLogo 
         userType={userType}
@@ -74,7 +93,7 @@ export default function ProfileScreen() {
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <TouchableOpacity 
-          style={styles.userCard}
+          style={[styles.userCard, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}
           onPress={() => router.push('/profile-edit')}
           activeOpacity={0.9}
         >
@@ -82,13 +101,15 @@ export default function ProfileScreen() {
             <SolarPenBold size={18} color="white" />
           </ProfileShape>
           
-          <View style={styles.userInfo}>
-            <Text style={styles.userName}>{user?.name || 'انسي انس مؤنس'}</Text>
+          <View style={[styles.userInfo, { textAlign: isRTL ? 'right' : 'left' }]}>
+            <Text style={[styles.userName, { textAlign: isRTL ? 'right' : 'left' }]}>
+              {userData?.name || (isRTL ? 'انسي انس مؤنس' : 'Ansi Ans Mounis')}
+            </Text>
           </View>
 
           <View style={styles.avatarWrap}>
             <Image 
-              source={{ uri: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png' }} 
+              source={getImageSrc(userData?.imageUrl)} 
               style={styles.avatarImg} 
             />
           </View>
@@ -96,9 +117,9 @@ export default function ProfileScreen() {
 
         {/* Wallet Card */}
         <WalletCard 
-          balance="100,000" 
+          balance={walletBalance} 
           onWithdraw={() => {
-            router.push('/(tabs)/(dashboard)/transactions');
+            router.push('/(tabs)/(customer)/bookings');
           }}
         />
 
@@ -107,7 +128,7 @@ export default function ProfileScreen() {
           {menuItems.map((item) => (
             <TouchableOpacity 
               key={item.id} 
-              style={styles.menuRow} 
+              style={[styles.menuRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]} 
               onPress={() => {
                 if (item.action) {
                   item.action();
@@ -117,7 +138,7 @@ export default function ProfileScreen() {
               }}
               activeOpacity={0.7}
             >
-              <Text style={styles.menuLabelText}>{item.title}</Text>
+              <Text style={[styles.menuLabelText, { textAlign: isRTL ? 'right' : 'left' }]}>{item.title}</Text>
               <ProfileShape size={normalize.width(42)} type={item.shape}>
                 {item.icon}
               </ProfileShape>
@@ -156,13 +177,12 @@ const styles = StyleSheet.create({
   },
   userInfo: {
     flex: 1,
-    marginRight: normalize.width(15),
+    marginHorizontal: normalize.width(15),
   },
   userName: {
     fontSize: normalize.font(16),
-    fontWeight: '800',
+    fontFamily: "Alexandria-Black",
     color: '#374151',
-    textAlign: 'right',
   },
   avatarWrap: {
     width: normalize.width(60),
@@ -183,7 +203,6 @@ const styles = StyleSheet.create({
   menuRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
     backgroundColor: '#FFFFFF',
     borderRadius: normalize.radius(18),
     paddingVertical: normalize.height(14),
@@ -194,10 +213,10 @@ const styles = StyleSheet.create({
     elevation: 0,
   },
   menuLabelText: {
+    flex: 1,
     fontSize: normalize.font(16),
-    fontWeight: '700',
+    fontFamily: "Alexandria-Bold",
     color: '#374151',
-    marginRight: normalize.width(15),
-    textAlign: 'right',
+    marginHorizontal: normalize.width(15),
   },
 });

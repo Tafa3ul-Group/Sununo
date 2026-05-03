@@ -19,18 +19,12 @@ import { SectionIcon } from '@/components/icons/section-icon';
 import { Colors, normalize } from '@/constants/theme';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { HeaderSection } from '@/components/header-section';
+import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const CATEGORIES = [
-  { id: 'all', label: 'الكل', icon: (isActive: boolean) => <SolarWidgetBold size={18} color={isActive ? "white" : Colors.primary} />, activeColor: Colors.primary },
-  { id: 'pool', label: 'المسبح', icon: (isActive: boolean) => <SolarWaterBold size={18} color={isActive ? "white" : Colors.secondary} />, activeColor: Colors.secondary },
-  { id: 'bbq', label: 'الشواء', icon: (isActive: boolean) => <SolarFireBold size={18} color={isActive ? "white" : Colors.accent} />, activeColor: Colors.accent },
-  { id: 'kitchen', label: 'المطبخ', icon: (isActive: boolean) => <SolarHome2Bold size={18} color={isActive ? "white" : Colors.secondary} />, activeColor: Colors.secondary },
-  { id: 'bath', label: 'الحمام', icon: (isActive: boolean) => <SolarWaterBold size={18} color={isActive ? "white" : Colors.primary} />, activeColor: Colors.primary },
-];
 
 const GALLERY_DATA = [
   {
@@ -60,7 +54,7 @@ const WavyHeader = ({ title, color }: { title: string, color: string }) => (
     <SectionIcon 
       color={color} 
       title={title} 
-      width={370} 
+      width={SCREEN_WIDTH - 32} 
       height={50} 
     />
   </View>
@@ -68,10 +62,45 @@ const WavyHeader = ({ title, color }: { title: string, color: string }) => (
 
 export default function GalleryScreen() {
   const router = useRouter();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
   const { userType } = useSelector((state: RootState) => state.auth);
   const [activeFilter, setActiveFilter] = useState('all');
   const [viewerVisible, setViewerVisible] = useState(false);
   const [viewerImage, setViewerImage] = useState('');
+
+  const CATEGORIES = [
+    { id: 'all', label: t('gallery.categories.all'), icon: (isActive: boolean) => <SolarWidgetBold size={18} color={isActive ? "white" : Colors.primary} />, activeColor: Colors.primary },
+    { id: 'pool', label: t('gallery.categories.pool'), icon: (isActive: boolean) => <SolarWaterBold size={18} color={isActive ? "white" : Colors.secondary} />, activeColor: Colors.secondary },
+    { id: 'bbq', label: t('gallery.categories.bbq'), icon: (isActive: boolean) => <SolarFireBold size={18} color={isActive ? "white" : Colors.accent} />, activeColor: Colors.accent },
+    { id: 'kitchen', label: t('gallery.categories.kitchen'), icon: (isActive: boolean) => <SolarHome2Bold size={18} color={isActive ? "white" : Colors.secondary} />, activeColor: Colors.secondary },
+    { id: 'bath', label: t('gallery.categories.bath'), icon: (isActive: boolean) => <SolarWaterBold size={18} color={isActive ? "white" : Colors.primary} />, activeColor: Colors.primary },
+  ];
+
+  const GALLERY_DATA = [
+    {
+      id: 'kitchen',
+      category: t('gallery.categories.kitchen'),
+      color: '#15AB64',
+      images: [
+        'https://images.unsplash.com/photo-1556911220-e1502138a597?w=800', // Large
+        'https://images.unsplash.com/photo-1556912173-3bb406ef7e77?w=400',
+        'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=400',
+        'https://images.unsplash.com/photo-1556911261-6bd741557538?w=400',
+      ]
+    },
+    {
+      id: 'bath',
+      category: t('gallery.categories.bath'),
+      color: '#035DF9',
+      images: [
+        'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800', // Large
+        'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=400',
+        'https://images.unsplash.com/photo-1620626011761-9963d7b6dd3a?w=400',
+        'https://images.unsplash.com/photo-1604084792761-904f81491740?w=400',
+      ]
+    }
+  ];
 
   const openViewer = (url: string) => {
     setViewerImage(url);
@@ -80,12 +109,7 @@ export default function GalleryScreen() {
 
   const filteredData = activeFilter === 'all' 
     ? GALLERY_DATA 
-    : GALLERY_DATA.filter(section => {
-        if (activeFilter === 'pool' && section.category === 'المسبح') return true;
-        if (activeFilter === 'kitchen' && section.category === 'المطبخ') return true;
-        if (activeFilter === 'bath' && section.category === 'الحمام') return true;
-        return false;
-      });
+    : GALLERY_DATA.filter(section => section.id === activeFilter);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -103,18 +127,19 @@ export default function GalleryScreen() {
 
       {/* Header */}
       <HeaderSection 
-        title="الصور" 
+        title={t('headers.gallery')} 
         showBackButton 
-        showLogo 
+        showLogo={true} 
         showSearch={false} 
         showCategories={false}
         userType={userType}
+        onBackPress={() => router.back()}
       />
 
       {/* Categories Filter (Home Page Style) */}
       <View style={styles.catArea}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.catList}>
-          <View style={{ flexDirection: 'row-reverse', gap: 10 }}>
+          <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 10 }}>
             {CATEGORIES.map((filter) => (
               <SecondaryButton 
                 key={filter.id} 
@@ -141,7 +166,7 @@ export default function GalleryScreen() {
             </TouchableOpacity>
             
             {/* Small Grid */}
-            <View style={styles.smallGrid}>
+            <View style={[styles.smallGrid, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
               {section.images.slice(1, 4).map((img, i) => (
                 <TouchableOpacity key={i} style={styles.smallImageCard} activeOpacity={0.9} onPress={() => openViewer(img)}>
                    <Image source={{ uri: img }} style={styles.smallImage} />
@@ -152,7 +177,7 @@ export default function GalleryScreen() {
         ))}
         {filteredData.length === 0 && (
           <View style={{ padding: 40, alignItems: 'center' }}>
-            <ThemedText style={{ color: '#9CA3AF' }}>لا توجد صور في هذا القسم حالياً</ThemedText>
+            <ThemedText style={{ color: '#9CA3AF' }}>{t('gallery.empty')}</ThemedText>
           </View>
         )}
       </ScrollView>
@@ -170,14 +195,13 @@ const styles = StyleSheet.create({
   },
   catList: {
     paddingHorizontal: 20,
-    flexDirection: 'row-reverse',
     paddingBottom: 5,
   },
   scrollContent: {
     paddingBottom: 40,
   },
   sectionWrap: {
-    paddingHorizontal: 25,
+    paddingHorizontal: 16,
     marginBottom: 35,
   },
   wavyHeaderContainer: {
@@ -196,7 +220,6 @@ const styles = StyleSheet.create({
     height: 240,
   },
   smallGrid: {
-    flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 12,
   },

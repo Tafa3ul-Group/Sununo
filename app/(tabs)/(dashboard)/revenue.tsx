@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { useTranslation } from 'react-i18next';
 import { useGetPayoutsQuery, useRequestPayoutMutation } from '@/store/api/apiSlice';
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { PrimaryButton } from '@/components/user/primary-button';
 import Toast from 'react-native-toast-message';
 import { 
@@ -27,14 +27,17 @@ const PERIODS = [
 
 export default function RevenueScreen() {
   const router = useRouter();
-  const { user, userType, language } = useSelector((state: RootState) => state.auth);
+  const { user, userType, language, selectedChalet } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
   const isRTL = language === 'ar';
   const [selectedPeriod, setSelectedPeriod] = useState('month');
   const [withdrawAmount, setWithdrawAmount] = useState('');
 
   // API hooks
-  const { data: payoutsResponse, isLoading: isLoadingPayouts } = useGetPayoutsQuery({ limit: 5 });
+  const { data: payoutsResponse, isLoading: isLoadingPayouts } = useGetPayoutsQuery({ 
+    limit: 5,
+    chaletId: selectedChalet?.id
+  });
   const [requestPayout, { isLoading: isRequesting }] = useRequestPayoutMutation();
 
   const payouts = payoutsResponse?.data || payoutsResponse || [];
@@ -107,8 +110,8 @@ export default function RevenueScreen() {
         {/* Balance Card */}
         <View style={styles.balanceCard}>
           <View style={styles.balanceCardInner}>
-            <View style={[styles.decorCircle, styles.decorCircle1]} />
-            <View style={[styles.decorCircle, styles.decorCircle2]} />
+            <View style={[styles.decorCircle, styles.decorCircle1, { [isRTL ? 'left' : 'right']: -40 }]} />
+            <View style={[styles.decorCircle, styles.decorCircle2, { [isRTL ? 'right' : 'left']: -20 }]} />
             
             <Text style={styles.balanceLabel}>{isRTL ? 'إجمالي الرصيد' : 'Total Balance'}</Text>
             <Text style={styles.balanceValue}>{user?.walletBalance?.toLocaleString() || '0'}</Text>
@@ -175,7 +178,7 @@ export default function RevenueScreen() {
             activeOpacity={0.7}
           >
             <Text style={styles.viewAllText}>{isRTL ? 'عرض الكل' : 'View All'}</Text>
-            <SolarAltArrowRightLinear size={14} color={Colors.primary} />
+            <SolarAltArrowRightLinear size={14} color={Colors.primary} style={{ transform: [{ rotate: isRTL ? '180deg' : '0deg' }] }} />
           </TouchableOpacity>
         </View>
 
@@ -238,7 +241,7 @@ export default function RevenueScreen() {
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustResize"
       >
-        <BottomSheetView style={styles.sheetContent}>
+        <BottomSheetScrollView contentContainerStyle={styles.sheetContent} keyboardShouldPersistTaps="handled">
           <Text style={styles.sheetTitle}>{isRTL ? 'طلب سحب أرباح' : 'Request Payout'}</Text>
           <Text style={styles.sheetSubtitle}>
             {isRTL ? 'أدخل المبلغ المراد سحبه' : 'Enter the amount to withdraw'}
@@ -262,7 +265,7 @@ export default function RevenueScreen() {
             loading={isRequesting}
             style={{ marginTop: 16 }}
           />
-        </BottomSheetView>
+        </BottomSheetScrollView>
       </BottomSheetModal>
     </SafeAreaView>
   );
@@ -304,18 +307,16 @@ const styles = StyleSheet.create({
     width: 180,
     height: 180,
     top: -60,
-    right: -40,
   },
   decorCircle2: {
     width: 120,
     height: 120,
     bottom: -30,
-    left: -20,
   },
   balanceLabel: {
     color: 'rgba(255,255,255,0.7)',
     fontSize: normalize.font(13),
-    fontWeight: '600',
+    fontFamily: "Alexandria-SemiBold",
     marginBottom: 8,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
@@ -323,13 +324,13 @@ const styles = StyleSheet.create({
   balanceValue: {
     color: Colors.white,
     fontSize: normalize.font(36),
-    fontWeight: '800',
+    fontFamily: "Alexandria-Black",
     letterSpacing: -1,
   },
   balanceCurrency: {
     color: 'rgba(255,255,255,0.6)',
     fontSize: normalize.font(14),
-    fontWeight: '600',
+    fontFamily: "Alexandria-SemiBold",
     marginBottom: 20,
     marginTop: 2,
   },
@@ -344,7 +345,7 @@ const styles = StyleSheet.create({
   },
   withdrawButtonText: {
     color: Colors.primary,
-    fontWeight: '700',
+    fontFamily: "Alexandria-Bold",
     fontSize: normalize.font(14),
   },
   // Period Filter
@@ -367,12 +368,12 @@ const styles = StyleSheet.create({
   },
   periodText: {
     fontSize: normalize.font(13),
-    fontWeight: '600',
+    fontFamily: "Alexandria-SemiBold",
     color: Colors.text.secondary,
   },
   periodTextActive: {
     color: Colors.white,
-  },
+   fontFamily: "Alexandria-Regular" },
   // Stats
   statsRow: {
     gap: 10,
@@ -397,13 +398,13 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: normalize.font(16),
-    fontWeight: '800',
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
   },
   statLabel: {
     fontSize: normalize.font(10),
     color: Colors.text.muted,
-    fontWeight: '600',
+    fontFamily: "Alexandria-SemiBold",
     marginTop: 2,
     textAlign: 'center',
   },
@@ -415,7 +416,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: normalize.font(18),
-    fontWeight: '800',
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
   },
   viewAllBtn: {
@@ -426,7 +427,7 @@ const styles = StyleSheet.create({
   viewAllText: {
     color: Colors.primary,
     fontSize: normalize.font(13),
-    fontWeight: '600',
+    fontFamily: "Alexandria-SemiBold",
   },
   // Transactions
   transactionsCard: {
@@ -453,24 +454,24 @@ const styles = StyleSheet.create({
   },
   transactionTitle: {
     fontSize: normalize.font(14),
-    fontWeight: '700',
+    fontFamily: "Alexandria-Bold",
     color: Colors.text.primary,
     marginBottom: 3,
   },
   transactionDate: {
     fontSize: normalize.font(11),
     color: Colors.text.muted,
-    fontWeight: '500',
+    fontFamily: "Alexandria-Medium",
   },
   transactionAmount: {
     fontSize: normalize.font(14),
-    fontWeight: '800',
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
     marginBottom: 4,
   },
   currencySmall: {
     fontSize: normalize.font(11),
-    fontWeight: '600',
+    fontFamily: "Alexandria-SemiBold",
     color: Colors.text.muted,
   },
   typeBadge: {
@@ -480,7 +481,7 @@ const styles = StyleSheet.create({
   },
   typeBadgeText: {
     fontSize: normalize.font(9),
-    fontWeight: '700',
+    fontFamily: "Alexandria-Bold",
     textTransform: 'uppercase',
   },
   separator: {
@@ -497,7 +498,7 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: normalize.font(13),
     color: Colors.text.muted,
-    fontWeight: '600',
+    fontFamily: "Alexandria-SemiBold",
   },
   // Withdraw Sheet
   sheetContent: {
@@ -505,7 +506,7 @@ const styles = StyleSheet.create({
   },
   sheetTitle: {
     fontSize: normalize.font(20),
-    fontWeight: '800',
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
     textAlign: 'center',
     marginBottom: 4,
@@ -513,7 +514,7 @@ const styles = StyleSheet.create({
   sheetSubtitle: {
     fontSize: normalize.font(13),
     color: Colors.text.muted,
-    fontWeight: '500',
+    fontFamily: "Alexandria-Medium",
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -530,13 +531,13 @@ const styles = StyleSheet.create({
   amountInput: {
     flex: 1,
     fontSize: normalize.font(24),
-    fontWeight: '800',
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
     textAlign: 'center',
   },
   amountCurrency: {
     fontSize: normalize.font(16),
-    fontWeight: '700',
+    fontFamily: "Alexandria-Bold",
     color: Colors.text.muted,
   },
 });

@@ -4,6 +4,8 @@ import { StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { normalize } from '@/constants/theme';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 
 interface CircleBackButtonProps {
   style?: ViewStyle;
@@ -15,8 +17,8 @@ const EN_BACK_PATH = "M16.9467 0L16.984 0.0319551C16.9918 0.563434 17.0077 1.119
 
 export function CircleBackButton({ style, onPress }: CircleBackButtonProps) {
   const router = useRouter();
-  const { i18n } = useTranslation();
-  const isArabic = i18n.language === 'ar';
+  const { language } = useSelector((state: RootState) => state.auth);
+  const isArabic = language === 'ar';
 
   return (
     <TouchableOpacity 

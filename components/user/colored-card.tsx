@@ -67,6 +67,8 @@ interface ColoredCardProps {
   shapeIndex?: number;
   onPress?: () => void;
   style?: ViewStyle;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 }
 
 export function ColoredCard({
@@ -79,6 +81,8 @@ export function ColoredCard({
   shapeIndex = 0,
   onPress,
   style,
+  isFavorite = false,
+  onToggleFavorite,
 }: ColoredCardProps) {
   const currentIndex = shapeIndex % SHAPES_CONFIG.length;
   const config = SHAPES_CONFIG[currentIndex];
@@ -90,11 +94,11 @@ export function ColoredCard({
       style={[styles.container, { backgroundColor: color }, style]}
     >
       {/* Favorite Button */}
-      <View style={styles.favoriteButton}>
+      <TouchableOpacity style={styles.favoriteButton} onPress={onToggleFavorite}>
         <View style={styles.favoriteCircle}>
-          <SolarHeartBold size={14} color="#EA2129" />
+          <SolarHeartBold size={14} color={isFavorite ? "#EA2129" : "#9CA3AF"} />
         </View>
-      </View>
+      </TouchableOpacity>
 
       {/* Organic Shape Section */}
       <View style={styles.imageContainer}>
@@ -204,7 +208,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: normalize.font(14),
-    fontWeight: "900",
+    fontFamily: "Alexandria-Black",
     color: "#FFFFFF",
     textAlign: "right",
     lineHeight: normalize.height(24),
@@ -217,7 +221,7 @@ const styles = StyleSheet.create({
   },
   location: {
     fontSize: normalize.font(12),
-    fontWeight: "400", // Not bold
+    fontFamily: "Alexandria-Regular", // Not bold
     color: "#FFFFFF",
     textAlign: "right",
     lineHeight: normalize.height(24),
@@ -238,7 +242,7 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     color: "white",
-    fontWeight: "900", // Bold
+    fontFamily: "Alexandria-Black", // Bold
     fontSize: normalize.font(12),
   },
   priceContainer: {
@@ -246,14 +250,14 @@ const styles = StyleSheet.create({
   },
   price: {
     color: "white",
-    fontWeight: "900",
+    fontFamily: "Alexandria-Black",
     fontSize: normalize.font(12),
     textAlign: "right",
   },
   priceUnit: {
     fontSize: normalize.font(8),
     color: "white",
-    fontWeight: "900", // Bold
+    fontFamily: "Alexandria-Black", // Bold
     opacity: 0.9,
   },
 });

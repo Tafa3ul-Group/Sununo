@@ -6,12 +6,14 @@ export const isRTL = I18nManager.isRTL;
 /**
  * Normalization utilities to ensure consistent UI across different screen sizes and platforms.
  */
-export const normalize = {
+const scaleFunction = (size: number) => scale(size);
+
+export const normalize = Object.assign(scaleFunction, {
   width: (size: number) => scale(size),
   height: (size: number) => verticalScale(size),
   font: (size: number, factor: number = 0.5) => moderateScale(size, factor),
   radius: (size: number, factor: number = 0.5) => moderateScale(size, factor),
-};
+});
 
 const BrandColors = {
   blue: "#2B66FF",
@@ -85,45 +87,53 @@ type FontWeight = "normal" | "bold" | "100" | "200" | "300" | "400" | "500" | "6
 
 interface TypeStyle {
   fontSize: number;
-  fontWeight: FontWeight;
+  fontFamily?: string;
   color: string;
+  lineHeight?: number;
 }
 
 export const Typography: Record<string, TypeStyle> = {
   h1: {
-    fontSize: normalize.font(28),
-    fontWeight: "700" as FontWeight,
+    fontSize: normalize.font(26),
+    fontFamily: "Alexandria-Bold",
     color: Colors.light.text,
+    lineHeight: normalize.font(36),
   },
   h2: {
-    fontSize: normalize.font(20),
-    fontWeight: "600" as FontWeight,
+    fontSize: normalize.font(18),
+    fontFamily: "Alexandria-Bold",
     color: Colors.light.text,
+    lineHeight: normalize.font(26),
   },
   body: {
-    fontSize: normalize.font(14),
-    fontWeight: "400" as FontWeight,
+    fontSize: normalize.font(13),
+    fontFamily: "Alexandria-Regular",
     color: Colors.light.text,
+    lineHeight: normalize.font(20),
   },
   subtitle: {
-    fontSize: normalize.font(13),
-    fontWeight: "400" as FontWeight,
+    fontSize: normalize.font(12),
+    fontFamily: "Alexandria-Regular",
     color: Colors.light.icon,
+    lineHeight: normalize.font(18),
   },
   caption: {
-    fontSize: normalize.font(12),
-    fontWeight: "500" as FontWeight,
+    fontSize: normalize.font(11),
+    fontFamily: "Alexandria-Medium",
     color: Colors.light.icon,
+    lineHeight: normalize.font(16),
   },
   price: {
-    fontSize: normalize.font(18),
-    fontWeight: "700" as FontWeight,
+    fontSize: normalize.font(17),
+    fontFamily: "Alexandria-Bold",
     color: Colors.light.primary,
+    lineHeight: normalize.font(24),
   },
   rating: {
-    fontSize: normalize.font(14),
-    fontWeight: "600" as FontWeight,
+    fontSize: normalize.font(13),
+    fontFamily: "Alexandria-Bold",
     color: Colors.light.text,
+    lineHeight: normalize.font(20),
   },
 };
 
@@ -150,13 +160,10 @@ export const Shadows = {
   }),
 };
 
-export const Fonts = Platform.select({
-  ios: { sans: "system-ui", serif: "ui-serif", rounded: "ui-rounded", mono: "ui-monospace" },
-  default: { sans: "normal", serif: "serif", rounded: "normal", mono: "monospace" },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-  },
-});
+export const Fonts = {
+  bold: "Alexandria-Bold" as const,
+  regular: "Alexandria-Regular" as const,
+  medium: "Alexandria-Medium" as const,
+  semiBold: "Alexandria-Bold" as const,
+  black: "Alexandria-Black" as const,
+};
