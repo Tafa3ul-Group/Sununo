@@ -79,7 +79,7 @@ export default function ProfileScreen() {
     { id: 'language', title: t('profile.language'), shape: 'pink' as const, icon: <SolarGlobalBold size={20} color="white" />, action: openLanguageSheet },
     { id: 'contact', title: t('profile.contactUs'), shape: 'green' as const, icon: <SolarPhoneBold size={20} color="white" /> },
     { id: 'privacy', title: t('profile.privacyPolicy'), shape: 'blue' as const, icon: <SolarShieldBold size={20} color="white" /> },
-    { id: 'logout', title: t('profile.logout'), shape: 'red' as const, icon: <SolarLogoutBold size={20} color="white" />, action: handleLogout },
+    { id: 'logout', title: t('profile.logout'), shape: 'pink' as const, icon: <SolarLogoutBold size={20} color="white" />, action: handleLogout, isDestructive: true },
   ];
 
   return (
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: normalize.font(16),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: '#374151',
   },
   avatarWrap: {
@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
   menuLabelText: {
     flex: 1,
     fontSize: normalize.font(16),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: '#374151',
     marginHorizontal: normalize.width(15),
   },

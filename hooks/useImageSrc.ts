@@ -1,5 +1,6 @@
-const IMAGE_BASE_URL = process.env.EXPO_PUBLIC_IMAGE_BASE_URL;
-const IMAGE_ACCOUNT_HASH = process.env.EXPO_PUBLIC_IMAGE_ACCOUNT_HASH;
+const IMAGE_BASE_URL = process.env.EXPO_PUBLIC_IMAGE_BASE_URL || 'http://192.168.0.167:3010';
+const IMAGE_ACCOUNT_HASH = process.env.EXPO_PUBLIC_IMAGE_ACCOUNT_HASH || 'token';
+
 
 // Placeholder image path
 const PLACEHOLDER_IMAGE = require('../assets/placeholder.png');

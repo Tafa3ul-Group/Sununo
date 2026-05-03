@@ -1,15 +1,15 @@
 import { SolarStarBold, SolarStarLinear } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { SecondaryButton } from "@/components/user/secondary-button";
-import { SecondaryButtonInverse } from "@/components/user/secondary-button-inverse";
-import {
-  BottomSheetModal,
-  BottomSheetTextInput,
-  BottomSheetScrollView,
+import { 
+  BottomSheetModal, 
+  BottomSheetTextInput, 
+  BottomSheetView, 
+  BottomSheetBackdrop 
 } from "@gorhom/bottom-sheet";
-import React, { forwardRef, useMemo, useState } from "react";
-import { Dimensions, StyleSheet, TouchableOpacity, View, I18nManager } from "react-native";
+import React, { forwardRef, useMemo, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
 import Svg, { Path } from "react-native-svg";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -35,7 +35,7 @@ const ReviewSubmissionSheet = forwardRef<
   }
 >((props, ref) => {
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
+  const isRTL = i18n.language === "ar";
   const [userRating, setUserRating] = useState(props.initialRating || 0);
   const [comment, setComment] = useState("");
 
@@ -48,24 +48,16 @@ const ReviewSubmissionSheet = forwardRef<
 
   const snapPoints = useMemo(() => [normalize(520)], []);
 
-  const handleSend = () => {
-    props.onSubmit(userRating, comment);
-    // @ts-ignore
-    ref.current?.dismiss();
-  };
-
-  const handleCancel = () => {
-    // @ts-ignore
-    ref.current?.dismiss();
-  };
-
-  const renderBackdrop = React.useCallback(
+  const renderBackdrop = useCallback(
     (props: any) => (
-      <View style={StyleSheet.absoluteFill}>
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} />
-      </View>
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        opacity={0.5}
+      />
     ),
-    []
+    [],
   );
 
   return (
@@ -73,13 +65,14 @@ const ReviewSubmissionSheet = forwardRef<
       ref={ref}
       index={0}
       snapPoints={snapPoints}
+      backdropComponent={renderBackdrop}
       backgroundStyle={styles.sheetBackground}
       handleIndicatorStyle={styles.indicator}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
       enablePanDownToClose={true}
     >
-      <View style={styles.contentContainer}>
+      <BottomSheetView style={styles.contentContainer}>
         {/* Wavy Background Wrapper */}
         <View style={styles.scallopedCard}>
           <Svg
@@ -88,6 +81,7 @@ const ReviewSubmissionSheet = forwardRef<
             viewBox="0 0 500 337"
             fill="none"
             style={styles.svgBg}
+            pointerEvents="none"
           >
             <Path d={SCALLOPED_BG_PATH} fill="#15AB64" />
             <Path d={TOP_SCALLOP_PATH} fill="#15AB64" />
@@ -130,9 +124,8 @@ const ReviewSubmissionSheet = forwardRef<
           </View>
         </View>
 
-        {/* Bottom Extension to fill the drawer with green */}
+        {/* Bottom Extension */}
         <View style={styles.bottomExtension}>
-          {/* Action Buttons Row */}
           <View
             style={[
               styles.actionsRow,
@@ -141,19 +134,23 @@ const ReviewSubmissionSheet = forwardRef<
           >
             <SecondaryButton
               label={t("profile.review.cancel")}
-              onPress={handleCancel}
+              onPress={() => (ref as any).current?.dismiss()}
               isActive={false}
               style={{ flex: 1 }}
             />
-            <SecondaryButtonInverse
+            <SecondaryButton
               label={t("profile.review.send")}
-              onPress={handleSend}
+              onPress={() => {
+                props.onSubmit(userRating, comment);
+                (ref as any).current?.dismiss();
+              }}
               isActive={true}
               style={{ flex: 1 }}
+              variant="inverse"
             />
           </View>
         </View>
-      </View>
+      </BottomSheetView>
     </BottomSheetModal>
   );
 });
@@ -205,7 +202,7 @@ const styles = StyleSheet.create({
 
   questionTitle: {
     fontSize: normalize(16),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: "#111827",
   },
   starsRow: {
@@ -234,7 +231,7 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     fontSize: normalize(16),
-    fontFamily: "Tajawal-Medium",
+    fontFamily: "Alexandria-Medium",
     color: "#111827",
     textAlignVertical: "top",
   },
@@ -260,7 +257,7 @@ const styles = StyleSheet.create({
   sendBtnText: {
     color: "white",
     fontSize: normalize(17),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
   },
   cancelBtn: {
     backgroundColor: "white",
@@ -270,6 +267,6 @@ const styles = StyleSheet.create({
   cancelBtnText: {
     color: "#035DF9",
     fontSize: normalize(17),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
   },
 });

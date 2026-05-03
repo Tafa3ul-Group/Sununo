@@ -170,18 +170,18 @@ const styles = StyleSheet.create({
   },
   chaletTitle: {
     fontSize: 16,
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: "#111827",
   },
   chaletLocation: {
     fontSize: 13,
     color: "#6B7280",
     marginVertical: 2,
-    fontFamily: "Tajawal-Medium",
+    fontFamily: "Alexandria-Medium",
   },
   priceText: {
     fontSize: 14,
-    fontFamily: "Tajawal-ExtraBold",
+    fontFamily: "Alexandria-ExtraBold",
     color: "#111827",
   },
   divider: {
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: 15,
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: "#111827",
   },
   ratingPill: {
@@ -218,8 +218,9 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: 14,
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: "#035DF9",
+    lineHeight: 18,
   },
   bottomSection: {
     marginTop: 4,
@@ -228,7 +229,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     color: "#374151",
-    fontFamily: "Tajawal-Medium",
+    fontFamily: "Alexandria-Medium",
   },
   galleryScroll: {
     marginTop: 12,
@@ -242,6 +243,6 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 12,
     color: "#9CA3AF",
-    fontFamily: "Tajawal-Medium",
+    fontFamily: "Alexandria-Medium",
   },
 });

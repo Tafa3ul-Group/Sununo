@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: '#111827',
   },
   cardContainer: { 
@@ -189,8 +189,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   textSide: { flex: 1 },
-  cardLabel: { fontSize: 16, fontFamily: "Tajawal-Black", color: '#111827' },
-  cardSubtext: { fontSize: 12, color: '#6B7280', marginTop: 4, fontFamily: "Tajawal-Regular" },
+  cardLabel: { fontSize: 16, fontFamily: "Alexandria-Black", color: '#111827' },
+  cardSubtext: { fontSize: 12, color: '#6B7280', marginTop: 4, fontFamily: "Alexandria-Regular" },
   iconSideScalloped: {
     width: 44,
     height: 44,

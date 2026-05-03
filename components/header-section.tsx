@@ -6,6 +6,7 @@ import {
   SolarStarBold,
   SolarUserBold,
   SolarBellBingBoldDuotone,
+  SolarWidgetBold,
 } from "@/components/icons/solar-icons";
 import { Colors, normalize, Spacing } from "@/constants/theme";
 import { RootState } from "@/store";
@@ -39,6 +40,7 @@ interface HeaderSectionProps {
   onExtraIconPress?: () => void;
   showProfile?: boolean;
   onProfilePress?: () => void;
+  onMenuPress?: () => void;
   onDeletePress?: () => void;
   showLogo?: boolean;
   showExtra?: boolean;
@@ -59,6 +61,7 @@ export function HeaderSection({
   onExtraIconPress,
   showProfile = false,
   onProfilePress,
+  onMenuPress,
   onDeletePress,
   showLogo = true,
   showExtra = false,
@@ -328,7 +331,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   headerSide: {
-    width: normalize.width(110),
     height: "100%",
     justifyContent: "center",
     alignItems: "center",
@@ -340,7 +342,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: normalize.font(18),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
     lineHeight: normalize.font(24),
     paddingVertical: normalize.height(2),
@@ -430,7 +432,7 @@ const styles = StyleSheet.create({
     marginHorizontal: Spacing.sm,
     fontSize: normalize.font(16),
     color: Colors.text.primary,
-    fontFamily: "Tajawal-Regular",
+    fontFamily: "Alexandria-Regular",
   },
   categoriesScroll: {
     paddingHorizontal: Spacing.md,
@@ -453,13 +455,13 @@ const styles = StyleSheet.create({
   },
   categoryLabel: {
     fontSize: normalize.font(14),
-    fontFamily: "Tajawal-Medium",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     lineHeight: normalize.font(20),
     paddingVertical: normalize.height(1),
   },
   categoryLabelActive: {
     color: Colors.background,
-    fontFamily: "Tajawal-Regular",
+    fontFamily: "Alexandria-Regular",
   },
 });

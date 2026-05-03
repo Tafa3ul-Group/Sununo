@@ -4,7 +4,6 @@ import React from "react";
 export default function CustomerNonTabLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="profile" options={{ title: 'الملف الشخصي' }} />
       <Stack.Screen name="booking/complete" options={{ title: 'اكتمال الحجز' }} />
       <Stack.Screen name="chalet-details/[id]" options={{ title: 'تفاصيل الشاليه' }} />
     </Stack>

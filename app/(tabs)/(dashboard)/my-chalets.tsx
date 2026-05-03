@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: normalize.font(18),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
   },
   countBadge: {
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
   countBadgeText: {
     color: Colors.white,
     fontSize: normalize.font(11),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
   },
   addChaletBtn: {
     width: 36,
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
   },
   chaletName: {
     fontSize: normalize.font(15),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: Colors.text.primary,
   },
   locationRow: {
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
   locationLabel: {
     fontSize: normalize.font(11),
     color: Colors.text.muted,
-    fontFamily: "Tajawal-Medium",
+    fontFamily: "Alexandria-Medium",
   },
   chipRow: {
     gap: 6,
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
   },
   statChipText: {
     fontSize: normalize.font(11),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
   },
   editBtn: {
     width: 32,
@@ -321,13 +321,13 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: normalize.font(16),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: Colors.text.primary,
   },
   emptySubtitle: {
     fontSize: normalize.font(12),
     color: Colors.text.muted,
-    fontFamily: "Tajawal-Medium",
+    fontFamily: "Alexandria-Medium",
     textAlign: 'center',
     paddingHorizontal: 40,
   },

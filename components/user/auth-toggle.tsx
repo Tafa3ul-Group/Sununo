@@ -60,7 +60,7 @@ export const AuthToggle: React.FC<AuthToggleProps> = ({
     });
   }, [activeType]);
 
-  const xOffsets = isRTL ? [70, -70] : [-70, 70];
+  const xOffsets = isRTL ? [65, -65] : [-65, 65];
   const rtlTextOffsets = [2, -2];
   const ltrTextOffsets = [0, 0];
   const currentTextOffsets = isRTL ? rtlTextOffsets : ltrTextOffsets;
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   tabText: {
-    fontFamily: "Tajawal-Black",
-    fontSize: normalize.font(16),
+    fontFamily: "Alexandria-Black",
+    fontSize: normalize.font(14),
   },
 });

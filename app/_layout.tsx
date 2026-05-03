@@ -18,11 +18,13 @@ import '@/i18n';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+// Alexandria fonts will be loaded directly in useFonts below
+
 // @ts-ignore
 if (Text.defaultProps == null) Text.defaultProps = {};
 // @ts-ignore
 Text.defaultProps.style = { 
-  fontFamily: 'Tajawal-Regular',
+  fontFamily: 'Alexandria-Regular',
   includeFontPadding: false,
   textAlignVertical: 'center',
 };
@@ -31,7 +33,7 @@ Text.defaultProps.style = {
 if (TextInput.defaultProps == null) TextInput.defaultProps = {};
 // @ts-ignore
 TextInput.defaultProps.style = { 
-  fontFamily: 'Tajawal-Regular',
+  fontFamily: 'Alexandria-Regular',
   includeFontPadding: false,
   textAlignVertical: 'center',
 };
@@ -44,12 +46,11 @@ function RootLayoutNav() {
   const { language, isAuthenticated, userType } = useSelector((state: RootState) => state.auth);
 
   const [loaded, error] = useFonts({
-    'Tajawal-Bold': require('../assets/fonts/Tajawal/Tajawal-Bold.ttf'),
-    'Tajawal-SemiBold': require('../assets/fonts/Tajawal/Tajawal-Bold.ttf'),
-    'Tajawal-Regular': require('../assets/fonts/Tajawal/Tajawal-Regular.ttf'),
-    'Tajawal-Medium': require('../assets/fonts/Tajawal/Tajawal-Medium.ttf'),
-    'Tajawal-Black': require('../assets/fonts/Tajawal/Tajawal-Black.ttf'),
-    'Tajawal-Light': require('../assets/fonts/Tajawal/Tajawal-Light.ttf'),
+    'Alexandria-Bold': require('@expo-google-fonts/alexandria/700Bold/Alexandria_700Bold.ttf'),
+    'Alexandria-SemiBold': require('@expo-google-fonts/alexandria/600SemiBold/Alexandria_600SemiBold.ttf'),
+    'Alexandria-Regular': require('@expo-google-fonts/alexandria/400Regular/Alexandria_400Regular.ttf'),
+    'Alexandria-Medium': require('@expo-google-fonts/alexandria/500Medium/Alexandria_500Medium.ttf'),
+    'Alexandria-Black': require('@expo-google-fonts/alexandria/900Black/Alexandria_900Black.ttf'),
   });
 
   // Global Auth Guard: Redirect to index if auth is lost

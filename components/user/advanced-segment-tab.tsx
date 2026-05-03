@@ -1,12 +1,7 @@
-import React from 'react';
+import { ThemedText } from "@/components/themed-text";
 import { normalize, Spacing } from "@/constants/theme";
-import {
-  Dimensions,
-  StyleSheet,
-  TouchableOpacity,
-  View
-} from "react-native";
-import { ThemedText } from '@/components/themed-text';
+import React from "react";
+import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
 
 const { width } = Dimensions.get("window");
 
@@ -45,7 +40,9 @@ export function AdvancedSegmentTab({
               <ThemedText
                 style={[
                   styles.tabLabel,
-                  isActive ? styles.activeLabel : { color: tab.color , fontFamily: "Tajawal-Regular" },
+                  isActive
+                    ? styles.activeLabel
+                    : { color: tab.color, fontFamily: "Alexandria-Regular" },
                 ]}
               >
                 {tab.label}
@@ -84,9 +81,10 @@ const styles = StyleSheet.create({
   },
   tabLabel: {
     fontSize: normalize.font(18),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
   },
   activeLabel: {
     color: "white",
-   fontFamily: "Tajawal-Regular" },
+    fontFamily: "Alexandria-Regular",
+  },
 });

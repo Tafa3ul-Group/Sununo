@@ -233,12 +233,14 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFFFFF" },
   summaryArea: { alignItems: "center", marginVertical: normalize(35) },
   bigRatingText: {
-    fontSize: normalize(56),
-    fontFamily: "Tajawal-Black",
+    fontSize: normalize(64), // Slightly larger
+    fontFamily: "Alexandria-Black",
     color: "#111827",
-    marginBottom: normalize(5),
+    lineHeight: normalize(72), // Explicit lineHeight to prevent cutoff
+    paddingVertical: 5,
+    textAlign: "center",
   },
-  starsRow: { flexDirection: "row", gap: normalize(6) },
+  starsRow: { flexDirection: "row", gap: normalize(10) }, // Increased gap from 6 to 10
   filterContainer: {
     paddingHorizontal: normalize(20),
     marginBottom: normalize(25),
@@ -262,8 +264,10 @@ const styles = StyleSheet.create({
   },
   rateNumText: {
     fontSize: normalize(16),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: "#111827",
+    lineHeight: normalize(20),
+    paddingVertical: 2,
   },
   userInfoRow: {
     alignItems: "flex-start",
@@ -272,7 +276,7 @@ const styles = StyleSheet.create({
   nameAndBody: { flex: 1 },
   reviewerNameText: {
     fontSize: normalize(16),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: "#111827",
   },
   revBodyText: {
@@ -280,7 +284,7 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     marginTop: normalize(8),
     lineHeight: normalize(22),
-    fontFamily: "Tajawal-Regular",
+    fontFamily: "Alexandria-Regular",
   },
   avatarCircle: {
     width: normalize(60),
@@ -301,7 +305,7 @@ const styles = StyleSheet.create({
   dateTextLabel: {
     fontSize: normalize(13),
     color: "#9CA3AF",
-    fontFamily: "Tajawal-Medium",
+    fontFamily: "Alexandria-Medium",
   },
   footerSticky: {
     position: "absolute",
@@ -333,7 +337,7 @@ const styles = StyleSheet.create({
   },
   questionTitle: {
     fontSize: normalize(16),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: "#111827",
     marginBottom: normalize(8),
   },
@@ -352,7 +356,7 @@ const styles = StyleSheet.create({
   unverifiedText: {
     fontSize: normalize(13),
     color: "#6B7280",
-    fontFamily: "Tajawal-Medium",
+    fontFamily: "Alexandria-Medium",
     textAlign: "center",
   },
 });

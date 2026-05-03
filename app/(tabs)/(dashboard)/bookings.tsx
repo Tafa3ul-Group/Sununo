@@ -16,11 +16,13 @@ import {
 } from "@/components/icons/solar-icons";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize } from "@/constants/theme";
+import { PendingApprovalScreen } from "@/components/dashboard/pending-approval";
 import { RootState } from "@/store";
 import {
   useCreateExternalBookingMutation,
   useDeleteExternalBookingMutation,
   useGetProviderBookingsQuery,
+  useGetProviderProfileQuery,
   useGetShiftAvailabilityQuery,
   useMarkBookingCompletedMutation,
   useRejectBookingMutation,
@@ -83,12 +85,15 @@ const format12H = (time: string | undefined | null, isRTL: boolean) => {
 
 export default function BookingsScreen() {
   const router = useRouter();
-  const { language, selectedChalet } = useSelector(
+  const { language, selectedChalet, user } = useSelector(
     (state: RootState) => state.auth,
   );
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = React.useState("new");
   const isRTL = language === "ar";
+
+  const { data: profileResponse, refetch: refetchProfile } = useGetProviderProfileQuery(undefined);
+  const profile = profileResponse?.data || profileResponse;
 
   const [markAsCompleted, { isLoading: isStatusLoading }] =
     useMarkBookingCompletedMutation();
@@ -287,6 +292,7 @@ export default function BookingsScreen() {
     ),
     [],
   );
+
 
   const renderShiftsGrid = () => {
     if (isAvailabilityFetching)
@@ -493,7 +499,7 @@ export default function BookingsScreen() {
               <Text
                 style={{
                   fontSize: normalize.font(10),
-                  fontFamily: "Tajawal-Bold",
+                  fontFamily: "Alexandria-Bold",
                   color: "#16A34A",
                   marginTop: 2,
                 }}
@@ -518,45 +524,87 @@ export default function BookingsScreen() {
               : item.shift?.name?.en || item.shift?.name}
           </Text>
         </View>
-
-
-        {item.paymentModel === "deposit" && (
           <View
             style={{
               flexDirection: isRTL ? "row-reverse" : "row",
               justifyContent: "space-between",
-              marginTop: 8,
-              paddingTop: 8,
-              borderTopWidth: 1,
-              borderTopColor: "#F1F5F9",
+              alignItems: "center",
+              marginTop: 12,
             }}
           >
-            <Text
-              style={{
-                fontSize: normalize.font(11),
-                fontFamily: "Tajawal-Regular",
-                color: "#64748B",
-              }}
+            <View
+              style={[
+                styles.statusBadge,
+                {
+                  backgroundColor:
+                    item.status === "confirmed"
+                      ? "#DCFCE7"
+                      : item.status === "completed"
+                        ? "#DBEAFE"
+                        : item.status === "cancelled"
+                          ? "#FEE2E2"
+                          : "#FEF3C7",
+                },
+              ]}
             >
-              {isRTL ? "العربون:" : "Deposit:"}{" "}
-              <Text style={{ fontFamily: "Tajawal-Bold" }}>
-                {Number(item.depositAmount).toLocaleString()}
+              <Text
+                style={[
+                  styles.statusText,
+                  {
+                    color:
+                      item.status === "confirmed"
+                        ? "#16A34A"
+                        : item.status === "completed"
+                          ? "#1E40AF"
+                          : item.status === "cancelled"
+                            ? "#EF4444"
+                            : "#D97706",
+                  },
+                ]}
+              >
+                {t(`dashboard.bookings.status.${item.status}`)}
               </Text>
-            </Text>
-            <Text
-              style={{
-                fontSize: normalize.font(11),
-                fontFamily: "Tajawal-Regular",
-                color: "#64748B",
-              }}
-            >
-              {isRTL ? "المتبقي:" : "Remaining:"}{" "}
-              <Text style={{ fontFamily: "Tajawal-Bold", color: "#EF4444" }}>
-                {Number(item.remainingAmount).toLocaleString()}
-              </Text>
-            </Text>
+            </View>
+            <Text style={styles.codeText}>#{item.bookingCode}</Text>
           </View>
-        )}
+
+          {item.paymentModel === "deposit" && (
+            <View
+              style={{
+                flexDirection: isRTL ? "row-reverse" : "row",
+                justifyContent: "space-between",
+                marginTop: 8,
+                paddingTop: 8,
+                borderTopWidth: 1,
+                borderTopColor: "#F1F5F9",
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: normalize.font(11),
+                  fontFamily: "Alexandria-Regular",
+                  color: "#64748B",
+                }}
+              >
+                {isRTL ? "العربون:" : "Deposit:"}{" "}
+                <Text style={{ fontFamily: "Alexandria-Bold" }}>
+                  {Number(item.depositAmount).toLocaleString()}
+                </Text>
+              </Text>
+              <Text
+                style={{
+                  fontSize: normalize.font(11),
+                  fontFamily: "Alexandria-Regular",
+                  color: "#64748B",
+                }}
+              >
+                {isRTL ? "المتبقي:" : "Remaining:"}{" "}
+                <Text style={{ fontFamily: "Alexandria-Bold", color: "#EF4444" }}>
+                  {Number(item.remainingAmount).toLocaleString()}
+                </Text>
+              </Text>
+            </View>
+          )}
         {item.status === "confirmed" && (
           <View
             style={{
@@ -596,6 +644,10 @@ export default function BookingsScreen() {
       </TouchableOpacity>
     );
   };
+
+  if (user && (profile ? !profile.isApproved : !user?.isApproved)) {
+    return <PendingApprovalScreen onRefresh={refetchProfile} />;
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -821,9 +873,9 @@ export default function BookingsScreen() {
                   >
                     {isRTL
                       ? selectedShiftForAction.shiftName?.ar ||
-                      selectedShiftForAction.shiftName
+                        selectedShiftForAction.shiftName
                       : selectedShiftForAction.shiftName?.en ||
-                      selectedShiftForAction.shiftName}
+                        selectedShiftForAction.shiftName}
                   </Text>
                   <View style={{ width: "100%" }}>
                     <Text
@@ -908,7 +960,7 @@ export default function BookingsScreen() {
                       shiftSheetRef.current?.dismiss();
                       openBookingDetails(
                         selectedShiftForAction.booking?.id ||
-                        selectedShiftForAction.bookingId,
+                          selectedShiftForAction.bookingId,
                       );
                     }}
                     isActive={true}
@@ -1097,13 +1149,13 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: normalize.font(14),
     color: "#64748B",
-    fontFamily: "Tajawal-SemiBold",
+    fontFamily: "Alexandria-SemiBold",
     paddingVertical: normalize.height(2),
     lineHeight: normalize.font(20),
   },
   activeTabText: {
     color: IDENTITY_BLUE,
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     paddingVertical: normalize.height(2),
     lineHeight: normalize.font(20),
   },
@@ -1116,7 +1168,7 @@ const styles = StyleSheet.create({
   filterToggle: { flexDirection: "row", alignItems: "center", gap: 6 },
   filterToggleText: {
     fontSize: normalize.font(14),
-    fontFamily: "Tajawal-SemiBold",
+    fontFamily: "Alexandria-SemiBold",
     color: "#64748B",
   },
   todayButton: {
@@ -1129,7 +1181,7 @@ const styles = StyleSheet.create({
   },
   todayButtonText: {
     color: IDENTITY_BLUE,
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     fontSize: normalize.font(12),
     lineHeight: normalize.font(16),
   },
@@ -1144,7 +1196,7 @@ const styles = StyleSheet.create({
   },
   monthLabel: {
     fontSize: normalize.font(16),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: IDENTITY_BLUE,
   },
   daysScroll: { gap: normalize.width(10) },
@@ -1159,11 +1211,11 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(12),
     color: "#64748B",
     marginBottom: 4,
-    fontFamily: "Tajawal-Regular",
+    fontFamily: "Alexandria-Regular",
   },
   selectedDayLabel: {
     color: "#FFF",
-    fontFamily: "Tajawal-Regular",
+    fontFamily: "Alexandria-Regular",
     lineHeight: normalize.font(16),
   },
   dateCircle: {
@@ -1174,10 +1226,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   selectedDateCircle: { backgroundColor: "#FFF" },
-  dateText: { fontSize: normalize.font(14), fontFamily: "Tajawal-Bold" },
+  dateText: { fontSize: normalize.font(14), fontFamily: "Alexandria-Bold" },
   selectedDateText: {
     color: IDENTITY_BLUE,
-    fontFamily: "Tajawal-Regular",
+    fontFamily: "Alexandria-Regular",
     lineHeight: normalize.font(18),
   },
   availabilitySection: {
@@ -1203,7 +1255,7 @@ const styles = StyleSheet.create({
   },
   chaletChipText: {
     fontSize: normalize.font(12),
-    fontFamily: "Tajawal-SemiBold",
+    fontFamily: "Alexandria-SemiBold",
     lineHeight: normalize.font(16),
     paddingTop: normalize.height(2),
   },
@@ -1237,12 +1289,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   shiftNameGroup: { gap: 2, flex: 1 },
-  shiftTileName: { fontSize: normalize.font(16), fontFamily: "Tajawal-Black" },
+  shiftTileName: { fontSize: normalize.font(16), fontFamily: "Alexandria-Black" },
   shiftTimeGroup: { alignItems: "center", gap: 4 },
   shiftTileTime: {
     fontSize: normalize.font(12),
     color: "#94A3B8",
-    fontFamily: "Tajawal-SemiBold",
+    fontFamily: "Alexandria-SemiBold",
   },
   shiftStatusColumn: { paddingLeft: 12 },
   statusGlassBadge: {
@@ -1255,7 +1307,7 @@ const styles = StyleSheet.create({
   },
   statusBadgeText: {
     fontSize: normalize.font(12),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     lineHeight: normalize.font(18),
     paddingVertical: normalize.height(2),
   },
@@ -1263,7 +1315,7 @@ const styles = StyleSheet.create({
   bookingMiniInfo: { marginTop: 6, alignItems: "center", gap: 6 },
   bookingMiniId: {
     fontSize: normalize.font(11),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     letterSpacing: 0.5,
   },
   bookingTypeBadge: {
@@ -1273,14 +1325,14 @@ const styles = StyleSheet.create({
   },
   bookingTypeBadgeText: {
     fontSize: normalize.font(9),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     textTransform: "uppercase",
   },
 
   noAvailabilityText: {
     textAlign: "center",
     color: "#64748B",
-    fontFamily: "Tajawal-SemiBold",
+    fontFamily: "Alexandria-SemiBold",
   },
   bookingCard: {
     backgroundColor: "#FFF",
@@ -1300,15 +1352,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  customerName: { fontSize: normalize.font(15), fontFamily: "Tajawal-Bold" },
+  customerName: { fontSize: normalize.font(15), fontFamily: "Alexandria-Bold" },
   chaletName: {
     fontSize: normalize.font(12),
     color: "#64748B",
-    fontFamily: "Tajawal-Regular",
+    fontFamily: "Alexandria-Regular",
   },
   priceText: {
     fontSize: normalize.font(15),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: IDENTITY_BLUE,
   },
   dateHighlight: {
@@ -1320,7 +1372,7 @@ const styles = StyleSheet.create({
   },
   dateHighlightText: {
     fontSize: normalize.font(13),
-    fontFamily: "Tajawal-SemiBold",
+    fontFamily: "Alexandria-SemiBold",
     color: "#1E293B",
   },
   statusBadge: {
@@ -1331,18 +1383,18 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: normalize.font(11),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     lineHeight: normalize.font(16),
   },
   codeText: {
     fontSize: normalize.font(12),
     color: "#64748B",
-    fontFamily: "Tajawal-Medium",
+    fontFamily: "Alexandria-Medium",
   },
   sheetLoading: { padding: 50, alignItems: "center" },
   sheetScroll: { padding: 20 },
   sheetTopRow: { marginBottom: 20 },
-  sheetHeroTitle: { fontSize: normalize.font(18), fontFamily: "Tajawal-Black" },
+  sheetHeroTitle: { fontSize: normalize.font(18), fontFamily: "Alexandria-Black" },
   customerCard: {
     backgroundColor: "#F8FAFC",
     borderRadius: 12,
@@ -1361,12 +1413,12 @@ const styles = StyleSheet.create({
   customerAvatarImg: { width: 44, height: 44, borderRadius: 12 },
   customerNameSheet: {
     fontSize: normalize.font(15),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
   },
   customerPhone: {
     fontSize: normalize.font(13),
     color: "#64748B",
-    fontFamily: "Tajawal-Regular",
+    fontFamily: "Alexandria-Regular",
   },
   contactActions: { gap: 8 },
   contactBtn: {
@@ -1396,7 +1448,7 @@ const styles = StyleSheet.create({
   },
   detailCardTitle: {
     fontSize: normalize.font(15),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     flex: 1,
   },
   detailSubRow: {
@@ -1408,7 +1460,7 @@ const styles = StyleSheet.create({
   detailSubText: {
     fontSize: normalize.font(12),
     color: "#64748B",
-    fontFamily: "Tajawal-Regular",
+    fontFamily: "Alexandria-Regular",
   },
   scheduleBlock: {
     backgroundColor: "#F8FAFC",
@@ -1424,7 +1476,7 @@ const styles = StyleSheet.create({
   },
   scheduleDate: {
     fontSize: normalize.font(13),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     flex: 1,
   },
   shiftChip: {
@@ -1435,30 +1487,30 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 6,
   },
-  shiftChipText: { fontSize: normalize.font(10), fontFamily: "Tajawal-Bold" },
+  shiftChipText: { fontSize: normalize.font(10), fontFamily: "Alexandria-Bold" },
   timeLabel: {
     fontSize: normalize.font(10),
     color: "#94A3B8",
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     textTransform: "uppercase",
   },
-  timeValue: { fontSize: normalize.font(14), fontFamily: "Tajawal-Black" },
+  timeValue: { fontSize: normalize.font(14), fontFamily: "Alexandria-Black" },
   timeArrow: { paddingHorizontal: 8 },
   paymentTotalValue: {
     fontSize: normalize.font(16),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: IDENTITY_BLUE,
   },
   paymentCard: { padding: 12, backgroundColor: "#F8FAFC", borderRadius: 10 },
   paymentTotalRow: { justifyContent: "space-between", alignItems: "center" },
   paymentTotalLabel: {
     fontSize: normalize.font(13),
-    fontFamily: "Tajawal-SemiBold",
+    fontFamily: "Alexandria-SemiBold",
   },
   sheetContent: { flex: 1 },
   sheetTitle: {
     fontSize: normalize.font(18),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     marginBottom: 16,
   },
   textInput: {
@@ -1471,7 +1523,7 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: normalize.font(14),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: "#64748B",
     marginBottom: 8,
   },
@@ -1490,7 +1542,7 @@ const styles = StyleSheet.create({
   pickerColLabel: {
     fontSize: normalize.font(12),
     color: "#94A3B8",
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     textTransform: "uppercase",
     marginBottom: 12,
     letterSpacing: 0.5,
@@ -1508,11 +1560,11 @@ const styles = StyleSheet.create({
   pickerItemTextNew: {
     fontSize: normalize.font(15),
     color: "#64748B",
-    fontFamily: "Tajawal-SemiBold",
+    fontFamily: "Alexandria-SemiBold",
   },
   pickerItemTextActiveNew: {
     color: IDENTITY_BLUE,
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
   },
   activeDot: {
     width: 6,
@@ -1537,14 +1589,14 @@ const styles = StyleSheet.create({
   },
   notesLabel: {
     fontSize: normalize.font(13),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: IDENTITY_BLUE,
   },
   notesText: {
     fontSize: normalize.font(13),
     color: "#475569",
     lineHeight: 18,
-    fontFamily: "Tajawal-Regular",
+    fontFamily: "Alexandria-Regular",
   },
   row: { flexDirection: "row" },
   successAnimationContainer: {
@@ -1560,7 +1612,7 @@ const styles = StyleSheet.create({
   },
   successAnimationText: {
     fontSize: normalize.font(18),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: IDENTITY_BLUE,
     marginTop: 16,
     textAlign: "center",

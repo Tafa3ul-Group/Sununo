@@ -1,7 +1,6 @@
 import { HeaderSection } from "@/components/header-section";
 import { ReviewCard } from "@/components/user/review-card";
 import { SecondaryButton } from "@/components/user/secondary-button";
-import { SecondaryButtonInverse } from "@/components/user/secondary-button-inverse";
 import { normalize } from "@/constants/theme";
 import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -110,23 +109,25 @@ export default function ReviewsScreen() {
       />
 
       {/* Tabs with fixed components to prevent shape shifting */}
-      <View style={[styles.tabsWrapper, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+      <View style={[styles.tabsWrapper, { flexDirection: isRTL ? 'row' : 'row' }]}>
+        <View style={styles.tabItem}>
+          <SecondaryButton
+            label={t('reviews.reviewed')}
+            onPress={() => setActiveTab('reviewed')}
+            isActive={activeTab === 'reviewed'}
+            style={{ width: '100%' }}
+            iconPosition={isRTL ? "left" : "right"}
+            variant="default"
+          />
+        </View>
         <View style={styles.tabItem}>
           <SecondaryButton
             label={t('reviews.pending')}
             onPress={() => setActiveTab('pending')}
             isActive={activeTab === 'pending'}
             style={{ width: '100%' }}
-            iconPosition={isRTL ? 'right' : 'left'}
-          />
-        </View>
-        <View style={styles.tabItem}>
-          <SecondaryButtonInverse
-            label={t('reviews.reviewed')}
-            onPress={() => setActiveTab('reviewed')}
-            isActive={activeTab === 'reviewed'}
-            style={{ width: '100%' }}
-            iconPosition={isRTL ? 'left' : 'right'}
+            iconPosition={isRTL ? "right" : "left"}
+            variant="inverse"
           />
         </View>
       </View>

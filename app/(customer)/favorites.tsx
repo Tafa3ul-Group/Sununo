@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 20,
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: '#1E293B',
     marginTop: 20,
   },
@@ -128,6 +128,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 10,
     lineHeight: 20,
-    fontFamily: "Tajawal-Regular" 
+    fontFamily: "Alexandria-Regular" 
   },
 });

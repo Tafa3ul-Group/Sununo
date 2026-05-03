@@ -93,14 +93,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: "#111827",
   },
   location: {
     fontSize: 12,
     color: "#6B7280",
     marginTop: 2,
-   fontFamily: "Tajawal-Regular" },
+   fontFamily: "Alexandria-Regular" },
   closeButton: {
     padding: 2,
   },
@@ -116,12 +116,12 @@ const styles = StyleSheet.create({
   },
   rating: {
     fontSize: 14,
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: "#111827",
   },
   price: {
     fontSize: 13,
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: Colors.primary,
   },
 });

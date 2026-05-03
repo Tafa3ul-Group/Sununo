@@ -118,10 +118,10 @@ export function HorizontalCard({
         {/* Bottom Row: Rating + Price */}
         <View style={[styles.bottomRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
           <View style={[styles.ratingBox, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-            <SolarStarBold size={normalize.width(16)} color={Colors.secondary} />
             <ThemedText style={styles.ratingText}>
               {chalet.rating || "4.5"}
             </ThemedText>
+            <SolarStarBold size={normalize.width(16)} color={Colors.secondary} />
           </View>
 
           <View style={[styles.priceRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: normalize.font(14),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: "#111827",
   },
   upperText: {
@@ -226,27 +226,27 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: normalize.font(16),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: "#111827",
   },
   location: {
     fontSize: normalize.font(12),
     color: "#6B7280",
     marginTop: 2,
-   fontFamily: "Tajawal-Regular" },
+   fontFamily: "Alexandria-Regular" },
   priceRow: {
     alignItems: "center",
     gap: 4,
   },
   price: {
     fontSize: normalize.font(16),
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     color: "#111827",
   },
   priceLabel: {
     fontSize: normalize.font(11),
     color: "#6B7280",
-   fontFamily: "Tajawal-Regular" },
+   fontFamily: "Alexandria-Regular" },
   imageWrapper: {
     width: normalize.width(98),
     height: normalize.height(88),

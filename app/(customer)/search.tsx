@@ -8,7 +8,7 @@ import {
   ActivityIndicator, 
   Platform 
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
@@ -31,6 +31,8 @@ export default function SearchScreen() {
   const isRTL = i18n.language === 'ar';
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const insets = useSafeAreaInsets();
+
   
   const { data: chaletsResponse, isLoading } = useBrowseCustomerChaletsQuery({ 
     page: 1, 
@@ -65,7 +67,7 @@ export default function SearchScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <HeaderSection 
         title={t('home.search')}
         isHome={false}
@@ -159,7 +161,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: Colors.text.primary,
-    fontFamily: 'Tajawal-Medium',
+    fontFamily: 'Alexandria-Medium',
   },
   listContent: {
     padding: 16,
@@ -187,7 +189,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.text.muted,
     textAlign: 'center',
-    fontFamily: 'Tajawal-Medium',
+    fontFamily: 'Alexandria-Medium',
     lineHeight: 24,
   },
 });

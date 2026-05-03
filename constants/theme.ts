@@ -95,43 +95,43 @@ interface TypeStyle {
 export const Typography: Record<string, TypeStyle> = {
   h1: {
     fontSize: normalize.font(26),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: Colors.light.text,
     lineHeight: normalize.font(36),
   },
   h2: {
     fontSize: normalize.font(18),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: Colors.light.text,
     lineHeight: normalize.font(26),
   },
   body: {
     fontSize: normalize.font(13),
-    fontFamily: "Tajawal-Regular",
+    fontFamily: "Alexandria-Regular",
     color: Colors.light.text,
     lineHeight: normalize.font(20),
   },
   subtitle: {
     fontSize: normalize.font(12),
-    fontFamily: "Tajawal-Regular",
+    fontFamily: "Alexandria-Regular",
     color: Colors.light.icon,
     lineHeight: normalize.font(18),
   },
   caption: {
     fontSize: normalize.font(11),
-    fontFamily: "Tajawal-Medium",
+    fontFamily: "Alexandria-Medium",
     color: Colors.light.icon,
     lineHeight: normalize.font(16),
   },
   price: {
     fontSize: normalize.font(17),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: Colors.light.primary,
     lineHeight: normalize.font(24),
   },
   rating: {
     fontSize: normalize.font(13),
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: Colors.light.text,
     lineHeight: normalize.font(20),
   },
@@ -161,9 +161,9 @@ export const Shadows = {
 };
 
 export const Fonts = {
-  bold: "Tajawal-Bold" as const,
-  regular: "Tajawal-Regular" as const,
-  medium: "Tajawal-Medium" as const,
-  semiBold: "Tajawal-Bold" as const,
-  black: "Tajawal-Black" as const,
+  bold: "Alexandria-Bold" as const,
+  regular: "Alexandria-Regular" as const,
+  medium: "Alexandria-Medium" as const,
+  semiBold: "Alexandria-Bold" as const,
+  black: "Alexandria-Black" as const,
 };

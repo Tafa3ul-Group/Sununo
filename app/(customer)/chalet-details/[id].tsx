@@ -23,6 +23,7 @@ import { HostContactCard } from "@/components/user/host-contact-card";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { ReviewSubmissionSheet } from "@/components/user/review-submission-sheet";
 import { SecondaryButton } from "@/components/user/secondary-button";
+import { LoginPromptModal } from "@/components/user/login-prompt-modal";
 import { Colors, normalize, Shadows } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import {
@@ -43,6 +44,8 @@ import { Image as ExpoImage } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
 import {
   ActivityIndicator,
   Alert,
@@ -90,6 +93,8 @@ export default function ChaletDetailScreen() {
   const [activeImage, setActiveImage] = useState(0);
   const reviewSheetRef = React.useRef<BottomSheetModal>(null);
   const bannerScrollRef = useRef<ScrollView>(null);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const { userType } = useSelector((state: RootState) => state.auth);
 
   const FEATURE_ICON_MAP: Record<string, any> = useMemo(
     () => ({
@@ -123,9 +128,13 @@ export default function ChaletDetailScreen() {
   // New queries for similar chalets and addons
   const { data: similarResponse } = useGetSimilarChaletsQuery(chaletId);
   const { data: addons = [] } = useGetChaletAddonsQuery(chaletId);
-  const { data: canReviewData } = useCheckCanReviewQuery(chaletId);
+  const { data: canReviewData } = useCheckCanReviewQuery(chaletId, {
+    skip: userType === "guest",
+  });
   const { data: favoriteIds = [], refetch: refetchFavorites } =
-    useGetFavoriteIdsQuery();
+    useGetFavoriteIdsQuery(undefined, {
+      skip: userType === "guest",
+    });
   const [toggleFavorite] = useToggleFavoriteMutation();
 
   const [selectedShiftId, setSelectedShiftId] = useState<string | null>(null);
@@ -136,6 +145,10 @@ export default function ChaletDetailScreen() {
   );
 
   const handleToggleFavorite = async () => {
+    if (userType === "guest") {
+      setShowLoginPrompt(true);
+      return;
+    }
     try {
       await toggleFavorite(chaletId).unwrap();
       refetchFavorites();
@@ -419,10 +432,10 @@ export default function ChaletDetailScreen() {
                 isRTL ? { marginRight: 15 } : { marginLeft: 15 },
               ]}
             >
-              <SolarStarBold size={14} color="#035DF9" />
               <ThemedText style={styles.ratingVal}>
                 {chaletRating.toFixed(1)}
               </ThemedText>
+              <SolarStarBold size={14} color="#035DF9" />
             </View>
             <View
               style={{ alignItems: isRTL ? "flex-end" : "flex-start", flex: 1 }}
@@ -613,7 +626,7 @@ export default function ChaletDetailScreen() {
           <View style={styles.readMoreWrapper}>
             <PrimaryButton
               label={t("chalet.details.readMore")}
-              onPress={() => {}}
+              onPress={() => router.push(`/(customer)/chalet-details/description/${chaletId}`)}
               style={styles.readMoreComp}
               height={54}
             />
@@ -699,7 +712,7 @@ export default function ChaletDetailScreen() {
           <View
             style={[
               styles.ctaRowReviewMerged,
-              { flexDirection: isRTL ? "row-reverse" : "row" },
+              { flexDirection: isRTL ? "row" : "row-reverse" },
             ]}
           >
             <TouchableOpacity
@@ -727,21 +740,22 @@ export default function ChaletDetailScreen() {
                   { flexDirection: isRTL ? "row-reverse" : "row" },
                 ]}
               >
-                <SolarStarBold size={18} color="white" />
                 <ThemedText style={styles.customRatingText}>
                   {chaletRating.toFixed(1)}
                 </ThemedText>
+                <SolarStarBold size={18} color="white" />
               </View>
             </TouchableOpacity>
 
             <SecondaryButton
               label={t("chalet.details.reviews")}
               iconLabel={String(reviewCount)}
-              iconPosition={isRTL ? "left" : "right"}
+              iconPosition="right"
               isActive={true}
               onPress={() => router.push(`/chalet-details/reviews/${chaletId}`)}
               style={{ width: 175 }}
               height={46}
+              variant={isRTL ? "inverse" : undefined}
             />
           </View>
 
@@ -777,10 +791,10 @@ export default function ChaletDetailScreen() {
                         { flexDirection: isRTL ? "row" : "row-reverse" },
                       ]}
                     >
-                      <SolarStarBold size={14} color="#035DF9" />
                       <ThemedText style={styles.revRateNumMerged}>
                         {reviewRating}
                       </ThemedText>
+                      <SolarStarBold size={14} color="#035DF9" />
                     </View>
                     <View
                       style={[
@@ -832,7 +846,7 @@ export default function ChaletDetailScreen() {
             },
           )}
 
-          {canReviewData?.canReview && (
+          {(canReviewData?.canReview || !canReviewData) && (
             <View style={styles.addReviewAction}>
               <PrimaryButton
                 label={t("chalet.details.addReview")}
@@ -843,8 +857,8 @@ export default function ChaletDetailScreen() {
             </View>
           )}
 
-          {!canReviewData?.canReview &&
-            canReviewData?.reason === "NO_COMPLETED_BOOKING" && (
+          {canReviewData && !canReviewData.canReview &&
+            canReviewData.reason === "NO_COMPLETED_BOOKING" && (
               <View style={styles.unverifiedReviewMsg}>
                 <ThemedText style={styles.unverifiedText}>
                   {isRTL
@@ -868,7 +882,7 @@ export default function ChaletDetailScreen() {
                 Icon: SolarKeyBold,
                 onPress: () =>
                   router.push({
-                    pathname: `/chalet-details/info/${chaletId}`,
+                    pathname: `/(customer)/chalet-details/info/${chaletId}`,
                     params: { type: "terms" },
                   }),
               },
@@ -877,7 +891,7 @@ export default function ChaletDetailScreen() {
                 Icon: SolarForbiddenBold,
                 onPress: () =>
                   router.push({
-                    pathname: `/chalet-details/info/${chaletId}`,
+                    pathname: `/(customer)/chalet-details/info/${chaletId}`,
                     params: { type: "policies" },
                   }),
               },
@@ -939,9 +953,13 @@ export default function ChaletDetailScreen() {
         <View style={styles.footerBtnSide}>
           <PrimaryButton
             label={t("chalet.details.bookNow")}
-            onPress={() =>
-              router.push(`/(customer)/booking/complete?id=${chaletId}`)
-            }
+            onPress={() => {
+              if (userType === "guest") {
+                setShowLoginPrompt(true);
+              } else {
+                router.push(`/(customer)/booking/complete?id=${chaletId}`);
+              }
+            }}
             style={styles.footerFlatBtn}
           />
         </View>
@@ -975,6 +993,14 @@ export default function ChaletDetailScreen() {
       <ReviewSubmissionSheet
         ref={reviewSheetRef}
         onSubmit={handleReviewSubmit}
+      />
+      <LoginPromptModal
+        isVisible={showLoginPrompt}
+        onClose={() => setShowLoginPrompt(false)}
+        onLogin={() => {
+          setShowLoginPrompt(false);
+          router.push("/(auth)/login");
+        }}
       />
     </View>
   );
@@ -1042,17 +1068,17 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
   },
   shiftName: {
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     fontSize: 15,
     color: "#1E293B",
   },
   shiftTime: {
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     fontSize: 12,
     color: "#64748B",
   },
   shiftPrice: {
-    fontFamily: "Tajawal-Black",
+    fontFamily: "Alexandria-Black",
     fontSize: 14,
     color: "#1E293B",
   },
@@ -1367,12 +1393,12 @@ const styles = StyleSheet.create({
   },
   capacityValue: {
     fontSize: 16,
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Bold",
     color: Colors.primary,
   },
   capacityLabel: {
     fontSize: 10,
-    fontFamily: "Tajawal-Medium",
+    fontFamily: "Alexandria-Medium",
     color: "#64748B",
     marginTop: 2,
   },

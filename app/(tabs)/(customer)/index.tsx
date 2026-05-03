@@ -1,39 +1,42 @@
+'use no memo';
 import { Redirect, useRouter } from "expo-router";
-import React, { useRef, useMemo } from "react";
+import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  ActivityIndicator,
   Dimensions,
-  Platform,
   ScrollView,
   StatusBar,
   StyleSheet,
   TouchableOpacity,
   View,
-  ActivityIndicator,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 
 import { HeaderSection } from "@/components/header-section";
+import {
+  SolarFireBold,
+  SolarTreeBold,
+  SolarWaterBold,
+  SolarWidgetBold,
+} from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { AppMap } from "@/components/user/app-map";
-import { ColoredCard } from "@/components/user/colored-card";
+import { BannerSwiper } from "@/components/user/banner-swiper";
 import { HorizontalCard } from "@/components/user/horizontal-card";
 import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
-import { BannerSwiper } from "@/components/user/banner-swiper";
-import { PrimaryButton } from "@/components/user/primary-button";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize } from "@/constants/theme";
-import { RootState } from "@/store";
-import { 
-  SolarWidgetBold, 
-  SolarWaterBold, 
-  SolarFireBold, 
-  SolarTreeBold 
-} from "@/components/icons/solar-icons";
-import { useBrowseCustomerChaletsQuery, useGetBannersQuery, useGetFavoriteIdsQuery, useToggleFavoriteMutation } from "@/store/api/customerApiSlice";
 import { getImageSrc } from "@/hooks/useImageSrc";
+import { RootState } from "@/store";
+import {
+  useBrowseCustomerChaletsQuery,
+  useGetBannersQuery,
+  useGetFavoriteIdsQuery,
+  useToggleFavoriteMutation,
+} from "@/store/api/customerApiSlice";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -44,29 +47,31 @@ export default function HomeScreen() {
   const { userType } = useSelector((state: RootState) => state.auth);
   const router = useRouter();
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
+  const isRTL = i18n.language === "ar";
   const [activeFilter, setActiveFilter] = React.useState("all");
   const [filters, setFilters] = React.useState<any>({});
   const insets = useSafeAreaInsets();
 
   // Map categories to amenity names/ids for filtering
   const amenityIds = useMemo(() => {
-    if (activeFilter === 'pool') return ['poo-id-placeholder']; // Ideally these would come from an amenities API
-    if (activeFilter === 'bbq') return ['bbq-id-placeholder'];
-    if (activeFilter === 'garden') return ['garden-id-placeholder'];
+    if (activeFilter === "pool") return ["poo-id-placeholder"]; // Ideally these would come from an amenities API
+    if (activeFilter === "bbq") return ["bbq-id-placeholder"];
+    if (activeFilter === "garden") return ["garden-id-placeholder"];
     return undefined;
   }, [activeFilter]);
 
   // Fetch data from the backend
   const { data: bannersResponse } = useGetBannersQuery(undefined);
-  const { data: chaletsResponse, isLoading: chaletsLoading } = useBrowseCustomerChaletsQuery({ 
-    page: 1, 
-    limit: 10,
-    amenityIds,
-    ...filters
-  });
+  const { data: chaletsResponse, isLoading: chaletsLoading } =
+    useBrowseCustomerChaletsQuery({
+      page: 1,
+      limit: 10,
+      amenityIds,
+      ...filters,
+    });
 
-  const { data: favoriteIds = [], refetch: refetchFavorites } = useGetFavoriteIdsQuery();
+  const { data: favoriteIds = [], refetch: refetchFavorites } =
+    useGetFavoriteIdsQuery();
   const [toggleFavorite] = useToggleFavoriteMutation();
 
   const handleToggleFavorite = async (id: string) => {
@@ -74,37 +79,44 @@ export default function HomeScreen() {
       await toggleFavorite(id).unwrap();
       refetchFavorites();
     } catch (error) {
-      console.error('Failed to toggle favorite:', error);
+      console.error("Failed to toggle favorite:", error);
     }
   };
 
   // Transform banners
-  const banners = useMemo(() => {
-    return (bannersResponse || []).map((b: any) => ({
-      id: b.id,
-      image: b.imageUrl,
-      title: isRTL ? (b.title?.ar || b.title) : (b.title?.en || b.title),
-    }));
-  }, [bannersResponse, isRTL]);
+  const banners = (bannersResponse || []).map((b: any) => ({
+    id: b.id,
+    image: b.imageUrl,
+    title: isRTL ? b.title?.ar || b.title : b.title?.en || b.title,
+  }));
 
   if (userType === "owner") return <Redirect href="/(tabs)/(dashboard)/home" />;
 
-  const navigateToDetails = (id: string) => router.push(`/chalet-details/${id}`);
+  const navigateToDetails = (id: string) =>
+    router.push(`/chalet-details/${id}`);
 
   // Transform API data to match card format, with fallback to empty array
   const POPULAR_CHALETS = useMemo(() => {
     const chalets = chaletsResponse?.data || [];
     return chalets.map((chalet: any, index: number) => ({
       id: chalet.id,
-      title: isRTL 
-        ? (chalet.name?.ar || chalet.nameAr || chalet.name || '') 
-        : (chalet.name?.en || chalet.nameEn || chalet.name || ''),
-      location: isRTL 
-        ? (chalet.region?.name?.ar || chalet.region?.nameAr || chalet.region?.name || '') 
-        : (chalet.region?.name?.en || chalet.region?.nameEn || chalet.region?.name || ''),
-      price: chalet.shifts?.[0]?.pricing?.[0]?.price 
-        ? Number(chalet.shifts[0].pricing[0].price).toLocaleString() 
-        : chalet.basePrice ? Number(chalet.basePrice).toLocaleString() : '0',
+      title: isRTL
+        ? chalet.name?.ar || chalet.nameAr || chalet.name || ""
+        : chalet.name?.en || chalet.nameEn || chalet.name || "",
+      location: isRTL
+        ? chalet.region?.name?.ar ||
+          chalet.region?.nameAr ||
+          chalet.region?.name ||
+          ""
+        : chalet.region?.name?.en ||
+          chalet.region?.nameEn ||
+          chalet.region?.name ||
+          "",
+      price: chalet.shifts?.[0]?.pricing?.[0]?.price
+        ? Number(chalet.shifts[0].pricing[0].price).toLocaleString()
+        : chalet.basePrice
+          ? Number(chalet.basePrice).toLocaleString()
+          : "0",
       rating: chalet.averageRating || 0,
       color: CARD_COLORS[index % CARD_COLORS.length],
       image: getImageSrc(chalet.images?.[0]?.url),
@@ -112,48 +124,117 @@ export default function HomeScreen() {
   }, [chaletsResponse, isRTL]);
 
   const FILTER_OPTIONS = [
-    { id: "all", label: t("home.categories.all"), icon: (isActive: boolean) => <SolarWidgetBold size={18} color={isActive ? "white" : Colors.primary} />, activeColor: Colors.primary },
-    { id: "pool", label: t("home.categories.pool"), icon: (isActive: boolean) => <SolarWaterBold size={18} color={isActive ? "white" : Colors.secondary} />, activeColor: Colors.secondary },
-    { id: "bbq", label: t("home.categories.bbq"), icon: (isActive: boolean) => <SolarFireBold size={18} color={isActive ? "white" : Colors.accent} />, activeColor: Colors.accent },
-    { id: "garden", label: t("home.categories.garden"), icon: (isActive: boolean) => <SolarTreeBold size={18} color={isActive ? "white" : Colors.secondary} />, activeColor: Colors.secondary },
+    {
+      id: "all",
+      label: t("home.categories.all"),
+      icon: (isActive: boolean) => (
+        <SolarWidgetBold
+          size={18}
+          color={isActive ? "white" : Colors.primary}
+        />
+      ),
+      activeColor: Colors.primary,
+    },
+    {
+      id: "pool",
+      label: t("home.categories.pool"),
+      icon: (isActive: boolean) => (
+        <SolarWaterBold
+          size={18}
+          color={isActive ? "white" : Colors.secondary}
+        />
+      ),
+      activeColor: Colors.secondary,
+    },
+    {
+      id: "bbq",
+      label: t("home.categories.bbq"),
+      icon: (isActive: boolean) => (
+        <SolarFireBold size={18} color={isActive ? "white" : Colors.accent} />
+      ),
+      activeColor: Colors.accent,
+    },
+    {
+      id: "garden",
+      label: t("home.categories.garden"),
+      icon: (isActive: boolean) => (
+        <SolarTreeBold
+          size={18}
+          color={isActive ? "white" : Colors.secondary}
+        />
+      ),
+      activeColor: Colors.secondary,
+    },
   ];
 
   return (
     <View style={[styles.safeArea, { paddingTop: insets.top }]}>
       <StatusBar barStyle="dark-content" />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
         {/* Header */}
-        <HeaderSection 
-          isHome
-        />
+        <HeaderSection isHome />
 
         {/* Banners Swiper */}
-        <BannerSwiper data={banners} />
+        {banners?.length > 0 && <BannerSwiper data={banners} />}
 
         {/* Nearby / Map */}
-        <View style={[styles.sectionHeader, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
-          <TouchableOpacity><ThemedText style={styles.seeAll}>{t('home.openMap')}</ThemedText></TouchableOpacity>
-          <ThemedText style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('home.categories.nearby')}</ThemedText>
+        <View
+          style={[
+            styles.sectionHeader,
+            { flexDirection: isRTL ? "row" : "row-reverse" },
+          ]}
+        >
+          <TouchableOpacity>
+            <ThemedText style={styles.seeAll}>{t("home.openMap")}</ThemedText>
+          </TouchableOpacity>
+          <ThemedText
+            style={[
+              styles.sectionTitle,
+              { textAlign: isRTL ? "right" : "left" },
+            ]}
+          >
+            {t("home.categories.nearby")}
+          </ThemedText>
         </View>
         <View style={styles.mapContainer}>
-          <AppMap style={styles.map} showMarker onPressCard={navigateToDetails} />
+          <AppMap
+            style={styles.map}
+            showMarker
+            onPressCard={navigateToDetails}
+          />
         </View>
 
         {/* Popular / Recent */}
-        <View style={[styles.sectionHeader, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
-          <TouchableOpacity><ThemedText style={styles.seeAll}>{t('home.seeAll')}</ThemedText></TouchableOpacity>
-          <ThemedText style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('home.recentBookings')}</ThemedText>
+        <View
+          style={[
+            styles.sectionHeader,
+            { flexDirection: isRTL ? "row" : "row-reverse" },
+          ]}
+        >
+          <TouchableOpacity>
+            <ThemedText style={styles.seeAll}>{t("home.seeAll")}</ThemedText>
+          </TouchableOpacity>
+          <ThemedText
+            style={[
+              styles.sectionTitle,
+              { textAlign: isRTL ? "right" : "left" },
+            ]}
+          >
+            {t("home.recentBookings")}
+          </ThemedText>
         </View>
-        
+
         {chaletsLoading ? (
           <View style={styles.loaderContainer}>
             <ActivityIndicator size="large" color={Colors.primary} />
           </View>
         ) : (
           <View style={styles.swiperWrapper}>
-            <HorizontalSwiper 
-              data={POPULAR_CHALETS} 
+            <HorizontalSwiper
+              data={POPULAR_CHALETS}
               onPressCard={navigateToDetails}
               favoriteIds={favoriteIds}
               onToggleFavorite={handleToggleFavorite}
@@ -162,42 +243,82 @@ export default function HomeScreen() {
         )}
 
         {/* Recommended */}
-        <View style={[styles.sectionHeader, { justifyContent: isRTL ? "flex-end" : "flex-start" }]}>
-          <ThemedText style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('home.recommended')}</ThemedText>
+        <View
+          style={[
+            styles.sectionHeader,
+            { justifyContent: isRTL ? "flex-end" : "flex-start" },
+          ]}
+        >
+          <ThemedText
+            style={[
+              styles.sectionTitle,
+              { textAlign: isRTL ? "right" : "left" },
+            ]}
+          >
+            {t("home.recommended")}
+          </ThemedText>
         </View>
-        <GHScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsContainer}>
-           <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 10 }}>
-             {FILTER_OPTIONS.map((filter) => (
-                <SecondaryButton 
-                  key={filter.id} 
-                  label={filter.label} 
-                  isActive={activeFilter === filter.id} 
-                  activeColor={filter.activeColor} 
-                  icon={filter.icon(activeFilter === filter.id)} 
-                  onPress={() => setActiveFilter(filter.id)} 
-                />
-             ))}
-           </View>
+        <GHScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.tabsContainer}
+        >
+          <View
+            style={{ flexDirection: isRTL ? "row-reverse" : "row", gap: 10 }}
+          >
+            {FILTER_OPTIONS.map((filter) => (
+              <SecondaryButton
+                key={filter.id}
+                label={filter.label}
+                isActive={activeFilter === filter.id}
+                activeColor={filter.activeColor}
+                icon={filter.icon(activeFilter === filter.id)}
+                onPress={() => setActiveFilter(filter.id)}
+              />
+            ))}
+          </View>
         </GHScrollView>
 
         <View style={styles.listPadding}>
-           {chaletsLoading ? (
-             <ActivityIndicator size="small" color={Colors.primary} style={{ marginTop: 20 }} />
-           ) : POPULAR_CHALETS.length > 0 ? (
-             POPULAR_CHALETS.map((item, index) => (
-               <HorizontalCard 
-                  key={index} 
-                  chalet={item} 
-                  onPress={() => navigateToDetails(item.id)}
-                  isFavorite={favoriteIds.includes(item.id)}
-                  onToggleFavorite={() => handleToggleFavorite(item.id)}
-               />
-             ))
-           ) : (
-             <View style={styles.emptyContainer}>
-                <ThemedText style={styles.emptyText}>{t('common.noData') || 'لا توجد بيانات'}</ThemedText>
-             </View>
-           )}
+          {chaletsLoading ? (
+            <ActivityIndicator
+              size="small"
+              color={Colors.primary}
+              style={{ marginTop: 20 }}
+            />
+          ) : POPULAR_CHALETS.length > 0 ? (
+            POPULAR_CHALETS.map((item, index) => (
+              <HorizontalCard
+                key={index}
+                chalet={item}
+                onPress={() => navigateToDetails(item.id)}
+                isFavorite={favoriteIds.includes(item.id)}
+                onToggleFavorite={() => handleToggleFavorite(item.id)}
+              />
+            ))
+          ) : (
+            <View style={styles.emptyContainer}>
+              <View style={styles.emptyIconContainer}>
+                <SolarWidgetBold size={60} color={Colors.primary} />
+              </View>
+              <ThemedText style={styles.emptyTitle}>
+                {t("home.noChalets")}
+              </ThemedText>
+              <ThemedText style={styles.emptyDesc}>
+                {t("home.noChaletsDesc")}
+              </ThemedText>
+              {activeFilter !== "all" && (
+                <TouchableOpacity
+                  style={styles.clearButton}
+                  onPress={() => setActiveFilter("all")}
+                >
+                  <ThemedText style={styles.clearButtonText}>
+                    {t("home.clearFilters")}
+                  </ThemedText>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>
@@ -207,21 +328,86 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: Colors.background },
   scrollContent: { paddingBottom: 120 },
-  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginTop: 20, marginBottom: 10 },
-  sectionTitle: { 
-    fontSize: normalize.font(20), 
-    fontFamily: "Tajawal-Black", 
-    color: Colors.text.primary, 
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    marginTop: 20,
+    marginBottom: 10,
   },
-  seeAll: { 
-    fontSize: normalize.font(13), 
-    color: Colors.primary, 
-    fontFamily: "Tajawal-SemiBold", 
-    textDecorationLine: "underline" 
+  sectionTitle: {
+    fontSize: normalize.font(20),
+    fontFamily: "Alexandria-Black",
+    color: Colors.text.primary,
   },
-  mapContainer: { height: 210, marginHorizontal: 16, borderRadius: 28, overflow: "hidden", backgroundColor: "#F3F4F6", marginTop: 10 },
+  seeAll: {
+    fontSize: normalize.font(13),
+    color: Colors.primary,
+    fontFamily: "Alexandria-SemiBold",
+    textDecorationLine: "underline",
+  },
+  mapContainer: {
+    height: 210,
+    marginHorizontal: 16,
+    borderRadius: 28,
+    overflow: "hidden",
+    backgroundColor: "#F3F4F6",
+    marginTop: 10,
+  },
   map: { flex: 1 },
   listPadding: { paddingHorizontal: 16 },
   tabsContainer: { paddingHorizontal: 16, marginVertical: 10 },
   swiperWrapper: { marginVertical: 10 },
+  loaderContainer: {
+    height: 200,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+    backgroundColor: Colors.white,
+    borderRadius: 24,
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: "#F3F4F6",
+  },
+  emptyIconContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: Colors.primary + "10",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: normalize.font(18),
+    fontFamily: "Alexandria-Bold",
+    color: Colors.text.primary,
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  emptyDesc: {
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Regular",
+    color: Colors.text.secondary,
+    textAlign: "center",
+    marginBottom: 24,
+    lineHeight: 20,
+  },
+  clearButton: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 16,
+  },
+  clearButtonText: {
+    color: Colors.white,
+    fontFamily: "Alexandria-SemiBold",
+    fontSize: normalize.font(14),
+  },
 });

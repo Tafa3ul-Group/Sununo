@@ -7,7 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "sununo",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.Sununo",
@@ -66,7 +65,19 @@
             "./assets/fonts/LamaSans/LamaSans-BlackCondensed.otf"
           ]
         }
-      ]
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "newArchEnabled": true
+          },
+          "ios": {
+            "newArchEnabled": true
+          }
+        }
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -75,14 +86,8 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "351a865e-f1c4-4f51-8d64-a0666b5b232b"
+        "projectId": "391462b3-5778-4922-81bb-63fe765d070c"
       }
-    },
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
-    "updates": {
-      "url": "https://u.expo.dev/351a865e-f1c4-4f51-8d64-a0666b5b232b"
     }
   }
 }
