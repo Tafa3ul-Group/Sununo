@@ -86,7 +86,7 @@ export default function ProfileScreen() {
     <SafeAreaView style={styles.container}>
       <HeaderSection 
         title={t('headers.profile')}
-        showBackButton 
+        showBackButton={false} 
         showLogo 
         userType={userType}
       />

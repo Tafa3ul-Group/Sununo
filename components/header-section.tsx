@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderColor: "#F1F5F9",
+    borderColor: "#E5E7EB",
     // Transition and cursor are handled by TouchableOpacity/React Native
   },
   avatarCircleHome: {
@@ -400,7 +400,7 @@ const styles = StyleSheet.create({
     height: normalize.width(48),
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: "#F1F5F9",
+    borderColor: "#E5E7EB",
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#FFFFFF",

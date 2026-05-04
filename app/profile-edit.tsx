@@ -43,26 +43,12 @@ export default function ProfileEditScreen() {
       <StatusBar barStyle="dark-content" />
       <Stack.Screen options={{ headerShown: false }} />
 
-      {/* Header */}
-      <View style={[styles.header, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
-        <TouchableOpacity style={styles.headerIconBtn} onPress={() => router.back()}>
-          {isRTL ? (
-            <SolarAltArrowRightLinear size={24} color="#6B7280" />
-          ) : (
-            <SolarAltArrowLeftLinear size={24} color="#6B7280" />
-          )}
-        </TouchableOpacity>
-        
-        <ThemedText style={styles.headerTitle}>{t('headers.profile')}</ThemedText>
-
-        <View style={styles.logoCircle}>
-          <Image 
-            source={isRTL ? require('@/assets/arlogo.svg') : require('@/assets/logo.svg')} 
-            style={styles.logoImg}
-            resizeMode="contain"
-          />
-        </View>
-      </View>
+      <HeaderSection 
+        title={t('headers.profile')}
+        showBackButton={true}
+        showLogo={true}
+        onBackPress={() => router.back()}
+      />
 
       <ScrollView 
         showsVerticalScrollIndicator={false} 

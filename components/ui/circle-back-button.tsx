@@ -1,8 +1,8 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
+import { StyleSheet, TouchableOpacity, ViewStyle, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { normalize } from '@/constants/theme';
+import { normalize, Colors } from '@/constants/theme';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
@@ -20,33 +20,56 @@ export function CircleBackButton({ style, onPress }: CircleBackButtonProps) {
   const { language } = useSelector((state: RootState) => state.auth);
   const isArabic = language === 'ar';
 
+  const handleBack = () => {
+    if (onPress) {
+      onPress();
+    } else if (router.canGoBack()) {
+      router.back();
+    } else {
+      // Fallback to home if no history, prevents going back to splash/login
+      router.replace('/(tabs)');
+    }
+  };
+
   return (
     <TouchableOpacity 
-      onPress={onPress || (() => router.back())} 
+      onPress={handleBack} 
       style={[styles.container, style]}
-      activeOpacity={0.8}
+      activeOpacity={0.7}
     >
-      <Svg 
-        width={normalize.width(17)} 
-        height={normalize.height(24)} 
-        viewBox="0 0 17 24" 
-        fill="none"
-      >
-        <Path d={isArabic ? AR_BACK_PATH : EN_BACK_PATH} fill="#035DF9" />
-      </Svg>
+      <View style={styles.iconWrapper}>
+        <Svg 
+          width={normalize.width(16)} 
+          height={normalize.height(16)} 
+          viewBox="0 0 17 24" 
+          fill="none"
+        >
+          <Path d={isArabic ? AR_BACK_PATH : EN_BACK_PATH} fill={Colors.primary} />
+        </Svg>
+      </View>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    width: normalize.width(42),
-    height: normalize.width(42),
-    borderRadius: normalize.width(21),
+    width: normalize.width(44),
+    height: normalize.width(44),
+    borderRadius: normalize.width(22),
     backgroundColor: 'white',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB', // Matching other premium buttons
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  iconWrapper: {
+    // Center the custom SVG path correctly
+    justifyContent: 'center',
+    alignItems: 'center',
   }
 });
