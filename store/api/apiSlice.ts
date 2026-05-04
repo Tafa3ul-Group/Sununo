@@ -302,12 +302,22 @@ export const apiSlice = createApi({
         return rest;
       },
       merge: (currentCache, newItems, { arg }) => {
-        if (arg.page === 1) {
+        if (arg.page === 1 || !currentCache) {
           return newItems;
         }
+        
+        // Ensure data exists before mapping
+        const existingData = currentCache.data || [];
+        const newData = newItems.data || [];
+        
+        // Deduplicate items by ID
+        const existingIds = new Set(existingData.map((item: any) => item.id));
+        const uniqueNewItems = newData.filter((item: any) => !existingIds.has(item.id));
+
         return {
           ...newItems,
-          data: [...(currentCache.data || []), ...(newItems.data || [])]
+          data: [...existingData, ...uniqueNewItems],
+          meta: newItems.meta,
         };
       },
       forceRefetch({ currentArg, previousArg }) {
