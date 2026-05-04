@@ -28,6 +28,7 @@ import {
   SolarAddCircleBold,
   SolarTrashBinBold,
   SolarPenBold,
+  SolarMagnifierBold,
 } from "@/components/icons/solar-icons";
 import {
   ActivityIndicator,

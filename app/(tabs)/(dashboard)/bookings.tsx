@@ -16,11 +16,13 @@ import {
 } from "@/components/icons/solar-icons";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize } from "@/constants/theme";
+import { PendingApprovalScreen } from "@/components/dashboard/pending-approval";
 import { RootState } from "@/store";
 import {
   useCreateExternalBookingMutation,
   useDeleteExternalBookingMutation,
   useGetProviderBookingsQuery,
+  useGetProviderProfileQuery,
   useGetShiftAvailabilityQuery,
   useMarkBookingCompletedMutation,
   useRejectBookingMutation,
@@ -83,12 +85,15 @@ const format12H = (time: string | undefined | null, isRTL: boolean) => {
 
 export default function BookingsScreen() {
   const router = useRouter();
-  const { language, selectedChalet } = useSelector(
+  const { language, selectedChalet, user } = useSelector(
     (state: RootState) => state.auth,
   );
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = React.useState("new");
   const isRTL = language === "ar";
+
+  const { data: profileResponse, refetch: refetchProfile } = useGetProviderProfileQuery(undefined);
+  const profile = profileResponse?.data || profileResponse;
 
   const [markAsCompleted, { isLoading: isStatusLoading }] =
     useMarkBookingCompletedMutation();
@@ -287,6 +292,7 @@ export default function BookingsScreen() {
     ),
     [],
   );
+
 
   const renderShiftsGrid = () => {
     if (isAvailabilityFetching)
@@ -638,6 +644,10 @@ export default function BookingsScreen() {
       </TouchableOpacity>
     );
   };
+
+  if (user && (profile ? !profile.isApproved : !user?.isApproved)) {
+    return <PendingApprovalScreen onRefresh={refetchProfile} />;
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>

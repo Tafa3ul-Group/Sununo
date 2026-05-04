@@ -1,3 +1,4 @@
+'use no memo';
 import { Redirect, useRouter } from "expo-router";
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -83,13 +84,11 @@ export default function HomeScreen() {
   };
 
   // Transform banners
-  const banners = useMemo(() => {
-    return (bannersResponse || []).map((b: any) => ({
-      id: b.id,
-      image: b.imageUrl,
-      title: isRTL ? b.title?.ar || b.title : b.title?.en || b.title,
-    }));
-  }, [bannersResponse, isRTL]);
+  const banners = (bannersResponse || []).map((b: any) => ({
+    id: b.id,
+    image: b.imageUrl,
+    title: isRTL ? b.title?.ar || b.title : b.title?.en || b.title,
+  }));
 
   if (userType === "owner") return <Redirect href="/(tabs)/(dashboard)/home" />;
 
@@ -179,7 +178,7 @@ export default function HomeScreen() {
         <HeaderSection isHome />
 
         {/* Banners Swiper */}
-        <BannerSwiper data={banners} />
+        {banners?.length > 0 && <BannerSwiper data={banners} />}
 
         {/* Nearby / Map */}
         <View
@@ -299,9 +298,25 @@ export default function HomeScreen() {
             ))
           ) : (
             <View style={styles.emptyContainer}>
-              <ThemedText style={styles.emptyText}>
-                {t("common.noData") || "لا توجد بيانات"}
+              <View style={styles.emptyIconContainer}>
+                <SolarWidgetBold size={60} color={Colors.primary} />
+              </View>
+              <ThemedText style={styles.emptyTitle}>
+                {t("home.noChalets")}
               </ThemedText>
+              <ThemedText style={styles.emptyDesc}>
+                {t("home.noChaletsDesc")}
+              </ThemedText>
+              {activeFilter !== "all" && (
+                <TouchableOpacity
+                  style={styles.clearButton}
+                  onPress={() => setActiveFilter("all")}
+                >
+                  <ThemedText style={styles.clearButtonText}>
+                    {t("home.clearFilters")}
+                  </ThemedText>
+                </TouchableOpacity>
+              )}
             </View>
           )}
         </View>
@@ -344,4 +359,55 @@ const styles = StyleSheet.create({
   listPadding: { paddingHorizontal: 16 },
   tabsContainer: { paddingHorizontal: 16, marginVertical: 10 },
   swiperWrapper: { marginVertical: 10 },
+  loaderContainer: {
+    height: 200,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+    backgroundColor: Colors.white,
+    borderRadius: 24,
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: "#F3F4F6",
+  },
+  emptyIconContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: Colors.primary + "10",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: normalize.font(18),
+    fontFamily: "Alexandria-Bold",
+    color: Colors.text.primary,
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  emptyDesc: {
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Regular",
+    color: Colors.text.secondary,
+    textAlign: "center",
+    marginBottom: 24,
+    lineHeight: 20,
+  },
+  clearButton: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 16,
+  },
+  clearButtonText: {
+    color: Colors.white,
+    fontFamily: "Alexandria-SemiBold",
+    fontSize: normalize.font(14),
+  },
 });

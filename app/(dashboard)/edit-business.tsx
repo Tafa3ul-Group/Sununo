@@ -21,7 +21,8 @@ import {
     StyleSheet,
     TextInput,
     TouchableOpacity,
-    View
+    View,
+    RefreshControl
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
@@ -32,34 +33,48 @@ export default function ProviderProfileScreen() {
   const isRTL = i18n.language === 'ar';
   const router = useRouter();
 
-  const { data: profile, isLoading, isError } = useGetProviderProfileQuery(undefined);
+  const { data: profile, isLoading, isError, refetch } = useGetProviderProfileQuery(undefined);
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProviderProfileMutation();
 
   const [formData, setFormData] = useState({
-    business_name: '',
-    business_description: '',
-    bank_name: '',
-    account_number: '',
+    businessName: '',
+    businessDescription: '',
+    bankName: '',
+    bankAccountNo: '',
     iban: '',
     address: '',
   });
 
+  const profileData = profile?.data || profile;
+
   useEffect(() => {
-    if (profile?.data) {
+    if (profileData) {
       setFormData({
-        business_name: profile.data.business_name || '',
-        business_description: profile.data.business_description || '',
-        bank_name: profile.data.bank_name || '',
-        account_number: profile.data.account_number || '',
-        iban: profile.data.iban || '',
-        address: profile.data.address || '',
+        businessName: (isRTL ? profileData.businessName?.ar : profileData.businessName?.en) || profileData.businessName?.ar || profileData.businessName?.en || '',
+        businessDescription: (isRTL ? profileData.businessDescription?.ar : profileData.businessDescription?.en) || profileData.businessDescription?.ar || profileData.businessDescription?.en || '',
+        bankName: profileData.bankName || '',
+        bankAccountNo: profileData.bankAccountNo || '',
+        iban: profileData.iban || '',
+        address: profileData.address || '',
       });
     }
-  }, [profile]);
+  }, [profileData, isRTL]);
 
   const handleSave = async () => {
     try {
-      await updateProfile(formData).unwrap();
+      const updateData = {
+        ...formData,
+        businessName: { 
+          ar: isRTL ? formData.businessName : (profileData?.businessName?.ar || formData.businessName),
+          en: !isRTL ? formData.businessName : (profileData?.businessName?.en || formData.businessName),
+        },
+        businessDescription: {
+          ar: isRTL ? formData.businessDescription : (profileData?.businessDescription?.ar || formData.businessDescription),
+          en: !isRTL ? formData.businessDescription : (profileData?.businessDescription?.en || formData.businessDescription),
+        }
+      };
+
+      await updateProfile(updateData).unwrap();
       Alert.alert(
         isRTL ? 'نجاح' : 'Success',
         isRTL ? 'تم تحديث البيانات بنجاح' : 'Profile updated successfully'
@@ -105,13 +120,22 @@ export default function ProviderProfileScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={
+            <RefreshControl 
+              refreshing={isLoading} 
+              onRefresh={refetch}
+              tintColor={Colors.primary}
+            />
+          }
+        >
           <View style={styles.section}>
             <ThemedText style={styles.sectionTitle}>{isRTL ? 'معلومات العمل' : 'Business Info'}</ThemedText>
             {renderField(
               isRTL ? 'اسم العمل' : 'Business Name',
-              formData.business_name,
-              'business_name',
+              formData.businessName,
+              'businessName',
               SolarShopBold,
               isRTL ? 'أدخل اسم عملك' : 'Enter business name'
             )}
@@ -124,27 +148,27 @@ export default function ProviderProfileScreen() {
             )}
             {renderField(
               isRTL ? 'الوصف' : 'Description',
-              formData.business_description,
-              'business_description',
+              formData.businessDescription,
+              'businessDescription',
               SolarPenBold,
               isRTL ? 'وصف مختصر لعملك' : 'Short business description',
               true
             )}
           </View>
-
+ 
           <View style={styles.section}>
             <ThemedText style={styles.sectionTitle}>{isRTL ? 'معلومات الحساب المصرفي' : 'Bank Account Info'}</ThemedText>
             {renderField(
               isRTL ? 'اسم البنك' : 'Bank Name',
-              formData.bank_name,
-              'bank_name',
+              formData.bankName,
+              'bankName',
               SolarBanknoteBold,
               isRTL ? 'اسم المصرف' : 'Bank name'
             )}
             {renderField(
               isRTL ? 'رقم الحساب' : 'Account Number',
-              formData.account_number,
-              'account_number',
+              formData.bankAccountNo,
+              'bankAccountNo',
               SolarCardBold,
               '1234567890'
             )}

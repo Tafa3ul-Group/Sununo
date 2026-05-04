@@ -1,5 +1,6 @@
-const IMAGE_BASE_URL = 'https://blob.rakiza.dev';
-const IMAGE_ACCOUNT_HASH = 'k4wwso0cwg480c480oo0owg4';
+const IMAGE_BASE_URL = process.env.EXPO_PUBLIC_IMAGE_BASE_URL || 'http://192.168.0.167:3010';
+const IMAGE_ACCOUNT_HASH = process.env.EXPO_PUBLIC_IMAGE_ACCOUNT_HASH || 'token';
+
 
 // Placeholder image path
 const PLACEHOLDER_IMAGE = require('../assets/placeholder.png');
