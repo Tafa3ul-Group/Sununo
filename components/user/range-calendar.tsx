@@ -226,19 +226,21 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({ onSelect, initialS
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "white",
-    paddingHorizontal: 10,
+    paddingHorizontal: normalize.width(10),
     width: "100%",
+    alignItems: 'center',
   },
   header: {
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 20,
-    paddingHorizontal: 10,
+    marginBottom: normalize.height(20),
+    paddingHorizontal: normalize.width(10),
+    width: '100%',
   },
   navBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: normalize.width(40),
+    height: normalize.width(40),
+    borderRadius: normalize.radius(20),
     backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
@@ -251,9 +253,10 @@ const styles = StyleSheet.create({
   },
   daysHeader: {
     backgroundColor: "#F7FCF9",
-    borderRadius: 12,
-    paddingVertical: 10,
-    marginBottom: 15,
+    borderRadius: normalize.radius(12),
+    paddingVertical: normalize.height(10),
+    marginBottom: normalize.height(15),
+    width: '100%',
   },
   dayHeaderText: {
     flex: 1,
@@ -264,25 +267,27 @@ const styles = StyleSheet.create({
   },
   grid: {
     flexWrap: "wrap",
+    width: '100%',
+    justifyContent: 'center',
   },
   dayCellContainer: {
     width: `${100 / 7}%`,
-    height: 48,
+    height: normalize.width(44),
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
     marginVertical: 1,
   },
   dayCell: {
-    width: 38,
-    height: 38,
+    width: normalize.width(36),
+    height: normalize.width(36),
     justifyContent: "center",
     alignItems: "center",
     zIndex: 2,
   },
   rangeHighlight: {
     position: 'absolute',
-    height: 32,
+    height: normalize.width(30),
     backgroundColor: "#EFF9F5",
     zIndex: 1,
   },
@@ -301,11 +306,11 @@ const styles = StyleSheet.create({
   },
   startDaySelected: {
     backgroundColor: Colors.primary,
-    borderRadius: 12,
+    borderRadius: normalize.radius(12),
   },
   endDaySelected: {
     backgroundColor: "#15AB64",
-    borderRadius: 12,
+    borderRadius: normalize.radius(12),
   },
   selectedDayText: {
     color: "white",
@@ -330,26 +335,28 @@ const styles = StyleSheet.create({
     zIndex: 3,
   },
   titleWrapper: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 8,
+    paddingHorizontal: normalize.width(10),
+    paddingVertical: normalize.height(5),
+    borderRadius: normalize.radius(8),
     backgroundColor: '#F9FAFB',
   },
   yearPicker: {
-    padding: 10,
+    padding: normalize.width(10),
     alignItems: 'center',
+    width: '100%',
   },
   yearGrid: {
     flexWrap: 'wrap',
     justifyContent: 'center',
-    gap: 10,
-    marginBottom: 20,
+    gap: normalize.width(10),
+    marginBottom: normalize.height(20),
+    width: '100%',
   },
   yearItem: {
     width: '30%',
-    paddingVertical: 12,
+    paddingVertical: normalize.height(12),
     alignItems: 'center',
-    borderRadius: 10,
+    borderRadius: normalize.radius(10),
     backgroundColor: '#F3F4F6',
   },
   yearItemSelected: {
@@ -365,8 +372,8 @@ const styles = StyleSheet.create({
     fontFamily: "Alexandria-Regular"
   },
   closeYearBtn: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingVertical: normalize.height(10),
+    paddingHorizontal: normalize.width(20),
   },
   closeYearText: {
     color: Colors.primary,

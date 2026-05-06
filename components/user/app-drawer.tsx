@@ -165,7 +165,7 @@ export const AppDrawer = forwardRef<AppDrawerRef>((props, ref) => {
               onPress={() => { close(); router.push(item.route as any); }}
             >
               <View style={[styles.iconWrapper, { backgroundColor: Colors.surface }]}>
-                {React.cloneElement(item.icon as React.ReactElement, { color: Colors.primary })}
+                {React.cloneElement(item.icon as React.ReactElement<any>, { color: Colors.primary })}
               </View>
               <ThemedText style={styles.menuLabel}>{item.label}</ThemedText>
             </TouchableOpacity>

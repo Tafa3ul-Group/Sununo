@@ -17,7 +17,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 import { ThemedText } from "@/components/themed-text";
-import { Colors, isRTL, Shadows, Spacing } from "@/constants/theme";
+import { Colors, isRTL, Shadows, Spacing, normalize } from "@/constants/theme";
 import { AppButton } from "./app-button";
 import { GuestCounter } from "./guest-counter";
 import { MainTabs, TabType } from "./MainTabs";
@@ -509,7 +509,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1,
     borderColor: "#F0F2F5",
-    height: 94,
+    minHeight: normalize.height(94),
     ...Shadows.small,
   },
   guestInfo: { 

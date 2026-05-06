@@ -158,6 +158,16 @@ export const Shadows = {
       elevation: 0,
     },
   }),
+  large: Platform.select({
+    web: { boxShadow: "none" },
+    default: {
+      shadowColor: "transparent",
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0,
+      shadowRadius: 0,
+      elevation: 0,
+    },
+  }),
 };
 
 export const Fonts = {

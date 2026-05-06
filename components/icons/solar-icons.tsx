@@ -1548,3 +1548,29 @@ export function SolarTrashBinMinimalisticLinear({ size = 24, color, ...props }: 
     </Svg>
   );
 }
+export function SolarInboxLinear({ size = 24, color, ...props }: SolarIconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+      <Path
+        stroke={color || "currentColor"}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.5"
+        d="M20 12L4 12"
+      />
+      <Path
+        stroke={color || "currentColor"}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.5"
+        d="M15 16L9 16"
+      />
+      <Path
+        stroke={color || "currentColor"}
+        strokeLinecap="round"
+        strokeWidth="1.5"
+        d="M3.17 7.43a2 2 0 0 1 1.97-1.43h13.72a2 2 0 0 1 1.97 1.43l1.83 6.42A4 4 0 0 1 18.8 19H5.2a4 4 0 0 1-3.86-5.15l1.83-6.42z"
+      />
+    </Svg>
+  );
+}

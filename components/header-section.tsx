@@ -193,7 +193,7 @@ export function HeaderSection({
         {/* Center Title - only when no logo shown */}
         {!isHome && !showLogo && (
           <View style={styles.titleWrapper}>
-            <ThemedText style={styles.headerTitle} numberOfLines={1}>
+            <ThemedText style={styles.headerTitle}>
               {title}
             </ThemedText>
           </View>
@@ -297,7 +297,7 @@ export function HeaderSection({
                 selectedCategory === cat.id && styles.categoryItemActive,
               ]}
             >
-              {React.cloneElement(cat.icon as React.ReactElement, {
+              {React.cloneElement(cat.icon as React.ReactElement<any>, {
                 color:
                   selectedCategory === cat.id
                     ? Colors.background
@@ -327,11 +327,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: normalize.width(20),
-    height: normalize.height(60),
+    minHeight: normalize.height(60),
+    paddingVertical: normalize.height(10),
     justifyContent: "space-between",
   },
   headerSide: {
-    height: "100%",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -339,13 +339,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: normalize.width(10),
   },
   headerTitle: {
     fontSize: normalize.font(18),
     fontFamily: "Alexandria-SemiBold",
     color: Colors.text.primary,
     lineHeight: normalize.font(24),
-    paddingVertical: normalize.height(2),
+    textAlign: 'center',
   },
   logoCircle: {
     width: normalize.width(42),

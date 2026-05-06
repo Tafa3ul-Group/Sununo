@@ -17,7 +17,7 @@ const EN_BACK_PATH = "M16.9467 0L16.984 0.0319551C16.9918 0.563434 17.0077 1.119
 
 export function CircleBackButton({ style, onPress }: CircleBackButtonProps) {
   const router = useRouter();
-  const { language } = useSelector((state: RootState) => state.auth);
+  const { language, userType } = useSelector((state: RootState) => state.auth);
   const isArabic = language === 'ar';
 
   const handleBack = () => {
@@ -27,7 +27,12 @@ export function CircleBackButton({ style, onPress }: CircleBackButtonProps) {
       router.back();
     } else {
       // Fallback to home if no history, prevents going back to splash/login
-      router.replace('/(tabs)');
+      // Using specific routes ensures we go to the correct dashboard and avoids TS errors
+      const fallbackRoute = userType === 'owner' 
+        ? '/(tabs)/(dashboard)/home' 
+        : '/(tabs)/(customer)';
+      
+      router.replace(fallbackRoute as any);
     }
   };
 
