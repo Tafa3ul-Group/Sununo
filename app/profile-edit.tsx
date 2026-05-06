@@ -25,6 +25,7 @@ import {
 import { PrimaryButton } from '@/components/user/primary-button';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
+import { HeaderSection } from '@/components/header-section';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 

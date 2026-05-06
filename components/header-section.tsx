@@ -297,7 +297,7 @@ export function HeaderSection({
                 selectedCategory === cat.id && styles.categoryItemActive,
               ]}
             >
-              {React.cloneElement(cat.icon as React.ReactElement, {
+              {React.cloneElement(cat.icon as React.ReactElement<any>, {
                 color:
                   selectedCategory === cat.id
                     ? Colors.background

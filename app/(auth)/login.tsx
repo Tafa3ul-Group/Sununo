@@ -81,7 +81,7 @@ export function LoginScreen() {
             userType: userType,
           }),
         );
-        router.replace(isOwner ? "/(tabs)/(dashboard)/home" : "/(tabs)");
+        router.replace(isOwner ? "/(tabs)/(dashboard)/home" : "/(tabs)/(customer)");
       } catch (err: any) {
         const msg = err?.data?.message;
         const displayMsg = Array.isArray(msg) ? msg.join(', ') : (msg || "Invalid OTP");
@@ -108,7 +108,10 @@ export function LoginScreen() {
         >
           {/* User Type Toggle */}
           <View style={styles.toggleWrapper}>
-            <AuthToggle activeType={userType} onChange={handleTypeChange} />
+            <AuthToggle 
+              activeType={userType === "owner" ? "owner" : "customer"} 
+              onChange={handleTypeChange} 
+            />
           </View>
 
           {/* Login Form */}
@@ -162,7 +165,7 @@ export function LoginScreen() {
               <TouchableOpacity 
                 style={styles.joinOwnerBtn}
                 onPress={() => {
-                  router.push("/(auth)/join-as-owner");
+                  router.push("/(auth)/join-as-owner" as any);
                 }}
               >
                 <ThemedText style={styles.joinOwnerText}>
@@ -175,7 +178,7 @@ export function LoginScreen() {
               style={styles.guestLink}
               onPress={() => {
                 dispatch(setUserType('guest'));
-                router.replace("/(tabs)");
+                router.replace("/(tabs)/(customer)");
               }}
             >
               <ThemedText style={styles.guestLinkText}>
