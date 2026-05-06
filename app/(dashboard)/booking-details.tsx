@@ -1,26 +1,22 @@
-import { Colors, normalize } from '@/constants/theme';
-import { useGetProviderBookingDetailsQuery, useRejectBookingMutation, useDeleteExternalBookingMutation, useMarkBookingCompletedMutation } from '@/store/api/apiSlice';
-import { 
-  SolarAltArrowLeftLinear, 
-  SolarAltArrowRightLinear, 
-  SolarMenuDotsBold,
-  SolarMapPointBold,
+import { BookingCancellationSheet, BookingCancellationSheetRef } from '@/components/booking-cancellation-modal';
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
+import {
   SolarDangerCircleBold
 } from '@/components/icons/solar-icons';
-import { PrimaryButton } from '@/components/user/primary-button';
 import { ThemedText } from '@/components/themed-text';
-import { HorizontalCard } from '@/components/user/horizontal-card';
-import { BookingCancellationSheet, BookingCancellationSheetRef } from '@/components/booking-cancellation-modal';
-import * as Haptics from 'expo-haptics';
-import React from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useSelector } from 'react-redux';
+import { PrimaryButton } from '@/components/user/primary-button';
+import { Colors, normalize } from '@/constants/theme';
 import { RootState } from '@/store';
-import { useTranslation } from 'react-i18next';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useDeleteExternalBookingMutation, useGetProviderBookingDetailsQuery, useMarkBookingCompletedMutation, useRejectBookingMutation } from '@/store/api/apiSlice';
+import * as Haptics from 'expo-haptics';
 import { Image as ExpoImage } from 'expo-image';
-import { DashboardHeader } from '@/components/dashboard/dashboard-header';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { getImageSrc } from '@/hooks/useImageSrc';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSelector } from 'react-redux';
 
 const IDENTITY_BLUE = '#035DF9';
 
@@ -72,6 +68,12 @@ export default function BookingDetailsPage() {
   const bShiftName = isRTL
     ? data.shift?.name?.ar || data.shift?.name
     : data.shift?.name?.en || data.shift?.name;
+  const bChaletImage = data.chalet?.image || data.chalet?.images?.[0];
+  const chaletImageId = typeof bChaletImage === 'string'
+    ? bChaletImage
+    : bChaletImage?.url || bChaletImage?.id || bChaletImage?.imageUrl;
+
+  const chaletImageSource = getImageSrc(chaletImageId);
 
   const depositAmount = Number(data.depositAmount || 0);
   const remainingAmount = Number(data.remainingAmount || 0);
@@ -100,19 +102,19 @@ export default function BookingDetailsPage() {
 
   const handleConfirmPayment = async () => {
     try {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-        await markAsPaid(data.id).unwrap();
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        
-        confirmPaymentSheetRef.current?.showSuccess(isRTL ? 'تم تأكيد استلام المبلغ بنجاح.' : 'Payment confirmed successfully.');
-        refetch();
-        setTimeout(() => {
-            confirmPaymentSheetRef.current?.dismiss();
-            router.back();
-        }, 1500);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      await markAsPaid(data.id).unwrap();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+      confirmPaymentSheetRef.current?.showSuccess(isRTL ? 'تم تأكيد استلام المبلغ بنجاح.' : 'Payment confirmed successfully.');
+      refetch();
+      setTimeout(() => {
+        confirmPaymentSheetRef.current?.dismiss();
+        router.back();
+      }, 1500);
     } catch (e: any) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        confirmPaymentSheetRef.current?.showError(e?.data?.message || (isRTL ? 'فشل تأكيد الاستلام' : 'Failed to confirm payment'));
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      confirmPaymentSheetRef.current?.showError(e?.data?.message || (isRTL ? 'فشل تأكيد الاستلام' : 'Failed to confirm payment'));
     }
   };
 
@@ -138,15 +140,15 @@ export default function BookingDetailsPage() {
   return (
     <View style={styles.container}>
       {/* Dashboard Header */}
-      <DashboardHeader 
-        title={isRTL ? 'تفاصيل الحجز' : 'Booking Details'} 
+      <DashboardHeader
+        title={isRTL ? 'تفاصيل الحجز' : 'Booking Details'}
         showBackButton={true}
         showSearch={false}
         customRightComponent={<View style={{ width: normalize.width(80) }} />}
       />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
+
         {/* Cancelled Status Card */}
         {bIsCancelled && (
           <View style={styles.cancelledCard}>
@@ -171,12 +173,12 @@ export default function BookingDetailsPage() {
             <Text style={styles.sectionTitle}>{isRTL ? 'معلومات الشاليه' : 'Chalet Information'}</Text>
           </View>
           <View style={styles.divider} />
-          
+
           <View style={[styles.chaletSimpleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             <View style={styles.simpleImageWrapper}>
-              <ExpoImage 
-                source={{ uri: data.chalet?.image || data.chalet?.images?.[0] }} 
-                style={styles.simpleChaletImage} 
+              <ExpoImage
+                source={chaletImageSource}
+                style={styles.simpleChaletImage}
               />
             </View>
             <View style={[styles.simpleChaletText, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
@@ -188,49 +190,49 @@ export default function BookingDetailsPage() {
 
         {/* Customer Information */}
         <View style={styles.infoSectionCard}>
-            <View style={[styles.sectionTitleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                <Text style={styles.sectionTitle}>{isRTL ? 'معلومات الزبون' : 'Customer Information'}</Text>
-            </View>
-            <View style={styles.divider} />
-            {renderInfoRow(isRTL ? 'الاسم' : 'Name', bCustomerName)}
-            {renderInfoRow(isRTL ? 'رقم الهاتف' : 'Phone', <Text style={[styles.infoValue, { direction: 'ltr' }]}>{data.customer?.phone || data.customerPhone || '--'}</Text>)}
+          <View style={[styles.sectionTitleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <Text style={styles.sectionTitle}>{isRTL ? 'معلومات الزبون' : 'Customer Information'}</Text>
+          </View>
+          <View style={styles.divider} />
+          {renderInfoRow(isRTL ? 'الاسم' : 'Name', bCustomerName)}
+          {renderInfoRow(isRTL ? 'رقم الهاتف' : 'Phone', <Text style={[styles.infoValue, { direction: 'ltr' }]}>{data.customer?.phone || data.customerPhone || '--'}</Text>)}
         </View>
 
         {/* Booking Information */}
         <View style={styles.infoSectionCard}>
-            <View style={[styles.sectionTitleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                <Text style={styles.sectionTitle}>{isRTL ? 'معلومات الحجز' : 'Booking Information'}</Text>
-            </View>
-            <View style={styles.divider} />
-            {renderInfoRow(isRTL ? "التاريخ" : "Date", data.bookingDate)}
-            {renderInfoRow(isRTL ? "الفترة" : "Period", bShiftName)}
-            {renderInfoRow(
-              isRTL ? "الاشخاص" : "Persons",
-              isRTL
-                ? `${data.adultsCount || 0} بالغين، ${data.childrenCount || 0} اطفال`
-                : `${data.adultsCount || 0} Adults, ${data.childrenCount || 0} Children`,
-            )}
+          <View style={[styles.sectionTitleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <Text style={styles.sectionTitle}>{isRTL ? 'معلومات الحجز' : 'Booking Information'}</Text>
+          </View>
+          <View style={styles.divider} />
+          {renderInfoRow(isRTL ? "التاريخ" : "Date", data.bookingDate)}
+          {renderInfoRow(isRTL ? "الفترة" : "Period", bShiftName)}
+          {renderInfoRow(
+            isRTL ? "الاشخاص" : "Persons",
+            isRTL
+              ? `${data.adultsCount || 0} بالغين، ${data.childrenCount || 0} اطفال`
+              : `${data.adultsCount || 0} Adults, ${data.childrenCount || 0} Children`,
+          )}
         </View>
 
         {/* Payment Information */}
         <View style={styles.infoSectionCard}>
-            <View style={[styles.sectionTitleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                <Text style={styles.sectionTitle}>{isRTL ? 'معلومات الدفع' : 'Payment Information'}</Text>
-            </View>
-            <View style={styles.divider} />
-            {renderInfoRow(
-              isRTL ? "المبلغ الكلي" : "Total Price",
-              `${totalPrice.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
-            )}
-            {renderInfoRow(
-              isRTL ? "المبلغ المدفوع (العربون)" : "Paid (Deposit)",
-              `${depositAmount.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
-            )}
-            {renderInfoRow(
-              isRTL ? "المبلغ المتبقي" : "Remaining Amount",
-              `${remainingAmount.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
-              true,
-            )}
+          <View style={[styles.sectionTitleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <Text style={styles.sectionTitle}>{isRTL ? 'معلومات الدفع' : 'Payment Information'}</Text>
+          </View>
+          <View style={styles.divider} />
+          {renderInfoRow(
+            isRTL ? "المبلغ الكلي" : "Total Price",
+            `${totalPrice.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
+          )}
+          {renderInfoRow(
+            isRTL ? "المبلغ المدفوع (العربون)" : "Paid (Deposit)",
+            `${depositAmount.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
+          )}
+          {renderInfoRow(
+            isRTL ? "المبلغ المتبقي" : "Remaining Amount",
+            `${remainingAmount.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
+            true,
+          )}
         </View>
 
         <View style={{ height: 180 }} />
@@ -240,27 +242,27 @@ export default function BookingDetailsPage() {
       {!bIsCancelled && (
         <View style={styles.bottomActions}>
           {remainingAmount > 0 ? (
-            <PrimaryButton 
-              label={isRTL ? `تسديد المبلغ المتبقي ( ${Number(remainingAmount).toLocaleString()} د.ع )` : `Pay Remaining Balance ( ${Number(remainingAmount).toLocaleString()} IQD )`}
+            <PrimaryButton
+              label={isRTL ? `تسديد المبلغ المتبقي ` : `Pay Remaining Balance`}
               onPress={() => {
-                  confirmPaymentSheetRef.current?.present();
+                confirmPaymentSheetRef.current?.present();
               }}
               height={60}
               style={styles.payButton}
             />
           ) : (
-            <PrimaryButton 
+            <PrimaryButton
               label={isRTL ? 'تم سداد المبلغ بالكامل' : 'Full amount paid'}
-              onPress={() => {}}
+              onPress={() => { }}
               activeColor="#22C55E"
               height={60}
               style={styles.payButton}
               disabled={true}
             />
           )}
-          
+
           {remainingAmount > 0 && (
-            <PrimaryButton 
+            <PrimaryButton
               label={isRTL ? 'إلغاء الحجز' : 'Cancel Booking'}
               onPress={() => cancelSheetRef.current?.present()}
               activeColor="#EA2129"
@@ -356,11 +358,11 @@ const styles = StyleSheet.create({
   simpleChaletText: { flex: 1 },
   simpleChaletName: { fontSize: normalize.font(16), fontFamily: "Alexandria-Black", color: '#1E293B', lineHeight: normalize.font(22) },
   simpleChaletLocation: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#64748B', lineHeight: normalize.font(20), marginTop: 4 },
-  infoSectionCard: { 
-    backgroundColor: '#FFFFFF', 
-    borderRadius: 20, 
-    padding: 16, 
-    borderWidth: 1, 
+  infoSectionCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 16,
+    borderWidth: 1,
     borderColor: '#F1F5F9',
     marginBottom: 12,
     paddingBottom: 24,
@@ -391,6 +393,7 @@ const styles = StyleSheet.create({
   },
   payButton: {
     marginBottom: 12,
+
   },
   cancelButton: {
     width: '100%',

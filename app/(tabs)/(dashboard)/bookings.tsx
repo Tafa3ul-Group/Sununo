@@ -27,14 +27,8 @@ import {
   useMarkBookingCompletedMutation,
   useRejectBookingMutation,
 } from "@/store/api/apiSlice";
-import {
-  BottomSheetBackdrop,
-  BottomSheetModal,
-  BottomSheetScrollView,
-  BottomSheetTextInput,
-  BottomSheetView,
-} from "@gorhom/bottom-sheet";
-import { FlashList } from "@shopify/flash-list";
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput, BottomSheetView } from "@gorhom/bottom-sheet";
+import { FlatList } from "react-native";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import LottieView from "lottie-react-native";
@@ -43,14 +37,18 @@ import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { getImageSrc } from "@/hooks/useImageSrc";
+import { Image as ExpoImage } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
+import Animated, { FadeInDown } from "react-native-reanimated";
 
 // Status mapping from UI to API
 const API_STATUS_MAP: Record<string, string> = {
@@ -106,6 +104,7 @@ export default function BookingsScreen() {
   const [baseDate, setBaseDate] = React.useState(new Date());
   const [selectedDate, setSelectedDate] = React.useState(new Date());
   const [isFilterByDate] = React.useState(true);
+  const [currentPage, setCurrentPage] = React.useState(1);
   const [selectedBookingId, setSelectedBookingId] = React.useState<
     string | null
   >(null);
@@ -117,6 +116,7 @@ export default function BookingsScreen() {
   const shiftSheetRef = React.useRef<BottomSheetModal>(null);
   const monthSheetRef = React.useRef<BottomSheetModal>(null);
   const dayScrollRef = React.useRef<ScrollView>(null);
+  const listRef = React.useRef<any>(null);
 
   const [rejectBooking, { isLoading: isRejectLoading }] =
     useRejectBookingMutation();
@@ -214,18 +214,56 @@ export default function BookingsScreen() {
     }
   };
 
+  React.useEffect(() => {
+    const todayIndex = weekDays.findIndex(
+      (d) => d.toDateString() === selectedDate.toDateString(),
+    );
+    if (todayIndex !== -1) {
+      const key = `date-${todayIndex}`;
+      if (itemLayouts[key] !== undefined) {
+        dayScrollRef.current?.scrollTo({
+          x: itemLayouts[key] - 50,
+          animated: true,
+        });
+      }
+    }
+  }, [itemLayouts, selectedDate, weekDays]);
+
   const {
     data: bookingsData,
     isLoading: isBookingsLoading,
+    isFetching: isBookingsFetching,
     refetch: refetchBookings,
   } = useGetProviderBookingsQuery(
     {
       status: API_STATUS_MAP[activeTab],
       date: isFilterByDate ? dateString : undefined,
       chaletId: selectedChalet?.id || undefined,
+      page: currentPage,
+      limit: 8,
     },
     { refetchOnMountOrArgChange: true },
   );
+
+  const loadMore = () => {
+    if (isBookingsFetching || isBookingsLoading) return;
+
+    const meta = bookingsData?.meta;
+    if (meta && meta.page < meta.totalPages) {
+      setCurrentPage(meta.page + 1);
+    }
+  };
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    setCurrentPage(1);
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
+  };
+
+  const handleDateChange = (date: Date, index: number) => {
+    handleDatePress(date, index);
+    setCurrentPage(1);
+  };
 
   const {
     data: availabilityData,
@@ -461,16 +499,26 @@ export default function BookingsScreen() {
     );
   };
 
-  const renderBookingItem = ({ item }: { item: any }) => {
+  const renderBookingItem = ({ item, index }: { item: any; index: number }) => {
+    const customer = item.customer;
+    const customerImageId =
+      typeof customer?.image === "string"
+        ? customer.image
+        : customer?.image?.url || customer?.image?.id || customer?.imageUrl;
+
     const chaletName = isRTL
       ? item.chalet?.name?.ar || item.chalet?.name
       : item.chalet?.name?.en || item.chalet?.name;
     const customerName = item.customer?.name || t("common.user");
     return (
-      <TouchableOpacity
-        style={styles.bookingCard}
-        onPress={() => openBookingDetails(item.id)}
+      <Animated.View
+        entering={FadeInDown.delay(index * 50).springify()}
+        style={{ width: "100%" }}
       >
+        <TouchableOpacity
+          style={styles.bookingCard}
+          onPress={() => openBookingDetails(item.id)}
+        >
         <View
           style={[
             styles.bookingHeader,
@@ -484,7 +532,16 @@ export default function BookingsScreen() {
             ]}
           >
             <View style={styles.avatarPlaceholder}>
-              <SolarUserBold size={20} color="#FFF" />
+              {customerImageId ? (
+                <ExpoImage
+                  source={getImageSrc(customerImageId)}
+                  style={{ width: "100%", height: "100%" }}
+                  contentFit="cover"
+                  cachePolicy="disk"
+                />
+              ) : (
+                <SolarUserBold size={20} color="#FFF" />
+              )}
             </View>
             <View style={{ alignItems: isRTL ? "flex-end" : "flex-start" }}>
               <Text style={styles.customerName}>{customerName}</Text>
@@ -522,6 +579,7 @@ export default function BookingsScreen() {
             {isRTL
               ? item.shift?.name?.ar || item.shift?.name
               : item.shift?.name?.en || item.shift?.name}
+            {item.shiftStartTime && ` (${item.shiftStartTime.substring(0, 5)} - ${item.shiftEndTime.substring(0, 5)})`}
           </Text>
         </View>
           <View
@@ -538,12 +596,21 @@ export default function BookingsScreen() {
                 {
                   backgroundColor:
                     item.status === "confirmed"
-                      ? "#DCFCE7"
-                      : item.status === "completed"
-                        ? "#DBEAFE"
+                      ? "#ECFDF5"
+                      : item.status === "completed" || item.status === "finished"
+                        ? "#EFF6FF"
                         : item.status === "cancelled"
-                          ? "#FEE2E2"
-                          : "#FEF3C7",
+                          ? "#FEF2F2"
+                          : "#FFFBEB",
+                  borderColor: 
+                    item.status === "confirmed"
+                      ? "#10B98120"
+                      : item.status === "completed" || item.status === "finished"
+                        ? "#3B82F620"
+                        : item.status === "cancelled"
+                          ? "#EF444420"
+                          : "#F59E0B20",
+                  borderWidth: 1
                 },
               ]}
             >
@@ -553,19 +620,36 @@ export default function BookingsScreen() {
                   {
                     color:
                       item.status === "confirmed"
-                        ? "#16A34A"
-                        : item.status === "completed"
-                          ? "#1E40AF"
+                        ? "#10B981"
+                        : item.status === "completed" || item.status === "finished"
+                          ? "#3B82F6"
                           : item.status === "cancelled"
                             ? "#EF4444"
-                            : "#D97706",
+                            : "#F59E0B",
                   },
                 ]}
               >
-                {t(`dashboard.bookings.status.${item.status}`)}
+                {(() => {
+                  if (item.status === 'completed' || item.status === 'finished') {
+                    return isRTL ? 'مدفوع بالكامل' : 'Paid in Full';
+                  }
+                  if (item.status === 'cancelled') {
+                    const wasDepositPaid = item.paymentModel === 'deposit' && (Number(item.depositAmount) > 0);
+                    return wasDepositPaid 
+                      ? (isRTL ? 'مدفوع العربون وملغي' : 'Deposit Paid & Cancelled')
+                      : (isRTL ? 'ملغي' : 'Cancelled');
+                  }
+                  if (item.status === 'confirmed') {
+                    const isDeposit = item.paymentModel === 'deposit';
+                    return isDeposit 
+                      ? (isRTL ? 'مؤكد بعربون' : 'Confirmed w/ Deposit')
+                      : (isRTL ? 'مدفوع بالكامل' : 'Paid in Full');
+                  }
+                  return isRTL ? 'انتظار الدفع' : 'Pending';
+                })()}
               </Text>
             </View>
-            <Text style={styles.codeText}>#{item.bookingCode}</Text>
+            <Text style={styles.codeText}>{item.bookingCode}</Text>
           </View>
 
           {item.paymentModel === "deposit" && (
@@ -642,6 +726,7 @@ export default function BookingsScreen() {
           </View>
         )}
       </TouchableOpacity>
+    </Animated.View>
     );
   };
 
@@ -678,7 +763,7 @@ export default function BookingsScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.tab, activeTab === "confirmed" && styles.activeTab]}
-            onPress={() => setActiveTab("confirmed")}
+            onPress={() => handleTabChange("confirmed")}
           >
             <Text
               style={[
@@ -691,7 +776,7 @@ export default function BookingsScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.tab, activeTab === "finished" && styles.activeTab]}
-            onPress={() => setActiveTab("finished")}
+            onPress={() => handleTabChange("finished")}
           >
             <Text
               style={[
@@ -704,7 +789,7 @@ export default function BookingsScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.tab, activeTab === "cancelled" && styles.activeTab]}
-            onPress={() => setActiveTab("cancelled")}
+            onPress={() => handleTabChange("cancelled")}
           >
             <Text
               style={[
@@ -779,7 +864,7 @@ export default function BookingsScreen() {
                   const x = e.nativeEvent.layout.x;
                   setItemLayouts((prev) => ({ ...prev, [`date-${idx}`]: x }));
                 }}
-                onPress={() => handleDatePress(date, idx)}
+                onPress={() => handleDateChange(date, idx)}
               >
                 <Text
                   style={[
@@ -818,14 +903,32 @@ export default function BookingsScreen() {
         <View style={styles.availabilitySection}>{renderShiftsGrid()}</View>
       )}
 
-      <FlashList
+      <FlatList
+        ref={listRef}
         data={bookingsData?.data || []}
         renderItem={renderBookingItem}
-        // @ts-ignore
-        estimatedItemSize={150}
-        contentContainerStyle={{ padding: 16 }}
-        onRefresh={refreshAvailability}
-        refreshing={isBookingsLoading}
+        contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
+        style={{ flex: 1 }}
+        extraData={bookingsData?.data}
+        onRefresh={() => {
+          setCurrentPage(1);
+          refreshAvailability();
+        }}
+        refreshing={isBookingsFetching && currentPage === 1}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
+        keyExtractor={(item: any) => item.id}
+        ListFooterComponent={() => {
+          if (isBookingsFetching && currentPage > 1) {
+            return (
+              <ActivityIndicator
+                color={IDENTITY_BLUE}
+                style={{ marginVertical: 20 }}
+              />
+            );
+          }
+          return null;
+        }}
       />
 
       <BottomSheetModal
@@ -1351,6 +1454,7 @@ const styles = StyleSheet.create({
     backgroundColor: IDENTITY_BLUE,
     justifyContent: "center",
     alignItems: "center",
+    overflow: "hidden",
   },
   customerName: { fontSize: normalize.font(15), fontFamily: "Alexandria-Bold" },
   chaletName: {

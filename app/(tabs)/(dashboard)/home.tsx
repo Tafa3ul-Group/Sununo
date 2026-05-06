@@ -31,6 +31,8 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { getImageSrc } from "@/hooks/useImageSrc";
+import { Image as ExpoImage } from "expo-image";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, { FadeIn, FadeInDown, FadeInRight, FadeInUp } from 'react-native-reanimated';
 import { useSelector } from 'react-redux';
@@ -136,7 +138,7 @@ export default function HomeScreen() {
   };
 
   const { data: bookingsResponse, isFetching: isBookingsFetching, isLoading: isBookingsLoading, refetch: refetchBookings } = useGetProviderBookingsQuery({
-    limit: 10,
+    limit: 8,
     page: page,
     status: activeFilter !== 'all' ? statusMap[activeFilter] : undefined,
     from: selectedRange?.start ? selectedRange.start.toISOString().split('T')[0] : undefined,
@@ -150,8 +152,9 @@ export default function HomeScreen() {
   }, [activeFilter, selectedRange, selectedChalet?.id]);
 
   const handleLoadMore = () => {
-    if (!isBookingsFetching && bookingsResponse?.meta?.nextPage) {
-      setPage(prev => prev + 1);
+    const meta = bookingsResponse?.meta;
+    if (!isBookingsFetching && meta && meta.page < meta.totalPages) {
+      setPage(meta.page + 1);
     }
   };
 
@@ -193,9 +196,59 @@ export default function HomeScreen() {
 
   const renderBookingCard = ({ item, index }: { item: any; index: number }) => {
     const bIsExternal = item.bookingStatus === 'EXTERNAL' || item.status === 'external';
-    const customerName = bIsExternal ? (isRTL ? 'حجز خارجي' : 'External Booking') : (item.customer?.name || t('common.user'));
+    const customer = item.customer;
+    const customerImageId =
+      typeof customer?.image === "string"
+        ? customer.image
+        : customer?.image?.url || customer?.image?.id || customer?.imageUrl;
+    const customerName = bIsExternal ? (isRTL ? 'حجز خارجي' : 'External Booking') : (customer?.name || t('common.user'));
     const shiftName = isRTL ? (item.shift?.name?.ar || item.shift?.name) : (item.shift?.name?.en || item.shift?.name);
     const chaletName = isRTL ? (item.chalet?.name?.ar || item.chalet?.name) : (item.chalet?.name?.en || item.chalet?.name);
+
+    const getStatusInfo = (status: string) => {
+      switch (status) {
+        case 'completed':
+        case 'finished':
+          return {
+            label: isRTL ? 'مدفوع بالكامل' : 'Paid in Full',
+            color: '#3B82F6',
+            bg: '#EFF6FF'
+          };
+        case 'cancelled':
+          const wasDepositPaid = item.paymentModel === 'deposit' && (Number(item.depositAmount) > 0);
+          return {
+            label: wasDepositPaid 
+              ? (isRTL ? 'مدفوع العربون وملغي' : 'Deposit Paid & Cancelled')
+              : (isRTL ? 'ملغي' : 'Cancelled'),
+            color: '#EF4444',
+            bg: '#FEF2F2'
+          };
+        case 'confirmed':
+          const isDeposit = item.paymentModel === 'deposit';
+          return {
+            label: isDeposit 
+              ? (isRTL ? 'مؤكد بعربون' : 'Confirmed w/ Deposit')
+              : (isRTL ? 'مدفوع بالكامل' : 'Paid in Full'),
+            color: '#10B981',
+            bg: '#ECFDF5'
+          };
+        case 'pending_payment':
+        case 'new':
+          return {
+            label: isRTL ? 'انتظار الدفع' : 'Pending',
+            color: '#F59E0B',
+            bg: '#FFFBEB'
+          };
+        default:
+          return {
+            label: status,
+            color: '#64748B',
+            bg: '#F8FAFC'
+          };
+      }
+    };
+
+    const statusInfo = getStatusInfo(item.status);
 
     return (
       <Animated.View
@@ -217,8 +270,13 @@ export default function HomeScreen() {
                 <View style={[styles.modernBookingPlaceholder, { backgroundColor: Colors.primary }]}>
                   <SolarUserBold size={24} color="#FFF" />
                 </View>
-              ) : item.customer?.image ? (
-                <Image source={{ uri: item.customer.image }} style={styles.modernBookingImg} />
+              ) : customerImageId ? (
+                <ExpoImage 
+                  source={getImageSrc(customerImageId)} 
+                  style={styles.modernBookingImg} 
+                  contentFit="cover"
+                  cachePolicy="disk"
+                />
               ) : (
                 <View style={styles.modernBookingPlaceholder}>
                   <SolarUserBold size={24} color="#CBD5E1" />
@@ -228,13 +286,44 @@ export default function HomeScreen() {
 
             {/* 2. Info (Name, Chalet and Shift) */}
             <View style={[styles.modernBookingInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-              <Text style={[styles.modernBookingName, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>{customerName}</Text>
+              <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                <Text style={[styles.modernBookingName, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>{customerName}</Text>
+                <View style={{ 
+                  backgroundColor: statusInfo.bg, 
+                  paddingHorizontal: 8, 
+                  paddingVertical: 2, 
+                  borderRadius: 6,
+                  borderWidth: 1,
+                  borderColor: statusInfo.color + '20'
+                }}>
+                  <Text style={{ 
+                    color: statusInfo.color, 
+                    fontSize: normalize.font(10), 
+                    fontFamily: 'Alexandria-Bold' 
+                  }}>
+                    {statusInfo.label}
+                  </Text>
+                </View>
+              </View>
+              
               {chaletName && <Text style={[styles.modernBookingChalet, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>{chaletName}</Text>}
+              
               <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 4 }}>
                 <Text style={[styles.modernBookingShift, { textAlign: isRTL ? 'right' : 'left' }]}>{t('common.shift')} {shiftName}</Text>
                 <Text style={styles.modernBookingDot}>•</Text>
-                <Text style={styles.modernBookingDate}>{item.date || item.createdAt?.split('T')[0]}</Text>
+                <Text style={styles.modernBookingDate}>{item.bookingDate || item.date || item.createdAt?.split('T')[0]}</Text>
               </View>
+              
+              {item.bookingCode && (
+                <Text style={{ 
+                  fontSize: normalize.font(10), 
+                  color: '#94A3B8', 
+                  fontFamily: 'Alexandria-Medium',
+                  marginTop: 2
+                }}>
+                  {item.bookingCode}
+                </Text>
+              )}
             </View>
 
             {/* 3. Price (Left part in RTL) */}
@@ -399,11 +488,17 @@ export default function HomeScreen() {
                   </Animated.View>
                 ) : null
               }
-              ListFooterComponent={
-                isBookingsFetching && recentBookings.length > 0 ? (
-                  <ActivityIndicator color={Colors.primary} style={{ marginVertical: 20 }} />
-                ) : <View style={{ height: 40 }} />
-              }
+              ListFooterComponent={() => {
+                if (isBookingsFetching && page > 1) {
+                  return (
+                    <ActivityIndicator
+                      color={Colors.primary}
+                      style={{ marginVertical: 20 }}
+                    />
+                  );
+                }
+                return <View style={{ height: 40 }} />;
+              }}
               refreshControl={
                 <RefreshControl refreshing={isBookingsFetching && page === 1} onRefresh={() => { setPage(1); refetchBookings(); }} tintColor={Colors.primary} />
               }
