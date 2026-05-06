@@ -188,6 +188,10 @@
     "cvv": "CVV/CVC",
     "enterName": "Enter Name",
     "completePayment": "Complete Payment",
+    "paymentMethod": "Payment Method",
+    "wallet": "Wallet",
+    "sindiPay": "SindiPay",
+    "wayl": "Wayl",
     "bookingDetails": "Booking Details",
     "bookingStatus": "Booking Status",
     "paymentStatus": "Payment Status",
@@ -211,7 +215,11 @@
     "viewBookingDetails": "View Booking Details",
     "noBookings": "No bookings yet",
     "noBookingsDesc": "Explore available chalets and book your next trip!",
-    "exploreNow": "Explore Now"
+    "exploreNow": "Explore Now",
+    "noShift": "No shift selected",
+    "noDate": "No date selected",
+    "bookingError": "An error occurred during booking",
+    "shiftPrice": "Shift Price"
   },
   "headers": {
     "notifications": "Notifications",

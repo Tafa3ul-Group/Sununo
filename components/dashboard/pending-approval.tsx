@@ -4,12 +4,20 @@ import { useTranslation } from 'react-i18next';
 import LottieView from 'lottie-react-native';
 import { Colors, normalize } from '@/constants/theme';
 import { PrimaryButton } from '@/components/user/primary-button';
-import { SolarClockCircleBold } from '@/components/icons/solar-icons';
+import { SecondaryButton } from '@/components/user/secondary-button';
+import { SolarClockCircleBold, SolarLogoutBold } from '@/components/icons/solar-icons';
+import { logout } from '@/store/authSlice';
+import { useDispatch } from 'react-redux';
 
 export function PendingApprovalScreen({ onRefresh }: { onRefresh?: () => void }) {
   const { t, i18n } = useTranslation();
+  const dispatch = useDispatch();
   const isRTL = i18n.language === 'ar';
   const [refreshing, setRefreshing] = React.useState(false);
+
+  const handleLogout = () => {
+    dispatch(logout());
+  };
 
   const handleRefresh = async () => {
     if (onRefresh) {
@@ -53,6 +61,12 @@ export function PendingApprovalScreen({ onRefresh }: { onRefresh?: () => void })
           label={isRTL ? 'تواصل مع الدعم' : 'Contact Support'}
           onPress={() => Linking.openURL('https://wa.me/9647712684012')}
           style={styles.button}
+        />
+
+        <SecondaryButton
+          label={isRTL ? 'تسجيل الخروج' : 'Logout'}
+          onPress={handleLogout}
+          style={styles.logoutButton}
         />
       </View>
     </ScrollView>
@@ -108,6 +122,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   button: {
+    width: '100%',
+    marginBottom: 12,
+  },
+  logoutButton: {
     width: '100%',
   },
 });

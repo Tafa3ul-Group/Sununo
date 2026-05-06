@@ -417,6 +417,16 @@ export const customerApi = apiSlice.injectEndpoints({
     getBanners: builder.query({
       query: () => "/banners",
     }),
+    /** Get plateforme configuration */
+    getPlatformConfig: builder.query({
+      query: () => "/config",
+    }),
+
+    /** Get payment status for a transaction */
+    getPaymentStatus: builder.query({
+      query: (transactionId: string) => `/transactions/payment-status/${transactionId}`,
+      providesTags: (result: any, error: any, id: string) => [{ type: "Booking" as const, id }],
+    }),
   }),
 });
 
@@ -489,4 +499,11 @@ export const {
 
   // Banners
   useGetBannersQuery,
+
+  // Config
+  useGetPlatformConfigQuery,
+
+  // Payment Status
+  useGetPaymentStatusQuery,
+  useLazyGetPaymentStatusQuery,
 } = customerApi;

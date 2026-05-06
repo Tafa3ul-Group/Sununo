@@ -1,8 +1,8 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 // Define the base URL for the API
-const BASE_URL = 'https://k4wwso0cwg480c480oo0owg4.rakiza.dev/api/v1';
-// const BASE_URL = 'http://192.168.0.167:4646/api/v1';
+// const BASE_URL = 'https://k4wwso0cwg480c480oo0owg4.rakiza.dev/api/v1';
+const BASE_URL = 'http://192.168.0.167:4646/api/v1';
 
 // Force reload hooks
 
@@ -305,11 +305,11 @@ export const apiSlice = createApi({
         if (arg.page === 1 || !currentCache) {
           return newItems;
         }
-        
+
         // Ensure data exists before mapping
         const existingData = currentCache.data || [];
         const newData = newItems.data || [];
-        
+
         // Deduplicate items by ID
         const existingIds = new Set(existingData.map((item: any) => item.id));
         const uniqueNewItems = newData.filter((item: any) => !existingIds.has(item.id));
