@@ -3,7 +3,6 @@ import { Colors, Spacing } from '@/constants/theme';
 import React from 'react';
 import { ActivityIndicator, StyleSheet, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { SolarMagnifierBold } from "@/components/icons/solar-icons";
 
 interface AppButtonProps {
   label: string;

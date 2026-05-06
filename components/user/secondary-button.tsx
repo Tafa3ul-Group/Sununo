@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 18,
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-SemiBold",
     textAlign: "center",
     lineHeight: 22,
   },

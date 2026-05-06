@@ -49,7 +49,6 @@ export const PaymentConfirmationSheet = forwardRef<PaymentConfirmationSheetRef, 
       showSuccess: (message) => {
         setInternalStatus('success');
         setFeedbackMessage(message || '');
-        bottomSheetModalRef.current?.snapToIndex(1);
         setTimeout(() => lottieRef.current?.play(), 100);
         setTimeout(() => bottomSheetModalRef.current?.dismiss(), 3000);
       },
@@ -129,8 +128,7 @@ export const PaymentConfirmationSheet = forwardRef<PaymentConfirmationSheetRef, 
     return (
       <BottomSheetModal
         ref={bottomSheetModalRef}
-        index={0}
-        snapPoints={internalStatus !== 'idle' ? ['45%', '90%'] : ['32%']}
+        enableDynamicSizing={true}
         backdropComponent={renderBackdrop}
         enablePanDownToClose={internalStatus === 'idle' || internalStatus === 'error'}
       >

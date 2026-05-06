@@ -46,6 +46,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
+import { ErrorState } from "@/components/ui/error-state";
 import {
   ActivityIndicator,
   Alert,
@@ -114,7 +115,7 @@ export default function ChaletDetailScreen() {
   );
 
   // Fetch chalet details from the backend
-  const { data: chaletData, isLoading } =
+  const { data: chaletData, isLoading, error, refetch } =
     useGetCustomerChaletDetailsQuery(chaletId);
   const { data: reviewsResponse } = useGetChaletReviewsQuery({
     chaletId,
@@ -345,6 +346,19 @@ export default function ChaletDetailScreen() {
       >
         <ActivityIndicator size="large" color={Colors.primary} />
       </View>
+    );
+  }
+
+  if (error || !chaletData) {
+    const is404 = (error as any)?.status === 404;
+    const errorMessage = (error as any)?.data?.message || (error as any)?.message;
+    return (
+      <ErrorState
+        type={is404 ? "error404" : "failed"}
+        message={errorMessage}
+        onBack={() => router.back()}
+        onRetry={() => refetch()}
+      />
     );
   }
 

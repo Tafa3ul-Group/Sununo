@@ -302,12 +302,22 @@ export const apiSlice = createApi({
         return rest;
       },
       merge: (currentCache, newItems, { arg }) => {
-        if (arg.page === 1) {
+        if (arg.page === 1 || !currentCache) {
           return newItems;
         }
+        
+        // Ensure data exists before mapping
+        const existingData = currentCache.data || [];
+        const newData = newItems.data || [];
+        
+        // Deduplicate items by ID
+        const existingIds = new Set(existingData.map((item: any) => item.id));
+        const uniqueNewItems = newData.filter((item: any) => !existingIds.has(item.id));
+
         return {
           ...newItems,
-          data: [...(currentCache.data || []), ...(newItems.data || [])]
+          data: [...existingData, ...uniqueNewItems],
+          meta: newItems.meta,
         };
       },
       forceRefetch({ currentArg, previousArg }) {
@@ -326,6 +336,15 @@ export const apiSlice = createApi({
     getShiftAvailability: builder.query({
       query: ({ chaletId, ...params }) => ({
         url: `/provider/chalets/${chaletId}/shifts/availability`,
+        params,
+      }),
+      providesTags: ['Chalet'],
+    }),
+
+    // Get fully booked status for days
+    getFullyBookedStatus: builder.query<{ date: string; isFullyBooked: boolean }[], { chaletId: string, from: string, to: string }>({
+      query: ({ chaletId, ...params }) => ({
+        url: `/provider/chalets/${chaletId}/shifts/days-status`,
         params,
       }),
       providesTags: ['Chalet'],
@@ -453,6 +472,7 @@ export const {
   useGetProviderBookingsQuery,
   useGetProviderBookingDetailsQuery,
   useGetShiftAvailabilityQuery,
+  useGetFullyBookedStatusQuery,
   useMarkBookingCompletedMutation,
   useCreateExternalBookingMutation,
   useDeleteExternalBookingMutation,
@@ -462,3 +482,5 @@ export const {
   useGetPayoutsQuery,
   useRequestPayoutMutation,
 } = apiSlice;
+
+// Force Metro cache reload - Updated at 2026-05-05T14:55

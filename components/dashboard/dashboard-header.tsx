@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: normalize.font(17),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-SemiBold",
     color: Colors.text.primary,
     lineHeight: normalize.font(22),
     paddingVertical: normalize.height(2),

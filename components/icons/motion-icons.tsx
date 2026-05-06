@@ -6,6 +6,7 @@ const MOTIONS = {
   success: require('./motions/success.json'),
   failed: require('./motions/fail.json'),
   splash: require('./motions/splash.json'),
+  error404: require('./motions/error404.json'),
 };
 
 export type MotionName = keyof typeof MOTIONS;
