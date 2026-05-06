@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
   },
   primaryText: {
     fontSize: 18,
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-SemiBold",
     textAlign: "center",
   },
   textWithIcon: {

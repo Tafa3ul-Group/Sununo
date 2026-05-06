@@ -2,6 +2,7 @@ import {
   BookingCancellationSheet,
   BookingCancellationSheetRef,
 } from "@/components/booking-cancellation-modal";
+import { PendingApprovalScreen } from "@/components/dashboard/pending-approval";
 import { HeaderSection } from "@/components/header-section";
 import {
   SolarAddCircleBold,
@@ -14,13 +15,15 @@ import {
   SolarLockBold,
   SolarUserBold,
 } from "@/components/icons/solar-icons";
+import { ErrorState } from "@/components/ui/error-state";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize } from "@/constants/theme";
-import { PendingApprovalScreen } from "@/components/dashboard/pending-approval";
+import { getImageSrc } from "@/hooks/useImageSrc";
 import { RootState } from "@/store";
 import {
   useCreateExternalBookingMutation,
   useDeleteExternalBookingMutation,
+  useGetFullyBookedStatusQuery,
   useGetProviderBookingsQuery,
   useGetProviderProfileQuery,
   useGetShiftAvailabilityQuery,
@@ -28,27 +31,23 @@ import {
   useRejectBookingMutation,
 } from "@/store/api/apiSlice";
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput, BottomSheetView } from "@gorhom/bottom-sheet";
-import { FlatList } from "react-native";
 import * as Haptics from "expo-haptics";
+import { Image as ExpoImage } from "expo-image";
 import { useRouter } from "expo-router";
 import LottieView from "lottie-react-native";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
-  Alert,
-  Image,
-  ScrollView,
+  Alert, FlatList, ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
-import { getImageSrc } from "@/hooks/useImageSrc";
-import { Image as ExpoImage } from "expo-image";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
-import Animated, { FadeInDown } from "react-native-reanimated";
 
 // Status mapping from UI to API
 const API_STATUS_MAP: Record<string, string> = {
@@ -101,6 +100,8 @@ export default function BookingsScreen() {
     useDeleteExternalBookingMutation();
 
   const [externalNotes, setExternalNotes] = React.useState("");
+  const [externalCustomerName, setExternalCustomerName] = React.useState("");
+  const [externalCustomerPhone, setExternalCustomerPhone] = React.useState("");
   const [baseDate, setBaseDate] = React.useState(new Date());
   const [selectedDate, setSelectedDate] = React.useState(new Date());
   const [isFilterByDate] = React.useState(true);
@@ -233,6 +234,7 @@ export default function BookingsScreen() {
     data: bookingsData,
     isLoading: isBookingsLoading,
     isFetching: isBookingsFetching,
+    error: bookingsError,
     refetch: refetchBookings,
   } = useGetProviderBookingsQuery(
     {
@@ -276,15 +278,37 @@ export default function BookingsScreen() {
       to: dateString,
     },
     {
-      skip:
-        !selectedChalet?.id || selectedChalet?.id === "all" || !isFilterByDate,
+      skip: !selectedChalet?.id || selectedChalet?.id === "all",
       refetchOnMountOrArgChange: true,
     },
   );
 
+  const {
+    data: daysStatus = [],
+    refetch: refetchDaysStatus,
+  } = useGetFullyBookedStatusQuery(
+    {
+      chaletId: selectedChalet?.id!,
+      from: formatDate(weekDays[0]),
+      to: formatDate(weekDays[weekDays.length - 1]),
+    },
+    {
+      skip: !selectedChalet?.id || selectedChalet?.id === "all",
+      refetchOnMountOrArgChange: true,
+    },
+  );
+
+  const fullyBookedDays = React.useMemo(() => {
+    if (!Array.isArray(daysStatus)) return [];
+    return daysStatus.filter((d: any) => d.isFullyBooked).map((d: any) => d.date);
+  }, [daysStatus]);
+
   const refreshAvailability = () => {
     refetchBookings();
-    if (selectedChalet?.id) refetchAvailabilityData();
+    if (selectedChalet?.id) {
+      refetchAvailabilityData();
+      refetchDaysStatus();
+    }
   };
 
   const changeWeek = (direction: "prev" | "next") => {
@@ -509,7 +533,9 @@ export default function BookingsScreen() {
     const chaletName = isRTL
       ? item.chalet?.name?.ar || item.chalet?.name
       : item.chalet?.name?.en || item.chalet?.name;
-    const customerName = item.customer?.name || t("common.user");
+    const customerName = item.status === 'external'
+      ? item.externalCustomerName || (isRTL ? "حجز خارجي" : "External Booking")
+      : item.customer?.name || t("common.user");
     return (
       <Animated.View
         entering={FadeInDown.delay(index * 50).springify()}
@@ -519,69 +545,69 @@ export default function BookingsScreen() {
           style={styles.bookingCard}
           onPress={() => openBookingDetails(item.id)}
         >
-        <View
-          style={[
-            styles.bookingHeader,
-            { flexDirection: isRTL ? "row-reverse" : "row" },
-          ]}
-        >
           <View
             style={[
-              styles.customerSection,
+              styles.bookingHeader,
               { flexDirection: isRTL ? "row-reverse" : "row" },
             ]}
           >
-            <View style={styles.avatarPlaceholder}>
-              {customerImageId ? (
-                <ExpoImage
-                  source={getImageSrc(customerImageId)}
-                  style={{ width: "100%", height: "100%" }}
-                  contentFit="cover"
-                  cachePolicy="disk"
-                />
-              ) : (
-                <SolarUserBold size={20} color="#FFF" />
+            <View
+              style={[
+                styles.customerSection,
+                { flexDirection: isRTL ? "row-reverse" : "row" },
+              ]}
+            >
+              <View style={styles.avatarPlaceholder}>
+                {customerImageId ? (
+                  <ExpoImage
+                    source={getImageSrc(customerImageId)}
+                    style={{ width: "100%", height: "100%" }}
+                    contentFit="cover"
+                    cachePolicy="disk"
+                  />
+                ) : (
+                  <SolarUserBold size={20} color="#FFF" />
+                )}
+              </View>
+              <View style={{ alignItems: isRTL ? "flex-end" : "flex-start" }}>
+                <Text style={styles.customerName}>{customerName}</Text>
+                <Text style={styles.chaletName}>{chaletName}</Text>
+              </View>
+            </View>
+            <View style={{ alignItems: isRTL ? "flex-start" : "flex-end" }}>
+              <Text style={styles.priceText}>
+                {Number(item.totalPrice).toLocaleString()} {t("common.iqd")}
+              </Text>
+              {item.providerEarnings && (
+                <Text
+                  style={{
+                    fontSize: normalize.font(10),
+                    fontFamily: "Alexandria-SemiBold",
+                    color: "#16A34A",
+                    marginTop: 2,
+                  }}
+                >
+                  {isRTL ? "صافي الربح:" : "Net Earnings:"}{" "}
+                  {Number(item.providerEarnings).toLocaleString()}
+                </Text>
               )}
             </View>
-            <View style={{ alignItems: isRTL ? "flex-end" : "flex-start" }}>
-              <Text style={styles.customerName}>{customerName}</Text>
-              <Text style={styles.chaletName}>{chaletName}</Text>
-            </View>
           </View>
-          <View style={{ alignItems: isRTL ? "flex-start" : "flex-end" }}>
-            <Text style={styles.priceText}>
-              {Number(item.totalPrice).toLocaleString()} {t("common.iqd")}
+          <View
+            style={[
+              styles.dateHighlight,
+              { flexDirection: isRTL ? "row-reverse" : "row", marginTop: 12 },
+            ]}
+          >
+            <SolarCalendarMinimalisticBold size={16} color={IDENTITY_BLUE} />
+            <Text style={styles.dateHighlightText}>
+              {item.bookingDate} -{" "}
+              {isRTL
+                ? item.shift?.name?.ar || item.shift?.name
+                : item.shift?.name?.en || item.shift?.name}
+              {item.shiftStartTime && ` (${item.shiftStartTime.substring(0, 5)} - ${item.shiftEndTime.substring(0, 5)})`}
             </Text>
-            {item.providerEarnings && (
-              <Text
-                style={{
-                  fontSize: normalize.font(10),
-                  fontFamily: "Alexandria-Bold",
-                  color: "#16A34A",
-                  marginTop: 2,
-                }}
-              >
-                {isRTL ? "صافي الربح:" : "Net Earnings:"}{" "}
-                {Number(item.providerEarnings).toLocaleString()}
-              </Text>
-            )}
           </View>
-        </View>
-        <View
-          style={[
-            styles.dateHighlight,
-            { flexDirection: isRTL ? "row-reverse" : "row", marginTop: 12 },
-          ]}
-        >
-          <SolarCalendarMinimalisticBold size={16} color={IDENTITY_BLUE} />
-          <Text style={styles.dateHighlightText}>
-            {item.bookingDate} -{" "}
-            {isRTL
-              ? item.shift?.name?.ar || item.shift?.name
-              : item.shift?.name?.en || item.shift?.name}
-            {item.shiftStartTime && ` (${item.shiftStartTime.substring(0, 5)} - ${item.shiftEndTime.substring(0, 5)})`}
-          </Text>
-        </View>
           <View
             style={{
               flexDirection: isRTL ? "row-reverse" : "row",
@@ -602,7 +628,7 @@ export default function BookingsScreen() {
                         : item.status === "cancelled"
                           ? "#FEF2F2"
                           : "#FFFBEB",
-                  borderColor: 
+                  borderColor:
                     item.status === "confirmed"
                       ? "#10B98120"
                       : item.status === "completed" || item.status === "finished"
@@ -635,13 +661,13 @@ export default function BookingsScreen() {
                   }
                   if (item.status === 'cancelled') {
                     const wasDepositPaid = item.paymentModel === 'deposit' && (Number(item.depositAmount) > 0);
-                    return wasDepositPaid 
+                    return wasDepositPaid
                       ? (isRTL ? 'مدفوع العربون وملغي' : 'Deposit Paid & Cancelled')
                       : (isRTL ? 'ملغي' : 'Cancelled');
                   }
                   if (item.status === 'confirmed') {
                     const isDeposit = item.paymentModel === 'deposit';
-                    return isDeposit 
+                    return isDeposit
                       ? (isRTL ? 'مؤكد بعربون' : 'Confirmed w/ Deposit')
                       : (isRTL ? 'مدفوع بالكامل' : 'Paid in Full');
                   }
@@ -671,7 +697,7 @@ export default function BookingsScreen() {
                 }}
               >
                 {isRTL ? "العربون:" : "Deposit:"}{" "}
-                <Text style={{ fontFamily: "Alexandria-Bold" }}>
+                <Text style={{ fontFamily: "Alexandria-SemiBold" }}>
                   {Number(item.depositAmount).toLocaleString()}
                 </Text>
               </Text>
@@ -683,55 +709,70 @@ export default function BookingsScreen() {
                 }}
               >
                 {isRTL ? "المتبقي:" : "Remaining:"}{" "}
-                <Text style={{ fontFamily: "Alexandria-Bold", color: "#EF4444" }}>
+                <Text style={{ fontFamily: "Alexandria-SemiBold", color: "#EF4444" }}>
                   {Number(item.remainingAmount).toLocaleString()}
                 </Text>
               </Text>
             </View>
           )}
-        {item.status === "confirmed" && (
-          <View
-            style={{
-              flexDirection: isRTL ? "row-reverse" : "row",
-              gap: 12,
-              marginTop: 16,
-            }}
-          >
-            <SecondaryButton
-              label={t("dashboard.bookings.complete")}
-              onPress={async () => {
-                try {
-                  await markAsCompleted(item.id).unwrap();
-                  refreshAvailability();
-                  Haptics.notificationAsync(
-                    Haptics.NotificationFeedbackType.Success,
-                  );
-                } catch (e) {
-                  Alert.alert("Error", "Update failed");
-                }
-              }}
-              isLoading={isStatusLoading}
-              isActive={true}
-              activeColor={Colors.primary}
-              style={{ flex: 1, height: 44 }}
-            />
-            <SecondaryButton
-              label={t("dashboard.bookings.cancel")}
-              onPress={() => handleOpenCancelSheet(item)}
-              isLoading={isRejectLoading || isDeletingExternal}
-              isActive={true}
-              activeColor="#EF4444"
-              style={{ flex: 1, height: 44 }}
-            />
-          </View>
-        )}
-      </TouchableOpacity>
-    </Animated.View>
+          {(item.status === "confirmed" ||
+            item.status === "external" ||
+            item.status === "pending_payment") && (
+              <View
+                style={{
+                  flexDirection: isRTL ? "row-reverse" : "row",
+                  gap: 12,
+                  marginTop: 16,
+                }}
+              >
+                <SecondaryButton
+                  label={t("dashboard.bookings.complete")}
+                  onPress={async () => {
+                    try {
+                      await markAsCompleted(item.id).unwrap();
+                      refreshAvailability();
+                      Haptics.notificationAsync(
+                        Haptics.NotificationFeedbackType.Success,
+                      );
+                    } catch (e) {
+                      Alert.alert("Error", "Update failed");
+                    }
+                  }}
+                  isLoading={isStatusLoading}
+                  isActive={true}
+                  activeColor={Colors.primary}
+                  style={{ flex: 1, height: 44 }}
+                />
+                <SecondaryButton
+                  label={t("dashboard.bookings.cancel")}
+                  onPress={() => handleOpenCancelSheet(item)}
+                  isLoading={isRejectLoading || isDeletingExternal}
+                  isActive={true}
+                  activeColor="#EF4444"
+                  style={{ flex: 1, height: 44 }}
+                />
+              </View>
+            )}
+        </TouchableOpacity>
+      </Animated.View>
     );
   };
 
   if (user && (profile ? !profile.isApproved : !user?.isApproved)) {
     return <PendingApprovalScreen onRefresh={refetchProfile} />;
+  }
+
+  if (bookingsError) {
+    const is404 = (bookingsError as any)?.status === 404;
+    const errorMessage = (bookingsError as any)?.data?.message || (bookingsError as any)?.message;
+    return (
+      <ErrorState
+        type={is404 ? "error404" : "failed"}
+        message={errorMessage}
+        onBack={() => router.back()}
+        onRetry={() => refetchBookings()}
+      />
+    );
   }
 
   return (
@@ -744,64 +785,7 @@ export default function BookingsScreen() {
         showExtra={false}
       />
 
-      <View style={styles.tabContainer}>
-        <View
-          style={[styles.tabs, { flexDirection: isRTL ? "row-reverse" : "row" }]}
-        >
-          <TouchableOpacity
-            style={[styles.tab, activeTab === "new" && styles.activeTab]}
-            onPress={() => setActiveTab("new")}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === "new" && styles.activeTabText,
-              ]}
-            >
-              {isRTL ? "انتظار الدفع" : "Pending"}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === "confirmed" && styles.activeTab]}
-            onPress={() => handleTabChange("confirmed")}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === "confirmed" && styles.activeTabText,
-              ]}
-            >
-              {isRTL ? "المؤكدة" : "Confirmed"}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === "finished" && styles.activeTab]}
-            onPress={() => handleTabChange("finished")}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === "finished" && styles.activeTabText,
-              ]}
-            >
-              {isRTL ? "المنتهية" : "Finished"}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === "cancelled" && styles.activeTab]}
-            onPress={() => handleTabChange("cancelled")}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === "cancelled" && styles.activeTabText,
-              ]}
-            >
-              {isRTL ? "الملغاة" : "Cancelled"}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+
 
       <View style={styles.calendarContainer}>
         <View
@@ -856,10 +840,15 @@ export default function BookingsScreen() {
           {weekDays.map((date, idx) => {
             const isSelected =
               selectedDate.toDateString() === date.toDateString();
+            const isFullyBooked = fullyBookedDays.includes(formatDate(date));
             return (
               <TouchableOpacity
                 key={idx}
-                style={[styles.dayItem, isSelected && styles.selectedDayItem]}
+                style={[
+                  styles.dayItem,
+                  isSelected && (isFullyBooked ? styles.selectedFullyBookedDay : styles.selectedDayItem),
+                  isFullyBooked && !isSelected && styles.fullyBookedDayItem,
+                ]}
                 onLayout={(e) => {
                   const x = e.nativeEvent.layout.x;
                   setItemLayouts((prev) => ({ ...prev, [`date-${idx}`]: x }));
@@ -870,6 +859,7 @@ export default function BookingsScreen() {
                   style={[
                     styles.dayLabel,
                     isSelected && styles.selectedDayLabel,
+                    isFullyBooked && !isSelected && styles.fullyBookedText,
                   ]}
                 >
                   {date
@@ -888,10 +878,22 @@ export default function BookingsScreen() {
                     style={[
                       styles.dateText,
                       isSelected && styles.selectedDateText,
+                      isFullyBooked && !isSelected && styles.fullyBookedText,
                     ]}
                   >
                     {date.getDate()}
                   </Text>
+                  {isFullyBooked && (
+                    <View style={styles.scribbleContainer}>
+                      <View style={[styles.scribbleLine, { transform: [{ rotate: "-28deg" }], top: "35%", width: "100%" }]} />
+                      <View style={[styles.scribbleLine, { transform: [{ rotate: "12deg" }], top: "55%", width: "95%" }]} />
+                      <View style={[styles.scribbleLine, { transform: [{ rotate: "-8deg" }], top: "45%", width: "110%" }]} />
+                      <View style={[styles.scribbleLine, { transform: [{ rotate: "22deg" }], top: "40%", width: "90%" }]} />
+                      <View style={[styles.scribbleLine, { transform: [{ rotate: "-15deg" }], top: "50%", width: "105%" }]} />
+                      <View style={[styles.scribbleLine, { transform: [{ rotate: "5deg" }], top: "48%", width: "100%" }]} />
+                      <View style={[styles.scribbleLine, { transform: [{ rotate: "-35deg" }], top: "42%", width: "85%" }]} />
+                    </View>
+                  )}
                 </View>
               </TouchableOpacity>
             );
@@ -933,18 +935,19 @@ export default function BookingsScreen() {
 
       <BottomSheetModal
         ref={shiftSheetRef}
-        snapPoints={selectedShiftForAction?.isAvailable ? ["60%"] : ["85%"]}
+        enableDynamicSizing={true}
         backdropComponent={renderBackdrop}
         enablePanDownToClose
         onDismiss={() => {
           setSelectedShiftForAction(null);
           setExternalNotes("");
+          setExternalCustomerName("");
+          setExternalCustomerPhone("");
           setShowExternalSuccess(false);
         }}
       >
-        <BottomSheetScrollView
-          contentContainerStyle={styles.sheetContent}
-          keyboardShouldPersistTaps="handled"
+        <BottomSheetView
+          style={styles.sheetContent}
         >
           {selectedShiftForAction && (
             <>
@@ -976,9 +979,9 @@ export default function BookingsScreen() {
                   >
                     {isRTL
                       ? selectedShiftForAction.shiftName?.ar ||
-                        selectedShiftForAction.shiftName
+                      selectedShiftForAction.shiftName
                       : selectedShiftForAction.shiftName?.en ||
-                        selectedShiftForAction.shiftName}
+                      selectedShiftForAction.shiftName}
                   </Text>
                   <View style={{ width: "100%" }}>
                     <Text
@@ -987,9 +990,46 @@ export default function BookingsScreen() {
                         { textAlign: isRTL ? "right" : "left" },
                       ]}
                     >
+                      {isRTL ? "اسم الزبون (اختياري)" : "Customer Name (Optional)"}
+                    </Text>
+                    <BottomSheetTextInput
+                      style={[
+                        styles.textInput,
+                        { textAlign: isRTL ? "right" : "left", marginBottom: 12 },
+                      ]}
+                      placeholder={isRTL ? "أدخل اسم الزبون..." : "Enter customer name..."}
+                      value={externalCustomerName}
+                      onChangeText={setExternalCustomerName}
+                    />
+
+                    <Text
+                      style={[
+                        styles.inputLabel,
+                        { textAlign: isRTL ? "right" : "left" },
+                      ]}
+                    >
+                      {isRTL ? "رقم الهاتف (اختياري)" : "Phone Number (Optional)"}
+                    </Text>
+                    <BottomSheetTextInput
+                      style={[
+                        styles.textInput,
+                        { textAlign: isRTL ? "right" : "left", marginBottom: 12 },
+                      ]}
+                      placeholder={isRTL ? "07xxxxxxxx" : "07xxxxxxxx"}
+                      value={externalCustomerPhone}
+                      onChangeText={setExternalCustomerPhone}
+                      keyboardType="phone-pad"
+                    />
+
+                    <Text
+                      style={[
+                        styles.inputLabel,
+                        { textAlign: isRTL ? "right" : "left" },
+                      ]}
+                    >
                       {isRTL
-                        ? "ملاحظات الحجز الخارجي"
-                        : "External Booking Notes"}
+                        ? "ملاحظات إضافية"
+                        : "Additional Notes"}
                     </Text>
                     <BottomSheetTextInput
                       style={[
@@ -998,8 +1038,8 @@ export default function BookingsScreen() {
                       ]}
                       placeholder={
                         isRTL
-                          ? "اسم الزبون، ملاحظات إضافية..."
-                          : "Customer name, notes..."
+                          ? "أدخل أي ملاحظات أخرى..."
+                          : "Enter any other notes..."
                       }
                       value={externalNotes}
                       onChangeText={setExternalNotes}
@@ -1021,6 +1061,8 @@ export default function BookingsScreen() {
                               selectedShiftForAction.id,
                             date: dateString,
                             notes: externalNotes,
+                            customerName: externalCustomerName,
+                            customerPhone: externalCustomerPhone,
                           }).unwrap();
                           console.log("Booking created successfully:", result);
 
@@ -1048,33 +1090,187 @@ export default function BookingsScreen() {
                   </View>
                 </View>
               ) : (
-                <View style={{ padding: 24, alignItems: "center" }}>
-                  <Text
-                    style={[
-                      styles.sheetTitle,
-                      { textAlign: "center", marginBottom: 24 },
-                    ]}
-                  >
-                    {isRTL ? "الحجز موجود" : "Booking Exists"}
-                  </Text>
-                  <SecondaryButton
-                    label={isRTL ? "عرض تفاصيل الحجز" : "View Booking Details"}
-                    onPress={() => {
-                      shiftSheetRef.current?.dismiss();
-                      openBookingDetails(
-                        selectedShiftForAction.booking?.id ||
-                          selectedShiftForAction.bookingId,
-                      );
+                <View style={{ padding: 24 }}>
+                  <View style={{ alignItems: "center", marginBottom: 28 }}>
+                    <View
+                      style={[
+                        styles.avatarPlaceholder,
+                        {
+                          width: 72,
+                          height: 72,
+                          borderRadius: 24,
+                          marginBottom: 16,
+                          elevation: 4,
+                          shadowColor: "#000",
+                          shadowOffset: { width: 0, height: 4 },
+                          shadowOpacity: 0.1,
+                          shadowRadius: 8,
+                        },
+                      ]}
+                    >
+                      {(() => {
+                        const customer = selectedShiftForAction.booking?.customer;
+                        const customerImageId =
+                          typeof customer?.image === "string"
+                            ? customer.image
+                            : customer?.image?.url ||
+                            customer?.image?.id ||
+                            customer?.imageUrl;
+
+                        return customerImageId ? (
+                          <ExpoImage
+                            source={getImageSrc(customerImageId)}
+                            style={{ width: "100%", height: "100%" }}
+                          />
+                        ) : (
+                          <SolarUserBold size={36} color="#FFF" />
+                        );
+                      })()}
+                    </View>
+                    <Text
+                      style={[
+                        styles.sheetTitle,
+                        { marginBottom: 2, fontSize: normalize.font(20) },
+                      ]}
+                    >
+                      {selectedShiftForAction.booking?.customer?.name ||
+                        selectedShiftForAction.booking?.externalCustomerName ||
+                        (selectedShiftForAction.booking?.status === "external"
+                          ? isRTL
+                            ? "حجز خارجي"
+                            : "External Booking"
+                          : isRTL
+                            ? "زبون"
+                            : "Customer")}
+                    </Text>
+                    {(selectedShiftForAction.booking?.customer?.phone ||
+                      selectedShiftForAction.booking?.externalCustomerPhone) && (
+                        <Text
+                          style={[
+                            styles.customerPhone,
+                            { marginBottom: 8, direction: "ltr" },
+                          ]}
+                        >
+                          {selectedShiftForAction.booking?.customer?.phone ||
+                            selectedShiftForAction.booking?.externalCustomerPhone}
+                        </Text>
+                      )}
+                    <View
+                      style={{
+                        flexDirection: isRTL ? "row-reverse" : "row",
+                        alignItems: "center",
+                        gap: 8,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: "#64748B",
+                          fontFamily: "Alexandria-SemiBold",
+                          fontSize: normalize.font(14),
+                          letterSpacing: 0.5,
+                        }}
+                      >
+                        {selectedShiftForAction.booking?.bookingCode || "#---"}
+                      </Text>
+                      <View
+                        style={[
+                          styles.statusBadge,
+                          {
+                            paddingVertical: 4,
+                            paddingHorizontal: 10,
+                            backgroundColor:
+                              selectedShiftForAction.booking?.status ===
+                                "confirmed"
+                                ? "#ECFDF5"
+                                : selectedShiftForAction.booking?.status ===
+                                  "external"
+                                  ? "#FEF2F2"
+                                  : "#F1F5F9",
+                            borderColor: "transparent",
+                            borderRadius: 6,
+                          },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.statusText,
+                            {
+                              fontSize: normalize.font(11),
+                              color:
+                                selectedShiftForAction.booking?.status ===
+                                  "confirmed"
+                                  ? "#10B981"
+                                  : selectedShiftForAction.booking?.status ===
+                                    "external"
+                                    ? "#EF4444"
+                                    : "#64748B",
+                            },
+                          ]}
+                        >
+                          {selectedShiftForAction.booking?.status ===
+                            "confirmed"
+                            ? isRTL
+                              ? "حجز مؤكد"
+                              : "Confirmed"
+                            : selectedShiftForAction.booking?.status ===
+                              "external"
+                              ? isRTL
+                                ? "حجز خارجي"
+                                : "External"
+                              : selectedShiftForAction.booking?.status}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+
+                  <View
+                    style={{
+                      height: 1,
+                      backgroundColor: "#F1F5F9",
+                      marginBottom: 24,
                     }}
-                    isActive={true}
-                    activeColor={IDENTITY_BLUE}
-                    style={{ height: 50, width: "100%" }}
                   />
+
+                  <View style={{ gap: 14 }}>
+                    <SecondaryButton
+                      label={
+                        isRTL ? "عرض تفاصيل الحجز" : "View Booking Details"
+                      }
+                      onPress={() => {
+                        shiftSheetRef.current?.dismiss();
+                        openBookingDetails(
+                          selectedShiftForAction.booking?.id ||
+                          selectedShiftForAction.bookingId,
+                        );
+                      }}
+                      isActive={true}
+                      activeColor={IDENTITY_BLUE}
+                      style={{ height: 56, width: "100%" }}
+                    />
+
+                    {(selectedShiftForAction.booking?.status === "confirmed" ||
+                      selectedShiftForAction.booking?.status === "external" ||
+                      selectedShiftForAction.booking?.status ===
+                      "pending_payment") && (
+                        <SecondaryButton
+                          label={isRTL ? "إلغاء الحجز" : "Cancel Booking"}
+                          onPress={() => {
+                            shiftSheetRef.current?.dismiss();
+                            handleOpenCancelSheet(
+                              selectedShiftForAction.booking,
+                            );
+                          }}
+                          isActive={true}
+                          activeColor="#EF4444"
+                          style={{ height: 56, width: "100%" }}
+                        />
+                      )}
+                  </View>
                 </View>
               )}
             </>
           )}
-        </BottomSheetScrollView>
+        </BottomSheetView>
       </BottomSheetModal>
 
       <BookingCancellationSheet
@@ -1091,7 +1287,7 @@ export default function BookingsScreen() {
 
       <BottomSheetModal
         ref={monthSheetRef}
-        snapPoints={["50%"]}
+        enableDynamicSizing={true}
         backdropComponent={renderBackdrop}
         enablePanDownToClose
       >
@@ -1258,7 +1454,7 @@ const styles = StyleSheet.create({
   },
   activeTabText: {
     color: IDENTITY_BLUE,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-SemiBold",
     paddingVertical: normalize.height(2),
     lineHeight: normalize.font(20),
   },
@@ -1284,7 +1480,7 @@ const styles = StyleSheet.create({
   },
   todayButtonText: {
     color: IDENTITY_BLUE,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-SemiBold",
     fontSize: normalize.font(12),
     lineHeight: normalize.font(16),
   },
@@ -1299,7 +1495,7 @@ const styles = StyleSheet.create({
   },
   monthLabel: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-SemiBold",
     color: IDENTITY_BLUE,
   },
   daysScroll: { gap: normalize.width(10) },
@@ -1329,11 +1525,36 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   selectedDateCircle: { backgroundColor: "#FFF" },
-  dateText: { fontSize: normalize.font(14), fontFamily: "Alexandria-Bold" },
+  scribbleContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10,
+  },
+  scribbleLine: {
+    position: "absolute",
+    height: 0.8,
+    backgroundColor: "#94A3B8",
+    opacity: 0.7,
+  },
+  fullyBookedDayItem: {
+    // Original background
+  },
+  fullyBookedText: {
+    color: "#94A3B8",
+  },
+  dateText: { fontSize: normalize.font(14), fontFamily: "Alexandria-SemiBold" },
   selectedDateText: {
     color: IDENTITY_BLUE,
     fontFamily: "Alexandria-Regular",
     lineHeight: normalize.font(18),
+  },
+  selectedFullyBookedDay: {
+    backgroundColor: "#94A3B8", // Gray background for the whole item
   },
   availabilitySection: {
     paddingVertical: 12,
@@ -1392,7 +1613,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   shiftNameGroup: { gap: 2, flex: 1 },
-  shiftTileName: { fontSize: normalize.font(16), fontFamily: "Alexandria-Black" },
+  shiftTileName: { fontSize: normalize.font(16), fontFamily: "Alexandria-SemiBold" },
   shiftTimeGroup: { alignItems: "center", gap: 4 },
   shiftTileTime: {
     fontSize: normalize.font(12),
@@ -1410,7 +1631,7 @@ const styles = StyleSheet.create({
   },
   statusBadgeText: {
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-SemiBold",
     lineHeight: normalize.font(18),
     paddingVertical: normalize.height(2),
   },
@@ -1418,7 +1639,7 @@ const styles = StyleSheet.create({
   bookingMiniInfo: { marginTop: 6, alignItems: "center", gap: 6 },
   bookingMiniId: {
     fontSize: normalize.font(11),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-SemiBold",
     letterSpacing: 0.5,
   },
   bookingTypeBadge: {
@@ -1428,7 +1649,7 @@ const styles = StyleSheet.create({
   },
   bookingTypeBadgeText: {
     fontSize: normalize.font(9),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-SemiBold",
     textTransform: "uppercase",
   },
 
@@ -1456,7 +1677,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     overflow: "hidden",
   },
-  customerName: { fontSize: normalize.font(15), fontFamily: "Alexandria-Bold" },
+  customerName: { fontSize: normalize.font(15), fontFamily: "Alexandria-SemiBold" },
   chaletName: {
     fontSize: normalize.font(12),
     color: "#64748B",
@@ -1464,7 +1685,7 @@ const styles = StyleSheet.create({
   },
   priceText: {
     fontSize: normalize.font(15),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-SemiBold",
     color: IDENTITY_BLUE,
   },
   dateHighlight: {
@@ -1487,7 +1708,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: normalize.font(11),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-SemiBold",
     lineHeight: normalize.font(16),
   },
   codeText: {
@@ -1498,7 +1719,7 @@ const styles = StyleSheet.create({
   sheetLoading: { padding: 50, alignItems: "center" },
   sheetScroll: { padding: 20 },
   sheetTopRow: { marginBottom: 20 },
-  sheetHeroTitle: { fontSize: normalize.font(18), fontFamily: "Alexandria-Black" },
+  sheetHeroTitle: { fontSize: normalize.font(18), fontFamily: "Alexandria-SemiBold" },
   customerCard: {
     backgroundColor: "#F8FAFC",
     borderRadius: 12,
@@ -1517,7 +1738,7 @@ const styles = StyleSheet.create({
   customerAvatarImg: { width: 44, height: 44, borderRadius: 12 },
   customerNameSheet: {
     fontSize: normalize.font(15),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-SemiBold",
   },
   customerPhone: {
     fontSize: normalize.font(13),
@@ -1552,7 +1773,7 @@ const styles = StyleSheet.create({
   },
   detailCardTitle: {
     fontSize: normalize.font(15),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-SemiBold",
     flex: 1,
   },
   detailSubRow: {
@@ -1580,7 +1801,7 @@ const styles = StyleSheet.create({
   },
   scheduleDate: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-SemiBold",
     flex: 1,
   },
   shiftChip: {
@@ -1591,18 +1812,18 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 6,
   },
-  shiftChipText: { fontSize: normalize.font(10), fontFamily: "Alexandria-Bold" },
+  shiftChipText: { fontSize: normalize.font(10), fontFamily: "Alexandria-SemiBold" },
   timeLabel: {
     fontSize: normalize.font(10),
     color: "#94A3B8",
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-SemiBold",
     textTransform: "uppercase",
   },
-  timeValue: { fontSize: normalize.font(14), fontFamily: "Alexandria-Black" },
+  timeValue: { fontSize: normalize.font(14), fontFamily: "Alexandria-SemiBold" },
   timeArrow: { paddingHorizontal: 8 },
   paymentTotalValue: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-SemiBold",
     color: IDENTITY_BLUE,
   },
   paymentCard: { padding: 12, backgroundColor: "#F8FAFC", borderRadius: 10 },
@@ -1611,10 +1832,10 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(13),
     fontFamily: "Alexandria-SemiBold",
   },
-  sheetContent: { flex: 1 },
+  sheetContent: { paddingBottom: normalize.height(24) },
   sheetTitle: {
     fontSize: normalize.font(18),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-SemiBold",
     marginBottom: 16,
   },
   textInput: {
@@ -1627,7 +1848,7 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-SemiBold",
     color: "#64748B",
     marginBottom: 8,
   },
@@ -1646,7 +1867,7 @@ const styles = StyleSheet.create({
   pickerColLabel: {
     fontSize: normalize.font(12),
     color: "#94A3B8",
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-SemiBold",
     textTransform: "uppercase",
     marginBottom: 12,
     letterSpacing: 0.5,
@@ -1668,7 +1889,7 @@ const styles = StyleSheet.create({
   },
   pickerItemTextActiveNew: {
     color: IDENTITY_BLUE,
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-SemiBold",
   },
   activeDot: {
     width: 6,
@@ -1693,7 +1914,7 @@ const styles = StyleSheet.create({
   },
   notesLabel: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-SemiBold",
     color: IDENTITY_BLUE,
   },
   notesText: {
@@ -1716,7 +1937,7 @@ const styles = StyleSheet.create({
   },
   successAnimationText: {
     fontSize: normalize.font(18),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-SemiBold",
     color: IDENTITY_BLUE,
     marginTop: 16,
     textAlign: "center",

@@ -1,7 +1,7 @@
 import { BookingCancellationSheet, BookingCancellationSheetRef } from '@/components/booking-cancellation-modal';
-import { BookingDetailsModalContent } from '@/components/booking-details-modal-content';
 import { DashboardCalendar } from "@/components/dashboard/dashboard-calendar";
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
+import { PendingApprovalScreen } from '@/components/dashboard/pending-approval';
 import {
   SolarCalendarBold,
   SolarCheckCircleBold,
@@ -11,11 +11,12 @@ import {
 import { PrimaryButton } from '@/components/user/primary-button';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { Colors, normalize } from '@/constants/theme';
-import { PendingApprovalScreen } from '@/components/dashboard/pending-approval';
+import { getImageSrc } from "@/hooks/useImageSrc";
 import { RootState } from '@/store';
 import { useDeleteExternalBookingMutation, useGetProviderBookingsQuery, useGetProviderProfileQuery, useRejectBookingMutation } from '@/store/api/apiSlice';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
+import { Image as ExpoImage } from "expo-image";
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -23,7 +24,6 @@ import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   FlatList,
-  Image,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -31,8 +31,6 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import { getImageSrc } from "@/hooks/useImageSrc";
-import { Image as ExpoImage } from "expo-image";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, { FadeIn, FadeInDown, FadeInRight, FadeInUp } from 'react-native-reanimated';
 import { useSelector } from 'react-redux';
@@ -131,7 +129,8 @@ export default function HomeScreen() {
 
 
 
-  const statusMap: Record<string, string> = {
+  const statusMap: Record<string, string | undefined> = {
+    recent: undefined,
     pending: 'pending_payment',
     confirmed: 'confirmed',
     finished: 'completed',
@@ -140,9 +139,10 @@ export default function HomeScreen() {
   const { data: bookingsResponse, isFetching: isBookingsFetching, isLoading: isBookingsLoading, refetch: refetchBookings } = useGetProviderBookingsQuery({
     limit: 8,
     page: page,
-    status: activeFilter !== 'all' ? statusMap[activeFilter] : undefined,
-    from: selectedRange?.start ? selectedRange.start.toISOString().split('T')[0] : undefined,
-    to: selectedRange?.end ? selectedRange.end.toISOString().split('T')[0] : undefined,
+    status: (activeFilter !== 'all' && activeFilter !== 'recent') ? statusMap[activeFilter] : undefined,
+    isRecent: activeFilter === 'recent' ? true : undefined,
+    from: (selectedRange?.start && activeFilter !== 'recent') ? selectedRange.start.toISOString().split('T')[0] : undefined,
+    to: (selectedRange?.end && activeFilter !== 'recent') ? selectedRange.end.toISOString().split('T')[0] : undefined,
     chaletId: selectedChalet?.id || undefined,
   });
 
@@ -159,6 +159,9 @@ export default function HomeScreen() {
   };
 
   const recentBookings = bookingsResponse?.data || bookingsResponse || [];
+  if (recentBookings.length > 0) {
+    console.log('[Home] first booking:', { id: recentBookings[0].id, extName: recentBookings[0].externalCustomerName });
+  }
 
 
   const handleToggleBalance = async () => {
@@ -201,24 +204,33 @@ export default function HomeScreen() {
       typeof customer?.image === "string"
         ? customer.image
         : customer?.image?.url || customer?.image?.id || customer?.imageUrl;
-    const customerName = bIsExternal ? (isRTL ? 'حجز خارجي' : 'External Booking') : (customer?.name || t('common.user'));
+    const customerName = bIsExternal
+      ? item.externalCustomerName || (isRTL ? 'حجز خارجي' : 'External Booking')
+      : (customer?.name || t('common.user'));
     const shiftName = isRTL ? (item.shift?.name?.ar || item.shift?.name) : (item.shift?.name?.en || item.shift?.name);
     const chaletName = isRTL ? (item.chalet?.name?.ar || item.chalet?.name) : (item.chalet?.name?.en || item.chalet?.name);
 
     const getStatusInfo = (status: string) => {
-      switch (status) {
+      const s = status?.toLowerCase();
+      switch (s) {
+        case 'external':
+          return {
+            label: isRTL ? 'حجز خارجي' : 'External Booking',
+            color: '#6366F1',
+            bg: '#EEF2FF'
+          };
         case 'completed':
         case 'finished':
           return {
-            label: isRTL ? 'مدفوع بالكامل' : 'Paid in Full',
+            label: isRTL ? 'مكتمل' : 'Completed',
             color: '#3B82F6',
             bg: '#EFF6FF'
           };
         case 'cancelled':
           const wasDepositPaid = item.paymentModel === 'deposit' && (Number(item.depositAmount) > 0);
           return {
-            label: wasDepositPaid 
-              ? (isRTL ? 'مدفوع العربون وملغي' : 'Deposit Paid & Cancelled')
+            label: wasDepositPaid
+              ? (isRTL ? 'ملغي (عربون)' : 'Cancelled (Deposit)')
               : (isRTL ? 'ملغي' : 'Cancelled'),
             color: '#EF4444',
             bg: '#FEF2F2'
@@ -226,7 +238,7 @@ export default function HomeScreen() {
         case 'confirmed':
           const isDeposit = item.paymentModel === 'deposit';
           return {
-            label: isDeposit 
+            label: isDeposit
               ? (isRTL ? 'مؤكد بعربون' : 'Confirmed w/ Deposit')
               : (isRTL ? 'مدفوع بالكامل' : 'Paid in Full'),
             color: '#10B981',
@@ -241,7 +253,7 @@ export default function HomeScreen() {
           };
         default:
           return {
-            label: status,
+            label: status || (isRTL ? 'غير معروف' : 'Unknown'),
             color: '#64748B',
             bg: '#F8FAFC'
           };
@@ -271,9 +283,9 @@ export default function HomeScreen() {
                   <SolarUserBold size={24} color="#FFF" />
                 </View>
               ) : customerImageId ? (
-                <ExpoImage 
-                  source={getImageSrc(customerImageId)} 
-                  style={styles.modernBookingImg} 
+                <ExpoImage
+                  source={getImageSrc(customerImageId)}
+                  style={styles.modernBookingImg}
                   contentFit="cover"
                   cachePolicy="disk"
                 />
@@ -288,36 +300,36 @@ export default function HomeScreen() {
             <View style={[styles.modernBookingInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
               <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
                 <Text style={[styles.modernBookingName, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>{customerName}</Text>
-                <View style={{ 
-                  backgroundColor: statusInfo.bg, 
-                  paddingHorizontal: 8, 
-                  paddingVertical: 2, 
+                <View style={{
+                  backgroundColor: statusInfo.bg,
+                  paddingHorizontal: 8,
+                  paddingVertical: 2,
                   borderRadius: 6,
                   borderWidth: 1,
                   borderColor: statusInfo.color + '20'
                 }}>
-                  <Text style={{ 
-                    color: statusInfo.color, 
-                    fontSize: normalize.font(10), 
-                    fontFamily: 'Alexandria-Bold' 
+                  <Text style={{
+                    color: statusInfo.color,
+                    fontSize: normalize.font(10),
+                    fontFamily: 'Alexandria-SemiBold'
                   }}>
                     {statusInfo.label}
                   </Text>
                 </View>
               </View>
-              
+
               {chaletName && <Text style={[styles.modernBookingChalet, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>{chaletName}</Text>}
-              
+
               <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 4 }}>
                 <Text style={[styles.modernBookingShift, { textAlign: isRTL ? 'right' : 'left' }]}>{t('common.shift')} {shiftName}</Text>
                 <Text style={styles.modernBookingDot}>•</Text>
                 <Text style={styles.modernBookingDate}>{item.bookingDate || item.date || item.createdAt?.split('T')[0]}</Text>
               </View>
-              
+
               {item.bookingCode && (
-                <Text style={{ 
-                  fontSize: normalize.font(10), 
-                  color: '#94A3B8', 
+                <Text style={{
+                  fontSize: normalize.font(10),
+                  color: '#94A3B8',
                   fontFamily: 'Alexandria-Medium',
                   marginTop: 2
                 }}>
@@ -327,11 +339,13 @@ export default function HomeScreen() {
             </View>
 
             {/* 3. Price (Left part in RTL) */}
-            <View style={styles.modernBookingPriceWrap}>
-              <Text style={styles.modernBookingPrice}>
-                {(Number(item.totalPrice) || 0).toLocaleString()} {t('common.iqd')}
-              </Text>
-            </View>
+            {!bIsExternal && (
+              <View style={styles.modernBookingPriceWrap}>
+                <Text style={styles.modernBookingPrice}>
+                  {(Number(item.totalPrice) || 0).toLocaleString()} {t('common.iqd')}
+                </Text>
+              </View>
+            )}
           </View>
         </TouchableOpacity>
       </Animated.View>
@@ -416,8 +430,13 @@ export default function HomeScreen() {
                   {[
                     { id: 'all', label: t('home.categories.all') },
                     {
+                      id: 'recent',
+                      label: isRTL ? 'جديد' : 'New',
+                      icon: <SolarClockCircleBold size={18} color={activeFilter === 'recent' ? 'white' : Colors.primary} />
+                    },
+                    {
                       id: 'pending',
-                      label: t('dashboard.bookings.new'),
+                      label: isRTL ? 'انتظار الدفع' : 'Pending',
                       icon: <SolarClockCircleBold size={18} color={activeFilter === 'pending' ? 'white' : Colors.primary} />
                     },
                     {
@@ -518,7 +537,7 @@ export default function HomeScreen() {
         {/* Calendar Drawer */}
         <BottomSheetModal
           ref={calendarSheetRef}
-          snapPoints={['60%']}
+          enableDynamicSizing={true}
           backdropComponent={renderBackdrop}
           enablePanDownToClose
         >
@@ -621,7 +640,7 @@ const styles = StyleSheet.create({
   walletValue: {
     color: Colors.white,
     fontSize: normalize.font(32),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-SemiBold",
     letterSpacing: normalize.width(-0.5),
     lineHeight: normalize.font(38),
   },
@@ -654,7 +673,7 @@ const styles = StyleSheet.create({
   },
   walletActionText: {
     color: Colors.primary,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-SemiBold",
     fontSize: normalize.font(13),
     lineHeight: normalize.font(18),
   },
@@ -681,7 +700,7 @@ const styles = StyleSheet.create({
   },
   avatarLetter: {
     fontSize: normalize.font(18),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-SemiBold",
     lineHeight: normalize.font(24),
   },
   bookingInfo: {
@@ -689,7 +708,7 @@ const styles = StyleSheet.create({
   },
   bookingName: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-SemiBold",
     color: Colors.text.primary,
     marginBottom: normalize.height(1),
     lineHeight: normalize.font(20),
@@ -709,7 +728,7 @@ const styles = StyleSheet.create({
   },
   bookingAmount: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-SemiBold",
     color: Colors.text.primary,
     marginBottom: normalize.height(4),
     lineHeight: normalize.font(20),
@@ -727,7 +746,7 @@ const styles = StyleSheet.create({
   },
   bookingStatusText: {
     fontSize: normalize.font(9),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-SemiBold",
     textTransform: 'uppercase',
     lineHeight: normalize.font(13),
   },
@@ -746,7 +765,7 @@ const styles = StyleSheet.create({
   },
   bookingsTitle: {
     fontSize: normalize.font(17),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-SemiBold",
     color: Colors.text.primary,
     lineHeight: normalize.font(23),
   },
@@ -774,7 +793,7 @@ const styles = StyleSheet.create({
   },
   calendarTitle: {
     fontSize: normalize.font(18),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-SemiBold",
     color: Colors.text.primary,
     lineHeight: normalize.font(24),
   },
@@ -833,7 +852,7 @@ const styles = StyleSheet.create({
   },
   modernBookingName: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-SemiBold",
     color: Colors.text.primary,
     marginBottom: normalize.height(1),
     lineHeight: normalize.font(22),
@@ -847,7 +866,7 @@ const styles = StyleSheet.create({
   modernBookingChalet: {
     fontSize: normalize.font(13),
     color: Colors.primary,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-SemiBold",
     marginBottom: normalize.height(1),
     lineHeight: normalize.font(18),
   },
@@ -867,7 +886,7 @@ const styles = StyleSheet.create({
   },
   modernBookingPrice: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-SemiBold",
     color: Colors.text.primary,
     lineHeight: normalize.font(20),
   },
@@ -908,7 +927,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-SemiBold",
     color: Colors.text.primary,
     lineHeight: normalize.font(22),
   },

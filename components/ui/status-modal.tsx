@@ -6,7 +6,7 @@ import { PrimaryButton } from '@/components/user/primary-button';
 
 interface StatusModalProps {
   visible: boolean;
-  type: 'loading' | 'success' | 'failed';
+  type: 'loading' | 'success' | 'failed' | 'error404';
   title?: string;
   message?: string;
   onClose?: () => void;
@@ -21,7 +21,7 @@ export const StatusModal = ({
   onClose,
   buttonLabel = "حسناً"
 }: StatusModalProps) => {
-  const motionName: MotionName = type === 'loading' ? 'loading' : type === 'success' ? 'success' : 'failed';
+  const motionName: MotionName = type === 'loading' ? 'loading' : type === 'success' ? 'success' : type === 'error404' ? 'error404' : 'failed';
 
   return (
     <Modal transparent visible={visible} animationType="fade">

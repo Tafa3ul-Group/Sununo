@@ -6,12 +6,12 @@ import {
 import { ThemedText } from '@/components/themed-text';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { Colors, normalize } from '@/constants/theme';
+import { getImageSrc } from '@/hooks/useImageSrc';
 import { RootState } from '@/store';
 import { useDeleteExternalBookingMutation, useGetProviderBookingDetailsQuery, useMarkBookingCompletedMutation, useRejectBookingMutation } from '@/store/api/apiSlice';
 import * as Haptics from 'expo-haptics';
 import { Image as ExpoImage } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { getImageSrc } from '@/hooks/useImageSrc';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -21,6 +21,8 @@ import { useSelector } from 'react-redux';
 const IDENTITY_BLUE = '#035DF9';
 
 import { PaymentConfirmationSheet, PaymentConfirmationSheetRef } from '@/components/payment-confirmation-modal';
+
+import { ErrorState } from '@/components/ui/error-state';
 
 export default function BookingDetailsPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -35,21 +37,25 @@ export default function BookingDetailsPage() {
   const [rejectBooking, { isLoading: isRejectLoading }] = useRejectBookingMutation();
   const [deleteExternalBooking, { isLoading: isDeletingExternal }] = useDeleteExternalBookingMutation();
   const [markAsPaid, { isLoading: isPaying }] = useMarkBookingCompletedMutation();
+  const [isSuccessNavigating, setIsSuccessNavigating] = React.useState(false);
 
   const { data: bookingDetailsData, isLoading, error, refetch } = useGetProviderBookingDetailsQuery(id as string, { skip: !id });
 
   if (isLoading) return <View style={styles.loadingContainer}><ActivityIndicator size="large" color={IDENTITY_BLUE} /></View>;
 
   const data = bookingDetailsData?.data || bookingDetailsData;
+  console.log('[BookingDetails] data:', { id: data?.id, extName: data?.externalCustomerName, extPhone: data?.externalCustomerPhone });
 
-  if (error || !data || !data.id) {
+  if ((error || !data || !data.id) && !isSuccessNavigating) {
+    const is404 = (error as any)?.status === 404;
+    const errorMessage = (error as any)?.data?.message || (error as any)?.message;
     return (
-      <SafeAreaView style={styles.errorContainer}>
-        <ThemedText style={styles.errorText}>{t('common.error')}</ThemedText>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backBtnText}>{isRTL ? 'العودة' : 'Go Back'}</Text>
-        </TouchableOpacity>
-      </SafeAreaView>
+      <ErrorState 
+        type={is404 ? 'error404' : 'failed'}
+        message={errorMessage}
+        onBack={() => router.back()}
+        onRetry={() => refetch()}
+      />
     );
   }
 
@@ -61,9 +67,7 @@ export default function BookingDetailsPage() {
     ? data.chalet?.address?.ar || data.chalet?.address
     : data.chalet?.address?.en || data.chalet?.address;
   const bCustomerName = bIsExternal
-    ? isRTL
-      ? "حجز خارجي"
-      : "External Booking"
+    ? data.externalCustomerName || (isRTL ? "حجز خارجي" : "External Booking")
     : data.customer?.name || t("common.user");
   const bShiftName = isRTL
     ? data.shift?.name?.ar || data.shift?.name
@@ -82,6 +86,7 @@ export default function BookingDetailsPage() {
   const handleConfirmCancellation = async (reason: string) => {
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      setIsSuccessNavigating(true);
       if (bIsExternal) {
         await deleteExternalBooking(data.id).unwrap();
       } else {
@@ -91,10 +96,11 @@ export default function BookingDetailsPage() {
         }).unwrap();
       }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      refetch();
       cancelSheetRef.current?.showSuccess(isRTL ? 'تم الإلغاء بنجاح.' : 'Cancelled successfully.');
       setTimeout(() => router.back(), 1500);
     } catch (e: any) {
+      setIsSuccessNavigating(false);
+      console.error('[BookingDetails] Cancellation error:', e);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       cancelSheetRef.current?.showError(e?.data?.message || (isRTL ? 'فشل الإلغاء' : 'Failed to cancel'));
     }
@@ -195,7 +201,8 @@ export default function BookingDetailsPage() {
           </View>
           <View style={styles.divider} />
           {renderInfoRow(isRTL ? 'الاسم' : 'Name', bCustomerName)}
-          {renderInfoRow(isRTL ? 'رقم الهاتف' : 'Phone', <Text style={[styles.infoValue, { direction: 'ltr' }]}>{data.customer?.phone || data.customerPhone || '--'}</Text>)}
+          {renderInfoRow(isRTL ? 'رقم الهاتف' : 'Phone', <Text style={[styles.infoValue, { direction: 'ltr' }]}>{data.customer?.phone || data.externalCustomerPhone || '--'}</Text>)}
+          {data.notes && renderInfoRow(isRTL ? 'ملاحظات' : 'Notes', data.notes)}
         </View>
 
         {/* Booking Information */}
@@ -215,53 +222,57 @@ export default function BookingDetailsPage() {
         </View>
 
         {/* Payment Information */}
-        <View style={styles.infoSectionCard}>
-          <View style={[styles.sectionTitleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-            <Text style={styles.sectionTitle}>{isRTL ? 'معلومات الدفع' : 'Payment Information'}</Text>
+        {!bIsExternal && (
+          <View style={styles.infoSectionCard}>
+            <View style={[styles.sectionTitleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+              <Text style={styles.sectionTitle}>{isRTL ? 'معلومات الدفع' : 'Payment Information'}</Text>
+            </View>
+            <View style={styles.divider} />
+            {renderInfoRow(
+              isRTL ? "المبلغ الكلي" : "Total Price",
+              `${totalPrice.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
+            )}
+            {renderInfoRow(
+              isRTL ? "المبلغ المدفوع (العربون)" : "Paid (Deposit)",
+              `${depositAmount.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
+            )}
+            {renderInfoRow(
+              isRTL ? "المبلغ المتبقي" : "Remaining Amount",
+              `${remainingAmount.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
+              true,
+            )}
           </View>
-          <View style={styles.divider} />
-          {renderInfoRow(
-            isRTL ? "المبلغ الكلي" : "Total Price",
-            `${totalPrice.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
-          )}
-          {renderInfoRow(
-            isRTL ? "المبلغ المدفوع (العربون)" : "Paid (Deposit)",
-            `${depositAmount.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
-          )}
-          {renderInfoRow(
-            isRTL ? "المبلغ المتبقي" : "Remaining Amount",
-            `${remainingAmount.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
-            true,
-          )}
-        </View>
+        )}
 
-        <View style={{ height: 180 }} />
+        <View style={{ height: 20 }} />
       </ScrollView>
 
       {/* Bottom Actions Footer */}
       {!bIsCancelled && (
         <View style={styles.bottomActions}>
-          {remainingAmount > 0 ? (
-            <PrimaryButton
-              label={isRTL ? `تسديد المبلغ المتبقي ` : `Pay Remaining Balance`}
-              onPress={() => {
-                confirmPaymentSheetRef.current?.present();
-              }}
-              height={60}
-              style={styles.payButton}
-            />
-          ) : (
-            <PrimaryButton
-              label={isRTL ? 'تم سداد المبلغ بالكامل' : 'Full amount paid'}
-              onPress={() => { }}
-              activeColor="#22C55E"
-              height={60}
-              style={styles.payButton}
-              disabled={true}
-            />
+          {!bIsExternal && (
+            remainingAmount > 0 ? (
+              <PrimaryButton
+                label={isRTL ? `تسديد المبلغ المتبقي ` : `Pay Remaining Balance`}
+                onPress={() => {
+                  confirmPaymentSheetRef.current?.present();
+                }}
+                height={60}
+                style={styles.payButton}
+              />
+            ) : (
+              <PrimaryButton
+                label={isRTL ? 'تم سداد المبلغ بالكامل' : 'Full amount paid'}
+                onPress={() => { }}
+                activeColor="#22C55E"
+                height={60}
+                style={styles.payButton}
+                disabled={true}
+              />
+            )
           )}
 
-          {remainingAmount > 0 && (
+          {(remainingAmount > 0 || bIsExternal) && (
             <PrimaryButton
               label={isRTL ? 'إلغاء الحجز' : 'Cancel Booking'}
               onPress={() => cancelSheetRef.current?.present()}
@@ -300,7 +311,7 @@ const styles = StyleSheet.create({
   errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFFFFF', padding: 20 },
   errorText: { color: '#64748B', marginTop: 16 },
   backBtn: { marginTop: 20 },
-  backBtnText: { color: IDENTITY_BLUE, fontFamily: "Alexandria-Bold" },
+  backBtnText: { color: IDENTITY_BLUE, fontFamily: "Alexandria-SemiBold" },
   menuCircle: {
     width: normalize.width(42),
     height: normalize.width(42),
@@ -335,7 +346,7 @@ const styles = StyleSheet.create({
   cancelledTitle: {
     flex: 1,
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-SemiBold",
     color: '#EA2129',
     lineHeight: normalize.font(24),
   },
@@ -347,16 +358,16 @@ const styles = StyleSheet.create({
   },
   cancelledReason: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-SemiBold",
     color: '#1E293B',
     lineHeight: normalize.font(20),
   },
-  scrollContent: { paddingBottom: 40, paddingHorizontal: 20 },
+  scrollContent: { paddingBottom: normalize.height(160), paddingHorizontal: 20 },
   chaletSimpleRow: { alignItems: 'center', gap: 16 },
   simpleImageWrapper: { width: 80, height: 80, borderRadius: 16, overflow: 'hidden', backgroundColor: '#F1F5F9' },
   simpleChaletImage: { width: '100%', height: '100%' },
   simpleChaletText: { flex: 1 },
-  simpleChaletName: { fontSize: normalize.font(16), fontFamily: "Alexandria-Black", color: '#1E293B', lineHeight: normalize.font(22) },
+  simpleChaletName: { fontSize: normalize.font(16), fontFamily: "Alexandria-SemiBold", color: '#1E293B', lineHeight: normalize.font(22) },
   simpleChaletLocation: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#64748B', lineHeight: normalize.font(20), marginTop: 4 },
   infoSectionCard: {
     backgroundColor: '#FFFFFF',
@@ -368,12 +379,12 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   sectionTitleRow: { width: '100%', marginBottom: 8 },
-  sectionTitle: { fontSize: normalize.font(14), fontFamily: "Alexandria-Black", color: IDENTITY_BLUE, lineHeight: normalize.font(20) },
+  sectionTitle: { fontSize: normalize.font(14), fontFamily: "Alexandria-SemiBold", color: IDENTITY_BLUE, lineHeight: normalize.font(20) },
   divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 10 },
   infoRow: { justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  infoLabel: { fontSize: normalize.font(14), fontFamily: "Alexandria-Bold", color: '#1E293B', lineHeight: normalize.font(20) },
+  infoLabel: { fontSize: normalize.font(14), fontFamily: "Alexandria-SemiBold", color: '#1E293B', lineHeight: normalize.font(20) },
   infoValue: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#64748B', lineHeight: normalize.font(22) },
-  blueValue: { color: IDENTITY_BLUE, fontFamily: "Alexandria-Bold", lineHeight: normalize.font(22) },
+  blueValue: { color: IDENTITY_BLUE, fontFamily: "Alexandria-SemiBold", lineHeight: normalize.font(22) },
   bottomActions: {
     position: 'absolute',
     bottom: 0,
@@ -385,11 +396,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     borderTopLeftRadius: normalize.radius(24),
     borderTopRightRadius: normalize.radius(24),
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
   },
   payButton: {
     marginBottom: 12,

@@ -341,6 +341,15 @@ export const apiSlice = createApi({
       providesTags: ['Chalet'],
     }),
 
+    // Get fully booked status for days
+    getFullyBookedStatus: builder.query<{ date: string; isFullyBooked: boolean }[], { chaletId: string, from: string, to: string }>({
+      query: ({ chaletId, ...params }) => ({
+        url: `/provider/chalets/${chaletId}/shifts/days-status`,
+        params,
+      }),
+      providesTags: ['Chalet'],
+    }),
+
     // Mark booking as completed
     markBookingCompleted: builder.mutation({
       query: (id) => ({
@@ -463,6 +472,7 @@ export const {
   useGetProviderBookingsQuery,
   useGetProviderBookingDetailsQuery,
   useGetShiftAvailabilityQuery,
+  useGetFullyBookedStatusQuery,
   useMarkBookingCompletedMutation,
   useCreateExternalBookingMutation,
   useDeleteExternalBookingMutation,
@@ -472,3 +482,5 @@ export const {
   useGetPayoutsQuery,
   useRequestPayoutMutation,
 } = apiSlice;
+
+// Force Metro cache reload - Updated at 2026-05-05T14:55

@@ -53,8 +53,6 @@ export const BookingCancellationSheet = forwardRef<BookingCancellationSheetRef, 
       showSuccess: (message) => {
         setInternalStatus('success');
         setFeedbackMessage(message || '');
-        // Expand to nearly full screen for success feedback to cover other sheets
-        bottomSheetModalRef.current?.snapToIndex(1);
         setTimeout(() => lottieRef.current?.play(), 100);
         setTimeout(() => bottomSheetModalRef.current?.dismiss(), 3000);
       },
@@ -194,8 +192,7 @@ export const BookingCancellationSheet = forwardRef<BookingCancellationSheetRef, 
     return (
       <BottomSheetModal
         ref={bottomSheetModalRef}
-        index={0}
-        snapPoints={internalStatus !== 'idle' ? ['45%', '90%'] : (isExternal ? ['45%'] : ['65%'])}
+        enableDynamicSizing={true}
         backdropComponent={renderBackdrop}
         enablePanDownToClose={internalStatus === 'idle' || internalStatus === 'error'}
         keyboardBehavior="fillParent"

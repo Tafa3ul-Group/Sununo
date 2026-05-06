@@ -61,11 +61,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1.5,
     borderColor: '#E5E7EB', // Matching other premium buttons
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
   },
   iconWrapper: {
     // Center the custom SVG path correctly
