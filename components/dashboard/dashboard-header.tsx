@@ -76,7 +76,7 @@ export function DashboardHeader({
         {/* Center: Title (if exists) */}
         {title && (
           <View style={styles.titleWrapper}>
-            <ThemedText style={styles.headerTitle} numberOfLines={1}>
+            <ThemedText style={styles.headerTitle}>
               {title}
             </ThemedText>
           </View>
@@ -143,7 +143,8 @@ const styles = StyleSheet.create({
     fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
     lineHeight: normalize.font(22),
-    paddingVertical: normalize.height(2),
+    textAlign: 'center',
+    paddingHorizontal: normalize.width(4),
   },
   rightGroup: {
     width: normalize.width(80),

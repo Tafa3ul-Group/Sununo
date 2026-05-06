@@ -340,12 +340,15 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(20),
     fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
+    lineHeight: normalize.font(28),
+    flexShrink: 1,
   },
   seeAll: {
     fontSize: normalize.font(13),
     color: Colors.primary,
     fontFamily: "Alexandria-SemiBold",
     textDecorationLine: "underline",
+    lineHeight: normalize.font(18),
   },
   mapContainer: {
     height: 210,
