@@ -116,12 +116,12 @@ const styles = StyleSheet.create({
   hostLabel: {
     fontSize: 12,
     color: "#040404ff",
-    fontFamily: "LamaSans-Medium",
+    fontFamily: "Alexandria-Medium",
   },
   hostName: {
     fontSize: 16,
     color: "#111827",
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Alexandria-Black",
     marginTop: -2,
   },
   avatarContainer: {

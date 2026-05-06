@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   },
   tabItem: {
     paddingHorizontal: 16,
-    height: 44,
+    minHeight: 44,
     borderRadius: 22,
     justifyContent: "center",
     alignItems: "center",

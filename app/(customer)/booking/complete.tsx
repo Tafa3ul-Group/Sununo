@@ -1692,16 +1692,16 @@ const styles = StyleSheet.create({
   paymentOptionActive: { borderColor: "#15AB64", backgroundColor: "#F0FDF4" },
   paymentVal: {
     fontSize: normalize.font(15),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Regular",
     color: "#64748B",
   },
-  paymentValActive: { color: "#1E293B", fontFamily: "Alexandria-Regular" },
+  paymentValActive: { color: "#1E293B", fontFamily: "Alexandria-Black" },
   paymentLabel: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Regular",
     color: "#64748B",
   },
-  paymentLabelActive: { color: "#1E293B", fontFamily: "Alexandria-Regular" },
+  paymentLabelActive: { color: "#1E293B", fontFamily: "Alexandria-Black" },
   agreementWrapper: { paddingVertical: 12, paddingBottom: 35 },
   agreementText: {
     fontSize: normalize.font(12),

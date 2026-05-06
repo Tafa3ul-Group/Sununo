@@ -3,8 +3,8 @@ import { StyleSheet, Text, type TextProps, type TextStyle, Platform } from "reac
 
 export type ThemedTextProps = TextProps & {
   type?:
-    | "default"
     | "title"
+    | "description"
     | "subtitle"
     | "h1"
     | "h2"
@@ -24,10 +24,13 @@ export function ThemedText({
   const getStyleByType = (): TextStyle => {
     switch (type) {
       case "h1":
-      case "title":
         return Typography.h1 as TextStyle;
+      case "title":
+        return Typography.title as TextStyle;
       case "h2":
         return Typography.h2 as TextStyle;
+      case "description":
+        return Typography.description as TextStyle;
       case "body":
       case "default":
         return Typography.body as TextStyle;

@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: Colors.text.primary,
-    fontFamily: "LamaSans-Regular",
+    fontFamily: "Alexandria-Regular",
   },
   cityItem: {
     alignItems: "center",
@@ -517,14 +517,14 @@ const styles = StyleSheet.create({
   },
   guestLabel: {
     fontSize: 22,
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Alexandria-Black",
     color: "#1A1A1A",
   },
   guestSubLabel: {
     fontSize: 16,
     color: "#9CA3AF",
     marginTop: 2,
-    fontFamily: "LamaSans-Regular",
+    fontFamily: "Alexandria-Regular",
   },
   // RTL Utilities
   rtlText: { textAlign: "right" },

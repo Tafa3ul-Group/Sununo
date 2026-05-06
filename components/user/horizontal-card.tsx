@@ -1,9 +1,9 @@
 import { SolarHeartBold, SolarStarBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
-import { useTranslation } from "react-i18next";
 import { Colors, normalize } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
-import React, { useState } from "react";
+import React from "react";
+import { useTranslation } from "react-i18next";
 import {
   Dimensions,
   StyleSheet,
@@ -68,13 +68,15 @@ export function HorizontalCard({
   onToggleFavorite,
 }: HorizontalCardProps) {
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
+  const isRTL = i18n.language === "ar";
 
   if (!chalet) return null;
 
-  const imageSource = typeof chalet.image === 'string' && !chalet.image.startsWith('http') 
-    ? getImageSrc(chalet.image) 
-    : (chalet.image || getImageSrc(chalet.images?.[0]?.url || chalet.images?.[0]));
+  const imageSource =
+    typeof chalet.image === "string" && !chalet.image.startsWith("http")
+      ? getImageSrc(chalet.image)
+      : chalet.image ||
+        getImageSrc(chalet.images?.[0]?.url || chalet.images?.[0]);
   const borderColor = chalet.color || Colors.secondary;
 
   const config = SHAPES_CONFIG[shapeIndex % SHAPES_CONFIG.length];
@@ -83,12 +85,21 @@ export function HorizontalCard({
     <TouchableOpacity
       activeOpacity={0.9}
       onPress={onPress}
-      style={[styles.container, { flexDirection: isRTL ? 'row' : 'row-reverse' }, style]}
+      style={[
+        styles.container,
+        { flexDirection: isRTL ? "row" : "row-reverse" },
+        style,
+      ]}
     >
       {/* info side */}
       <View style={styles.contentAndLeft}>
         {/* Top Row: Heart + Title/Location */}
-        <View style={[styles.topRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+        <View
+          style={[
+            styles.topRow,
+            { flexDirection: isRTL ? "row" : "row-reverse" },
+          ]}
+        >
           <View style={styles.leftColumn}>
             {!hideFavorite && (
               <TouchableOpacity
@@ -104,29 +115,76 @@ export function HorizontalCard({
           </View>
 
           <View style={styles.mainContent}>
-            <View style={[styles.upperText, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-              <ThemedText style={[styles.title, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
-                {typeof chalet.title === 'object' ? (isRTL ? chalet.title.ar : chalet.title.en) : chalet.title}
+            <View
+              style={[
+                styles.upperText,
+                { alignItems: isRTL ? "flex-end" : "flex-start" },
+              ]}
+            >
+              <ThemedText
+                style={[styles.title, { textAlign: isRTL ? "right" : "left" }]}
+                numberOfLines={1}
+              >
+                {typeof chalet.title === "object"
+                  ? isRTL
+                    ? chalet.title.ar
+                    : chalet.title.en
+                  : chalet.title}
               </ThemedText>
-              <ThemedText style={[styles.location, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
-                {typeof chalet.location === 'object' ? (isRTL ? chalet.location.ar : chalet.location.en) : chalet.location}
+              <ThemedText
+                style={[
+                  styles.location,
+                  { textAlign: isRTL ? "right" : "left" },
+                ]}
+                numberOfLines={1}
+              >
+                {typeof chalet.location === "object"
+                  ? isRTL
+                    ? chalet.location.ar
+                    : chalet.location.en
+                  : chalet.location}
               </ThemedText>
             </View>
           </View>
         </View>
 
         {/* Bottom Row: Rating + Price */}
-        <View style={[styles.bottomRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
-          <View style={[styles.ratingBox, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <View
+          style={[
+            styles.bottomRow,
+            { flexDirection: isRTL ? "row" : "row-reverse" },
+          ]}
+        >
+          <View
+            style={[
+              styles.ratingBox,
+              { flexDirection: isRTL ? "row-reverse" : "row" },
+            ]}
+          >
             <ThemedText style={styles.ratingText}>
               {chalet.rating || "4.5"}
             </ThemedText>
-            <SolarStarBold size={normalize.width(16)} color={Colors.secondary} />
+            <SolarStarBold
+              size={normalize.width(16)}
+              color={Colors.secondary}
+            />
           </View>
 
-          <View style={[styles.priceRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-            <ThemedText style={styles.price}>{isRTL ? '' : 'IQD '}{chalet.price}{isRTL ? ' د.ع' : ''}</ThemedText>
-            <ThemedText style={styles.priceLabel}> / {isRTL ? "شفت" : "Shift"}</ThemedText>
+          <View
+            style={[
+              styles.priceRow,
+              { flexDirection: isRTL ? "row-reverse" : "row" },
+            ]}
+          >
+            <ThemedText style={styles.price}>
+              {isRTL ? "" : "IQD "}
+              {chalet.price}
+              {isRTL ? " د.ع" : ""}
+            </ThemedText>
+            <ThemedText style={styles.priceLabel}>
+              {" "}
+              / {isRTL ? "شفت" : "Shift"}
+            </ThemedText>
           </View>
         </View>
       </View>
@@ -233,7 +291,8 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(12),
     color: "#6B7280",
     marginTop: 2,
-   fontFamily: "Alexandria-Regular" },
+    fontFamily: "Alexandria-Regular",
+  },
   priceRow: {
     alignItems: "center",
     gap: 4,
@@ -246,7 +305,8 @@ const styles = StyleSheet.create({
   priceLabel: {
     fontSize: normalize.font(11),
     color: "#6B7280",
-   fontFamily: "Alexandria-Regular" },
+    fontFamily: "Alexandria-Regular",
+  },
   imageWrapper: {
     width: normalize.width(98),
     height: normalize.height(88),
