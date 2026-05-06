@@ -135,6 +135,18 @@ export const Typography: Record<string, TypeStyle> = {
     color: Colors.light.text,
     lineHeight: normalize.font(20),
   },
+  title: {
+    fontSize: normalize.font(20),
+    fontFamily: "Alexandria-Bold",
+    color: Colors.light.text,
+    lineHeight: normalize.font(28),
+  },
+  description: {
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Regular",
+    color: Colors.light.text,
+    lineHeight: normalize.font(22),
+  },
 };
 
 export const Shadows = {

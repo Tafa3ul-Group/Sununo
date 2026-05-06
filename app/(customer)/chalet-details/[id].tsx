@@ -498,28 +498,30 @@ export default function ChaletDetailScreen() {
                   : null;
 
               return (
-                <View
+                <TouchableOpacity
                   key={shift.id || index}
+                  onPress={() => setSelectedShiftId(shift.id)}
                   style={[
                     styles.shiftCard,
                     { flexDirection: isRTL ? "row-reverse" : "row" },
+                    isSelected && styles.shiftCardActive,
                   ]}
                 >
                   {(() => {
                     const isMorning = shift.type === 'MORNING' || (shift.name?.en?.toLowerCase().includes('morning')) || (shift.name?.ar?.includes('صباح'));
                     return (
                       <View
-                        style={styles.shiftIconCircle}
+                        style={[styles.shiftIconCircle, isSelected && styles.shiftIconCircleActive]}
                       >
                         {isMorning ? (
                           <SolarSunBold
                             size={22}
-                            color="#FBBF24"
+                            color={isSelected ? "white" : "#FBBF24"}
                           />
                         ) : (
                           <SolarMoonBold
                             size={22}
-                            color="#6366F1"
+                            color={isSelected ? "white" : "#6366F1"}
                           />
                         )}
                       </View>
@@ -532,13 +534,13 @@ export default function ChaletDetailScreen() {
                     ]}
                   >
                     <ThemedText
-                      style={styles.shiftName}
+                      style={[styles.shiftName, isSelected && styles.shiftNameActive]}
                     >
                       {isRTL
                         ? shift.name?.ar || shift.name
                         : shift.name?.en || shift.name}
                     </ThemedText>
-                    <ThemedText style={styles.shiftTime}>
+                    <ThemedText style={[styles.shiftTime, isSelected && styles.shiftTimeActive]}>
                       {formatShiftTime(shift.startTime)} -{" "}
                       {formatShiftTime(shift.endTime)}
                     </ThemedText>
@@ -548,13 +550,13 @@ export default function ChaletDetailScreen() {
                       style={{ alignItems: isRTL ? "flex-start" : "flex-end" }}
                     >
                       <ThemedText
-                        style={styles.shiftPrice}
+                        style={[styles.shiftPrice, isSelected && styles.shiftPriceActive]}
                       >
                         {minShiftPrice} {t("common.iqd")}
                       </ThemedText>
                     </View>
                   )}
-                </View>
+                </TouchableOpacity>
               );
             })}
           </View>
@@ -761,19 +763,23 @@ export default function ChaletDetailScreen() {
 
           {/* المراجعات */}
           <SectionHeader title={t("chalet.details.reviews")} isRTL={isRTL} />
-          {(reviews.length > 0 ? reviews.slice(0, 2) : [1, 2]).map(
+          {reviews.length === 0 && (
+            <View style={styles.emptyReviewsContainer}>
+              <ThemedText style={styles.emptyReviewsText}>
+                {isRTL ? "لا توجد مراجعات لهذا الشاليه بعد." : "No reviews for this chalet yet."}
+              </ThemedText>
+            </View>
+          )}
+          {reviews.slice(0, 2).map(
             (reviewItem: any, i: number) => {
+              const customer = reviewItem?.customer;
               const reviewerName =
-                reviewItem?.customer?.name || (isRTL ? "انسة انس" : "Ansi Ans");
-              const reviewComment =
-                reviewItem?.comment ||
-                (isRTL
-                  ? "خوش مكان ونضيف يستاهل"
-                  : "Great place and clean, worth it.");
-              const reviewRating = reviewItem?.rating || 4;
+                customer?.name || (isRTL ? "مستخدم سُنونو" : "Sununo User");
+              const reviewComment = reviewItem?.comment || "";
+              const reviewRating = reviewItem?.rating || 0;
               const reviewDate = reviewItem?.createdAt
                 ? new Date(reviewItem.createdAt).toLocaleDateString()
-                : "2025/09/22";
+                : "";
               return (
                 <View
                   key={reviewItem?.id || i}
@@ -823,7 +829,7 @@ export default function ChaletDetailScreen() {
                       </View>
                       <View style={styles.avatarCircleMerged}>
                         <ExpoImage
-                          source={require("@/assets/profile.svg")}
+                          source={customer?.image ? getImageSrc(customer.image) : require("@/assets/profile.svg")}
                           style={styles.userAvatarImgMerged}
                           contentFit="cover"
                         />
@@ -1055,6 +1061,10 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: "transparent",
   },
+  shiftCardActive: {
+    borderColor: "#035DF9",
+    backgroundColor: "#F0F7FF",
+  },
   shiftIconCircle: {
     width: 44,
     height: 44,
@@ -1063,24 +1073,38 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  shiftIconCircleActive: {
+    backgroundColor: "#035DF9",
+  },
   shiftInfo: {
     flex: 1,
     marginHorizontal: 12,
   },
   shiftName: {
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Regular",
     fontSize: 15,
     color: "#1E293B",
+  },
+  shiftNameActive: {
+    fontFamily: "Alexandria-Black",
+    color: "#035DF9",
   },
   shiftTime: {
     fontFamily: "Alexandria-Bold",
     fontSize: 12,
     color: "#64748B",
   },
+  shiftTimeActive: {
+    color: "#035DF9",
+  },
   shiftPrice: {
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Regular",
     fontSize: 14,
     color: "#1E293B",
+  },
+  shiftPriceActive: {
+    fontFamily: "Alexandria-Black",
+    color: "#035DF9",
   },
   titleSection: {
     alignItems: "center",
@@ -1106,7 +1130,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Alexandria-Black",
     marginVertical: 15,
   },
   specsRow: { flexWrap: "wrap", gap: 8 },
@@ -1137,7 +1161,7 @@ const styles = StyleSheet.create({
   iconInShape: { position: "absolute" },
   facilityLabelText: {
     fontSize: 12,
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Alexandria-Bold",
     marginTop: 6,
     textAlign: "center",
   },
@@ -1230,7 +1254,7 @@ const styles = StyleSheet.create({
   customRatingText: {
     color: "white",
     fontSize: 16,
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Alexandria-Black",
   },
 
   revComplexCardFlat: {
@@ -1252,7 +1276,7 @@ const styles = StyleSheet.create({
   },
   revRateNumMerged: {
     fontSize: 16,
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Alexandria-Black",
     color: "#111827",
   },
   userInfoRowMerged: {
@@ -1264,7 +1288,7 @@ const styles = StyleSheet.create({
   },
   reviewerNameMerged: {
     fontSize: 16,
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Alexandria-Black",
     color: "#111827",
   },
   revMessageMerged: {
@@ -1310,7 +1334,7 @@ const styles = StyleSheet.create({
   infoGearIcon: { position: "absolute" },
   infoLabelText: {
     fontSize: 11,
-    fontFamily: "LamaSans-Bold",
+    fontFamily: "Alexandria-Bold",
     marginTop: 8,
     textAlign: "center",
   },
@@ -1332,7 +1356,7 @@ const styles = StyleSheet.create({
   footerTextSide: { flex: 1 },
   footerPriceBig: {
     fontSize: 18,
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Alexandria-Black",
     marginBottom: 4,
   },
   footerMetaRow: { alignItems: "center", gap: 6 },
@@ -1375,7 +1399,7 @@ const styles = StyleSheet.create({
   addonPrice: {
     fontSize: 12,
     color: Colors.primary,
-    fontFamily: "LamaSans-Black",
+    fontFamily: "Alexandria-Black",
   },
   capacityPolicyCard: {
     backgroundColor: "#F8FAFC",
@@ -1407,5 +1431,20 @@ const styles = StyleSheet.create({
     height: 30,
     backgroundColor: "#CBD5E1",
     marginHorizontal: 10,
+  },
+  emptyReviewsContainer: {
+    paddingVertical: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 16,
+    marginVertical: 10,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  emptyReviewsText: {
+    fontSize: 14,
+    color: '#64748B',
+    fontFamily: "Alexandria-Medium",
   },
 });

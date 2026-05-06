@@ -342,11 +342,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: normalize.width(10),
   },
   headerTitle: {
-    fontSize: normalize.font(18),
+    fontSize: normalize.font(17),
     fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
-    lineHeight: normalize.font(24),
-    textAlign: 'center',
+    lineHeight: normalize.font(28),
+    textAlign: "center",
+    paddingVertical: normalize.height(8),
   },
   logoCircle: {
     width: normalize.width(42),

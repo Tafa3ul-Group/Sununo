@@ -142,9 +142,10 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(17),
     fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
-    lineHeight: normalize.font(22),
+    lineHeight: normalize.font(28),
     textAlign: 'center',
     paddingHorizontal: normalize.width(4),
+    paddingVertical: normalize.height(8),
   },
   rightGroup: {
     width: normalize.width(80),
