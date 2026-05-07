@@ -348,7 +348,7 @@ export default function EditChaletScreen() {
         }
       }
 
-      await setAmenities({ chaletId: id, data: { amenityIds: selectedFeatures } }).unwrap();
+      await setAmenities({ chaletId: id, data: { featureIds: selectedFeatures } }).unwrap();
 
       Toast.show({ type: 'success', text1: isRTL ? 'تم بنجاح' : 'Success', text2: isRTL ? 'تم تحديث البيانات بنجاح' : 'Listing updated successfully', position: 'bottom' });
       router.back();
