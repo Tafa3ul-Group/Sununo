@@ -54,7 +54,8 @@ import {
   Switch,
   Text,
   TouchableOpacity,
-  View
+  View,
+  Keyboard
 } from 'react-native';
 import { Swipeable, ScrollView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -91,7 +92,7 @@ function ShiftPricingView({ shift, isRTL, onEdit }: { shift: any; isRTL: boolean
           <SolarBanknoteBold size={18} color={Colors.primary} style={{ marginHorizontal: 6 }} />
           <Text style={styles.expandedTitle}>{isRTL ? 'تخصيص أسعار الأيام' : 'Daily Pricing'}</Text>
         </View>
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => onEdit(pricing)}
           style={styles.editBadge}
         >
@@ -104,12 +105,12 @@ function ShiftPricingView({ shift, isRTL, onEdit }: { shift: any; isRTL: boolean
         {fullPricing.map((item) => {
           const isWeekend = item.dayOfWeek === 5 || item.dayOfWeek === 6;
           const isClosed = item.price <= 1;
-          
+
           return (
             <TouchableOpacity
               key={`mini-day-${item.dayOfWeek}`}
               style={[
-                styles.pricingMiniCard, 
+                styles.pricingMiniCard,
                 isWeekend && styles.weekendMiniCard,
                 isClosed && styles.closedMiniCard
               ]}
@@ -117,13 +118,13 @@ function ShiftPricingView({ shift, isRTL, onEdit }: { shift: any; isRTL: boolean
               activeOpacity={0.8}
             >
               <Text style={[
-                styles.miniCardDay, 
+                styles.miniCardDay,
                 isWeekend && { color: Colors.error },
                 isClosed && { color: '#999' }
               ]}>
                 {daysShort[item.dayOfWeek]}
               </Text>
-              
+
               {isClosed ? (
                 <View style={styles.closedBadgeMini}>
                   <Text style={styles.closedBadgeTextMini}>{isRTL ? 'مغلق' : 'OFF'}</Text>
@@ -320,6 +321,8 @@ export default function ShiftsAndPricesScreen() {
   const [shiftForm, setShiftForm] = useState({ name: '', startTime: '08:00', endTime: '23:00', price: '', isActive: true });
   const [pricingForm, setPricingForm] = useState<any[]>([]);
   const [policyForm, setPolicyForm] = useState<any[]>([]);
+  const [modalActiveStatus, setModalActiveStatus] = useState(true);
+  const [bulkPrice, setBulkPrice] = useState('');
 
   const { data: chaletResponse } = useGetOwnerChaletDetailsQuery(selectedChaletId, { skip: !selectedChaletId });
   const chalet = chaletResponse?.data || chaletResponse;
@@ -566,6 +569,7 @@ export default function ShiftsAndPricesScreen() {
   const handlePricing = (shift: any, existingPricing?: any[]) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setSelectedShift(shift);
+    setModalActiveStatus(shift.isActive);
     const fullWeek = Array.from({ length: 7 }, (_, i) => ({ dayOfWeek: i, price: shift.price ?? 0 }));
     const pricingToUse = existingPricing || shift.pricing || [];
     const finalPricing = fullWeek.map(defaultDay => {
@@ -580,6 +584,127 @@ export default function ShiftsAndPricesScreen() {
   const applyToAllDays = (price: string) => {
     const p = parseInt(price) || 0;
     setPricingForm(pricingForm.map(item => ({ ...item, price: p })));
+  };
+
+  const handleEnableAllDays = async () => {
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      const cleanPricing = pricingForm.map(item => ({
+        dayOfWeek: item.dayOfWeek,
+        price: item.price > 1 ? item.price : 50000
+      }));
+      // Update local state
+      setPricingForm(pricingForm.map(item => ({
+        ...item,
+        price: item.price > 1 ? item.price : 50000
+      })));
+      await setShiftPricing({ shiftId: selectedShift.id, data: { pricing: cleanPricing } }).unwrap();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (e) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    }
+  };
+
+  const handleDisableAllDays = async () => {
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      const cleanPricing = pricingForm.map(item => ({
+        dayOfWeek: item.dayOfWeek,
+        price: 1
+      }));
+      // Update local state
+      setPricingForm(pricingForm.map(item => ({
+        ...item,
+        lastPrice: item.price > 1 ? item.price : 50000,
+        price: 1
+      })));
+      await setShiftPricing({ shiftId: selectedShift.id, data: { pricing: cleanPricing } }).unwrap();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (e) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    }
+  };
+
+  const handleApplyBulkPrice = async () => {
+    const p = parseInt(bulkPrice) || 0;
+    if (p > 0) {
+      try {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        const cleanPricing = pricingForm.map(item => ({
+          dayOfWeek: item.dayOfWeek,
+          price: p
+        }));
+        // Update local state
+        setPricingForm(pricingForm.map(item => ({ ...item, price: p })));
+        await setShiftPricing({ shiftId: selectedShift.id, data: { pricing: cleanPricing } }).unwrap();
+        setBulkPrice('');
+        Keyboard.dismiss();
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      } catch (e) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      }
+    }
+  };
+
+  const handleToggleDay = async (index: number, val: boolean) => {
+    const item = pricingForm[index];
+    const newPrice = val ? (item.lastPrice || 50000) : 1;
+    
+    // Update local state immediately
+    const newP = [...pricingForm];
+    newP[index] = { ...newP[index] }; // Create new object reference
+    if (!val) newP[index].lastPrice = item.price > 1 ? item.price : 50000;
+    newP[index].price = newPrice;
+    setPricingForm(newP);
+
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      await updateShiftPricingDay({
+        shiftId: selectedShift.id,
+        pricingId: item.id,
+        price: newPrice
+      }).unwrap();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (e) {
+      // Rollback on error
+      const rollbackP = [...pricingForm];
+      rollbackP[index].price = item.price;
+      setPricingForm(rollbackP);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    }
+  };
+
+  const handleUpdateSinglePrice = async (index: number) => {
+    const item = pricingForm[index];
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      await updateShiftPricingDay({
+        shiftId: selectedShift.id,
+        pricingId: item.id,
+        price: item.price
+      }).unwrap();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (e) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    }
+  };
+
+  const handleToggleShiftModal = async (val: boolean) => {
+    setModalActiveStatus(val);
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      const data = {
+        name: selectedShift.name,
+        startTime: selectedShift.startTime?.substring(0, 5),
+        endTime: selectedShift.endTime?.substring(0, 5),
+        isActive: val
+      };
+      await updateShift({ chaletId: selectedChaletId, shiftId: selectedShift.id, data }).unwrap();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (e) {
+      setModalActiveStatus(!val);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    }
   };
 
   const adjustPrice = (index: number, amount: number) => {
@@ -597,23 +722,37 @@ export default function ShiftsAndPricesScreen() {
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       // Ensure prices are valid numbers and handle the "stopped" state (price <= 1)
-      const cleanPricing = pricingForm.map(item => ({ 
-        dayOfWeek: item.dayOfWeek, 
-        price: Math.max(0, parseInt(String(item.price)) || 0) 
+      const cleanPricing = pricingForm.map(item => ({
+        dayOfWeek: item.dayOfWeek,
+        price: Math.max(0, parseInt(String(item.price)) || 0)
       }));
-      
+
       await setShiftPricing({ shiftId: selectedShift.id, data: { pricing: cleanPricing } }).unwrap();
-      
+
+      // Also update the global isActive status if changed
+      if (selectedShift.isActive !== modalActiveStatus) {
+        await updateShift({
+          chaletId: selectedChaletId,
+          shiftId: selectedShift.id,
+          data: {
+            name: selectedShift.name,
+            startTime: selectedShift.startTime?.substring(0, 5),
+            endTime: selectedShift.endTime?.substring(0, 5),
+            isActive: modalActiveStatus
+          }
+        }).unwrap();
+      }
+
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Toast.show({ type: 'success', text1: isRTL ? 'تم تحديث الأسعار' : 'Pricing updated' });
       pricingSheetRef.current?.dismiss();
     } catch (e: any) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       let errorMsg = e.data?.message || (isRTL ? 'فشل الحفظ' : 'Update Failed');
-      Toast.show({ 
-        type: 'error', 
-        text1: isRTL ? 'خطأ' : 'Error', 
-        text2: Array.isArray(errorMsg) ? errorMsg[0] : errorMsg 
+      Toast.show({
+        type: 'error',
+        text1: isRTL ? 'خطأ' : 'Error',
+        text2: Array.isArray(errorMsg) ? errorMsg[0] : errorMsg
       });
     }
   };
@@ -664,6 +803,22 @@ export default function ShiftsAndPricesScreen() {
     }
   };
 
+  const toggleShiftStatus = async (shift: any) => {
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      const data = {
+        name: shift.name,
+        startTime: shift.startTime?.substring(0, 5),
+        endTime: shift.endTime?.substring(0, 5),
+        isActive: !shift.isActive
+      };
+      await updateShift({ chaletId: selectedChaletId, shiftId: shift.id, data }).unwrap();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (e) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    }
+  };
+
   const confirmDeleteShift = (shiftId: string) => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     Alert.alert(
@@ -676,7 +831,7 @@ export default function ShiftsAndPricesScreen() {
             try {
               await deleteShift({ chaletId: selectedChaletId, shiftId }).unwrap();
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            } catch (e) {}
+            } catch (e) { }
           }
         }
       ]
@@ -738,23 +893,36 @@ export default function ShiftsAndPricesScreen() {
                   renderLeftActions={isRTL ? () => renderShiftActions(shift, shiftName) : undefined}
                   containerStyle={styles.swipeableContainer}
                 >
-                  <View style={styles.cardFlat}>
-                    <TouchableOpacity style={styles.cardHeader} onPress={() => setExpandedShift(isExpanded ? null : shift.id)}>
-                      <View style={[styles.row, { flexDirection, justifyContent: 'space-between' }]}>
-                        <View>
+                  <View style={[styles.cardFlat, !shift.isActive && styles.cardInactive]}>
+                    <View style={[styles.row, { padding: 16, borderBottomWidth: isExpanded ? 1 : 0, borderBottomColor: '#F0F2F7', justifyContent: 'space-between' }, isRTL && { flexDirection: 'row-reverse' }]}>
+                      <TouchableOpacity 
+                        style={{ flex: 1, flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }} 
+                        onPress={() => setExpandedShift(isExpanded ? null : shift.id)}
+                      >
+                        <View style={{ flex: 1 }}>
                           <View style={[styles.row, { flexDirection }]}>
-                            <Text style={styles.cardTitle}>{shiftName}</Text>
-                            {!shift.isActive && (
-                              <View style={[styles.inactiveBadge, { marginLeft: isRTL ? 0 : 8, marginRight: isRTL ? 8 : 0 }]}>
-                                <Text style={styles.inactiveBadgeText}>{isRTL ? 'متوقفة' : 'Disabled'}</Text>
-                              </View>
-                            )}
+                            <Text style={[styles.cardTitle, !shift.isActive && { color: '#9CA3AF' }]}>{shiftName}</Text>
                           </View>
-                          <Text style={styles.timeBadgeText}>{formatTime12h(shift.startTime)} - {formatTime12h(shift.endTime)}</Text>
+                          <Text style={[styles.timeBadgeText, !shift.isActive && { color: '#9CA3AF' }]}>{formatTime12h(shift.startTime)} - {formatTime12h(shift.endTime)}</Text>
                         </View>
                         {isExpanded ? <SolarAltArrowUpBold size={20} color={Colors.border} /> : <SolarAltArrowDownBold size={20} color={Colors.border} />}
+                      </TouchableOpacity>
+
+                      <View style={[styles.row, { marginLeft: isRTL ? 0 : 16, marginRight: isRTL ? 16 : 0 }, isRTL && { flexDirection: 'row-reverse' }]}>
+                        <View style={{ alignItems: 'flex-end', marginRight: isRTL ? 0 : 8, marginLeft: isRTL ? 8 : 0 }}>
+                          <Text style={{ fontSize: 8, fontFamily: 'Alexandria-Bold', color: shift.isActive ? Colors.primary : '#9CA3AF' }}>
+                            {isRTL ? (shift.isActive ? 'نشطة' : 'متوقفة') : (shift.isActive ? 'Active' : 'Inactive')}
+                          </Text>
+                        </View>
+                        <Switch 
+                          value={shift.isActive} 
+                          onValueChange={() => toggleShiftStatus(shift)}
+                          trackColor={{ false: '#D1D5DB', true: Colors.primary + '40' }}
+                          thumbColor={shift.isActive ? Colors.primary : '#9CA3AF'}
+                          style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
+                        />
                       </View>
-                    </TouchableOpacity>
+                    </View>
                     {isExpanded && (
                       <View style={styles.expandedContent}>
                         <ShiftPricingView shift={shift} isRTL={isRTL} onEdit={(data) => handlePricing(shift, data)} />
@@ -797,14 +965,14 @@ export default function ShiftsAndPricesScreen() {
         <BottomSheetScrollView contentContainerStyle={{ padding: 20 }}>
           <Text style={styles.modalTitle}>{isRTL ? 'إعداد الفترة' : 'Shift Setup'}</Text>
           <DayVisualizer shifts={shifts} isRTL={isRTL} onEditShift={handleEditShift} onAddShift={handleAddShiftAtHour} currentShiftForm={shiftForm} selectedId={selectedShift?.id} />
-          
+
           <View style={[styles.row, { justifyContent: 'space-between', marginVertical: 20 }, isRTL && { flexDirection: 'row-reverse' }]}>
             <View>
               <Text style={styles.label}>{isRTL ? 'حالة الفترة' : 'Shift Status'}</Text>
               <Text style={{ fontSize: 12, color: '#666' }}>{isRTL ? 'تفعيل أو إيقاف هذه الفترة تماماً' : 'Enable or disable this shift globally'}</Text>
             </View>
-            <Switch 
-              value={shiftForm.isActive} 
+            <Switch
+              value={shiftForm.isActive}
               onValueChange={v => setShiftForm({ ...shiftForm, isActive: v })}
               trackColor={{ false: '#D1D1D6', true: Colors.primary }}
             />
@@ -819,140 +987,157 @@ export default function ShiftsAndPricesScreen() {
       </BottomSheetModal>
 
       {/* Pricing Modal */}
-      <BottomSheetModal 
-        ref={pricingSheetRef} 
-        index={0} 
-        snapPoints={['90%']} 
-        backdropComponent={renderBackdrop} 
+      <BottomSheetModal
+        ref={pricingSheetRef}
+        index={0}
+        snapPoints={['90%']}
+        backdropComponent={renderBackdrop}
         backgroundStyle={{ borderRadius: 32, backgroundColor: '#F8F9FA' }}
       >
-        <View style={{ flex: 1 }}>
-          <View style={{ padding: 20 }}>
-            <View style={[styles.row, { justifyContent: 'space-between', marginBottom: 12 }, isRTL && { flexDirection: 'row-reverse' }]}>
-              <View>
-                <Text style={styles.modalTitleCompact}>{isRTL ? 'إعداد أسعار الأسبوع' : 'Weekly Pricing'}</Text>
-                {selectedShift && (
-                  <Text style={{ fontSize: 12, color: Colors.primary, fontFamily: 'Alexandria-Bold', marginTop: 2 }}>
-                    {isRTL ? (selectedShift.name?.ar || selectedShift.name) : (selectedShift.name?.en || selectedShift.name)}
-                  </Text>
-                )}
+        <BottomSheetFlatList
+          data={pricingForm}
+          keyExtractor={(item) => `day-${item.dayOfWeek}`}
+          contentContainerStyle={{ paddingBottom: 120 }}
+          ListHeaderComponent={
+            <View style={{ padding: 20 }}>
+              <View style={[styles.row, { justifyContent: 'space-between', marginBottom: 12 }, isRTL && { flexDirection: 'row-reverse' }]}>
+                <View>
+                  <Text style={styles.modalTitleCompact}>{isRTL ? 'إعداد أسعار الأسبوع' : 'Weekly Pricing'}</Text>
+                  {selectedShift && (
+                    <Text style={{ fontSize: 12, color: Colors.primary, fontFamily: 'Alexandria-Bold', marginTop: 2 }}>
+                      {isRTL ? (selectedShift.name?.ar || selectedShift.name) : (selectedShift.name?.en || selectedShift.name)}
+                    </Text>
+                  )}
+                </View>
+                <TouchableOpacity onPress={() => pricingSheetRef.current?.dismiss()} style={{ backgroundColor: '#F3F4F6', padding: 8, borderRadius: 12 }}>
+                  <SolarCloseBold size={20} color="#000" />
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity onPress={() => pricingSheetRef.current?.dismiss()}>
-                <SolarCloseBold size={24} color="#000" />
-              </TouchableOpacity>
-            </View>
-            
-            <View style={styles.quickActionCardNew}>
-              <View style={[styles.row, { justifyContent: 'space-between', marginBottom: 8 }, isRTL && { flexDirection: 'row-reverse' }]}>
-                <Text style={styles.quickLabelNew}>{isRTL ? 'تطبيق سعر موحد لجميع أيام الأسبوع' : 'Apply standard price to all days'}</Text>
-                <SolarLightbulbBold size={16} color="#FFF" />
-              </View>
-              <BottomSheetTextInput 
-                style={styles.quickInputNew} 
-                keyboardType="numeric" 
-                placeholder={isRTL ? "أدخل السعر هنا..." : "Enter price here..."}
-                placeholderTextColor="rgba(255,255,255,0.5)"
-                onChangeText={applyToAllDays} 
-              />
-            </View>
-          </View>
 
-          <BottomSheetFlatList
-            data={pricingForm}
-            keyExtractor={(item) => `day-${item.dayOfWeek}`}
-            contentContainerStyle={{ paddingBottom: 120 }}
-            renderItem={({ item, index }) => {
-              const isStopped = item.price <= 1;
-              const dayName = isRTL 
-                ? ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'][item.dayOfWeek] 
-                : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][item.dayOfWeek];
-              
-              return (
-                <View style={[
-                  styles.pricingRowModern, 
-                  isStopped && styles.pricingRowStopped, 
-                  { marginHorizontal: 20, flexDirection: isRTL ? 'row-reverse' : 'row' }
-                ]}>
-                  <View style={{ flex: 1 }}>
-                    <View style={[styles.row, { justifyContent: 'space-between', marginBottom: item.price > 1 ? 12 : 0 }, isRTL && { flexDirection: 'row-reverse' }]}>
-                      <View style={[styles.row, isRTL && { flexDirection: 'row-reverse' }]}>
-                        <View style={[
-                          styles.dayIndicator, 
-                          (item.dayOfWeek === 5 || item.dayOfWeek === 6) && { backgroundColor: '#FEE4E2' }
-                        ]}>
-                          <Text style={[
-                            styles.dayIndicatorText,
-                            (item.dayOfWeek === 5 || item.dayOfWeek === 6) && { color: Colors.error }
-                          ]}>
-                            {dayName.substring(0, 1)}
-                          </Text>
-                        </View>
-                        <Text style={[styles.dayFullName, { marginHorizontal: 12 }]}>{dayName}</Text>
-                      </View>
-                      
-                      <View style={[styles.row, isRTL && { flexDirection: 'row-reverse' }]}>
-                        <Text style={{ fontSize: 12, color: isStopped ? '#999' : Colors.primary, fontFamily: 'Alexandria-Bold', marginRight: isRTL ? 0 : 8, marginLeft: isRTL ? 8 : 0 }}>
-                          {isStopped ? (isRTL ? 'متوقف' : 'Stopped') : (isRTL ? 'نشط' : 'Active')}
-                        </Text>
-                        <Switch
-                          value={!isStopped}
-                          trackColor={{ false: '#D1D1D6', true: Colors.primary }}
-                          thumbColor={Platform.OS === 'ios' ? undefined : '#FFF'}
-                          onValueChange={(val) => {
-                            const newP = [...pricingForm];
-                            // If turning on, use a default price or last known price
-                            // If turning off, set to 1 (which means closed in backend)
-                            if (val) {
-                              const lastPrice = item.lastPrice || 50000;
-                              newP[index].price = lastPrice;
-                            } else {
-                              newP[index].lastPrice = item.price > 1 ? item.price : 50000;
-                              newP[index].price = 1;
-                            }
-                            setPricingForm(newP);
-                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                          }}
-                        />
-                      </View>
-                    </View>
-                    
-                    {!isStopped && (
-                      <View style={[styles.priceControlWrapper, isRTL && { flexDirection: 'row-reverse' }]}>
-                        <SolarBanknoteBold size={20} color={Colors.primary} style={{ marginHorizontal: 8 }} />
-                        <BottomSheetTextInput
-                          style={[styles.pricingInputModern, { flex: 1, textAlign: isRTL ? 'right' : 'left' }]}
-                          keyboardType="numeric"
-                          value={String(item.price)}
-                          placeholder="0"
-                          onChangeText={t => {
-                            const newP = [...pricingForm];
-                            newP[index].price = parseInt(t) || 0;
-                            setPricingForm(newP);
-                          }}
-                        />
-                        <Text style={{ fontSize: 12, color: '#999', fontFamily: 'Alexandria-Bold' }}>{isRTL ? 'د.ع' : 'IQD'}</Text>
-                      </View>
-                    )}
+              <View style={[styles.shiftStatusHighlight, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <View style={[styles.row, { flex: 1 }, isRTL && { flexDirection: 'row-reverse' }]}>
+                  <View style={[styles.statusIconCircle, { backgroundColor: modalActiveStatus ? Colors.primary + '15' : '#F3F4F6' }]}>
+                    <SolarShieldBold size={20} color={modalActiveStatus ? Colors.primary : '#9CA3AF'} />
+                  </View>
+                  <View style={{ marginHorizontal: 12 }}>
+                    <Text style={styles.statusLabelLarge}>{isRTL ? 'حالة الفترة الحالية' : 'Shift Status'}</Text>
+                    <Text style={[styles.statusValueLarge, { color: modalActiveStatus ? Colors.primary : '#9CA3AF' }]}>
+                      {isRTL ? (modalActiveStatus ? 'هذه الفترة نشطة الآن' : 'هذه الفترة متوقفة حالياً') : (modalActiveStatus ? 'Shift is currently active' : 'Shift is currently inactive')}
+                    </Text>
                   </View>
                 </View>
-              );
-            }}
-          />
-          
-          <View style={styles.pricingFloatingFooter}>
-            <TouchableOpacity 
-              style={[styles.applyBtnLargeModern, isSettingPricing && { opacity: 0.7 }]} 
-              onPress={savePricing}
-              disabled={isSettingPricing}
-            >
-              {isSettingPricing ? (
-                <ActivityIndicator color="#FFF" size="small" />
-              ) : (
-                <Text style={styles.applyBtnTextLarge}>{isRTL ? 'حفظ الأسعار وتطبيقها' : 'Save & Apply Pricing'}</Text>
-              )}
-            </TouchableOpacity>
-          </View>
-        </View>
+                <Switch 
+                  value={modalActiveStatus} 
+                  onValueChange={handleToggleShiftModal}
+                  trackColor={{ false: '#D1D5DB', true: Colors.primary + '40' }}
+                  thumbColor={modalActiveStatus ? Colors.primary : '#9CA3AF'}
+                />
+              </View>
+
+              <View style={styles.quickActionCardNew}>
+                <View style={[styles.row, { justifyContent: 'space-between', marginBottom: 12 }, isRTL && { flexDirection: 'row-reverse' }]}>
+                  <View style={[styles.row, isRTL && { flexDirection: 'row-reverse' }]}>
+                    <SolarLightbulbBold size={16} color="#FFF" style={{ marginHorizontal: 4 }} />
+                    <Text style={styles.quickLabelNew}>{isRTL ? 'إجراءات سريعة لجميع الأيام' : 'Quick Batch Actions'}</Text>
+                  </View>
+                  <View style={[styles.row, { gap: 8 }, isRTL && { flexDirection: 'row-reverse' }]}>
+                    <TouchableOpacity onPress={handleEnableAllDays} style={styles.miniQuickBtn}>
+                      <Text style={styles.miniQuickBtnText}>{isRTL ? 'تفعيل الكل' : 'Enable All'}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={handleDisableAllDays} style={[styles.miniQuickBtn, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
+                      <Text style={styles.miniQuickBtnText}>{isRTL ? 'إيقاف الكل' : 'Disable All'}</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <View style={[styles.row, { backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 12, padding: 4 }, isRTL && { flexDirection: 'row-reverse' }]}>
+                  <BottomSheetTextInput
+                    style={[styles.quickInputNew, { flex: 1, height: 44, paddingHorizontal: 12, textAlign: isRTL ? 'right' : 'left' }]}
+                    keyboardType="numeric"
+                    placeholder={isRTL ? "أدخل السعر الموحد..." : "Enter uniform price..."}
+                    placeholderTextColor="rgba(255,255,255,0.5)"
+                    value={bulkPrice}
+                    onChangeText={setBulkPrice}
+                  />
+                  <TouchableOpacity
+                    onPress={handleApplyBulkPrice}
+                    style={{ backgroundColor: '#FFF', paddingHorizontal: 16, height: 36, borderRadius: 8, justifyContent: 'center', marginHorizontal: 4 }}
+                  >
+                    <Text style={{ color: Colors.primary, fontFamily: 'Alexandria-Bold', fontSize: 12 }}>{isRTL ? 'تطبيق السعر' : 'Apply Price'}</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          }
+          renderItem={({ item, index }) => {
+            const isStopped = item.price <= 1;
+            const dayName = isRTL
+              ? ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'][item.dayOfWeek]
+              : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][item.dayOfWeek];
+
+            return (
+              <View style={[
+                styles.pricingRowModern,
+                isStopped && styles.pricingRowStopped,
+                { marginHorizontal: 20, flexDirection: isRTL ? 'row-reverse' : 'row' }
+              ]}>
+                <View style={{ flex: 1 }}>
+                  <View style={[styles.row, { justifyContent: 'space-between', marginBottom: item.price > 1 ? 12 : 0 }, isRTL && { flexDirection: 'row-reverse' }]}>
+                    <View style={[styles.row, isRTL && { flexDirection: 'row-reverse' }]}>
+                      <View style={[
+                        styles.dayIndicator,
+                        (item.dayOfWeek === 5 || item.dayOfWeek === 6) && { backgroundColor: '#FEE4E2' }
+                      ]}>
+                        <Text style={[
+                          styles.dayIndicatorText,
+                          (item.dayOfWeek === 5 || item.dayOfWeek === 6) && { color: Colors.error }
+                        ]}>
+                          {dayName.substring(0, 1)}
+                        </Text>
+                      </View>
+                      <Text style={[styles.dayFullName, { marginHorizontal: 12 }]}>{dayName}</Text>
+                    </View>
+
+                    <View style={[styles.row, isRTL && { flexDirection: 'row-reverse' }]}>
+                      <Text style={{ fontSize: 12, color: isStopped ? '#999' : Colors.primary, fontFamily: 'Alexandria-Bold', marginRight: isRTL ? 0 : 8, marginLeft: isRTL ? 8 : 0 }}>
+                        {isStopped ? (isRTL ? 'متوقف' : 'Stopped') : (isRTL ? 'نشط' : 'Active')}
+                      </Text>
+                      <Switch
+                        value={!isStopped}
+                        trackColor={{ false: '#D1D1D6', true: Colors.primary }}
+                        thumbColor={Platform.OS === 'ios' ? undefined : '#FFF'}
+                        onValueChange={(val) => handleToggleDay(index, val)}
+                      />
+                    </View>
+                  </View>
+
+                  {!isStopped && (
+                    <View style={[styles.priceControlWrapper, isRTL && { flexDirection: 'row-reverse' }]}>
+                      <SolarBanknoteBold size={20} color={Colors.primary} style={{ marginHorizontal: 8 }} />
+                      <BottomSheetTextInput
+                        style={[styles.pricingInputModern, { flex: 1, textAlign: isRTL ? 'right' : 'left' }]}
+                        keyboardType="numeric"
+                        value={String(item.price)}
+                        placeholder="0"
+                        onChangeText={t => {
+                          const newP = [...pricingForm];
+                          newP[index].price = parseInt(t) || 0;
+                          setPricingForm(newP);
+                        }}
+                      />
+                      <TouchableOpacity 
+                        onPress={() => handleUpdateSinglePrice(index)}
+                        style={{ backgroundColor: Colors.primary, padding: 8, borderRadius: 8, marginLeft: 8 }}
+                      >
+                        <SolarCheckCircleBold size={18} color="#FFF" />
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              </View>
+            );
+          }}
+        />
       </BottomSheetModal>
 
       {/* Policy Modal */}
@@ -1054,4 +1239,11 @@ const styles = StyleSheet.create({
   chaletSelectCard: { padding: 16, borderBottomWidth: 1, borderBottomColor: '#EEE' },
   dayIndicator: { width: 32, height: 32, borderRadius: 16, backgroundColor: Colors.primary + '10', justifyContent: 'center', alignItems: 'center' },
   dayIndicatorText: { fontSize: 14, fontFamily: 'Alexandria-Black', color: Colors.primary },
+  cardInactive: { backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' },
+  shiftStatusHighlight: { backgroundColor: '#fff', padding: 16, borderRadius: 20, marginBottom: 20, borderWidth: 1, borderColor: '#F0F2F7', alignItems: 'center', ...Shadows.small },
+  statusIconCircle: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
+  statusLabelLarge: { fontSize: 14, fontFamily: 'Alexandria-Bold', color: '#1F2937' },
+  statusValueLarge: { fontSize: 11, fontFamily: 'Alexandria-Medium', marginTop: 2 },
+  miniQuickBtn: { backgroundColor: 'rgba(255,255,255,0.3)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
+  miniQuickBtnText: { color: '#fff', fontSize: 10, fontFamily: 'Alexandria-Bold' },
 });

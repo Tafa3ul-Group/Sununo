@@ -190,8 +190,8 @@ export function HeaderSection({
           )}
         </View>
 
-        {/* Center Title - only when no logo shown */}
-        {!isHome && !showLogo && (
+        {/* Center Title - only when not home */}
+        {!isHome && (
           <View style={styles.titleWrapper}>
             <ThemedText style={styles.headerTitle}>
               {title}
@@ -229,7 +229,7 @@ export function HeaderSection({
           )}
 
           {/* Supporting extra actions for non-home pages */}
-          {!isHome && !showLogo && (showProfile || showExtra) && (
+          {!isHome && (showProfile || showExtra) && (
             <View
               style={{
                 flexDirection: isRTL ? "row-reverse" : "row",

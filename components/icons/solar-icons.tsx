@@ -410,6 +410,19 @@ export function SolarMagnifierBold({
   );
 }
 
+export function SolarEyeBold({ size = 24, color, ...props }: SolarIconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+      <Path
+        fill={color || "currentColor"}
+        d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5ZM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5s5 2.24 5 5s-2.24 5-5 5Z"
+        opacity="0.5"
+      />
+      <Circle cx="12" cy="12" r="3" fill={color || "currentColor"} />
+    </Svg>
+  );
+}
+
 export function SolarUserBold({ size = 24, color, ...props }: SolarIconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>

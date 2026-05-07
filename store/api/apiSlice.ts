@@ -105,6 +105,7 @@ export const apiSlice = createApi({
         url: `/provider/chalets/${chaletId}/images`,
         method: 'POST',
         body: formData,
+        headers: {},
       }),
     }),
 
@@ -305,11 +306,11 @@ export const apiSlice = createApi({
         if (arg.page === 1 || !currentCache) {
           return newItems;
         }
-        
+
         // Ensure data exists before mapping
         const existingData = currentCache.data || [];
         const newData = newItems.data || [];
-        
+
         // Deduplicate items by ID
         const existingIds = new Set(existingData.map((item: any) => item.id));
         const uniqueNewItems = newData.filter((item: any) => !existingIds.has(item.id));
@@ -406,6 +407,27 @@ export const apiSlice = createApi({
       invalidatesTags: (result, error, { id }) => ['Booking', { type: 'Booking' as const, id }],
     }),
 
+    // Update user profile
+    updateProfile: builder.mutation({
+      query: (data) => ({
+        url: '/users/profile',
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['User'],
+    }),
+
+    // Update user profile image
+    updateProfileImage: builder.mutation({
+      query: (formData) => ({
+        url: '/users/profile/image',
+        method: 'PUT',
+        body: formData,
+        headers: {},
+      }),
+      invalidatesTags: ['User'],
+    }),
+
     // Get payouts/withdrawals
     getPayouts: builder.query({
       query: (params) => ({
@@ -481,6 +503,8 @@ export const {
   useDeleteChaletMutation,
   useGetPayoutsQuery,
   useRequestPayoutMutation,
+  useUpdateProfileMutation,
+  useUpdateProfileImageMutation,
 } = apiSlice;
 
-// Force Metro cache reload - Updated at 2026-05-05T14:55
+// Force Metro cache reload - Updated at 2026-05-06T12:08:00
