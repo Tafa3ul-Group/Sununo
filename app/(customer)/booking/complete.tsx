@@ -382,7 +382,10 @@ export default function CompleteBookingScreen() {
   };
 
   const toggleDayDate = (day: number) => {
-    if (bookedDates.includes(day)) return;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dateToCheck = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+    if (bookedDates.includes(day) || dateToCheck < today) return;
     setSelectedDates((prev) => {
       if (prev.includes(day)) {
         // Remove the day
@@ -1039,12 +1042,20 @@ export default function CompleteBookingScreen() {
     if (day === null)
       return <View key={`empty-${index}`} style={styles.dayCell} />;
     const isBooked = bookedDates.includes(day);
+    
+    // Check if the date is in the past
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dateToCheck = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+    const isPast = dateToCheck < today;
+
     const isSelected = selectedDates.includes(day);
+    const isDisabled = isBooked || isPast;
 
     return (
       <TouchableOpacity
         key={day}
-        disabled={isBooked}
+        disabled={isDisabled}
         style={[styles.dayCell, isSelected && styles.activeDayCell]}
         onPress={() => toggleDayDate(day)}
       >
@@ -1052,7 +1063,7 @@ export default function CompleteBookingScreen() {
           style={[
             styles.dayText,
             isSelected && styles.activeDayText,
-            isBooked && styles.bookedDayText,
+            isDisabled && styles.bookedDayText,
           ]}
         >
           {day}

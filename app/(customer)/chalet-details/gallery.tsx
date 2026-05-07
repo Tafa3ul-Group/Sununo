@@ -26,28 +26,25 @@ import { RootState } from '@/store';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 
-const GALLERY_DATA = [
-  {
-    category: 'المطبخ',
-    color: '#15AB64',
-    images: [
-      'https://images.unsplash.com/photo-1556911220-e1502138a597?w=800', // Large
-      'https://images.unsplash.com/photo-1556912173-3bb406ef7e77?w=400',
-      'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=400',
-      'https://images.unsplash.com/photo-1556911261-6bd741557538?w=400',
-    ]
-  },
-  {
-    category: 'الحمام',
-    color: '#035DF9',
-    images: [
-      'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800', // Large
-      'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=400',
-      'https://images.unsplash.com/photo-1620626011761-9963d7b6dd3a?w=400',
-      'https://images.unsplash.com/photo-1604084792761-904f81491740?w=400',
-    ]
-  }
-];
+import { useGetCustomerChaletDetailsQuery } from '@/store/api/customerApiSlice';
+import { getImageSrc } from '@/hooks/useImageSrc';
+
+// Categories mapping helper
+const CATEGORY_ICONS: Record<string, any> = {
+  pool: (isActive: boolean) => <SolarWaterBold size={18} color={isActive ? "white" : Colors.secondary} />,
+  bbq: (isActive: boolean) => <SolarFireBold size={18} color={isActive ? "white" : Colors.accent} />,
+  kitchen: (isActive: boolean) => <SolarHome2Bold size={18} color={isActive ? "white" : Colors.secondary} />,
+  bath: (isActive: boolean) => <SolarWaterBold size={18} color={isActive ? "white" : Colors.primary} />,
+  default: (isActive: boolean) => <SolarWidgetBold size={18} color={isActive ? "white" : Colors.primary} />,
+};
+
+const CATEGORY_COLORS: Record<string, string> = {
+  pool: Colors.secondary,
+  bbq: Colors.accent,
+  kitchen: '#15AB64',
+  bath: '#035DF9',
+  default: Colors.primary,
+};
 
 const WavyHeader = ({ title, color }: { title: string, color: string }) => (
   <View style={styles.wavyHeaderContainer}>
@@ -62,6 +59,8 @@ const WavyHeader = ({ title, color }: { title: string, color: string }) => (
 
 export default function GalleryScreen() {
   const router = useRouter();
+  const { id } = useLocalSearchParams();
+  const chaletId = id as string;
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === 'ar';
   const { userType } = useSelector((state: RootState) => state.auth);
@@ -69,47 +68,64 @@ export default function GalleryScreen() {
   const [viewerVisible, setViewerVisible] = useState(false);
   const [viewerImage, setViewerImage] = useState('');
 
-  const CATEGORIES = [
-    { id: 'all', label: t('gallery.categories.all'), icon: (isActive: boolean) => <SolarWidgetBold size={18} color={isActive ? "white" : Colors.primary} />, activeColor: Colors.primary },
-    { id: 'pool', label: t('gallery.categories.pool'), icon: (isActive: boolean) => <SolarWaterBold size={18} color={isActive ? "white" : Colors.secondary} />, activeColor: Colors.secondary },
-    { id: 'bbq', label: t('gallery.categories.bbq'), icon: (isActive: boolean) => <SolarFireBold size={18} color={isActive ? "white" : Colors.accent} />, activeColor: Colors.accent },
-    { id: 'kitchen', label: t('gallery.categories.kitchen'), icon: (isActive: boolean) => <SolarHome2Bold size={18} color={isActive ? "white" : Colors.secondary} />, activeColor: Colors.secondary },
-    { id: 'bath', label: t('gallery.categories.bath'), icon: (isActive: boolean) => <SolarWaterBold size={18} color={isActive ? "white" : Colors.primary} />, activeColor: Colors.primary },
-  ];
+  const { data: chaletData, isLoading } = useGetCustomerChaletDetailsQuery(chaletId);
+  const chalet = chaletData?.data || chaletData || {};
 
-  const GALLERY_DATA = [
-    {
-      id: 'kitchen',
-      category: t('gallery.categories.kitchen'),
-      color: '#15AB64',
-      images: [
-        'https://images.unsplash.com/photo-1556911220-e1502138a597?w=800', // Large
-        'https://images.unsplash.com/photo-1556912173-3bb406ef7e77?w=400',
-        'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=400',
-        'https://images.unsplash.com/photo-1556911261-6bd741557538?w=400',
-      ]
-    },
-    {
-      id: 'bath',
-      category: t('gallery.categories.bath'),
-      color: '#035DF9',
-      images: [
-        'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800', // Large
-        'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=400',
-        'https://images.unsplash.com/photo-1620626011761-9963d7b6dd3a?w=400',
-        'https://images.unsplash.com/photo-1604084792761-904f81491740?w=400',
-      ]
-    }
-  ];
+  const gallerySections = useMemo(() => {
+    if (!chalet.images) return [];
 
-  const openViewer = (url: string) => {
-    setViewerImage(url);
+    const grouped: Record<string, any> = {};
+    
+    // Group images by category
+    chalet.images.forEach((img: any) => {
+      const categoryId = img.amenityCategory?.id || 'general';
+      const categoryName = isRTL 
+        ? img.amenityCategory?.name?.ar || img.amenityCategory?.name || t('gallery.categories.general')
+        : img.amenityCategory?.name?.en || img.amenityCategory?.name || t('gallery.categories.general');
+      
+      if (!grouped[categoryId]) {
+        grouped[categoryId] = {
+          id: categoryId,
+          category: categoryName,
+          color: CATEGORY_COLORS[categoryId] || CATEGORY_COLORS.default,
+          images: [],
+          iconKey: categoryId
+        };
+      }
+      grouped[categoryId].images.push(getImageSrc(img.url));
+    });
+
+    return Object.values(grouped);
+  }, [chalet.images, isRTL, t]);
+
+  const CATEGORIES = useMemo(() => {
+    const cats = [
+      { id: 'all', label: t('gallery.categories.all'), icon: (isActive: boolean) => <SolarWidgetBold size={18} color={isActive ? "white" : Colors.primary} />, activeColor: Colors.primary }
+    ];
+
+    gallerySections.forEach(section => {
+      cats.push({
+        id: section.id,
+        label: section.category,
+        icon: (isActive: boolean) => {
+          const IconGen = CATEGORY_ICONS[section.iconKey] || CATEGORY_ICONS.default;
+          return IconGen(isActive);
+        },
+        activeColor: section.color
+      });
+    });
+
+    return cats;
+  }, [gallerySections, t]);
+
+  const openViewer = (url: any) => {
+    setViewerImage(typeof url === 'string' ? url : Image.resolveAssetSource(url).uri);
     setViewerVisible(true);
   };
 
   const filteredData = activeFilter === 'all' 
-    ? GALLERY_DATA 
-    : GALLERY_DATA.filter(section => section.id === activeFilter);
+    ? gallerySections 
+    : gallerySections.filter(section => section.id === activeFilter);
 
   return (
     <SafeAreaView style={styles.container}>

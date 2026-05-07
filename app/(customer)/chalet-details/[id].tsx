@@ -41,8 +41,8 @@ import {
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import Constants from "expo-constants";
 import { Image as ExpoImage } from "expo-image";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Stack, useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
+import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
@@ -83,7 +83,7 @@ function SectionHeader({ title, isRTL }: { title: string; isRTL: boolean }) {
   );
 }
 
-const CARD_COLORS = ["#035DF9", "#15AB64", "#F64300"];
+const CARD_COLORS = ["#035DF9", "#F472B6", "#F64300", "#15AB64", "#A855F7", "#06B6D4", "#FBBF24"];
 
 export default function ChaletDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -101,11 +101,17 @@ export default function ChaletDetailScreen() {
     () => ({
       bbq: SolarFireBold,
       heater: SolarWindBold,
+      ac: SolarWindBold,
+      air_conditioner: SolarWindBold,
+      "air-conditioner": SolarWindBold,
       "toilet-western": SolarWaterBold,
       wifi: SolarWifiBold,
+      internet: SolarWifiBold,
       fridge: SolarHome2Bold,
       tv: SolarWidgetBold,
       kitchen: SolarHome2Bold,
+      pool: SolarWaterBold,
+      swimming: SolarWaterBold,
       bathroom: SolarWaterBold,
       entertainment: SolarWidgetBold,
       services: SolarSettingsBold,
@@ -137,8 +143,14 @@ export default function ChaletDetailScreen() {
       skip: userType === "guest",
     });
   const [toggleFavorite] = useToggleFavoriteMutation();
-
   const [selectedShiftId, setSelectedShiftId] = useState<string | null>(null);
+
+  // Auto-refresh data when the screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
 
   const isFavorite = useMemo(
     () => favoriteIds.includes(chaletId),
@@ -599,7 +611,7 @@ export default function ChaletDetailScreen() {
                   { flexDirection: isRTL ? "row-reverse" : "row" },
                 ]}
               >
-                {facilities.slice(0, 4).map((f: any, i: number) => (
+                {facilities.slice(0, 8).map((f: any, i: number) => (
                   <View key={i} style={styles.facilityCell}>
                     <View style={styles.shapeCont}>
                       <Svg height={55} width={55} viewBox="0 0 60 60">
