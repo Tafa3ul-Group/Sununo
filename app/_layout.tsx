@@ -1,41 +1,44 @@
 // @@iconify-code-gen
-import { persistor, store } from '@/store';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack, useRouter, useSegments } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import React, { useEffect } from 'react';
-import { Text, TextInput, Platform } from 'react-native';
-import 'react-native-reanimated';
-import Toast from 'react-native-toast-message';
-import { Provider, useSelector } from 'react-redux';
-import { PersistGate } from 'redux-persist/integration/react';
-import { useFonts } from 'expo-font';
-import * as SplashScreen from 'expo-splash-screen';
-import { useTranslation } from 'react-i18next';
-import { RootState } from '@/store';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import '@/i18n';
-import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import "@/i18n";
+import { persistor, RootState, store } from "@/store";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
+import { useFonts } from "expo-font";
+import { Stack, useRouter, useSegments } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
+import React, { useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { Text, TextInput } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import "react-native-reanimated";
+import Toast from "react-native-toast-message";
+import { Provider, useSelector } from "react-redux";
+import { PersistGate } from "redux-persist/integration/react";
 
 // Alexandria fonts will be loaded directly in useFonts below
 
 // @ts-ignore
 if (Text.defaultProps == null) Text.defaultProps = {};
 // @ts-ignore
-Text.defaultProps.style = { 
-  fontFamily: 'Alexandria-Regular',
+Text.defaultProps.style = {
+  fontFamily: "Alexandria-Regular",
   includeFontPadding: false,
-  textAlignVertical: 'center',
+  textAlignVertical: "center",
 };
 
 // @ts-ignore
 if (TextInput.defaultProps == null) TextInput.defaultProps = {};
 // @ts-ignore
-TextInput.defaultProps.style = { 
-  fontFamily: 'Alexandria-Regular',
+TextInput.defaultProps.style = {
+  fontFamily: "Alexandria-Regular",
   includeFontPadding: false,
-  textAlignVertical: 'center',
+  textAlignVertical: "center",
 };
 
 function RootLayoutNav() {
@@ -43,25 +46,29 @@ function RootLayoutNav() {
   const { i18n } = useTranslation();
   const segments = useSegments();
   const router = useRouter();
-  const { language, isAuthenticated, userType } = useSelector((state: RootState) => state.auth);
+  const { language, isAuthenticated, userType } = useSelector(
+    (state: RootState) => state.auth,
+  );
 
   const [loaded, error] = useFonts({
-    'Alexandria-Bold': require('@expo-google-fonts/alexandria/700Bold/Alexandria_700Bold.ttf'),
-    'Alexandria-SemiBold': require('@expo-google-fonts/alexandria/600SemiBold/Alexandria_600SemiBold.ttf'),
-    'Alexandria-Regular': require('@expo-google-fonts/alexandria/400Regular/Alexandria_400Regular.ttf'),
-    'Alexandria-Medium': require('@expo-google-fonts/alexandria/500Medium/Alexandria_500Medium.ttf'),
-    'Alexandria-Black': require('@expo-google-fonts/alexandria/900Black/Alexandria_900Black.ttf'),
+    "Alexandria-Bold": require("@expo-google-fonts/alexandria/700Bold/Alexandria_700Bold.ttf"),
+    "Alexandria-SemiBold": require("@expo-google-fonts/alexandria/600SemiBold/Alexandria_600SemiBold.ttf"),
+    "Alexandria-Regular": require("@expo-google-fonts/alexandria/400Regular/Alexandria_400Regular.ttf"),
+    "Alexandria-Medium": require("@expo-google-fonts/alexandria/500Medium/Alexandria_500Medium.ttf"),
+    "Alexandria-Black": require("@expo-google-fonts/alexandria/900Black/Alexandria_900Black.ttf"),
   });
 
   // Global Auth Guard: Redirect to index if auth is lost
   useEffect(() => {
     if (!loaded) return;
 
-    const inAuthGroup = segments[0] === '(auth)';
-    const isIndex = segments.length === 0 || (segments.length === 1 && segments[0] === 'index');
+    const inAuthGroup = segments[0] === "(auth)";
+    const isIndex =
+      (segments as any).length === 0 ||
+      (segments.length === 1 && segments[0] === "index");
 
-    if (!isAuthenticated && userType !== 'guest' && !inAuthGroup && !isIndex) {
-      router.replace('/');
+    if (!isAuthenticated && userType !== "guest" && !inAuthGroup && !isIndex) {
+      router.replace("/");
     }
   }, [isAuthenticated, userType, segments, loaded]);
 
@@ -83,14 +90,17 @@ function RootLayoutNav() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="(customer)" options={{ headerShown: false }} />
         <Stack.Screen name="(dashboard)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+        <Stack.Screen
+          name="modal"
+          options={{ presentation: "modal", title: "Modal" }}
+        />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>

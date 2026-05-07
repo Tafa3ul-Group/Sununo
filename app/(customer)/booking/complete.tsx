@@ -779,7 +779,7 @@ export default function CompleteBookingScreen() {
               ]}
               onPress={() => setSelectedMethod("sindi_pay")}
             >
-              <View style={[styles.methodIconContainer, { backgroundColor: "#EEF2FF" }]}>
+              <View style={[styles.methodIconContainer, { backgroundColor: selectedMethod === "sindi_pay" ? "#6366F1" : "#EEF2FF" }]}>
                 <SolarCardBold size={24} color={selectedMethod === "sindi_pay" ? "white" : "#6366F1"} />
               </View>
               <ThemedText style={styles.methodName}>{t("booking.sindiPay")}</ThemedText>
@@ -795,7 +795,7 @@ export default function CompleteBookingScreen() {
               ]}
               onPress={() => setSelectedMethod("wayl")}
             >
-              <View style={[styles.methodIconContainer, { backgroundColor: "#ECFDF5" }]}>
+              <View style={[styles.methodIconContainer, { backgroundColor: selectedMethod === "wayl" ? "#10B981" : "#ECFDF5" }]}>
                 <SolarCardBold size={24} color={selectedMethod === "wayl" ? "white" : "#10B981"} />
               </View>
               <ThemedText style={styles.methodName}>{t("booking.wayl")}</ThemedText>
@@ -811,7 +811,7 @@ export default function CompleteBookingScreen() {
               ]}
               onPress={() => setSelectedMethod("wallet")}
             >
-              <View style={[styles.methodIconContainer, { backgroundColor: "#FFF7ED" }]}>
+              <View style={[styles.methodIconContainer, { backgroundColor: selectedMethod === "wallet" ? "#F97316" : "#FFF7ED" }]}>
                 <SolarWalletBold size={24} color={selectedMethod === "wallet" ? "white" : "#F97316"} />
               </View>
               <ThemedText style={styles.methodName}>{t("booking.wallet")}</ThemedText>
@@ -1854,7 +1854,7 @@ const styles = StyleSheet.create({
   agreementLink: {
     color: Colors.primary,
     textDecorationLine: "underline",
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Bold",
   },
   // RTL Utilities
   rtlText: { textAlign: "right" },
