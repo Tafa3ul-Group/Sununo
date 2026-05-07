@@ -16,8 +16,7 @@
     "dontHaveAccount": "Don't have an account?",
     "registerNow": "Register now",
     "phonePlaceholder": "077XXXXXXXX",
-    "verificationCode": "Verification Code",
-    "joinAsOwner": "Join as Owner"
+    "verificationCode": "Verification Code"
   },
   "tabs": {
     "home": "Home",

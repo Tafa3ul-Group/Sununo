@@ -16,6 +16,7 @@ import {
 import { getImageSrc } from '@/hooks/useImageSrc';
 import { ThemedText } from '@/components/themed-text';
 import { LanguageSheet } from '@/components/user/language-sheet';
+import { LogoutSheet } from '@/components/user/logout-sheet';
 import { Colors, normalize } from '@/constants/theme';
 import { RootState } from '@/store';
 import {
@@ -68,6 +69,7 @@ export default function ProviderProfileScreen() {
   const languageSheetRef = useRef<BottomSheetModal>(null);
   const editProfileSheetRef = useRef<BottomSheetModal>(null);
   const citySheetRef = useRef<BottomSheetModal>(null);
+  const logoutSheetRef = useRef<BottomSheetModal>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -98,27 +100,7 @@ export default function ProviderProfileScreen() {
   };
 
   const handleLogout = () => {
-    Alert.alert(
-      isRTL ? 'تسجيل الخروج' : 'Logout',
-      isRTL ? 'هل أنت متأكد من تسجيل الخروج؟' : 'Are you sure you want to logout?',
-      [
-        { text: isRTL ? 'إلغاء' : 'Cancel', style: 'cancel' },
-        {
-          text: isRTL ? 'خروج' : 'Logout',
-          style: 'destructive',
-          onPress: () => {
-            // 1. Clear credentials and auth state
-            dispatch(logout());
-            
-            // 2. Reset API state to clear cache
-            dispatch(apiSlice.util.resetApiState());
-            
-            // 3. Navigate back to root/login
-            router.replace('/(auth)/login');
-          }
-        }
-      ]
-    );
+    logoutSheetRef.current?.present();
   };
 
   const handleSaveProfile = async () => {
@@ -443,6 +425,7 @@ export default function ProviderProfileScreen() {
       </BottomSheetModal>
 
       <LanguageSheet ref={languageSheetRef} />
+      <LogoutSheet ref={logoutSheetRef} />
     </View>
   );
 }
@@ -605,12 +588,13 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   inputWrapper: {
-    height: 56,
+    minHeight: 56,
     backgroundColor: '#F8FAFC',
     borderRadius: 16,
     borderWidth: 1,
     borderColor: '#F1F5F9',
     paddingHorizontal: 16,
+    paddingVertical: 10,
     alignItems: 'center',
   },
   disabledInputWrapper: {
@@ -628,11 +612,12 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   genderOption: {
-    height: 52,
+    minHeight: 52,
     borderRadius: 16,
     backgroundColor: '#F8FAFC',
     borderWidth: 1,
     borderColor: '#F1F5F9',
+    paddingVertical: 12,
     justifyContent: 'center',
     alignItems: 'center',
   },

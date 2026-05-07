@@ -48,7 +48,7 @@ export function LoginScreen() {
   const [verifyPhone, { isLoading: isVerifyLoading }] = useVerifyPhoneMutation();
 
   const userType = useSelector((state: RootState) => state.auth.userType) || "customer";
-  const isOwner = userType === "owner";
+  const isOwner = userType === "owner" || userType === "provider";
 
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [phone, setPhone] = useState("7700000001");
@@ -78,10 +78,10 @@ export function LoginScreen() {
           setCredentials({
             user: result.user,
             token: result.token,
-            userType: userType,
+            userType: userType, // Respect the toggle selection
           }),
         );
-        router.replace(isOwner ? "/(tabs)/(dashboard)/home" : "/(tabs)/(customer)");
+        router.replace(userType === "owner" || userType === "provider" ? "/(tabs)/(dashboard)/home" : "/(tabs)/(customer)");
       } catch (err: any) {
         const msg = err?.data?.message;
         const displayMsg = Array.isArray(msg) ? msg.join(', ') : (msg || "Invalid OTP");
@@ -109,7 +109,7 @@ export function LoginScreen() {
           {/* User Type Toggle */}
           <View style={styles.toggleWrapper}>
             <AuthToggle 
-              activeType={userType === "owner" ? "owner" : "customer"} 
+              activeType={userType === "owner" || userType === "provider" ? "owner" : "customer"} 
               onChange={handleTypeChange} 
             />
           </View>
@@ -118,16 +118,18 @@ export function LoginScreen() {
           <View style={styles.formContainer}>
             <View style={[styles.headerRow, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
               <ThemedText style={[styles.title, { textAlign: isRTL ? 'right' : 'left' }]}>{t('auth.login')}</ThemedText>
-              <View style={[styles.subtextRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                <ThemedText style={styles.subtitle}>
-                  {t('auth.dontHaveAccount')}
-                </ThemedText>
-                <TouchableOpacity>
-                  <ThemedText style={[styles.linkText, isRTL ? { marginRight: normalize.width(6) } : { marginLeft: normalize.width(6) }]}>
-                    {t('auth.registerNow')}
+              {!isOwner && (
+                <View style={[styles.subtextRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                  <ThemedText style={styles.subtitle}>
+                    {t('auth.dontHaveAccount')}
                   </ThemedText>
-                </TouchableOpacity>
-              </View>
+                  <TouchableOpacity onPress={() => router.push(`/register?type=${userType}`)}>
+                    <ThemedText style={[styles.linkText, isRTL ? { marginRight: normalize.width(6) } : { marginLeft: normalize.width(6) }]}>
+                      {t('auth.registerNow')}
+                    </ThemedText>
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
 
             {step === "phone" ? (
@@ -140,6 +142,7 @@ export function LoginScreen() {
                   onChangeText={setPhone}
                   keyboardType="phone-pad"
                   placeholderTextColor="#94A3B8"
+                  multiline={false}
                 />
               </View>
             ) : (
@@ -161,30 +164,19 @@ export function LoginScreen() {
               loading={isLoginLoading || isVerifyLoading}
             />
 
-            {isOwner && step === "phone" && (
+            {!isOwner && (
               <TouchableOpacity 
-                style={styles.joinOwnerBtn}
+                style={styles.guestLink}
                 onPress={() => {
-                  router.push("/(auth)/join-as-owner" as any);
+                  dispatch(setUserType('guest'));
+                  router.replace("/(tabs)/(customer)");
                 }}
               >
-                <ThemedText style={styles.joinOwnerText}>
-                  {t('auth.joinAsOwner')}
+                <ThemedText style={styles.guestLinkText}>
+                  {t('auth.browseAsGuest')}
                 </ThemedText>
               </TouchableOpacity>
             )}
-
-            <TouchableOpacity 
-              style={styles.guestLink}
-              onPress={() => {
-                dispatch(setUserType('guest'));
-                router.replace("/(tabs)/(customer)");
-              }}
-            >
-              <ThemedText style={styles.guestLinkText}>
-                {t('auth.browseAsGuest')}
-              </ThemedText>
-            </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -228,6 +220,8 @@ const styles = StyleSheet.create({
     fontFamily: "Alexandria-Black",
     color: "#1E293B",
     marginBottom: normalize.height(4),
+    lineHeight: normalize.font(32),
+    paddingTop: normalize.height(8),
   },
   subtextRow: {
     alignItems: "center",
@@ -253,20 +247,22 @@ const styles = StyleSheet.create({
   },
   input: {
     width: "100%",
-    height: normalize.height(52),
+    minHeight: normalize.height(52),
     backgroundColor: "#FFFFFF",
     borderRadius: normalize.radius(10),
     borderWidth: 1,
     borderColor: "#E2E8F0",
     paddingHorizontal: normalize.width(18),
+    paddingVertical: normalize.height(10),
     fontSize: normalize.font(15),
     fontFamily: "Alexandria-Medium",
     color: "#1E293B",
   },
   loginBtn: {
     marginTop: normalize.height(20),
-    height: normalize.height(52),
+    minHeight: normalize.height(52),
     width: "100%",
+    paddingVertical: normalize.height(12),
     shadowOpacity: 0,
     elevation: 0,
   },
@@ -279,18 +275,6 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(15),
     color: "#94A3B8",
     fontFamily: "Alexandria-Bold",
-  },
-  joinOwnerBtn: {
-    marginTop: normalize.height(20),
-    width: "100%",
-    alignItems: "center",
-    paddingVertical: normalize.height(10),
-  },
-  joinOwnerText: {
-    fontSize: normalize.font(16),
-    color: "#0061FE",
-    fontFamily: "Alexandria-Bold",
-    textDecorationLine: "underline",
   },
   bottomWaveContainer: {
     position: "absolute",
