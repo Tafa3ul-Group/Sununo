@@ -17,7 +17,8 @@ export default function ChaletDescriptionScreen() {
   const router = useRouter();
   const { userType } = useSelector((state: RootState) => state.auth);
 
-  const { data: chalet, isLoading } = useGetCustomerChaletDetailsQuery(id);
+  const { data: response, isLoading } = useGetCustomerChaletDetailsQuery(id as string);
+  const chalet = response?.data || response;
 
   const title = t('chalet.details.overview');
   const description = isRTL

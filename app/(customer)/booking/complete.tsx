@@ -92,9 +92,10 @@ export default function CompleteBookingScreen() {
   // API hooks
   const [createBooking, { isLoading: isCreatingBooking }] =
     useCreateCustomerBookingMutation();
-  const { data: chaletDetails } = useGetCustomerChaletDetailsQuery(chaletId, {
+  const { data: response } = useGetCustomerChaletDetailsQuery(chaletId, {
     skip: !chaletId,
   });
+  const chaletDetails = response?.data || response;
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const getDayOfWeek = (day: number) => {

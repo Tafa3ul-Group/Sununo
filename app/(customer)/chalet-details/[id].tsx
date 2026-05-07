@@ -179,7 +179,7 @@ export default function ChaletDetailScreen() {
   }, [showMap]);
 
   // Extract chalet info from API response
-  const chalet = chaletData || ({} as any);
+  const chalet = chaletData?.data || chaletData || ({} as any);
   const chaletName = isRTL
     ? chalet.name?.ar || chalet.nameAr || chalet.name || ""
     : chalet.name?.en || chalet.nameEn || chalet.name || "";
