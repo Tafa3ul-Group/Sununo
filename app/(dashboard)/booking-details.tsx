@@ -142,6 +142,7 @@ export default function BookingDetailsPage() {
 
   const bIsCancelled = data.status === 'cancelled' || data.bookingStatus === 'CANCELLED';
   const bCancelReason = data.cancelReason || data.cancellationReason || (isRTL ? 'غير محدد' : 'Not specified');
+  const bCustomerPhone = data.customer?.phone || data.externalCustomerPhone;
 
   return (
     <View style={styles.container}>
@@ -275,7 +276,7 @@ export default function BookingDetailsPage() {
           {(remainingAmount > 0 || bIsExternal) && (
             <PrimaryButton
               label={isRTL ? 'إلغاء الحجز' : 'Cancel Booking'}
-              onPress={() => cancelSheetRef.current?.present()}
+              onPress={() => cancelSheetRef.current?.present(bCustomerName, bCustomerPhone)}
               activeColor="#EA2129"
               isActive={true}
               height={50}
@@ -299,7 +300,9 @@ export default function BookingDetailsPage() {
         isLoading={isRejectLoading || isDeletingExternal}
         isRTL={isRTL}
         isExternal={bIsExternal}
-        depositAmount={data.downPayment || '50,000'}
+        depositAmount={data.depositAmount || 0}
+        totalPrice={data.totalPrice || 0}
+        paymentModel={data.paymentModel || 'deposit'}
       />
     </View>
   );

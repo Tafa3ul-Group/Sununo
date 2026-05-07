@@ -129,8 +129,16 @@ export default function BookingsScreen() {
 
   const handleOpenCancelSheet = (data: any) => {
     setCancellingBookingData(data);
+    const bIsExternal = data.status === "external" || data.bIsExternal;
+    const customerName = bIsExternal
+      ? data.externalCustomerName
+      : (data.customer?.fullName || data.customer?.name);
+    const customerPhone = bIsExternal
+      ? data.externalCustomerPhone
+      : (data.customer?.phone || data.customer?.phoneNumber);
+
     setTimeout(() => {
-      cancelSheetRef.current?.present();
+      cancelSheetRef.current?.present(customerName, customerPhone);
     }, 100);
   };
 
@@ -736,44 +744,7 @@ export default function BookingsScreen() {
               </Text>
             </View>
           )}
-          {(item.status === "confirmed" ||
-            item.status === "external" ||
-            item.status === "pending_payment") && (
-              <View
-                style={{
-                  flexDirection: isRTL ? "row-reverse" : "row",
-                  gap: 12,
-                  marginTop: 16,
-                }}
-              >
-                <SecondaryButton
-                  label={t("dashboard.bookings.complete")}
-                  onPress={async () => {
-                    try {
-                      await markAsCompleted(item.id).unwrap();
-                      refreshAvailability();
-                      Haptics.notificationAsync(
-                        Haptics.NotificationFeedbackType.Success,
-                      );
-                    } catch (e) {
-                      Alert.alert("Error", "Update failed");
-                    }
-                  }}
-                  isLoading={isStatusLoading}
-                  isActive={true}
-                  activeColor={Colors.primary}
-                  style={{ flex: 1, height: 44 }}
-                />
-                <SecondaryButton
-                  label={t("dashboard.bookings.cancel")}
-                  onPress={() => handleOpenCancelSheet(item)}
-                  isLoading={isRejectLoading || isDeletingExternal}
-                  isActive={true}
-                  activeColor="#EF4444"
-                  style={{ flex: 1, height: 44 }}
-                />
-              </View>
-            )}
+          {/* Actions removed as requested */}
         </TouchableOpacity>
       </Animated.View>
     );
@@ -1340,11 +1311,10 @@ export default function BookingsScreen() {
         onConfirm={handleConfirmCancellation}
         isLoading={isRejectLoading || isDeletingExternal}
         isRTL={isRTL}
-        isExternal={
-          cancellingBookingData?.status === "external" ||
-          cancellingBookingData?.bIsExternal
-        }
-        depositAmount={cancellingBookingData?.downPayment || "50,000"}
+        isExternal={cancellingBookingData?.status === "external" || cancellingBookingData?.bIsExternal}
+        depositAmount={cancellingBookingData?.depositAmount || 0}
+        totalPrice={cancellingBookingData?.totalPrice || 0}
+        paymentModel={cancellingBookingData?.paymentModel || 'deposit'}
       />
 
       <BottomSheetModal

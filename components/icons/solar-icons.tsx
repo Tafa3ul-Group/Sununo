@@ -1504,6 +1504,7 @@ const IconMap: Record<string, React.FC<SolarIconProps>> = {
   "close-bold": SolarCloseBold,
   "wheel-bold": SolarWheelBold,
   "square-share-line-bold-duotone": SolarSquareShareLineBoldDuotone,
+  "danger-triangle-bold": SolarDangerTriangleBold,
 };
 
 export function SolarWheelBold({ size = 24, color, ...props }: SolarIconProps) {
@@ -1548,6 +1549,23 @@ export function SolarIcon({
     return null;
   }
   return <Icon {...props} />;
+}
+
+export function SolarDangerTriangleBold({
+  size = 24,
+  color,
+  ...props
+}: SolarIconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+      <Path
+        fill={color || "#FFFFFF"}
+        fillRule="evenodd"
+        d="M12 3c-.5 0-.96.26-1.21.68l-8.5 14.5c-.26.44-.27.99-.01 1.44s.74.73 1.25.73h17.01c.5 0 .99-.28 1.25-.73s.25-1 .01-1.44L13.25 3.68c-.29-.42-.75-.68-1.25-.68zm-1 6a1 1 0 1 1 2 0v5a1 1 0 1 1-2 0V9zm1 10a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5z"
+        clipRule="evenodd"
+      />
+    </Svg>
+  );
 }
 export function SolarTrashBinMinimalisticLinear({ size = 24, color, ...props }: SolarIconProps) {
   return (

@@ -19,6 +19,7 @@ import { LanguageSheet } from '@/components/user/language-sheet';
 import { Colors, normalize } from '@/constants/theme';
 import { RootState } from '@/store';
 import {
+  apiSlice,
   useGetCitiesQuery,
   useGetMeQuery,
   useGetProviderProfileQuery,
@@ -106,7 +107,13 @@ export default function ProviderProfileScreen() {
           text: isRTL ? 'خروج' : 'Logout',
           style: 'destructive',
           onPress: () => {
+            // 1. Clear credentials and auth state
             dispatch(logout());
+            
+            // 2. Reset API state to clear cache
+            dispatch(apiSlice.util.resetApiState());
+            
+            // 3. Navigate back to root/login
             router.replace('/(auth)/login');
           }
         }

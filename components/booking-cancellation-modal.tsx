@@ -1,4 +1,4 @@
-import { SolarDangerCircleBold } from '@/components/icons/solar-icons';
+import { SolarDangerTriangleBold } from '@/components/icons/solar-icons';
 import { normalize } from '@/constants/theme';
 import {
   BottomSheetBackdrop,
@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 import { SecondaryButton } from './user/secondary-button';
 
 // Static imports for Lottie files
@@ -25,28 +26,42 @@ interface BookingCancellationSheetProps {
   isLoading?: boolean;
   isRTL?: boolean;
   depositAmount?: string | number;
+  totalPrice?: string | number;
+  paymentModel?: 'full' | 'deposit';
   isExternal?: boolean;
 }
 
 export type BookingCancellationSheetRef = {
-  present: () => void;
+  present: (customerName?: string, customerPhone?: string) => void;
   dismiss: () => void;
   showSuccess: (message?: string) => void;
   showError: (message?: string) => void;
 };
 
 export const BookingCancellationSheet = forwardRef<BookingCancellationSheetRef, BookingCancellationSheetProps>(
-  ({ onConfirm, isLoading = false, isRTL = true, depositAmount = '50,000', isExternal = false }, ref) => {
+  ({ 
+    onConfirm, 
+    isLoading = false, 
+    isRTL = true, 
+    depositAmount = 0, 
+    totalPrice = 0,
+    paymentModel = 'deposit',
+    isExternal = false 
+  }, ref) => {
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
     const lottieRef = useRef<LottieView>(null);
     const [reason, setReason] = useState('');
     const [internalStatus, setInternalStatus] = useState<'idle' | 'success' | 'error'>('idle');
     const [feedbackMessage, setFeedbackMessage] = useState('');
+    const [customerName, setCustomerName] = useState<string | undefined>();
+    const [customerPhone, setCustomerPhone] = useState<string | undefined>();
 
     useImperativeHandle(ref, () => ({
-      present: () => {
+      present: (name, phone) => {
         setInternalStatus('idle');
         setReason('');
+        setCustomerName(name);
+        setCustomerPhone(phone);
         bottomSheetModalRef.current?.present();
       },
       dismiss: () => bottomSheetModalRef.current?.dismiss(),
@@ -81,27 +96,39 @@ export const BookingCancellationSheet = forwardRef<BookingCancellationSheetRef, 
     );
 
     const renderHeader = () => (
-      <>
+      <View style={{ alignItems: 'center' }}>
         <View style={styles.iconContainer}>
           <View style={styles.starburst}>
-            <View style={[styles.starLayer, { transform: [{ rotate: '0deg' }] }]} />
-            <View style={[styles.starLayer, { transform: [{ rotate: '15deg' }] }]} />
-            <View style={[styles.starLayer, { transform: [{ rotate: '30deg' }] }]} />
-            <View style={[styles.starLayer, { transform: [{ rotate: '45deg' }] }]} />
-            <View style={[styles.starLayer, { transform: [{ rotate: '60deg' }] }]} />
-            <View style={[styles.starLayer, { transform: [{ rotate: '75deg' }] }]} />
-            <View style={styles.iconCircle}>
-              <SolarDangerCircleBold size={32} color="#FFFFFF" />
-            </View>
+            <Svg 
+              width="100" 
+              height="100" 
+              viewBox="0 0 60 60" 
+              fill="none" 
+              style={{ position: 'absolute' }}
+            >
+              <Path 
+                d="M26.0603 60C29.9658 59.4325 29.8391 57.154 32.7123 55.3719C34.9225 54.1301 37.5529 56.9614 39.3811 57.3718C44.9058 58.6116 45.0155 53.8851 45.7481 50.2915C46.6896 46.8466 51.9145 48.769 54.0192 47.2906C58.6446 44.0383 54.2219 40.5348 54.091 37.1548C54.015 35.1591 59.4109 33.2953 59.8817 30.686C60.7641 25.7794 56.4955 25.9343 54.2493 22.9543C53.2593 21.2225 55.2331 18.2886 55.4822 16.8143C56.5335 10.6114 50.9476 11.4512 47.0992 11.0554C44.5891 10.7957 44.7707 5.60846 43.789 4.02109C42.7863 2.40231 41.7835 2.19288 40.0292 1.73217C37.2468 2.50491 35.7226 3.96454 33.0732 4.97811C29.9193 4.0148 28.8406 -0.579781 24.7388 0.0610315C21.5701 0.0359016 20.8671 5.11424 19.5751 6.16131C15.2897 9.63133 12.864 2.85464 8.01704 8.83346C7.91359 10.2303 8.34847 15.4992 7.88615 16.2991C6.25008 19.1388 -0.948651 18.253 0.10477 23.4151C0.647314 26.0705 2.92303 27.662 4.08201 30.02L4.18968 30.2441C3.20803 32.4388 0.824638 34.7235 0.389759 36.803C-0.691106 41.9798 5.48587 41.5358 7.9347 43.7054C9.67633 45.2467 7.4935 50.3062 9.13168 52.2118C11.3251 55.9604 16.8983 52.3584 18.8236 53.1061C22.3723 54.4819 20.7087 58.6535 26.0603 60Z" 
+                fill="#F64200"
+              />
+            </Svg>
+            <SolarDangerTriangleBold size={38} color="#FFFFFF" />
           </View>
         </View>
 
         <Text style={styles.title}>
           {isExternal
-            ? (isRTL ? 'تأكيد إلغاء الإغلاق الخارجي' : 'Confirm External Cancellation')
-            : (isRTL ? 'تأكيد إلغاء الحجز' : 'Confirm Cancellation')}
+            ? (isRTL ? 'تأكيد إلغاء الحجز الخارجي' : 'Confirm External Booking Cancellation')
+            : (isRTL 
+                ? `تأكيد إلغاء حجز ${customerName || 'الزبون'}` 
+                : `Confirm Cancellation for ${customerName || 'Customer'}`)}
         </Text>
-      </>
+
+        {customerPhone && (
+          <Text style={styles.customerPhone}>
+            {customerPhone}
+          </Text>
+        )}
+      </View>
     );
 
     const renderContent = () => {
@@ -129,6 +156,10 @@ export const BookingCancellationSheet = forwardRef<BookingCancellationSheetRef, 
         );
       }
 
+      const isFullPayment = paymentModel === 'full';
+      const refundAmount = isFullPayment ? totalPrice : depositAmount;
+      const formattedAmount = Number(refundAmount || 0).toLocaleString();
+
       return (
         <>
           <View style={styles.inputWrapper}>
@@ -149,8 +180,8 @@ export const BookingCancellationSheet = forwardRef<BookingCancellationSheetRef, 
             {!isExternal && (
               <Text style={[styles.noteText, { textAlign: isRTL ? 'right' : 'left' }]}>
                 {isRTL
-                  ? `عند الإلغاء سيتم استرداد مبلغ العربون (${depositAmount} د.ع) تلقائياً لمحفظة الزبون`
-                  : `Upon cancellation, the deposit amount (${depositAmount} IQD) will be automatically refunded to the customer's wallet.`
+                  ? `عند الإلغاء سيتم استرداد ${isFullPayment ? 'كامل المبلغ' : 'مبلغ العربون'} (${formattedAmount} د.ع) تلقائياً لمحفظة الزبون`
+                  : `Upon cancellation, the ${isFullPayment ? 'full amount' : 'deposit amount'} (${formattedAmount} IQD) will be automatically refunded to the customer's wallet.`
                 }
               </Text>
             )}
@@ -165,13 +196,14 @@ export const BookingCancellationSheet = forwardRef<BookingCancellationSheetRef, 
           </View>
 
           <View style={[styles.buttonRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1.2 }}>
               <SecondaryButton
-                label={isRTL ? 'تأكيد الالغاء' : 'Confirm'}
+                label={isRTL ? 'تأكيد الالغاء' : 'Confirm Cancellation'}
                 onPress={handleConfirm}
                 isActive={true}
                 activeColor="#FF4D17"
                 isLoading={isLoading}
+                style={{ height: 56 }}
               />
             </View>
 
@@ -181,7 +213,8 @@ export const BookingCancellationSheet = forwardRef<BookingCancellationSheetRef, 
                 onPress={() => bottomSheetModalRef.current?.dismiss()}
                 inactiveTextColor="#1C1C1C"
                 isActive={false}
-                variant={!isRTL ? "inverse" : "default"}
+                variant="outline"
+                style={{ height: 56, borderColor: '#E2E8F0' }}
               />
             </View>
           </View>
@@ -196,6 +229,7 @@ export const BookingCancellationSheet = forwardRef<BookingCancellationSheetRef, 
         backdropComponent={renderBackdrop}
         enablePanDownToClose={internalStatus === 'idle' || internalStatus === 'error'}
         keyboardBehavior="fillParent"
+        handleIndicatorStyle={{ backgroundColor: '#E2E8F0', width: 40 }}
       >
         <BottomSheetView style={styles.modalContent}>
           {internalStatus === 'idle' && renderHeader()}
@@ -209,71 +243,76 @@ export const BookingCancellationSheet = forwardRef<BookingCancellationSheetRef, 
 const styles = StyleSheet.create({
   modalContent: {
     padding: 24,
-    alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    minHeight: 300,
+    paddingBottom: 40,
   },
   iconContainer: {
-    marginBottom: 20,
-    marginTop: 0,
+    marginBottom: 24,
+    marginTop: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   starburst: {
-    width: 80,
-    height: 80,
+    width: 100,
+    height: 100,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  starLayer: {
-    position: 'absolute',
-    width: 65,
-    height: 65,
-    backgroundColor: '#FF4D17',
-    borderRadius: 12,
-  },
   iconCircle: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#FF4D17',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
+    borderWidth: 0,
+    position: 'absolute',
   },
   title: {
-    fontSize: normalize.font(18),
-    fontFamily: "Alexandria-Black",
+    fontSize: normalize.font(22),
+    fontFamily: "Alexandria-Bold",
     color: '#FF4D17',
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  customerPhone: {
+    fontSize: normalize.font(16),
+    fontFamily: "Alexandria-SemiBold",
+    color: '#64748B',
+    marginTop: 4,
     marginBottom: 24,
+    textAlign: 'center',
   },
   inputWrapper: {
     width: '100%',
-    marginBottom: 24,
+    marginBottom: 32,
   },
   inputLabel: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Bold",
+    fontSize: normalize.font(16),
+    fontFamily: "Alexandria-SemiBold",
     color: '#1C1C1C',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   textInput: {
     width: '100%',
-    height: 120,
+    height: 140,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 16,
-    fontSize: normalize.font(14),
+    fontSize: normalize.font(15),
     fontFamily: "Alexandria-Regular",
     color: '#1C1C1C',
     textAlignVertical: 'top',
   },
   noteText: {
-    fontSize: normalize.font(11),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(13),
+    fontFamily: "Alexandria-Regular",
     color: '#64748B',
-    marginTop: 12,
-    lineHeight: 18,
+    marginTop: 16,
+    lineHeight: 20,
   },
   buttonRow: {
     width: '100%',
@@ -285,28 +324,29 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: '100%',
     paddingVertical: 40,
-    flex: 1,
   },
   lottie: {
     width: '100%',
-    height: 400,
+    height: 300,
   },
   feedbackText: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(18),
     fontFamily: "Alexandria-Bold",
     color: '#1C1C1C',
     textAlign: 'center',
     marginTop: 10,
   },
   retryButton: {
-    marginTop: 20,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 12,
-    backgroundColor: '#F1F3F5',
+    marginTop: 24,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 14,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   retryButtonText: {
-    fontSize: normalize.font(14),
+    fontSize: normalize.font(15),
     fontFamily: "Alexandria-Bold",
     color: '#FF4D17',
   },

@@ -23,7 +23,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { WalletCard } from '@/components/user/wallet-card';
 import { HeaderSection } from '@/components/header-section';
-import { useGetMeQuery } from '@/store/api/apiSlice';
+import { apiSlice, useGetMeQuery } from '@/store/api/apiSlice';
 import { useGetCustomerWalletQuery, useLogoutUserMutation, useDeleteCustomerAccountMutation } from '@/store/api/customerApiSlice';
 import { getImageSrc } from '@/hooks/useImageSrc';
 
@@ -64,7 +64,13 @@ export default function ProfileScreen() {
             } catch (e) {
               // Even if server logout fails, clear local state
             }
+            // 1. Reset API state to clear cache
+            dispatch(apiSlice.util.resetApiState());
+            
+            // 2. Clear credentials and auth state
             dispatch(logout());
+            
+            // 3. Navigate back to root/login
             router.replace('/(auth)/login');
           }
         }
