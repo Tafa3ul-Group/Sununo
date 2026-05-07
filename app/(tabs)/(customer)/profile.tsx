@@ -15,6 +15,7 @@ import {
 import { CircleBackButton } from '@/components/ui/circle-back-button';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { LanguageSheet } from '@/components/user/language-sheet';
+import { LogoutSheet } from '@/components/user/logout-sheet';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert, Image } from 'react-native';
@@ -34,6 +35,7 @@ export default function ProfileScreen() {
   const { user, userType } = useSelector((state: RootState) => state.auth);
   const router = useRouter();
   const languageSheetRef = React.useRef<BottomSheetModal>(null);
+  const logoutSheetRef = React.useRef<BottomSheetModal>(null);
 
   // Fetch user data and wallet from the backend
   const { data: meData } = useGetMeQuery(undefined);
@@ -50,26 +52,7 @@ export default function ProfileScreen() {
   };
 
   const handleLogout = () => {
-    Alert.alert(
-      t('profile.logout'),
-      t('profile.logoutConfirm'),
-      [
-        { text: t('profile.cancel'), style: 'cancel' },
-        { 
-          text: t('profile.exit'), 
-          style: 'destructive', 
-          onPress: async () => {
-            try {
-              await logoutApi(undefined).unwrap();
-            } catch (e) {
-              // Even if server logout fails, clear local state
-            }
-            dispatch(logout());
-            router.replace('/(auth)/login');
-          }
-        }
-      ]
-    );
+    logoutSheetRef.current?.present();
   };
 
   const menuItems = [
@@ -150,6 +133,7 @@ export default function ProfileScreen() {
       </ScrollView>
 
       <LanguageSheet ref={languageSheetRef} />
+      <LogoutSheet ref={logoutSheetRef} />
     </SafeAreaView>
   );
 }

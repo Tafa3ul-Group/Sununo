@@ -485,7 +485,8 @@ export default function ChaletDetailScreen() {
             isRTL={isRTL}
           />
           <View style={styles.shiftsGrid}>
-            {(chalet.shifts || []).map((shift: any, index: number) => {
+            {chalet.shifts && chalet.shifts.length > 0 ? (
+              chalet.shifts.map((shift: any, index: number) => {
               const isSelected = selectedShift?.id === shift.id;
               const minShiftPrice =
                 shift.pricing && shift.pricing.length > 0
@@ -551,9 +552,19 @@ export default function ChaletDetailScreen() {
                       </ThemedText>
                     </View>
                   )}
-                </View>
-              );
-            })}
+                  </View>
+                );
+              })
+            ) : (
+              <View style={styles.closedChaletBox}>
+                <SolarForbiddenBold size={24} color="#EF4444" />
+                <ThemedText style={styles.closedChaletText}>
+                  {isRTL 
+                    ? "عذراً، هذا الشاليه غير متاح للحجز حالياً (مغلق)" 
+                    : "Sorry, this chalet is currently unavailable for booking (Closed)"}
+                </ThemedText>
+              </View>
+            )}
           </View>
 
           {facilities.length > 0 && (
@@ -988,6 +999,22 @@ export default function ChaletDetailScreen() {
                 : t("chalet.details.morningShift")}
             </ThemedText>
           </View>
+          
+          {chalet.depositPercentage > 0 && (
+            <View
+              style={[
+                styles.depositRow,
+                { flexDirection: isRTL ? "row-reverse" : "row" },
+              ]}
+            >
+              <ThemedText style={styles.depositLabel}>
+                {isRTL ? "العربون المطلوب:" : "Required Deposit:"}
+              </ThemedText>
+              <ThemedText style={styles.depositValue}>
+                {Math.round(displayPrice * (chalet.depositPercentage / 100)).toLocaleString()} {t("common.iqd")} ({chalet.depositPercentage}%)
+              </ThemedText>
+            </View>
+          )}
         </View>
       </View>
 
@@ -1147,6 +1174,37 @@ const styles = StyleSheet.create({
     marginVertical: 15,
   },
   facilityCell: { width: "23%", alignItems: "center", marginBottom: 20 },
+  closedChaletBox: {
+    backgroundColor: '#FEF2F2',
+    padding: 20,
+    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderWidth: 1,
+    borderColor: '#FEE2E2',
+  },
+  closedChaletText: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: 'Alexandria-Bold',
+    color: '#EF4444',
+  },
+  depositRow: {
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
+  },
+  depositLabel: {
+    fontSize: 11,
+    fontFamily: 'Alexandria-Regular',
+    color: '#6B7280',
+  },
+  depositValue: {
+    fontSize: 11,
+    fontFamily: 'Alexandria-Bold',
+    color: '#035DF9',
+  },
   shapeCont: {
     width: 55,
     height: 55,

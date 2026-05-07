@@ -47,7 +47,7 @@ import Svg, { Path } from "react-native-svg";
 
 import { getImageSrc } from "@/hooks/useImageSrc";
 import * as Location from "expo-location";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import React, {
   useCallback,
@@ -118,6 +118,7 @@ function SectionHeader({ title, isRTL }: { title: string; isRTL: boolean }) {
 
 export default function ExploreScreen() {
   const router = useRouter();
+  const { id } = useLocalSearchParams();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { language, isAuthenticated, user } = useSelector(
@@ -284,7 +285,21 @@ export default function ExploreScreen() {
   );
 
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const snapPoints = useMemo(() => ["100%"], []);
+  const snapPoints = useMemo(() => ["35%", "94%"], []);
+
+  // Handle auto-selection if ID is passed in params
+  useEffect(() => {
+    if (id && MOCK_CHALETS.length > 0) {
+      const chalet = MOCK_CHALETS.find((c) => c.id === id);
+      if (chalet) {
+        // Use a small delay to ensure everything is ready
+        const timer = setTimeout(() => {
+          handleSelectChalet(chalet);
+        }, 500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [id, MOCK_CHALETS.length]);
 
   useEffect(() => {
     let subscription: any = null;
