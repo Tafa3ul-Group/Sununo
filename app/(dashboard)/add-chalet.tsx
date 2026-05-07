@@ -355,7 +355,11 @@ export default function AddChaletScreen() {
       formData.append('extraPersonPrice', form.extraPersonPrice || '0');
       
       // Filter only active shifts for submission
-      const activeShifts = shifts.filter(s => s.isActive);
+      const activeShifts = shifts.filter(s => s.isActive).map(s => ({
+        ...s,
+        startTime: s.startTime?.split(':').slice(0, 2).join(':'),
+        endTime: s.endTime?.split(':').slice(0, 2).join(':'),
+      }));
       formData.append('shifts', JSON.stringify(activeShifts));
 
       // ── Optional fields ──
@@ -403,7 +407,8 @@ export default function AddChaletScreen() {
   };
 
   const handleCitySelect = (city: any) => {
-    setForm({ ...form, cityId: city.id, cityName: city.name });
+    const cityName = typeof city.name === 'object' ? (isRTL ? city.name.ar : city.name.en) : city.name;
+    setForm({ ...form, cityId: city.id, cityName });
     citySheetRef.current?.dismiss();
   };
 
@@ -923,7 +928,9 @@ export default function AddChaletScreen() {
                 renderItem={({ item }: { item: any }) => (
                   <TouchableOpacity style={[styles.pickerItem, { flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 10 }]} onPress={() => handleCitySelect(item)}>
                     <SolarMapPointBold size={20} color={Colors.primary} />
-                    <Text style={[styles.pickerItemText, { textAlign, flex: 1 }]}>{item.name}</Text>
+                    <Text style={[styles.pickerItemText, { textAlign, flex: 1 }]}>
+                      {typeof item.name === 'object' ? (isRTL ? item.name.ar : item.name.en) : item.name}
+                    </Text>
                   </TouchableOpacity>
                 )}
                 contentContainerStyle={{ paddingBottom: Spacing.xl }}

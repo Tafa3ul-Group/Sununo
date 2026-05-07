@@ -81,12 +81,12 @@ const FacilityCard = ({ label, subtext, color, Icon, isRTL }: { label: string; s
 
 export default function FacilitiesScreen() {
   const { id } = useLocalSearchParams();
-  const chaletId = id as string;
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === 'ar';
   const { userType } = useSelector((state: RootState) => state.auth);
 
-  const { data: chaletData, isLoading } = useGetCustomerChaletDetailsQuery(chaletId);
+  const { data: response, isLoading } = useGetCustomerChaletDetailsQuery(id);
+  const chaletData = response?.data || response;
 
   const categories = useMemo(() => {
     if (!chaletData?.chaletFeatures) return [];

@@ -29,6 +29,7 @@ import {
   useGetShiftAvailabilityQuery,
   useMarkBookingCompletedMutation,
   useRejectBookingMutation,
+  useUpdateShiftPricingDayMutation,
 } from "@/store/api/apiSlice";
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput, BottomSheetView } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
@@ -98,6 +99,8 @@ export default function BookingsScreen() {
     useCreateExternalBookingMutation();
   const [deleteExternalBooking, { isLoading: isDeletingExternal }] =
     useDeleteExternalBookingMutation();
+  const [updateShiftPricingDay, { isLoading: isUpdatingPricing }] =
+    useUpdateShiftPricingDayMutation();
 
   const [externalNotes, setExternalNotes] = React.useState("");
   const [externalCustomerName, setExternalCustomerName] = React.useState("");
@@ -126,8 +129,16 @@ export default function BookingsScreen() {
 
   const handleOpenCancelSheet = (data: any) => {
     setCancellingBookingData(data);
+    const bIsExternal = data.status === "external" || data.bIsExternal;
+    const customerName = bIsExternal
+      ? data.externalCustomerName
+      : (data.customer?.fullName || data.customer?.name);
+    const customerPhone = bIsExternal
+      ? data.externalCustomerPhone
+      : (data.customer?.phone || data.customer?.phoneNumber);
+
     setTimeout(() => {
-      cancelSheetRef.current?.present();
+      cancelSheetRef.current?.present(customerName, customerPhone);
     }, 100);
   };
 
@@ -380,7 +391,7 @@ export default function BookingsScreen() {
               key={shift.shiftId || idx}
               style={[
                 styles.shiftTile,
-                !isAvailable && styles.shiftTileBooked,
+                shift.isClosed ? styles.shiftTileClosed : (!isAvailable && styles.shiftTileBooked),
                 { borderLeftColor: accentColor },
               ]}
               onPress={() => openShiftActions(shift)}
@@ -481,29 +492,47 @@ export default function BookingsScreen() {
                     style={[
                       styles.statusGlassBadge,
                       {
-                        backgroundColor: isAvailable ? "#DCFCE7" : "#F1F5F9",
-                        borderColor: isAvailable ? "#BBF7D0" : "#E2E8F0",
+                        backgroundColor: isAvailable
+                          ? "#DCFCE7"
+                          : (shift.isClosed ? "#FFF1F2" : "#F1F5F9"),
+                        borderColor: isAvailable
+                          ? "#BBF7D0"
+                          : (shift.isClosed ? "#FFE4E6" : "#E2E8F0"),
                       },
                     ]}
                   >
                     <Text
                       style={[
                         styles.statusBadgeText,
-                        { color: isAvailable ? "#16A34A" : "#64748B" },
+                        {
+                          color: isAvailable
+                            ? "#16A34A"
+                            : (shift.isClosed ? "#E11D48" : "#64748B")
+                        },
                       ]}
                     >
                       {isAvailable
                         ? isRTL
                           ? "متاح"
                           : "Available"
-                        : isRTL
-                          ? "محجوز"
-                          : "Booked"}
+                        : shift.isClosed
+                          ? isRTL
+                            ? "مغلق"
+                            : "Closed"
+                          : isRTL
+                            ? "محجوز"
+                            : "Booked"}
                     </Text>
                     {isAvailable ? (
                       <SolarAddCircleBold
                         size={14}
                         color="#16A34A"
+                        style={{ [isRTL ? "marginRight" : "marginLeft"]: 6 }}
+                      />
+                    ) : shift.isClosed ? (
+                      <SolarLockBold
+                        size={14}
+                        color="#E11D48"
                         style={{ [isRTL ? "marginRight" : "marginLeft"]: 6 }}
                       />
                     ) : (
@@ -715,44 +744,7 @@ export default function BookingsScreen() {
               </Text>
             </View>
           )}
-          {(item.status === "confirmed" ||
-            item.status === "external" ||
-            item.status === "pending_payment") && (
-              <View
-                style={{
-                  flexDirection: isRTL ? "row-reverse" : "row",
-                  gap: 12,
-                  marginTop: 16,
-                }}
-              >
-                <SecondaryButton
-                  label={t("dashboard.bookings.complete")}
-                  onPress={async () => {
-                    try {
-                      await markAsCompleted(item.id).unwrap();
-                      refreshAvailability();
-                      Haptics.notificationAsync(
-                        Haptics.NotificationFeedbackType.Success,
-                      );
-                    } catch (e) {
-                      Alert.alert("Error", "Update failed");
-                    }
-                  }}
-                  isLoading={isStatusLoading}
-                  isActive={true}
-                  activeColor={Colors.primary}
-                  style={{ flex: 1, height: 44 }}
-                />
-                <SecondaryButton
-                  label={t("dashboard.bookings.cancel")}
-                  onPress={() => handleOpenCancelSheet(item)}
-                  isLoading={isRejectLoading || isDeletingExternal}
-                  isActive={true}
-                  activeColor="#EF4444"
-                  style={{ flex: 1, height: 44 }}
-                />
-              </View>
-            )}
+          {/* Actions removed as requested */}
         </TouchableOpacity>
       </Animated.View>
     );
@@ -780,6 +772,7 @@ export default function BookingsScreen() {
       <HeaderSection
         title={isRTL ? "الحجوزات" : "Bookings"}
         showBackButton={true}
+        showLogo={true}
         showSearch={false}
         showCategories={false}
         showExtra={false}
@@ -807,7 +800,7 @@ export default function BookingsScreen() {
             style={styles.monthSelector}
           >
             <Text style={styles.monthLabel}>
-              {baseDate.toLocaleString(isRTL ? "ar-IQ" : "en-US", {
+              {baseDate.toLocaleString(isRTL ? "ar-IQ-u-nu-latn" : "en-US", {
                 month: "long",
                 year: "numeric",
               })}
@@ -987,7 +980,7 @@ export default function BookingsScreen() {
                     <Text
                       style={[
                         styles.inputLabel,
-                        { textAlign: isRTL ? "right" : "left" },
+                        { textAlign: isRTL ? "right" : "left" }
                       ]}
                     >
                       {isRTL ? "اسم الزبون (اختياري)" : "Customer Name (Optional)"}
@@ -995,7 +988,7 @@ export default function BookingsScreen() {
                     <BottomSheetTextInput
                       style={[
                         styles.textInput,
-                        { textAlign: isRTL ? "right" : "left", marginBottom: 12 },
+                        { textAlign: isRTL ? "right" : "left" }
                       ]}
                       placeholder={isRTL ? "أدخل اسم الزبون..." : "Enter customer name..."}
                       value={externalCustomerName}
@@ -1005,7 +998,7 @@ export default function BookingsScreen() {
                     <Text
                       style={[
                         styles.inputLabel,
-                        { textAlign: isRTL ? "right" : "left" },
+                        { textAlign: isRTL ? "right" : "left" }
                       ]}
                     >
                       {isRTL ? "رقم الهاتف (اختياري)" : "Phone Number (Optional)"}
@@ -1013,7 +1006,7 @@ export default function BookingsScreen() {
                     <BottomSheetTextInput
                       style={[
                         styles.textInput,
-                        { textAlign: isRTL ? "right" : "left", marginBottom: 12 },
+                        { textAlign: isRTL ? "right" : "left" }
                       ]}
                       placeholder={isRTL ? "07xxxxxxxx" : "07xxxxxxxx"}
                       value={externalCustomerPhone}
@@ -1024,7 +1017,7 @@ export default function BookingsScreen() {
                     <Text
                       style={[
                         styles.inputLabel,
-                        { textAlign: isRTL ? "right" : "left" },
+                        { textAlign: isRTL ? "right" : "left" }
                       ]}
                     >
                       {isRTL
@@ -1033,8 +1026,8 @@ export default function BookingsScreen() {
                     </Text>
                     <BottomSheetTextInput
                       style={[
-                        styles.textInput,
-                        { textAlign: isRTL ? "right" : "left" },
+                        styles.textArea,
+                        { textAlign: isRTL ? "right" : "left" }
                       ]}
                       placeholder={
                         isRTL
@@ -1048,8 +1041,8 @@ export default function BookingsScreen() {
                     <SecondaryButton
                       label={
                         isRTL
-                          ? "تأكيد الإغلاق الخارجي"
-                          : "Confirm External Closing"
+                          ? "تأكيد الحجز الخارجي"
+                          : "Confirm External Booking"
                       }
                       onPress={async () => {
                         try {
@@ -1088,6 +1081,46 @@ export default function BookingsScreen() {
                       style={{ height: 50 }}
                     />
                   </View>
+                </View>
+              ) : selectedShiftForAction.isClosed ? (
+                <View style={{ padding: 24, alignItems: "center" }}>
+                  <View style={[styles.avatarPlaceholder, { width: 80, height: 80, borderRadius: 40, backgroundColor: "#F1F5F9", marginBottom: 20 }]}>
+                    <SolarLockBold size={40} color="#64748B" />
+                  </View>
+                  <Text style={[styles.sheetTitle, { marginBottom: 8 }]}>
+                    {isRTL ? "هذه الفترة مغلقة" : "This shift is closed"}
+                  </Text>
+                  <Text style={{ textAlign: "center", color: "#64748B", fontFamily: "Alexandria-Regular", fontSize: normalize.font(14), marginBottom: 32 }}>
+                    {isRTL
+                      ? "لقد قمت بإغلاق هذه الفترة يدوياً. لن يتمكن الزبائن من حجزها حتى تقوم بإعادة فتحها."
+                      : "You have manually closed this shift. Customers won't be able to book it until you reopen it."}
+                  </Text>
+
+                  <SecondaryButton
+                    label={isRTL ? "إلغاء الإغلاق (إعادة الفتح)" : "Un-close (Reopen)"}
+                    onPress={async () => {
+                      try {
+                        if (!selectedShiftForAction.pricingId) {
+                          throw new Error("Pricing ID not found");
+                        }
+                        await updateShiftPricingDay({
+                          shiftId: selectedShiftForAction.shiftId || selectedShiftForAction.id,
+                          pricingId: selectedShiftForAction.pricingId,
+                          price: 50000, // Default price or could be something else
+                        }).unwrap();
+
+                        refreshAvailability();
+                        shiftSheetRef.current?.dismiss();
+                        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                      } catch (e: any) {
+                        Alert.alert("Error", e?.data?.message || "Failed to reopen");
+                      }
+                    }}
+                    isActive={true}
+                    activeColor={IDENTITY_BLUE}
+                    isLoading={isUpdatingPricing}
+                    style={{ height: 56, width: "100%" }}
+                  />
                 </View>
               ) : (
                 <View style={{ padding: 24 }}>
@@ -1278,11 +1311,10 @@ export default function BookingsScreen() {
         onConfirm={handleConfirmCancellation}
         isLoading={isRejectLoading || isDeletingExternal}
         isRTL={isRTL}
-        isExternal={
-          cancellingBookingData?.status === "external" ||
-          cancellingBookingData?.bIsExternal
-        }
-        depositAmount={cancellingBookingData?.downPayment || "50,000"}
+        isExternal={cancellingBookingData?.status === "external" || cancellingBookingData?.bIsExternal}
+        depositAmount={cancellingBookingData?.depositAmount || 0}
+        totalPrice={cancellingBookingData?.totalPrice || 0}
+        paymentModel={cancellingBookingData?.paymentModel || 'deposit'}
       />
 
       <BottomSheetModal
@@ -1599,6 +1631,12 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   shiftTileBooked: { opacity: 0.6, backgroundColor: "#F8FAFC" },
+  shiftTileClosed: {
+    opacity: 0.9,
+    backgroundColor: "#FFF5F5",
+    borderColor: "#FFE4E6",
+    borderStyle: "dashed"
+  },
   shiftTileContent: {
     padding: 12,
     justifyContent: "space-between",
@@ -1839,11 +1877,26 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   textInput: {
-    backgroundColor: "#F1F5F9",
-    borderRadius: 12,
-    padding: 12,
-    minHeight: 80,
-    marginBottom: 16,
+    backgroundColor: "#F8FAFC",
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    height: 54,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    fontFamily: "Alexandria-Regular",
+    fontSize: normalize.font(14),
+  },
+  textArea: {
+    backgroundColor: "#F8FAFC",
+    borderRadius: 14,
+    padding: 16,
+    minHeight: 100,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    fontFamily: "Alexandria-Regular",
+    fontSize: normalize.font(14),
     textAlignVertical: "top",
   },
   inputLabel: {

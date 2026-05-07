@@ -410,6 +410,19 @@ export function SolarMagnifierBold({
   );
 }
 
+export function SolarEyeBold({ size = 24, color, ...props }: SolarIconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+      <Path
+        fill={color || "currentColor"}
+        d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5ZM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5s5 2.24 5 5s-2.24 5-5 5Z"
+        opacity="0.5"
+      />
+      <Circle cx="12" cy="12" r="3" fill={color || "currentColor"} />
+    </Svg>
+  );
+}
+
 export function SolarUserBold({ size = 24, color, ...props }: SolarIconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
@@ -1491,6 +1504,10 @@ const IconMap: Record<string, React.FC<SolarIconProps>> = {
   "close-bold": SolarCloseBold,
   "wheel-bold": SolarWheelBold,
   "square-share-line-bold-duotone": SolarSquareShareLineBoldDuotone,
+  "danger-triangle-bold": SolarDangerTriangleBold,
+  "notebook-bold": SolarNotebookBold,
+  "shield-warning-bold": SolarShieldWarningBold,
+  "smart-home-bold": SolarSmartHomeBold,
 };
 
 export function SolarWheelBold({ size = 24, color, ...props }: SolarIconProps) {
@@ -1536,6 +1553,23 @@ export function SolarIcon({
   }
   return <Icon {...props} />;
 }
+
+export function SolarDangerTriangleBold({
+  size = 24,
+  color,
+  ...props
+}: SolarIconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+      <Path
+        fill={color || "#FFFFFF"}
+        fillRule="evenodd"
+        d="M12 3c-.5 0-.96.26-1.21.68l-8.5 14.5c-.26.44-.27.99-.01 1.44s.74.73 1.25.73h17.01c.5 0 .99-.28 1.25-.73s.25-1 .01-1.44L13.25 3.68c-.29-.42-.75-.68-1.25-.68zm-1 6a1 1 0 1 1 2 0v5a1 1 0 1 1-2 0V9zm1 10a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5z"
+        clipRule="evenodd"
+      />
+    </Svg>
+  );
+}
 export function SolarTrashBinMinimalisticLinear({ size = 24, color, ...props }: SolarIconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
@@ -1571,6 +1605,43 @@ export function SolarInboxLinear({ size = 24, color, ...props }: SolarIconProps)
         strokeWidth="1.5"
         d="M3.17 7.43a2 2 0 0 1 1.97-1.43h13.72a2 2 0 0 1 1.97 1.43l1.83 6.42A4 4 0 0 1 18.8 19H5.2a4 4 0 0 1-3.86-5.15l1.83-6.42z"
       />
+    </Svg>
+  );
+}export function SolarNotebookBold({ size = 24, color, ...props }: SolarIconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+      <Path
+        fill={color || "currentColor"}
+        d="M20 12c0-4.714 0-7.071-1.464-8.536C17.07 2 14.714 2 10 2s-7.071 0-8.536 1.464C0 4.93 0 7.286 0 12s0 7.071 1.464 8.536C2.93 22 5.286 22 10 22s7.071 0 8.536-1.465C20 19.072 20 16.714 20 12Z"
+        opacity="0.5"
+      />
+      <Path fill={color || "currentColor"} d="M5 8h10M5 12h10M5 16h6" />
+    </Svg>
+  );
+}
+
+export function SolarShieldWarningBold({ size = 24, color, ...props }: SolarIconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+      <Path
+        fill={color || "currentColor"}
+        d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3Z"
+        opacity="0.5"
+      />
+      <Path fill={color || "currentColor"} d="M12 7v6m0 3.5a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1Z" stroke={color || "currentColor"} strokeWidth="1.5" />
+    </Svg>
+  );
+}
+
+export function SolarSmartHomeBold({ size = 24, color, ...props }: SolarIconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+      <Path
+        fill={color || "currentColor"}
+        d="M12 2L2 12h3v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8h3L12 2Z"
+        opacity="0.5"
+      />
+      <Circle cx="12" cy="13" r="3" fill={color || "currentColor"} />
     </Svg>
   );
 }

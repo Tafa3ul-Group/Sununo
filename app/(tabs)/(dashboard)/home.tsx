@@ -58,8 +58,16 @@ export default function HomeScreen() {
 
   const handleOpenCancelSheet = (data: any) => {
     setCancellingBookingData(data);
+    const bIsExternal = data.bookingStatus === 'EXTERNAL' || data.status === 'external' || data.type === 'external';
+    const customerName = bIsExternal
+      ? data.externalCustomerName
+      : (data.customer?.name || data.customer?.fullName);
+    const customerPhone = bIsExternal
+      ? data.externalCustomerPhone
+      : (data.customer?.phone || data.customer?.phoneNumber);
+
     setTimeout(() => {
-      cancelSheetRef.current?.present();
+      cancelSheetRef.current?.present(customerName, customerPhone);
     }, 100);
   };
 
@@ -532,7 +540,9 @@ export default function HomeScreen() {
           isLoading={isRejectLoading || isDeletingExternal}
           isRTL={isRTL}
           isExternal={cancellingBookingData?.type === 'external' || cancellingBookingData?.bIsExternal}
-          depositAmount={cancellingBookingData?.downPayment || '50,000'}
+          depositAmount={cancellingBookingData?.depositAmount || 0}
+          totalPrice={cancellingBookingData?.totalPrice || 0}
+          paymentModel={cancellingBookingData?.paymentModel || 'deposit'}
         />
         {/* Calendar Drawer */}
         <BottomSheetModal

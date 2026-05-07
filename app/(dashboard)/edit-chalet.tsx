@@ -194,7 +194,11 @@ export default function EditChaletScreen() {
         maxAdults: chalet.maxAdults?.toString() || chalet.maxGuests?.toString() || '4',
         maxChildren: chalet.maxChildren?.toString() || '0',
         cityId: chalet.cityId || chalet.region?.cityId || '',
-        cityName: chalet.city?.name || chalet.region?.city?.name || '',
+        cityName: (() => {
+          const c = chalet.city || chalet.region?.city;
+          if (!c) return '';
+          return typeof c.name === 'object' ? (isRTL ? c.name.ar : c.name.en) : (c.name || '');
+        })(),
         depositPercentage: chalet.depositPercentage?.toString() || '25',
         phone: chalet.phone || '', whatsapp: chalet.whatsapp || '',
         policiesAr: chalet.policies?.ar || '', policiesEn: chalet.policies?.en || '',
@@ -330,7 +334,11 @@ export default function EditChaletScreen() {
         area: parseInt(form.area) || 0,
         bedrooms: parseInt(form.bedrooms) || 0,
         bathrooms: parseInt(form.bathrooms) || 0,
-        shifts: JSON.stringify(shifts.filter(s => s.isActive)),
+        shifts: shifts.filter(s => s.isActive).map(s => ({
+          ...s,
+          startTime: s.startTime?.split(':').slice(0, 2).join(':'),
+          endTime: s.endTime?.split(':').slice(0, 2).join(':'),
+        })),
       };
       if (form.policiesAr) payload.policies = { ar: form.policiesAr, en: form.policiesEn || form.policiesAr };
 
@@ -378,7 +386,8 @@ export default function EditChaletScreen() {
   }, [navigation, chalet]);
 
   const handleCitySelect = (city: any) => {
-    setForm({ ...form, cityId: city.id, cityName: city.name });
+    const cityName = typeof city.name === 'object' ? (isRTL ? city.name.ar : city.name.en) : city.name;
+    setForm({ ...form, cityId: city.id, cityName });
     citySheetRef.current?.dismiss();
   };
 
@@ -588,7 +597,11 @@ export default function EditChaletScreen() {
       <BottomSheetModal ref={citySheetRef} index={0} snapPoints={snapPoints} backdropComponent={renderBackdrop} backgroundStyle={{ borderRadius: normalize.radius(24) }}>
         <BottomSheetView style={styles.sheetContent}>
           <BottomSheetFlatList data={cities} keyExtractor={(item: any) => item.id} style={{ width: '100%' }} ListHeaderComponent={<Text style={styles.modalTitle}>{isRTL ? 'اختر المدينة' : 'Select City'}</Text>} renderItem={({ item }: { item: any }) => (
-            <TouchableOpacity style={styles.pickerItem} onPress={() => handleCitySelect(item)}><Text style={[styles.pickerItemText, { textAlign }]}>{item.name}</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.pickerItem} onPress={() => handleCitySelect(item)}>
+              <Text style={[styles.pickerItemText, { textAlign }]}>
+                {typeof item.name === 'object' ? (isRTL ? item.name.ar : item.name.en) : item.name}
+              </Text>
+            </TouchableOpacity>
           )} contentContainerStyle={{ paddingBottom: Spacing.xl }} />
         </BottomSheetView>
       </BottomSheetModal>

@@ -37,12 +37,9 @@ export default function ProviderProfileScreen() {
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProviderProfileMutation();
 
   const [formData, setFormData] = useState({
-    businessName: '',
-    businessDescription: '',
     bankName: '',
     bankAccountNo: '',
     iban: '',
-    address: '',
   });
 
   const profileData = profile?.data || profile;
@@ -50,31 +47,16 @@ export default function ProviderProfileScreen() {
   useEffect(() => {
     if (profileData) {
       setFormData({
-        businessName: (isRTL ? profileData.businessName?.ar : profileData.businessName?.en) || profileData.businessName?.ar || profileData.businessName?.en || '',
-        businessDescription: (isRTL ? profileData.businessDescription?.ar : profileData.businessDescription?.en) || profileData.businessDescription?.ar || profileData.businessDescription?.en || '',
         bankName: profileData.bankName || '',
         bankAccountNo: profileData.bankAccountNo || '',
         iban: profileData.iban || '',
-        address: profileData.address || '',
       });
     }
   }, [profileData, isRTL]);
 
   const handleSave = async () => {
     try {
-      const updateData = {
-        ...formData,
-        businessName: { 
-          ar: isRTL ? formData.businessName : (profileData?.businessName?.ar || formData.businessName),
-          en: !isRTL ? formData.businessName : (profileData?.businessName?.en || formData.businessName),
-        },
-        businessDescription: {
-          ar: isRTL ? formData.businessDescription : (profileData?.businessDescription?.ar || formData.businessDescription),
-          en: !isRTL ? formData.businessDescription : (profileData?.businessDescription?.en || formData.businessDescription),
-        }
-      };
-
-      await updateProfile(updateData).unwrap();
+      await updateProfile(formData).unwrap();
       Alert.alert(
         isRTL ? 'نجاح' : 'Success',
         isRTL ? 'تم تحديث البيانات بنجاح' : 'Profile updated successfully'
@@ -115,7 +97,6 @@ export default function ProviderProfileScreen() {
 
   return (
     <View style={styles.container}>
-
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1 }}
@@ -131,33 +112,7 @@ export default function ProviderProfileScreen() {
           }
         >
           <View style={styles.section}>
-            <ThemedText style={styles.sectionTitle}>{isRTL ? 'معلومات العمل' : 'Business Info'}</ThemedText>
-            {renderField(
-              isRTL ? 'اسم العمل' : 'Business Name',
-              formData.businessName,
-              'businessName',
-              SolarShopBold,
-              isRTL ? 'أدخل اسم عملك' : 'Enter business name'
-            )}
-            {renderField(
-              isRTL ? 'العنوان' : 'Address',
-              formData.address,
-              'address',
-              SolarMapPointBold,
-              isRTL ? 'العنوان الفعلي' : 'Physical address'
-            )}
-            {renderField(
-              isRTL ? 'الوصف' : 'Description',
-              formData.businessDescription,
-              'businessDescription',
-              SolarPenBold,
-              isRTL ? 'وصف مختصر لعملك' : 'Short business description',
-              true
-            )}
-          </View>
- 
-          <View style={styles.section}>
-            <ThemedText style={styles.sectionTitle}>{isRTL ? 'معلومات الحساب المصرفي' : 'Bank Account Info'}</ThemedText>
+            {/* Redundant title removed */}
             {renderField(
               isRTL ? 'اسم البنك' : 'Bank Name',
               formData.bankName,

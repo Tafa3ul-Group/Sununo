@@ -102,11 +102,11 @@ export const customerApi = apiSlice.injectEndpoints({
     getCustomerBookings: builder.query({
       query: (params?: {
         status?:
-          | "pending_payment"
-          | "confirmed"
-          | "completed"
-          | "cancelled"
-          | "refunded";
+        | "pending_payment"
+        | "confirmed"
+        | "completed"
+        | "cancelled"
+        | "refunded";
         page?: number;
         limit?: number;
       }) => ({

@@ -1,7 +1,7 @@
 import {
   SolarHome2Bold,
   SolarAddSquareBold,
-  SolarMagnifierBold
+  SolarEyeBold
 } from '@/components/icons/solar-icons';
 import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
@@ -47,14 +47,27 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
 
   // Auto-select first chalet if none selected or if 'all' is selected (legacy)
   React.useEffect(() => {
-    if (hasChalets && (!selectedChalet || selectedChalet.id === 'all') && chalets[0]) {
-      dispatch(setSelectedChalet({
-        id: chalets[0].id,
-        name: isRTL ? (chalets[0].name?.ar || chalets[0].name) : (chalets[0].name?.en || chalets[0].name),
-        image: chalets[0].images?.[0]?.url || null
-      }));
+    if (hasChalets && chalets[0]) {
+      // 1. Initial selection
+      if ((!selectedChalet || selectedChalet.id === 'all')) {
+        dispatch(setSelectedChalet({
+          id: chalets[0].id,
+          name: isRTL ? (chalets[0].name?.ar || chalets[0].name) : (chalets[0].name?.en || chalets[0].name),
+          image: chalets[0].images?.[0]?.url || null
+        }));
+      } 
+      // 2. Ensure image is populated if it's missing but exists in the list
+      else if (!selectedChalet.image) {
+        const current = chalets.find((c: any) => c.id === selectedChalet.id);
+        if (current?.images?.[0]?.url) {
+          dispatch(setSelectedChalet({
+            ...selectedChalet,
+            image: current.images[0].url
+          }));
+        }
+      }
     }
-  }, [hasChalets, selectedChalet]);
+  }, [hasChalets, selectedChalet?.id, selectedChalet?.image, chalets]);
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
@@ -103,6 +116,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
   const renderIcon = (route: any, isActive: boolean) => {
     const descriptor = descriptors[route.key];
     if (!descriptor) return null;
+
     const { options } = descriptor;
     if (options.tabBarIcon) {
       return options.tabBarIcon({
@@ -238,7 +252,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
                           router.push({ pathname: '/(dashboard)/chalet-details', params: { id: item.id } });
                         }}
                       >
-                         <SolarMagnifierBold size={16} color={Colors.primary} />
+                         <SolarEyeBold size={18} color={Colors.primary} />
                       </TouchableOpacity>
                     </TouchableOpacity>
                   ))}
