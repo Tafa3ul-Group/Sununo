@@ -38,7 +38,9 @@ import * as ImagePicker from 'expo-image-picker';
 import Toast from 'react-native-toast-message';
 import { 
   useUpdateChaletMutation, 
-  useUploadChaletImageMutation, 
+  useUploadChaletImageMutation,
+  useUpdateChaletImageMutation,
+  useDeleteChaletImageMutation, 
   useSetChaletAmenitiesMutation,
   useGetCitiesQuery,
   useGetAmenityCategoriesQuery,
@@ -62,6 +64,8 @@ export default function ChaletDetailsScreen() {
   const [deleteChalet] = useDeleteChaletMutation();
   const [updateChalet, { isLoading: isUpdating }] = useUpdateChaletMutation();
   const [uploadImage, { isLoading: isUploading }] = useUploadChaletImageMutation();
+  const [updateImage, { isLoading: isUpdatingImage }] = useUpdateChaletImageMutation();
+  const [deleteImage, { isLoading: isDeletingImage }] = useDeleteChaletImageMutation();
   const [setAmenitiesMutation, { isLoading: isLinking }] = useSetChaletAmenitiesMutation();
   const { data: cities } = useGetCitiesQuery();
   const { data: amenityCategories } = useGetAmenityCategoriesQuery();
@@ -250,6 +254,43 @@ export default function ChaletDetailsScreen() {
       refetch();
     } catch (e) {
       Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error' });
+    }
+  };
+
+  const handleDeleteChaletImage = async (imageId: string) => {
+    Alert.alert(
+      isRTL ? 'تنبيه' : 'Warning',
+      isRTL ? 'هل أنت متأكد من حذف هذه الصورة؟' : 'Are you sure you want to delete this image?',
+      [
+        { text: isRTL ? 'إلغاء' : 'Cancel', style: 'cancel' },
+        { 
+          text: isRTL ? 'حذف' : 'Delete', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteImage({ chaletId: id as string, imageId }).unwrap();
+              Toast.show({ type: 'success', text1: isRTL ? 'تم الحذف' : 'Deleted' });
+              refetch();
+            } catch (e) {
+              Toast.show({ type: 'error', text1: isRTL ? 'فشل الحذف' : 'Delete failed' });
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleSetAsCover = async (imageId: string) => {
+    try {
+      await updateImage({ 
+        chaletId: id as string, 
+        imageId, 
+        data: { isCover: true } 
+      }).unwrap();
+      Toast.show({ type: 'success', text1: isRTL ? 'تم التحديث' : 'Updated' });
+      refetch();
+    } catch (e) {
+      Toast.show({ type: 'error', text1: isRTL ? 'فشل التحديث' : 'Update failed' });
     }
   };
 
@@ -673,6 +714,12 @@ export default function ChaletDetailsScreen() {
                   icon={<SolarStarBold size={22} color={Colors.primary} />}
                   style={styles.managementBtn}
                 />
+                <SecondaryButton
+                  label={isRTL ? 'تعديل الصور' : 'Edit Photos'}
+                  onPress={() => imagesModalRef.current?.present()}
+                  icon={<SolarGalleryBold size={22} color={Colors.primary} />}
+                  style={styles.managementBtn}
+                />
               </View>
             </View>
 
@@ -880,7 +927,17 @@ export default function ChaletDetailsScreen() {
                       style={[styles.amenityItem, isSelected && styles.amenityItemActive]} 
                       onPress={() => setSelectedFeatures(prev => prev.includes(feature.id) ? prev.filter(f => f !== feature.id) : [...prev, feature.id])}
                     >
-                      <Text style={styles.amenityIcon}>{feature.icon === 'wifi' ? '📶' : '✨'}</Text>
+                      <View style={styles.amenityIcon}>
+                        {feature.icon && feature.icon !== 'wifi' && feature.icon !== 'default' ? (
+                          <Image 
+                            source={getImageSrc(feature.icon)} 
+                            style={{ width: 22, height: 22 }} 
+                            resizeMode="contain" 
+                          />
+                        ) : (
+                          <Text style={{ fontSize: 20 }}>{feature.icon === 'wifi' ? '📶' : '✨'}</Text>
+                        )}
+                      </View>
                       <Text style={styles.amenityName} numberOfLines={1}>{isRTL ? feature.name?.ar : feature.name?.en}</Text>
                       {isSelected && <View style={styles.checkBadge}><Text style={{ color: '#fff', fontSize: 10 }}>✓</Text></View>}
                     </TouchableOpacity>
@@ -898,12 +955,54 @@ export default function ChaletDetailsScreen() {
       <BottomSheetModal
         ref={imagesModalRef}
         index={0}
-        snapPoints={['70%']}
+        snapPoints={['85%']}
         backdropComponent={renderBackdrop}
         backgroundStyle={{ borderRadius: 24 }}
       >
         <BottomSheetScrollView contentContainerStyle={styles.modalScrollContent}>
           <Text style={styles.modalTitle}>{isRTL ? 'إدارة الصور' : 'Manage Images'}</Text>
+          
+          {/* Existing Images Section */}
+          <Text style={[styles.modalSubTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
+            {isRTL ? 'الصور الحالية' : 'Current Images'}
+          </Text>
+          <View style={styles.imagesUploadGrid}>
+            {chalet?.images?.map((img: any) => (
+              <View key={img.id} style={styles.uploadImageItem}>
+                <Image source={{ uri: getImageSrc(img.url).uri }} style={styles.uploadImage} />
+                
+                {/* Delete Button */}
+                <TouchableOpacity 
+                  style={styles.removeUploadBtn} 
+                  onPress={() => handleDeleteChaletImage(img.id)}
+                >
+                  <SolarTrashBinBold size={18} color={Colors.error} />
+                </TouchableOpacity>
+
+                {/* Cover Indicator/Toggle */}
+                <TouchableOpacity 
+                  style={[
+                    styles.coverIndicator, 
+                    img.isCover && { backgroundColor: Colors.primary }
+                  ]}
+                  onPress={() => !img.isCover && handleSetAsCover(img.id)}
+                >
+                  {img.isCover ? (
+                    <SolarCheckCircleBold size={14} color="white" />
+                  ) : (
+                    <SolarStarBold size={14} color={Colors.text.muted} />
+                  )}
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+
+          <View style={[styles.divider, { marginVertical: 24 }]} />
+
+          {/* New Images Section */}
+          <Text style={[styles.modalSubTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
+            {isRTL ? 'إضافة صور جديدة' : 'Add New Photos'}
+          </Text>
           <View style={styles.imagesUploadGrid}>
             {selectedImages.map((uri, idx) => (
               <View key={idx} style={styles.uploadImageItem}>
@@ -918,12 +1017,13 @@ export default function ChaletDetailsScreen() {
               <Text style={styles.addPhotosText}>{isRTL ? 'إضافة' : 'Add'}</Text>
             </TouchableOpacity>
           </View>
+
           <PrimaryButton 
-            label={isRTL ? 'رفع الصور' : 'Upload Photos'} 
+            label={isRTL ? 'رفع الصور المختارة' : 'Upload Selected Photos'} 
             onPress={handleUploadImages} 
             loading={isUploading} 
             disabled={selectedImages.length === 0} 
-            style={{ marginTop: 20 }}
+            style={{ marginTop: 24 }}
           />
           <View style={{ height: 40 }} />
         </BottomSheetScrollView>
@@ -1102,11 +1202,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.25)',
   },
-  contentBody: {
-    paddingHorizontal: 14,
-    paddingTop: 24,
+  infoSection: {
+    paddingHorizontal: 20,
+    marginTop: 24,
   },
-  titleSection: {
+  divider: {
+    height: 1,
+    backgroundColor: '#E2E8F0',
+    width: '100%',
+  },
+  sectionHeaderRow: {
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: 28,
@@ -1456,6 +1561,16 @@ const styles = StyleSheet.create({
   uploadImage: {
     width: '100%',
     height: '100%',
+  },
+  coverIndicator: {
+    position: 'absolute',
+    bottom: 5,
+    left: 5,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderRadius: 8,
+    padding: 4,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   removeUploadBtn: {
     position: 'absolute',

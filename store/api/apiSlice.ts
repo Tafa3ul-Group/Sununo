@@ -116,6 +116,24 @@ export const apiSlice = createApi({
         method: "POST",
         body: formData,
       }),
+      invalidatesTags: (result, error, { chaletId }) => [{ type: 'Chalet', id: chaletId }],
+    }),
+
+    updateChaletImage: builder.mutation({
+      query: ({ chaletId, imageId, data }) => ({
+        url: `/provider/chalets/${chaletId}/images/${imageId}`,
+        method: 'PATCH',
+        body: data,
+      }),
+      invalidatesTags: (result, error, { chaletId }) => [{ type: 'Chalet', id: chaletId }],
+    }),
+
+    deleteChaletImage: builder.mutation({
+      query: ({ chaletId, imageId }) => ({
+        url: `/provider/chalets/${chaletId}/images/${imageId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (result, error, { chaletId }) => [{ type: 'Chalet', id: chaletId }],
     }),
 
     // Get amenity categories for image categorization
@@ -464,6 +482,8 @@ export const {
   useCreateChaletMutation,
   useUpdateChaletMutation,
   useUploadChaletImageMutation,
+  useUpdateChaletImageMutation,
+  useDeleteChaletImageMutation,
   useGetOwnerChaletsQuery,
   useGetOwnerChaletDetailsQuery,
   useGetChaletDetailsQuery,

@@ -303,6 +303,9 @@ export default function ChaletDetailScreen() {
       return apiFeatures.map((item: any, idx: number) => {
         const feature = item.feature || item; // Fallback for old structure
         const iconName = feature.icon || "default";
+        
+        // Check if iconName is an image ID/URL
+        const isImage = iconName && !Object.keys(FEATURE_ICON_MAP).includes(iconName) && iconName !== 'default';
         const IconComponent =
           FEATURE_ICON_MAP[iconName] || FEATURE_ICON_MAP.default;
 
@@ -311,13 +314,14 @@ export default function ChaletDetailScreen() {
             ? feature.name?.ar || feature.nameAr || feature.name || ""
             : feature.name?.en || feature.nameEn || feature.name || "",
           Icon: IconComponent,
+          imageUrl: isImage ? getImageSrc(iconName) : null,
           color: CARD_COLORS[idx % CARD_COLORS.length],
         };
       });
     }
 
     return [];
-  }, [chalet.chaletFeatures, chalet.amenities, isRTL]);
+  }, [chalet.chaletFeatures, chalet.amenities, isRTL, FEATURE_ICON_MAP]);
 
   if (isLoading) {
     return (
@@ -602,7 +606,15 @@ export default function ChaletDetailScreen() {
                         <Path d={SHAPES.blue} fill={f.color} />
                       </Svg>
                       <View style={styles.iconInShape}>
-                        {f.Icon && <f.Icon size={22} color="white" />}
+                        {f.imageUrl ? (
+                          <Image
+                            source={f.imageUrl}
+                            style={{ width: 22, height: 22 }}
+                            resizeMode="contain"
+                          />
+                        ) : f.Icon ? (
+                          <f.Icon size={22} color="white" />
+                        ) : null}
                       </View>
                     </View>
                     <ThemedText style={styles.facilityLabelText}>
