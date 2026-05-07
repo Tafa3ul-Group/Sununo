@@ -1024,21 +1024,7 @@ export default function ChaletDetailScreen() {
             </ThemedText>
           </View>
           
-          {chalet.depositPercentage > 0 && (
-            <View
-              style={[
-                styles.depositRow,
-                { flexDirection: isRTL ? "row-reverse" : "row" },
-              ]}
-            >
-              <ThemedText style={styles.depositLabel}>
-                {isRTL ? "العربون المطلوب:" : "Required Deposit:"}
-              </ThemedText>
-              <ThemedText style={styles.depositValue}>
-                {Math.round(displayPrice * (chalet.depositPercentage / 100)).toLocaleString()} {t("common.iqd")} ({chalet.depositPercentage}%)
-              </ThemedText>
-            </View>
-          )}
+
         </View>
       </View>
 
@@ -1169,10 +1155,10 @@ const styles = StyleSheet.create({
     fontFamily: "LamaSans-Regular",
   },
   sectionHeaderContainer: {
-    height: 60,
     justifyContent: "center",
-    marginBottom: 10,
-    marginTop: 15,
+    marginBottom: 5,
+    marginTop: 20,
+    paddingVertical: 10,
   },
   sectionTitle: {
     fontSize: 18,
@@ -1193,11 +1179,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   facilitiesGrid: {
+    flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "space-between",
-    marginVertical: 15,
+    justifyContent: "flex-start",
+    marginVertical: 10,
+    gap: 10,
   },
-  facilityCell: { width: "23%", alignItems: "center", marginBottom: 20 },
+  facilityCell: { 
+    width: (SCREEN_WIDTH - 64) / 4, 
+    alignItems: "center", 
+    marginBottom: 15 
+  },
   closedChaletBox: {
     backgroundColor: '#FEF2F2',
     padding: 20,
