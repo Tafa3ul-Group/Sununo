@@ -384,29 +384,15 @@ export default function CompleteBookingScreen() {
     if (bookedDates.includes(day)) return;
     setSelectedDates((prev) => {
       if (prev.includes(day)) {
-        Alert.alert(
-          isRTL ? "حذف اليوم" : "Delete Day",
-          isRTL
-            ? "هل أنت متأكد من حذف هذا اليوم؟"
-            : "Are you sure you want to delete this day?",
-          [
-            { text: isRTL ? "إلغاء" : "Cancel", style: "cancel" },
-            {
-              text: isRTL ? "حذف" : "Delete",
-              style: "destructive",
-              onPress: () => {
-                setSelectedDates((curr) => curr.filter((d) => d !== day));
-                setSelectedShifts((prevShifts) => {
-                  const next = { ...prevShifts };
-                  delete next[day];
-                  return next;
-                });
-              },
-            },
-          ],
-        );
-        return prev; // Deletion handled in Alert onPress
+        // Remove the day
+        setSelectedShifts((prevShifts) => {
+          const next = { ...prevShifts };
+          delete next[day];
+          return next;
+        });
+        return prev.filter((d) => d !== day);
       }
+      // Add the day
       const updated = [...prev, day].sort((a, b) => a - b);
       return updated;
     });
@@ -1059,9 +1045,7 @@ export default function CompleteBookingScreen() {
         key={day}
         disabled={isBooked}
         style={[styles.dayCell, isSelected && styles.activeDayCell]}
-        onPress={() => {
-          if (!isSelected) toggleDayDate(day);
-        }}
+        onPress={() => toggleDayDate(day)}
       >
         <ThemedText
           style={[
@@ -1153,6 +1137,16 @@ export default function CompleteBookingScreen() {
                             {formatShiftTime(shift.endTime)}
                           </ThemedText>
                         </View>
+                        <View style={{ alignItems: isRTL ? 'flex-start' : 'flex-end' }}>
+                          <ThemedText style={styles.shiftPriceFlat}>
+                            {(() => {
+                              const minPrice = shift.pricing && shift.pricing.length > 0
+                                ? Math.min(...shift.pricing.map((p: any) => p.price))
+                                : chaletDetails?.basePrice || 0;
+                              return Number(minPrice).toLocaleString();
+                            })()} {t("common.iqd")}
+                          </ThemedText>
+                        </View>
                       </View>
                     );
                   })}
@@ -1218,6 +1212,11 @@ export default function CompleteBookingScreen() {
                       ? shift.name?.ar || shift.name
                       : shift.name?.en || shift.name;
 
+                    const dayOfWeek = getDayOfWeek(day);
+                    const shiftPrice = shift.pricing?.find(
+                      (p: any) => p.dayOfWeek === dayOfWeek,
+                    )?.price || chaletDetails?.basePrice || 0;
+
                     const isMorning =
                       shift.type === "MORNING" ||
                       shift.name?.en?.toLowerCase().includes("morning") ||
@@ -1267,12 +1266,13 @@ export default function CompleteBookingScreen() {
                           style={[
                             styles.shiftInfoFlat,
                             isRTL ? styles.rtlAlign : styles.ltrAlign,
+                            { flex: 1 }
                           ]}
                         >
                           <ThemedText
                             style={[
                               styles.shiftNameFlat,
-                              isSelected && { color: "#035DF9" },
+                              isSelected && { color: "#035DF9", fontFamily: "Alexandria-Black" },
                             ]}
                           >
                             {shiftName}
@@ -1280,6 +1280,11 @@ export default function CompleteBookingScreen() {
                           <ThemedText style={styles.shiftTimeFlat}>
                             {formatShiftTime(shift.startTime)} -{" "}
                             {formatShiftTime(shift.endTime)}
+                          </ThemedText>
+                        </View>
+                        <View style={{ alignItems: isRTL ? 'flex-start' : 'flex-end' }}>
+                          <ThemedText style={[styles.shiftPriceFlat, isSelected && { color: "#035DF9", fontFamily: "Alexandria-Black" }]}>
+                            {Number(shiftPrice).toLocaleString()} {t("common.iqd")}
                           </ThemedText>
                         </View>
                       </TouchableOpacity>
@@ -1610,13 +1615,13 @@ const styles = StyleSheet.create({
   },
   shiftNameFlat: {
     fontSize: normalize.font(15),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Bold",
     color: "#1E293B",
   },
   shiftTimeFlat: {
     fontSize: normalize.font(12),
+    fontFamily: "Alexandria-Regular",
     color: "#64748B",
-    fontFamily: "Alexandria-Bold",
   },
   shiftPriceFlat: {
     fontSize: normalize.font(14),

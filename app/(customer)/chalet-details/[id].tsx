@@ -300,7 +300,7 @@ export default function ChaletDetailScreen() {
     const apiFeatures = chalet.chaletFeatures || chalet.amenities || [];
 
     if (apiFeatures.length > 0) {
-      return apiFeatures.slice(0, 4).map((item: any, idx: number) => {
+      return apiFeatures.map((item: any, idx: number) => {
         const feature = item.feature || item; // Fallback for old structure
         const iconName = feature.icon || "default";
         const IconComponent =
@@ -316,25 +316,8 @@ export default function ChaletDetailScreen() {
       });
     }
 
-    return [
-      {
-        label: t("facilities.privatePool"),
-        Icon: SolarWaterBold,
-        color: "#035DF9",
-      },
-      { label: t("facilities.wifi"), Icon: SolarWifiBold, color: "#EF79D7" },
-      {
-        label: t("facilities.generator"),
-        Icon: SolarWindBold,
-        color: "#F64200",
-      },
-      {
-        label: t("facilities.kitchen"),
-        Icon: SolarHome2Bold,
-        color: "#15AB64",
-      },
-    ];
-  }, [chalet.chaletFeatures, chalet.amenities, isRTL, t]);
+    return [];
+  }, [chalet.chaletFeatures, chalet.amenities, isRTL]);
 
   if (isLoading) {
     return (
@@ -512,30 +495,28 @@ export default function ChaletDetailScreen() {
                   : null;
 
               return (
-                <TouchableOpacity
+                <View
                   key={shift.id || index}
-                  onPress={() => setSelectedShiftId(shift.id)}
                   style={[
                     styles.shiftCard,
                     { flexDirection: isRTL ? "row-reverse" : "row" },
-                    isSelected && styles.shiftCardActive,
                   ]}
                 >
                   {(() => {
                     const isMorning = shift.type === 'MORNING' || (shift.name?.en?.toLowerCase().includes('morning')) || (shift.name?.ar?.includes('صباح'));
                     return (
                       <View
-                        style={[styles.shiftIconCircle, isSelected && styles.shiftIconCircleActive]}
+                        style={styles.shiftIconCircle}
                       >
                         {isMorning ? (
                           <SolarSunBold
                             size={22}
-                            color={isSelected ? "white" : "#FBBF24"}
+                            color="#FBBF24"
                           />
                         ) : (
                           <SolarMoonBold
                             size={22}
-                            color={isSelected ? "white" : "#6366F1"}
+                            color="#6366F1"
                           />
                         )}
                       </View>
@@ -548,13 +529,13 @@ export default function ChaletDetailScreen() {
                     ]}
                   >
                     <ThemedText
-                      style={[styles.shiftName, isSelected && styles.shiftNameActive]}
+                      style={styles.shiftName}
                     >
                       {isRTL
                         ? shift.name?.ar || shift.name
                         : shift.name?.en || shift.name}
                     </ThemedText>
-                    <ThemedText style={[styles.shiftTime, isSelected && styles.shiftTimeActive]}>
+                    <ThemedText style={styles.shiftTime}>
                       {formatShiftTime(shift.startTime)} -{" "}
                       {formatShiftTime(shift.endTime)}
                     </ThemedText>
@@ -564,60 +545,63 @@ export default function ChaletDetailScreen() {
                       style={{ alignItems: isRTL ? "flex-start" : "flex-end" }}
                     >
                       <ThemedText
-                        style={[styles.shiftPrice, isSelected && styles.shiftPriceActive]}
+                        style={styles.shiftPrice}
                       >
                         {minShiftPrice} {t("common.iqd")}
                       </ThemedText>
                     </View>
                   )}
-                </TouchableOpacity>
+                </View>
               );
             })}
           </View>
 
-          {/* المرافق */}
-          <View
-            style={[
-              styles.facilitiesHeader,
-              { flexDirection: isRTL ? "row" : "row-reverse" },
-            ]}
-          >
-            <TouchableOpacity
-              onPress={() =>
-                router.push(`/chalet-details/facilities/${chaletId}`)
-              }
-            >
-              <ThemedText style={styles.viewAllText}>
-                {t("home.seeAll")}
-              </ThemedText>
-            </TouchableOpacity>
-            <SectionHeader
-              title={t("chalet.details.facilities")}
-              isRTL={isRTL}
-            />
-          </View>
-          <View
-            style={[
-              styles.facilitiesGrid,
-              { flexDirection: isRTL ? "row-reverse" : "row" },
-            ]}
-          >
-            {facilities.map((f: any, i: number) => (
-              <View key={i} style={styles.facilityCell}>
-                <View style={styles.shapeCont}>
-                  <Svg height={55} width={55} viewBox="0 0 60 60">
-                    <Path d={SHAPES.blue} fill={f.color} />
-                  </Svg>
-                  <View style={styles.iconInShape}>
-                    {f.Icon && <f.Icon size={22} color="white" />}
-                  </View>
-                </View>
-                <ThemedText style={styles.facilityLabelText}>
-                  {f.label}
-                </ThemedText>
+          {facilities.length > 0 && (
+            <>
+              <View
+                style={[
+                  styles.facilitiesHeader,
+                  { flexDirection: isRTL ? "row" : "row-reverse" },
+                ]}
+              >
+                <TouchableOpacity
+                  onPress={() =>
+                    router.push(`/chalet-details/facilities/${chaletId}`)
+                  }
+                >
+                  <ThemedText style={styles.viewAllText}>
+                    {t("home.seeAll")}
+                  </ThemedText>
+                </TouchableOpacity>
+                <SectionHeader
+                  title={t("chalet.details.facilities")}
+                  isRTL={isRTL}
+                />
               </View>
-            ))}
-          </View>
+              <View
+                style={[
+                  styles.facilitiesGrid,
+                  { flexDirection: isRTL ? "row-reverse" : "row" },
+                ]}
+              >
+                {facilities.slice(0, 4).map((f: any, i: number) => (
+                  <View key={i} style={styles.facilityCell}>
+                    <View style={styles.shapeCont}>
+                      <Svg height={55} width={55} viewBox="0 0 60 60">
+                        <Path d={SHAPES.blue} fill={f.color} />
+                      </Svg>
+                      <View style={styles.iconInShape}>
+                        {f.Icon && <f.Icon size={22} color="white" />}
+                      </View>
+                    </View>
+                    <ThemedText style={styles.facilityLabelText}>
+                      {f.label}
+                    </ThemedText>
+                  </View>
+                ))}
+              </View>
+            </>
+          )}
 
           {/* نظرة عامة */}
           <SectionHeader title={t("chalet.details.overview")} isRTL={isRTL} />
@@ -633,10 +617,7 @@ export default function ChaletDetailScreen() {
                 { textAlign: isRTL ? "right" : "left" },
               ]}
             >
-              {chaletDescription ||
-                (isRTL
-                  ? "هو ببساطة نص شكلي (بمعنى أن الغاية هي الشكل وليس المحتوى) ويُستخدم في صناعات المطابع ودور النشر..."
-                  : "Lorem ipsum is simply dummy text of the printing and typesetting industry...")}
+              {chaletDescription}
             </ThemedText>
           </View>
           <View style={styles.readMoreWrapper}>
@@ -1095,7 +1076,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
   },
   shiftName: {
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "Alexandria-Black",
     fontSize: 15,
     color: "#1E293B",
   },
@@ -1112,7 +1093,7 @@ const styles = StyleSheet.create({
     color: "#035DF9",
   },
   shiftPrice: {
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "Alexandria-Black",
     fontSize: 14,
     color: "#1E293B",
   },
