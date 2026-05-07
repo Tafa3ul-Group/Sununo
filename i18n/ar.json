@@ -199,6 +199,10 @@
     "cvv": "CVV/CVC",
     "enterName": "ادخل الاسم",
     "completePayment": "اتمام الدفع",
+    "paymentMethod": "طريقة الدفع",
+    "wallet": "المحفظة",
+    "sindiPay": "سندي باي",
+    "wayl": "وايل",
     "bookingDetails": "تفاصيل الحجز",
     "bookingStatus": "حالة الحجز",
     "paymentStatus": "حالة الدفع",
@@ -230,7 +234,11 @@
     "viewBookingDetails": "عرض تفاصيل الحجز",
     "noBookings": "لا توجد حجوزات حتى الآن",
     "noBookingsDesc": "ابدأ باستكشاف الشاليهات المتاحة واحجز رحلتك القادمة!",
-    "exploreNow": "اكتشف الآن"
+    "exploreNow": "اكتشف الآن",
+    "noShift": "لم يتم اختيار فترة",
+    "noDate": "لم يتم اختيار تاريخ",
+    "bookingError": "حدث خطأ أثناء الحجز",
+    "shiftPrice": "سعر الفترة"
   },
   "headers": {
     "notifications": "الإشعارات",

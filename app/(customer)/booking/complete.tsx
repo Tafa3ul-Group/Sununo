@@ -4,7 +4,9 @@ import {
   SolarAltArrowRightBold,
   SolarMapPointBold,
   SolarMoonBold,
-  SolarSunBold
+  SolarSunBold,
+  SolarWalletBold,
+  SolarCardBold,
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { GuestCounter } from "@/components/user/guest-counter";
@@ -13,10 +15,13 @@ import { MainTabs, TabType } from "@/components/user/MainTabs";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { Colors, normalize } from "@/constants/theme";
 import { RootState } from "@/store";
+import * as WebBrowser from "expo-web-browser";
 import {
   useCreateCustomerBookingMutation,
   useGetChaletAvailabilityQuery,
   useGetCustomerChaletDetailsQuery,
+  useGetPlatformConfigQuery,
+  useLazyGetPaymentStatusQuery,
 } from "@/store/api/customerApiSlice";
 import {
   BottomSheetBackdrop,
@@ -30,6 +35,7 @@ import LottieView from "lottie-react-native";
 import React, { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  ActivityIndicator,
   Alert,
   Dimensions,
   Platform,
@@ -151,11 +157,21 @@ export default function CompleteBookingScreen() {
   const [cardNum, setCardNum] = useState("");
   const [expiry, setExpiry] = useState("");
   const [cvv, setCvv] = useState("");
+  const [selectedMethod, setSelectedMethod] = useState<"sindi_pay" | "wayl" | "wallet">("sindi_pay");
+
+  const { data: platformConfig } = useGetPlatformConfigQuery({});
   const [cardName, setCardName] = useState("");
   const [notes, setNotes] = useState("");
 
   const [adultCount, setAdultCount] = useState(2);
   const [childrenCount, setChildrenCount] = useState(1);
+
+  // Payment status polling
+  const [isWaitingForPayment, setIsWaitingForPayment] = useState(false);
+  const [pollingStatus, setPollingStatus] = useState<'pending' | 'success' | 'failed' | 'timeout'>('pending');
+  const [paymentTransactionId, setPaymentTransactionId] = useState<string | null>(null);
+  const [checkPaymentStatus] = useLazyGetPaymentStatusQuery();
+  const processingSheetRef = React.useRef<BottomSheetModal>(null);
 
   const handleNextMonth = () => {
     const next = new Date(currentMonth);
@@ -311,16 +327,40 @@ export default function CompleteBookingScreen() {
             adultsCount: adultCount,
             childrenCount: childrenCount,
             paymentModel: paymentType.toLowerCase() as any,
-            useWalletBalance: paymentType === "FULL",
+            paymentMethod: selectedMethod,
             notes,
-            cardHolderName: cardName,
-            cardNumber: cardNum,
-            expiry,
-            cvv,
           }).unwrap();
 
-          setCreatedBookingId(result.booking.id);
-          successSheetRef.current?.present();
+          if (result.payment?.paymentUrl) {
+            setCreatedBookingId(result.booking.id);
+            setPaymentTransactionId(result.payment.transactionId);
+            
+            // Open payment URL in auth session to catch the redirect
+            setIsWaitingForPayment(true);
+            setPollingStatus('pending');
+            processingSheetRef.current?.present();
+
+            try {
+              const authResult = await WebBrowser.openAuthSessionAsync(
+                result.payment.paymentUrl,
+                'sununo://payment-callback'
+              );
+
+              // Start polling regardless of authResult to be sure
+              startPaymentPolling(result.payment.transactionId);
+            } catch (e) {
+              console.error("Browser error", e);
+              setIsWaitingForPayment(false);
+              processingSheetRef.current?.dismiss();
+            }
+          } else if (selectedMethod === "wallet") {
+            setCreatedBookingId(result.booking.id);
+            successSheetRef.current?.present();
+          } else {
+            // Handle cases where no URL is returned (e.g. error or test)
+            setCreatedBookingId(result.booking.id);
+            successSheetRef.current?.present();
+          }
         } else {
           Alert.alert(
             isRTL ? "خطأ" : "Error",
@@ -381,6 +421,50 @@ export default function CompleteBookingScreen() {
     }));
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
+
+  const startPaymentPolling = async (transactionId: string) => {
+    let attempts = 0;
+    const maxAttempts = 20; // 20 * 3s = 60s (1 minute)
+    
+    const interval = setInterval(async () => {
+      attempts++;
+      try {
+        const result = await checkPaymentStatus(transactionId).unwrap();
+        if (result?.status === 'success') {
+          clearInterval(interval);
+          setPollingStatus('success');
+          WebBrowser.dismissAuthSession();
+          // Wait a bit then show success sheet
+          setTimeout(() => {
+            processingSheetRef.current?.dismiss();
+            successSheetRef.current?.present();
+          }, 1500);
+        } else if (result?.status === 'failed') {
+          clearInterval(interval);
+          setPollingStatus('failed');
+          WebBrowser.dismissAuthSession();
+          setTimeout(() => {
+            processingSheetRef.current?.dismiss();
+          }, 1500);
+        }
+      } catch (e) {
+        // Only log actual network errors, ignore WebBrowser close errors
+        if (e && typeof e === 'object' && 'status' in e) {
+           console.error("Polling error", e);
+        }
+      }
+
+      if (attempts >= maxAttempts) {
+        clearInterval(interval);
+        setPollingStatus('timeout');
+        WebBrowser.dismissAuthSession();
+        setTimeout(() => {
+          processingSheetRef.current?.dismiss();
+        }, 1500);
+      }
+    }, 3000);
+  };
+
 
   const renderDetailsTab = () => (
     <View style={styles.detailsContainer}>
@@ -693,104 +777,57 @@ export default function CompleteBookingScreen() {
             isRTL ? styles.rtlText : styles.ltrText,
           ]}
         >
-          {t("booking.paymentDetails")}
+          {t("booking.paymentMethod") || "طريقة الدفع"}
         </ThemedText>
 
-        <View style={styles.paymentForm}>
-          <View style={styles.inputGroup}>
-            <ThemedText
+        <View style={styles.paymentMethodsGrid}>
+          {platformConfig?.isSindiPayEnabled && (
+            <TouchableOpacity
               style={[
-                styles.inputLabel,
-                isRTL ? styles.rtlText : styles.ltrText,
+                styles.methodCard,
+                selectedMethod === "sindi_pay" && styles.methodCardActive,
               ]}
+              onPress={() => setSelectedMethod("sindi_pay")}
             >
-              {t("booking.cardNum")}
-            </ThemedText>
-            <TextInput
-              style={[
-                styles.textInput,
-                isRTL ? styles.rtlText : styles.ltrText,
-              ]}
-              placeholder="**** **** **** ****"
-              placeholderTextColor="#94A3B8"
-              keyboardType="numeric"
-              value={cardNum}
-              onChangeText={setCardNum}
-            />
-          </View>
+              <View style={[styles.methodIconContainer, { backgroundColor: "#EEF2FF" }]}>
+                <SolarCardBold size={24} color={selectedMethod === "sindi_pay" ? "white" : "#6366F1"} />
+              </View>
+              <ThemedText style={styles.methodName}>{t("booking.sindiPay")}</ThemedText>
+              {selectedMethod === "sindi_pay" && <View style={styles.selectedDot} />}
+            </TouchableOpacity>
+          )}
 
-          <View
-            style={[
-              styles.rowInputs,
-              { gap: 15, flexDirection: isRTL ? "row-reverse" : "row" },
-            ]}
-          >
-            <View style={styles.inputGroupFull}>
-              <ThemedText
-                style={[
-                  styles.inputLabel,
-                  isRTL ? styles.rtlText : styles.ltrText,
-                ]}
-              >
-                {t("booking.expiry")}
-              </ThemedText>
-              <TextInput
-                style={[
-                  styles.textInput,
-                  isRTL ? styles.rtlText : styles.ltrText,
-                ]}
-                placeholder="MM/YYYY"
-                placeholderTextColor="#94A3B8"
-                keyboardType="numeric"
-                value={expiry}
-                onChangeText={setExpiry}
-              />
-            </View>
-            <View style={styles.inputGroupFixed}>
-              <ThemedText
-                style={[
-                  styles.inputLabel,
-                  isRTL ? styles.rtlText : styles.ltrText,
-                ]}
-              >
-                {t("booking.cvv")}
-              </ThemedText>
-              <TextInput
-                style={[
-                  styles.textInput,
-                  isRTL ? styles.rtlText : styles.ltrText,
-                ]}
-                placeholder="***"
-                placeholderTextColor="#94A3B8"
-                keyboardType="numeric"
-                secureTextEntry
-                maxLength={4}
-                value={cvv}
-                onChangeText={setCvv}
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <ThemedText
+          {platformConfig?.isWaylEnabled && (
+            <TouchableOpacity
               style={[
-                styles.inputLabel,
-                isRTL ? styles.rtlText : styles.ltrText,
+                styles.methodCard,
+                selectedMethod === "wayl" && styles.methodCardActive,
               ]}
+              onPress={() => setSelectedMethod("wayl")}
             >
-              {t("booking.cardName")}
-            </ThemedText>
-            <TextInput
+              <View style={[styles.methodIconContainer, { backgroundColor: "#ECFDF5" }]}>
+                <SolarCardBold size={24} color={selectedMethod === "wayl" ? "white" : "#10B981"} />
+              </View>
+              <ThemedText style={styles.methodName}>{t("booking.wayl")}</ThemedText>
+              {selectedMethod === "wayl" && <View style={styles.selectedDot} />}
+            </TouchableOpacity>
+          )}
+
+          {platformConfig?.isWalletEnabled && (
+            <TouchableOpacity
               style={[
-                styles.textInput,
-                isRTL ? styles.rtlText : styles.ltrText,
+                styles.methodCard,
+                selectedMethod === "wallet" && styles.methodCardActive,
               ]}
-              placeholder={t("booking.enterName")}
-              placeholderTextColor="#94A3B8"
-              value={cardName}
-              onChangeText={setCardName}
-            />
-          </View>
+              onPress={() => setSelectedMethod("wallet")}
+            >
+              <View style={[styles.methodIconContainer, { backgroundColor: "#FFF7ED" }]}>
+                <SolarWalletBold size={24} color={selectedMethod === "wallet" ? "white" : "#F97316"} />
+              </View>
+              <ThemedText style={styles.methodName}>{t("booking.wallet")}</ThemedText>
+              {selectedMethod === "wallet" && <View style={styles.selectedDot} />}
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </View>
@@ -921,6 +958,92 @@ export default function CompleteBookingScreen() {
           activeColor="#15AB64"
           style={styles.successBtn}
         />
+      </BottomSheetView>
+    </BottomSheetModal>
+  );
+
+  const renderProcessingSheet = () => (
+    <BottomSheetModal
+      ref={processingSheetRef}
+      index={0}
+      snapPoints={["55%"]}
+      enablePanDownToClose={pollingStatus !== 'pending'}
+      backdropComponent={(props) => (
+        <BottomSheetBackdrop
+          {...props}
+          disappearsOnIndex={-1}
+          appearsOnIndex={0}
+        />
+      )}
+      handleIndicatorStyle={{ backgroundColor: "#CBD5E1", width: 40 }}
+    >
+      <BottomSheetView style={styles.successSheetContent}>
+        {pollingStatus === 'pending' ? (
+          <>
+            <ActivityIndicator size="large" color={Colors.primary} style={{ marginTop: 40, marginBottom: 20 }} />
+            <ThemedText style={styles.successTitle}>
+              {isRTL ? "جاري التحقق من الدفع..." : "Verifying Payment..."}
+            </ThemedText>
+            <ThemedText style={styles.successSub}>
+              {isRTL 
+                ? "يرجى الانتظار بينما نتأكد من حالة العملية، قد يستغرق ذلك لحظات." 
+                : "Please wait while we confirm your transaction, this may take a few moments."}
+            </ThemedText>
+          </>
+        ) : pollingStatus === 'success' ? (
+          <>
+            <LottieView
+              source={require("../../../components/icons/motions/success.json")}
+              autoPlay
+              loop={false}
+              style={[styles.lottieIcon, { height: normalize.height(120) }]}
+              resizeMode="contain"
+            />
+            <ThemedText style={styles.successTitle}>
+              {isRTL ? "تم الدفع بنجاح!" : "Payment Successful!"}
+            </ThemedText>
+            <ThemedText style={styles.successSub}>
+              {isRTL ? "تم تأكيد الدفع بنجاح، جاري تحويلك..." : "Payment confirmed successfully, redirecting..."}
+            </ThemedText>
+          </>
+        ) : pollingStatus === 'failed' ? (
+          <>
+            <View style={[styles.methodIconContainer, { backgroundColor: '#FEE2E2', width: 80, height: 80, borderRadius: 40, marginBottom: 20 }]}>
+               <ThemedText style={{ fontSize: 40 }}>❌</ThemedText>
+            </View>
+            <ThemedText style={[styles.successTitle, { color: '#EF4444' }]}>
+              {isRTL ? "فشلت عملية الدفع" : "Payment Failed"}
+            </ThemedText>
+            <ThemedText style={styles.successSub}>
+              {isRTL ? "نعتذر، لم نتمكن من تأكيد عملية الدفع. يرجى المحاولة مرة أخرى." : "Sorry, we couldn't confirm the payment. Please try again."}
+            </ThemedText>
+            <PrimaryButton
+              label={isRTL ? "إغلاق" : "Close"}
+              onPress={() => processingSheetRef.current?.dismiss()}
+              style={{ width: '100%', height: 56, marginTop: 10 }}
+            />
+          </>
+        ) : (
+          <>
+             <View style={[styles.methodIconContainer, { backgroundColor: '#FEF3C7', width: 80, height: 80, borderRadius: 40, marginBottom: 20 }]}>
+               <ThemedText style={{ fontSize: 40 }}>⏳</ThemedText>
+            </View>
+            <ThemedText style={[styles.successTitle, { color: '#F59E0B' }]}>
+              {isRTL ? "انتهت مهلة التحقق" : "Verification Timeout"}
+            </ThemedText>
+            <ThemedText style={styles.successSub}>
+              {isRTL ? "لم نتلقَّ تأكيداً بعد. يرجى مراجعة قائمة حجوزاتك لاحقاً للتأكد من الحالة." : "We haven't received confirmation yet. Please check your bookings later for status."}
+            </ThemedText>
+            <PrimaryButton
+              label={isRTL ? "الذهاب للحجوزات" : "Go to Bookings"}
+              onPress={() => {
+                processingSheetRef.current?.dismiss();
+                router.replace("/(tabs)/(customer)/bookings");
+              }}
+              style={{ width: '100%', height: 56, marginTop: 10 }}
+            />
+          </>
+        )}
       </BottomSheetView>
     </BottomSheetModal>
   );
@@ -1291,6 +1414,7 @@ export default function CompleteBookingScreen() {
 
       {renderCalendarSheet()}
       {renderSuccessSheet()}
+      {renderProcessingSheet()}
     </SafeAreaView>
   );
 }
@@ -1722,4 +1846,45 @@ const styles = StyleSheet.create({
   ltrRow: { flexDirection: "row" },
   rtlAlign: { alignItems: "flex-end" },
   ltrAlign: { alignItems: "flex-start" },
+  paymentMethodsGrid: {
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 15,
+  },
+  methodCard: {
+    flex: 1,
+    backgroundColor: "#F8FAFC",
+    borderRadius: 16,
+    padding: 16,
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "transparent",
+    position: "relative",
+  },
+  methodCardActive: {
+    borderColor: Colors.primary,
+    backgroundColor: "#F0F7FF",
+  },
+  methodIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  methodName: {
+    fontSize: normalize.font(12),
+    fontFamily: "Alexandria-Bold",
+    color: "#1E293B",
+  },
+  selectedDot: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.primary,
+  },
 });
