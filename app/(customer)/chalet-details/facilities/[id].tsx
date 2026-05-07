@@ -16,6 +16,8 @@ import { RootState } from '@/store';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGetCustomerChaletDetailsQuery } from '@/store/api/customerApiSlice';
 import { Colors } from '@/constants/theme';
+import { getImageSrc } from '@/hooks/useImageSrc';
+import { Image } from 'react-native';
 
 import { 
   SolarWaterBold, 
@@ -62,7 +64,7 @@ const SectionHeader = ({ title, isRTL }: { title: string; isRTL: boolean }) => (
   </View>
 );
 
-const FacilityCard = ({ label, subtext, color, Icon, isRTL }: { label: string; subtext?: string; color: string; Icon?: any; isRTL: boolean }) => (
+const FacilityCard = ({ label, subtext, color, Icon, imageUrl, isRTL }: { label: string; subtext?: string; color: string; Icon?: any; imageUrl?: any; isRTL: boolean }) => (
   <View style={[styles.cardContainer, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
      <View style={[styles.textSide, { alignItems: isRTL ? 'flex-end' : 'flex-start', [isRTL ? 'marginRight' : 'marginLeft']: 15 }]}>
         <ThemedText style={styles.cardLabel}>{label}</ThemedText>
@@ -73,7 +75,13 @@ const FacilityCard = ({ label, subtext, color, Icon, isRTL }: { label: string; s
            <Path d={SHAPES.scalloped} fill={color} />
         </Svg>
         <View style={styles.iconCentered}>
-           {Icon ? <Icon size={18} color="white" /> : <View style={styles.iconDot} />}
+           {imageUrl ? (
+             <Image source={imageUrl} style={{ width: 18, height: 18 }} resizeMode="contain" />
+           ) : Icon ? (
+             <Icon size={18} color="white" />
+           ) : (
+             <View style={styles.iconDot} />
+           )}
         </View>
      </View>
   </View>
@@ -142,7 +150,9 @@ export default function FacilitiesScreen() {
                   <View key={idx}>
                     <SectionHeader title={cat.name} isRTL={isRTL} />
                     {cat.features.map((feat) => {
-                        const IconComp = FEATURE_ICON_MAP[feat.icon] || FEATURE_ICON_MAP.default;
+                        const iconName = feat.icon;
+                        const isImage = iconName && !Object.keys(FEATURE_ICON_MAP).includes(iconName) && iconName !== 'default';
+                        const IconComp = FEATURE_ICON_MAP[iconName] || FEATURE_ICON_MAP.default;
                         const color = CATEGORY_COLORS[cat.icon] || CATEGORY_COLORS.default;
                         
                         return (
@@ -152,6 +162,7 @@ export default function FacilitiesScreen() {
                                 subtext={feat.value}
                                 color={color}
                                 Icon={IconComp}
+                                imageUrl={isImage ? getImageSrc(iconName) : null}
                                 isRTL={isRTL}
                             />
                         );
