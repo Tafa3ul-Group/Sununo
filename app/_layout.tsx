@@ -105,17 +105,21 @@ function RootLayoutNav() {
           // 2. إظهار التوكن للمطوّر (احذف هذا السطر في الإنتاج)
           Alert.alert("Expo Push Token", token, [{ text: "OK" }]);
 
-          // 3. تسجيل التوكن في الباكند (فقط إذا كان المستخدم مسجّل دخول)
-          if (isAuthenticated && !tokenRegistered.current) {
-            const authState = store.getState().auth as any;
-            const authToken: string | undefined = authState?.token;
-            const baseUrl =
-              process.env.EXPO_PUBLIC_API_URL ?? "http://192.168.0.167:3010";
+          // 3. تسجيل التوكن في الباكند
+          const authState = store.getState().auth as any;
+          const authToken: string | undefined = authState?.token;
+          const baseUrl =
+            process.env.EXPO_PUBLIC_API_URL ?? "http://192.168.0.167:3010";
 
-            if (authToken) {
-              await registerTokenWithBackend(token, authToken, baseUrl);
-              tokenRegistered.current = true;
-            }
+          console.log("[Layout] isAuthenticated:", isAuthenticated);
+          console.log("[Layout] authToken exists:", !!authToken);
+          console.log("[Layout] baseUrl:", baseUrl);
+
+          if (authToken && !tokenRegistered.current) {
+            await registerTokenWithBackend(token, authToken, baseUrl);
+            tokenRegistered.current = true;
+          } else if (!authToken) {
+            console.warn("[Layout] لا يوجد authToken — المستخدم غير مسجّل دخول بعد");
           }
         }
 
@@ -155,9 +159,6 @@ function RootLayoutNav() {
 
   // ── إعادة تسجيل التوكن عند تسجيل الدخول ─────────────────────────────────
   useEffect(() => {
-    if (isAuthenticated) {
-      tokenRegistered.current = false; // reset so it re-registers on next effect run
-    }
   }, [isAuthenticated]);
 
   if (!loaded && !error) return null;

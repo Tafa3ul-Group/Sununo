@@ -94,7 +94,10 @@ export async function registerTokenWithBackend(
   baseUrl: string,
 ): Promise<void> {
   try {
-    const res = await fetch(`${baseUrl}/api/v1/notifications/firebase-token`, {
+    const url = `${baseUrl}/api/v1/notifications/firebase-token`;
+    console.log("[Notifications] Registering token at:", url);
+
+    const res = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -106,14 +109,18 @@ export async function registerTokenWithBackend(
       }),
     });
 
+    const body = await res.text();
+
     if (res.ok) {
       console.log("[Notifications] ✓ Token مسجّل في الباكند");
     } else {
-      const err = await res.json().catch(() => ({}));
-      console.warn("[Notifications] فشل تسجيل Token:", err);
+      console.warn(
+        `[Notifications] فشل تسجيل Token — status: ${res.status}`,
+        body,
+      );
     }
   } catch (e: any) {
-    console.warn("[Notifications] خطأ في تسجيل Token:", e?.message);
+    console.warn("[Notifications] خطأ في تسجيل Token:", e?.message ?? e);
   }
 }
 
