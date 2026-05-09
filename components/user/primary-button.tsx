@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: "Alexandria-SemiBold",
     textAlign: "center",
-    lineHeight: 22,
+    lineHeight: 28,
     includeFontPadding: false,
   },
   textWithIcon: {

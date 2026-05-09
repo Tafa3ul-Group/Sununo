@@ -2,12 +2,12 @@ import { ThemedText } from "@/components/themed-text";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ActivityIndicator,
-  StyleSheet,
-  TextStyle,
-  TouchableOpacity,
-  View,
-  ViewStyle,
+    ActivityIndicator,
+    StyleSheet,
+    TextStyle,
+    TouchableOpacity,
+    View,
+    ViewStyle,
 } from "react-native";
 
 interface SecondaryButtonProps {
@@ -190,6 +190,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: "Alexandria-SemiBold",
     textAlign: "center",
-    lineHeight: 22,
+    lineHeight: 28,
   },
 });

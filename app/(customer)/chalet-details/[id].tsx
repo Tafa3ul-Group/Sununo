@@ -6,26 +6,28 @@ import {
   SolarHome2Bold,
   SolarKeyBold,
   SolarMapPointBold,
+  SolarMoonBold,
   SolarSettingsBold,
   SolarShieldCheckBold,
   SolarStarBold,
+  SolarSunBold,
   SolarWaterBold,
   SolarWidgetBold,
   SolarWifiBold,
   SolarWindBold,
-  SolarSunBold,
-  SolarMoonBold,
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { CircleBackButton } from "@/components/ui/circle-back-button";
+import { ErrorState } from "@/components/ui/error-state";
 import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
 import { HostContactCard } from "@/components/user/host-contact-card";
+import { LoginPromptModal } from "@/components/user/login-prompt-modal";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { ReviewSubmissionSheet } from "@/components/user/review-submission-sheet";
 import { SecondaryButton } from "@/components/user/secondary-button";
-import { LoginPromptModal } from "@/components/user/login-prompt-modal";
 import { Colors, normalize, Shadows } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
+import { RootState } from "@/store";
 import {
   useAddFavoriteMutation,
   useCheckCanReviewQuery,
@@ -41,12 +43,9 @@ import {
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import Constants from "expo-constants";
 import { Image as ExpoImage } from "expo-image";
-import { Stack, useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
-import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store";
-import { ErrorState } from "@/components/ui/error-state";
 import {
   ActivityIndicator,
   Alert,
@@ -58,6 +57,7 @@ import {
   View,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
+import { useSelector } from "react-redux";
 import { useFormatTime } from "../../../hooks/useFormatTime";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -785,7 +785,7 @@ export default function ChaletDetailScreen() {
               iconPosition="right"
               isActive={true}
               onPress={() => router.push(`/chalet-details/reviews/${chaletId}`)}
-              style={{ width: 175 }}
+              style={{ flex: 1, marginHorizontal: 8 }}
               height={46}
               variant={isRTL ? "inverse" : undefined}
             />
@@ -1092,6 +1092,7 @@ const styles = StyleSheet.create({
     padding: 14,
     borderWidth: 1.5,
     borderColor: "transparent",
+    flexWrap: "nowrap",
   },
   shiftCardActive: {
     borderColor: "#035DF9",
@@ -1111,11 +1112,14 @@ const styles = StyleSheet.create({
   shiftInfo: {
     flex: 1,
     marginHorizontal: 12,
+    minWidth: 0,
   },
   shiftName: {
     fontFamily: "Alexandria-Black",
     fontSize: 15,
     color: "#1E293B",
+    flexShrink: 1,
+    lineHeight: 24,
   },
   shiftNameActive: {
     fontFamily: "Alexandria-Black",
@@ -1125,6 +1129,8 @@ const styles = StyleSheet.create({
     fontFamily: "Alexandria-Bold",
     fontSize: 12,
     color: "#64748B",
+    flexShrink: 1,
+    lineHeight: 20,
   },
   shiftTimeActive: {
     color: "#035DF9",
@@ -1133,6 +1139,9 @@ const styles = StyleSheet.create({
     fontFamily: "Alexandria-Black",
     fontSize: 14,
     color: "#1E293B",
+    flexShrink: 0,
+    textAlign: "right",
+    lineHeight: 22,
   },
   shiftPriceActive: {
     fontFamily: "Alexandria-Black",
@@ -1147,12 +1156,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 6,
   },
-  ratingVal: { fontSize: 18, fontFamily: "LamaSans-Black" },
-  mainTitle: { fontSize: 22, fontFamily: "LamaSans-Black" },
+  ratingVal: { fontSize: 18, fontFamily: "LamaSans-Black", lineHeight: 26 },
+  mainTitle: { fontSize: 22, fontFamily: "LamaSans-Black", lineHeight: 32 },
   locationSub: {
     fontSize: 13,
     color: "#6B7280",
     fontFamily: "LamaSans-Regular",
+    lineHeight: 20,
   },
   sectionHeaderContainer: {
     justifyContent: "center",
@@ -1164,6 +1174,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: "Alexandria-Black",
     marginVertical: 15,
+    lineHeight: 28,
   },
   specsRow: { flexWrap: "wrap", gap: 8 },
   specTag: {
@@ -1171,8 +1182,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 12,
+    flexShrink: 1,
   },
-  specText: { fontSize: 13, fontFamily: "LamaSans-Bold" },
+  specText: { fontSize: 13, fontFamily: "LamaSans-Bold", flexShrink: 1 },
   viewAllText: { fontSize: 13, color: "#6B7280", fontFamily: "LamaSans-Bold" },
   facilitiesHeader: {
     justifyContent: "space-between",
@@ -1188,7 +1200,8 @@ const styles = StyleSheet.create({
   facilityCell: { 
     width: (SCREEN_WIDTH - 64) / 4, 
     alignItems: "center", 
-    marginBottom: 15 
+    marginBottom: 15,
+    minWidth: 0,
   },
   closedChaletBox: {
     backgroundColor: '#FEF2F2',
@@ -1205,6 +1218,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Alexandria-Bold',
     color: '#EF4444',
+    lineHeight: 22,
   },
   depositRow: {
     alignItems: 'center',
@@ -1233,6 +1247,9 @@ const styles = StyleSheet.create({
     fontFamily: "Alexandria-Bold",
     marginTop: 6,
     textAlign: "center",
+    flexWrap: "wrap",
+    width: "100%",
+    lineHeight: 18,
   },
   descriptionText: {
     fontSize: 14,
@@ -1240,6 +1257,9 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     marginTop: 5,
     fontFamily: "LamaSans-Regular",
+  },
+  descriptionContainer: {
+    width: "100%",
   },
   readMoreWrapper: { alignItems: "center", marginTop: 15 },
   readMoreComp: { width: "65%", borderRadius: 27 },
@@ -1270,7 +1290,7 @@ const styles = StyleSheet.create({
   },
   expoGoText: { color: "white", fontSize: 10, fontFamily: "LamaSans-Medium" },
   mapLocLabel: { paddingVertical: 12, alignItems: "center" },
-  mapLocText: { fontSize: 16, fontFamily: "LamaSans-Black" },
+  mapLocText: { fontSize: 16, fontFamily: "LamaSans-Black", lineHeight: 24 },
   unverifiedReviewMsg: {
     padding: 20,
     backgroundColor: "#F9FAFB",
@@ -1307,6 +1327,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     alignItems: "center",
     justifyContent: "space-between",
+    gap: 8,
   },
   pillTouch: {
     width: 86,
@@ -1324,6 +1345,7 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontFamily: "Alexandria-Black",
+    lineHeight: 24,
   },
 
   revComplexCardFlat: {
@@ -1347,6 +1369,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "Alexandria-Black",
     color: "#111827",
+    lineHeight: 24,
   },
   userInfoRowMerged: {
     alignItems: "flex-start",
@@ -1359,6 +1382,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "Alexandria-Black",
     color: "#111827",
+    lineHeight: 26,
   },
   revMessageMerged: {
     fontSize: 14,
@@ -1393,7 +1417,7 @@ const styles = StyleSheet.create({
   infoIconsGrid: {
     justifyContent: "space-between",
   },
-  infoIconCell: { width: "23%", alignItems: "center" },
+  infoIconCell: { width: "23%", alignItems: "center", minWidth: 0 },
   infoGearWrap: {
     width: 55,
     height: 55,
@@ -1406,6 +1430,9 @@ const styles = StyleSheet.create({
     fontFamily: "Alexandria-Bold",
     marginTop: 8,
     textAlign: "center",
+    flexWrap: "wrap",
+    width: "100%",
+    lineHeight: 17,
   },
 
   flatUltimateFooter: {
@@ -1422,17 +1449,21 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#F3F4F6",
   },
-  footerTextSide: { flex: 1 },
+  footerTextSide: { flex: 1, minWidth: 0 },
   footerPriceBig: {
     fontSize: 18,
     fontFamily: "Alexandria-Black",
     marginBottom: 4,
+    flexShrink: 1,
+    lineHeight: 26,
   },
-  footerMetaRow: { alignItems: "center", gap: 6 },
+  footerMetaRow: { alignItems: "center", gap: 6, flexShrink: 1 },
   footerMetaSmall: {
     fontSize: 10,
     color: "#9CA3AF",
     fontFamily: "LamaSans-SemiBold",
+    flexShrink: 1,
+    lineHeight: 16,
   },
   footerBtnSide: { width: 180 },
   footerFlatBtn: {

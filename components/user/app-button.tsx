@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Alexandria-Bold",
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 22,
     includeFontPadding: false,
     textAlignVertical: 'center',
   },
@@ -208,5 +208,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "Alexandria-Bold",
     textAlign: 'center',
+    lineHeight: 25,
   },
 });

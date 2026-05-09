@@ -1,5 +1,5 @@
 import { Typography } from "@/constants/theme";
-import { StyleSheet, Text, type TextProps, type TextStyle, Platform } from "react-native";
+import { StyleSheet, Text, type TextProps, type TextStyle } from "react-native";
 
 export type ThemedTextProps = TextProps & {
   type?:
@@ -15,6 +15,21 @@ export type ThemedTextProps = TextProps & {
     | "defaultSemiBold"
     | "link";
 };
+
+/**
+ * Flattens a style array/object and injects a lineHeight if fontSize is
+ * present but lineHeight is missing. Ratio 1.55 works well for Arabic fonts
+ * (Alexandria / LamaSans) which have tall ascenders/descenders.
+ */
+function withAutoLineHeight(style: TextProps["style"]): TextStyle {
+  // Flatten nested arrays into a single object
+  const flat: TextStyle = StyleSheet.flatten(style) ?? {};
+
+  if (flat.fontSize !== undefined && flat.lineHeight === undefined) {
+    return { ...flat, lineHeight: Math.ceil(flat.fontSize * 1.55) };
+  }
+  return flat;
+}
 
 export function ThemedText({
   style,
@@ -51,7 +66,12 @@ export function ThemedText({
     }
   };
 
-  return <Text style={[styles.base, getStyleByType(), style]} {...rest} />;
+  return (
+    <Text
+      style={[styles.base, getStyleByType(), withAutoLineHeight(style)]}
+      {...rest}
+    />
+  );
 }
 
 const styles = StyleSheet.create({
