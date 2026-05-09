@@ -3,13 +3,13 @@ import { Redirect, useRouter } from "expo-router";
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ActivityIndicator,
-  Dimensions,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Dimensions,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -17,10 +17,10 @@ import { useSelector } from "react-redux";
 
 import { HeaderSection } from "@/components/header-section";
 import {
-  SolarFireBold,
-  SolarTreeBold,
-  SolarWaterBold,
-  SolarWidgetBold,
+    SolarFireBold,
+    SolarTreeBold,
+    SolarWaterBold,
+    SolarWidgetBold,
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { AppMap } from "@/components/user/app-map";
@@ -32,10 +32,10 @@ import { Colors, normalize } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { RootState } from "@/store";
 import {
-  useBrowseCustomerChaletsQuery,
-  useGetBannersQuery,
-  useGetFavoriteIdsQuery,
-  useToggleFavoriteMutation,
+    useBrowseCustomerChaletsQuery,
+    useGetBannersQuery,
+    useGetFavoriteIdsQuery,
+    useToggleFavoriteMutation,
 } from "@/store/api/customerApiSlice";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -187,7 +187,7 @@ export default function HomeScreen() {
             { flexDirection: isRTL ? "row" : "row-reverse" },
           ]}
         >
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push("/(tabs)/(customer)/explore")}>
             <ThemedText style={styles.seeAll}>{t("home.openMap")}</ThemedText>
           </TouchableOpacity>
           <ThemedText
@@ -199,13 +199,19 @@ export default function HomeScreen() {
             {t("home.categories.nearby")}
           </ThemedText>
         </View>
-        <View style={styles.mapContainer}>
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={() => router.push("/(tabs)/(customer)/explore?showMyLocation=1")}
+          style={styles.mapContainer}
+        >
           <AppMap
             style={styles.map}
             showMarker
             onPressCard={navigateToDetails}
           />
-        </View>
+          {/* overlay to intercept taps and navigate */}
+          <View style={styles.mapOverlay} />
+        </TouchableOpacity>
 
         {/* Popular / Recent */}
         <View
@@ -359,6 +365,10 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   map: { flex: 1 },
+  mapOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "transparent",
+  },
   listPadding: { paddingHorizontal: 16 },
   tabsContainer: { paddingHorizontal: 16, marginVertical: 10 },
   swiperWrapper: { marginVertical: 10 },

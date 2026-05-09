@@ -12,16 +12,14 @@ import { useFonts } from "expo-font";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Text, TextInput } from "react-native";
+import { Alert, Text, TextInput } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import Toast from "react-native-toast-message";
 import { Provider, useSelector } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-
-// Alexandria fonts will be loaded directly in useFonts below
 
 // @ts-ignore
 if (Text.defaultProps == null) Text.defaultProps = {};
@@ -50,6 +48,9 @@ function RootLayoutNav() {
     (state: RootState) => state.auth,
   );
 
+  // Track whether we've already registered the token for this session
+  const tokenRegistered = useRef(false);
+
   const [loaded, error] = useFonts({
     "Alexandria-Bold": require("@expo-google-fonts/alexandria/700Bold/Alexandria_700Bold.ttf"),
     "Alexandria-SemiBold": require("@expo-google-fonts/alexandria/600SemiBold/Alexandria_600SemiBold.ttf"),
@@ -58,36 +59,108 @@ function RootLayoutNav() {
     "Alexandria-Black": require("@expo-google-fonts/alexandria/900Black/Alexandria_900Black.ttf"),
   });
 
-  // Global Auth Guard: Redirect to index if auth is lost
+  // ── Auth Guard ────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!loaded) return;
-
     const inAuthGroup = segments[0] === "(auth)";
     const isIndex =
       (segments as any).length === 0 ||
       (segments.length === 1 && segments[0] === "index");
-
     if (!isAuthenticated && userType !== "guest" && !inAuthGroup && !isIndex) {
       router.replace("/");
     }
   }, [isAuthenticated, userType, segments, loaded]);
 
+  // ── Splash Screen ─────────────────────────────────────────────────────────
   useEffect(() => {
-    if (loaded || error) {
-      SplashScreen.hideAsync();
-    }
+    if (loaded || error) SplashScreen.hideAsync();
   }, [loaded, error]);
 
-  // Sync language with persisted Redux state
+  // ── Language Sync ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (language && i18n.language !== language) {
       i18n.changeLanguage(language);
     }
   }, [language, i18n]);
 
-  if (!loaded && !error) {
-    return null;
-  }
+  // ── Push Notifications ────────────────────────────────────────────────────
+  // يعمل عند تحميل الخطوط + عند تغيّر حالة المصادقة
+  useEffect(() => {
+    if (!loaded) return;
+
+    let cleanup: (() => void) | undefined;
+
+    (async () => {
+      try {
+        const {
+          registerForPushNotificationsAsync,
+          registerTokenWithBackend,
+          addNotificationListeners,
+        } = await import("@/services/notifications");
+
+        // 1. الحصول على التوكن
+        const token = await registerForPushNotificationsAsync();
+
+        if (token) {
+          // 2. إظهار التوكن للمطوّر (احذف هذا السطر في الإنتاج)
+          Alert.alert("Expo Push Token", token, [{ text: "OK" }]);
+
+          // 3. تسجيل التوكن في الباكند (فقط إذا كان المستخدم مسجّل دخول)
+          if (isAuthenticated && !tokenRegistered.current) {
+            const authState = store.getState().auth as any;
+            const authToken: string | undefined = authState?.token;
+            const baseUrl =
+              process.env.EXPO_PUBLIC_API_URL ?? "http://192.168.0.167:3010";
+
+            if (authToken) {
+              await registerTokenWithBackend(token, authToken, baseUrl);
+              tokenRegistered.current = true;
+            }
+          }
+        }
+
+        // 4. الاستماع للإشعارات الواردة
+        cleanup = addNotificationListeners(
+          // إشعار وصل والتطبيق مفتوح
+          (notification) => {
+            console.log(
+              "[Notifications] وصل إشعار:",
+              notification?.request?.content?.title,
+            );
+          },
+          // المستخدم ضغط على الإشعار
+          (response) => {
+            const data = response?.notification?.request?.content
+              ?.data as Record<string, string> | undefined;
+
+            if (!data) return;
+
+            // Deep linking بناءً على نوع الإشعار
+            if (data.type === "booking" && data.id) {
+              router.push(`/(customer)/booking/complete?id=${data.id}`);
+            } else if (data.type === "chalet" && data.id) {
+              router.push(`/chalet-details/${data.id}`);
+            } else if (data.type === "payout") {
+              router.push("/(tabs)/(dashboard)/home");
+            }
+          },
+        );
+      } catch {
+        // expo-notifications غير مثبّت — تجاهل بصمت
+      }
+    })();
+
+    return () => cleanup?.();
+  }, [loaded, isAuthenticated]);
+
+  // ── إعادة تسجيل التوكن عند تسجيل الدخول ─────────────────────────────────
+  useEffect(() => {
+    if (isAuthenticated) {
+      tokenRegistered.current = false; // reset so it re-registers on next effect run
+    }
+  }, [isAuthenticated]);
+
+  if (!loaded && !error) return null;
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>

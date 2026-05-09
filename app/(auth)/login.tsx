@@ -1,31 +1,30 @@
 import {
-  LoginBottomBackground,
-  LoginDividerShape,
+    LoginBottomBackground
 } from "@/components/icons/login-design-elements";
 import { LoginHeaderLogo } from "@/components/icons/login-header-logo";
 import { ThemedText } from "@/components/themed-text";
 import { AuthToggle } from "@/components/user/auth-toggle";
+import { OtpInput } from "@/components/user/otp-input";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { RootState } from "@/store";
+import { useLoginMutation, useVerifyPhoneMutation } from "@/store/api/apiSlice";
 import { setCredentials, setUserType } from "@/store/authSlice";
-import { OtpInput } from "@/components/user/otp-input";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Dimensions,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    Dimensions,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
-import { useLoginMutation, useVerifyPhoneMutation } from "@/store/api/apiSlice";
-import { ActivityIndicator, Alert } from "react-native";
 // import { normalize } from "@/constants/theme";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -81,6 +80,13 @@ export function LoginScreen() {
             userType: userType, // Respect the toggle selection
           }),
         );
+        // Register push notification token with backend
+        registerForPushNotificationsAsync().then((pushToken) => {
+          if (pushToken) {
+            console.log("Push token registered:", pushToken);
+            // Token will be sent to backend via the notification service
+          }
+        });
         router.replace(userType === "owner" || userType === "provider" ? "/(tabs)/(dashboard)/home" : "/(tabs)/(customer)");
       } catch (err: any) {
         const msg = err?.data?.message;

@@ -1,42 +1,42 @@
 import {
-  SolarClockCircleBold,
-  SolarCloseBold,
-  SolarCloseCircleBold,
-  SolarFireBold,
-  SolarHeartBold,
-  SolarHome2Bold,
-  SolarMagnifierBold,
-  SolarMapBoldDuotone,
-  SolarSettingsBold,
-  SolarStarBold,
-  SolarTreeBold,
-  SolarWaterBold,
-  SolarWidgetBold,
-  SolarWifiBold,
-  SolarWindBold
+    SolarClockCircleBold,
+    SolarCloseBold,
+    SolarCloseCircleBold,
+    SolarFireBold,
+    SolarHeartBold,
+    SolarHome2Bold,
+    SolarMagnifierBold,
+    SolarMapBoldDuotone,
+    SolarSettingsBold,
+    SolarStarBold,
+    SolarTreeBold,
+    SolarWaterBold,
+    SolarWidgetBold,
+    SolarWifiBold,
+    SolarWindBold
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { AppDrawer, AppDrawerRef } from "@/components/user/app-drawer";
 import { AppMap } from "@/components/user/app-map";
 import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
+import { LoginPromptModal } from "@/components/user/login-prompt-modal";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { SecondaryButton } from "@/components/user/secondary-button";
-import { LoginPromptModal } from "@/components/user/login-prompt-modal";
 import { Colors, normalize, Shadows } from "@/constants/theme";
 import { RootState } from "@/store";
 import {
-  useGetChaletReviewsQuery,
-  useGetCustomerChaletDetailsQuery,
-  useGetFavoriteIdsQuery,
-  useGetSimilarChaletsQuery,
-  useToggleFavoriteMutation,
+    useGetChaletReviewsQuery,
+    useGetCustomerChaletDetailsQuery,
+    useGetFavoriteIdsQuery,
+    useGetSimilarChaletsQuery,
+    useToggleFavoriteMutation,
 } from "@/store/api/customerApiSlice";
 import {
-  BottomSheetBackdrop,
-  BottomSheetFooter,
-  BottomSheetModal,
-  BottomSheetScrollView,
-  BottomSheetTextInput,
+    BottomSheetBackdrop,
+    BottomSheetFooter,
+    BottomSheetModal,
+    BottomSheetScrollView,
+    BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
 import { useTranslation } from "react-i18next";
 import Animated, { FadeInUp } from "react-native-reanimated";
@@ -47,26 +47,26 @@ import Svg, { Path } from "react-native-svg";
 
 import { getImageSrc } from "@/hooks/useImageSrc";
 import * as Location from "expo-location";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
 } from "react";
 import {
-  ActivityIndicator,
-  Dimensions,
-  Image,
-  Keyboard,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Dimensions,
+    Image,
+    Keyboard,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
@@ -118,7 +118,7 @@ function SectionHeader({ title, isRTL }: { title: string; isRTL: boolean }) {
 
 export default function ExploreScreen() {
   const router = useRouter();
-  const { id } = useLocalSearchParams();
+  const { id, showMyLocation } = useLocalSearchParams();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { language, isAuthenticated, user } = useSelector(
@@ -300,6 +300,19 @@ export default function ExploreScreen() {
       }
     }
   }, [id, MOCK_CHALETS.length]);
+
+  // Center map on user location when showMyLocation param is passed
+  useEffect(() => {
+    if (!showMyLocation) return;
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") return;
+      const loc = await Location.getCurrentPositionAsync({});
+      setLocation(loc);
+      setCameraPosition([loc.coords.longitude, loc.coords.latitude]);
+      setZoom(14);
+    })();
+  }, [showMyLocation]);
 
   useEffect(() => {
     let subscription: any = null;

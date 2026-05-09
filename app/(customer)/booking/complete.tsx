@@ -1,12 +1,12 @@
 import { HeaderSection } from "@/components/header-section";
 import {
-  SolarAltArrowLeftBold,
-  SolarAltArrowRightBold,
-  SolarMapPointBold,
-  SolarMoonBold,
-  SolarSunBold,
-  SolarWalletBold,
-  SolarCardBold,
+    SolarAltArrowLeftBold,
+    SolarAltArrowRightBold,
+    SolarCardBold,
+    SolarMapPointBold,
+    SolarMoonBold,
+    SolarSunBold,
+    SolarWalletBold,
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { GuestCounter } from "@/components/user/guest-counter";
@@ -15,40 +15,47 @@ import { MainTabs, TabType } from "@/components/user/MainTabs";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { Colors, normalize } from "@/constants/theme";
 import { RootState } from "@/store";
-import * as WebBrowser from "expo-web-browser";
 import {
-  useCreateCustomerBookingMutation,
-  useGetChaletAvailabilityQuery,
-  useGetCustomerChaletDetailsQuery,
-  useGetPlatformConfigQuery,
-  useLazyGetPaymentStatusQuery,
+    useCreateCustomerBookingMutation,
+    useGetChaletAvailabilityQuery,
+    useGetCustomerChaletDetailsQuery,
+    useGetPlatformConfigQuery,
+    useLazyGetPaymentStatusQuery,
 } from "@/store/api/customerApiSlice";
 import {
-  BottomSheetBackdrop,
-  BottomSheetModal,
-  BottomSheetView,
+    BottomSheetBackdrop,
+    BottomSheetModal,
+    BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
 import { Image as ExpoImage } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
 import LottieView from "lottie-react-native";
 import React, { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ActivityIndicator,
-  Alert,
-  Dimensions,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Dimensions,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
 import { useSelector } from "react-redux";
 import { useFormatTime } from "../../../hooks/useFormatTime";
+
+// dismissAuthSession is iOS-only — Android closes the browser automatically
+const dismissBrowser = () => {
+  if (Platform.OS === "ios") {
+    try { WebBrowser.dismissAuthSession(); } catch { /* ignore */ }
+  }
+};
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -423,7 +430,7 @@ export default function CompleteBookingScreen() {
         if (result?.status === 'success') {
           clearInterval(interval);
           setPollingStatus('success');
-          WebBrowser.dismissAuthSession();
+          dismissBrowser();
           // Wait a bit then show success sheet
           setTimeout(() => {
             processingSheetRef.current?.dismiss();
@@ -432,7 +439,7 @@ export default function CompleteBookingScreen() {
         } else if (result?.status === 'failed') {
           clearInterval(interval);
           setPollingStatus('failed');
-          WebBrowser.dismissAuthSession();
+          dismissBrowser();
           setTimeout(() => {
             processingSheetRef.current?.dismiss();
           }, 1500);
@@ -447,7 +454,7 @@ export default function CompleteBookingScreen() {
       if (attempts >= maxAttempts) {
         clearInterval(interval);
         setPollingStatus('timeout');
-        WebBrowser.dismissAuthSession();
+        dismissBrowser();
         setTimeout(() => {
           processingSheetRef.current?.dismiss();
         }, 1500);
