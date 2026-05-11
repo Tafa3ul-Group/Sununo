@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Dimensions, Platform } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Dimensions, ActivityIndicator, FlatList, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
@@ -7,73 +7,63 @@ import { Colors, normalize, Shadows } from '@/constants/theme';
 import { ThemedText } from '@/components/themed-text';
 import { SolarAltArrowRightBold } from "@/components/icons/solar-icons";
 import { useRouter } from 'expo-router';
+import { useGetNotificationsQuery } from '@/store/api/apiSlice';
+import { useState } from 'react';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface Notification {
   id: string;
   title: string;
-  message: string;
-  time: string;
-  isRead: boolean;
+  text: string;
+  createdAt: string;
+  readAt: string | null;
+  type: string;
+  redirectType?: string;
+  redirectId?: string;
 }
-
-const MOCK_DATA = {
-  today: [
-    {
-      id: '1',
-      title: 'تخفيضات عملاقة',
-      message: 'هذا مثال للإشعارات',
-      time: '3:06 PM',
-      isRead: false
-    },
-    {
-      id: '2',
-      title: 'تخفيضات عملاقة',
-      message: 'هذا مثال للإشعارات',
-      time: '3:06 PM',
-      isRead: false
-    }
-  ],
-  yesterday: [
-    {
-      id: '3',
-      title: 'تخفيضات عملاقة',
-      message: 'هذا مثال للإشعارات',
-      time: '3:06 PM',
-      isRead: true
-    },
-    {
-      id: '4',
-      title: 'تخفيضات عملاقة',
-      message: 'هذا مثال للإشعارات',
-      time: '3:06 PM',
-      isRead: true
-    }
-  ]
-};
 
 export default function NotificationsScreen() {
     const { t } = useTranslation();
     const { language } = useSelector((state: RootState) => state.auth);
     const isRTL = language === 'ar';
     const router = useRouter();
+    const [page, setPage] = useState(1);
 
-    const renderItem = (item: Notification) => (
-        <View key={item.id} style={[styles.notificationCard, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-            {/* Content section */}
-            <View style={[styles.cardContent, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                <ThemedText style={[styles.titleText, { textAlign: isRTL ? 'right' : 'left' }]}>{t('dashboard.revenue.history')}</ThemedText>
-                <ThemedText style={[styles.messageText, { textAlign: isRTL ? 'right' : 'left' }]}>{item.message}</ThemedText>
-            </View>
+    const { data: response, isLoading, isFetching, refetch } = useGetNotificationsQuery({
+        page,
+        limit: 15,
+    });
 
-            {/* Header section with orange dot and time */}
-            <View style={[styles.cardLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                <ThemedText style={styles.timeText}>{item.time}</ThemedText>
-                <View style={styles.orangeDot} />
+    const notifications = response?.data || [];
+
+    const handleLoadMore = () => {
+        if (response?.meta && page < response.meta.totalPages && !isFetching) {
+            setPage(prev => prev + 1);
+        }
+    };
+
+    const renderItem = ({ item }: { item: Notification }) => {
+        const date = new Date(item.createdAt);
+        const timeStr = date.toLocaleTimeString(isRTL ? 'ar-IQ' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+
+        return (
+            <View key={item.id} style={[styles.notificationCard, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                {/* Content section */}
+                <View style={[styles.cardContent, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                    <ThemedText style={[styles.titleText, { textAlign: isRTL ? 'right' : 'left' }]}>{item.title}</ThemedText>
+                    <ThemedText style={[styles.messageText, { textAlign: isRTL ? 'right' : 'left' }]}>{item.text}</ThemedText>
+                </View>
+
+                {/* Header section with orange dot and time */}
+                <View style={[styles.cardLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <ThemedText style={styles.timeText}>{timeStr}</ThemedText>
+                    {!item.readAt && <View style={styles.orangeDot} />}
+                </View>
             </View>
-        </View>
-    );
+        );
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -94,19 +84,37 @@ export default function NotificationsScreen() {
                 </View>
             </View>
 
-            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-                {/* Today Section */}
-                <View style={[styles.sectionHeader, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                    <ThemedText style={styles.sectionTitle}>{t('notifications.today')}</ThemedText>
-                </View>
-                {MOCK_DATA.today.map(renderItem)}
-
-                {/* Yesterday Section */}
-                <View style={[styles.sectionHeader, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                    <ThemedText style={styles.sectionTitle}>{t('notifications.yesterday')}</ThemedText>
-                </View>
-                {MOCK_DATA.yesterday.map(renderItem)}
-            </ScrollView>
+            <FlatList
+                data={notifications}
+                renderItem={renderItem}
+                keyExtractor={(item) => item.id.toString()}
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
+                onEndReached={handleLoadMore}
+                onEndReachedThreshold={0.5}
+                refreshControl={
+                    <RefreshControl refreshing={isFetching && page === 1} onRefresh={() => { setPage(1); refetch(); }} tintColor={Colors.primary} />
+                }
+                ListEmptyComponent={
+                    isLoading ? (
+                        <View style={styles.centerContainer}>
+                            <ActivityIndicator size="large" color={Colors.primary} />
+                        </View>
+                    ) : (
+                        <Animated.View entering={FadeIn.duration(300)} style={styles.centerContainer}>
+                            <ThemedText style={styles.emptyText}>
+                                {isRTL ? 'لا توجد إشعارات حالياً' : 'No notifications found'}
+                            </ThemedText>
+                        </Animated.View>
+                    )
+                }
+                ListFooterComponent={() => {
+                    if (isFetching && page > 1) {
+                        return <ActivityIndicator color={Colors.primary} style={{ marginVertical: 20 }} />;
+                    }
+                    return null;
+                }}
+            />
         </SafeAreaView>
     );
 }
@@ -149,15 +157,17 @@ const styles = StyleSheet.create({
     scrollContent: {
         paddingHorizontal: 20,
         paddingBottom: 40,
+        paddingTop: 10,
     },
-    sectionHeader: {
-        marginTop: 20,
-        marginBottom: 10,
+    centerContainer: {
+        flex: 1, 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        marginTop: 100
     },
-    sectionTitle: {
-        fontSize: 14,
-        fontFamily: "Alexandria-Bold",
-        color: '#9CA3AF', // Gray color as in image
+    emptyText: {
+        color: '#9CA3AF', 
+        fontFamily: 'Alexandria-Medium'
     },
     notificationCard: {
         flexDirection: 'row',
@@ -192,10 +202,12 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontFamily: "Alexandria-Black",
         color: '#111827',
+        marginBottom: 2,
     },
     messageText: {
         fontSize: 13,
         color: '#6B7280',
         marginTop: 2,
-     fontFamily: "Alexandria-Regular" }
+        fontFamily: "Alexandria-Regular"
+    }
 });

@@ -468,6 +468,42 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ["User"],
     }),
+
+    // Get notifications
+    getNotifications: builder.query({
+      query: (params) => ({
+        url: "/notifications",
+        params,
+      }),
+      // Support for infinite scrolling
+      serializeQueryArgs: ({ queryArgs }) => {
+        const { page, ...rest } = queryArgs;
+        return rest;
+      },
+      merge: (currentCache, newItems, { arg }) => {
+        if (arg.page === 1 || !currentCache) {
+          return newItems;
+        }
+
+        const existingData = currentCache.data || [];
+        const newData = newItems.data || [];
+
+        const existingIds = new Set(existingData.map((item: any) => item.id));
+        const uniqueNewItems = newData.filter(
+          (item: any) => !existingIds.has(item.id),
+        );
+
+        return {
+          ...newItems,
+          data: [...existingData, ...uniqueNewItems],
+          meta: newItems.meta,
+        };
+      },
+      forceRefetch({ currentArg, previousArg }) {
+        return currentArg !== previousArg;
+      },
+      providesTags: ["Notification"],
+    }),
   }),
 });
 
@@ -526,6 +562,7 @@ export const {
   useDeleteChaletMutation,
   useGetPayoutsQuery,
   useRequestPayoutMutation,
+  useGetNotificationsQuery,
 } = apiSlice;
 
 // Force Metro cache reload - Updated at 2026-05-05T14:55

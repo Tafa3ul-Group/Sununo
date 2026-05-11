@@ -149,7 +149,7 @@ function RootLayoutNav() {
     })();
 
     return () => cleanup?.();
-  }, [loaded, isAuthenticated]);
+  }, [loaded, isAuthenticated, authToken]);
 
   // ── إعادة تسجيل التوكن عند تسجيل الدخول ─────────────────────────────────
   useEffect(() => {
