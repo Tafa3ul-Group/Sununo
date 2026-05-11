@@ -9,6 +9,7 @@ import { PrimaryButton } from "@/components/user/primary-button";
 import { RootState } from "@/store";
 import { useLoginMutation, useVerifyPhoneMutation } from "@/store/api/apiSlice";
 import { setCredentials, setUserType } from "@/store/authSlice";
+import { registerForPushNotificationsAsync } from "@/services/notifications";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -47,11 +48,11 @@ export function LoginScreen() {
   const [verifyPhone, { isLoading: isVerifyLoading }] = useVerifyPhoneMutation();
 
   const userType = useSelector((state: RootState) => state.auth.userType) || "customer";
-  const isOwner = userType === "owner" || userType === "provider";
+  const isOwner = userType === "owner";
 
   const [step, setStep] = useState<"phone" | "otp">("phone");
-  const [phone, setPhone] = useState("7700000001");
-  const [code, setCode] = useState("123456");
+  const [phone, setPhone] = useState("");
+  const [code, setCode] = useState("");
 
   function handleTypeChange(type: "owner" | "customer") {
     dispatch(setUserType(type));
@@ -59,8 +60,15 @@ export function LoginScreen() {
 
   async function handleAction() {
     if (step === "phone") {
+      const trimmedPhone = phone.trim();
+      if (!trimmedPhone) {
+        Alert.alert(t('common.error'), isRTL ? "يرجى إدخال رقم الهاتف" : "Please enter your phone number");
+        return;
+      }
+
       try {
-        const res = await login({ phone }).unwrap();
+        const res = await login({ phone: trimmedPhone }).unwrap();
+        setPhone(trimmedPhone);
         if (res?.code) {
           setCode(String(res.code));
         }
@@ -72,12 +80,30 @@ export function LoginScreen() {
       }
     } else {
       try {
-        const result = await verifyPhone({ phone, code }).unwrap();
+        const otpCode = Number(code);
+        if (!/^\d{6}$/.test(code) || !Number.isInteger(otpCode)) {
+          Alert.alert(t('common.error'), "Invalid OTP");
+          return;
+        }
+
+        const result = await verifyPhone({ phone, code: otpCode }).unwrap();
+        const resolvedUserType = result.user?.type === "provider" ? "owner" : "customer";
+
+        if (isOwner && resolvedUserType !== "owner") {
+          Alert.alert(
+            t('common.error'),
+            isRTL
+              ? "هذا الرقم غير مرتبط بحساب مالك. يرجى التسجيل كمالك أولاً."
+              : "This phone number is not linked to an owner account. Please register as an owner first.",
+          );
+          return;
+        }
+
         dispatch(
           setCredentials({
             user: result.user,
             token: result.token,
-            userType: userType, // Respect the toggle selection
+            userType: resolvedUserType,
           }),
         );
         // Register push notification token with backend
@@ -87,7 +113,7 @@ export function LoginScreen() {
             // Token will be sent to backend via the notification service
           }
         });
-        router.replace(userType === "owner" || userType === "provider" ? "/(tabs)/(dashboard)/home" : "/(tabs)/(customer)");
+        router.replace(resolvedUserType === "owner" ? "/(tabs)/(dashboard)/home" : "/(tabs)/(customer)");
       } catch (err: any) {
         const msg = err?.data?.message;
         const displayMsg = Array.isArray(msg) ? msg.join(', ') : (msg || "Invalid OTP");
@@ -115,7 +141,7 @@ export function LoginScreen() {
           {/* User Type Toggle */}
           <View style={styles.toggleWrapper}>
             <AuthToggle 
-              activeType={userType === "owner" || userType === "provider" ? "owner" : "customer"} 
+              activeType={userType === "owner" ? "owner" : "customer"}
               onChange={handleTypeChange} 
             />
           </View>

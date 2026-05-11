@@ -138,22 +138,40 @@ export default function RegisterScreen() {
 
   const handleVerify = async () => {
     try {
+      const otpCodeNumber = Number(otpCode);
+      if (!/^\d{6}$/.test(otpCode) || !Number.isInteger(otpCodeNumber)) {
+        Alert.alert(t("common.error"), "Invalid code");
+        return;
+      }
+
       const result = await verifyPhone({
         phone: formData.phone,
-        code: otpCode,
+        code: otpCodeNumber,
         name: formData.name, // Pass name to update it in DB
       }).unwrap();
+      const resolvedUserType =
+        result.user?.type === "provider" ? "owner" : "customer";
+
+      if (accountType === "owner" && resolvedUserType !== "owner") {
+        Alert.alert(
+          t("common.error"),
+          isRTL
+            ? "تعذر تفعيل حساب المالك لهذا الرقم. يرجى المحاولة من جديد."
+            : "Could not activate an owner account for this phone number. Please try again.",
+        );
+        return;
+      }
 
       dispatch(
         setCredentials({
           user: result.user,
           token: result.token,
-          userType: accountType,
+          userType: resolvedUserType,
         }),
       );
 
       router.replace(
-        accountType === "owner"
+        resolvedUserType === "owner"
           ? "/(tabs)/(dashboard)/home"
           : "/(tabs)/(customer)",
       );
