@@ -15,6 +15,7 @@ import { Platform } from "react-native";
 // يمنع الكراش إذا لم تُثبَّت expo-notifications بعد
 let Notifications: typeof import("expo-notifications") | null = null;
 try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   Notifications = require("expo-notifications");
 } catch {
   console.warn(
@@ -94,9 +95,10 @@ export async function registerTokenWithBackend(
   token: string,
   authToken: string,
   baseUrl: string,
-): Promise<void> {
+): Promise<boolean> {
   try {
-    const url = `${baseUrl}/api/v1/notifications/expo-token`;
+    const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
+    const url = `${normalizedBaseUrl}/api/v1/notifications/expo-token`;
     console.log("[Notifications] Registering token at:", url);
 
     const res = await fetch(url, {
@@ -115,14 +117,17 @@ export async function registerTokenWithBackend(
 
     if (res.ok) {
       console.log("[Notifications] ✓ Token مسجّل في الباكند");
+      return true;
     } else {
       console.warn(
         `[Notifications] فشل تسجيل Token — status: ${res.status}`,
         body,
       );
+      return false;
     }
   } catch (e: any) {
     console.warn("[Notifications] خطأ في تسجيل Token:", e?.message ?? e);
+    return false;
   }
 }
 

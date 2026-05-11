@@ -9,7 +9,6 @@ import { PrimaryButton } from "@/components/user/primary-button";
 import { RootState } from "@/store";
 import { useLoginMutation, useVerifyPhoneMutation } from "@/store/api/apiSlice";
 import { setCredentials, setUserType } from "@/store/authSlice";
-import { registerForPushNotificationsAsync } from "@/services/notifications";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -24,7 +23,6 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 // import { normalize } from "@/constants/theme";
 
@@ -42,7 +40,6 @@ export function LoginScreen() {
   const isRTL = i18n.language === 'ar';
   const dispatch = useDispatch();
   const router = useRouter();
-  const insets = useSafeAreaInsets();
 
   const [login, { isLoading: isLoginLoading }] = useLoginMutation();
   const [verifyPhone, { isLoading: isVerifyLoading }] = useVerifyPhoneMutation();
@@ -106,13 +103,6 @@ export function LoginScreen() {
             userType: resolvedUserType,
           }),
         );
-        // Register push notification token with backend
-        registerForPushNotificationsAsync().then((pushToken) => {
-          if (pushToken) {
-            console.log("Push token registered:", pushToken);
-            // Token will be sent to backend via the notification service
-          }
-        });
         router.replace(resolvedUserType === "owner" ? "/(tabs)/(dashboard)/home" : "/(tabs)/(customer)");
       } catch (err: any) {
         const msg = err?.data?.message;

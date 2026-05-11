@@ -12,7 +12,7 @@ import { useFonts } from "expo-font";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, TextInput } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -50,6 +50,7 @@ function RootLayoutNav() {
 
   // Track whether we've already registered the token for this session
   const tokenRegistered = useRef(false);
+  const [notificationRetryNonce, setNotificationRetryNonce] = useState(0);
 
   const [loaded, error] = useFonts({
     "Alexandria-Bold": require("@expo-google-fonts/alexandria/700Bold/Alexandria_700Bold.ttf"),
@@ -69,7 +70,7 @@ function RootLayoutNav() {
     if (!isAuthenticated && userType !== "guest" && !inAuthGroup && !isIndex) {
       router.replace("/");
     }
-  }, [isAuthenticated, userType, segments, loaded]);
+  }, [isAuthenticated, userType, segments, loaded, router]);
 
   // ── Splash Screen ─────────────────────────────────────────────────────────
   useEffect(() => {
@@ -89,6 +90,7 @@ function RootLayoutNav() {
     if (!loaded) return;
 
     let cleanup: (() => void) | undefined;
+    let retryTimeout: ReturnType<typeof setTimeout> | undefined;
 
     (async () => {
       try {
@@ -110,8 +112,13 @@ function RootLayoutNav() {
             process.env.EXPO_PUBLIC_API_URL ?? "http://192.168.0.167:3010";
 
           if (authToken && !tokenRegistered.current) {
-            await registerTokenWithBackend(token, authToken, baseUrl);
-            tokenRegistered.current = true;
+            const registered = await registerTokenWithBackend(token, authToken, baseUrl);
+            tokenRegistered.current = registered;
+            if (!registered) {
+              retryTimeout = setTimeout(() => {
+                setNotificationRetryNonce((value) => value + 1);
+              }, 15000);
+            }
           } else if (!authToken) {
             console.warn("[Layout] لا يوجد authToken — المستخدم غير مسجّل دخول بعد");
           }
@@ -143,13 +150,16 @@ function RootLayoutNav() {
             }
           },
         );
-      } catch {
-        // expo-notifications غير مثبّت — تجاهل بصمت
+      } catch (error) {
+        console.warn("[Notifications] فشل إعداد الإشعارات:", error);
       }
     })();
 
-    return () => cleanup?.();
-  }, [loaded, isAuthenticated, authToken]);
+    return () => {
+      cleanup?.();
+      if (retryTimeout) clearTimeout(retryTimeout);
+    };
+  }, [loaded, isAuthenticated, authToken, notificationRetryNonce, router]);
 
   // ── إعادة تسجيل التوكن عند تسجيل الدخول ─────────────────────────────────
   useEffect(() => {
