@@ -9,11 +9,12 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.Sununo",
+      "bundleIdentifier": "com.dudes.sununo",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "نحتاج الوصول لموقعك لإظهار الشاليهات القريبة منك وتحديد موقع شاليك على الخارطة.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "نحتاج الوصول لموقعك لإظهار الشاليهات القريبة منك وتحديد موقع شاليك على الخارطة."
-      }
+      },
+      "appleTeamId": "UD89399RJ8"
     },
     "android": {
       "adaptiveIcon": {
@@ -32,7 +33,7 @@
         "ACCESS_FINE_LOCATION",
         "FOREGROUND_SERVICE"
       ],
-      "package": "com.anonymous.Sununo"
+      "package": "com.dudes.sununo"
     },
     "web": {
       "output": "static",

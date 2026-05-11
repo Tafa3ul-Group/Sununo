@@ -14,7 +14,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, Text, TextInput } from "react-native";
+import { Text, TextInput } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import Toast from "react-native-toast-message";
@@ -102,8 +102,8 @@ function RootLayoutNav() {
         const token = await registerForPushNotificationsAsync();
 
         if (token) {
-          // 2. إظهار التوكن للمطوّر (احذف هذا السطر في الإنتاج)
-          Alert.alert("Expo Push Token", token, [{ text: "OK" }]);
+          // 2. إظهار التوكن للمطوّر في التيرمنل فقط
+          console.log("[Layout] Expo Push Token:", token);
 
           // 3. تسجيل التوكن في الباكند
           const authState = store.getState().auth as any;
