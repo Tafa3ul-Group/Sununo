@@ -44,7 +44,7 @@ function RootLayoutNav() {
   const { i18n } = useTranslation();
   const segments = useSegments();
   const router = useRouter();
-  const { language, isAuthenticated, userType } = useSelector(
+  const { language, isAuthenticated, userType, token: authToken } = useSelector(
     (state: RootState) => state.auth,
   );
 
@@ -106,14 +106,8 @@ function RootLayoutNav() {
           console.log("[Layout] Expo Push Token:", token);
 
           // 3. تسجيل التوكن في الباكند
-          const authState = store.getState().auth as any;
-          const authToken: string | undefined = authState?.token;
           const baseUrl =
             process.env.EXPO_PUBLIC_API_URL ?? "http://192.168.0.167:3010";
-
-          console.log("[Layout] isAuthenticated:", isAuthenticated);
-          console.log("[Layout] authToken exists:", !!authToken);
-          console.log("[Layout] baseUrl:", baseUrl);
 
           if (authToken && !tokenRegistered.current) {
             await registerTokenWithBackend(token, authToken, baseUrl);
@@ -159,6 +153,9 @@ function RootLayoutNav() {
 
   // ── إعادة تسجيل التوكن عند تسجيل الدخول ─────────────────────────────────
   useEffect(() => {
+    if (!isAuthenticated) {
+      tokenRegistered.current = false;
+    }
   }, [isAuthenticated]);
 
   if (!loaded && !error) return null;

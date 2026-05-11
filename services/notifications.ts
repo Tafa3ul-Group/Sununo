@@ -96,7 +96,7 @@ export async function registerTokenWithBackend(
   baseUrl: string,
 ): Promise<void> {
   try {
-    const url = `${baseUrl}/api/v1/notifications/firebase-token`;
+    const url = `${baseUrl}/api/v1/notifications/expo-token`;
     console.log("[Notifications] Registering token at:", url);
 
     const res = await fetch(url, {

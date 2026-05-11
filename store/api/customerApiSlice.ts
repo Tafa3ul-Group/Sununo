@@ -383,7 +383,7 @@ export const customerApi = apiSlice.injectEndpoints({
     /** Register Firebase token */
     registerFirebaseToken: builder.mutation({
       query: (data: { token: string; platform?: string }) => ({
-        url: "/notifications/firebase-token",
+        url: "/notifications/expo-token",
         method: "POST",
         body: data,
       }),
