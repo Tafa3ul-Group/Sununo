@@ -1,4 +1,5 @@
 import {
+    SolarCalendarMinimalisticBold,
     SolarClockCircleBold,
     SolarCloseBold,
     SolarCloseCircleBold,
@@ -7,9 +8,11 @@ import {
     SolarHome2Bold,
     SolarMagnifierBold,
     SolarMapBoldDuotone,
+    SolarMapPointBold,
     SolarSettingsBold,
     SolarStarBold,
     SolarTreeBold,
+    SolarUsersGroupBold,
     SolarWaterBold,
     SolarWidgetBold,
     SolarWifiBold,
@@ -69,7 +72,7 @@ import {
     View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const MAPBOX_ACCESS_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN;
@@ -163,7 +166,7 @@ function ActiveFilterBanner({ filter, isRTL, onClear }: { filter: any; isRTL: bo
           style={filterBannerStyles.clearBtn}
           onPress={onClear}
         >
-          <SolarCloseCircleBold size={20} color={Colors.primary} />
+          <SolarCloseBold size={16} color={Colors.primary} />
         </TouchableOpacity>
       </View>
     </View>
@@ -1921,7 +1924,8 @@ const styles = StyleSheet.create({
 const filterBannerStyles = StyleSheet.create({
   container: {
     marginHorizontal: 16,
-    marginTop: 12,
+    marginTop: 0,
+    marginBottom: 16,
     backgroundColor: Colors.white,
     borderRadius: 20,
     ...Shadows.small,
@@ -1931,14 +1935,14 @@ const filterBannerStyles = StyleSheet.create({
   },
   content: {
     alignItems: "center",
-    paddingLeft: 12,
-    paddingRight: 8,
+    justifyContent: "center",
+    paddingHorizontal: 12,
     paddingVertical: 8,
   },
   scrollContent: {
     alignItems: "center",
+    justifyContent: "center",
     gap: 8,
-    paddingRight: 12,
   },
   pill: {
     flexDirection: "row",

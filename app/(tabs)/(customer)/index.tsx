@@ -15,8 +15,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 
 import { HeaderSection } from "@/components/header-section";
+import {
     SolarCalendarMinimalisticBold,
     SolarClockCircleBold,
+    SolarCloseBold,
     SolarCloseCircleBold,
     SolarFireBold,
     SolarMapPointBold,
@@ -96,7 +98,7 @@ function ActiveFilterBanner({ filter, isRTL }: { filter: any; isRTL: boolean }) 
           style={filterBannerStyles.clearBtn}
           onPress={() => dispatch(clearFilters())}
         >
-          <SolarCloseCircleBold size={20} color={Colors.primary} />
+          <SolarCloseBold size={16} color={Colors.primary} />
         </TouchableOpacity>
       </View>
     </View>
@@ -106,7 +108,8 @@ function ActiveFilterBanner({ filter, isRTL }: { filter: any; isRTL: boolean }) 
 const filterBannerStyles = StyleSheet.create({
   container: {
     marginHorizontal: 16,
-    marginTop: 12,
+    marginTop: 0,
+    marginBottom: 16,
     backgroundColor: Colors.white,
     borderRadius: 20,
     ...Shadows.small,
@@ -116,14 +119,14 @@ const filterBannerStyles = StyleSheet.create({
   },
   content: {
     alignItems: "center",
-    paddingLeft: 12,
-    paddingRight: 8,
+    justifyContent: "center",
+    paddingHorizontal: 12,
     paddingVertical: 8,
   },
   scrollContent: {
     alignItems: "center",
+    justifyContent: "center",
     gap: 8,
-    paddingRight: 12,
   },
   pill: {
     flexDirection: "row",
