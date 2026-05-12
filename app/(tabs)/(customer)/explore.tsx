@@ -116,6 +116,60 @@ function SectionHeader({ title, isRTL }: { title: string; isRTL: boolean }) {
   );
 }
 
+// ── Active Filter Banner ──────────────────────────────────────────────────────
+function ActiveFilterBanner({ filter, isRTL, onClear }: { filter: any; isRTL: boolean; onClear: () => void }) {
+  const filterItems = useMemo(() => {
+    const items = [];
+    if (filter.cityName) {
+      items.push({ id: 'city', text: filter.cityName, icon: <SolarMapPointBold size={14} color={Colors.primary} /> });
+    }
+    if (filter.checkIn) {
+      const dateText = new Date(filter.checkIn).toLocaleDateString(isRTL ? "ar" : "en", { month: "short", day: "numeric" });
+      items.push({ id: 'date', text: dateText, icon: <SolarCalendarMinimalisticBold size={14} color={Colors.primary} /> });
+    }
+    if (filter.period) {
+      const periodMap: Record<string, string> = {
+        morning: isRTL ? "صباحي" : "Morning",
+        evening: isRTL ? "مسائي" : "Evening",
+        overnight: isRTL ? "مبيت" : "Overnight",
+      };
+      items.push({ id: 'period', text: periodMap[filter.period] || filter.period, icon: <SolarClockCircleBold size={14} color={Colors.primary} /> });
+    }
+    if (filter.maxGuests) {
+      items.push({ id: 'guests', text: `${filter.maxGuests} ${isRTL ? "ضيف" : "guests"}`, icon: <SolarUsersGroupBold size={14} color={Colors.primary} /> });
+    }
+    return items;
+  }, [filter, isRTL]);
+
+  if (filterItems.length === 0) return null;
+
+  return (
+    <View style={filterBannerStyles.container}>
+      <View style={[filterBannerStyles.content, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={[filterBannerStyles.scrollContent, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+        >
+          {filterItems.map((item) => (
+            <View key={item.id} style={[filterBannerStyles.pill, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+              {item.icon}
+              <ThemedText style={filterBannerStyles.pillText}>{item.text}</ThemedText>
+            </View>
+          ))}
+        </ScrollView>
+
+        <TouchableOpacity
+          style={filterBannerStyles.clearBtn}
+          onPress={onClear}
+        >
+          <SolarCloseCircleBold size={20} color={Colors.primary} />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
 export default function ExploreScreen() {
   const router = useRouter();
   const { id, showMyLocation } = useLocalSearchParams();
@@ -144,15 +198,22 @@ export default function ExploreScreen() {
   // Bottom Sheet Ref for Filters
   const filterSheetRef = useRef<BottomSheetModal>(null);
   const drawerRef = useRef<AppDrawerRef>(null);
+  const dispatch = useDispatch();
+
+  // Global Filters from Redux
+  const activeFilters = useSelector((state: RootState) => (state as any).filter);
 
   // API Data
   const { data: chaletsResponse, isLoading: isChaletsLoading } =
     useGetChaletsMapQuery({
       limit: zoom >= 14 ? 300 : zoom >= 10 ? 150 : zoom >= 6 ? 80 : 40,
-      search: search || undefined,
-      maxAdults: maxAdults ? parseInt(maxAdults) : undefined,
+      search: search || activeFilters?.search || undefined,
+      maxAdults: maxAdults ? parseInt(maxAdults) : (activeFilters?.maxGuests || undefined),
       minPrice: minPrice ? parseInt(minPrice) : undefined,
       maxPrice: maxPrice ? parseInt(maxPrice) : undefined,
+      cityId: activeFilters?.cityId || undefined,
+      checkIn: activeFilters?.checkIn?.split("T")[0],
+      period: activeFilters?.period,
       zoom: Math.round(zoom),
     });
 
@@ -564,6 +625,18 @@ export default function ExploreScreen() {
             )}
           </View>
         </View>
+
+        {/* Active Filter Indicator */}
+        {activeFilters?.isActive && (
+          <ActiveFilterBanner 
+            filter={activeFilters} 
+            isRTL={isRTL} 
+            onClear={() => {
+              const { clearFilters } = require("@/store/filterSlice");
+              dispatch(clearFilters());
+            }} 
+          />
+        )}
 
         {/* Removed CategoryTabs from here as requested to be moved to filter sheet */}
       </View>
@@ -1842,5 +1915,47 @@ const styles = StyleSheet.create({
   userAvatarImgMerged: {
     width: "100%",
     height: "100%",
+  },
+});
+
+const filterBannerStyles = StyleSheet.create({
+  container: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    backgroundColor: Colors.white,
+    borderRadius: 20,
+    ...Shadows.small,
+    borderWidth: 1,
+    borderColor: "#F3F4F6",
+    overflow: "hidden",
+  },
+  content: {
+    alignItems: "center",
+    paddingLeft: 12,
+    paddingRight: 8,
+    paddingVertical: 8,
+  },
+  scrollContent: {
+    alignItems: "center",
+    gap: 8,
+    paddingRight: 12,
+  },
+  pill: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F3F7FF",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    gap: 6,
+  },
+  pillText: {
+    fontSize: 12,
+    fontFamily: "Alexandria-Medium",
+    color: Colors.primary,
+  },
+  clearBtn: {
+    padding: 4,
+    marginLeft: 4,
   },
 });

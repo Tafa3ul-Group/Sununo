@@ -1,10 +1,10 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-// Define the base URL for the API
-const BASE_URL = "https://k4wwso0cwg480c480oo0owg4.rakiza.dev/api/v1";
-// const BASE_URL = 'http://192.168.0.167:4646/api/v1';
-
-// Force reload hooks
+// API base URL — reads from environment variable with fallback
+const BASE_URL =
+  process.env.EXPO_PUBLIC_API_URL
+    ? `${process.env.EXPO_PUBLIC_API_URL}/api/v1`
+    : "https://k4wwso0cwg480c480oo0owg4.rakiza.dev/api/v1";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: BASE_URL,

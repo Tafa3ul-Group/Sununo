@@ -1,29 +1,46 @@
 import {
-  SolarFiltersBoldDuotone,
-  SolarHomeSmileBoldDuotone,
-  SolarMapBoldDuotone,
-  SolarUserBold,
+    SolarFiltersBoldDuotone,
+    SolarHomeSmileBoldDuotone,
+    SolarMapBoldDuotone,
+    SolarUserBold,
 } from "@/components/icons/solar-icons";
 import { CustomTabBar } from "@/components/user/custom-tab-bar";
 import { SearchFilterSheet } from "@/components/user/search-filter-sheet";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { RootState } from "@/store";
+import { setFilters } from "@/store/filterSlice";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { Redirect, Tabs, useRouter } from "expo-router";
 import React, { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Image, View } from "react-native";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 export default function CustomerLayout() {
   const { t } = useTranslation();
   const { userType, user } = useSelector((state: RootState) => state.auth);
   const router = useRouter();
+  const dispatch = useDispatch();
   const filterSheetRef = useRef<BottomSheetModal>(null);
 
   if (userType === "owner") {
     return <Redirect href="/(tabs)/(dashboard)/home" />;
   }
+
+  const handleFilterApply = (filters: any) => {
+    dispatch(setFilters({
+      cityId: filters.cityId || null,
+      cityName: filters.cityName || null,
+      search: filters.search || null,
+      checkIn: filters.checkIn || null,
+      checkOut: filters.checkOut || null,
+      period: filters.period || null,
+      maxGuests: filters.maxGuests || null,
+      adults: filters.adults ?? 2,
+      children: filters.children ?? 0,
+      isActive: true,
+    }));
+  };
 
   return (
     <>
@@ -106,7 +123,7 @@ export default function CustomerLayout() {
         <Tabs.Screen name="bookings" options={{ href: null }} />
         <Tabs.Screen name="booking-success" options={{ href: null }} />
       </Tabs>
-      <SearchFilterSheet ref={filterSheetRef} />
+      <SearchFilterSheet ref={filterSheetRef} onApply={handleFilterApply} />
     </>
   );
 }

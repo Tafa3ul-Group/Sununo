@@ -1,29 +1,29 @@
-import BottomSheet, {
-  BottomSheetBackdrop,
-  BottomSheetModal,
-  BottomSheetScrollView,
-  useBottomSheetModal,
+import {
+    BottomSheetBackdrop,
+    BottomSheetModal,
+    BottomSheetScrollView,
+    useBottomSheetModal,
 } from "@gorhom/bottom-sheet";
 import React, { forwardRef, useCallback, useMemo, useState } from "react";
-import {
-  Dimensions,
-  Keyboard,
-  Platform,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
 import { useTranslation } from "react-i18next";
+import {
+    Dimensions,
+    Keyboard,
+    Platform,
+    StyleSheet,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
 
+import { SolarBedBold, SolarMagnifierBold, SolarMapPointBold, SolarMoonBold, SolarSunBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
-import { Colors, isRTL, Shadows, Spacing, normalize } from "@/constants/theme";
+import { Colors, normalize, Shadows, Spacing } from "@/constants/theme";
+import { useGetCityNamesQuery } from "@/store/api/customerApiSlice";
 import { AppButton } from "./app-button";
 import { GuestCounter } from "./guest-counter";
 import { MainTabs, TabType } from "./MainTabs";
 import { RangeCalendar } from "./range-calendar";
-import { SolarMagnifierBold, SolarMapPointBold, SolarSunBold, SolarMoonBold, SolarBedBold } from "@/components/icons/solar-icons";
-import { useGetCityNamesQuery } from "@/store/api/customerApiSlice";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -44,13 +44,16 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
   const { i18n } = useTranslation();
   const isArabic = i18n.language === "ar";
 
-  const [activeTab, setActiveTab] = useState<TabType>("WHERE");
-  const [selectedCity, setSelectedCity] = useState("basra");
+  const [activeTab, setActiveTab] = useState<TabType>("WHEN");
+  const [selectedCity, setSelectedCity] = useState<string>("");
+  const [selectedCityName, setSelectedCityName] = useState<string>("");
   const [searchText, setSearchText] = useState("");
-  const [whenStep, setWhenStep] = useState(1); // 1: Calendar, 2: Periods
+  const [whenStep, setWhenStep] = useState(1);
   const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null);
   const [adults, setAdults] = useState(2);
-  const [children, setChildren] = useState(1);
+  const [children, setChildren] = useState(0);
+  const [checkIn, setCheckIn] = useState<Date | null>(null);
+  const [checkOut, setCheckOut] = useState<Date | null>(null);
 
   // Fetch cities from backend
   const { data: citiesData } = useGetCityNamesQuery(undefined);
@@ -67,27 +70,32 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
 
   const handleNext = useCallback(() => {
     Keyboard.dismiss();
-    if (activeTab === "WHERE") {
-      setActiveTab("WHEN");
-      setWhenStep(1);
-    } else if (activeTab === "WHEN") {
+    if (activeTab === "WHEN") {
       if (whenStep === 1) {
         setWhenStep(2);
       } else {
         setActiveTab("WHO");
       }
+    } else if (activeTab === "WHO") {
+      setActiveTab("WHERE");
     } else {
+      // WHERE — apply and close
       if (onApply) {
         onApply({
-          cityId: selectedCity,
-          search: searchText,
-          maxGuests: adults + children,
+          cityId: selectedCity || null,
+          cityName: selectedCityName || null,
+          search: searchText || null,
+          checkIn: checkIn ? checkIn.toISOString() : null,
+          checkOut: checkOut ? checkOut.toISOString() : null,
           period: selectedPeriod,
+          maxGuests: adults + children,
+          adults,
+          children,
         });
       }
       dismiss();
     }
-  }, [activeTab, whenStep, dismiss, onApply, selectedCity, searchText, adults, children, selectedPeriod]);
+  }, [activeTab, whenStep, dismiss, onApply, selectedCity, selectedCityName, searchText, adults, children, selectedPeriod, checkIn, checkOut]);
 
   const renderBackdrop = useCallback(
     (backdropProps: any) => (
@@ -118,7 +126,10 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
       {cities.filter(city => city.name.includes(searchText)).map((city) => (
         <TouchableOpacity
           key={city.id}
-          onPress={() => setSelectedCity(city.id)}
+          onPress={() => {
+            setSelectedCity(city.id);
+            setSelectedCityName(city.name);
+          }}
           style={[
             styles.cityItem,
             isArabic ? styles.ltrRow : styles.rtlRow,
@@ -139,7 +150,14 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
 
   const renderWhenCalendarContent = () => (
     <View style={styles.tabContent}>
-      <RangeCalendar />
+      <RangeCalendar
+        onSelect={(start, end) => {
+          setCheckIn(start);
+          setCheckOut(end);
+        }}
+        initialStartDate={checkIn ?? undefined}
+        initialEndDate={checkOut ?? undefined}
+      />
       <View style={styles.calendarFooter}>
         <View style={styles.legendWrapper}>
           <View style={styles.legendItem}>
@@ -323,10 +341,10 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
         {/* Fixed Footer Button */}
         <View style={styles.mainFooter}>
           <AppButton
-            label={activeTab === "WHO" ? "بحث" : "التالية"}
+            label={activeTab === "WHERE" ? "بحث" : "التالية"}
             onPress={handleNext}
             isActive={true}
-            activeColor={activeTab === "WHO" ? "#F64200" : "#15AB64"}
+            activeColor={activeTab === "WHEN" ? "#15AB64" : activeTab === "WHO" ? "#F64200" : "#035DF9"}
             style={styles.nextButton}
           />
         </View>

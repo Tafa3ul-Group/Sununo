@@ -151,33 +151,33 @@ export const Typography: Record<string, TypeStyle> = {
 
 export const Shadows = {
   small: Platform.select({
-    web: { boxShadow: "none" },
+    web: { boxShadow: "0 2px 4px rgba(0,0,0,0.05)" },
     default: {
-      shadowColor: "transparent",
-      shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0,
-      shadowRadius: 0,
-      elevation: 0,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 4,
+      elevation: 2,
     },
   }),
   medium: Platform.select({
-    web: { boxShadow: "none" },
+    web: { boxShadow: "0 4px 12px rgba(0,0,0,0.08)" },
     default: {
-      shadowColor: "transparent",
-      shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0,
-      shadowRadius: 0,
-      elevation: 0,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.08,
+      shadowRadius: 12,
+      elevation: 5,
     },
   }),
   large: Platform.select({
-    web: { boxShadow: "none" },
+    web: { boxShadow: "0 8px 24px rgba(0,0,0,0.12)" },
     default: {
-      shadowColor: "transparent",
-      shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0,
-      shadowRadius: 0,
-      elevation: 0,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.12,
+      shadowRadius: 24,
+      elevation: 10,
     },
   }),
 };

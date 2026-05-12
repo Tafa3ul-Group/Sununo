@@ -1,61 +1,54 @@
-import { configureStore, combineReducers } from '@reduxjs/toolkit';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
+import {
+    FLUSH,
+    PAUSE,
+    PERSIST,
+    persistReducer,
+    persistStore,
+    PURGE,
+    REGISTER,
+    REHYDRATE,
+} from 'redux-persist';
 import { apiSlice } from './api/apiSlice';
-// Import customerApiSlice to ensure endpoints are injected into apiSlice
 import './api/customerApiSlice';
 import authReducer from './authSlice';
-import { 
-  persistStore, 
-  persistReducer,
-  FLUSH,
-  REHYDRATE,
-  PAUSE,
-  PERSIST,
-  PURGE,
-  REGISTER,
-} from 'redux-persist';
-import { Platform } from 'react-native';
+import filterReducer from './filterSlice';
 
-// Fallback storage for SSR (Server Side Rendering)
+// Use AsyncStorage directly — no dynamic require needed
+// Safeguard storage for SSR environments
 const storage = {
-  getItem: async (key: string) => {
-    try {
-      if (Platform.OS === 'web' && typeof window === 'undefined') return null;
-      const s = require('@react-native-async-storage/async-storage').default;
-      return await s.getItem(key);
-    } catch (e) {
-      return null;
+  getItem: (key: string) => {
+    if (typeof window !== 'undefined') {
+      return AsyncStorage.getItem(key);
     }
+    return Promise.resolve(null);
   },
-  setItem: async (key: string, value: string) => {
-    try {
-      if (Platform.OS === 'web' && typeof window === 'undefined') return;
-      const s = require('@react-native-async-storage/async-storage').default;
-      await s.setItem(key, value);
-    } catch (e) {
-      // ignore
+  setItem: (key: string, value: string) => {
+    if (typeof window !== 'undefined') {
+      return AsyncStorage.setItem(key, value);
     }
+    return Promise.resolve();
   },
-  removeItem: async (key: string) => {
-    try {
-      if (Platform.OS === 'web' && typeof window === 'undefined') return;
-      const s = require('@react-native-async-storage/async-storage').default;
-      await s.removeItem(key);
-    } catch (e) {
-      // ignore
+  removeItem: (key: string) => {
+    if (typeof window !== 'undefined') {
+      return AsyncStorage.removeItem(key);
     }
+    return Promise.resolve();
   },
 };
 
 const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ['auth'], // Only persist auth slice
+  whitelist: ['auth', 'filter'], // persist auth + filter
 };
 
 const rootReducer = combineReducers({
   [apiSlice.reducerPath]: apiSlice.reducer,
   auth: authReducer,
+  filter: filterReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

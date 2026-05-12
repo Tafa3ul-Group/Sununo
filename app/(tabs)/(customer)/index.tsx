@@ -1,4 +1,3 @@
-'use no memo';
 import { Redirect, useRouter } from "expo-router";
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -13,12 +12,16 @@ import {
 } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import { HeaderSection } from "@/components/header-section";
-import {
+    SolarCalendarMinimalisticBold,
+    SolarClockCircleBold,
+    SolarCloseCircleBold,
     SolarFireBold,
+    SolarMapPointBold,
     SolarTreeBold,
+    SolarUsersGroupBold,
     SolarWaterBold,
     SolarWidgetBold,
 } from "@/components/icons/solar-icons";
@@ -28,7 +31,7 @@ import { BannerSwiper } from "@/components/user/banner-swiper";
 import { HorizontalCard } from "@/components/user/horizontal-card";
 import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
 import { SecondaryButton } from "@/components/user/secondary-button";
-import { Colors, normalize } from "@/constants/theme";
+import { Colors, normalize, Shadows } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { RootState } from "@/store";
 import {
@@ -37,38 +40,141 @@ import {
     useGetFavoriteIdsQuery,
     useToggleFavoriteMutation,
 } from "@/store/api/customerApiSlice";
-
+import { clearFilters } from "@/store/filterSlice";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 // Fallback colors for chalet cards
 const CARD_COLORS = [Colors.primary, Colors.secondary, Colors.accent];
 
+// ── Active Filter Banner ──────────────────────────────────────────────────────
+function ActiveFilterBanner({ filter, isRTL }: { filter: any; isRTL: boolean }) {
+  const dispatch = useDispatch();
+  const { t } = useTranslation();
+
+  const filterItems = useMemo(() => {
+    const items = [];
+    if (filter.cityName) {
+      items.push({ id: 'city', text: filter.cityName, icon: <SolarMapPointBold size={14} color={Colors.primary} /> });
+    }
+    if (filter.checkIn) {
+      const dateText = new Date(filter.checkIn).toLocaleDateString(isRTL ? "ar" : "en", { month: "short", day: "numeric" });
+      items.push({ id: 'date', text: dateText, icon: <SolarCalendarMinimalisticBold size={14} color={Colors.primary} /> });
+    }
+    if (filter.period) {
+      const periodMap: Record<string, string> = {
+        morning: isRTL ? "صباحي" : "Morning",
+        evening: isRTL ? "مسائي" : "Evening",
+        overnight: isRTL ? "مبيت" : "Overnight",
+      };
+      items.push({ id: 'period', text: periodMap[filter.period] || filter.period, icon: <SolarClockCircleBold size={14} color={Colors.primary} /> });
+    }
+    if (filter.maxGuests) {
+      items.push({ id: 'guests', text: `${filter.maxGuests} ${isRTL ? "ضيف" : "guests"}`, icon: <SolarUsersGroupBold size={14} color={Colors.primary} /> });
+    }
+    return items;
+  }, [filter, isRTL]);
+
+  if (filterItems.length === 0) return null;
+
+  return (
+    <View style={filterBannerStyles.container}>
+      <View style={[filterBannerStyles.content, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={[filterBannerStyles.scrollContent, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+        >
+          {filterItems.map((item) => (
+            <View key={item.id} style={[filterBannerStyles.pill, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+              {item.icon}
+              <ThemedText style={filterBannerStyles.pillText}>{item.text}</ThemedText>
+            </View>
+          ))}
+        </ScrollView>
+
+        <TouchableOpacity
+          style={filterBannerStyles.clearBtn}
+          onPress={() => dispatch(clearFilters())}
+        >
+          <SolarCloseCircleBold size={20} color={Colors.primary} />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+const filterBannerStyles = StyleSheet.create({
+  container: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    backgroundColor: Colors.white,
+    borderRadius: 20,
+    ...Shadows.small,
+    borderWidth: 1,
+    borderColor: "#F3F4F6",
+    overflow: "hidden",
+  },
+  content: {
+    alignItems: "center",
+    paddingLeft: 12,
+    paddingRight: 8,
+    paddingVertical: 8,
+  },
+  scrollContent: {
+    alignItems: "center",
+    gap: 8,
+    paddingRight: 12,
+  },
+  pill: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F3F7FF",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    gap: 6,
+  },
+  pillText: {
+    fontSize: 12,
+    fontFamily: "Alexandria-Medium",
+    color: Colors.primary,
+  },
+  clearBtn: {
+    padding: 4,
+    marginLeft: 4,
+  },
+});
+
 export default function HomeScreen() {
   const { userType } = useSelector((state: RootState) => state.auth);
+  const activeFilters = useSelector((state: RootState) => (state as any).filter);
+  const dispatch = useDispatch();
   const router = useRouter();
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
   const [activeFilter, setActiveFilter] = React.useState("all");
-  const [filters, setFilters] = React.useState<any>({});
   const insets = useSafeAreaInsets();
 
-  // Map categories to amenity names/ids for filtering
-  const amenityIds = useMemo(() => {
-    if (activeFilter === "pool") return ["poo-id-placeholder"]; // Ideally these would come from an amenities API
-    if (activeFilter === "bbq") return ["bbq-id-placeholder"];
-    if (activeFilter === "garden") return ["garden-id-placeholder"];
-    return undefined;
-  }, [activeFilter]);
+  // Build query params from Redux filter state
+  const queryParams = React.useMemo(() => {
+    const params: any = { page: 1, limit: 10 };
+    if (activeFilters?.cityId) params.cityId = activeFilters.cityId;
+    if (activeFilters?.search) params.search = activeFilters.search;
+    if (activeFilters?.maxGuests) params.maxGuests = activeFilters.maxGuests;
+    if (activeFilters?.checkIn) params.checkIn = activeFilters.checkIn.split("T")[0];
+    if (activeFilters?.checkOut) params.checkOut = activeFilters.checkOut.split("T")[0];
+    if (activeFilters?.period) params.period = activeFilters.period;
+
+    if (activeFilter === "pool") params.amenityIds = ["pool"];
+    if (activeFilter === "bbq") params.amenityIds = ["bbq"];
+    if (activeFilter === "garden") params.amenityIds = ["garden"];
+    return params;
+  }, [activeFilters, activeFilter]);
 
   // Fetch data from the backend
   const { data: bannersResponse } = useGetBannersQuery(undefined);
   const { data: chaletsResponse, isLoading: chaletsLoading } =
-    useBrowseCustomerChaletsQuery({
-      page: 1,
-      limit: 10,
-      amenityIds,
-      ...filters,
-    });
+    useBrowseCustomerChaletsQuery(queryParams);
 
   const { data: favoriteIds = [], refetch: refetchFavorites } =
     useGetFavoriteIdsQuery();
@@ -176,6 +282,11 @@ export default function HomeScreen() {
       >
         {/* Header */}
         <HeaderSection isHome />
+
+        {/* Active Filter Indicator */}
+        {activeFilters?.isActive && (
+          <ActiveFilterBanner filter={activeFilters} isRTL={isRTL} />
+        )}
 
         {/* Banners Swiper */}
         {banners?.length > 0 && <BannerSwiper data={banners} />}

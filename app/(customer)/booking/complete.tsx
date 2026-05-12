@@ -86,10 +86,31 @@ export default function CompleteBookingScreen() {
   const { id: chaletIdParam } = useLocalSearchParams();
   const chaletId = chaletIdParam as string;
   const { userType, user } = useSelector((state: RootState) => state.auth);
+  const savedFilter = useSelector((state: RootState) => (state as any).filter);
+
   const [activeTab, setActiveTab] = useState<TabType>("WHEN");
-  const [selectedDates, setSelectedDates] = useState<number[]>([]);
   const [paymentType, setPaymentType] = useState<"DEPOSIT" | "FULL">("DEPOSIT");
   const { formatShiftTime } = useFormatTime();
+
+  // Pre-fill from saved filter
+  const [adults, setAdults] = useState<number>(savedFilter?.adults ?? 2);
+  const [children, setChildren] = useState<number>(savedFilter?.children ?? 0);
+
+  // Pre-fill dates from filter if available
+  const getInitialDates = (): number[] => {
+    if (!savedFilter?.checkIn) return [];
+    const start = new Date(savedFilter.checkIn);
+    const end = savedFilter.checkOut ? new Date(savedFilter.checkOut) : start;
+    const days: number[] = [];
+    const cur = new Date(start);
+    while (cur <= end) {
+      days.push(cur.getDate());
+      cur.setDate(cur.getDate() + 1);
+    }
+    return days;
+  };
+
+  const [selectedDates, setSelectedDates] = useState<number[]>(getInitialDates);
 
   // Mapping of Day -> Selected Shift ID
   const [selectedShifts, setSelectedShifts] = useState<Record<number, string>>(
