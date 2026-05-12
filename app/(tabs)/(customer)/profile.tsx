@@ -1,32 +1,29 @@
-import { Colors, normalize, Spacing, Typography } from '@/constants/theme';
-import { RootState } from '@/store';
-import { logout } from '@/store/authSlice';
+import { HeaderSection } from '@/components/header-section';
 import {
-  SolarWalletBold,
-  SolarCalendarBold,
-  SolarHeartBold,
-  SolarGlobalBold,
-  SolarPhoneBold,
-  SolarShieldBold,
-  SolarLogoutBold,
-  SolarPenBold,
-  ProfileShape
+    ProfileShape,
+    SolarCalendarBold,
+    SolarGlobalBold,
+    SolarHeartBold,
+    SolarLogoutBold,
+    SolarPenBold,
+    SolarPhoneBold,
+    SolarShieldBold
 } from '@/components/icons/solar-icons';
-import { CircleBackButton } from '@/components/ui/circle-back-button';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { LanguageSheet } from '@/components/user/language-sheet';
 import { LogoutSheet } from '@/components/user/logout-sheet';
+import { WalletCard } from '@/components/user/wallet-card';
+import { normalize } from '@/constants/theme';
+import { getImageSrc } from '@/hooks/useImageSrc';
+import { RootState } from '@/store';
+import { useGetMeQuery } from '@/store/api/apiSlice';
+import { useDeleteCustomerAccountMutation, useGetCustomerWalletQuery, useLogoutUserMutation } from '@/store/api/customerApiSlice';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert, Image } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
-import { WalletCard } from '@/components/user/wallet-card';
-import { HeaderSection } from '@/components/header-section';
-import { useGetMeQuery } from '@/store/api/apiSlice';
-import { useGetCustomerWalletQuery, useLogoutUserMutation, useDeleteCustomerAccountMutation } from '@/store/api/customerApiSlice';
-import { getImageSrc } from '@/hooks/useImageSrc';
 
 export default function ProfileScreen() {
   const dispatch = useDispatch();

@@ -1,14 +1,14 @@
 import {
-  SolarClockCircleBold,
-  SolarForbiddenBold,
-  SolarHeartBold,
-  SolarKeyBold,
-  SolarMapPointBold,
-  SolarMoonBold,
-  SolarShieldCheckBold,
-  SolarStarBold,
-  SolarSunBold,
-  SolarWidgetBold
+    SolarClockCircleBold,
+    SolarForbiddenBold,
+    SolarHeartBold,
+    SolarKeyBold,
+    SolarMapPointBold,
+    SolarMoonBold,
+    SolarShieldCheckBold,
+    SolarStarBold,
+    SolarSunBold,
+    SolarWidgetBold
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { CircleBackButton } from "@/components/ui/circle-back-button";
@@ -23,16 +23,16 @@ import { Colors, normalize, Shadows } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { RootState } from "@/store";
 import {
-  useAddFavoriteMutation,
-  useCheckCanReviewQuery,
-  useCreateReviewMutation,
-  useGetChaletAddonsQuery,
-  useGetChaletReviewsQuery,
-  useGetCustomerChaletDetailsQuery,
-  useGetFavoriteIdsQuery,
-  useGetSimilarChaletsQuery,
-  useRemoveFavoriteMutation,
-  useToggleFavoriteMutation,
+    useAddFavoriteMutation,
+    useCheckCanReviewQuery,
+    useCreateReviewMutation,
+    useGetChaletAddonsQuery,
+    useGetChaletReviewsQuery,
+    useGetCustomerChaletDetailsQuery,
+    useGetFavoriteIdsQuery,
+    useGetSimilarChaletsQuery,
+    useRemoveFavoriteMutation,
+    useToggleFavoriteMutation,
 } from "@/store/api/customerApiSlice";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import Constants from "expo-constants";
@@ -41,14 +41,14 @@ import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from "expo-rou
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ActivityIndicator,
-  Alert,
-  Dimensions,
-  Image,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Dimensions,
+    Image,
+    ScrollView,
+    StyleSheet,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { useSelector } from "react-redux";
@@ -150,7 +150,6 @@ export default function ChaletDetailScreen() {
     }
     try {
       await toggleFavorite(chaletId).unwrap();
-      refetchFavorites();
     } catch (error) {
       console.error("Failed to toggle favorite:", error);
     }

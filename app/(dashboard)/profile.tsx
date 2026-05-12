@@ -1,31 +1,28 @@
 import {
-  ProfileShape,
-  SolarBanknoteBold,
-  SolarBellBold,
-  SolarCalendarBold,
-  SolarChartBold,
-  SolarGlobalBold,
-  SolarHome2Bold,
-  SolarLogoutBold,
-  SolarMapPointBold,
-  SolarPenBold,
-  SolarPhoneBold,
-  SolarShieldBold,
-  SolarUserBold
+    ProfileShape,
+    SolarBanknoteBold,
+    SolarCalendarBold,
+    SolarGlobalBold,
+    SolarLogoutBold,
+    SolarMapPointBold,
+    SolarPenBold,
+    SolarPhoneBold,
+    SolarShieldBold,
+    SolarUserBold
 } from "@/components/icons/solar-icons";
-import { getImageSrc } from '@/hooks/useImageSrc';
 import { ThemedText } from '@/components/themed-text';
 import { LanguageSheet } from '@/components/user/language-sheet';
 import { LogoutSheet } from '@/components/user/logout-sheet';
 import { Colors, normalize } from '@/constants/theme';
+import { getImageSrc } from '@/hooks/useImageSrc';
 import { RootState } from '@/store';
 import {
-  apiSlice,
-  useGetCitiesQuery,
-  useGetMeQuery,
-  useGetProviderProfileQuery,
-  useUpdateProfileImageMutation,
-  useUpdateProfileMutation
+    useGetCitiesQuery,
+    useGetMeQuery,
+    useGetProviderProfileQuery,
+    useLogoutUserMutation,
+    useUpdateProfileImageMutation,
+    useUpdateProfileMutation,
 } from '@/store/api/apiSlice';
 import { logout } from '@/store/authSlice';
 import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
@@ -35,17 +32,17 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -64,6 +61,7 @@ export default function ProviderProfileScreen() {
   const { data: cities } = useGetCitiesQuery();
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
   const [updateProfileImage, { isLoading: isUploadingImage }] = useUpdateProfileImageMutation();
+  const [logoutApi] = useLogoutUserMutation();
 
   const router = useRouter();
   const languageSheetRef = useRef<BottomSheetModal>(null);
@@ -100,7 +98,29 @@ export default function ProviderProfileScreen() {
   };
 
   const handleLogout = () => {
-    logoutSheetRef.current?.present();
+    Alert.alert(
+      isRTL ? 'تسجيل الخروج' : 'Logout',
+      isRTL ? 'هل أنت متأكد من تسجيل الخروج؟' : 'Are you sure you want to logout?',
+      [
+        {
+          text: isRTL ? 'إلغاء' : 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: isRTL ? 'خروج' : 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await logoutApi(undefined).unwrap();
+            } catch {
+              // تجاهل خطأ السيرفر وأكمل الخروج
+            }
+            dispatch(logout());
+            router.replace('/(auth)/login');
+          },
+        },
+      ],
+    );
   };
 
   const handleSaveProfile = async () => {

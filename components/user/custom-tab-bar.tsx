@@ -1,4 +1,4 @@
-import { normalize, Shadows, Colors } from '@/constants/theme';
+import { Colors, normalize } from '@/constants/theme';
 import { RootState } from '@/store';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
@@ -96,8 +96,10 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
                       canPreventDefault: true,
                     });
 
-                    if (!isActive && !event.defaultPrevented) {
-                      navigation.navigate(route.name);
+                    if (!event.defaultPrevented) {
+                      if (!isActive) {
+                        navigation.navigate(route.name);
+                      }
                     }
                   }}
                   style={[

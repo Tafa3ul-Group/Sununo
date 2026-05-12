@@ -1,13 +1,13 @@
-import React, { forwardRef, useCallback, useMemo } from 'react';
-import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
-import { BottomSheetModal, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
-import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
-import { useRouter } from 'expo-router';
-import { logout } from '@/store/authSlice';
+import { SolarCloseBold } from '@/components/icons/solar-icons';
+import { normalize } from '@/constants/theme';
 import { useLogoutUserMutation } from '@/store/api/customerApiSlice';
-import { Colors, normalize, Spacing } from '@/constants/theme';
-import { SolarLogoutBold, SolarCloseBold } from '@/components/icons/solar-icons';
+import { logout } from '@/store/authSlice';
+import { BottomSheetBackdrop, BottomSheetModal } from '@gorhom/bottom-sheet';
+import { useRouter } from 'expo-router';
+import React, { forwardRef, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useDispatch } from 'react-redux';
 import { PrimaryButton } from './primary-button';
 
 export const LogoutSheet = forwardRef<BottomSheetModal>((props, ref) => {
@@ -73,7 +73,7 @@ export const LogoutSheet = forwardRef<BottomSheetModal>((props, ref) => {
           <PrimaryButton
             label={t('profile.exit')}
             onPress={handleLogout}
-            isLoading={isLoading}
+            loading={isLoading}
             style={styles.logoutBtn}
           />
           <TouchableOpacity 

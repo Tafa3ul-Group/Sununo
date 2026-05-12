@@ -1,18 +1,16 @@
-import React, { useMemo } from 'react';
-import { View, StyleSheet, ScrollView, RefreshControl, Image, TouchableOpacity, I18nManager, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
-import { Colors, normalize, Shadows } from '@/constants/theme';
+import { HeaderSection } from '@/components/header-section';
+import { SolarCalendarAddBold, SolarStarBold } from "@/components/icons/solar-icons";
 import { ThemedText } from '@/components/themed-text';
-import { SolarCalendarBold, SolarBanknoteBold, SolarCalendarAddBold, SolarStarBold } from "@/components/icons/solar-icons";
+import { normalize, Shadows } from '@/constants/theme';
+import { getImageSrc } from '@/hooks/useImageSrc';
+import { useGetCustomerBookingsQuery } from '@/store/api/customerApiSlice';
 import { formatPrice } from '@/utils/format';
 import { useRouter } from 'expo-router';
-import { HeaderSection } from '@/components/header-section';
-import Svg, { Path, Defs, ClipPath, Image as SvgImage } from 'react-native-svg';
-import { useGetCustomerBookingsQuery } from '@/store/api/customerApiSlice';
-import { getImageSrc } from '@/hooks/useImageSrc';
+import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { I18nManager, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { ClipPath, Defs, Path, Image as SvgImage } from 'react-native-svg';
 
 // Global isRTL for styles
 const isRTL = I18nManager.isRTL;
@@ -77,7 +75,7 @@ export default function BookingsScreen() {
                     </Defs>
                     <Path d={shape.path} stroke="#035DF9" strokeWidth="4" />
                     <SvgImage
-                        href={getImageSrc(booking.chalet?.images?.[0]?.url)}
+                        href={getImageSrc(booking.chalet?.images?.[0]?.url)?.uri || ''}
                         width="100%"
                         height="100%"
                         preserveAspectRatio="xMidYMid slice"

@@ -1,17 +1,17 @@
+import { SolarStarBold, SolarTrashBinMinimalisticLinear } from "@/components/icons/solar-icons";
+import { ThemedText } from "@/components/themed-text";
 import { normalize } from "@/constants/theme";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Dimensions,
-  Image,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-  ScrollView,
+    Dimensions,
+    Image,
+    ScrollView,
+    StyleSheet,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import Svg, { ClipPath, Defs, G, Path, Image as SvgImage } from "react-native-svg";
-import { ThemedText } from "@/components/themed-text";
-import { SolarStarBold, SolarTrashBinMinimalisticLinear } from "@/components/icons/solar-icons";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -70,7 +70,7 @@ export function ReviewCard({ review, onDelete, onPressChalet }: ReviewCardProps)
             </Defs>
             <G clipPath="url(#clip)">
               <SvgImage
-                href={{ uri: review.chaletImage }}
+                href={review.chaletImage}
                 width="100%"
                 height="100%"
                 preserveAspectRatio="xMidYMid slice"

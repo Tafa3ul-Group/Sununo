@@ -298,6 +298,26 @@ export const apiSlice = createApi({
       invalidatesTags: ["Chalet"],
     }),
 
+    // Update user profile
+    updateProfile: builder.mutation({
+      query: (data) => ({
+        url: "/users/profile",
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["User"],
+    }),
+
+    // Update user profile image
+    updateProfileImage: builder.mutation({
+      query: (data) => ({
+        url: "/users/profile/image",
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["User"],
+    }),
+
     // Get provider profile
     getProviderProfile: builder.query({
       query: () => "/provider/profile",
@@ -504,6 +524,14 @@ export const apiSlice = createApi({
       },
       providesTags: ["Notification"],
     }),
+
+    // Logout
+    logoutUser: builder.mutation({
+      query: () => ({
+        url: "/auth/logout",
+        method: "POST",
+      }),
+    }),
   }),
 });
 
@@ -550,6 +578,8 @@ export const {
   useGetProviderProfileQuery,
   useGetProviderStatsQuery,
   useUpdateProviderProfileMutation,
+  useUpdateProfileMutation,
+  useUpdateProfileImageMutation,
   useGetProviderBookingsQuery,
   useGetProviderBookingDetailsQuery,
   useGetShiftAvailabilityQuery,
@@ -563,6 +593,7 @@ export const {
   useGetPayoutsQuery,
   useRequestPayoutMutation,
   useGetNotificationsQuery,
+  useLogoutUserMutation,
 } = apiSlice;
 
 // Force Metro cache reload - Updated at 2026-05-05T14:55

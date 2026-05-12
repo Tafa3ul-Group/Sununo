@@ -1,21 +1,18 @@
 import { HeaderSection } from "@/components/header-section";
 import { ReviewCard } from "@/components/user/review-card";
 import { SecondaryButton } from "@/components/user/secondary-button";
-import { normalize } from "@/constants/theme";
-import React, { useState, useMemo } from "react";
+import { getImageSrc } from "@/hooks/useImageSrc";
+import { useGetCustomerBookingsQuery } from "@/store/api/customerApiSlice";
+import { useRouter } from "expo-router";
+import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  FlatList,
-  StyleSheet,
-  View,
-  Dimensions,
-  ActivityIndicator,
+    Dimensions,
+    FlatList,
+    StyleSheet,
+    View
 } from "react-native";
-import { useRouter } from "expo-router";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store";
-import { useGetCustomerBookingsQuery } from "@/store/api/customerApiSlice";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -48,7 +45,7 @@ export default function ReviewsScreen() {
           ? (booking.chalet?.region?.name?.ar || booking.chalet?.region?.nameAr || booking.chalet?.region?.name || '')
           : (booking.chalet?.region?.name?.en || booking.chalet?.region?.nameEn || booking.chalet?.region?.name || ''),
         price: booking.chalet?.basePrice ? Number(booking.chalet.basePrice).toLocaleString() : '0',
-        chaletImage: booking.chalet?.images?.[0]?.url || 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800',
+        chaletImage: getImageSrc(booking.chalet?.images?.[0]?.url)?.uri || '',
         userName: booking.customer?.name || '',
         userAvatar: booking.customer?.imageUrl || '',
         rating: 0,
@@ -71,7 +68,7 @@ export default function ReviewsScreen() {
           ? (booking.chalet?.region?.nameAr || booking.chalet?.region?.name || '')
           : (booking.chalet?.region?.nameEn || booking.chalet?.region?.name || ''),
         price: booking.chalet?.basePrice ? Number(booking.chalet.basePrice).toLocaleString() : '0',
-        chaletImage: booking.chalet?.images?.[0]?.url || 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800',
+        chaletImage: getImageSrc(booking.chalet?.images?.[0]?.url)?.uri || '',
         userName: booking.customer?.name || '',
         userAvatar: booking.customer?.imageUrl || '',
         rating: booking.review?.rating || 0,
