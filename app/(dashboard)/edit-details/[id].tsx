@@ -92,7 +92,7 @@ export default function EditChaletDetailsScreen() {
   const flexDirection = isRTL ? 'row-reverse' : 'row';
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       <StatusBar style="dark" />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

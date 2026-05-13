@@ -74,7 +74,7 @@ export default function CustomersScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       <HeaderSection 
         userType={userType} 
         userName={user?.name} 

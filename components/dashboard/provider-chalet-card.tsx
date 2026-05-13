@@ -1,4 +1,4 @@
-import { Colors, normalize, Shadows, Spacing } from "@/constants/theme";
+import { Colors, normalize } from "@/constants/theme";
 import { Image } from "expo-image";
 import React from "react";
 import {
@@ -47,7 +47,13 @@ export function ProviderChaletCard({
         <View style={styles.imageOverlay} />
         
         {/* Status Badge - Can be dynamic later */}
-        <View style={[styles.statusBadge, isRTL ? { right: 12 } : { left: 12 }]}>
+        <View
+          style={[
+            styles.statusBadge,
+            { flexDirection: isRTL ? 'row-reverse' : 'row' },
+            isRTL ? { right: 12 } : { left: 12 },
+          ]}
+        >
           <View style={styles.statusDot} />
           <Text style={styles.statusText}>{isRTL ? 'نشط' : 'Active'}</Text>
         </View>
@@ -66,7 +72,11 @@ export function ProviderChaletCard({
 
         <View style={[styles.actionGrid, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
           <TouchableOpacity 
-            style={[styles.actionBtn, styles.editBtn]} 
+            style={[
+              styles.actionBtn,
+              styles.editBtn,
+              { flexDirection: isRTL ? 'row-reverse' : 'row' },
+            ]} 
             onPress={(e) => {
               e.stopPropagation();
               onEdit?.();
@@ -77,7 +87,11 @@ export function ProviderChaletCard({
           </TouchableOpacity>
 
           <TouchableOpacity 
-            style={[styles.actionBtn, styles.revenueBtn]} 
+            style={[
+              styles.actionBtn,
+              styles.revenueBtn,
+              { flexDirection: isRTL ? 'row-reverse' : 'row' },
+            ]} 
             onPress={(e) => {
               e.stopPropagation();
               onRevenue?.();
@@ -117,7 +131,6 @@ const styles = StyleSheet.create({
   statusBadge: {
     position: 'absolute',
     top: 12,
-    flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     paddingHorizontal: 10,
@@ -162,7 +175,6 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 40,
     borderRadius: 12,
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,

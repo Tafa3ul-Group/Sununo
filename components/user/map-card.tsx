@@ -1,6 +1,7 @@
 import { ThemedText } from "@/components/themed-text";
 import { Colors, Shadows } from "@/constants/theme";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SolarCloseCircleBold, SolarStarBold } from "@/components/icons/solar-icons";
 
@@ -23,35 +24,74 @@ export const MapCard = ({
   onPress,
   onClose,
 }: MapCardProps) => {
+  const { i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
+
   return (
     <TouchableOpacity
       activeOpacity={0.9}
       onPress={onPress}
-      style={styles.container}
+      style={[
+        styles.container,
+        { flexDirection: isRTL ? "row-reverse" : "row" },
+      ]}
     >
       <Image source={{ uri: image }} style={styles.image} />
 
       <View style={styles.content}>
-        <View style={styles.header}>
+        <View
+          style={[
+            styles.header,
+            { flexDirection: isRTL ? "row" : "row-reverse" },
+          ]}
+        >
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <SolarCloseCircleBold size={16} color="#6B7280" />
           </TouchableOpacity>
-          <View style={styles.titleSection}>
-            <ThemedText style={styles.title} numberOfLines={1}>
+          <View
+            style={[
+              styles.titleSection,
+              { alignItems: isRTL ? "flex-end" : "flex-start" },
+            ]}
+          >
+            <ThemedText
+              style={[styles.title, { textAlign: isRTL ? "right" : "left" }]}
+              numberOfLines={1}
+            >
               {title}
             </ThemedText>
-            <ThemedText style={styles.location} numberOfLines={1}>
+            <ThemedText
+              style={[
+                styles.location,
+                { textAlign: isRTL ? "right" : "left" },
+              ]}
+              numberOfLines={1}
+            >
               {location}
             </ThemedText>
           </View>
         </View>
 
-        <View style={styles.footer}>
-          <View style={styles.ratingContainer}>
+        <View
+          style={[
+            styles.footer,
+            { flexDirection: isRTL ? "row" : "row-reverse" },
+          ]}
+        >
+          <View
+            style={[
+              styles.ratingContainer,
+              { flexDirection: isRTL ? "row" : "row-reverse" },
+            ]}
+          >
             <Text style={styles.rating}>{rating}</Text>
             <SolarStarBold size={14} color="#035DF9" />
           </View>
-          <ThemedText style={styles.price}>{price} / شفت</ThemedText>
+          <ThemedText
+            style={[styles.price, { textAlign: isRTL ? "right" : "left" }]}
+          >
+            {price} {isRTL ? "/ شفت" : "/ shift"}
+          </ThemedText>
         </View>
       </View>
     </TouchableOpacity>
@@ -60,7 +100,6 @@ export const MapCard = ({
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "row-reverse",
     backgroundColor: "white",
     borderRadius: 16,
     padding: 8,
@@ -83,12 +122,10 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   header: {
-    flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
   },
   titleSection: {
-    alignItems: "flex-end",
     flex: 1,
   },
   title: {
@@ -105,12 +142,10 @@ const styles = StyleSheet.create({
     padding: 2,
   },
   footer: {
-    flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
   ratingContainer: {
-    flexDirection: "row",
     alignItems: "center",
     gap: 4,
   },

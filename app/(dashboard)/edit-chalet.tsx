@@ -436,7 +436,7 @@ export default function EditChaletScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       <StatusBar style="dark" />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -576,7 +576,7 @@ export default function EditChaletScreen() {
                 <Text style={[styles.label, { textAlign, marginBottom: 8 }]}>{isRTL ? 'إضافة صور جديدة' : 'Add New Photos'}</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.imageContainer, { flexDirection }]}>
                   {selectedImages.map((uri, index) => (
-                    <View key={index} style={styles.imageItem}><Image source={{ uri }} style={styles.uploadedImage} /><TouchableOpacity style={styles.removeImageButton} onPress={() => removeSelectedImage(index)}><SolarCloseCircleBold size={24} color={Colors.error} /></TouchableOpacity></View>
+                    <View key={index} style={styles.imageItem}><Image source={{ uri }} style={styles.uploadedImage} /><TouchableOpacity style={[styles.removeImageButton, isRTL ? { right: normalize.width(6) } : { left: normalize.width(6) }]} onPress={() => removeSelectedImage(index)}><SolarCloseCircleBold size={24} color={Colors.error} /></TouchableOpacity></View>
                   ))}
                   <TouchableOpacity style={styles.imageUpload} onPress={() => imageSourceSheetRef.current?.present()}><SolarCameraAddBold size={32} color={Colors.text.muted} /><Text style={styles.uploadText}>{isRTL ? 'إضافة صور' : 'Add Photos'}</Text></TouchableOpacity>
                 </ScrollView>
@@ -609,7 +609,7 @@ export default function EditChaletScreen() {
       <BottomSheetModal ref={imageSourceSheetRef} index={0} snapPoints={imageSnapPoints} backdropComponent={renderBackdrop} backgroundStyle={{ borderRadius: normalize.radius(24) }}>
         <BottomSheetView style={styles.sheetContent}>
           <Text style={styles.modalTitle}>{isRTL ? 'اختر مصدر الصورة' : 'Select Image Source'}</Text>
-          <View style={styles.modalOptions}>
+          <View style={[styles.modalOptions, { flexDirection }]}>
             <TouchableOpacity style={styles.modalOption} onPress={() => { takePhoto(); imageSourceSheetRef.current?.dismiss(); }}><View style={[styles.modalIcon, { backgroundColor: '#E3F2FD' }]}><SolarCameraBold size={30} color={Colors.primary} /></View><Text style={styles.modalOptionText}>{isRTL ? 'الكاميرا' : 'Camera'}</Text></TouchableOpacity>
             <TouchableOpacity style={styles.modalOption} onPress={() => { pickImage(); imageSourceSheetRef.current?.dismiss(); }}><View style={[styles.modalIcon, { backgroundColor: '#F3E5F5' }]}><SolarGalleryBold size={30} color="#9C27B0" /></View><Text style={styles.modalOptionText}>{isRTL ? 'الأستوديو' : 'Gallery'}</Text></TouchableOpacity>
           </View>
@@ -732,9 +732,9 @@ const styles = StyleSheet.create({
   imageContainer: { gap: Spacing.sm },
   imageItem: { width: normalize.width(100), height: normalize.width(100), borderRadius: normalize.radius(16), overflow: 'hidden', position: 'relative' },
   uploadedImage: { width: '100%', height: '100%' },
-  removeImageButton: { position: 'absolute', top: normalize.height(6), right: normalize.width(6), backgroundColor: Colors.white, borderRadius: normalize.radius(12) },
+  removeImageButton: { position: 'absolute', top: normalize.height(6), backgroundColor: Colors.white, borderRadius: normalize.radius(12) },
   imageUpload: { width: normalize.width(100), height: normalize.width(100), backgroundColor: Colors.surface, borderRadius: normalize.radius(16), borderWidth: 2, borderColor: Colors.border, borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center' },
-  coverBadge: { position: 'absolute', bottom: 6, left: 6, backgroundColor: Colors.primary, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
+  coverBadge: { position: 'absolute', bottom: 6, start: 6, backgroundColor: Colors.primary, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
   coverBadgeText: { color: '#FFFFFF', fontSize: normalize.font(9), fontFamily: "Alexandria-Bold" },
   sheetContent: { padding: Spacing.lg, alignItems: 'center' },
   modalTitle: { ...Typography.h2, marginBottom: Spacing.lg, textAlign: 'center' },
@@ -750,5 +750,5 @@ const styles = StyleSheet.create({
   bulkBtn: { paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#EFF6FF', borderRadius: 8, borderWidth: 1, borderColor: '#DBEAFE' },
   bulkBtnText: { color: Colors.primary, fontSize: normalize.font(12), fontFamily: "Alexandria-Bold" },
   row: { flexDirection: 'row', gap: 8 },
-  closeMapBtn: { position: 'absolute', top: 50, right: 20 },
+  closeMapBtn: { position: 'absolute', top: 50, end: 20 },
 });

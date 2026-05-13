@@ -2,6 +2,7 @@ import { ThemedText } from "@/components/themed-text";
 import React from "react";
 import {
   ActivityIndicator,
+  I18nManager,
   StyleSheet,
   TextStyle,
   TouchableOpacity,
@@ -50,6 +51,7 @@ export function PrimaryButton({
   height = 46,
 }: PrimaryButtonProps) {
   const isWhite = variant === "white";
+  const isRTL = I18nManager.isRTL;
   const defaultActiveColor = isWhite ? "white" : "#035DF9";
   const defaultActiveTextColor = isWhite ? "#6B7280" : "white";
 
@@ -110,7 +112,12 @@ export function PrimaryButton({
           },
         ]}
       >
-        <View style={styles.textWithIcon}>
+        <View
+          style={[
+            styles.textWithIcon,
+            { flexDirection: isRTL ? "row-reverse" : "row" },
+          ]}
+        >
           {icon}
           <ThemedText
             style={[styles.primaryText, { color: textColor }, textStyle]}
@@ -159,7 +166,6 @@ const styles = StyleSheet.create({
     includeFontPadding: false,
   },
   textWithIcon: {
-    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
   },

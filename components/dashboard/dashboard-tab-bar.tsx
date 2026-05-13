@@ -9,7 +9,7 @@ import { RootState } from '@/store';
 import { setSelectedChalet } from '@/store/authSlice';
 import { useGetOwnerChaletsQuery } from '@/store/api/apiSlice';
 import * as Haptics from 'expo-haptics';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import Animated, {
@@ -42,7 +42,10 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
 
   // Fetch chalets
   const { data: chaletsResponse } = useGetOwnerChaletsQuery({}, { skip: userType !== 'owner' });
-  const chalets = chaletsResponse?.data || chaletsResponse || [];
+  const chalets = useMemo(
+    () => chaletsResponse?.data || chaletsResponse || [],
+    [chaletsResponse],
+  );
   const hasChalets = chalets && chalets.length > 0;
 
   // Auto-select first chalet if none selected or if 'all' is selected (legacy)
@@ -67,7 +70,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
         }
       }
     }
-  }, [hasChalets, selectedChalet?.id, selectedChalet?.image, chalets]);
+  }, [chalets, dispatch, hasChalets, isRTL, selectedChalet]);
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
@@ -289,7 +292,6 @@ const styles = StyleSheet.create({
     height: normalize.height(52), 
     borderRadius: normalize.height(26),
     backgroundColor: Colors.primary, 
-    flexDirection: 'row', 
     alignItems: 'center',
     justifyContent: 'space-around',
     flexDirection: 'row',

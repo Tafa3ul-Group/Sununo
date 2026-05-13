@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Modal, Platform } from 'react-native';
+import React, { useState } from 'react';
+import { I18nManager, StyleSheet, View, Text, TouchableOpacity, Modal, Platform } from 'react-native';
 import { Colors, Spacing, normalize, Typography } from '@/constants/theme';
 import { PrimaryButton } from './primary-button';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -26,6 +26,7 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
   const [region, setRegion] = useState({ latitude: 33.3152, longitude: 44.3661 });
   const [hasNativeMap] = useState(!!Mapbox);
   const cameraRef = React.useRef<any>(null);
+  const isRTL = I18nManager.isRTL;
 
   // Sync with initialLocation when modal opens
   React.useEffect(() => {
@@ -57,11 +58,18 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
   return (
     <Modal visible={visible} animationType="slide" transparent={false}>
       <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
+        <View
+          style={[
+            styles.header,
+            { flexDirection: isRTL ? 'row-reverse' : 'row' },
+          ]}
+        >
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <SolarCloseCircleBold size={28} color={Colors.text.primary} />
           </TouchableOpacity>
-          <Text style={styles.title}>تحديد الموقع</Text>
+          <Text style={[styles.title, { textAlign: isRTL ? 'right' : 'left' }]}>
+            تحديد الموقع
+          </Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -94,7 +102,12 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
         </View>
 
         <View style={styles.footer}>
-          <View style={styles.locationInfo}>
+          <View
+            style={[
+              styles.locationInfo,
+              { flexDirection: isRTL ? 'row-reverse' : 'row' },
+            ]}
+          >
             <Text style={styles.coordinateLabel}>Lat: {region.latitude.toFixed(6)}</Text>
             <Text style={styles.coordinateLabel}>Long: {region.longitude.toFixed(6)}</Text>
           </View>
@@ -114,7 +127,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   header: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: Spacing.md,
@@ -162,7 +174,6 @@ const styles = StyleSheet.create({
     borderTopColor: Colors.border,
   },
   locationInfo: {
-    flexDirection: 'row',
     justifyContent: 'space-around',
     marginBottom: Spacing.md,
   },

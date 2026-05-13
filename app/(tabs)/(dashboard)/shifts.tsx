@@ -266,13 +266,13 @@ function DayVisualizer({
     <View style={styles.hoursGridContainer}>
       <View style={styles.gridHeader}>
         <Text style={styles.gridTitleLarge}>{isRTL ? 'مخطط توزيع ساعات اليوم' : 'Daily Hours Chart'}</Text>
-        <View style={{ flexDirection: 'row', gap: 12 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <View style={[styles.legendItem, { backgroundColor: Colors.primary, width: 10, height: 10, borderRadius: 5, marginRight: 6 }]} />
+        <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 12 }}>
+          <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }}>
+            <View style={[styles.legendItem, { backgroundColor: Colors.primary, width: 10, height: 10, borderRadius: 5, marginRight: isRTL ? 0 : 6, marginLeft: isRTL ? 6 : 0 }]} />
             <Text style={styles.legendText}>{isRTL ? 'فترة محجوزة' : 'Shift'}</Text>
           </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <View style={[styles.legendItem, { backgroundColor: Colors.primary + '20', width: 10, height: 10, borderRadius: 5, marginRight: 6 }]} />
+          <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }}>
+            <View style={[styles.legendItem, { backgroundColor: Colors.primary + '20', width: 10, height: 10, borderRadius: 5, marginRight: isRTL ? 0 : 6, marginLeft: isRTL ? 6 : 0 }]} />
             <Text style={styles.legendText}>{isRTL ? 'الفترة المختارة' : 'Selected'}</Text>
           </View>
         </View>
@@ -864,7 +864,7 @@ export default function ShiftsAndPricesScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       <StatusBar style="dark" />
       <HeaderSection
         title={chaletName || (isRTL ? 'اختر الشاليه' : 'Select Chalet')}

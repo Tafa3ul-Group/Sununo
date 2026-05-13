@@ -1,6 +1,6 @@
 // @@iconify-code-gen
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import "@/i18n";
+import { changeLanguage as applyAppLanguage } from "@/i18n";
 import { persistor, RootState, store } from "@/store";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import {
@@ -14,7 +14,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Text, TextInput } from "react-native";
+import { I18nManager, Text, TextInput } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import Toast from "react-native-toast-message";
@@ -28,6 +28,8 @@ Text.defaultProps.style = {
   fontFamily: "Alexandria-Regular",
   includeFontPadding: false,
   textAlignVertical: "center",
+  writingDirection: I18nManager.isRTL ? "rtl" : "ltr",
+  textAlign: I18nManager.isRTL ? "right" : "left",
 };
 
 // @ts-ignore
@@ -37,6 +39,8 @@ TextInput.defaultProps.style = {
   fontFamily: "Alexandria-Regular",
   includeFontPadding: false,
   textAlignVertical: "center",
+  writingDirection: I18nManager.isRTL ? "rtl" : "ltr",
+  textAlign: I18nManager.isRTL ? "right" : "left",
 };
 
 function RootLayoutNav() {
@@ -64,9 +68,7 @@ function RootLayoutNav() {
   useEffect(() => {
     if (!loaded) return;
     const inAuthGroup = segments[0] === "(auth)";
-    const isIndex =
-      (segments as any).length === 0 ||
-      (segments.length === 1 && segments[0] === "index");
+    const isIndex = (segments as string[]).length === 0;
     if (!isAuthenticated && userType !== "guest" && !inAuthGroup && !isIndex) {
       router.replace("/(auth)/login");
     }
@@ -80,7 +82,7 @@ function RootLayoutNav() {
   // ── Language Sync ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (language && i18n.language !== language) {
-      i18n.changeLanguage(language);
+      applyAppLanguage(language);
     }
   }, [language, i18n]);
 

@@ -1,17 +1,15 @@
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, TouchableOpacity, Dimensions, ActivityIndicator, FlatList, RefreshControl } from 'react-native';
+import { StyleSheet, View, ActivityIndicator, FlatList, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
-import { Colors, normalize, Shadows } from '@/constants/theme';
+import { Colors, Shadows } from '@/constants/theme';
 import { ThemedText } from '@/components/themed-text';
-import { SolarAltArrowRightBold } from "@/components/icons/solar-icons";
+import { CircleBackButton } from '@/components/ui/circle-back-button';
 import { useRouter } from 'expo-router';
 import { useGetNotificationsQuery } from '@/store/api/apiSlice';
 import { useState } from 'react';
 import Animated, { FadeIn } from 'react-native-reanimated';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface Notification {
   id: string;
@@ -66,21 +64,15 @@ export default function NotificationsScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
             {/* Header */}
             <View style={styles.header}>
                 <View style={[styles.headerInner, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                     <ThemedText style={styles.headerTitle}>{t('headers.notifications')}</ThemedText>
-                    <TouchableOpacity 
-                        style={[styles.backButton, isRTL ? { right: 0 } : { left: 0 }]} 
+                    <CircleBackButton
+                        style={[styles.backButton, isRTL ? { right: 0 } : { left: 0 }]}
                         onPress={() => router.back()}
-                    >
-                        <SolarAltArrowRightBold 
-                            size={normalize.width(22)} 
-                            color="#035DF9" 
-                            style={{ transform: [{ rotate: isRTL ? '0deg' : '180deg' }] }}
-                        />
-                    </TouchableOpacity>
+                    />
                 </View>
             </View>
 
@@ -143,7 +135,6 @@ const styles = StyleSheet.create({
     },
     backButton: {
         position: 'absolute',
-        right: 0,
         width: 44,
         height: 44,
         borderRadius: 22,

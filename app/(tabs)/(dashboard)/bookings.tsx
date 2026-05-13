@@ -89,6 +89,10 @@ export default function BookingsScreen() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = React.useState("new");
   const isRTL = language === "ar";
+  const rowDirection = isRTL ? "row-reverse" : "row";
+  const textAlign = isRTL ? "right" : "left";
+  const startAlign = isRTL ? "flex-end" : "flex-start";
+  const endAlign = isRTL ? "flex-start" : "flex-end";
 
   const { data: profileResponse, refetch: refetchProfile } = useGetProviderProfileQuery(undefined);
   const profile = profileResponse?.data || profileResponse;
@@ -392,7 +396,12 @@ export default function BookingsScreen() {
               style={[
                 styles.shiftTile,
                 shift.isClosed ? styles.shiftTileClosed : (!isAvailable && styles.shiftTileBooked),
-                { borderLeftColor: accentColor },
+                {
+                  borderLeftWidth: isRTL ? 1 : 4,
+                  borderRightWidth: isRTL ? 4 : 1,
+                  borderLeftColor: isRTL ? "#F1F5F9" : accentColor,
+                  borderRightColor: isRTL ? accentColor : "#F1F5F9",
+                },
               ]}
               onPress={() => openShiftActions(shift)}
               activeOpacity={0.7}
@@ -400,34 +409,34 @@ export default function BookingsScreen() {
               <View
                 style={[
                   styles.shiftTileContent,
-                  { flexDirection: isRTL ? "row-reverse" : "row" },
+                  { flexDirection: rowDirection },
                 ]}
               >
                 <View
                   style={[
                     styles.shiftTileCore,
-                    { flexDirection: isRTL ? "row-reverse" : "row" },
+                    { flexDirection: rowDirection },
                   ]}
                 >
                   <View
                     style={[
                       styles.shiftNameGroup,
-                      { alignItems: isRTL ? "flex-end" : "flex-start" },
+                      { alignItems: startAlign },
                     ]}
                   >
                     <Text
-                      style={[styles.shiftTileName, { color: accentColor }]}
+                      style={[styles.shiftTileName, { color: accentColor, textAlign }]}
                     >
                       {name}
                     </Text>
                     <View
                       style={[
                         styles.shiftTimeGroup,
-                        { flexDirection: isRTL ? "row-reverse" : "row" },
+                        { flexDirection: rowDirection },
                       ]}
                     >
                       <SolarClockCircleLinear size={14} color="#94A3B8" />
-                      <Text style={styles.shiftTileTime}>
+                      <Text style={[styles.shiftTileTime, { textAlign }]}>
                         {format12H(shift.startTime, isRTL)} -{" "}
                         {format12H(shift.endTime, isRTL)}
                       </Text>
@@ -436,7 +445,7 @@ export default function BookingsScreen() {
                       <View
                         style={[
                           styles.bookingMiniInfo,
-                          { flexDirection: isRTL ? "row-reverse" : "row" },
+                          { flexDirection: rowDirection },
                         ]}
                       >
                         <Text
@@ -485,13 +494,18 @@ export default function BookingsScreen() {
                 <View
                   style={[
                     styles.shiftStatusColumn,
-                    { alignItems: isRTL ? "flex-start" : "flex-end" },
+                    {
+                      alignItems: endAlign,
+                      paddingLeft: isRTL ? 0 : 12,
+                      paddingRight: isRTL ? 12 : 0,
+                    },
                   ]}
                 >
                   <View
                     style={[
                       styles.statusGlassBadge,
                       {
+                        flexDirection: rowDirection,
                         backgroundColor: isAvailable
                           ? "#DCFCE7"
                           : (shift.isClosed ? "#FFF1F2" : "#F1F5F9"),
@@ -527,7 +541,7 @@ export default function BookingsScreen() {
                       <SolarAddCircleBold
                         size={14}
                         color="#16A34A"
-                        style={{ [isRTL ? "marginRight" : "marginLeft"]: 6 }}
+                      style={{ [isRTL ? "marginRight" : "marginLeft"]: 6 }}
                       />
                     ) : shift.isClosed ? (
                       <SolarLockBold
@@ -571,19 +585,19 @@ export default function BookingsScreen() {
         style={{ width: "100%" }}
       >
         <TouchableOpacity
-          style={styles.bookingCard}
+          style={[styles.bookingCard, { direction: isRTL ? "rtl" : "ltr" }]}
           onPress={() => openBookingDetails(item.id)}
         >
           <View
             style={[
               styles.bookingHeader,
-              { flexDirection: isRTL ? "row-reverse" : "row" },
+              { flexDirection: rowDirection },
             ]}
           >
             <View
               style={[
                 styles.customerSection,
-                { flexDirection: isRTL ? "row-reverse" : "row" },
+                { flexDirection: rowDirection },
               ]}
             >
               <View style={styles.avatarPlaceholder}>
@@ -598,13 +612,13 @@ export default function BookingsScreen() {
                   <SolarUserBold size={20} color="#FFF" />
                 )}
               </View>
-              <View style={{ alignItems: isRTL ? "flex-end" : "flex-start" }}>
-                <Text style={styles.customerName}>{customerName}</Text>
-                <Text style={styles.chaletName}>{chaletName}</Text>
+              <View style={{ alignItems: startAlign, flex: 1 }}>
+                <Text style={[styles.customerName, { textAlign }]}>{customerName}</Text>
+                <Text style={[styles.chaletName, { textAlign }]}>{chaletName}</Text>
               </View>
             </View>
-            <View style={{ alignItems: isRTL ? "flex-start" : "flex-end" }}>
-              <Text style={styles.priceText}>
+            <View style={{ alignItems: endAlign }}>
+              <Text style={[styles.priceText, { textAlign: isRTL ? "left" : "right" }]}>
                 {Number(item.totalPrice).toLocaleString()} {t("common.iqd")}
               </Text>
               {item.providerEarnings && (
@@ -614,6 +628,7 @@ export default function BookingsScreen() {
                     fontFamily: "Alexandria-SemiBold",
                     color: "#16A34A",
                     marginTop: 2,
+                    textAlign: isRTL ? "left" : "right",
                   }}
                 >
                   {isRTL ? "صافي الربح:" : "Net Earnings:"}{" "}
@@ -625,11 +640,11 @@ export default function BookingsScreen() {
           <View
             style={[
               styles.dateHighlight,
-              { flexDirection: isRTL ? "row-reverse" : "row", marginTop: 12 },
+              { flexDirection: rowDirection, marginTop: 12 },
             ]}
           >
             <SolarCalendarMinimalisticBold size={16} color={IDENTITY_BLUE} />
-            <Text style={styles.dateHighlightText}>
+            <Text style={[styles.dateHighlightText, { textAlign }]}>
               {item.bookingDate} -{" "}
               {isRTL
                 ? item.shift?.name?.ar || item.shift?.name
@@ -639,7 +654,7 @@ export default function BookingsScreen() {
           </View>
           <View
             style={{
-              flexDirection: isRTL ? "row-reverse" : "row",
+              flexDirection: rowDirection,
               justifyContent: "space-between",
               alignItems: "center",
               marginTop: 12,
@@ -704,13 +719,13 @@ export default function BookingsScreen() {
                 })()}
               </Text>
             </View>
-            <Text style={styles.codeText}>{item.bookingCode}</Text>
+            <Text style={[styles.codeText, { textAlign: isRTL ? "left" : "right" }]}>{item.bookingCode}</Text>
           </View>
 
           {item.paymentModel === "deposit" && (
             <View
               style={{
-                flexDirection: isRTL ? "row-reverse" : "row",
+                flexDirection: rowDirection,
                 justifyContent: "space-between",
                 marginTop: 8,
                 paddingTop: 8,
@@ -723,6 +738,7 @@ export default function BookingsScreen() {
                   fontSize: normalize.font(11),
                   fontFamily: "Alexandria-Regular",
                   color: "#64748B",
+                  textAlign,
                 }}
               >
                 {isRTL ? "العربون:" : "Deposit:"}{" "}
@@ -735,6 +751,7 @@ export default function BookingsScreen() {
                   fontSize: normalize.font(11),
                   fontFamily: "Alexandria-Regular",
                   color: "#64748B",
+                  textAlign: isRTL ? "left" : "right",
                 }}
               >
                 {isRTL ? "المتبقي:" : "Remaining:"}{" "}
@@ -768,7 +785,7 @@ export default function BookingsScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       <HeaderSection
         title={isRTL ? "الحجوزات" : "Bookings"}
         showBackButton={true}
@@ -784,7 +801,7 @@ export default function BookingsScreen() {
         <View
           style={[
             styles.calendarHeader,
-            { flexDirection: isRTL ? "row-reverse" : "row" },
+            { flexDirection: rowDirection },
           ]}
         >
           <TouchableOpacity onPress={() => changeWeek(isRTL ? "prev" : "next")}>
@@ -797,7 +814,7 @@ export default function BookingsScreen() {
 
           <TouchableOpacity
             onPress={() => monthSheetRef.current?.present()}
-            style={styles.monthSelector}
+            style={[styles.monthSelector, { flexDirection: rowDirection }]}
           >
             <Text style={styles.monthLabel}>
               {baseDate.toLocaleString(isRTL ? "ar-IQ-u-nu-latn" : "en-US", {
@@ -827,7 +844,7 @@ export default function BookingsScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={[
             styles.daysScroll,
-            { flexDirection: isRTL ? "row-reverse" : "row" },
+            { flexDirection: rowDirection },
           ]}
         >
           {weekDays.map((date, idx) => {
@@ -940,7 +957,7 @@ export default function BookingsScreen() {
         }}
       >
         <BottomSheetView
-          style={styles.sheetContent}
+          style={[styles.sheetContent, { direction: isRTL ? "rtl" : "ltr" }]}
         >
           {selectedShiftForAction && (
             <>
@@ -967,7 +984,7 @@ export default function BookingsScreen() {
                   <Text
                     style={[
                       styles.sheetTitle,
-                      { textAlign: isRTL ? "right" : "left", marginBottom: 24 },
+                      { textAlign, marginBottom: 24 },
                     ]}
                   >
                     {isRTL
@@ -980,7 +997,7 @@ export default function BookingsScreen() {
                     <Text
                       style={[
                         styles.inputLabel,
-                        { textAlign: isRTL ? "right" : "left" }
+                        { textAlign }
                       ]}
                     >
                       {isRTL ? "اسم الزبون (اختياري)" : "Customer Name (Optional)"}
@@ -988,7 +1005,7 @@ export default function BookingsScreen() {
                     <BottomSheetTextInput
                       style={[
                         styles.textInput,
-                        { textAlign: isRTL ? "right" : "left" }
+                        { textAlign }
                       ]}
                       placeholder={isRTL ? "أدخل اسم الزبون..." : "Enter customer name..."}
                       value={externalCustomerName}
@@ -998,7 +1015,7 @@ export default function BookingsScreen() {
                     <Text
                       style={[
                         styles.inputLabel,
-                        { textAlign: isRTL ? "right" : "left" }
+                        { textAlign }
                       ]}
                     >
                       {isRTL ? "رقم الهاتف (اختياري)" : "Phone Number (Optional)"}
@@ -1006,7 +1023,7 @@ export default function BookingsScreen() {
                     <BottomSheetTextInput
                       style={[
                         styles.textInput,
-                        { textAlign: isRTL ? "right" : "left" }
+                        { textAlign }
                       ]}
                       placeholder={isRTL ? "07xxxxxxxx" : "07xxxxxxxx"}
                       value={externalCustomerPhone}
@@ -1017,7 +1034,7 @@ export default function BookingsScreen() {
                     <Text
                       style={[
                         styles.inputLabel,
-                        { textAlign: isRTL ? "right" : "left" }
+                        { textAlign }
                       ]}
                     >
                       {isRTL
@@ -1027,7 +1044,7 @@ export default function BookingsScreen() {
                     <BottomSheetTextInput
                       style={[
                         styles.textArea,
-                        { textAlign: isRTL ? "right" : "left" }
+                        { textAlign }
                       ]}
                       placeholder={
                         isRTL
@@ -1190,7 +1207,7 @@ export default function BookingsScreen() {
                       )}
                     <View
                       style={{
-                        flexDirection: isRTL ? "row-reverse" : "row",
+                        flexDirection: rowDirection,
                         alignItems: "center",
                         gap: 8,
                       }}
@@ -1323,12 +1340,12 @@ export default function BookingsScreen() {
         backdropComponent={renderBackdrop}
         enablePanDownToClose
       >
-        <BottomSheetView style={styles.sheetContent}>
+        <BottomSheetView style={[styles.sheetContent, { direction: isRTL ? "rtl" : "ltr" }]}>
           <View style={{ padding: 24 }}>
             <View
               style={[
                 styles.sheetHeaderLabelRow,
-                { flexDirection: isRTL ? "row-reverse" : "row" },
+                { flexDirection: rowDirection },
               ]}
             >
               <View style={styles.modalIconCircle}>
@@ -1337,7 +1354,7 @@ export default function BookingsScreen() {
               <Text
                 style={[
                   styles.sheetTitle,
-                  { textAlign: isRTL ? "right" : "left", marginBottom: 0 },
+                  { textAlign, marginBottom: 0 },
                 ]}
               >
                 {isRTL ? "تحديد الفترة" : "Select Period"}
@@ -1346,7 +1363,7 @@ export default function BookingsScreen() {
 
             <View
               style={{
-                flexDirection: isRTL ? "row-reverse" : "row",
+                flexDirection: rowDirection,
                 height: 300,
                 gap: 16,
                 marginTop: 24,
@@ -1357,7 +1374,7 @@ export default function BookingsScreen() {
                 <Text
                   style={[
                     styles.pickerColLabel,
-                    { textAlign: isRTL ? "right" : "left" },
+                    { textAlign },
                   ]}
                 >
                   {isRTL ? "الشهر" : "Month"}
@@ -1376,6 +1393,7 @@ export default function BookingsScreen() {
                         }
                         style={[
                           styles.pickerItemNew,
+                          { flexDirection: rowDirection },
                           isSelected && styles.pickerItemActiveNew,
                         ]}
                       >
@@ -1408,7 +1426,7 @@ export default function BookingsScreen() {
                 <Text
                   style={[
                     styles.pickerColLabel,
-                    { textAlign: isRTL ? "right" : "left" },
+                    { textAlign },
                   ]}
                 >
                   {isRTL ? "السنة" : "Year"}
@@ -1427,6 +1445,7 @@ export default function BookingsScreen() {
                         }
                         style={[
                           styles.pickerItemNew,
+                          { flexDirection: rowDirection },
                           isSelected && styles.pickerItemActiveNew,
                         ]}
                       >

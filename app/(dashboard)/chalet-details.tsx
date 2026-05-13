@@ -394,7 +394,7 @@ export default function ChaletDetailsScreen() {
   });
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
       
       {/* Persistent Nav Bar (Sticky title only) */}
@@ -501,7 +501,7 @@ export default function ChaletDetailsScreen() {
           
           {/* Pagination Dots */}
           {chalet.images && chalet.images.length > 1 && (
-            <View style={styles.pagination} pointerEvents="none">
+            <View style={[styles.pagination, { flexDirection: isRTL ? 'row-reverse' : 'row' }]} pointerEvents="none">
               {chalet.images.map((_: any, i: number) => (
                 <View 
                   key={i} 
@@ -1205,6 +1205,7 @@ const styles = StyleSheet.create({
   infoSection: {
     paddingHorizontal: 20,
     marginTop: 24,
+    marginBottom: 32,
   },
   divider: {
     height: 1,
@@ -1212,9 +1213,10 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   sectionHeaderRow: {
+    flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 28,
+    alignItems: 'center',
+    marginBottom: 16,
   },
   titleRow: {
     flexDirection: 'row',
@@ -1312,9 +1314,6 @@ const styles = StyleSheet.create({
   sectionDivider: {
     height: 1,
     backgroundColor: '#F1F5F9',
-    marginBottom: 32,
-  },
-  infoSection: {
     marginBottom: 32,
   },
   sectionTitle: {
@@ -1425,7 +1424,7 @@ const styles = StyleSheet.create({
   editImagesOverlay: {
     position: 'absolute',
     bottom: 20,
-    right: 20,
+    end: 20,
     backgroundColor: 'rgba(0,0,0,0.6)',
     flexDirection: 'row',
     alignItems: 'center',
@@ -1438,12 +1437,6 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontSize: normalize.font(12),
     fontFamily: "Alexandria-Bold",
-  },
-  sectionHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
   },
   modalScrollContent: {
     padding: 20,
@@ -1538,7 +1531,7 @@ const styles = StyleSheet.create({
   checkBadge: {
     position: 'absolute',
     top: -5,
-    right: -5,
+    end: -5,
     backgroundColor: Colors.primary,
     width: 18,
     height: 18,
@@ -1565,7 +1558,7 @@ const styles = StyleSheet.create({
   coverIndicator: {
     position: 'absolute',
     bottom: 5,
-    left: 5,
+    start: 5,
     backgroundColor: 'rgba(255,255,255,0.9)',
     borderRadius: 8,
     padding: 4,
@@ -1575,7 +1568,7 @@ const styles = StyleSheet.create({
   removeUploadBtn: {
     position: 'absolute',
     top: 5,
-    right: 5,
+    end: 5,
     backgroundColor: '#fff',
     borderRadius: 10,
   },
@@ -1613,4 +1606,3 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
 });
-

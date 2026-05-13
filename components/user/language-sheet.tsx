@@ -7,10 +7,9 @@ import {
 } from "@gorhom/bottom-sheet";
 import { useTranslation } from "react-i18next";
 import { ThemedText } from "@/components/themed-text";
-import { Colors, normalize, Spacing } from "@/constants/theme";
+import { changeLanguage } from "@/i18n";
 import { SolarCheckCircleBold } from "@/components/icons/solar-icons";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/store";
+import { useDispatch } from "react-redux";
 import { setLanguage } from "@/store/authSlice";
 
 interface LanguageSheetProps {
@@ -19,7 +18,7 @@ interface LanguageSheetProps {
 
 export const LanguageSheet = React.forwardRef<BottomSheetModal, LanguageSheetProps>(
   ({ onSelect }, ref) => {
-    const { i18n, t } = useTranslation();
+    const { i18n } = useTranslation();
     const dispatch = useDispatch();
     const currentLang = i18n.language;
 
@@ -50,9 +49,10 @@ export const LanguageSheet = React.forwardRef<BottomSheetModal, LanguageSheetPro
       []
     );
 
-    const handleSelect = (lang: string) => {
-      i18n.changeLanguage(lang);
-      dispatch(setLanguage(lang as 'ar' | 'en'));
+    const handleSelect = async (lang: string) => {
+      const nextLanguage = lang as "ar" | "en";
+      dispatch(setLanguage(nextLanguage));
+      await changeLanguage(nextLanguage);
       if (onSelect) onSelect(lang);
       // @ts-ignore
       ref.current?.dismiss();
@@ -75,6 +75,7 @@ export const LanguageSheet = React.forwardRef<BottomSheetModal, LanguageSheetPro
                 key={lang.id}
                 style={[
                   styles.item,
+                  { flexDirection: currentLang === "ar" ? "row-reverse" : "row" },
                   currentLang === lang.id && styles.activeItem,
                 ]}
                 onPress={() => handleSelect(lang.id)}
@@ -87,7 +88,12 @@ export const LanguageSheet = React.forwardRef<BottomSheetModal, LanguageSheetPro
                   <View style={styles.checkCircle} />
                 )}
                 
-                <View style={styles.langInfo}>
+                <View
+                  style={[
+                    styles.langInfo,
+                    { flexDirection: currentLang === "ar" ? "row-reverse" : "row" },
+                  ]}
+                >
                    <ThemedText style={[
                      styles.label,
                      currentLang === lang.id && styles.activeLabel
@@ -104,6 +110,8 @@ export const LanguageSheet = React.forwardRef<BottomSheetModal, LanguageSheetPro
     );
   }
 );
+
+LanguageSheet.displayName = "LanguageSheet";
 
 const styles = StyleSheet.create({
   indicator: {
@@ -129,7 +137,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   item: {
-    flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     padding: 16,
@@ -143,7 +150,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#F3F7FF",
   },
   langInfo: {
-    flexDirection: "row",
     alignItems: "center",
     gap: 12,
   },

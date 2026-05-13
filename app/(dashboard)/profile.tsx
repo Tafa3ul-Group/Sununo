@@ -219,7 +219,7 @@ export default function ProviderProfileScreen() {
   ];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       {/* Profile Header & User Card */}
       <View style={styles.topSection}>
         <TouchableOpacity
@@ -227,7 +227,7 @@ export default function ProviderProfileScreen() {
           onPress={openEditProfileSheet}
           activeOpacity={0.9}
         >
-          <View style={[styles.userInfo, { textAlign: isRTL ? 'right' : 'left' }]}>
+          <View style={styles.userInfo}>
             <Text style={[styles.userName, { textAlign: isRTL ? 'right' : 'left' }]}>
               {user?.name || profile?.business_name || t('tabs.home')}
             </Text>
@@ -320,7 +320,7 @@ export default function ProviderProfileScreen() {
 
             <View style={styles.formSection}>
               <View style={styles.fieldContainer}>
-                <ThemedText style={styles.label}>{isRTL ? 'الاسم الكامل' : 'Full Name'}</ThemedText>
+                <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'الاسم الكامل' : 'Full Name'}</ThemedText>
                 <View style={[styles.inputWrapper, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
                   <TextInput
                     style={[styles.input, { textAlign: isRTL ? 'right' : 'left' }]}
@@ -334,7 +334,7 @@ export default function ProviderProfileScreen() {
               </View>
 
               <View style={styles.fieldContainer}>
-                <ThemedText style={styles.label}>{isRTL ? 'رقم الهاتف' : 'Phone Number'}</ThemedText>
+                <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'رقم الهاتف' : 'Phone Number'}</ThemedText>
                 <View style={[styles.inputWrapper, styles.disabledInputWrapper, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
                   <ThemedText style={[styles.input, { textAlign: isRTL ? 'right' : 'left', paddingTop: 14 }]}>
                     {user?.phone || ''}
@@ -344,7 +344,7 @@ export default function ProviderProfileScreen() {
               </View>
 
               <View style={styles.fieldContainer}>
-                <ThemedText style={styles.label}>{isRTL ? 'الجنس' : 'Gender'}</ThemedText>
+                <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'الجنس' : 'Gender'}</ThemedText>
                 <View style={[styles.genderContainer, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
                   <TouchableOpacity
                     style={[styles.genderOption, formData.gender === 'male' && styles.genderOptionActive, { flex: 1 }]}
@@ -362,7 +362,7 @@ export default function ProviderProfileScreen() {
               </View>
 
               <View style={styles.fieldContainer}>
-                <ThemedText style={styles.label}>{isRTL ? 'تاريخ الميلاد' : 'Birthday'}</ThemedText>
+                <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'تاريخ الميلاد' : 'Birthday'}</ThemedText>
                 <TouchableOpacity
                   style={[styles.inputWrapper, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}
                   onPress={() => setShowDatePicker(true)}
@@ -387,7 +387,7 @@ export default function ProviderProfileScreen() {
               </View>
 
               <View style={styles.fieldContainer}>
-                <ThemedText style={styles.label}>{isRTL ? 'المدينة' : 'City'}</ThemedText>
+                <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'المدينة' : 'City'}</ThemedText>
                 <TouchableOpacity
                   style={[styles.inputWrapper, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}
                   onPress={() => citySheetRef.current?.present()}
@@ -524,7 +524,7 @@ const styles = StyleSheet.create({
   editBadge: {
     position: 'absolute',
     bottom: -2,
-    right: -2,
+    end: -2,
     backgroundColor: Colors.primary,
     width: 24,
     height: 24,
@@ -585,7 +585,7 @@ const styles = StyleSheet.create({
   sheetEditBadge: {
     position: 'absolute',
     bottom: 0,
-    right: 0,
+    end: 0,
     backgroundColor: Colors.primary,
     width: 32,
     height: 32,
@@ -605,7 +605,6 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-SemiBold",
     color: Colors.text.secondary,
-    textAlign: 'right',
   },
   inputWrapper: {
     minHeight: 56,

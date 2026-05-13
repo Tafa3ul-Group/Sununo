@@ -80,7 +80,7 @@ export default function ProviderProfileScreen() {
 
   const renderField = (label: string, value: string, key: string, IconComponent: React.ElementType, placeholder: string, multiline = false) => (
     <View style={styles.fieldContainer}>
-      <ThemedText style={styles.label}>{label}</ThemedText>
+      <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{label}</ThemedText>
       <View style={[styles.inputWrapper, multiline && styles.multilineWrapper, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
         <TextInput
           style={[styles.input, multiline && styles.multilineInput, { textAlign: isRTL ? 'right' : 'left' }]}
@@ -96,7 +96,7 @@ export default function ProviderProfileScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1 }}
@@ -177,7 +177,6 @@ const styles = StyleSheet.create({
     fontFamily: "Alexandria-Bold",
     color: Colors.text.primary,
     marginBottom: 16,
-    textAlign: 'right',
   },
   fieldContainer: {
     marginBottom: 20,
@@ -187,7 +186,6 @@ const styles = StyleSheet.create({
     fontFamily: "Alexandria-SemiBold",
     color: Colors.text.secondary,
     marginBottom: 8,
-    textAlign: 'right',
   },
   inputWrapper: {
     flexDirection: 'row',

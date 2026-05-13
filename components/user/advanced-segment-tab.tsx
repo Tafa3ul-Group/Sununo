@@ -1,9 +1,7 @@
 import { ThemedText } from "@/components/themed-text";
 import { normalize, Spacing } from "@/constants/theme";
 import React from "react";
-import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
-
-const { width } = Dimensions.get("window");
+import { I18nManager, StyleSheet, TouchableOpacity, View } from "react-native";
 
 interface Tab {
   id: string;
@@ -26,9 +24,16 @@ export function AdvancedSegmentTab({
   activeTab,
   onTabChange,
 }: AdvancedSegmentTabProps) {
+  const isRTL = I18nManager.isRTL;
+
   return (
     <View style={styles.container}>
-      <View style={styles.tabBar}>
+      <View
+        style={[
+          styles.tabBar,
+          { flexDirection: isRTL ? "row-reverse" : "row" },
+        ]}
+      >
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
@@ -61,7 +66,6 @@ const styles = StyleSheet.create({
     marginVertical: Spacing.md,
   },
   tabBar: {
-    flexDirection: "row-reverse", // RTL
     backgroundColor: "white",
     borderRadius: normalize.radius(35),
     padding: 6,

@@ -30,6 +30,10 @@ export default function RevenueScreen() {
   const { user, userType, language, selectedChalet } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
   const isRTL = language === 'ar';
+  const rowDirection = isRTL ? 'row-reverse' : 'row';
+  const textAlign = isRTL ? 'right' : 'left';
+  const startAlign = isRTL ? 'flex-end' : 'flex-start';
+  const endAlign = isRTL ? 'flex-start' : 'flex-end';
   const [selectedPeriod, setSelectedPeriod] = useState('month');
   const [withdrawAmount, setWithdrawAmount] = useState('');
 
@@ -105,7 +109,7 @@ export default function RevenueScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       <HeaderSection 
         userType={userType} 
         userName={user?.name} 
@@ -139,7 +143,7 @@ export default function RevenueScreen() {
             <Text style={styles.balanceCurrency}>{isRTL ? 'دينار عراقي' : 'IQD'}</Text>
             
             <TouchableOpacity 
-              style={styles.withdrawButton} 
+              style={[styles.withdrawButton, { flexDirection: rowDirection }]} 
               activeOpacity={0.85}
               onPress={() => withdrawSheetRef.current?.present()}
             >
@@ -150,7 +154,7 @@ export default function RevenueScreen() {
         </View>
 
         {/* Period Filter */}
-        <View style={[styles.periodRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <View style={[styles.periodRow, { flexDirection: rowDirection }]}>
           {PERIODS.map((period) => (
             <TouchableOpacity
               key={period.id}
@@ -166,7 +170,7 @@ export default function RevenueScreen() {
         </View>
 
         {/* Quick Stats */}
-        <View style={[styles.statsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <View style={[styles.statsRow, { flexDirection: rowDirection }]}>
           <View style={styles.statCard}>
             <View style={[styles.statIconWrap, { backgroundColor: '#EFF6FF' }]}>  
               <SolarCalendarBold size={20} color={Colors.primary} />
@@ -191,11 +195,11 @@ export default function RevenueScreen() {
         </View>
 
         {/* Recent Payouts */}
-        <View style={[styles.sectionHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-          <Text style={styles.sectionTitle}>{isRTL ? 'طلبات السحب' : 'Payout Requests'}</Text>
+        <View style={[styles.sectionHeader, { flexDirection: rowDirection }]}>
+          <Text style={[styles.sectionTitle, { textAlign }]}>{isRTL ? 'طلبات السحب' : 'Payout Requests'}</Text>
           <TouchableOpacity 
             onPress={() => router.push('/(tabs)/(dashboard)/transactions')}
-            style={styles.viewAllBtn}
+            style={[styles.viewAllBtn, { flexDirection: rowDirection }]}
             activeOpacity={0.7}
           >
             <Text style={styles.viewAllText}>{isRTL ? 'عرض الكل' : 'View All'}</Text>
@@ -209,7 +213,7 @@ export default function RevenueScreen() {
           ) : Array.isArray(payouts) && payouts.length > 0 ? (
             payouts.map((item: any, index: number) => (
               <View key={item.id}>
-                <View style={[styles.transactionItem, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <View style={[styles.transactionItem, { flexDirection: rowDirection }]}>
                   <View style={[
                     styles.transactionIcon, 
                     { backgroundColor: item.status === 'paid' ? '#ECFDF5' : item.status === 'rejected' ? '#FEF2F2' : '#FFF7ED' }
@@ -220,15 +224,15 @@ export default function RevenueScreen() {
                     />
                   </View>
                   
-                  <View style={[styles.transactionInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                    <Text style={styles.transactionTitle}>{isRTL ? 'طلب سحب' : 'Payout Request'}</Text>
-                    <Text style={styles.transactionDate}>
+                  <View style={[styles.transactionInfo, { alignItems: startAlign }]}>
+                    <Text style={[styles.transactionTitle, { textAlign }]}>{isRTL ? 'طلب سحب' : 'Payout Request'}</Text>
+                    <Text style={[styles.transactionDate, { textAlign }]}>
                       {new Date(item.createdAt).toLocaleDateString(isRTL ? 'ar-IQ' : 'en-US', { month: 'short', day: 'numeric' })}
                     </Text>
                   </View>
 
-                  <View style={{ alignItems: isRTL ? 'flex-start' : 'flex-end' }}>
-                    <Text style={styles.transactionAmount}>
+                  <View style={{ alignItems: endAlign }}>
+                    <Text style={[styles.transactionAmount, { textAlign: isRTL ? 'left' : 'right' }]}>
                       {item.amount?.toLocaleString()} <Text style={styles.currencySmall}>{isRTL ? 'د.ع' : 'IQD'}</Text>
                     </Text>
                     <View style={[styles.typeBadge, { backgroundColor: getStatusColor(item.status) + '15' }]}>
@@ -262,13 +266,16 @@ export default function RevenueScreen() {
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustResize"
       >
-        <BottomSheetScrollView contentContainerStyle={styles.sheetContent} keyboardShouldPersistTaps="handled">
+        <BottomSheetScrollView
+          contentContainerStyle={[styles.sheetContent, { direction: isRTL ? 'rtl' : 'ltr' }]}
+          keyboardShouldPersistTaps="handled"
+        >
           <Text style={styles.sheetTitle}>{isRTL ? 'طلب سحب أرباح' : 'Request Payout'}</Text>
           <Text style={styles.sheetSubtitle}>
             {isRTL ? 'أدخل المبلغ المراد سحبه' : 'Enter the amount to withdraw'}
           </Text>
 
-          <View style={styles.amountInputWrap}>
+          <View style={[styles.amountInputWrap, { flexDirection: rowDirection }]}>
             <BottomSheetTextInput
               style={styles.amountInput}
               placeholder="0"

@@ -1,14 +1,13 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { StyleSheet, TouchableOpacity, ViewStyle, View } from 'react-native';
+import { StyleSheet, StyleProp, TouchableOpacity, ViewStyle, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { normalize, Colors } from '@/constants/theme';
-import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 
 interface CircleBackButtonProps {
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   onPress?: () => void;
 }
 

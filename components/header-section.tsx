@@ -4,9 +4,7 @@ import {
   SolarMagnifierBold,
   SolarMapPointBold,
   SolarStarBold,
-  SolarUserBold,
   SolarBellBingBoldDuotone,
-  SolarWidgetBold,
 } from "@/components/icons/solar-icons";
 import { Colors, normalize, Spacing } from "@/constants/theme";
 import { RootState } from "@/store";
@@ -76,8 +74,6 @@ export function HeaderSection({
   const isRTL = language === "ar";
   const [selectedCategory, setSelectedCategory] = React.useState("all");
 
-  const finalUserType = userType || stateUserType;
-
   const CATEGORIES = [
     {
       id: "all",
@@ -102,9 +98,12 @@ export function HeaderSection({
   ];
 
   const textAlign = isRTL ? "right" : "left";
+  const rowDirection = isRTL ? "row-reverse" : "row";
+  const startAlign = isRTL ? "flex-end" : "flex-start";
+  const endAlign = isRTL ? "flex-start" : "flex-end";
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { direction: isRTL ? "rtl" : "ltr" }]}>
       <StatusBar style="dark" />
 
       {/* Absolute Standard Header Section */}
@@ -113,36 +112,22 @@ export function HeaderSection({
           styles.topRow,
           {
             marginBottom,
-            flexDirection: isHome
-              ? isRTL
-                ? "row"
-                : "row-reverse"
-              : isRTL
-                ? "row-reverse"
-                : "row",
+            flexDirection: rowDirection,
           },
         ]}
       >
-        {/* START SIDE (Left in LTR Standard, Right in RTL Standard) - Avatar/Back + Search */}
+        {/* START SIDE - right in RTL, left in LTR */}
         <View
           style={[
             styles.headerSide,
-            {
-              alignItems: isHome
-                ? isRTL
-                  ? "flex-start"
-                  : "flex-end"
-                : isRTL
-                  ? "flex-end"
-                  : "flex-start",
-            },
+            { alignItems: startAlign },
           ]}
         >
           {isHome ? (
             <View
               style={[
                 styles.homeLeftGroup,
-                { flexDirection: isRTL ? "row-reverse" : "row" },
+                { flexDirection: rowDirection },
               ]}
             >
               {stateUserType !== "guest" && (
@@ -171,7 +156,7 @@ export function HeaderSection({
             <View
               style={[
                 styles.homeLeftGroup,
-                { flexDirection: isRTL ? "row-reverse" : "row" },
+                { flexDirection: rowDirection },
               ]}
             >
               {showBackButton && <CircleBackButton onPress={onBackPress} />}
@@ -199,19 +184,11 @@ export function HeaderSection({
           </View>
         )}
 
-        {/* END SIDE (Right in LTR Standard, Right in RTL Standard) - Logo */}
+        {/* END SIDE - left in RTL, right in LTR */}
         <View
           style={[
             styles.headerSide,
-            {
-              alignItems: isHome
-                ? isRTL
-                  ? "flex-end"
-                  : "flex-start"
-                : isRTL
-                  ? "flex-start"
-                  : "flex-end",
-            },
+            { alignItems: endAlign },
           ]}
         >
           {showLogo && (
@@ -232,7 +209,7 @@ export function HeaderSection({
           {!isHome && (showProfile || showExtra) && (
             <View
               style={{
-                flexDirection: isRTL ? "row-reverse" : "row",
+                flexDirection: rowDirection,
                 gap: 8,
                 position: "absolute",
                 [isRTL ? "left" : "right"]: 0,
@@ -260,7 +237,7 @@ export function HeaderSection({
           <View
             style={[
               styles.searchBar,
-              { flexDirection: isRTL ? "row-reverse" : "row" },
+              { flexDirection: rowDirection },
             ]}
           >
             <SolarMagnifierBold
@@ -283,7 +260,7 @@ export function HeaderSection({
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={[
             styles.categoriesContent,
-            { flexDirection: isRTL ? "row-reverse" : "row" },
+            { flexDirection: rowDirection },
           ]}
           style={styles.categoriesScroll}
         >
@@ -293,7 +270,7 @@ export function HeaderSection({
               onPress={() => setSelectedCategory(cat.id)}
               style={[
                 styles.categoryItem,
-                { flexDirection: isRTL ? "row-reverse" : "row" },
+                { flexDirection: rowDirection },
                 selectedCategory === cat.id && styles.categoryItemActive,
               ]}
             >

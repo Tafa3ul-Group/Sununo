@@ -4,7 +4,6 @@ import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
-import { useTranslation } from "react-i18next";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
@@ -37,17 +36,23 @@ export function DashboardHeader({
   const { language } = useSelector((state: RootState) => state.auth);
   const insets = useSafeAreaInsets();
   const isRTL = language === "ar";
+  const rowDirection = isRTL ? "row-reverse" : "row";
 
   return (
-    <View style={[styles.container, { marginBottom, paddingTop: insets.top }]}>
+    <View
+      style={[
+        styles.container,
+        { direction: isRTL ? "rtl" : "ltr", marginBottom, paddingTop: insets.top },
+      ]}
+    >
       <StatusBar style="dark" />
-      <View style={[styles.topRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
-        {/* Left Side: Profile Icon OR Back Button */}
+      <View style={[styles.topRow, { flexDirection: rowDirection }]}>
+        {/* Start side: right in RTL, left in LTR */}
         <View style={[styles.leftGroup, { alignItems: isRTL ? "flex-end" : "flex-start" }]}>
           {showBackButton ? (
             <CircleBackButton onPress={() => router.back()} />
           ) : !title ? (
-            <View style={[styles.homeLeftGroup, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+            <View style={[styles.homeLeftGroup, { flexDirection: rowDirection }]}>
               <TouchableOpacity
                 onPress={onProfilePress || (() => router.push("/(dashboard)/profile"))}
                 style={styles.profileCircle}
@@ -82,7 +87,7 @@ export function DashboardHeader({
           </View>
         )}
 
-        {/* Right Side: Logo or Actions */}
+        {/* End side: left in RTL, right in LTR */}
         <View style={[styles.rightGroup, { alignItems: isRTL ? "flex-start" : "flex-end" }]}>
           {onDeletePress ? (
             <TouchableOpacity onPress={onDeletePress} style={styles.deleteCircle}>
@@ -191,4 +196,3 @@ const styles = StyleSheet.create({
     height: "100%",
   },
 });
-

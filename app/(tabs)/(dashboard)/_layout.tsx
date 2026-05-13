@@ -3,12 +3,11 @@ import { SolarBanknoteBold, SolarHomeSmileBoldDuotone, SolarNotesBoldDuotone } f
 import { RootState } from "@/store";
 import { Redirect, Tabs } from "expo-router";
 import React from "react";
-import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 export default function DashboardLayout() {
-  const { t } = useTranslation();
-  const { userType, isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { userType, isAuthenticated, language } = useSelector((state: RootState) => state.auth);
+  const isRTL = language === 'ar';
 
   if (!isAuthenticated) {
     return <Redirect href="/(auth)/login" />;
@@ -24,6 +23,7 @@ export default function DashboardLayout() {
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
+        sceneStyle: { direction: isRTL ? 'rtl' : 'ltr' },
       }}
     >
       <Tabs.Screen

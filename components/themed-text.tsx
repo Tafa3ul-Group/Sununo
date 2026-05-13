@@ -1,5 +1,11 @@
 import { Typography } from "@/constants/theme";
-import { StyleSheet, Text, type TextProps, type TextStyle } from "react-native";
+import {
+  I18nManager,
+  StyleSheet,
+  Text,
+  type TextProps,
+  type TextStyle,
+} from "react-native";
 
 export type ThemedTextProps = TextProps & {
   type?:
@@ -12,6 +18,7 @@ export type ThemedTextProps = TextProps & {
     | "caption"
     | "price"
     | "rating"
+    | "default"
     | "defaultSemiBold"
     | "link";
 };
@@ -79,6 +86,8 @@ const styles = StyleSheet.create({
     fontFamily: "Alexandria-Regular",
     includeFontPadding: false,
     textAlignVertical: "center",
+    writingDirection: I18nManager.isRTL ? "rtl" : "ltr",
+    textAlign: I18nManager.isRTL ? "right" : "left",
   },
   defaultSemiBold: {
     fontFamily: "Alexandria-SemiBold",

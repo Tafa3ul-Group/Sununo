@@ -1,6 +1,7 @@
 import { ThemedText } from "@/components/themed-text";
 import { normalize } from "@/constants/theme";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { SolarStarBold, SolarHeartBold } from "@/components/icons/solar-icons";
 import { StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
 import Svg, {
@@ -84,6 +85,8 @@ export function ColoredCard({
   isFavorite = false,
   onToggleFavorite,
 }: ColoredCardProps) {
+  const { i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
   const currentIndex = shapeIndex % SHAPES_CONFIG.length;
   const config = SHAPES_CONFIG[currentIndex];
 
@@ -94,7 +97,13 @@ export function ColoredCard({
       style={[styles.container, { backgroundColor: color }, style]}
     >
       {/* Favorite Button */}
-      <TouchableOpacity style={styles.favoriteButton} onPress={onToggleFavorite}>
+      <TouchableOpacity
+        style={[
+          styles.favoriteButton,
+          isRTL ? { right: 12 } : { left: 12 },
+        ]}
+        onPress={onToggleFavorite}
+      >
         <View style={styles.favoriteCircle}>
           <SolarHeartBold size={14} color={isFavorite ? "#EA2129" : "#9CA3AF"} />
         </View>
@@ -133,29 +142,69 @@ export function ColoredCard({
 
       {/* Content Section - Figma Typography Implementation */}
       <View style={styles.content}>
-        <View style={styles.titleWrapper}>
-          <ThemedText style={styles.title} numberOfLines={1}>
+        <View
+          style={[
+            styles.titleWrapper,
+            { alignSelf: isRTL ? "flex-end" : "flex-start" },
+          ]}
+        >
+          <ThemedText
+            style={[styles.title, { textAlign: isRTL ? "right" : "left" }]}
+            numberOfLines={1}
+          >
             {title}
           </ThemedText>
         </View>
 
-        <View style={styles.locationWrapper}>
-          <ThemedText style={styles.location} numberOfLines={1}>
+        <View
+          style={[
+            styles.locationWrapper,
+            { alignSelf: isRTL ? "flex-end" : "flex-start" },
+          ]}
+        >
+          <ThemedText
+            style={[styles.location, { textAlign: isRTL ? "right" : "left" }]}
+            numberOfLines={1}
+          >
             {location}
           </ThemedText>
         </View>
 
-        <View style={styles.footer}>
+        <View
+          style={[
+            styles.footer,
+            {
+              flexDirection: isRTL ? "row" : "row-reverse",
+              justifyContent: isRTL ? "flex-end" : "flex-start",
+            },
+          ]}
+        >
           {/* Rating */}
-          <View style={styles.ratingContainer}>
+          <View
+            style={[
+              styles.ratingContainer,
+              { flexDirection: isRTL ? "row-reverse" : "row" },
+            ]}
+          >
             <SolarStarBold size={12} color="#FFFFFF" />
             <ThemedText style={styles.ratingText}>{rating}</ThemedText>
           </View>
 
           {/* Price */}
-          <View style={styles.priceContainer}>
-            <ThemedText style={styles.price} numberOfLines={1}>
-              {price} <ThemedText style={styles.priceUnit}>/ شفت</ThemedText>
+          <View
+            style={[
+              styles.priceContainer,
+              { alignItems: isRTL ? "flex-end" : "flex-start" },
+            ]}
+          >
+            <ThemedText
+              style={[styles.price, { textAlign: isRTL ? "right" : "left" }]}
+              numberOfLines={1}
+            >
+              {price}{" "}
+              <ThemedText style={styles.priceUnit}>
+                {isRTL ? "/ شفت" : "/ shift"}
+              </ThemedText>
             </ThemedText>
           </View>
         </View>
@@ -176,7 +225,6 @@ const styles = StyleSheet.create({
   favoriteButton: {
     position: "absolute",
     top: 12,
-    right: 12,
     zIndex: 10,
   },
   favoriteCircle: {
@@ -204,31 +252,25 @@ const styles = StyleSheet.create({
     width: normalize.width(115),
     height: normalize.height(24),
     justifyContent: "center",
-    alignSelf: "flex-end",
   },
   title: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Black",
     color: "#FFFFFF",
-    textAlign: "right",
     lineHeight: normalize.height(24),
   },
   locationWrapper: {
     width: normalize.width(132),
     height: normalize.height(24),
     justifyContent: "center",
-    alignSelf: "flex-end",
   },
   location: {
     fontSize: normalize.font(12),
     fontFamily: "Alexandria-Regular", // Not bold
     color: "#FFFFFF",
-    textAlign: "right",
     lineHeight: normalize.height(24),
   },
   footer: {
-    flexDirection: "row",
-    justifyContent: "flex-end", // Align everything to the right edge
     alignItems: "center",
     gap: normalize.width(26), // Specific gap requested
     width: "100%",
@@ -236,7 +278,6 @@ const styles = StyleSheet.create({
     marginTop: normalize.height(4),
   },
   ratingContainer: {
-    flexDirection: "row",
     alignItems: "center",
     gap: normalize.width(4),
   },
@@ -246,13 +287,11 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(12),
   },
   priceContainer: {
-    alignItems: "flex-end",
   },
   price: {
     color: "white",
     fontFamily: "Alexandria-Black",
     fontSize: normalize.font(12),
-    textAlign: "right",
   },
   priceUnit: {
     fontSize: normalize.font(8),

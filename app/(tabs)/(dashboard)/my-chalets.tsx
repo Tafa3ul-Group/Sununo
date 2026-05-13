@@ -35,6 +35,10 @@ export default function MyChaletsScreen() {
   const { userType, language } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
   const isRTL = language === 'ar';
+  const rowDirection = isRTL ? 'row-reverse' : 'row';
+  const textAlign = isRTL ? 'right' : 'left';
+  const startAlign = isRTL ? 'flex-end' : 'flex-start';
+  const endAlign = isRTL ? 'flex-start' : 'flex-end';
 
   const { data: chaletsResponse, isLoading, refetch, isFetching } = useGetOwnerChaletsQuery({});
   const chalets = chaletsResponse?.data || chaletsResponse || [];
@@ -57,31 +61,40 @@ export default function MyChaletsScreen() {
           });
         }}
       >
-        <View style={[styles.chaletCardInner, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <View style={[styles.chaletCardInner, { flexDirection: rowDirection }]}>
           {/* Image */}
           <View style={styles.chaletImageWrap}>
             <Image source={mainImageSrc} style={styles.chaletImage} />
             {/* Status indicator */}
-            <View style={[styles.statusIndicator, { backgroundColor: item.isApproved ? '#10B981' : '#F59E0B' }]} />
+            <View
+              style={[
+                styles.statusIndicator,
+                {
+                  backgroundColor: item.isApproved ? '#10B981' : '#F59E0B',
+                  left: isRTL ? undefined : 6,
+                  right: isRTL ? 6 : undefined,
+                },
+              ]}
+            />
           </View>
 
           {/* Info */}
-          <View style={[styles.chaletInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-            <Text style={[styles.chaletName, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
+          <View style={[styles.chaletInfo, { alignItems: startAlign }]}>
+            <Text style={[styles.chaletName, { textAlign }]} numberOfLines={1}>
               {chaletName}
             </Text>
-            <View style={[styles.locationRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.locationRow, { flexDirection: rowDirection }]}>
               <SolarMapPointBold size={12} color={Colors.primary} />
-              <Text style={styles.locationLabel} numberOfLines={1}>{chaletLocation}</Text>
+              <Text style={[styles.locationLabel, { textAlign }]} numberOfLines={1}>{chaletLocation}</Text>
             </View>
 
             {/* Stat chips row */}
-            <View style={[styles.chipRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-              <View style={[styles.statChip, { backgroundColor: '#ECFDF5' }]}>
+            <View style={[styles.chipRow, { flexDirection: rowDirection }]}>
+              <View style={[styles.statChip, { backgroundColor: '#ECFDF5', flexDirection: rowDirection }]}>
                 <SolarBanknoteBold size={12} color="#10B981" />
                 <Text style={[styles.statChipText, { color: '#10B981' }]}>{formatPrice(item.price)}</Text>
               </View>
-              <View style={[styles.statChip, { backgroundColor: '#EFF6FF' }]}>
+              <View style={[styles.statChip, { backgroundColor: '#EFF6FF', flexDirection: rowDirection }]}>
                 <SolarStarBold size={12} color={Colors.primary} />
                 <Text style={[styles.statChipText, { color: Colors.primary }]}>{item.reviewCount || 0}</Text>
               </View>
@@ -89,7 +102,7 @@ export default function MyChaletsScreen() {
           </View>
 
           {/* Actions */}
-          <View style={[styles.actionsColumn, { alignItems: isRTL ? 'flex-start' : 'flex-end' }]}>
+          <View style={[styles.actionsColumn, { alignItems: endAlign }]}>
             <TouchableOpacity
               style={styles.editBtn}
               onPress={() => {
@@ -116,7 +129,7 @@ export default function MyChaletsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       <HeaderSection
         userType={userType}
         title={t('tabs.myChalets')}
@@ -135,9 +148,9 @@ export default function MyChaletsScreen() {
           <RefreshControl refreshing={isFetching} onRefresh={refetch} tintColor={Colors.primary} />
         }
       >
-        <View style={styles.chaletSectionHeader}>
-            <View style={[styles.sectionTitleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-              <Text style={styles.sectionTitle}>{isRTL ? 'قائمة الشاليهات' : 'Chalets List'}</Text>
+        <View style={[styles.chaletSectionHeader, { flexDirection: rowDirection }]}>
+            <View style={[styles.sectionTitleRow, { flexDirection: rowDirection }]}>
+              <Text style={[styles.sectionTitle, { textAlign }]}>{isRTL ? 'قائمة الشاليهات' : 'Chalets List'}</Text>
               <View style={styles.countBadge}>
                 <Text style={styles.countBadgeText}>{chalets.length}</Text>
               </View>
@@ -250,7 +263,6 @@ const styles = StyleSheet.create({
   statusIndicator: {
     position: 'absolute',
     top: 6,
-    left: 6,
     width: 10,
     height: 10,
     borderRadius: 5,

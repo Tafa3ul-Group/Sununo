@@ -1,12 +1,18 @@
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+import { RootState } from "@/store";
 import { Stack } from "expo-router";
 import React from "react";
+import { useSelector } from "react-redux";
 
 export default function DashboardNonTabLayout() {
+  const { language } = useSelector((state: RootState) => state.auth);
+  const isRTL = language === "ar";
+
   return (
     <Stack
       screenOptions={{
         headerShown: true,
+        contentStyle: { direction: isRTL ? "rtl" : "ltr" },
         header: (props) => (
           <DashboardHeader 
             title={props.options.title}

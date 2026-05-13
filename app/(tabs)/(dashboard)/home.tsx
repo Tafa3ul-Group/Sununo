@@ -393,7 +393,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1, direction: isRTL ? 'rtl' : 'ltr' }}>
       <View style={styles.safeArea}>
         <DashboardHeader
           showSearch={false}

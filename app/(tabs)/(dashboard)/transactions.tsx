@@ -24,6 +24,10 @@ export default function TransactionsScreen() {
   const { user, userType, language } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
   const isRTL = language === 'ar';
+  const rowDirection = isRTL ? 'row-reverse' : 'row';
+  const textAlign = isRTL ? 'right' : 'left';
+  const startAlign = isRTL ? 'flex-end' : 'flex-start';
+  const endAlign = isRTL ? 'flex-start' : 'flex-end';
   const [activeFilter, setActiveFilter] = useState<string | undefined>(undefined);
 
   const { data: payoutsResponse, isLoading, refetch } = useGetPayoutsQuery({ 
@@ -87,23 +91,23 @@ export default function TransactionsScreen() {
     
     return (
       <TouchableOpacity 
-        style={[styles.transactionItem, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+        style={[styles.transactionItem, { flexDirection: rowDirection }]}
         activeOpacity={0.7}
       >
         <View style={[styles.transactionIcon, { backgroundColor: statusBg }]}>
           <SolarBanknoteBold size={22} color={statusColor} />
         </View>
         
-        <View style={[styles.transactionInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-          <Text style={styles.transactionTitle}>{isRTL ? 'طلب سحب' : 'Payout Request'}</Text>
-          <Text style={styles.transactionDate}>{formatDate(item.createdAt)}</Text>
+        <View style={[styles.transactionInfo, { alignItems: startAlign }]}>
+          <Text style={[styles.transactionTitle, { textAlign }]}>{isRTL ? 'طلب سحب' : 'Payout Request'}</Text>
+          <Text style={[styles.transactionDate, { textAlign }]}>{formatDate(item.createdAt)}</Text>
         </View>
 
-        <View style={{ alignItems: isRTL ? 'flex-start' : 'flex-end' }}>
-          <Text style={styles.transactionAmount}>
+        <View style={{ alignItems: endAlign }}>
+          <Text style={[styles.transactionAmount, { textAlign: isRTL ? 'left' : 'right' }]}>
             {item.amount?.toLocaleString()} <Text style={styles.currencySmall}>{isRTL ? 'د.ع' : 'IQD'}</Text>
           </Text>
-          <View style={[styles.statusBadge, { backgroundColor: statusBg }]}>
+          <View style={[styles.statusBadge, { backgroundColor: statusBg, flexDirection: rowDirection }]}>
             <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
             <Text style={[styles.statusBadgeText, { color: statusColor }]}>
               {getStatusLabel(item.status)}
@@ -115,7 +119,7 @@ export default function TransactionsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       <HeaderSection 
         userType={userType} 
         userName={user?.name} 

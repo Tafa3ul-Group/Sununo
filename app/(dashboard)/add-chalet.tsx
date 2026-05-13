@@ -98,8 +98,6 @@ export default function AddChaletScreen() {
     whatsapp: '',
     policiesAr: '',
     policiesEn: '',
-    latitude: '',
-    longitude: '',
     basePrice: '',
     area: '',
     bedrooms: '',
@@ -509,7 +507,7 @@ export default function AddChaletScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       <StatusBar style="dark" />
 
       <KeyboardAvoidingView
@@ -803,7 +801,7 @@ export default function AddChaletScreen() {
                       <View key={index} style={styles.imageItem}>
                         <Image source={{ uri }} style={styles.uploadedImage} />
                         <TouchableOpacity 
-                          style={styles.removeImageButton} 
+                          style={[styles.removeImageButton, isRTL ? { right: normalize.width(6) } : { left: normalize.width(6) }]} 
                           onPress={() => removeImage(index, amenityCategories[currentAmenitySubStep].id)}
                         >
                           <SolarCloseCircleBold size={24} color={Colors.error} />
@@ -850,7 +848,7 @@ export default function AddChaletScreen() {
                   {(imagesByCategory['general'] || []).map((uri, index) => (
                     <View key={index} style={styles.imageItem}>
                       <Image source={{ uri }} style={styles.uploadedImage} />
-                      <TouchableOpacity style={styles.removeImageButton} onPress={() => removeImage(index, 'general')}>
+                      <TouchableOpacity style={[styles.removeImageButton, isRTL ? { right: normalize.width(6) } : { left: normalize.width(6) }]} onPress={() => removeImage(index, 'general')}>
                         <SolarCloseCircleBold size={24} color={Colors.error} />
                       </TouchableOpacity>
                     </View>
@@ -949,7 +947,7 @@ export default function AddChaletScreen() {
       <BottomSheetModal ref={imageSourceSheetRef} index={0} snapPoints={imageSnapPoints} backdropComponent={renderBackdrop} backgroundStyle={{ borderRadius: normalize.radius(24) }}>
         <BottomSheetView style={styles.sheetContent}>
           <Text style={styles.modalTitle}>{isRTL ? 'اختر مصدر الصورة' : 'Select Image Source'}</Text>
-          <View style={styles.modalOptions}>
+          <View style={[styles.modalOptions, { flexDirection }]}>
             <TouchableOpacity style={styles.modalOption} onPress={() => { takePhoto(); imageSourceSheetRef.current?.dismiss(); }}>
               <View style={[styles.modalIcon, { backgroundColor: '#E3F2FD' }]}>
                 <SolarCameraBold size={30} color={Colors.primary} />
@@ -1003,13 +1001,13 @@ export default function AddChaletScreen() {
 
                 <View style={styles.pricingSectionModal}>
                   <Text style={[styles.pricingTitle, { textAlign }]}>{isRTL ? 'الأسعار (د.ع)' : 'Pricing (IQD)'}</Text>
-                  <View style={styles.bulkPricingRow}>
+                  <View style={[styles.bulkPricingRow, { flexDirection }]}>
                     <TextInput style={[styles.input, { flex: 1, height: 40 }]} placeholder={isRTL ? 'السعر...' : 'Price...'} keyboardType="numeric" value={bulkPrice} onChangeText={setBulkPrice} />
                     <TouchableOpacity style={styles.bulkBtn} onPress={() => handleApplyBulkPrice('all')}><Text style={styles.bulkBtnText}>{isRTL ? 'الكل' : 'All'}</Text></TouchableOpacity>
                     <TouchableOpacity style={styles.bulkBtn} onPress={() => handleApplyBulkPrice('weekdays')}><Text style={styles.bulkBtnText}>{isRTL ? 'الأسبوع' : 'Week'}</Text></TouchableOpacity>
                     <TouchableOpacity style={styles.bulkBtn} onPress={() => handleApplyBulkPrice('weekends')}><Text style={styles.bulkBtnText}>{isRTL ? 'الجمعة' : 'W.E'}</Text></TouchableOpacity>
                   </View>
-                  <View style={[styles.dayPricingGrid]}>
+                  <View style={[styles.dayPricingGrid, { flexDirection }]}>
                     {shifts[editingShiftIndex].pricing.map((p) => (
                       <View key={p.dayOfWeek} style={styles.dayPriceItem}>
                         <Text style={styles.dayLabel}>{isRTL ? DAY_NAMES_AR[p.dayOfWeek] : DAY_NAMES_EN[p.dayOfWeek]}</Text>
@@ -1155,13 +1153,13 @@ const styles = StyleSheet.create({
   imageContainer: { gap: Spacing.sm },
   imageItem: { width: normalize.width(100), height: normalize.width(100), borderRadius: normalize.radius(16), overflow: 'hidden', position: 'relative' },
   uploadedImage: { width: '100%', height: '100%' },
-  removeImageButton: { position: 'absolute', top: normalize.height(6), right: normalize.width(6), backgroundColor: Colors.white, borderRadius: normalize.radius(12) },
+  removeImageButton: { position: 'absolute', top: normalize.height(6), backgroundColor: Colors.white, borderRadius: normalize.radius(12) },
   imageUpload: {
     width: normalize.width(100), height: normalize.width(100), backgroundColor: Colors.surface,
     borderRadius: normalize.radius(16), borderWidth: 2, borderColor: Colors.border, borderStyle: 'dashed',
     justifyContent: 'center', alignItems: 'center',
   },
-  coverBadge: { position: 'absolute', bottom: 6, left: 6, backgroundColor: Colors.primary, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
+  coverBadge: { position: 'absolute', bottom: 6, start: 6, backgroundColor: Colors.primary, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
   coverBadgeText: { color: '#FFFFFF', fontSize: normalize.font(9), fontFamily: "Alexandria-Bold" },
   // Amenity Wizard Progress
   amenityProgressContainer: {

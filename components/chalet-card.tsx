@@ -3,6 +3,7 @@ import { getImageSrc } from "@/hooks/useImageSrc";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import {
@@ -24,11 +25,25 @@ const STAR_SHAPE =
 
 export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
   const router = useRouter();
+  const { i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
   const [isFavorite, setIsFavorite] = React.useState(false);
 
   if (!chalet) return null;
 
   const imageSource = getImageSrc(chalet.images?.[0]?.url || chalet.image);
+  const title =
+    typeof chalet.title === "object"
+      ? isRTL
+        ? chalet.title?.ar
+        : chalet.title?.en
+      : chalet.title;
+  const location =
+    typeof chalet.location === "object"
+      ? isRTL
+        ? chalet.location?.ar
+        : chalet.location?.en
+      : chalet.location;
 
   return (
     <TouchableOpacity
@@ -40,7 +55,12 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
         <Image source={imageSource} style={styles.image} contentFit="cover" />
 
         {/* الطبقة العلوية للأيقونات (التقييم والقلب) */}
-        <View style={styles.topActions}>
+        <View
+          style={[
+            styles.topActions,
+            { flexDirection: isRTL ? "row-reverse" : "row" },
+          ]}
+        >
           {/* التقييم في زاوية اليمنى صريحاً وبنفس المسافة */}
           <View style={styles.ratingOverlay}>
             <ThemedText style={styles.ratingText}>
@@ -68,23 +88,51 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
       </View>
 
       <View style={styles.infoContainer}>
-        <View style={styles.titleRow}>
-          <ThemedText style={styles.title} numberOfLines={1}>
-            {chalet.title}
+        <View style={{ alignItems: isRTL ? "flex-end" : "flex-start" }}>
+          <ThemedText
+            style={[styles.title, { textAlign: isRTL ? "right" : "left" }]}
+            numberOfLines={1}
+          >
+            {title}
           </ThemedText>
         </View>
 
-        <View style={styles.locationRow}>
-          <ThemedText style={styles.location} numberOfLines={1}>
-            {chalet.location}
-          </ThemedText>
+        <View
+          style={[
+            styles.locationRow,
+            {
+              flexDirection: isRTL ? "row-reverse" : "row",
+              justifyContent: isRTL ? "flex-start" : "flex-end",
+            },
+          ]}
+        >
           <SolarMapPointBold size={normalize.width(14)} color="#9CA3AF" />
+          <ThemedText
+            style={[styles.location, { textAlign: isRTL ? "right" : "left" }]}
+            numberOfLines={1}
+          >
+            {location}
+          </ThemedText>
         </View>
 
-        <View style={styles.priceContainer}>
-          <View style={styles.priceRow}>
-            <ThemedText style={styles.price}>IQD {chalet.price}</ThemedText>
-            <ThemedText style={styles.priceLabel}> / ليلة</ThemedText>
+        <View
+          style={[
+            styles.priceContainer,
+            { alignItems: isRTL ? "flex-end" : "flex-start" },
+          ]}
+        >
+          <View
+            style={[
+              styles.priceRow,
+              { flexDirection: isRTL ? "row-reverse" : "row" },
+            ]}
+          >
+            <ThemedText style={styles.price}>
+              {isRTL ? `${chalet.price} د.ع` : `IQD ${chalet.price}`}
+            </ThemedText>
+            <ThemedText style={styles.priceLabel}>
+              {isRTL ? " / ليلة" : " / night"}
+            </ThemedText>
           </View>
         </View>
       </View>
@@ -147,17 +195,12 @@ const styles = StyleSheet.create({
   infoContainer: {
     padding: normalize.width(12),
   },
-  titleRow: {
-    alignItems: "flex-end",
-  },
   title: {
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-Black",
     color: "#111827",
   },
   locationRow: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
     alignItems: "center",
     gap: 4,
     marginTop: 4,
@@ -169,10 +212,8 @@ const styles = StyleSheet.create({
   },
   priceContainer: {
     marginTop: normalize.height(12),
-    alignItems: "flex-end",
   },
   priceRow: {
-    flexDirection: "row-reverse",
     alignItems: "center",
     gap: 4,
   },

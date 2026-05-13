@@ -1,7 +1,7 @@
 import { ThemedText } from '@/components/themed-text';
 import { Colors, Spacing } from '@/constants/theme';
 import React from 'react';
-import { ActivityIndicator, StyleSheet, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { ActivityIndicator, I18nManager, StyleSheet, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 interface AppButtonProps {
@@ -43,6 +43,7 @@ export function AppButton({
   textStyle,
 }: AppButtonProps) {
   const isPrimary = variant === 'primary';
+  const isRTL = I18nManager.isRTL;
   const color = isActive ? activeColor : inactiveColor;
   const determinedInactiveTextColor = inactiveTextColor || activeColor;
   const textColor = isActive ? activeTextColor : determinedInactiveTextColor;
@@ -76,7 +77,7 @@ export function AppButton({
 
         {/* Flexible Middle Section */}
         <View style={[styles.middleSection, { backgroundColor: color }]}>
-          <View style={styles.contentRow}>
+          <View style={[styles.contentRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             {icon}
             <ThemedText style={[styles.primaryText, { color: textColor }, textStyle]}>
               {label}
@@ -106,6 +107,7 @@ export function AppButton({
       disabled={disabled}
       style={[
         styles.secondaryContainer,
+        { flexDirection: isRTL ? 'row-reverse' : 'row' },
         { borderColor: isActive ? secondaryActiveColor : '#E5E7EB' },
         isActive && styles.secondaryActiveShadow,
         style
@@ -163,7 +165,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
   },
   contentRow: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 4,
@@ -177,7 +178,6 @@ const styles = StyleSheet.create({
     textAlignVertical: 'center',
   },
   secondaryContainer: {
-    flexDirection: 'row-reverse',
     height: 42,
     backgroundColor: 'white',
     borderWidth: 1.5,

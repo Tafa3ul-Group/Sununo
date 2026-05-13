@@ -145,7 +145,7 @@ export default function BookingDetailsPage() {
   const bCustomerPhone = data.customer?.phone || data.externalCustomerPhone;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       {/* Dashboard Header */}
       <DashboardHeader
         title={isRTL ? 'تفاصيل الحجز' : 'Booking Details'}

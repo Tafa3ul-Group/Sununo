@@ -1,8 +1,7 @@
 import { ThemedText } from '@/components/themed-text';
 import { Colors, normalize, Spacing } from '@/constants/theme';
 import React from 'react';
-import { StyleSheet, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
-import { SolarMagnifierBold } from "@/components/icons/solar-icons";
+import { I18nManager, StyleSheet, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 
 interface FilterInputProps {
   label: string;
@@ -26,12 +25,15 @@ export function FilterInput({
   style,
   labelStyle
 }: FilterInputProps) {
+  const isRTL = I18nManager.isRTL;
+
   return (
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={onPress}
       style={[
         styles.container,
+        { flexDirection: isRTL ? 'row-reverse' : 'row' },
         selected && styles.selectedContainer,
         style
       ]}
@@ -57,15 +59,12 @@ export function FilterInput({
 
 const styles = StyleSheet.create({
   container: {
-    // We use a row for the design [Text | Icon]
-    // The image shows Text on the left, Icon on the right.
-    flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.white,
     borderWidth: 1.5, // slightly thicker for premium feel
     borderColor: Colors.border,
     borderRadius: normalize.radius(20),
-    paddingLeft: Spacing.md,
+    paddingStart: Spacing.md,
     height: normalize.height(56),
     overflow: 'hidden',
     // Subtle shadow

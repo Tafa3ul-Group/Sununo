@@ -5,6 +5,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
     Dimensions,
     FlatList,
+    I18nManager,
     Image,
     NativeScrollEvent,
     NativeSyntheticEvent,
@@ -21,12 +22,11 @@ const SNAP_INTERVAL = BANNER_WIDTH + ITEM_GAP;
 const AUTO_PLAY_INTERVAL = 4000;
 
 export function BannerSwiper({ data }: { data?: any[] }) {
-  if (!data || data.length === 0) return null;
-
-  const displayData = data;
+  const displayData = data ?? [];
+  const isRTL = I18nManager.isRTL;
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   // Use a ref to always have the latest index inside the interval callback
   const activeIndexRef = useRef(0);
 
@@ -38,6 +38,7 @@ export function BannerSwiper({ data }: { data?: any[] }) {
   }, []);
 
   const startTimer = useCallback(() => {
+    if (displayData.length === 0) return;
     stopTimer();
     timerRef.current = setInterval(() => {
       const next = (activeIndexRef.current + 1) % displayData.length;
@@ -75,6 +76,8 @@ export function BannerSwiper({ data }: { data?: any[] }) {
     <View style={{ width: ITEM_GAP }} />
   ), []);
 
+  if (displayData.length === 0) return null;
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -83,6 +86,7 @@ export function BannerSwiper({ data }: { data?: any[] }) {
         renderItem={renderItem}
         keyExtractor={(item, index) => item.id?.toString() || index.toString()}
         horizontal
+        inverted={isRTL}
         showsHorizontalScrollIndicator={false}
         pagingEnabled={false}
         snapToInterval={SNAP_INTERVAL}
@@ -136,7 +140,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   pagination: {
-    flexDirection: 'row',
+    flexDirection: I18nManager.isRTL ? 'row-reverse' : 'row',
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: normalize.height(12),
