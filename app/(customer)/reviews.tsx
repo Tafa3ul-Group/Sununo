@@ -13,14 +13,14 @@ import {
   View
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { isRTL } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function ReviewsScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
-  const [activeTab, setActiveTab] = useState<"pending" | "reviewed">("pending");
+    const [activeTab, setActiveTab] = useState<"pending" | "reviewed">("pending");
   const insets = useSafeAreaInsets();
 
   // Fetch completed bookings (pending review) and all bookings
@@ -52,8 +52,7 @@ export default function ReviewsScreen() {
         comment: '',
         gallery: [],
         date: booking.bookingDate || '',
-        status: 'pending' as const,
-      }));
+        status: 'pending' as const }));
 
     // Reviewed: bookings that have reviews
     const reviewed = all
@@ -75,8 +74,7 @@ export default function ReviewsScreen() {
         comment: booking.review?.comment || '',
         gallery: [],
         date: booking.review?.createdAt ? new Date(booking.review.createdAt).toLocaleDateString() : '',
-        status: 'reviewed' as const,
-      }));
+        status: 'reviewed' as const }));
 
     return { pending, reviewed };
   }, [completedBookings, allBookings, isRTL]);
@@ -90,8 +88,7 @@ export default function ReviewsScreen() {
           ...item,
           chaletTitle: item.chaletTitle,
           chaletLocation: item.chaletLocation,
-          comment: item.comment,
-        }} 
+          comment: item.comment }} 
       />
     );
   };
@@ -143,18 +140,13 @@ export default function ReviewsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
-  },
+    backgroundColor: "white" },
   tabsWrapper: {
     paddingHorizontal: 16,
     paddingVertical: 12,
-    gap: 12,
-  },
+    gap: 12 },
   tabItem: {
-    flex: 1,
-  },
+    flex: 1 },
   listContent: {
     paddingHorizontal: 16,
-    paddingBottom: 40,
-  },
-});
+    paddingBottom: 40 } });

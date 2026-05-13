@@ -9,11 +9,11 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { PrimaryButton } from './primary-button';
+import { isRTL } from "@/i18n";
 
 export const LogoutSheet = forwardRef<BottomSheetModal>((props, ref) => {
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
-  const dispatch = useDispatch();
+    const dispatch = useDispatch();
   const router = useRouter();
   const [logoutApi, { isLoading }] = useLogoutUserMutation();
 
@@ -56,7 +56,7 @@ export const LogoutSheet = forwardRef<BottomSheetModal>((props, ref) => {
       style={styles.sheet}
     >
       <View style={styles.container}>
-        <View style={[styles.header, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <View style={[styles.header, { flexDirection: 'row' }]}>
           <Text style={[styles.title, { textAlign: isRTL ? 'right' : 'left' }]}>
             {t('profile.logout')}
           </Text>
@@ -93,50 +93,39 @@ export const LogoutSheet = forwardRef<BottomSheetModal>((props, ref) => {
 
 const styles = StyleSheet.create({
   sheet: {
-    borderRadius: 24,
-  },
+    borderRadius: 24 },
   container: {
     flex: 1,
-    padding: normalize.width(20),
-  },
+    padding: normalize.width(20) },
   header: {
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: normalize.height(15),
-  },
+    marginBottom: normalize.height(15) },
   title: {
     fontSize: normalize.font(18),
     fontFamily: "Alexandria-Black",
-    color: '#1E293B',
-  },
+    color: '#1E293B' },
   closeBtn: {
     width: 32,
     height: 32,
     borderRadius: 16,
     backgroundColor: '#F1F5F9',
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   message: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Regular",
     color: '#64748B',
     lineHeight: 22,
-    marginBottom: normalize.height(25),
-  },
+    marginBottom: normalize.height(25) },
   footer: {
-    gap: 12,
-  },
+    gap: 12 },
   logoutBtn: {
-    backgroundColor: '#EF4444',
-  },
+    backgroundColor: '#EF4444' },
   cancelBtn: {
     paddingVertical: 12,
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   cancelText: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Bold",
-    color: '#64748B',
-  },
-});
+    color: '#64748B' } });

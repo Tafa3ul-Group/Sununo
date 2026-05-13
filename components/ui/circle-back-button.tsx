@@ -69,6 +69,5 @@ const styles = StyleSheet.create({
   iconWrapper: {
     // Center the custom SVG path correctly
     justifyContent: 'center',
-    alignItems: 'center',
-  }
+    alignItems: 'center' }
 });

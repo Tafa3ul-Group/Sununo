@@ -6,8 +6,7 @@ const MOTIONS = {
   success: require('./motions/success.json'),
   failed: require('./motions/fail.json'),
   splash: require('./motions/splash.json'),
-  error404: require('./motions/error404.json'),
-};
+  error404: require('./motions/error404.json') };
 
 export type MotionName = keyof typeof MOTIONS;
 
@@ -23,8 +22,7 @@ export const MotionIcon = forwardRef(({ name, size = 100, style, ...props }: Mot
     play: () => lottieRef.current?.play(),
     reset: () => lottieRef.current?.reset(),
     pause: () => lottieRef.current?.pause(),
-    resume: () => lottieRef.current?.resume(),
-  }));
+    resume: () => lottieRef.current?.resume() }));
 
   return (
     <LottieView

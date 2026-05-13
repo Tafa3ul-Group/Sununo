@@ -1,10 +1,10 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { isRTL } from "@/i18n";
 
 export const useFormatTime = () => {
   const { i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
-
+  
   const formatShiftTime = useCallback((timeStr?: string) => {
     if (!timeStr) return '';
     

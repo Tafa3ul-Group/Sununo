@@ -9,12 +9,12 @@ import { HeaderSection } from "@/components/header-section";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
+import { isRTL } from "@/i18n";
 
 export default function ChaletDescriptionScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
-  const router = useRouter();
+    const router = useRouter();
   const { userType } = useSelector((state: RootState) => state.auth);
 
   const { data: response, isLoading } = useGetCustomerChaletDetailsQuery(id as string);
@@ -62,16 +62,13 @@ export default function ChaletDescriptionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
-  },
+    backgroundColor: "white" },
   scrollContent: {
     padding: 20,
-    paddingTop: 40,
-  },
+    paddingTop: 40 },
   headerIconContainer: {
     alignItems: 'center',
-    marginBottom: 30,
-  },
+    marginBottom: 30 },
   iconCircle: {
     width: 80,
     height: 80,
@@ -84,25 +81,20 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
     shadowRadius: 15,
-    elevation: 8,
-  },
+    elevation: 8 },
   pageTitle: {
     fontSize: 22,
     fontFamily: 'Alexandria-Black',
-    color: '#111827',
-  },
+    color: '#111827' },
   card: {
     backgroundColor: 'white',
     borderRadius: 24,
     padding: 24,
     elevation: 2,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
-  },
+    borderColor: '#F3F4F6' },
   content: {
     fontSize: 15,
     lineHeight: 24,
     color: '#4B5563',
-    fontFamily: 'Alexandria-Medium',
-  },
-});
+    fontFamily: 'Alexandria-Medium' } });

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-nati
 import Svg, { G, Path, Circle, Text as SvgText, Line } from 'react-native-svg';
 import { normalize, Colors } from '@/constants/theme';
 import { SolarIcon } from './solar-icon';
+import { isRTL } from "@/i18n";
 
 interface ShiftItem {
   shiftId: string;
@@ -193,7 +194,7 @@ export const CircularShiftClock: React.FC<CircularShiftClockProps> = ({
       </View>
 
       {/* Legend / Info Bar below clock */}
-      <View style={[styles.legend, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+      <View style={[styles.legend, { flexDirection: 'row' }]}>
         <LegendItem color="#22C55E" label={isRTL ? 'متاح' : 'Available'} />
         <LegendItem color="#EF4444" label={isRTL ? 'محجوز' : 'Booked'} />
         <LegendItem color="#F59E0B" label={isRTL ? 'انتظار' : 'Pending'} />
@@ -221,11 +222,9 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
     shadowRadius: 20,
-    elevation: 8,
-  },
+    elevation: 8 },
   clockBody: {
-    marginTop: 10,
-  },
+    marginTop: 10 },
   legend: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -233,22 +232,17 @@ const styles = StyleSheet.create({
     gap: 12,
     marginTop: 16,
     paddingBottom: 20,
-    width: '100%',
-  },
+    width: '100%' },
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-  },
+    gap: 6 },
   legendDot: {
     width: 8,
     height: 8,
-    borderRadius: 4,
-  },
+    borderRadius: 4 },
   legendText: {
     color: '#94A3B8',
     fontSize: 10,
     fontFamily: "Alexandria-Bold",
-    textTransform: 'uppercase',
-  },
-});
+    textTransform: 'uppercase' } });

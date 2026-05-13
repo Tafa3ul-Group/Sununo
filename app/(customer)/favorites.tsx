@@ -12,14 +12,14 @@ import { HorizontalCard } from '@/components/user/horizontal-card';
 import { HeaderSection } from '@/components/header-section';
 import { useGetCustomerFavoritesQuery, useToggleFavoriteMutation } from '@/store/api/customerApiSlice';
 import { getImageSrc } from '@/hooks/useImageSrc';
+import { isRTL } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function FavoritesScreen() {
   const { t } = useTranslation();
   const { language } = useSelector((state: RootState) => state.auth);
-  const isRTL = language === 'ar';
-  const router = useRouter();
+    const router = useRouter();
 
   // Fetch favorites from the backend
   const { data: favoritesResponse, isLoading, refetch } = useGetCustomerFavoritesQuery({ page: 1, limit: 50 });
@@ -50,13 +50,12 @@ export default function FavoritesScreen() {
         price: chalet.basePrice ? Number(chalet.basePrice).toLocaleString() : '0',
         rating: chalet.averageRating?.toFixed(1) || '0',
         image: getImageSrc(chalet.images?.[0]?.url),
-        color: '#22C55E',
-      };
+        color: '#22C55E' };
     });
   }, [favoritesResponse, isRTL]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container]}>
       {/* Header matching the design */}
       <HeaderSection 
         title={t('headers.favorites')} 
@@ -96,32 +95,26 @@ export default function FavoritesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
-  },
+    backgroundColor: 'white' },
   scrollContent: {
     padding: 16,
-    paddingBottom: 100,
-  },
+    paddingBottom: 100 },
   cardWrapper: {
     position: 'relative',
-    marginBottom: normalize.height(15),
-  },
+    marginBottom: normalize.height(15) },
   customCard: {
     borderWidth: 1,
-    borderColor: '#F3F4F6',
-  },
+    borderColor: '#F3F4F6' },
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: 80,
-    paddingHorizontal: 40,
-  },
+    paddingHorizontal: 40 },
   emptyTitle: {
     fontSize: 20,
     fontFamily: "Alexandria-Bold",
     color: '#1E293B',
-    marginTop: 20,
-  },
+    marginTop: 20 },
   emptySubtitle: {
     fontSize: 14,
     color: '#64748B',
@@ -129,5 +122,4 @@ const styles = StyleSheet.create({
     marginTop: 10,
     lineHeight: 20,
     fontFamily: "Alexandria-Regular" 
-  },
-});
+  } });

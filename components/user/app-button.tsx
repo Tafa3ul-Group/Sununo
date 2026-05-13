@@ -3,6 +3,7 @@ import { Colors, Spacing } from '@/constants/theme';
 import React from 'react';
 import { ActivityIndicator, I18nManager, StyleSheet, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+import { isRTL } from "@/i18n";
 
 interface AppButtonProps {
   label: string;
@@ -40,10 +41,8 @@ export function AppButton({
   activeTextColor = "white",
   inactiveTextColor,
   style,
-  textStyle,
-}: AppButtonProps) {
+  textStyle }: AppButtonProps) {
   const isPrimary = variant === 'primary';
-  const isRTL = I18nManager.isRTL;
   const color = isActive ? activeColor : inactiveColor;
   const determinedInactiveTextColor = inactiveTextColor || activeColor;
   const textColor = isActive ? activeTextColor : determinedInactiveTextColor;
@@ -77,7 +76,7 @@ export function AppButton({
 
         {/* Flexible Middle Section */}
         <View style={[styles.middleSection, { backgroundColor: color }]}>
-          <View style={[styles.contentRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.contentRow, { flexDirection: 'row' }]}>
             {icon}
             <ThemedText style={[styles.primaryText, { color: textColor }, textStyle]}>
               {label}
@@ -107,7 +106,7 @@ export function AppButton({
       disabled={disabled}
       style={[
         styles.secondaryContainer,
-        { flexDirection: isRTL ? 'row-reverse' : 'row' },
+        { flexDirection: 'row' },
         { borderColor: isActive ? secondaryActiveColor : '#E5E7EB' },
         isActive && styles.secondaryActiveShadow,
         style
@@ -146,45 +145,38 @@ const styles = StyleSheet.create({
   loadingContainer: {
     height: 32,
     justifyContent: 'center',
-    paddingHorizontal: Spacing.md,
-  },
+    paddingHorizontal: Spacing.md },
   hybridContainer: {
     flexDirection: 'row',
     height: 36, // Improved default height
     alignItems: 'stretch',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   svgPart: {
-    height: '100%',
-  },
+    height: '100%' },
   middleSection: {
     flexGrow: 1,
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 2,
-  },
+    paddingHorizontal: 2 },
   contentRow: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 4,
-  },
+    paddingHorizontal: 4 },
   primaryText: {
     fontSize: 14,
     fontFamily: "Alexandria-Bold",
     textAlign: 'center',
     lineHeight: 22,
     includeFontPadding: false,
-    textAlignVertical: 'center',
-  },
+    textAlignVertical: 'center' },
   secondaryContainer: {
     height: 42,
     backgroundColor: 'white',
     borderWidth: 1.5,
     borderRadius: 16,
     alignItems: 'center',
-    overflow: 'hidden',
-  },
+    overflow: 'hidden' },
   secondaryActiveShadow: {
     // Shadows removed per user request
   },
@@ -192,22 +184,17 @@ const styles = StyleSheet.create({
     height: '100%',
     width: 44,
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   divider: {
     width: 1,
-    height: '60%',
-  },
+    height: '60%' },
   labelPart: {
     flex: 1,
     paddingHorizontal: Spacing.md,
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   secondaryText: {
     fontSize: 16,
     fontFamily: "Alexandria-Bold",
     textAlign: 'center',
-    lineHeight: 25,
-  },
-});
+    lineHeight: 25 } });

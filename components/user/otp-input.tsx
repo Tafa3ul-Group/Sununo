@@ -4,8 +4,7 @@ import {
   View,
   TextInput,
   TouchableOpacity,
-  Animated,
-} from 'react-native';
+  Animated } from 'react-native';
 import { ThemedText } from '../themed-text';
 import { Colors, normalize, Shadows } from '@/constants/theme';
 
@@ -85,18 +84,15 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     alignItems: 'center',
-    marginVertical: 15,
-  },
+    marginVertical: 15 },
   otpContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-  },
+    gap: 8 },
   digitWrapper: {
     flexDirection: 'row',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   digitBox: {
     width: normalize.width(42),
     height: normalize.height(52),
@@ -108,8 +104,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     position: 'relative',
     ...Shadows.small,
-    shadowOpacity: 0.05,
-  },
+    shadowOpacity: 0.05 },
   activeDigitBox: {
     borderColor: '#0061FE',
     backgroundColor: '#FFFFFF',
@@ -117,43 +112,35 @@ const styles = StyleSheet.create({
     transform: [{ scale: 1.05 }],
     ...Shadows.medium,
     shadowColor: '#0061FE',
-    shadowOpacity: 0.15,
-  },
+    shadowOpacity: 0.15 },
   filledDigitBox: {
     borderColor: '#0061FE',
-    backgroundColor: '#FFFFFF',
-  },
+    backgroundColor: '#FFFFFF' },
   digitText: {
     fontSize: 22,
     fontFamily: 'Alexandria-Bold',
-    color: '#1E293B',
-  },
+    color: '#1E293B' },
   placeholderDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#CBD5E1',
-  },
+    backgroundColor: '#CBD5E1' },
   activeIndicator: {
     position: 'absolute',
     bottom: 8,
     width: 12,
     height: 2,
     backgroundColor: '#0061FE',
-    borderRadius: 1,
-  },
+    borderRadius: 1 },
   separator: {
     width: 12,
     height: 2,
     backgroundColor: '#E2E8F0',
     marginHorizontal: 4,
-    borderRadius: 1,
-  },
+    borderRadius: 1 },
   hiddenInput: {
     position: 'absolute',
     width: 1,
     height: 1,
-    opacity: 0,
-  },
-});
+    opacity: 0 } });
 

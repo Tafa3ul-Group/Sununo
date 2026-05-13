@@ -8,8 +8,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
-} from "react-native";
+  View } from "react-native";
 import { useTranslation } from "react-i18next";
 import Animated, {
   interpolate,
@@ -17,9 +16,9 @@ import Animated, {
   useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
-} from "react-native-reanimated";
+  withSpring } from "react-native-reanimated";
 import Svg, { G, Path } from "react-native-svg";
+import { isRTL } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const scale = SCREEN_WIDTH / 375;
@@ -27,8 +26,7 @@ const scale = SCREEN_WIDTH / 375;
 const normalize = {
   width: (size: number) => size * scale,
   height: (size: number) => size * scale,
-  font: (size: number) => size * scale,
-};
+  font: (size: number) => size * scale };
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 const AnimatedG = Animated.createAnimatedComponent(G);
@@ -44,11 +42,9 @@ interface AuthToggleProps {
 
 export const AuthToggle: React.FC<AuthToggleProps> = ({
   activeType,
-  onChange,
-}) => {
+  onChange }) => {
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === "ar";
-
+  
   // 0: owner, 1: customer
   const transition = useSharedValue(activeType === "owner" ? 0 : 1);
 
@@ -56,8 +52,7 @@ export const AuthToggle: React.FC<AuthToggleProps> = ({
     transition.value = withSpring(activeType === "owner" ? 0 : 1, {
       damping: 20,
       stiffness: 150,
-      mass: 0.8, 
-    });
+      mass: 0.8 });
   }, [activeType]);
 
   const xOffsets = isRTL ? [65, -65] : [-65, 65];
@@ -92,8 +87,7 @@ export const AuthToggle: React.FC<AuthToggleProps> = ({
         { scaleY: stretchY * 0.85 }, // تصغير الارتفاع بنسبة 15%
         { translateX: -140 },
         { translateY: -40 },
-      ],
-    };
+      ] };
   });
 
   const tab0Style = useAnimatedStyle(() => ({
@@ -101,16 +95,14 @@ export const AuthToggle: React.FC<AuthToggleProps> = ({
     transform: [
       { scale: interpolate(transition.value, [0, 1], [1.1, 1]) },
       { translateX: currentTextOffsets[0] },
-    ],
-  }));
+    ] }));
 
   const tab1Style = useAnimatedStyle(() => ({
     color: interpolateColor(transition.value, [0.6, 1], ["#64748B", "#FFFFFF"]),
     transform: [
       { scale: interpolate(transition.value, [0, 1], [1, 1.1]) },
       { translateX: currentTextOffsets[1] },
-    ],
-  }));
+    ] }));
 
   return (
     <View style={styles.container}>
@@ -131,7 +123,7 @@ export const AuthToggle: React.FC<AuthToggleProps> = ({
         </Svg>
       </View>
 
-      <View style={[styles.buttonsContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+      <View style={[styles.buttonsContainer, { flexDirection: 'row' }]}>
         <TouchableOpacity onPress={() => onChange("owner")} style={styles.tabButton} activeOpacity={1}>
           <AnimatedText style={[styles.tabText, tab0Style]}>{t('auth.owner')}</AnimatedText>
         </TouchableOpacity>
@@ -146,22 +138,17 @@ export const AuthToggle: React.FC<AuthToggleProps> = ({
 const styles = StyleSheet.create({
   container: {
     width: TOGGLE_WIDTH,
-    height: TOGGLE_HEIGHT,
-  },
+    height: TOGGLE_HEIGHT },
   buttonsContainer: {
     ...StyleSheet.absoluteFillObject,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 0,
-  },
+    paddingHorizontal: 0 },
   tabButton: {
     flex: 1,
     height: "100%",
     alignItems: "center",
-    justifyContent: "center",
-  },
+    justifyContent: "center" },
   tabText: {
     fontFamily: "Alexandria-Black",
-    fontSize: normalize.font(14),
-  },
-});
+    fontSize: normalize.font(14) } });

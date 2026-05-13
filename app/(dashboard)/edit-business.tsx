@@ -26,12 +26,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
+import { isRTL } from "@/i18n";
 
 export default function ProviderProfileScreen() {
   const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
-  const isRTL = i18n.language === 'ar';
-  const router = useRouter();
+    const router = useRouter();
 
   const { data: profile, isLoading, isError, refetch } = useGetProviderProfileQuery(undefined);
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProviderProfileMutation();
@@ -39,8 +39,7 @@ export default function ProviderProfileScreen() {
   const [formData, setFormData] = useState({
     bankName: '',
     bankAccountNo: '',
-    iban: '',
-  });
+    iban: '' });
 
   const profileData = profile?.data || profile;
 
@@ -49,8 +48,7 @@ export default function ProviderProfileScreen() {
       setFormData({
         bankName: profileData.bankName || '',
         bankAccountNo: profileData.bankAccountNo || '',
-        iban: profileData.iban || '',
-      });
+        iban: profileData.iban || '' });
     }
   }, [profileData, isRTL]);
 
@@ -81,7 +79,7 @@ export default function ProviderProfileScreen() {
   const renderField = (label: string, value: string, key: string, IconComponent: React.ElementType, placeholder: string, multiline = false) => (
     <View style={styles.fieldContainer}>
       <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{label}</ThemedText>
-      <View style={[styles.inputWrapper, multiline && styles.multilineWrapper, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+      <View style={[styles.inputWrapper, multiline && styles.multilineWrapper, { flexDirection: 'row-reverse' }]}>
         <TextInput
           style={[styles.input, multiline && styles.multilineInput, { textAlign: isRTL ? 'right' : 'left' }]}
           value={value}
@@ -96,7 +94,7 @@ export default function ProviderProfileScreen() {
   );
 
   return (
-    <View style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
+    <View style={[styles.container]}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1 }}
@@ -157,36 +155,29 @@ export default function ProviderProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.white,
-  },
+    backgroundColor: Colors.white },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.white,
-  },
+    backgroundColor: Colors.white },
   scrollContent: {
     padding: 16,
-    paddingBottom: 40,
-  },
+    paddingBottom: 40 },
   section: {
-    marginBottom: 32,
-  },
+    marginBottom: 32 },
   sectionTitle: {
     fontSize: normalize.font(18),
     fontFamily: "Alexandria-Bold",
     color: Colors.text.primary,
-    marginBottom: 16,
-  },
+    marginBottom: 16 },
   fieldContainer: {
-    marginBottom: 20,
-  },
+    marginBottom: 20 },
   label: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-SemiBold",
     color: Colors.text.secondary,
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -195,13 +186,11 @@ const styles = StyleSheet.create({
     borderColor: '#F0F0F0',
     borderRadius: 12,
     paddingHorizontal: 12,
-    height: 52,
-  },
+    height: 52 },
   multilineWrapper: {
     height: 100,
     alignItems: 'flex-start',
-    paddingVertical: 12,
-  },
+    paddingVertical: 12 },
   input: {
     flex: 1,
     fontSize: normalize.font(16),
@@ -209,22 +198,17 @@ const styles = StyleSheet.create({
     height: '100%',
    fontFamily: "Alexandria-Regular" },
   multilineInput: {
-    textAlignVertical: 'top',
-  },
+    textAlignVertical: 'top' },
   saveButton: {
     backgroundColor: Colors.primary,
     height: 56,
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 8,
-  },
+    marginTop: 8 },
   disabledButton: {
-    opacity: 0.7,
-  },
+    opacity: 0.7 },
   saveButtonText: {
     color: Colors.white,
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Bold",
-  },
-});
+    fontFamily: "Alexandria-Bold" } });

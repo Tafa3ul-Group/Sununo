@@ -144,7 +144,7 @@ export const tr = (obj: any): string => {
     );
   }
 
-  // English / default
+// English / default
   return (
     obj.nameEn ||
     obj.name_en ||
@@ -154,5 +154,7 @@ export const tr = (obj: any): string => {
     ""
   );
 };
+
+export const isRTL = I18nManager.isRTL;
 
 export default i18n;

@@ -3,6 +3,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { ThemedText } from "../themed-text";
+import { isRTL } from "@/i18n";
 
 interface Category {
   id: string;
@@ -20,11 +21,9 @@ interface CategoryTabsProps {
 export function CategoryTabs({
   categories,
   activeId,
-  onSelect,
-}: CategoryTabsProps) {
+  onSelect }: CategoryTabsProps) {
   const { i18n } = useTranslation();
-  const isRTL = i18n.language === "ar";
-
+  
   return (
     <View style={styles.container}>
       <ScrollView
@@ -32,13 +31,13 @@ export function CategoryTabs({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={[
           styles.scrollContent,
-          { flexDirection: isRTL ? "row-reverse" : "row" },
+          { flexDirection: 'row' },
         ]}
       >
         <View
           style={[
             styles.tabsWrapper,
-            { flexDirection: isRTL ? "row-reverse" : "row" },
+            { flexDirection: 'row' },
           ]}
         >
           {categories.map((cat) => {
@@ -56,7 +55,7 @@ export function CategoryTabs({
                 <View
                   style={[
                     styles.tabContent,
-                    { flexDirection: isRTL ? "row-reverse" : "row" },
+                    { flexDirection: 'row' },
                   ]}
                 >
                   {cat.icon(isActive)}
@@ -81,11 +80,9 @@ export function CategoryTabs({
 const styles = StyleSheet.create({
   container: {
     marginVertical: 10,
-    paddingHorizontal: 16,
-  },
+    paddingHorizontal: 16 },
   scrollContent: {
-    paddingRight: 20,
-  },
+    paddingRight: 20 },
   tabsWrapper: {
     backgroundColor: "#FFFFFF",
     borderRadius: 30,
@@ -94,26 +91,20 @@ const styles = StyleSheet.create({
     borderColor: "#F1F5F9",
     flexDirection: "row",
     alignItems: "center",
-    ...Shadows.small,
-  },
+    ...Shadows.small },
   tabItem: {
     paddingHorizontal: 16,
     minHeight: 44,
     borderRadius: 22,
     justifyContent: "center",
     alignItems: "center",
-    marginHorizontal: 2,
-  },
+    marginHorizontal: 2 },
   tabContent: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-  },
+    gap: 8 },
   tabLabel: {
     fontSize: 14,
-    fontFamily: "Alexandria-Bold",
-  },
+    fontFamily: "Alexandria-Bold" },
   activeLabel: {
-    color: "#FFFFFF",
-  },
-});
+    color: "#FFFFFF" } });

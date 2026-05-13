@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { StyleSheet, View, ScrollView, ActivityIndicator } from 'react-native';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
-import { normalize, Colors, isRTL } from '@/constants/theme';
+import { normalize, Colors } from "@/constants/theme";
 import { HorizontalCard } from '@/components/user/horizontal-card';
 import { SolarMapPointBold } from '@/components/icons/solar-icons';
 import { Image as ExpoImage } from 'expo-image';
@@ -12,19 +12,18 @@ import { HeaderSection } from '@/components/header-section';
 import { useGetCustomerBookingDetailsQuery } from '@/store/api/customerApiSlice';
 import { getImageSrc } from '@/hooks/useImageSrc';
 import { useFormatTime } from '@/hooks/useFormatTime';
+import { isRTL } from "@/i18n";
 
 export default function BookingSuccessDetailsScreen() {
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
-  const router = useRouter();
+    const router = useRouter();
   const { id } = useLocalSearchParams();
   const bookingId = id as string;
   const { formatShiftTime } = useFormatTime();
 
   // Fetch booking details from the backend
   const { data: booking, isLoading } = useGetCustomerBookingDetailsQuery(bookingId, {
-    skip: !bookingId,
-  });
+    skip: !bookingId });
 
   // Extract data from API response with fallbacks
   const chalet = booking?.chalet || {} as any;
@@ -48,7 +47,7 @@ export default function BookingSuccessDetailsScreen() {
   }, [booking, isRTL, t]);
 
   const renderInfoRow = (label: string, value: string | React.ReactNode) => (
-    <View style={[styles.infoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+    <View style={[styles.infoRow, { flexDirection: 'row' }]}>
         <ThemedText style={styles.infoLabel}>{label}</ThemedText>
         {typeof value === 'string' ? (
           <ThemedText style={styles.infoValue}>{value}</ThemedText>
@@ -82,8 +81,7 @@ export default function BookingSuccessDetailsScreen() {
               location: chaletLocation,
               rating: chalet.averageRating || 0,
               price: chalet.basePrice ? Number(chalet.basePrice).toLocaleString() : '0',
-              image: chaletImage,
-            }} 
+              image: chaletImage }} 
             style={styles.chaletCardInstance}
             hideFavorite={true}
             onPress={() => {}}
@@ -113,7 +111,7 @@ export default function BookingSuccessDetailsScreen() {
             <ThemedText style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('booking.bookingInfo')}</ThemedText>
             <View style={styles.divider} />
             
-            <View style={[styles.infoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.infoRow, { flexDirection: 'row' }]}>
                 <ThemedText style={styles.infoLabel}>{t('booking.bookingStatus')}</ThemedText>
                 <View style={styles.statusBadgeBlue}>
                     <ThemedText style={styles.statusBadgeTextBlue}>{t('booking.status.accepted')}</ThemedText>
@@ -131,7 +129,7 @@ export default function BookingSuccessDetailsScreen() {
             <ThemedText style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('booking.paymentDetails')}</ThemedText>
             <View style={styles.divider} />
             
-            <View style={[styles.infoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.infoRow, { flexDirection: 'row' }]}>
                 <ThemedText style={styles.infoLabel}>{t('booking.paymentStatus')}</ThemedText>
                 <View style={styles.statusBadgeGray}>
                     <ThemedText style={styles.statusBadgeTextGray}>
@@ -182,6 +180,5 @@ const styles = StyleSheet.create({
   statusBadgeBlue: { backgroundColor: '#035DF9', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
   statusBadgeTextBlue: { color: '#FFF', fontSize: normalize.font(12), fontFamily: "Alexandria-Black" },
   statusBadgeGray: { backgroundColor: '#94A3B8', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
-  statusBadgeTextGray: { color: '#FFF', fontSize: normalize.font(12), fontFamily: "Alexandria-Black" },
-});
+  statusBadgeTextGray: { color: '#FFF', fontSize: normalize.font(12), fontFamily: "Alexandria-Black" } });
 

@@ -10,6 +10,7 @@ import { useRouter } from 'expo-router';
 import { useGetNotificationsQuery } from '@/store/api/apiSlice';
 import { useState } from 'react';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import { isRTL } from "@/i18n";
 
 interface Notification {
   id: string;
@@ -25,14 +26,12 @@ interface Notification {
 export default function NotificationsScreen() {
     const { t } = useTranslation();
     const { language } = useSelector((state: RootState) => state.auth);
-    const isRTL = language === 'ar';
-    const router = useRouter();
+        const router = useRouter();
     const [page, setPage] = useState(1);
 
     const { data: response, isLoading, isFetching, refetch } = useGetNotificationsQuery({
         page,
-        limit: 15,
-    });
+        limit: 15 });
 
     const notifications = response?.data || [];
 
@@ -47,15 +46,15 @@ export default function NotificationsScreen() {
         const timeStr = date.toLocaleTimeString(isRTL ? 'ar-IQ' : 'en-US', { hour: '2-digit', minute: '2-digit' });
 
         return (
-            <View key={item.id} style={[styles.notificationCard, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <View key={item.id} style={[styles.notificationCard, { flexDirection: 'row' }]}>
                 {/* Content section */}
-                <View style={[styles.cardContent, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                <View style={[styles.cardContent, { alignItems: 'flex-start' }]}>
                     <ThemedText style={[styles.titleText, { textAlign: isRTL ? 'right' : 'left' }]}>{item.title}</ThemedText>
                     <ThemedText style={[styles.messageText, { textAlign: isRTL ? 'right' : 'left' }]}>{item.text}</ThemedText>
                 </View>
 
                 {/* Header section with orange dot and time */}
-                <View style={[styles.cardLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <View style={[styles.cardLeft, { flexDirection: 'row' }]}>
                     <ThemedText style={styles.timeText}>{timeStr}</ThemedText>
                     {!item.readAt && <View style={styles.orangeDot} />}
                 </View>
@@ -64,10 +63,10 @@ export default function NotificationsScreen() {
     };
 
     return (
-        <SafeAreaView style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
+        <SafeAreaView style={[styles.container]}>
             {/* Header */}
             <View style={styles.header}>
-                <View style={[styles.headerInner, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <View style={[styles.headerInner, { flexDirection: 'row' }]}>
                     <ThemedText style={styles.headerTitle}>{t('headers.notifications')}</ThemedText>
                     <CircleBackButton
                         style={[styles.backButton, isRTL ? { right: 0 } : { left: 0 }]}
@@ -114,25 +113,21 @@ export default function NotificationsScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'white',
-    },
+        backgroundColor: 'white' },
     header: {
         paddingHorizontal: 20,
         paddingVertical: 10,
-        backgroundColor: 'white',
-    },
+        backgroundColor: 'white' },
     headerInner: {
         flexDirection: 'row-reverse',
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',
-        height: 48,
-    },
+        height: 48 },
     headerTitle: {
         fontSize: 20,
         fontFamily: "Alexandria-Black",
-        color: '#111827',
-    },
+        color: '#111827' },
     backButton: {
         position: 'absolute',
         width: 44,
@@ -143,13 +138,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         ...Shadows.small,
         borderWidth: 1,
-        borderColor: '#F3F4F6',
-    },
+        borderColor: '#F3F4F6' },
     scrollContent: {
         paddingHorizontal: 20,
         paddingBottom: 40,
-        paddingTop: 10,
-    },
+        paddingTop: 10 },
     centerContainer: {
         flex: 1, 
         justifyContent: 'center', 
@@ -168,13 +161,11 @@ const styles = StyleSheet.create({
         marginBottom: 12,
         borderWidth: 1,
         borderColor: '#F3F4F6',
-        alignItems: 'center',
-    },
+        alignItems: 'center' },
     cardLeft: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
-    },
+        gap: 8 },
     orangeDot: {
         width: 12,
         height: 12,
@@ -184,17 +175,14 @@ const styles = StyleSheet.create({
     timeText: {
         fontSize: 12,
         color: '#9CA3AF',
-        fontFamily: "Alexandria-SemiBold",
-    },
+        fontFamily: "Alexandria-SemiBold" },
     cardContent: {
-        flex: 1,
-    },
+        flex: 1 },
     titleText: {
         fontSize: 16,
         fontFamily: "Alexandria-Black",
         color: '#111827',
-        marginBottom: 2,
-    },
+        marginBottom: 2 },
     messageText: {
         fontSize: 13,
         color: '#6B7280',

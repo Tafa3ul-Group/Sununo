@@ -21,6 +21,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from 'react-redux';
+import { isRTL } from "@/i18n";
 
 /**
  * DashboardTabBar - Standardized with CustomTabBar design
@@ -30,8 +31,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
   const dispatch = useDispatch();
   const { userType, language, selectedChalet } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
-  const isRTL = language === 'ar';
-  const insets = useSafeAreaInsets();
+    const insets = useSafeAreaInsets();
 
   const [showPopover, setShowPopover] = useState(false);
 
@@ -78,8 +78,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
       transform: [
         { scale: scale.value },
         { translateY: translateY.value }
-      ],
-    };
+      ] };
   });
 
   const togglePopover = () => {
@@ -125,8 +124,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
       return options.tabBarIcon({
         focused: isActive,
         color: isActive ? Colors.primary : 'white',
-        size: normalize.width(24),
-      });
+        size: normalize.width(24) });
     }
     return null;
   };
@@ -140,7 +138,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
         {
           bottom: Math.max(insets.bottom, 24),
           paddingHorizontal: normalize.width(23),
-          flexDirection: isRTL ? 'row-reverse' : 'row'
+          flexDirection: 'row'
         }
       ]}>
         <TouchableOpacity
@@ -171,7 +169,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
 
         <View style={[
           styles.tabCapsule,
-          { flexDirection: isRTL ? 'row-reverse' : 'row' }
+          { flexDirection: 'row' }
         ]}>
           {pillTabs.map((route: any) => {
             const isActive = currentRouteName === route.name;
@@ -213,7 +211,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
             >
               <View style={styles.popoverContent}>
                 <TouchableOpacity 
-                  style={[styles.popoverHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+                  style={[styles.popoverHeader, { flexDirection: 'row' }]}
                   onPress={() => { closePopover(); router.push('/(tabs)/(dashboard)/my-chalets'); }}
                 >
                   <SolarHome2Bold size={20} color={Colors.primary} />
@@ -228,7 +226,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
                       key={item.id}
                       style={[
                         styles.chaletItem,
-                        { flexDirection: isRTL ? 'row-reverse' : 'row' },
+                        { flexDirection: 'row' },
                         selectedChalet?.id === item.id && { backgroundColor: '#F0F7FF' }
                       ]}
                       onPress={() => {
@@ -241,7 +239,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
                       }}
                     >
                       <Image source={getImageSrc(item.images?.[0]?.url)} style={styles.chaletThumb} />
-                      <View style={[styles.chaletItemInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                      <View style={[styles.chaletItemInfo, { alignItems: 'flex-start' }]}>
                         <Text style={styles.chaletItemName} numberOfLines={1}>
                           {isRTL ? (item.name?.ar || item.name) : (item.name?.en || item.name)}
                         </Text>
@@ -303,18 +301,16 @@ const styles = StyleSheet.create({
     height: normalize.height(40), 
     borderRadius: normalize.height(20),
     justifyContent: 'center', 
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   activeTabIndicator: { backgroundColor: 'white' },
   popoverOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.1)' },
   popoverContainer: { position: 'absolute', width: normalize.width(240), zIndex: 2000 },
   popoverContent: {
     backgroundColor: 'white', borderRadius: 24, shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.15,
-    shadowRadius: 16, elevation: 10, overflow: 'hidden', paddingBottom: 8,
-  },
+    shadowRadius: 16, elevation: 10, overflow: 'hidden', paddingBottom: 8 },
   popoverHeader: { padding: 16, borderBottomWidth: 1, borderBottomColor: '#F0F0F0', alignItems: 'center', gap: 8 },
-  popoverTitle: { fontSize: 14, fontWeight: '800', color: Colors.text.primary, flex: 1 },
+  popoverTitle: { fontSize: 14, fontFamily: 'Alexandria-Black', color: Colors.text.primary, flex: 1 },
   popoverList: { maxHeight: 260 },
   chaletItem: {
     paddingVertical: 12,
@@ -323,21 +319,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F8F9FA',
-  },
+    borderBottomColor: '#F8F9FA' },
   chaletThumb: { width: 40, height: 40, borderRadius: 10, backgroundColor: '#F5F5F7' },
   chaletItemInfo: { flex: 1 },
-  chaletItemName: { fontSize: 13, fontWeight: '700', color: '#333' },
+  chaletItemName: { fontSize: 13, fontFamily: 'Alexandria-Bold', color: '#333' },
   addNewChaletBtn: {
     padding: 12, marginHorizontal: 12, marginTop: 4, borderRadius: 12,
-    backgroundColor: '#F8F9FB', alignItems: 'center',
-  },
-  addNewChaletText: { fontSize: 12, fontWeight: '700', color: Colors.primary },
+    backgroundColor: '#F8F9FB', alignItems: 'center' },
+  addNewChaletText: { fontSize: 12, fontFamily: 'Alexandria-Bold', color: Colors.primary },
   chaletAvatarImg: {
     width: '100%',
     height: '100%',
-    borderRadius: 99,
-  },
+    borderRadius: 99 },
   editItemBtn: {
     width: 32,
     height: 32,
@@ -346,6 +339,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#F0F0F0',
-  },
-});
+    borderColor: '#F0F0F0' } });

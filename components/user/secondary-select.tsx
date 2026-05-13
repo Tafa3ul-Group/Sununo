@@ -1,16 +1,15 @@
 import { BottomSheetBackdrop, BottomSheetModal } from "@gorhom/bottom-sheet";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
   StyleSheet,
   TouchableOpacity,
   View,
-  ViewStyle,
-} from "react-native";
+  ViewStyle } from "react-native";
 import { ThemedText } from "@/components/themed-text";
 import { SecondaryButton } from "./secondary-button";
 import { SolarAltArrowDownLinear } from "@/components/icons/solar-icons";
-import { normalize } from "@/constants/theme";
+import { isRTL } from "@/i18n";
 
 export interface SelectOption {
   label: string;
@@ -30,11 +29,10 @@ export function SecondarySelect({
   value,
   onSelect,
   placeholder = "اختر...",
-  style,
-}: SecondarySelectProps) {
+  style }: SecondarySelectProps) {
   const { i18n } = useTranslation();
-  const isRTL = i18n.language === "ar";
   const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const isArabic = isRTL || i18n.language === "ar";
 
   const selectedOption = options.find((opt) => opt.value === value);
   const currentLabel = selectedOption ? selectedOption.label : placeholder;
@@ -75,7 +73,11 @@ export function SecondarySelect({
         backgroundStyle={styles.sheetBackground}
       >
         <View style={styles.sheetContent}>
-          <ThemedText style={styles.sheetTitle}>اختر</ThemedText>
+          <ThemedText
+            style={[styles.sheetTitle, { textAlign: isArabic ? "right" : "left" }]}
+          >
+            {isArabic ? "اختر" : "Select"}
+          </ThemedText>
           {options.map((opt) => {
             const isSelected = opt.value === value;
             return (
@@ -83,6 +85,7 @@ export function SecondarySelect({
                 key={opt.value}
                 style={[
                   styles.optionRow,
+                  { flexDirection: isArabic ? "row-reverse" : "row" },
                   isSelected && styles.optionRowSelected,
                 ]}
                 onPress={() => {
@@ -93,7 +96,12 @@ export function SecondarySelect({
                 <ThemedText
                   style={[
                     styles.optionText,
+                    { textAlign: isArabic ? "right" : "left" },
                     isSelected && styles.optionTextSelected,
+                    isSelected && {
+                      marginRight: isArabic ? 10 : 0,
+                      marginLeft: isArabic ? 0 : 10,
+                    },
                   ]}
                 >
                   {opt.label}
@@ -113,52 +121,38 @@ export function SecondarySelect({
 const styles = StyleSheet.create({
   indicator: {
     width: 40,
-    backgroundColor: "#E5E7EB",
-  },
+    backgroundColor: "#E5E7EB" },
   sheetBackground: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 24,
-  },
+    borderRadius: 24 },
   sheetContent: {
     padding: 20,
-    paddingBottom: 40,
-  },
+    paddingBottom: 40 },
   sheetTitle: {
     fontSize: 20,
     fontFamily: "Alexandria-Black",
-    textAlign: "right",
     marginBottom: 20,
-    color: "#111827",
-  },
+    color: "#111827" },
   optionRow: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
     alignItems: "center",
     paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
-  },
+    borderBottomColor: "#F3F4F6" },
   optionRowSelected: {
     backgroundColor: "#F9FAFB",
     borderRadius: 12,
     borderBottomWidth: 0,
-    paddingHorizontal: 15,
-  },
+    paddingHorizontal: 15 },
   optionText: {
     fontSize: 16,
     fontFamily: "Alexandria-Medium",
-    color: "#6B7280",
-    textAlign: "right",
-  },
+    color: "#6B7280" },
   optionTextSelected: {
     color: "#035DF9",
-    fontFamily: "Alexandria-Bold",
-    marginRight: 10,
-  },
+    fontFamily: "Alexandria-Bold" },
   dotSelection: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#035DF9",
-  },
-});
+    backgroundColor: "#035DF9" } });

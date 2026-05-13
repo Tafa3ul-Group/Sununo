@@ -4,8 +4,7 @@ import {
   SolarMagnifierBold,
   SolarMapPointBold,
   SolarStarBold,
-  SolarBellBingBoldDuotone,
-} from "@/components/icons/solar-icons";
+  SolarBellBingBoldDuotone } from "@/components/icons/solar-icons";
 import { Colors, normalize, Spacing } from "@/constants/theme";
 import { RootState } from "@/store";
 import { UserType } from "@/store/authSlice";
@@ -19,11 +18,11 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  View,
-} from "react-native";
+  View } from "react-native";
 import { useSelector } from "react-redux";
 import { ThemedText } from "./themed-text";
 import { CircleBackButton } from "./ui/circle-back-button";
+import { isRTL } from "@/i18n";
 
 interface HeaderSectionProps {
   userType?: UserType;
@@ -64,46 +63,39 @@ export function HeaderSection({
   showLogo = true,
   showExtra = false,
   marginBottom = 0,
-  isHome = false,
-}: HeaderSectionProps) {
+  isHome = false }: HeaderSectionProps) {
   const router = useRouter();
   const { t } = useTranslation();
   const { userType: stateUserType, language } = useSelector(
     (state: RootState) => state.auth,
   );
-  const isRTL = language === "ar";
-  const [selectedCategory, setSelectedCategory] = React.useState("all");
+    const [selectedCategory, setSelectedCategory] = React.useState("all");
 
   const CATEGORIES = [
     {
       id: "all",
       label: t("home.categories.all"),
-      icon: <SolarGalleryBold size={normalize.width(18)} />,
-    },
+      icon: <SolarGalleryBold size={normalize.width(18)} /> },
     {
       id: "popular",
       label: t("home.categories.popular"),
-      icon: <SolarDangerCircleBold size={normalize.width(18)} />,
-    },
+      icon: <SolarDangerCircleBold size={normalize.width(18)} /> },
     {
       id: "nearby",
       label: t("home.categories.nearby"),
-      icon: <SolarMapPointBold size={normalize.width(18)} />,
-    },
+      icon: <SolarMapPointBold size={normalize.width(18)} /> },
     {
       id: "luxury",
       label: t("home.categories.luxury"),
-      icon: <SolarStarBold size={normalize.width(18)} />,
-    },
+      icon: <SolarStarBold size={normalize.width(18)} /> },
   ];
 
   const textAlign = isRTL ? "right" : "left";
-  const rowDirection = isRTL ? "row-reverse" : "row";
   const startAlign = isRTL ? "flex-end" : "flex-start";
   const endAlign = isRTL ? "flex-start" : "flex-end";
 
   return (
-    <View style={[styles.container, { direction: isRTL ? "rtl" : "ltr" }]}>
+    <View style={[styles.container]}>
       <StatusBar style="dark" />
 
       {/* Absolute Standard Header Section */}
@@ -111,23 +103,19 @@ export function HeaderSection({
         style={[
           styles.topRow,
           {
-            marginBottom,
-            flexDirection: rowDirection,
-          },
+            marginBottom },
         ]}
       >
         {/* START SIDE - right in RTL, left in LTR */}
         <View
           style={[
             styles.headerSide,
-            { alignItems: startAlign },
           ]}
         >
           {isHome ? (
             <View
               style={[
                 styles.homeLeftGroup,
-                { flexDirection: rowDirection },
               ]}
             >
               {stateUserType !== "guest" && (
@@ -156,7 +144,6 @@ export function HeaderSection({
             <View
               style={[
                 styles.homeLeftGroup,
-                { flexDirection: rowDirection },
               ]}
             >
               {showBackButton && <CircleBackButton onPress={onBackPress} />}
@@ -188,7 +175,7 @@ export function HeaderSection({
         <View
           style={[
             styles.headerSide,
-            { alignItems: endAlign },
+            { alignItems: 'flex-end' },
           ]}
         >
           {showLogo && (
@@ -209,11 +196,10 @@ export function HeaderSection({
           {!isHome && (showProfile || showExtra) && (
             <View
               style={{
-                flexDirection: rowDirection,
+                flexDirection: 'row',
                 gap: 8,
                 position: "absolute",
-                [isRTL ? "left" : "right"]: 0,
-              }}
+                end: 0 }}
             >
               {showProfile && stateUserType !== "guest" && (
                 <TouchableOpacity
@@ -237,7 +223,7 @@ export function HeaderSection({
           <View
             style={[
               styles.searchBar,
-              { flexDirection: rowDirection },
+              { flexDirection: 'row' },
             ]}
           >
             <SolarMagnifierBold
@@ -260,7 +246,7 @@ export function HeaderSection({
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={[
             styles.categoriesContent,
-            { flexDirection: rowDirection },
+            { flexDirection: 'row' },
           ]}
           style={styles.categoriesScroll}
         >
@@ -270,7 +256,7 @@ export function HeaderSection({
               onPress={() => setSelectedCategory(cat.id)}
               style={[
                 styles.categoryItem,
-                { flexDirection: rowDirection },
+                { flexDirection: 'row' },
                 selectedCategory === cat.id && styles.categoryItemActive,
               ]}
             >
@@ -278,8 +264,7 @@ export function HeaderSection({
                 color:
                   selectedCategory === cat.id
                     ? Colors.background
-                    : Colors.text.primary,
-              })}
+                    : Colors.text.primary })}
               <ThemedText
                 style={[
                   styles.categoryLabel,
@@ -298,33 +283,28 @@ export function HeaderSection({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.background,
-  },
+    backgroundColor: Colors.background },
   topRow: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: normalize.width(20),
     minHeight: normalize.height(60),
     paddingVertical: normalize.height(10),
-    justifyContent: "space-between",
-  },
+    justifyContent: "space-between" },
   headerSide: {
     justifyContent: "center",
-    alignItems: "center",
-  },
+    alignItems: "center" },
   titleWrapper: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: normalize.width(10),
-  },
+    paddingHorizontal: normalize.width(10) },
   headerTitle: {
     fontSize: normalize.font(18),
     fontFamily: "Alexandria-SemiBold",
     color: Colors.text.primary,
     lineHeight: normalize.font(24),
-    textAlign: 'center',
-  },
+    textAlign: 'center' },
   logoCircle: {
     width: normalize.width(42),
     height: normalize.width(42),
@@ -333,12 +313,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 0,
-    overflow: "hidden",
-  },
+    overflow: "hidden" },
   logoImg: {
     width: "89%",
-    height: "89%",
-  },
+    height: "89%" },
   actionButton: {
     backgroundColor: Colors.white,
     padding: normalize.width(8),
@@ -347,10 +325,10 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB", // Slightly darker for matching screenshot
   },
   homeLeftGroup: {
+    flexDirection: "row",
     width: "auto",
     gap: 12,
-    alignItems: "center",
-  },
+    alignItems: "center" },
   avatarContainerHome: {
     width: normalize.width(48),
     height: normalize.width(48),
@@ -367,12 +345,10 @@ const styles = StyleSheet.create({
     height: "82%",
     borderRadius: 999,
     overflow: "hidden",
-    backgroundColor: "#FAFCFF",
-  },
+    backgroundColor: "#FAFCFF" },
   avatarImgHome: {
     width: "100%",
-    height: "100%",
-  },
+    height: "100%" },
   searchPillHome: {
     width: normalize.width(48),
     height: normalize.width(48),
@@ -381,65 +357,52 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
-  },
+    backgroundColor: "#FFFFFF" },
   logoCircleHome: {
     width: normalize.width(54),
     height: normalize.width(54),
     borderRadius: 999,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
-  },
+    backgroundColor: "#FFFFFF" },
   logoImgHome: {
     width: "65%",
-    height: "65%",
-  },
+    height: "65%" },
   searchContainer: {
     paddingHorizontal: Spacing.md,
-    marginBottom: Spacing.md,
-  },
+    marginBottom: Spacing.md },
   searchBar: {
     alignItems: "center",
     backgroundColor: Colors.surface,
     paddingHorizontal: Spacing.md,
-    height: normalize.height(52),
-  },
+    height: normalize.height(52) },
   searchInput: {
     flex: 1,
     marginHorizontal: Spacing.sm,
     fontSize: normalize.font(16),
     color: Colors.text.primary,
-    fontFamily: "Alexandria-Regular",
-  },
+    fontFamily: "Alexandria-Regular" },
   categoriesScroll: {
     paddingHorizontal: Spacing.md,
-    marginBottom: Spacing.md,
-  },
+    marginBottom: Spacing.md },
   categoriesContent: {
     gap: Spacing.sm,
-    paddingRight: Spacing.lg,
-  },
+    paddingEnd: Spacing.lg },
   categoryItem: {
     alignItems: "center",
     backgroundColor: Colors.surface,
     paddingHorizontal: Spacing.md,
     paddingVertical: normalize.height(10),
     borderRadius: normalize.radius(10),
-    gap: normalize.width(8),
-  },
+    gap: normalize.width(8) },
   categoryItemActive: {
-    backgroundColor: Colors.primary,
-  },
+    backgroundColor: Colors.primary },
   categoryLabel: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     lineHeight: normalize.font(20),
-    paddingVertical: normalize.height(1),
-  },
+    paddingVertical: normalize.height(1) },
   categoryLabelActive: {
     color: Colors.background,
-    fontFamily: "Alexandria-Regular",
-  },
-});
+    fontFamily: "Alexandria-Regular" } });

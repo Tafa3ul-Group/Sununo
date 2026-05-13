@@ -29,13 +29,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
+import { isRTL } from "@/i18n";
 
 export default function MyChaletsScreen() {
   const router = useRouter();
   const { userType, language } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
-  const isRTL = language === 'ar';
-  const rowDirection = isRTL ? 'row-reverse' : 'row';
   const textAlign = isRTL ? 'right' : 'left';
   const startAlign = isRTL ? 'flex-end' : 'flex-start';
   const endAlign = isRTL ? 'flex-start' : 'flex-end';
@@ -61,7 +60,7 @@ export default function MyChaletsScreen() {
           });
         }}
       >
-        <View style={[styles.chaletCardInner, { flexDirection: rowDirection }]}>
+        <View style={[styles.chaletCardInner, { flexDirection: 'row' }]}>
           {/* Image */}
           <View style={styles.chaletImageWrap}>
             <Image source={mainImageSrc} style={styles.chaletImage} />
@@ -72,8 +71,7 @@ export default function MyChaletsScreen() {
                 {
                   backgroundColor: item.isApproved ? '#10B981' : '#F59E0B',
                   left: isRTL ? undefined : 6,
-                  right: isRTL ? 6 : undefined,
-                },
+                  right: isRTL ? 6 : undefined },
               ]}
             />
           </View>
@@ -83,18 +81,18 @@ export default function MyChaletsScreen() {
             <Text style={[styles.chaletName, { textAlign }]} numberOfLines={1}>
               {chaletName}
             </Text>
-            <View style={[styles.locationRow, { flexDirection: rowDirection }]}>
+            <View style={[styles.locationRow, { flexDirection: 'row' }]}>
               <SolarMapPointBold size={12} color={Colors.primary} />
               <Text style={[styles.locationLabel, { textAlign }]} numberOfLines={1}>{chaletLocation}</Text>
             </View>
 
             {/* Stat chips row */}
-            <View style={[styles.chipRow, { flexDirection: rowDirection }]}>
-              <View style={[styles.statChip, { backgroundColor: '#ECFDF5', flexDirection: rowDirection }]}>
+            <View style={[styles.chipRow, { flexDirection: 'row' }]}>
+              <View style={[styles.statChip, { backgroundColor: '#ECFDF5', flexDirection: 'row' }]}>
                 <SolarBanknoteBold size={12} color="#10B981" />
                 <Text style={[styles.statChipText, { color: '#10B981' }]}>{formatPrice(item.price)}</Text>
               </View>
-              <View style={[styles.statChip, { backgroundColor: '#EFF6FF', flexDirection: rowDirection }]}>
+              <View style={[styles.statChip, { backgroundColor: '#EFF6FF', flexDirection: 'row' }]}>
                 <SolarStarBold size={12} color={Colors.primary} />
                 <Text style={[styles.statChipText, { color: Colors.primary }]}>{item.reviewCount || 0}</Text>
               </View>
@@ -129,7 +127,7 @@ export default function MyChaletsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { direction: isRTL ? 'rtl' : 'ltr' }]}>
+    <SafeAreaView style={[styles.safeArea]}>
       <HeaderSection
         userType={userType}
         title={t('tabs.myChalets')}
@@ -148,8 +146,8 @@ export default function MyChaletsScreen() {
           <RefreshControl refreshing={isFetching} onRefresh={refetch} tintColor={Colors.primary} />
         }
       >
-        <View style={[styles.chaletSectionHeader, { flexDirection: rowDirection }]}>
-            <View style={[styles.sectionTitleRow, { flexDirection: rowDirection }]}>
+        <View style={[styles.chaletSectionHeader, { flexDirection: 'row' }]}>
+            <View style={[styles.sectionTitleRow, { flexDirection: 'row' }]}>
               <Text style={[styles.sectionTitle, { textAlign }]}>{isRTL ? 'قائمة الشاليهات' : 'Chalets List'}</Text>
               <View style={styles.countBadge}>
                 <Text style={styles.countBadgeText}>{chalets.length}</Text>
@@ -188,53 +186,44 @@ export default function MyChaletsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.white,
-  },
+    backgroundColor: Colors.white },
   container: {
     flex: 1,
-    backgroundColor: Colors.white,
-  },
+    backgroundColor: Colors.white },
   scrollContent: {
     paddingHorizontal: 16,
     paddingTop: 10,
-    paddingBottom: 100,
-  },
+    paddingBottom: 100 },
   chaletSectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
-  },
+    marginBottom: 16 },
   sectionTitleRow: {
     alignItems: 'center',
-    gap: 8,
-  },
+    gap: 8 },
   sectionTitle: {
     fontSize: normalize.font(18),
     fontFamily: "Alexandria-Black",
-    color: Colors.text.primary,
-  },
+    color: Colors.text.primary },
   countBadge: {
     backgroundColor: Colors.primary,
     width: 22,
     height: 22,
     borderRadius: 11,
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   countBadgeText: {
     color: Colors.white,
     fontSize: normalize.font(11),
-    fontFamily: "Alexandria-Black",
-  },
+    fontFamily: "Alexandria-Black" },
   addChaletBtn: {
     width: 36,
     height: 36,
     borderRadius: 12,
     backgroundColor: Colors.primary,
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   chaletsList: {
     // Removed gap for compatibility
   },
@@ -249,17 +238,14 @@ const styles = StyleSheet.create({
   chaletCardInner: {
     padding: 12,
     alignItems: 'center',
-    gap: 14,
-  },
+    gap: 14 },
   chaletImageWrap: {
-    position: 'relative',
-  },
+    position: 'relative' },
   chaletImage: {
     width: normalize.width(80),
     height: normalize.width(80),
     borderRadius: 14,
-    backgroundColor: '#F5F5F7',
-  },
+    backgroundColor: '#F5F5F7' },
   statusIndicator: {
     position: 'absolute',
     top: 6,
@@ -267,61 +253,50 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
     borderWidth: 2,
-    borderColor: Colors.white,
-  },
+    borderColor: Colors.white },
   chaletInfo: {
     flex: 1,
     justifyContent: 'center',
-    gap: 6,
-  },
+    gap: 6 },
   chaletName: {
     fontSize: normalize.font(15),
     fontFamily: "Alexandria-Bold",
-    color: Colors.text.primary,
-  },
+    color: Colors.text.primary },
   locationRow: {
     alignItems: 'center',
-    gap: 3,
-  },
+    gap: 3 },
   locationLabel: {
     fontSize: normalize.font(11),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-Medium",
-  },
+    fontFamily: "Alexandria-Medium" },
   chipRow: {
     gap: 6,
-    marginTop: 2,
-  },
+    marginTop: 2 },
   statChip: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
-    gap: 4,
-  },
+    gap: 4 },
   statChipText: {
     fontSize: normalize.font(11),
-    fontFamily: "Alexandria-Bold",
-  },
+    fontFamily: "Alexandria-Bold" },
   editBtn: {
     width: 32,
     height: 32,
     borderRadius: 10,
     backgroundColor: '#F8F9FB',
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   actionsColumn: {
     justifyContent: 'center',
-    gap: 8,
-  },
+    gap: 8 },
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 60,
-    gap: 8,
-  },
+    gap: 8 },
   emptyIconWrap: {
     width: 80,
     height: 80,
@@ -329,18 +304,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F9FB',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   emptyTitle: {
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-Bold",
-    color: Colors.text.primary,
-  },
+    color: Colors.text.primary },
   emptySubtitle: {
     fontSize: normalize.font(12),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium",
     textAlign: 'center',
-    paddingHorizontal: 40,
-  },
-});
+    paddingHorizontal: 40 } });

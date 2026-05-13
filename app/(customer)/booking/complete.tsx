@@ -6,8 +6,7 @@ import {
     SolarMapPointBold,
     SolarMoonBold,
     SolarSunBold,
-    SolarWalletBold,
-} from "@/components/icons/solar-icons";
+    SolarWalletBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { GuestCounter } from "@/components/user/guest-counter";
 import { HorizontalCard } from "@/components/user/horizontal-card";
@@ -20,13 +19,11 @@ import {
     useGetChaletAvailabilityQuery,
     useGetCustomerChaletDetailsQuery,
     useGetPlatformConfigQuery,
-    useLazyGetPaymentStatusQuery,
-} from "@/store/api/customerApiSlice";
+    useLazyGetPaymentStatusQuery } from "@/store/api/customerApiSlice";
 import {
     BottomSheetBackdrop,
     BottomSheetModal,
-    BottomSheetView,
-} from "@gorhom/bottom-sheet";
+    BottomSheetView } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
 import { Image as ExpoImage } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -43,12 +40,12 @@ import {
     StyleSheet,
     TextInput,
     TouchableOpacity,
-    View,
-} from "react-native";
+    View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
 import { useSelector } from "react-redux";
 import { useFormatTime } from "../../../hooks/useFormatTime";
+import { isRTL } from "@/i18n";
 
 // dismissAuthSession is iOS-only — Android closes the browser automatically
 const dismissBrowser = () => {
@@ -81,8 +78,7 @@ const ScribbleIcon = () => (
 
 export default function CompleteBookingScreen() {
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === "ar";
-  const router = useRouter();
+    const router = useRouter();
   const { id: chaletIdParam } = useLocalSearchParams();
   const chaletId = chaletIdParam as string;
   const { userType, user } = useSelector((state: RootState) => state.auth);
@@ -121,8 +117,7 @@ export default function CompleteBookingScreen() {
   const [createBooking, { isLoading: isCreatingBooking }] =
     useCreateCustomerBookingMutation();
   const { data: response } = useGetCustomerChaletDetailsQuery(chaletId, {
-    skip: !chaletId,
-  });
+    skip: !chaletId });
   const chaletDetails = response?.data || response;
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -138,8 +133,7 @@ export default function CompleteBookingScreen() {
     {
       id: chaletId,
       month: currentMonth.getMonth() + 1,
-      year: currentMonth.getFullYear(),
-    },
+      year: currentMonth.getFullYear() },
     { skip: !chaletId },
   );
 
@@ -237,8 +231,7 @@ export default function CompleteBookingScreen() {
   const monthLabel = currentMonth
     .toLocaleString(i18n.language, {
       month: "long",
-      year: "numeric",
-    })
+      year: "numeric" })
     .toUpperCase();
   const dayHeadersRaw = t("booking.days", { returnObjects: true });
   const dayHeaders = Array.isArray(dayHeadersRaw) ? dayHeadersRaw : [];
@@ -346,8 +339,7 @@ export default function CompleteBookingScreen() {
         if (chaletId) {
           const bookings = selectedDates.map((day) => ({
             bookingDate: `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
-            shiftId: selectedShifts[day],
-          }));
+            shiftId: selectedShifts[day] }));
 
           const result = await createBooking({
             chaletId,
@@ -357,8 +349,7 @@ export default function CompleteBookingScreen() {
             childrenCount: childrenCount,
             paymentModel: paymentType.toLowerCase() as any,
             paymentMethod: selectedMethod,
-            notes,
-          }).unwrap();
+            notes }).unwrap();
 
           if (result.payment?.paymentUrl) {
             setCreatedBookingId(result.booking.id);
@@ -435,8 +426,7 @@ export default function CompleteBookingScreen() {
     if (isShiftBookedForDay(day, shiftId)) return;
     setSelectedShifts((prev) => ({
       ...prev,
-      [day]: prev[day] === shiftId ? "" : shiftId,
-    }));
+      [day]: prev[day] === shiftId ? "" : shiftId }));
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
@@ -503,8 +493,7 @@ export default function CompleteBookingScreen() {
             : "0",
           image:
             chaletDetails?.images?.[0]?.url ||
-            "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500&auto=format&fit=crop",
-        }}
+            "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500&auto=format&fit=crop" }}
         style={styles.chaletCardInstance}
         shapeIndex={2}
         hideFavorite={true}
@@ -515,8 +504,7 @@ export default function CompleteBookingScreen() {
         <View style={styles.mapSnippetWrapper}>
           <ExpoImage
             source={{
-              uri: `https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/47.98,30.50,13,0/600x300?access_token=${process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN}`,
-            }}
+              uri: `https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/47.98,30.50,13,0/600x300?access_token=${process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN}` }}
             style={styles.mapSnippet}
           />
           <View style={styles.mapMarker}>
@@ -699,8 +687,7 @@ export default function CompleteBookingScreen() {
               height: 100,
               textAlignVertical: "top",
               paddingTop: 12,
-              textAlign: isRTL ? "right" : "left",
-            },
+              textAlign: isRTL ? "right" : "left" },
           ]}
           placeholder={
             isRTL
@@ -925,8 +912,7 @@ export default function CompleteBookingScreen() {
                 width: "100%",
                 shadowOpacity: 0,
                 elevation: 0,
-                height: 56,
-              }}
+                height: 56 }}
             />
           </View>
         </View>
@@ -970,8 +956,7 @@ export default function CompleteBookingScreen() {
             successSheetRef.current?.dismiss();
             router.push({
               pathname: "/(tabs)/(customer)/booking-success",
-              params: { id: createdBookingId },
-            });
+              params: { id: createdBookingId } });
           }}
           activeColor="#15AB64"
           style={styles.successBtn}
@@ -1150,10 +1135,9 @@ export default function CompleteBookingScreen() {
                         style={[
                           styles.shiftCardFlat,
                           {
-                            flexDirection: isRTL ? "row-reverse" : "row",
+                            flexDirection: 'row',
                             opacity: 0.6,
-                            backgroundColor: "#fff",
-                          },
+                            backgroundColor: "#fff" },
                         ]}
                       >
                         <View style={styles.shiftIconCircleFlat}>
@@ -1177,7 +1161,7 @@ export default function CompleteBookingScreen() {
                             {formatShiftTime(shift.endTime)}
                           </ThemedText>
                         </View>
-                        <View style={{ alignItems: isRTL ? 'flex-start' : 'flex-end' }}>
+                        <View style={{ alignItems: 'flex-end' }}>
                           <ThemedText style={styles.shiftPriceFlat}>
                             {(() => {
                               const minPrice = shift.pricing && shift.pricing.length > 0
@@ -1198,8 +1182,7 @@ export default function CompleteBookingScreen() {
                     width: "100%",
                     marginTop: 20,
                     shadowOpacity: 0,
-                    elevation: 0,
-                  }}
+                    elevation: 0 }}
                 />
               </View>
             )}
@@ -1227,8 +1210,7 @@ export default function CompleteBookingScreen() {
                           {
                             text: isRTL ? "حذف" : "Delete",
                             onPress: () => toggleDayDate(day),
-                            style: "destructive",
-                          },
+                            style: "destructive" },
                         ],
                       );
                     }}
@@ -1236,8 +1218,7 @@ export default function CompleteBookingScreen() {
                     <ThemedText
                       style={{
                         color: "#EF4444",
-                        fontFamily: "Alexandria-Bold",
-                      }}
+                        fontFamily: "Alexandria-Bold" }}
                     >
                       {t("common.delete")}
                     </ThemedText>
@@ -1269,18 +1250,15 @@ export default function CompleteBookingScreen() {
                         style={[
                           styles.shiftCardFlat,
                           {
-                            flexDirection: isRTL ? "row-reverse" : "row",
-                            backgroundColor: "#fff",
-                          },
+                            flexDirection: 'row',
+                            backgroundColor: "#fff" },
                           isSelected && {
                             borderColor: "#035DF9",
                             borderWidth: 1.5,
-                            backgroundColor: "#EBF3FF",
-                          },
+                            backgroundColor: "#EBF3FF" },
                           isBooked && {
                             opacity: 0.5,
-                            backgroundColor: "#F1F5F9",
-                          },
+                            backgroundColor: "#F1F5F9" },
                         ]}
                         onPress={() => toggleShiftForDay(day, shift.id)}
                       >
@@ -1322,7 +1300,7 @@ export default function CompleteBookingScreen() {
                             {formatShiftTime(shift.endTime)}
                           </ThemedText>
                         </View>
-                        <View style={{ alignItems: isRTL ? 'flex-start' : 'flex-end' }}>
+                        <View style={{ alignItems: 'flex-end' }}>
                           <ThemedText style={[styles.shiftPriceFlat, isSelected && { color: "#035DF9", fontFamily: "Alexandria-Black" }]}>
                             {Number(shiftPrice).toLocaleString()} {t("common.iqd")}
                           </ThemedText>
@@ -1392,8 +1370,7 @@ export default function CompleteBookingScreen() {
                 styles.whoCard,
                 {
                   marginTop: 12,
-                  flexDirection: isRTL ? "row-reverse" : "row",
-                },
+                  flexDirection: 'row' },
               ]}
             >
               <View
@@ -1473,8 +1450,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    paddingHorizontal: 4,
-  },
+    paddingHorizontal: 4 },
   dateBadge: {
     width: 42,
     height: 42,
@@ -1483,8 +1459,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E2E8F0",
     justifyContent: "center",
-    alignItems: "center",
-  },
+    alignItems: "center" },
   dateBadgeActive: { borderColor: Colors.primary, borderWidth: 2 },
   dateBadgeText: {
     fontSize: normalize.font(16),
@@ -1492,12 +1467,10 @@ const styles = StyleSheet.create({
     color: "#94A3B8",
     textAlign: "center",
     includeFontPadding: false,
-    lineHeight: 42,
-  },
+    lineHeight: 42 },
   dateBadgeTextActive: {
     color: Colors.primary,
-    fontFamily: "Alexandria-Black",
-  },
+    fontFamily: "Alexandria-Black" },
   addDateBtn: {
     width: 42,
     height: 42,
@@ -1506,23 +1479,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E2E8F0",
     justifyContent: "center",
-    alignItems: "center",
-  },
+    alignItems: "center" },
   calendarMonthHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 20,
-    paddingHorizontal: 10,
-  },
+    paddingHorizontal: 10 },
   calendarMonthTitle: {
     fontSize: normalize.font(18),
     fontFamily: "Alexandria-Black",
     color: "#1E293B",
     textAlign: "center",
     letterSpacing: 2,
-    flex: 1,
-  },
+    flex: 1 },
   monthNavBtn: { padding: 5 },
   daysHeader: {
     flexDirection: "row",
@@ -1531,42 +1501,36 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     backgroundColor: "#F1F5F9",
     paddingVertical: 12,
-    borderRadius: 12,
-  },
+    borderRadius: 12 },
   dayHeaderCell: {
     fontSize: normalize.font(10),
     fontFamily: "Alexandria-Black",
     color: "#94A3B8",
     width: (SCREEN_WIDTH - 100) / 7,
-    textAlign: "center",
-  },
+    textAlign: "center" },
   daysGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "center",
-    gap: 4,
-  },
+    gap: 4 },
   dayCell: {
     width: (SCREEN_WIDTH - 100) / 7,
     height: (SCREEN_WIDTH - 100) / 7,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 4,
-    position: "relative",
-  },
+    position: "relative" },
   activeDayCell: { backgroundColor: Colors.primary, borderRadius: 10 },
   dayText: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Bold",
     color: "#334155",
-    textAlign: "center",
-  },
+    textAlign: "center" },
   activeDayText: { color: "#FFF", fontFamily: "Alexandria-Black" },
   bookedDayText: {
     color: "#CBD5E1",
     fontFamily: "Alexandria-Regular",
-    opacity: 0.4,
-  },
+    opacity: 0.4 },
   scribbleOverlay: {
     position: "absolute",
     top: 0,
@@ -1575,8 +1539,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     zIndex: 2,
     justifyContent: "center",
-    alignItems: "center",
-  },
+    alignItems: "center" },
   shiftLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
   shiftIconBox: {
     width: 40,
@@ -1584,52 +1547,43 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: "#FFF",
     justifyContent: "center",
-    alignItems: "center",
-  },
+    alignItems: "center" },
   shiftTitle: {
     fontSize: normalize.font(15),
     fontFamily: "Alexandria-Black",
-    color: "#1E293B",
-  },
+    color: "#1E293B" },
   shiftTime: {
     fontSize: normalize.font(12),
     color: "#64748B",
-    fontFamily: "Alexandria-Bold",
-  },
+    fontFamily: "Alexandria-Bold" },
   deleteDayText: {
     color: "#EF4444",
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Black",
-    textDecorationLine: "underline",
-  },
+    textDecorationLine: "underline" },
   calendarSheetContent: {
     padding: 20,
-    flex: 1,
-  },
+    flex: 1 },
   calendarCardDrawer: {
     backgroundColor: "#FFFFFF",
     borderRadius: 24,
-    padding: 15,
-  },
+    padding: 15 },
   daySelectionSection: {
     marginTop: 15,
     backgroundColor: "#FFFFFF",
     borderRadius: 20,
     padding: 12,
     borderWidth: 1,
-    borderColor: "#F1F5F9",
-  },
+    borderColor: "#F1F5F9" },
   dayHeaderRow: {
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 10,
-    paddingHorizontal: 4,
-  },
+    paddingHorizontal: 4 },
   dayHeaderText: {
     fontSize: normalize.font(15),
     fontFamily: "Alexandria-Black",
-    color: "#1E293B",
-  },
+    color: "#1E293B" },
   shiftCardFlat: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -1639,35 +1593,29 @@ const styles = StyleSheet.create({
     padding: 14,
     borderWidth: 1.5,
     borderColor: "#F1F5F9",
-    marginBottom: 10,
-  },
+    marginBottom: 10 },
   shiftIconCircleFlat: {
     width: 44,
     height: 44,
     borderRadius: 22,
     backgroundColor: "#FFF",
     justifyContent: "center",
-    alignItems: "center",
-  },
+    alignItems: "center" },
   shiftInfoFlat: {
     flex: 1,
-    marginHorizontal: 12,
-  },
+    marginHorizontal: 12 },
   shiftNameFlat: {
     fontSize: normalize.font(15),
     fontFamily: "Alexandria-Bold",
-    color: "#1E293B",
-  },
+    color: "#1E293B" },
   shiftTimeFlat: {
     fontSize: normalize.font(12),
     fontFamily: "Alexandria-Regular",
-    color: "#64748B",
-  },
+    color: "#64748B" },
   shiftPriceFlat: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Black",
-    color: "#1E293B",
-  },
+    color: "#1E293B" },
   whoContainer: { marginTop: 20 },
   whoCard: {
     flexDirection: "row",
@@ -1677,22 +1625,19 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#F1F5F9",
-  },
+    borderColor: "#F1F5F9" },
   guestInfo: {
     // Removed flex: 1 to allow space-between to push it
   },
   guestLabel: {
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-Black",
-    color: "#111827",
-  },
+    color: "#111827" },
   guestSubLabel: {
     fontSize: normalize.font(12),
     color: "#9CA3AF",
     fontFamily: "Alexandria-SemiBold",
-    marginTop: 1,
-  },
+    marginTop: 1 },
   footer: {
     position: "absolute",
     bottom: 0,
@@ -1704,8 +1649,7 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === "ios" ? 40 : 25,
     borderTopWidth: 1,
     borderTopColor: "#F1F5F9",
-    zIndex: 100,
-  },
+    zIndex: 100 },
   nextBtn: { width: "100%", height: 56 },
 
   // Inline Payment Styles
@@ -1714,14 +1658,12 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#F1F5F9",
     paddingTop: 20,
-    paddingBottom: 15,
-  },
+    paddingBottom: 15 },
   inlinePaymentTitle: {
     fontSize: normalize.font(18),
     fontFamily: "Alexandria-Black",
     color: "#1E293B",
-    marginBottom: 15,
-  },
+    marginBottom: 15 },
   paymentForm: { gap: 12 },
   inputGroup: { gap: 6 },
   inputGroupFull: { flex: 1, gap: 6 },
@@ -1729,8 +1671,7 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Black",
-    color: "#1E293B",
-  },
+    color: "#1E293B" },
   textInput: {
     backgroundColor: "#FFFFFF",
     borderWidth: 1.5,
@@ -1740,37 +1681,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Bold",
-    color: "#1E293B",
-  },
+    color: "#1E293B" },
   rowInputs: { flexDirection: "row" },
 
   // Success Sheet Styles
   successSheetContent: {
     padding: 25,
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
-  },
+    backgroundColor: "#FFFFFF" },
   lottieIcon: {
     width: 140,
     height: 140,
     alignSelf: "center",
-    marginBottom: 15,
-  },
+    marginBottom: 15 },
   successTitle: {
     fontSize: normalize.font(20),
     fontFamily: "Alexandria-Black",
     color: "#1E293B",
     marginBottom: 8,
-    textAlign: "center",
-  },
+    textAlign: "center" },
   successSub: {
     fontSize: normalize.font(14),
     color: "#64748B",
     textAlign: "center",
     marginBottom: 25,
     lineHeight: 22,
-    fontFamily: "Alexandria-Regular",
-  },
+    fontFamily: "Alexandria-Regular" },
   successBtn: { width: "100%", height: 56 },
 
   // Details Styles
@@ -1782,8 +1718,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderWidth: 1,
     borderColor: "#F1F5F9",
-    marginBottom: 12,
-  },
+    marginBottom: 12 },
   mapSnippetWrapper: {
     width: "100%",
     height: 120,
@@ -1791,8 +1726,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     backgroundColor: "#F1F5F9",
     justifyContent: "center",
-    alignItems: "center",
-  },
+    alignItems: "center" },
   mapSnippet: { width: "100%", height: "100%" },
   mapMarker: { position: "absolute", zIndex: 5 },
   mapAddressLabel: {
@@ -1801,33 +1735,28 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(12),
     fontFamily: "Alexandria-Black",
     color: "#1E293B",
-    width: "100%",
-  },
+    width: "100%" },
   infoSectionCard: {
     backgroundColor: "#FFFFFF",
     borderRadius: 20,
     padding: 16,
     borderWidth: 1,
     borderColor: "#F1F5F9",
-    marginBottom: 12,
-  },
+    marginBottom: 12 },
   sectionTitle: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Black",
-    color: "#15AB64",
-  },
+    color: "#15AB64" },
   divider: { height: 1, backgroundColor: "#F1F5F9", marginVertical: 10 },
   infoRow: { justifyContent: "space-between", marginBottom: 10 },
   infoLabel: {
     fontSize: normalize.font(13),
     fontFamily: "Alexandria-Black",
-    color: "#1E293B",
-  },
+    color: "#1E293B" },
   infoValue: {
     fontSize: normalize.font(13),
     fontFamily: "Alexandria-Bold",
-    color: "#64748B",
-  },
+    color: "#64748B" },
   sectionHeaderRow: { justifyContent: "space-between", alignItems: "center" },
   editBtn: {
     backgroundColor: "#F0FDF4",
@@ -1835,19 +1764,16 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#15AB6433",
-  },
+    borderColor: "#15AB6433" },
   editBtnText: {
     color: "#15AB64",
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Black",
-  },
+    fontFamily: "Alexandria-Black" },
   paymentMainTitle: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Black",
     color: "#15AB64",
-    marginVertical: 12,
-  },
+    marginVertical: 12 },
   paymentOptionCard: {
     marginBottom: 10,
     backgroundColor: "#FFFFFF",
@@ -1856,20 +1782,17 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: "#F1F5F9",
     justifyContent: "space-between",
-    alignItems: "center",
-  },
+    alignItems: "center" },
   paymentOptionActive: { borderColor: "#15AB64", backgroundColor: "#F0FDF4" },
   paymentVal: {
     fontSize: normalize.font(15),
     fontFamily: "Alexandria-Regular",
-    color: "#64748B",
-  },
+    color: "#64748B" },
   paymentValActive: { color: "#1E293B", fontFamily: "Alexandria-Black" },
   paymentLabel: {
     fontSize: normalize.font(13),
     fontFamily: "Alexandria-Regular",
-    color: "#64748B",
-  },
+    color: "#64748B" },
   paymentLabelActive: { color: "#1E293B", fontFamily: "Alexandria-Black" },
   agreementWrapper: { paddingVertical: 12, paddingBottom: 35 },
   agreementText: {
@@ -1877,13 +1800,11 @@ const styles = StyleSheet.create({
     color: "#64748B",
     textAlign: "center",
     lineHeight: 18,
-    fontFamily: "Alexandria-Regular",
-  },
+    fontFamily: "Alexandria-Regular" },
   agreementLink: {
     color: Colors.primary,
     textDecorationLine: "underline",
-    fontFamily: "Alexandria-Bold",
-  },
+    fontFamily: "Alexandria-Bold" },
   // RTL Utilities
   rtlText: { textAlign: "right" },
   ltrText: { textAlign: "left" },
@@ -1894,8 +1815,7 @@ const styles = StyleSheet.create({
   paymentMethodsGrid: {
     flexDirection: "row",
     gap: 12,
-    marginTop: 15,
-  },
+    marginTop: 15 },
   methodCard: {
     flex: 1,
     backgroundColor: "#F8FAFC",
@@ -1904,25 +1824,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 2,
     borderColor: "transparent",
-    position: "relative",
-  },
+    position: "relative" },
   methodCardActive: {
     borderColor: Colors.primary,
-    backgroundColor: "#F0F7FF",
-  },
+    backgroundColor: "#F0F7FF" },
   methodIconContainer: {
     width: 48,
     height: 48,
     borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   methodName: {
     fontSize: normalize.font(12),
     fontFamily: "Alexandria-Bold",
-    color: "#1E293B",
-  },
+    color: "#1E293B" },
   selectedDot: {
     position: "absolute",
     top: 8,
@@ -1930,6 +1846,4 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: Colors.primary,
-  },
-});
+    backgroundColor: Colors.primary } });

@@ -34,13 +34,13 @@ import {
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, { FadeIn, FadeInDown, FadeInRight, FadeInUp } from 'react-native-reanimated';
 import { useSelector } from 'react-redux';
+import { isRTL } from "@/i18n";
 
 export default function HomeScreen() {
   const router = useRouter();
   const { user, userType, language, selectedChalet } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
-  const isRTL = language === 'ar';
-
+  
   // API hooks
   const { data: profileResponse, refetch: refetchProfile } = useGetProviderProfileQuery(undefined);
   const profile = profileResponse?.data || profileResponse;
@@ -141,8 +141,7 @@ export default function HomeScreen() {
     recent: undefined,
     pending: 'pending_payment',
     confirmed: 'confirmed',
-    finished: 'completed',
-  };
+    finished: 'completed' };
 
   const { data: bookingsResponse, isFetching: isBookingsFetching, isLoading: isBookingsLoading, refetch: refetchBookings } = useGetProviderBookingsQuery({
     limit: 8,
@@ -151,8 +150,7 @@ export default function HomeScreen() {
     isRecent: activeFilter === 'recent' ? true : undefined,
     from: (selectedRange?.start && activeFilter !== 'recent') ? selectedRange.start.toISOString().split('T')[0] : undefined,
     to: (selectedRange?.end && activeFilter !== 'recent') ? selectedRange.end.toISOString().split('T')[0] : undefined,
-    chaletId: selectedChalet?.id || undefined,
-  });
+    chaletId: selectedChalet?.id || undefined });
 
   // Reset pagination when filter changes
   useEffect(() => {
@@ -194,8 +192,7 @@ export default function HomeScreen() {
     const result = await LocalAuthentication.authenticateAsync({
       promptMessage: isRTL ? 'تحقق من هويتك لعرض الرصيد' : 'Verify identity to show balance',
       cancelLabel: isRTL ? 'إلغاء' : 'Cancel',
-      fallbackLabel: isRTL ? 'استخدم رمز المرور' : 'Use Passcode',
-    });
+      fallbackLabel: isRTL ? 'استخدم رمز المرور' : 'Use Passcode' });
 
     if (result.success) {
       setIsBalanceVisible(true);
@@ -283,7 +280,7 @@ export default function HomeScreen() {
             router.push({ pathname: '/(dashboard)/booking-details', params: { id: item.id } });
           }}
         >
-          <View style={[styles.modernBookingInner, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.modernBookingInner, { flexDirection: 'row' }]}>
             {/* 1. Avatar (Right part in RTL) */}
             <View style={styles.modernBookingAvatar}>
               {bIsExternal ? (
@@ -305,8 +302,8 @@ export default function HomeScreen() {
             </View>
 
             {/* 2. Info (Name, Chalet and Shift) */}
-            <View style={[styles.modernBookingInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-              <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+            <View style={[styles.modernBookingInfo, { alignItems: 'flex-start' }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
                 <Text style={[styles.modernBookingName, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>{customerName}</Text>
                 <View style={{
                   backgroundColor: statusInfo.bg,
@@ -328,7 +325,7 @@ export default function HomeScreen() {
 
               {chaletName && <Text style={[styles.modernBookingChalet, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>{chaletName}</Text>}
 
-              <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 4 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                 <Text style={[styles.modernBookingShift, { textAlign: isRTL ? 'right' : 'left' }]}>{t('common.shift')} {shiftName}</Text>
                 <Text style={styles.modernBookingDot}>•</Text>
                 <Text style={styles.modernBookingDate}>{item.bookingDate || item.date || item.createdAt?.split('T')[0]}</Text>
@@ -393,7 +390,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, direction: isRTL ? 'rtl' : 'ltr' }}>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={styles.safeArea}>
         <DashboardHeader
           showSearch={false}
@@ -407,7 +404,7 @@ export default function HomeScreen() {
             <View style={styles.fixedHeaderArea}>
               <Animated.View
                 entering={FadeInUp.duration(400).springify().damping(18)}
-                style={[styles.bookingsHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+                style={[styles.bookingsHeader, { flexDirection: 'row' }]}
               >
                 <Text style={styles.bookingsTitle}>{isRTL ? 'الحجوزات' : 'Bookings'}</Text>
                 <View style={{ transform: [{ scale: 0.92 }] }}>
@@ -433,7 +430,7 @@ export default function HomeScreen() {
                   horizontal
                   showsHorizontalScrollIndicator={false}
                   style={styles.filterScroll}
-                  contentContainerStyle={[styles.filterContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+                  contentContainerStyle={[styles.filterContainer, { flexDirection: 'row' }]}
                 >
                   {[
                     { id: 'all', label: t('home.categories.all') },
@@ -583,58 +580,48 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.white,
-  },
+    backgroundColor: Colors.white },
   container: {
     flex: 1,
-    backgroundColor: Colors.white,
-  },
+    backgroundColor: Colors.white },
   scrollContent: {
     paddingHorizontal: normalize.width(14),
     paddingTop: normalize.height(5),
-    paddingBottom: normalize.height(10),
-  },
+    paddingBottom: normalize.height(10) },
   loadingContainer: {
     flex: 1,
     height: normalize.height(400),
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
 
   // Wallet Card
   walletCard: {
     marginBottom: normalize.height(20),
     borderRadius: normalize.radius(24),
-    overflow: 'hidden',
-  },
+    overflow: 'hidden' },
   walletCardInner: {
     backgroundColor: Colors.primary,
     padding: normalize.width(24),
     position: 'relative',
-    overflow: 'hidden',
-  },
+    overflow: 'hidden' },
   decorCircle: {
     position: 'absolute',
     borderRadius: normalize.radius(999),
-    backgroundColor: 'rgba(255,255,255,0.06)',
-  },
+    backgroundColor: 'rgba(255,255,255,0.06)' },
   decorCircle1: {
     width: normalize.width(180),
     height: normalize.width(180),
     top: normalize.height(-60),
-    right: normalize.width(-40),
-  },
+    right: normalize.width(-40) },
   decorCircle2: {
     width: normalize.width(120),
     height: normalize.width(120),
     bottom: normalize.height(-30),
-    left: normalize.width(-20),
-  },
+    left: normalize.width(-20) },
   walletTop: {
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: normalize.height(20),
-  },
+    marginBottom: normalize.height(20) },
   walletLabel: {
     color: 'rgba(255,255,255,0.65)',
     fontSize: normalize.font(12),
@@ -642,35 +629,29 @@ const styles = StyleSheet.create({
     marginBottom: normalize.height(6),
     letterSpacing: normalize.width(0.3),
     textTransform: 'uppercase',
-    lineHeight: normalize.font(16),
-  },
+    lineHeight: normalize.font(16) },
   walletAmountRow: {
-    alignItems: 'baseline',
-  },
+    alignItems: 'baseline' },
   walletValue: {
     color: Colors.white,
     fontSize: normalize.font(32),
     fontFamily: "Alexandria-SemiBold",
     letterSpacing: normalize.width(-0.5),
-    lineHeight: normalize.font(38),
-  },
+    lineHeight: normalize.font(38) },
   walletCurrency: {
     color: 'rgba(255,255,255,0.5)',
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-SemiBold",
-    lineHeight: normalize.font(20),
-  },
+    lineHeight: normalize.font(20) },
   eyeButton: {
     width: normalize.width(44),
     height: normalize.width(44),
     borderRadius: normalize.radius(22),
     backgroundColor: 'rgba(255,255,255,0.12)',
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   walletActions: {
-    gap: normalize.width(10),
-  },
+    gap: normalize.width(10) },
   walletActionBtn: {
     flex: 1,
     backgroundColor: Colors.white,
@@ -679,14 +660,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: normalize.width(6),
-  },
+    gap: normalize.width(6) },
   walletActionText: {
     color: Colors.primary,
     fontFamily: "Alexandria-SemiBold",
     fontSize: normalize.font(13),
-    lineHeight: normalize.font(18),
-  },
+    lineHeight: normalize.font(18) },
 
 
 
@@ -699,126 +678,104 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: normalize.width(12),
     borderWidth: 1,
-    borderColor: '#F0F0F0',
-  },
+    borderColor: '#F0F0F0' },
   bookingAvatar: {
     width: normalize.width(44),
     height: normalize.width(44),
     borderRadius: normalize.radius(14),
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   avatarLetter: {
     fontSize: normalize.font(18),
     fontFamily: "Alexandria-SemiBold",
-    lineHeight: normalize.font(24),
-  },
+    lineHeight: normalize.font(24) },
   bookingInfo: {
-    flex: 1,
-  },
+    flex: 1 },
   bookingName: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-SemiBold",
     color: Colors.text.primary,
     marginBottom: normalize.height(1),
-    lineHeight: normalize.font(20),
-  },
+    lineHeight: normalize.font(20) },
   bookingChalet: {
     fontSize: normalize.font(11),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium",
-    lineHeight: normalize.font(16),
-  },
+    lineHeight: normalize.font(16) },
   bookingDate: {
     fontSize: normalize.font(10),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium",
     marginTop: normalize.height(2),
-    lineHeight: normalize.font(14),
-  },
+    lineHeight: normalize.font(14) },
   bookingAmount: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-SemiBold",
     color: Colors.text.primary,
     marginBottom: normalize.height(4),
-    lineHeight: normalize.font(20),
-  },
+    lineHeight: normalize.font(20) },
   bookingCurrency: {
     fontSize: normalize.font(10),
     color: Colors.text.muted,
     fontFamily: "Alexandria-SemiBold",
-    lineHeight: normalize.font(14),
-  },
+    lineHeight: normalize.font(14) },
   bookingStatusBadge: {
     paddingHorizontal: normalize.width(8),
     paddingVertical: normalize.height(2),
-    borderRadius: normalize.radius(6),
-  },
+    borderRadius: normalize.radius(6) },
   bookingStatusText: {
     fontSize: normalize.font(9),
     fontFamily: "Alexandria-SemiBold",
     textTransform: 'uppercase',
-    lineHeight: normalize.font(13),
-  },
+    lineHeight: normalize.font(13) },
 
   // New Modern Bookings Section
   bookingsSection: {
     marginTop: 0,
-    marginBottom: 0,
-  },
+    marginBottom: 0 },
   bookingsHeader: {
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: normalize.height(10),
     paddingHorizontal: normalize.width(16),
-    marginTop: 0,
-  },
+    marginTop: 0 },
   bookingsTitle: {
     fontSize: normalize.font(17),
     fontFamily: "Alexandria-SemiBold",
     color: Colors.text.primary,
-    lineHeight: normalize.font(23),
-  },
+    lineHeight: normalize.font(23) },
   bookingsViewAll: {
     fontSize: normalize.font(14),
     color: Colors.text.primary,
     fontFamily: "Alexandria-SemiBold",
     textDecorationLine: 'underline',
-    lineHeight: normalize.font(20),
-  },
+    lineHeight: normalize.font(20) },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-  },
+    gap: 8 },
   calendarSheetContent: {
     flex: 1,
-    paddingHorizontal: normalize.width(20),
-  },
+    paddingHorizontal: normalize.width(20) },
   calendarHeader: {
     paddingVertical: normalize.height(15),
     borderBottomWidth: 1,
     borderBottomColor: '#F1F3F5',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   calendarTitle: {
     fontSize: normalize.font(18),
     fontFamily: "Alexandria-SemiBold",
     color: Colors.text.primary,
-    lineHeight: normalize.font(24),
-  },
+    lineHeight: normalize.font(24) },
   filterScroll: {
-    marginBottom: 0,
-  },
+    marginBottom: 0 },
   filterContainer: {
     gap: normalize.width(8),
     paddingHorizontal: normalize.width(16),
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   filterWrapper: {
     height: normalize.height(55),
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   bookingList: {
     // Removed gap for compatibility
   },
@@ -834,8 +791,7 @@ const styles = StyleSheet.create({
   modernBookingInner: {
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: normalize.width(10),
-  },
+    gap: normalize.width(10) },
   modernBookingAvatar: {
     width: normalize.width(52),
     height: normalize.width(52),
@@ -843,80 +799,66 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F9FA',
     justifyContent: 'center',
     alignItems: 'center',
-    overflow: 'hidden',
-  },
+    overflow: 'hidden' },
   modernBookingImg: {
     width: '100%',
-    height: '100%',
-  },
+    height: '100%' },
   modernBookingPlaceholder: {
     width: '100%',
     height: '100%',
     backgroundColor: '#F1F3F5',
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   modernBookingInfo: {
     flex: 1,
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   modernBookingName: {
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-SemiBold",
     color: Colors.text.primary,
     marginBottom: normalize.height(1),
-    lineHeight: normalize.font(22),
-  },
+    lineHeight: normalize.font(22) },
   modernBookingShift: {
     fontSize: normalize.font(12),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium",
-    lineHeight: normalize.font(16),
-  },
+    lineHeight: normalize.font(16) },
   modernBookingChalet: {
     fontSize: normalize.font(13),
     color: Colors.primary,
     fontFamily: "Alexandria-SemiBold",
     marginBottom: normalize.height(1),
-    lineHeight: normalize.font(18),
-  },
+    lineHeight: normalize.font(18) },
   modernBookingDate: {
     fontSize: normalize.font(11),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium",
-    lineHeight: normalize.font(16),
-  },
+    lineHeight: normalize.font(16) },
   modernBookingDot: {
     color: Colors.text.muted,
-    fontSize: normalize.font(11),
-  },
+    fontSize: normalize.font(11) },
   modernBookingPriceWrap: {
     alignItems: 'flex-start',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   modernBookingPrice: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-SemiBold",
     color: Colors.text.primary,
-    lineHeight: normalize.font(20),
-  },
+    lineHeight: normalize.font(20) },
   fixedHeaderArea: {
     backgroundColor: Colors.white,
     zIndex: 10,
-    paddingBottom: normalize.height(5),
-  },
+    paddingBottom: normalize.height(5) },
   noBookings: {
     padding: normalize.width(30),
     alignItems: 'center',
     backgroundColor: '#F8F9FA',
-    borderRadius: normalize.radius(16),
-  },
+    borderRadius: normalize.radius(16) },
   noBookingsText: {
     color: Colors.text.muted,
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-SemiBold",
-    lineHeight: normalize.font(20),
-  },
+    lineHeight: normalize.font(20) },
 
 
   // Empty State
@@ -924,8 +866,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: normalize.height(60),
-    gap: normalize.width(8),
-  },
+    gap: normalize.width(8) },
   emptyIconWrap: {
     width: normalize.width(80),
     height: normalize.width(80),
@@ -933,20 +874,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F9FB',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: normalize.height(8),
-  },
+    marginBottom: normalize.height(8) },
   emptyTitle: {
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-SemiBold",
     color: Colors.text.primary,
-    lineHeight: normalize.font(22),
-  },
+    lineHeight: normalize.font(22) },
   emptySubtitle: {
     fontSize: normalize.font(12),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium",
     textAlign: 'center',
     paddingHorizontal: normalize.width(40),
-    lineHeight: normalize.font(18),
-  },
-});
+    lineHeight: normalize.font(18) } });

@@ -10,6 +10,7 @@ import { useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
 import { useGetPayoutsQuery } from '@/store/api/apiSlice';
 import { SolarBanknoteBold } from "@/components/icons/solar-icons";
+import { isRTL } from "@/i18n";
 
 const FILTERS = [
   { id: undefined, ar: 'الكل', en: 'All' },
@@ -23,8 +24,6 @@ export default function TransactionsScreen() {
   const router = useRouter();
   const { user, userType, language } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
-  const isRTL = language === 'ar';
-  const rowDirection = isRTL ? 'row-reverse' : 'row';
   const textAlign = isRTL ? 'right' : 'left';
   const startAlign = isRTL ? 'flex-end' : 'flex-start';
   const endAlign = isRTL ? 'flex-start' : 'flex-end';
@@ -71,8 +70,7 @@ export default function TransactionsScreen() {
       pending: { ar: 'قيد المراجعة', en: 'Pending' },
       approved: { ar: 'مقبول', en: 'Approved' },
       paid: { ar: 'تم الدفع', en: 'Paid' },
-      rejected: { ar: 'مرفوض', en: 'Rejected' },
-    };
+      rejected: { ar: 'مرفوض', en: 'Rejected' } };
     return isRTL ? labels[status]?.ar || status : labels[status]?.en || status;
   };
 
@@ -91,7 +89,7 @@ export default function TransactionsScreen() {
     
     return (
       <TouchableOpacity 
-        style={[styles.transactionItem, { flexDirection: rowDirection }]}
+        style={[styles.transactionItem, { flexDirection: 'row' }]}
         activeOpacity={0.7}
       >
         <View style={[styles.transactionIcon, { backgroundColor: statusBg }]}>
@@ -107,7 +105,7 @@ export default function TransactionsScreen() {
           <Text style={[styles.transactionAmount, { textAlign: isRTL ? 'left' : 'right' }]}>
             {item.amount?.toLocaleString()} <Text style={styles.currencySmall}>{isRTL ? 'د.ع' : 'IQD'}</Text>
           </Text>
-          <View style={[styles.statusBadge, { backgroundColor: statusBg, flexDirection: rowDirection }]}>
+          <View style={[styles.statusBadge, { backgroundColor: statusBg, flexDirection: 'row' }]}>
             <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
             <Text style={[styles.statusBadgeText, { color: statusColor }]}>
               {getStatusLabel(item.status)}
@@ -119,7 +117,7 @@ export default function TransactionsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { direction: isRTL ? 'rtl' : 'ltr' }]}>
+    <SafeAreaView style={[styles.safeArea]}>
       <HeaderSection 
         userType={userType} 
         userName={user?.name} 
@@ -187,106 +185,87 @@ export default function TransactionsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.white,
-  },
+    backgroundColor: Colors.white },
   // Filters
   filterContainer: {
     height: 52,
-    marginTop: 4,
-  },
+    marginTop: 4 },
   filterPill: {
     paddingHorizontal: 18,
     paddingVertical: 9,
     borderRadius: 10,
     backgroundColor: '#F8F9FB',
     borderWidth: 1,
-    borderColor: '#F0F0F0',
-  },
+    borderColor: '#F0F0F0' },
   filterPillActive: {
     backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
+    borderColor: Colors.primary },
   filterText: {
     fontSize: normalize.font(13),
     fontFamily: "Alexandria-SemiBold",
-    color: Colors.text.secondary,
-  },
+    color: Colors.text.secondary },
   filterTextActive: {
     color: Colors.white,
    fontFamily: "Alexandria-Regular" },
   // List
   listContainer: {
     flex: 1,
-    backgroundColor: Colors.white,
-  },
+    backgroundColor: Colors.white },
   listContent: {
     paddingHorizontal: 14,
-    paddingBottom: 100,
-  },
+    paddingBottom: 100 },
   transactionItem: {
     paddingVertical: 16,
     alignItems: 'center',
-    gap: 12,
-  },
+    gap: 12 },
   transactionIcon: {
     width: 48,
     height: 48,
     borderRadius: 16,
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   transactionInfo: {
-    flex: 1,
-  },
+    flex: 1 },
   transactionTitle: {
     fontSize: normalize.font(15),
     fontFamily: "Alexandria-Bold",
     color: Colors.text.primary,
-    marginBottom: 3,
-  },
+    marginBottom: 3 },
   transactionDate: {
     fontSize: normalize.font(11),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-Medium",
-  },
+    fontFamily: "Alexandria-Medium" },
   transactionAmount: {
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
-    marginBottom: 4,
-  },
+    marginBottom: 4 },
   currencySmall: {
     fontSize: normalize.font(11),
     fontFamily: "Alexandria-SemiBold",
-    color: Colors.text.muted,
-  },
+    color: Colors.text.muted },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
-    gap: 4,
-  },
+    gap: 4 },
   statusDot: {
     width: 6,
     height: 6,
-    borderRadius: 3,
-  },
+    borderRadius: 3 },
   statusBadgeText: {
     fontSize: normalize.font(10),
-    fontFamily: "Alexandria-Bold",
-  },
+    fontFamily: "Alexandria-Bold" },
   separator: {
     height: 1,
-    backgroundColor: '#F5F5F5',
-  },
+    backgroundColor: '#F5F5F5' },
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 80,
-    gap: 8,
-  },
+    gap: 8 },
   emptyIconWrap: {
     width: 80,
     height: 80,
@@ -294,18 +273,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F9FB',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   emptyTitle: {
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-Bold",
-    color: Colors.text.primary,
-  },
+    color: Colors.text.primary },
   emptySubtitle: {
     fontSize: normalize.font(12),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium",
     textAlign: 'center',
-    paddingHorizontal: 40,
-  },
-});
+    paddingHorizontal: 40 } });

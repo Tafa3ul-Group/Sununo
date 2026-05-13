@@ -6,6 +6,7 @@ import { SolarUserBold, SolarCloseBold } from '@/components/icons/solar-icons';
 import { PrimaryButton } from './primary-button';
 import { SecondaryButton } from './secondary-button';
 import { useTranslation } from 'react-i18next';
+import { isRTL } from "@/i18n";
 
 interface LoginPromptModalProps {
   isVisible: boolean;
@@ -15,8 +16,7 @@ interface LoginPromptModalProps {
 
 export const LoginPromptModal: React.FC<LoginPromptModalProps> = ({ isVisible, onClose, onLogin }) => {
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
-
+  
   return (
     <Modal
       visible={isVisible}
@@ -48,7 +48,7 @@ export const LoginPromptModal: React.FC<LoginPromptModalProps> = ({ isVisible, o
             </ThemedText>
           </View>
 
-          <View style={[styles.footer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.footer, { flexDirection: 'row' }]}>
             <SecondaryButton 
               label={isRTL ? 'إلغاء' : 'Cancel'} 
               onPress={onClose}
@@ -74,31 +74,26 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
-  },
+    padding: 20 },
   container: {
     width: '100%',
     backgroundColor: 'white',
     borderRadius: 24,
     padding: 24,
-    ...Shadows.large,
-  },
+    ...Shadows.large },
   header: {
     alignItems: 'flex-end',
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   closeBtn: {
     width: 36,
     height: 36,
     borderRadius: 18,
     backgroundColor: '#F1F5F9',
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   content: {
     alignItems: 'center',
-    marginBottom: 32,
-  },
+    marginBottom: 32 },
   iconCircle: {
     width: 80,
     height: 80,
@@ -106,23 +101,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#EFF6FF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
-  },
+    marginBottom: 20 },
   title: {
     fontSize: 22,
     fontFamily: 'Alexandria-Black',
     color: '#1E293B',
     marginBottom: 12,
-    textAlign: 'center',
-  },
+    textAlign: 'center' },
   description: {
     fontSize: 16,
     color: '#64748B',
     textAlign: 'center',
     lineHeight: 24,
-    fontFamily: 'Alexandria-Medium',
-  },
+    fontFamily: 'Alexandria-Medium' },
   footer: {
-    gap: 12,
-  },
-});
+    gap: 12 } });

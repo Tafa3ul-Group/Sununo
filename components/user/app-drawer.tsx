@@ -6,16 +6,14 @@ import {
   View,
   Image,
   Alert,
-  Platform,
-} from "react-native";
+  Platform } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   withTiming,
   interpolate,
-  Extrapolate,
-} from "react-native-reanimated";
+  Extrapolate } from "react-native-reanimated";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 import { useRouter } from "expo-router";
@@ -35,6 +33,7 @@ import {
 } from "@/components/icons/solar-icons";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { isRTL } from "@/i18n";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const DRAWER_WIDTH = SCREEN_WIDTH * 0.75;
@@ -46,8 +45,7 @@ export interface AppDrawerRef {
 
 export const AppDrawer = forwardRef<AppDrawerRef>((props, ref) => {
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === "ar";
-  const insets = useSafeAreaInsets();
+    const insets = useSafeAreaInsets();
   const router = useRouter();
   const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
@@ -61,8 +59,7 @@ export const AppDrawer = forwardRef<AppDrawerRef>((props, ref) => {
     },
     close: () => {
       isOpen.value = withTiming(0, { duration: 250 });
-    },
-  }));
+    } }));
 
   const handleLogout = () => {
     Alert.alert(
@@ -100,16 +97,14 @@ export const AppDrawer = forwardRef<AppDrawerRef>((props, ref) => {
       [isRTL ? DRAWER_WIDTH : -DRAWER_WIDTH, 0]
     );
     return {
-      transform: [{ translateX }],
-    };
+      transform: [{ translateX }] };
   });
 
   const backdropStyle = useAnimatedStyle(() => {
     const opacity = interpolate(isOpen.value, [0, 1], [0, 1]);
     return {
       opacity,
-      pointerEvents: isOpen.value > 0.5 ? "auto" : "none",
-    };
+      pointerEvents: isOpen.value > 0.5 ? "auto" : "none" };
   });
 
   const close = () => {
@@ -129,7 +124,7 @@ export const AppDrawer = forwardRef<AppDrawerRef>((props, ref) => {
         { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 }
       ]}>
         {/* Header with Close Button */}
-        <View style={[styles.drawerHeader, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+        <View style={[styles.drawerHeader, { flexDirection: 'row-reverse' }]}>
            <TouchableOpacity onPress={close} style={styles.closeBtn}>
               <SolarCloseBold size={24} color="#64748B" />
            </TouchableOpacity>
@@ -144,11 +139,11 @@ export const AppDrawer = forwardRef<AppDrawerRef>((props, ref) => {
 
         {/* User Info */}
         <TouchableOpacity 
-          style={[styles.userSection, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+          style={[styles.userSection, { flexDirection: 'row' }]}
           onPress={() => { close(); router.push('/(tabs)/(customer)/profile'); }}
         >
           <Image source={getImageSrc(user?.imageUrl)} style={styles.avatar} />
-          <View style={[styles.userInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+          <View style={[styles.userInfo, { alignItems: 'flex-start' }]}>
             <ThemedText style={styles.userName}>{user?.name || t('common.user')}</ThemedText>
             <ThemedText style={styles.userPhone}>{user?.phone || ''}</ThemedText>
           </View>
@@ -161,7 +156,7 @@ export const AppDrawer = forwardRef<AppDrawerRef>((props, ref) => {
           {menuItems.map((item) => (
             <TouchableOpacity 
               key={item.id} 
-              style={[styles.menuItem, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+              style={[styles.menuItem, { flexDirection: 'row' }]}
               onPress={() => { close(); router.push(item.route as any); }}
             >
               <View style={[styles.iconWrapper, { backgroundColor: Colors.surface }]}>
@@ -175,7 +170,7 @@ export const AppDrawer = forwardRef<AppDrawerRef>((props, ref) => {
         {/* Footer with Logout */}
         <View style={styles.footer}>
           <TouchableOpacity 
-            style={[styles.logoutBtn, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+            style={[styles.logoutBtn, { flexDirection: 'row' }]}
             onPress={handleLogout}
           >
             <View style={[styles.iconWrapper, { backgroundColor: '#FEE2E2' }]}>
@@ -193,8 +188,7 @@ const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.5)",
-    zIndex: 999,
-  },
+    zIndex: 999 },
   drawer: {
     position: "absolute",
     top: 0,
@@ -203,92 +197,73 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     zIndex: 1000,
     ...Shadows.large,
-    paddingHorizontal: 20,
-  },
+    paddingHorizontal: 20 },
   drawerHeader: {
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 30,
-  },
+    marginBottom: 30 },
   closeBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
     backgroundColor: '#F1F5F9',
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   logoContainer: {
     flex: 1,
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   logo: {
     width: 100,
-    height: 40,
-  },
+    height: 40 },
   userSection: {
     alignItems: 'center',
     gap: 15,
-    marginBottom: 20,
-  },
+    marginBottom: 20 },
   avatar: {
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#F1F5F9',
-  },
+    backgroundColor: '#F1F5F9' },
   userInfo: {
-    flex: 1,
-  },
+    flex: 1 },
   userName: {
     fontSize: 18,
     fontFamily: "Alexandria-Black",
-    color: '#1E293B',
-  },
+    color: '#1E293B' },
   userPhone: {
     fontSize: 14,
     color: '#64748B',
-    fontFamily: "Alexandria-Medium",
-  },
+    fontFamily: "Alexandria-Medium" },
   divider: {
     height: 1,
     backgroundColor: '#F1F5F9',
-    marginVertical: 10,
-  },
+    marginVertical: 10 },
   menuContainer: {
     flex: 1,
-    paddingTop: 10,
-  },
+    paddingTop: 10 },
   menuItem: {
     alignItems: 'center',
     paddingVertical: 12,
-    gap: 15,
-  },
+    gap: 15 },
   iconWrapper: {
     width: 44,
     height: 44,
     borderRadius: 12,
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   menuLabel: {
     fontSize: 16,
     fontFamily: "Alexandria-Bold",
-    color: '#334155',
-  },
+    color: '#334155' },
   footer: {
     paddingTop: 20,
     borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
-  },
+    borderTopColor: '#F1F5F9' },
   logoutBtn: {
     alignItems: 'center',
     gap: 15,
-    paddingVertical: 12,
-  },
+    paddingVertical: 12 },
   logoutText: {
     fontSize: 16,
     fontFamily: "Alexandria-Black",
-    color: '#EF4444',
-  },
-});
+    color: '#EF4444' } });

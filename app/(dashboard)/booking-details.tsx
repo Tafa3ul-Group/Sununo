@@ -23,14 +23,13 @@ const IDENTITY_BLUE = '#035DF9';
 import { PaymentConfirmationSheet, PaymentConfirmationSheetRef } from '@/components/payment-confirmation-modal';
 
 import { ErrorState } from '@/components/ui/error-state';
+import { isRTL } from "@/i18n";
 
 export default function BookingDetailsPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { language } = useSelector((state: RootState) => state.auth);
-  const isArabic = language === 'ar';
-  const isRTL = isArabic;
-  const { t } = useTranslation();
+    const { t } = useTranslation();
   const cancelSheetRef = React.useRef<BookingCancellationSheetRef>(null);
   const confirmPaymentSheetRef = React.useRef<PaymentConfirmationSheetRef>(null);
 
@@ -125,18 +124,9 @@ export default function BookingDetailsPage() {
   };
 
   const renderInfoRow = (label: string, value: string | React.ReactNode, isBlue: boolean = false) => (
-    <View style={[styles.infoRow, { flexDirection: isRTL ? 'row' : 'row' }]}>
-      {isRTL ? (
-        <>
-          <Text style={[styles.infoValue, isBlue && styles.blueValue]}>{value}</Text>
-          <Text style={styles.infoLabel}>{label}</Text>
-        </>
-      ) : (
-        <>
-          <Text style={styles.infoLabel}>{label}</Text>
-          <Text style={[styles.infoValue, isBlue && styles.blueValue]}>{value}</Text>
-        </>
-      )}
+    <View style={[styles.infoRow]}>
+      <Text style={styles.infoLabel}>{label}</Text>
+      <Text style={[styles.infoValue, isBlue && styles.blueValue]}>{value}</Text>
     </View>
   );
 
@@ -145,7 +135,7 @@ export default function BookingDetailsPage() {
   const bCustomerPhone = data.customer?.phone || data.externalCustomerPhone;
 
   return (
-    <View style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
+    <View style={[styles.container]}>
       {/* Dashboard Header */}
       <DashboardHeader
         title={isRTL ? 'تفاصيل الحجز' : 'Booking Details'}
@@ -159,7 +149,7 @@ export default function BookingDetailsPage() {
         {/* Cancelled Status Card */}
         {bIsCancelled && (
           <View style={styles.cancelledCard}>
-            <View style={[styles.cancelledHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.cancelledHeader]}>
               <View style={styles.warningIconWrapper}>
                 <SolarDangerCircleBold size={24} color="#EA2129" />
               </View>
@@ -176,19 +166,19 @@ export default function BookingDetailsPage() {
 
         {/* Chalet Information Section */}
         <View style={styles.infoSectionCard}>
-          <View style={[styles.sectionTitleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.sectionTitleRow]}>
             <Text style={styles.sectionTitle}>{isRTL ? 'معلومات الشاليه' : 'Chalet Information'}</Text>
           </View>
           <View style={styles.divider} />
 
-          <View style={[styles.chaletSimpleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.chaletSimpleRow]}>
             <View style={styles.simpleImageWrapper}>
               <ExpoImage
                 source={chaletImageSource}
                 style={styles.simpleChaletImage}
               />
             </View>
-            <View style={[styles.simpleChaletText, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+            <View style={[styles.simpleChaletText]}>
               <Text style={styles.simpleChaletName}>{bChaletName}</Text>
               <Text style={styles.simpleChaletLocation}>{bChaletAddress}</Text>
             </View>
@@ -197,7 +187,7 @@ export default function BookingDetailsPage() {
 
         {/* Customer Information */}
         <View style={styles.infoSectionCard}>
-          <View style={[styles.sectionTitleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.sectionTitleRow]}>
             <Text style={styles.sectionTitle}>{isRTL ? 'معلومات الزبون' : 'Customer Information'}</Text>
           </View>
           <View style={styles.divider} />
@@ -208,7 +198,7 @@ export default function BookingDetailsPage() {
 
         {/* Booking Information */}
         <View style={styles.infoSectionCard}>
-          <View style={[styles.sectionTitleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.sectionTitleRow]}>
             <Text style={styles.sectionTitle}>{isRTL ? 'معلومات الحجز' : 'Booking Information'}</Text>
           </View>
           <View style={styles.divider} />
@@ -225,7 +215,7 @@ export default function BookingDetailsPage() {
         {/* Payment Information */}
         {!bIsExternal && (
           <View style={styles.infoSectionCard}>
-            <View style={[styles.sectionTitleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.sectionTitleRow]}>
               <Text style={styles.sectionTitle}>{isRTL ? 'معلومات الدفع' : 'Payment Information'}</Text>
             </View>
             <View style={styles.divider} />
@@ -323,50 +313,44 @@ const styles = StyleSheet.create({
     borderColor: "#F1F5F9",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F8F9FB",
-  },
+    backgroundColor: "#F8F9FB" },
   cancelledCard: {
     backgroundColor: '#FFF5F5',
     borderRadius: 20,
     padding: 16,
     borderWidth: 1,
     borderColor: '#FEE2E2',
-    marginBottom: 16,
-  },
+    marginBottom: 16 },
   cancelledHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    marginBottom: 12,
-  },
+    marginBottom: 12 },
   warningIconWrapper: {
     width: 36,
     height: 36,
     borderRadius: 18,
     backgroundColor: '#FFE5E5',
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   cancelledTitle: {
     flex: 1,
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-SemiBold",
     color: '#EA2129',
-    lineHeight: normalize.font(24),
-  },
+    lineHeight: normalize.font(24) },
   cancelledDivider: {
     height: 1,
     backgroundColor: '#FEE2E2',
     marginVertical: 4,
-    marginBottom: 12,
-  },
+    marginBottom: 12 },
   cancelledReason: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-SemiBold",
     color: '#1E293B',
-    lineHeight: normalize.font(20),
-  },
+    lineHeight: normalize.font(20) },
   scrollContent: { paddingBottom: normalize.height(160), paddingHorizontal: 20 },
-  chaletSimpleRow: { alignItems: 'center', gap: 16 },
+  chaletSimpleRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   simpleImageWrapper: { width: 80, height: 80, borderRadius: 16, overflow: 'hidden', backgroundColor: '#F1F5F9' },
   simpleChaletImage: { width: '100%', height: '100%' },
   simpleChaletText: { flex: 1 },
@@ -379,12 +363,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F1F5F9',
     marginBottom: 12,
-    paddingBottom: 24,
-  },
+    paddingBottom: 24 },
   sectionTitleRow: { width: '100%', marginBottom: 8 },
   sectionTitle: { fontSize: normalize.font(14), fontFamily: "Alexandria-SemiBold", color: IDENTITY_BLUE, lineHeight: normalize.font(20) },
   divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 10 },
-  infoRow: { justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   infoLabel: { fontSize: normalize.font(14), fontFamily: "Alexandria-SemiBold", color: '#1E293B', lineHeight: normalize.font(20) },
   infoValue: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#64748B', lineHeight: normalize.font(22) },
   blueValue: { color: IDENTITY_BLUE, fontFamily: "Alexandria-SemiBold", lineHeight: normalize.font(22) },
@@ -400,13 +383,8 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: normalize.radius(24),
     borderTopRightRadius: normalize.radius(24),
     borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
-  },
+    borderTopColor: '#F1F5F9' },
   payButton: {
-    marginBottom: 12,
-
-  },
+    marginBottom: 12 },
   cancelButton: {
-    width: '100%',
-  },
-});
+    width: '100%' } });

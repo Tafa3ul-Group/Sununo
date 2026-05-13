@@ -28,6 +28,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 import { useGetCustomerChaletDetailsQuery } from '@/store/api/customerApiSlice';
 import { getImageSrc } from '@/hooks/useImageSrc';
+import { isRTL } from "@/i18n";
 
 // Categories mapping helper
 const CATEGORY_ICONS: Record<string, any> = {
@@ -35,16 +36,14 @@ const CATEGORY_ICONS: Record<string, any> = {
   bbq: (isActive: boolean) => <SolarFireBold size={18} color={isActive ? "white" : Colors.accent} />,
   kitchen: (isActive: boolean) => <SolarHome2Bold size={18} color={isActive ? "white" : Colors.secondary} />,
   bath: (isActive: boolean) => <SolarWaterBold size={18} color={isActive ? "white" : Colors.primary} />,
-  default: (isActive: boolean) => <SolarWidgetBold size={18} color={isActive ? "white" : Colors.primary} />,
-};
+  default: (isActive: boolean) => <SolarWidgetBold size={18} color={isActive ? "white" : Colors.primary} /> };
 
 const CATEGORY_COLORS: Record<string, string> = {
   pool: Colors.secondary,
   bbq: Colors.accent,
   kitchen: '#15AB64',
   bath: '#035DF9',
-  default: Colors.primary,
-};
+  default: Colors.primary };
 
 const WavyHeader = ({ title, color }: { title: string, color: string }) => (
   <View style={styles.wavyHeaderContainer}>
@@ -62,8 +61,7 @@ export default function GalleryScreen() {
   const { id } = useLocalSearchParams();
   const chaletId = id as string;
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
-  const { userType } = useSelector((state: RootState) => state.auth);
+    const { userType } = useSelector((state: RootState) => state.auth);
   const [activeFilter, setActiveFilter] = useState('all');
   const [viewerVisible, setViewerVisible] = useState(false);
   const [viewerImage, setViewerImage] = useState('');
@@ -155,7 +153,7 @@ export default function GalleryScreen() {
       {/* Categories Filter (Home Page Style) */}
       <View style={styles.catArea}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.catList}>
-          <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 10 }}>
+          <View style={{ flexDirection: 'row', gap: 10 }}>
             {CATEGORIES.map((filter) => (
               <SecondaryButton 
                 key={filter.id} 
@@ -182,7 +180,7 @@ export default function GalleryScreen() {
             </TouchableOpacity>
             
             {/* Small Grid */}
-            <View style={[styles.smallGrid, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.smallGrid, { flexDirection: 'row' }]}>
               {section.images.slice(1, 4).map((img, i) => (
                 <TouchableOpacity key={i} style={styles.smallImageCard} activeOpacity={0.9} onPress={() => openViewer(img)}>
                    <Image source={{ uri: img }} style={styles.smallImage} />
@@ -204,66 +202,51 @@ export default function GalleryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
+    backgroundColor: '#FFFFFF' },
   catArea: {
-    paddingVertical: 10,
-  },
+    paddingVertical: 10 },
   catList: {
     paddingHorizontal: 20,
-    paddingBottom: 5,
-  },
+    paddingBottom: 5 },
   scrollContent: {
-    paddingBottom: 40,
-  },
+    paddingBottom: 40 },
   sectionWrap: {
     paddingHorizontal: 16,
-    marginBottom: 35,
-  },
+    marginBottom: 35 },
   wavyHeaderContainer: {
     alignItems: 'center',
-    marginVertical: 15,
-  },
+    marginVertical: 15 },
   imageCard: {
     width: '100%',
     borderRadius: 20,
     overflow: 'hidden',
     backgroundColor: '#F9FAFB',
-    marginBottom: 15,
-  },
+    marginBottom: 15 },
   bigImage: {
     width: '100%',
-    height: 240,
-  },
+    height: 240 },
   smallGrid: {
     justifyContent: 'space-between',
-    gap: 12,
-  },
+    gap: 12 },
   smallImageCard: {
     flex: 1,
     height: 110,
     borderRadius: 15,
     overflow: 'hidden',
-    backgroundColor: '#F9FAFB',
-  },
+    backgroundColor: '#F9FAFB' },
   smallImage: {
     width: '100%',
-    height: '100%',
-  },
+    height: '100%' },
   modalBg: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.9)',
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   modalClose: {
     position: 'absolute',
     top: 50,
     right: 20,
-    zIndex: 10,
-  },
+    zIndex: 10 },
   modalImg: {
     width: SCREEN_WIDTH,
-    height: '100%',
-  },
-});
+    height: '100%' } });

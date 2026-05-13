@@ -2,6 +2,7 @@ import { ThemedText } from "@/components/themed-text";
 import { normalize, Spacing } from "@/constants/theme";
 import React from "react";
 import { I18nManager, StyleSheet, TouchableOpacity, View } from "react-native";
+import { isRTL } from "@/i18n";
 
 interface Tab {
   id: string;
@@ -22,16 +23,14 @@ interface AdvancedSegmentTabProps {
 export function AdvancedSegmentTab({
   tabs,
   activeTab,
-  onTabChange,
-}: AdvancedSegmentTabProps) {
-  const isRTL = I18nManager.isRTL;
+  onTabChange }: AdvancedSegmentTabProps) {
 
   return (
     <View style={styles.container}>
       <View
         style={[
           styles.tabBar,
-          { flexDirection: isRTL ? "row-reverse" : "row" },
+          { flexDirection: 'row' },
         ]}
       >
         {tabs.map((tab) => {
@@ -63,8 +62,7 @@ export function AdvancedSegmentTab({
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: Spacing.md,
-    marginVertical: Spacing.md,
-  },
+    marginVertical: Spacing.md },
   tabBar: {
     backgroundColor: "white",
     borderRadius: normalize.radius(35),
@@ -74,21 +72,16 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: "#F0F2F5",
     alignItems: "center",
-    justifyContent: "space-between",
-  },
+    justifyContent: "space-between" },
   tab: {
     flex: 1,
     height: "100%",
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: normalize.radius(30),
-  },
+    borderRadius: normalize.radius(30) },
   tabLabel: {
     fontSize: normalize.font(18),
-    fontFamily: "Alexandria-Bold",
-  },
+    fontFamily: "Alexandria-Bold" },
   activeLabel: {
     color: "white",
-    fontFamily: "Alexandria-Regular",
-  },
-});
+    fontFamily: "Alexandria-Regular" } });

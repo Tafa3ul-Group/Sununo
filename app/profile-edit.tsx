@@ -3,8 +3,7 @@ import {
     SolarAltArrowRightBold,
     SolarMapPointBold,
     SolarMenuDotsBold,
-    SolarPenBold,
-} from '@/components/icons/solar-icons';
+    SolarPenBold } from '@/components/icons/solar-icons';
 import { ThemedText } from '@/components/themed-text';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { Colors, normalize } from '@/constants/theme';
@@ -13,8 +12,7 @@ import { RootState } from '@/store';
 import { useGetMeQuery } from '@/store/api/apiSlice';
 import {
     useUpdateProfileImageMutation,
-    useUpdateUserProfileMutation,
-} from '@/store/api/customerApiSlice';
+    useUpdateUserProfileMutation } from '@/store/api/customerApiSlice';
 import * as ImagePicker from 'expo-image-picker';
 import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -32,18 +30,17 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    View,
-} from 'react-native';
+    View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
+import { isRTL } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function ProfileEditScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
-  const { user: authUser } = useSelector((state: RootState) => state.auth);
+    const { user: authUser } = useSelector((state: RootState) => state.auth);
 
   const { data: meData, refetch } = useGetMeQuery(undefined);
   const userData = (meData as any)?.data || meData || authUser;
@@ -65,8 +62,7 @@ export default function ProfileEditScreen() {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.8,
-    });
+      quality: 0.8 });
 
     if (!result.canceled) {
       const asset = result.assets[0];
@@ -118,7 +114,7 @@ export default function ProfileEditScreen() {
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* ── Header ── */}
-      <View style={[styles.header, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+      <View style={[styles.header, { flexDirection: 'row' }]}>
         {/* Three-dots menu (decorative, matches design) */}
         <TouchableOpacity style={styles.headerSideBtn}>
           <SolarMenuDotsBold size={22} color="#9CA3AF" />
@@ -206,7 +202,7 @@ export default function ProfileEditScreen() {
               <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>
                 {isRTL ? 'رقم الهاتف' : 'Phone Number'}
               </ThemedText>
-              <View style={[styles.phoneRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+              <View style={[styles.phoneRow, { flexDirection: 'row' }]}>
                 {/* Change phone button */}
                 <TouchableOpacity
                   style={styles.changePhoneBtn}
@@ -245,8 +241,7 @@ export default function ProfileEditScreen() {
                 {/* Static map image */}
                 <Image
                   source={{
-                    uri: 'https://miro.medium.com/v2/resize:fit:1400/1*qV3uDpS9mZc6jS1j75n6oA.png',
-                  }}
+                    uri: 'https://miro.medium.com/v2/resize:fit:1400/1*qV3uDpS9mZc6jS1j75n6oA.png' }}
                   style={styles.mapImage}
                   resizeMode="cover"
                 />
@@ -258,7 +253,7 @@ export default function ProfileEditScreen() {
                 <View
                   style={[
                     styles.mapFooter,
-                    { flexDirection: isRTL ? 'row-reverse' : 'row' },
+                    { flexDirection: 'row' },
                   ]}
                 >
                   <ThemedText style={styles.locationName}>
@@ -295,27 +290,23 @@ export default function ProfileEditScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
+    backgroundColor: '#FFFFFF' },
 
   // ── Header ──────────────────────────────────────────────────────────────
   header: {
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: normalize.width(20),
-    paddingVertical: normalize.height(12),
-  },
+    paddingVertical: normalize.height(12) },
   headerSideBtn: {
     width: 40,
     height: 40,
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   headerTitle: {
     fontSize: normalize.font(18),
     fontFamily: 'Alexandria-Black',
-    color: '#111827',
-  },
+    color: '#111827' },
   backCircle: {
     width: 44,
     height: 44,
@@ -324,32 +315,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#DBEAFE',
-  },
+    borderColor: '#DBEAFE' },
 
   // ── Scroll ───────────────────────────────────────────────────────────────
   scrollContent: {
     paddingHorizontal: normalize.width(20),
-    paddingTop: normalize.height(4),
-  },
+    paddingTop: normalize.height(4) },
 
   // ── Avatar ───────────────────────────────────────────────────────────────
   avatarSection: {
     alignItems: 'center',
-    marginBottom: normalize.height(28),
-  },
+    marginBottom: normalize.height(28) },
   avatarContainer: {
     width: normalize.width(130),
     height: normalize.width(130),
     borderRadius: normalize.width(65),
     backgroundColor: '#F3F4F6',
-    position: 'relative',
-  },
+    position: 'relative' },
   avatarImg: {
     width: '100%',
     height: '100%',
-    borderRadius: normalize.width(65),
-  },
+    borderRadius: normalize.width(65) },
   editBadge: {
     position: 'absolute',
     bottom: 4,
@@ -361,22 +347,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 3,
-    borderColor: '#FFFFFF',
-  },
+    borderColor: '#FFFFFF' },
 
   // ── Form ─────────────────────────────────────────────────────────────────
   form: {
-    gap: 0,
-  },
+    gap: 0 },
   fieldGroup: {
-    marginBottom: normalize.height(18),
-  },
+    marginBottom: normalize.height(18) },
   label: {
     fontSize: normalize.font(14),
     fontFamily: 'Alexandria-Bold',
     color: '#374151',
-    marginBottom: normalize.height(8),
-  },
+    marginBottom: normalize.height(8) },
   inputWrapper: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
@@ -384,14 +366,12 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
     height: normalize.height(56),
     justifyContent: 'center',
-    paddingHorizontal: normalize.width(16),
-  },
+    paddingHorizontal: normalize.width(16) },
   input: {
     fontSize: normalize.font(15),
     fontFamily: 'Alexandria-Medium',
     color: '#9CA3AF',
-    flex: 1,
-  },
+    flex: 1 },
 
   // ── Phone row ────────────────────────────────────────────────────────────
   phoneRow: {
@@ -401,31 +381,26 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
     height: normalize.height(56),
     overflow: 'hidden',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   changePhoneBtn: {
     backgroundColor: Colors.primary,
     height: '100%',
     paddingHorizontal: normalize.width(16),
     justifyContent: 'center',
     alignItems: 'center',
-    minWidth: normalize.width(130),
-  },
+    minWidth: normalize.width(130) },
   changePhoneText: {
     color: '#FFFFFF',
     fontSize: normalize.font(13),
-    fontFamily: 'Alexandria-Black',
-  },
+    fontFamily: 'Alexandria-Black' },
   phoneValueWrapper: {
     flex: 1,
     paddingHorizontal: normalize.width(14),
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   phoneValue: {
     fontSize: normalize.font(15),
     fontFamily: 'Alexandria-Medium',
-    color: '#9CA3AF',
-  },
+    color: '#9CA3AF' },
 
   // ── Map card ─────────────────────────────────────────────────────────────
   mapCard: {
@@ -433,33 +408,27 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F3F4F6',
     overflow: 'hidden',
-    backgroundColor: '#F9FAFB',
-  },
+    backgroundColor: '#F9FAFB' },
   mapImage: {
     width: '100%',
-    height: normalize.height(160),
-  },
+    height: normalize.height(160) },
   mapPinOverlay: {
     position: 'absolute',
     top: normalize.height(62),
-    alignSelf: 'center',
-  },
+    alignSelf: 'center' },
   mapFooter: {
     paddingHorizontal: normalize.width(16),
     paddingVertical: normalize.height(12),
     justifyContent: 'space-between',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   locationName: {
     fontSize: normalize.font(14),
     fontFamily: 'Alexandria-Bold',
-    color: '#9CA3AF',
-  },
+    color: '#9CA3AF' },
   changeLocText: {
     fontSize: normalize.font(14),
     fontFamily: 'Alexandria-Bold',
-    color: Colors.primary,
-  },
+    color: Colors.primary },
 
   // ── Footer ───────────────────────────────────────────────────────────────
   footer: {
@@ -470,11 +439,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: normalize.width(20),
     paddingBottom: normalize.height(30),
     paddingTop: normalize.height(12),
-    backgroundColor: '#FFFFFF',
-  },
+    backgroundColor: '#FFFFFF' },
   submitBtn: {
     width: '100%',
     height: normalize.height(58),
-    borderRadius: 29,
-  },
-});
+    borderRadius: 29 } });

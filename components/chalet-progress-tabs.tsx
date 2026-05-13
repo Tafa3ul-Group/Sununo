@@ -4,17 +4,16 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
-} from 'react-native';
+  View } from 'react-native';
 import Animated, {
   interpolate,
   interpolateColor,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
+  withSpring } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 import { Colors, Spacing } from '@/constants/theme';
+import { isRTL } from "@/i18n";
 
 const AnimatedText = Animated.createAnimatedComponent(Text);
 const AnimatedView = Animated.createAnimatedComponent(View);
@@ -69,8 +68,7 @@ export const ChaletProgressTabs: React.FC<ChaletProgressTabsProps> = ({
   steps,
   currentStep,
   onStepPress,
-  isRTL = false,
-}) => {
+  isRTL = false }) => {
   const tabCount = steps.length;
   const [containerWidth, setContainerWidth] = useState(0);
 
@@ -79,8 +77,7 @@ export const ChaletProgressTabs: React.FC<ChaletProgressTabsProps> = ({
   const springConfig = {
     damping: 18,
     stiffness: 120,
-    mass: 1,
-  };
+    mass: 1 };
 
   useEffect(() => {
     transition.value = withSpring(currentStep, springConfig);
@@ -121,8 +118,7 @@ export const ChaletProgressTabs: React.FC<ChaletProgressTabsProps> = ({
 
     return {
       transform: [{ translateX }, { scaleX: scale }],
-      opacity: 1,
-    };
+      opacity: 1 };
   });
 
   // RTL: reverse visual order of buttons
@@ -159,8 +155,7 @@ export const ChaletProgressTabs: React.FC<ChaletProgressTabsProps> = ({
               {
                 width: pillWidth,
                 height: pillHeight,
-                borderRadius: pillHeight / 2.5,
-              },
+                borderRadius: pillHeight / 2.5 },
               pillAnimStyle,
             ]}
           />
@@ -195,32 +190,26 @@ const styles = StyleSheet.create({
   container: {
     height: DESIGN_HEIGHT,
     backgroundColor: 'transparent',
-    marginBottom: Spacing.lg,
-  },
+    marginBottom: Spacing.lg },
   pill: {
     position: 'absolute',
     top: PILL_INSET,
     left: 0,
     backgroundColor: PILL_COLOR,
-    zIndex: 10,
-  },
+    zIndex: 10 },
   buttonsContainer: {
     ...StyleSheet.absoluteFillObject,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
     paddingHorizontal: 8,
-    zIndex: 20,
-  },
+    zIndex: 20 },
   tabButton: {
     flex: 1,
     height: '100%',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   tabText: {
     fontSize: 16,
     fontFamily: "Alexandria-Black",
-    textAlign: 'center',
-  },
-});
+    textAlign: 'center' } });

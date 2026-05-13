@@ -22,8 +22,7 @@ import {
     useGetProviderProfileQuery,
     useLogoutUserMutation,
     useUpdateProfileImageMutation,
-    useUpdateProfileMutation,
-} from '@/store/api/apiSlice';
+    useUpdateProfileMutation } from '@/store/api/apiSlice';
 import { logout } from '@/store/authSlice';
 import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -45,12 +44,12 @@ import {
     View
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
+import { isRTL } from "@/i18n";
 
 export default function ProviderProfileScreen() {
   const dispatch = useDispatch();
   const { i18n, t } = useTranslation();
-  const isRTL = i18n.language === 'ar';
-  const { user: authUser, userType } = useSelector((state: RootState) => state.auth);
+    const { user: authUser, userType } = useSelector((state: RootState) => state.auth);
 
   const { data: userData, isLoading: isUserLoading } = useGetMeQuery(undefined);
   const user = userData?.data || userData || authUser;
@@ -73,8 +72,7 @@ export default function ProviderProfileScreen() {
     name: '',
     gender: 'male',
     birthday: new Date(),
-    cityId: '',
-  });
+    cityId: '' });
 
   const [showDatePicker, setShowDatePicker] = useState(false);
 
@@ -84,8 +82,7 @@ export default function ProviderProfileScreen() {
         name: user.name || '',
         gender: user.gender || 'male',
         birthday: user.birthday ? new Date(user.birthday) : new Date(),
-        cityId: user.cityId || '',
-      });
+        cityId: user.cityId || '' });
     }
   }, [user]);
 
@@ -104,8 +101,7 @@ export default function ProviderProfileScreen() {
       [
         {
           text: isRTL ? 'إلغاء' : 'Cancel',
-          style: 'cancel',
-        },
+          style: 'cancel' },
         {
           text: isRTL ? 'خروج' : 'Logout',
           style: 'destructive',
@@ -117,8 +113,7 @@ export default function ProviderProfileScreen() {
             }
             // Clear Redux state — the Auth Guard in _layout.tsx will redirect automatically
             dispatch(logout());
-          },
-        },
+          } },
       ],
     );
   };
@@ -139,8 +134,7 @@ export default function ProviderProfileScreen() {
         name: formData.name,
         gender: formData.gender,
         birthday: formData.birthday.toISOString(),
-        cityId: formData.cityId,
-      }).unwrap();
+        cityId: formData.cityId }).unwrap();
 
       Alert.alert(
         isRTL ? 'نجاح' : 'Success',
@@ -162,8 +156,7 @@ export default function ProviderProfileScreen() {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.8,
-    });
+      quality: 0.8 });
 
     if (!result.canceled) {
       const imageAsset = result.assets[0];
@@ -186,8 +179,7 @@ export default function ProviderProfileScreen() {
         imageFormData.append('image', {
           uri,
           name,
-          type,
-        } as any);
+          type } as any);
       }
 
       try {
@@ -219,11 +211,11 @@ export default function ProviderProfileScreen() {
   ];
 
   return (
-    <View style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
+    <View style={[styles.container]}>
       {/* Profile Header & User Card */}
       <View style={styles.topSection}>
         <TouchableOpacity
-          style={[styles.userCard, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}
+          style={[styles.userCard, { flexDirection: 'row-reverse' }]}
           onPress={openEditProfileSheet}
           activeOpacity={0.9}
         >
@@ -263,7 +255,7 @@ export default function ProviderProfileScreen() {
           {menuItems.map((item) => (
             <TouchableOpacity
               key={item.id}
-              style={[styles.menuRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}
+              style={[styles.menuRow, { flexDirection: 'row-reverse' }]}
               onPress={() => {
                 if (item.action) {
                   item.action();
@@ -321,7 +313,7 @@ export default function ProviderProfileScreen() {
             <View style={styles.formSection}>
               <View style={styles.fieldContainer}>
                 <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'الاسم الكامل' : 'Full Name'}</ThemedText>
-                <View style={[styles.inputWrapper, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+                <View style={[styles.inputWrapper, { flexDirection: 'row-reverse' }]}>
                   <TextInput
                     style={[styles.input, { textAlign: isRTL ? 'right' : 'left' }]}
                     value={formData.name}
@@ -335,7 +327,7 @@ export default function ProviderProfileScreen() {
 
               <View style={styles.fieldContainer}>
                 <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'رقم الهاتف' : 'Phone Number'}</ThemedText>
-                <View style={[styles.inputWrapper, styles.disabledInputWrapper, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+                <View style={[styles.inputWrapper, styles.disabledInputWrapper, { flexDirection: 'row-reverse' }]}>
                   <ThemedText style={[styles.input, { textAlign: isRTL ? 'right' : 'left', paddingTop: 14 }]}>
                     {user?.phone || ''}
                   </ThemedText>
@@ -345,7 +337,7 @@ export default function ProviderProfileScreen() {
 
               <View style={styles.fieldContainer}>
                 <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'الجنس' : 'Gender'}</ThemedText>
-                <View style={[styles.genderContainer, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+                <View style={[styles.genderContainer, { flexDirection: 'row-reverse' }]}>
                   <TouchableOpacity
                     style={[styles.genderOption, formData.gender === 'male' && styles.genderOptionActive, { flex: 1 }]}
                     onPress={() => setFormData(prev => ({ ...prev, gender: 'male' }))}
@@ -364,7 +356,7 @@ export default function ProviderProfileScreen() {
               <View style={styles.fieldContainer}>
                 <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'تاريخ الميلاد' : 'Birthday'}</ThemedText>
                 <TouchableOpacity
-                  style={[styles.inputWrapper, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}
+                  style={[styles.inputWrapper, { flexDirection: 'row-reverse' }]}
                   onPress={() => setShowDatePicker(true)}
                 >
                   <ThemedText style={[styles.input, { textAlign: isRTL ? 'right' : 'left', paddingTop: 14 }]}>
@@ -389,7 +381,7 @@ export default function ProviderProfileScreen() {
               <View style={styles.fieldContainer}>
                 <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'المدينة' : 'City'}</ThemedText>
                 <TouchableOpacity
-                  style={[styles.inputWrapper, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}
+                  style={[styles.inputWrapper, { flexDirection: 'row-reverse' }]}
                   onPress={() => citySheetRef.current?.present()}
                 >
                   <ThemedText style={[styles.input, { textAlign: isRTL ? 'right' : 'left', paddingTop: 14 }]}>
@@ -428,7 +420,7 @@ export default function ProviderProfileScreen() {
             keyExtractor={(item: any) => item.id}
             renderItem={({ item }: { item: any }) => (
               <TouchableOpacity
-                style={[styles.cityItem, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}
+                style={[styles.cityItem, { flexDirection: 'row-reverse' }]}
                 onPress={() => {
                   setFormData(prev => ({ ...prev, cityId: item.id }));
                   citySheetRef.current?.dismiss();
@@ -453,20 +445,16 @@ export default function ProviderProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
+    backgroundColor: '#FFFFFF' },
   topSection: {
     paddingHorizontal: normalize.width(20),
-    paddingTop: 10,
-  },
+    paddingTop: 10 },
   scrollView: {
-    flex: 1,
-  },
+    flex: 1 },
   scrollContent: {
     paddingHorizontal: normalize.width(20),
     paddingTop: normalize.height(10),
-    paddingBottom: 40,
-  },
+    paddingBottom: 40 },
   userCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -475,23 +463,19 @@ const styles = StyleSheet.create({
     padding: normalize.width(18),
     marginBottom: normalize.height(20),
     borderWidth: 1,
-    borderColor: '#F3F4F6',
-  },
+    borderColor: '#F3F4F6' },
   userInfo: {
     flex: 1,
-    marginHorizontal: normalize.width(15),
-  },
+    marginHorizontal: normalize.width(15) },
   userName: {
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-Black",
-    color: '#374151',
-  },
+    color: '#374151' },
   userType: {
     fontSize: normalize.font(12),
     fontFamily: "Alexandria-Regular",
     color: Colors.primary,
-    marginTop: 4,
-  },
+    marginTop: 4 },
   avatarWrap: {
     width: normalize.width(66),
     height: normalize.width(66),
@@ -501,26 +485,22 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'relative',
-  },
+    position: 'relative' },
   avatarImg: {
     width: '100%',
     height: '100%',
-    borderRadius: normalize.width(33),
-  },
+    borderRadius: normalize.width(33) },
   avatarInitial: {
     width: '100%',
     height: '100%',
     borderRadius: normalize.width(33),
     backgroundColor: Colors.primary,
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   avatarInitialText: {
     color: 'white',
     fontSize: normalize.font(24),
-    fontFamily: "Alexandria-Black",
-  },
+    fontFamily: "Alexandria-Black" },
   editBadge: {
     position: 'absolute',
     bottom: -2,
@@ -532,11 +512,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: 'white',
-  },
+    borderColor: 'white' },
   menuGroup: {
-    gap: normalize.height(16),
-  },
+    gap: normalize.height(16) },
   menuRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -545,43 +523,35 @@ const styles = StyleSheet.create({
     paddingVertical: normalize.height(14),
     paddingHorizontal: normalize.width(18),
     borderWidth: 1,
-    borderColor: '#F3F4F6',
-  },
+    borderColor: '#F3F4F6' },
   menuLabelText: {
     flex: 1,
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-Bold",
     color: '#374151',
-    marginHorizontal: normalize.width(15),
-  },
+    marginHorizontal: normalize.width(15) },
   sheetScrollContent: {
     padding: 20,
-    paddingBottom: 40,
-  },
+    paddingBottom: 40 },
   sheetHeader: {
     alignItems: 'center',
-    marginBottom: 20,
-  },
+    marginBottom: 20 },
   sheetTitle: {
     fontSize: normalize.font(18),
     fontFamily: "Alexandria-Bold",
-    color: Colors.text.primary,
-  },
+    color: Colors.text.primary },
   imageSection: {
     alignItems: 'center',
-    marginBottom: 24,
-  },
+    marginBottom: 24 },
   imageContainer: {
     position: 'relative',
     width: 110,
     height: 110,
-    borderRadius: 55,
-  },
+    borderRadius: 55 },
   profileImage: {
     width: '100%',
     height: '100%',
-    borderRadius: 55,
-  },
+    borderRadius: 55 },
   sheetEditBadge: {
     position: 'absolute',
     bottom: 0,
@@ -593,19 +563,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 3,
-    borderColor: 'white',
-  },
+    borderColor: 'white' },
   formSection: {
-    gap: 16,
-  },
+    gap: 16 },
   fieldContainer: {
-    gap: 8,
-  },
+    gap: 8 },
   label: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-SemiBold",
-    color: Colors.text.secondary,
-  },
+    color: Colors.text.secondary },
   inputWrapper: {
     minHeight: 56,
     backgroundColor: '#F8FAFC',
@@ -614,22 +580,18 @@ const styles = StyleSheet.create({
     borderColor: '#F1F5F9',
     paddingHorizontal: 16,
     paddingVertical: 10,
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   disabledInputWrapper: {
-    backgroundColor: '#F1F5F9',
-  },
+    backgroundColor: '#F1F5F9' },
   input: {
     flex: 1,
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-Regular",
     color: Colors.text.primary,
-    marginHorizontal: 12,
-  },
+    marginHorizontal: 12 },
   genderContainer: {
     flexDirection: 'row',
-    gap: 12,
-  },
+    gap: 12 },
   genderOption: {
     minHeight: 52,
     borderRadius: 16,
@@ -638,60 +600,48 @@ const styles = StyleSheet.create({
     borderColor: '#F1F5F9',
     paddingVertical: 12,
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   genderOptionActive: {
     borderColor: Colors.primary,
-    backgroundColor: '#EEF2FF',
-  },
+    backgroundColor: '#EEF2FF' },
   genderText: {
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-Medium",
-    color: Colors.text.secondary,
-  },
+    color: Colors.text.secondary },
   genderTextActive: {
     color: Colors.primary,
-    fontFamily: "Alexandria-Bold",
-  },
+    fontFamily: "Alexandria-Bold" },
   saveButton: {
     backgroundColor: Colors.primary,
     height: 58,
     borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 30,
-  },
+    marginTop: 30 },
   disabledButton: {
-    opacity: 0.7,
-  },
+    opacity: 0.7 },
   saveButtonText: {
     color: 'white',
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Bold",
-  },
+    fontFamily: "Alexandria-Bold" },
   citySheetContent: {
     flex: 1,
-    padding: 20,
-  },
+    padding: 20 },
   cityItem: {
     paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#F1F5F9',
     justifyContent: 'space-between',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   cityText: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Medium",
-  },
+    fontFamily: "Alexandria-Medium" },
   cityTextActive: {
     color: Colors.primary,
-    fontFamily: "Alexandria-Bold",
-  },
+    fontFamily: "Alexandria-Bold" },
   selectedDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: Colors.primary,
-  }
+    backgroundColor: Colors.primary }
 });

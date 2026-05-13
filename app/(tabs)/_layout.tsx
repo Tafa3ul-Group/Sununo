@@ -15,26 +15,22 @@ import {
 export default function TabLayout() {
   const { t } = useTranslation();
   const { userType, language } = useSelector((state: RootState) => state.auth);
-  const isRTL = language === 'ar';
-
+  
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarStyle: { display: 'none' },
-      }}
+        tabBarStyle: { display: 'none' } }}
     >
       <Tabs.Screen
         name="(customer)"
         options={{
-          href: userType === "owner" ? null : "/(tabs)/(customer)",
-        }}
+          href: userType === "owner" ? null : "/(tabs)/(customer)" }}
       />
       <Tabs.Screen
         name="(dashboard)"
         options={{
-          href: userType === "customer" ? null : "/(tabs)/(dashboard)/home",
-        }}
+          href: userType === "customer" ? null : "/(tabs)/(dashboard)/home" }}
       />
     </Tabs>
   );

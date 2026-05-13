@@ -3,6 +3,7 @@ import React from "react";
 import { Dimensions, StyleSheet, View } from "react-native";
 import Svg, { Path, Rect } from "react-native-svg";
 import { ThemedText } from "../themed-text";
+import { isRTL } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SVG_WIDTH = 375;
@@ -18,8 +19,7 @@ interface HostContactCardProps {
 export const HostContactCard: React.FC<HostContactCardProps> = ({
   name,
   avatar,
-  isRTL,
-}) => {
+  isRTL }) => {
   return (
     <View style={styles.container}>
       <Svg
@@ -58,17 +58,16 @@ export const HostContactCard: React.FC<HostContactCardProps> = ({
       <View
         style={[
           styles.contentOverlay,
-          { flexDirection: isRTL ? "row-reverse" : "row" },
+          { flexDirection: 'row' },
         ]}
       >
         <View
           style={[
             styles.infoColumn,
             {
-              alignItems: isRTL ? "flex-end" : "flex-start",
+              alignItems: 'flex-start',
               marginRight: isRTL ? 85 * SCALE : 15 * SCALE,
-              marginLeft: isRTL ? 15 * SCALE : 85 * SCALE,
-            },
+              marginLeft: isRTL ? 15 * SCALE : 85 * SCALE },
           ]}
         >
           <ThemedText style={styles.hostLabel}>
@@ -101,29 +100,24 @@ const styles = StyleSheet.create({
     width: SCREEN_WIDTH - 40,
     height: SVG_HEIGHT * SCALE,
     justifyContent: "center",
-    alignItems: "center",
-  },
+    alignItems: "center" },
   contentOverlay: {
     position: "absolute",
     width: "100%",
     height: "100%",
     paddingHorizontal: 15 * SCALE,
-    alignItems: "center",
-  },
+    alignItems: "center" },
   infoColumn: {
-    flex: 1,
-  },
+    flex: 1 },
   hostLabel: {
     fontSize: 12,
     color: "#040404ff",
-    fontFamily: "Alexandria-Medium",
-  },
+    fontFamily: "Alexandria-Medium" },
   hostName: {
     fontSize: 16,
     color: "#111827",
     fontFamily: "Alexandria-Black",
-    marginTop: -2,
-  },
+    marginTop: -2 },
   avatarContainer: {
     position: "absolute",
     top: 14.6 * SCALE,
@@ -133,10 +127,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     backgroundColor: "#C5C5C5",
     borderWidth: 2,
-    borderColor: "white",
-  },
+    borderColor: "white" },
   avatar: {
     width: "100%",
-    height: "100%",
-  },
-});
+    height: "100%" } });

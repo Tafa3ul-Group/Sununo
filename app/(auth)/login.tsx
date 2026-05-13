@@ -26,6 +26,7 @@ import {
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 // import { normalize } from "@/constants/theme";
+import { isRTL } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const scale = SCREEN_WIDTH / 375;
@@ -33,13 +34,11 @@ const normalize = {
   width: (size: number) => size * scale,
   height: (size: number) => size * scale, // Using uniform scaling for simplicity
   font: (size: number) => size * scale,
-  radius: (size: number) => size * scale,
-};
+  radius: (size: number) => size * scale };
 
 export function LoginScreen() {
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
-  const dispatch = useDispatch();
+    const dispatch = useDispatch();
   const router = useRouter();
 
   const [login, { isLoading: isLoginLoading }] = useLoginMutation();
@@ -120,8 +119,7 @@ export function LoginScreen() {
           setCredentials({
             user: result.user,
             token: result.token,
-            userType: resolvedUserType,
-          }),
+            userType: resolvedUserType }),
         );
         router.replace(resolvedUserType === "owner" ? "/(tabs)/(dashboard)/home" : "/(tabs)/(customer)");
       } catch (err: any) {
@@ -133,7 +131,7 @@ export function LoginScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container]}>
       {/* Top Logo */}
       <View style={styles.topLogoContainer}>
         <LoginHeaderLogo size={normalize.width(200)} color="#0061FE" />
@@ -155,12 +153,12 @@ export function LoginScreen() {
               onChange={handleTypeChange} 
             />
             {isOwner && (
-              <View style={[styles.ownerHintRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+              <View style={[styles.ownerHintRow, { flexDirection: 'row' }]}>
                 <ThemedText style={styles.ownerHintText}>
                   {isRTL ? "مالك جديد؟" : "New owner?"}
                 </ThemedText>
                 <TouchableOpacity onPress={() => router.push(`/register?type=owner`)}>
-                  <ThemedText style={[styles.ownerHintLink, isRTL ? { marginRight: 6 } : { marginLeft: 6 }]}>
+                  <ThemedText style={[styles.ownerHintLink, { marginStart: 6 }]}>
                     {isRTL ? "سجّل شاليهك" : "Register your chalet"}
                   </ThemedText>
                 </TouchableOpacity>
@@ -170,15 +168,15 @@ export function LoginScreen() {
 
           {/* Login Form */}
           <View style={styles.formContainer}>
-            <View style={[styles.headerRow, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+            <View style={[styles.headerRow, { alignItems: 'flex-start' }]}>
               <ThemedText style={[styles.title, { textAlign: isRTL ? 'right' : 'left' }]}>{t('auth.login')}</ThemedText>
               {!isOwner && (
-                <View style={[styles.subtextRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <View style={[styles.subtextRow, { flexDirection: 'row' }]}>
                   <ThemedText style={styles.subtitle}>
                     {t('auth.dontHaveAccount')}
                   </ThemedText>
                   <TouchableOpacity onPress={() => router.push(`/register?type=${localUserType}`)}>
-                    <ThemedText style={[styles.linkText, isRTL ? { marginRight: normalize.width(6) } : { marginLeft: normalize.width(6) }]}>
+                    <ThemedText style={[styles.linkText, { marginStart: normalize.width(6) }]}>
                       {t('auth.registerNow')}
                     </ThemedText>
                   </TouchableOpacity>
@@ -251,59 +249,47 @@ export function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
-  },
+    backgroundColor: "white" },
   topLogoContainer: {
     alignItems: "center",
     justifyContent: "center",
     marginTop: normalize.height(60),
-    marginBottom: normalize.height(30),
-  },
+    marginBottom: normalize.height(30) },
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: normalize.width(24),
-    paddingBottom: normalize.height(100),
-  },
+    paddingBottom: normalize.height(100) },
   toggleWrapper: {
     alignItems: "center",
-    marginBottom: 24,
-  },
+    marginBottom: 24 },
   formContainer: {
-    width: "100%",
-  },
+    width: "100%" },
   headerRow: {
-    marginBottom: 28,
-  },
+    marginBottom: 28 },
   title: {
     fontSize: 20,
     fontFamily: "Alexandria-Black",
     color: "#1E293B",
     marginBottom: normalize.height(4),
     lineHeight: normalize.font(32),
-    paddingTop: normalize.height(8),
-  },
+    paddingTop: normalize.height(8) },
   subtextRow: {
-    alignItems: "center",
-  },
+    alignItems: "center" },
   subtitle: {
     fontSize: normalize.font(14),
     color: "#64748B",
-    fontFamily: "Alexandria-Medium",
-  },
+    fontFamily: "Alexandria-Medium" },
   linkText: {
     fontSize: normalize.font(14),
     color: "#0061FE",
-    fontFamily: "Alexandria-Bold",
-  },
+    fontFamily: "Alexandria-Bold" },
   inputGroup: {
-    marginBottom: normalize.height(25),
-  },
+    marginBottom: normalize.height(25) },
   label: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Bold",
     color: "#1E293B",
-    marginBottom: normalize.height(10),
-  },
+    marginBottom: normalize.height(10) },
   input: {
     width: "100%",
     minHeight: normalize.height(52),
@@ -315,56 +301,46 @@ const styles = StyleSheet.create({
     paddingVertical: normalize.height(10),
     fontSize: normalize.font(15),
     fontFamily: "Alexandria-Medium",
-    color: "#1E293B",
-  },
+    color: "#1E293B" },
   loginBtn: {
     marginTop: 16,
     minHeight: normalize.height(52),
     width: "100%",
     paddingVertical: normalize.height(12),
     shadowOpacity: 0,
-    elevation: 0,
-  },
+    elevation: 0 },
   guestLink: {
     marginTop: 24,
     width: "100%",
-    alignItems: "center",
-  },
+    alignItems: "center" },
   guestLinkText: {
     fontSize: normalize.font(15),
     color: "#94A3B8",
-    fontFamily: "Alexandria-Bold",
-  },
+    fontFamily: "Alexandria-Bold" },
   bottomWaveContainer: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    zIndex: -1,
-  },
+    zIndex: -1 },
   devHint: {
     fontSize: 12,
     color: "#94A3B8",
     fontFamily: "Alexandria-Regular",
     textAlign: "center",
-    marginTop: 8,
-  },
+    marginTop: 8 },
   ownerHintRow: {
     alignItems: "center",
     justifyContent: "center",
     marginTop: 12,
-    gap: 4,
-  },
+    gap: 4 },
   ownerHintText: {
     fontSize: 13,
     color: "#64748B",
-    fontFamily: "Alexandria-Medium",
-  },
+    fontFamily: "Alexandria-Medium" },
   ownerHintLink: {
     fontSize: 13,
     color: "#0061FE",
-    fontFamily: "Alexandria-Bold",
-  },
-});
+    fontFamily: "Alexandria-Bold" } });
 // Default export for Expo Router
 export default LoginScreen;

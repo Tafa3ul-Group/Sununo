@@ -6,9 +6,9 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ViewStyle,
-} from "react-native";
+  ViewStyle } from "react-native";
 import { SolarMapPointBold, SolarPenBold, SolarBanknoteBold } from "@/components/icons/solar-icons";
+import { isRTL } from "@/i18n";
 
 interface ProviderChaletCardProps {
   title: string;
@@ -29,8 +29,7 @@ export function ProviderChaletCard({
   onEdit,
   onRevenue,
   isRTL = false,
-  style,
-}: ProviderChaletCardProps) {
+  style }: ProviderChaletCardProps) {
   return (
     <TouchableOpacity
       activeOpacity={0.9}
@@ -50,7 +49,7 @@ export function ProviderChaletCard({
         <View
           style={[
             styles.statusBadge,
-            { flexDirection: isRTL ? 'row-reverse' : 'row' },
+            { flexDirection: 'row' },
             isRTL ? { right: 12 } : { left: 12 },
           ]}
         >
@@ -63,19 +62,19 @@ export function ProviderChaletCard({
         <Text style={[styles.title, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
           {title}
         </Text>
-        <View style={[styles.locationRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <View style={[styles.locationRow, { flexDirection: 'row' }]}>
           <SolarMapPointBold size={14} color={Colors.primary} />
           <Text style={styles.location} numberOfLines={1}>
             {location}
           </Text>
         </View>
 
-        <View style={[styles.actionGrid, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <View style={[styles.actionGrid, { flexDirection: 'row' }]}>
           <TouchableOpacity 
             style={[
               styles.actionBtn,
               styles.editBtn,
-              { flexDirection: isRTL ? 'row-reverse' : 'row' },
+              { flexDirection: 'row' },
             ]} 
             onPress={(e) => {
               e.stopPropagation();
@@ -90,7 +89,7 @@ export function ProviderChaletCard({
             style={[
               styles.actionBtn,
               styles.revenueBtn,
-              { flexDirection: isRTL ? 'row-reverse' : 'row' },
+              { flexDirection: 'row' },
             ]} 
             onPress={(e) => {
               e.stopPropagation();
@@ -113,21 +112,17 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#F1F5F9',
-    width: normalize.width(220),
-  },
+    width: normalize.width(220) },
   imageWrapper: {
     height: normalize.height(140),
     width: '100%',
-    position: 'relative',
-  },
+    position: 'relative' },
   image: {
     width: '100%',
-    height: '100%',
-  },
+    height: '100%' },
   imageOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.05)',
-  },
+    backgroundColor: 'rgba(0,0,0,0.05)' },
   statusBadge: {
     position: 'absolute',
     top: 12,
@@ -136,65 +131,52 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
-    gap: 6,
-  },
+    gap: 6 },
   statusDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#10B981',
-  },
+    backgroundColor: '#10B981' },
   statusText: {
     fontSize: normalize.font(10),
     fontFamily: "Alexandria-Black",
-    color: '#111827',
-  },
+    color: '#111827' },
   content: {
-    padding: 14,
-  },
+    padding: 14 },
   title: {
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-Black",
     color: '#111827',
-    marginBottom: 4,
-  },
+    marginBottom: 4 },
   locationRow: {
     alignItems: 'center',
     gap: 4,
-    marginBottom: 16,
-  },
+    marginBottom: 16 },
   location: {
     fontSize: normalize.font(12),
     color: Colors.text.secondary,
     flex: 1,
    fontFamily: "Alexandria-Regular" },
   actionGrid: {
-    gap: 8,
-  },
+    gap: 8 },
   actionBtn: {
     flex: 1,
     height: 40,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-  },
+    gap: 6 },
   editBtn: {
     backgroundColor: Colors.primary + '10',
     borderWidth: 1,
-    borderColor: Colors.primary + '20',
-  },
+    borderColor: Colors.primary + '20' },
   editBtnText: {
     fontSize: normalize.font(13),
     fontFamily: "Alexandria-Black",
-    color: Colors.primary,
-  },
+    color: Colors.primary },
   revenueBtn: {
-    backgroundColor: Colors.primary,
-  },
+    backgroundColor: Colors.primary },
   revenueBtnText: {
     fontSize: normalize.font(13),
     fontFamily: "Alexandria-Black",
-    color: '#FFFFFF',
-  },
-});
+    color: '#FFFFFF' } });

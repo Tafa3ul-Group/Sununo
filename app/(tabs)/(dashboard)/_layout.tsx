@@ -4,11 +4,11 @@ import { RootState } from "@/store";
 import { Redirect, Tabs } from "expo-router";
 import React from "react";
 import { useSelector } from "react-redux";
+import { isRTL } from "@/i18n";
 
 export default function DashboardLayout() {
   const { userType, isAuthenticated, language } = useSelector((state: RootState) => state.auth);
-  const isRTL = language === 'ar';
-
+  
   if (!isAuthenticated) {
     return <Redirect href="/(auth)/login" />;
   }
@@ -23,32 +23,28 @@ export default function DashboardLayout() {
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
-        sceneStyle: { direction: isRTL ? 'rtl' : 'ltr' },
-      }}
+        sceneStyle: { } }}
     >
       <Tabs.Screen
         name="home"
         options={{
           tabBarIcon: ({ color, size }) => (
             <SolarHomeSmileBoldDuotone size={size} color={color} />
-          ),
-        }}
+          ) }}
       />
       <Tabs.Screen
         name="bookings"
         options={{
           tabBarIcon: ({ color, size }) => (
             <SolarNotesBoldDuotone size={size} color={color} />
-          ),
-        }}
+          ) }}
       />
       <Tabs.Screen
         name="revenue"
         options={{
           tabBarIcon: ({ color, size }) => (
             <SolarBanknoteBold size={size} color={color} />
-          ),
-        }}
+          ) }}
       />
       <Tabs.Screen name="shifts" options={{ href: null }} />
       <Tabs.Screen name="chalet-details" options={{ href: null }} />

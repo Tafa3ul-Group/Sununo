@@ -4,6 +4,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
 import Svg, { ClipPath, Defs, G, Path, Rect } from "react-native-svg";
+import { isRTL } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -14,11 +15,9 @@ interface WalletCardProps {
 
 export const WalletCard = ({
   balance = "100,000",
-  onWithdraw,
-}: WalletCardProps) => {
+  onWithdraw }: WalletCardProps) => {
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === "ar";
-  return (
+    return (
     <View style={styles.container}>
       {/* SVG Background - Mirrored for LTR to keep focal points consistent */}
       <View
@@ -80,7 +79,7 @@ export const WalletCard = ({
         <View
           style={[
             styles.topRow,
-            { alignItems: isRTL ? "flex-end" : "flex-start" },
+            { alignItems: 'flex-start' },
           ]}
         >
           <ThemedText
@@ -96,13 +95,13 @@ export const WalletCard = ({
         <View
           style={[
             styles.bottomRow,
-            { flexDirection: isRTL ? "row" : "row-reverse" },
+            { flexDirection: 'row-reverse' },
           ]}
         >
           <View
             style={[
               styles.balanceContainer,
-              { flexDirection: isRTL ? "row-reverse" : "row" },
+              { flexDirection: 'row' },
             ]}
           >
             <ThemedText style={styles.balanceValue}>{balance}</ThemedText>
@@ -135,55 +134,43 @@ const styles = StyleSheet.create({
     height: normalize.height(145),
     alignSelf: "center",
     marginVertical: normalize.height(4),
-    overflow: "hidden",
-  },
+    overflow: "hidden" },
   svgWrapper: {
-    ...StyleSheet.absoluteFillObject,
-  },
+    ...StyleSheet.absoluteFillObject },
   contentOverlay: {
     flex: 1,
     paddingHorizontal: normalize.width(25),
     paddingTop: normalize.height(25),
     paddingBottom: normalize.height(35),
-    justifyContent: "space-between",
-  },
+    justifyContent: "space-between" },
   topRow: {
-    alignItems: "flex-end",
-  },
+    alignItems: "flex-end" },
   balanceLabel: {
     color: "white",
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Black",
-  },
+    fontFamily: "Alexandria-Black" },
   bottomRow: {
     alignItems: "flex-end",
-    justifyContent: "space-between",
-  },
+    justifyContent: "space-between" },
   balanceContainer: {
     alignItems: "baseline",
-    gap: normalize.width(6),
-  },
+    gap: normalize.width(6) },
   balanceValue: {
     color: "white",
     fontSize: normalize.font(28),
     fontFamily: "Alexandria-Black",
     lineHeight: normalize.font(36),
-    paddingVertical: normalize.height(4),
-  },
+    paddingVertical: normalize.height(4) },
   currencyText: {
     color: "white",
     fontSize: normalize.font(18),
-    fontFamily: "Alexandria-Bold",
-  },
+    fontFamily: "Alexandria-Bold" },
   withdrawButton: {
     width: normalize.width(120),
     height: normalize.height(20),
     justifyContent: "center",
-    alignItems: "center",
-  },
+    alignItems: "center" },
   withdrawText: {
     color: "white",
     fontSize: normalize.font(20),
-    fontFamily: "Alexandria-Black",
-  },
-});
+    fontFamily: "Alexandria-Black" } });

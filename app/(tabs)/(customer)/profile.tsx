@@ -7,8 +7,7 @@ import {
     SolarPenBold,
     SolarPhoneBold,
     SolarShieldBold,
-    SolarUserBold,
-} from '@/components/icons/solar-icons';
+    SolarUserBold } from '@/components/icons/solar-icons';
 import { ThemedText } from '@/components/themed-text';
 import { LanguageSheet } from '@/components/user/language-sheet';
 import { WalletCard } from '@/components/user/wallet-card';
@@ -18,8 +17,7 @@ import { RootState } from '@/store';
 import { useGetMeQuery } from '@/store/api/apiSlice';
 import {
     useGetCustomerWalletQuery,
-    useLogoutUserMutation,
-} from '@/store/api/customerApiSlice';
+    useLogoutUserMutation } from '@/store/api/customerApiSlice';
 import { logout } from '@/store/authSlice';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
@@ -32,16 +30,15 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
-} from 'react-native';
+    View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
+import { isRTL } from "@/i18n";
 
 export default function CustomerProfileScreen() {
     const dispatch = useDispatch();
     const { i18n, t } = useTranslation();
-    const isRTL = i18n.language === 'ar';
-    const { user: authUser } = useSelector((state: RootState) => state.auth);
+        const { user: authUser } = useSelector((state: RootState) => state.auth);
     const router = useRouter();
     const insets = useSafeAreaInsets();
 
@@ -72,8 +69,7 @@ export default function CustomerProfileScreen() {
                             // ignore server error
                         }
                         dispatch(logout());
-                    },
-                },
+                    } },
             ],
         );
     };
@@ -84,55 +80,47 @@ export default function CustomerProfileScreen() {
             title: isRTL ? 'تعديل الملف الشخصي' : 'Edit Profile',
             shape: 'blue' as const,
             icon: <SolarUserBold size={20} color="white" />,
-            route: '/profile-edit',
-        },
+            route: '/profile-edit' },
         {
             id: 'bookings',
             title: t('headers.bookings'),
             shape: 'blue' as const,
             icon: <SolarCalendarBold size={20} color="white" />,
-            route: '/(tabs)/(customer)/bookings',
-        },
+            route: '/(tabs)/(customer)/bookings' },
         {
             id: 'reviews',
             title: t('headers.reviews'),
             shape: 'blue' as const,
             icon: <SolarHeartBold size={20} color="white" />,
-            route: '/reviews',
-        },
+            route: '/reviews' },
         {
             id: 'favorites',
             title: t('headers.favorites'),
             shape: 'blue' as const,
             icon: <SolarHeartBold size={20} color="white" />,
-            route: '/favorites',
-        },
+            route: '/favorites' },
         {
             id: 'language',
             title: t('profile.language'),
             shape: 'pink' as const,
             icon: <SolarGlobalBold size={20} color="white" />,
-            action: () => languageSheetRef.current?.present(),
-        },
+            action: () => languageSheetRef.current?.present() },
         {
             id: 'contact',
             title: t('profile.contactUs'),
             shape: 'green' as const,
-            icon: <SolarPhoneBold size={20} color="white" />,
-        },
+            icon: <SolarPhoneBold size={20} color="white" /> },
         {
             id: 'privacy',
             title: t('profile.privacyPolicy'),
             shape: 'blue' as const,
-            icon: <SolarShieldBold size={20} color="white" />,
-        },
+            icon: <SolarShieldBold size={20} color="white" /> },
         {
             id: 'logout',
             title: t('profile.logout'),
             shape: 'red' as const,
             icon: <SolarLogoutBold size={20} color="white" />,
-            action: handleLogout,
-        },
+            action: handleLogout },
     ];
 
     return (
@@ -148,7 +136,7 @@ export default function CustomerProfileScreen() {
             >
                 {/* User Card — navigates to profile-edit */}
                 <TouchableOpacity
-                    style={[styles.userCard, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}
+                    style={[styles.userCard, { flexDirection: 'row-reverse' }]}
                     onPress={() => router.push('/profile-edit')}
                     activeOpacity={0.9}
                 >
@@ -156,7 +144,7 @@ export default function CustomerProfileScreen() {
                         <SolarPenBold size={16} color="white" />
                     </ProfileShape>
 
-                    <View style={[styles.userInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                    <View style={[styles.userInfo, { alignItems: 'flex-start' }]}>
                         <Text style={[styles.userName, { textAlign: isRTL ? 'right' : 'left' }]}>
                             {userData?.name || (isRTL ? 'المستخدم' : 'User')}
                         </Text>
@@ -186,7 +174,7 @@ export default function CustomerProfileScreen() {
                     {menuItems.map((item) => (
                         <TouchableOpacity
                             key={item.id}
-                            style={[styles.menuRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}
+                            style={[styles.menuRow, { flexDirection: 'row-reverse' }]}
                             onPress={() => {
                                 if (item.action) {
                                     item.action();
@@ -224,25 +212,21 @@ export default function CustomerProfileScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFFFFF',
-    },
+        backgroundColor: '#FFFFFF' },
     header: {
         alignItems: 'center',
         justifyContent: 'center',
         paddingHorizontal: normalize.width(20),
         paddingVertical: normalize.height(14),
         borderBottomWidth: 1,
-        borderBottomColor: '#F3F4F6',
-    },
+        borderBottomColor: '#F3F4F6' },
     headerTitle: {
         fontSize: normalize.font(18),
         fontFamily: 'Alexandria-Black',
-        color: '#111827',
-    },
+        color: '#111827' },
     scrollContent: {
         paddingHorizontal: normalize.width(20),
-        paddingTop: normalize.height(16),
-    },
+        paddingTop: normalize.height(16) },
     userCard: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -251,23 +235,19 @@ const styles = StyleSheet.create({
         padding: normalize.width(16),
         marginBottom: normalize.height(16),
         borderWidth: 1,
-        borderColor: '#F3F4F6',
-    },
+        borderColor: '#F3F4F6' },
     userInfo: {
         flex: 1,
-        marginHorizontal: normalize.width(14),
-    },
+        marginHorizontal: normalize.width(14) },
     userName: {
         fontSize: normalize.font(16),
         fontFamily: 'Alexandria-Black',
         color: '#111827',
-        marginBottom: 2,
-    },
+        marginBottom: 2 },
     userPhone: {
         fontSize: normalize.font(13),
         fontFamily: 'Alexandria-Regular',
-        color: '#6B7280',
-    },
+        color: '#6B7280' },
     avatarWrap: {
         width: normalize.width(56),
         height: normalize.width(56),
@@ -275,16 +255,13 @@ const styles = StyleSheet.create({
         backgroundColor: '#F3F4F6',
         borderWidth: 1,
         borderColor: '#E5E7EB',
-        overflow: 'hidden',
-    },
+        overflow: 'hidden' },
     avatarImg: {
         width: '100%',
-        height: '100%',
-    },
+        height: '100%' },
     menuGroup: {
         gap: normalize.height(12),
-        marginTop: normalize.height(16),
-    },
+        marginTop: normalize.height(16) },
     menuRow: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -293,16 +270,12 @@ const styles = StyleSheet.create({
         paddingVertical: normalize.height(14),
         paddingHorizontal: normalize.width(16),
         borderWidth: 1,
-        borderColor: '#F3F4F6',
-    },
+        borderColor: '#F3F4F6' },
     menuLabelText: {
         flex: 1,
         fontSize: normalize.font(15),
         fontFamily: 'Alexandria-Bold',
         color: '#374151',
-        marginHorizontal: normalize.width(14),
-    },
+        marginHorizontal: normalize.width(14) },
     logoutText: {
-        color: '#EF4444',
-    },
-});
+        color: '#EF4444' } });

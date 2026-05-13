@@ -15,16 +15,15 @@ import {
   StyleSheet,
   TextInput,
   View,
-  Alert,
-} from 'react-native';
+  Alert } from 'react-native';
 import Toast from 'react-native-toast-message';
+import { isRTL } from "@/i18n";
 
 export default function EditChaletDetailsScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
-
+  
   const { data: response, isLoading: isLoadingDetails, refetch } = useGetOwnerChaletDetailsQuery(id);
   const chalet = response?.data || response;
 
@@ -38,8 +37,7 @@ export default function EditChaletDetailsScreen() {
     cancellationAr: '',
     cancellationEn: '',
     checkInTime: '',
-    checkOutTime: '',
-  });
+    checkOutTime: '' });
 
   useEffect(() => {
     if (chalet) {
@@ -51,8 +49,7 @@ export default function EditChaletDetailsScreen() {
         cancellationAr: chalet.cancellationPolicy?.ar || '',
         cancellationEn: chalet.cancellationPolicy?.en || '',
         checkInTime: chalet.checkInTime || '',
-        checkOutTime: chalet.checkOutTime || '',
-      });
+        checkOutTime: chalet.checkOutTime || '' });
     }
   }, [chalet]);
 
@@ -63,16 +60,14 @@ export default function EditChaletDetailsScreen() {
         terms: { ar: form.termsAr, en: form.termsEn || form.termsAr },
         cancellationPolicy: { ar: form.cancellationAr, en: form.cancellationEn || form.cancellationAr },
         checkInTime: form.checkInTime,
-        checkOutTime: form.checkOutTime,
-      };
+        checkOutTime: form.checkOutTime };
 
       await updateChalet({ id, data: payload }).unwrap();
       Toast.show({
         type: 'success',
         text1: isRTL ? 'تم الحفظ' : 'Saved',
         text2: isRTL ? 'تم تحديث التفاصيل بنجاح' : 'Details updated successfully',
-        position: 'bottom',
-      });
+        position: 'bottom' });
       refetch();
       router.back();
     } catch (error: any) {
@@ -92,7 +87,7 @@ export default function EditChaletDetailsScreen() {
   const flexDirection = isRTL ? 'row-reverse' : 'row';
 
   return (
-    <View style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
+    <View style={[styles.container]}>
       <StatusBar style="dark" />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -237,36 +232,30 @@ export default function EditChaletDetailsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FBFCFE',
-  },
+    backgroundColor: '#FBFCFE' },
   center: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   scrollContent: {
     padding: 20,
-    paddingBottom: 120,
-  },
+    paddingBottom: 120 },
   headerInfo: {
     alignItems: 'center',
     marginBottom: 30,
-    marginTop: 10,
-  },
+    marginTop: 10 },
   headerTitle: {
     fontSize: normalize.font(20),
     fontFamily: 'Alexandria-Black',
     color: Colors.text.primary,
-    marginTop: 12,
-  },
+    marginTop: 12 },
   headerSub: {
     fontSize: normalize.font(14),
     fontFamily: 'Alexandria-Medium',
     color: Colors.text.muted,
     textAlign: 'center',
     marginTop: 8,
-    paddingHorizontal: 20,
-  },
+    paddingHorizontal: 20 },
   sectionCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: normalize.radius(24),
@@ -279,40 +268,31 @@ const styles = StyleSheet.create({
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
-        shadowRadius: 10,
-      },
+        shadowRadius: 10 },
       android: {
-        elevation: 2,
-      },
-    }),
-  },
+        elevation: 2 } }) },
   sectionTitleRow: {
     alignItems: 'center',
     gap: 12,
-    marginBottom: 20,
-  },
+    marginBottom: 20 },
   iconBox: {
     width: 36,
     height: 36,
     borderRadius: 10,
     backgroundColor: Colors.primary,
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   sectionTitle: {
     fontSize: normalize.font(16),
     fontFamily: 'Alexandria-Black',
-    color: Colors.text.primary,
-  },
+    color: Colors.text.primary },
   inputGroup: {
-    marginBottom: 16,
-  },
+    marginBottom: 16 },
   label: {
     fontSize: normalize.font(13),
     fontFamily: 'Alexandria-Bold',
     color: '#64748B',
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   input: {
     height: 52,
     backgroundColor: '#F8FAFC',
@@ -322,8 +302,7 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
     fontSize: normalize.font(15),
     fontFamily: 'Alexandria-Medium',
-    color: Colors.text.primary,
-  },
+    color: Colors.text.primary },
   textArea: {
     minHeight: 120,
     backgroundColor: '#F8FAFC',
@@ -335,11 +314,9 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(15),
     fontFamily: 'Alexandria-Medium',
     color: Colors.text.primary,
-    textAlignVertical: 'top',
-  },
+    textAlignVertical: 'top' },
   row: {
-    flexDirection: 'row',
-  },
+    flexDirection: 'row' },
   footer: {
     position: 'absolute',
     bottom: 0,
@@ -349,6 +326,4 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
     borderTopColor: '#F1F5F9',
-    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
-  },
-});
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20 } });

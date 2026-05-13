@@ -54,10 +54,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFFFFF",
     justifyContent: "center",
-    alignItems: "center",
-  },
+    alignItems: "center" },
   lottie: {
     width: width,
-    height: height,
-  },
-});
+    height: height } });

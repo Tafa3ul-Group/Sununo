@@ -8,8 +8,7 @@ import { normalize } from "@/constants/theme";
 import {
     useLoginMutation,
     useRegisterProviderMutation,
-    useVerifyPhoneMutation,
-} from "@/store/api/apiSlice";
+    useVerifyPhoneMutation } from "@/store/api/apiSlice";
 import { setCredentials } from "@/store/authSlice";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -26,6 +25,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch } from "react-redux";
+import { isRTL } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -52,8 +52,7 @@ function StepProgress({ current, total }: { current: number; total: number }) {
 
 export default function RegisterScreen() {
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === "ar";
-  const router = useRouter();
+    const router = useRouter();
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
 
@@ -85,8 +84,7 @@ export default function RegisterScreen() {
     phone: "",
     businessNameAr: "",
     businessNameEn: "",
-    commercialRegNo: "",
-  });
+    commercialRegNo: "" });
 
   const [otpCode, setOtpCode] = useState("");
 
@@ -160,9 +158,7 @@ export default function RegisterScreen() {
         name: formData.name,
         businessName: {
           ar: formData.businessNameAr,
-          en: formData.businessNameEn || formData.businessNameAr,
-        },
-      };
+          en: formData.businessNameEn || formData.businessNameAr } };
       if (formData.commercialRegNo.trim()) {
         payload.commercialRegNo = formData.commercialRegNo.trim();
       }
@@ -189,8 +185,7 @@ export default function RegisterScreen() {
             { text: isRTL ? "إلغاء" : "Cancel", style: "cancel" },
             {
               text: isRTL ? "تسجيل الدخول" : "Log In",
-              onPress: () => router.replace("/login"),
-            },
+              onPress: () => router.replace("/login") },
           ],
         );
       } else {
@@ -232,8 +227,7 @@ export default function RegisterScreen() {
         setCredentials({
           user: result.user,
           token: result.token,
-          userType: resolvedUserType,
-        }),
+          userType: resolvedUserType }),
       );
 
       router.replace(
@@ -251,7 +245,6 @@ export default function RegisterScreen() {
       <View
         style={[
           styles.header,
-          { flexDirection: isRTL ? "row-reverse" : "row" },
         ]}
       >
         <CircleBackButton onPress={prevStep} />
@@ -508,37 +501,30 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
-  },
+    backgroundColor: "white" },
   header: {
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
     minHeight: 60,
-    paddingVertical: 10,
-  },
+    paddingVertical: 10 },
   headerTitle: {
     fontSize: 18,
     fontFamily: "Alexandria-Bold",
-    color: "#1E293B",
-  },
+    color: "#1E293B" },
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    paddingBottom: 40,
-  },
+    paddingBottom: 40 },
   logoContainer: {
     alignItems: "center",
-    marginVertical: 20,
-  },
+    marginVertical: 20 },
   stepContainer: {
-    width: "100%",
-  },
+    width: "100%" },
   // Task 2.1: New style for toggle inside INFO step
   toggleInInfo: {
     alignItems: "center",
-    marginBottom: 20,
-  },
+    marginBottom: 20 },
   // Task 2.4: stepTitle fontSize changed from 22 to 20
   stepTitle: {
     fontSize: 20,
@@ -546,15 +532,13 @@ const styles = StyleSheet.create({
     color: "#1E293B",
     marginBottom: 8,
     lineHeight: 30,
-    paddingTop: 6,
-  },
+    paddingTop: 6 },
   // Task 2.4: stepSubtitle marginBottom changed from 30 to 20
   stepSubtitle: {
     fontSize: 14,
     fontFamily: "Alexandria-Medium",
     color: "#64748B",
-    marginBottom: 20,
-  },
+    marginBottom: 20 },
   typeCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -563,46 +547,38 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "#E2E8F0",
-  },
+    borderColor: "#E2E8F0" },
   typeCardActive: {
     borderColor: "#0061FE",
-    backgroundColor: "#EBF3FF",
-  },
+    backgroundColor: "#EBF3FF" },
   iconBox: {
     width: 48,
     height: 48,
     borderRadius: 12,
     justifyContent: "center",
-    alignItems: "center",
-  },
+    alignItems: "center" },
   cardInfo: {
     flex: 1,
-    paddingHorizontal: 12,
-  },
+    paddingHorizontal: 12 },
   cardTitle: {
     fontSize: 16,
     fontFamily: "Alexandria-Bold",
     color: "#1E293B",
-    marginBottom: 4,
-  },
+    marginBottom: 4 },
   cardDesc: {
     fontSize: 12,
     fontFamily: "Alexandria-Regular",
-    color: "#64748B",
-  },
+    color: "#64748B" },
   // Task 2.4: inputGroup marginBottom changed from normalize.height(20) to 16
   inputGroup: {
-    marginBottom: 16,
-  },
+    marginBottom: 16 },
   label: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Bold",
     color: "#1E293B",
     marginBottom: normalize.height(8),
     lineHeight: normalize.font(20),
-    paddingTop: 4,
-  },
+    paddingTop: 4 },
   input: {
     width: "100%",
     minHeight: normalize.height(52),
@@ -614,16 +590,13 @@ const styles = StyleSheet.create({
     paddingVertical: normalize.height(10),
     fontSize: 15,
     fontFamily: "Alexandria-Medium",
-    color: "#1E293B",
-  },
+    color: "#1E293B" },
   // Task 2.4: mainBtn marginTop changed from normalize.height(20) to 16
   mainBtn: {
     marginTop: 16,
     width: "100%",
     minHeight: normalize.height(54),
-    paddingVertical: normalize.height(12),
-  },
-});
+    paddingVertical: normalize.height(12) } });
 
 // Task 2.2: progressStyles for StepProgress component
 const progressStyles = StyleSheet.create({
@@ -632,21 +605,16 @@ const progressStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    marginBottom: 20,
-  },
+    marginBottom: 20 },
   dot: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: "#E2E8F0",
-  },
+    backgroundColor: "#E2E8F0" },
   activeDot: {
     backgroundColor: "#0061FE",
     width: 12,
     height: 12,
-    borderRadius: 6,
-  },
+    borderRadius: 6 },
   doneDot: {
-    backgroundColor: "#93C5FD",
-  },
-});
+    backgroundColor: "#93C5FD" } });

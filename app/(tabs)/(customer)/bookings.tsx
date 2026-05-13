@@ -8,30 +8,28 @@ import { formatPrice } from '@/utils/format';
 import { useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { I18nManager, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { ClipPath, Defs, Path, Image as SvgImage } from 'react-native-svg';
+import { isRTL } from "@/i18n";
 
 // Global isRTL for styles
-const isRTL = I18nManager.isRTL;
 
 const SHAPES_CONFIG = [
   {
     viewBox: "0 0 132 114",
     width: 132,
     height: 114,
-    path: "M78.7725 2C93.5962 2.00003 106.408 5.61551 115.473 12.8877C124.473 20.1084 130 31.1096 130 46.416C130 63.2797 118.126 78.4796 102.275 90.1074C86.4772 101.697 67.2293 109.354 53.5078 111.289C39.5004 113.265 27.4662 111.112 18.5918 104.994C9.7592 98.905 3.76485 88.6866 2.18652 73.9004C0.804578 60.9535 7.14433 42.9634 20.3965 28.1426C33.584 13.3941 53.4373 2 78.7725 2Z",
-  }
+    path: "M78.7725 2C93.5962 2.00003 106.408 5.61551 115.473 12.8877C124.473 20.1084 130 31.1096 130 46.416C130 63.2797 118.126 78.4796 102.275 90.1074C86.4772 101.697 67.2293 109.354 53.5078 111.289C39.5004 113.265 27.4662 111.112 18.5918 104.994C9.7592 98.905 3.76485 88.6866 2.18652 73.9004C0.804578 60.9535 7.14433 42.9634 20.3965 28.1426C33.584 13.3941 53.4373 2 78.7725 2Z" }
 ];
 
 export default function BookingsScreen() {
   const { t, i18n } = useTranslation();
-  const isArabic = i18n.language === 'ar';
-  const isRTL = isArabic;
   const router = useRouter();
+  const isArabic = isRTL || i18n.language === 'ar';
 
   // Fetch bookings from the backend
-  const { data: bookingsResponse, isLoading, refetch } = useGetCustomerBookingsQuery({ page: 1, limit: 20 });
+  const { data: bookingsResponse } = useGetCustomerBookingsQuery({ page: 1, limit: 20 });
 
   // Transform API data to match UI format
   const bookings = useMemo(() => {
@@ -52,9 +50,7 @@ export default function BookingsScreen() {
           : (booking.chalet?.region?.name?.en || booking.chalet?.region?.nameEn || booking.chalet?.region?.name || ''),
         rating: booking.chalet?.averageRating || 0,
         price: booking.chalet?.basePrice || booking.totalPrice || 0,
-        images: booking.chalet?.images || [],
-      },
-    }));
+        images: booking.chalet?.images || [] } }));
   }, [bookingsResponse, isArabic]);
 
   const renderBookingItem = (booking: any) => {
@@ -91,7 +87,7 @@ export default function BookingsScreen() {
                 </View>
                 
                 <View style={[styles.priceRatingRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                   <ThemedText style={styles.priceText}>
+                   <ThemedText style={[styles.priceText, { textAlign: isRTL ? 'right' : 'left' }]}>
                        <ThemedText style={styles.priceLabel}>{isArabic ? "شفت / " : "Shift / "}</ThemedText>
                        {formatPrice(booking.chalet?.price)}
                    </ThemedText>
@@ -106,17 +102,17 @@ export default function BookingsScreen() {
         {/* Bottom Block: Booking Details */}
         <View style={styles.bottomBlock}>
             <View style={[styles.detailRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                <ThemedText style={styles.detailLabel}>{t('booking.bookingDate')}</ThemedText>
-                <ThemedText style={styles.detailValue}>{t('booking.dateValue')}</ThemedText>
+                <ThemedText style={[styles.detailLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{t('booking.bookingDate')}</ThemedText>
+                <ThemedText style={[styles.detailValue, { textAlign: isRTL ? 'left' : 'right' }]}>{t('booking.dateValue')}</ThemedText>
             </View>
 
             <View style={[styles.detailRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                <ThemedText style={styles.detailLabel}>{t('booking.finalAmount')}</ThemedText>
-                <ThemedText style={styles.detailValue}>{formatPrice(booking.totalPrice)}</ThemedText>
+                <ThemedText style={[styles.detailLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{t('booking.finalAmount')}</ThemedText>
+                <ThemedText style={[styles.detailValue, { textAlign: isRTL ? 'left' : 'right' }]}>{formatPrice(booking.totalPrice)}</ThemedText>
             </View>
 
             <View style={[styles.detailRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                <ThemedText style={styles.detailLabel}>{t('booking.paymentStatus')}</ThemedText>
+                <ThemedText style={[styles.detailLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{t('booking.paymentStatus')}</ThemedText>
                 <View style={styles.paidBadge}>
                     <ThemedText style={styles.paidBadgeText}>{t('booking.status.paid')}</ThemedText>
                 </View>
@@ -158,7 +154,7 @@ export default function BookingsScreen() {
             <ThemedText style={styles.emptySubtitle}>
               {t('booking.noBookingsDesc')}
             </ThemedText>
-            <TouchableOpacity style={styles.exploreBtn} onPress={() => router.push('/(tabs)')}>
+            <TouchableOpacity style={styles.exploreBtn} onPress={() => router.push('/(tabs)/(customer)/explore')}>
               <ThemedText style={styles.exploreBtnText}>{t('booking.exploreNow')}</ThemedText>
             </TouchableOpacity>
           </View>
@@ -178,12 +174,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderWidth: 1,
     borderColor: '#F1F5F9',
-    ...Shadows.small,
-  },
+    ...Shadows.small },
   topBlock: {
     padding: 16,
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   chaletInfoContent: { flex: 1, height: 100, justifyContent: 'space-between' },
   chaletTitle: { fontSize: 16, fontFamily: "Alexandria-Black", color: '#1E293B' },
   locationText: { fontSize: 13, color: '#64748B', fontFamily: "Alexandria-Bold", marginTop: 4 },
@@ -203,8 +197,7 @@ const styles = StyleSheet.create({
      borderBottomLeftRadius: 24,
      borderBottomRightRadius: 24,
      paddingHorizontal: 20,
-     paddingVertical: 16,
-  },
+     paddingVertical: 16 },
   detailRow: { justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   detailLabel: { fontSize: normalize.font(15), fontFamily: "Alexandria-Black", color: '#111827' },
   detailValue: { fontSize: normalize.font(16), fontFamily: "Alexandria-Bold", color: '#94A3B8' },

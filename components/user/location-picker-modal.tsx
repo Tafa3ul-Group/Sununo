@@ -4,6 +4,7 @@ import { Colors, Spacing, normalize, Typography } from '@/constants/theme';
 import { PrimaryButton } from './primary-button';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SolarCloseCircleBold, SolarMapPointBold, SolarMapPointLinear } from "@/components/icons/solar-icons";
+import { isRTL } from "@/i18n";
 
 let Mapbox: any = null;
 try {
@@ -26,7 +27,6 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
   const [region, setRegion] = useState({ latitude: 33.3152, longitude: 44.3661 });
   const [hasNativeMap] = useState(!!Mapbox);
   const cameraRef = React.useRef<any>(null);
-  const isRTL = I18nManager.isRTL;
 
   // Sync with initialLocation when modal opens
   React.useEffect(() => {
@@ -37,8 +37,7 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
         cameraRef.current.setCamera({
           centerCoordinate: [startLoc.longitude, startLoc.latitude],
           zoomLevel: 14,
-          animationDuration: 0,
-        });
+          animationDuration: 0 });
       }
     }
   }, [visible, initialLocation]);
@@ -61,7 +60,7 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
         <View
           style={[
             styles.header,
-            { flexDirection: isRTL ? 'row-reverse' : 'row' },
+            { flexDirection: 'row' },
           ]}
         >
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
@@ -84,8 +83,7 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
                 ref={cameraRef}
                 defaultSettings={{
                   zoomLevel: 14,
-                  centerCoordinate: [region.longitude, region.latitude],
-                }}
+                  centerCoordinate: [region.longitude, region.latitude] }}
               />
             </Mapbox.MapView>
           ) : (
@@ -105,7 +103,7 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
           <View
             style={[
               styles.locationInfo,
-              { flexDirection: isRTL ? 'row-reverse' : 'row' },
+              { flexDirection: 'row' },
             ]}
           >
             <Text style={styles.coordinateLabel}>Lat: {region.latitude.toFixed(6)}</Text>
@@ -124,18 +122,15 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.white,
-  },
+    backgroundColor: Colors.white },
   header: {
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-  },
+    borderBottomColor: Colors.border },
   closeButton: {
-    padding: 4,
-  },
+    padding: 4 },
   title: {
     ...Typography.h2,
     fontSize: normalize.font(18) },
@@ -143,18 +138,15 @@ const styles = StyleSheet.create({
     flex: 1,
     position: 'relative',
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   map: {
-    ...StyleSheet.absoluteFillObject,
-  },
+    ...StyleSheet.absoluteFillObject },
   fallback: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F3F4F6',
-    width: '100%',
-  },
+    width: '100%' },
   fallbackText: {
     ...Typography.body,
     marginTop: Spacing.md,
@@ -165,18 +157,15 @@ const styles = StyleSheet.create({
     left: '50%',
     marginLeft: -20,
     marginTop: -40, // Adjust based on icon size and point
-    zIndex: 10,
-  },
+    zIndex: 10 },
   footer: {
     padding: Spacing.lg,
     backgroundColor: Colors.white,
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
-  },
+    borderTopColor: Colors.border },
   locationInfo: {
     justifyContent: 'space-around',
-    marginBottom: Spacing.md,
-  },
+    marginBottom: Spacing.md },
   coordinateLabel: {
     ...Typography.caption,
     color: Colors.text.muted,

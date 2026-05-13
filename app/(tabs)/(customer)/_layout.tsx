@@ -2,8 +2,7 @@ import {
     SolarFiltersBoldDuotone,
     SolarHomeSmileBoldDuotone,
     SolarMapBoldDuotone,
-    SolarUserBold,
-} from "@/components/icons/solar-icons";
+    SolarUserBold } from "@/components/icons/solar-icons";
 import { CustomTabBar } from "@/components/user/custom-tab-bar";
 import { SearchFilterSheet } from "@/components/user/search-filter-sheet";
 import { getImageSrc } from "@/hooks/useImageSrc";
@@ -38,8 +37,7 @@ export default function CustomerLayout() {
       maxGuests: filters.maxGuests || null,
       adults: filters.adults ?? 2,
       children: filters.children ?? 0,
-      isActive: true,
-    }));
+      isActive: true }));
   };
 
   return (
@@ -48,38 +46,33 @@ export default function CustomerLayout() {
         tabBar={(props) => <CustomTabBar {...props} />}
         screenOptions={{
           headerShown: false,
-          tabBarShowLabel: false,
-        }}
+          tabBarShowLabel: false }}
       >
         <Tabs.Screen
           name="index"
           options={{
             tabBarIcon: ({ color, size }) => (
               <SolarHomeSmileBoldDuotone size={size} color={color} />
-            ),
-          }}
+            ) }}
         />
         <Tabs.Screen
           name="filters"
           options={{
             tabBarIcon: ({ color, size }) => (
               <SolarFiltersBoldDuotone size={size} color={color} />
-            ),
-          }}
+            ) }}
           listeners={{
             tabPress: (e) => {
               e.preventDefault();
               filterSheetRef.current?.present();
-            },
-          }}
+            } }}
         />
         <Tabs.Screen
           name="explore"
           options={{
             tabBarIcon: ({ color, size }) => (
               <SolarMapBoldDuotone size={size} color={color} />
-            ),
-          }}
+            ) }}
         />
         <Tabs.Screen
           name="profile"
@@ -100,8 +93,7 @@ export default function CustomerLayout() {
                     overflow: "hidden",
                     borderWidth: focused ? 2 : 1,
                     borderColor: focused ? color : "#E5E7EB",
-                    backgroundColor: "#F3F4F6",
-                  }}
+                    backgroundColor: "#F3F4F6" }}
                 >
                   <Image
                     source={getImageSrc(user?.imageUrl || avatarUrl)}
@@ -109,16 +101,14 @@ export default function CustomerLayout() {
                   />
                 </View>
               );
-            },
-          }}
+            } }}
           listeners={{
             tabPress: (e) => {
               if (userType === "guest") {
                 e.preventDefault();
                 router.push("/(auth)/login");
               }
-            },
-          }}
+            } }}
         />
         <Tabs.Screen name="bookings" options={{ href: null }} />
         <Tabs.Screen name="booking-success" options={{ href: null }} />

@@ -10,6 +10,7 @@ import {
   NativeScrollEvent
 } from "react-native";
 import { HorizontalCard } from "./horizontal-card";
+import { isRTL } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const ITEM_WIDTH = SCREEN_WIDTH - 32;
@@ -24,8 +25,7 @@ interface HorizontalSwiperProps {
 
 export function HorizontalSwiper({ data, onPressCard, onIndexChange, favoriteIds = [], onToggleFavorite }: HorizontalSwiperProps) {
   const { i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
-  const [activeIndex, setActiveIndex] = useState(0);
+    const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -62,7 +62,7 @@ export function HorizontalSwiper({ data, onPressCard, onIndexChange, favoriteIds
         snapToInterval={ITEM_WIDTH + SEPARATOR_WIDTH}
         snapToAlignment="center"
         decelerationRate="fast"
-        contentContainerStyle={[styles.listContent, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+        contentContainerStyle={[styles.listContent, { flexDirection: 'row' }]}
         pagingEnabled={false}
         ItemSeparatorComponent={() => (
           <View style={{ width: SEPARATOR_WIDTH }} />
@@ -77,12 +77,9 @@ export function HorizontalSwiper({ data, onPressCard, onIndexChange, favoriteIds
 const styles = StyleSheet.create({
   container: {},
   listContent: {
-    paddingHorizontal: 16,
-  },
+    paddingHorizontal: 16 },
   cardOverride: {
     width: "100%",
     marginBottom: 0,
     borderWidth: 1.5,
-    borderColor: "#F3F4F6",
-  },
-});
+    borderColor: "#F3F4F6" } });

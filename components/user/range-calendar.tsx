@@ -5,6 +5,7 @@ import { SolarAltArrowLeftBold, SolarAltArrowRightBold } from "@/components/icon
 import { normalize, Colors } from "@/constants/theme";
 import { useTranslation } from "react-i18next";
 import Svg, { Path } from "react-native-svg";
+import { isRTL } from "@/i18n";
 
 const DAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 const MONTHS_NAMES = [
@@ -32,8 +33,7 @@ interface RangeCalendarProps {
 
 export const RangeCalendar: React.FC<RangeCalendarProps> = ({ onSelect, initialStartDate, initialEndDate, reservedDates = [] }) => {
   const { i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
-  
+    
   const [viewDate, setViewDate] = useState(initialStartDate || new Date()); // The month currently being viewed
   const [startDate, setStartDate] = useState<Date | null>(initialStartDate || null);
   const [endDate, setEndDate] = useState<Date | null>(initialEndDate || null);
@@ -130,7 +130,7 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({ onSelect, initialS
   return (
     <View style={styles.container}>
       {/* Month Navigation Header */}
-      <View style={[styles.header, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+      <View style={[styles.header, { flexDirection: 'row' }]}>
         <TouchableOpacity onPress={() => changeMonth(-1)} style={styles.navBtn}>
           {isRTL ? <SolarAltArrowRightBold size={20} color={Colors.text.primary} /> : <SolarAltArrowLeftBold size={20} color={Colors.text.primary} />}
         </TouchableOpacity>
@@ -148,7 +148,7 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({ onSelect, initialS
 
       {showYearPicker ? (
         <View style={styles.yearPicker}>
-            <View style={[styles.yearGrid, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.yearGrid, { flexDirection: 'row' }]}>
                 {years.map(y => (
                     <TouchableOpacity 
                         key={y} 
@@ -167,7 +167,7 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({ onSelect, initialS
         </View>
       ) : (
         <>
-          <View style={[styles.daysHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.daysHeader, { flexDirection: 'row' }]}>
             {DAYS.map((day) => (
               <ThemedText key={day} style={styles.dayHeaderText}>
                 {day}
@@ -175,7 +175,7 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({ onSelect, initialS
             ))}
           </View>
 
-          <View style={[styles.grid, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.grid, { flexDirection: 'row' }]}>
             {calendarDays.map((item, index) => {
               const time = item.date.getTime();
               const isStart = !!startDate && time === startDate.getTime();
@@ -228,77 +228,65 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     paddingHorizontal: normalize.width(10),
     width: "100%",
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   header: {
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: normalize.height(20),
     paddingHorizontal: normalize.width(10),
-    width: '100%',
-  },
+    width: '100%' },
   navBtn: {
     width: normalize.width(40),
     height: normalize.width(40),
     borderRadius: normalize.radius(20),
     backgroundColor: '#F3F4F6',
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   monthTitle: {
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-Black",
     color: "#1A1A1A",
-    letterSpacing: 0.5,
-  },
+    letterSpacing: 0.5 },
   daysHeader: {
     backgroundColor: "#F7FCF9",
     borderRadius: normalize.radius(12),
     paddingVertical: normalize.height(10),
     marginBottom: normalize.height(15),
-    width: '100%',
-  },
+    width: '100%' },
   dayHeaderText: {
     flex: 1,
     textAlign: "center",
     fontSize: normalize.font(12),
     fontFamily: "Alexandria-Black",
-    color: "#15AB64",
-  },
+    color: "#15AB64" },
   grid: {
     flexWrap: "wrap",
     width: '100%',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   dayCellContainer: {
     width: `${100 / 7}%`,
     height: normalize.width(44),
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
-    marginVertical: 1,
-  },
+    marginVertical: 1 },
   dayCell: {
     width: normalize.width(36),
     height: normalize.width(36),
     justifyContent: "center",
     alignItems: "center",
-    zIndex: 2,
-  },
+    zIndex: 2 },
   rangeHighlight: {
     position: 'absolute',
     height: normalize.width(30),
     backgroundColor: "#EFF9F5",
-    zIndex: 1,
-  },
+    zIndex: 1 },
   rangeHighlightMiddle: {
-    width: '100%',
-  },
+    width: '100%' },
   dayText: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-SemiBold",
-    color: "#1A1A1A",
-  },
+    color: "#1A1A1A" },
   disabledDayText: {
     color: "#D1D5DB",
     opacity: 0,
@@ -306,24 +294,20 @@ const styles = StyleSheet.create({
   },
   startDaySelected: {
     backgroundColor: Colors.primary,
-    borderRadius: normalize.radius(12),
-  },
+    borderRadius: normalize.radius(12) },
   endDaySelected: {
     backgroundColor: "#15AB64",
-    borderRadius: normalize.radius(12),
-  },
+    borderRadius: normalize.radius(12) },
   selectedDayText: {
     color: "white",
-    fontFamily: "Alexandria-Bold",
-  },
+    fontFamily: "Alexandria-Bold" },
   inRangeDayText: {
     color: "#1A1A1A",
     fontFamily: "Alexandria-Regular"
   },
   bookedDayText: {
     color: "#9CA3AF",
-    fontFamily: "Alexandria-Regular",
-  },
+    fontFamily: "Alexandria-Regular" },
   scribbleOverlay: {
     position: 'absolute',
     top: 0,
@@ -332,52 +316,42 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 3,
-  },
+    zIndex: 3 },
   titleWrapper: {
     paddingHorizontal: normalize.width(10),
     paddingVertical: normalize.height(5),
     borderRadius: normalize.radius(8),
-    backgroundColor: '#F9FAFB',
-  },
+    backgroundColor: '#F9FAFB' },
   yearPicker: {
     padding: normalize.width(10),
     alignItems: 'center',
-    width: '100%',
-  },
+    width: '100%' },
   yearGrid: {
     flexWrap: 'wrap',
     justifyContent: 'center',
     gap: normalize.width(10),
     marginBottom: normalize.height(20),
-    width: '100%',
-  },
+    width: '100%' },
   yearItem: {
     width: '30%',
     paddingVertical: normalize.height(12),
     alignItems: 'center',
     borderRadius: normalize.radius(10),
-    backgroundColor: '#F3F4F6',
-  },
+    backgroundColor: '#F3F4F6' },
   yearItemSelected: {
-    backgroundColor: Colors.primary,
-  },
+    backgroundColor: Colors.primary },
   yearText: {
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-Bold",
-    color: '#1A1A1A',
-  },
+    color: '#1A1A1A' },
   yearTextSelected: {
     color: 'white',
     fontFamily: "Alexandria-Regular"
   },
   closeYearBtn: {
     paddingVertical: normalize.height(10),
-    paddingHorizontal: normalize.width(20),
-  },
+    paddingHorizontal: normalize.width(20) },
   closeYearText: {
     color: Colors.primary,
     fontFamily: "Alexandria-Black",
-    fontSize: normalize.font(14),
-  },
-});
+    fontSize: normalize.font(14) } });

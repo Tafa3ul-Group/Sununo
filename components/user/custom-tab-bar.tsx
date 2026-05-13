@@ -4,14 +4,14 @@ import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
+import { isRTL } from "@/i18n";
 
 /**
  * CustomTabBar - Refined Active Indicator 40x40
  */
 export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) => {
   const { userType, language } = useSelector((state: RootState) => state.auth);
-  const isRTL = language === 'ar';
-  const insets = useSafeAreaInsets();
+    const insets = useSafeAreaInsets();
 
   const currentRouteIndex = state.index;
   const currentRouteName = state.routes[currentRouteIndex].name;
@@ -47,8 +47,7 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
       return options.tabBarIcon({
         focused: isActive,
         color: isIsolated ? 'white' : (isActive ? Colors.primary : 'white'),
-        size: normalize.width(24),
-      });
+        size: normalize.width(24) });
     }
     return null;
   };
@@ -60,7 +59,7 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
         { 
           bottom: Math.max(insets.bottom, 24),
           paddingHorizontal: SIDE_PADDING,
-          flexDirection: isRTL ? 'row-reverse' : 'row'
+          flexDirection: 'row'
         }
       ]}>
         {/* Isolated Button (Map for Customer) */}
@@ -70,8 +69,7 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
             const event = navigation.emit({
               type: 'tabPress',
               target: isolatedTab.key,
-              canPreventDefault: true,
-            });
+              canPreventDefault: true });
 
             if (currentRouteName !== isolatedTab.name && !event.defaultPrevented) {
               navigation.navigate(isolatedTab.name);
@@ -83,7 +81,7 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
         </TouchableOpacity>
 
         {/* Tab Capsule */}
-        <View style={[styles.tabCapsule, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <View style={[styles.tabCapsule, { flexDirection: 'row' }]}>
           {pillTabs.map((route: any) => {
             const isActive = currentRouteName === route.name;
             return (
@@ -93,8 +91,7 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
                     const event = navigation.emit({
                       type: 'tabPress',
                       target: route.key,
-                      canPreventDefault: true,
-                    });
+                      canPreventDefault: true });
 
                     if (!event.defaultPrevented) {
                       if (!isActive) {
@@ -124,8 +121,7 @@ const styles = StyleSheet.create({
   navWrapper: {
     width: '100%',
     alignItems: 'center',
-    justifyContent: 'space-between',
-  },
+    justifyContent: 'space-between' },
   roundButton: { 
     width: normalize.height(52), 
     height: normalize.height(52), 
@@ -154,9 +150,6 @@ const styles = StyleSheet.create({
     height: normalize.height(40),
     borderRadius: normalize.height(20),
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   activeTabIndicator: { 
-    backgroundColor: 'white',
-  },
-});
+    backgroundColor: 'white' } });

@@ -9,14 +9,14 @@ import { PrimaryButton } from "@/components/user/primary-button";
 import { SolarStarBold, SolarStarLinear } from "@/components/icons/solar-icons";
 import { useCreateReviewMutation } from "@/store/api/customerApiSlice";
 import Svg, { Path } from "react-native-svg";
+import { isRTL } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function AddReviewScreen() {
   const { id: chaletId } = useLocalSearchParams<{ id: string }>();
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
-  const router = useRouter();
+    const router = useRouter();
   
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
@@ -55,8 +55,7 @@ export default function AddReviewScreen() {
           headerShown: true,
           headerTitle: t('chalet.details.addReview'),
           headerTitleStyle: { fontFamily: 'Alexandria-Black', fontSize: 18 },
-          headerLeft: () => <CircleBackButton onPress={() => router.back()} />,
-        }}
+          headerLeft: () => <CircleBackButton onPress={() => router.back()} /> }}
       />
 
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
@@ -106,55 +105,45 @@ export default function AddReviewScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F9FAFB",
-  },
+    backgroundColor: "#F9FAFB" },
   scrollContent: {
     padding: 20,
-    paddingTop: 30,
-  },
+    paddingTop: 30 },
   headerArea: {
     marginBottom: 30,
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   title: {
     fontSize: 24,
     fontFamily: 'Alexandria-Black',
     color: '#111827',
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   subtitle: {
     fontSize: 16,
     fontFamily: 'Alexandria-Medium',
     color: '#6B7280',
-    textAlign: 'center',
-  },
+    textAlign: 'center' },
   card: {
     backgroundColor: 'white',
     borderRadius: 24,
     padding: 24,
     ...Shadows.medium,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
-  },
+    borderColor: '#F3F4F6' },
   starsRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     marginBottom: 32,
-    gap: 10,
-  },
+    gap: 10 },
   starTouch: {
-    padding: 5,
-  },
+    padding: 5 },
   inputContainer: {
-    marginBottom: 32,
-  },
+    marginBottom: 32 },
   inputLabel: {
     fontSize: 14,
     fontFamily: 'Alexandria-SemiBold',
     color: '#374151',
     marginBottom: 10,
-    marginHorizontal: 4,
-  },
+    marginHorizontal: 4 },
   textInput: {
     backgroundColor: '#F9FAFB',
     borderRadius: 16,
@@ -165,9 +154,6 @@ const styles = StyleSheet.create({
     minHeight: 150,
     textAlignVertical: 'top',
     borderWidth: 1,
-    borderColor: '#F3F4F6',
-  },
+    borderColor: '#F3F4F6' },
   submitBtn: {
-    marginTop: 10,
-  },
-});
+    marginTop: 10 } });

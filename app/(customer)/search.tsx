@@ -25,11 +25,11 @@ import { useBrowseCustomerChaletsQuery } from '@/store/api/customerApiSlice';
 import { HorizontalCard } from '@/components/user/horizontal-card';
 import { getImageSrc } from '@/hooks/useImageSrc';
 import { HeaderSection } from '@/components/header-section';
+import { isRTL } from "@/i18n";
 
 export default function SearchScreen() {
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
-  const router = useRouter();
+    const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const insets = useSafeAreaInsets();
 
@@ -52,8 +52,7 @@ export default function SearchScreen() {
         : (chalet.region?.name?.en || chalet.region?.nameEn || chalet.region?.name || ''),
       price: chalet.basePrice ? Number(chalet.basePrice).toLocaleString() : '0',
       rating: chalet.averageRating || 0,
-      image: chalet.images?.[0]?.url || "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500&auto=format&fit=crop",
-    }));
+      image: chalet.images?.[0]?.url || "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500&auto=format&fit=crop" }));
   }, [chaletsResponse, isRTL]);
 
   const renderItem = ({ item }: { item: any }) => (
@@ -77,7 +76,7 @@ export default function SearchScreen() {
       />
 
       <View style={styles.searchContainer}>
-        <View style={[styles.searchBar, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <View style={[styles.searchBar, { flexDirection: 'row' }]}>
           <SolarMagnifierBold size={20} color={Colors.primary} />
           <TextInput
             placeholder={t('home.searchPlaceholder')}
@@ -130,23 +129,19 @@ export default function SearchScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
+    backgroundColor: '#FFFFFF' },
   header: {
     paddingHorizontal: 16,
     paddingVertical: 12,
     alignItems: 'center',
     gap: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
-  },
+    borderBottomColor: '#F1F5F9' },
   backButton: {
-    padding: 4,
-  },
+    padding: 4 },
   searchContainer: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
+    paddingVertical: 12 },
   searchBar: {
     height: 52,
     backgroundColor: '#F8FAFC',
@@ -155,27 +150,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
+    borderColor: '#E2E8F0' },
   searchInput: {
     flex: 1,
     fontSize: 16,
     color: Colors.text.primary,
-    fontFamily: 'Alexandria-Medium',
-  },
+    fontFamily: 'Alexandria-Medium' },
   listContent: {
     padding: 16,
-    paddingBottom: 40,
-  },
+    paddingBottom: 40 },
   cardWrapper: {
-    marginBottom: 16,
-  },
+    marginBottom: 16 },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 40,
-  },
+    padding: 40 },
   emptyIconCircle: {
     width: 80,
     height: 80,
@@ -183,13 +173,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0F7FF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
-  },
+    marginBottom: 20 },
   emptyText: {
     fontSize: 16,
     color: Colors.text.muted,
     textAlign: 'center',
     fontFamily: 'Alexandria-Medium',
-    lineHeight: 24,
-  },
-});
+    lineHeight: 24 } });

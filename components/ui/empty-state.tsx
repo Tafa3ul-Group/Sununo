@@ -5,6 +5,7 @@ import { ThemedText } from '../themed-text';
 import { Colors, normalize, Spacing } from '@/constants/theme';
 import { PrimaryButton } from '../user/primary-button';
 import { SolarInboxLinear } from '@/components/icons/solar-icons';
+import { isRTL } from "@/i18n";
 
 interface EmptyStateProps {
   title?: string;
@@ -21,11 +22,9 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   icon,
   actionLabel,
   onAction,
-  style,
-}) => {
+  style }) => {
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
-
+  
   return (
     <View style={[styles.container, style]}>
       <View style={styles.content}>
@@ -62,12 +61,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: Spacing.xl,
     backgroundColor: 'transparent',
-    minHeight: 300,
-  },
+    minHeight: 300 },
   content: {
     alignItems: 'center',
-    width: '100%',
-  },
+    width: '100%' },
   iconContainer: {
     width: normalize.width(140),
     height: normalize.width(140),
@@ -75,26 +72,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: Spacing.lg,
-  },
+    marginBottom: Spacing.lg },
   title: {
     fontSize: normalize.font(20),
     fontFamily: 'Alexandria-Bold',
     color: Colors.text.primary,
     textAlign: 'center',
-    marginBottom: Spacing.sm,
-  },
+    marginBottom: Spacing.sm },
   description: {
     fontSize: normalize.font(15),
     fontFamily: 'Alexandria-Regular',
     color: Colors.text.secondary,
     textAlign: 'center',
     lineHeight: normalize.font(22),
-    marginBottom: Spacing.xl,
-  },
+    marginBottom: Spacing.xl },
   button: {
     width: '70%',
     height: normalize.height(52),
-    borderRadius: normalize.radius(26),
-  },
-});
+    borderRadius: normalize.radius(26) } });

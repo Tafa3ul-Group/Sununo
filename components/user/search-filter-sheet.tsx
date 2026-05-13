@@ -2,8 +2,7 @@ import {
     BottomSheetBackdrop,
     BottomSheetModal,
     BottomSheetScrollView,
-    useBottomSheetModal,
-} from "@gorhom/bottom-sheet";
+    useBottomSheetModal } from "@gorhom/bottom-sheet";
 import React, { forwardRef, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -13,8 +12,7 @@ import {
     StyleSheet,
     TextInput,
     TouchableOpacity,
-    View,
-} from "react-native";
+    View } from "react-native";
 
 import { SolarBedBold, SolarMagnifierBold, SolarMapPointBold, SolarMoonBold, SolarSunBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
@@ -61,8 +59,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
     if (!citiesData || citiesData.length === 0) return STATIC_CITIES;
     return citiesData.map((city: any) => ({
       id: city.id,
-      name: isArabic ? (city.nameAr || city.name) : (city.nameEn || city.name),
-    }));
+      name: isArabic ? (city.nameAr || city.name) : (city.nameEn || city.name) }));
   }, [citiesData, isArabic]);
 
   // The sheet takes 85% of screen height
@@ -90,8 +87,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
           period: selectedPeriod,
           maxGuests: adults + children,
           adults,
-          children,
-        });
+          children });
       }
       dismiss();
     }
@@ -301,8 +297,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
                 styles.stepDot,
                 {
                   backgroundColor:
-                    whenStep === 2 ? "#15AB64" : "#15AB6433",
-                },
+                    whenStep === 2 ? "#15AB64" : "#15AB6433" },
               ]}
             />
             <TouchableOpacity
@@ -312,8 +307,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
                 styles.stepDot,
                 {
                   backgroundColor:
-                    whenStep === 1 ? "#15AB64" : "#15AB6433",
-                },
+                    whenStep === 1 ? "#15AB64" : "#15AB6433" },
               ]}
             />
           </View>
@@ -355,58 +349,48 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
 
 const styles = StyleSheet.create({
   sheetBackground: {
-    backgroundColor: "transparent",
-  },
+    backgroundColor: "transparent" },
   headerWrapper: {
     alignItems: "center",
     paddingHorizontal: 16,
     marginVertical: Spacing.md,
     zIndex: 10,
-    ...Shadows.medium,
-  },
+    ...Shadows.medium },
   contentCard: {
     flex: 1,
     backgroundColor: "white",
     borderTopLeftRadius: 40,
     borderTopRightRadius: 40,
-    overflow: "hidden",
-  },
+    overflow: "hidden" },
   dragHandleContainer: {
     width: "100%",
     height: 32,
     justifyContent: "center",
-    alignItems: "center",
-  },
+    alignItems: "center" },
   dragHandle: {
     width: 40,
     height: 4,
     backgroundColor: "#F0F2F5",
-    borderRadius: 2,
-  },
+    borderRadius: 2 },
   scrollView: {
-    flex: 1,
-  },
+    flex: 1 },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 24,
-  },
+    paddingBottom: 24 },
   tabContent: {
-    paddingHorizontal: 24,
-  },
+    paddingHorizontal: 24 },
   searchBar: {
     alignItems: "center",
     backgroundColor: "#F8F9FB",
     borderRadius: 12,
     paddingHorizontal: 16,
     height: 52,
-    marginBottom: 16,
-  },
+    marginBottom: 16 },
   searchInput: {
     flex: 1,
     fontSize: 16,
     color: Colors.text.primary,
-    fontFamily: "Alexandria-Regular",
-  },
+    fontFamily: "Alexandria-Regular" },
   cityItem: {
     alignItems: "center",
     padding: 12,
@@ -414,19 +398,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#F0F4FF",
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "transparent",
-  },
+    borderColor: "transparent" },
   selectedCityItem: {
     borderColor: Colors.primary,
-    backgroundColor: "#E6EFFF",
-  },
+    backgroundColor: "#E6EFFF" },
   cityName: {
     fontSize: 16,
     fontFamily: "LamaSans-SemiBold",
     color: Colors.text.primary,
     flex: 1,
-    marginHorizontal: 8,
-  },
+    marginHorizontal: 8 },
   cityRight: {
     backgroundColor: "white",
     width: 36,
@@ -434,16 +415,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
-    ...Shadows.small,
-  },
+    ...Shadows.small },
   calendarFooter: {
     marginTop: 10,
-    alignItems: "flex-end",
-  },
+    alignItems: "flex-end" },
   legendWrapper: {
     flexDirection: "row",
-    gap: 12,
-  },
+    gap: 12 },
   legendItem: {
     flexDirection: "row",
     alignItems: "center",
@@ -451,52 +429,42 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 20,
-    gap: 8,
-  },
+    gap: 8 },
   legendText: {
     fontSize: 13,
     fontFamily: "LamaSans-SemiBold",
-    color: "#1A1A1A",
-  },
+    color: "#1A1A1A" },
   dot: {
     width: 18,
     height: 18,
-    borderRadius: 9,
-  },
+    borderRadius: 9 },
   mainFooter: {
     paddingHorizontal: 24,
     paddingTop: 12,
     paddingBottom: Platform.OS === "ios" ? 34 : 24,
     backgroundColor: "white",
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "#F0F2F5",
-  },
+    borderTopColor: "#F0F2F5" },
   nextButton: {
     width: 100,
-    height: 36,
-  },
+    height: 36 },
   whoContainer: {
-    paddingTop: 10,
-  },
+    paddingTop: 10 },
   stepIndicators: {
     flexDirection: "row",
     position: "absolute",
     top: 16,
     right: 24,
     gap: 8,
-    zIndex: 100,
-  },
+    zIndex: 100 },
   stepDot: {
     width: 14,
     height: 14,
-    borderRadius: 7,
-  },
+    borderRadius: 7 },
   periodsContainer: {
-    paddingTop: 10,
-  },
+    paddingTop: 10 },
   periodList: {
-    gap: 12,
-  },
+    gap: 12 },
   periodItem: {
     flexDirection: "row-reverse",
     alignItems: "center",
@@ -506,19 +474,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderWidth: 1.5,
     borderColor: "transparent",
-    gap: 16,
-  },
+    gap: 16 },
   selectedPeriodItem: {
     borderColor: "#15AB64",
-    backgroundColor: "white",
-  },
+    backgroundColor: "white" },
   periodLabel: {
     fontSize: 18,
     fontFamily: "LamaSans-Bold",
     color: "#1A1A1A",
     flex: 1,
-    textAlign: "right",
-  },
+    textAlign: "right" },
   guestItem: {
     alignItems: "center",
     backgroundColor: "white",
@@ -528,27 +493,23 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#F0F2F5",
     minHeight: normalize.height(94),
-    ...Shadows.small,
-  },
+    ...Shadows.small },
   guestInfo: { 
     // Removed flex: 1 to allow space-between to push it
   },
   guestLabel: {
     fontSize: 22,
     fontFamily: "Alexandria-Black",
-    color: "#1A1A1A",
-  },
+    color: "#1A1A1A" },
   guestSubLabel: {
     fontSize: 16,
     color: "#9CA3AF",
     marginTop: 2,
-    fontFamily: "Alexandria-Regular",
-  },
+    fontFamily: "Alexandria-Regular" },
   // RTL Utilities
   rtlText: { textAlign: "right" },
   ltrText: { textAlign: "left" },
   rtlRow: { flexDirection: "row-reverse" },
   ltrRow: { flexDirection: "row" },
   rtlAlign: { alignItems: "flex-end" },
-  ltrAlign: { alignItems: "flex-start" },
-});
+  ltrAlign: { alignItems: "flex-start" } });

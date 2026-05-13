@@ -35,8 +35,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: 24,
@@ -46,20 +45,15 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 4,
-    },
+      height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
-    elevation: 5,
-  },
+    elevation: 5 },
   animation: {
-    marginBottom: 0,
-  },
+    marginBottom: 0 },
   message: {
     marginTop: 10,
     fontSize: 16,
     fontFamily: "Alexandria-Bold",
     color: '#1E293B',
-    textAlign: 'center',
-  },
-});
+    textAlign: 'center' } });

@@ -8,12 +8,12 @@ import { SecondaryButton } from '@/components/user/secondary-button';
 import { SolarClockCircleBold, SolarLogoutBold } from '@/components/icons/solar-icons';
 import { logout } from '@/store/authSlice';
 import { useDispatch } from 'react-redux';
+import { isRTL } from "@/i18n";
 
 export function PendingApprovalScreen({ onRefresh }: { onRefresh?: () => void }) {
   const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
-  const isRTL = i18n.language === 'ar';
-  const [refreshing, setRefreshing] = React.useState(false);
+    const [refreshing, setRefreshing] = React.useState(false);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -79,33 +79,28 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 30,
-  },
+    paddingHorizontal: 30 },
   content: {
     alignItems: 'center',
-    width: '100%',
-  },
+    width: '100%' },
   iconContainer: {
     marginBottom: 30,
     backgroundColor: '#F0F7FF',
     padding: 30,
-    borderRadius: 50,
-  },
+    borderRadius: 50 },
   title: {
     fontSize: normalize.font(24),
     fontFamily: 'Alexandria-Black',
     color: '#1E293B',
     marginBottom: 15,
-    textAlign: 'center',
-  },
+    textAlign: 'center' },
   description: {
     fontSize: normalize.font(14),
     fontFamily: 'Alexandria-Medium',
     color: '#64748B',
     textAlign: 'center',
     lineHeight: 22,
-    marginBottom: 30,
-  },
+    marginBottom: 30 },
   infoCard: {
     backgroundColor: '#F8FAFC',
     padding: 15,
@@ -113,19 +108,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E2E8F0',
     width: '100%',
-    marginBottom: 30,
-  },
+    marginBottom: 30 },
   infoText: {
     fontSize: normalize.font(12),
     fontFamily: 'Alexandria-Bold',
     color: '#475569',
-    textAlign: 'center',
-  },
+    textAlign: 'center' },
   button: {
     width: '100%',
-    marginBottom: 12,
-  },
+    marginBottom: 12 },
   logoutButton: {
-    width: '100%',
-  },
-});
+    width: '100%' } });

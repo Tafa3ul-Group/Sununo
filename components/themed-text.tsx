@@ -1,11 +1,11 @@
 import { Typography } from "@/constants/theme";
+import { isRTL } from "@/i18n";
 import {
   I18nManager,
   StyleSheet,
   Text,
   type TextProps,
-  type TextStyle,
-} from "react-native";
+  type TextStyle } from "react-native";
 
 export type ThemedTextProps = TextProps & {
   type?:
@@ -87,14 +87,10 @@ const styles = StyleSheet.create({
     includeFontPadding: false,
     textAlignVertical: "center",
     writingDirection: I18nManager.isRTL ? "rtl" : "ltr",
-    textAlign: I18nManager.isRTL ? "right" : "left",
-  },
+    textAlign: I18nManager.isRTL ? "right" : "left" },
   defaultSemiBold: {
-    fontFamily: "Alexandria-SemiBold",
-  },
+    fontFamily: "Alexandria-SemiBold" },
   link: {
     color: "#2B66FF",
     textDecorationLine: "underline",
-    fontFamily: "Alexandria-Regular",
-  },
-});
+    fontFamily: "Alexandria-Regular" } });

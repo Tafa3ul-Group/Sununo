@@ -51,8 +51,7 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: "center",
     alignItems: "center",
-    position: "relative",
-  },
+    position: "relative" },
   textOverlay: {
     position: "absolute",
     top: 0,
@@ -60,11 +59,8 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     justifyContent: "center",
-    alignItems: "center",
-  },
+    alignItems: "center" },
   titleText: {
     fontSize: 16,
     fontFamily: "Alexandria-Black",
-    color: "#171725",
-  },
-});
+    color: "#171725" } });

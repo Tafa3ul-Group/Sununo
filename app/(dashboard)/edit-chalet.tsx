@@ -8,8 +8,7 @@ import {
   SolarStarBold,
   SolarAddCircleBold,
   SolarTrashBinBold,
-  SolarPenBold,
-} from '@/components/icons/solar-icons';
+  SolarPenBold } from '@/components/icons/solar-icons';
 import { ThemedText } from '@/components/themed-text';
 import { AppMap } from '@/components/user/app-map';
 import { LocationPickerModal } from '@/components/user/location-picker-modal';
@@ -53,6 +52,7 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { useSelector } from 'react-redux';
+import { isRTL } from "@/i18n";
 
 // ── Types ──
 interface ShiftPricing { dayOfWeek: number; price: number; }
@@ -83,8 +83,7 @@ export default function EditChaletScreen() {
   const { id } = useLocalSearchParams();
   const { t } = useTranslation();
   const { language } = useSelector((state: RootState) => state.auth);
-  const isRTL = language === 'ar';
-
+  
   const { data: response, isLoading: isLoadingDetails } = useGetOwnerChaletDetailsQuery(id);
   const chalet = response?.data || response;
 
@@ -99,8 +98,7 @@ export default function EditChaletScreen() {
     maxAdults: '4', maxChildren: '2', cityId: '', cityName: '',
     depositPercentage: '25', phone: '', whatsapp: '',
     policiesAr: '', policiesEn: '', latitude: '', longitude: '',
-    basePrice: '', area: '', bedrooms: '', bathrooms: '',
-  });
+    basePrice: '', area: '', bedrooms: '', bathrooms: '' });
 
   const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
 
@@ -206,8 +204,7 @@ export default function EditChaletScreen() {
         basePrice: chalet.basePrice?.toString() || '',
         area: chalet.area?.toString() || '',
         bedrooms: chalet.bedrooms?.toString() || '',
-        bathrooms: chalet.bathrooms?.toString() || '',
-      });
+        bathrooms: chalet.bathrooms?.toString() || '' });
       setExistingImages(chalet.images || []);
     }
   }, [chalet]);
@@ -227,8 +224,7 @@ export default function EditChaletScreen() {
             isActive: existing.isActive !== false,
             pricing: existing.pricing?.length > 0
               ? existing.pricing.map((p: any) => ({ dayOfWeek: p.dayOfWeek, price: p.price }))
-              : createDefaultPricing(),
-          };
+              : createDefaultPricing() };
         }
         const def = defaultShifts?.find(s => s.type === type);
         return {
@@ -237,8 +233,7 @@ export default function EditChaletScreen() {
           endTime: def?.endTime || '14:00',
           type: type as any,
           isActive: false,
-          pricing: createDefaultPricing(),
-        };
+          pricing: createDefaultPricing() };
       });
       setShifts(mapped);
     } else if (chalet && shifts.length === 0 && defaultShifts) {
@@ -337,9 +332,7 @@ export default function EditChaletScreen() {
         shifts: shifts.filter(s => s.isActive).map(s => ({
           ...s,
           startTime: s.startTime?.split(':').slice(0, 2).join(':'),
-          endTime: s.endTime?.split(':').slice(0, 2).join(':'),
-        })),
-      };
+          endTime: s.endTime?.split(':').slice(0, 2).join(':') })) };
       if (form.policiesAr) payload.policies = { ar: form.policiesAr, en: form.policiesEn || form.policiesAr };
 
       await updateChalet({ id, data: payload }).unwrap();
@@ -436,7 +429,7 @@ export default function EditChaletScreen() {
   }
 
   return (
-    <View style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
+    <View style={[styles.container]}>
       <StatusBar style="dark" />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -524,11 +517,11 @@ export default function EditChaletScreen() {
                 <View style={styles.capacityList}>
                   <View style={[styles.capacityCard, { flexDirection }]}>
                     <GuestCounter value={parseInt(form.maxAdults) || 1} onIncrement={() => setForm({ ...form, maxAdults: (parseInt(form.maxAdults || '1') + 1).toString() })} onDecrement={() => setForm({ ...form, maxAdults: Math.max(1, parseInt(form.maxAdults || '1') - 1).toString() })} />
-                    <View style={[styles.capacityInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}><Text style={styles.capacityLabel}>{isRTL ? 'البالغين' : 'Adults'}</Text><Text style={styles.capacitySubLabel}>{isRTL ? '18 وأكبر' : '18 and above'}</Text></View>
+                    <View style={[styles.capacityInfo, { alignItems: 'flex-start' }]}><Text style={styles.capacityLabel}>{isRTL ? 'البالغين' : 'Adults'}</Text><Text style={styles.capacitySubLabel}>{isRTL ? '18 وأكبر' : '18 and above'}</Text></View>
                   </View>
                   <View style={[styles.capacityCard, { flexDirection }]}>
                     <GuestCounter value={parseInt(form.maxChildren) || 0} onIncrement={() => setForm({ ...form, maxChildren: (parseInt(form.maxChildren || '0') + 1).toString() })} onDecrement={() => setForm({ ...form, maxChildren: Math.max(0, parseInt(form.maxChildren || '0') - 1).toString() })} />
-                    <View style={[styles.capacityInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}><Text style={styles.capacityLabel}>{isRTL ? 'الاطفال' : 'Children'}</Text><Text style={styles.capacitySubLabel}>{isRTL ? '0 - 18' : '0 - 18 years'}</Text></View>
+                    <View style={[styles.capacityInfo, { alignItems: 'flex-start' }]}><Text style={styles.capacityLabel}>{isRTL ? 'الاطفال' : 'Children'}</Text><Text style={styles.capacitySubLabel}>{isRTL ? '0 - 18' : '0 - 18 years'}</Text></View>
                   </View>
                 </View>
               </View>
@@ -644,13 +637,13 @@ export default function EditChaletScreen() {
                   <View style={[styles.row, { justifyContent: 'space-between', alignItems: 'center' }]}>
                     <Text style={styles.pricingTitle}>{isRTL ? 'الأسعار (د.ع)' : 'Pricing (IQD)'}</Text>
                   </View>
-                  <View style={styles.bulkPricingRow}>
+                  <View style={[styles.bulkPricingRow, { flexDirection }]}>
                     <TextInput style={[styles.input, { flex: 1, height: 40 }]} placeholder={isRTL ? 'السعر...' : 'Price...'} keyboardType="numeric" value={bulkPrice} onChangeText={setBulkPrice} />
                     <TouchableOpacity style={styles.bulkBtn} onPress={() => handleApplyBulkPrice('all')}><Text style={styles.bulkBtnText}>{isRTL ? 'الكل' : 'All'}</Text></TouchableOpacity>
                     <TouchableOpacity style={styles.bulkBtn} onPress={() => handleApplyBulkPrice('weekdays')}><Text style={styles.bulkBtnText}>{isRTL ? 'الأسبوع' : 'Week'}</Text></TouchableOpacity>
                     <TouchableOpacity style={styles.bulkBtn} onPress={() => handleApplyBulkPrice('weekends')}><Text style={styles.bulkBtnText}>{isRTL ? 'الجمعة' : 'W.E'}</Text></TouchableOpacity>
                   </View>
-                  <View style={styles.dayPricingGrid}>
+                  <View style={[styles.dayPricingGrid, { flexDirection }]}>
                     {shifts[editingShiftIndex].pricing.map((p) => (
                       <View key={p.dayOfWeek} style={styles.dayPriceItem}>
                         <Text style={styles.dayLabel}>{isRTL ? DAY_NAMES_AR[p.dayOfWeek] : DAY_NAMES_EN[p.dayOfWeek]}</Text>
@@ -750,5 +743,4 @@ const styles = StyleSheet.create({
   bulkBtn: { paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#EFF6FF', borderRadius: 8, borderWidth: 1, borderColor: '#DBEAFE' },
   bulkBtnText: { color: Colors.primary, fontSize: normalize.font(12), fontFamily: "Alexandria-Bold" },
   row: { flexDirection: 'row', gap: 8 },
-  closeMapBtn: { position: 'absolute', top: 50, end: 20 },
-});
+  closeMapBtn: { position: 'absolute', top: 50, end: 20 } });

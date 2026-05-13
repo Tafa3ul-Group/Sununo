@@ -6,8 +6,7 @@ import { ThemedText } from "@/components/themed-text";
 import { Colors } from "@/constants/theme";
 import {
   useGetChaletPoliciesQuery,
-  useGetChaletTermsQuery,
-} from "@/store/api/customerApiSlice";
+  useGetChaletTermsQuery } from "@/store/api/customerApiSlice";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { useTranslation } from "react-i18next";
@@ -16,6 +15,7 @@ import { HeaderSection } from "@/components/header-section";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
+import { isRTL } from "@/i18n";
 
 export default function ChaletInfoScreen() {
   const { id, type } = useLocalSearchParams<{
@@ -23,8 +23,7 @@ export default function ChaletInfoScreen() {
     type: "terms" | "policies";
   }>();
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === "ar";
-  const router = useRouter();
+    const router = useRouter();
   const { userType } = useSelector((state: RootState) => state.auth);
 
   const { data: terms, isLoading: isTermsLoading } = useGetChaletTermsQuery(
@@ -124,16 +123,13 @@ export default function ChaletInfoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
-  },
+    backgroundColor: "white" },
   scrollContent: {
     padding: 20,
-    paddingTop: 40,
-  },
+    paddingTop: 40 },
   headerIconContainer: {
     alignItems: "center",
-    marginBottom: 30,
-  },
+    marginBottom: 30 },
   iconCircle: {
     width: 80,
     height: 80,
@@ -146,13 +142,11 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
     shadowRadius: 15,
-    elevation: 8,
-  },
+    elevation: 8 },
   pageTitle: {
     fontSize: 22,
     fontFamily: "Alexandria-Black",
-    color: "#111827",
-  },
+    color: "#111827" },
   card: {
     backgroundColor: "white",
     borderRadius: 24,
@@ -163,24 +157,19 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 2,
     borderWidth: 1,
-    borderColor: "#F3F4F6",
-  },
+    borderColor: "#F3F4F6" },
   sectionTitle: {
     fontSize: 18,
     fontFamily: "Alexandria-Black",
     color: Colors.primary,
-    marginBottom: 12,
-  },
+    marginBottom: 12 },
   content: {
     fontSize: 15,
     lineHeight: 24,
     color: "#4B5563",
     fontFamily: "Alexandria-Medium",
-    textAlign: "justify",
-  },
+    textAlign: "justify" },
   divider: {
     height: 1,
     backgroundColor: "#F3F4F6",
-    marginVertical: 20,
-  },
-});
+    marginVertical: 20 } });

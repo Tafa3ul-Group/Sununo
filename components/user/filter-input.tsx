@@ -2,6 +2,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Colors, normalize, Spacing } from '@/constants/theme';
 import React from 'react';
 import { I18nManager, StyleSheet, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { isRTL } from "@/i18n";
 
 interface FilterInputProps {
   label: string;
@@ -25,7 +26,6 @@ export function FilterInput({
   style,
   labelStyle
 }: FilterInputProps) {
-  const isRTL = I18nManager.isRTL;
 
   return (
     <TouchableOpacity
@@ -33,7 +33,7 @@ export function FilterInput({
       onPress={onPress}
       style={[
         styles.container,
-        { flexDirection: isRTL ? 'row-reverse' : 'row' },
+        { flexDirection: 'row' },
         selected && styles.selectedContainer,
         style
       ]}
@@ -72,8 +72,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
-    elevation: 2,
-  },
+    elevation: 2 },
   selectedContainer: {
     borderColor: Colors.primary,
     backgroundColor: '#F0F4FF', // Light blue tint when selected
@@ -83,19 +82,14 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-Medium",
     color: Colors.primary, // The text in the image is blue
-    textAlign: 'center',
-  },
+    textAlign: 'center' },
   selectedText: {
-    fontFamily: "Alexandria-Bold",
-  },
+    fontFamily: "Alexandria-Bold" },
   divider: {
     width: 1,
     height: '60%',
-    backgroundColor: Colors.border,
-  },
+    backgroundColor: Colors.border },
   iconContainer: {
     width: normalize.width(50),
     alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+    justifyContent: 'center' } });

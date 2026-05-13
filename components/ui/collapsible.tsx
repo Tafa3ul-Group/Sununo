@@ -6,11 +6,11 @@ import { ThemedView } from '@/components/themed-view';
 import { SolarAltArrowRightBold } from '@/components/icons/solar-icons';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { isRTL } from "@/i18n";
 
 export function Collapsible({ children, title }: PropsWithChildren & { title: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const theme = useColorScheme() ?? 'light';
-  const isRTL = I18nManager.isRTL;
 
   return (
     <ThemedView>
@@ -24,8 +24,7 @@ export function Collapsible({ children, title }: PropsWithChildren & { title: st
           style={{
             transform: [
               { rotate: isOpen ? '90deg' : isRTL ? '180deg' : '0deg' },
-            ],
-          }}
+            ] }}
         />
 
         <ThemedText type="defaultSemiBold">{title}</ThemedText>
@@ -37,12 +36,9 @@ export function Collapsible({ children, title }: PropsWithChildren & { title: st
 
 const styles = StyleSheet.create({
   heading: {
-    flexDirection: I18nManager.isRTL ? 'row-reverse' : 'row',
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-  },
+    gap: 6 },
   content: {
     marginTop: 6,
-    marginStart: 24,
-  },
-});
+    marginStart: 24 } });

@@ -1,14 +1,14 @@
 import { ThemedText } from "@/components/themed-text";
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { isRTL } from "@/i18n";
 import {
     ActivityIndicator,
     StyleSheet,
     TextStyle,
     TouchableOpacity,
     View,
-    ViewStyle,
-} from "react-native";
+    ViewStyle } from "react-native";
 
 interface SecondaryButtonProps {
   label: string;
@@ -43,11 +43,9 @@ export function SecondaryButton({
   textStyle,
   isLoading = false,
   height = 46,
-  variant = "default",
-}: SecondaryButtonProps) {
+  variant = "default" }: SecondaryButtonProps) {
   const { i18n } = useTranslation();
-  const isRTL = i18n.language === "ar";
-
+  
   // Use EXACT original logic based on variant
   const finalIconPosition =
     iconPosition ||
@@ -76,8 +74,7 @@ export function SecondaryButton({
         styles.container,
         {
           flexDirection: finalIconPosition === "right" ? "row-reverse" : "row",
-          gap: -1.5,
-        },
+          gap: -1.5 },
         style,
         isLoading && { opacity: 0.7 },
       ]}
@@ -101,8 +98,7 @@ export function SecondaryButton({
             borderBottomLeftRadius:
               finalIconPosition === "left" ? height / 2 : 8,
             justifyContent: "center",
-            alignItems: "center",
-          },
+            alignItems: "center" },
         ]}
       >
         {!!(icon || iconLabel || isLoading) && (
@@ -150,8 +146,7 @@ export function SecondaryButton({
             borderBottomLeftRadius: finalIconPosition === "right" ? 10 : 8,
             borderTopRightRadius: finalIconPosition === "left" ? 10 : 8,
             borderBottomRightRadius: finalIconPosition === "left" ? 10 : 8,
-            borderWidth: 1.5,
-          },
+            borderWidth: 1.5 },
         ]}
       >
         <ThemedText
@@ -172,24 +167,18 @@ export function SecondaryButton({
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    justifyContent: "center",
-  },
+    justifyContent: "center" },
   iconWrapper: {
     justifyContent: "center",
-    alignItems: "center",
-  },
+    alignItems: "center" },
   iconContainerInternal: {
     justifyContent: "center",
-    alignItems: "center",
-  },
+    alignItems: "center" },
   textWrapper: {
     justifyContent: "center",
-    alignItems: "center",
-  },
+    alignItems: "center" },
   text: {
     fontSize: 18,
     fontFamily: "Alexandria-SemiBold",
     textAlign: "center",
-    lineHeight: 28,
-  },
-});
+    lineHeight: 28 } });

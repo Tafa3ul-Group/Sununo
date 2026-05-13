@@ -2,6 +2,7 @@
 import { normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { isRTL } from "@/i18n";
 import {
     Dimensions,
     FlatList,
@@ -23,7 +24,6 @@ const AUTO_PLAY_INTERVAL = 4000;
 
 export function BannerSwiper({ data }: { data?: any[] }) {
   const displayData = data ?? [];
-  const isRTL = I18nManager.isRTL;
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -101,8 +101,7 @@ export function BannerSwiper({ data }: { data?: any[] }) {
         getItemLayout={(_, index) => ({
           length: SNAP_INTERVAL,
           offset: SNAP_INTERVAL * index,
-          index,
-        })}
+          index })}
       />
 
       {/* Pagination Dots */}
@@ -124,38 +123,29 @@ export function BannerSwiper({ data }: { data?: any[] }) {
 const styles = StyleSheet.create({
   container: {
     marginVertical: 0,
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   listContent: {
-    paddingHorizontal: SIDE_PADDING,
-  },
+    paddingHorizontal: SIDE_PADDING },
   bannerContainer: {
     width: BANNER_WIDTH,
     height: BANNER_HEIGHT,
     borderRadius: normalize.radius(24),
-    overflow: 'hidden',
-  },
+    overflow: 'hidden' },
   bannerImage: {
     width: '100%',
-    height: '100%',
-  },
+    height: '100%' },
   pagination: {
-    flexDirection: I18nManager.isRTL ? 'row-reverse' : 'row',
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: normalize.height(12),
-    gap: 8,
-  },
+    gap: 8 },
   dot: {
     height: 8,
-    borderRadius: 4,
-  },
+    borderRadius: 4 },
   activeDot: {
     width: 20,
-    backgroundColor: '#035DF9',
-  },
+    backgroundColor: '#035DF9' },
   inactiveDot: {
     width: 8,
-    backgroundColor: '#C7D9FF',
-  },
-});
+    backgroundColor: '#C7D9FF' } });

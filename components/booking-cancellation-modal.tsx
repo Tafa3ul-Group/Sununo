@@ -20,6 +20,7 @@ import { SecondaryButton } from './user/secondary-button';
 // Static imports for Lottie files
 import errorAnim from './icons/motions/fail.json';
 import successAnim from './icons/motions/success.json';
+import { isRTL } from "@/i18n";
 
 interface BookingCancellationSheetProps {
   onConfirm: (reason: string) => void;
@@ -76,8 +77,7 @@ export const BookingCancellationSheet = forwardRef<BookingCancellationSheetRef, 
         setFeedbackMessage(message || '');
         setTimeout(() => lottieRef.current?.play(), 100);
         // Don't auto-dismiss error so user can see what happened
-      },
-    }));
+      } }));
 
     const handleConfirm = () => {
       onConfirm(reason);
@@ -195,7 +195,7 @@ export const BookingCancellationSheet = forwardRef<BookingCancellationSheetRef, 
             )}
           </View>
 
-          <View style={[styles.buttonRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.buttonRow, { flexDirection: 'row' }]}>
             <View style={{ flex: 1.2 }}>
               <SecondaryButton
                 label={isRTL ? 'تأكيد الالغاء' : 'Confirm Cancellation'}
@@ -244,20 +244,17 @@ const styles = StyleSheet.create({
   modalContent: {
     padding: 24,
     backgroundColor: '#FFFFFF',
-    paddingBottom: 40,
-  },
+    paddingBottom: 40 },
   iconContainer: {
     marginBottom: 24,
     marginTop: 8,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   starburst: {
     width: 100,
     height: 100,
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   iconCircle: {
     width: 60,
     height: 60,
@@ -267,33 +264,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 10,
     borderWidth: 0,
-    position: 'absolute',
-  },
+    position: 'absolute' },
   title: {
     fontSize: normalize.font(22),
     fontFamily: "Alexandria-Bold",
     color: '#FF4D17',
     marginTop: 16,
-    textAlign: 'center',
-  },
+    textAlign: 'center' },
   customerPhone: {
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-SemiBold",
     color: '#64748B',
     marginTop: 4,
     marginBottom: 24,
-    textAlign: 'center',
-  },
+    textAlign: 'center' },
   inputWrapper: {
     width: '100%',
-    marginBottom: 32,
-  },
+    marginBottom: 32 },
   inputLabel: {
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-SemiBold",
     color: '#1C1C1C',
-    marginBottom: 12,
-  },
+    marginBottom: 12 },
   textInput: {
     width: '100%',
     height: 140,
@@ -305,37 +297,31 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(15),
     fontFamily: "Alexandria-Regular",
     color: '#1C1C1C',
-    textAlignVertical: 'top',
-  },
+    textAlignVertical: 'top' },
   noteText: {
     fontSize: normalize.font(13),
     fontFamily: "Alexandria-Regular",
     color: '#64748B',
     marginTop: 16,
-    lineHeight: 20,
-  },
+    lineHeight: 20 },
   buttonRow: {
     width: '100%',
-    gap: 12,
-  },
+    gap: 12 },
   // Feedback specific styles
   feedbackContainer: {
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
-    paddingVertical: 40,
-  },
+    paddingVertical: 40 },
   lottie: {
     width: '100%',
-    height: 300,
-  },
+    height: 300 },
   feedbackText: {
     fontSize: normalize.font(18),
     fontFamily: "Alexandria-Bold",
     color: '#1C1C1C',
     textAlign: 'center',
-    marginTop: 10,
-  },
+    marginTop: 10 },
   retryButton: {
     marginTop: 24,
     paddingHorizontal: 24,
@@ -343,11 +329,8 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: '#F8FAFC',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
+    borderColor: '#E2E8F0' },
   retryButtonText: {
     fontSize: normalize.font(15),
     fontFamily: "Alexandria-Bold",
-    color: '#FF4D17',
-  },
-});
+    color: '#FF4D17' } });

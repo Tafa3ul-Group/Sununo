@@ -5,6 +5,7 @@ import { SolarAddBold, SolarMinusBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { useTranslation } from "react-i18next";
 import { normalize } from "../../constants/theme";
+import { isRTL } from "@/i18n";
 
 interface GuestCounterProps {
   value: number;
@@ -17,14 +18,12 @@ export const GuestCounter: React.FC<GuestCounterProps> = ({
   value,
   onIncrement,
   onDecrement,
-  style,
-}) => {
+  style }) => {
   const { i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
-  const btnSize = 38;
+    const btnSize = 38;
 
   return (
-    <View style={[styles.container, { flexDirection: isRTL ? 'row-reverse' : 'row' }, style]}>
+    <View style={[styles.container, { flexDirection: 'row' }, style]}>
       {/* First Button (Right in RTL, Left in LTR) - Now Minus for RTL */}
       <TouchableOpacity
         onPress={onDecrement}
@@ -69,20 +68,16 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
-  },
+    gap: 4 },
   buttonWrapper: {
     justifyContent: "center",
-    alignItems: "center",
-  },
+    alignItems: "center" },
   mirror: {
-    transform: [{ scaleX: -1 }],
-  },
+    transform: [{ scaleX: -1 }] },
   iconOverlay: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: "center",
-    alignItems: "center",
-  },
+    alignItems: "center" },
   iconCircle: {
     width: 22,
     height: 22,
@@ -90,18 +85,14 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: "rgba(255, 255, 255, 0.4)",
     justifyContent: "center",
-    alignItems: "center",
-  },
+    alignItems: "center" },
   valueBlock: {
     backgroundColor: "#F64200",
     width: 42,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 6,
-  },
+    borderRadius: 6 },
   valueText: {
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-Black",
-    color: "white",
-  },
-});
+    color: "white" } });

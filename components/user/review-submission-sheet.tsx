@@ -11,6 +11,7 @@ import React, { forwardRef, useMemo, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
 import Svg, { Path } from "react-native-svg";
+import { isRTL } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 // Base design width for normalization (e.g., iPhone 11/12 is ~390-414, but design units used 499 as container)
@@ -35,8 +36,7 @@ const ReviewSubmissionSheet = forwardRef<
   }
 >((props, ref) => {
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === "ar";
-  const [userRating, setUserRating] = useState(props.initialRating || 0);
+    const [userRating, setUserRating] = useState(props.initialRating || 0);
   const [comment, setComment] = useState("");
 
   // Update rating if prop changes (when opening sheet)
@@ -129,7 +129,7 @@ const ReviewSubmissionSheet = forwardRef<
           <View
             style={[
               styles.actionsRow,
-              { flexDirection: isRTL ? "row-reverse" : "row" },
+              { flexDirection: 'row' },
             ]}
           >
             <SecondaryButton
@@ -159,37 +159,31 @@ export { ReviewSubmissionSheet };
 
 const styles = StyleSheet.create({
   sheetBackground: {
-    borderRadius: normalize(30),
-  },
+    borderRadius: normalize(30) },
   indicator: {
     backgroundColor: "#E5E7EB",
-    width: normalize(40),
-  },
+    width: normalize(40) },
   contentContainer: {
     alignItems: "center",
-    width: "100%",
-  },
+    width: "100%" },
   scallopedCard: {
     width: "100%",
     height: normalize(372),
     justifyContent: "center",
     alignItems: "center",
     position: "relative",
-    marginHorizontal: 0,
-  },
+    marginHorizontal: 0 },
   svgBg: {
     position: "absolute",
     left: -40,
     right: -40,
     top: 0,
-    bottom: 0,
-  },
+    bottom: 0 },
   cardContent: {
     ...StyleSheet.absoluteFillObject,
     alignItems: "center",
     justifyContent: "center",
-    gap: normalize(10),
-  },
+    gap: normalize(10) },
   questionPill: {
     backgroundColor: "#F0F6F5",
     borderRadius: 24,
@@ -197,18 +191,15 @@ const styles = StyleSheet.create({
     height: normalize(90),
     justifyContent: "center",
     alignItems: "center",
-    gap: 8,
-  },
+    gap: 8 },
 
   questionTitle: {
     fontSize: normalize(16),
     fontFamily: "Alexandria-Black",
-    color: "#111827",
-  },
+    color: "#111827" },
   starsRow: {
     flexDirection: "row",
-    gap: 8,
-  },
+    gap: 8 },
   inputArea: {
     backgroundColor: "white",
     borderRadius: normalize(24),
@@ -218,23 +209,20 @@ const styles = StyleSheet.create({
     borderWidth: normalize(1.5),
     borderColor: "#E5E7EB",
     marginTop: normalize(10),
-    zIndex: 10,
-  },
+    zIndex: 10 },
   bottomExtension: {
     width: "100%",
     paddingBottom: normalize(40),
     marginTop: -normalize(10), // Significant overlap to ensure no white space is visible
     backgroundColor: "#15AB64",
     alignItems: "center",
-    justifyContent: "flex-start",
-  },
+    justifyContent: "flex-start" },
   textInput: {
     flex: 1,
     fontSize: normalize(16),
     fontFamily: "Alexandria-Medium",
     color: "#111827",
-    textAlignVertical: "top",
-  },
+    textAlignVertical: "top" },
   actionsRow: {
     flexDirection: "row",
     width: "100%",
@@ -242,31 +230,24 @@ const styles = StyleSheet.create({
     paddingBottom: normalize(24),
     paddingTop: normalize(12),
     gap: normalize(12),
-    justifyContent: "center",
-  },
+    justifyContent: "center" },
   btn: {
     flex: 1,
     height: normalize(58),
     borderRadius: normalize(29),
     justifyContent: "center",
-    alignItems: "center",
-  },
+    alignItems: "center" },
   sendBtn: {
-    backgroundColor: "#035DF9",
-  },
+    backgroundColor: "#035DF9" },
   sendBtnText: {
     color: "white",
     fontSize: normalize(17),
-    fontFamily: "Alexandria-Bold",
-  },
+    fontFamily: "Alexandria-Bold" },
   cancelBtn: {
     backgroundColor: "white",
     borderWidth: normalize(1),
-    borderColor: "#F3F4F6",
-  },
+    borderColor: "#F3F4F6" },
   cancelBtnText: {
     color: "#035DF9",
     fontSize: normalize(17),
-    fontFamily: "Alexandria-Bold",
-  },
-});
+    fontFamily: "Alexandria-Bold" } });

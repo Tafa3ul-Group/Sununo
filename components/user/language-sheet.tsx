@@ -3,8 +3,7 @@ import { StyleSheet, View, TouchableOpacity, Image } from "react-native";
 import {
   BottomSheetModal,
   BottomSheetView,
-  BottomSheetBackdrop,
-} from "@gorhom/bottom-sheet";
+  BottomSheetBackdrop } from "@gorhom/bottom-sheet";
 import { useTranslation } from "react-i18next";
 import { ThemedText } from "@/components/themed-text";
 import { changeLanguage } from "@/i18n";
@@ -116,26 +115,21 @@ LanguageSheet.displayName = "LanguageSheet";
 const styles = StyleSheet.create({
   indicator: {
     backgroundColor: "#E5E7EB",
-    width: 60,
-  },
+    width: 60 },
   background: {
     borderRadius: 36,
-    backgroundColor: "white",
-  },
+    backgroundColor: "white" },
   content: {
     padding: 24,
-    alignItems: "center",
-  },
+    alignItems: "center" },
   title: {
     fontSize: 20,
     fontFamily: "Alexandria-Black",
     color: "#111827",
-    marginBottom: 24,
-  },
+    marginBottom: 24 },
   list: {
     width: "100%",
-    gap: 12,
-  },
+    gap: 12 },
   item: {
     alignItems: "center",
     justifyContent: "space-between",
@@ -143,42 +137,34 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1.5,
     borderColor: "#F3F4F6",
-    backgroundColor: "#F9FAFB",
-  },
+    backgroundColor: "#F9FAFB" },
   activeItem: {
     borderColor: "#035DF9",
-    backgroundColor: "#F3F7FF",
-  },
+    backgroundColor: "#F3F7FF" },
   langInfo: {
     alignItems: "center",
-    gap: 12,
-  },
+    gap: 12 },
   label: {
     fontSize: 16,
     fontFamily: "Alexandria-Bold",
-    color: "#4B5563",
-  },
+    color: "#4B5563" },
   activeLabel: {
     color: "#035DF9",
    fontFamily: "Alexandria-Regular" },
   flag: {
     width: 28,
-    height: 28,
-  },
+    height: 28 },
   checkCircle: {
     width: 22,
     height: 22,
     borderRadius: 11,
     borderWidth: 2,
     borderColor: "#E5E7EB",
-    backgroundColor: "white",
-  },
+    backgroundColor: "white" },
   checkCircleActive: {
     width: 22,
     height: 22,
     borderRadius: 11,
     backgroundColor: "#15AB64", // Green check for selection
     justifyContent: "center",
-    alignItems: "center",
-  },
-});
+    alignItems: "center" } });

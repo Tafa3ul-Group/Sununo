@@ -22,6 +22,7 @@ import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
 import React from 'react';
 import { ActivityIndicator, Image, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { isRTL } from "@/i18n";
 
 const IDENTITY_BLUE = '#035DF9';
 
@@ -62,7 +63,7 @@ export const BookingDetailsModalContent = ({ id, isRTL, t, onClose, onOpenCancel
   return (
     <View style={styles.mainContainer}>
       {/* Custom Header */}
-      <View style={[styles.header, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+      <View style={[styles.header, { flexDirection: 'row' }]}>
         <TouchableOpacity style={styles.headerBtn} onPress={onClose}>
           {isRTL ? <SolarAltArrowRightLinear size={24} color={Colors.text.primary} /> : <SolarAltArrowLeftLinear size={24} color={Colors.text.primary} />}
         </TouchableOpacity>
@@ -75,12 +76,12 @@ export const BookingDetailsModalContent = ({ id, isRTL, t, onClose, onOpenCancel
       <BottomSheetScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Chalet Card */}
         <View style={styles.sectionCard}>
-          <View style={[styles.chaletRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-            <View style={[styles.chaletInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+          <View style={[styles.chaletRow, { flexDirection: 'row' }]}>
+            <View style={[styles.chaletInfo, { alignItems: 'flex-start' }]}>
               <Text style={[styles.chaletName, { textAlign: isRTL ? 'right' : 'left' }]}>{bChaletName}</Text>
               <Text style={[styles.chaletLocation, { textAlign: isRTL ? 'right' : 'left' }]}>{bChaletAddress || (isRTL ? 'البصرة - الجزائر' : 'Basra - Algeria')}</Text>
               
-              <View style={[styles.ratingRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+              <View style={[styles.ratingRow, { flexDirection: 'row' }]}>
                 <SolarStarBold size={14} color="#EF4444" />
                 <Text style={styles.ratingText}>4.5</Text>
               </View>
@@ -106,13 +107,13 @@ export const BookingDetailsModalContent = ({ id, isRTL, t, onClose, onOpenCancel
           </Text>
           <View style={styles.divider} />
           
-          <View style={[styles.detailRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.detailRow, { flexDirection: 'row' }]}>
             <Text style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'الاسم' : 'Name'}</Text>
             <Text style={[styles.value, { textAlign: isRTL ? 'left' : 'right' }]}>{bCustomerName}</Text>
           </View>
 
           {!bIsExternal && (
-            <View style={[styles.detailRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.detailRow, { flexDirection: 'row' }]}>
               <Text style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'رقم الهاتف' : 'Phone'}</Text>
               <Text style={[styles.value, { textAlign: isRTL ? 'left' : 'right' }]}>{data.customer?.phone || '--'}</Text>
             </View>
@@ -126,17 +127,17 @@ export const BookingDetailsModalContent = ({ id, isRTL, t, onClose, onOpenCancel
           </Text>
           <View style={styles.divider} />
           
-          <View style={[styles.detailRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.detailRow, { flexDirection: 'row' }]}>
             <Text style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'التاريخ' : 'Date'}</Text>
             <Text style={[styles.value, { textAlign: isRTL ? 'left' : 'right' }]}>{data.bookingDate}</Text>
           </View>
 
-          <View style={[styles.detailRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.detailRow, { flexDirection: 'row' }]}>
             <Text style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'الفترة' : 'Period'}</Text>
             <Text style={[styles.value, { textAlign: isRTL ? 'left' : 'right' }]}>{bShiftName}</Text>
           </View>
 
-          <View style={[styles.detailRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.detailRow, { flexDirection: 'row' }]}>
             <Text style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'الاشخاص' : 'Persons'}</Text>
             <Text style={[styles.value, { textAlign: isRTL ? 'left' : 'right' }]}>
               {isRTL ? `${data.adults || 2} بالغين، ${data.children || 2} اطفال` : `${data.adults || 2} Adults, ${data.children || 2} Children`}
@@ -151,17 +152,17 @@ export const BookingDetailsModalContent = ({ id, isRTL, t, onClose, onOpenCancel
           </Text>
           <View style={styles.divider} />
           
-          <View style={[styles.detailRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.detailRow, { flexDirection: 'row' }]}>
             <Text style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'المبلغ المدفوع' : 'Amount Paid'}</Text>
-            <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 4 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <Text style={[styles.value, { color: Colors.text.muted }]}>{Number(data.paidAmount || 0).toLocaleString()}</Text>
               <Text style={[styles.currency, { color: Colors.text.muted }]}>{isRTL ? 'د.ع' : 'IQD'}</Text>
             </View>
           </View>
 
-          <View style={[styles.detailRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.detailRow, { flexDirection: 'row' }]}>
             <Text style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'المبلغ المتبقي' : 'Remaining Amount'}</Text>
-            <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 4 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <Text style={[styles.value, { color: IDENTITY_BLUE }]}>{Number(remainingAmount).toLocaleString()}</Text>
               <Text style={[styles.currency, { color: IDENTITY_BLUE }]}>{isRTL ? 'د.ع' : 'IQD'}</Text>
             </View>
@@ -212,15 +213,13 @@ export const BookingDetailsModalContent = ({ id, isRTL, t, onClose, onOpenCancel
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    backgroundColor: '#F8F9FB',
-  },
+    backgroundColor: '#F8F9FB' },
   header: {
     height: normalize.height(60),
     paddingHorizontal: normalize.width(16),
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#F8F9FB',
-  },
+    backgroundColor: '#F8F9FB' },
   headerBtn: {
     width: normalize.width(40),
     height: normalize.width(40),
@@ -232,16 +231,13 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 5,
-    elevation: 2,
-  },
+    elevation: 2 },
   headerTitle: {
     fontSize: normalize.font(18),
     fontFamily: "Alexandria-Bold",
-    color: Colors.text.primary,
-  },
+    color: Colors.text.primary },
   scrollContent: {
-    padding: normalize.width(16),
-  },
+    padding: normalize.width(16) },
   sectionCard: {
     backgroundColor: Colors.white,
     borderRadius: normalize.radius(20),
@@ -251,95 +247,78 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.03,
     shadowRadius: 10,
-    elevation: 2,
-  },
+    elevation: 2 },
   chaletRow: {
     justifyContent: 'space-between',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   chaletInfo: {
-    flex: 1,
-  },
+    flex: 1 },
   chaletName: {
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
-    marginBottom: 4,
-  },
+    marginBottom: 4 },
   chaletLocation: {
     fontSize: normalize.font(13),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.muted,
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   ratingRow: {
     alignItems: 'center',
     gap: 4,
-    marginBottom: 12,
-  },
+    marginBottom: 12 },
   ratingText: {
     fontSize: normalize.font(12),
     fontFamily: "Alexandria-Bold",
     color: Colors.text.primary,
-    paddingTop: 2,
-  },
+    paddingTop: 2 },
   priceTag: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Bold",
-    color: Colors.text.primary,
-  },
+    color: Colors.text.primary },
   organicImageContainer: {
     width: normalize.width(100),
     height: normalize.width(100),
     borderRadius: normalize.radius(30),
     overflow: 'hidden',
-    marginLeft: normalize.width(12),
-  },
+    marginLeft: normalize.width(12) },
   organicImage: {
     width: '100%',
     height: '100%',
     borderRadius: normalize.radius(30), // Can be made more organic with complex radii
     borderTopLeftRadius: 50,
-    borderBottomRightRadius: 50,
-  },
+    borderBottomRightRadius: 50 },
   sectionTitle: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Bold",
     color: IDENTITY_BLUE,
-    marginBottom: 12,
-  },
+    marginBottom: 12 },
   divider: {
     height: 1,
     backgroundColor: '#F1F3F5',
-    marginBottom: 16,
-  },
+    marginBottom: 16 },
   detailRow: {
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
-  },
+    marginBottom: 16 },
   label: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
-    flex: 1,
-  },
+    flex: 1 },
   value: {
     fontSize: normalize.font(15),
     fontFamily: "Alexandria-Bold",
     color: Colors.text.primary,
-    flex: 2,
-  },
+    flex: 2 },
   currency: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Bold",
-  },
+    fontFamily: "Alexandria-Bold" },
   notesText: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Regular",
     color: Colors.text.muted,
-    lineHeight: 20,
-  },
+    lineHeight: 20 },
   bottomActions: {
     position: 'absolute',
     bottom: 0,
@@ -355,25 +334,19 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.05,
     shadowRadius: 10,
-    elevation: 5,
-  },
+    elevation: 5 },
   payButton: {
     height: normalize.height(56),
-    borderRadius: normalize.radius(28),
-  },
+    borderRadius: normalize.radius(28) },
   cancelLink: {
     alignItems: 'center',
-    paddingVertical: 10,
-  },
+    paddingVertical: 10 },
   cancelLinkText: {
     color: '#EF4444',
     fontFamily: "Alexandria-SemiBold",
     fontSize: normalize.font(14),
-    textDecorationLine: 'underline',
-  },
+    textDecorationLine: 'underline' },
   sheetLoading: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
+    alignItems: 'center' } });

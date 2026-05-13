@@ -10,6 +10,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import { ThemedText } from "../themed-text";
 import { CircleBackButton } from "../ui/circle-back-button";
+import { isRTL } from "@/i18n";
 
 interface DashboardHeaderProps {
   title?: string;
@@ -30,29 +31,26 @@ export function DashboardHeader({
   onSearchPress,
   onDeletePress,
   customRightComponent,
-  marginBottom = 0,
-}: DashboardHeaderProps) {
+  marginBottom = 0 }: DashboardHeaderProps) {
   const router = useRouter();
   const { language } = useSelector((state: RootState) => state.auth);
   const insets = useSafeAreaInsets();
-  const isRTL = language === "ar";
-  const rowDirection = isRTL ? "row-reverse" : "row";
 
   return (
     <View
       style={[
         styles.container,
-        { direction: isRTL ? "rtl" : "ltr", marginBottom, paddingTop: insets.top },
+        { marginBottom, paddingTop: insets.top },
       ]}
     >
       <StatusBar style="dark" />
-      <View style={[styles.topRow, { flexDirection: rowDirection }]}>
+      <View style={[styles.topRow]}>
         {/* Start side: right in RTL, left in LTR */}
-        <View style={[styles.leftGroup, { alignItems: isRTL ? "flex-end" : "flex-start" }]}>
+        <View style={[styles.leftGroup]}>
           {showBackButton ? (
             <CircleBackButton onPress={() => router.back()} />
           ) : !title ? (
-            <View style={[styles.homeLeftGroup, { flexDirection: rowDirection }]}>
+            <View style={[styles.homeLeftGroup]}>
               <TouchableOpacity
                 onPress={onProfilePress || (() => router.push("/(dashboard)/profile"))}
                 style={styles.profileCircle}
@@ -88,7 +86,7 @@ export function DashboardHeader({
         )}
 
         {/* End side: left in RTL, right in LTR */}
-        <View style={[styles.rightGroup, { alignItems: isRTL ? "flex-start" : "flex-end" }]}>
+        <View style={[styles.rightGroup]}>
           {onDeletePress ? (
             <TouchableOpacity onPress={onDeletePress} style={styles.deleteCircle}>
                <SolarTrashBinBold 
@@ -119,20 +117,17 @@ export function DashboardHeader({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.background,
-  },
+    backgroundColor: Colors.background },
   topRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: normalize.width(16),
-    paddingVertical: normalize.height(10),
-  },
+    paddingVertical: normalize.height(10) },
   leftGroup: {
     width: normalize.width(80),
     alignItems: "flex-start",
-    justifyContent: "center",
-  },
+    justifyContent: "center" },
   homeLeftGroup: {
     flexDirection: "row",
     alignItems: "center",
@@ -141,8 +136,7 @@ const styles = StyleSheet.create({
   titleWrapper: {
     flex: 1,
     justifyContent: "center",
-    alignItems: "center",
-  },
+    alignItems: "center" },
   headerTitle: {
     fontSize: normalize.font(17),
     fontFamily: "Alexandria-SemiBold",
@@ -150,12 +144,10 @@ const styles = StyleSheet.create({
     lineHeight: normalize.font(28),
     textAlign: 'center',
     paddingHorizontal: normalize.width(4),
-    paddingVertical: normalize.height(8),
-  },
+    paddingVertical: normalize.height(8) },
   rightGroup: {
     width: normalize.width(80),
-    justifyContent: "center",
-  },
+    justifyContent: "center" },
   profileCircle: {
     width: normalize.width(42),
     height: normalize.width(42),
@@ -164,8 +156,7 @@ const styles = StyleSheet.create({
     borderColor: "#F1F5F9",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
-  },
+    backgroundColor: "#FFFFFF" },
   searchCircle: {
     width: normalize.width(38),
     height: normalize.width(38),
@@ -174,8 +165,7 @@ const styles = StyleSheet.create({
     borderColor: "#F1F5F9",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
-  },
+    backgroundColor: "#FFFFFF" },
   deleteCircle: {
     width: normalize.width(42),
     height: normalize.width(42),
@@ -184,15 +174,11 @@ const styles = StyleSheet.create({
     borderColor: "#FEE2E2",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FFF5F5",
-  },
+    backgroundColor: "#FFF5F5" },
   logoContainer: {
     width: normalize.width(75),
     height: normalize.width(30),
-    justifyContent: "center",
-  },
+    justifyContent: "center" },
   logoImg: {
     width: "100%",
-    height: "100%",
-  },
-});
+    height: "100%" } });

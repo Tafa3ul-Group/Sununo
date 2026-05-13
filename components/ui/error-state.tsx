@@ -24,8 +24,7 @@ export const ErrorState = ({
   onRetry,
   onBack,
   retryLabel,
-  backLabel,
-}: ErrorStateProps) => {
+  backLabel }: ErrorStateProps) => {
   const { t } = useTranslation();
 
   return (
@@ -84,65 +83,53 @@ export const ErrorState = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
+    backgroundColor: '#FFFFFF' },
   content: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: Spacing.xl,
-  },
+    padding: Spacing.xl },
   animation: {
     marginTop: -Spacing.xl,
-    marginBottom: -Spacing.lg,
-  },
+    marginBottom: -Spacing.lg },
   textContainer: {
     alignItems: 'center',
-    marginTop: -Spacing.md,
-  },
+    marginTop: -Spacing.md },
   title: {
     textAlign: 'center',
     marginBottom: 4,
     color: '#0F172A',
     fontSize: normalize.font(20),
-    fontFamily: 'Alexandria-Bold',
-  },
+    fontFamily: 'Alexandria-Bold' },
   message: {
     textAlign: 'center',
     color: '#64748B',
     marginBottom: Spacing.xl,
     paddingHorizontal: Spacing.lg,
     fontSize: normalize.font(13),
-    fontFamily: 'Alexandria-Regular',
-  },
+    fontFamily: 'Alexandria-Regular' },
   actions: {
     width: '100%',
     gap: Spacing.sm,
     marginTop: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-  },
+    paddingHorizontal: Spacing.md },
   retryButton: {
     backgroundColor: Colors.primary,
     paddingVertical: normalize.height(12),
     borderRadius: normalize.radius(12),
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   retryButtonText: {
     color: Colors.white,
     fontFamily: 'Alexandria-Bold',
-    fontSize: normalize.font(14),
-  },
+    fontSize: normalize.font(14) },
   backButton: {
     paddingVertical: normalize.height(12),
     borderRadius: normalize.radius(12),
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#F1F5F9',
-    backgroundColor: '#F8FAFC',
-  },
+    backgroundColor: '#F8FAFC' },
   backButtonText: {
     color: '#64748B',
     fontFamily: 'Alexandria-Medium',
-    fontSize: normalize.font(14),
-  },
-});
+    fontSize: normalize.font(14) } });

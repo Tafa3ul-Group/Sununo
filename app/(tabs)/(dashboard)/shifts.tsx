@@ -63,6 +63,7 @@ import { useSelector } from 'react-redux';
 import { formatPrice } from '@/utils/format';
 import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput, BottomSheetView } from '@gorhom/bottom-sheet';
 import Toast from 'react-native-toast-message';
+import { isRTL } from "@/i18n";
 
 function ShiftPricingView({ shift, isRTL, onEdit }: { shift: any; isRTL: boolean; onEdit: (data?: any[]) => void }) {
   const { data: pricingResponse, isLoading } = useGetShiftPricingQuery(shift.id);
@@ -101,7 +102,7 @@ function ShiftPricingView({ shift, isRTL, onEdit }: { shift: any; isRTL: boolean
         </TouchableOpacity>
       </View>
 
-      <View style={[styles.pricingGrid, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+      <View style={[styles.pricingGrid, { flexDirection: 'row' }]}>
         {fullPricing.map((item) => {
           const isWeekend = item.dayOfWeek === 5 || item.dayOfWeek === 6;
           const isClosed = item.price <= 1;
@@ -213,7 +214,7 @@ function DayVisualizer({
     }
 
     return (
-      <View style={[styles.hourGridRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+      <View style={[styles.hourGridRow, { flexDirection: 'row' }]}>
         <View style={[styles.rowIconOuter, { marginLeft: isRTL ? 12 : 0, marginRight: isRTL ? 0 : 12 }]}>
           {icon === 'sun' ? (
             <SolarSunBold size={24} color={iconColor} />
@@ -221,7 +222,7 @@ function DayVisualizer({
             <SolarMoonBold size={24} color={iconColor} />
           )}
         </View>
-        <View style={{ flex: 1, flexDirection: isRTL ? 'row-reverse' : 'row', gap: 4 }}>
+        <View style={{ flex: 1, flexDirection: 'row', gap: 4 }}>
           {slots.map((slot, index) => {
             if (slot.type === 'shift') {
               const name = isRTL ? (slot.shift.name?.ar || slot.shift.name) : (slot.shift.name?.en || slot.shift.name);
@@ -266,12 +267,12 @@ function DayVisualizer({
     <View style={styles.hoursGridContainer}>
       <View style={styles.gridHeader}>
         <Text style={styles.gridTitleLarge}>{isRTL ? 'مخطط توزيع ساعات اليوم' : 'Daily Hours Chart'}</Text>
-        <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 12 }}>
-          <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }}>
+        <View style={{ flexDirection: 'row', gap: 12 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <View style={[styles.legendItem, { backgroundColor: Colors.primary, width: 10, height: 10, borderRadius: 5, marginRight: isRTL ? 0 : 6, marginLeft: isRTL ? 6 : 0 }]} />
             <Text style={styles.legendText}>{isRTL ? 'فترة محجوزة' : 'Shift'}</Text>
           </View>
-          <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <View style={[styles.legendItem, { backgroundColor: Colors.primary + '20', width: 10, height: 10, borderRadius: 5, marginRight: isRTL ? 0 : 6, marginLeft: isRTL ? 6 : 0 }]} />
             <Text style={styles.legendText}>{isRTL ? 'الفترة المختارة' : 'Selected'}</Text>
           </View>
@@ -296,8 +297,7 @@ export default function ShiftsAndPricesScreen() {
   const [selectedChaletId, setSelectedChaletId] = useState<string | null>(initialId as string || null);
   const { t } = useTranslation();
   const { language } = useSelector((state: RootState) => state.auth);
-  const isRTL = language === 'ar';
-
+  
   const { data: ownerChaletsResponse, isLoading: isLoadingOwnerChalets } = useGetOwnerChaletsQuery({});
   const ownerChalets = ownerChaletsResponse?.data || [];
 
@@ -864,7 +864,7 @@ export default function ShiftsAndPricesScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
+    <SafeAreaView style={[styles.container]}>
       <StatusBar style="dark" />
       <HeaderSection
         title={chaletName || (isRTL ? 'اختر الشاليه' : 'Select Chalet')}
@@ -896,7 +896,7 @@ export default function ShiftsAndPricesScreen() {
                   <View style={[styles.cardFlat, !shift.isActive && styles.cardInactive]}>
                     <View style={[styles.row, { padding: 16, borderBottomWidth: isExpanded ? 1 : 0, borderBottomColor: '#F0F2F7', justifyContent: 'space-between' }, isRTL && { flexDirection: 'row-reverse' }]}>
                       <TouchableOpacity 
-                        style={{ flex: 1, flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }} 
+                        style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }} 
                         onPress={() => setExpandedShift(isExpanded ? null : shift.id)}
                       >
                         <View style={{ flex: 1 }}>
@@ -1014,7 +1014,7 @@ export default function ShiftsAndPricesScreen() {
                 </TouchableOpacity>
               </View>
 
-              <View style={[styles.shiftStatusHighlight, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+              <View style={[styles.shiftStatusHighlight, { flexDirection: 'row' }]}>
                 <View style={[styles.row, { flex: 1 }, isRTL && { flexDirection: 'row-reverse' }]}>
                   <View style={[styles.statusIconCircle, { backgroundColor: modalActiveStatus ? Colors.primary + '15' : '#F3F4F6' }]}>
                     <SolarShieldBold size={20} color={modalActiveStatus ? Colors.primary : '#9CA3AF'} />
@@ -1079,7 +1079,7 @@ export default function ShiftsAndPricesScreen() {
               <View style={[
                 styles.pricingRowModern,
                 isStopped && styles.pricingRowStopped,
-                { marginHorizontal: 20, flexDirection: isRTL ? 'row-reverse' : 'row' }
+                { marginHorizontal: 20, flexDirection: 'row' }
               ]}>
                 <View style={{ flex: 1 }}>
                   <View style={[styles.row, { justifyContent: 'space-between', marginBottom: item.price > 1 ? 12 : 0 }, isRTL && { flexDirection: 'row-reverse' }]}>
@@ -1245,5 +1245,4 @@ const styles = StyleSheet.create({
   statusLabelLarge: { fontSize: 14, fontFamily: 'Alexandria-Bold', color: '#1F2937' },
   statusValueLarge: { fontSize: 11, fontFamily: 'Alexandria-Medium', marginTop: 2 },
   miniQuickBtn: { backgroundColor: 'rgba(255,255,255,0.3)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
-  miniQuickBtnText: { color: '#fff', fontSize: 10, fontFamily: 'Alexandria-Bold' },
-});
+  miniQuickBtnText: { color: '#fff', fontSize: 10, fontFamily: 'Alexandria-Bold' } });

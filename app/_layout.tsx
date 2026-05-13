@@ -6,8 +6,7 @@ import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import {
     DarkTheme,
     DefaultTheme,
-    ThemeProvider,
-} from "@react-navigation/native";
+    ThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -20,6 +19,7 @@ import "react-native-reanimated";
 import Toast from "react-native-toast-message";
 import { Provider, useSelector } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
+import { isRTL } from "@/i18n";
 
 // @ts-ignore
 if (Text.defaultProps == null) Text.defaultProps = {};
@@ -29,8 +29,7 @@ Text.defaultProps.style = {
   includeFontPadding: false,
   textAlignVertical: "center",
   writingDirection: I18nManager.isRTL ? "rtl" : "ltr",
-  textAlign: I18nManager.isRTL ? "right" : "left",
-};
+  textAlign: I18nManager.isRTL ? "right" : "left" };
 
 // @ts-ignore
 if (TextInput.defaultProps == null) TextInput.defaultProps = {};
@@ -40,8 +39,7 @@ TextInput.defaultProps.style = {
   includeFontPadding: false,
   textAlignVertical: "center",
   writingDirection: I18nManager.isRTL ? "rtl" : "ltr",
-  textAlign: I18nManager.isRTL ? "right" : "left",
-};
+  textAlign: I18nManager.isRTL ? "right" : "left" };
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
@@ -61,8 +59,7 @@ function RootLayoutNav() {
     "Alexandria-SemiBold": require("@expo-google-fonts/alexandria/600SemiBold/Alexandria_600SemiBold.ttf"),
     "Alexandria-Regular": require("@expo-google-fonts/alexandria/400Regular/Alexandria_400Regular.ttf"),
     "Alexandria-Medium": require("@expo-google-fonts/alexandria/500Medium/Alexandria_500Medium.ttf"),
-    "Alexandria-Black": require("@expo-google-fonts/alexandria/900Black/Alexandria_900Black.ttf"),
-  });
+    "Alexandria-Black": require("@expo-google-fonts/alexandria/900Black/Alexandria_900Black.ttf") });
 
   // ── Auth Guard ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -99,8 +96,7 @@ function RootLayoutNav() {
         const {
           registerForPushNotificationsAsync,
           registerTokenWithBackend,
-          addNotificationListeners,
-        } = await import("@/services/notifications");
+          addNotificationListeners } = await import("@/services/notifications");
 
         // 1. الحصول على التوكن
         const token = await registerForPushNotificationsAsync();

@@ -68,26 +68,22 @@ export default function DemoMotionsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
+    backgroundColor: '#F8FAFC' },
   content: {
     padding: 20,
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   sectionTitle: {
     fontSize: 20,
     fontFamily: "Alexandria-Black",
     color: '#1E293B',
     alignSelf: 'flex-end',
     marginTop: 30,
-    marginBottom: 20,
-  },
+    marginBottom: 20 },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    gap: 20,
-  },
+    gap: 20 },
   item: {
     backgroundColor: '#FFF',
     padding: 15,
@@ -98,14 +94,12 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
     shadowRadius: 10,
-    elevation: 2,
-  },
+    elevation: 2 },
   itemLabel: {
     marginTop: 10,
     fontSize: 14,
     fontFamily: "Alexandria-Bold",
-    color: '#64748B',
-  },
+    color: '#64748B' },
   btn: {
     backgroundColor: '#035DF9',
     paddingVertical: 16,
@@ -113,11 +107,9 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     width: '100%',
     alignItems: 'center',
-    marginBottom: 12,
-  },
+    marginBottom: 12 },
   btnText: {
     color: '#FFF',
     fontSize: 16,
-    fontFamily: "Alexandria-Black",
-  }
+    fontFamily: "Alexandria-Black" }
 });

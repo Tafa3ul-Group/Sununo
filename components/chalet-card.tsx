@@ -9,9 +9,9 @@ import Svg, { Path } from "react-native-svg";
 import {
   SolarHeartBold,
   SolarMapPointBold,
-  SolarStarBold,
-} from "./icons/solar-icons";
+  SolarStarBold } from "./icons/solar-icons";
 import { ThemedText } from "./themed-text";
+import { isRTL } from "@/i18n";
 
 interface ChaletCardProps {
   chalet: any;
@@ -26,8 +26,7 @@ const STAR_SHAPE =
 export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
   const router = useRouter();
   const { i18n } = useTranslation();
-  const isRTL = i18n.language === "ar";
-  const [isFavorite, setIsFavorite] = React.useState(false);
+    const [isFavorite, setIsFavorite] = React.useState(false);
 
   if (!chalet) return null;
 
@@ -58,7 +57,7 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
         <View
           style={[
             styles.topActions,
-            { flexDirection: isRTL ? "row-reverse" : "row" },
+            { flexDirection: 'row' },
           ]}
         >
           {/* التقييم في زاوية اليمنى صريحاً وبنفس المسافة */}
@@ -88,7 +87,7 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
       </View>
 
       <View style={styles.infoContainer}>
-        <View style={{ alignItems: isRTL ? "flex-end" : "flex-start" }}>
+        <View style={{ alignItems: 'flex-start' }}>
           <ThemedText
             style={[styles.title, { textAlign: isRTL ? "right" : "left" }]}
             numberOfLines={1}
@@ -101,9 +100,7 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
           style={[
             styles.locationRow,
             {
-              flexDirection: isRTL ? "row-reverse" : "row",
-              justifyContent: isRTL ? "flex-start" : "flex-end",
-            },
+              flexDirection: 'row' },
           ]}
         >
           <SolarMapPointBold size={normalize.width(14)} color="#9CA3AF" />
@@ -118,13 +115,13 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
         <View
           style={[
             styles.priceContainer,
-            { alignItems: isRTL ? "flex-end" : "flex-start" },
+            { alignItems: 'flex-start' },
           ]}
         >
           <View
             style={[
               styles.priceRow,
-              { flexDirection: isRTL ? "row-reverse" : "row" },
+              { flexDirection: 'row' },
             ]}
           >
             <ThemedText style={styles.price}>
@@ -148,25 +145,21 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#F3F4F6",
     width: normalize.width(240),
-    marginRight: Spacing.md,
-  },
+    marginEnd: Spacing.md },
   imageContainer: {
     width: "100%",
     height: normalize.height(180),
-    position: "relative",
-  },
+    position: "relative" },
   image: {
     width: "100%",
     height: "100%",
-    position: "absolute",
-  },
+    position: "absolute" },
   topActions: {
     flexDirection: "row",
     justifyContent: "space-between",
     paddingHorizontal: normalize.width(10), // المسافة الموحدة من الحواف (10 بكسل)
     paddingTop: normalize.height(10),
-    width: "100%",
-  },
+    width: "100%" },
   ratingOverlay: {
     flexDirection: "row",
     alignItems: "center",
@@ -174,57 +167,44 @@ const styles = StyleSheet.create({
     paddingHorizontal: normalize.width(10),
     paddingVertical: normalize.height(6),
     borderRadius: normalize.radius(10),
-    gap: 4,
-  },
+    gap: 4 },
   ratingText: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Black",
-    color: "#111827",
-  },
+    color: "#111827" },
   heartContainer: {
     width: normalize.width(42),
     height: normalize.width(42),
     justifyContent: "center",
-    alignItems: "center",
-  },
+    alignItems: "center" },
   svgBackground: {
     position: "absolute",
     top: -2,
-    left: -2,
-  },
+    start: -2 },
   infoContainer: {
-    padding: normalize.width(12),
-  },
+    padding: normalize.width(12) },
   title: {
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-Black",
-    color: "#111827",
-  },
+    color: "#111827" },
   locationRow: {
     alignItems: "center",
     gap: 4,
-    marginTop: 4,
-  },
+    marginTop: 4 },
   location: {
     fontSize: normalize.font(12),
     color: "#6B7280",
-    fontFamily: "Alexandria-Regular",
-  },
+    fontFamily: "Alexandria-Regular" },
   priceContainer: {
-    marginTop: normalize.height(12),
-  },
+    marginTop: normalize.height(12) },
   priceRow: {
     alignItems: "center",
-    gap: 4,
-  },
+    gap: 4 },
   price: {
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-Black",
-    color: "#111827",
-  },
+    color: "#111827" },
   priceLabel: {
     fontSize: normalize.font(12),
     color: "#6B7280",
-    fontFamily: "Alexandria-Regular",
-  },
-});
+    fontFamily: "Alexandria-Regular" } });

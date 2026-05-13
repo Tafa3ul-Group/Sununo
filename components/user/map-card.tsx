@@ -4,6 +4,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SolarCloseCircleBold, SolarStarBold } from "@/components/icons/solar-icons";
+import { isRTL } from "@/i18n";
 
 interface MapCardProps {
   title: string;
@@ -22,18 +23,16 @@ export const MapCard = ({
   image,
   price,
   onPress,
-  onClose,
-}: MapCardProps) => {
+  onClose }: MapCardProps) => {
   const { i18n } = useTranslation();
-  const isRTL = i18n.language === "ar";
-
+  
   return (
     <TouchableOpacity
       activeOpacity={0.9}
       onPress={onPress}
       style={[
         styles.container,
-        { flexDirection: isRTL ? "row-reverse" : "row" },
+        { flexDirection: 'row' },
       ]}
     >
       <Image source={{ uri: image }} style={styles.image} />
@@ -42,7 +41,7 @@ export const MapCard = ({
         <View
           style={[
             styles.header,
-            { flexDirection: isRTL ? "row" : "row-reverse" },
+            { flexDirection: 'row-reverse' },
           ]}
         >
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
@@ -51,7 +50,7 @@ export const MapCard = ({
           <View
             style={[
               styles.titleSection,
-              { alignItems: isRTL ? "flex-end" : "flex-start" },
+              { alignItems: 'flex-start' },
             ]}
           >
             <ThemedText
@@ -75,13 +74,13 @@ export const MapCard = ({
         <View
           style={[
             styles.footer,
-            { flexDirection: isRTL ? "row" : "row-reverse" },
+            { flexDirection: 'row-reverse' },
           ]}
         >
           <View
             style={[
               styles.ratingContainer,
-              { flexDirection: isRTL ? "row" : "row-reverse" },
+              { flexDirection: 'row-reverse' },
             ]}
           >
             <Text style={styles.rating}>{rating}</Text>
@@ -108,55 +107,43 @@ const styles = StyleSheet.create({
     ...Shadows.medium,
     height: 100,
     alignItems: "center",
-    gap: 12,
-  },
+    gap: 12 },
   image: {
     width: 84,
     height: 84,
-    borderRadius: 12,
-  },
+    borderRadius: 12 },
   content: {
     flex: 1,
     height: "100%",
     justifyContent: "space-between",
-    paddingVertical: 4,
-  },
+    paddingVertical: 4 },
   header: {
     justifyContent: "space-between",
-    alignItems: "flex-start",
-  },
+    alignItems: "flex-start" },
   titleSection: {
-    flex: 1,
-  },
+    flex: 1 },
   title: {
     fontSize: 16,
     fontFamily: "Alexandria-Black",
-    color: "#111827",
-  },
+    color: "#111827" },
   location: {
     fontSize: 12,
     color: "#6B7280",
     marginTop: 2,
    fontFamily: "Alexandria-Regular" },
   closeButton: {
-    padding: 2,
-  },
+    padding: 2 },
   footer: {
     justifyContent: "space-between",
-    alignItems: "center",
-  },
+    alignItems: "center" },
   ratingContainer: {
     alignItems: "center",
-    gap: 4,
-  },
+    gap: 4 },
   rating: {
     fontSize: 14,
     fontFamily: "Alexandria-Bold",
-    color: "#111827",
-  },
+    color: "#111827" },
   price: {
     fontSize: 13,
     fontFamily: "Alexandria-Black",
-    color: Colors.primary,
-  },
-});
+    color: Colors.primary } });

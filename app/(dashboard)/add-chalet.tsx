@@ -12,8 +12,7 @@ import {
   useCreateChaletMutation,
   useGetAmenityCategoriesQuery,
   useGetCitiesQuery,
-  useGetShiftDefaultsQuery,
-} from '@/store/api/apiSlice';
+  useGetShiftDefaultsQuery } from '@/store/api/apiSlice';
 import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
@@ -28,8 +27,7 @@ import {
   SolarAddCircleBold,
   SolarTrashBinBold,
   SolarPenBold,
-  SolarMagnifierBold,
-} from "@/components/icons/solar-icons";
+  SolarMagnifierBold } from "@/components/icons/solar-icons";
 import {
   ActivityIndicator,
   Alert,
@@ -45,6 +43,7 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { useSelector } from 'react-redux';
+import { isRTL } from "@/i18n";
 
 // ── Types ──
 interface ShiftPricing {
@@ -72,15 +71,13 @@ const SHIFT_TYPES = [
 
 const createDefaultPricing = () => Array.from({ length: 7 }, (_, i) => ({
   dayOfWeek: i,
-  price: i >= 5 ? 150000 : 100000,
-}));
+  price: i >= 5 ? 150000 : 100000 }));
 
 export default function AddChaletScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { language } = useSelector((state: RootState) => state.auth);
-  const isRTL = language === 'ar';
-
+  
   const [createChalet, { isLoading: isCreating }] = useCreateChaletMutation();
   const isLoading = isCreating;
 
@@ -105,8 +102,7 @@ export default function AddChaletScreen() {
     latitude: '33.3152',
     longitude: '44.3661',
     baseCapacity: '4',
-    extraPersonPrice: '10000',
-  });
+    extraPersonPrice: '10000' });
 
   const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
 
@@ -285,8 +281,7 @@ export default function AddChaletScreen() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsMultipleSelection: true,
-      quality: 0.8,
-    });
+      quality: 0.8 });
     
     if (!result.canceled) {
       const catId = uploadingCategoryId || 'general';
@@ -306,8 +301,7 @@ export default function AddChaletScreen() {
 
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ['images'],
-      quality: 0.8,
-    });
+      quality: 0.8 });
  
     if (!result.canceled) {
       const catId = uploadingCategoryId || 'general';
@@ -356,8 +350,7 @@ export default function AddChaletScreen() {
       const activeShifts = shifts.filter(s => s.isActive).map(s => ({
         ...s,
         startTime: s.startTime?.split(':').slice(0, 2).join(':'),
-        endTime: s.endTime?.split(':').slice(0, 2).join(':'),
-      }));
+        endTime: s.endTime?.split(':').slice(0, 2).join(':') }));
       formData.append('shifts', JSON.stringify(activeShifts));
 
       // ── Optional fields ──
@@ -507,7 +500,7 @@ export default function AddChaletScreen() {
   };
 
   return (
-    <View style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
+    <View style={[styles.container]}>
       <StatusBar style="dark" />
 
       <KeyboardAvoidingView
@@ -707,7 +700,7 @@ export default function AddChaletScreen() {
                       onIncrement={() => setForm({ ...form, maxAdults: (parseInt(form.maxAdults || '1') + 1).toString() })}
                       onDecrement={() => setForm({ ...form, maxAdults: Math.max(1, parseInt(form.maxAdults || '1') - 1).toString() })}
                     />
-                    <View style={[styles.capacityInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                    <View style={[styles.capacityInfo, { alignItems: 'flex-start' }]}>
                       <Text style={styles.capacityLabel}>{isRTL ? 'البالغين' : 'Adults'}</Text>
                       <Text style={styles.capacitySubLabel}>{isRTL ? '18 وأكبر' : '18 and above'}</Text>
                     </View>
@@ -720,7 +713,7 @@ export default function AddChaletScreen() {
                       onIncrement={() => setForm({ ...form, maxChildren: (parseInt(form.maxChildren || '0') + 1).toString() })}
                       onDecrement={() => setForm({ ...form, maxChildren: Math.max(0, parseInt(form.maxChildren || '0') - 1).toString() })}
                     />
-                    <View style={[styles.capacityInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                    <View style={[styles.capacityInfo, { alignItems: 'flex-start' }]}>
                       <Text style={styles.capacityLabel}>{isRTL ? 'الأطفال' : 'Children'}</Text>
                       <Text style={styles.capacitySubLabel}>{isRTL ? 'تحت 18 سنة' : 'Under 18'}</Text>
                     </View>
@@ -909,7 +902,7 @@ export default function AddChaletScreen() {
             <ActivityIndicator color={Colors.primary} style={{ margin: 20 }} />
           ) : (
             <View style={{ width: '100%', flex: 1 }}>
-              <View style={[styles.modalSearchContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+              <View style={[styles.modalSearchContainer, { flexDirection: 'row' }]}>
                 <SolarMagnifierBold size={20} color={Colors.text.muted} />
                 <TextInput
                   style={[styles.modalSearchInput, { textAlign }]}
@@ -924,7 +917,7 @@ export default function AddChaletScreen() {
                 style={{ width: '100%' }}
                 ListHeaderComponent={<Text style={styles.modalTitle}>{isRTL ? 'اختر المدينة' : 'Select City'}</Text>}
                 renderItem={({ item }: { item: any }) => (
-                  <TouchableOpacity style={[styles.pickerItem, { flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 10 }]} onPress={() => handleCitySelect(item)}>
+                  <TouchableOpacity style={[styles.pickerItem, { flexDirection: 'row', alignItems: 'center', gap: 10 }]} onPress={() => handleCitySelect(item)}>
                     <SolarMapPointBold size={20} color={Colors.primary} />
                     <Text style={[styles.pickerItemText, { textAlign, flex: 1 }]}>
                       {typeof item.name === 'object' ? (isRTL ? item.name.ar : item.name.en) : item.name}
@@ -1041,8 +1034,7 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: 'row', gap: Spacing.md, padding: Spacing.md,
     backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#F1F5F9',
-    paddingBottom: Platform.OS === 'ios' ? 34 : Spacing.md,
-  },
+    paddingBottom: Platform.OS === 'ios' ? 34 : Spacing.md },
   sectionCard: { backgroundColor: 'transparent', padding: 0, gap: Spacing.md, marginBottom: Spacing.md },
   sectionHeader: { fontSize: normalize.font(16), fontFamily: "Alexandria-Black", color: Colors.text.primary, marginBottom: 2 },
   rowInputs: { gap: Spacing.sm },
@@ -1052,20 +1044,17 @@ const styles = StyleSheet.create({
   input: {
     height: normalize.height(48), backgroundColor: '#FFFFFF', borderRadius: normalize.radius(12),
     paddingHorizontal: Spacing.md, borderWidth: 1, borderColor: '#E8E8E8',
-    fontSize: normalize.font(15), color: Colors.text.primary, fontFamily: "Alexandria-Regular",
-  },
+    fontSize: normalize.font(15), color: Colors.text.primary, fontFamily: "Alexandria-Regular" },
   textArea: { height: normalize.height(100), paddingTop: 18, textAlignVertical: 'top' },
   // Map
   mapPreviewContainer: {
     height: normalize.height(160), width: '100%', borderRadius: normalize.radius(12),
-    overflow: 'hidden', backgroundColor: '#F1F5F9', position: 'relative',
-  },
+    overflow: 'hidden', backgroundColor: '#F1F5F9', position: 'relative' },
   miniMap: { flex: 1 },
   mapOverlay: { position: 'absolute', bottom: Spacing.sm, left: 0, right: 0, alignItems: 'center' },
   editLocBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: 'rgba(3, 93, 249, 0.9)', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 100,
-  },
+    backgroundColor: 'rgba(3, 93, 249, 0.9)', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 100 },
   editLocText: { color: Colors.white, fontSize: normalize.font(12), fontFamily: "Alexandria-Bold" },
   // Shifts
   shiftsHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
@@ -1077,14 +1066,12 @@ const styles = StyleSheet.create({
   dayPriceInput: {
     width: '100%', height: 36, backgroundColor: '#F8FAFC', borderRadius: 8,
     borderWidth: 1, borderColor: '#E2E8F0', textAlign: 'center',
-    fontSize: normalize.font(11), color: Colors.text.primary, fontFamily: "Alexandria-Medium", paddingHorizontal: 2,
-  },
+    fontSize: normalize.font(11), color: Colors.text.primary, fontFamily: "Alexandria-Medium", paddingHorizontal: 2 },
   // Shift Card Row (Matches Screenshot)
   shiftListContainer: { gap: 12, marginBottom: 16 },
   shiftCardRow: {
     backgroundColor: '#FFFFFF', borderRadius: normalize.radius(16),
-    borderWidth: 1.5, borderColor: '#F1F5F9', paddingHorizontal: 16, paddingVertical: 14,
-  },
+    borderWidth: 1.5, borderColor: '#F1F5F9', paddingHorizontal: 16, paddingVertical: 14 },
   shiftCardRowActive: { borderColor: Colors.primary + '20' },
   shiftRowInner: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   shiftActions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
@@ -1096,16 +1083,14 @@ const styles = StyleSheet.create({
   addShiftBtnFull: {
     flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center',
     paddingVertical: 12, borderStyle: 'dashed', borderWidth: 1.5, borderColor: Colors.primary + '40',
-    borderRadius: 14, marginTop: 8,
-  },
+    borderRadius: 14, marginTop: 8 },
   addShiftBtnFullText: { color: Colors.primary, fontFamily: "Alexandria-Bold" },
   // Capacity (Matches Screenshot)
   capacityList: { gap: 12, marginTop: 8 },
   capacityCard: {
     backgroundColor: '#FFFFFF', borderRadius: normalize.radius(16),
     borderWidth: 1.5, borderColor: '#F1F5F9', padding: 16,
-    justifyContent: 'space-between', alignItems: 'center',
-  },
+    justifyContent: 'space-between', alignItems: 'center' },
   capacityInfo: { flex: 1, gap: 2 },
   capacityLabel: { fontSize: normalize.font(18), fontFamily: "Alexandria-Bold", color: Colors.text.primary },
   capacitySubLabel: { fontSize: normalize.font(14), fontFamily: "Alexandria-Regular", color: Colors.text.muted },
@@ -1117,13 +1102,11 @@ const styles = StyleSheet.create({
   // Amenity Categories & Feature Rows
   categorySectionTitle: {
     fontSize: normalize.font(16), fontFamily: "Alexandria-Black", color: Colors.text.primary,
-    textAlign: 'center', marginBottom: 8,
-  },
+    textAlign: 'center', marginBottom: 8 },
   featuresList: { gap: 8 },
   featureRow: {
     backgroundColor: '#FFFFFF', borderRadius: normalize.radius(14),
-    borderWidth: 1.5, borderColor: '#E8E8E8', paddingHorizontal: 16, paddingVertical: 14,
-  },
+    borderWidth: 1.5, borderColor: '#E8E8E8', paddingHorizontal: 16, paddingVertical: 14 },
   featureRowActive: { borderColor: Colors.primary + '40', backgroundColor: '#F8FAFF' },
   featureRowInner: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   featureInfo: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
@@ -1135,17 +1118,14 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
-    elevation: 3,
-  },
+    elevation: 3 },
   featureIconText: { fontSize: normalize.font(20), color: '#FFFFFF' },
   featureName: {
     fontSize: normalize.font(14), fontFamily: "Alexandria-Bold", color: Colors.text.primary,
-    flex: 1,
-  },
+    flex: 1 },
   checkbox: {
     width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: '#D1D5DB',
-    justifyContent: 'center', alignItems: 'center',
-  },
+    justifyContent: 'center', alignItems: 'center' },
   checkboxActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
   checkboxCheck: { color: '#FFFFFF', fontSize: normalize.font(14), fontFamily: "Alexandria-Bold" },
   uploadText: { marginTop: normalize.height(4), color: Colors.text.muted, fontSize: normalize.font(12), fontFamily: "Alexandria-SemiBold" },
@@ -1157,23 +1137,18 @@ const styles = StyleSheet.create({
   imageUpload: {
     width: normalize.width(100), height: normalize.width(100), backgroundColor: Colors.surface,
     borderRadius: normalize.radius(16), borderWidth: 2, borderColor: Colors.border, borderStyle: 'dashed',
-    justifyContent: 'center', alignItems: 'center',
-  },
+    justifyContent: 'center', alignItems: 'center' },
   coverBadge: { position: 'absolute', bottom: 6, start: 6, backgroundColor: Colors.primary, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
   coverBadgeText: { color: '#FFFFFF', fontSize: normalize.font(9), fontFamily: "Alexandria-Bold" },
   // Amenity Wizard Progress
   amenityProgressContainer: {
-    flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 24, marginBottom: 12,
-  },
+    flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 24, marginBottom: 12 },
   amenityDot: {
-    width: 8, height: 8, borderRadius: 4, backgroundColor: '#E2E8F0',
-  },
+    width: 8, height: 8, borderRadius: 4, backgroundColor: '#E2E8F0' },
   amenityDotActive: {
-    width: 24, backgroundColor: Colors.primary,
-  },
+    width: 24, backgroundColor: Colors.primary },
   amenityDotPassed: {
-    backgroundColor: Colors.primary + '60',
-  },
+    backgroundColor: Colors.primary + '60' },
   // Bottom sheets
   sheetContent: { padding: Spacing.lg, alignItems: 'center', flex: 1 },
   modalTitle: { ...Typography.h2, marginBottom: Spacing.lg, textAlign: 'center' },
@@ -1192,12 +1167,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     height: 48,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
+    borderColor: '#E2E8F0' },
   modalSearchInput: {
     flex: 1,
     fontSize: 14,
     color: Colors.text.primary,
-    fontFamily: "Alexandria-Regular",
-  },
-});
+    fontFamily: "Alexandria-Regular" } });

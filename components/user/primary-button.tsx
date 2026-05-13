@@ -7,9 +7,9 @@ import {
   TextStyle,
   TouchableOpacity,
   View,
-  ViewStyle,
-} from "react-native";
+  ViewStyle } from "react-native";
 import Svg, { Path } from "react-native-svg";
+import { isRTL } from "@/i18n";
 
 interface PrimaryButtonProps {
   label: string;
@@ -48,10 +48,8 @@ export function PrimaryButton({
   border = "#E5E7EB",
   style,
   textStyle,
-  height = 46,
-}: PrimaryButtonProps) {
+  height = 46 }: PrimaryButtonProps) {
   const isWhite = variant === "white";
-  const isRTL = I18nManager.isRTL;
   const defaultActiveColor = isWhite ? "white" : "#035DF9";
   const defaultActiveTextColor = isWhite ? "#6B7280" : "white";
 
@@ -115,7 +113,7 @@ export function PrimaryButton({
         <View
           style={[
             styles.textWithIcon,
-            { flexDirection: isRTL ? "row-reverse" : "row" },
+            { flexDirection: 'row' },
           ]}
         >
           {icon}
@@ -145,28 +143,22 @@ const styles = StyleSheet.create({
   loadingContainer: {
     height: 46,
     justifyContent: "center",
-    paddingHorizontal: 16,
-  },
+    paddingHorizontal: 16 },
   hybridContainer: {
     flexDirection: "row-reverse",
     alignItems: "center",
-    justifyContent: "center",
-  },
+    justifyContent: "center" },
   svgPart: {},
   middleSection: {
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 12,
-  },
+    paddingHorizontal: 12 },
   primaryText: {
     fontSize: 18,
     fontFamily: "Alexandria-SemiBold",
     textAlign: "center",
     lineHeight: 28,
-    includeFontPadding: false,
-  },
+    includeFontPadding: false },
   textWithIcon: {
     alignItems: "center",
-    justifyContent: "center",
-  },
-});
+    justifyContent: "center" } });

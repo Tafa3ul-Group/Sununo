@@ -8,8 +8,7 @@ import {
     StatusBar,
     StyleSheet,
     TouchableOpacity,
-    View,
-} from "react-native";
+    View } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
@@ -40,9 +39,9 @@ import {
     useBrowseCustomerChaletsQuery,
     useGetBannersQuery,
     useGetFavoriteIdsQuery,
-    useToggleFavoriteMutation,
-} from "@/store/api/customerApiSlice";
+    useToggleFavoriteMutation } from "@/store/api/customerApiSlice";
 import { clearFilters } from "@/store/filterSlice";
+import { isRTL } from "@/i18n";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 // Fallback colors for chalet cards
@@ -66,8 +65,7 @@ function ActiveFilterBanner({ filter, isRTL }: { filter: any; isRTL: boolean }) 
       const periodMap: Record<string, string> = {
         morning: isRTL ? "صباحي" : "Morning",
         evening: isRTL ? "مسائي" : "Evening",
-        overnight: isRTL ? "مبيت" : "Overnight",
-      };
+        overnight: isRTL ? "مبيت" : "Overnight" };
       items.push({ id: 'period', text: periodMap[filter.period] || filter.period, icon: <SolarClockCircleBold size={14} color={Colors.primary} /> });
     }
     if (filter.maxGuests) {
@@ -80,14 +78,14 @@ function ActiveFilterBanner({ filter, isRTL }: { filter: any; isRTL: boolean }) 
 
   return (
     <View style={filterBannerStyles.container}>
-      <View style={[filterBannerStyles.content, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+      <View style={[filterBannerStyles.content, { flexDirection: 'row' }]}>
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={[filterBannerStyles.scrollContent, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+          contentContainerStyle={[filterBannerStyles.scrollContent, { flexDirection: 'row' }]}
         >
           {filterItems.map((item) => (
-            <View key={item.id} style={[filterBannerStyles.pill, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <View key={item.id} style={[filterBannerStyles.pill, { flexDirection: 'row' }]}>
               {item.icon}
               <ThemedText style={filterBannerStyles.pillText}>{item.text}</ThemedText>
             </View>
@@ -115,19 +113,16 @@ const filterBannerStyles = StyleSheet.create({
     ...Shadows.small,
     borderWidth: 1,
     borderColor: "#F3F4F6",
-    overflow: "hidden",
-  },
+    overflow: "hidden" },
   content: {
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
+    paddingVertical: 8 },
   scrollContent: {
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,
-  },
+    gap: 8 },
   pill: {
     flexDirection: "row",
     alignItems: "center",
@@ -135,18 +130,14 @@ const filterBannerStyles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 12,
-    gap: 6,
-  },
+    gap: 6 },
   pillText: {
     fontSize: 12,
     fontFamily: "Alexandria-Medium",
-    color: Colors.primary,
-  },
+    color: Colors.primary },
   clearBtn: {
     padding: 4,
-    marginLeft: 4,
-  },
-});
+    marginLeft: 4 } });
 
 export default function HomeScreen() {
   const { userType } = useSelector((state: RootState) => state.auth);
@@ -154,8 +145,7 @@ export default function HomeScreen() {
   const dispatch = useDispatch();
   const router = useRouter();
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === "ar";
-  const [activeFilter, setActiveFilter] = React.useState("all");
+    const [activeFilter, setActiveFilter] = React.useState("all");
   const insets = useSafeAreaInsets();
 
   // Fetch all amenities to resolve real IDs for pool/bbq/garden filters
@@ -225,8 +215,7 @@ export default function HomeScreen() {
   const banners = (bannersResponse || []).map((b: any) => ({
     id: b.id,
     image: b.imageUrl,
-    title: isRTL ? b.title?.ar || b.title : b.title?.en || b.title,
-  }));
+    title: isRTL ? b.title?.ar || b.title : b.title?.en || b.title }));
 
   if (userType === "owner") return <Redirect href="/(tabs)/(dashboard)/home" />;
 
@@ -257,8 +246,7 @@ export default function HomeScreen() {
           : "0",
       rating: chalet.averageRating || 0,
       color: CARD_COLORS[index % CARD_COLORS.length],
-      image: getImageSrc(chalet.images?.[0]?.url),
-    }));
+      image: getImageSrc(chalet.images?.[0]?.url) }));
   }, [chaletsResponse, isRTL]);
 
   const FILTER_OPTIONS = [
@@ -271,8 +259,7 @@ export default function HomeScreen() {
           color={isActive ? "white" : Colors.primary}
         />
       ),
-      activeColor: Colors.primary,
-    },
+      activeColor: Colors.primary },
     {
       id: "pool",
       label: t("home.categories.pool"),
@@ -282,16 +269,14 @@ export default function HomeScreen() {
           color={isActive ? "white" : Colors.secondary}
         />
       ),
-      activeColor: Colors.secondary,
-    },
+      activeColor: Colors.secondary },
     {
       id: "bbq",
       label: t("home.categories.bbq"),
       icon: (isActive: boolean) => (
         <SolarFireBold size={18} color={isActive ? "white" : Colors.accent} />
       ),
-      activeColor: Colors.accent,
-    },
+      activeColor: Colors.accent },
     {
       id: "garden",
       label: t("home.categories.garden"),
@@ -301,8 +286,7 @@ export default function HomeScreen() {
           color={isActive ? "white" : Colors.secondary}
         />
       ),
-      activeColor: Colors.secondary,
-    },
+      activeColor: Colors.secondary },
   ];
 
   return (
@@ -327,7 +311,7 @@ export default function HomeScreen() {
         <View
           style={[
             styles.sectionHeader,
-            { flexDirection: isRTL ? "row" : "row-reverse" },
+            { flexDirection: 'row-reverse' },
           ]}
         >
           <TouchableOpacity onPress={() => router.push("/(tabs)/(customer)/explore")}>
@@ -360,7 +344,7 @@ export default function HomeScreen() {
         <View
           style={[
             styles.sectionHeader,
-            { flexDirection: isRTL ? "row" : "row-reverse" },
+            { flexDirection: 'row-reverse' },
           ]}
         >
           <TouchableOpacity>
@@ -413,7 +397,7 @@ export default function HomeScreen() {
           contentContainerStyle={styles.tabsContainer}
         >
           <View
-            style={{ flexDirection: isRTL ? "row-reverse" : "row", gap: 10 }}
+            style={{ flexDirection: 'row', gap: 10 }}
           >
             {FILTER_OPTIONS.map((filter) => (
               <SecondaryButton
@@ -483,43 +467,37 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     marginTop: 20,
-    marginBottom: 10,
-  },
+    marginBottom: 10 },
   sectionTitle: {
     fontSize: normalize.font(20),
     fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
     lineHeight: normalize.font(28),
-    flexShrink: 1,
-  },
+    flexShrink: 1 },
   seeAll: {
     fontSize: normalize.font(13),
     color: Colors.primary,
     fontFamily: "Alexandria-SemiBold",
     textDecorationLine: "underline",
-    lineHeight: normalize.font(18),
-  },
+    lineHeight: normalize.font(18) },
   mapContainer: {
     height: 210,
     marginHorizontal: 16,
     borderRadius: 28,
     overflow: "hidden",
     backgroundColor: "#F3F4F6",
-    marginTop: 10,
-  },
+    marginTop: 10 },
   map: { flex: 1 },
   mapOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "transparent",
-  },
+    backgroundColor: "transparent" },
   listPadding: { paddingHorizontal: 16 },
   tabsContainer: { paddingHorizontal: 16, marginVertical: 10 },
   swiperWrapper: { marginVertical: 10 },
   loaderContainer: {
     height: 200,
     justifyContent: "center",
-    alignItems: "center",
-  },
+    alignItems: "center" },
   emptyContainer: {
     alignItems: "center",
     justifyContent: "center",
@@ -529,8 +507,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     marginTop: 10,
     borderWidth: 1,
-    borderColor: "#F3F4F6",
-  },
+    borderColor: "#F3F4F6" },
   emptyIconContainer: {
     width: 100,
     height: 100,
@@ -538,32 +515,26 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary + "10",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 16,
-  },
+    marginBottom: 16 },
   emptyTitle: {
     fontSize: normalize.font(18),
     fontFamily: "Alexandria-Bold",
     color: Colors.text.primary,
     textAlign: "center",
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   emptyDesc: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Regular",
     color: Colors.text.secondary,
     textAlign: "center",
     marginBottom: 24,
-    lineHeight: 20,
-  },
+    lineHeight: 20 },
   clearButton: {
     backgroundColor: Colors.primary,
     paddingHorizontal: 24,
     paddingVertical: 12,
-    borderRadius: 16,
-  },
+    borderRadius: 16 },
   clearButtonText: {
     color: Colors.white,
     fontFamily: "Alexandria-SemiBold",
-    fontSize: normalize.font(14),
-  },
-});
+    fontSize: normalize.font(14) } });

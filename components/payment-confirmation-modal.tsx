@@ -16,6 +16,7 @@ import { SecondaryButton } from './user/secondary-button';
 // Static imports for Lottie files
 import errorAnim from './icons/motions/fail.json';
 import successAnim from './icons/motions/success.json';
+import { isRTL } from "@/i18n";
 
 interface PaymentConfirmationSheetProps {
   onConfirm: () => void;
@@ -56,8 +57,7 @@ export const PaymentConfirmationSheet = forwardRef<PaymentConfirmationSheetRef, 
         setInternalStatus('error');
         setFeedbackMessage(message || '');
         setTimeout(() => lottieRef.current?.play(), 100);
-      },
-    }));
+      } }));
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -98,7 +98,7 @@ export const PaymentConfirmationSheet = forwardRef<PaymentConfirmationSheetRef, 
 
       return (
         <View style={styles.contentWrapper}>
-          <View style={[styles.buttonRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.buttonRow, { flexDirection: 'row' }]}>
             <View style={{ flex: 1.8 }}>
               <SecondaryButton
                 label={isRTL ? 'تأكيد' : 'Confirm'}
@@ -145,42 +145,33 @@ const styles = StyleSheet.create({
   modalContent: {
     padding: 20,
     backgroundColor: '#FFFFFF',
-    minHeight: 180,
-  },
+    minHeight: 180 },
   headerWrapper: {
     width: '100%',
     alignItems: 'center',
-    marginBottom: 20,
-  },
+    marginBottom: 20 },
   title: {
     fontSize: normalize.font(20),
     fontFamily: "Alexandria-Black",
     color: '#1E293B',
     textAlign: 'center',
-    lineHeight: normalize.font(28),
-  },
+    lineHeight: normalize.font(28) },
   contentWrapper: {
-    width: '100%',
-  },
+    width: '100%' },
   buttonRow: {
     width: '100%',
     gap: 16,
-    alignItems: 'stretch',
-  },
+    alignItems: 'stretch' },
   feedbackContainer: {
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
-    paddingVertical: 20,
-  },
+    paddingVertical: 20 },
   lottie: {
-    width: '100%',
-  },
+    width: '100%' },
   feedbackText: {
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-Bold",
     color: '#1C1C1C',
     textAlign: 'center',
-    marginTop: 10,
-  },
-});
+    marginTop: 10 } });

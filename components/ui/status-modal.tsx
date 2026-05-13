@@ -56,8 +56,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
-  },
+    padding: 20 },
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: 32,
@@ -69,28 +68,23 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.1,
     shadowRadius: 20,
-    elevation: 10,
-  },
+    elevation: 10 },
   animation: {
-    marginBottom: 10,
-  },
+    marginBottom: 10 },
   title: {
     fontSize: 22,
     fontFamily: "Alexandria-Black",
     color: '#1E293B',
     textAlign: 'center',
-    marginBottom: 10,
-  },
+    marginBottom: 10 },
   message: {
     fontSize: 15,
     color: '#64748B',
     textAlign: 'center',
     lineHeight: 22,
     fontFamily: "Alexandria-SemiBold",
-    marginBottom: 25,
-  },
+    marginBottom: 25 },
   button: {
     width: '100%',
-    height: 52,
-  }
+    height: 52 }
 });

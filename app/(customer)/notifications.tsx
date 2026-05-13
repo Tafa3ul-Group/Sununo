@@ -10,6 +10,7 @@ import { SolarAltArrowRightBold } from "@/components/icons/solar-icons";
 import { useRouter } from 'expo-router';
 import { HeaderSection } from '@/components/header-section';
 import { useGetNotificationsQuery, useMarkNotificationAsReadMutation } from '@/store/api/customerApiSlice';
+import { isRTL } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -24,8 +25,7 @@ interface Notification {
 export default function NotificationsScreen() {
     const { t } = useTranslation();
     const { language } = useSelector((state: RootState) => state.auth);
-    const isRTL = language === 'ar';
-    const router = useRouter();
+        const router = useRouter();
 
     // Fetch notifications from the backend
     const { data: notificationsResponse, isLoading, refetch } = useGetNotificationsQuery({ page: 1, limit: 50 });
@@ -49,8 +49,7 @@ export default function NotificationsScreen() {
           title: item.title || t('notifications.newNotification'),
           message: item.body || item.message || '',
           time: new Date(item.createdAt).toLocaleTimeString(isRTL ? 'ar' : 'en', { hour: '2-digit', minute: '2-digit' }),
-          isRead: item.isRead || false,
-        };
+          isRead: item.isRead || false };
 
         const notifDate = new Date(item.createdAt).toDateString();
         if (notifDate === todayStr) {
@@ -73,18 +72,18 @@ export default function NotificationsScreen() {
     const renderItem = (item: Notification) => (
         <TouchableOpacity 
             key={item.id} 
-            style={[styles.notificationCard, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+            style={[styles.notificationCard, { flexDirection: 'row' }]}
             onPress={() => handleNotificationPress(item)}
             activeOpacity={0.7}
         >
             {/* Content section */}
-            <View style={[styles.cardContent, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+            <View style={[styles.cardContent, { alignItems: 'flex-start' }]}>
                 <ThemedText style={styles.titleText}>{item.title}</ThemedText>
                 <ThemedText style={[styles.messageText, { textAlign: isRTL ? 'right' : 'left' }]}>{item.message}</ThemedText>
             </View>
 
             {/* Header section with orange dot and time */}
-            <View style={[styles.cardLeft, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.cardLeft, { flexDirection: 'row' }]}>
                 <ThemedText style={styles.timeText}>{item.time}</ThemedText>
                 {!item.isRead && <View style={styles.orangeDot} />}
             </View>
@@ -107,7 +106,7 @@ export default function NotificationsScreen() {
                 {/* Today Section */}
                 {groupedNotifications.today.length > 0 && (
                     <>
-                        <View style={[styles.sectionHeader, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                        <View style={[styles.sectionHeader, { alignItems: 'flex-start' }]}>
                             <ThemedText style={styles.sectionTitle}>{t('notifications.today')}</ThemedText>
                         </View>
                         {groupedNotifications.today.map(renderItem)}
@@ -117,7 +116,7 @@ export default function NotificationsScreen() {
                 {/* Yesterday Section */}
                 {groupedNotifications.yesterday.length > 0 && (
                     <>
-                        <View style={[styles.sectionHeader, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                        <View style={[styles.sectionHeader, { alignItems: 'flex-start' }]}>
                             <ThemedText style={styles.sectionTitle}>{t('notifications.yesterday')}</ThemedText>
                         </View>
                         {groupedNotifications.yesterday.map(renderItem)}
@@ -127,7 +126,7 @@ export default function NotificationsScreen() {
                 {/* Older Section */}
                 {groupedNotifications.older.length > 0 && (
                     <>
-                        <View style={[styles.sectionHeader, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                        <View style={[styles.sectionHeader, { alignItems: 'flex-start' }]}>
                             <ThemedText style={styles.sectionTitle}>{t('notifications.older') || (isRTL ? 'أقدم' : 'Older')}</ThemedText>
                         </View>
                         {groupedNotifications.older.map(renderItem)}
@@ -150,21 +149,17 @@ export default function NotificationsScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'white',
-    },
+        backgroundColor: 'white' },
     scrollContent: {
         paddingHorizontal: 20,
-        paddingBottom: 40,
-    },
+        paddingBottom: 40 },
     sectionHeader: {
         marginTop: 20,
-        marginBottom: 10,
-    },
+        marginBottom: 10 },
     sectionTitle: {
         fontSize: 14,
         fontFamily: "Alexandria-Bold",
-        color: '#9CA3AF',
-    },
+        color: '#9CA3AF' },
     notificationCard: {
         flexDirection: 'row',
         backgroundColor: 'white',
@@ -173,32 +168,26 @@ const styles = StyleSheet.create({
         marginBottom: 12,
         borderWidth: 1,
         borderColor: '#F3F4F6',
-        alignItems: 'center',
-    },
+        alignItems: 'center' },
     cardLeft: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
-    },
+        gap: 8 },
     orangeDot: {
         width: 12,
         height: 12,
         borderRadius: 6,
-        backgroundColor: '#FF4500',
-    },
+        backgroundColor: '#FF4500' },
     timeText: {
         fontSize: 12,
         color: '#9CA3AF',
-        fontFamily: "Alexandria-SemiBold",
-    },
+        fontFamily: "Alexandria-SemiBold" },
     cardContent: {
-        flex: 1,
-    },
+        flex: 1 },
     titleText: {
         fontSize: 16,
         fontFamily: "Alexandria-Black",
-        color: '#111827',
-    },
+        color: '#111827' },
     messageText: {
         fontSize: 13,
         color: '#6B7280',

@@ -5,17 +5,16 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
-} from "react-native";
+  View } from "react-native";
 import Animated, {
   interpolate,
   interpolateColor,
   useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
-} from "react-native-reanimated";
+  withSpring } from "react-native-reanimated";
 import Svg, { G, Path } from "react-native-svg";
+import { isRTL } from "@/i18n";
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 const AnimatedG = Animated.createAnimatedComponent(G);
@@ -36,8 +35,7 @@ interface MainTabsProps {
 
 export function MainTabs({ activeTab, onChange }: MainTabsProps) {
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === "ar";
-
+  
   const transition = useSharedValue(0);
   // Re-ordered to start with SHOOKET (WHEN), then MANO (WHO), then DETAILS (WHERE)
   const tabList: TabType[] = ["WHEN", "WHO", "WHERE"];
@@ -51,8 +49,7 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
     transition.value = withSpring(target, {
       damping: 18,
       stiffness: 120,
-      mass: 1,
-    });
+      mass: 1 });
   }, [activeTab]);
 
   // ==========================================
@@ -82,8 +79,7 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
         { scale: s },
         { translateX: -172 },
         { translateY: -40 },
-      ],
-    };
+      ] };
   });
 
   const circlePathProps = useAnimatedProps(() => {
@@ -92,8 +88,7 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
         transition.value,
         [0, 1, 2],
         [WHEN_COLOR, WHO_COLOR, WHERE_COLOR],
-      ),
-    };
+      ) };
   });
 
   const tab0Style = useAnimatedStyle(() => {
@@ -106,8 +101,7 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
       transform: [
         { scale: interpolate(transition.value, [0, 1], [1.05, 1]) },
         { translateX: currentTextOffsets[0] },
-      ],
-    };
+      ] };
   });
 
   const tab1Style = useAnimatedStyle(() => {
@@ -120,8 +114,7 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
       transform: [
         { scale: interpolate(transition.value, [0, 1, 2], [1, 1.05, 1]) },
         { translateX: currentTextOffsets[1] },
-      ],
-    };
+      ] };
   });
 
   const tab2Style = useAnimatedStyle(() => {
@@ -134,8 +127,7 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
       transform: [
         { scale: interpolate(transition.value, [1, 2], [1, 1.05]) },
         { translateX: currentTextOffsets[2] },
-      ],
-    };
+      ] };
   });
 
   const tabStyles = [tab0Style, tab1Style, tab2Style];
@@ -161,7 +153,7 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
       <View
         style={[
           styles.buttonsContainer,
-          { flexDirection: isRTL ? "row-reverse" : "row" },
+          { flexDirection: 'row' },
         ]}
       >
         {tabList.map(function (tab, idx) {
@@ -197,8 +189,7 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
 const styles = StyleSheet.create({
   container: {
     height: 80,
-    backgroundColor: "transparent",
-  },
+    backgroundColor: "transparent" },
   buttonsContainer: {
     position: "absolute",
     top: 0,
@@ -208,17 +199,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 0,
-    zIndex: 20,
-  },
+    zIndex: 20 },
   tabButton: {
     flex: 1,
     height: "100%",
     alignItems: "center",
-    justifyContent: "center",
-  },
+    justifyContent: "center" },
   tabText: {
     fontSize: 17,
     fontFamily: "Alexandria-Black",
-    textAlign: "center",
-  },
-});
+    textAlign: "center" } });
