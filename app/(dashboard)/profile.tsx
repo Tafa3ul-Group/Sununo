@@ -46,18 +46,34 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { isRTL } from "@/i18n";
 
+const getCityName = (city: any, isArabic: boolean) => {
+  if (!city) return '';
+  if (typeof city.name === 'object') {
+    return (isArabic ? city.name?.ar : city.name?.en) || city.name?.ar || city.name?.en || '';
+  }
+  return (
+    (isArabic ? city.nameAr || city.arName : city.nameEn || city.enName) ||
+    city.name ||
+    city.nameAr ||
+    city.arName ||
+    city.nameEn ||
+    city.enName ||
+    ''
+  );
+};
+
 export default function ProviderProfileScreen() {
   const dispatch = useDispatch();
-  const { i18n, t } = useTranslation();
-    const { user: authUser, userType } = useSelector((state: RootState) => state.auth);
+  const { t } = useTranslation();
+    const { user: authUser } = useSelector((state: RootState) => state.auth);
 
-  const { data: userData, isLoading: isUserLoading } = useGetMeQuery(undefined);
+  const { data: userData } = useGetMeQuery(undefined);
   const user = userData?.data || userData || authUser;
 
   const { data: profileResponse } = useGetProviderProfileQuery(undefined);
   const profile = profileResponse?.data || profileResponse;
 
-  const { data: cities } = useGetCitiesQuery();
+  const { data: cities = [], isLoading: isCitiesLoading, isError: isCitiesError } = useGetCitiesQuery();
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
   const [updateProfileImage, { isLoading: isUploadingImage }] = useUpdateProfileImageMutation();
   const [logoutApi] = useLogoutUserMutation();
@@ -82,7 +98,7 @@ export default function ProviderProfileScreen() {
         name: user.name || '',
         gender: user.gender || 'male',
         birthday: user.birthday ? new Date(user.birthday) : new Date(),
-        cityId: user.cityId || '' });
+        cityId: user.cityId || user.city?.id || '' });
     }
   }, [user]);
 
@@ -196,10 +212,10 @@ export default function ProviderProfileScreen() {
   };
 
   const selectedCityName = useMemo(() => {
-    if (!formData.cityId || !cities) return '';
+    if (!formData.cityId) return '';
     const city = cities.find((c: any) => c.id === formData.cityId);
-    return city ? (isRTL ? city.name.ar : city.name.en) : '';
-  }, [formData.cityId, cities, isRTL]);
+    return getCityName(city || user?.city, isRTL);
+  }, [formData.cityId, cities, user?.city]);
 
   const menuItems = [
     { id: 'profile', title: isRTL ? 'المعلومات الشخصية' : 'Personal Information', shape: 'blue' as const, icon: <SolarUserBold size={20} color="white" />, action: openEditProfileSheet },
@@ -418,6 +434,15 @@ export default function ProviderProfileScreen() {
           <BottomSheetFlatList
             data={cities}
             keyExtractor={(item: any) => item.id}
+            ListEmptyComponent={
+              <ThemedText style={styles.cityEmptyText}>
+                {isCitiesLoading
+                  ? (isRTL ? 'جاري تحميل المدن...' : 'Loading cities...')
+                  : isCitiesError
+                    ? (isRTL ? 'تعذر تحميل المدن' : 'Could not load cities')
+                    : (isRTL ? 'لا توجد مدن متاحة' : 'No cities available')}
+              </ThemedText>
+            }
             renderItem={({ item }: { item: any }) => (
               <TouchableOpacity
                 style={[styles.cityItem, { flexDirection: 'row-reverse' }]}
@@ -427,7 +452,7 @@ export default function ProviderProfileScreen() {
                 }}
               >
                 <ThemedText style={[styles.cityText, formData.cityId === item.id && styles.cityTextActive]}>
-                  {isRTL ? item.name.ar : item.name.en}
+                  {getCityName(item, isRTL)}
                 </ThemedText>
                 {formData.cityId === item.id && <View style={styles.selectedDot} />}
               </TouchableOpacity>
@@ -639,6 +664,12 @@ const styles = StyleSheet.create({
   cityTextActive: {
     color: Colors.primary,
     fontFamily: "Alexandria-Bold" },
+  cityEmptyText: {
+    paddingVertical: 24,
+    textAlign: 'center',
+    color: Colors.text.muted,
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Regular" },
   selectedDot: {
     width: 8,
     height: 8,

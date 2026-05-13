@@ -1,4 +1,4 @@
-import { apiSlice } from "./apiSlice";
+import { apiSlice, unwrapListResponse } from "./apiSlice";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Customer-specific API endpoints — injected into the shared apiSlice.
@@ -413,6 +413,7 @@ export const customerApi = apiSlice.injectEndpoints({
     /** Get list of all city names */
     getCityNames: builder.query({
       query: () => "/cities/names",
+      transformResponse: unwrapListResponse,
     }),
 
     /** Get regions for a specific city */

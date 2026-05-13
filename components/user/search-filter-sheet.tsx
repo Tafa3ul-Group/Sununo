@@ -59,7 +59,9 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
     if (!citiesData || citiesData.length === 0) return STATIC_CITIES;
     return citiesData.map((city: any) => ({
       id: city.id,
-      name: isArabic ? (city.nameAr || city.name) : (city.nameEn || city.name) }));
+      name: isArabic
+        ? (city.nameAr || city.arName || city.name)
+        : (city.nameEn || city.enName || city.name) }));
   }, [citiesData, isArabic]);
 
   // The sheet takes 85% of screen height
