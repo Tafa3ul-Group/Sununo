@@ -4,9 +4,9 @@ import "@/i18n";
 import { persistor, RootState, store } from "@/store";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
+    DarkTheme,
+    DefaultTheme,
+    ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { Stack, useRouter, useSegments } from "expo-router";
@@ -68,7 +68,7 @@ function RootLayoutNav() {
       (segments as any).length === 0 ||
       (segments.length === 1 && segments[0] === "index");
     if (!isAuthenticated && userType !== "guest" && !inAuthGroup && !isIndex) {
-      router.replace("/");
+      router.replace("/(auth)/login");
     }
   }, [isAuthenticated, userType, segments, loaded, router]);
 

@@ -115,8 +115,8 @@ export default function ProviderProfileScreen() {
             } catch {
               // تجاهل خطأ السيرفر وأكمل الخروج
             }
+            // Clear Redux state — the Auth Guard in _layout.tsx will redirect automatically
             dispatch(logout());
-            router.replace('/(auth)/login');
           },
         },
       ],

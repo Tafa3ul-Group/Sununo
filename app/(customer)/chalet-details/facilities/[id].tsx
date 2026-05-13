@@ -1,34 +1,24 @@
-import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
+import { HeaderSection } from '@/components/header-section';
+import { SolarWidgetBold } from '@/components/icons/solar-icons';
+import { ThemedText } from '@/components/themed-text';
+import { Colors } from '@/constants/theme';
+import { getImageSrc } from '@/hooks/useImageSrc';
+import { RootState } from '@/store';
+import { useGetCustomerChaletDetailsQuery } from '@/store/api/customerApiSlice';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Dimensions,
-  ScrollView,
-  StyleSheet,
-  View,
-  ActivityIndicator,
+    ActivityIndicator,
+    Dimensions,
+    Image,
+    ScrollView,
+    StyleSheet,
+    View,
 } from 'react-native';
-import { ThemedText } from '@/components/themed-text';
-import Svg, { Path } from 'react-native-svg';
-import { HeaderSection } from '@/components/header-section';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useGetCustomerChaletDetailsQuery } from '@/store/api/customerApiSlice';
-import { Colors } from '@/constants/theme';
-import { getImageSrc } from '@/hooks/useImageSrc';
-import { Image } from 'react-native';
-
-import { 
-  SolarWaterBold, 
-  SolarFireBold, 
-  SolarHome2Bold, 
-  SolarWidgetBold,
-  SolarWifiBold,
-  SolarWindBold,
-  SolarLockBold,
-  SolarSettingsBold,
-} from '@/components/icons/solar-icons';
+import Svg, { Path } from 'react-native-svg';
+import { useSelector } from 'react-redux';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -36,27 +26,8 @@ const SHAPES = {
   scalloped: "M29.4165 59.9929C32.7707 60.1573 33.8516 57.4154 36.6494 56.5727C39.068 55.844 42.1373 57.9136 44.602 56.1435C46.9761 54.4385 47.1003 51.1778 49.39 49.5262C50.4402 48.7686 52.2285 48.273 53.3904 47.6556C57.9159 45.2507 55.39 40.9854 56.6649 37.1198C57.1904 35.527 59.1812 33.5316 59.751 31.5682C61.0163 27.2086 57.083 25.3948 56.3847 21.7944C55.9755 19.6849 56.7103 16.6837 55.7598 14.6214C54.353 11.5687 50.787 11.9068 48.8393 9.92411C46.9162 7.96647 46.7071 4.83632 44.0101 3.40727C41.8302 2.25218 38.8321 3.99511 36.9305 3.46716C34.6099 2.82303 33.5786 0.936956 30.7928 0.00846604C26.7125 -0.17205 26.2613 2.58433 22.9082 3.49519C20.8505 4.05394 17.7655 1.94318 15.3255 3.77446C12.937 5.5671 12.9572 8.61484 10.6792 10.3017C9.69816 11.028 7.80148 11.597 6.71476 12.167C2.02929 14.6248 4.47819 18.6917 3.31327 22.6894C2.84735 24.2881 0.782415 26.4167 0.259212 28.2376C-0.909281 32.3028 2.18416 34.1827 3.35303 37.3834C4.22685 39.776 3.04536 42.7163 4.19953 45.2418C5.67644 48.4732 9.28102 47.9739 11.2678 50.1348C13.0367 52.0591 13.2797 55.0582 15.8605 56.4423C18.0647 57.6243 21.3307 55.8827 23.1837 56.5279C25.7251 57.4128 26.4182 58.9797 29.4165 59.9929Z",
 };
 
-const FEATURE_ICON_MAP: Record<string, any> = {
-  'bbq': SolarFireBold,
-  'heater': SolarWindBold,
-  'toilet-western': SolarWaterBold,
-  'wifi': SolarWifiBold,
-  'fridge': SolarHome2Bold,
-  'tv': SolarWidgetBold,
-  'kitchen': SolarHome2Bold,
-  'bathroom': SolarWaterBold,
-  'entertainment': SolarWidgetBold,
-  'services': SolarSettingsBold,
-  'default': SolarWidgetBold
-};
-
-const CATEGORY_COLORS: Record<string, string> = {
-  'entertainment': '#F64300',
-  'bathroom': '#035DF9',
-  'kitchen': '#15AB64',
-  'services': '#EF79D7',
-  'default': '#6B7280'
-};
+// Cycle through these colors for category headers
+const CATEGORY_COLORS = ['#035DF9', '#15AB64', '#F64300', '#EF79D7', '#A855F7', '#06B6D4'];
 
 const SectionHeader = ({ title, isRTL }: { title: string; isRTL: boolean }) => (
   <View style={[styles.sectionHeader, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
@@ -64,28 +35,31 @@ const SectionHeader = ({ title, isRTL }: { title: string; isRTL: boolean }) => (
   </View>
 );
 
-const FacilityCard = ({ label, subtext, color, Icon, imageUrl, isRTL }: { label: string; subtext?: string; color: string; Icon?: any; imageUrl?: any; isRTL: boolean }) => (
-  <View style={[styles.cardContainer, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
-     <View style={[styles.textSide, { alignItems: isRTL ? 'flex-end' : 'flex-start', [isRTL ? 'marginRight' : 'marginLeft']: 15 }]}>
-        <ThemedText style={styles.cardLabel}>{label}</ThemedText>
-        {subtext && <ThemedText style={[styles.cardSubtext, { textAlign: isRTL ? 'right' : 'left' }]}>{subtext}</ThemedText>}
-     </View>
-     <View style={styles.iconSideScalloped}>
-        <Svg height={44} width={44} viewBox="0 0 60 60">
-           <Path d={SHAPES.scalloped} fill={color} />
-        </Svg>
-        <View style={styles.iconCentered}>
-           {imageUrl ? (
-             <Image source={imageUrl} style={{ width: 18, height: 18 }} resizeMode="contain" />
-           ) : Icon ? (
-             <Icon size={18} color="white" />
-           ) : (
-             <View style={styles.iconDot} />
-           )}
-        </View>
-     </View>
-  </View>
-);
+const FacilityCard = ({ label, subtext, color, iconId, isRTL }: { label: string; subtext?: string; color: string; iconId?: string | null; isRTL: boolean }) => {
+  // iconId from API is a UUID → load as image from server
+  const imageSource = iconId ? getImageSrc(iconId) : null;
+
+  return (
+    <View style={[styles.cardContainer, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+       <View style={[styles.textSide, { alignItems: isRTL ? 'flex-end' : 'flex-start', [isRTL ? 'marginRight' : 'marginLeft']: 15 }]}>
+          <ThemedText style={styles.cardLabel}>{label}</ThemedText>
+          {subtext && <ThemedText style={[styles.cardSubtext, { textAlign: isRTL ? 'right' : 'left' }]}>{subtext}</ThemedText>}
+       </View>
+       <View style={styles.iconSideScalloped}>
+          <Svg height={44} width={44} viewBox="0 0 60 60">
+             <Path d={SHAPES.scalloped} fill={color} />
+          </Svg>
+          <View style={styles.iconCentered}>
+             {imageSource ? (
+               <Image source={imageSource} style={{ width: 20, height: 20, tintColor: 'white' }} resizeMode="contain" />
+             ) : (
+               <SolarWidgetBold size={18} color="white" />
+             )}
+          </View>
+       </View>
+    </View>
+  );
+};
 
 export default function FacilitiesScreen() {
   const { id } = useLocalSearchParams();
@@ -99,7 +73,8 @@ export default function FacilitiesScreen() {
   const categories = useMemo(() => {
     if (!chaletData?.chaletFeatures) return [];
     
-    const grouped: Record<string, { name: string; icon: string; features: any[] }> = {};
+    const grouped: Record<string, { name: string; colorIndex: number; features: any[] }> = {};
+    let colorIdx = 0;
     
     chaletData.chaletFeatures.forEach((item: any) => {
         const feature = item.feature;
@@ -111,7 +86,7 @@ export default function FacilitiesScreen() {
         if (!grouped[categoryId]) {
             grouped[categoryId] = {
                 name: isRTL ? (category?.name?.ar || category?.name) : (category?.name?.en || category?.name),
-                icon: category?.icon || 'default',
+                colorIndex: colorIdx++,
                 features: []
             };
         }
@@ -119,7 +94,8 @@ export default function FacilitiesScreen() {
         grouped[categoryId].features.push({
             id: feature.id,
             name: isRTL ? (feature.name?.ar || feature.name) : (feature.name?.en || feature.name),
-            icon: feature.icon,
+            // icon field from API is a UUID pointing to an image on the server
+            iconId: feature.icon || null,
             value: item.value
         });
     });
@@ -149,11 +125,8 @@ export default function FacilitiesScreen() {
               {categories.map((cat, idx) => (
                   <View key={idx}>
                     <SectionHeader title={cat.name} isRTL={isRTL} />
-                    {cat.features.map((feat) => {
-                        const iconName = feat.icon;
-                        const isImage = iconName && !Object.keys(FEATURE_ICON_MAP).includes(iconName) && iconName !== 'default';
-                        const IconComp = FEATURE_ICON_MAP[iconName] || FEATURE_ICON_MAP.default;
-                        const color = CATEGORY_COLORS[cat.icon] || CATEGORY_COLORS.default;
+                    {cat.features.map((feat, featIdx) => {
+                        const color = CATEGORY_COLORS[cat.colorIndex % CATEGORY_COLORS.length];
                         
                         return (
                             <FacilityCard 
@@ -161,8 +134,7 @@ export default function FacilitiesScreen() {
                                 label={feat.name}
                                 subtext={feat.value}
                                 color={color}
-                                Icon={IconComp}
-                                imageUrl={isImage ? getImageSrc(iconName) : null}
+                                iconId={feat.iconId}
                                 isRTL={isRTL}
                             />
                         );
@@ -213,10 +185,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  iconDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'white',
-  }
 });

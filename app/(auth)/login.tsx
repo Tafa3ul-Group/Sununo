@@ -10,10 +10,11 @@ import { RootState } from "@/store";
 import { useLoginMutation, useVerifyPhoneMutation } from "@/store/api/apiSlice";
 import { setCredentials, setUserType } from "@/store/authSlice";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
     Alert,
+    BackHandler,
     Dimensions,
     KeyboardAvoidingView,
     Platform,
@@ -21,7 +22,7 @@ import {
     StyleSheet,
     TextInput,
     TouchableOpacity,
-    View,
+    View
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 // import { normalize } from "@/constants/theme";
@@ -44,16 +45,34 @@ export function LoginScreen() {
   const [login, { isLoading: isLoginLoading }] = useLoginMutation();
   const [verifyPhone, { isLoading: isVerifyLoading }] = useVerifyPhoneMutation();
 
-  const userType = useSelector((state: RootState) => state.auth.userType) || "customer";
-  const isOwner = userType === "owner";
+  const reduxUserType = useSelector((state: RootState) => state.auth.userType);
+  const [localUserType, setLocalUserType] = useState<"owner" | "customer">(
+    reduxUserType === "owner" ? "owner" : "customer"
+  );
+  const isOwner = localUserType === "owner";
 
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
+  const [devAutoFilled, setDevAutoFilled] = useState(false);
 
   function handleTypeChange(type: "owner" | "customer") {
+    setLocalUserType(type);
     dispatch(setUserType(type));
   }
+
+  useEffect(() => {
+    const onBackPress = () => {
+      if (step === "otp") {
+        setStep("phone");
+        setDevAutoFilled(false);
+        return true;
+      }
+      return false;
+    };
+    const sub = BackHandler.addEventListener("hardwareBackPress", onBackPress);
+    return () => sub.remove();
+  }, [step]);
 
   async function handleAction() {
     if (step === "phone") {
@@ -68,6 +87,7 @@ export function LoginScreen() {
         setPhone(trimmedPhone);
         if (res?.code) {
           setCode(String(res.code));
+          setDevAutoFilled(true);
         }
         setStep("otp");
       } catch (err: any) {
@@ -131,9 +151,21 @@ export function LoginScreen() {
           {/* User Type Toggle */}
           <View style={styles.toggleWrapper}>
             <AuthToggle 
-              activeType={userType === "owner" ? "owner" : "customer"}
+              activeType={localUserType}
               onChange={handleTypeChange} 
             />
+            {isOwner && (
+              <View style={[styles.ownerHintRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <ThemedText style={styles.ownerHintText}>
+                  {isRTL ? "مالك جديد؟" : "New owner?"}
+                </ThemedText>
+                <TouchableOpacity onPress={() => router.push(`/register?type=owner`)}>
+                  <ThemedText style={[styles.ownerHintLink, isRTL ? { marginRight: 6 } : { marginLeft: 6 }]}>
+                    {isRTL ? "سجّل شاليهك" : "Register your chalet"}
+                  </ThemedText>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
 
           {/* Login Form */}
@@ -145,7 +177,7 @@ export function LoginScreen() {
                   <ThemedText style={styles.subtitle}>
                     {t('auth.dontHaveAccount')}
                   </ThemedText>
-                  <TouchableOpacity onPress={() => router.push(`/register?type=${userType}`)}>
+                  <TouchableOpacity onPress={() => router.push(`/register?type=${localUserType}`)}>
                     <ThemedText style={[styles.linkText, isRTL ? { marginRight: normalize.width(6) } : { marginLeft: normalize.width(6) }]}>
                       {t('auth.registerNow')}
                     </ThemedText>
@@ -175,6 +207,11 @@ export function LoginScreen() {
                   setCode={setCode} 
                   length={6} 
                 />
+                {devAutoFilled && (
+                  <ThemedText style={styles.devHint}>
+                    {isRTL ? "تم ملء الكود تلقائياً للاختبار" : "Code auto-filled for testing"}
+                  </ThemedText>
+                )}
               </View>
             )}
 
@@ -229,16 +266,16 @@ const styles = StyleSheet.create({
   },
   toggleWrapper: {
     alignItems: "center",
-    marginBottom: normalize.height(50),
+    marginBottom: 24,
   },
   formContainer: {
     width: "100%",
   },
   headerRow: {
-    marginBottom: normalize.height(45),
+    marginBottom: 28,
   },
   title: {
-    fontSize: normalize.font(24),
+    fontSize: 20,
     fontFamily: "Alexandria-Black",
     color: "#1E293B",
     marginBottom: normalize.height(4),
@@ -281,7 +318,7 @@ const styles = StyleSheet.create({
     color: "#1E293B",
   },
   loginBtn: {
-    marginTop: normalize.height(20),
+    marginTop: 16,
     minHeight: normalize.height(52),
     width: "100%",
     paddingVertical: normalize.height(12),
@@ -289,7 +326,7 @@ const styles = StyleSheet.create({
     elevation: 0,
   },
   guestLink: {
-    marginTop: normalize.height(35),
+    marginTop: 24,
     width: "100%",
     alignItems: "center",
   },
@@ -304,6 +341,29 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: -1,
+  },
+  devHint: {
+    fontSize: 12,
+    color: "#94A3B8",
+    fontFamily: "Alexandria-Regular",
+    textAlign: "center",
+    marginTop: 8,
+  },
+  ownerHintRow: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 12,
+    gap: 4,
+  },
+  ownerHintText: {
+    fontSize: 13,
+    color: "#64748B",
+    fontFamily: "Alexandria-Medium",
+  },
+  ownerHintLink: {
+    fontSize: 13,
+    color: "#0061FE",
+    fontFamily: "Alexandria-Bold",
   },
 });
 // Default export for Expo Router

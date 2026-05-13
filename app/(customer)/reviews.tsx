@@ -7,10 +7,10 @@ import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-    Dimensions,
-    FlatList,
-    StyleSheet,
-    View
+  Dimensions,
+  FlatList,
+  StyleSheet,
+  View
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 

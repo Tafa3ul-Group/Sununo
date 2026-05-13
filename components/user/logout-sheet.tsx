@@ -20,14 +20,17 @@ export const LogoutSheet = forwardRef<BottomSheetModal>((props, ref) => {
   const snapPoints = useMemo(() => ['30%'], []);
 
   const handleLogout = async () => {
+    // Dismiss the sheet first to avoid navigation conflicts
+    (ref as any).current?.dismiss();
+
     try {
       await logoutApi(undefined).unwrap();
     } catch (e) {
       // Even if server logout fails, clear local state
     }
+
+    // Clear Redux state — the Auth Guard in _layout.tsx will redirect to "/" automatically
     dispatch(logout());
-    (ref as any).current?.dismiss();
-    router.replace('/(auth)/login');
   };
 
   const renderBackdrop = useCallback(

@@ -19,13 +19,12 @@ import {
     SolarCalendarMinimalisticBold,
     SolarClockCircleBold,
     SolarCloseBold,
-    SolarCloseCircleBold,
     SolarFireBold,
     SolarMapPointBold,
     SolarTreeBold,
     SolarUsersGroupBold,
     SolarWaterBold,
-    SolarWidgetBold,
+    SolarWidgetBold
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { AppMap } from "@/components/user/app-map";
@@ -36,6 +35,7 @@ import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize, Shadows } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { RootState } from "@/store";
+import { useGetAmenitiesQuery } from "@/store/api/apiSlice";
 import {
     useBrowseCustomerChaletsQuery,
     useGetBannersQuery,
@@ -158,6 +158,33 @@ export default function HomeScreen() {
   const [activeFilter, setActiveFilter] = React.useState("all");
   const insets = useSafeAreaInsets();
 
+  // Fetch all amenities to resolve real IDs for pool/bbq/garden filters
+  const { data: allAmenities = [] } = useGetAmenitiesQuery();
+
+  // Build a lookup: slug/keyword → real amenity ID
+  const amenityIdMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    allAmenities.forEach((amenity: any) => {
+      const nameEn = (amenity.name?.en || amenity.nameEn || amenity.name || "").toLowerCase();
+      const nameAr = (amenity.name?.ar || amenity.nameAr || "").toLowerCase();
+      const slug = (amenity.slug || amenity.key || "").toLowerCase();
+
+      // Match pool
+      if (nameEn.includes("pool") || nameAr.includes("مسبح") || slug.includes("pool")) {
+        map["pool"] = amenity.id;
+      }
+      // Match bbq
+      if (nameEn.includes("bbq") || nameEn.includes("barbecue") || nameEn.includes("grill") || nameAr.includes("شواء") || nameAr.includes("باربيكيو") || slug.includes("bbq")) {
+        map["bbq"] = amenity.id;
+      }
+      // Match garden
+      if (nameEn.includes("garden") || nameEn.includes("yard") || nameAr.includes("حديقة") || slug.includes("garden")) {
+        map["garden"] = amenity.id;
+      }
+    });
+    return map;
+  }, [allAmenities]);
+
   // Build query params from Redux filter state
   const queryParams = React.useMemo(() => {
     const params: any = { page: 1, limit: 10 };
@@ -168,11 +195,13 @@ export default function HomeScreen() {
     if (activeFilters?.checkOut) params.checkOut = activeFilters.checkOut.split("T")[0];
     if (activeFilters?.period) params.period = activeFilters.period;
 
-    if (activeFilter === "pool") params.amenityIds = ["pool"];
-    if (activeFilter === "bbq") params.amenityIds = ["bbq"];
-    if (activeFilter === "garden") params.amenityIds = ["garden"];
+    // Use real amenity ID from API if available, otherwise send the slug as fallback
+    if (activeFilter !== "all") {
+      const realId = amenityIdMap[activeFilter];
+      params.amenityIds = [realId || activeFilter];
+    }
     return params;
-  }, [activeFilters, activeFilter]);
+  }, [activeFilters, activeFilter, amenityIdMap]);
 
   // Fetch data from the backend
   const { data: bannersResponse } = useGetBannersQuery(undefined);

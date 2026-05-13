@@ -6,30 +6,49 @@ import { OtpInput } from "@/components/user/otp-input";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { normalize } from "@/constants/theme";
 import {
-  useLoginMutation,
-  useRegisterProviderMutation,
-  useVerifyPhoneMutation,
+    useLoginMutation,
+    useRegisterProviderMutation,
+    useVerifyPhoneMutation,
 } from "@/store/api/apiSlice";
 import { setCredentials } from "@/store/authSlice";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import React, { useState, useEffect } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Alert,
-  Dimensions,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  View
+    Alert,
+    Dimensions,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    TextInput,
+    View
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch } from "react-redux";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-type Step = "TYPE" | "INFO" | "BUSINESS" | "OTP";
+// Task 2.1: Removed "TYPE" from Step type
+type Step = "INFO" | "BUSINESS" | "OTP";
+
+// Task 2.2: StepProgress component (inline)
+function StepProgress({ current, total }: { current: number; total: number }) {
+  return (
+    <View style={progressStyles.container}>
+      {Array.from({ length: total }).map((_, i) => (
+        <View
+          key={i}
+          style={[
+            progressStyles.dot,
+            i + 1 === current && progressStyles.activeDot,
+            i + 1 < current && progressStyles.doneDot,
+          ]}
+        />
+      ))}
+    </View>
+  );
+}
 
 export default function RegisterScreen() {
   const { t, i18n } = useTranslation();
@@ -39,7 +58,8 @@ export default function RegisterScreen() {
   const dispatch = useDispatch();
 
   const params = useLocalSearchParams<{ type?: string }>();
-  const [step, setStep] = useState<Step>("TYPE");
+  // Task 2.1: Start from "INFO" instead of "TYPE"
+  const [step, setStep] = useState<Step>("INFO");
   const [accountType, setAccountType] = useState<"customer" | "owner">(
     params.type === "owner" || params.type === "provider" ? "owner" : "customer",
   );
@@ -70,9 +90,19 @@ export default function RegisterScreen() {
 
   const [otpCode, setOtpCode] = useState("");
 
+  // Task 2.2: getStepInfo function
+  const getStepInfo = () => {
+    if (accountType === "owner") {
+      const map: Record<Step, number> = { INFO: 1, BUSINESS: 2, OTP: 3 };
+      return { current: map[step] || 1, total: 3 };
+    } else {
+      const map: Record<Step, number> = { INFO: 1, BUSINESS: 1, OTP: 2 };
+      return { current: map[step] || 1, total: 2 };
+    }
+  };
+
   const nextStep = () => {
-    if (step === "TYPE") setStep("INFO");
-    else if (step === "INFO") {
+    if (step === "INFO") {
       if (!formData.name || !formData.phone) {
         Alert.alert(
           t("common.error"),
@@ -94,8 +124,9 @@ export default function RegisterScreen() {
     }
   };
 
+  // Task 2.1: Updated prevStep — INFO is now the first step
   const prevStep = () => {
-    if (step === "INFO") setStep("TYPE");
+    if (step === "INFO") router.back();
     else if (step === "BUSINESS") setStep("INFO");
     else if (step === "OTP") {
       if (accountType === "owner") setStep("BUSINESS");
@@ -106,7 +137,11 @@ export default function RegisterScreen() {
   const handleCustomerRegister = async () => {
     try {
       // For customers, we just trigger login to get OTP
-      await login({ phone: formData.phone }).unwrap();
+      const res = await login({ phone: formData.phone }).unwrap();
+      // Auto-fill OTP code if returned in response (dev/staging env)
+      if (res?.code) {
+        setOtpCode(String(res.code));
+      }
       setStep("OTP");
     } catch (err: any) {
       Alert.alert(
@@ -116,23 +151,54 @@ export default function RegisterScreen() {
     }
   };
 
+  // Task 2.3 & 2.5: Fixed payload and duplicate account error handling
   const handleOwnerRegister = async () => {
     try {
-      await registerProvider({
+      // Task 2.3: Build payload without commercialRegNo if empty
+      const payload: any = {
         phone: formData.phone,
         name: formData.name,
         businessName: {
           ar: formData.businessNameAr,
           en: formData.businessNameEn || formData.businessNameAr,
         },
-        commercialRegNo: formData.commercialRegNo,
-      }).unwrap();
+      };
+      if (formData.commercialRegNo.trim()) {
+        payload.commercialRegNo = formData.commercialRegNo.trim();
+      }
+      const res = await registerProvider(payload).unwrap();
+      // Auto-fill OTP code if returned in response (dev/staging env)
+      if (res?.code) {
+        setOtpCode(String(res.code));
+      }
       setStep("OTP");
     } catch (err: any) {
-      Alert.alert(
-        t("common.error"),
-        err?.data?.message || "Failed to register",
-      );
+      // Task 2.5: Translated duplicate account error
+      const rawMsg = err?.data?.message || "";
+      const isDuplicate =
+        rawMsg.toLowerCase().includes("already exists") ||
+        err?.status === 409;
+
+      if (isDuplicate) {
+        Alert.alert(
+          isRTL ? "حساب موجود مسبقاً" : "Account Already Exists",
+          isRTL
+            ? "يوجد حساب مالك مرتبط بهذا الرقم. هل تريد تسجيل الدخول؟"
+            : "An owner account already exists for this number. Would you like to log in?",
+          [
+            { text: isRTL ? "إلغاء" : "Cancel", style: "cancel" },
+            {
+              text: isRTL ? "تسجيل الدخول" : "Log In",
+              onPress: () => router.replace("/login"),
+            },
+          ],
+        );
+      } else {
+        Alert.alert(
+          t("common.error"),
+          rawMsg || "Failed to register",
+        );
+      }
     }
   };
 
@@ -188,9 +254,7 @@ export default function RegisterScreen() {
           { flexDirection: isRTL ? "row-reverse" : "row" },
         ]}
       >
-        <CircleBackButton
-          onPress={() => (step === "TYPE" ? router.back() : prevStep())}
-        />
+        <CircleBackButton onPress={prevStep} />
         <ThemedText style={styles.headerTitle}>
           {t("auth.registerNow")}
         </ThemedText>
@@ -210,44 +274,17 @@ export default function RegisterScreen() {
             <LoginHeaderLogo size={normalize.width(100)} color="#0061FE" />
           </View>
 
-          {step === "TYPE" && (
-            <View style={styles.stepContainer}>
-              <View style={{ alignItems: "center", marginBottom: 40 }}>
-                <AuthToggle
-                  activeType={accountType}
-                  onChange={(type) => setAccountType(type)}
-                />
-              </View>
-
-              <ThemedText
-                style={[
-                  styles.stepTitle,
-                  { textAlign: isRTL ? "right" : "left" },
-                ]}
-              >
-                {isRTL ? "المعلومات الأساسية" : "Basic Information"}
-              </ThemedText>
-              <ThemedText
-                style={[
-                  styles.stepSubtitle,
-                  { textAlign: isRTL ? "right" : "left" },
-                ]}
-              >
-                {isRTL
-                  ? "يرجى إكمال بياناتك للمتابعة"
-                  : "Please complete your details to continue"}
-              </ThemedText>
-
-              <PrimaryButton
-                label={isRTL ? "التالي" : "Next"}
-                onPress={() => setStep("INFO")}
-                style={styles.mainBtn}
-              />
-            </View>
-          )}
-
+          {/* Task 2.1: TYPE step removed. INFO step now includes AuthToggle at the top */}
           {step === "INFO" && (
             <View style={styles.stepContainer}>
+              {/* Task 2.2: StepProgress at the top */}
+              <StepProgress {...getStepInfo()} />
+
+              {/* Task 2.1: Toggle moved into INFO step */}
+              <View style={styles.toggleInInfo}>
+                <AuthToggle activeType={accountType} onChange={setAccountType} />
+              </View>
+
               <ThemedText
                 style={[
                   styles.stepTitle,
@@ -324,6 +361,9 @@ export default function RegisterScreen() {
 
           {step === "BUSINESS" && (
             <View style={styles.stepContainer}>
+              {/* Task 2.2: StepProgress at the top */}
+              <StepProgress {...getStepInfo()} />
+
               <ThemedText
                 style={[
                   styles.stepTitle,
@@ -425,6 +465,9 @@ export default function RegisterScreen() {
 
           {step === "OTP" && (
             <View style={styles.stepContainer}>
+              {/* Task 2.2: StepProgress at the top */}
+              <StepProgress {...getStepInfo()} />
+
               <ThemedText
                 style={[
                   styles.stepTitle,
@@ -491,19 +534,26 @@ const styles = StyleSheet.create({
   stepContainer: {
     width: "100%",
   },
+  // Task 2.1: New style for toggle inside INFO step
+  toggleInInfo: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  // Task 2.4: stepTitle fontSize changed from 22 to 20
   stepTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontFamily: "Alexandria-Black",
     color: "#1E293B",
     marginBottom: 8,
     lineHeight: 30,
     paddingTop: 6,
   },
+  // Task 2.4: stepSubtitle marginBottom changed from 30 to 20
   stepSubtitle: {
     fontSize: 14,
     fontFamily: "Alexandria-Medium",
     color: "#64748B",
-    marginBottom: 30,
+    marginBottom: 20,
   },
   typeCard: {
     flexDirection: "row",
@@ -541,8 +591,9 @@ const styles = StyleSheet.create({
     fontFamily: "Alexandria-Regular",
     color: "#64748B",
   },
+  // Task 2.4: inputGroup marginBottom changed from normalize.height(20) to 16
   inputGroup: {
-    marginBottom: normalize.height(20),
+    marginBottom: 16,
   },
   label: {
     fontSize: normalize.font(14),
@@ -565,10 +616,37 @@ const styles = StyleSheet.create({
     fontFamily: "Alexandria-Medium",
     color: "#1E293B",
   },
+  // Task 2.4: mainBtn marginTop changed from normalize.height(20) to 16
   mainBtn: {
-    marginTop: normalize.height(20),
+    marginTop: 16,
     width: "100%",
     minHeight: normalize.height(54),
     paddingVertical: normalize.height(12),
+  },
+});
+
+// Task 2.2: progressStyles for StepProgress component
+const progressStyles = StyleSheet.create({
+  container: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginBottom: 20,
+  },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "#E2E8F0",
+  },
+  activeDot: {
+    backgroundColor: "#0061FE",
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  doneDot: {
+    backgroundColor: "#93C5FD",
   },
 });

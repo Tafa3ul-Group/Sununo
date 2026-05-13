@@ -1,0 +1,53 @@
+# Implementation Tasks — login-register-fix
+
+## Tasks
+
+- [x] 1. إصلاح login.tsx — الحالة المحلية والتنقل والمظهر
+  - [x] 1.1 نقل `userType` من Redux إلى `useState` محلي مع الإبقاء على مزامنة Redux
+    - استبدال `useSelector` لـ `userType` بـ `useState<"owner" | "customer">` مُهيَّأ من قيمة Redux
+    - تحديث `handleTypeChange` لتعيين الحالة المحلية وإرسال `dispatch(setUserType)` معاً
+    - استخدام الحالة المحلية `localUserType` في كل منطق التحقق داخل `handleAction`
+  - [x] 1.2 إضافة `BackHandler` للتعامل مع زر الرجوع في خطوة OTP
+    - إضافة `useEffect` يستمع لـ `BackHandler.addEventListener("hardwareBackPress")`
+    - عند `step === "otp"` يُعيد `setStep("phone")` ويُرجع `true` لمنع الخروج
+    - تنظيف الـ listener عند unmount
+  - [x] 1.3 إضافة مؤشر OTP التلقائي في بيئة التطوير
+    - إضافة حالة `devAutoFilled` من نوع `boolean`
+    - تعيين `devAutoFilled = true` عند ملء الكود تلقائياً من `res.code`
+    - عرض `ThemedText` توضيحي صغير أسفل `OtpInput` عند `devAutoFilled === true`
+  - [x] 1.4 تصحيح أحجام النصوص والمسافات في login.tsx
+    - تغيير `title` fontSize من `normalize.font(24)` إلى `20`
+    - تغيير `toggleWrapper` marginBottom من `normalize.height(50)` إلى `24`
+    - تغيير `headerRow` marginBottom من `normalize.height(45)` إلى `28`
+    - تغيير `loginBtn` marginTop من `normalize.height(20)` إلى `16`
+    - تغيير `guestLink` marginTop من `normalize.height(35)` إلى `24`
+  - [x] 1.5 إضافة توجيه المالك الجديد غير المسجّل
+    - عرض صف يحتوي نص "مالك جديد؟" ورابط "سجّل شاليهك" عند `isOwner === true`
+    - الرابط يوجّه إلى `/register?type=owner`
+    - الصف يظهر أسفل الـ toggle مباشرةً
+
+- [x] 2. إصلاح register.tsx — دمج الخطوات والمؤشر والـ payload والمظهر
+  - [x] 2.1 دمج خطوة TYPE مع INFO وحذف خطوة TYPE
+    - تغيير نوع `Step` من `"TYPE" | "INFO" | "BUSINESS" | "OTP"` إلى `"INFO" | "BUSINESS" | "OTP"`
+    - تغيير `useState<Step>("TYPE")` إلى `useState<Step>("INFO")`
+    - نقل `AuthToggle` إلى أعلى محتوى خطوة INFO مع margin مناسب
+    - حذف كتلة JSX الخاصة بـ `step === "TYPE"` بالكامل
+    - تحديث `prevStep` لتبدأ من INFO بدلاً من TYPE
+  - [x] 2.2 إضافة مكوّن `StepProgress` ومؤشر التقدم
+    - إنشاء دالة `getStepInfo()` تُرجع `{ current, total }` حسب `accountType` و`step`
+    - إنشاء مكوّن `StepProgress` inline يعرض نقاطاً ملوّنة (active / done / pending)
+    - عرض `StepProgress` في أعلى كل خطوة (INFO, BUSINESS, OTP)
+    - إضافة styles للنقاط: `dot`, `activeDot` (أزرق), `doneDot` (أزرق فاتح)
+  - [x] 2.3 إصلاح payload الـ `registerProvider` لحذف `commercialRegNo` الفارغ
+    - بناء `payload` كـ object منفصل بدون `commercialRegNo`
+    - إضافة `commercialRegNo` للـ payload فقط إذا كانت `formData.commercialRegNo.trim()` غير فارغة
+    - تمرير الـ payload المُصلَح إلى `registerProvider(payload).unwrap()`
+  - [x] 2.4 تصحيح أحجام النصوص والمسافات في register.tsx
+    - تغيير `stepTitle` fontSize من `22` إلى `20`
+    - تغيير `inputGroup` marginBottom من `normalize.height(20)` إلى `16`
+    - تغيير `mainBtn` marginTop من `normalize.height(20)` إلى `16`
+    - تغيير `stepSubtitle` marginBottom من `30` إلى `20`
+  - [x] 2.5 إضافة رسالة خطأ مترجمة لحساب المالك المكرر
+    - في `catch` الخاص بـ `handleOwnerRegister`، فحص إذا كان الخطأ 409 أو يحتوي "already exists"
+    - عرض `Alert` بعنوان ورسالة مترجمة للعربية والإنجليزية
+    - إضافة زر "تسجيل الدخول" في الـ Alert يوجّه إلى `/login` عبر `router.replace`
