@@ -447,8 +447,8 @@ export default function AddChaletScreen() {
     }
   };
 
-  const textAlign = isRTL ? 'right' : 'left';
-  const flexDirection = isRTL ? 'row-reverse' : 'row';
+  const textAlign = 'left';
+  const flexDirection = 'row';
 
   // ── Shift Row (Matching Screenshot) ──
   const renderShiftRow = (shift: ShiftData, index: number) => {
@@ -500,7 +500,7 @@ export default function AddChaletScreen() {
   };
 
   return (
-    <View style={[styles.container]}>
+    <View style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       <StatusBar style="dark" />
 
       <KeyboardAvoidingView

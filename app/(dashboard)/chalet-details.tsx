@@ -385,7 +385,7 @@ export default function ChaletDetailsScreen() {
     extrapolate: 'clamp' });
 
   return (
-    <View style={[styles.container]}>
+    <View style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
       
       {/* Persistent Nav Bar (Sticky title only) */}

@@ -35,9 +35,9 @@ export default function MyChaletsScreen() {
   const router = useRouter();
   const { userType, language } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
-  const textAlign = isRTL ? 'right' : 'left';
-  const startAlign = isRTL ? 'flex-end' : 'flex-start';
-  const endAlign = isRTL ? 'flex-start' : 'flex-end';
+  const textAlign = 'left';
+  const startAlign = 'flex-start';
+  const endAlign = 'flex-end';
 
   const { data: chaletsResponse, isLoading, refetch, isFetching } = useGetOwnerChaletsQuery({});
   const chalets = chaletsResponse?.data || chaletsResponse || [];
@@ -127,7 +127,7 @@ export default function MyChaletsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea]}>
+    <SafeAreaView style={[styles.safeArea, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       <HeaderSection
         userType={userType}
         title={t('tabs.myChalets')}

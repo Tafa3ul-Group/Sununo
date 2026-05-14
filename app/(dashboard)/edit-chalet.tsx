@@ -395,8 +395,8 @@ export default function EditChaletScreen() {
   const nextStep = () => { if (!isStepValid) return; if (currentStep < steps.length - 1) setCurrentStep(currentStep + 1); };
   const prevStep = () => { if (currentStep > 0) setCurrentStep(currentStep - 1); };
 
-  const textAlign = isRTL ? 'right' : 'left';
-  const flexDirection = isRTL ? 'row-reverse' : 'row';
+  const textAlign = 'left';
+  const flexDirection = 'row';
 
   const renderShiftRow = (shift: ShiftData, index: number) => {
     const isActive = shift.isActive;
@@ -404,7 +404,7 @@ export default function EditChaletScreen() {
     let icon = '☀️';
     if (shift.type === 'EVENING') icon = '🌙';
     if (shift.type === 'OVERNIGHT') icon = '🌙💤';
-    const flexDirection = isRTL ? 'row-reverse' : 'row';
+    const flexDirection = 'row';
 
     return (
       <TouchableOpacity key={index} activeOpacity={0.8} onPress={() => toggleShiftActive(index)} style={[styles.shiftCardRow, isActive && styles.shiftCardRowActive]}>
@@ -429,7 +429,7 @@ export default function EditChaletScreen() {
   }
 
   return (
-    <View style={[styles.container]}>
+    <View style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       <StatusBar style="dark" />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
