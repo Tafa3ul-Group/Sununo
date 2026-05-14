@@ -124,7 +124,7 @@ export default function CustomerProfileScreen() {
     ];
 
     return (
-        <View style={[styles.container, { paddingTop: insets.top }]}>
+        <View style={[styles.container, { paddingTop: insets.top, direction: isRTL ? 'rtl' : 'ltr' }]}>
             {/* Header */}
             <View style={styles.header}>
                 <ThemedText style={styles.headerTitle}>{t('headers.profile')}</ThemedText>
@@ -136,7 +136,7 @@ export default function CustomerProfileScreen() {
             >
                 {/* User Card — navigates to profile-edit */}
                 <TouchableOpacity
-                    style={[styles.userCard, { flexDirection: 'row-reverse' }]}
+                    style={[styles.userCard]}
                     onPress={() => router.push('/profile-edit')}
                     activeOpacity={0.9}
                 >
@@ -145,11 +145,11 @@ export default function CustomerProfileScreen() {
                     </ProfileShape>
 
                     <View style={[styles.userInfo, { alignItems: 'flex-start' }]}>
-                        <Text style={[styles.userName, { textAlign: isRTL ? 'right' : 'left' }]}>
+                        <Text style={[styles.userName, { textAlign: 'left' }]}>
                             {userData?.name || (isRTL ? 'المستخدم' : 'User')}
                         </Text>
                         {!!userData?.phone && (
-                            <Text style={[styles.userPhone, { textAlign: isRTL ? 'right' : 'left' }]}>
+                            <Text style={[styles.userPhone, { textAlign: 'left', direction: 'ltr' }]}>
                                 {userData.phone}
                             </Text>
                         )}
@@ -174,7 +174,7 @@ export default function CustomerProfileScreen() {
                     {menuItems.map((item) => (
                         <TouchableOpacity
                             key={item.id}
-                            style={[styles.menuRow, { flexDirection: 'row-reverse' }]}
+                            style={[styles.menuRow]}
                             onPress={() => {
                                 if (item.action) {
                                     item.action();
@@ -187,7 +187,7 @@ export default function CustomerProfileScreen() {
                             <Text
                                 style={[
                                     styles.menuLabelText,
-                                    { textAlign: isRTL ? 'right' : 'left' },
+                                    { textAlign: 'left' },
                                     item.id === 'logout' && styles.logoutText,
                                 ]}
                             >

@@ -46,18 +46,34 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { isRTL } from "@/i18n";
 
+const getCityName = (city: any, isArabic: boolean) => {
+  if (!city) return '';
+  if (typeof city.name === 'object') {
+    return (isArabic ? city.name?.ar : city.name?.en) || city.name?.ar || city.name?.en || '';
+  }
+  return (
+    (isArabic ? city.nameAr || city.arName : city.nameEn || city.enName) ||
+    city.name ||
+    city.nameAr ||
+    city.arName ||
+    city.nameEn ||
+    city.enName ||
+    ''
+  );
+};
+
 export default function ProviderProfileScreen() {
   const dispatch = useDispatch();
-  const { i18n, t } = useTranslation();
-    const { user: authUser, userType } = useSelector((state: RootState) => state.auth);
+  const { t } = useTranslation();
+    const { user: authUser } = useSelector((state: RootState) => state.auth);
 
-  const { data: userData, isLoading: isUserLoading } = useGetMeQuery(undefined);
+  const { data: userData } = useGetMeQuery(undefined);
   const user = userData?.data || userData || authUser;
 
   const { data: profileResponse } = useGetProviderProfileQuery(undefined);
   const profile = profileResponse?.data || profileResponse;
 
-  const { data: cities } = useGetCitiesQuery();
+  const { data: cities = [], isLoading: isCitiesLoading, isError: isCitiesError } = useGetCitiesQuery();
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
   const [updateProfileImage, { isLoading: isUploadingImage }] = useUpdateProfileImageMutation();
   const [logoutApi] = useLogoutUserMutation();
@@ -82,7 +98,7 @@ export default function ProviderProfileScreen() {
         name: user.name || '',
         gender: user.gender || 'male',
         birthday: user.birthday ? new Date(user.birthday) : new Date(),
-        cityId: user.cityId || '' });
+        cityId: user.cityId || user.city?.id || '' });
     }
   }, [user]);
 
@@ -196,10 +212,10 @@ export default function ProviderProfileScreen() {
   };
 
   const selectedCityName = useMemo(() => {
-    if (!formData.cityId || !cities) return '';
+    if (!formData.cityId) return '';
     const city = cities.find((c: any) => c.id === formData.cityId);
-    return city ? (isRTL ? city.name.ar : city.name.en) : '';
-  }, [formData.cityId, cities, isRTL]);
+    return getCityName(city || user?.city, isRTL);
+  }, [formData.cityId, cities, user?.city]);
 
   const menuItems = [
     { id: 'profile', title: isRTL ? 'المعلومات الشخصية' : 'Personal Information', shape: 'blue' as const, icon: <SolarUserBold size={20} color="white" />, action: openEditProfileSheet },
@@ -211,16 +227,16 @@ export default function ProviderProfileScreen() {
   ];
 
   return (
-    <View style={[styles.container]}>
+    <View style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       {/* Profile Header & User Card */}
       <View style={styles.topSection}>
         <TouchableOpacity
-          style={[styles.userCard, { flexDirection: 'row-reverse' }]}
+          style={[styles.userCard]}
           onPress={openEditProfileSheet}
           activeOpacity={0.9}
         >
-          <View style={styles.userInfo}>
-            <Text style={[styles.userName, { textAlign: isRTL ? 'right' : 'left' }]}>
+          <View style={[styles.userInfo, { alignItems: 'flex-start' }]}>
+            <Text style={[styles.userName, { textAlign: 'left' }]}>
               {user?.name || profile?.business_name || t('tabs.home')}
             </Text>
           </View>
@@ -255,7 +271,7 @@ export default function ProviderProfileScreen() {
           {menuItems.map((item) => (
             <TouchableOpacity
               key={item.id}
-              style={[styles.menuRow, { flexDirection: 'row-reverse' }]}
+              style={[styles.menuRow]}
               onPress={() => {
                 if (item.action) {
                   item.action();
@@ -265,7 +281,7 @@ export default function ProviderProfileScreen() {
               }}
               activeOpacity={0.7}
             >
-              <Text style={[styles.menuLabelText, { textAlign: isRTL ? 'right' : 'left' }]}>{item.title}</Text>
+              <Text style={[styles.menuLabelText, { textAlign: 'left' }]}>{item.title}</Text>
               <ProfileShape size={normalize.width(42)} type={item.shape}>
                 {item.icon}
               </ProfileShape>
@@ -312,10 +328,10 @@ export default function ProviderProfileScreen() {
 
             <View style={styles.formSection}>
               <View style={styles.fieldContainer}>
-                <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'الاسم الكامل' : 'Full Name'}</ThemedText>
-                <View style={[styles.inputWrapper, { flexDirection: 'row-reverse' }]}>
+                <ThemedText style={[styles.label, { textAlign: 'left' }]}>{isRTL ? 'الاسم الكامل' : 'Full Name'}</ThemedText>
+                <View style={[styles.inputWrapper]}>
                   <TextInput
-                    style={[styles.input, { textAlign: isRTL ? 'right' : 'left' }]}
+                    style={[styles.input, { textAlign: 'left' }]}
                     value={formData.name}
                     onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
                     placeholder={isRTL ? 'أدخل اسمك' : 'Enter your name'}
@@ -326,9 +342,9 @@ export default function ProviderProfileScreen() {
               </View>
 
               <View style={styles.fieldContainer}>
-                <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'رقم الهاتف' : 'Phone Number'}</ThemedText>
-                <View style={[styles.inputWrapper, styles.disabledInputWrapper, { flexDirection: 'row-reverse' }]}>
-                  <ThemedText style={[styles.input, { textAlign: isRTL ? 'right' : 'left', paddingTop: 14 }]}>
+                <ThemedText style={[styles.label, { textAlign: 'left' }]}>{isRTL ? 'رقم الهاتف' : 'Phone Number'}</ThemedText>
+                <View style={[styles.inputWrapper, styles.disabledInputWrapper]}>
+                  <ThemedText style={[styles.input, { textAlign: 'left', paddingTop: 14, direction: 'ltr' }]}>
                     {user?.phone || ''}
                   </ThemedText>
                   <SolarPhoneBold size={20} color={Colors.text.muted} />
@@ -336,8 +352,8 @@ export default function ProviderProfileScreen() {
               </View>
 
               <View style={styles.fieldContainer}>
-                <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'الجنس' : 'Gender'}</ThemedText>
-                <View style={[styles.genderContainer, { flexDirection: 'row-reverse' }]}>
+                <ThemedText style={[styles.label, { textAlign: 'left' }]}>{isRTL ? 'الجنس' : 'Gender'}</ThemedText>
+                <View style={[styles.genderContainer]}>
                   <TouchableOpacity
                     style={[styles.genderOption, formData.gender === 'male' && styles.genderOptionActive, { flex: 1 }]}
                     onPress={() => setFormData(prev => ({ ...prev, gender: 'male' }))}
@@ -354,12 +370,12 @@ export default function ProviderProfileScreen() {
               </View>
 
               <View style={styles.fieldContainer}>
-                <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'تاريخ الميلاد' : 'Birthday'}</ThemedText>
+                <ThemedText style={[styles.label, { textAlign: 'left' }]}>{isRTL ? 'تاريخ الميلاد' : 'Birthday'}</ThemedText>
                 <TouchableOpacity
-                  style={[styles.inputWrapper, { flexDirection: 'row-reverse' }]}
+                  style={[styles.inputWrapper]}
                   onPress={() => setShowDatePicker(true)}
                 >
-                  <ThemedText style={[styles.input, { textAlign: isRTL ? 'right' : 'left', paddingTop: 14 }]}>
+                  <ThemedText style={[styles.input, { textAlign: 'left', paddingTop: 14 }]}>
                     {formData.birthday.toLocaleDateString(isRTL ? 'ar-EG' : 'en-US')}
                   </ThemedText>
                   <SolarCalendarBold size={20} color={Colors.text.muted} />
@@ -379,12 +395,12 @@ export default function ProviderProfileScreen() {
               </View>
 
               <View style={styles.fieldContainer}>
-                <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'المدينة' : 'City'}</ThemedText>
+                <ThemedText style={[styles.label, { textAlign: 'left' }]}>{isRTL ? 'المدينة' : 'City'}</ThemedText>
                 <TouchableOpacity
-                  style={[styles.inputWrapper, { flexDirection: 'row-reverse' }]}
+                  style={[styles.inputWrapper]}
                   onPress={() => citySheetRef.current?.present()}
                 >
-                  <ThemedText style={[styles.input, { textAlign: isRTL ? 'right' : 'left', paddingTop: 14 }]}>
+                  <ThemedText style={[styles.input, { textAlign: 'left', paddingTop: 14 }]}>
                     {selectedCityName || (isRTL ? 'اختر المدينة' : 'Select City')}
                   </ThemedText>
                   <SolarMapPointBold size={20} color={Colors.text.muted} />
@@ -418,16 +434,25 @@ export default function ProviderProfileScreen() {
           <BottomSheetFlatList
             data={cities}
             keyExtractor={(item: any) => item.id}
+            ListEmptyComponent={
+              <ThemedText style={styles.cityEmptyText}>
+                {isCitiesLoading
+                  ? (isRTL ? 'جاري تحميل المدن...' : 'Loading cities...')
+                  : isCitiesError
+                    ? (isRTL ? 'تعذر تحميل المدن' : 'Could not load cities')
+                    : (isRTL ? 'لا توجد مدن متاحة' : 'No cities available')}
+              </ThemedText>
+            }
             renderItem={({ item }: { item: any }) => (
               <TouchableOpacity
-                style={[styles.cityItem, { flexDirection: 'row-reverse' }]}
+                style={[styles.cityItem]}
                 onPress={() => {
                   setFormData(prev => ({ ...prev, cityId: item.id }));
                   citySheetRef.current?.dismiss();
                 }}
               >
                 <ThemedText style={[styles.cityText, formData.cityId === item.id && styles.cityTextActive]}>
-                  {isRTL ? item.name.ar : item.name.en}
+                  {getCityName(item, isRTL)}
                 </ThemedText>
                 {formData.cityId === item.id && <View style={styles.selectedDot} />}
               </TouchableOpacity>
@@ -639,6 +664,12 @@ const styles = StyleSheet.create({
   cityTextActive: {
     color: Colors.primary,
     fontFamily: "Alexandria-Bold" },
+  cityEmptyText: {
+    paddingVertical: 24,
+    textAlign: 'center',
+    color: Colors.text.muted,
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Regular" },
   selectedDot: {
     width: 8,
     height: 8,

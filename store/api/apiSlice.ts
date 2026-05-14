@@ -30,6 +30,17 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
   return result;
 };
 
+export const unwrapListResponse = (response: any) => {
+  if (Array.isArray(response)) return response;
+  if (Array.isArray(response?.data)) return response.data;
+  if (Array.isArray(response?.data?.data)) return response.data.data;
+  if (Array.isArray(response?.data?.items)) return response.data.items;
+  if (Array.isArray(response?.data?.cities)) return response.data.cities;
+  if (Array.isArray(response?.items)) return response.items;
+  if (Array.isArray(response?.cities)) return response.cities;
+  return [];
+};
+
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithReauth,
@@ -188,6 +199,7 @@ export const apiSlice = createApi({
     // Get all cities
     getCities: builder.query<any[], void>({
       query: () => "/cities/names",
+      transformResponse: unwrapListResponse,
     }),
 
     // Get default shift templates

@@ -61,7 +61,7 @@ export default function BookingsScreen() {
     return (
       <View key={booking.id} style={styles.bookingCardContainer}>
         {/* Top Block: Image + Chalet Info */}
-        <View style={[styles.topBlock, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <View style={[styles.topBlock, { flexDirection: 'row' }]}>
             <View style={styles.imageBlock}>
                 <Svg width={115} height={100} viewBox={shape.viewBox}>
                     <Defs>
@@ -80,18 +80,18 @@ export default function BookingsScreen() {
                 </Svg>
             </View>
 
-            <View style={[styles.chaletInfoContent, { [isRTL ? 'marginRight' : 'marginLeft']: 15 }]}>
-                <View style={{ alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
-                    <ThemedText style={[styles.chaletTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{chaletName}</ThemedText>
-                    <ThemedText style={[styles.locationText, { textAlign: isRTL ? 'right' : 'left' }]}>{location}</ThemedText>
+            <View style={[styles.chaletInfoContent, { marginLeft: 15 }]}>
+                <View style={{ alignItems: 'flex-start' }}>
+                    <ThemedText style={[styles.chaletTitle, { textAlign: 'left' }]}>{chaletName}</ThemedText>
+                    <ThemedText style={[styles.locationText, { textAlign: 'left' }]}>{location}</ThemedText>
                 </View>
                 
-                <View style={[styles.priceRatingRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                   <ThemedText style={[styles.priceText, { textAlign: isRTL ? 'right' : 'left' }]}>
+                <View style={[styles.priceRatingRow, { flexDirection: 'row' }]}>
+                   <ThemedText style={[styles.priceText, { textAlign: 'left' }]}>
                        <ThemedText style={styles.priceLabel}>{isArabic ? "شفت / " : "Shift / "}</ThemedText>
                        {formatPrice(booking.chalet?.price)}
                    </ThemedText>
-                   <View style={[styles.ratingBox, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                   <View style={[styles.ratingBox, { flexDirection: 'row' }]}>
                        <ThemedText style={styles.ratingText}>{booking.chalet?.rating}</ThemedText>
                        <SolarStarBold size={14} color="#EA2129" />
                    </View>
@@ -101,18 +101,18 @@ export default function BookingsScreen() {
 
         {/* Bottom Block: Booking Details */}
         <View style={styles.bottomBlock}>
-            <View style={[styles.detailRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                <ThemedText style={[styles.detailLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{t('booking.bookingDate')}</ThemedText>
-                <ThemedText style={[styles.detailValue, { textAlign: isRTL ? 'left' : 'right' }]}>{t('booking.dateValue')}</ThemedText>
+            <View style={[styles.detailRow, { flexDirection: 'row' }]}>
+                <ThemedText style={[styles.detailLabel, { textAlign: 'left' }]}>{t('booking.bookingDate')}</ThemedText>
+                <ThemedText style={[styles.detailValue, { textAlign: 'right' }]}>{t('booking.dateValue')}</ThemedText>
             </View>
 
-            <View style={[styles.detailRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                <ThemedText style={[styles.detailLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{t('booking.finalAmount')}</ThemedText>
-                <ThemedText style={[styles.detailValue, { textAlign: isRTL ? 'left' : 'right' }]}>{formatPrice(booking.totalPrice)}</ThemedText>
+            <View style={[styles.detailRow, { flexDirection: 'row' }]}>
+                <ThemedText style={[styles.detailLabel, { textAlign: 'left' }]}>{t('booking.finalAmount')}</ThemedText>
+                <ThemedText style={[styles.detailValue, { textAlign: 'right' }]}>{formatPrice(booking.totalPrice)}</ThemedText>
             </View>
 
-            <View style={[styles.detailRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                <ThemedText style={[styles.detailLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{t('booking.paymentStatus')}</ThemedText>
+            <View style={[styles.detailRow, { flexDirection: 'row' }]}>
+                <ThemedText style={[styles.detailLabel, { textAlign: 'left' }]}>{t('booking.paymentStatus')}</ThemedText>
                 <View style={styles.paidBadge}>
                     <ThemedText style={styles.paidBadgeText}>{t('booking.status.paid')}</ThemedText>
                 </View>
@@ -132,7 +132,7 @@ export default function BookingsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       {/* Header */}
       <HeaderSection 
         title={t('tabs.bookings') || 'الحجوزات'} 

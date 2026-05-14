@@ -85,9 +85,9 @@ export default function BookingsScreen() {
   );
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = React.useState("new");
-  const textAlign = isRTL ? "right" : "left";
-  const startAlign = isRTL ? "flex-end" : "flex-start";
-  const endAlign = isRTL ? "flex-start" : "flex-end";
+  const textAlign = 'left';
+  const startAlign = 'flex-start';
+  const endAlign = 'flex-end';
 
   const { data: profileResponse, refetch: refetchProfile } = useGetProviderProfileQuery(undefined);
   const profile = profileResponse?.data || profileResponse;
@@ -756,7 +756,7 @@ export default function BookingsScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.safeArea]}>
+    <SafeAreaView style={[styles.safeArea, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       <HeaderSection
         title={isRTL ? "الحجوزات" : "Bookings"}
         showBackButton={true}

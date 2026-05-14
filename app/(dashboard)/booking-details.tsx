@@ -141,7 +141,7 @@ export default function BookingDetailsPage() {
   const bCustomerPhone = data.customer?.phone || data.externalCustomerPhone;
 
   return (
-    <View style={[styles.container]}>
+    <View style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       {/* Dashboard Header */}
       <DashboardHeader
         title={isRTL ? 'تفاصيل الحجز' : 'Booking Details'}
@@ -344,6 +344,7 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-SemiBold",
     color: '#EA2129',
+    textAlign: 'left',
     lineHeight: normalize.font(24) },
   cancelledDivider: {
     height: 1,
@@ -354,14 +355,15 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-SemiBold",
     color: '#1E293B',
+    textAlign: 'left',
     lineHeight: normalize.font(20) },
   scrollContent: { paddingBottom: normalize.height(160), paddingHorizontal: 20 },
   chaletSimpleRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   simpleImageWrapper: { width: 80, height: 80, borderRadius: 16, overflow: 'hidden', backgroundColor: '#F1F5F9' },
   simpleChaletImage: { width: '100%', height: '100%' },
-  simpleChaletText: { flex: 1 },
-  simpleChaletName: { fontSize: normalize.font(16), fontFamily: "Alexandria-SemiBold", color: '#1E293B', lineHeight: normalize.font(22) },
-  simpleChaletLocation: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#64748B', lineHeight: normalize.font(20), marginTop: 4 },
+  simpleChaletText: { flex: 1, alignItems: 'flex-start' },
+  simpleChaletName: { fontSize: normalize.font(16), fontFamily: "Alexandria-SemiBold", color: '#1E293B', textAlign: 'left', lineHeight: normalize.font(22) },
+  simpleChaletLocation: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#64748B', textAlign: 'left', lineHeight: normalize.font(20), marginTop: 4 },
   infoSectionCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
@@ -370,13 +372,13 @@ const styles = StyleSheet.create({
     borderColor: '#F1F5F9',
     marginBottom: 12,
     paddingBottom: 24 },
-  sectionTitleRow: { width: '100%', marginBottom: 8 },
-  sectionTitle: { fontSize: normalize.font(14), fontFamily: "Alexandria-SemiBold", color: IDENTITY_BLUE, lineHeight: normalize.font(20) },
+  sectionTitleRow: { width: '100%', marginBottom: 8, alignItems: 'flex-start' },
+  sectionTitle: { fontSize: normalize.font(14), fontFamily: "Alexandria-SemiBold", color: IDENTITY_BLUE, textAlign: 'left', lineHeight: normalize.font(20) },
   divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 10 },
   infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  infoLabel: { fontSize: normalize.font(14), fontFamily: "Alexandria-SemiBold", color: '#1E293B', lineHeight: normalize.font(20) },
-  infoValue: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#64748B', lineHeight: normalize.font(22) },
-  blueValue: { color: IDENTITY_BLUE, fontFamily: "Alexandria-SemiBold", lineHeight: normalize.font(22) },
+  infoLabel: { fontSize: normalize.font(14), fontFamily: "Alexandria-SemiBold", color: '#1E293B', textAlign: 'left', lineHeight: normalize.font(20) },
+  infoValue: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#64748B', textAlign: 'right', lineHeight: normalize.font(22) },
+  blueValue: { color: IDENTITY_BLUE, fontFamily: "Alexandria-SemiBold", textAlign: 'right', lineHeight: normalize.font(22) },
   bottomActions: {
     position: 'absolute',
     bottom: 0,
