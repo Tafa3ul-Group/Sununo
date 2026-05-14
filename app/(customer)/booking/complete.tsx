@@ -530,7 +530,7 @@ export default function CompleteBookingScreen() {
         <View
           style={[
             styles.infoRow,
-            isRTL ? styles.rtlRow : styles.ltrRow,
+            styles.row,
           ]}
         >
           <ThemedText style={styles.infoLabel}>{t("booking.name")}</ThemedText>
@@ -541,7 +541,7 @@ export default function CompleteBookingScreen() {
         <View
           style={[
             styles.infoRow,
-            isRTL ? styles.rtlRow : styles.ltrRow,
+            styles.row,
           ]}
         >
           <ThemedText style={styles.infoLabel}>{t("booking.phone")}</ThemedText>
@@ -555,7 +555,7 @@ export default function CompleteBookingScreen() {
         <View
           style={[
             styles.sectionHeaderRow,
-            isRTL ? styles.rtlRow : styles.ltrRow,
+            styles.row,
           ]}
         >
           <ThemedText
@@ -579,7 +579,7 @@ export default function CompleteBookingScreen() {
         <View
           style={[
             styles.infoRow,
-            isRTL ? styles.rtlRow : styles.ltrRow,
+            styles.row,
           ]}
         >
           <ThemedText style={styles.infoLabel}>{t("booking.date")}</ThemedText>
@@ -588,7 +588,7 @@ export default function CompleteBookingScreen() {
         <View
           style={[
             styles.infoRow,
-            isRTL ? styles.rtlRow : styles.ltrRow,
+            styles.row,
           ]}
         >
           <ThemedText style={styles.infoLabel}>{t("booking.shift")}</ThemedText>
@@ -614,7 +614,7 @@ export default function CompleteBookingScreen() {
         <View
           style={[
             styles.infoRow,
-            isRTL ? styles.rtlRow : styles.ltrRow,
+            styles.row,
           ]}
         >
           <ThemedText style={styles.infoLabel}>
@@ -628,7 +628,7 @@ export default function CompleteBookingScreen() {
         <View
           style={[
             styles.infoRow,
-            isRTL ? styles.rtlRow : styles.ltrRow,
+            styles.row,
           ]}
         >
           <ThemedText style={styles.infoLabel}>
@@ -642,7 +642,7 @@ export default function CompleteBookingScreen() {
           <View
             style={[
               styles.infoRow,
-              isRTL ? styles.rtlRow : styles.ltrRow,
+              styles.row,
             ]}
           >
             <ThemedText style={styles.infoLabel}>
@@ -656,7 +656,7 @@ export default function CompleteBookingScreen() {
         <View
           style={[
             styles.infoRow,
-            isRTL ? styles.rtlRow : styles.ltrRow,
+            styles.row,
           ]}
         >
           <ThemedText style={[styles.infoLabel, { fontWeight: "700" }]}>
@@ -665,7 +665,7 @@ export default function CompleteBookingScreen() {
           <ThemedText
             style={[
               styles.infoValue,
-              { fontWeight: "700", color: Colors.primary },
+              { fontFamily: "Alexandria-SemiBold", color: Colors.primary },
             ]}
           >
             {totalPrice.toLocaleString()} {t("common.iqd")}
@@ -714,7 +714,7 @@ export default function CompleteBookingScreen() {
         style={[
           styles.paymentOptionCard,
           paymentType === "DEPOSIT" && styles.paymentOptionActive,
-          isRTL ? styles.rtlRow : styles.ltrRow,
+          styles.row,
         ]}
         onPress={() => setPaymentType("DEPOSIT")}
       >
@@ -722,6 +722,7 @@ export default function CompleteBookingScreen() {
           style={[
             styles.paymentLabel,
             paymentType === "DEPOSIT" && styles.paymentLabelActive,
+            isRTL ? styles.rtlText : styles.ltrText,
           ]}
         >
           {t("booking.depositPay")}
@@ -740,7 +741,7 @@ export default function CompleteBookingScreen() {
         style={[
           styles.paymentOptionCard,
           paymentType === "FULL" && styles.paymentOptionActive,
-          isRTL ? styles.rtlRow : styles.ltrRow,
+          styles.row,
         ]}
         onPress={() => setPaymentType("FULL")}
       >
@@ -748,6 +749,7 @@ export default function CompleteBookingScreen() {
           style={[
             styles.paymentLabel,
             paymentType === "FULL" && styles.paymentLabelActive,
+            isRTL ? styles.rtlText : styles.ltrText,
           ]}
         >
           {t("booking.fullPay")}
@@ -1081,7 +1083,7 @@ export default function CompleteBookingScreen() {
         >
           {day}
         </ThemedText>
-        {isBooked && <ScribbleIcon />}
+        {isDisabled && <ScribbleIcon />}
       </TouchableOpacity>
     );
   };
@@ -1112,7 +1114,7 @@ export default function CompleteBookingScreen() {
                 <View
                   style={[
                     styles.dayHeaderRow,
-                    isRTL ? styles.rtlRow : styles.ltrRow,
+                    styles.row,
                   ]}
                 >
                   <ThemedText style={styles.dayHeaderText}>
@@ -1134,10 +1136,8 @@ export default function CompleteBookingScreen() {
                         key={`preview-${shift.id}`}
                         style={[
                           styles.shiftCardFlat,
-                          {
-                            flexDirection: 'row',
-                            opacity: 0.6,
-                            backgroundColor: "#fff" },
+                          styles.row,
+                          { opacity: 0.6, backgroundColor: "#fff" },
                         ]}
                       >
                         <View style={styles.shiftIconCircleFlat}>
@@ -1161,7 +1161,7 @@ export default function CompleteBookingScreen() {
                             {formatShiftTime(shift.endTime)}
                           </ThemedText>
                         </View>
-                        <View style={{ alignItems: 'flex-end' }}>
+                        <View style={isRTL ? { alignItems: 'flex-start' } : { alignItems: 'flex-end' }}>
                           <ThemedText style={styles.shiftPriceFlat}>
                             {(() => {
                               const minPrice = shift.pricing && shift.pricing.length > 0
@@ -1192,7 +1192,7 @@ export default function CompleteBookingScreen() {
                 <View
                   style={[
                     styles.dayHeaderRow,
-                    isRTL ? styles.rtlRow : styles.ltrRow,
+                    styles.row,
                   ]}
                 >
                   <ThemedText style={styles.dayHeaderText}>
@@ -1249,9 +1249,8 @@ export default function CompleteBookingScreen() {
                         disabled={isBooked}
                         style={[
                           styles.shiftCardFlat,
-                          {
-                            flexDirection: 'row',
-                            backgroundColor: "#fff" },
+                          styles.row,
+                          { backgroundColor: "#fff" },
                           isSelected && {
                             borderColor: "#035DF9",
                             borderWidth: 1.5,
@@ -1300,8 +1299,8 @@ export default function CompleteBookingScreen() {
                             {formatShiftTime(shift.endTime)}
                           </ThemedText>
                         </View>
-                        <View style={{ alignItems: 'flex-end' }}>
-                          <ThemedText style={[styles.shiftPriceFlat, isSelected && { color: "#035DF9", fontFamily: "Alexandria-Black" }]}>
+                        <View style={isRTL ? { alignItems: 'flex-start' } : { alignItems: 'flex-end' }}>
+                          <ThemedText style={[styles.shiftPriceFlat, isSelected && { color: "#035DF9", fontFamily: "Alexandria-SemiBold" }]}>
                             {Number(shiftPrice).toLocaleString()} {t("common.iqd")}
                           </ThemedText>
                         </View>
@@ -1614,9 +1613,9 @@ const styles = StyleSheet.create({
     color: "#64748B" },
   shiftPriceFlat: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-SemiBold",
     color: "#1E293B" },
-  whoContainer: { marginTop: 20 },
+  whoContainer: { marginTop: 10 },
   whoCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -1660,9 +1659,9 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 15 },
   inlinePaymentTitle: {
-    fontSize: normalize.font(18),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Black",
-    color: "#1E293B",
+    color: "#15AB64",
     marginBottom: 15 },
   paymentForm: { gap: 12 },
   inputGroup: { gap: 6 },
@@ -1752,11 +1751,13 @@ const styles = StyleSheet.create({
   infoLabel: {
     fontSize: normalize.font(13),
     fontFamily: "Alexandria-Black",
-    color: "#1E293B" },
+    color: "#1E293B",
+    textAlign: isRTL ? "right" : "left" },
   infoValue: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Bold",
-    color: "#64748B" },
+    fontFamily: "Alexandria-SemiBold",
+    color: "#64748B",
+    textAlign: isRTL ? "left" : "right" },
   sectionHeaderRow: { justifyContent: "space-between", alignItems: "center" },
   editBtn: {
     backgroundColor: "#F0FDF4",
@@ -1786,9 +1787,9 @@ const styles = StyleSheet.create({
   paymentOptionActive: { borderColor: "#15AB64", backgroundColor: "#F0FDF4" },
   paymentVal: {
     fontSize: normalize.font(15),
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "Alexandria-SemiBold",
     color: "#64748B" },
-  paymentValActive: { color: "#1E293B", fontFamily: "Alexandria-Black" },
+  paymentValActive: { color: "#1E293B", fontFamily: "Alexandria-Bold" },
   paymentLabel: {
     fontSize: normalize.font(13),
     fontFamily: "Alexandria-Regular",
@@ -1808,7 +1809,8 @@ const styles = StyleSheet.create({
   // RTL Utilities
   rtlText: { textAlign: "right" },
   ltrText: { textAlign: "left" },
-  rtlRow: { flexDirection: "row-reverse" },
+  row: { flexDirection: "row" },
+  rtlRow: { flexDirection: isRTL ? "row-reverse" : "row" },
   ltrRow: { flexDirection: "row" },
   rtlAlign: { alignItems: "flex-end" },
   ltrAlign: { alignItems: "flex-start" },

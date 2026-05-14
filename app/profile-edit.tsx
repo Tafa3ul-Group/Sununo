@@ -34,6 +34,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { isRTL } from "@/i18n";
+import { HeaderSection } from '@/components/header-section';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -113,20 +114,11 @@ export default function ProfileEditScreen() {
       <StatusBar barStyle="dark-content" />
       <Stack.Screen options={{ headerShown: false }} />
 
-      {/* ── Header ── */}
-      <View style={[styles.header, { flexDirection: 'row' }]}>
-        <TouchableOpacity style={styles.headerSideBtn}>
-          <SolarMenuDotsBold size={20} color="#9CA3AF" />
-        </TouchableOpacity>
-
-        <ThemedText style={styles.headerTitle}>
-          {isRTL ? 'الملف الشخصي' : 'Profile'}
-        </ThemedText>
-
-        <TouchableOpacity style={styles.backCircle} onPress={() => router.back()}>
-          <BackIcon size={18} color={Colors.primary} />
-        </TouchableOpacity>
-      </View>
+      <HeaderSection
+        title={isRTL ? 'تعديل الملف الشخصي' : 'Edit Profile'}
+        showBackButton
+        onBackPress={() => router.back()}
+      />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -200,33 +192,52 @@ export default function ProfileEditScreen() {
               <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>
                 {isRTL ? 'رقم الهاتف' : 'Phone Number'}
               </ThemedText>
-              <View style={[styles.phoneRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                {/* Change phone button */}
-                <TouchableOpacity
-                  style={styles.changePhoneBtn}
-                  onPress={() =>
-                    Alert.alert(
-                      isRTL ? 'تغيير رقم الهاتف' : 'Change Phone',
-                      isRTL
-                        ? 'هذه الميزة ستكون متاحة قريباً'
-                        : 'This feature will be available soon',
-                    )
-                  }
-                >
-                  <Text style={styles.changePhoneText}>
-                    {isRTL ? 'تغيير رقم الهاتف' : 'Change Phone'}
-                  </Text>
-                </TouchableOpacity>
-
-                {/* Phone number (read-only) */}
-                <View style={styles.phoneValueWrapper}>
-                  <Text
-                    style={[styles.phoneValue, { textAlign: isRTL ? 'right' : 'left' }]}
-                    numberOfLines={1}
-                  >
-                    {phone || (isRTL ? 'غير محدد' : 'Not set')}
-                  </Text>
-                </View>
+              <View style={[styles.phoneRow, { flexDirection: 'row' }]}>
+                {isRTL ? (
+                  <>
+                    <View style={styles.phoneValueWrapper}>
+                      <Text
+                        style={[styles.phoneValue, { textAlign: 'right' }]}
+                        numberOfLines={1}
+                      >
+                        {phone || 'غير محدد'}
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.changePhoneBtn}
+                      onPress={() =>
+                        Alert.alert(
+                          'تغيير رقم الهاتف',
+                          'هذه الميزة ستكون متاحة قريباً',
+                        )
+                      }
+                    >
+                      <Text style={styles.changePhoneText}>تغيير رقم الهاتف</Text>
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <>
+                    <TouchableOpacity
+                      style={styles.changePhoneBtn}
+                      onPress={() =>
+                        Alert.alert(
+                          'Change Phone',
+                          'This feature will be available soon',
+                        )
+                      }
+                    >
+                      <Text style={styles.changePhoneText}>Change Phone</Text>
+                    </TouchableOpacity>
+                    <View style={styles.phoneValueWrapper}>
+                      <Text
+                        style={[styles.phoneValue, { textAlign: 'left' }]}
+                        numberOfLines={1}
+                      >
+                        {phone || 'Not set'}
+                      </Text>
+                    </View>
+                  </>
+                )}
               </View>
             </View>
 
