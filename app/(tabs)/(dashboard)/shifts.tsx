@@ -84,7 +84,7 @@ function ShiftPricingView({ shift, isRTL, onEdit }: { shift: any; isRTL: boolean
     </View>
   );
 
-  const flexDirection = isRTL ? 'row-reverse' : 'row';
+  const flexDirection = 'row';
 
   return (
     <View style={styles.pricingSectionContainer}>
@@ -446,8 +446,8 @@ export default function ShiftsAndPricesScreen() {
     return false;
   };
 
-  const textAlign = isRTL ? 'right' : 'left';
-  const flexDirection = isRTL ? 'row-reverse' : 'row';
+  const textAlign = 'left';
+  const flexDirection = 'row';
 
   const calculateDuration = (start: string, end: string) => {
     if (!start || !end) return 0;
@@ -864,7 +864,7 @@ export default function ShiftsAndPricesScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container]}>
+    <SafeAreaView style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       <StatusBar style="dark" />
       <HeaderSection
         title={chaletName || (isRTL ? 'اختر الشاليه' : 'Select Chalet')}
@@ -894,7 +894,7 @@ export default function ShiftsAndPricesScreen() {
                   containerStyle={styles.swipeableContainer}
                 >
                   <View style={[styles.cardFlat, !shift.isActive && styles.cardInactive]}>
-                    <View style={[styles.row, { padding: 16, borderBottomWidth: isExpanded ? 1 : 0, borderBottomColor: '#F0F2F7', justifyContent: 'space-between' }, isRTL && { flexDirection: 'row-reverse' }]}>
+                    <View style={[styles.row, { padding: 16, borderBottomWidth: isExpanded ? 1 : 0, borderBottomColor: '#F0F2F7', justifyContent: 'space-between' }]}>
                       <TouchableOpacity 
                         style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }} 
                         onPress={() => setExpandedShift(isExpanded ? null : shift.id)}
@@ -908,7 +908,7 @@ export default function ShiftsAndPricesScreen() {
                         {isExpanded ? <SolarAltArrowUpBold size={20} color={Colors.border} /> : <SolarAltArrowDownBold size={20} color={Colors.border} />}
                       </TouchableOpacity>
 
-                      <View style={[styles.row, { marginLeft: isRTL ? 0 : 16, marginRight: isRTL ? 16 : 0 }, isRTL && { flexDirection: 'row-reverse' }]}>
+                      <View style={[styles.row, { marginLeft: isRTL ? 0 : 16, marginRight: isRTL ? 16 : 0 }]}>
                         <View style={{ alignItems: 'flex-end', marginRight: isRTL ? 0 : 8, marginLeft: isRTL ? 8 : 0 }}>
                           <Text style={{ fontSize: 8, fontFamily: 'Alexandria-Bold', color: shift.isActive ? Colors.primary : '#9CA3AF' }}>
                             {isRTL ? (shift.isActive ? 'نشطة' : 'متوقفة') : (shift.isActive ? 'Active' : 'Inactive')}
@@ -962,11 +962,11 @@ export default function ShiftsAndPricesScreen() {
 
       {/* Add Shift Modal */}
       <BottomSheetModal ref={shiftSheetRef} index={0} snapPoints={['60%', '90%']} backdropComponent={renderBackdrop}>
-        <BottomSheetScrollView contentContainerStyle={{ padding: 20 }}>
+        <BottomSheetScrollView contentContainerStyle={{ padding: 20, direction: isRTL ? 'rtl' : 'ltr' }}>
           <Text style={styles.modalTitle}>{isRTL ? 'إعداد الفترة' : 'Shift Setup'}</Text>
           <DayVisualizer shifts={shifts} isRTL={isRTL} onEditShift={handleEditShift} onAddShift={handleAddShiftAtHour} currentShiftForm={shiftForm} selectedId={selectedShift?.id} />
 
-          <View style={[styles.row, { justifyContent: 'space-between', marginVertical: 20 }, isRTL && { flexDirection: 'row-reverse' }]}>
+          <View style={[styles.row, { justifyContent: 'space-between', marginVertical: 20 }]}>
             <View>
               <Text style={styles.label}>{isRTL ? 'حالة الفترة' : 'Shift Status'}</Text>
               <Text style={{ fontSize: 12, color: '#666' }}>{isRTL ? 'تفعيل أو إيقاف هذه الفترة تماماً' : 'Enable or disable this shift globally'}</Text>
@@ -997,10 +997,10 @@ export default function ShiftsAndPricesScreen() {
         <BottomSheetFlatList
           data={pricingForm}
           keyExtractor={(item) => `day-${item.dayOfWeek}`}
-          contentContainerStyle={{ paddingBottom: 120 }}
+          contentContainerStyle={{ paddingBottom: 120, direction: isRTL ? 'rtl' : 'ltr' }}
           ListHeaderComponent={
             <View style={{ padding: 20 }}>
-              <View style={[styles.row, { justifyContent: 'space-between', marginBottom: 12 }, isRTL && { flexDirection: 'row-reverse' }]}>
+              <View style={[styles.row, { justifyContent: 'space-between', marginBottom: 12 }]}>
                 <View>
                   <Text style={styles.modalTitleCompact}>{isRTL ? 'إعداد أسعار الأسبوع' : 'Weekly Pricing'}</Text>
                   {selectedShift && (
@@ -1015,7 +1015,7 @@ export default function ShiftsAndPricesScreen() {
               </View>
 
               <View style={[styles.shiftStatusHighlight, { flexDirection: 'row' }]}>
-                <View style={[styles.row, { flex: 1 }, isRTL && { flexDirection: 'row-reverse' }]}>
+                <View style={[styles.row, { flex: 1 }]}>
                   <View style={[styles.statusIconCircle, { backgroundColor: modalActiveStatus ? Colors.primary + '15' : '#F3F4F6' }]}>
                     <SolarShieldBold size={20} color={modalActiveStatus ? Colors.primary : '#9CA3AF'} />
                   </View>
@@ -1035,12 +1035,12 @@ export default function ShiftsAndPricesScreen() {
               </View>
 
               <View style={styles.quickActionCardNew}>
-                <View style={[styles.row, { justifyContent: 'space-between', marginBottom: 12 }, isRTL && { flexDirection: 'row-reverse' }]}>
-                  <View style={[styles.row, isRTL && { flexDirection: 'row-reverse' }]}>
+                <View style={[styles.row, { justifyContent: 'space-between', marginBottom: 12 }]}>
+                  <View style={[styles.row]}>
                     <SolarLightbulbBold size={16} color="#FFF" style={{ marginHorizontal: 4 }} />
                     <Text style={styles.quickLabelNew}>{isRTL ? 'إجراءات سريعة لجميع الأيام' : 'Quick Batch Actions'}</Text>
                   </View>
-                  <View style={[styles.row, { gap: 8 }, isRTL && { flexDirection: 'row-reverse' }]}>
+                  <View style={[styles.row, { gap: 8 }]}>
                     <TouchableOpacity onPress={handleEnableAllDays} style={styles.miniQuickBtn}>
                       <Text style={styles.miniQuickBtnText}>{isRTL ? 'تفعيل الكل' : 'Enable All'}</Text>
                     </TouchableOpacity>
@@ -1050,9 +1050,9 @@ export default function ShiftsAndPricesScreen() {
                   </View>
                 </View>
 
-                <View style={[styles.row, { backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 12, padding: 4 }, isRTL && { flexDirection: 'row-reverse' }]}>
+                <View style={[styles.row, { backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 12, padding: 4 }]}>
                   <BottomSheetTextInput
-                    style={[styles.quickInputNew, { flex: 1, height: 44, paddingHorizontal: 12, textAlign: isRTL ? 'right' : 'left' }]}
+                    style={[styles.quickInputNew, { flex: 1, height: 44, paddingHorizontal: 12, textAlign: 'left' }]}
                     keyboardType="numeric"
                     placeholder={isRTL ? "أدخل السعر الموحد..." : "Enter uniform price..."}
                     placeholderTextColor="rgba(255,255,255,0.5)"
@@ -1082,8 +1082,8 @@ export default function ShiftsAndPricesScreen() {
                 { marginHorizontal: 20, flexDirection: 'row' }
               ]}>
                 <View style={{ flex: 1 }}>
-                  <View style={[styles.row, { justifyContent: 'space-between', marginBottom: item.price > 1 ? 12 : 0 }, isRTL && { flexDirection: 'row-reverse' }]}>
-                    <View style={[styles.row, isRTL && { flexDirection: 'row-reverse' }]}>
+                  <View style={[styles.row, { justifyContent: 'space-between', marginBottom: item.price > 1 ? 12 : 0 }]}>
+                    <View style={[styles.row]}>
                       <View style={[
                         styles.dayIndicator,
                         (item.dayOfWeek === 5 || item.dayOfWeek === 6) && { backgroundColor: '#FEE4E2' }
@@ -1098,7 +1098,7 @@ export default function ShiftsAndPricesScreen() {
                       <Text style={[styles.dayFullName, { marginHorizontal: 12 }]}>{dayName}</Text>
                     </View>
 
-                    <View style={[styles.row, isRTL && { flexDirection: 'row-reverse' }]}>
+                    <View style={[styles.row]}>
                       <Text style={{ fontSize: 12, color: isStopped ? '#999' : Colors.primary, fontFamily: 'Alexandria-Bold', marginRight: isRTL ? 0 : 8, marginLeft: isRTL ? 8 : 0 }}>
                         {isStopped ? (isRTL ? 'متوقف' : 'Stopped') : (isRTL ? 'نشط' : 'Active')}
                       </Text>
@@ -1112,10 +1112,10 @@ export default function ShiftsAndPricesScreen() {
                   </View>
 
                   {!isStopped && (
-                    <View style={[styles.priceControlWrapper, isRTL && { flexDirection: 'row-reverse' }]}>
+                    <View style={[styles.priceControlWrapper]}>
                       <SolarBanknoteBold size={20} color={Colors.primary} style={{ marginHorizontal: 8 }} />
                       <BottomSheetTextInput
-                        style={[styles.pricingInputModern, { flex: 1, textAlign: isRTL ? 'right' : 'left' }]}
+                        style={[styles.pricingInputModern, { flex: 1, textAlign: 'left' }]}
                         keyboardType="numeric"
                         value={String(item.price)}
                         placeholder="0"
@@ -1142,7 +1142,7 @@ export default function ShiftsAndPricesScreen() {
 
       {/* Policy Modal */}
       <BottomSheetModal ref={policySheetRef} index={0} snapPoints={['70%']} backdropComponent={renderBackdrop}>
-        <BottomSheetScrollView contentContainerStyle={{ padding: 20 }}>
+        <BottomSheetScrollView contentContainerStyle={{ padding: 20, direction: isRTL ? 'rtl' : 'ltr' }}>
           <Text style={styles.modalTitleCompact}>{isRTL ? 'سياسة الاسترجاع' : 'Refund Policy'}</Text>
           {policyForm.map((p, i) => (
             <View key={i} style={styles.policyFormCard}>
