@@ -1,12 +1,11 @@
 import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'expo-router';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, TextInput, Alert, ActivityIndicator, RefreshControl } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, Spacing, normalize } from '@/constants/theme';
+import { Colors, normalize } from '@/constants/theme';
 import { HeaderSection } from '@/components/header-section';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
-import { useTranslation } from 'react-i18next';
 import { useGetPayoutsQuery, useRequestPayoutMutation, useGetProviderStatsQuery, useGetProviderProfileQuery } from '@/store/api/apiSlice';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { PrimaryButton } from '@/components/user/primary-button';
@@ -26,23 +25,70 @@ const PERIODS = [
   { id: 'year', ar: 'سنة', en: 'Year' },
 ];
 
+const formatDateParam = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const getPeriodRange = (period: string) => {
+  const now = new Date();
+  const from = new Date(now);
+
+  if (period === 'week') {
+    from.setDate(now.getDate() - 6);
+  } else if (period === 'year') {
+    from.setFullYear(now.getFullYear(), 0, 1);
+    from.setHours(0, 0, 0, 0);
+  } else {
+    from.setDate(1);
+    from.setHours(0, 0, 0, 0);
+  }
+
+  return {
+    from: formatDateParam(from),
+    to: formatDateParam(now),
+  };
+};
+
+const PERIOD_LABELS: Record<string, { bookings: { ar: string; en: string }; income: { ar: string; en: string } }> = {
+  week: {
+    bookings: { ar: 'حجوزات الأسبوع', en: "Week's Bookings" },
+    income: { ar: 'دخل الأسبوع', en: "Week's Income" },
+  },
+  month: {
+    bookings: { ar: 'حجوزات الشهر', en: "Month's Bookings" },
+    income: { ar: 'دخل الشهر', en: "Month's Income" },
+  },
+  year: {
+    bookings: { ar: 'حجوزات السنة', en: "Year's Bookings" },
+    income: { ar: 'دخل السنة', en: "Year's Income" },
+  },
+};
+
 export default function RevenueScreen() {
   const router = useRouter();
-  const { user, userType, language, selectedChalet } = useSelector((state: RootState) => state.auth);
-  const { t } = useTranslation();
+  const { user, userType, selectedChalet } = useSelector((state: RootState) => state.auth);
   const textAlign = isRTL ? 'right' : 'left';
   const startAlign = isRTL ? 'flex-end' : 'flex-start';
   const endAlign = isRTL ? 'flex-start' : 'flex-end';
   const [selectedPeriod, setSelectedPeriod] = useState('month');
   const [withdrawAmount, setWithdrawAmount] = useState('');
+  const periodRange = useMemo(() => getPeriodRange(selectedPeriod), [selectedPeriod]);
+  const statLabels = PERIOD_LABELS[selectedPeriod] || PERIOD_LABELS.month;
+  const statsQueryParams = useMemo(() => ({
+    ...periodRange,
+    chaletId: selectedChalet?.id,
+  }), [periodRange, selectedChalet?.id]);
 
   // API hooks
   const { data: payoutsResponse, isLoading: isLoadingPayouts, refetch: refetchPayouts } = useGetPayoutsQuery({ 
     limit: 5,
-    chaletId: selectedChalet?.id
+    ...periodRange,
   });
   const { data: profileResponse, isLoading: isLoadingProfile, refetch: refetchProfile } = useGetProviderProfileQuery(undefined);
-  const { data: statsData, isLoading: isLoadingStats, refetch: refetchStats } = useGetProviderStatsQuery(undefined);
+  const { data: statsData, isLoading: isLoadingStats, refetch: refetchStats } = useGetProviderStatsQuery(statsQueryParams);
   const [requestPayout, { isLoading: isRequesting }] = useRequestPayoutMutation();
 
   const handleRefresh = async () => {
@@ -53,7 +99,7 @@ export default function RevenueScreen() {
 
   const payouts = payoutsResponse?.data || payoutsResponse || [];
   const profile = profileResponse?.data || profileResponse;
-  const stats = statsData || { monthBookings: 0, monthRevenue: 0, occupancyRate: 0 };
+  const stats = statsData || { periodBookings: 0, periodRevenue: 0, occupancyRate: 0 };
 
   // Bottom sheet
   const withdrawSheetRef = useRef<BottomSheetModal>(null);
@@ -172,15 +218,15 @@ export default function RevenueScreen() {
             <View style={[styles.statIconWrap, { backgroundColor: '#EFF6FF' }]}>  
               <SolarCalendarBold size={20} color={Colors.primary} />
             </View>
-            <Text style={styles.statValue}>{isLoadingStats ? '...' : stats.monthBookings}</Text>
-            <Text style={styles.statLabel}>{isRTL ? 'حجوزات الشهر' : "Month's Bookings"}</Text>
+            <Text style={styles.statValue}>{isLoadingStats ? '...' : stats.periodBookings ?? stats.monthBookings ?? 0}</Text>
+            <Text style={styles.statLabel}>{isRTL ? statLabels.bookings.ar : statLabels.bookings.en}</Text>
           </View>
           <View style={styles.statCard}>
             <View style={[styles.statIconWrap, { backgroundColor: '#ECFDF5' }]}>
               <SolarBanknoteBold size={20} color="#10B981" />
             </View>
-            <Text style={styles.statValue}>{isLoadingStats ? '...' : stats.monthRevenue?.toLocaleString()}</Text>
-            <Text style={styles.statLabel}>{isRTL ? 'دخل الشهر' : "Month's Income"}</Text>
+            <Text style={styles.statValue}>{isLoadingStats ? '...' : (stats.periodRevenue ?? stats.monthRevenue ?? 0)?.toLocaleString()}</Text>
+            <Text style={styles.statLabel}>{isRTL ? statLabels.income.ar : statLabels.income.en}</Text>
           </View>
           <View style={styles.statCard}>
             <View style={[styles.statIconWrap, { backgroundColor: '#FFF7ED' }]}>

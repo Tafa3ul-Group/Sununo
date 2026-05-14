@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { logout } from "../authSlice";
 
 // API base URL — reads from environment variable with fallback
 const BASE_URL =
@@ -23,7 +24,6 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
 
   if (result.error && result.error.status === 401) {
     // Force logout if 401 Unauthorized
-    const { logout } = require("../authSlice");
     api.dispatch(logout());
   }
 
@@ -338,7 +338,10 @@ export const apiSlice = createApi({
 
     // Get provider stats
     getProviderStats: builder.query({
-      query: () => "/provider/profile/stats",
+      query: (params) => ({
+        url: "/provider/profile/stats",
+        params,
+      }),
       providesTags: ["Booking", "Chalet"],
     }),
 
