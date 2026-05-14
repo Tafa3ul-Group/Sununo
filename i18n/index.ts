@@ -37,15 +37,34 @@ const reloadApp = async () => {
 };
 
 // ──────────────────────────────────────────────────────────
-// 1. SYNCHRONOUS init — uses I18nManager.isRTL which is
-//    available immediately (set by the OS / previous session).
-//    This prevents the "English flash" on Arabic devices.
+// 1. Initial State Setup
 // ──────────────────────────────────────────────────────────
-const syncDefault = I18nManager.isRTL ? "ar" : "en";
+let initialLng = I18nManager.isRTL ? "ar" : "en";
+
+// On Web, we can check localStorage synchronously to avoid the "async refinement" loop
+if (Platform.OS === 'web' && typeof window !== 'undefined') {
+  const saved = window.localStorage.getItem(LANGUAGE_KEY);
+  if (saved) {
+    initialLng = saved;
+    const needsRTL = saved === 'ar';
+    
+    // Apply RTL to document immediately to prevent layout shifts
+    if (document.documentElement) {
+        document.documentElement.dir = needsRTL ? 'rtl' : 'ltr';
+        document.documentElement.lang = saved;
+    }
+    
+    // Sync React Native's I18nManager
+    if (I18nManager.isRTL !== needsRTL) {
+      I18nManager.allowRTL(needsRTL);
+      I18nManager.forceRTL(needsRTL);
+    }
+  }
+}
 
 i18n.use(initReactI18next).init({
   resources,
-  lng: syncDefault,
+  lng: initialLng,
   fallbackLng: "ar",
   interpolation: {
     escapeValue: false,
@@ -53,15 +72,22 @@ i18n.use(initReactI18next).init({
   react: {
     useSuspense: false,
   },
-}, (err, t) => {
+}, (err) => {
   if (err) return console.error('i18n init error:', err);
 
-  // Ensure layout matches language (handles cases where they get out of sync)
+  // Skip layout synchronization during SSR
+  if (Platform.OS === 'web' && typeof window === 'undefined') return;
+
   const isArabic = i18n.language === 'ar';
-  if (isArabic !== I18nManager.isRTL) {
+  
+  // Only trigger reload if layout and language are mismatched AND we are on native
+  // On Web, we handle this via document.dir and localStorage synchronously above
+  if (Platform.OS !== 'web' && isArabic !== I18nManager.isRTL) {
     I18nManager.allowRTL(isArabic);
     I18nManager.forceRTL(isArabic);
-    I18nManager.swapLeftAndRightInRTL(isArabic);
+    if (I18nManager.swapLeftAndRightInRTL) {
+      I18nManager.swapLeftAndRightInRTL(isArabic);
+    }
     setTimeout(() => {
       reloadApp();
     }, 100);
@@ -69,14 +95,14 @@ i18n.use(initReactI18next).init({
 });
 
 // ──────────────────────────────────────────────────────────
-// 2. ASYNC refinement — read saved preference from storage.
-//    If it differs from the sync default, update and reload if needed.
+// 2. ASYNC refinement (Native only)
 // ──────────────────────────────────────────────────────────
 const refineLanguageFromStorage = async () => {
+  if (Platform.OS === 'web') return; // Handled synchronously on Web
+
   try {
     let saved = await AsyncStorage.getItem(LANGUAGE_KEY);
     
-    // Default to Arabic on first launch if no preference is saved
     if (!saved) {
       saved = "ar";
       await AsyncStorage.setItem(LANGUAGE_KEY, "ar");
@@ -85,10 +111,8 @@ const refineLanguageFromStorage = async () => {
     if (saved && saved !== i18n.language) {
       const needsRTL = saved === 'ar';
       if (I18nManager.isRTL !== needsRTL) {
-        // If layout needs to change, use the public API which reloads
         await changeLanguage(saved as "en" | "ar");
       } else {
-        // Otherwise just update the language in memory
         await i18n.changeLanguage(saved);
       }
     }
@@ -100,18 +124,30 @@ const refineLanguageFromStorage = async () => {
 refineLanguageFromStorage();
 
 // ──────────────────────────────────────────────────────────
-// 3. Public API to change language (saves + reloads for RTL)
+// 3. Public API to change language
 // ──────────────────────────────────────────────────────────
 export const changeLanguage = async (lng: "en" | "ar") => {
   await i18n.changeLanguage(lng);
-  await AsyncStorage.setItem(LANGUAGE_KEY, lng);
+  
+  if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    window.localStorage.setItem(LANGUAGE_KEY, lng);
+  } else {
+    await AsyncStorage.setItem(LANGUAGE_KEY, lng);
+  }
 
   const isRTL = lng === "ar";
 
   if (I18nManager.isRTL !== isRTL) {
     I18nManager.allowRTL(isRTL);
     I18nManager.forceRTL(isRTL);
-    I18nManager.swapLeftAndRightInRTL(isRTL);
+    
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+    }
+
+    if (I18nManager.swapLeftAndRightInRTL) {
+      I18nManager.swapLeftAndRightInRTL(isRTL);
+    }
 
     setTimeout(() => {
       reloadApp();
@@ -119,14 +155,6 @@ export const changeLanguage = async (lng: "en" | "ar") => {
   }
 };
 
-// ──────────────────────────────────────────────────────────
-// 4. tr() — Global helper to translate dynamic API objects.
-//    Automatically picks the right name field based on
-//    the current i18next language. Use across the entire app:
-//
-//      import { tr } from "../../i18n/i18n";
-//      tr(match?.homeTeam)   // → Arabic or English name
-// ──────────────────────────────────────────────────────────
 export const tr = (obj: any): string => {
   if (!obj) return "";
   if (typeof obj === "string") return obj;
@@ -144,7 +172,6 @@ export const tr = (obj: any): string => {
     );
   }
 
-// English / default
   return (
     obj.nameEn ||
     obj.name_en ||
