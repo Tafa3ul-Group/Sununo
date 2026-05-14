@@ -399,6 +399,15 @@ export const apiSlice = createApi({
       providesTags: (result, error, id) => [{ type: "Booking" as const, id }],
     }),
 
+    // Get financial stats for a specific chalet owned by the provider
+    getProviderChaletStats: builder.query({
+      query: (chaletId) => `/provider/bookings/chalets/${chaletId}/stats`,
+      providesTags: (result, error, chaletId) => [
+        "Booking",
+        { type: "Chalet" as const, id: chaletId },
+      ],
+    }),
+
     // Get shift availability
     getShiftAvailability: builder.query({
       query: ({ chaletId, ...params }) => ({
@@ -597,6 +606,7 @@ export const {
   useUpdateProfileImageMutation,
   useGetProviderBookingsQuery,
   useGetProviderBookingDetailsQuery,
+  useGetProviderChaletStatsQuery,
   useGetShiftAvailabilityQuery,
   useGetFullyBookedStatusQuery,
   useMarkBookingCompletedMutation,

@@ -1,14 +1,23 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, Switch, Platform, ActivityIndicator, Dimensions, Animated, StatusBar, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
-import { Colors, normalize, Spacing } from '@/constants/theme';
+import { Colors, normalize } from '@/constants/theme';
 import * as Haptics from 'expo-haptics';
 import { getImageSrc } from '@/hooks/useImageSrc';
-import { useGetOwnerChaletDetailsQuery, useDeleteChaletMutation } from '@/store/api/apiSlice';
+import {
+  useDeleteChaletImageMutation,
+  useDeleteChaletMutation,
+  useGetAmenityCategoriesQuery,
+  useGetChaletAmenitiesQuery,
+  useGetCitiesQuery,
+  useGetOwnerChaletDetailsQuery,
+  useGetProviderChaletStatsQuery,
+  useSetChaletAmenitiesMutation,
+  useUpdateChaletImageMutation,
+  useUpdateChaletMutation,
+  useUploadChaletImageMutation,
+} from '@/store/api/apiSlice';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { 
@@ -23,32 +32,16 @@ import {
   SolarCalendarBold,
   SolarCameraAddBold,
   SolarGalleryBold,
-  SolarCameraBold,
   SolarCloseCircleBold,
   SolarCheckCircleBold,
-  SolarSettingsBold,
-  SolarMenuDotsBold,
   SolarNotebookBold,
   SolarShieldWarningBold,
-  SolarSmartHomeBold
 } from "@/components/icons/solar-icons";
 import { CircleBackButton } from '@/components/ui/circle-back-button';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView, BottomSheetScrollView, BottomSheetTextInput, BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import * as ImagePicker from 'expo-image-picker';
 import Toast from 'react-native-toast-message';
-import { 
-  useUpdateChaletMutation, 
-  useUploadChaletImageMutation,
-  useUpdateChaletImageMutation,
-  useDeleteChaletImageMutation, 
-  useSetChaletAmenitiesMutation,
-  useGetCitiesQuery,
-  useGetAmenityCategoriesQuery,
-  useGetChaletAmenitiesQuery
-} from '@/store/api/apiSlice';
 import { GuestCounter } from '@/components/user/guest-counter';
-import { AppMap } from '@/components/user/app-map';
-import { LocationPickerModal } from '@/components/user/location-picker-modal';
 import { isRTL } from "@/i18n";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -57,21 +50,23 @@ const HERO_HEIGHT = 420;
 export default function ChaletDetailsScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
-  const { language } = useSelector((state: RootState) => state.auth);
-  const { t } = useTranslation();
+  const chaletId = Array.isArray(id) ? id[0] : id;
     
-  const { data: response, isLoading, refetch } = useGetOwnerChaletDetailsQuery(id);
+  const { data: response, isLoading, refetch } = useGetOwnerChaletDetailsQuery(chaletId as string, { skip: !chaletId });
+  const { data: chaletStatsResponse, isLoading: isLoadingStats, refetch: refetchStats } = useGetProviderChaletStatsQuery(chaletId as string, { skip: !chaletId });
   const [deleteChalet] = useDeleteChaletMutation();
   const [updateChalet, { isLoading: isUpdating }] = useUpdateChaletMutation();
   const [uploadImage, { isLoading: isUploading }] = useUploadChaletImageMutation();
-  const [updateImage, { isLoading: isUpdatingImage }] = useUpdateChaletImageMutation();
-  const [deleteImage, { isLoading: isDeletingImage }] = useDeleteChaletImageMutation();
+  const [updateImage] = useUpdateChaletImageMutation();
+  const [deleteImage] = useDeleteChaletImageMutation();
   const [setAmenitiesMutation, { isLoading: isLinking }] = useSetChaletAmenitiesMutation();
   const { data: cities } = useGetCitiesQuery();
   const { data: amenityCategories } = useGetAmenityCategoriesQuery();
-  const { data: currentAmenities } = useGetChaletAmenitiesQuery(id as string, { skip: !id });
+  const { data: currentAmenities } = useGetChaletAmenitiesQuery(chaletId as string, { skip: !chaletId });
   
   const chalet = response?.data || (response?.id ? response : null);
+  const chaletStats = chaletStatsResponse?.data || chaletStatsResponse || {};
+  const chaletSummary = chaletStats.summary || {};
 
   const [isActive, setIsActive] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -111,7 +106,6 @@ export default function ChaletDetailsScreen() {
 
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
-  const [showMap, setShowMap] = useState(false);
 
   const [policiesForm, setPoliciesForm] = useState({
     policiesAr: '',
@@ -162,7 +156,8 @@ export default function ChaletDetailsScreen() {
 
   useEffect(() => {
     if (currentAmenities) {
-      setSelectedFeatures(currentAmenities.map((a: any) => a.amenityId || a.amenity?.id));
+      const amenities = Array.isArray(currentAmenities?.data) ? currentAmenities.data : currentAmenities;
+      setSelectedFeatures((amenities || []).map((a: any) => a.featureId || a.amenityId || a.feature?.id || a.amenity?.id).filter(Boolean));
     }
   }, [currentAmenities]);
 
@@ -174,18 +169,22 @@ export default function ChaletDetailsScreen() {
 
   const handleUpdateBasic = async () => {
     try {
-      const payload = {
+      const payload: any = {
         name: { ar: basicForm.nameAr, en: basicForm.nameEn || basicForm.nameAr },
         description: { ar: basicForm.descriptionAr, en: basicForm.descriptionEn || basicForm.descriptionAr },
-        cityId: basicForm.cityId,
         address: { ar: basicForm.addressAr, en: basicForm.addressEn || basicForm.addressAr },
-        latitude: basicForm.latitude ? parseFloat(basicForm.latitude) : null,
-        longitude: basicForm.longitude ? parseFloat(basicForm.longitude) : null };
-      await updateChalet({ id: id as string, data: payload }).unwrap();
+        phone: basicForm.phone,
+        whatsapp: basicForm.whatsapp,
+      };
+      if (basicForm.cityId) payload.cityId = basicForm.cityId;
+      if (basicForm.latitude) payload.latitude = parseFloat(basicForm.latitude);
+      if (basicForm.longitude) payload.longitude = parseFloat(basicForm.longitude);
+      await updateChalet({ id: chaletId as string, data: payload }).unwrap();
       Toast.show({ type: 'success', text1: isRTL ? 'تم تحديث التفاصيل' : 'Details updated' });
       basicInfoModalRef.current?.dismiss();
       refetch();
-    } catch (e) {
+      refetchStats();
+    } catch {
       Toast.show({ type: 'error', text1: isRTL ? 'خطأ في التحديث' : 'Update failed' });
     }
   };
@@ -193,13 +192,14 @@ export default function ChaletDetailsScreen() {
   const handleUpdateDeposit = async () => {
     try {
       await updateChalet({
-        id: id as string,
+        id: chaletId as string,
         data: { depositPercentage: parseFloat(basicForm.depositPercentage) || 0 }
       }).unwrap();
       Toast.show({ type: 'success', text1: isRTL ? 'تم تحديث العربون' : 'Deposit updated' });
       depositModalRef.current?.dismiss();
       refetch();
-    } catch (e) {
+      refetchStats();
+    } catch {
       Toast.show({ type: 'error', text1: isRTL ? 'خطأ في التحديث' : 'Update failed' });
     }
   };
@@ -210,23 +210,26 @@ export default function ChaletDetailsScreen() {
         maxAdults: parseInt(basicForm.maxAdults) || 0,
         maxChildren: parseInt(basicForm.maxChildren) || 0,
         baseCapacity: parseInt(basicForm.baseCapacity) || 0,
-        extraPersonPrice: parseFloat(basicForm.extraPersonPrice) || 0 };
-      await updateChalet({ id: id as string, data: payload }).unwrap();
+        extraPersonPrice: parseFloat(basicForm.extraPersonPrice) || 0,
+        basePrice: parseFloat(basicForm.basePrice) || 0,
+      };
+      await updateChalet({ id: chaletId as string, data: payload }).unwrap();
       Toast.show({ type: 'success', text1: isRTL ? 'تم تحديث السعة' : 'Capacity updated' });
       capacityModalRef.current?.dismiss();
       refetch();
-    } catch (e) {
+      refetchStats();
+    } catch {
       Toast.show({ type: 'error', text1: isRTL ? 'خطأ في التحديث' : 'Update failed' });
     }
   };
 
   const handleUpdateAmenities = async () => {
     try {
-      await setAmenitiesMutation({ chaletId: id, data: { featureIds: selectedFeatures } }).unwrap();
+      await setAmenitiesMutation({ chaletId: chaletId as string, data: { featureIds: selectedFeatures } }).unwrap();
       Toast.show({ type: 'success', text1: isRTL ? 'تم الحفظ' : 'Saved' });
       amenitiesModalRef.current?.dismiss();
       refetch();
-    } catch (e) {
+    } catch {
       Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error' });
     }
   };
@@ -240,13 +243,13 @@ export default function ChaletDetailsScreen() {
         const type = match ? `image/${match[1]}` : 'image/jpeg';
         // @ts-ignore
         imageFormData.append('image', { uri, name: filename, type });
-        await uploadImage({ chaletId: id, formData: imageFormData }).unwrap();
+        await uploadImage({ chaletId: chaletId as string, formData: imageFormData }).unwrap();
       }
       Toast.show({ type: 'success', text1: isRTL ? 'تم الرفع' : 'Uploaded' });
       setSelectedImages([]);
       imagesModalRef.current?.dismiss();
       refetch();
-    } catch (e) {
+    } catch {
       Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error' });
     }
   };
@@ -262,10 +265,10 @@ export default function ChaletDetailsScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await deleteImage({ chaletId: id as string, imageId }).unwrap();
+              await deleteImage({ chaletId: chaletId as string, imageId }).unwrap();
               Toast.show({ type: 'success', text1: isRTL ? 'تم الحذف' : 'Deleted' });
               refetch();
-            } catch (e) {
+            } catch {
               Toast.show({ type: 'error', text1: isRTL ? 'فشل الحذف' : 'Delete failed' });
             }
           }
@@ -277,13 +280,13 @@ export default function ChaletDetailsScreen() {
   const handleSetAsCover = async (imageId: string) => {
     try {
       await updateImage({ 
-        chaletId: id as string, 
-        imageId, 
-        data: { isCover: true } 
+        chaletId: chaletId as string,
+        imageId,
+        data: { isMain: true }
       }).unwrap();
       Toast.show({ type: 'success', text1: isRTL ? 'تم التحديث' : 'Updated' });
       refetch();
-    } catch (e) {
+    } catch {
       Toast.show({ type: 'error', text1: isRTL ? 'فشل التحديث' : 'Update failed' });
     }
   };
@@ -294,11 +297,11 @@ export default function ChaletDetailsScreen() {
         cancellationPolicy: { ar: policiesForm.cancellationAr, en: policiesForm.cancellationEn || policiesForm.cancellationAr },
         checkInTime: policiesForm.checkInTime,
         checkOutTime: policiesForm.checkOutTime };
-      await updateChalet({ id: id as string, data: payload }).unwrap();
+      await updateChalet({ id: chaletId as string, data: payload }).unwrap();
       Toast.show({ type: 'success', text1: isRTL ? 'تم تحديث السياسات' : 'Policies updated' });
       policiesModalRef.current?.dismiss();
       refetch();
-    } catch (e) {
+    } catch {
       Toast.show({ type: 'error', text1: isRTL ? 'خطأ في التحديث' : 'Update failed' });
     }
   };
@@ -328,9 +331,9 @@ export default function ChaletDetailsScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await deleteChalet(id).unwrap();
+              await deleteChalet(chaletId as string).unwrap();
               router.replace('/(tabs)/(dashboard)/home');
-            } catch (err) {
+            } catch {
               Alert.alert(isRTL ? 'خطأ' : 'Error', isRTL ? 'فشل حذف الشاليه' : 'Failed to delete chalet');
             }
           }
@@ -346,9 +349,20 @@ export default function ChaletDetailsScreen() {
     }
   }, [chalet]);
 
-  const toggleStatus = (value: boolean) => {
+  const toggleStatus = async (value: boolean) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setIsActive(value);
+    try {
+      await updateChalet({ id: chaletId as string, data: { isActive: value } }).unwrap();
+      Toast.show({
+        type: 'success',
+        text1: value ? (isRTL ? 'الشاليه ظاهر للزبائن' : 'Chalet is visible') : (isRTL ? 'الشاليه مخفي حالياً' : 'Chalet is hidden'),
+      });
+      refetch();
+    } catch {
+      setIsActive(!value);
+      Toast.show({ type: 'error', text1: isRTL ? 'تعذر تغيير الحالة' : 'Status update failed' });
+    }
   };
 
   if (isLoading) {
@@ -372,12 +386,11 @@ export default function ChaletDetailsScreen() {
   const chaletName = isRTL ? (chalet.name?.ar || chalet.name) : (chalet.name?.en || chalet.name);
   const chaletLocation = isRTL ? (chalet.address?.ar || chalet.region?.name) : (chalet.address?.en || chalet.region?.enName);
   const chaletDescription = isRTL ? (chalet.description?.ar || chalet.description) : (chalet.description?.en || chalet.description);
-
-  // Fixed Header State - Image stays background, content slides UP over it.
-  const headerOpacity = scrollY.interpolate({
-    inputRange: [0, HERO_HEIGHT / 2],
-    outputRange: [1, 0],
-    extrapolate: 'clamp' });
+  const activeAmenities = chalet?.chaletFeatures || chalet?.chaletAmenities || [];
+  const coverImage = chalet?.images?.find((img: any) => img.isMain || img.isCover);
+  const totalBookings = chaletSummary.totalBookings ?? chalet?.bookingCount ?? 0;
+  const totalEarnings = chaletSummary.totalProviderEarnings ?? chaletSummary.totalRevenue ?? chalet?.revenue ?? 0;
+  const ratingValue = typeof chalet?.rating === 'string' ? parseFloat(chalet.rating) : (chalet?.rating || 0);
 
   const navBarOpacity = scrollY.interpolate({
     inputRange: [HERO_HEIGHT - 100, HERO_HEIGHT - 60],
@@ -470,7 +483,7 @@ export default function ChaletDetailsScreen() {
             disableIntervalMomentum={true}
           >
             {chalet.images && chalet.images.length > 0 ? (
-              chalet.images.map((img: any, index: number) => (
+              [coverImage, ...chalet.images.filter((img: any) => img.id !== coverImage?.id)].filter(Boolean).map((img: any, index: number) => (
                 <Image 
                   key={img.id || index}
                   source={getImageSrc(img.url)} 
@@ -543,6 +556,7 @@ export default function ChaletDetailsScreen() {
                 <Switch 
                   value={isActive} 
                   onValueChange={toggleStatus} 
+                  disabled={isUpdating}
                   trackColor={{ false: '#E2E8F0', true: Colors.primary }} 
                   thumbColor="#fff"
                 />
@@ -552,13 +566,37 @@ export default function ChaletDetailsScreen() {
               </View>
             </View>
 
+            {!chalet?.isApproved && (
+              <View style={[styles.noticeBox, { flexDirection: 'row' }]}>
+                <SolarShieldWarningBold size={20} color="#B45309" />
+                <Text style={[styles.noticeText, { textAlign: isRTL ? 'right' : 'left' }]}>
+                  {isRTL ? 'الشاليه بانتظار موافقة الإدارة. جهّز الصور والمعلومات حتى يظهر للزبائن بعد الموافقة.' : 'This chalet is waiting for admin approval. Complete photos and details so it is ready when approved.'}
+                </Text>
+              </View>
+            )}
+
+            <View style={[styles.quickActionsRow, { flexDirection: 'row' }]}>
+              <TouchableOpacity style={styles.quickAction} onPress={() => basicInfoModalRef.current?.present()}>
+                <SolarPenBold size={20} color={Colors.primary} />
+                <Text style={styles.quickActionText}>{isRTL ? 'المعلومات' : 'Info'}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.quickAction} onPress={() => imagesModalRef.current?.present()}>
+                <SolarGalleryBold size={20} color={Colors.primary} />
+                <Text style={styles.quickActionText}>{isRTL ? 'الصور' : 'Photos'}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.quickAction} onPress={() => router.push({ pathname: '/(tabs)/(dashboard)/shifts', params: { id: chalet?.id } })}>
+                <SolarClockCircleBold size={20} color={Colors.primary} />
+                <Text style={styles.quickActionText}>{isRTL ? 'الفترات' : 'Shifts'}</Text>
+              </TouchableOpacity>
+            </View>
+
             {/* Performance Stats */}
             <View style={[styles.statsRow, { flexDirection: 'row' }]}>
               <View style={styles.statItem}>
                 <View style={[styles.statIconWrap, { backgroundColor: '#EFF6FF' }]}>
                   <SolarBanknoteBold size={20} color={Colors.primary} />
                 </View>
-                <Text style={styles.statValue}>{chalet?.revenue || '0'}</Text>
+                <Text style={styles.statValue}>{isLoadingStats ? '...' : Number(totalEarnings || 0).toLocaleString()}</Text>
                 <Text style={styles.statLabel}>{isRTL ? 'الأرباح' : 'Revenue'}</Text>
               </View>
               <View style={styles.statDivider} />
@@ -566,7 +604,7 @@ export default function ChaletDetailsScreen() {
                 <View style={[styles.statIconWrap, { backgroundColor: '#ECFDF5' }]}>
                   <SolarCalendarBold size={20} color="#10B981" />
                 </View>
-                <Text style={styles.statValue}>{chalet?.reviewCount || 0}</Text>
+                <Text style={styles.statValue}>{isLoadingStats ? '...' : totalBookings}</Text>
                 <Text style={styles.statLabel}>{isRTL ? 'الحجوزات' : 'Bookings'}</Text>
               </View>
               <View style={styles.statDivider} />
@@ -574,7 +612,7 @@ export default function ChaletDetailsScreen() {
                 <View style={[styles.statIconWrap, { backgroundColor: '#FFF7ED' }]}>
                   <SolarStarBold size={20} color="#F97316" />
                 </View>
-                <Text style={styles.statValue}>{typeof chalet?.rating === 'string' ? parseFloat(chalet.rating).toFixed(1) : (chalet?.rating || 0)}</Text>
+                <Text style={styles.statValue}>{ratingValue.toFixed(1)}</Text>
                 <Text style={styles.statLabel}>{isRTL ? 'التقييم' : 'Rating'}</Text>
               </View>
             </View>
@@ -593,18 +631,20 @@ export default function ChaletDetailsScreen() {
             <View style={styles.sectionDivider} />
 
             {/* Chalet Amenities */}
-            {chalet?.chaletAmenities && chalet.chaletAmenities.length > 0 && (
+            {activeAmenities.length > 0 && (
               <View style={styles.infoSection}>
                 <View style={[styles.sectionHeaderRow, { flexDirection: 'row' }]}>
                   <Text style={styles.sectionTitle}>{isRTL ? 'المرافق المتاحة' : 'Amenities'}</Text>
                 </View>
                 <View style={[styles.amenitiesWrap, { flexDirection: 'row' }]}>
-                  {chalet.chaletAmenities.map((item: any) => (
+                  {activeAmenities.map((item: any) => {
+                    const feature = item.feature || item.amenity || item;
+                    return (
                     <View key={item.id} style={styles.amenityPill}>
-                      <Text style={styles.amenityEmoji}>{item.amenity?.icon || '✨'}</Text>
-                      <Text style={styles.amenityText}>{isRTL ? item.amenity?.name?.ar : item.amenity?.name?.en}</Text>
+                      <Text style={styles.amenityEmoji}>{feature.icon || '✨'}</Text>
+                      <Text style={styles.amenityText}>{isRTL ? feature.name?.ar : feature.name?.en}</Text>
                     </View>
-                  ))}
+                  )})}
                 </View>
               </View>
             )}
@@ -704,6 +744,12 @@ export default function ChaletDetailsScreen() {
                   style={styles.managementBtn}
                 />
                 <SecondaryButton
+                  label={isRTL ? 'السياسات والأوقات' : 'Policies & Times'}
+                  onPress={() => policiesModalRef.current?.present()}
+                  icon={<SolarShieldWarningBold size={22} color={Colors.primary} />}
+                  style={styles.managementBtn}
+                />
+                <SecondaryButton
                   label={isRTL ? 'تعديل الصور' : 'Edit Photos'}
                   onPress={() => imagesModalRef.current?.present()}
                   icon={<SolarGalleryBold size={22} color={Colors.primary} />}
@@ -735,8 +781,8 @@ export default function ChaletDetailsScreen() {
             </Text>
           </View>
           <PrimaryButton 
-            label={isRTL ? 'إضافة عرض خاص' : 'Add Special Offer'}
-            onPress={() => {}}
+            label={isRTL ? 'إدارة الأسعار' : 'Manage Pricing'}
+            onPress={() => router.push({ pathname: '/(tabs)/(dashboard)/shifts', params: { id: chalet?.id } })}
             style={styles.footerButtonOverride}
           />
         </SafeAreaView>
@@ -812,6 +858,27 @@ export default function ChaletDetailsScreen() {
               onChangeText={(val) => setBasicForm({ ...basicForm, addressEn: val })} 
             />
           </View>
+
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            <View style={[styles.modalInputGroup, { flex: 1 }]}>
+              <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'رقم الهاتف' : 'Phone'}</Text>
+              <BottomSheetTextInput
+                style={[styles.modalInput, { textAlign: isRTL ? 'right' : 'left' }]}
+                keyboardType="phone-pad"
+                value={basicForm.phone}
+                onChangeText={(val) => setBasicForm({ ...basicForm, phone: val })}
+              />
+            </View>
+            <View style={[styles.modalInputGroup, { flex: 1 }]}>
+              <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'واتساب' : 'WhatsApp'}</Text>
+              <BottomSheetTextInput
+                style={[styles.modalInput, { textAlign: isRTL ? 'right' : 'left' }]}
+                keyboardType="phone-pad"
+                value={basicForm.whatsapp}
+                onChangeText={(val) => setBasicForm({ ...basicForm, whatsapp: val })}
+              />
+            </View>
+          </View>
           
           <View style={styles.modalInputGroup}>
             <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'المدينة' : 'City'}</Text>
@@ -886,6 +953,16 @@ export default function ChaletDetailsScreen() {
               keyboardType="numeric" 
               value={basicForm.extraPersonPrice} 
               onChangeText={(val) => setBasicForm({ ...basicForm, extraPersonPrice: val })} 
+            />
+          </View>
+
+          <View style={styles.modalInputGroup}>
+            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'السعر الأساسي' : 'Base Price'}</Text>
+            <BottomSheetTextInput
+              style={[styles.modalInput, { textAlign: isRTL ? 'right' : 'left' }]}
+              keyboardType="numeric"
+              value={basicForm.basePrice}
+              onChangeText={(val) => setBasicForm({ ...basicForm, basePrice: val })}
             />
           </View>
 
@@ -972,11 +1049,11 @@ export default function ChaletDetailsScreen() {
                 <TouchableOpacity 
                   style={[
                     styles.coverIndicator, 
-                    img.isCover && { backgroundColor: Colors.primary }
+                    (img.isMain || img.isCover) && { backgroundColor: Colors.primary }
                   ]}
-                  onPress={() => !img.isCover && handleSetAsCover(img.id)}
+                  onPress={() => !(img.isMain || img.isCover) && handleSetAsCover(img.id)}
                 >
-                  {img.isCover ? (
+                  {(img.isMain || img.isCover) ? (
                     <SolarCheckCircleBold size={14} color="white" />
                   ) : (
                     <SolarStarBold size={14} color={Colors.text.muted} />
@@ -1004,6 +1081,10 @@ export default function ChaletDetailsScreen() {
             <TouchableOpacity style={styles.addPhotosBtn} onPress={pickImage}>
               <SolarCameraAddBold size={30} color={Colors.text.muted} />
               <Text style={styles.addPhotosText}>{isRTL ? 'إضافة' : 'Add'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.addPhotosBtn} onPress={takePhoto}>
+              <SolarCameraAddBold size={30} color={Colors.text.muted} />
+              <Text style={styles.addPhotosText}>{isRTL ? 'كاميرا' : 'Camera'}</Text>
             </TouchableOpacity>
           </View>
 
@@ -1157,6 +1238,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F1F5F9',
     minHeight: SCREEN_HEIGHT - 100 },
+  contentBody: {
+    paddingTop: 24,
+    paddingBottom: 16 },
+  titleSection: {
+    paddingHorizontal: 20,
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginBottom: 16 },
   fixedHeaderActions: {
     position: 'absolute',
     top: 0,
@@ -1224,6 +1314,41 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(10),
     fontFamily: "Alexandria-Black",
     textTransform: 'uppercase' },
+  noticeBox: {
+    marginHorizontal: 20,
+    marginBottom: 16,
+    padding: 14,
+    borderRadius: 12,
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    alignItems: 'flex-start',
+    gap: 10 },
+  noticeText: {
+    flex: 1,
+    fontSize: normalize.font(12),
+    lineHeight: 20,
+    color: '#92400E',
+    fontFamily: "Alexandria-Medium" },
+  quickActionsRow: {
+    paddingHorizontal: 20,
+    gap: 10,
+    marginBottom: 18 },
+  quickAction: {
+    flex: 1,
+    minHeight: 72,
+    borderRadius: 12,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8 },
+  quickActionText: {
+    fontSize: normalize.font(12),
+    color: Colors.text.primary,
+    fontFamily: "Alexandria-Bold",
+    textAlign: 'center' },
   statsRow: {
     backgroundColor: Colors.white,
     paddingVertical: 14,
