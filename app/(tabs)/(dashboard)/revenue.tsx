@@ -40,6 +40,7 @@ const getPeriodRange = (period: string) => {
     from.setDate(now.getDate() - 6);
   } else if (period === 'year') {
     from.setFullYear(now.getFullYear(), 0, 1);
+    from.setDate(1);
     from.setHours(0, 0, 0, 0);
   } else {
     from.setDate(1);
@@ -79,8 +80,9 @@ export default function RevenueScreen() {
   const statLabels = PERIOD_LABELS[selectedPeriod] || PERIOD_LABELS.month;
   const statsQueryParams = useMemo(() => ({
     ...periodRange,
+    period: selectedPeriod,
     chaletId: selectedChalet?.id,
-  }), [periodRange, selectedChalet?.id]);
+  }), [periodRange, selectedPeriod, selectedChalet?.id]);
 
   // API hooks
   const { data: payoutsResponse, isLoading: isLoadingPayouts, refetch: refetchPayouts } = useGetPayoutsQuery({ 
@@ -99,7 +101,12 @@ export default function RevenueScreen() {
 
   const payouts = payoutsResponse?.data || payoutsResponse || [];
   const profile = profileResponse?.data || profileResponse;
-  const stats = statsData || { periodBookings: 0, periodRevenue: 0, occupancyRate: 0 };
+  const statsResponse = statsData?.data || statsData || {};
+  const stats = {
+    periodBookings: statsResponse.periodBookings ?? statsResponse.monthBookings ?? statsResponse.summary?.totalBookings ?? 0,
+    periodRevenue: statsResponse.periodRevenue ?? statsResponse.monthRevenue ?? statsResponse.summary?.totalProviderEarnings ?? 0,
+    occupancyRate: statsResponse.occupancyRate ?? 0,
+  };
 
   // Bottom sheet
   const withdrawSheetRef = useRef<BottomSheetModal>(null);
@@ -218,14 +225,14 @@ export default function RevenueScreen() {
             <View style={[styles.statIconWrap, { backgroundColor: '#EFF6FF' }]}>  
               <SolarCalendarBold size={20} color={Colors.primary} />
             </View>
-            <Text style={styles.statValue}>{isLoadingStats ? '...' : stats.periodBookings ?? stats.monthBookings ?? 0}</Text>
+            <Text style={styles.statValue}>{isLoadingStats ? '...' : stats.periodBookings}</Text>
             <Text style={styles.statLabel}>{isRTL ? statLabels.bookings.ar : statLabels.bookings.en}</Text>
           </View>
           <View style={styles.statCard}>
             <View style={[styles.statIconWrap, { backgroundColor: '#ECFDF5' }]}>
               <SolarBanknoteBold size={20} color="#10B981" />
             </View>
-            <Text style={styles.statValue}>{isLoadingStats ? '...' : (stats.periodRevenue ?? stats.monthRevenue ?? 0)?.toLocaleString()}</Text>
+            <Text style={styles.statValue}>{isLoadingStats ? '...' : stats.periodRevenue.toLocaleString()}</Text>
             <Text style={styles.statLabel}>{isRTL ? statLabels.income.ar : statLabels.income.en}</Text>
           </View>
           <View style={styles.statCard}>
