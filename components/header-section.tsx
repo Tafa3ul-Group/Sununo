@@ -106,48 +106,37 @@ export function HeaderSection({
             marginBottom },
         ]}
       >
-        {/* START SIDE - right in RTL, left in LTR */}
+        {/* LEFT SIDE - in LTR this is Back/Extra, in RTL this is Logo */}
         <View
           style={[
             styles.headerSide,
+            { alignItems: isRTL ? 'flex-end' : 'flex-start' }
           ]}
         >
-          {isHome ? (
-            <View
-              style={[
-                styles.homeLeftGroup,
-              ]}
-            >
-              {stateUserType !== "guest" && (
-                <TouchableOpacity
-                  onPress={() => router.push("/(customer)/notifications")}
-                  style={styles.avatarContainerHome}
-                >
-                  <SolarBellBingBoldDuotone
-                    size={normalize.width(28)}
-                    color={Colors.primary}
-                  />
-                </TouchableOpacity>
-              )}
-
-              <TouchableOpacity
-                onPress={() => router.push("/(customer)/search")}
-                style={styles.searchPillHome}
-              >
-                <SolarMagnifierBold
-                  size={normalize.width(24)}
-                  color={Colors.primary}
+          {isRTL ? (
+            showLogo && (
+              <View style={isHome ? styles.logoCircleHome : styles.logoCircle}>
+                <Image
+                  source={require("@/assets/arlogo.svg")}
+                  style={isHome ? styles.logoImgHome : styles.logoImg}
+                  contentFit="contain"
                 />
-              </TouchableOpacity>
-            </View>
+              </View>
+            )
           ) : (
-            <View
-              style={[
-                styles.homeLeftGroup,
-              ]}
-            >
-              {showBackButton && <CircleBackButton onPress={onBackPress} />}
-              {extraIcon === "search" && (
+            isHome ? (
+              <View style={styles.homeLeftGroup}>
+                {stateUserType !== "guest" && (
+                  <TouchableOpacity
+                    onPress={() => router.push("/(customer)/notifications")}
+                    style={styles.avatarContainerHome}
+                  >
+                    <SolarBellBingBoldDuotone
+                      size={normalize.width(28)}
+                      color={Colors.primary}
+                    />
+                  </TouchableOpacity>
+                )}
                 <TouchableOpacity
                   onPress={() => router.push("/(customer)/search")}
                   style={styles.searchPillHome}
@@ -157,12 +146,27 @@ export function HeaderSection({
                     color={Colors.primary}
                   />
                 </TouchableOpacity>
-              )}
-            </View>
+              </View>
+            ) : (
+              <View style={styles.homeLeftGroup}>
+                {showBackButton && <CircleBackButton onPress={onBackPress} />}
+                {extraIcon === "search" && (
+                  <TouchableOpacity
+                    onPress={() => router.push("/(customer)/search")}
+                    style={styles.searchPillHome}
+                  >
+                    <SolarMagnifierBold
+                      size={normalize.width(24)}
+                      color={Colors.primary}
+                    />
+                  </TouchableOpacity>
+                )}
+              </View>
+            )
           )}
         </View>
 
-        {/* Center Title - only when not home */}
+        {/* Center Title */}
         {!isHome && (
           <View style={styles.titleWrapper}>
             <ThemedText style={styles.headerTitle}>
@@ -171,48 +175,63 @@ export function HeaderSection({
           </View>
         )}
 
-        {/* END SIDE - left in RTL, right in LTR */}
+        {/* RIGHT SIDE - in LTR this is Logo, in RTL this is Back/Extra */}
         <View
           style={[
             styles.headerSide,
-            { alignItems: 'flex-end' },
+            { alignItems: isRTL ? 'flex-start' : 'flex-end' },
           ]}
         >
-          {showLogo && (
-            <View style={isHome ? styles.logoCircleHome : styles.logoCircle}>
-              <Image
-                source={
-                  isRTL
-                    ? require("@/assets/arlogo.svg")
-                    : require("@/assets/logo.svg")
-                }
-                style={isHome ? styles.logoImgHome : styles.logoImg}
-                contentFit="contain"
-              />
-            </View>
-          )}
-
-          {/* Supporting extra actions for non-home pages */}
-          {!isHome && (showProfile || showExtra) && (
-            <View
-              style={{
-                flexDirection: 'row',
-                gap: 8,
-                position: "absolute",
-                end: 0 }}
-            >
-              {showProfile && stateUserType !== "guest" && (
+          {isRTL ? (
+            isHome ? (
+              <View style={styles.homeLeftGroup}>
                 <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={() => router.push("/(customer)/notifications")}
+                  onPress={() => router.push("/(customer)/search")}
+                  style={styles.searchPillHome}
                 >
-                  <SolarBellBingBoldDuotone
-                    size={normalize.width(28)}
-                    color={Colors.text.primary}
+                  <SolarMagnifierBold
+                    size={normalize.width(24)}
+                    color={Colors.primary}
                   />
                 </TouchableOpacity>
-              )}
-            </View>
+                {stateUserType !== "guest" && (
+                  <TouchableOpacity
+                    onPress={() => router.push("/(customer)/notifications")}
+                    style={styles.avatarContainerHome}
+                  >
+                    <SolarBellBingBoldDuotone
+                      size={normalize.width(28)}
+                      color={Colors.primary}
+                    />
+                  </TouchableOpacity>
+                )}
+              </View>
+            ) : (
+              <View style={styles.homeLeftGroup}>
+                 {extraIcon === "search" && (
+                  <TouchableOpacity
+                    onPress={() => router.push("/(customer)/search")}
+                    style={styles.searchPillHome}
+                  >
+                    <SolarMagnifierBold
+                      size={normalize.width(24)}
+                      color={Colors.primary}
+                    />
+                  </TouchableOpacity>
+                )}
+                {showBackButton && <CircleBackButton onPress={onBackPress} />}
+              </View>
+            )
+          ) : (
+            showLogo && (
+              <View style={isHome ? styles.logoCircleHome : styles.logoCircle}>
+                <Image
+                  source={require("@/assets/logo.svg")}
+                  style={isHome ? styles.logoImgHome : styles.logoImg}
+                  contentFit="contain"
+                />
+              </View>
+            )
           )}
         </View>
       </View>

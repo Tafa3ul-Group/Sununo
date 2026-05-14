@@ -11,6 +11,7 @@ import {
 import { ThemedText } from '@/components/themed-text';
 import { LanguageSheet } from '@/components/user/language-sheet';
 import { WalletCard } from '@/components/user/wallet-card';
+import { HeaderSection } from '@/components/header-section';
 import { normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
 import { RootState } from '@/store';
@@ -125,10 +126,11 @@ export default function CustomerProfileScreen() {
 
     return (
         <View style={[styles.container, { paddingTop: insets.top, direction: isRTL ? 'rtl' : 'ltr' }]}>
-            {/* Header */}
-            <View style={styles.header}>
-                <ThemedText style={styles.headerTitle}>{t('headers.profile')}</ThemedText>
-            </View>
+            <HeaderSection
+                title={isRTL ? 'تعديل الملف الشخصي' : 'Edit Profile'}
+                showBackButton
+                onBackPress={() => router.back()}
+            />
 
             <ScrollView
                 contentContainerStyle={styles.scrollContent}
@@ -140,27 +142,51 @@ export default function CustomerProfileScreen() {
                     onPress={() => router.push('/profile-edit')}
                     activeOpacity={0.9}
                 >
-                    <ProfileShape size={normalize.width(44)} type="green">
-                        <SolarPenBold size={16} color="white" />
-                    </ProfileShape>
-
-                    <View style={[styles.userInfo, { alignItems: 'flex-start' }]}>
-                        <Text style={[styles.userName, { textAlign: 'left' }]}>
-                            {userData?.name || (isRTL ? 'المستخدم' : 'User')}
-                        </Text>
-                        {!!userData?.phone && (
-                            <Text style={[styles.userPhone, { textAlign: 'left', direction: 'ltr' }]}>
-                                {userData.phone}
-                            </Text>
-                        )}
-                    </View>
-
-                    <View style={styles.avatarWrap}>
-                        <Image
-                            source={getImageSrc(userData?.image || userData?.imageUrl)}
-                            style={styles.avatarImg}
-                        />
-                    </View>
+                    {isRTL ? (
+                        <>
+                            <View style={styles.avatarWrap}>
+                                <Image
+                                    source={getImageSrc(userData?.image || userData?.imageUrl)}
+                                    style={styles.avatarImg}
+                                />
+                            </View>
+                            <View style={[styles.userInfo, { alignItems: 'flex-end' }]}>
+                                <Text style={[styles.userName, { textAlign: 'right' }]}>
+                                    {userData?.name || 'المستخدم'}
+                                </Text>
+                                {!!userData?.phone && (
+                                    <Text style={[styles.userPhone, { textAlign: 'right', direction: 'ltr' }]}>
+                                        {userData.phone}
+                                    </Text>
+                                )}
+                            </View>
+                            <ProfileShape size={normalize.width(44)} type="green">
+                                <SolarPenBold size={16} color="white" />
+                            </ProfileShape>
+                        </>
+                    ) : (
+                        <>
+                            <ProfileShape size={normalize.width(44)} type="green">
+                                <SolarPenBold size={16} color="white" />
+                            </ProfileShape>
+                            <View style={[styles.userInfo, { alignItems: 'flex-start' }]}>
+                                <Text style={[styles.userName, { textAlign: 'left' }]}>
+                                    {userData?.name || 'User'}
+                                </Text>
+                                {!!userData?.phone && (
+                                    <Text style={[styles.userPhone, { textAlign: 'left', direction: 'ltr' }]}>
+                                        {userData.phone}
+                                    </Text>
+                                )}
+                            </View>
+                            <View style={styles.avatarWrap}>
+                                <Image
+                                    source={getImageSrc(userData?.image || userData?.imageUrl)}
+                                    style={styles.avatarImg}
+                                />
+                            </View>
+                        </>
+                    )}
                 </TouchableOpacity>
 
                 {/* Wallet Card */}
@@ -174,7 +200,7 @@ export default function CustomerProfileScreen() {
                     {menuItems.map((item) => (
                         <TouchableOpacity
                             key={item.id}
-                            style={[styles.menuRow]}
+                            style={styles.menuRow}
                             onPress={() => {
                                 if (item.action) {
                                     item.action();
@@ -184,18 +210,41 @@ export default function CustomerProfileScreen() {
                             }}
                             activeOpacity={0.7}
                         >
-                            <Text
-                                style={[
-                                    styles.menuLabelText,
-                                    { textAlign: 'left' },
-                                    item.id === 'logout' && styles.logoutText,
-                                ]}
-                            >
-                                {item.title}
-                            </Text>
-                            <ProfileShape size={normalize.width(42)} type={item.shape}>
-                                {item.icon}
-                            </ProfileShape>
+                            {isRTL ? (
+                                <>
+                                    <ProfileShape size={normalize.width(42)} type={item.shape}>
+                                        {item.icon}
+                                    </ProfileShape>
+                                    <View style={{ flex: 1 }}>
+                                        <Text
+                                            style={[
+                                                styles.menuLabelText,
+                                                { textAlign: 'right' },
+                                                item.id === 'logout' && styles.logoutText,
+                                            ]}
+                                        >
+                                            {item.title}
+                                        </Text>
+                                    </View>
+                                </>
+                            ) : (
+                                <>
+                                    <ProfileShape size={normalize.width(42)} type={item.shape}>
+                                        {item.icon}
+                                    </ProfileShape>
+                                    <View style={{ flex: 1 }}>
+                                        <Text
+                                            style={[
+                                                styles.menuLabelText,
+                                                { textAlign: 'left' },
+                                                item.id === 'logout' && styles.logoutText,
+                                            ]}
+                                        >
+                                            {item.title}
+                                        </Text>
+                                    </View>
+                                </>
+                            )}
                         </TouchableOpacity>
                     ))}
                 </View>
@@ -232,7 +281,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#FFFFFF',
         borderRadius: normalize.radius(24),
-        padding: normalize.width(16),
+        paddingHorizontal: normalize.width(16),
+        paddingTop: normalize.height(18),
+        paddingBottom: normalize.height(30),
         marginBottom: normalize.height(16),
         borderWidth: 1,
         borderColor: '#F3F4F6' },

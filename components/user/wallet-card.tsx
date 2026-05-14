@@ -1,10 +1,10 @@
 import { ThemedText } from "@/components/themed-text";
 import { normalize } from "@/constants/theme";
+import { isRTL } from "@/i18n";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
 import Svg, { ClipPath, Defs, G, Path, Rect } from "react-native-svg";
-import { isRTL } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -15,9 +15,10 @@ interface WalletCardProps {
 
 export const WalletCard = ({
   balance = "100,000",
-  onWithdraw }: WalletCardProps) => {
+  onWithdraw,
+}: WalletCardProps) => {
   const { t, i18n } = useTranslation();
-    return (
+  return (
     <View style={styles.container}>
       {/* SVG Background - Mirrored for LTR to keep focal points consistent */}
       <View
@@ -76,12 +77,7 @@ export const WalletCard = ({
 
       {/* Content Overlay */}
       <View style={styles.contentOverlay}>
-        <View
-          style={[
-            styles.topRow,
-            { alignItems: 'flex-start' },
-          ]}
-        >
+        <View style={[styles.topRow, { alignItems: "flex-start" }]}>
           <ThemedText
             style={[
               styles.balanceLabel,
@@ -92,36 +88,44 @@ export const WalletCard = ({
           </ThemedText>
         </View>
 
-        <View
-          style={[
-            styles.bottomRow,
-            { flexDirection: 'row-reverse' },
-          ]}
-        >
-          <View
-            style={[
-              styles.balanceContainer,
-              { flexDirection: 'row' },
-            ]}
-          >
-            <ThemedText style={styles.balanceValue}>{balance}</ThemedText>
-            <ThemedText style={styles.currencyText}>
-              {t("common.iqd")}
-            </ThemedText>
-          </View>
-
-          <TouchableOpacity
-            style={[
-              styles.withdrawButton,
-              { [isRTL ? "paddingLeft" : "paddingRight"]: normalize.width(60) },
-            ]}
-            onPress={onWithdraw}
-            activeOpacity={0.8}
-          >
-            <ThemedText style={styles.withdrawText}>
-              {t("profile.wallet.withdraw")}
-            </ThemedText>
-          </TouchableOpacity>
+        <View style={[styles.bottomRow, { flexDirection: "row" }]}>
+          {isRTL ? (
+            <>
+              <TouchableOpacity
+                style={styles.withdrawButton}
+                onPress={onWithdraw}
+                activeOpacity={0.8}
+              >
+                <ThemedText style={styles.withdrawText}>
+                  {t("profile.wallet.withdraw")}
+                </ThemedText>
+              </TouchableOpacity>
+              <View style={[styles.balanceContainer, { flexDirection: "row" }]}>
+                <ThemedText style={styles.balanceValue}>{balance}</ThemedText>
+                <ThemedText style={styles.currencyText}>
+                  {t("common.iqd")}
+                </ThemedText>
+              </View>
+            </>
+          ) : (
+            <>
+              <View style={[styles.balanceContainer, { flexDirection: "row" }]}>
+                <ThemedText style={styles.balanceValue}>{balance}</ThemedText>
+                <ThemedText style={styles.currencyText}>
+                  {t("common.iqd")}
+                </ThemedText>
+              </View>
+              <TouchableOpacity
+                style={styles.withdrawButton}
+                onPress={onWithdraw}
+                activeOpacity={0.8}
+              >
+                <ThemedText style={styles.withdrawText}>
+                  {t("profile.wallet.withdraw")}
+                </ThemedText>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
       </View>
     </View>
@@ -134,43 +138,55 @@ const styles = StyleSheet.create({
     height: normalize.height(145),
     alignSelf: "center",
     marginVertical: normalize.height(4),
-    overflow: "hidden" },
+    overflow: "hidden",
+  },
   svgWrapper: {
-    ...StyleSheet.absoluteFillObject },
+    ...StyleSheet.absoluteFillObject,
+  },
   contentOverlay: {
     flex: 1,
     paddingHorizontal: normalize.width(25),
-    paddingTop: normalize.height(25),
-    paddingBottom: normalize.height(35),
-    justifyContent: "space-between" },
+    paddingTop: normalize.height(18),
+    paddingBottom: normalize.height(30),
+    justifyContent: "space-between",
+  },
   topRow: {
-    alignItems: "flex-end" },
+    alignItems: "flex-end",
+  },
   balanceLabel: {
     color: "white",
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Black" },
+    fontFamily: "Alexandria-Black",
+  },
   bottomRow: {
     alignItems: "flex-end",
-    justifyContent: "space-between" },
+    justifyContent: "space-between",
+  },
   balanceContainer: {
     alignItems: "baseline",
-    gap: normalize.width(6) },
+    gap: normalize.width(6),
+  },
   balanceValue: {
     color: "white",
     fontSize: normalize.font(28),
     fontFamily: "Alexandria-Black",
     lineHeight: normalize.font(36),
-    paddingVertical: normalize.height(4) },
+    paddingVertical: normalize.height(4),
+  },
   currencyText: {
     color: "white",
     fontSize: normalize.font(18),
-    fontFamily: "Alexandria-Bold" },
+    fontFamily: "Alexandria-Bold",
+  },
   withdrawButton: {
     width: normalize.width(120),
     height: normalize.height(20),
     justifyContent: "center",
-    alignItems: "center" },
+    alignItems: "center",
+  },
   withdrawText: {
     color: "white",
     fontSize: normalize.font(20),
-    fontFamily: "Alexandria-Black" } });
+    fontFamily: "Alexandria-Black",
+  },
+});

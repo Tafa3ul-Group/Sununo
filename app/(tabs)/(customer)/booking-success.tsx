@@ -47,7 +47,7 @@ export default function BookingSuccessDetailsScreen() {
   }, [booking, isRTL, t]);
 
   const renderInfoRow = (label: string, value: string | React.ReactNode) => (
-    <View style={[styles.infoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+    <View style={[styles.infoRow, { flexDirection: 'row' }]}>
         <ThemedText style={[styles.infoLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{label}</ThemedText>
         <View style={{ flex: 1, alignItems: isRTL ? 'flex-start' : 'flex-end' }}>
           {typeof value === 'string' ? (
@@ -115,8 +115,10 @@ export default function BookingSuccessDetailsScreen() {
             
             <View style={[styles.infoRow, { flexDirection: 'row' }]}>
                 <ThemedText style={styles.infoLabel}>{t('booking.bookingStatus')}</ThemedText>
-                <View style={styles.statusBadgeBlue}>
-                    <ThemedText style={styles.statusBadgeTextBlue}>{t('booking.status.accepted')}</ThemedText>
+                <View style={[isRTL ? { marginRight: 'auto' } : { marginLeft: 'auto' }]}>
+                    <View style={styles.statusBadgeBlue}>
+                        <ThemedText style={styles.statusBadgeTextBlue}>{t('booking.status.accepted')}</ThemedText>
+                    </View>
                 </View>
             </View>
 
@@ -133,10 +135,12 @@ export default function BookingSuccessDetailsScreen() {
             
             <View style={[styles.infoRow, { flexDirection: 'row' }]}>
                 <ThemedText style={styles.infoLabel}>{t('booking.paymentStatus')}</ThemedText>
-                <View style={styles.statusBadgeGray}>
-                    <ThemedText style={styles.statusBadgeTextGray}>
-                      {booking?.paymentStatus === 'paid' ? t('booking.status.paid') : t('booking.status.deferred')}
-                    </ThemedText>
+                <View style={[isRTL ? { marginRight: 'auto' } : { marginLeft: 'auto' }]}>
+                  <View style={booking?.paymentStatus === 'paid' ? styles.statusBadgeBlue : styles.statusBadgeGray}>
+                      <ThemedText style={booking?.paymentStatus === 'paid' ? styles.statusBadgeTextBlue : styles.statusBadgeTextGray}>
+                        {booking?.paymentStatus === 'paid' ? t('booking.status.paid') : t('booking.status.deferred')}
+                      </ThemedText>
+                  </View>
                 </View>
             </View>
 
