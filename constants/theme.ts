@@ -94,58 +94,58 @@ interface TypeStyle {
 
 export const Typography: Record<string, TypeStyle> = {
   h1: {
-    fontSize: normalize.font(26),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Bold",
-    color: Colors.light.text,
-    lineHeight: normalize.font(36),
-  },
-  h2: {
-    fontSize: normalize.font(18),
-    fontFamily: "Alexandria-Bold",
-    color: Colors.light.text,
-    lineHeight: normalize.font(26),
-  },
-  body: {
-    fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Regular",
     color: Colors.light.text,
     lineHeight: normalize.font(20),
   },
-  subtitle: {
-    fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Regular",
-    color: Colors.light.icon,
-    lineHeight: normalize.font(18),
+  h2: {
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Bold",
+    color: Colors.light.text,
+    lineHeight: normalize.font(20),
   },
-  caption: {
-    fontSize: normalize.font(11),
-    fontFamily: "Alexandria-Medium",
+  body: {
+    fontSize: normalize.font(10),
+    fontFamily: "Alexandria-Regular",
+    color: Colors.light.text,
+    lineHeight: normalize.font(16),
+  },
+  subtitle: {
+    fontSize: normalize.font(10),
+    fontFamily: "Alexandria-Regular",
     color: Colors.light.icon,
     lineHeight: normalize.font(16),
   },
+  caption: {
+    fontSize: normalize.font(10),
+    fontFamily: "Alexandria-Medium",
+    color: Colors.light.icon,
+    lineHeight: normalize.font(14),
+  },
   price: {
-    fontSize: normalize.font(17),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Bold",
     color: Colors.light.primary,
-    lineHeight: normalize.font(24),
+    lineHeight: normalize.font(20),
   },
   rating: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(10),
+    fontFamily: "Alexandria-Bold",
+    color: Colors.light.text,
+    lineHeight: normalize.font(16),
+  },
+  title: {
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Bold",
     color: Colors.light.text,
     lineHeight: normalize.font(20),
   },
-  title: {
-    fontSize: normalize.font(20),
-    fontFamily: "Alexandria-Bold",
-    color: Colors.light.text,
-    lineHeight: normalize.font(28),
-  },
   description: {
-    fontSize: normalize.font(14),
+    fontSize: normalize.font(10),
     fontFamily: "Alexandria-Regular",
     color: Colors.light.text,
-    lineHeight: normalize.font(22),
+    lineHeight: normalize.font(16),
   },
 };
 
