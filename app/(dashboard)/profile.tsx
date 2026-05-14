@@ -227,16 +227,16 @@ export default function ProviderProfileScreen() {
   ];
 
   return (
-    <View style={[styles.container]}>
+    <View style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       {/* Profile Header & User Card */}
       <View style={styles.topSection}>
         <TouchableOpacity
-          style={[styles.userCard, { flexDirection: 'row-reverse' }]}
+          style={[styles.userCard]}
           onPress={openEditProfileSheet}
           activeOpacity={0.9}
         >
-          <View style={styles.userInfo}>
-            <Text style={[styles.userName, { textAlign: isRTL ? 'right' : 'left' }]}>
+          <View style={[styles.userInfo, { alignItems: 'flex-start' }]}>
+            <Text style={[styles.userName, { textAlign: 'left' }]}>
               {user?.name || profile?.business_name || t('tabs.home')}
             </Text>
           </View>
@@ -271,7 +271,7 @@ export default function ProviderProfileScreen() {
           {menuItems.map((item) => (
             <TouchableOpacity
               key={item.id}
-              style={[styles.menuRow, { flexDirection: 'row-reverse' }]}
+              style={[styles.menuRow]}
               onPress={() => {
                 if (item.action) {
                   item.action();
@@ -281,7 +281,7 @@ export default function ProviderProfileScreen() {
               }}
               activeOpacity={0.7}
             >
-              <Text style={[styles.menuLabelText, { textAlign: isRTL ? 'right' : 'left' }]}>{item.title}</Text>
+              <Text style={[styles.menuLabelText, { textAlign: 'left' }]}>{item.title}</Text>
               <ProfileShape size={normalize.width(42)} type={item.shape}>
                 {item.icon}
               </ProfileShape>
@@ -328,10 +328,10 @@ export default function ProviderProfileScreen() {
 
             <View style={styles.formSection}>
               <View style={styles.fieldContainer}>
-                <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'الاسم الكامل' : 'Full Name'}</ThemedText>
-                <View style={[styles.inputWrapper, { flexDirection: 'row-reverse' }]}>
+                <ThemedText style={[styles.label, { textAlign: 'left' }]}>{isRTL ? 'الاسم الكامل' : 'Full Name'}</ThemedText>
+                <View style={[styles.inputWrapper]}>
                   <TextInput
-                    style={[styles.input, { textAlign: isRTL ? 'right' : 'left' }]}
+                    style={[styles.input, { textAlign: 'left' }]}
                     value={formData.name}
                     onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
                     placeholder={isRTL ? 'أدخل اسمك' : 'Enter your name'}
@@ -342,9 +342,9 @@ export default function ProviderProfileScreen() {
               </View>
 
               <View style={styles.fieldContainer}>
-                <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'رقم الهاتف' : 'Phone Number'}</ThemedText>
-                <View style={[styles.inputWrapper, styles.disabledInputWrapper, { flexDirection: 'row-reverse' }]}>
-                  <ThemedText style={[styles.input, { textAlign: isRTL ? 'right' : 'left', paddingTop: 14 }]}>
+                <ThemedText style={[styles.label, { textAlign: 'left' }]}>{isRTL ? 'رقم الهاتف' : 'Phone Number'}</ThemedText>
+                <View style={[styles.inputWrapper, styles.disabledInputWrapper]}>
+                  <ThemedText style={[styles.input, { textAlign: 'left', paddingTop: 14, direction: 'ltr' }]}>
                     {user?.phone || ''}
                   </ThemedText>
                   <SolarPhoneBold size={20} color={Colors.text.muted} />
@@ -352,8 +352,8 @@ export default function ProviderProfileScreen() {
               </View>
 
               <View style={styles.fieldContainer}>
-                <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'الجنس' : 'Gender'}</ThemedText>
-                <View style={[styles.genderContainer, { flexDirection: 'row-reverse' }]}>
+                <ThemedText style={[styles.label, { textAlign: 'left' }]}>{isRTL ? 'الجنس' : 'Gender'}</ThemedText>
+                <View style={[styles.genderContainer]}>
                   <TouchableOpacity
                     style={[styles.genderOption, formData.gender === 'male' && styles.genderOptionActive, { flex: 1 }]}
                     onPress={() => setFormData(prev => ({ ...prev, gender: 'male' }))}
@@ -370,12 +370,12 @@ export default function ProviderProfileScreen() {
               </View>
 
               <View style={styles.fieldContainer}>
-                <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'تاريخ الميلاد' : 'Birthday'}</ThemedText>
+                <ThemedText style={[styles.label, { textAlign: 'left' }]}>{isRTL ? 'تاريخ الميلاد' : 'Birthday'}</ThemedText>
                 <TouchableOpacity
-                  style={[styles.inputWrapper, { flexDirection: 'row-reverse' }]}
+                  style={[styles.inputWrapper]}
                   onPress={() => setShowDatePicker(true)}
                 >
-                  <ThemedText style={[styles.input, { textAlign: isRTL ? 'right' : 'left', paddingTop: 14 }]}>
+                  <ThemedText style={[styles.input, { textAlign: 'left', paddingTop: 14 }]}>
                     {formData.birthday.toLocaleDateString(isRTL ? 'ar-EG' : 'en-US')}
                   </ThemedText>
                   <SolarCalendarBold size={20} color={Colors.text.muted} />
@@ -395,12 +395,12 @@ export default function ProviderProfileScreen() {
               </View>
 
               <View style={styles.fieldContainer}>
-                <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'المدينة' : 'City'}</ThemedText>
+                <ThemedText style={[styles.label, { textAlign: 'left' }]}>{isRTL ? 'المدينة' : 'City'}</ThemedText>
                 <TouchableOpacity
-                  style={[styles.inputWrapper, { flexDirection: 'row-reverse' }]}
+                  style={[styles.inputWrapper]}
                   onPress={() => citySheetRef.current?.present()}
                 >
-                  <ThemedText style={[styles.input, { textAlign: isRTL ? 'right' : 'left', paddingTop: 14 }]}>
+                  <ThemedText style={[styles.input, { textAlign: 'left', paddingTop: 14 }]}>
                     {selectedCityName || (isRTL ? 'اختر المدينة' : 'Select City')}
                   </ThemedText>
                   <SolarMapPointBold size={20} color={Colors.text.muted} />
@@ -445,7 +445,7 @@ export default function ProviderProfileScreen() {
             }
             renderItem={({ item }: { item: any }) => (
               <TouchableOpacity
-                style={[styles.cityItem, { flexDirection: 'row-reverse' }]}
+                style={[styles.cityItem]}
                 onPress={() => {
                   setFormData(prev => ({ ...prev, cityId: item.id }));
                   citySheetRef.current?.dismiss();
