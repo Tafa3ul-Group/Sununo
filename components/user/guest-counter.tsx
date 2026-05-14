@@ -24,18 +24,18 @@ export const GuestCounter: React.FC<GuestCounterProps> = ({
 
   return (
     <View style={[styles.container, { flexDirection: 'row' }, style]}>
-      {/* First Button (Right in RTL, Left in LTR) - Now Minus for RTL */}
+      {/* Child 1: Minus in RTL, Plus in LTR */}
       <TouchableOpacity
-        onPress={onDecrement}
+        onPress={isRTL ? onDecrement : onIncrement}
         activeOpacity={0.8}
-        style={[styles.buttonWrapper, isRTL && styles.mirror, { width: btnSize, height: btnSize }]}
+        style={[styles.buttonWrapper, isRTL ? styles.mirror : undefined, { width: btnSize, height: btnSize }]}
       >
         <Svg width={btnSize} height={btnSize} viewBox="0 0 29 29" fill="none">
           <Path d="M0 14.5C0 6.49187 6.49187 0 14.5 0H25.375C27.377 0 29 1.62297 29 3.625V25.375C29 27.377 27.377 29 25.375 29H14.5C6.49187 29 0 22.5081 0 14.5Z" fill="#F64200" />
         </Svg>
         <View style={styles.iconOverlay}>
             <View style={styles.iconCircle}>
-                <SolarMinusBold size={14} color="white" />
+                {isRTL ? <SolarMinusBold size={14} color="white" /> : <SolarAddBold size={14} color="white" />}
             </View>
         </View>
       </TouchableOpacity>
@@ -45,18 +45,18 @@ export const GuestCounter: React.FC<GuestCounterProps> = ({
         <ThemedText style={styles.valueText}>{value}</ThemedText>
       </View>
 
-      {/* Last Button (Left in RTL, Right in LTR) - Now Plus for RTL */}
+      {/* Child 3: Plus in RTL, Minus in LTR */}
       <TouchableOpacity
-        onPress={onIncrement}
+        onPress={isRTL ? onIncrement : onDecrement}
         activeOpacity={0.8}
-        style={[styles.buttonWrapper, !isRTL && styles.mirror, { width: btnSize, height: btnSize }]}
+        style={[styles.buttonWrapper, !isRTL ? styles.mirror : undefined, { width: btnSize, height: btnSize }]}
       >
         <Svg width={btnSize} height={btnSize} viewBox="0 0 29 29" fill="none">
           <Path d="M0 14.5C0 6.49187 6.49187 0 14.5 0H25.375C27.377 0 29 1.62297 29 3.625V25.375C29 27.377 27.377 29 25.375 29H14.5C6.49187 29 0 22.5081 0 14.5Z" fill="#F64200" />
         </Svg>
         <View style={styles.iconOverlay}>
             <View style={styles.iconCircle}>
-                <SolarAddBold size={14} color="white" />
+                {isRTL ? <SolarAddBold size={14} color="white" /> : <SolarMinusBold size={14} color="white" />}
             </View>
         </View>
       </TouchableOpacity>

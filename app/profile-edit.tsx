@@ -115,18 +115,16 @@ export default function ProfileEditScreen() {
 
       {/* ── Header ── */}
       <View style={[styles.header, { flexDirection: 'row' }]}>
-        {/* Three-dots menu (decorative, matches design) */}
         <TouchableOpacity style={styles.headerSideBtn}>
-          <SolarMenuDotsBold size={22} color="#9CA3AF" />
+          <SolarMenuDotsBold size={20} color="#9CA3AF" />
         </TouchableOpacity>
 
         <ThemedText style={styles.headerTitle}>
           {isRTL ? 'الملف الشخصي' : 'Profile'}
         </ThemedText>
 
-        {/* Back button — circle with arrow */}
         <TouchableOpacity style={styles.backCircle} onPress={() => router.back()}>
-          <BackIcon size={20} color={Colors.primary} />
+          <BackIcon size={18} color={Colors.primary} />
         </TouchableOpacity>
       </View>
 
@@ -202,7 +200,7 @@ export default function ProfileEditScreen() {
               <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>
                 {isRTL ? 'رقم الهاتف' : 'Phone Number'}
               </ThemedText>
-              <View style={[styles.phoneRow, { flexDirection: 'row' }]}>
+              <View style={[styles.phoneRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 {/* Change phone button */}
                 <TouchableOpacity
                   style={styles.changePhoneBtn}
@@ -297,20 +295,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: normalize.width(20),
-    paddingVertical: normalize.height(12) },
+    paddingVertical: normalize.height(10) },
   headerSideBtn: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
     justifyContent: 'center',
     alignItems: 'center' },
   headerTitle: {
-    fontSize: normalize.font(18),
+    fontSize: normalize.font(16),
     fontFamily: 'Alexandria-Black',
     color: '#111827' },
   backCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     backgroundColor: '#EEF4FF',
     justifyContent: 'center',
     alignItems: 'center',
@@ -320,29 +318,29 @@ const styles = StyleSheet.create({
   // ── Scroll ───────────────────────────────────────────────────────────────
   scrollContent: {
     paddingHorizontal: normalize.width(20),
-    paddingTop: normalize.height(4) },
+    paddingTop: normalize.height(2) },
 
   // ── Avatar ───────────────────────────────────────────────────────────────
   avatarSection: {
     alignItems: 'center',
-    marginBottom: normalize.height(28) },
+    marginBottom: normalize.height(20) },
   avatarContainer: {
-    width: normalize.width(130),
-    height: normalize.width(130),
-    borderRadius: normalize.width(65),
+    width: normalize.width(110),
+    height: normalize.width(110),
+    borderRadius: normalize.width(55),
     backgroundColor: '#F3F4F6',
     position: 'relative' },
   avatarImg: {
     width: '100%',
     height: '100%',
-    borderRadius: normalize.width(65) },
+    borderRadius: normalize.width(55) },
   editBadge: {
     position: 'absolute',
-    bottom: 4,
-    right: 4,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    bottom: 2,
+    right: 2,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: Colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
@@ -353,80 +351,80 @@ const styles = StyleSheet.create({
   form: {
     gap: 0 },
   fieldGroup: {
-    marginBottom: normalize.height(18) },
+    marginBottom: normalize.height(14) },
   label: {
-    fontSize: normalize.font(14),
+    fontSize: normalize.font(12),
     fontFamily: 'Alexandria-Bold',
     color: '#374151',
-    marginBottom: normalize.height(8) },
+    marginBottom: normalize.height(6) },
   inputWrapper: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    height: normalize.height(56),
+    height: normalize.height(48),
     justifyContent: 'center',
-    paddingHorizontal: normalize.width(16) },
+    paddingHorizontal: normalize.width(14) },
   input: {
-    fontSize: normalize.font(15),
+    fontSize: normalize.font(14),
     fontFamily: 'Alexandria-Medium',
-    color: '#9CA3AF',
+    color: '#1E293B',
     flex: 1 },
 
   // ── Phone row ────────────────────────────────────────────────────────────
   phoneRow: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    height: normalize.height(56),
+    height: normalize.height(48),
     overflow: 'hidden',
     alignItems: 'center' },
   changePhoneBtn: {
     backgroundColor: Colors.primary,
     height: '100%',
-    paddingHorizontal: normalize.width(16),
+    paddingHorizontal: normalize.width(14),
     justifyContent: 'center',
     alignItems: 'center',
-    minWidth: normalize.width(130) },
+    minWidth: normalize.width(110) },
   changePhoneText: {
     color: '#FFFFFF',
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(12),
     fontFamily: 'Alexandria-Black' },
   phoneValueWrapper: {
     flex: 1,
-    paddingHorizontal: normalize.width(14),
+    paddingHorizontal: normalize.width(12),
     justifyContent: 'center' },
   phoneValue: {
-    fontSize: normalize.font(15),
+    fontSize: normalize.font(14),
     fontFamily: 'Alexandria-Medium',
-    color: '#9CA3AF' },
+    color: '#1E293B' },
 
   // ── Map card ─────────────────────────────────────────────────────────────
   mapCard: {
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: '#F3F4F6',
     overflow: 'hidden',
     backgroundColor: '#F9FAFB' },
   mapImage: {
     width: '100%',
-    height: normalize.height(160) },
+    height: normalize.height(140) },
   mapPinOverlay: {
     position: 'absolute',
-    top: normalize.height(62),
+    top: normalize.height(52),
     alignSelf: 'center' },
   mapFooter: {
-    paddingHorizontal: normalize.width(16),
-    paddingVertical: normalize.height(12),
+    paddingHorizontal: normalize.width(14),
+    paddingVertical: normalize.height(10),
     justifyContent: 'space-between',
     alignItems: 'center' },
   locationName: {
-    fontSize: normalize.font(14),
+    fontSize: normalize.font(13),
     fontFamily: 'Alexandria-Bold',
     color: '#9CA3AF' },
   changeLocText: {
-    fontSize: normalize.font(14),
+    fontSize: normalize.font(13),
     fontFamily: 'Alexandria-Bold',
     color: Colors.primary },
 
@@ -437,10 +435,10 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     paddingHorizontal: normalize.width(20),
-    paddingBottom: normalize.height(30),
-    paddingTop: normalize.height(12),
+    paddingBottom: normalize.height(20),
+    paddingTop: normalize.height(10),
     backgroundColor: '#FFFFFF' },
   submitBtn: {
     width: '100%',
-    height: normalize.height(58),
-    borderRadius: 29 } });
+    height: normalize.height(54),
+    borderRadius: 27 } });

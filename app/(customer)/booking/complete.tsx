@@ -1327,7 +1327,7 @@ export default function CompleteBookingScreen() {
             <View
               style={[
                 styles.whoCard,
-                isRTL ? styles.rtlRow : styles.ltrRow,
+                { flexDirection: 'row' },
               ]}
             >
               <View

@@ -42,18 +42,20 @@ export default function BookingSuccessDetailsScreen() {
   const shiftInfo = useMemo(() => {
     if (!booking?.shift) return t('booking.morningShift');
     const name = isRTL ? (booking.shift.name?.ar || booking.shift.name) : (booking.shift.name?.en || booking.shift.name);
-    const time = `${formatShiftTime(booking.shift.startTime)} - ${formatShiftTime(booking.shift.endTime)}`;
+    const time = `\u200E${formatShiftTime(booking.shift.startTime)} - ${formatShiftTime(booking.shift.endTime)}\u200E`;
     return `${name} (${time})`;
   }, [booking, isRTL, t]);
 
   const renderInfoRow = (label: string, value: string | React.ReactNode) => (
-    <View style={[styles.infoRow, { flexDirection: 'row' }]}>
-        <ThemedText style={styles.infoLabel}>{label}</ThemedText>
-        {typeof value === 'string' ? (
-          <ThemedText style={styles.infoValue}>{value}</ThemedText>
-        ) : (
-          value
-        )}
+    <View style={[styles.infoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <ThemedText style={[styles.infoLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{label}</ThemedText>
+        <View style={{ flex: 1, alignItems: isRTL ? 'flex-start' : 'flex-end' }}>
+          {typeof value === 'string' ? (
+            <ThemedText style={[styles.infoValue, { textAlign: isRTL ? 'left' : 'right' }]}>{value}</ThemedText>
+          ) : (
+            value
+          )}
+        </View>
     </View>
   );
 

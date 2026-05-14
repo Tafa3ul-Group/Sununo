@@ -124,9 +124,15 @@ export default function BookingDetailsPage() {
   };
 
   const renderInfoRow = (label: string, value: string | React.ReactNode, isBlue: boolean = false) => (
-    <View style={[styles.infoRow]}>
-      <Text style={styles.infoLabel}>{label}</Text>
-      <Text style={[styles.infoValue, isBlue && styles.blueValue]}>{value}</Text>
+    <View style={[styles.infoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+      <Text style={[styles.infoLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{label}</Text>
+      <View style={{ flex: 1, alignItems: isRTL ? 'flex-start' : 'flex-end' }}>
+        {typeof value === 'string' ? (
+          <Text style={[styles.infoValue, isBlue && styles.blueValue, { textAlign: isRTL ? 'left' : 'right' }]}>{value}</Text>
+        ) : (
+          value
+        )}
+      </View>
     </View>
   );
 

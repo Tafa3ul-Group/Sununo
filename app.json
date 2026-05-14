@@ -75,7 +75,8 @@
             "newArchEnabled": true
           },
           "ios": {
-            "newArchEnabled": true
+            "newArchEnabled": true,
+            "deploymentTarget": "15.1"
           }
         }
       ],

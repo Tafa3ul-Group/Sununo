@@ -85,11 +85,14 @@ export function PrimaryButton({
       disabled={disabled}
       style={[styles.hybridContainer, { minHeight: height }, style]}
     >
-      {/* Right Curve SVG */}
+      {/* Visual Left: Left Curve in LTR, Right Curve in RTL */}
       <View style={{ width: scaledPartWidth, height: '100%', aspectRatio: 1 }}>
-        <Svg width="100%" height="100%" viewBox="62 0 29 29" fill="none">
+        <Svg width="100%" height="100%" viewBox={isRTL ? "62 0 29 29" : "0 0 29 29"} fill="none">
           <Path
-            d="M91 14.5C91 6.49187 84.5081 0 76.5 0H67.1176C64.2912 0 62 2.29125 62 5.11765V23.8824C62 26.7088 64.2912 29 67.1176 29H76.5C84.5081 29 91 22.5081 91 14.5Z"
+            d={isRTL 
+              ? "M91 14.5C91 6.49187 84.5081 0 76.5 0H67.1176C64.2912 0 62 2.29125 62 5.11765V23.8824C62 26.7088 64.2912 29 67.1176 29H76.5C84.5081 29 91 22.5081 91 14.5Z"
+              : "M0 14.5C0 6.49187 6.49187 0 14.5 0H23.8824C26.7088 0 29 2.29125 29 5.11765V23.8824C29 26.7088 26.7088 29 23.8824 29H14.5C6.49187 29 0 22.5081 0 14.5Z"
+            }
             fill={color}
             stroke={currentBorderColor}
           />
@@ -106,7 +109,7 @@ export function PrimaryButton({
             borderWidth: currentBorderWidth,
             backgroundColor: color,
             minHeight: height,
-            marginHorizontal: -2, // Slight overlap to fix pixel gaps
+            marginHorizontal: -1, // Slight overlap to fix pixel gaps
           },
         ]}
       >
@@ -125,11 +128,14 @@ export function PrimaryButton({
         </View>
       </View>
 
-      {/* Left Curve SVG */}
+      {/* Visual Right: Right Curve in LTR, Left Curve in RTL */}
       <View style={{ width: scaledPartWidth, height: '100%', aspectRatio: 1 }}>
-        <Svg width="100%" height="100%" viewBox="0 0 29 29" fill="none">
+        <Svg width="100%" height="100%" viewBox={isRTL ? "0 0 29 29" : "62 0 29 29"} fill="none">
           <Path
-            d="M0 14.5C0 6.49187 6.49187 0 14.5 0H23.8824C26.7088 0 29 2.29125 29 5.11765V23.8824C29 26.7088 26.7088 29 23.8824 29H14.5C6.49187 29 0 22.5081 0 14.5Z"
+            d={isRTL
+              ? "M0 14.5C0 6.49187 6.49187 0 14.5 0H23.8824C26.7088 0 29 2.29125 29 5.11765V23.8824C29 26.7088 26.7088 29 23.8824 29H14.5C6.49187 29 0 22.5081 0 14.5Z"
+              : "M91 14.5C91 6.49187 84.5081 0 76.5 0H67.1176C64.2912 0 62 2.29125 62 5.11765V23.8824C62 26.7088 64.2912 29 67.1176 29H76.5C84.5081 29 91 22.5081 91 14.5Z"
+            }
             fill={color}
             stroke={currentBorderColor}
           />
@@ -145,7 +151,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 16 },
   hybridContainer: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center" },
   svgPart: {},
