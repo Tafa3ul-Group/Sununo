@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     alignItems: 'center' },
   monthTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: "#1A1A1A",
     textTransform: 'uppercase' },
   daysHeader: {
@@ -256,8 +256,8 @@ const styles = StyleSheet.create({
   dayHeaderText: {
     flex: 1,
     textAlign: "center",
-    fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Black",
+    fontSize: normalize.font(8),
+    fontFamily: "Alexandria-Medium",
     color: "#15AB64" },
   grid: {
     flexDirection: "row",
@@ -283,12 +283,12 @@ const styles = StyleSheet.create({
     width: '100%' },
   dayText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     color: "#1A1A1A" },
   disabledDayText: {
     color: "#D1D5DB",
     opacity: 0,
-    fontFamily: "Alexandria-Regular"
+    fontFamily: "Alexandria-Medium"
   },
   startDaySelected: {
     backgroundColor: Colors.primary,
@@ -298,10 +298,10 @@ const styles = StyleSheet.create({
     borderRadius: 12 },
   selectedDayText: {
     color: "white",
-    fontFamily: "Alexandria-Bold" },
+    fontFamily: "Alexandria-Medium" },
   inRangeDayText: {
     color: "#1A1A1A",
-    fontFamily: "Alexandria-Regular"
+    fontFamily: "Alexandria-Medium"
   },
   yearPicker: {
     padding: 10,
@@ -321,19 +321,19 @@ const styles = StyleSheet.create({
   yearItemSelected: {
     backgroundColor: Colors.primary },
   yearText: {
-    fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Bold",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: '#1A1A1A' },
   yearTextSelected: {
     color: 'white',
-    fontFamily: "Alexandria-Regular"
+    fontFamily: "Alexandria-Medium"
   },
   closeYearBtn: {
     paddingVertical: 10,
     paddingHorizontal: 20 },
   closeYearText: {
     color: Colors.primary,
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     fontSize: normalize.font(14) },
   resetBtn: {
     marginBottom: 20,
@@ -346,5 +346,5 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed' },
   resetText: {
     color: Colors.text.muted,
-    fontFamily: "Alexandria-Bold",
-    fontSize: normalize.font(12) } });
+    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(8) } });

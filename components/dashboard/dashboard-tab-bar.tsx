@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.15,
     shadowRadius: 16, elevation: 10, overflow: 'hidden', paddingBottom: 8 },
   popoverHeader: { padding: 16, borderBottomWidth: 1, borderBottomColor: '#F0F0F0', alignItems: 'center', gap: 8 },
-  popoverTitle: { fontSize: 14, fontFamily: 'Alexandria-Black', color: Colors.text.primary, flex: 1 },
+  popoverTitle: { fontSize: 14, fontFamily: "Alexandria-Medium", color: Colors.text.primary, flex: 1 },
   popoverList: { maxHeight: 260 },
   chaletItem: {
     paddingVertical: 12,
@@ -322,11 +322,11 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F8F9FA' },
   chaletThumb: { width: 40, height: 40, borderRadius: 10, backgroundColor: '#F5F5F7' },
   chaletItemInfo: { flex: 1 },
-  chaletItemName: { fontSize: 13, fontFamily: 'Alexandria-Bold', color: '#333' },
+  chaletItemName: { fontSize: 14, fontFamily: "Alexandria-Medium", color: '#333' },
   addNewChaletBtn: {
     padding: 12, marginHorizontal: 12, marginTop: 4, borderRadius: 12,
     backgroundColor: '#F8F9FB', alignItems: 'center' },
-  addNewChaletText: { fontSize: 12, fontFamily: 'Alexandria-Bold', color: Colors.primary },
+  addNewChaletText: { fontSize: 8, fontFamily: "Alexandria-Medium", color: Colors.primary },
   chaletAvatarImg: {
     width: '100%',
     height: '100%',

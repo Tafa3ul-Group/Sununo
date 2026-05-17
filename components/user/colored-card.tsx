@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
     justifyContent: "center" },
   title: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: "#FFFFFF",
     lineHeight: normalize.height(24) },
   locationWrapper: {
@@ -249,8 +249,8 @@ const styles = StyleSheet.create({
     height: normalize.height(24),
     justifyContent: "center" },
   location: {
-    fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Regular", // Not bold
+    fontSize: normalize.font(8),
+    fontFamily: "Alexandria-Medium", // Not bold
     color: "#FFFFFF",
     lineHeight: normalize.height(24) },
   footer: {
@@ -264,16 +264,16 @@ const styles = StyleSheet.create({
     gap: normalize.width(4) },
   ratingText: {
     color: "white",
-    fontFamily: "Alexandria-Black", // Bold
-    fontSize: normalize.font(12) },
+    fontFamily: "Alexandria-Medium", // Bold
+    fontSize: normalize.font(8) },
   priceContainer: {
   },
   price: {
     color: "white",
-    fontFamily: "Alexandria-Black",
-    fontSize: normalize.font(12) },
+    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(8) },
   priceUnit: {
     fontSize: normalize.font(8),
     color: "white",
-    fontFamily: "Alexandria-Black", // Bold
+    fontFamily: "Alexandria-Medium", // Bold
     opacity: 0.9 } });

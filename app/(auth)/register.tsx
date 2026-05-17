@@ -3,12 +3,13 @@ import { ThemedText } from "@/components/themed-text";
 import { CircleBackButton } from "@/components/ui/circle-back-button";
 import { AuthToggle } from "@/components/user/auth-toggle";
 import { OtpInput } from "@/components/user/otp-input";
-import { PrimaryButton } from "@/components/user/primary-button";
 import { normalize } from "@/constants/theme";
+import { isRTL } from "@/i18n";
 import {
     useLoginMutation,
     useRegisterProviderMutation,
-    useVerifyPhoneMutation } from "@/store/api/apiSlice";
+    useVerifyPhoneMutation
+} from "@/store/api/apiSlice";
 import { setCredentials } from "@/store/authSlice";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -25,7 +26,6 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch } from "react-redux";
-import { isRTL } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -336,7 +336,7 @@ export default function RegisterScreen() {
                 />
               </View>
 
-              <PrimaryButton
+              <SecondaryButton
                 label={
                   accountType === "owner"
                     ? isRTL
@@ -447,11 +447,11 @@ export default function RegisterScreen() {
                 />
               </View>
 
-              <PrimaryButton
+              <SecondaryButton
                 label={isRTL ? "إرسال الطلب" : "Submit & Send Code"}
                 onPress={nextStep}
                 style={styles.mainBtn}
-                loading={isRegisteringProvider}
+                isLoading={isRegisteringProvider}
               />
             </View>
           )}
@@ -484,11 +484,11 @@ export default function RegisterScreen() {
                 <OtpInput code={otpCode} setCode={setOtpCode} length={6} />
               </View>
 
-              <PrimaryButton
+              <SecondaryButton
                 label={isRTL ? "تحقق وتفعيل" : "Verify & Activate"}
                 onPress={handleVerify}
                 style={styles.mainBtn}
-                loading={isVerifying}
+                isLoading={isVerifying}
               />
             </View>
           )}
@@ -503,14 +503,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "white" },
   header: {
+    flexDirection: 'row',
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
     minHeight: 60,
     paddingVertical: 10 },
   headerTitle: {
-    fontSize: 18,
-    fontFamily: "Alexandria-Bold",
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
     color: "#1E293B" },
   scrollContent: {
     flexGrow: 1,
@@ -527,8 +528,8 @@ const styles = StyleSheet.create({
     marginBottom: 20 },
   // Task 2.4: stepTitle fontSize changed from 22 to 20
   stepTitle: {
-    fontSize: 20,
-    fontFamily: "Alexandria-Black",
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
     color: "#1E293B",
     marginBottom: 8,
     lineHeight: 30,
@@ -561,23 +562,23 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 12 },
   cardTitle: {
-    fontSize: 16,
-    fontFamily: "Alexandria-Bold",
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
     color: "#1E293B",
     marginBottom: 4 },
   cardDesc: {
-    fontSize: 12,
-    fontFamily: "Alexandria-Regular",
+    fontSize: 8,
+    fontFamily: "Alexandria-Medium",
     color: "#64748B" },
   // Task 2.4: inputGroup marginBottom changed from normalize.height(20) to 16
   inputGroup: {
     marginBottom: 16 },
   label: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: "#1E293B",
     marginBottom: normalize.height(8),
-    lineHeight: normalize.font(20),
+    lineHeight: normalize.font(14),
     paddingTop: 4 },
   input: {
     width: "100%",
@@ -588,7 +589,7 @@ const styles = StyleSheet.create({
     borderColor: "#E2E8F0",
     paddingHorizontal: 16,
     paddingVertical: normalize.height(10),
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: "Alexandria-Medium",
     color: "#1E293B" },
   // Task 2.4: mainBtn marginTop changed from normalize.height(20) to 16

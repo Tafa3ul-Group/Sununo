@@ -262,30 +262,30 @@ const styles = StyleSheet.create({
     gap: 4 },
   ratingText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: "#111827" },
   upperText: {
     marginTop: 4 },
   title: {
-    fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Black",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: "#111827" },
   location: {
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(8),
     color: "#6B7280",
     marginTop: 2,
-    fontFamily: "Alexandria-Regular" },
+    fontFamily: "Alexandria-Medium" },
   priceRow: {
     alignItems: "center",
     gap: 4 },
   price: {
-    fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Black",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: "#111827" },
   priceLabel: {
-    fontSize: normalize.font(11),
+    fontSize: normalize.font(8),
     color: "#6B7280",
-    fontFamily: "Alexandria-Regular" },
+    fontFamily: "Alexandria-Medium" },
   imageWrapper: {
     width: normalize.width(98),
     height: normalize.height(88),

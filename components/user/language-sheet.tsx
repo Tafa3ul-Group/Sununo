@@ -123,8 +123,8 @@ const styles = StyleSheet.create({
     padding: 24,
     alignItems: "center" },
   title: {
-    fontSize: 20,
-    fontFamily: "Alexandria-Black",
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
     color: "#111827",
     marginBottom: 24 },
   list: {
@@ -145,12 +145,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 12 },
   label: {
-    fontSize: 16,
-    fontFamily: "Alexandria-Bold",
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
     color: "#4B5563" },
   activeLabel: {
     color: "#035DF9",
-   fontFamily: "Alexandria-Regular" },
+   fontFamily: "Alexandria-Medium" },
   flag: {
     width: 28,
     height: 28 },

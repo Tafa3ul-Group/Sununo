@@ -12,10 +12,8 @@
       "bundleIdentifier": "com.sununo.dudes",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "نحتاج الوصول لموقعك لإظهار الشاليهات القريبة منك وتحديد موقع شاليك على الخارطة.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "نحتاج الوصول لموقعك لإظهار الشاليهات القريبة منك وتحديد موقع شاليك على الخارطة.",
-        "ITSAppUsesNonExemptEncryption": false
-      },
-      "appleTeamId": "UD89399RJ8"
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "نحتاج الوصول لموقعك لإظهار الشاليهات القريبة منك وتحديد موقع شاليك على الخارطة."
+      }
     },
     "android": {
       "adaptiveIcon": {

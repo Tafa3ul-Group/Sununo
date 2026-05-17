@@ -111,8 +111,8 @@ const styles = StyleSheet.create({
     paddingTop: 80,
     paddingHorizontal: 40 },
   emptyTitle: {
-    fontSize: 20,
-    fontFamily: "Alexandria-Bold",
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
     color: '#1E293B',
     marginTop: 20 },
   emptySubtitle: {
@@ -121,5 +121,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 10,
     lineHeight: 20,
-    fontFamily: "Alexandria-Regular" 
+    fontFamily: "Alexandria-Medium" 
   } });

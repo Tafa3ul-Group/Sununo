@@ -109,7 +109,7 @@ export function SecondaryButton({
               <ThemedText
                 style={[
                   styles.text,
-                  { color: finalContentColor, fontSize: 16 },
+                  { color: finalContentColor, fontSize: 14 },
                 ]}
               >
                 {iconLabel}
@@ -119,7 +119,7 @@ export function SecondaryButton({
                 <ThemedText
                   style={[
                     styles.text,
-                    { color: finalContentColor, fontSize: 12 },
+                    { color: finalContentColor, fontSize: 8 },
                   ]}
                 >
                   {icon}
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center" },
   text: {
-    fontSize: 18,
-    fontFamily: "Alexandria-SemiBold",
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
     textAlign: "center",
     lineHeight: 28 } });
