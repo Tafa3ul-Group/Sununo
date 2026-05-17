@@ -393,10 +393,29 @@ export default function ChaletDetailScreen() {
               color={isFavorite ? "#EA2129" : "#FFFFFF"}
             />
           </TouchableOpacity>
+
+          <PrimaryButton
+            label={isRTL ? "عرض الصور" : "Show Photos"}
+            onPress={() =>
+              router.push({
+                pathname: "/(customer)/chalet-details/gallery",
+                params: { startIndex: activeImage }
+              })
+            }
+            variant="primary"
+            height={36}
+            style={[
+              styles.galleryBtnFloating,
+              isRTL ? { left: 24 } : { right: 24 }
+            ]}
+            textStyle={{ fontSize: normalize.font(8), lineHeight: normalize.font(12) }}
+          />
+
           <View
             style={[
               styles.paginationDots,
-              { flexDirection: 'row' },
+              isRTL ? { right: 24, left: undefined } : { left: 24, right: undefined },
+              { flexDirection: isRTL ? 'row-reverse' : 'row' },
             ]}
           >
             {images.map((_: string, i: number) => (
@@ -413,13 +432,14 @@ export default function ChaletDetailScreen() {
           <View
             style={[
               styles.titleSection,
-              { flexDirection: 'row-reverse' },
+              { flexDirection: isRTL ? 'row' : 'row-reverse' },
             ]}
           >
             <View
               style={[
                 styles.ratingGroupLeft,
-                isRTL ? { marginRight: 15 } : { marginLeft: 15 },
+                { flexDirection: 'row' },
+                isRTL ? { marginLeft: 15 } : { marginRight: 15 },
               ]}
             >
               <ThemedText style={styles.ratingVal}>
@@ -428,7 +448,7 @@ export default function ChaletDetailScreen() {
               <SolarStarBold size={14} color="#035DF9" />
             </View>
             <View
-              style={{ alignItems: 'flex-start', flex: 1 }}
+              style={{ alignItems: isRTL ? 'flex-end' : 'flex-start', flex: 1 }}
             >
               <ThemedText
                 style={[
@@ -1038,10 +1058,9 @@ const styles = StyleSheet.create({
   paginationDots: {
     position: "absolute",
     bottom: 20,
-    width: "100%",
     flexDirection: "row",
-    justifyContent: "center",
-    gap: 6 },
+    gap: 6,
+    zIndex: 10 },
   dot: {
     width: 8,
     height: 8,
@@ -1114,12 +1133,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6 },
-  ratingVal: { fontSize: 18, fontFamily: "LamaSans-Black", lineHeight: 26 },
-  mainTitle: { fontSize: 22, fontFamily: "LamaSans-Black", lineHeight: 32 },
+  ratingVal: { fontSize: 18, fontFamily: "Alexandria-Medium", lineHeight: 26 },
+  mainTitle: { fontSize: 22, fontFamily: "Alexandria-Medium", lineHeight: 32 },
   locationSub: {
     fontSize: 13,
     color: "#6B7280",
-    fontFamily: "LamaSans-Regular",
+    fontFamily: "Alexandria-Medium",
     lineHeight: 20 },
   sectionHeaderContainer: {
     justifyContent: "center",
@@ -1138,8 +1157,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 12,
     flexShrink: 1 },
-  specText: { fontSize: 13, fontFamily: "LamaSans-Bold", flexShrink: 1 },
-  viewAllText: { fontSize: 13, color: "#6B7280", fontFamily: "LamaSans-Bold" },
+  specText: { fontSize: 13, fontFamily: "Alexandria-Medium", flexShrink: 1 },
+  viewAllText: { fontSize: 13, color: "#6B7280", fontFamily: "Alexandria-Medium" },
   facilitiesHeader: {
     justifyContent: "space-between",
     alignItems: "center" },
@@ -1221,7 +1240,7 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     lineHeight: 22,
     marginTop: 5,
-    fontFamily: "LamaSans-Regular" },
+    fontFamily: "Alexandria-Medium" },
   descriptionContainer: {
     width: "100%" },
   readMoreWrapper: { alignItems: "center", marginTop: 15 },
@@ -1247,9 +1266,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12 },
-  expoGoText: { color: "white", fontSize: 10, fontFamily: "LamaSans-Medium" },
+  expoGoText: { color: "white", fontSize: 10, fontFamily: "Alexandria-Medium" },
   mapLocLabel: { paddingVertical: 12, alignItems: "center" },
-  mapLocText: { fontSize: 16, fontFamily: "LamaSans-Black", lineHeight: 24 },
+  mapLocText: { fontSize: 16, fontFamily: "Alexandria-Medium", lineHeight: 24 },
   unverifiedReviewMsg: {
     padding: 20,
     backgroundColor: "#F9FAFB",
@@ -1261,7 +1280,7 @@ const styles = StyleSheet.create({
   unverifiedText: {
     color: "#9CA3AF",
     fontSize: 13,
-    fontFamily: "LamaSans-Medium",
+    fontFamily: "Alexandria-Medium",
     textAlign: "center" },
 
   hostStampArea: {
@@ -1333,7 +1352,7 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     marginTop: 8,
     lineHeight: 22,
-    fontFamily: "LamaSans-Regular" },
+    fontFamily: "Alexandria-Medium" },
   avatarCircleMerged: {
     width: 60,
     height: 60,
@@ -1349,7 +1368,7 @@ const styles = StyleSheet.create({
   revTimeTextMerged: {
     fontSize: 13,
     color: "#9CA3AF",
-    fontFamily: "LamaSans-Medium" },
+    fontFamily: "Alexandria-Medium" },
 
   addReviewAction: { alignItems: "center", marginVertical: 20 },
   addBtnFinal: { width: "85%", borderRadius: 27 },
@@ -1378,7 +1397,7 @@ const styles = StyleSheet.create({
   footerMetaSmall: {
     fontSize: 10,
     color: "#9CA3AF",
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "Alexandria-Medium",
     flexShrink: 1,
     lineHeight: 16 },
   footerBtnSide: { width: 180 },
@@ -1404,7 +1423,7 @@ const styles = StyleSheet.create({
     padding: 8 },
   addonName: {
     fontSize: 13,
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "Alexandria-Medium",
     marginBottom: 4 },
   addonPrice: {
     fontSize: 12,
@@ -1448,4 +1467,9 @@ const styles = StyleSheet.create({
   emptyReviewsText: {
     fontSize: 14,
     color: '#64748B',
-    fontFamily: "Alexandria-Medium" } });
+    fontFamily: "Alexandria-Medium" },
+  galleryBtnFloating: {
+    position: "absolute",
+    bottom: 20,
+    zIndex: 10
+  } });

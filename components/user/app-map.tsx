@@ -471,8 +471,7 @@ const styles = StyleSheet.create({
     alignItems: "center" },
   fallbackContainer: {
     position: "relative",
-    height: "100%",
-    width: "100%",
+    flex: 1,
     backgroundColor: "#E5E7EB",
     justifyContent: "center",
     alignItems: "center" },

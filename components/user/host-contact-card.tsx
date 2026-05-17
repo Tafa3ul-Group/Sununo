@@ -3,7 +3,6 @@ import React from "react";
 import { Dimensions, StyleSheet, View } from "react-native";
 import Svg, { Path, Rect } from "react-native-svg";
 import { ThemedText } from "../themed-text";
-import { isRTL } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SVG_WIDTH = 375;
@@ -19,7 +18,8 @@ interface HostContactCardProps {
 export const HostContactCard: React.FC<HostContactCardProps> = ({
   name,
   avatar,
-  isRTL }) => {
+  isRTL,
+}) => {
   return (
     <View style={styles.container}>
       <Svg
@@ -41,50 +41,38 @@ export const HostContactCard: React.FC<HostContactCardProps> = ({
           rx="28.5"
           fill="#F0F6F5"
         />
-        {/* Orange Badge - Directional */}
-        {isRTL ? (
-          <Path
-            d="M311.773 64.5139C307.455 60.0597 304.406 54.2479 303.351 47.6158C301.712 37.3064 305.271 27.3987 312.064 20.6509L294.965 20.7994C293.726 28.6828 291.168 31.4063 282.943 32.9287L282.826 52.1331C290.782 53.565 293.222 56.448 294.906 64.2969L311.773 64.5139Z"
-            fill="#F64300"
-          />
-        ) : (
-          <Path
-            d="M61.7573 64.5139C66.0754 60.0597 69.1243 54.2479 70.1789 47.6158C71.8182 37.3064 68.2592 27.3987 61.4664 20.6509L78.5649 20.7994C79.8039 28.6828 82.3618 31.4063 90.5877 32.9287L90.7048 52.1331C82.7482 53.565 80.3078 56.448 78.6241 64.2969L61.7573 64.5139Z"
-            fill="#F64300"
-          />
-        )}
+        {/* Orange Badge - Always on the Left side as requested */}
+        <Path
+          d="M61.7573 64.5139C66.0754 60.0597 69.1243 54.2479 70.1789 47.6158C71.8182 37.3064 68.2592 27.3987 61.4664 20.6509L78.5649 20.7994C79.8039 28.6828 82.3618 31.4063 90.5877 32.9287L90.7048 52.1331C82.7482 53.565 80.3078 56.448 78.6241 64.2969L61.7573 64.5139Z"
+          fill="#F64300"
+        />
       </Svg>
 
-      <View
-        style={[
-          styles.contentOverlay,
-          { flexDirection: 'row' },
-        ]}
-      >
+      <View style={[styles.contentOverlay, { position: "relative" }]}>
         <View
           style={[
             styles.infoColumn,
             {
-              alignItems: 'flex-start',
-              marginRight: isRTL ? 85 * SCALE : 15 * SCALE,
-              marginLeft: isRTL ? 15 * SCALE : 85 * SCALE },
+              position: "absolute",
+              left: 105 * SCALE, // Spacing increased beautifully from the left side (where image is)
+              right: 30 * SCALE,
+              alignItems: isRTL ? "flex-end" : "flex-start",
+            },
           ]}
         >
-          <ThemedText style={styles.hostLabel}>
+          <ThemedText style={[styles.hostLabel, { textAlign: isRTL ? "right" : "left" }]}>
             {isRTL ? "المضيف" : "Host"}
           </ThemedText>
-          <ThemedText style={styles.hostName} numberOfLines={1}>
+          <ThemedText style={[styles.hostName, { textAlign: isRTL ? "right" : "left" }]} numberOfLines={1}>
             {name}
           </ThemedText>
         </View>
 
-        {/* Fixed to position derived from SVG */}
+        {/* Fixed to Left position derived from SVG */}
         <View
           style={[
             styles.avatarContainer,
-            isRTL
-              ? { right: (SVG_WIDTH - 304.627 - 56.6) * SCALE }
-              : { left: 12.3 * SCALE },
+            { left: 12.3 * SCALE },
           ]}
         >
           <ExpoImage source={avatar} style={styles.avatar} contentFit="cover" />
@@ -100,24 +88,29 @@ const styles = StyleSheet.create({
     width: SCREEN_WIDTH - 40,
     height: SVG_HEIGHT * SCALE,
     justifyContent: "center",
-    alignItems: "center" },
+    alignItems: "center",
+  },
   contentOverlay: {
     position: "absolute",
     width: "100%",
     height: "100%",
     paddingHorizontal: 15 * SCALE,
-    alignItems: "center" },
+    alignItems: "center",
+  },
   infoColumn: {
-    flex: 1 },
+    flex: 1,
+  },
   hostLabel: {
     fontSize: 8,
     color: "#040404ff",
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "Alexandria-Medium",
+  },
   hostName: {
     fontSize: 14,
     color: "#111827",
     fontFamily: "Alexandria-Medium",
-    marginTop: -2 },
+    marginTop: -2,
+  },
   avatarContainer: {
     position: "absolute",
     top: 14.6 * SCALE,
@@ -127,7 +120,10 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     backgroundColor: "#C5C5C5",
     borderWidth: 2,
-    borderColor: "white" },
+    borderColor: "white",
+  },
   avatar: {
     width: "100%",
-    height: "100%" } });
+    height: "100%",
+  },
+});
