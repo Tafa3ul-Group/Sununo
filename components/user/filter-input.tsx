@@ -79,12 +79,12 @@ const styles = StyleSheet.create({
   },
   label: {
     flex: 1,
-    fontSize: normalize.font(14),
+    fontSize: normalize.font(16),
     fontFamily: "Alexandria-Medium",
     color: Colors.primary, // The text in the image is blue
     textAlign: 'center' },
   selectedText: {
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "Alexandria-Bold" },
   divider: {
     width: 1,
     height: '60%',

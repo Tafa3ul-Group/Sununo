@@ -206,6 +206,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center" },
   tabText: {
-    fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontSize: 17,
+    fontFamily: "Alexandria-Black",
     textAlign: "center" } });

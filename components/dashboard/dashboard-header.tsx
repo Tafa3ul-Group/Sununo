@@ -138,10 +138,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center" },
   headerTitle: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(17),
+    fontFamily: "Alexandria-SemiBold",
     color: Colors.text.primary,
-    lineHeight: normalize.font(14),
+    lineHeight: normalize.font(28),
     textAlign: 'center',
     paddingHorizontal: normalize.width(4),
     paddingVertical: normalize.height(8) },

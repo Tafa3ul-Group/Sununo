@@ -227,8 +227,8 @@ const styles = StyleSheet.create({
   userInfo: {
     flex: 1 },
   userName: {
-    fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontSize: 18,
+    fontFamily: "Alexandria-Black",
     color: '#1E293B' },
   userPhone: {
     fontSize: 14,
@@ -252,8 +252,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center' },
   menuLabel: {
-    fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontSize: 16,
+    fontFamily: "Alexandria-Bold",
     color: '#334155' },
   footer: {
     paddingTop: 20,
@@ -264,6 +264,6 @@ const styles = StyleSheet.create({
     gap: 15,
     paddingVertical: 12 },
   logoutText: {
-    fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontSize: 16,
+    fontFamily: "Alexandria-Black",
     color: '#EF4444' } });

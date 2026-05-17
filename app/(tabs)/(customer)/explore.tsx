@@ -105,7 +105,7 @@ function SectionHeader({ title, isRTL }: { title: string; isRTL: boolean }) {
         alignItems: 'flex-start' }}
     >
       <ThemedText
-        style={{ fontSize: 14, fontFamily: "Alexandria-Medium", color: "#111827" }}
+        style={{ fontSize: 18, fontFamily: "Tajawal-Black", color: "#111827" }}
       >
         {title}
       </ThemedText>
@@ -872,7 +872,7 @@ export default function ExploreScreen() {
                                   <ThemedText
                                     style={{
                                       fontSize: 14,
-                                      fontFamily: "Alexandria-Medium",
+                                      fontFamily: "Tajawal-Bold",
                                       color: "#1F2937" }}
                                   >
                                     {isRTL
@@ -881,8 +881,8 @@ export default function ExploreScreen() {
                                   </ThemedText>
                                   <ThemedText
                                     style={{
-                                      fontSize: 8,
-                                      fontFamily: "Alexandria-Medium",
+                                      fontSize: 12,
+                                      fontFamily: "Tajawal-Medium",
                                       color: "#6B7280",
                                       marginTop: 2 }}
                                   >
@@ -950,8 +950,8 @@ export default function ExploreScreen() {
                                   </View>
                                   <ThemedText
                                     style={{
-                                      fontSize: 8,
-                                      fontFamily: "Alexandria-Medium",
+                                      fontSize: 11,
+                                      fontFamily: "Tajawal-Bold",
                                       marginTop: 6,
                                       textAlign: "center" }}
                                   >
@@ -1038,8 +1038,8 @@ export default function ExploreScreen() {
                           >
                             <ThemedText
                               style={{
-                                fontSize: 14,
-                                fontFamily: "Alexandria-Medium",
+                                fontSize: 16,
+                                fontFamily: "Tajawal-Black",
                                 color: Colors.primary }}
                             >
                               {isRTL
@@ -1051,9 +1051,9 @@ export default function ExploreScreen() {
                             </ThemedText>
                             <ThemedText
                               style={{
-                                fontSize: 8,
+                                fontSize: 12,
                                 color: "#64748B",
-                                fontFamily: "Alexandria-Medium",
+                                fontFamily: "Tajawal-Medium",
                                 marginTop: 2 }}
                             >
                               {isRTL
@@ -1344,8 +1344,8 @@ const styles = StyleSheet.create({
     gap: 8,
     ...Shadows.small },
   filterChipText: {
-    fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontSize: 13,
+    fontFamily: "Tajawal-SemiBold",
     color: "#1F2937" },
   bottomSheet: {
     borderTopLeftRadius: 30,
@@ -1383,29 +1383,29 @@ const styles = StyleSheet.create({
     borderRadius: 12 },
   imageCountText: {
     color: "white",
-    fontSize: 8,
-    fontFamily: "Alexandria-Medium" },
+    fontSize: 11,
+    fontFamily: "Tajawal-Bold" },
   headerInfo: {
     flex: 1,
     justifyContent: "center",
     gap: 4 },
   chaletTitle: {
-    fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontSize: 18,
+    fontFamily: "Tajawal-Black",
     color: "#111827" },
   locationRow: {
     alignItems: "center",
     gap: 4 },
   chaletLocation: {
-    fontSize: 14,
+    fontSize: 13,
     color: "#6B7280",
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "Tajawal-Medium" },
   ratingRow: {
     alignItems: "center",
     marginTop: 4 },
   priceText: {
-    fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontSize: 15,
+    fontFamily: "Tajawal-Black",
     color: Colors.primary },
   dot: {
     width: 4,
@@ -1414,7 +1414,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#D1D5DB" },
   ratingText: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Tajawal-Bold",
     color: "#1F2937",
     marginLeft: 4 },
   rightNavActions: {
@@ -1436,13 +1436,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flex: 1 },
   navInfoVal: {
-    fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontSize: 18,
+    fontFamily: "Tajawal-Black",
     color: Colors.primary },
   navInfoLbl: {
-    fontSize: 8,
+    fontSize: 10,
     color: "#9CA3AF",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Tajawal-Bold",
     textTransform: "uppercase" },
   navCircleFab: {
     width: 64,
@@ -1469,8 +1469,8 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start" },
   navActionText: {
     color: "white",
-    fontSize: 14,
-    fontFamily: "Alexandria-Medium" },
+    fontSize: 13,
+    fontFamily: "Tajawal-Bold" },
   enhancedInfoGrid: {
     marginTop: 24,
     paddingHorizontal: 0,
@@ -1485,13 +1485,13 @@ const styles = StyleSheet.create({
     borderColor: "#F1F5F9",
     ...Shadows.small },
   enhancedInfoValue: {
-    fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontSize: 15,
+    fontFamily: "Tajawal-Black",
     color: "#1E293B",
     marginTop: 6 },
   enhancedInfoLabel: {
-    fontSize: 8,
-    fontFamily: "Alexandria-Medium",
+    fontSize: 10,
+    fontFamily: "Tajawal-Medium",
     color: "#64748B",
     marginTop: 2,
     textTransform: "uppercase" },
@@ -1512,7 +1512,7 @@ const styles = StyleSheet.create({
     gap: 8 },
   navOutlineText: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Tajawal-Bold",
     color: Colors.primary },
 
   // New Design Styles
@@ -1530,27 +1530,27 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 12 },
   ratingValue: {
-    fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontSize: 16,
+    fontFamily: "Tajawal-Bold",
     color: "#1E293B" },
   titleSection: {
     flex: 1,
     paddingHorizontal: 12 },
   chaletTitleMain: {
-    fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontSize: 22,
+    fontFamily: "Tajawal-Black",
     color: "#111827",
     textAlign: "right" },
   chaletLocationSub: {
-    fontSize: 14,
+    fontSize: 15,
     color: "#6B7280",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Tajawal-Medium",
     marginTop: 2 },
   specsSection: {
     marginTop: 24 },
   sectionLabel: {
-    fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontSize: 18,
+    fontFamily: "Tajawal-Bold",
     color: "#1E293B",
     marginBottom: 12,
     paddingHorizontal: 4 },
@@ -1564,7 +1564,7 @@ const styles = StyleSheet.create({
     borderRadius: 10 },
   specText: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Tajawal-Bold",
     color: "#334155" },
   favoriteBtn: {
     position: "absolute",
@@ -1618,8 +1618,8 @@ const styles = StyleSheet.create({
   priceContainer: {
     flex: 1 },
   footerPrice: {
-    fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontSize: 24,
+    fontFamily: "Tajawal-Black",
     color: "#000000",
     textAlign: "right" },
   bookButtonCustom: {
@@ -1644,8 +1644,8 @@ const styles = StyleSheet.create({
     zIndex: 1 },
   bookButtonText: {
     color: "white",
-    fontSize: 14,
-    fontFamily: "Alexandria-Medium" },
+    fontSize: 16,
+    fontFamily: "Tajawal-Bold" },
   loaderOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(255,255,255,0.3)",
@@ -1674,7 +1674,7 @@ const styles = StyleSheet.create({
     ...Shadows.medium },
   searchInput: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 15,
     fontFamily: "Alexandria-Medium",
     color: "#1F2937" },
   filterButtonCircle: {
@@ -1701,8 +1701,8 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 24 },
   filterModalTitle: {
-    fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontSize: 20,
+    fontFamily: "Tajawal-Black",
     color: "#111827",
     marginBottom: 24,
     textAlign: "center" },
@@ -1710,7 +1710,7 @@ const styles = StyleSheet.create({
     marginBottom: 24 },
   filterSectionLabel: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Tajawal-Bold",
     color: "#374151",
     marginBottom: 12 },
   modalInput: {
@@ -1718,8 +1718,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#F9FAFB",
     borderRadius: 14,
     paddingHorizontal: 16,
-    fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontSize: 15,
+    fontFamily: "Tajawal-Medium",
     color: "#111827",
     borderWidth: 1,
     borderColor: "#E5E7EB" },
@@ -1749,19 +1749,19 @@ const styles = StyleSheet.create({
     gap: 4 },
   revRateNumMerged: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "Tajawal-Bold" },
   userInfoRowMerged: {
     flex: 1,
     alignItems: "flex-start" },
   nameAndBodyMerged: {
     flex: 1 },
   reviewerNameMerged: {
-    fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontSize: 15,
+    fontFamily: "Tajawal-Bold",
     color: "#1E293B" },
   revMessageMerged: {
-    fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontSize: 13,
+    fontFamily: "Tajawal-Medium",
     color: "#64748B",
     marginTop: 4 },
   avatarCircleMerged: {
@@ -1803,7 +1803,7 @@ const filterBannerStyles = StyleSheet.create({
     borderRadius: 12,
     gap: 6 },
   pillText: {
-    fontSize: 8,
+    fontSize: 12,
     fontFamily: "Alexandria-Medium",
     color: Colors.primary },
   clearBtn: {

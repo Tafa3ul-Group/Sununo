@@ -95,57 +95,57 @@ interface TypeStyle {
 export const Typography: Record<string, TypeStyle> = {
   h1: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Alexandria-Bold",
     color: Colors.light.text,
     lineHeight: normalize.font(20),
   },
   h2: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Alexandria-Bold",
     color: Colors.light.text,
     lineHeight: normalize.font(20),
   },
   body: {
-    fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(10),
+    fontFamily: "Alexandria-Regular",
     color: Colors.light.text,
-    lineHeight: normalize.font(14),
+    lineHeight: normalize.font(16),
   },
   subtitle: {
-    fontSize: normalize.font(8),
+    fontSize: normalize.font(10),
+    fontFamily: "Alexandria-Regular",
+    color: Colors.light.icon,
+    lineHeight: normalize.font(16),
+  },
+  caption: {
+    fontSize: normalize.font(10),
     fontFamily: "Alexandria-Medium",
     color: Colors.light.icon,
     lineHeight: normalize.font(14),
-  },
-  caption: {
-    fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium",
-    color: Colors.light.icon,
-    lineHeight: normalize.font(12),
   },
   price: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Alexandria-Bold",
     color: Colors.light.primary,
     lineHeight: normalize.font(20),
   },
   rating: {
-    fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(10),
+    fontFamily: "Alexandria-Bold",
     color: Colors.light.text,
-    lineHeight: normalize.font(14),
+    lineHeight: normalize.font(16),
   },
   title: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Alexandria-Bold",
     color: Colors.light.text,
     lineHeight: normalize.font(20),
   },
   description: {
-    fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(10),
+    fontFamily: "Alexandria-Regular",
     color: Colors.light.text,
-    lineHeight: normalize.font(14),
+    lineHeight: normalize.font(16),
   },
 };
 
@@ -183,9 +183,9 @@ export const Shadows = {
 };
 
 export const Fonts = {
-  bold: "Alexandria-Medium" as const,
-  regular: "Alexandria-Medium" as const,
+  bold: "Alexandria-Bold" as const,
+  regular: "Alexandria-Regular" as const,
   medium: "Alexandria-Medium" as const,
-  semiBold: "Alexandria-Medium" as const,
-  black: "Alexandria-Medium" as const,
+  semiBold: "Alexandria-Bold" as const,
+  black: "Alexandria-Black" as const,
 };

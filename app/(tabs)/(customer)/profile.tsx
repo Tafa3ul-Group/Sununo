@@ -270,8 +270,8 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#F3F4F6' },
     headerTitle: {
-        fontSize: normalize.font(14),
-        fontFamily: "Alexandria-Medium",
+        fontSize: normalize.font(18),
+        fontFamily: 'Alexandria-Black',
         color: '#111827' },
     scrollContent: {
         paddingHorizontal: normalize.width(20),
@@ -291,13 +291,13 @@ const styles = StyleSheet.create({
         flex: 1,
         marginHorizontal: normalize.width(14) },
     userName: {
-        fontSize: normalize.font(14),
-        fontFamily: "Alexandria-Medium",
+        fontSize: normalize.font(16),
+        fontFamily: 'Alexandria-Black',
         color: '#111827',
         marginBottom: 2 },
     userPhone: {
-        fontSize: normalize.font(14),
-        fontFamily: "Alexandria-Medium",
+        fontSize: normalize.font(13),
+        fontFamily: 'Alexandria-Regular',
         color: '#6B7280' },
     avatarWrap: {
         width: normalize.width(56),
@@ -324,8 +324,8 @@ const styles = StyleSheet.create({
         borderColor: '#F3F4F6' },
     menuLabelText: {
         flex: 1,
-        fontSize: normalize.font(14),
-        fontFamily: "Alexandria-Medium",
+        fontSize: normalize.font(15),
+        fontFamily: 'Alexandria-Bold',
         color: '#374151',
         marginHorizontal: normalize.width(14) },
     logoutText: {

@@ -150,5 +150,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center" },
   tabText: {
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Alexandria-Black",
     fontSize: normalize.font(14) } });

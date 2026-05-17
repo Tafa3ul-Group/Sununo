@@ -385,20 +385,20 @@ const styles = StyleSheet.create({
     bottom: -30 },
   balanceLabel: {
     color: 'rgba(255,255,255,0.7)',
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(13),
+    fontFamily: "Alexandria-SemiBold",
     marginBottom: 8,
     letterSpacing: 0.5,
     textTransform: 'uppercase' },
   balanceValue: {
     color: Colors.white,
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(36),
+    fontFamily: "Alexandria-Black",
     letterSpacing: -1 },
   balanceCurrency: {
     color: 'rgba(255,255,255,0.6)',
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Alexandria-SemiBold",
     marginBottom: 20,
     marginTop: 2 },
   withdrawButton: {
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
     gap: 8 },
   withdrawButtonText: {
     color: Colors.primary,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Alexandria-Bold",
     fontSize: normalize.font(14) },
   // Period Filter
   periodRow: {
@@ -429,12 +429,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     borderColor: Colors.primary },
   periodText: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(13),
+    fontFamily: "Alexandria-SemiBold",
     color: Colors.text.secondary },
   periodTextActive: {
     color: Colors.white,
-   fontFamily: "Alexandria-Medium" },
+   fontFamily: "Alexandria-Regular" },
   // Stats
   statsRow: {
     gap: 10,
@@ -455,13 +455,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10 },
   statValue: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(16),
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary },
   statLabel: {
-    fontSize: normalize.font(8),
+    fontSize: normalize.font(10),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Alexandria-SemiBold",
     marginTop: 2,
     textAlign: 'center' },
   // Section Header
@@ -470,8 +470,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 14 },
   sectionTitle: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(18),
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary },
   viewAllBtn: {
     flexDirection: 'row',
@@ -479,8 +479,8 @@ const styles = StyleSheet.create({
     gap: 2 },
   viewAllText: {
     color: Colors.primary,
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium" },
+    fontSize: normalize.font(13),
+    fontFamily: "Alexandria-SemiBold" },
   // Transactions
   transactionsCard: {
     backgroundColor: Colors.white,
@@ -502,29 +502,29 @@ const styles = StyleSheet.create({
     flex: 1 },
   transactionTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Alexandria-Bold",
     color: Colors.text.primary,
     marginBottom: 3 },
   transactionDate: {
-    fontSize: normalize.font(8),
+    fontSize: normalize.font(11),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium" },
   transactionAmount: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
     marginBottom: 4 },
   currencySmall: {
-    fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(11),
+    fontFamily: "Alexandria-SemiBold",
     color: Colors.text.muted },
   typeBadge: {
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 6 },
   typeBadgeText: {
-    fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(9),
+    fontFamily: "Alexandria-Bold",
     textTransform: 'uppercase' },
   separator: {
     height: 1,
@@ -536,20 +536,20 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
     gap: 10 },
   emptyText: {
-    fontSize: normalize.font(14),
+    fontSize: normalize.font(13),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "Alexandria-SemiBold" },
   // Withdraw Sheet
   sheetContent: {
     padding: 24 },
   sheetTitle: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(20),
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
     textAlign: 'center',
     marginBottom: 4 },
   sheetSubtitle: {
-    fontSize: normalize.font(14),
+    fontSize: normalize.font(13),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium",
     textAlign: 'center',
@@ -565,11 +565,11 @@ const styles = StyleSheet.create({
     height: 60 },
   amountInput: {
     flex: 1,
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(24),
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
     textAlign: 'center' },
   amountCurrency: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(16),
+    fontFamily: "Alexandria-Bold",
     color: Colors.text.muted } });

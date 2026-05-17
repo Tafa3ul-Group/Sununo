@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     padding: 4 },
   title: {
     ...Typography.h2,
-    fontSize: normalize.font(14) },
+    fontSize: normalize.font(18) },
   mapWrapper: {
     flex: 1,
     position: 'relative',
@@ -169,5 +169,5 @@ const styles = StyleSheet.create({
   coordinateLabel: {
     ...Typography.caption,
     color: Colors.text.muted,
-    fontSize: normalize.font(8) }
+    fontSize: normalize.font(12) }
 });
