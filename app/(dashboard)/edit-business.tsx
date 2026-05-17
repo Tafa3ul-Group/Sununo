@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: 32 },
   sectionTitle: {
-    fontSize: normalize.font(18),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     marginBottom: 16 },
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12 },
   input: {
     flex: 1,
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     color: Colors.text.primary,
     height: '100%',
    fontFamily: "Alexandria-Medium" },
@@ -210,5 +210,5 @@ const styles = StyleSheet.create({
     opacity: 0.7 },
   saveButtonText: {
     color: Colors.white,
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium" } });

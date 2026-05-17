@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center' },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 14,
     fontFamily: "Alexandria-Medium",
     color: '#1E293B',
     alignSelf: 'flex-end',
@@ -110,6 +110,6 @@ const styles = StyleSheet.create({
     marginBottom: 12 },
   btnText: {
     color: '#FFF',
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: "Alexandria-Medium" }
 });

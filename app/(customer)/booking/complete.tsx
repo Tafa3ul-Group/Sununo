@@ -1014,7 +1014,7 @@ export default function CompleteBookingScreen() {
         ) : pollingStatus === 'failed' ? (
           <>
             <View style={[styles.methodIconContainer, { backgroundColor: '#FEE2E2', width: 80, height: 80, borderRadius: 40, marginBottom: 20 }]}>
-               <ThemedText style={{ fontSize: 40 }}>❌</ThemedText>
+               <ThemedText style={{ fontSize: 14 }}>❌</ThemedText>
             </View>
             <ThemedText style={[styles.successTitle, { color: '#EF4444' }]}>
               {isRTL ? "فشلت عملية الدفع" : "Payment Failed"}
@@ -1031,7 +1031,7 @@ export default function CompleteBookingScreen() {
         ) : (
           <>
              <View style={[styles.methodIconContainer, { backgroundColor: '#FEF3C7', width: 80, height: 80, borderRadius: 40, marginBottom: 20 }]}>
-               <ThemedText style={{ fontSize: 40 }}>⏳</ThemedText>
+               <ThemedText style={{ fontSize: 14 }}>⏳</ThemedText>
             </View>
             <ThemedText style={[styles.successTitle, { color: '#F59E0B' }]}>
               {isRTL ? "انتهت مهلة التحقق" : "Verification Timeout"}
@@ -1461,7 +1461,7 @@ const styles = StyleSheet.create({
     alignItems: "center" },
   dateBadgeActive: { borderColor: Colors.primary, borderWidth: 2 },
   dateBadgeText: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: "#94A3B8",
     textAlign: "center",
@@ -1486,7 +1486,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     paddingHorizontal: 10 },
   calendarMonthTitle: {
-    fontSize: normalize.font(18),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: "#1E293B",
     textAlign: "center",
@@ -1502,7 +1502,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 12 },
   dayHeaderCell: {
-    fontSize: normalize.font(10),
+    fontSize: normalize.font(8),
     fontFamily: "Alexandria-Medium",
     color: "#94A3B8",
     width: (SCREEN_WIDTH - 100) / 7,
@@ -1548,11 +1548,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center" },
   shiftTitle: {
-    fontSize: normalize.font(15),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: "#1E293B" },
   shiftTime: {
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(8),
     color: "#64748B",
     fontFamily: "Alexandria-Medium" },
   deleteDayText: {
@@ -1580,7 +1580,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     paddingHorizontal: 4 },
   dayHeaderText: {
-    fontSize: normalize.font(15),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: "#1E293B" },
   shiftCardFlat: {
@@ -1604,11 +1604,11 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 12 },
   shiftNameFlat: {
-    fontSize: normalize.font(15),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: "#1E293B" },
   shiftTimeFlat: {
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(8),
     fontFamily: "Alexandria-Medium",
     color: "#64748B" },
   shiftPriceFlat: {
@@ -1629,11 +1629,11 @@ const styles = StyleSheet.create({
     // Removed flex: 1 to allow space-between to push it
   },
   guestLabel: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: "#111827" },
   guestSubLabel: {
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(8),
     color: "#9CA3AF",
     fontFamily: "Alexandria-Medium",
     marginTop: 1 },
@@ -1694,7 +1694,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginBottom: 15 },
   successTitle: {
-    fontSize: normalize.font(20),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: "#1E293B",
     marginBottom: 8,
@@ -1731,7 +1731,7 @@ const styles = StyleSheet.create({
   mapAddressLabel: {
     textAlign: "center",
     paddingVertical: 8,
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(8),
     fontFamily: "Alexandria-Medium",
     color: "#1E293B",
     width: "100%" },
@@ -1749,12 +1749,12 @@ const styles = StyleSheet.create({
   divider: { height: 1, backgroundColor: "#F1F5F9", marginVertical: 10 },
   infoRow: { justifyContent: "space-between", marginBottom: 10 },
   infoLabel: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: "#1E293B",
     textAlign: isRTL ? "right" : "left" },
   infoValue: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: "#64748B",
     textAlign: isRTL ? "left" : "right" },
@@ -1768,7 +1768,7 @@ const styles = StyleSheet.create({
     borderColor: "#15AB6433" },
   editBtnText: {
     color: "#15AB64",
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(8),
     fontFamily: "Alexandria-Medium" },
   paymentMainTitle: {
     fontSize: normalize.font(14),
@@ -1786,18 +1786,18 @@ const styles = StyleSheet.create({
     alignItems: "center" },
   paymentOptionActive: { borderColor: "#15AB64", backgroundColor: "#F0FDF4" },
   paymentVal: {
-    fontSize: normalize.font(15),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: "#64748B" },
   paymentValActive: { color: "#1E293B", fontFamily: "Alexandria-Medium" },
   paymentLabel: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: "#64748B" },
   paymentLabelActive: { color: "#1E293B", fontFamily: "Alexandria-Medium" },
   agreementWrapper: { paddingVertical: 12, paddingBottom: 35 },
   agreementText: {
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(8),
     color: "#64748B",
     textAlign: "center",
     lineHeight: 18,
@@ -1838,7 +1838,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 8 },
   methodName: {
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(8),
     fontFamily: "Alexandria-Medium",
     color: "#1E293B" },
   selectedDot: {

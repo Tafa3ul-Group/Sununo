@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 2 },
   headerTitle: {
-    fontSize: normalize.font(18),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
   scrollContent: {
@@ -254,12 +254,12 @@ const styles = StyleSheet.create({
   chaletInfo: {
     flex: 1 },
   chaletName: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     marginBottom: 4 },
   chaletLocation: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.muted,
     marginBottom: 8 },
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     gap: 4,
     marginBottom: 12 },
   ratingText: {
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(8),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     paddingTop: 2 },
@@ -307,12 +307,12 @@ const styles = StyleSheet.create({
     color: Colors.text.primary,
     flex: 1 },
   value: {
-    fontSize: normalize.font(15),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     flex: 2 },
   currency: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium" },
   notesText: {
     fontSize: normalize.font(14),

@@ -245,13 +245,13 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     marginTop: 10 },
   headerTitle: {
-    fontSize: normalize.font(20),
-    fontFamily: 'Alexandria-Medium',
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     marginTop: 12 },
   headerSub: {
     fontSize: normalize.font(14),
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.muted,
     textAlign: 'center',
     marginTop: 8,
@@ -283,14 +283,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center' },
   sectionTitle: {
-    fontSize: normalize.font(16),
-    fontFamily: 'Alexandria-Medium',
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
   inputGroup: {
     marginBottom: 16 },
   label: {
-    fontSize: normalize.font(13),
-    fontFamily: 'Alexandria-Medium',
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: '#64748B',
     marginBottom: 8 },
   input: {
@@ -300,8 +300,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    fontSize: normalize.font(15),
-    fontFamily: 'Alexandria-Medium',
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
   textArea: {
     minHeight: 120,
@@ -311,8 +311,8 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    fontSize: normalize.font(15),
-    fontFamily: 'Alexandria-Medium',
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     textAlignVertical: 'top' },
   row: {

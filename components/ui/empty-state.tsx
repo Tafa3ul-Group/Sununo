@@ -74,17 +74,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: Spacing.lg },
   title: {
-    fontSize: normalize.font(20),
-    fontFamily: 'Alexandria-Medium',
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     textAlign: 'center',
     marginBottom: Spacing.sm },
   description: {
-    fontSize: normalize.font(15),
-    fontFamily: 'Alexandria-Medium',
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.secondary,
     textAlign: 'center',
-    lineHeight: normalize.font(22),
+    lineHeight: normalize.font(14),
     marginBottom: Spacing.xl },
   button: {
     width: '70%',

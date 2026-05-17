@@ -55,11 +55,7 @@ function RootLayoutNav() {
   const [notificationRetryNonce, setNotificationRetryNonce] = useState(0);
 
   const [loaded, error] = useFonts({
-    "Alexandria-Medium": require("@expo-google-fonts/alexandria/700Bold/Alexandria_700Bold.ttf"),
-    "Alexandria-Medium": require("@expo-google-fonts/alexandria/600SemiBold/Alexandria_600SemiBold.ttf"),
-    "Alexandria-Medium": require("@expo-google-fonts/alexandria/400Regular/Alexandria_400Regular.ttf"),
-    "Alexandria-Medium": require("@expo-google-fonts/alexandria/500Medium/Alexandria_500Medium.ttf"),
-    "Alexandria-Medium": require("@expo-google-fonts/alexandria/900Black/Alexandria_900Black.ttf") });
+    "Alexandria-Medium": require("@expo-google-fonts/alexandria/500Medium/Alexandria_500Medium.ttf") });
 
   // ── Auth Guard ────────────────────────────────────────────────────────────
   useEffect(() => {

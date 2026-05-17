@@ -103,16 +103,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20 },
   title: {
-    fontSize: 22,
-    fontFamily: 'Alexandria-Medium',
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
     color: '#1E293B',
     marginBottom: 12,
     textAlign: 'center' },
   description: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#64748B',
     textAlign: 'center',
     lineHeight: 24,
-    fontFamily: 'Alexandria-Medium' },
+    fontFamily: "Alexandria-Medium" },
   footer: {
     gap: 12 } });

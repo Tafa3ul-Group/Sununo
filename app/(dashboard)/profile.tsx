@@ -493,11 +493,11 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: normalize.width(15) },
   userName: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: '#374151' },
   userType: {
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(8),
     fontFamily: "Alexandria-Medium",
     color: Colors.primary,
     marginTop: 4 },
@@ -524,7 +524,7 @@ const styles = StyleSheet.create({
     alignItems: 'center' },
   avatarInitialText: {
     color: 'white',
-    fontSize: normalize.font(24),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium" },
   editBadge: {
     position: 'absolute',
@@ -551,7 +551,7 @@ const styles = StyleSheet.create({
     borderColor: '#F3F4F6' },
   menuLabelText: {
     flex: 1,
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: '#374151',
     marginHorizontal: normalize.width(15) },
@@ -562,7 +562,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20 },
   sheetTitle: {
-    fontSize: normalize.font(18),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
   imageSection: {
@@ -610,7 +610,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F1F5F9' },
   input: {
     flex: 1,
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     marginHorizontal: 12 },
@@ -630,7 +630,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
     backgroundColor: '#EEF2FF' },
   genderText: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.secondary },
   genderTextActive: {
@@ -647,7 +647,7 @@ const styles = StyleSheet.create({
     opacity: 0.7 },
   saveButtonText: {
     color: 'white',
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium" },
   citySheetContent: {
     flex: 1,
@@ -659,7 +659,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center' },
   cityText: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium" },
   cityTextActive: {
     color: Colors.primary,

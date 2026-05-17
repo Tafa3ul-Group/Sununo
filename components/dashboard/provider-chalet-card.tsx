@@ -138,13 +138,13 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     backgroundColor: '#10B981' },
   statusText: {
-    fontSize: normalize.font(10),
+    fontSize: normalize.font(8),
     fontFamily: "Alexandria-Medium",
     color: '#111827' },
   content: {
     padding: 14 },
   title: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: '#111827',
     marginBottom: 4 },
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     gap: 4,
     marginBottom: 16 },
   location: {
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(8),
     color: Colors.text.secondary,
     flex: 1,
    fontFamily: "Alexandria-Medium" },
@@ -171,12 +171,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.primary + '20' },
   editBtnText: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.primary },
   revenueBtn: {
     backgroundColor: Colors.primary },
   revenueBtnText: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: '#FFFFFF' } });

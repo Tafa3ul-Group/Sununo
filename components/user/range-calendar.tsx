@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center' },
   monthTitle: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: "#1A1A1A",
     letterSpacing: 0.5 },
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   dayHeaderText: {
     flex: 1,
     textAlign: "center",
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(8),
     fontFamily: "Alexandria-Medium",
     color: "#15AB64" },
   grid: {
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
   yearItemSelected: {
     backgroundColor: Colors.primary },
   yearText: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: '#1A1A1A' },
   yearTextSelected: {

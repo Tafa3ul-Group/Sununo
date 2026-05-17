@@ -504,7 +504,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%" },
   markerTitle: {
-    fontSize: 11,
+    fontSize: 8,
     fontFamily: "Alexandria-Medium",
     color: "#111827",
     marginTop: 6,
@@ -525,7 +525,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E5E7EB" },
   fallbackText: {
-    fontSize: 10,
+    fontSize: 8,
     color: "#6B7280",
     fontFamily: "Alexandria-Medium",
     textAlign: "center" },

@@ -910,7 +910,7 @@ export default function ShiftsAndPricesScreen() {
 
                       <View style={[styles.row, { marginLeft: isRTL ? 0 : 16, marginRight: isRTL ? 16 : 0 }, isRTL && { flexDirection: 'row-reverse' }]}>
                         <View style={{ alignItems: 'flex-end', marginRight: isRTL ? 0 : 8, marginLeft: isRTL ? 8 : 0 }}>
-                          <Text style={{ fontSize: 8, fontFamily: 'Alexandria-Medium', color: shift.isActive ? Colors.primary : '#9CA3AF' }}>
+                          <Text style={{ fontSize: 8, fontFamily: "Alexandria-Medium", color: shift.isActive ? Colors.primary : '#9CA3AF' }}>
                             {isRTL ? (shift.isActive ? 'نشطة' : 'متوقفة') : (shift.isActive ? 'Active' : 'Inactive')}
                           </Text>
                         </View>
@@ -969,7 +969,7 @@ export default function ShiftsAndPricesScreen() {
           <View style={[styles.row, { justifyContent: 'space-between', marginVertical: 20 }, isRTL && { flexDirection: 'row-reverse' }]}>
             <View>
               <Text style={styles.label}>{isRTL ? 'حالة الفترة' : 'Shift Status'}</Text>
-              <Text style={{ fontSize: 12, color: '#666' }}>{isRTL ? 'تفعيل أو إيقاف هذه الفترة تماماً' : 'Enable or disable this shift globally'}</Text>
+              <Text style={{ fontSize: 8, color: '#666' }}>{isRTL ? 'تفعيل أو إيقاف هذه الفترة تماماً' : 'Enable or disable this shift globally'}</Text>
             </View>
             <Switch
               value={shiftForm.isActive}
@@ -1004,7 +1004,7 @@ export default function ShiftsAndPricesScreen() {
                 <View>
                   <Text style={styles.modalTitleCompact}>{isRTL ? 'إعداد أسعار الأسبوع' : 'Weekly Pricing'}</Text>
                   {selectedShift && (
-                    <Text style={{ fontSize: 12, color: Colors.primary, fontFamily: 'Alexandria-Medium', marginTop: 2 }}>
+                    <Text style={{ fontSize: 8, color: Colors.primary, fontFamily: "Alexandria-Medium", marginTop: 2 }}>
                       {isRTL ? (selectedShift.name?.ar || selectedShift.name) : (selectedShift.name?.en || selectedShift.name)}
                     </Text>
                   )}
@@ -1063,7 +1063,7 @@ export default function ShiftsAndPricesScreen() {
                     onPress={handleApplyBulkPrice}
                     style={{ backgroundColor: '#FFF', paddingHorizontal: 16, height: 36, borderRadius: 8, justifyContent: 'center', marginHorizontal: 4 }}
                   >
-                    <Text style={{ color: Colors.primary, fontFamily: 'Alexandria-Medium', fontSize: 12 }}>{isRTL ? 'تطبيق السعر' : 'Apply Price'}</Text>
+                    <Text style={{ color: Colors.primary, fontFamily: "Alexandria-Medium", fontSize: 8 }}>{isRTL ? 'تطبيق السعر' : 'Apply Price'}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -1099,7 +1099,7 @@ export default function ShiftsAndPricesScreen() {
                     </View>
 
                     <View style={[styles.row, isRTL && { flexDirection: 'row-reverse' }]}>
-                      <Text style={{ fontSize: 12, color: isStopped ? '#999' : Colors.primary, fontFamily: 'Alexandria-Medium', marginRight: isRTL ? 0 : 8, marginLeft: isRTL ? 8 : 0 }}>
+                      <Text style={{ fontSize: 8, color: isStopped ? '#999' : Colors.primary, fontFamily: "Alexandria-Medium", marginRight: isRTL ? 0 : 8, marginLeft: isRTL ? 8 : 0 }}>
                         {isStopped ? (isRTL ? 'متوقف' : 'Stopped') : (isRTL ? 'نشط' : 'Active')}
                       </Text>
                       <Switch
@@ -1175,74 +1175,74 @@ const styles = StyleSheet.create({
   scrollContent: { padding: 16, paddingBottom: 100 },
   section: { marginBottom: 24 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  sectionTitle: { fontSize: 18, fontFamily: "Alexandria-Medium", color: '#000' },
+  sectionTitle: { fontSize: 14, fontFamily: "Alexandria-Medium", color: '#000' },
   row: { flexDirection: 'row', alignItems: 'center' },
   cardFlat: { backgroundColor: '#fff', borderRadius: 20, marginBottom: 12, borderWidth: 1, borderColor: '#F0F2F7', overflow: 'hidden', ...Shadows.small },
   cardHeader: { padding: 16 },
-  cardTitle: { fontSize: 16, fontFamily: "Alexandria-Medium" },
-  timeBadgeText: { color: Colors.primary, fontSize: 12, fontFamily: "Alexandria-Medium" },
+  cardTitle: { fontSize: 14, fontFamily: "Alexandria-Medium" },
+  timeBadgeText: { color: Colors.primary, fontSize: 8, fontFamily: "Alexandria-Medium" },
   expandedContent: { padding: 16, backgroundColor: '#F9FAFB', borderTopWidth: 1, borderTopColor: '#F0F2F7' },
   pricingSectionContainer: { backgroundColor: '#fff', borderRadius: 16, padding: 12 },
   expandedHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   expandedTitle: { fontSize: 14, fontFamily: "Alexandria-Medium" },
   editBadge: { backgroundColor: Colors.primary + '10', padding: 6, borderRadius: 8 },
-  editBadgeText: { fontSize: 10, color: Colors.primary, fontFamily: "Alexandria-Medium" },
+  editBadgeText: { fontSize: 8, color: Colors.primary, fontFamily: "Alexandria-Medium" },
   emptyPricingCard: { padding: 20, alignItems: 'center', borderStyle: 'dashed', borderWidth: 1, borderColor: '#DDD', borderRadius: 12 },
-  emptyPricingText: { fontSize: 12, color: '#999', marginTop: 8 },
+  emptyPricingText: { fontSize: 8, color: '#999', marginTop: 8 },
   setPriceBtn: { backgroundColor: Colors.primary, padding: 8, borderRadius: 8, marginTop: 10 },
-  setPriceBtnText: { color: '#fff', fontSize: 11 },
+  setPriceBtnText: { color: '#fff', fontSize: 8 },
   pricingGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   pricingMiniCard: { width: '23%', aspectRatio: 1, backgroundColor: '#F9FAFB', borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   weekendMiniCard: { backgroundColor: '#FFF5F5' },
   closedMiniCard: { opacity: 0.5 },
-  miniCardDay: { fontSize: 10, color: '#666' },
+  miniCardDay: { fontSize: 8, color: '#666' },
   miniCardPriceRow: { alignItems: 'center' },
-  miniCardPrice: { fontSize: 11, fontFamily: "Alexandria-Medium" },
+  miniCardPrice: { fontSize: 8, fontFamily: "Alexandria-Medium" },
   miniCardCurrency: { fontSize: 8, color: '#999' },
   closedBadgeMini: { backgroundColor: '#FEE4E2', padding: 2, borderRadius: 4 },
   closedBadgeTextMini: { fontSize: 8, color: '#D92D20' },
   hoursGridContainer: { marginVertical: 16, padding: 16, backgroundColor: '#F9FAFB', borderRadius: 16 },
   gridHeader: { alignItems: 'center', marginBottom: 12 },
-  gridTitleLarge: { fontSize: 16, fontFamily: "Alexandria-Medium" },
-  legendText: { fontSize: 10, color: '#666' },
+  gridTitleLarge: { fontSize: 14, fontFamily: "Alexandria-Medium" },
+  legendText: { fontSize: 8, color: '#666' },
   gridContent: { gap: 6 },
   hourGridRow: { flexDirection: 'row', alignItems: 'center', height: 40 },
   rowIconOuter: { width: 30 },
   hourSquare: { flex: 1, height: 36, backgroundColor: '#fff', borderWidth: 1, borderColor: '#EEE', justifyContent: 'center', alignItems: 'center' },
   hourSquareMerged: { height: 36, backgroundColor: Colors.primary, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 4 },
-  hourText: { fontSize: 12, color: '#999' },
-  shiftOverlayText: { fontSize: 10, color: '#fff', fontFamily: "Alexandria-Medium" },
+  hourText: { fontSize: 8, color: '#999' },
+  shiftOverlayText: { fontSize: 8, color: '#fff', fontFamily: "Alexandria-Medium" },
   swipeableContainer: { borderRadius: 20 },
   swipeActions: { flexDirection: 'row', height: '100%' },
   swipeAction: { width: 70, justifyContent: 'center', alignItems: 'center' },
-  swipeActionText: { fontSize: 10, fontFamily: "Alexandria-Medium" },
-  modalTitle: { fontSize: 20, fontFamily: "Alexandria-Medium", marginBottom: 20 },
-  modalTitleCompact: { fontSize: 18, fontFamily: "Alexandria-Medium" },
+  swipeActionText: { fontSize: 8, fontFamily: "Alexandria-Medium" },
+  modalTitle: { fontSize: 14, fontFamily: "Alexandria-Medium", marginBottom: 20 },
+  modalTitleCompact: { fontSize: 14, fontFamily: "Alexandria-Medium" },
   label: { fontSize: 14, fontFamily: "Alexandria-Medium", marginBottom: 8 },
   input: { backgroundColor: '#F3F4F6', height: 50, borderRadius: 12, paddingHorizontal: 16, marginBottom: 16 },
   saveBtn: { backgroundColor: Colors.primary, padding: 16, borderRadius: 12, alignItems: 'center' },
   saveBtnText: { color: '#fff', fontFamily: "Alexandria-Medium" },
   quickActionCardNew: { backgroundColor: Colors.primary, padding: 16, borderRadius: 16, marginTop: 12 },
-  quickLabelNew: { color: '#fff', fontSize: 12, marginBottom: 4 },
-  quickInputNew: { color: '#fff', fontSize: 18, fontFamily: "Alexandria-Medium" },
+  quickLabelNew: { color: '#fff', fontSize: 8, marginBottom: 4 },
+  quickInputNew: { color: '#fff', fontSize: 14, fontFamily: "Alexandria-Medium" },
   pricingRowModern: { padding: 16, backgroundColor: '#fff', borderRadius: 16, marginBottom: 10, borderWidth: 1, borderColor: '#EEE' },
   pricingRowStopped: { backgroundColor: '#F9FAFB', opacity: 0.7 },
   dayFullName: { fontSize: 14, fontFamily: "Alexandria-Medium" },
   priceControlWrapper: { marginTop: 12, backgroundColor: '#F3F4F6', borderRadius: 10, padding: 8 },
-  pricingInputModern: { fontSize: 16, fontFamily: "Alexandria-Medium", textAlign: 'center' },
+  pricingInputModern: { fontSize: 14, fontFamily: "Alexandria-Medium", textAlign: 'center' },
   pricingFloatingFooter: { padding: 16, borderTopWidth: 1, borderTopColor: '#EEE', backgroundColor: '#fff' },
   applyBtnLargeModern: { backgroundColor: Colors.primary, padding: 16, borderRadius: 12, alignItems: 'center' },
   applyBtnTextLarge: { color: '#fff', fontFamily: "Alexandria-Medium" },
   inactiveBadge: { backgroundColor: '#F2F4F7', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, justifyContent: 'center' },
-  inactiveBadgeText: { fontSize: 10, color: '#667085', fontFamily: 'Alexandria-Medium' },
+  inactiveBadgeText: { fontSize: 8, color: '#667085', fontFamily: "Alexandria-Medium" },
   policyFormCard: { padding: 16, backgroundColor: '#F9FAFB', borderRadius: 12, marginBottom: 12 },
   chaletSelectCard: { padding: 16, borderBottomWidth: 1, borderBottomColor: '#EEE' },
   dayIndicator: { width: 32, height: 32, borderRadius: 16, backgroundColor: Colors.primary + '10', justifyContent: 'center', alignItems: 'center' },
-  dayIndicatorText: { fontSize: 14, fontFamily: 'Alexandria-Medium', color: Colors.primary },
+  dayIndicatorText: { fontSize: 14, fontFamily: "Alexandria-Medium", color: Colors.primary },
   cardInactive: { backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' },
   shiftStatusHighlight: { backgroundColor: '#fff', padding: 16, borderRadius: 20, marginBottom: 20, borderWidth: 1, borderColor: '#F0F2F7', alignItems: 'center', ...Shadows.small },
   statusIconCircle: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
-  statusLabelLarge: { fontSize: 14, fontFamily: 'Alexandria-Medium', color: '#1F2937' },
-  statusValueLarge: { fontSize: 11, fontFamily: 'Alexandria-Medium', marginTop: 2 },
+  statusLabelLarge: { fontSize: 14, fontFamily: "Alexandria-Medium", color: '#1F2937' },
+  statusValueLarge: { fontSize: 8, fontFamily: "Alexandria-Medium", marginTop: 2 },
   miniQuickBtn: { backgroundColor: 'rgba(255,255,255,0.3)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
-  miniQuickBtnText: { color: '#fff', fontSize: 10, fontFamily: 'Alexandria-Medium' } });
+  miniQuickBtnText: { color: '#fff', fontSize: 8, fontFamily: "Alexandria-Medium" } });

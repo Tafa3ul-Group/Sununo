@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 40 },
   sheetTitle: {
-    fontSize: 20,
+    fontSize: 14,
     fontFamily: "Alexandria-Medium",
     marginBottom: 20,
     color: "#111827" },
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
     paddingHorizontal: 15 },
   optionText: {
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: "Alexandria-Medium",
     color: "#6B7280" },
   optionTextSelected: {

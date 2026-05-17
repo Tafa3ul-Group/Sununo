@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: normalize.radius(30) },
   tabLabel: {
-    fontSize: normalize.font(18),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium" },
   activeLabel: {
     color: "white",

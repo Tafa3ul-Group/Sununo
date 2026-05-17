@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: normalize.height(15) },
   title: {
-    fontSize: normalize.font(18),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: '#1E293B' },
   closeBtn: {

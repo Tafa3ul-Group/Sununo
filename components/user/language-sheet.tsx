@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     padding: 24,
     alignItems: "center" },
   title: {
-    fontSize: 20,
+    fontSize: 14,
     fontFamily: "Alexandria-Medium",
     color: "#111827",
     marginBottom: 24 },
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 12 },
   label: {
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: "Alexandria-Medium",
     color: "#4B5563" },
   activeLabel: {

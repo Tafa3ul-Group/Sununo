@@ -243,6 +243,6 @@ const styles = StyleSheet.create({
     borderRadius: 4 },
   legendText: {
     color: '#94A3B8',
-    fontSize: 10,
+    fontSize: 8,
     fontFamily: "Alexandria-Medium",
     textTransform: 'uppercase' } });

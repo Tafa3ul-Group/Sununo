@@ -332,14 +332,14 @@ const styles = StyleSheet.create({
     bottom: -30 },
   balanceLabel: {
     color: 'rgba(255,255,255,0.7)',
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     marginBottom: 8,
     letterSpacing: 0.5,
     textTransform: 'uppercase' },
   balanceValue: {
     color: Colors.white,
-    fontSize: normalize.font(36),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     letterSpacing: -1 },
   balanceCurrency: {
@@ -376,7 +376,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     borderColor: Colors.primary },
   periodText: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.secondary },
   periodTextActive: {
@@ -402,11 +402,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10 },
   statValue: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
   statLabel: {
-    fontSize: normalize.font(10),
+    fontSize: normalize.font(8),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium",
     marginTop: 2,
@@ -417,7 +417,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 14 },
   sectionTitle: {
-    fontSize: normalize.font(18),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
   viewAllBtn: {
@@ -426,7 +426,7 @@ const styles = StyleSheet.create({
     gap: 2 },
   viewAllText: {
     color: Colors.primary,
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium" },
   // Transactions
   transactionsCard: {
@@ -453,7 +453,7 @@ const styles = StyleSheet.create({
     color: Colors.text.primary,
     marginBottom: 3 },
   transactionDate: {
-    fontSize: normalize.font(11),
+    fontSize: normalize.font(8),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium" },
   transactionAmount: {
@@ -462,7 +462,7 @@ const styles = StyleSheet.create({
     color: Colors.text.primary,
     marginBottom: 4 },
   currencySmall: {
-    fontSize: normalize.font(11),
+    fontSize: normalize.font(8),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.muted },
   typeBadge: {
@@ -470,7 +470,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 6 },
   typeBadgeText: {
-    fontSize: normalize.font(9),
+    fontSize: normalize.font(8),
     fontFamily: "Alexandria-Medium",
     textTransform: 'uppercase' },
   separator: {
@@ -483,20 +483,20 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
     gap: 10 },
   emptyText: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium" },
   // Withdraw Sheet
   sheetContent: {
     padding: 24 },
   sheetTitle: {
-    fontSize: normalize.font(20),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     textAlign: 'center',
     marginBottom: 4 },
   sheetSubtitle: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium",
     textAlign: 'center',
@@ -512,11 +512,11 @@ const styles = StyleSheet.create({
     height: 60 },
   amountInput: {
     flex: 1,
-    fontSize: normalize.font(24),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     textAlign: 'center' },
   amountCurrency: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.muted } });

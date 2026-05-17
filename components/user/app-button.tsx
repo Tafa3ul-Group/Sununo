@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center' },
   secondaryText: {
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: "Alexandria-Medium",
     textAlign: 'center',
     lineHeight: 25 } });

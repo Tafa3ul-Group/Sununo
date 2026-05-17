@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     paddingTop: 80,
     paddingHorizontal: 40 },
   emptyTitle: {
-    fontSize: 20,
+    fontSize: 14,
     fontFamily: "Alexandria-Medium",
     color: '#1E293B',
     marginTop: 20 },

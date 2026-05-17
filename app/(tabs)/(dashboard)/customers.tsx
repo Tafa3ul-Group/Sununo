@@ -132,17 +132,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center' },
   avatarText: {
-    fontSize: normalize.font(18),
+    fontSize: normalize.font(14),
     color: Colors.text.primary,
     fontFamily: "Alexandria-Medium" },
   info: {
     flex: 1 },
   customerName: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
   customerPhone: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     color: Colors.text.muted,
     marginTop: 2,
     fontFamily: "Alexandria-Medium" },
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   stat: {
     flex: 1 },
   statLabel: {
-    fontSize: normalize.font(10),
+    fontSize: normalize.font(8),
     color: Colors.text.muted,
     marginBottom: 2,
     fontFamily: "Alexandria-Medium",

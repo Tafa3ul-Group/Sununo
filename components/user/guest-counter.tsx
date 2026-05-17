@@ -93,6 +93,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 6 },
   valueText: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: "white" } });

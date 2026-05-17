@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
   userInfo: {
     flex: 1 },
   userName: {
-    fontSize: 18,
+    fontSize: 14,
     fontFamily: "Alexandria-Medium",
     color: '#1E293B' },
   userPhone: {
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center' },
   menuLabel: {
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: "Alexandria-Medium",
     color: '#334155' },
   footer: {
@@ -264,6 +264,6 @@ const styles = StyleSheet.create({
     gap: 15,
     paddingVertical: 12 },
   logoutText: {
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: "Alexandria-Medium",
     color: '#EF4444' } });

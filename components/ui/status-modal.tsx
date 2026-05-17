@@ -72,13 +72,13 @@ const styles = StyleSheet.create({
   animation: {
     marginBottom: 10 },
   title: {
-    fontSize: 22,
+    fontSize: 14,
     fontFamily: "Alexandria-Medium",
     color: '#1E293B',
     textAlign: 'center',
     marginBottom: 10 },
   message: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#64748B',
     textAlign: 'center',
     lineHeight: 22,

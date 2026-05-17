@@ -174,7 +174,7 @@ const filterBannerStyles = StyleSheet.create({
     gap: 6,
   },
   pillText: {
-    fontSize: 12,
+    fontSize: 8,
     fontFamily: "Alexandria-Medium",
     color: Colors.primary,
   },
@@ -538,18 +538,18 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   sectionTitle: {
-    fontSize: normalize.font(20),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
-    lineHeight: normalize.font(28),
+    lineHeight: normalize.font(14),
     flexShrink: 1,
   },
   seeAll: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     color: Colors.primary,
     fontFamily: "Alexandria-Medium",
     textDecorationLine: "underline",
-    lineHeight: normalize.font(18),
+    lineHeight: normalize.font(14),
   },
   mapContainer: {
     height: 210,
@@ -593,7 +593,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyTitle: {
-    fontSize: normalize.font(18),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     textAlign: "center",

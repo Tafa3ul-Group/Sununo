@@ -509,7 +509,7 @@ const styles = StyleSheet.create({
     minHeight: 60,
     paddingVertical: 10 },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 14,
     fontFamily: "Alexandria-Medium",
     color: "#1E293B" },
   scrollContent: {
@@ -527,7 +527,7 @@ const styles = StyleSheet.create({
     marginBottom: 20 },
   // Task 2.4: stepTitle fontSize changed from 22 to 20
   stepTitle: {
-    fontSize: 20,
+    fontSize: 14,
     fontFamily: "Alexandria-Medium",
     color: "#1E293B",
     marginBottom: 8,
@@ -561,12 +561,12 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 12 },
   cardTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: "Alexandria-Medium",
     color: "#1E293B",
     marginBottom: 4 },
   cardDesc: {
-    fontSize: 12,
+    fontSize: 8,
     fontFamily: "Alexandria-Medium",
     color: "#64748B" },
   // Task 2.4: inputGroup marginBottom changed from normalize.height(20) to 16
@@ -577,7 +577,7 @@ const styles = StyleSheet.create({
     fontFamily: "Alexandria-Medium",
     color: "#1E293B",
     marginBottom: normalize.height(8),
-    lineHeight: normalize.font(20),
+    lineHeight: normalize.font(14),
     paddingTop: 4 },
   input: {
     width: "100%",
@@ -588,7 +588,7 @@ const styles = StyleSheet.create({
     borderColor: "#E2E8F0",
     paddingHorizontal: 16,
     paddingVertical: normalize.height(10),
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: "Alexandria-Medium",
     color: "#1E293B" },
   // Task 2.4: mainBtn marginTop changed from normalize.height(20) to 16

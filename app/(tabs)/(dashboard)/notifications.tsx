@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
         position: 'relative',
         height: 48 },
     headerTitle: {
-        fontSize: 20,
+        fontSize: 14,
         fontFamily: "Alexandria-Medium",
         color: '#111827' },
     backButton: {
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     },
     emptyText: {
         color: '#9CA3AF', 
-        fontFamily: 'Alexandria-Medium'
+        fontFamily: "Alexandria-Medium"
     },
     notificationCard: {
         flexDirection: 'row',
@@ -173,18 +173,18 @@ const styles = StyleSheet.create({
         backgroundColor: '#FF4500', // Solid orange as in image
     },
     timeText: {
-        fontSize: 12,
+        fontSize: 8,
         color: '#9CA3AF',
         fontFamily: "Alexandria-Medium" },
     cardContent: {
         flex: 1 },
     titleText: {
-        fontSize: 16,
+        fontSize: 14,
         fontFamily: "Alexandria-Medium",
         color: '#111827',
         marginBottom: 2 },
     messageText: {
-        fontSize: 13,
+        fontSize: 14,
         color: '#6B7280',
         marginTop: 2,
         fontFamily: "Alexandria-Medium"

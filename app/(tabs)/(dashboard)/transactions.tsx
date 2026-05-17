@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     borderColor: Colors.primary },
   filterText: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.secondary },
   filterTextActive: {
@@ -227,21 +227,21 @@ const styles = StyleSheet.create({
   transactionInfo: {
     flex: 1 },
   transactionTitle: {
-    fontSize: normalize.font(15),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     marginBottom: 3 },
   transactionDate: {
-    fontSize: normalize.font(11),
+    fontSize: normalize.font(8),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium" },
   transactionAmount: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     marginBottom: 4 },
   currencySmall: {
-    fontSize: normalize.font(11),
+    fontSize: normalize.font(8),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.muted },
   statusBadge: {
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3 },
   statusBadgeText: {
-    fontSize: normalize.font(10),
+    fontSize: normalize.font(8),
     fontFamily: "Alexandria-Medium" },
   separator: {
     height: 1,
@@ -275,11 +275,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8 },
   emptyTitle: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
   emptySubtitle: {
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(8),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium",
     textAlign: 'center',

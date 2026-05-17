@@ -924,11 +924,11 @@ export default function ChaletDetailsScreen() {
                             resizeMode="contain" 
                           />
                         ) : (
-                          <Text style={{ fontSize: 20 }}>{feature.icon === 'wifi' ? '📶' : '✨'}</Text>
+                          <Text style={{ fontSize: 14 }}>{feature.icon === 'wifi' ? '📶' : '✨'}</Text>
                         )}
                       </View>
                       <Text style={styles.amenityName} numberOfLines={1}>{isRTL ? feature.name?.ar : feature.name?.en}</Text>
-                      {isSelected && <View style={styles.checkBadge}><Text style={{ color: '#fff', fontSize: 10 }}>✓</Text></View>}
+                      {isSelected && <View style={styles.checkBadge}><Text style={{ color: '#fff', fontSize: 8 }}>✓</Text></View>}
                     </TouchableOpacity>
                   );
                 })}
@@ -1126,7 +1126,7 @@ const styles = StyleSheet.create({
     width: 42, // Match iconButton size
     height: 42 },
   navBarTitle: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     maxWidth: '65%',
@@ -1197,7 +1197,7 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 8 },
   chaletName: {
-    fontSize: normalize.font(26),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     letterSpacing: -0.5 },
@@ -1206,7 +1206,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 12 },
   approvalText: {
-    fontSize: normalize.font(11),
+    fontSize: normalize.font(8),
     fontFamily: "Alexandria-Medium",
     textTransform: 'uppercase' },
   locationRow: {
@@ -1214,14 +1214,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6 },
   locationText: {
-    fontSize: normalize.font(15),
+    fontSize: normalize.font(14),
     color: Colors.text.secondary,
     fontFamily: "Alexandria-Medium" },
   statusBox: {
     alignItems: 'center',
     gap: 4 },
   statusLabel: {
-    fontSize: normalize.font(10),
+    fontSize: normalize.font(8),
     fontFamily: "Alexandria-Medium",
     textTransform: 'uppercase' },
   statsRow: {
@@ -1243,11 +1243,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10 },
   statValue: {
-    fontSize: normalize.font(17),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
   statLabel: {
-    fontSize: normalize.font(11),
+    fontSize: normalize.font(8),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium",
     marginTop: 2 },
@@ -1270,7 +1270,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F1F5F9',
     marginBottom: 32 },
   sectionTitle: {
-    fontSize: normalize.font(18),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     marginBottom: 16 },
@@ -1289,7 +1289,7 @@ const styles = StyleSheet.create({
     gap: 10,
     minWidth: '47%' },
   amenityEmoji: {
-    fontSize: 18,
+    fontSize: 14,
    fontFamily: "Alexandria-Medium" },
   amenityText: {
     fontSize: normalize.font(14),
@@ -1308,15 +1308,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F0F0F0' },
   detailValue: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
   detailLabel: {
-    fontSize: normalize.font(11),
+    fontSize: normalize.font(8),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium" },
   descriptionText: {
-    fontSize: normalize.font(15),
+    fontSize: normalize.font(14),
     color: Colors.text.secondary,
     lineHeight: 24,
     opacity: 0.9,
@@ -1326,11 +1326,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between' },
   footerPriceLabel: {
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(8),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium" },
   footerPriceValue: {
-    fontSize: normalize.font(20),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
   footerCurrency: {
@@ -1371,26 +1371,26 @@ const styles = StyleSheet.create({
     gap: 6 },
   editImagesText: {
     color: Colors.white,
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(8),
     fontFamily: "Alexandria-Medium" },
   modalScrollContent: {
     padding: 20,
     paddingBottom: 40 },
   modalTitle: {
-    fontSize: normalize.font(20),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     marginBottom: 24,
     textAlign: 'center' },
   modalSubTitle: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     marginBottom: 12 },
   modalInputGroup: {
     marginBottom: 20 },
   modalLabel: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.muted,
     marginBottom: 8 },
@@ -1401,7 +1401,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    fontSize: normalize.font(15),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
   modalTextArea: {
@@ -1441,10 +1441,10 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
     backgroundColor: Colors.primary + '05' },
   amenityIcon: {
-    fontSize: 20,
+    fontSize: 14,
     marginBottom: 4 },
   amenityName: {
-    fontSize: 11,
+    fontSize: 8,
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     textAlign: 'center' },
@@ -1497,7 +1497,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F8FAFC' },
   addPhotosText: {
-    fontSize: 12,
+    fontSize: 8,
     fontFamily: "Alexandria-Medium",
     color: Colors.text.muted,
     marginTop: 4 },
@@ -1506,7 +1506,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#F1F5F9' },
   cityPickerText: {
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
   managementList: {

@@ -601,7 +601,7 @@ export default function BookingsScreen() {
               {item.providerEarnings && (
                 <Text
                   style={{
-                    fontSize: normalize.font(10),
+                    fontSize: normalize.font(8),
                     fontFamily: "Alexandria-Medium",
                     color: "#16A34A",
                     marginTop: 2,
@@ -708,7 +708,7 @@ export default function BookingsScreen() {
             >
               <Text
                 style={{
-                  fontSize: normalize.font(11),
+                  fontSize: normalize.font(8),
                   fontFamily: "Alexandria-Medium",
                   color: "#64748B",
                   textAlign }}
@@ -720,7 +720,7 @@ export default function BookingsScreen() {
               </Text>
               <Text
                 style={{
-                  fontSize: normalize.font(11),
+                  fontSize: normalize.font(8),
                   fontFamily: "Alexandria-Medium",
                   color: "#64748B",
                   textAlign: isRTL ? "left" : "right" }}
@@ -1147,7 +1147,7 @@ export default function BookingsScreen() {
                     <Text
                       style={[
                         styles.sheetTitle,
-                        { marginBottom: 2, fontSize: normalize.font(20) },
+                        { marginBottom: 2, fontSize: normalize.font(14) },
                       ]}
                     >
                       {selectedShiftForAction.booking?.customer?.name ||
@@ -1209,7 +1209,7 @@ export default function BookingsScreen() {
                           style={[
                             styles.statusText,
                             {
-                              fontSize: normalize.font(11),
+                              fontSize: normalize.font(8),
                               color:
                                 selectedShiftForAction.booking?.status ===
                                   "confirmed"
@@ -1457,12 +1457,12 @@ const styles = StyleSheet.create({
     color: "#64748B",
     fontFamily: "Alexandria-Medium",
     paddingVertical: normalize.height(2),
-    lineHeight: normalize.font(20) },
+    lineHeight: normalize.font(14) },
   activeTabText: {
     color: IDENTITY_BLUE,
     fontFamily: "Alexandria-Medium",
     paddingVertical: normalize.height(2),
-    lineHeight: normalize.font(20) },
+    lineHeight: normalize.font(14) },
   filterRow: {
     paddingHorizontal: normalize.width(16),
     marginBottom: normalize.height(16),
@@ -1483,8 +1483,8 @@ const styles = StyleSheet.create({
   todayButtonText: {
     color: IDENTITY_BLUE,
     fontFamily: "Alexandria-Medium",
-    fontSize: normalize.font(12),
-    lineHeight: normalize.font(16) },
+    fontSize: normalize.font(8),
+    lineHeight: normalize.font(14) },
   calendarContainer: {
     paddingHorizontal: normalize.width(16),
     marginBottom: normalize.height(16) },
@@ -1493,7 +1493,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: normalize.height(12) },
   monthLabel: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: IDENTITY_BLUE },
   daysScroll: { gap: normalize.width(10) },
@@ -1504,14 +1504,14 @@ const styles = StyleSheet.create({
     borderRadius: normalize.radius(12) },
   selectedDayItem: { backgroundColor: IDENTITY_BLUE },
   dayLabel: {
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(8),
     color: "#64748B",
     marginBottom: 4,
     fontFamily: "Alexandria-Medium" },
   selectedDayLabel: {
     color: "#FFF",
     fontFamily: "Alexandria-Medium",
-    lineHeight: normalize.font(16) },
+    lineHeight: normalize.font(14) },
   dateCircle: {
     width: 30,
     height: 30,
@@ -1542,7 +1542,7 @@ const styles = StyleSheet.create({
   selectedDateText: {
     color: IDENTITY_BLUE,
     fontFamily: "Alexandria-Medium",
-    lineHeight: normalize.font(18) },
+    lineHeight: normalize.font(14) },
   selectedFullyBookedDay: {
     backgroundColor: "#94A3B8", // Gray background for the whole item
   },
@@ -1565,9 +1565,9 @@ const styles = StyleSheet.create({
     backgroundColor: IDENTITY_BLUE,
     borderColor: IDENTITY_BLUE },
   chaletChipText: {
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(8),
     fontFamily: "Alexandria-Medium",
-    lineHeight: normalize.font(16),
+    lineHeight: normalize.font(14),
     paddingTop: normalize.height(2) },
 
   shiftsGridContainer: { paddingHorizontal: 16, gap: 12 },
@@ -1602,10 +1602,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center" },
   shiftNameGroup: { gap: 2, flex: 1 },
-  shiftTileName: { fontSize: normalize.font(16), fontFamily: "Alexandria-Medium" },
+  shiftTileName: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium" },
   shiftTimeGroup: { alignItems: "center", gap: 4 },
   shiftTileTime: {
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(8),
     color: "#94A3B8",
     fontFamily: "Alexandria-Medium" },
   shiftStatusColumn: { paddingLeft: 12 },
@@ -1617,14 +1617,14 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1 },
   statusBadgeText: {
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(8),
     fontFamily: "Alexandria-Medium",
-    lineHeight: normalize.font(18),
+    lineHeight: normalize.font(14),
     paddingVertical: normalize.height(2) },
 
   bookingMiniInfo: { marginTop: 6, alignItems: "center", gap: 6 },
   bookingMiniId: {
-    fontSize: normalize.font(11),
+    fontSize: normalize.font(8),
     fontFamily: "Alexandria-Medium",
     letterSpacing: 0.5 },
   bookingTypeBadge: {
@@ -1632,7 +1632,7 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
     borderRadius: 4 },
   bookingTypeBadgeText: {
-    fontSize: normalize.font(9),
+    fontSize: normalize.font(8),
     fontFamily: "Alexandria-Medium",
     textTransform: "uppercase" },
 
@@ -1657,13 +1657,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden" },
-  customerName: { fontSize: normalize.font(15), fontFamily: "Alexandria-Medium" },
+  customerName: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium" },
   chaletName: {
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(8),
     color: "#64748B",
     fontFamily: "Alexandria-Medium" },
   priceText: {
-    fontSize: normalize.font(15),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: IDENTITY_BLUE },
   dateHighlight: {
@@ -1673,7 +1673,7 @@ const styles = StyleSheet.create({
     gap: 8,
     alignItems: "center" },
   dateHighlightText: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: "#1E293B" },
   statusBadge: {
@@ -1682,17 +1682,17 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: "center" },
   statusText: {
-    fontSize: normalize.font(11),
+    fontSize: normalize.font(8),
     fontFamily: "Alexandria-Medium",
-    lineHeight: normalize.font(16) },
+    lineHeight: normalize.font(14) },
   codeText: {
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(8),
     color: "#64748B",
     fontFamily: "Alexandria-Medium" },
   sheetLoading: { padding: 50, alignItems: "center" },
   sheetScroll: { padding: 20 },
   sheetTopRow: { marginBottom: 20 },
-  sheetHeroTitle: { fontSize: normalize.font(18), fontFamily: "Alexandria-Medium" },
+  sheetHeroTitle: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium" },
   customerCard: {
     backgroundColor: "#F8FAFC",
     borderRadius: 12,
@@ -1708,10 +1708,10 @@ const styles = StyleSheet.create({
     alignItems: "center" },
   customerAvatarImg: { width: 44, height: 44, borderRadius: 12 },
   customerNameSheet: {
-    fontSize: normalize.font(15),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium" },
   customerPhone: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     color: "#64748B",
     fontFamily: "Alexandria-Medium" },
   contactActions: { gap: 8 },
@@ -1738,7 +1738,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center" },
   detailCardTitle: {
-    fontSize: normalize.font(15),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     flex: 1 },
   detailSubRow: {
@@ -1747,7 +1747,7 @@ const styles = StyleSheet.create({
     gap: 6,
     marginBottom: 12 },
   detailSubText: {
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(8),
     color: "#64748B",
     fontFamily: "Alexandria-Medium" },
   scheduleBlock: {
@@ -1761,7 +1761,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8 },
   scheduleDate: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     flex: 1 },
   shiftChip: {
@@ -1771,26 +1771,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6 },
-  shiftChipText: { fontSize: normalize.font(10), fontFamily: "Alexandria-Medium" },
+  shiftChipText: { fontSize: normalize.font(8), fontFamily: "Alexandria-Medium" },
   timeLabel: {
-    fontSize: normalize.font(10),
+    fontSize: normalize.font(8),
     color: "#94A3B8",
     fontFamily: "Alexandria-Medium",
     textTransform: "uppercase" },
   timeValue: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium" },
   timeArrow: { paddingHorizontal: 8 },
   paymentTotalValue: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: IDENTITY_BLUE },
   paymentCard: { padding: 12, backgroundColor: "#F8FAFC", borderRadius: 10 },
   paymentTotalRow: { justifyContent: "space-between", alignItems: "center" },
   paymentTotalLabel: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium" },
   sheetContent: { paddingBottom: normalize.height(24) },
   sheetTitle: {
-    fontSize: normalize.font(18),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     marginBottom: 16 },
   textInput: {
@@ -1831,7 +1831,7 @@ const styles = StyleSheet.create({
     borderColor: "#DBEAFE" },
   sheetHeaderLabelRow: { alignItems: "center", gap: 8 },
   pickerColLabel: {
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(8),
     color: "#94A3B8",
     fontFamily: "Alexandria-Medium",
     textTransform: "uppercase",
@@ -1847,7 +1847,7 @@ const styles = StyleSheet.create({
     marginBottom: 4 },
   pickerItemActiveNew: { backgroundColor: "#F0F9FF" },
   pickerItemTextNew: {
-    fontSize: normalize.font(15),
+    fontSize: normalize.font(14),
     color: "#64748B",
     fontFamily: "Alexandria-Medium" },
   pickerItemTextActiveNew: {
@@ -1872,11 +1872,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#F1F5F9" },
   notesLabel: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: IDENTITY_BLUE },
   notesText: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     color: "#475569",
     lineHeight: 18,
     fontFamily: "Alexandria-Medium" },
@@ -1891,7 +1891,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 400 },
   successAnimationText: {
-    fontSize: normalize.font(18),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: IDENTITY_BLUE,
     marginTop: 16,

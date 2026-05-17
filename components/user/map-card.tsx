@@ -123,11 +123,11 @@ const styles = StyleSheet.create({
   titleSection: {
     flex: 1 },
   title: {
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: "Alexandria-Medium",
     color: "#111827" },
   location: {
-    fontSize: 12,
+    fontSize: 8,
     color: "#6B7280",
     marginTop: 2,
    fontFamily: "Alexandria-Medium" },
@@ -144,6 +144,6 @@ const styles = StyleSheet.create({
     fontFamily: "Alexandria-Medium",
     color: "#111827" },
   price: {
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: "Alexandria-Medium",
     color: Colors.primary } });

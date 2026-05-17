@@ -161,17 +161,17 @@ const styles = StyleSheet.create({
   chaletInfo: {
     flex: 1 },
   chaletTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: "Alexandria-Medium",
     color: "#111827" },
   chaletLocation: {
-    fontSize: 13,
+    fontSize: 14,
     color: "#6B7280",
     marginVertical: 2,
     fontFamily: "Alexandria-Medium" },
   priceText: {
     fontSize: 14,
-    fontFamily: "Alexandria-ExtraBold",
+    fontFamily: "Alexandria-Medium",
     color: "#111827" },
   divider: {
     height: 1,
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18 },
   userName: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: "Alexandria-Medium",
     color: "#111827" },
   ratingPill: {
@@ -219,6 +219,6 @@ const styles = StyleSheet.create({
     height: 70,
     borderRadius: 12 },
   dateText: {
-    fontSize: 12,
+    fontSize: 8,
     color: "#9CA3AF",
     fontFamily: "Alexandria-Medium" } });

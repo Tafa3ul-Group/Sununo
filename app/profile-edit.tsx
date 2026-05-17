@@ -313,8 +313,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center' },
   headerTitle: {
-    fontSize: normalize.font(16),
-    fontFamily: 'Alexandria-Medium',
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: '#111827' },
   backCircle: {
     width: 38,
@@ -364,8 +364,8 @@ const styles = StyleSheet.create({
   fieldGroup: {
     marginBottom: normalize.height(14) },
   label: {
-    fontSize: normalize.font(12),
-    fontFamily: 'Alexandria-Medium',
+    fontSize: normalize.font(8),
+    fontFamily: "Alexandria-Medium",
     color: '#374151',
     marginBottom: normalize.height(6) },
   inputWrapper: {
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: normalize.width(14) },
   input: {
     fontSize: normalize.font(14),
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: "Alexandria-Medium",
     color: '#1E293B',
     flex: 1 },
 
@@ -400,15 +400,15 @@ const styles = StyleSheet.create({
     minWidth: normalize.width(110) },
   changePhoneText: {
     color: '#FFFFFF',
-    fontSize: normalize.font(12),
-    fontFamily: 'Alexandria-Medium' },
+    fontSize: normalize.font(8),
+    fontFamily: "Alexandria-Medium" },
   phoneValueWrapper: {
     flex: 1,
     paddingHorizontal: normalize.width(12),
     justifyContent: 'center' },
   phoneValue: {
     fontSize: normalize.font(14),
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: "Alexandria-Medium",
     color: '#1E293B' },
 
   // ── Map card ─────────────────────────────────────────────────────────────
@@ -431,12 +431,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center' },
   locationName: {
-    fontSize: normalize.font(13),
-    fontFamily: 'Alexandria-Medium',
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: '#9CA3AF' },
   changeLocText: {
-    fontSize: normalize.font(13),
-    fontFamily: 'Alexandria-Medium',
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.primary },
 
   // ── Footer ───────────────────────────────────────────────────────────────

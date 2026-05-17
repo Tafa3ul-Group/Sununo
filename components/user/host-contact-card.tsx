@@ -110,11 +110,11 @@ const styles = StyleSheet.create({
   infoColumn: {
     flex: 1 },
   hostLabel: {
-    fontSize: 12,
+    fontSize: 8,
     color: "#040404ff",
     fontFamily: "Alexandria-Medium" },
   hostName: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#111827",
     fontFamily: "Alexandria-Medium",
     marginTop: -2 },

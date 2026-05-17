@@ -267,11 +267,11 @@ const styles = StyleSheet.create({
   upperText: {
     marginTop: 4 },
   title: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: "#111827" },
   location: {
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(8),
     color: "#6B7280",
     marginTop: 2,
     fontFamily: "Alexandria-Medium" },
@@ -279,11 +279,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 4 },
   price: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: "#111827" },
   priceLabel: {
-    fontSize: normalize.font(11),
+    fontSize: normalize.font(8),
     color: "#6B7280",
     fontFamily: "Alexandria-Medium" },
   imageWrapper: {
