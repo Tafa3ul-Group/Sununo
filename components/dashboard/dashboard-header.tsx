@@ -45,33 +45,21 @@ export function DashboardHeader({
     >
       <StatusBar style="dark" />
       <View style={[styles.topRow]}>
-        {/* Start side: right in RTL, left in LTR */}
+        {/* Start side: Logo */}
         <View style={[styles.leftGroup]}>
           {showBackButton ? (
             <CircleBackButton onPress={() => router.back()} />
           ) : !title ? (
-            <View style={[styles.homeLeftGroup]}>
-              <TouchableOpacity
-                onPress={onProfilePress || (() => router.push("/(dashboard)/profile"))}
-                style={styles.profileCircle}
-              >
-                <SolarUserBold
-                  size={normalize.width(22)}
-                  color="#111827"
-                />
-              </TouchableOpacity>
-
-              {showSearch && (
-                <TouchableOpacity
-                  onPress={onSearchPress}
-                  style={styles.searchCircle}
-                >
-                  <SolarMagnifierBold
-                    size={normalize.width(22)}
-                    color="#111827"
-                  />
-                </TouchableOpacity>
-              )}
+            <View style={styles.logoContainer}>
+              <Image
+                source={
+                  isRTL
+                    ? require("@/assets/arlogo.svg")
+                    : require("@/assets/logo.svg")
+                }
+                style={styles.logoImg}
+                contentFit="contain"
+              />
             </View>
           ) : null}
         </View>
@@ -85,7 +73,7 @@ export function DashboardHeader({
           </View>
         )}
 
-        {/* End side: left in RTL, right in LTR */}
+        {/* End side: Profile & Search */}
         <View style={[styles.rightGroup]}>
           {onDeletePress ? (
             <TouchableOpacity onPress={onDeletePress} style={styles.deleteCircle}>
@@ -97,16 +85,27 @@ export function DashboardHeader({
           ) : customRightComponent ? (
             customRightComponent
           ) : (
-            <View style={styles.logoContainer}>
-              <Image
-                source={
-                  isRTL
-                    ? require("@/assets/arlogo.svg")
-                    : require("@/assets/logo.svg")
-                }
-                style={styles.logoImg}
-                contentFit="contain"
-              />
+            <View style={[styles.homeRightGroup]}>
+              {showSearch && (
+                <TouchableOpacity
+                  onPress={onSearchPress}
+                  style={styles.searchCircle}
+                >
+                  <SolarMagnifierBold
+                    size={normalize.width(22)}
+                    color="#111827"
+                  />
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                onPress={onProfilePress || (() => router.push("/(dashboard)/profile"))}
+                style={styles.profileCircle}
+              >
+                <SolarUserBold
+                  size={normalize.width(22)}
+                  color="#111827"
+                />
+              </TouchableOpacity>
             </View>
           )}
         </View>
@@ -128,10 +127,11 @@ const styles = StyleSheet.create({
     width: normalize.width(80),
     alignItems: "flex-start",
     justifyContent: "center" },
-  homeLeftGroup: {
+  homeRightGroup: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6, // Tighter gap
+    justifyContent: "flex-end",
+    gap: 6,
   },
   titleWrapper: {
     flex: 1,
@@ -147,6 +147,7 @@ const styles = StyleSheet.create({
     paddingVertical: normalize.height(8) },
   rightGroup: {
     width: normalize.width(80),
+    alignItems: "flex-end",
     justifyContent: "center" },
   profileCircle: {
     width: normalize.width(42),
