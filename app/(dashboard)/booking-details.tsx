@@ -3,6 +3,7 @@ import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import {
   SolarDangerCircleBold
 } from '@/components/icons/solar-icons';
+import { ThemedText } from '@/components/themed-text';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
@@ -13,7 +14,8 @@ import { Image as ExpoImage } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 
 const IDENTITY_BLUE = '#035DF9';
@@ -27,7 +29,7 @@ export default function BookingDetailsPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { language } = useSelector((state: RootState) => state.auth);
-  const { t } = useTranslation();
+    const { t } = useTranslation();
   const cancelSheetRef = React.useRef<BookingCancellationSheetRef>(null);
   const confirmPaymentSheetRef = React.useRef<PaymentConfirmationSheetRef>(null);
 
@@ -47,7 +49,7 @@ export default function BookingDetailsPage() {
     const is404 = (error as any)?.status === 404;
     const errorMessage = (error as any)?.data?.message || (error as any)?.message;
     return (
-      <ErrorState
+      <ErrorState 
         type={is404 ? 'error404' : 'failed'}
         message={errorMessage}
         onBack={() => router.back()}
@@ -122,11 +124,11 @@ export default function BookingDetailsPage() {
   };
 
   const renderInfoRow = (label: string, value: string | React.ReactNode, isBlue: boolean = false) => (
-    <View style={styles.infoRow}>
-      <Text style={styles.infoLabel}>{label}</Text>
-      <View style={styles.infoValueContainer}>
+    <View style={[styles.infoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+      <Text style={[styles.infoLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{label}</Text>
+      <View style={{ flex: 1, alignItems: isRTL ? 'flex-start' : 'flex-end' }}>
         {typeof value === 'string' ? (
-          <Text style={[styles.infoValue, isBlue && styles.blueValue]}>{value}</Text>
+          <Text style={[styles.infoValue, isBlue && styles.blueValue, { textAlign: isRTL ? 'left' : 'right' }]}>{value}</Text>
         ) : (
           value
         )}
@@ -148,21 +150,7 @@ export default function BookingDetailsPage() {
         customRightComponent={<View style={{ width: normalize.width(80) }} />}
       />
 
-      <ScrollView
-        contentContainerStyle={[
-          styles.scrollContent,
-          {
-            paddingBottom: bIsCancelled
-              ? normalize.height(24)
-              : bIsExternal
-                ? normalize.height(120)
-                : remainingAmount > 0
-                  ? normalize.height(180)
-                  : normalize.height(120)
-          }
-        ]}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
         {/* Cancelled Status Card */}
         {bIsCancelled && (
@@ -252,6 +240,8 @@ export default function BookingDetailsPage() {
             )}
           </View>
         )}
+
+        <View style={{ height: 20 }} />
       </ScrollView>
 
       {/* Bottom Actions Footer */}
@@ -320,7 +310,7 @@ const styles = StyleSheet.create({
   errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFFFFF', padding: 20 },
   errorText: { color: '#64748B', marginTop: 16 },
   backBtn: { marginTop: 20 },
-  backBtnText: { color: IDENTITY_BLUE, fontFamily: "Alexandria-SemiBold" },
+  backBtnText: { color: IDENTITY_BLUE, fontFamily: "Alexandria-Medium" },
   menuCircle: {
     width: normalize.width(42),
     height: normalize.width(42),
@@ -329,58 +319,51 @@ const styles = StyleSheet.create({
     borderColor: "#F1F5F9",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F8F9FB"
-  },
+    backgroundColor: "#F8F9FB" },
   cancelledCard: {
     backgroundColor: '#FFF5F5',
     borderRadius: 20,
     padding: 16,
     borderWidth: 1,
     borderColor: '#FEE2E2',
-    marginBottom: 16
-  },
+    marginBottom: 16 },
   cancelledHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    marginBottom: 12
-  },
+    marginBottom: 12 },
   warningIconWrapper: {
     width: 36,
     height: 36,
     borderRadius: 18,
     backgroundColor: '#FFE5E5',
     justifyContent: 'center',
-    alignItems: 'center'
-  },
+    alignItems: 'center' },
   cancelledTitle: {
     flex: 1,
-    fontSize: normalize.font(16),
-    fontFamily: "Alexandria-SemiBold",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: '#EA2129',
-    textAlign: isRTL ? 'right' : 'left',
-    lineHeight: normalize.font(24)
-  },
+    textAlign: 'left',
+    lineHeight: normalize.font(14) },
   cancelledDivider: {
     height: 1,
     backgroundColor: '#FEE2E2',
     marginVertical: 4,
-    marginBottom: 12
-  },
+    marginBottom: 12 },
   cancelledReason: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     color: '#1E293B',
-    textAlign: isRTL ? 'right' : 'left',
-    lineHeight: normalize.font(20)
-  },
-  scrollContent: { paddingHorizontal: 20 },
+    textAlign: 'left',
+    lineHeight: normalize.font(14) },
+  scrollContent: { paddingBottom: normalize.height(160), paddingHorizontal: 20 },
   chaletSimpleRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   simpleImageWrapper: { width: 80, height: 80, borderRadius: 16, overflow: 'hidden', backgroundColor: '#F1F5F9' },
   simpleChaletImage: { width: '100%', height: '100%' },
   simpleChaletText: { flex: 1, alignItems: 'flex-start' },
-  simpleChaletName: { fontSize: normalize.font(16), fontFamily: "Alexandria-SemiBold", color: '#1E293B', textAlign: isRTL ? 'right' : 'left', lineHeight: normalize.font(22) },
-  simpleChaletLocation: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#64748B', textAlign: isRTL ? 'right' : 'left', lineHeight: normalize.font(20), marginTop: 4 },
+  simpleChaletName: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#1E293B', textAlign: 'left', lineHeight: normalize.font(14) },
+  simpleChaletLocation: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#64748B', textAlign: 'left', lineHeight: normalize.font(14), marginTop: 4 },
   infoSectionCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
@@ -388,16 +371,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F1F5F9',
     marginBottom: 12,
-    paddingBottom: 24
-  },
+    paddingBottom: 24 },
   sectionTitleRow: { width: '100%', marginBottom: 8, alignItems: 'flex-start' },
-  sectionTitle: { fontSize: normalize.font(14), fontFamily: "Alexandria-SemiBold", color: IDENTITY_BLUE, textAlign: isRTL ? 'right' : 'left', lineHeight: normalize.font(20) },
+  sectionTitle: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: IDENTITY_BLUE, textAlign: 'left', lineHeight: normalize.font(14) },
   divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 10 },
   infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  infoLabel: { fontSize: normalize.font(14), fontFamily: "Alexandria-SemiBold", color: '#1E293B', textAlign: isRTL ? 'right' : 'left', lineHeight: normalize.font(20) },
-  infoValueContainer: { flex: 1, alignItems: 'flex-end' },
-  infoValue: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#64748B', textAlign: isRTL ? 'left' : 'right', lineHeight: normalize.font(22) },
-  blueValue: { color: IDENTITY_BLUE, fontFamily: "Alexandria-SemiBold", textAlign: isRTL ? 'left' : 'right', lineHeight: normalize.font(22) },
+  infoLabel: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#1E293B', textAlign: 'left', lineHeight: normalize.font(14) },
+  infoValue: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#64748B', textAlign: 'right', lineHeight: normalize.font(14) },
+  blueValue: { color: IDENTITY_BLUE, fontFamily: "Alexandria-Medium", textAlign: 'right', lineHeight: normalize.font(14) },
   bottomActions: {
     position: 'absolute',
     bottom: 0,
@@ -410,12 +391,8 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: normalize.radius(24),
     borderTopRightRadius: normalize.radius(24),
     borderTopWidth: 1,
-    borderTopColor: '#F1F5F9'
-  },
+    borderTopColor: '#F1F5F9' },
   payButton: {
-    marginBottom: 12
-  },
+    marginBottom: 12 },
   cancelButton: {
-    width: '100%'
-  }
-});
+    width: '100%' } });

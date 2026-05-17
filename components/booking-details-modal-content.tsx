@@ -12,7 +12,8 @@ import {
   SolarSunBold, 
   SolarAltArrowLeftLinear, 
   SolarAltArrowRightLinear, 
-  SolarMenuDotsBold, 
+  SolarNotesBoldDuotone,
+  SolarMenuDotsBold,
   SolarStarBold
 } from '@/components/icons/solar-icons';
 import { PrimaryButton } from '@/components/user/primary-button';
@@ -232,8 +233,8 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 2 },
   headerTitle: {
-    fontSize: normalize.font(18),
-    fontFamily: "Alexandria-Bold",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
   scrollContent: {
     padding: normalize.width(16) },
@@ -253,12 +254,12 @@ const styles = StyleSheet.create({
   chaletInfo: {
     flex: 1 },
   chaletName: {
-    fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Black",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     marginBottom: 4 },
   chaletLocation: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.muted,
     marginBottom: 8 },
@@ -267,13 +268,13 @@ const styles = StyleSheet.create({
     gap: 4,
     marginBottom: 12 },
   ratingText: {
-    fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Bold",
+    fontSize: normalize.font(8),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     paddingTop: 2 },
   priceTag: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
   organicImageContainer: {
     width: normalize.width(100),
@@ -289,7 +290,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 50 },
   sectionTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: IDENTITY_BLUE,
     marginBottom: 12 },
   divider: {
@@ -306,16 +307,16 @@ const styles = StyleSheet.create({
     color: Colors.text.primary,
     flex: 1 },
   value: {
-    fontSize: normalize.font(15),
-    fontFamily: "Alexandria-Bold",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     flex: 2 },
   currency: {
-    fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Bold" },
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium" },
   notesText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.muted,
     lineHeight: 20 },
   bottomActions: {
@@ -342,7 +343,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10 },
   cancelLinkText: {
     color: '#EF4444',
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     fontSize: normalize.font(14),
     textDecorationLine: 'underline' },
   sheetLoading: {

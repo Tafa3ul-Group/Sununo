@@ -144,8 +144,8 @@ const styles = StyleSheet.create({
     shadowRadius: 15,
     elevation: 8 },
   pageTitle: {
-    fontSize: 22,
-    fontFamily: "Alexandria-Black",
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
     color: "#111827" },
   card: {
     backgroundColor: "white",
@@ -159,12 +159,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#F3F4F6" },
   sectionTitle: {
-    fontSize: 18,
-    fontFamily: "Alexandria-Black",
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
     color: Colors.primary,
     marginBottom: 12 },
   content: {
-    fontSize: 15,
+    fontSize: 14,
     lineHeight: 24,
     color: "#4B5563",
     fontFamily: "Alexandria-Medium",

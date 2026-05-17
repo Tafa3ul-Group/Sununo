@@ -390,9 +390,9 @@ const styles = StyleSheet.create({
     marginBottom: 16 },
   searchInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 14,
     color: Colors.text.primary,
-    fontFamily: "Alexandria-Regular" },
+    fontFamily: "Alexandria-Medium" },
   cityItem: {
     alignItems: "center",
     padding: 12,
@@ -405,8 +405,8 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
     backgroundColor: "#E6EFFF" },
   cityName: {
-    fontSize: 16,
-    fontFamily: "LamaSans-SemiBold",
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     flex: 1,
     marginHorizontal: 8 },
@@ -433,8 +433,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     gap: 8 },
   legendText: {
-    fontSize: 13,
-    fontFamily: "LamaSans-SemiBold",
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
     color: "#1A1A1A" },
   dot: {
     width: 18,
@@ -481,8 +481,8 @@ const styles = StyleSheet.create({
     borderColor: "#15AB64",
     backgroundColor: "white" },
   periodLabel: {
-    fontSize: 18,
-    fontFamily: "LamaSans-Bold",
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
     color: "#1A1A1A",
     flex: 1,
     textAlign: "right" },
@@ -500,14 +500,14 @@ const styles = StyleSheet.create({
     // Removed flex: 1 to allow space-between to push it
   },
   guestLabel: {
-    fontSize: 22,
-    fontFamily: "Alexandria-Black",
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
     color: "#1A1A1A" },
   guestSubLabel: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#9CA3AF",
     marginTop: 2,
-    fontFamily: "Alexandria-Regular" },
+    fontFamily: "Alexandria-Medium" },
   // RTL Utilities
   rtlText: { textAlign: "right" },
   ltrText: { textAlign: "left" },

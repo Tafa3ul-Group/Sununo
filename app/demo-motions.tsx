@@ -73,8 +73,8 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center' },
   sectionTitle: {
-    fontSize: 20,
-    fontFamily: "Alexandria-Black",
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
     color: '#1E293B',
     alignSelf: 'flex-end',
     marginTop: 30,
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   itemLabel: {
     marginTop: 10,
     fontSize: 14,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: '#64748B' },
   btn: {
     backgroundColor: '#035DF9',
@@ -110,6 +110,6 @@ const styles = StyleSheet.create({
     marginBottom: 12 },
   btnText: {
     color: '#FFF',
-    fontSize: 16,
-    fontFamily: "Alexandria-Black" }
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium" }
 });

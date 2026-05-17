@@ -1,5 +1,4 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { logout } from "../authSlice";
 
 // API base URL — reads from environment variable with fallback
 const BASE_URL =
@@ -24,6 +23,7 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
 
   if (result.error && result.error.status === 401) {
     // Force logout if 401 Unauthorized
+    const { logout } = require("../authSlice");
     api.dispatch(logout());
   }
 
@@ -338,10 +338,7 @@ export const apiSlice = createApi({
 
     // Get provider stats
     getProviderStats: builder.query({
-      query: (params) => ({
-        url: "/provider/profile/stats",
-        params,
-      }),
+      query: () => "/provider/profile/stats",
       providesTags: ["Booking", "Chalet"],
     }),
 
@@ -397,15 +394,6 @@ export const apiSlice = createApi({
     getProviderBookingDetails: builder.query({
       query: (id) => `/provider/bookings/${id}`,
       providesTags: (result, error, id) => [{ type: "Booking" as const, id }],
-    }),
-
-    // Get financial stats for a specific chalet owned by the provider
-    getProviderChaletStats: builder.query({
-      query: (chaletId) => `/provider/bookings/chalets/${chaletId}/stats`,
-      providesTags: (result, error, chaletId) => [
-        "Booking",
-        { type: "Chalet" as const, id: chaletId },
-      ],
     }),
 
     // Get shift availability
@@ -606,7 +594,6 @@ export const {
   useUpdateProfileImageMutation,
   useGetProviderBookingsQuery,
   useGetProviderBookingDetailsQuery,
-  useGetProviderChaletStatsQuery,
   useGetShiftAvailabilityQuery,
   useGetFullyBookedStatusQuery,
   useMarkBookingCompletedMutation,

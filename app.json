@@ -13,8 +13,7 @@
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "نحتاج الوصول لموقعك لإظهار الشاليهات القريبة منك وتحديد موقع شاليك على الخارطة.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "نحتاج الوصول لموقعك لإظهار الشاليهات القريبة منك وتحديد موقع شاليك على الخارطة."
-      },
-      "appleTeamId": "UD89399RJ8"
+      }
     },
     "android": {
       "adaptiveIcon": {

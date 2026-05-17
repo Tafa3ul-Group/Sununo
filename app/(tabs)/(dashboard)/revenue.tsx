@@ -1,11 +1,12 @@
 import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'expo-router';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator, RefreshControl } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, TextInput, Alert, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, normalize } from '@/constants/theme';
+import { Colors, Spacing, normalize } from '@/constants/theme';
 import { HeaderSection } from '@/components/header-section';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
+import { useTranslation } from 'react-i18next';
 import { useGetPayoutsQuery, useRequestPayoutMutation, useGetProviderStatsQuery, useGetProviderProfileQuery } from '@/store/api/apiSlice';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { PrimaryButton } from '@/components/user/primary-button';
@@ -25,72 +26,23 @@ const PERIODS = [
   { id: 'year', ar: 'سنة', en: 'Year' },
 ];
 
-const formatDateParam = (date: Date) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
-const getPeriodRange = (period: string) => {
-  const now = new Date();
-  const from = new Date(now);
-
-  if (period === 'week') {
-    from.setDate(now.getDate() - 6);
-  } else if (period === 'year') {
-    from.setFullYear(now.getFullYear(), 0, 1);
-    from.setDate(1);
-    from.setHours(0, 0, 0, 0);
-  } else {
-    from.setDate(1);
-    from.setHours(0, 0, 0, 0);
-  }
-
-  return {
-    from: formatDateParam(from),
-    to: formatDateParam(now),
-  };
-};
-
-const PERIOD_LABELS: Record<string, { bookings: { ar: string; en: string }; income: { ar: string; en: string } }> = {
-  week: {
-    bookings: { ar: 'حجوزات الأسبوع', en: "Week's Bookings" },
-    income: { ar: 'دخل الأسبوع', en: "Week's Income" },
-  },
-  month: {
-    bookings: { ar: 'حجوزات الشهر', en: "Month's Bookings" },
-    income: { ar: 'دخل الشهر', en: "Month's Income" },
-  },
-  year: {
-    bookings: { ar: 'حجوزات السنة', en: "Year's Bookings" },
-    income: { ar: 'دخل السنة', en: "Year's Income" },
-  },
-};
-
 export default function RevenueScreen() {
   const router = useRouter();
-  const { user, userType, selectedChalet } = useSelector((state: RootState) => state.auth);
+  const { user, userType, language, selectedChalet } = useSelector((state: RootState) => state.auth);
+  const { t } = useTranslation();
   const textAlign = isRTL ? 'right' : 'left';
   const startAlign = isRTL ? 'flex-end' : 'flex-start';
   const endAlign = isRTL ? 'flex-start' : 'flex-end';
   const [selectedPeriod, setSelectedPeriod] = useState('month');
   const [withdrawAmount, setWithdrawAmount] = useState('');
-  const periodRange = useMemo(() => getPeriodRange(selectedPeriod), [selectedPeriod]);
-  const statLabels = PERIOD_LABELS[selectedPeriod] || PERIOD_LABELS.month;
-  const statsQueryParams = useMemo(() => ({
-    ...periodRange,
-    period: selectedPeriod,
-    chaletId: selectedChalet?.id,
-  }), [periodRange, selectedPeriod, selectedChalet?.id]);
 
   // API hooks
   const { data: payoutsResponse, isLoading: isLoadingPayouts, refetch: refetchPayouts } = useGetPayoutsQuery({ 
     limit: 5,
-    ...periodRange,
+    chaletId: selectedChalet?.id
   });
   const { data: profileResponse, isLoading: isLoadingProfile, refetch: refetchProfile } = useGetProviderProfileQuery(undefined);
-  const { data: statsData, isLoading: isLoadingStats, refetch: refetchStats } = useGetProviderStatsQuery(statsQueryParams);
+  const { data: statsData, isLoading: isLoadingStats, refetch: refetchStats } = useGetProviderStatsQuery(undefined);
   const [requestPayout, { isLoading: isRequesting }] = useRequestPayoutMutation();
 
   const handleRefresh = async () => {
@@ -101,12 +53,7 @@ export default function RevenueScreen() {
 
   const payouts = payoutsResponse?.data || payoutsResponse || [];
   const profile = profileResponse?.data || profileResponse;
-  const statsResponse = statsData?.data || statsData || {};
-  const stats = {
-    periodBookings: statsResponse.periodBookings ?? statsResponse.monthBookings ?? statsResponse.summary?.totalBookings ?? 0,
-    periodRevenue: statsResponse.periodRevenue ?? statsResponse.monthRevenue ?? statsResponse.summary?.totalProviderEarnings ?? 0,
-    occupancyRate: statsResponse.occupancyRate ?? 0,
-  };
+  const stats = statsData || { monthBookings: 0, monthRevenue: 0, occupancyRate: 0 };
 
   // Bottom sheet
   const withdrawSheetRef = useRef<BottomSheetModal>(null);
@@ -225,15 +172,15 @@ export default function RevenueScreen() {
             <View style={[styles.statIconWrap, { backgroundColor: '#EFF6FF' }]}>  
               <SolarCalendarBold size={20} color={Colors.primary} />
             </View>
-            <Text style={styles.statValue}>{isLoadingStats ? '...' : stats.periodBookings}</Text>
-            <Text style={styles.statLabel}>{isRTL ? statLabels.bookings.ar : statLabels.bookings.en}</Text>
+            <Text style={styles.statValue}>{isLoadingStats ? '...' : stats.monthBookings}</Text>
+            <Text style={styles.statLabel}>{isRTL ? 'حجوزات الشهر' : "Month's Bookings"}</Text>
           </View>
           <View style={styles.statCard}>
             <View style={[styles.statIconWrap, { backgroundColor: '#ECFDF5' }]}>
               <SolarBanknoteBold size={20} color="#10B981" />
             </View>
-            <Text style={styles.statValue}>{isLoadingStats ? '...' : stats.periodRevenue.toLocaleString()}</Text>
-            <Text style={styles.statLabel}>{isRTL ? statLabels.income.ar : statLabels.income.en}</Text>
+            <Text style={styles.statValue}>{isLoadingStats ? '...' : stats.monthRevenue?.toLocaleString()}</Text>
+            <Text style={styles.statLabel}>{isRTL ? 'دخل الشهر' : "Month's Income"}</Text>
           </View>
           <View style={styles.statCard}>
             <View style={[styles.statIconWrap, { backgroundColor: '#FFF7ED' }]}>
@@ -385,20 +332,20 @@ const styles = StyleSheet.create({
     bottom: -30 },
   balanceLabel: {
     color: 'rgba(255,255,255,0.7)',
-    fontSize: normalize.font(13),
-    fontFamily: "Alexandria-SemiBold",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     marginBottom: 8,
     letterSpacing: 0.5,
     textTransform: 'uppercase' },
   balanceValue: {
     color: Colors.white,
-    fontSize: normalize.font(36),
-    fontFamily: "Alexandria-Black",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     letterSpacing: -1 },
   balanceCurrency: {
     color: 'rgba(255,255,255,0.6)',
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     marginBottom: 20,
     marginTop: 2 },
   withdrawButton: {
@@ -411,7 +358,7 @@ const styles = StyleSheet.create({
     gap: 8 },
   withdrawButtonText: {
     color: Colors.primary,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     fontSize: normalize.font(14) },
   // Period Filter
   periodRow: {
@@ -429,12 +376,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     borderColor: Colors.primary },
   periodText: {
-    fontSize: normalize.font(13),
-    fontFamily: "Alexandria-SemiBold",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.secondary },
   periodTextActive: {
     color: Colors.white,
-   fontFamily: "Alexandria-Regular" },
+   fontFamily: "Alexandria-Medium" },
   // Stats
   statsRow: {
     gap: 10,
@@ -455,13 +402,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10 },
   statValue: {
-    fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Black",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
   statLabel: {
-    fontSize: normalize.font(10),
+    fontSize: normalize.font(8),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     marginTop: 2,
     textAlign: 'center' },
   // Section Header
@@ -470,8 +417,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 14 },
   sectionTitle: {
-    fontSize: normalize.font(18),
-    fontFamily: "Alexandria-Black",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
   viewAllBtn: {
     flexDirection: 'row',
@@ -479,8 +426,8 @@ const styles = StyleSheet.create({
     gap: 2 },
   viewAllText: {
     color: Colors.primary,
-    fontSize: normalize.font(13),
-    fontFamily: "Alexandria-SemiBold" },
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium" },
   // Transactions
   transactionsCard: {
     backgroundColor: Colors.white,
@@ -502,29 +449,29 @@ const styles = StyleSheet.create({
     flex: 1 },
   transactionTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     marginBottom: 3 },
   transactionDate: {
-    fontSize: normalize.font(11),
+    fontSize: normalize.font(8),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium" },
   transactionAmount: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     marginBottom: 4 },
   currencySmall: {
-    fontSize: normalize.font(11),
-    fontFamily: "Alexandria-SemiBold",
+    fontSize: normalize.font(8),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.muted },
   typeBadge: {
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 6 },
   typeBadgeText: {
-    fontSize: normalize.font(9),
-    fontFamily: "Alexandria-Bold",
+    fontSize: normalize.font(8),
+    fontFamily: "Alexandria-Medium",
     textTransform: 'uppercase' },
   separator: {
     height: 1,
@@ -536,20 +483,20 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
     gap: 10 },
   emptyText: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-SemiBold" },
+    fontFamily: "Alexandria-Medium" },
   // Withdraw Sheet
   sheetContent: {
     padding: 24 },
   sheetTitle: {
-    fontSize: normalize.font(20),
-    fontFamily: "Alexandria-Black",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     textAlign: 'center',
     marginBottom: 4 },
   sheetSubtitle: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium",
     textAlign: 'center',
@@ -565,11 +512,11 @@ const styles = StyleSheet.create({
     height: 60 },
   amountInput: {
     flex: 1,
-    fontSize: normalize.font(24),
-    fontFamily: "Alexandria-Black",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     textAlign: 'center' },
   amountCurrency: {
-    fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Bold",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.muted } });

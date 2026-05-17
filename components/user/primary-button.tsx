@@ -164,8 +164,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   primaryText: {
-    fontSize: 18,
-    fontFamily: "LamaSans-Black",
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
     textAlign: "center",
     lineHeight: 25,
     paddingVertical: 2,
