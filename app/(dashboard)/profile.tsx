@@ -493,12 +493,12 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: normalize.width(15) },
   userName: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(16),
+    fontFamily: "Alexandria-Black",
     color: '#374151' },
   userType: {
-    fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(12),
+    fontFamily: "Alexandria-Regular",
     color: Colors.primary,
     marginTop: 4 },
   avatarWrap: {
@@ -524,8 +524,8 @@ const styles = StyleSheet.create({
     alignItems: 'center' },
   avatarInitialText: {
     color: 'white',
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium" },
+    fontSize: normalize.font(24),
+    fontFamily: "Alexandria-Black" },
   editBadge: {
     position: 'absolute',
     bottom: -2,
@@ -551,8 +551,8 @@ const styles = StyleSheet.create({
     borderColor: '#F3F4F6' },
   menuLabelText: {
     flex: 1,
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(16),
+    fontFamily: "Alexandria-Bold",
     color: '#374151',
     marginHorizontal: normalize.width(15) },
   sheetScrollContent: {
@@ -562,8 +562,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20 },
   sheetTitle: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(18),
+    fontFamily: "Alexandria-Bold",
     color: Colors.text.primary },
   imageSection: {
     alignItems: 'center',
@@ -595,7 +595,7 @@ const styles = StyleSheet.create({
     gap: 8 },
   label: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Alexandria-SemiBold",
     color: Colors.text.secondary },
   inputWrapper: {
     minHeight: 56,
@@ -610,8 +610,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#F1F5F9' },
   input: {
     flex: 1,
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(16),
+    fontFamily: "Alexandria-Regular",
     color: Colors.text.primary,
     marginHorizontal: 12 },
   genderContainer: {
@@ -630,12 +630,12 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
     backgroundColor: '#EEF2FF' },
   genderText: {
-    fontSize: normalize.font(14),
+    fontSize: normalize.font(16),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.secondary },
   genderTextActive: {
     color: Colors.primary,
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "Alexandria-Bold" },
   saveButton: {
     backgroundColor: Colors.primary,
     height: 58,
@@ -647,8 +647,8 @@ const styles = StyleSheet.create({
     opacity: 0.7 },
   saveButtonText: {
     color: 'white',
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium" },
+    fontSize: normalize.font(16),
+    fontFamily: "Alexandria-Bold" },
   citySheetContent: {
     flex: 1,
     padding: 20 },
@@ -659,17 +659,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center' },
   cityText: {
-    fontSize: normalize.font(14),
+    fontSize: normalize.font(16),
     fontFamily: "Alexandria-Medium" },
   cityTextActive: {
     color: Colors.primary,
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "Alexandria-Bold" },
   cityEmptyText: {
     paddingVertical: 24,
     textAlign: 'center',
     color: Colors.text.muted,
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "Alexandria-Regular" },
   selectedDot: {
     width: 8,
     height: 8,

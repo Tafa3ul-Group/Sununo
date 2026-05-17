@@ -266,14 +266,14 @@ const styles = StyleSheet.create({
     borderWidth: 0,
     position: 'absolute' },
   title: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(22),
+    fontFamily: "Alexandria-Bold",
     color: '#FF4D17',
     marginTop: 16,
     textAlign: 'center' },
   customerPhone: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(16),
+    fontFamily: "Alexandria-SemiBold",
     color: '#64748B',
     marginTop: 4,
     marginBottom: 24,
@@ -282,8 +282,8 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: 32 },
   inputLabel: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(16),
+    fontFamily: "Alexandria-SemiBold",
     color: '#1C1C1C',
     marginBottom: 12 },
   textInput: {
@@ -294,13 +294,13 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
     borderRadius: 20,
     padding: 16,
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(15),
+    fontFamily: "Alexandria-Regular",
     color: '#1C1C1C',
     textAlignVertical: 'top' },
   noteText: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(13),
+    fontFamily: "Alexandria-Regular",
     color: '#64748B',
     marginTop: 16,
     lineHeight: 20 },
@@ -317,8 +317,8 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 300 },
   feedbackText: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(18),
+    fontFamily: "Alexandria-Bold",
     color: '#1C1C1C',
     textAlign: 'center',
     marginTop: 10 },
@@ -331,6 +331,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E2E8F0' },
   retryButtonText: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(15),
+    fontFamily: "Alexandria-Bold",
     color: '#FF4D17' } });

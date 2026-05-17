@@ -9,7 +9,6 @@ import { PrimaryButton } from "@/components/user/primary-button";
 import { SolarStarBold, SolarStarLinear } from "@/components/icons/solar-icons";
 import { useCreateReviewMutation } from "@/store/api/customerApiSlice";
 import Svg, { Path } from "react-native-svg";
-import { HeaderSection } from "@/components/header-section";
 import { isRTL } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -51,12 +50,12 @@ export default function AddReviewScreen() {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ headerShown: false }} />
-      <HeaderSection
-        title={t('chalet.details.addReview')}
-        showBackButton={true}
-        showLogo={false}
-        onBackPress={() => router.back()}
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          headerTitle: t('chalet.details.addReview'),
+          headerTitleStyle: { fontFamily: 'Alexandria-Black', fontSize: 18 },
+          headerLeft: () => <CircleBackButton onPress={() => router.back()} /> }}
       />
 
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
@@ -114,13 +113,13 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     alignItems: 'center' },
   title: {
-    fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontSize: 24,
+    fontFamily: 'Alexandria-Black',
     color: '#111827',
     marginBottom: 8 },
   subtitle: {
-    fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontSize: 16,
+    fontFamily: 'Alexandria-Medium',
     color: '#6B7280',
     textAlign: 'center' },
   card: {
@@ -141,7 +140,7 @@ const styles = StyleSheet.create({
     marginBottom: 32 },
   inputLabel: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: 'Alexandria-SemiBold',
     color: '#374151',
     marginBottom: 10,
     marginHorizontal: 4 },
@@ -149,8 +148,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB',
     borderRadius: 16,
     padding: 18,
-    fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontSize: 16,
+    fontFamily: 'Alexandria-Medium',
     color: '#111827',
     minHeight: 150,
     textAlignVertical: 'top',

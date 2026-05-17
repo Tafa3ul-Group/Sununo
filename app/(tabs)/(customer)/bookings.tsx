@@ -179,14 +179,14 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center' },
   chaletInfoContent: { flex: 1, height: 100, justifyContent: 'space-between' },
-  chaletTitle: { fontSize: 14, fontFamily: "Alexandria-Medium", color: '#1E293B' },
-  locationText: { fontSize: 14, color: '#64748B', fontFamily: "Alexandria-Medium", marginTop: 4 },
+  chaletTitle: { fontSize: 16, fontFamily: "Alexandria-Black", color: '#1E293B' },
+  locationText: { fontSize: 13, color: '#64748B', fontFamily: "Alexandria-Bold", marginTop: 4 },
   
   priceRatingRow: { justifyContent: 'space-between', alignItems: 'center' },
   ratingBox: { alignItems: 'center', gap: 4 },
-  ratingText: { fontSize: 14, fontFamily: "Alexandria-Medium", color: '#1E293B' },
-  priceText: { fontSize: 14, fontFamily: "Alexandria-Medium", color: '#111827' },
-  priceLabel: { fontSize: 8, fontFamily: "Alexandria-Medium", color: '#64748B' },
+  ratingText: { fontSize: 14, fontFamily: "Alexandria-Black", color: '#1E293B' },
+  priceText: { fontSize: 13, fontFamily: "Alexandria-Black", color: '#111827' },
+  priceLabel: { fontSize: 11, fontFamily: "Alexandria-Bold", color: '#64748B' },
   
   imageBlock: { width: 115, height: 100 },
   
@@ -199,19 +199,19 @@ const styles = StyleSheet.create({
      paddingHorizontal: 20,
      paddingVertical: 16 },
   detailRow: { justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-  detailLabel: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#111827' },
-  detailValue: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#94A3B8' },
+  detailLabel: { fontSize: normalize.font(15), fontFamily: "Alexandria-Black", color: '#111827' },
+  detailValue: { fontSize: normalize.font(16), fontFamily: "Alexandria-Bold", color: '#94A3B8' },
   
   paidBadge: { backgroundColor: '#035DF9', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10 },
-  paidBadgeText: { color: '#FFF', fontSize: 14, fontFamily: "Alexandria-Medium" },
+  paidBadgeText: { color: '#FFF', fontSize: 13, fontFamily: "Alexandria-Black" },
   
   dividerFull: { height: 1, backgroundColor: '#E2E8F0', marginVertical: 15, opacity: 0.6 },
   viewDetailsBtn: { width: '100%', alignItems: 'center', justifyContent: 'center', paddingVertical: 4 },
-  viewDetailsText: { color: '#035DF9', fontSize: 14, fontFamily: "Alexandria-Medium", textAlign: 'center' },
+  viewDetailsText: { color: '#035DF9', fontSize: 15, fontFamily: "Alexandria-Black", textAlign: 'center' },
  
   emptyState: { alignItems: 'center', justifyContent: 'center', paddingTop: 80, paddingHorizontal: 40 },
-  emptyTitle: { fontSize: 14, fontFamily: "Alexandria-Medium", color: '#1E293B', marginTop: 20 },
-  emptySubtitle: { fontSize: 14, color: '#64748B', textAlign: 'center', marginTop: 10, lineHeight: 20 , fontFamily: "Alexandria-Medium" },
+  emptyTitle: { fontSize: 20, fontFamily: "Alexandria-Bold", color: '#1E293B', marginTop: 20 },
+  emptySubtitle: { fontSize: 14, color: '#64748B', textAlign: 'center', marginTop: 10, lineHeight: 20 , fontFamily: "Alexandria-Regular" },
   exploreBtn: { marginTop: 24, backgroundColor: '#035DF9', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 },
-  exploreBtnText: { color: 'white', fontFamily: "Alexandria-Medium" }
+  exploreBtnText: { color: 'white', fontFamily: "Alexandria-Bold" }
 });

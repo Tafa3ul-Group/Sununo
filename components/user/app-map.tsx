@@ -504,8 +504,8 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%" },
   markerTitle: {
-    fontSize: 8,
-    fontFamily: "Alexandria-Medium",
+    fontSize: 11,
+    fontFamily: "Alexandria-Black",
     color: "#111827",
     marginTop: 6,
     textAlign: "center",
@@ -525,9 +525,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E5E7EB" },
   fallbackText: {
-    fontSize: 8,
+    fontSize: 10,
     color: "#6B7280",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Alexandria-SemiBold",
     textAlign: "center" },
   fabContainer: {
     position: "absolute",
@@ -552,7 +552,7 @@ const styles = StyleSheet.create({
     borderColor: Theme.Colors.primary },
   fabText: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "Alexandria-Bold" },
   userLocationMarker: {
     width: 30,
     height: 30,

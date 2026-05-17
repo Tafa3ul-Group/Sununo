@@ -151,11 +151,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20 },
   title: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(20),
+    fontFamily: "Alexandria-Black",
     color: '#1E293B',
     textAlign: 'center',
-    lineHeight: normalize.font(14) },
+    lineHeight: normalize.font(28) },
   contentWrapper: {
     width: '100%' },
   buttonRow: {
@@ -170,8 +170,8 @@ const styles = StyleSheet.create({
   lottie: {
     width: '100%' },
   feedbackText: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(16),
+    fontFamily: "Alexandria-Bold",
     color: '#1C1C1C',
     textAlign: 'center',
     marginTop: 10 } });
