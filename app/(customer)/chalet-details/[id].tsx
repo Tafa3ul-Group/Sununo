@@ -1081,16 +1081,16 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
     minWidth: 0 },
   shiftName: {
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     fontSize: 15,
     color: "#1E293B",
     flexShrink: 1,
     lineHeight: 24 },
   shiftNameActive: {
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: "#035DF9" },
   shiftTime: {
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     fontSize: 12,
     color: "#64748B",
     flexShrink: 1,
@@ -1098,14 +1098,14 @@ const styles = StyleSheet.create({
   shiftTimeActive: {
     color: "#035DF9" },
   shiftPrice: {
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     fontSize: 14,
     color: "#1E293B",
     flexShrink: 0,
     textAlign: "right",
     lineHeight: 22 },
   shiftPriceActive: {
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: "#035DF9" },
   titleSection: {
     alignItems: "center",
@@ -1128,7 +1128,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10 },
   sectionTitle: {
     fontSize: 18,
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     marginVertical: 15,
     lineHeight: 28 },
   specsRow: { flexWrap: "wrap", gap: 8 },
@@ -1166,7 +1166,7 @@ const styles = StyleSheet.create({
   closedChaletText: {
     flex: 1,
     fontSize: 14,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'Alexandria-Medium',
     color: '#EF4444',
     lineHeight: 22 },
   depositRow: {
@@ -1175,11 +1175,11 @@ const styles = StyleSheet.create({
     marginTop: 2 },
   depositLabel: {
     fontSize: 11,
-    fontFamily: 'Alexandria-Regular',
+    fontFamily: 'Alexandria-Medium',
     color: '#6B7280' },
   depositValue: {
     fontSize: 11,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'Alexandria-Medium',
     color: '#035DF9' },
   shapeCont: {
     width: 55,
@@ -1202,7 +1202,7 @@ const styles = StyleSheet.create({
   infoGearIcon: { position: "absolute" },
   infoLabelText: {
     fontSize: 11,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     marginTop: 8,
     textAlign: "center",
     flexWrap: "wrap",
@@ -1210,7 +1210,7 @@ const styles = StyleSheet.create({
     lineHeight: 17 },
   facilityLabelText: {
     fontSize: 12,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     marginTop: 6,
     textAlign: "center",
     flexWrap: "wrap",
@@ -1296,7 +1296,7 @@ const styles = StyleSheet.create({
   customRatingText: {
     color: "white",
     fontSize: 16,
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     lineHeight: 24 },
 
   revComplexCardFlat: {
@@ -1315,7 +1315,7 @@ const styles = StyleSheet.create({
     marginTop: 4 },
   revRateNumMerged: {
     fontSize: 16,
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: "#111827",
     lineHeight: 24 },
   userInfoRowMerged: {
@@ -1325,7 +1325,7 @@ const styles = StyleSheet.create({
     flex: 1 },
   reviewerNameMerged: {
     fontSize: 16,
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: "#111827",
     lineHeight: 26 },
   revMessageMerged: {
@@ -1370,7 +1370,7 @@ const styles = StyleSheet.create({
   footerTextSide: { flex: 1, minWidth: 0 },
   footerPriceBig: {
     fontSize: 18,
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     marginBottom: 4,
     flexShrink: 1,
     lineHeight: 26 },
@@ -1409,7 +1409,7 @@ const styles = StyleSheet.create({
   addonPrice: {
     fontSize: 12,
     color: Colors.primary,
-    fontFamily: "Alexandria-Black" },
+    fontFamily: "Alexandria-Medium" },
   capacityPolicyCard: {
     backgroundColor: "#F8FAFC",
     borderRadius: 16,
@@ -1424,7 +1424,7 @@ const styles = StyleSheet.create({
     flex: 1 },
   capacityValue: {
     fontSize: 16,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: Colors.primary },
   capacityLabel: {
     fontSize: 10,

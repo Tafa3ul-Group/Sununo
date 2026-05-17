@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
     alignItems: 'center' },
   headerTitle: {
     fontSize: normalize.font(16),
-    fontFamily: 'Alexandria-Black',
+    fontFamily: 'Alexandria-Medium',
     color: '#111827' },
   backCircle: {
     width: 38,
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
     marginBottom: normalize.height(14) },
   label: {
     fontSize: normalize.font(12),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'Alexandria-Medium',
     color: '#374151',
     marginBottom: normalize.height(6) },
   inputWrapper: {
@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
   changePhoneText: {
     color: '#FFFFFF',
     fontSize: normalize.font(12),
-    fontFamily: 'Alexandria-Black' },
+    fontFamily: 'Alexandria-Medium' },
   phoneValueWrapper: {
     flex: 1,
     paddingHorizontal: normalize.width(12),
@@ -432,11 +432,11 @@ const styles = StyleSheet.create({
     alignItems: 'center' },
   locationName: {
     fontSize: normalize.font(13),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'Alexandria-Medium',
     color: '#9CA3AF' },
   changeLocText: {
     fontSize: normalize.font(13),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'Alexandria-Medium',
     color: Colors.primary },
 
   // ── Footer ───────────────────────────────────────────────────────────────

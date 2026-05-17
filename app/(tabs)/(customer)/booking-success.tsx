@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   mapSnippetWrapper: { width: '100%', height: 120, borderRadius: 14, overflow: 'hidden', backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center' },
   mapSnippet: { width: '100%', height: '100%' },
   mapMarker: { position: 'absolute', zIndex: 3 },
-  mapAddressLabel: { textAlign: 'center', paddingVertical: 8, fontSize: normalize.font(12), fontFamily: "Alexandria-Black", color: '#1E293B' },
+  mapAddressLabel: { textAlign: 'center', paddingVertical: 8, fontSize: normalize.font(12), fontFamily: "Alexandria-Medium", color: '#1E293B' },
   infoSectionCard: { 
     backgroundColor: '#FFFFFF', 
     borderRadius: 20, 
@@ -178,13 +178,13 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingBottom: 24, // Add more padding at bottom
   },
-  sectionTitle: { fontSize: normalize.font(14), fontFamily: "Alexandria-Black", color: Colors.primary },
+  sectionTitle: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: Colors.primary },
   divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 10 },
   infoRow: { justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  infoLabel: { fontSize: normalize.font(13), fontFamily: "Alexandria-Black", color: '#1E293B' },
-  infoValue: { fontSize: normalize.font(13), fontFamily: "Alexandria-Bold", color: '#64748B' },
+  infoLabel: { fontSize: normalize.font(13), fontFamily: "Alexandria-Medium", color: '#1E293B' },
+  infoValue: { fontSize: normalize.font(13), fontFamily: "Alexandria-Medium", color: '#64748B' },
   statusBadgeBlue: { backgroundColor: '#035DF9', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
-  statusBadgeTextBlue: { color: '#FFF', fontSize: normalize.font(12), fontFamily: "Alexandria-Black" },
+  statusBadgeTextBlue: { color: '#FFF', fontSize: normalize.font(12), fontFamily: "Alexandria-Medium" },
   statusBadgeGray: { backgroundColor: '#94A3B8', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
-  statusBadgeTextGray: { color: '#FFF', fontSize: normalize.font(12), fontFamily: "Alexandria-Black" } });
+  statusBadgeTextGray: { color: '#FFF', fontSize: normalize.font(12), fontFamily: "Alexandria-Medium" } });
 

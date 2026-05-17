@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF' },
   digitText: {
     fontSize: 22,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'Alexandria-Medium',
     color: '#1E293B' },
   placeholderDot: {
     width: 6,

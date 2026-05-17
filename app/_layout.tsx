@@ -25,7 +25,7 @@ import { isRTL } from "@/i18n";
 if (Text.defaultProps == null) Text.defaultProps = {};
 // @ts-ignore
 Text.defaultProps.style = {
-  fontFamily: "Alexandria-Regular",
+  fontFamily: "Alexandria-Medium",
   includeFontPadding: false,
   textAlignVertical: "center",
   writingDirection: I18nManager.isRTL ? "rtl" : "ltr",
@@ -35,7 +35,7 @@ Text.defaultProps.style = {
 if (TextInput.defaultProps == null) TextInput.defaultProps = {};
 // @ts-ignore
 TextInput.defaultProps.style = {
-  fontFamily: "Alexandria-Regular",
+  fontFamily: "Alexandria-Medium",
   includeFontPadding: false,
   textAlignVertical: "center",
   writingDirection: I18nManager.isRTL ? "rtl" : "ltr",
@@ -55,11 +55,11 @@ function RootLayoutNav() {
   const [notificationRetryNonce, setNotificationRetryNonce] = useState(0);
 
   const [loaded, error] = useFonts({
-    "Alexandria-Bold": require("@expo-google-fonts/alexandria/700Bold/Alexandria_700Bold.ttf"),
-    "Alexandria-SemiBold": require("@expo-google-fonts/alexandria/600SemiBold/Alexandria_600SemiBold.ttf"),
-    "Alexandria-Regular": require("@expo-google-fonts/alexandria/400Regular/Alexandria_400Regular.ttf"),
+    "Alexandria-Medium": require("@expo-google-fonts/alexandria/700Bold/Alexandria_700Bold.ttf"),
+    "Alexandria-Medium": require("@expo-google-fonts/alexandria/600SemiBold/Alexandria_600SemiBold.ttf"),
+    "Alexandria-Medium": require("@expo-google-fonts/alexandria/400Regular/Alexandria_400Regular.ttf"),
     "Alexandria-Medium": require("@expo-google-fonts/alexandria/500Medium/Alexandria_500Medium.ttf"),
-    "Alexandria-Black": require("@expo-google-fonts/alexandria/900Black/Alexandria_900Black.ttf") });
+    "Alexandria-Medium": require("@expo-google-fonts/alexandria/900Black/Alexandria_900Black.ttf") });
 
   // ── Auth Guard ────────────────────────────────────────────────────────────
   useEffect(() => {

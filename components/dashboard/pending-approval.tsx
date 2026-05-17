@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     borderRadius: 50 },
   title: {
     fontSize: normalize.font(24),
-    fontFamily: 'Alexandria-Black',
+    fontFamily: 'Alexandria-Medium',
     color: '#1E293B',
     marginBottom: 15,
     textAlign: 'center' },
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     marginBottom: 30 },
   infoText: {
     fontSize: normalize.font(12),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'Alexandria-Medium',
     color: '#475569',
     textAlign: 'center' },
   button: {

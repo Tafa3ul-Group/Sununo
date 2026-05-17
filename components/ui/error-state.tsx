@@ -100,14 +100,14 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     color: '#0F172A',
     fontSize: normalize.font(20),
-    fontFamily: 'Alexandria-Bold' },
+    fontFamily: 'Alexandria-Medium' },
   message: {
     textAlign: 'center',
     color: '#64748B',
     marginBottom: Spacing.xl,
     paddingHorizontal: Spacing.lg,
     fontSize: normalize.font(13),
-    fontFamily: 'Alexandria-Regular' },
+    fontFamily: 'Alexandria-Medium' },
   actions: {
     width: '100%',
     gap: Spacing.sm,
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     alignItems: 'center' },
   retryButtonText: {
     color: Colors.white,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'Alexandria-Medium',
     fontSize: normalize.font(14) },
   backButton: {
     paddingVertical: normalize.height(12),

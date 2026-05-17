@@ -94,5 +94,5 @@ const styles = StyleSheet.create({
     borderRadius: 6 },
   valueText: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: "white" } });

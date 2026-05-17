@@ -1127,7 +1127,7 @@ const styles = StyleSheet.create({
     height: 42 },
   navBarTitle: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     maxWidth: '65%',
     textAlign: 'center' },
@@ -1198,7 +1198,7 @@ const styles = StyleSheet.create({
     marginBottom: 8 },
   chaletName: {
     fontSize: normalize.font(26),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     letterSpacing: -0.5 },
   approvalBadge: {
@@ -1207,7 +1207,7 @@ const styles = StyleSheet.create({
     borderRadius: 12 },
   approvalText: {
     fontSize: normalize.font(11),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     textTransform: 'uppercase' },
   locationRow: {
     flexDirection: 'row',
@@ -1222,7 +1222,7 @@ const styles = StyleSheet.create({
     gap: 4 },
   statusLabel: {
     fontSize: normalize.font(10),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     textTransform: 'uppercase' },
   statsRow: {
     backgroundColor: Colors.white,
@@ -1244,12 +1244,12 @@ const styles = StyleSheet.create({
     marginBottom: 10 },
   statValue: {
     fontSize: normalize.font(17),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
   statLabel: {
     fontSize: normalize.font(11),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     marginTop: 2 },
   statDivider: {
     width: 1,
@@ -1271,7 +1271,7 @@ const styles = StyleSheet.create({
     marginBottom: 32 },
   sectionTitle: {
     fontSize: normalize.font(18),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     marginBottom: 16 },
   amenitiesWrap: {
@@ -1290,10 +1290,10 @@ const styles = StyleSheet.create({
     minWidth: '47%' },
   amenityEmoji: {
     fontSize: 18,
-   fontFamily: "Alexandria-Regular" },
+   fontFamily: "Alexandria-Medium" },
   amenityText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
   detailsRow: {
     gap: 12 },
@@ -1309,18 +1309,18 @@ const styles = StyleSheet.create({
     borderColor: '#F0F0F0' },
   detailValue: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
   detailLabel: {
     fontSize: normalize.font(11),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-SemiBold" },
+    fontFamily: "Alexandria-Medium" },
   descriptionText: {
     fontSize: normalize.font(15),
     color: Colors.text.secondary,
     lineHeight: 24,
     opacity: 0.9,
-   fontFamily: "Alexandria-Regular" },
+   fontFamily: "Alexandria-Medium" },
   footerContent: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1328,15 +1328,15 @@ const styles = StyleSheet.create({
   footerPriceLabel: {
     fontSize: normalize.font(12),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-SemiBold" },
+    fontFamily: "Alexandria-Medium" },
   footerPriceValue: {
     fontSize: normalize.font(20),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
   footerCurrency: {
     fontSize: normalize.font(14),
     color: Colors.primary,
-    fontFamily: "Alexandria-Bold" },
+    fontFamily: "Alexandria-Medium" },
   footerButtonOverride: {
     flex: 1 },
   stickyFooter: {
@@ -1372,26 +1372,26 @@ const styles = StyleSheet.create({
   editImagesText: {
     color: Colors.white,
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Bold" },
+    fontFamily: "Alexandria-Medium" },
   modalScrollContent: {
     padding: 20,
     paddingBottom: 40 },
   modalTitle: {
     fontSize: normalize.font(20),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     marginBottom: 24,
     textAlign: 'center' },
   modalSubTitle: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     marginBottom: 12 },
   modalInputGroup: {
     marginBottom: 20 },
   modalLabel: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.muted,
     marginBottom: 8 },
   modalInput: {
@@ -1420,7 +1420,7 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0' },
   capacityLabelInline: {
     fontSize: 14,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     flex: 1,
     marginHorizontal: 10 },
@@ -1498,7 +1498,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC' },
   addPhotosText: {
     fontSize: 12,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.muted,
     marginTop: 4 },
   cityPickerItem: {

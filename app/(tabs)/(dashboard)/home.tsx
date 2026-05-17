@@ -316,7 +316,7 @@ export default function HomeScreen() {
                   <Text style={{
                     color: statusInfo.color,
                     fontSize: normalize.font(10),
-                    fontFamily: 'Alexandria-SemiBold'
+                    fontFamily: 'Alexandria-Medium'
                   }}>
                     {statusInfo.label}
                   </Text>
@@ -625,7 +625,7 @@ const styles = StyleSheet.create({
   walletLabel: {
     color: 'rgba(255,255,255,0.65)',
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     marginBottom: normalize.height(6),
     letterSpacing: normalize.width(0.3),
     textTransform: 'uppercase',
@@ -635,13 +635,13 @@ const styles = StyleSheet.create({
   walletValue: {
     color: Colors.white,
     fontSize: normalize.font(32),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     letterSpacing: normalize.width(-0.5),
     lineHeight: normalize.font(38) },
   walletCurrency: {
     color: 'rgba(255,255,255,0.5)',
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     lineHeight: normalize.font(20) },
   eyeButton: {
     width: normalize.width(44),
@@ -663,7 +663,7 @@ const styles = StyleSheet.create({
     gap: normalize.width(6) },
   walletActionText: {
     color: Colors.primary,
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     fontSize: normalize.font(13),
     lineHeight: normalize.font(18) },
 
@@ -687,13 +687,13 @@ const styles = StyleSheet.create({
     alignItems: 'center' },
   avatarLetter: {
     fontSize: normalize.font(18),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     lineHeight: normalize.font(24) },
   bookingInfo: {
     flex: 1 },
   bookingName: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     marginBottom: normalize.height(1),
     lineHeight: normalize.font(20) },
@@ -710,14 +710,14 @@ const styles = StyleSheet.create({
     lineHeight: normalize.font(14) },
   bookingAmount: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     marginBottom: normalize.height(4),
     lineHeight: normalize.font(20) },
   bookingCurrency: {
     fontSize: normalize.font(10),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     lineHeight: normalize.font(14) },
   bookingStatusBadge: {
     paddingHorizontal: normalize.width(8),
@@ -725,7 +725,7 @@ const styles = StyleSheet.create({
     borderRadius: normalize.radius(6) },
   bookingStatusText: {
     fontSize: normalize.font(9),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     textTransform: 'uppercase',
     lineHeight: normalize.font(13) },
 
@@ -741,13 +741,13 @@ const styles = StyleSheet.create({
     marginTop: 0 },
   bookingsTitle: {
     fontSize: normalize.font(17),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     lineHeight: normalize.font(23) },
   bookingsViewAll: {
     fontSize: normalize.font(14),
     color: Colors.text.primary,
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     textDecorationLine: 'underline',
     lineHeight: normalize.font(20) },
   headerActions: {
@@ -764,7 +764,7 @@ const styles = StyleSheet.create({
     alignItems: 'center' },
   calendarTitle: {
     fontSize: normalize.font(18),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     lineHeight: normalize.font(24) },
   filterScroll: {
@@ -814,7 +814,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center' },
   modernBookingName: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     marginBottom: normalize.height(1),
     lineHeight: normalize.font(22) },
@@ -826,7 +826,7 @@ const styles = StyleSheet.create({
   modernBookingChalet: {
     fontSize: normalize.font(13),
     color: Colors.primary,
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     marginBottom: normalize.height(1),
     lineHeight: normalize.font(18) },
   modernBookingDate: {
@@ -842,7 +842,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center' },
   modernBookingPrice: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     lineHeight: normalize.font(20) },
   fixedHeaderArea: {
@@ -857,7 +857,7 @@ const styles = StyleSheet.create({
   noBookingsText: {
     color: Colors.text.muted,
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     lineHeight: normalize.font(20) },
 
 
@@ -877,7 +877,7 @@ const styles = StyleSheet.create({
     marginBottom: normalize.height(8) },
   emptyTitle: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     lineHeight: normalize.font(22) },
   emptySubtitle: {

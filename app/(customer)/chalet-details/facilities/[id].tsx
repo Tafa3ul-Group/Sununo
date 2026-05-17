@@ -160,15 +160,15 @@ const styles = StyleSheet.create({
     marginBottom: 15 },
   sectionTitle: {
     fontSize: 18,
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: '#111827' },
   cardContainer: { 
     backgroundColor: '#FFFFFF', borderRadius: 15, 
     padding: 15, marginBottom: 16, borderWidth: 1, borderColor: '#F3F4F6',
     alignItems: 'center' },
   textSide: { flex: 1 },
-  cardLabel: { fontSize: 16, fontFamily: "Alexandria-Black", color: '#111827' },
-  cardSubtext: { fontSize: 12, color: '#6B7280', marginTop: 4, fontFamily: "Alexandria-Regular" },
+  cardLabel: { fontSize: 16, fontFamily: "Alexandria-Medium", color: '#111827' },
+  cardSubtext: { fontSize: 12, color: '#6B7280', marginTop: 4, fontFamily: "Alexandria-Medium" },
   iconSideScalloped: {
     width: 44,
     height: 44,

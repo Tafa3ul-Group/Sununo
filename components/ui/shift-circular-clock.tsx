@@ -89,7 +89,7 @@ export const CircularShiftClock: React.FC<CircularShiftClockProps> = ({
           fill="#64748B"
           fontSize="10"
           fontWeight="bold"
-          fontFamily="Alexandria-Bold"
+          fontFamily="Alexandria-Medium"
           textAnchor="middle"
         >
           {`${i === 12 ? '12h' : i === 0 ? '00h' : i + 'h'}`}
@@ -174,7 +174,7 @@ export const CircularShiftClock: React.FC<CircularShiftClockProps> = ({
               fill="#FFF"
               fontSize="14"
               fontWeight="900"
-              fontFamily="Alexandria-Black"
+              fontFamily="Alexandria-Medium"
               textAnchor="middle"
             >
               {isRTL ? 'توزيع الأوقات' : 'Schedule Grid'}
@@ -184,7 +184,7 @@ export const CircularShiftClock: React.FC<CircularShiftClockProps> = ({
               fill="#94A3B8"
               fontSize="10"
               fontWeight="bold"
-              fontFamily="Alexandria-Bold"
+              fontFamily="Alexandria-Medium"
               textAnchor="middle"
             >
               {shifts.length} {isRTL ? 'شيفتات' : 'Total Slots'}
@@ -244,5 +244,5 @@ const styles = StyleSheet.create({
   legendText: {
     color: '#94A3B8',
     fontSize: 10,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     textTransform: 'uppercase' } });

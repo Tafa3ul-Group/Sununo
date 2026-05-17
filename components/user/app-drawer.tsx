@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
     flex: 1 },
   userName: {
     fontSize: 18,
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: '#1E293B' },
   userPhone: {
     fontSize: 14,
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     alignItems: 'center' },
   menuLabel: {
     fontSize: 16,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: '#334155' },
   footer: {
     paddingTop: 20,
@@ -265,5 +265,5 @@ const styles = StyleSheet.create({
     paddingVertical: 12 },
   logoutText: {
     fontSize: 16,
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: '#EF4444' } });

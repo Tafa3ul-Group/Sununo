@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     marginTop: 10 },
   headerTitle: {
     fontSize: normalize.font(20),
-    fontFamily: 'Alexandria-Black',
+    fontFamily: 'Alexandria-Medium',
     color: Colors.text.primary,
     marginTop: 12 },
   headerSub: {
@@ -284,13 +284,13 @@ const styles = StyleSheet.create({
     alignItems: 'center' },
   sectionTitle: {
     fontSize: normalize.font(16),
-    fontFamily: 'Alexandria-Black',
+    fontFamily: 'Alexandria-Medium',
     color: Colors.text.primary },
   inputGroup: {
     marginBottom: 16 },
   label: {
     fontSize: normalize.font(13),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'Alexandria-Medium',
     color: '#64748B',
     marginBottom: 8 },
   input: {

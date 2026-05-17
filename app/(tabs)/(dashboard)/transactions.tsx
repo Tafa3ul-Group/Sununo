@@ -202,11 +202,11 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary },
   filterText: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.secondary },
   filterTextActive: {
     color: Colors.white,
-   fontFamily: "Alexandria-Regular" },
+   fontFamily: "Alexandria-Medium" },
   // List
   listContainer: {
     flex: 1,
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
     flex: 1 },
   transactionTitle: {
     fontSize: normalize.font(15),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     marginBottom: 3 },
   transactionDate: {
@@ -237,12 +237,12 @@ const styles = StyleSheet.create({
     fontFamily: "Alexandria-Medium" },
   transactionAmount: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     marginBottom: 4 },
   currencySmall: {
     fontSize: normalize.font(11),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.muted },
   statusBadge: {
     flexDirection: 'row',
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     borderRadius: 3 },
   statusBadgeText: {
     fontSize: normalize.font(10),
-    fontFamily: "Alexandria-Bold" },
+    fontFamily: "Alexandria-Medium" },
   separator: {
     height: 1,
     backgroundColor: '#F5F5F5' },
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
     marginBottom: 8 },
   emptyTitle: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
   emptySubtitle: {
     fontSize: normalize.font(12),

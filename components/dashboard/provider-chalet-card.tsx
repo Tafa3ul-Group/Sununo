@@ -139,13 +139,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#10B981' },
   statusText: {
     fontSize: normalize.font(10),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: '#111827' },
   content: {
     padding: 14 },
   title: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: '#111827',
     marginBottom: 4 },
   locationRow: {
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(12),
     color: Colors.text.secondary,
     flex: 1,
-   fontFamily: "Alexandria-Regular" },
+   fontFamily: "Alexandria-Medium" },
   actionGrid: {
     gap: 8 },
   actionBtn: {
@@ -172,11 +172,11 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary + '20' },
   editBtnText: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: Colors.primary },
   revenueBtn: {
     backgroundColor: Colors.primary },
   revenueBtnText: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: '#FFFFFF' } });

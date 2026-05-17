@@ -392,7 +392,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: Colors.text.primary,
-    fontFamily: "Alexandria-Regular" },
+    fontFamily: "Alexandria-Medium" },
   cityItem: {
     alignItems: "center",
     padding: 12,
@@ -501,13 +501,13 @@ const styles = StyleSheet.create({
   },
   guestLabel: {
     fontSize: 22,
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: "#1A1A1A" },
   guestSubLabel: {
     fontSize: 16,
     color: "#9CA3AF",
     marginTop: 2,
-    fontFamily: "Alexandria-Regular" },
+    fontFamily: "Alexandria-Medium" },
   // RTL Utilities
   rtlText: { textAlign: "right" },
   ltrText: { textAlign: "left" },

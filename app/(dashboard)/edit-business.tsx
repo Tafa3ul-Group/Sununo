@@ -168,14 +168,14 @@ const styles = StyleSheet.create({
     marginBottom: 32 },
   sectionTitle: {
     fontSize: normalize.font(18),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     marginBottom: 16 },
   fieldContainer: {
     marginBottom: 20 },
   label: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.secondary,
     marginBottom: 8 },
   inputWrapper: {
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(16),
     color: Colors.text.primary,
     height: '100%',
-   fontFamily: "Alexandria-Regular" },
+   fontFamily: "Alexandria-Medium" },
   multilineInput: {
     textAlignVertical: 'top' },
   saveButton: {
@@ -211,4 +211,4 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: Colors.white,
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Bold" } });
+    fontFamily: "Alexandria-Medium" } });

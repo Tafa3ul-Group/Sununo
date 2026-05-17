@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   hostName: {
     fontSize: 16,
     color: "#111827",
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     marginTop: -2 },
   avatarContainer: {
     position: "absolute",

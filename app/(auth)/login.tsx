@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     marginBottom: 28 },
   title: {
     fontSize: 20,
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: "#1E293B",
     marginBottom: normalize.height(4),
     lineHeight: normalize.font(32),
@@ -282,12 +282,12 @@ const styles = StyleSheet.create({
   linkText: {
     fontSize: normalize.font(14),
     color: "#0061FE",
-    fontFamily: "Alexandria-Bold" },
+    fontFamily: "Alexandria-Medium" },
   inputGroup: {
     marginBottom: normalize.height(25) },
   label: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: "#1E293B",
     marginBottom: normalize.height(10) },
   input: {
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
   guestLinkText: {
     fontSize: normalize.font(15),
     color: "#94A3B8",
-    fontFamily: "Alexandria-Bold" },
+    fontFamily: "Alexandria-Medium" },
   bottomWaveContainer: {
     position: "absolute",
     bottom: 0,
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
   devHint: {
     fontSize: 12,
     color: "#94A3B8",
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "Alexandria-Medium",
     textAlign: "center",
     marginTop: 8 },
   ownerHintRow: {
@@ -341,6 +341,6 @@ const styles = StyleSheet.create({
   ownerHintLink: {
     fontSize: 13,
     color: "#0061FE",
-    fontFamily: "Alexandria-Bold" } });
+    fontFamily: "Alexandria-Medium" } });
 // Default export for Expo Router
 export default LoginScreen;

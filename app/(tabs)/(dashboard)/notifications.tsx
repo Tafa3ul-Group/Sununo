@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
         height: 48 },
     headerTitle: {
         fontSize: 20,
-        fontFamily: "Alexandria-Black",
+        fontFamily: "Alexandria-Medium",
         color: '#111827' },
     backButton: {
         position: 'absolute',
@@ -175,18 +175,18 @@ const styles = StyleSheet.create({
     timeText: {
         fontSize: 12,
         color: '#9CA3AF',
-        fontFamily: "Alexandria-SemiBold" },
+        fontFamily: "Alexandria-Medium" },
     cardContent: {
         flex: 1 },
     titleText: {
         fontSize: 16,
-        fontFamily: "Alexandria-Black",
+        fontFamily: "Alexandria-Medium",
         color: '#111827',
         marginBottom: 2 },
     messageText: {
         fontSize: 13,
         color: '#6B7280',
         marginTop: 2,
-        fontFamily: "Alexandria-Regular"
+        fontFamily: "Alexandria-Medium"
     }
 });

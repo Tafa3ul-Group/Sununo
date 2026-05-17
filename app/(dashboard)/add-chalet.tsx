@@ -1036,15 +1036,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#F1F5F9',
     paddingBottom: Platform.OS === 'ios' ? 34 : Spacing.md },
   sectionCard: { backgroundColor: 'transparent', padding: 0, gap: Spacing.md, marginBottom: Spacing.md },
-  sectionHeader: { fontSize: normalize.font(16), fontFamily: "Alexandria-Black", color: Colors.text.primary, marginBottom: 2 },
+  sectionHeader: { fontSize: normalize.font(16), fontFamily: "Alexandria-Medium", color: Colors.text.primary, marginBottom: 2 },
   rowInputs: { gap: Spacing.sm },
   inputGroup: { gap: 6 },
-  label: { ...Typography.caption, color: Colors.text.primary, fontFamily: "Alexandria-Black", fontSize: normalize.font(14) },
-  smallLabel: { ...Typography.caption, color: Colors.text.muted, fontFamily: "Alexandria-SemiBold", fontSize: normalize.font(12) },
+  label: { ...Typography.caption, color: Colors.text.primary, fontFamily: "Alexandria-Medium", fontSize: normalize.font(14) },
+  smallLabel: { ...Typography.caption, color: Colors.text.muted, fontFamily: "Alexandria-Medium", fontSize: normalize.font(12) },
   input: {
     height: normalize.height(48), backgroundColor: '#FFFFFF', borderRadius: normalize.radius(12),
     paddingHorizontal: Spacing.md, borderWidth: 1, borderColor: '#E8E8E8',
-    fontSize: normalize.font(15), color: Colors.text.primary, fontFamily: "Alexandria-Regular" },
+    fontSize: normalize.font(15), color: Colors.text.primary, fontFamily: "Alexandria-Medium" },
   textArea: { height: normalize.height(100), paddingTop: 18, textAlignVertical: 'top' },
   // Map
   mapPreviewContainer: {
@@ -1055,14 +1055,14 @@ const styles = StyleSheet.create({
   editLocBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     backgroundColor: 'rgba(3, 93, 249, 0.9)', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 100 },
-  editLocText: { color: Colors.white, fontSize: normalize.font(12), fontFamily: "Alexandria-Bold" },
+  editLocText: { color: Colors.white, fontSize: normalize.font(12), fontFamily: "Alexandria-Medium" },
   // Shifts
   shiftsHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  shiftHint: { fontSize: normalize.font(13), color: Colors.text.muted, fontFamily: "Alexandria-Regular", marginBottom: 4 },
-  pricingTitle: { fontSize: normalize.font(14), fontFamily: "Alexandria-Bold", color: Colors.text.primary },
+  shiftHint: { fontSize: normalize.font(13), color: Colors.text.muted, fontFamily: "Alexandria-Medium", marginBottom: 4 },
+  pricingTitle: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: Colors.text.primary },
   dayPricingGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
   dayPriceItem: { alignItems: 'center', gap: 4, width: '13%' },
-  dayLabel: { fontSize: normalize.font(10), fontFamily: "Alexandria-Black", color: Colors.text.muted },
+  dayLabel: { fontSize: normalize.font(10), fontFamily: "Alexandria-Medium", color: Colors.text.muted },
   dayPriceInput: {
     width: '100%', height: 36, backgroundColor: '#F8FAFC', borderRadius: 8,
     borderWidth: 1, borderColor: '#E2E8F0', textAlign: 'center',
@@ -1078,13 +1078,13 @@ const styles = StyleSheet.create({
   shiftEditBtn: { width: 32, height: 32, justifyContent: 'center', alignItems: 'center' },
   shiftInfo: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, justifyContent: 'flex-end' },
   shiftIconLarge: { fontSize: 24 },
-  shiftValueName: { fontSize: normalize.font(15), fontFamily: "Alexandria-Bold", color: Colors.text.primary },
-  shiftPriceText: { color: Colors.text.primary, fontFamily: "Alexandria-Black" },
+  shiftValueName: { fontSize: normalize.font(15), fontFamily: "Alexandria-Medium", color: Colors.text.primary },
+  shiftPriceText: { color: Colors.text.primary, fontFamily: "Alexandria-Medium" },
   addShiftBtnFull: {
     flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center',
     paddingVertical: 12, borderStyle: 'dashed', borderWidth: 1.5, borderColor: Colors.primary + '40',
     borderRadius: 14, marginTop: 8 },
-  addShiftBtnFullText: { color: Colors.primary, fontFamily: "Alexandria-Bold" },
+  addShiftBtnFullText: { color: Colors.primary, fontFamily: "Alexandria-Medium" },
   // Capacity (Matches Screenshot)
   capacityList: { gap: 12, marginTop: 8 },
   capacityCard: {
@@ -1092,16 +1092,16 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderColor: '#F1F5F9', padding: 16,
     justifyContent: 'space-between', alignItems: 'center' },
   capacityInfo: { flex: 1, gap: 2 },
-  capacityLabel: { fontSize: normalize.font(18), fontFamily: "Alexandria-Bold", color: Colors.text.primary },
-  capacitySubLabel: { fontSize: normalize.font(14), fontFamily: "Alexandria-Regular", color: Colors.text.muted },
+  capacityLabel: { fontSize: normalize.font(18), fontFamily: "Alexandria-Medium", color: Colors.text.primary },
+  capacitySubLabel: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: Colors.text.muted },
   // Modal Edit
   shiftModalCard: { backgroundColor: '#F8FAFC', borderRadius: 16, padding: 16, gap: 16 },
   pricingSectionModal: { gap: 12 },
   modalDeleteBtn: { paddingVertical: 16, alignItems: 'center' },
-  modalDeleteText: { color: Colors.error, fontFamily: "Alexandria-Bold" },
+  modalDeleteText: { color: Colors.error, fontFamily: "Alexandria-Medium" },
   // Amenity Categories & Feature Rows
   categorySectionTitle: {
-    fontSize: normalize.font(16), fontFamily: "Alexandria-Black", color: Colors.text.primary,
+    fontSize: normalize.font(16), fontFamily: "Alexandria-Medium", color: Colors.text.primary,
     textAlign: 'center', marginBottom: 8 },
   featuresList: { gap: 8 },
   featureRow: {
@@ -1121,15 +1121,15 @@ const styles = StyleSheet.create({
     elevation: 3 },
   featureIconText: { fontSize: normalize.font(20), color: '#FFFFFF' },
   featureName: {
-    fontSize: normalize.font(14), fontFamily: "Alexandria-Bold", color: Colors.text.primary,
+    fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: Colors.text.primary,
     flex: 1 },
   checkbox: {
     width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: '#D1D5DB',
     justifyContent: 'center', alignItems: 'center' },
   checkboxActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
-  checkboxCheck: { color: '#FFFFFF', fontSize: normalize.font(14), fontFamily: "Alexandria-Bold" },
-  uploadText: { marginTop: normalize.height(4), color: Colors.text.muted, fontSize: normalize.font(12), fontFamily: "Alexandria-SemiBold" },
-  photoHint: { fontSize: normalize.font(12), color: Colors.text.muted, fontFamily: "Alexandria-Regular", marginBottom: 4 },
+  checkboxCheck: { color: '#FFFFFF', fontSize: normalize.font(14), fontFamily: "Alexandria-Medium" },
+  uploadText: { marginTop: normalize.height(4), color: Colors.text.muted, fontSize: normalize.font(12), fontFamily: "Alexandria-Medium" },
+  photoHint: { fontSize: normalize.font(12), color: Colors.text.muted, fontFamily: "Alexandria-Medium", marginBottom: 4 },
   imageContainer: { gap: Spacing.sm },
   imageItem: { width: normalize.width(100), height: normalize.width(100), borderRadius: normalize.radius(16), overflow: 'hidden', position: 'relative' },
   uploadedImage: { width: '100%', height: '100%' },
@@ -1139,7 +1139,7 @@ const styles = StyleSheet.create({
     borderRadius: normalize.radius(16), borderWidth: 2, borderColor: Colors.border, borderStyle: 'dashed',
     justifyContent: 'center', alignItems: 'center' },
   coverBadge: { position: 'absolute', bottom: 6, start: 6, backgroundColor: Colors.primary, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
-  coverBadgeText: { color: '#FFFFFF', fontSize: normalize.font(9), fontFamily: "Alexandria-Bold" },
+  coverBadgeText: { color: '#FFFFFF', fontSize: normalize.font(9), fontFamily: "Alexandria-Medium" },
   // Amenity Wizard Progress
   amenityProgressContainer: {
     flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 24, marginBottom: 12 },
@@ -1155,7 +1155,7 @@ const styles = StyleSheet.create({
   modalOptions: { flexDirection: 'row', justifyContent: 'space-around', width: '100%', marginBottom: Spacing.lg },
   modalOption: { alignItems: 'center', gap: Spacing.sm },
   modalIcon: { width: normalize.width(70), height: normalize.width(70), borderRadius: normalize.radius(35), justifyContent: 'center', alignItems: 'center' },
-  modalOptionText: { ...Typography.body, fontFamily: "Alexandria-SemiBold" },
+  modalOptionText: { ...Typography.body, fontFamily: "Alexandria-Medium" },
   pickerItem: { width: '100%', paddingVertical: Spacing.md, paddingHorizontal: Spacing.lg, borderBottomWidth: 1, borderBottomColor: Colors.border },
   pickerItemText: { ...Typography.body, fontSize: normalize.font(16), color: Colors.text.primary },
   modalSearchContainer: {
@@ -1172,4 +1172,4 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     color: Colors.text.primary,
-    fontFamily: "Alexandria-Regular" } });
+    fontFamily: "Alexandria-Medium" } });

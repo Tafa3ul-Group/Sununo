@@ -54,7 +54,7 @@ export default function AddReviewScreen() {
         options={{
           headerShown: true,
           headerTitle: t('chalet.details.addReview'),
-          headerTitleStyle: { fontFamily: 'Alexandria-Black', fontSize: 18 },
+          headerTitleStyle: { fontFamily: 'Alexandria-Medium', fontSize: 18 },
           headerLeft: () => <CircleBackButton onPress={() => router.back()} /> }}
       />
 
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
     alignItems: 'center' },
   title: {
     fontSize: 24,
-    fontFamily: 'Alexandria-Black',
+    fontFamily: 'Alexandria-Medium',
     color: '#111827',
     marginBottom: 8 },
   subtitle: {
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     marginBottom: 32 },
   inputLabel: {
     fontSize: 14,
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'Alexandria-Medium',
     color: '#374151',
     marginBottom: 10,
     marginHorizontal: 4 },

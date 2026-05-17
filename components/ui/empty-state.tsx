@@ -75,13 +75,13 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg },
   title: {
     fontSize: normalize.font(20),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'Alexandria-Medium',
     color: Colors.text.primary,
     textAlign: 'center',
     marginBottom: Spacing.sm },
   description: {
     fontSize: normalize.font(15),
-    fontFamily: 'Alexandria-Regular',
+    fontFamily: 'Alexandria-Medium',
     color: Colors.text.secondary,
     textAlign: 'center',
     lineHeight: normalize.font(22),

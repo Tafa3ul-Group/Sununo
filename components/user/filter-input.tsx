@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     color: Colors.primary, // The text in the image is blue
     textAlign: 'center' },
   selectedText: {
-    fontFamily: "Alexandria-Bold" },
+    fontFamily: "Alexandria-Medium" },
   divider: {
     width: 1,
     height: '60%',

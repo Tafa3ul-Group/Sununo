@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     marginBottom: 20 },
   title: {
     fontSize: 22,
-    fontFamily: 'Alexandria-Black',
+    fontFamily: 'Alexandria-Medium',
     color: '#1E293B',
     marginBottom: 12,
     textAlign: 'center' },

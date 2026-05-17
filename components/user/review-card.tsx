@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
     flex: 1 },
   chaletTitle: {
     fontSize: 16,
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: "#111827" },
   chaletLocation: {
     fontSize: 13,
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     borderRadius: 18 },
   userName: {
     fontSize: 15,
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: "#111827" },
   ratingPill: {
     backgroundColor: "#F0F6FE",
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     gap: 4 },
   ratingText: {
     fontSize: 14,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: "#035DF9",
     lineHeight: 18 },
   bottomSection: {

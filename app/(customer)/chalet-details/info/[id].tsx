@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     elevation: 8 },
   pageTitle: {
     fontSize: 22,
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: "#111827" },
   card: {
     backgroundColor: "white",
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     borderColor: "#F3F4F6" },
   sectionTitle: {
     fontSize: 18,
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: Colors.primary,
     marginBottom: 12 },
   content: {

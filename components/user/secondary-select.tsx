@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40 },
   sheetTitle: {
     fontSize: 20,
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     marginBottom: 20,
     color: "#111827" },
   optionRow: {
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     color: "#6B7280" },
   optionTextSelected: {
     color: "#035DF9",
-    fontFamily: "Alexandria-Bold" },
+    fontFamily: "Alexandria-Medium" },
   dotSelection: {
     width: 8,
     height: 8,

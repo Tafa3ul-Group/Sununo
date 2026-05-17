@@ -136,7 +136,7 @@ export default function NotificationsScreen() {
                 {/* Empty state */}
                 {!isLoading && groupedNotifications.today.length === 0 && groupedNotifications.yesterday.length === 0 && groupedNotifications.older.length === 0 && (
                     <View style={{ alignItems: 'center', paddingTop: 80 }}>
-                        <ThemedText style={{ fontSize: 16, color: '#9CA3AF', fontFamily: 'Alexandria-Bold' }}>
+                        <ThemedText style={{ fontSize: 16, color: '#9CA3AF', fontFamily: 'Alexandria-Medium' }}>
                             {isRTL ? 'لا توجد إشعارات' : 'No notifications'}
                         </ThemedText>
                     </View>
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
         marginBottom: 10 },
     sectionTitle: {
         fontSize: 14,
-        fontFamily: "Alexandria-Bold",
+        fontFamily: "Alexandria-Medium",
         color: '#9CA3AF' },
     notificationCard: {
         flexDirection: 'row',
@@ -181,16 +181,16 @@ const styles = StyleSheet.create({
     timeText: {
         fontSize: 12,
         color: '#9CA3AF',
-        fontFamily: "Alexandria-SemiBold" },
+        fontFamily: "Alexandria-Medium" },
     cardContent: {
         flex: 1 },
     titleText: {
         fontSize: 16,
-        fontFamily: "Alexandria-Black",
+        fontFamily: "Alexandria-Medium",
         color: '#111827' },
     messageText: {
         fontSize: 13,
         color: '#6B7280',
         marginTop: 2,
-     fontFamily: "Alexandria-Regular" }
+     fontFamily: "Alexandria-Medium" }
 });

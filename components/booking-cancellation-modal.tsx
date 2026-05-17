@@ -267,13 +267,13 @@ const styles = StyleSheet.create({
     position: 'absolute' },
   title: {
     fontSize: normalize.font(22),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: '#FF4D17',
     marginTop: 16,
     textAlign: 'center' },
   customerPhone: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     color: '#64748B',
     marginTop: 4,
     marginBottom: 24,
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     marginBottom: 32 },
   inputLabel: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     color: '#1C1C1C',
     marginBottom: 12 },
   textInput: {
@@ -295,12 +295,12 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 16,
     fontSize: normalize.font(15),
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "Alexandria-Medium",
     color: '#1C1C1C',
     textAlignVertical: 'top' },
   noteText: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "Alexandria-Medium",
     color: '#64748B',
     marginTop: 16,
     lineHeight: 20 },
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     height: 300 },
   feedbackText: {
     fontSize: normalize.font(18),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: '#1C1C1C',
     textAlign: 'center',
     marginTop: 10 },
@@ -332,5 +332,5 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0' },
   retryButtonText: {
     fontSize: normalize.font(15),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: '#FF4D17' } });

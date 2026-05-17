@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     alignItems: "center" },
   headerTitle: {
     fontSize: normalize.font(17),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     lineHeight: normalize.font(28),
     textAlign: 'center',

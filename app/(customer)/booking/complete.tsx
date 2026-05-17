@@ -665,7 +665,7 @@ export default function CompleteBookingScreen() {
           <ThemedText
             style={[
               styles.infoValue,
-              { fontFamily: "Alexandria-SemiBold", color: Colors.primary },
+              { fontFamily: "Alexandria-Medium", color: Colors.primary },
             ]}
           >
             {totalPrice.toLocaleString()} {t("common.iqd")}
@@ -1218,7 +1218,7 @@ export default function CompleteBookingScreen() {
                     <ThemedText
                       style={{
                         color: "#EF4444",
-                        fontFamily: "Alexandria-Bold" }}
+                        fontFamily: "Alexandria-Medium" }}
                     >
                       {t("common.delete")}
                     </ThemedText>
@@ -1289,7 +1289,7 @@ export default function CompleteBookingScreen() {
                           <ThemedText
                             style={[
                               styles.shiftNameFlat,
-                              isSelected && { color: "#035DF9", fontFamily: "Alexandria-Black" },
+                              isSelected && { color: "#035DF9", fontFamily: "Alexandria-Medium" },
                             ]}
                           >
                             {shiftName}
@@ -1300,7 +1300,7 @@ export default function CompleteBookingScreen() {
                           </ThemedText>
                         </View>
                         <View style={isRTL ? { alignItems: 'flex-start' } : { alignItems: 'flex-end' }}>
-                          <ThemedText style={[styles.shiftPriceFlat, isSelected && { color: "#035DF9", fontFamily: "Alexandria-SemiBold" }]}>
+                          <ThemedText style={[styles.shiftPriceFlat, isSelected && { color: "#035DF9", fontFamily: "Alexandria-Medium" }]}>
                             {Number(shiftPrice).toLocaleString()} {t("common.iqd")}
                           </ThemedText>
                         </View>
@@ -1462,14 +1462,14 @@ const styles = StyleSheet.create({
   dateBadgeActive: { borderColor: Colors.primary, borderWidth: 2 },
   dateBadgeText: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: "#94A3B8",
     textAlign: "center",
     includeFontPadding: false,
     lineHeight: 42 },
   dateBadgeTextActive: {
     color: Colors.primary,
-    fontFamily: "Alexandria-Black" },
+    fontFamily: "Alexandria-Medium" },
   addDateBtn: {
     width: 42,
     height: 42,
@@ -1487,7 +1487,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10 },
   calendarMonthTitle: {
     fontSize: normalize.font(18),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: "#1E293B",
     textAlign: "center",
     letterSpacing: 2,
@@ -1503,7 +1503,7 @@ const styles = StyleSheet.create({
     borderRadius: 12 },
   dayHeaderCell: {
     fontSize: normalize.font(10),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: "#94A3B8",
     width: (SCREEN_WIDTH - 100) / 7,
     textAlign: "center" },
@@ -1522,13 +1522,13 @@ const styles = StyleSheet.create({
   activeDayCell: { backgroundColor: Colors.primary, borderRadius: 10 },
   dayText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: "#334155",
     textAlign: "center" },
-  activeDayText: { color: "#FFF", fontFamily: "Alexandria-Black" },
+  activeDayText: { color: "#FFF", fontFamily: "Alexandria-Medium" },
   bookedDayText: {
     color: "#CBD5E1",
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "Alexandria-Medium",
     opacity: 0.4 },
   scribbleOverlay: {
     position: "absolute",
@@ -1549,16 +1549,16 @@ const styles = StyleSheet.create({
     alignItems: "center" },
   shiftTitle: {
     fontSize: normalize.font(15),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: "#1E293B" },
   shiftTime: {
     fontSize: normalize.font(12),
     color: "#64748B",
-    fontFamily: "Alexandria-Bold" },
+    fontFamily: "Alexandria-Medium" },
   deleteDayText: {
     color: "#EF4444",
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     textDecorationLine: "underline" },
   calendarSheetContent: {
     padding: 20,
@@ -1581,7 +1581,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4 },
   dayHeaderText: {
     fontSize: normalize.font(15),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: "#1E293B" },
   shiftCardFlat: {
     flexDirection: "row",
@@ -1605,15 +1605,15 @@ const styles = StyleSheet.create({
     marginHorizontal: 12 },
   shiftNameFlat: {
     fontSize: normalize.font(15),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: "#1E293B" },
   shiftTimeFlat: {
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "Alexandria-Medium",
     color: "#64748B" },
   shiftPriceFlat: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     color: "#1E293B" },
   whoContainer: { marginTop: 10 },
   whoCard: {
@@ -1630,12 +1630,12 @@ const styles = StyleSheet.create({
   },
   guestLabel: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: "#111827" },
   guestSubLabel: {
     fontSize: normalize.font(12),
     color: "#9CA3AF",
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     marginTop: 1 },
   footer: {
     position: "absolute",
@@ -1660,7 +1660,7 @@ const styles = StyleSheet.create({
     paddingBottom: 15 },
   inlinePaymentTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: "#15AB64",
     marginBottom: 15 },
   paymentForm: { gap: 12 },
@@ -1669,7 +1669,7 @@ const styles = StyleSheet.create({
   inputGroupFixed: { width: 90, gap: 6 },
   inputLabel: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: "#1E293B" },
   textInput: {
     backgroundColor: "#FFFFFF",
@@ -1679,7 +1679,7 @@ const styles = StyleSheet.create({
     height: 48,
     paddingHorizontal: 16,
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: "#1E293B" },
   rowInputs: { flexDirection: "row" },
 
@@ -1695,7 +1695,7 @@ const styles = StyleSheet.create({
     marginBottom: 15 },
   successTitle: {
     fontSize: normalize.font(20),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: "#1E293B",
     marginBottom: 8,
     textAlign: "center" },
@@ -1705,7 +1705,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 25,
     lineHeight: 22,
-    fontFamily: "Alexandria-Regular" },
+    fontFamily: "Alexandria-Medium" },
   successBtn: { width: "100%", height: 56 },
 
   // Details Styles
@@ -1732,7 +1732,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingVertical: 8,
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: "#1E293B",
     width: "100%" },
   infoSectionCard: {
@@ -1744,18 +1744,18 @@ const styles = StyleSheet.create({
     marginBottom: 12 },
   sectionTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: "#15AB64" },
   divider: { height: 1, backgroundColor: "#F1F5F9", marginVertical: 10 },
   infoRow: { justifyContent: "space-between", marginBottom: 10 },
   infoLabel: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: "#1E293B",
     textAlign: isRTL ? "right" : "left" },
   infoValue: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     color: "#64748B",
     textAlign: isRTL ? "left" : "right" },
   sectionHeaderRow: { justifyContent: "space-between", alignItems: "center" },
@@ -1769,10 +1769,10 @@ const styles = StyleSheet.create({
   editBtnText: {
     color: "#15AB64",
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Black" },
+    fontFamily: "Alexandria-Medium" },
   paymentMainTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: "#15AB64",
     marginVertical: 12 },
   paymentOptionCard: {
@@ -1787,25 +1787,25 @@ const styles = StyleSheet.create({
   paymentOptionActive: { borderColor: "#15AB64", backgroundColor: "#F0FDF4" },
   paymentVal: {
     fontSize: normalize.font(15),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     color: "#64748B" },
-  paymentValActive: { color: "#1E293B", fontFamily: "Alexandria-Bold" },
+  paymentValActive: { color: "#1E293B", fontFamily: "Alexandria-Medium" },
   paymentLabel: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "Alexandria-Medium",
     color: "#64748B" },
-  paymentLabelActive: { color: "#1E293B", fontFamily: "Alexandria-Black" },
+  paymentLabelActive: { color: "#1E293B", fontFamily: "Alexandria-Medium" },
   agreementWrapper: { paddingVertical: 12, paddingBottom: 35 },
   agreementText: {
     fontSize: normalize.font(12),
     color: "#64748B",
     textAlign: "center",
     lineHeight: 18,
-    fontFamily: "Alexandria-Regular" },
+    fontFamily: "Alexandria-Medium" },
   agreementLink: {
     color: Colors.primary,
     textDecorationLine: "underline",
-    fontFamily: "Alexandria-Bold" },
+    fontFamily: "Alexandria-Medium" },
   // RTL Utilities
   rtlText: { textAlign: "right" },
   ltrText: { textAlign: "left" },
@@ -1839,7 +1839,7 @@ const styles = StyleSheet.create({
     marginBottom: 8 },
   methodName: {
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: "#1E293B" },
   selectedDot: {
     position: "absolute",

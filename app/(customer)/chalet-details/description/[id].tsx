@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     elevation: 8 },
   pageTitle: {
     fontSize: 22,
-    fontFamily: 'Alexandria-Black',
+    fontFamily: 'Alexandria-Medium',
     color: '#111827' },
   card: {
     backgroundColor: 'white',

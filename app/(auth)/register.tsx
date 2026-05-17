@@ -510,7 +510,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10 },
   headerTitle: {
     fontSize: 18,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: "#1E293B" },
   scrollContent: {
     flexGrow: 1,
@@ -528,7 +528,7 @@ const styles = StyleSheet.create({
   // Task 2.4: stepTitle fontSize changed from 22 to 20
   stepTitle: {
     fontSize: 20,
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: "#1E293B",
     marginBottom: 8,
     lineHeight: 30,
@@ -562,19 +562,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12 },
   cardTitle: {
     fontSize: 16,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: "#1E293B",
     marginBottom: 4 },
   cardDesc: {
     fontSize: 12,
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "Alexandria-Medium",
     color: "#64748B" },
   // Task 2.4: inputGroup marginBottom changed from normalize.height(20) to 16
   inputGroup: {
     marginBottom: 16 },
   label: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: "#1E293B",
     marginBottom: normalize.height(8),
     lineHeight: normalize.font(20),
