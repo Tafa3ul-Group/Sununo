@@ -102,8 +102,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: normalize.height(15) },
   title: {
-    fontSize: normalize.font(18),
-    fontFamily: "Alexandria-Black",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: '#1E293B' },
   closeBtn: {
     width: 32,
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
     alignItems: 'center' },
   message: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "Alexandria-Medium",
     color: '#64748B',
     lineHeight: 22,
     marginBottom: normalize.height(25) },
@@ -127,5 +127,5 @@ const styles = StyleSheet.create({
     alignItems: 'center' },
   cancelText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: '#64748B' } });

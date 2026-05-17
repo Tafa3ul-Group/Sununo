@@ -201,12 +201,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     borderColor: Colors.primary },
   filterText: {
-    fontSize: normalize.font(13),
-    fontFamily: "Alexandria-SemiBold",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.secondary },
   filterTextActive: {
     color: Colors.white,
-   fontFamily: "Alexandria-Regular" },
+   fontFamily: "Alexandria-Medium" },
   // List
   listContainer: {
     flex: 1,
@@ -227,22 +227,22 @@ const styles = StyleSheet.create({
   transactionInfo: {
     flex: 1 },
   transactionTitle: {
-    fontSize: normalize.font(15),
-    fontFamily: "Alexandria-Bold",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     marginBottom: 3 },
   transactionDate: {
-    fontSize: normalize.font(11),
+    fontSize: normalize.font(8),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium" },
   transactionAmount: {
-    fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Black",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     marginBottom: 4 },
   currencySmall: {
-    fontSize: normalize.font(11),
-    fontFamily: "Alexandria-SemiBold",
+    fontSize: normalize.font(8),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.muted },
   statusBadge: {
     flexDirection: 'row',
@@ -256,8 +256,8 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3 },
   statusBadgeText: {
-    fontSize: normalize.font(10),
-    fontFamily: "Alexandria-Bold" },
+    fontSize: normalize.font(8),
+    fontFamily: "Alexandria-Medium" },
   separator: {
     height: 1,
     backgroundColor: '#F5F5F5' },
@@ -275,11 +275,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8 },
   emptyTitle: {
-    fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Bold",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
   emptySubtitle: {
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(8),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium",
     textAlign: 'center',

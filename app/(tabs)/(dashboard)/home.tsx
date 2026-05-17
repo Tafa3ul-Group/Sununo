@@ -315,8 +315,8 @@ export default function HomeScreen() {
                 }}>
                   <Text style={{
                     color: statusInfo.color,
-                    fontSize: normalize.font(10),
-                    fontFamily: 'Alexandria-SemiBold'
+                    fontSize: normalize.font(8),
+                    fontFamily: "Alexandria-Medium"
                   }}>
                     {statusInfo.label}
                   </Text>
@@ -333,9 +333,9 @@ export default function HomeScreen() {
 
               {item.bookingCode && (
                 <Text style={{
-                  fontSize: normalize.font(10),
+                  fontSize: normalize.font(8),
                   color: '#94A3B8',
-                  fontFamily: 'Alexandria-Medium',
+                  fontFamily: "Alexandria-Medium",
                   marginTop: 2
                 }}>
                   {item.bookingCode}
@@ -624,25 +624,25 @@ const styles = StyleSheet.create({
     marginBottom: normalize.height(20) },
   walletLabel: {
     color: 'rgba(255,255,255,0.65)',
-    fontSize: normalize.font(12),
-    fontFamily: "Alexandria-SemiBold",
+    fontSize: normalize.font(8),
+    fontFamily: "Alexandria-Medium",
     marginBottom: normalize.height(6),
     letterSpacing: normalize.width(0.3),
     textTransform: 'uppercase',
-    lineHeight: normalize.font(16) },
+    lineHeight: normalize.font(14) },
   walletAmountRow: {
     alignItems: 'baseline' },
   walletValue: {
     color: Colors.white,
-    fontSize: normalize.font(32),
-    fontFamily: "Alexandria-SemiBold",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     letterSpacing: normalize.width(-0.5),
-    lineHeight: normalize.font(38) },
+    lineHeight: normalize.font(14) },
   walletCurrency: {
     color: 'rgba(255,255,255,0.5)',
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
-    lineHeight: normalize.font(20) },
+    fontFamily: "Alexandria-Medium",
+    lineHeight: normalize.font(14) },
   eyeButton: {
     width: normalize.width(44),
     height: normalize.width(44),
@@ -663,9 +663,9 @@ const styles = StyleSheet.create({
     gap: normalize.width(6) },
   walletActionText: {
     color: Colors.primary,
-    fontFamily: "Alexandria-SemiBold",
-    fontSize: normalize.font(13),
-    lineHeight: normalize.font(18) },
+    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(14),
+    lineHeight: normalize.font(14) },
 
 
 
@@ -686,48 +686,48 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center' },
   avatarLetter: {
-    fontSize: normalize.font(18),
-    fontFamily: "Alexandria-SemiBold",
-    lineHeight: normalize.font(24) },
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
+    lineHeight: normalize.font(14) },
   bookingInfo: {
     flex: 1 },
   bookingName: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     marginBottom: normalize.height(1),
-    lineHeight: normalize.font(20) },
+    lineHeight: normalize.font(14) },
   bookingChalet: {
-    fontSize: normalize.font(11),
+    fontSize: normalize.font(8),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium",
-    lineHeight: normalize.font(16) },
+    lineHeight: normalize.font(14) },
   bookingDate: {
-    fontSize: normalize.font(10),
+    fontSize: normalize.font(8),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium",
     marginTop: normalize.height(2),
     lineHeight: normalize.font(14) },
   bookingAmount: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     marginBottom: normalize.height(4),
-    lineHeight: normalize.font(20) },
+    lineHeight: normalize.font(14) },
   bookingCurrency: {
-    fontSize: normalize.font(10),
+    fontSize: normalize.font(8),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     lineHeight: normalize.font(14) },
   bookingStatusBadge: {
     paddingHorizontal: normalize.width(8),
     paddingVertical: normalize.height(2),
     borderRadius: normalize.radius(6) },
   bookingStatusText: {
-    fontSize: normalize.font(9),
-    fontFamily: "Alexandria-SemiBold",
+    fontSize: normalize.font(8),
+    fontFamily: "Alexandria-Medium",
     textTransform: 'uppercase',
-    lineHeight: normalize.font(13) },
+    lineHeight: normalize.font(14) },
 
   // New Modern Bookings Section
   bookingsSection: {
@@ -740,16 +740,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: normalize.width(16),
     marginTop: 0 },
   bookingsTitle: {
-    fontSize: normalize.font(17),
-    fontFamily: "Alexandria-SemiBold",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
-    lineHeight: normalize.font(23) },
+    lineHeight: normalize.font(14) },
   bookingsViewAll: {
     fontSize: normalize.font(14),
     color: Colors.text.primary,
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     textDecorationLine: 'underline',
-    lineHeight: normalize.font(20) },
+    lineHeight: normalize.font(14) },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -763,10 +763,10 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F1F3F5',
     alignItems: 'center' },
   calendarTitle: {
-    fontSize: normalize.font(18),
-    fontFamily: "Alexandria-SemiBold",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
-    lineHeight: normalize.font(24) },
+    lineHeight: normalize.font(14) },
   filterScroll: {
     marginBottom: 0 },
   filterContainer: {
@@ -813,38 +813,38 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center' },
   modernBookingName: {
-    fontSize: normalize.font(16),
-    fontFamily: "Alexandria-SemiBold",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     marginBottom: normalize.height(1),
-    lineHeight: normalize.font(22) },
+    lineHeight: normalize.font(14) },
   modernBookingShift: {
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(8),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium",
-    lineHeight: normalize.font(16) },
+    lineHeight: normalize.font(14) },
   modernBookingChalet: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     color: Colors.primary,
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     marginBottom: normalize.height(1),
-    lineHeight: normalize.font(18) },
+    lineHeight: normalize.font(14) },
   modernBookingDate: {
-    fontSize: normalize.font(11),
+    fontSize: normalize.font(8),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium",
-    lineHeight: normalize.font(16) },
+    lineHeight: normalize.font(14) },
   modernBookingDot: {
     color: Colors.text.muted,
-    fontSize: normalize.font(11) },
+    fontSize: normalize.font(8) },
   modernBookingPriceWrap: {
     alignItems: 'flex-start',
     justifyContent: 'center' },
   modernBookingPrice: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
-    lineHeight: normalize.font(20) },
+    lineHeight: normalize.font(14) },
   fixedHeaderArea: {
     backgroundColor: Colors.white,
     zIndex: 10,
@@ -857,8 +857,8 @@ const styles = StyleSheet.create({
   noBookingsText: {
     color: Colors.text.muted,
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
-    lineHeight: normalize.font(20) },
+    fontFamily: "Alexandria-Medium",
+    lineHeight: normalize.font(14) },
 
 
   // Empty State
@@ -876,14 +876,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: normalize.height(8) },
   emptyTitle: {
-    fontSize: normalize.font(16),
-    fontFamily: "Alexandria-SemiBold",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
-    lineHeight: normalize.font(22) },
+    lineHeight: normalize.font(14) },
   emptySubtitle: {
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(8),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium",
     textAlign: 'center',
     paddingHorizontal: normalize.width(40),
-    lineHeight: normalize.font(18) } });
+    lineHeight: normalize.font(14) } });

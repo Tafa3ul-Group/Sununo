@@ -153,9 +153,9 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0' },
   searchInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 14,
     color: Colors.text.primary,
-    fontFamily: 'Alexandria-Medium' },
+    fontFamily: "Alexandria-Medium" },
   listContent: {
     padding: 16,
     paddingBottom: 40 },
@@ -175,8 +175,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20 },
   emptyText: {
-    fontSize: 16,
+    fontSize: 14,
     color: Colors.text.muted,
     textAlign: 'center',
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: "Alexandria-Medium",
     lineHeight: 24 } });
