@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4 },
   primaryText: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Alexandria-Bold",
     textAlign: 'center',
     lineHeight: 22,
     includeFontPadding: false,
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center' },
   secondaryText: {
-    fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontSize: 16,
+    fontFamily: "Alexandria-Bold",
     textAlign: 'center',
     lineHeight: 25 } });

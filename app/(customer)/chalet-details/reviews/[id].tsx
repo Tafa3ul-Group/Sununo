@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
   summaryArea: { alignItems: "center", marginVertical: normalize(35) },
   bigRatingText: {
     fontSize: normalize(64), // Slightly larger
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Alexandria-Black",
     color: "#111827",
     lineHeight: normalize(72), // Explicit lineHeight to prevent cutoff
     paddingVertical: 5,
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
     marginTop: normalize(4) },
   rateNumText: {
     fontSize: normalize(16),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Alexandria-Black",
     color: "#111827",
     lineHeight: normalize(20),
     paddingVertical: 2 },
@@ -266,14 +266,14 @@ const styles = StyleSheet.create({
   nameAndBody: { flex: 1 },
   reviewerNameText: {
     fontSize: normalize(16),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Alexandria-Black",
     color: "#111827" },
   revBodyText: {
     fontSize: normalize(14),
     color: "#6B7280",
     marginTop: normalize(8),
     lineHeight: normalize(22),
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "Alexandria-Regular" },
   avatarCircle: {
     width: normalize(60),
     height: normalize(60),
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     justifyContent: "center" },
   questionTitle: {
     fontSize: normalize(16),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Alexandria-Black",
     color: "#111827",
     marginBottom: normalize(8) },
   inputStarsRow: { flexDirection: "row", gap: normalize(12) },

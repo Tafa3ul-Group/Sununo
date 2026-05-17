@@ -125,8 +125,8 @@ const styles = StyleSheet.create({
         position: 'relative',
         height: 48 },
     headerTitle: {
-        fontSize: 14,
-        fontFamily: "Alexandria-Medium",
+        fontSize: 20,
+        fontFamily: "Alexandria-Black",
         color: '#111827' },
     backButton: {
         position: 'absolute',
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     },
     emptyText: {
         color: '#9CA3AF', 
-        fontFamily: "Alexandria-Medium"
+        fontFamily: 'Alexandria-Medium'
     },
     notificationCard: {
         flexDirection: 'row',
@@ -173,20 +173,20 @@ const styles = StyleSheet.create({
         backgroundColor: '#FF4500', // Solid orange as in image
     },
     timeText: {
-        fontSize: 8,
+        fontSize: 12,
         color: '#9CA3AF',
-        fontFamily: "Alexandria-Medium" },
+        fontFamily: "Alexandria-SemiBold" },
     cardContent: {
         flex: 1 },
     titleText: {
-        fontSize: 14,
-        fontFamily: "Alexandria-Medium",
+        fontSize: 16,
+        fontFamily: "Alexandria-Black",
         color: '#111827',
         marginBottom: 2 },
     messageText: {
-        fontSize: 14,
+        fontSize: 13,
         color: '#6B7280',
         marginTop: 2,
-        fontFamily: "Alexandria-Medium"
+        fontFamily: "Alexandria-Regular"
     }
 });

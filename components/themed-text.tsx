@@ -83,14 +83,14 @@ export function ThemedText({
 
 const styles = StyleSheet.create({
   base: {
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Alexandria-Regular",
     includeFontPadding: false,
     textAlignVertical: "center",
     writingDirection: I18nManager.isRTL ? "rtl" : "ltr",
     textAlign: I18nManager.isRTL ? "right" : "left" },
   defaultSemiBold: {
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "Alexandria-SemiBold" },
   link: {
     color: "#2B66FF",
     textDecorationLine: "underline",
-    fontFamily: "Alexandria-Medium" } });
+    fontFamily: "Alexandria-Regular" } });
