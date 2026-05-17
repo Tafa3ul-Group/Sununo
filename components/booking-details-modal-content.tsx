@@ -12,8 +12,7 @@ import {
   SolarSunBold, 
   SolarAltArrowLeftLinear, 
   SolarAltArrowRightLinear, 
-  SolarNotesBoldDuotone,
-  SolarMenuDotsBold,
+  SolarMenuDotsBold, 
   SolarStarBold
 } from '@/components/icons/solar-icons';
 import { PrimaryButton } from '@/components/user/primary-button';
