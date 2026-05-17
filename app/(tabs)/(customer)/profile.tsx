@@ -110,6 +110,7 @@ export default function CustomerProfileScreen() {
                     onPress={() => router.push('/profile-edit')}
                     activeOpacity={0.9}
                 >
+                    {/* Avatar always on the right in RTL, left in LTR */}
                     <View style={styles.avatarWrap}>
                         <Image
                             source={getImageSrc(userData?.image || userData?.imageUrl)}
