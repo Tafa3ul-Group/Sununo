@@ -1,18 +1,21 @@
+import { HeaderSection } from '@/components/header-section';
 import {
     SolarAltArrowLeftBold,
     SolarAltArrowRightBold,
     SolarMapPointBold,
-    SolarMenuDotsBold,
-    SolarPenBold } from '@/components/icons/solar-icons';
+    SolarPenBold
+} from '@/components/icons/solar-icons';
 import { ThemedText } from '@/components/themed-text';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
+import { isRTL } from "@/i18n";
 import { RootState } from '@/store';
 import { useGetMeQuery } from '@/store/api/apiSlice';
 import {
     useUpdateProfileImageMutation,
-    useUpdateUserProfileMutation } from '@/store/api/customerApiSlice';
+    useUpdateUserProfileMutation
+} from '@/store/api/customerApiSlice';
 import * as ImagePicker from 'expo-image-picker';
 import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -30,11 +33,10 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    View } from 'react-native';
+    View
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
-import { isRTL } from "@/i18n";
-import { HeaderSection } from '@/components/header-section';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -156,7 +158,7 @@ export default function ProfileEditScreen() {
 
             {/* الاسم الكامل */}
             <View style={styles.fieldGroup}>
-              <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>
+              <ThemedText style={styles.label}>
                 {isRTL ? 'الاسم الكامل' : 'Full Name'}
               </ThemedText>
               <View style={styles.inputWrapper}>
@@ -172,7 +174,7 @@ export default function ProfileEditScreen() {
 
             {/* تاريخ الميلاد */}
             <View style={styles.fieldGroup}>
-              <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>
+              <ThemedText style={styles.label}>
                 {isRTL ? 'تاريخ الميلاد' : 'Date of Birth'}
               </ThemedText>
               <View style={styles.inputWrapper}>
@@ -189,7 +191,7 @@ export default function ProfileEditScreen() {
 
             {/* رقم الهاتف */}
             <View style={styles.fieldGroup}>
-              <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>
+              <ThemedText style={styles.label}>
                 {isRTL ? 'رقم الهاتف' : 'Phone Number'}
               </ThemedText>
               <View style={[styles.phoneRow, { flexDirection: 'row' }]}>
@@ -243,7 +245,7 @@ export default function ProfileEditScreen() {
 
             {/* الموقع */}
             <View style={styles.fieldGroup}>
-              <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>
+              <ThemedText style={styles.label}>
                 {isRTL ? 'موقعك' : 'Your Location'}
               </ThemedText>
               <View style={styles.mapCard}>
@@ -313,8 +315,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center' },
   headerTitle: {
-    fontSize: normalize.font(16),
-    fontFamily: 'Alexandria-Black',
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: '#111827' },
   backCircle: {
     width: 38,
@@ -362,12 +364,17 @@ const styles = StyleSheet.create({
   form: {
     gap: 0 },
   fieldGroup: {
-    marginBottom: normalize.height(14) },
+    marginBottom: normalize.height(14),
+    width: '100%',
+  },
   label: {
-    fontSize: normalize.font(12),
-    fontFamily: 'Alexandria-Bold',
+    width: '100%',
+    fontSize: normalize.font(8),
+    fontFamily: "Alexandria-Medium",
     color: '#374151',
-    marginBottom: normalize.height(6) },
+    marginBottom: normalize.height(6),
+    textAlign: 'right',
+  },
   inputWrapper: {
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
@@ -378,7 +385,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: normalize.width(14) },
   input: {
     fontSize: normalize.font(14),
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: "Alexandria-Medium",
     color: '#1E293B',
     flex: 1 },
 
@@ -400,15 +407,15 @@ const styles = StyleSheet.create({
     minWidth: normalize.width(110) },
   changePhoneText: {
     color: '#FFFFFF',
-    fontSize: normalize.font(12),
-    fontFamily: 'Alexandria-Black' },
+    fontSize: normalize.font(8),
+    fontFamily: "Alexandria-Medium" },
   phoneValueWrapper: {
     flex: 1,
     paddingHorizontal: normalize.width(12),
     justifyContent: 'center' },
   phoneValue: {
     fontSize: normalize.font(14),
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: "Alexandria-Medium",
     color: '#1E293B' },
 
   // ── Map card ─────────────────────────────────────────────────────────────
@@ -431,12 +438,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center' },
   locationName: {
-    fontSize: normalize.font(13),
-    fontFamily: 'Alexandria-Bold',
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: '#9CA3AF' },
   changeLocText: {
-    fontSize: normalize.font(13),
-    fontFamily: 'Alexandria-Bold',
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.primary },
 
   // ── Footer ───────────────────────────────────────────────────────────────
