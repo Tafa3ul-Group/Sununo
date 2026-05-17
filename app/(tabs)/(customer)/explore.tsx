@@ -73,7 +73,7 @@ import { useDispatch, useSelector } from "react-redux";
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const MAPBOX_ACCESS_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
-import { useGetChaletsMapQuery, unwrapListResponse } from "@/store/api/apiSlice";
+import { useGetChaletsMapQuery } from "@/store/api/apiSlice";
 import { isRTL } from "@/i18n";
 
 const SHAPES = {
@@ -211,7 +211,7 @@ export default function ExploreScreen() {
       period: activeFilters?.period,
       zoom: Math.round(zoom) });
 
-  const chaletsRaw = unwrapListResponse(chaletsResponse);
+  const chaletsRaw = chaletsResponse?.data || [];
 
   const [selectedChalet, setSelectedChalet] = useState<any>(null);
   const browsingRegionRef = useRef<{ center: [number, number]; zoom: number }>({
@@ -460,10 +460,8 @@ export default function ExploreScreen() {
               />
 
               <View style={styles.priceContainer}>
-                <ThemedText style={styles.footerPrice} numberOfLines={1}>
-                  {isRTL ? "يبدأ من " : "Starts from "}
-                  {selectedChalet.price}
-                  {isRTL ? " د.ع / شفت" : " IQD / shift"}
+                <ThemedText style={styles.footerPrice}>
+                  {selectedChalet.price} IQD
                 </ThemedText>
               </View>
             </View>
@@ -563,20 +561,16 @@ export default function ExploreScreen() {
       )}
 
       <AppMap
-        style={{ flex: 1 }}
         markers={MOCK_CHALETS}
         onSelectMarker={handleSelectChalet}
-        onPress={() => {
-          Keyboard.dismiss();
-          setSelectedChalet(null);
-          bottomSheetRef.current?.dismiss();
-        }}
+        onPress={() => Keyboard.dismiss()}
         selectedChalet={selectedChalet}
         route={route}
         location={location}
         isNavigating={isNavigating}
         zoomLevel={zoom}
         centerCoordinate={cameraPosition}
+        onPress={() => Keyboard.dismiss()}
         onCameraChanged={handleCameraChanged}
       />
 
@@ -651,7 +645,6 @@ export default function ExploreScreen() {
               setIsNavigating(false);
               toggleMapTools(false);
               setSelectedChalet(null);
-              bottomSheetRef.current?.dismiss();
 
               if (preSelectionRegion) {
                 setZoom(preSelectionRegion.zoom);

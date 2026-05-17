@@ -104,18 +104,12 @@ export function HeaderSection({
           styles.topRow,
           {
             marginBottom,
-            position: "relative",
-            justifyContent: "center",
+            flexDirection: isRTL ? 'row-reverse' : 'row'
           },
         ]}
       >
         {/* LEFT SIDE (Start side) */}
-        <View
-          style={[
-            styles.absoluteLeft,
-            isRTL ? { right: normalize.width(20) } : { left: normalize.width(20) },
-          ]}
-        >
+        <View style={[styles.headerSide, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
           {isHome ? (
             <View style={styles.homeLeftGroup}>
               {stateUserType !== "guest" && (
@@ -160,19 +154,14 @@ export function HeaderSection({
         {/* Center Title */}
         {!isHome && (
           <View style={styles.titleWrapper}>
-            <ThemedText style={styles.headerTitle} numberOfLines={1}>
+            <ThemedText style={styles.headerTitle}>
               {title}
             </ThemedText>
           </View>
         )}
 
         {/* RIGHT SIDE (End side) */}
-        <View
-          style={[
-            styles.absoluteRight,
-            isRTL ? { left: normalize.width(20) } : { right: normalize.width(20) },
-          ]}
-        >
+        <View style={[styles.headerSide, { alignItems: isRTL ? 'flex-start' : 'flex-end' }]}>
           {showLogo && (
             <View style={isHome ? styles.logoCircleHome : styles.logoCircle}>
               <Image
@@ -257,7 +246,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: normalize.width(20),
     minHeight: normalize.height(60),
-    paddingVertical: normalize.height(10) },
+    paddingVertical: normalize.height(10),
+    justifyContent: "space-between" },
   headerSide: {
     justifyContent: "center",
     alignItems: "center" },
@@ -265,28 +255,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: normalize.width(80),
-    width: "100%" },
+    paddingHorizontal: normalize.width(10) },
   headerTitle: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     lineHeight: normalize.font(14),
     textAlign: 'center' },
-  absoluteLeft: {
-    position: "absolute",
-    zIndex: 10,
-    top: 0,
-    bottom: 0,
-    justifyContent: "center",
-    alignItems: "center" },
-  absoluteRight: {
-    position: "absolute",
-    zIndex: 10,
-    top: 0,
-    bottom: 0,
-    justifyContent: "center",
-    alignItems: "center" },
   logoCircle: {
     width: normalize.width(42),
     height: normalize.width(42),
