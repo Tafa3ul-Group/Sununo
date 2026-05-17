@@ -3,6 +3,7 @@ import React from "react";
 import { Dimensions, StyleSheet, View } from "react-native";
 import Svg, { Path, Rect } from "react-native-svg";
 import { ThemedText } from "../themed-text";
+import { isRTL } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SVG_WIDTH = 375;

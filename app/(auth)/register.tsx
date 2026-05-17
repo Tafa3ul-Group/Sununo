@@ -3,12 +3,13 @@ import { ThemedText } from "@/components/themed-text";
 import { CircleBackButton } from "@/components/ui/circle-back-button";
 import { AuthToggle } from "@/components/user/auth-toggle";
 import { OtpInput } from "@/components/user/otp-input";
-import { PrimaryButton } from "@/components/user/primary-button";
 import { normalize } from "@/constants/theme";
+import { isRTL } from "@/i18n";
 import {
     useLoginMutation,
     useRegisterProviderMutation,
-    useVerifyPhoneMutation } from "@/store/api/apiSlice";
+    useVerifyPhoneMutation
+} from "@/store/api/apiSlice";
 import { setCredentials } from "@/store/authSlice";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -25,7 +26,6 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch } from "react-redux";
-import { isRTL } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -336,7 +336,7 @@ export default function RegisterScreen() {
                 />
               </View>
 
-              <PrimaryButton
+              <SecondaryButton
                 label={
                   accountType === "owner"
                     ? isRTL
@@ -447,11 +447,11 @@ export default function RegisterScreen() {
                 />
               </View>
 
-              <PrimaryButton
+              <SecondaryButton
                 label={isRTL ? "إرسال الطلب" : "Submit & Send Code"}
                 onPress={nextStep}
                 style={styles.mainBtn}
-                loading={isRegisteringProvider}
+                isLoading={isRegisteringProvider}
               />
             </View>
           )}
@@ -484,11 +484,11 @@ export default function RegisterScreen() {
                 <OtpInput code={otpCode} setCode={setOtpCode} length={6} />
               </View>
 
-              <PrimaryButton
+              <SecondaryButton
                 label={isRTL ? "تحقق وتفعيل" : "Verify & Activate"}
                 onPress={handleVerify}
                 style={styles.mainBtn}
-                loading={isVerifying}
+                isLoading={isVerifying}
               />
             </View>
           )}
@@ -503,6 +503,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "white" },
   header: {
+    flexDirection: 'row',
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,

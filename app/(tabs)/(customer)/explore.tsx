@@ -19,7 +19,6 @@ import {
     SolarWindBold
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
-import { AppDrawer, AppDrawerRef } from "@/components/user/app-drawer";
 import { AppMap } from "@/components/user/app-map";
 import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
 import { LoginPromptModal } from "@/components/user/login-prompt-modal";
@@ -32,13 +31,15 @@ import {
     useGetCustomerChaletDetailsQuery,
     useGetFavoriteIdsQuery,
     useGetSimilarChaletsQuery,
-    useToggleFavoriteMutation } from "@/store/api/customerApiSlice";
+    useToggleFavoriteMutation
+} from "@/store/api/customerApiSlice";
 import {
     BottomSheetBackdrop,
     BottomSheetFooter,
     BottomSheetModal,
     BottomSheetScrollView,
-    BottomSheetTextInput } from "@gorhom/bottom-sheet";
+    BottomSheetTextInput
+} from "@gorhom/bottom-sheet";
 import { useTranslation } from "react-i18next";
 import Animated, { FadeInUp } from "react-native-reanimated";
 
@@ -55,7 +56,8 @@ import React, {
     useEffect,
     useMemo,
     useRef,
-    useState } from "react";
+    useState
+} from "react";
 import {
     ActivityIndicator,
     Dimensions,
@@ -66,15 +68,16 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    View } from "react-native";
+    View
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const MAPBOX_ACCESS_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
-import { useGetChaletsMapQuery } from "@/store/api/apiSlice";
 import { isRTL } from "@/i18n";
+import { useGetChaletsMapQuery } from "@/store/api/apiSlice";
 
 const SHAPES = {
   blue: "M29.4165 59.9929C32.7707 60.1573 33.8516 57.4154 36.6494 56.5727C39.068 55.844 42.1373 57.9136 44.602 56.1435C46.9761 54.4385 47.1003 51.1778 49.39 49.5262C50.4402 48.7686 52.2285 48.273 53.3904 47.6556C57.9159 45.2507 55.39 40.9854 56.6649 37.1198C57.1904 35.527 59.1812 33.5316 59.751 31.5682C61.0163 27.2086 57.083 25.3948 56.3847 21.7944C55.9755 19.6849 56.7103 16.6837 55.7598 14.6214C54.353 11.5687 50.787 11.9068 48.8393 9.92411C46.9162 7.96647 46.7071 4.83632 44.0101 3.40727C41.8302 2.25218 38.8321 3.99511 36.9305 3.46716C34.6099 2.82303 33.5786 0.936956 30.7928 0.00846604C26.7125 -0.17205 26.2613 2.58433 22.9082 3.49519C20.8505 4.05394 17.7655 1.94318 15.3255 3.77446C12.937 5.5671 12.9572 8.61484 10.6792 10.3017C9.69816 11.028 7.80148 11.597 6.71476 12.167C2.02929 14.6248 4.47819 18.6917 3.31327 22.6894C2.84735 24.2881 0.782415 26.4167 0.259212 28.2376C-0.909281 32.3028 2.18416 34.1827 3.35303 37.3834C4.22685 39.776 3.04536 42.7163 4.19953 45.2418C5.67644 48.4732 9.28102 47.9739 11.2678 50.1348C13.0367 52.0591 13.2797 55.0582 15.8605 56.4423C18.0647 57.6243 21.3307 55.8827 23.1837 56.5279C25.7251 57.4128 26.4182 58.9797 29.4165 59.9929Z" };
@@ -192,7 +195,6 @@ export default function ExploreScreen() {
 
   // Bottom Sheet Ref for Filters
   const filterSheetRef = useRef<BottomSheetModal>(null);
-  const drawerRef = useRef<AppDrawerRef>(null);
   const dispatch = useDispatch();
 
   // Global Filters from Redux
@@ -1308,7 +1310,6 @@ export default function ExploreScreen() {
           </View>
         </BottomSheetScrollView>
       </BottomSheetModal>
-      <AppDrawer ref={drawerRef} />
       <LoginPromptModal
         isVisible={showLoginPrompt}
         onClose={() => setShowLoginPrompt(false)}
