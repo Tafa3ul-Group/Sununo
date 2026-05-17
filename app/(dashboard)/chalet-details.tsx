@@ -1,14 +1,23 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, Switch, Platform, ActivityIndicator, Dimensions, Animated, StatusBar, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
-import { Colors, normalize, Spacing } from '@/constants/theme';
+import { Colors, normalize } from '@/constants/theme';
 import * as Haptics from 'expo-haptics';
 import { getImageSrc } from '@/hooks/useImageSrc';
-import { useGetOwnerChaletDetailsQuery, useDeleteChaletMutation } from '@/store/api/apiSlice';
+import {
+  useDeleteChaletImageMutation,
+  useDeleteChaletMutation,
+  useGetAmenityCategoriesQuery,
+  useGetChaletAmenitiesQuery,
+  useGetCitiesQuery,
+  useGetOwnerChaletDetailsQuery,
+  useGetProviderChaletStatsQuery,
+  useSetChaletAmenitiesMutation,
+  useUpdateChaletImageMutation,
+  useUpdateChaletMutation,
+  useUploadChaletImageMutation,
+} from '@/store/api/apiSlice';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { 
@@ -23,32 +32,16 @@ import {
   SolarCalendarBold,
   SolarCameraAddBold,
   SolarGalleryBold,
-  SolarCameraBold,
   SolarCloseCircleBold,
   SolarCheckCircleBold,
-  SolarSettingsBold,
-  SolarMenuDotsBold,
   SolarNotebookBold,
   SolarShieldWarningBold,
-  SolarSmartHomeBold
 } from "@/components/icons/solar-icons";
 import { CircleBackButton } from '@/components/ui/circle-back-button';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView, BottomSheetScrollView, BottomSheetTextInput, BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import * as ImagePicker from 'expo-image-picker';
 import Toast from 'react-native-toast-message';
-import { 
-  useUpdateChaletMutation, 
-  useUploadChaletImageMutation,
-  useUpdateChaletImageMutation,
-  useDeleteChaletImageMutation, 
-  useSetChaletAmenitiesMutation,
-  useGetCitiesQuery,
-  useGetAmenityCategoriesQuery,
-  useGetChaletAmenitiesQuery
-} from '@/store/api/apiSlice';
 import { GuestCounter } from '@/components/user/guest-counter';
-import { AppMap } from '@/components/user/app-map';
-import { LocationPickerModal } from '@/components/user/location-picker-modal';
 import { isRTL } from "@/i18n";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -57,21 +50,23 @@ const HERO_HEIGHT = 420;
 export default function ChaletDetailsScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
-  const { language } = useSelector((state: RootState) => state.auth);
-  const { t } = useTranslation();
+  const chaletId = Array.isArray(id) ? id[0] : id;
     
-  const { data: response, isLoading, refetch } = useGetOwnerChaletDetailsQuery(id);
+  const { data: response, isLoading, refetch } = useGetOwnerChaletDetailsQuery(chaletId as string, { skip: !chaletId });
+  const { data: chaletStatsResponse, isLoading: isLoadingStats, refetch: refetchStats } = useGetProviderChaletStatsQuery(chaletId as string, { skip: !chaletId });
   const [deleteChalet] = useDeleteChaletMutation();
   const [updateChalet, { isLoading: isUpdating }] = useUpdateChaletMutation();
   const [uploadImage, { isLoading: isUploading }] = useUploadChaletImageMutation();
-  const [updateImage, { isLoading: isUpdatingImage }] = useUpdateChaletImageMutation();
-  const [deleteImage, { isLoading: isDeletingImage }] = useDeleteChaletImageMutation();
+  const [updateImage] = useUpdateChaletImageMutation();
+  const [deleteImage] = useDeleteChaletImageMutation();
   const [setAmenitiesMutation, { isLoading: isLinking }] = useSetChaletAmenitiesMutation();
   const { data: cities } = useGetCitiesQuery();
   const { data: amenityCategories } = useGetAmenityCategoriesQuery();
-  const { data: currentAmenities } = useGetChaletAmenitiesQuery(id as string, { skip: !id });
+  const { data: currentAmenities } = useGetChaletAmenitiesQuery(chaletId as string, { skip: !chaletId });
   
   const chalet = response?.data || (response?.id ? response : null);
+  const chaletStats = chaletStatsResponse?.data || chaletStatsResponse || {};
+  const chaletSummary = chaletStats.summary || {};
 
   const [isActive, setIsActive] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -111,7 +106,6 @@ export default function ChaletDetailsScreen() {
 
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
-  const [showMap, setShowMap] = useState(false);
 
   const [policiesForm, setPoliciesForm] = useState({
     policiesAr: '',
@@ -162,7 +156,9 @@ export default function ChaletDetailsScreen() {
 
   useEffect(() => {
     if (currentAmenities) {
-      setSelectedFeatures(currentAmenities.map((a: any) => a.amenityId || a.amenity?.id));
+      const amenitiesSource: any = currentAmenities;
+      const amenities = Array.isArray(amenitiesSource) ? amenitiesSource : amenitiesSource?.data;
+      setSelectedFeatures((amenities || []).map((a: any) => a.featureId || a.amenityId || a.feature?.id || a.amenity?.id).filter(Boolean));
     }
   }, [currentAmenities]);
 
@@ -174,18 +170,22 @@ export default function ChaletDetailsScreen() {
 
   const handleUpdateBasic = async () => {
     try {
-      const payload = {
+      const payload: any = {
         name: { ar: basicForm.nameAr, en: basicForm.nameEn || basicForm.nameAr },
         description: { ar: basicForm.descriptionAr, en: basicForm.descriptionEn || basicForm.descriptionAr },
-        cityId: basicForm.cityId,
         address: { ar: basicForm.addressAr, en: basicForm.addressEn || basicForm.addressAr },
-        latitude: basicForm.latitude ? parseFloat(basicForm.latitude) : null,
-        longitude: basicForm.longitude ? parseFloat(basicForm.longitude) : null };
-      await updateChalet({ id: id as string, data: payload }).unwrap();
+        phone: basicForm.phone,
+        whatsapp: basicForm.whatsapp,
+      };
+      if (basicForm.cityId) payload.cityId = basicForm.cityId;
+      if (basicForm.latitude) payload.latitude = parseFloat(basicForm.latitude);
+      if (basicForm.longitude) payload.longitude = parseFloat(basicForm.longitude);
+      await updateChalet({ id: chaletId as string, data: payload }).unwrap();
       Toast.show({ type: 'success', text1: isRTL ? 'تم تحديث التفاصيل' : 'Details updated' });
       basicInfoModalRef.current?.dismiss();
       refetch();
-    } catch (e) {
+      refetchStats();
+    } catch {
       Toast.show({ type: 'error', text1: isRTL ? 'خطأ في التحديث' : 'Update failed' });
     }
   };
@@ -193,13 +193,14 @@ export default function ChaletDetailsScreen() {
   const handleUpdateDeposit = async () => {
     try {
       await updateChalet({
-        id: id as string,
+        id: chaletId as string,
         data: { depositPercentage: parseFloat(basicForm.depositPercentage) || 0 }
       }).unwrap();
       Toast.show({ type: 'success', text1: isRTL ? 'تم تحديث العربون' : 'Deposit updated' });
       depositModalRef.current?.dismiss();
       refetch();
-    } catch (e) {
+      refetchStats();
+    } catch {
       Toast.show({ type: 'error', text1: isRTL ? 'خطأ في التحديث' : 'Update failed' });
     }
   };
@@ -210,23 +211,26 @@ export default function ChaletDetailsScreen() {
         maxAdults: parseInt(basicForm.maxAdults) || 0,
         maxChildren: parseInt(basicForm.maxChildren) || 0,
         baseCapacity: parseInt(basicForm.baseCapacity) || 0,
-        extraPersonPrice: parseFloat(basicForm.extraPersonPrice) || 0 };
-      await updateChalet({ id: id as string, data: payload }).unwrap();
+        extraPersonPrice: parseFloat(basicForm.extraPersonPrice) || 0,
+        basePrice: parseFloat(basicForm.basePrice) || 0,
+      };
+      await updateChalet({ id: chaletId as string, data: payload }).unwrap();
       Toast.show({ type: 'success', text1: isRTL ? 'تم تحديث السعة' : 'Capacity updated' });
       capacityModalRef.current?.dismiss();
       refetch();
-    } catch (e) {
+      refetchStats();
+    } catch {
       Toast.show({ type: 'error', text1: isRTL ? 'خطأ في التحديث' : 'Update failed' });
     }
   };
 
   const handleUpdateAmenities = async () => {
     try {
-      await setAmenitiesMutation({ chaletId: id, data: { featureIds: selectedFeatures } }).unwrap();
+      await setAmenitiesMutation({ chaletId: chaletId as string, data: { featureIds: selectedFeatures } }).unwrap();
       Toast.show({ type: 'success', text1: isRTL ? 'تم الحفظ' : 'Saved' });
       amenitiesModalRef.current?.dismiss();
       refetch();
-    } catch (e) {
+    } catch {
       Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error' });
     }
   };
@@ -240,13 +244,13 @@ export default function ChaletDetailsScreen() {
         const type = match ? `image/${match[1]}` : 'image/jpeg';
         // @ts-ignore
         imageFormData.append('image', { uri, name: filename, type });
-        await uploadImage({ chaletId: id, formData: imageFormData }).unwrap();
+        await uploadImage({ chaletId: chaletId as string, formData: imageFormData }).unwrap();
       }
       Toast.show({ type: 'success', text1: isRTL ? 'تم الرفع' : 'Uploaded' });
       setSelectedImages([]);
       imagesModalRef.current?.dismiss();
       refetch();
-    } catch (e) {
+    } catch {
       Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error' });
     }
   };
@@ -262,10 +266,10 @@ export default function ChaletDetailsScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await deleteImage({ chaletId: id as string, imageId }).unwrap();
+              await deleteImage({ chaletId: chaletId as string, imageId }).unwrap();
               Toast.show({ type: 'success', text1: isRTL ? 'تم الحذف' : 'Deleted' });
               refetch();
-            } catch (e) {
+            } catch {
               Toast.show({ type: 'error', text1: isRTL ? 'فشل الحذف' : 'Delete failed' });
             }
           }
@@ -277,13 +281,13 @@ export default function ChaletDetailsScreen() {
   const handleSetAsCover = async (imageId: string) => {
     try {
       await updateImage({ 
-        chaletId: id as string, 
-        imageId, 
-        data: { isCover: true } 
+        chaletId: chaletId as string,
+        imageId,
+        data: { isMain: true }
       }).unwrap();
       Toast.show({ type: 'success', text1: isRTL ? 'تم التحديث' : 'Updated' });
       refetch();
-    } catch (e) {
+    } catch {
       Toast.show({ type: 'error', text1: isRTL ? 'فشل التحديث' : 'Update failed' });
     }
   };
@@ -294,11 +298,11 @@ export default function ChaletDetailsScreen() {
         cancellationPolicy: { ar: policiesForm.cancellationAr, en: policiesForm.cancellationEn || policiesForm.cancellationAr },
         checkInTime: policiesForm.checkInTime,
         checkOutTime: policiesForm.checkOutTime };
-      await updateChalet({ id: id as string, data: payload }).unwrap();
+      await updateChalet({ id: chaletId as string, data: payload }).unwrap();
       Toast.show({ type: 'success', text1: isRTL ? 'تم تحديث السياسات' : 'Policies updated' });
       policiesModalRef.current?.dismiss();
       refetch();
-    } catch (e) {
+    } catch {
       Toast.show({ type: 'error', text1: isRTL ? 'خطأ في التحديث' : 'Update failed' });
     }
   };
@@ -328,9 +332,9 @@ export default function ChaletDetailsScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await deleteChalet(id).unwrap();
+              await deleteChalet(chaletId as string).unwrap();
               router.replace('/(tabs)/(dashboard)/home');
-            } catch (err) {
+            } catch {
               Alert.alert(isRTL ? 'خطأ' : 'Error', isRTL ? 'فشل حذف الشاليه' : 'Failed to delete chalet');
             }
           }
@@ -346,9 +350,20 @@ export default function ChaletDetailsScreen() {
     }
   }, [chalet]);
 
-  const toggleStatus = (value: boolean) => {
+  const toggleStatus = async (value: boolean) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setIsActive(value);
+    try {
+      await updateChalet({ id: chaletId as string, data: { isActive: value } }).unwrap();
+      Toast.show({
+        type: 'success',
+        text1: value ? (isRTL ? 'الشاليه ظاهر للزبائن' : 'Chalet is visible') : (isRTL ? 'الشاليه مخفي حالياً' : 'Chalet is hidden'),
+      });
+      refetch();
+    } catch {
+      setIsActive(!value);
+      Toast.show({ type: 'error', text1: isRTL ? 'تعذر تغيير الحالة' : 'Status update failed' });
+    }
   };
 
   if (isLoading) {
@@ -372,12 +387,43 @@ export default function ChaletDetailsScreen() {
   const chaletName = isRTL ? (chalet.name?.ar || chalet.name) : (chalet.name?.en || chalet.name);
   const chaletLocation = isRTL ? (chalet.address?.ar || chalet.region?.name) : (chalet.address?.en || chalet.region?.enName);
   const chaletDescription = isRTL ? (chalet.description?.ar || chalet.description) : (chalet.description?.en || chalet.description);
-
-  // Fixed Header State - Image stays background, content slides UP over it.
-  const headerOpacity = scrollY.interpolate({
-    inputRange: [0, HERO_HEIGHT / 2],
-    outputRange: [1, 0],
-    extrapolate: 'clamp' });
+  const activeAmenities = chalet?.chaletFeatures || chalet?.chaletAmenities || [];
+  const coverImage = chalet?.images?.find((img: any) => img.isMain || img.isCover);
+  const heroImages = chalet.images && chalet.images.length > 0
+    ? [coverImage, ...chalet.images.filter((img: any) => img.id !== coverImage?.id)].filter(Boolean)
+    : [];
+  const totalBookings = chaletSummary.totalBookings ?? chalet?.bookingCount ?? 0;
+  const totalEarnings = chaletSummary.totalProviderEarnings ?? chaletSummary.totalRevenue ?? chalet?.revenue ?? 0;
+  const ratingValue = typeof chalet?.rating === 'string' ? parseFloat(chalet.rating) : (chalet?.rating || 0);
+  const completionItems = [
+    {
+      key: 'photos',
+      done: heroImages.length > 0,
+      label: isRTL ? 'صور الشاليه' : 'Photos'
+    },
+    {
+      key: 'price',
+      done: Number(chalet?.basePrice || 0) > 0,
+      label: isRTL ? 'السعر الأساسي' : 'Base price'
+    },
+    {
+      key: 'capacity',
+      done: Number(chalet?.maxAdults || chalet?.maxGuests || 0) + Number(chalet?.maxChildren || 0) > 0,
+      label: isRTL ? 'السعة' : 'Capacity'
+    },
+    {
+      key: 'amenities',
+      done: activeAmenities.length > 0,
+      label: isRTL ? 'المرافق' : 'Amenities'
+    },
+    {
+      key: 'policy',
+      done: Boolean(chalet?.checkInTime && chalet?.checkOutTime && (chalet?.cancellationPolicy?.ar || chalet?.cancellationPolicy)),
+      label: isRTL ? 'السياسات والأوقات' : 'Policies & times'
+    }
+  ];
+  const completedItems = completionItems.filter((item) => item.done).length;
+  const completionPercent = Math.round((completedItems / completionItems.length) * 100);
 
   const navBarOpacity = scrollY.interpolate({
     inputRange: [HERO_HEIGHT - 100, HERO_HEIGHT - 60],
@@ -385,7 +431,7 @@ export default function ChaletDetailsScreen() {
     extrapolate: 'clamp' });
 
   return (
-    <View style={[styles.container]}>
+    <View style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
       
       {/* Persistent Nav Bar (Sticky title only) */}
@@ -469,8 +515,8 @@ export default function ChaletDetailsScreen() {
             snapToInterval={SCREEN_WIDTH}
             disableIntervalMomentum={true}
           >
-            {chalet.images && chalet.images.length > 0 ? (
-              chalet.images.map((img: any, index: number) => (
+            {heroImages.length > 0 ? (
+              heroImages.map((img: any, index: number) => (
                 <Image 
                   key={img.id || index}
                   source={getImageSrc(img.url)} 
@@ -479,19 +525,18 @@ export default function ChaletDetailsScreen() {
                 />
               ))
             ) : (
-              <Image 
-                source={getImageSrc('')} 
-                style={styles.heroImage} 
-                resizeMode="cover"
-              />
+              <View style={[styles.heroImage, styles.emptyHero]}>
+                <SolarGalleryBold size={44} color="rgba(255,255,255,0.82)" />
+                <Text style={styles.emptyHeroText}>{isRTL ? 'أضف صوراً للشاليه' : 'Add chalet photos'}</Text>
+              </View>
             )}
           </ScrollView>
           <View style={styles.imageOverlayDarken} pointerEvents="none" />
           
           {/* Pagination Dots */}
-          {chalet.images && chalet.images.length > 1 && (
+          {heroImages.length > 1 && (
             <View style={[styles.pagination, { flexDirection: 'row' }]} pointerEvents="none">
-              {chalet.images.map((_: any, i: number) => (
+              {heroImages.map((_: any, i: number) => (
                 <View 
                   key={i} 
                   style={[
@@ -527,7 +572,7 @@ export default function ChaletDetailsScreen() {
             <View style={[styles.titleSection, { flexDirection: 'row' }]}>
               <View style={{ flex: 1, alignItems: 'flex-start' }}>
                 <View style={[styles.titleRow, { flexDirection: 'row' }]}>
-                  <Text style={styles.chaletName}>{chaletName || ''}</Text>
+                  <Text style={[styles.chaletName, { textAlign: 'left' }]}>{chaletName || ''}</Text>
                   <View style={[styles.approvalBadge, { backgroundColor: chalet?.isApproved ? '#ECFDF5' : '#FFFBEB' }]}>
                     <Text style={[styles.approvalText, { color: chalet?.isApproved ? '#10B981' : '#F59E0B' }]}>
                       {chalet?.isApproved ? (isRTL ? 'مقبول' : 'Approved') : (isRTL ? 'قيد المراجعة' : 'Pending')}
@@ -536,13 +581,14 @@ export default function ChaletDetailsScreen() {
                 </View>
                 <View style={[styles.locationRow, { flexDirection: 'row' }]}>
                   <SolarMapPointBold size={16} color={Colors.primary} style={{ marginTop: 2 }} />
-                  <Text style={styles.locationText}>{chaletLocation || ''}</Text>
+                  <Text style={[styles.locationText, { textAlign: 'left' }]}>{chaletLocation || ''}</Text>
                 </View>
               </View>
               <View style={styles.statusBox}>
                 <Switch 
                   value={isActive} 
                   onValueChange={toggleStatus} 
+                  disabled={isUpdating}
                   trackColor={{ false: '#E2E8F0', true: Colors.primary }} 
                   thumbColor="#fff"
                 />
@@ -552,13 +598,73 @@ export default function ChaletDetailsScreen() {
               </View>
             </View>
 
+            {!chalet?.isApproved && (
+              <View style={[styles.noticeBox, { flexDirection: 'row' }]}>
+                <SolarShieldWarningBold size={20} color="#B45309" />
+                <Text style={[styles.noticeText, { textAlign: 'left' }]}>
+                  {isRTL ? 'الشاليه بانتظار موافقة الإدارة. جهّز الصور والمعلومات حتى يظهر للزبائن بعد الموافقة.' : 'This chalet is waiting for admin approval. Complete photos and details so it is ready when approved.'}
+                </Text>
+              </View>
+            )}
+
+            <View style={[styles.quickActionsRow, { flexDirection: 'row' }]}>
+              <TouchableOpacity style={styles.quickAction} onPress={() => basicInfoModalRef.current?.present()}>
+                <SolarPenBold size={20} color={Colors.primary} />
+                <Text style={styles.quickActionText}>{isRTL ? 'المعلومات' : 'Info'}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.quickAction} onPress={() => imagesModalRef.current?.present()}>
+                <SolarGalleryBold size={20} color={Colors.primary} />
+                <Text style={styles.quickActionText}>{isRTL ? 'الصور' : 'Photos'}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.quickAction} onPress={() => router.push({ pathname: '/(tabs)/(dashboard)/shifts', params: { id: chalet?.id } })}>
+                <SolarClockCircleBold size={20} color={Colors.primary} />
+                <Text style={styles.quickActionText}>{isRTL ? 'الفترات' : 'Shifts'}</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.readinessCard}>
+              <View style={[styles.readinessHeader, { flexDirection: 'row' }]}>
+                <View style={{ flex: 1, alignItems: 'flex-start' }}>
+                  <Text style={[styles.readinessTitle, { textAlign: 'left' }]}>
+                    {isRTL ? 'جاهزية الشاليه' : 'Listing readiness'}
+                  </Text>
+                  <Text style={[styles.readinessSubtitle, { textAlign: 'left' }]}>
+                    {isRTL ? 'أكمل العناصر الناقصة حتى تكون الصفحة أوضح للزبائن.' : 'Complete the missing items to make this page clearer for customers.'}
+                  </Text>
+                </View>
+                <View style={styles.readinessScore}>
+                  <Text style={styles.readinessScoreText}>{completionPercent}%</Text>
+                </View>
+              </View>
+              <View style={styles.progressTrack}>
+                <View style={[styles.progressFill, { width: `${completionPercent}%` }]} />
+              </View>
+              <View style={[styles.readinessItems, { flexDirection: 'row' }]}>
+                {completionItems.map((item) => (
+                  <View
+                    key={item.key}
+                    style={[
+                      styles.readinessPill,
+                      item.done ? styles.readinessPillDone : styles.readinessPillMissing,
+                      { flexDirection: 'row' }
+                    ]}
+                  >
+                    <SolarCheckCircleBold size={14} color={item.done ? '#10B981' : '#94A3B8'} />
+                    <Text style={[styles.readinessPillText, item.done && styles.readinessPillTextDone]}>
+                      {item.label}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+
             {/* Performance Stats */}
             <View style={[styles.statsRow, { flexDirection: 'row' }]}>
               <View style={styles.statItem}>
                 <View style={[styles.statIconWrap, { backgroundColor: '#EFF6FF' }]}>
                   <SolarBanknoteBold size={20} color={Colors.primary} />
                 </View>
-                <Text style={styles.statValue}>{chalet?.revenue || '0'}</Text>
+                <Text style={styles.statValue}>{isLoadingStats ? '...' : Number(totalEarnings || 0).toLocaleString()}</Text>
                 <Text style={styles.statLabel}>{isRTL ? 'الأرباح' : 'Revenue'}</Text>
               </View>
               <View style={styles.statDivider} />
@@ -566,7 +672,7 @@ export default function ChaletDetailsScreen() {
                 <View style={[styles.statIconWrap, { backgroundColor: '#ECFDF5' }]}>
                   <SolarCalendarBold size={20} color="#10B981" />
                 </View>
-                <Text style={styles.statValue}>{chalet?.reviewCount || 0}</Text>
+                <Text style={styles.statValue}>{isLoadingStats ? '...' : totalBookings}</Text>
                 <Text style={styles.statLabel}>{isRTL ? 'الحجوزات' : 'Bookings'}</Text>
               </View>
               <View style={styles.statDivider} />
@@ -574,7 +680,7 @@ export default function ChaletDetailsScreen() {
                 <View style={[styles.statIconWrap, { backgroundColor: '#FFF7ED' }]}>
                   <SolarStarBold size={20} color="#F97316" />
                 </View>
-                <Text style={styles.statValue}>{typeof chalet?.rating === 'string' ? parseFloat(chalet.rating).toFixed(1) : (chalet?.rating || 0)}</Text>
+                <Text style={styles.statValue}>{ratingValue.toFixed(1)}</Text>
                 <Text style={styles.statLabel}>{isRTL ? 'التقييم' : 'Rating'}</Text>
               </View>
             </View>
@@ -593,18 +699,20 @@ export default function ChaletDetailsScreen() {
             <View style={styles.sectionDivider} />
 
             {/* Chalet Amenities */}
-            {chalet?.chaletAmenities && chalet.chaletAmenities.length > 0 && (
+            {activeAmenities.length > 0 && (
               <View style={styles.infoSection}>
                 <View style={[styles.sectionHeaderRow, { flexDirection: 'row' }]}>
                   <Text style={styles.sectionTitle}>{isRTL ? 'المرافق المتاحة' : 'Amenities'}</Text>
                 </View>
                 <View style={[styles.amenitiesWrap, { flexDirection: 'row' }]}>
-                  {chalet.chaletAmenities.map((item: any) => (
-                    <View key={item.id} style={styles.amenityPill}>
-                      <Text style={styles.amenityEmoji}>{item.amenity?.icon || '✨'}</Text>
-                      <Text style={styles.amenityText}>{isRTL ? item.amenity?.name?.ar : item.amenity?.name?.en}</Text>
+                  {activeAmenities.map((item: any) => {
+                    const feature = item.feature || item.amenity || item;
+                    return (
+                    <View key={item.id} style={[styles.amenityPill, { flexDirection: 'row' }]}>
+                      <Text style={styles.amenityEmoji}>{feature.icon || '✨'}</Text>
+                      <Text style={styles.amenityText}>{isRTL ? feature.name?.ar : feature.name?.en}</Text>
                     </View>
-                  ))}
+                  )})}
                 </View>
               </View>
             )}
@@ -615,14 +723,14 @@ export default function ChaletDetailsScreen() {
                 <Text style={styles.sectionTitle}>{isRTL ? 'معلومات أساسية' : 'Key Info'}</Text>
               </View>
               <View style={[styles.detailsRow, { flexDirection: 'row' }]}>
-                <View style={styles.detailCard}>
+                <View style={[styles.detailCard, { flexDirection: 'row' }]}>
                   <SolarUsersGroupBold size={20} color={Colors.primary} />
                   <View style={{ alignItems: 'flex-start' }}>
                     <Text style={styles.detailValue}>{(chalet?.maxAdults || chalet?.maxGuests || 0) + (chalet?.maxChildren || 0)}</Text>
                     <Text style={styles.detailLabel}>{isRTL ? 'أقصى عدد' : 'Max Guests'}</Text>
                   </View>
                 </View>
-                <View style={styles.detailCard}>
+                <View style={[styles.detailCard, { flexDirection: 'row' }]}>
                   <SolarBanknoteBold size={20} color={Colors.primary} />
                   <View style={{ alignItems: 'flex-start' }}>
                     <Text style={styles.detailValue}>{chalet?.depositPercentage}%</Text>
@@ -638,14 +746,14 @@ export default function ChaletDetailsScreen() {
                 <Text style={styles.sectionTitle}>{isRTL ? 'السياسات والأوقات' : 'Policies & Times'}</Text>
               </View>
               <View style={[styles.detailsRow, { flexDirection: 'row' }]}>
-                <View style={styles.detailCard}>
+                <View style={[styles.detailCard, { flexDirection: 'row' }]}>
                   <SolarClockCircleBold size={20} color={Colors.primary} />
                   <View style={{ alignItems: 'flex-start' }}>
                     <Text style={styles.detailValue}>{chalet?.checkInTime || '--:--'}</Text>
                     <Text style={styles.detailLabel}>{isRTL ? 'وقت الدخول' : 'Check-in'}</Text>
                   </View>
                 </View>
-                <View style={styles.detailCard}>
+                <View style={[styles.detailCard, { flexDirection: 'row' }]}>
                   <SolarClockCircleBold size={20} color={Colors.primary} />
                   <View style={{ alignItems: 'flex-start' }}>
                     <Text style={styles.detailValue}>{chalet?.checkOutTime || '--:--'}</Text>
@@ -674,7 +782,7 @@ export default function ChaletDetailsScreen() {
 
             {/* Management Section */}
             <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
-               <Text style={[styles.sectionTitle, { marginBottom: 16, textAlign: isRTL ? 'right' : 'left' }]}>
+               <Text style={[styles.sectionTitle, { marginBottom: 16, textAlign: 'left' }]}>
                 {isRTL ? 'إدارة الشاليه' : 'Chalet Management'}
               </Text>
 
@@ -704,6 +812,12 @@ export default function ChaletDetailsScreen() {
                   style={styles.managementBtn}
                 />
                 <SecondaryButton
+                  label={isRTL ? 'السياسات والأوقات' : 'Policies & Times'}
+                  onPress={() => policiesModalRef.current?.present()}
+                  icon={<SolarShieldWarningBold size={22} color={Colors.primary} />}
+                  style={styles.managementBtn}
+                />
+                <SecondaryButton
                   label={isRTL ? 'تعديل الصور' : 'Edit Photos'}
                   onPress={() => imagesModalRef.current?.present()}
                   icon={<SolarGalleryBold size={22} color={Colors.primary} />}
@@ -717,7 +831,7 @@ export default function ChaletDetailsScreen() {
               <View style={[styles.sectionHeaderRow, { flexDirection: 'row' }]}>
                 <Text style={styles.sectionTitle}>{isRTL ? 'عن المكان' : 'About the Space'}</Text>
               </View>
-              <Text style={[styles.descriptionText, { textAlign: isRTL ? 'right' : 'left' }]}>
+              <Text style={[styles.descriptionText, { textAlign: 'left' }]}>
                 {chaletDescription || ''}
               </Text>
             </View>
@@ -735,8 +849,8 @@ export default function ChaletDetailsScreen() {
             </Text>
           </View>
           <PrimaryButton 
-            label={isRTL ? 'إضافة عرض خاص' : 'Add Special Offer'}
-            onPress={() => {}}
+            label={isRTL ? 'إدارة الأسعار' : 'Manage Pricing'}
+            onPress={() => router.push({ pathname: '/(tabs)/(dashboard)/shifts', params: { id: chalet?.id } })}
             style={styles.footerButtonOverride}
           />
         </SafeAreaView>
@@ -752,20 +866,20 @@ export default function ChaletDetailsScreen() {
         backdropComponent={renderBackdrop}
         backgroundStyle={{ borderRadius: 24 }}
       >
-        <BottomSheetScrollView contentContainerStyle={styles.modalScrollContent}>
+        <BottomSheetScrollView contentContainerStyle={[styles.modalScrollContent, { direction: isRTL ? 'rtl' : 'ltr' }]}>
           <Text style={styles.modalTitle}>{isRTL ? 'المعلومات الأساسية' : 'Basic Information'}</Text>
           
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'اسم الشاليه (عربي)' : 'Name (AR)'}</Text>
+            <Text style={[styles.modalLabel, { textAlign: 'left' }]}>{isRTL ? 'اسم الشاليه (عربي)' : 'Name (AR)'}</Text>
             <BottomSheetTextInput 
-              style={[styles.modalInput, { textAlign: isRTL ? 'right' : 'left' }]} 
+              style={[styles.modalInput, { textAlign: 'left' }]} 
               value={basicForm.nameAr} 
               onChangeText={(val) => setBasicForm({ ...basicForm, nameAr: val })} 
             />
           </View>
 
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'اسم الشاليه (English)' : 'Name (EN)'}</Text>
+            <Text style={[styles.modalLabel, { textAlign: 'left' }]}>{isRTL ? 'اسم الشاليه (English)' : 'Name (EN)'}</Text>
             <BottomSheetTextInput 
               style={[styles.modalInput, { textAlign: 'left' }]} 
               value={basicForm.nameEn} 
@@ -774,9 +888,9 @@ export default function ChaletDetailsScreen() {
           </View>
 
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'وصف الشاليه (عربي)' : 'Description (AR)'}</Text>
+            <Text style={[styles.modalLabel, { textAlign: 'left' }]}>{isRTL ? 'وصف الشاليه (عربي)' : 'Description (AR)'}</Text>
             <BottomSheetTextInput 
-              style={[styles.modalInput, styles.modalTextArea, { textAlign: isRTL ? 'right' : 'left' }]} 
+              style={[styles.modalInput, styles.modalTextArea, { textAlign: 'left' }]} 
               multiline 
               numberOfLines={4} 
               value={basicForm.descriptionAr} 
@@ -785,7 +899,7 @@ export default function ChaletDetailsScreen() {
           </View>
 
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'وصف الشاليه (English)' : 'Description (EN)'}</Text>
+            <Text style={[styles.modalLabel, { textAlign: 'left' }]}>{isRTL ? 'وصف الشاليه (English)' : 'Description (EN)'}</Text>
             <BottomSheetTextInput 
               style={[styles.modalInput, styles.modalTextArea, { textAlign: 'left' }]} 
               multiline 
@@ -796,27 +910,48 @@ export default function ChaletDetailsScreen() {
           </View>
 
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'العنوان (عربي)' : 'Address (AR)'}</Text>
+            <Text style={[styles.modalLabel, { textAlign: 'left' }]}>{isRTL ? 'العنوان (عربي)' : 'Address (AR)'}</Text>
             <BottomSheetTextInput 
-              style={[styles.modalInput, { textAlign: isRTL ? 'right' : 'left' }]} 
+              style={[styles.modalInput, { textAlign: 'left' }]} 
               value={basicForm.addressAr} 
               onChangeText={(val) => setBasicForm({ ...basicForm, addressAr: val })} 
             />
           </View>
 
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'العنوان (English)' : 'Address (EN)'}</Text>
+            <Text style={[styles.modalLabel, { textAlign: 'left' }]}>{isRTL ? 'العنوان (English)' : 'Address (EN)'}</Text>
             <BottomSheetTextInput 
               style={[styles.modalInput, { textAlign: 'left' }]} 
               value={basicForm.addressEn} 
               onChangeText={(val) => setBasicForm({ ...basicForm, addressEn: val })} 
             />
           </View>
+
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            <View style={[styles.modalInputGroup, { flex: 1 }]}>
+              <Text style={[styles.modalLabel, { textAlign: 'left' }]}>{isRTL ? 'رقم الهاتف' : 'Phone'}</Text>
+              <BottomSheetTextInput
+                style={[styles.modalInput, { textAlign: 'left' }]}
+                keyboardType="phone-pad"
+                value={basicForm.phone}
+                onChangeText={(val) => setBasicForm({ ...basicForm, phone: val })}
+              />
+            </View>
+            <View style={[styles.modalInputGroup, { flex: 1 }]}>
+              <Text style={[styles.modalLabel, { textAlign: 'left' }]}>{isRTL ? 'واتساب' : 'WhatsApp'}</Text>
+              <BottomSheetTextInput
+                style={[styles.modalInput, { textAlign: 'left' }]}
+                keyboardType="phone-pad"
+                value={basicForm.whatsapp}
+                onChangeText={(val) => setBasicForm({ ...basicForm, whatsapp: val })}
+              />
+            </View>
+          </View>
           
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'المدينة' : 'City'}</Text>
+            <Text style={[styles.modalLabel, { textAlign: 'left' }]}>{isRTL ? 'المدينة' : 'City'}</Text>
             <TouchableOpacity style={styles.modalInput} onPress={() => citySheetRef.current?.present()}>
-              <Text style={{ color: basicForm.cityName ? Colors.text.primary : Colors.text.muted, textAlign: isRTL ? 'right' : 'left', marginTop: 14 }}>
+              <Text style={{ color: basicForm.cityName ? Colors.text.primary : Colors.text.muted, textAlign: 'left', marginTop: 14 }}>
                 {basicForm.cityName || (isRTL ? 'اختر المدينة' : 'Select City')}
               </Text>
             </TouchableOpacity>
@@ -838,7 +973,7 @@ export default function ChaletDetailsScreen() {
         <BottomSheetView style={styles.modalScrollContent}>
           <Text style={styles.modalTitle}>{isRTL ? 'نسبة العربون' : 'Deposit Percentage'}</Text>
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'نسبة العربون %' : 'Deposit %'}</Text>
+            <Text style={[styles.modalLabel, { textAlign: 'left' }]}>{isRTL ? 'نسبة العربون %' : 'Deposit %'}</Text>
             <BottomSheetTextInput 
               style={[styles.modalInput, { textAlign: 'center' }]} 
               keyboardType="numeric" 
@@ -858,11 +993,11 @@ export default function ChaletDetailsScreen() {
         backdropComponent={renderBackdrop}
         backgroundStyle={{ borderRadius: 24 }}
       >
-        <BottomSheetScrollView contentContainerStyle={styles.modalScrollContent}>
+        <BottomSheetScrollView contentContainerStyle={[styles.modalScrollContent, { direction: isRTL ? 'rtl' : 'ltr' }]}>
           <Text style={styles.modalTitle}>{isRTL ? 'السعة والتسعير' : 'Capacity & Pricing'}</Text>
           
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'السعة' : 'Capacity'}</Text>
+            <Text style={[styles.modalLabel, { textAlign: 'left' }]}>{isRTL ? 'السعة' : 'Capacity'}</Text>
             <View style={styles.capacityListInline}>
               <View style={[styles.capacityCardInline, { flexDirection: 'row' }]}>
                 <GuestCounter value={parseInt(basicForm.maxAdults) || 0} onIncrement={() => setBasicForm({ ...basicForm, maxAdults: (parseInt(basicForm.maxAdults) + 1).toString() })} onDecrement={() => setBasicForm({ ...basicForm, maxAdults: Math.max(0, parseInt(basicForm.maxAdults) - 1).toString() })} />
@@ -880,12 +1015,22 @@ export default function ChaletDetailsScreen() {
           </View>
 
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'سعر الشخص الإضافي' : 'Extra Person Price'}</Text>
+            <Text style={[styles.modalLabel, { textAlign: 'left' }]}>{isRTL ? 'سعر الشخص الإضافي' : 'Extra Person Price'}</Text>
             <BottomSheetTextInput 
-              style={[styles.modalInput, { textAlign: isRTL ? 'right' : 'left' }]} 
+              style={[styles.modalInput, { textAlign: 'left' }]} 
               keyboardType="numeric" 
               value={basicForm.extraPersonPrice} 
               onChangeText={(val) => setBasicForm({ ...basicForm, extraPersonPrice: val })} 
+            />
+          </View>
+
+          <View style={styles.modalInputGroup}>
+            <Text style={[styles.modalLabel, { textAlign: 'left' }]}>{isRTL ? 'السعر الأساسي' : 'Base Price'}</Text>
+            <BottomSheetTextInput
+              style={[styles.modalInput, { textAlign: 'left' }]}
+              keyboardType="numeric"
+              value={basicForm.basePrice}
+              onChangeText={(val) => setBasicForm({ ...basicForm, basePrice: val })}
             />
           </View>
 
@@ -902,11 +1047,11 @@ export default function ChaletDetailsScreen() {
         backdropComponent={renderBackdrop}
         backgroundStyle={{ borderRadius: 24 }}
       >
-        <BottomSheetScrollView contentContainerStyle={styles.modalScrollContent}>
+        <BottomSheetScrollView contentContainerStyle={[styles.modalScrollContent, { direction: isRTL ? 'rtl' : 'ltr' }]}>
           <Text style={styles.modalTitle}>{isRTL ? 'المرافق والخدمات' : 'Amenities'}</Text>
           {amenityCategories?.map((category: any) => (
             <View key={category.id} style={{ marginBottom: 24 }}>
-              <Text style={[styles.modalSubTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? category.name?.ar : category.name?.en}</Text>
+              <Text style={[styles.modalSubTitle, { textAlign: 'left' }]}>{isRTL ? category.name?.ar : category.name?.en}</Text>
               <View style={styles.amenitiesGrid}>
                 {category.features?.map((feature: any) => {
                   const isSelected = selectedFeatures.includes(feature.id);
@@ -924,11 +1069,11 @@ export default function ChaletDetailsScreen() {
                             resizeMode="contain" 
                           />
                         ) : (
-                          <Text style={{ fontSize: 14 }}>{feature.icon === 'wifi' ? '📶' : '✨'}</Text>
+                          <Text style={{ fontSize: 20 }}>{feature.icon === 'wifi' ? '📶' : '✨'}</Text>
                         )}
                       </View>
                       <Text style={styles.amenityName} numberOfLines={1}>{isRTL ? feature.name?.ar : feature.name?.en}</Text>
-                      {isSelected && <View style={styles.checkBadge}><Text style={{ color: '#fff', fontSize: 8 }}>✓</Text></View>}
+                      {isSelected && <View style={styles.checkBadge}><Text style={{ color: '#fff', fontSize: 10 }}>✓</Text></View>}
                     </TouchableOpacity>
                   );
                 })}
@@ -948,11 +1093,11 @@ export default function ChaletDetailsScreen() {
         backdropComponent={renderBackdrop}
         backgroundStyle={{ borderRadius: 24 }}
       >
-        <BottomSheetScrollView contentContainerStyle={styles.modalScrollContent}>
+        <BottomSheetScrollView contentContainerStyle={[styles.modalScrollContent, { direction: isRTL ? 'rtl' : 'ltr' }]}>
           <Text style={styles.modalTitle}>{isRTL ? 'إدارة الصور' : 'Manage Images'}</Text>
           
           {/* Existing Images Section */}
-          <Text style={[styles.modalSubTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
+          <Text style={[styles.modalSubTitle, { textAlign: 'left' }]}>
             {isRTL ? 'الصور الحالية' : 'Current Images'}
           </Text>
           <View style={styles.imagesUploadGrid}>
@@ -972,11 +1117,11 @@ export default function ChaletDetailsScreen() {
                 <TouchableOpacity 
                   style={[
                     styles.coverIndicator, 
-                    img.isCover && { backgroundColor: Colors.primary }
+                    (img.isMain || img.isCover) && { backgroundColor: Colors.primary }
                   ]}
-                  onPress={() => !img.isCover && handleSetAsCover(img.id)}
+                  onPress={() => !(img.isMain || img.isCover) && handleSetAsCover(img.id)}
                 >
-                  {img.isCover ? (
+                  {(img.isMain || img.isCover) ? (
                     <SolarCheckCircleBold size={14} color="white" />
                   ) : (
                     <SolarStarBold size={14} color={Colors.text.muted} />
@@ -989,7 +1134,7 @@ export default function ChaletDetailsScreen() {
           <View style={[styles.divider, { marginVertical: 24 }]} />
 
           {/* New Images Section */}
-          <Text style={[styles.modalSubTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
+          <Text style={[styles.modalSubTitle, { textAlign: 'left' }]}>
             {isRTL ? 'إضافة صور جديدة' : 'Add New Photos'}
           </Text>
           <View style={styles.imagesUploadGrid}>
@@ -1004,6 +1149,10 @@ export default function ChaletDetailsScreen() {
             <TouchableOpacity style={styles.addPhotosBtn} onPress={pickImage}>
               <SolarCameraAddBold size={30} color={Colors.text.muted} />
               <Text style={styles.addPhotosText}>{isRTL ? 'إضافة' : 'Add'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.addPhotosBtn} onPress={takePhoto}>
+              <SolarCameraAddBold size={30} color={Colors.text.muted} />
+              <Text style={styles.addPhotosText}>{isRTL ? 'كاميرا' : 'Camera'}</Text>
             </TouchableOpacity>
           </View>
 
@@ -1026,13 +1175,13 @@ export default function ChaletDetailsScreen() {
         backdropComponent={renderBackdrop}
         backgroundStyle={{ borderRadius: 24 }}
       >
-        <BottomSheetScrollView contentContainerStyle={styles.modalScrollContent}>
+        <BottomSheetScrollView contentContainerStyle={[styles.modalScrollContent, { direction: isRTL ? 'rtl' : 'ltr' }]}>
           <Text style={styles.modalTitle}>{isRTL ? 'السياسات والأوقات' : 'Policies & Times'}</Text>
           
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'سياسة الإلغاء' : 'Cancellation Policy'}</Text>
+            <Text style={[styles.modalLabel, { textAlign: 'left' }]}>{isRTL ? 'سياسة الإلغاء' : 'Cancellation Policy'}</Text>
             <BottomSheetTextInput 
-              style={[styles.modalInput, styles.modalTextArea, { textAlign: isRTL ? 'right' : 'left' }]} 
+              style={[styles.modalInput, styles.modalTextArea, { textAlign: 'left' }]} 
               multiline 
               value={policiesForm.cancellationAr} 
               onChangeText={(val) => setPoliciesForm({ ...policiesForm, cancellationAr: val })} 
@@ -1041,7 +1190,7 @@ export default function ChaletDetailsScreen() {
 
           <View style={{ flexDirection: 'row', gap: 10 }}>
             <View style={[styles.modalInputGroup, { flex: 1 }]}>
-              <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'وقت الدخول' : 'Check-in'}</Text>
+              <Text style={[styles.modalLabel, { textAlign: 'left' }]}>{isRTL ? 'وقت الدخول' : 'Check-in'}</Text>
               <BottomSheetTextInput 
                 style={[styles.modalInput, { textAlign: 'center' }]} 
                 placeholder="08:00 AM" 
@@ -1050,7 +1199,7 @@ export default function ChaletDetailsScreen() {
               />
             </View>
             <View style={[styles.modalInputGroup, { flex: 1 }]}>
-              <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'وقت الخروج' : 'Check-out'}</Text>
+              <Text style={[styles.modalLabel, { textAlign: 'left' }]}>{isRTL ? 'وقت الخروج' : 'Check-out'}</Text>
               <BottomSheetTextInput 
                 style={[styles.modalInput, { textAlign: 'center' }]} 
                 placeholder="10:00 PM" 
@@ -1086,7 +1235,7 @@ export default function ChaletDetailsScreen() {
                   citySheetRef.current?.dismiss();
                 }}
               >
-                <Text style={[styles.cityPickerText, { textAlign: isRTL ? 'right' : 'left' }]}>{item.name?.ar || item.name}</Text>
+                <Text style={[styles.cityPickerText, { textAlign: 'left' }]}>{item.name?.ar || item.name}</Text>
               </TouchableOpacity>
             )}
           />
@@ -1126,8 +1275,8 @@ const styles = StyleSheet.create({
     width: 42, // Match iconButton size
     height: 42 },
   navBarTitle: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(16),
+    fontFamily: "Alexandria-Bold",
     color: Colors.text.primary,
     maxWidth: '65%',
     textAlign: 'center' },
@@ -1140,6 +1289,15 @@ const styles = StyleSheet.create({
   heroImage: {
     width: SCREEN_WIDTH,
     height: HERO_HEIGHT },
+  emptyHero: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#111827',
+    gap: 10 },
+  emptyHeroText: {
+    color: 'rgba(255,255,255,0.88)',
+    fontSize: normalize.font(15),
+    fontFamily: "Alexandria-Bold" },
   imageOverlayDarken: {
     position: 'absolute',
     top: 0,
@@ -1157,6 +1315,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F1F5F9',
     minHeight: SCREEN_HEIGHT - 100 },
+  contentBody: {
+    paddingTop: 24,
+    paddingBottom: 140 },
+  titleSection: {
+    paddingHorizontal: 20,
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginBottom: 16 },
   fixedHeaderActions: {
     position: 'absolute',
     top: 0,
@@ -1197,8 +1364,8 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 8 },
   chaletName: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(26),
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
     letterSpacing: -0.5 },
   approvalBadge: {
@@ -1206,24 +1373,126 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 12 },
   approvalText: {
-    fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(11),
+    fontFamily: "Alexandria-Bold",
     textTransform: 'uppercase' },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6 },
   locationText: {
-    fontSize: normalize.font(14),
+    fontSize: normalize.font(15),
     color: Colors.text.secondary,
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "Alexandria-Medium",
+    flexShrink: 1 },
   statusBox: {
     alignItems: 'center',
     gap: 4 },
   statusLabel: {
-    fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(10),
+    fontFamily: "Alexandria-Black",
     textTransform: 'uppercase' },
+  noticeBox: {
+    marginHorizontal: 20,
+    marginBottom: 16,
+    padding: 14,
+    borderRadius: 12,
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    alignItems: 'flex-start',
+    gap: 10 },
+  noticeText: {
+    flex: 1,
+    fontSize: normalize.font(12),
+    lineHeight: 20,
+    color: '#92400E',
+    fontFamily: "Alexandria-Medium" },
+  quickActionsRow: {
+    paddingHorizontal: 20,
+    gap: 10,
+    marginBottom: 18 },
+  quickAction: {
+    flex: 1,
+    minHeight: 72,
+    borderRadius: 12,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8 },
+  quickActionText: {
+    fontSize: normalize.font(12),
+    color: Colors.text.primary,
+    fontFamily: "Alexandria-Bold",
+    textAlign: 'center' },
+  readinessCard: {
+    marginHorizontal: 20,
+    marginBottom: 20,
+    padding: 16,
+    borderRadius: 16,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0' },
+  readinessHeader: {
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12 },
+  readinessTitle: {
+    fontSize: normalize.font(16),
+    color: Colors.text.primary,
+    fontFamily: "Alexandria-Black" },
+  readinessSubtitle: {
+    marginTop: 4,
+    fontSize: normalize.font(12),
+    lineHeight: 20,
+    color: Colors.text.muted,
+    fontFamily: "Alexandria-Medium" },
+  readinessScore: {
+    width: 54,
+    height: 54,
+    borderRadius: 18,
+    backgroundColor: Colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center' },
+  readinessScoreText: {
+    color: Colors.white,
+    fontSize: normalize.font(15),
+    fontFamily: "Alexandria-Black" },
+  progressTrack: {
+    height: 8,
+    borderRadius: 8,
+    backgroundColor: '#E2E8F0',
+    overflow: 'hidden',
+    marginTop: 14 },
+  progressFill: {
+    height: '100%',
+    borderRadius: 8,
+    backgroundColor: Colors.primary },
+  readinessItems: {
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 14 },
+  readinessPill: {
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 10,
+    borderWidth: 1 },
+  readinessPillDone: {
+    backgroundColor: '#ECFDF5',
+    borderColor: '#BBF7D0' },
+  readinessPillMissing: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#E2E8F0' },
+  readinessPillText: {
+    fontSize: normalize.font(11),
+    color: Colors.text.muted,
+    fontFamily: "Alexandria-SemiBold" },
+  readinessPillTextDone: {
+    color: '#047857' },
   statsRow: {
     backgroundColor: Colors.white,
     paddingVertical: 14,
@@ -1243,13 +1512,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10 },
   statValue: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(17),
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary },
   statLabel: {
-    fontSize: normalize.font(8),
+    fontSize: normalize.font(11),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Alexandria-SemiBold",
     marginTop: 2 },
   statDivider: {
     width: 1,
@@ -1270,8 +1539,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#F1F5F9',
     marginBottom: 32 },
   sectionTitle: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(18),
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
     marginBottom: 16 },
   amenitiesWrap: {
@@ -1289,12 +1558,13 @@ const styles = StyleSheet.create({
     gap: 10,
     minWidth: '47%' },
   amenityEmoji: {
-    fontSize: 14,
-   fontFamily: "Alexandria-Medium" },
+    fontSize: 18,
+   fontFamily: "Alexandria-Regular" },
   amenityText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
-    color: Colors.text.primary },
+    fontFamily: "Alexandria-SemiBold",
+    color: Colors.text.primary,
+    flexShrink: 1 },
   detailsRow: {
     gap: 12 },
   detailCard: {
@@ -1308,35 +1578,35 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F0F0F0' },
   detailValue: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(16),
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary },
   detailLabel: {
-    fontSize: normalize.font(8),
+    fontSize: normalize.font(11),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "Alexandria-SemiBold" },
   descriptionText: {
-    fontSize: normalize.font(14),
+    fontSize: normalize.font(15),
     color: Colors.text.secondary,
     lineHeight: 24,
     opacity: 0.9,
-   fontFamily: "Alexandria-Medium" },
+   fontFamily: "Alexandria-Regular" },
   footerContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between' },
   footerPriceLabel: {
-    fontSize: normalize.font(8),
+    fontSize: normalize.font(12),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "Alexandria-SemiBold" },
   footerPriceValue: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(20),
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary },
   footerCurrency: {
     fontSize: normalize.font(14),
     color: Colors.primary,
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "Alexandria-Bold" },
   footerButtonOverride: {
     flex: 1 },
   stickyFooter: {
@@ -1371,27 +1641,27 @@ const styles = StyleSheet.create({
     gap: 6 },
   editImagesText: {
     color: Colors.white,
-    fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium" },
+    fontSize: normalize.font(12),
+    fontFamily: "Alexandria-Bold" },
   modalScrollContent: {
     padding: 20,
     paddingBottom: 40 },
   modalTitle: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(20),
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
     marginBottom: 24,
     textAlign: 'center' },
   modalSubTitle: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(16),
+    fontFamily: "Alexandria-Bold",
     color: Colors.text.primary,
     marginBottom: 12 },
   modalInputGroup: {
     marginBottom: 20 },
   modalLabel: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(13),
+    fontFamily: "Alexandria-Bold",
     color: Colors.text.muted,
     marginBottom: 8 },
   modalInput: {
@@ -1401,7 +1671,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    fontSize: normalize.font(14),
+    fontSize: normalize.font(15),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
   modalTextArea: {
@@ -1420,7 +1690,7 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0' },
   capacityLabelInline: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Alexandria-Bold",
     color: Colors.text.primary,
     flex: 1,
     marginHorizontal: 10 },
@@ -1441,10 +1711,10 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
     backgroundColor: Colors.primary + '05' },
   amenityIcon: {
-    fontSize: 14,
+    fontSize: 20,
     marginBottom: 4 },
   amenityName: {
-    fontSize: 8,
+    fontSize: 11,
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     textAlign: 'center' },
@@ -1497,8 +1767,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F8FAFC' },
   addPhotosText: {
-    fontSize: 8,
-    fontFamily: "Alexandria-Medium",
+    fontSize: 12,
+    fontFamily: "Alexandria-Bold",
     color: Colors.text.muted,
     marginTop: 4 },
   cityPickerItem: {
@@ -1506,10 +1776,14 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#F1F5F9' },
   cityPickerText: {
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
   managementList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
     gap: 12 },
   managementBtn: {
+    width: '48%',
     marginBottom: 0 } });

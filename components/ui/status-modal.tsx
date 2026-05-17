@@ -72,17 +72,17 @@ const styles = StyleSheet.create({
   animation: {
     marginBottom: 10 },
   title: {
-    fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontSize: 22,
+    fontFamily: "Alexandria-Black",
     color: '#1E293B',
     textAlign: 'center',
     marginBottom: 10 },
   message: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#64748B',
     textAlign: 'center',
     lineHeight: 22,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Alexandria-SemiBold",
     marginBottom: 25 },
   button: {
     width: '100%',

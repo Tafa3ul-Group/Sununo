@@ -61,6 +61,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center" },
   titleText: {
-    fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontSize: 16,
+    fontFamily: "Alexandria-Black",
     color: "#171725" } });

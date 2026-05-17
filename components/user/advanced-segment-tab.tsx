@@ -46,7 +46,7 @@ export function AdvancedSegmentTab({
                   styles.tabLabel,
                   isActive
                     ? styles.activeLabel
-                    : { color: tab.color, fontFamily: "Alexandria-Medium" },
+                    : { color: tab.color, fontFamily: "Alexandria-Regular" },
                 ]}
               >
                 {tab.label}
@@ -80,8 +80,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: normalize.radius(30) },
   tabLabel: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium" },
+    fontSize: normalize.font(18),
+    fontFamily: "Alexandria-Bold" },
   activeLabel: {
     color: "white",
-    fontFamily: "Alexandria-Medium" } });
+    fontFamily: "Alexandria-Regular" } });

@@ -44,16 +44,6 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
         : chalet.location?.en
       : chalet.location;
 
-  let minPrice = chalet.price;
-  if (chalet.shifts && chalet.shifts.length > 0) {
-    const prices = chalet.shifts.flatMap((s: any) => s.pricing?.map((p: any) => p.price) || []);
-    if (prices.length > 0) {
-      minPrice = Math.min(...prices).toLocaleString();
-    }
-  } else if (chalet.basePrice) {
-    minPrice = Number(chalet.basePrice).toLocaleString();
-  }
-
   return (
     <TouchableOpacity
       activeOpacity={0.9}
@@ -97,9 +87,10 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
       </View>
 
       <View style={styles.infoContainer}>
-        <View style={{ width: '100%' }}>
+        <View style={{ alignItems: 'flex-start' }}>
           <ThemedText
             style={[styles.title, { textAlign: isRTL ? "right" : "left" }]}
+            numberOfLines={1}
           >
             {title}
           </ThemedText>
@@ -133,11 +124,11 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
               { flexDirection: 'row' },
             ]}
           >
-            <ThemedText style={styles.priceLabel}>
-              {isRTL ? "يبدأ من" : "Starts from"}
-            </ThemedText>
             <ThemedText style={styles.price}>
-              {isRTL ? `${minPrice} د.ع` : `IQD ${minPrice}`}
+              {isRTL ? `${chalet.price} د.ع` : `IQD ${chalet.price}`}
+            </ThemedText>
+            <ThemedText style={styles.priceLabel}>
+              {isRTL ? " / ليلة" : " / night"}
             </ThemedText>
           </View>
         </View>
@@ -179,7 +170,7 @@ const styles = StyleSheet.create({
     gap: 4 },
   ratingText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Alexandria-Black",
     color: "#111827" },
   heartContainer: {
     width: normalize.width(42),
@@ -193,27 +184,27 @@ const styles = StyleSheet.create({
   infoContainer: {
     padding: normalize.width(12) },
   title: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(16),
+    fontFamily: "Alexandria-Black",
     color: "#111827" },
   locationRow: {
     alignItems: "center",
     gap: 4,
     marginTop: 4 },
   location: {
-    fontSize: normalize.font(8),
+    fontSize: normalize.font(12),
     color: "#6B7280",
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "Alexandria-Regular" },
   priceContainer: {
     marginTop: normalize.height(12) },
   priceRow: {
     alignItems: "center",
     gap: 4 },
   price: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(16),
+    fontFamily: "Alexandria-Black",
     color: "#111827" },
   priceLabel: {
-    fontSize: normalize.font(8),
+    fontSize: normalize.font(12),
     color: "#6B7280",
-    fontFamily: "Alexandria-Medium" } });
+    fontFamily: "Alexandria-Regular" } });

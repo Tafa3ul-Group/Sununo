@@ -9,11 +9,12 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.dudes.sununo",
+      "bundleIdentifier": "com.sununo.dudes",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "نحتاج الوصول لموقعك لإظهار الشاليهات القريبة منك وتحديد موقع شاليك على الخارطة.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "نحتاج الوصول لموقعك لإظهار الشاليهات القريبة منك وتحديد موقع شاليك على الخارطة."
-      }
+      },
+      "appleTeamId": "UD89399RJ8"
     },
     "android": {
       "adaptiveIcon": {
@@ -30,9 +31,15 @@
         "FOREGROUND_SERVICE",
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
+        "FOREGROUND_SERVICE",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "FOREGROUND_SERVICE",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
         "FOREGROUND_SERVICE"
       ],
-      "package": "com.dudes.sununo"
+      "package": "com.sununo.dudes"
     },
     "web": {
       "output": "static",
@@ -90,6 +97,12 @@
       "eas": {
         "projectId": "391462b3-5778-4922-81bb-63fe765d070c"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/391462b3-5778-4922-81bb-63fe765d070c"
     }
   }
 }
