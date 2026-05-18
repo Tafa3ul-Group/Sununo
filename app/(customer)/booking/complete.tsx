@@ -29,7 +29,7 @@ import { Image as ExpoImage } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import LottieView from "lottie-react-native";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
     ActivityIndicator,
@@ -120,6 +120,42 @@ export default function CompleteBookingScreen() {
     skip: !chaletId });
   const chaletDetails = response?.data || response;
 
+  const filterPeriod = useSelector((state: RootState) => state.filter.period);
+
+  const availableShifts = useMemo(() => {
+    if (!chaletDetails?.shifts || chaletDetails.shifts.length === 0) return [];
+    if (!filterPeriod) return chaletDetails.shifts;
+
+    return chaletDetails.shifts.filter((shift: any) => {
+      if (shift.id === filterPeriod) return true;
+
+      const isMorning = shift.type === 'MORNING' || (shift.name?.en?.toLowerCase().includes('morning')) || (shift.name?.ar?.includes('صباح'));
+      const isEvening = shift.type === 'EVENING' || (shift.name?.en?.toLowerCase().includes('evening')) || (shift.name?.ar?.includes('مساء'));
+      const isOvernight = shift.type === 'OVERNIGHT' || (shift.name?.en?.toLowerCase().includes('overnight')) || (shift.name?.ar?.includes('مبيت'));
+
+      if (filterPeriod === "morning") return isMorning;
+      if (filterPeriod === "evening") return isEvening;
+      if (filterPeriod === "overnight") return isOvernight;
+
+      return false;
+    });
+  }, [chaletDetails?.shifts, filterPeriod]);
+
+  // Pre-fill selected shifts if there is only 1 available shift
+  useEffect(() => {
+    if (availableShifts.length === 1 && selectedDates.length > 0) {
+      setSelectedShifts((prev) => {
+        const next = { ...prev };
+        selectedDates.forEach((day) => {
+          if (!next[day]) {
+            next[day] = availableShifts[0].id;
+          }
+        });
+        return next;
+      });
+    }
+  }, [availableShifts, selectedDates]);
+
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const getDayOfWeek = (day: number) => {
     return new Date(
@@ -142,7 +178,7 @@ export default function CompleteBookingScreen() {
     if (
       !availabilityData ||
       !Array.isArray(availabilityData) ||
-      !chaletDetails?.shifts
+      availableShifts.length === 0
     )
       return [];
 
@@ -162,13 +198,13 @@ export default function CompleteBookingScreen() {
       }
     });
 
-    const totalShifts = chaletDetails.shifts.length;
+    const totalShifts = availableShifts.length;
     if (totalShifts === 0) return [];
 
     return Object.keys(dateCounts)
       .filter((d) => dateCounts[Number(d)] >= totalShifts)
       .map(Number);
-  }, [availabilityData, chaletDetails, currentMonth]);
+  }, [availabilityData, availableShifts, currentMonth]);
 
   // Success Sheet Ref
   const successSheetRef = React.useRef<BottomSheetModal>(null);
@@ -417,6 +453,12 @@ export default function CompleteBookingScreen() {
       }
       // Add the day
       const updated = [...prev, day].sort((a, b) => a - b);
+      if (availableShifts.length === 1) {
+        setSelectedShifts((prevShifts) => ({
+          ...prevShifts,
+          [day]: availableShifts[0].id
+        }));
+      }
       return updated;
     });
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -480,13 +522,11 @@ export default function CompleteBookingScreen() {
         chalet={{
           id: chaletDetails?.id || "",
           title: isRTL
-            ? chaletDetails?.nameAr || chaletDetails?.name || ""
-            : chaletDetails?.nameEn || chaletDetails?.name || "",
+            ? chaletDetails?.nameAr || chaletDetails?.name?.ar || chaletDetails?.name || ""
+            : chaletDetails?.nameEn || chaletDetails?.name?.en || chaletDetails?.name || "",
           location: isRTL
-            ? chaletDetails?.region?.nameAr || chaletDetails?.region?.name || ""
-            : chaletDetails?.region?.nameEn ||
-              chaletDetails?.region?.name ||
-              "",
+            ? chaletDetails?.region?.name?.ar || chaletDetails?.region?.nameAr || chaletDetails?.region?.name || ""
+            : chaletDetails?.region?.name?.en || chaletDetails?.region?.nameEn || chaletDetails?.region?.name || "",
           rating: chaletDetails?.averageRating || 0,
           price: chaletDetails?.basePrice
             ? Number(chaletDetails.basePrice).toLocaleString()
@@ -513,10 +553,8 @@ export default function CompleteBookingScreen() {
         </View>
         <ThemedText style={styles.mapAddressLabel}>
           {isRTL
-            ? chaletDetails?.region?.nameAr || chaletDetails?.region?.name || ""
-            : chaletDetails?.region?.nameEn ||
-              chaletDetails?.region?.name ||
-              ""}
+            ? chaletDetails?.region?.name?.ar || chaletDetails?.region?.nameAr || chaletDetails?.region?.name || ""
+            : chaletDetails?.region?.name?.en || chaletDetails?.region?.nameEn || chaletDetails?.region?.name || ""}
         </ThemedText>
       </View>
 
@@ -1122,7 +1160,7 @@ export default function CompleteBookingScreen() {
                   </ThemedText>
                 </View>
                 <View style={styles.shiftsContainer}>
-                  {chaletDetails?.shifts?.map((shift: any) => {
+                  {availableShifts?.map((shift: any) => {
                     const shiftName = isRTL
                       ? shift.name?.ar || shift.name
                       : shift.name?.en || shift.name;
@@ -1226,7 +1264,7 @@ export default function CompleteBookingScreen() {
                 </View>
 
                 <View style={styles.shiftsContainer}>
-                  {chaletDetails?.shifts?.map((shift: any) => {
+                  {availableShifts?.map((shift: any) => {
                     const isSelected = selectedShifts[day] === shift.id;
                     const isBooked = isShiftBookedForDay(day, shift.id);
                     const shiftName = isRTL
@@ -1583,6 +1621,9 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: "#1E293B" },
+  shiftsContainer: {
+    gap: 12,
+    marginBottom: 10 },
   shiftCardFlat: {
     flexDirection: "row",
     justifyContent: "space-between",

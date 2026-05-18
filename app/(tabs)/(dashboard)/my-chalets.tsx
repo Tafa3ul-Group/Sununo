@@ -110,16 +110,6 @@ export default function MyChaletsScreen() {
             >
               <SolarPenBold size={18} color={Colors.text.muted} />
             </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.editBtn, { marginTop: 8 }]}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                router.push({ pathname: '/(dashboard)/edit-details', params: { id: item.id } });
-              }}
-            >
-              <SolarNotebookBold size={18} color={Colors.primary} />
-            </TouchableOpacity>
           </View>
         </View>
       </TouchableOpacity>

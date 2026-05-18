@@ -7,7 +7,7 @@ import {
     BottomSheetModal,
     BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { useDispatch } from "react-redux";
 
@@ -19,8 +19,6 @@ export const LogoutSheet = React.forwardRef<BottomSheetModal, LogoutSheetProps>(
   ({ onLoggedOut }, ref) => {
     const dispatch = useDispatch();
     const [logoutApi] = useLogoutUserMutation();
-
-    const snapPoints = useMemo(() => ["35%"], []);
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -52,8 +50,7 @@ export const LogoutSheet = React.forwardRef<BottomSheetModal, LogoutSheetProps>(
     return (
       <BottomSheetModal
         ref={ref}
-        index={0}
-        snapPoints={snapPoints}
+        enableDynamicSizing={true}
         backdropComponent={renderBackdrop}
         handleIndicatorStyle={styles.indicator}
         backgroundStyle={styles.background}

@@ -92,7 +92,10 @@ export const WalletCard = ({
           {isRTL ? (
             <>
               <TouchableOpacity
-                style={styles.withdrawButton}
+                style={[
+                  styles.withdrawButton,
+                  { marginLeft: normalize.width(6) },
+                ]}
                 onPress={onWithdraw}
                 activeOpacity={0.8}
               >
@@ -100,7 +103,12 @@ export const WalletCard = ({
                   {t("profile.wallet.withdraw")}
                 </ThemedText>
               </TouchableOpacity>
-              <View style={[styles.balanceContainer, { flexDirection: "row" }]}>
+              <View
+                style={[
+                  styles.balanceContainer,
+                  { flexDirection: "row", marginRight: normalize.width(25) },
+                ]}
+              >
                 <ThemedText style={styles.balanceValue}>{balance}</ThemedText>
                 <ThemedText style={styles.currencyText}>
                   {t("common.iqd")}
@@ -109,14 +117,22 @@ export const WalletCard = ({
             </>
           ) : (
             <>
-              <View style={[styles.balanceContainer, { flexDirection: "row" }]}>
+              <View
+                style={[
+                  styles.balanceContainer,
+                  { flexDirection: "row", marginLeft: normalize.width(25) },
+                ]}
+              >
                 <ThemedText style={styles.balanceValue}>{balance}</ThemedText>
                 <ThemedText style={styles.currencyText}>
                   {t("common.iqd")}
                 </ThemedText>
               </View>
               <TouchableOpacity
-                style={styles.withdrawButton}
+                style={[
+                  styles.withdrawButton,
+                  { marginRight: normalize.width(6) },
+                ]}
                 onPress={onWithdraw}
                 activeOpacity={0.8}
               >
@@ -145,13 +161,13 @@ const styles = StyleSheet.create({
   },
   contentOverlay: {
     flex: 1,
-    paddingHorizontal: normalize.width(25),
     paddingTop: normalize.height(18),
     paddingBottom: normalize.height(30),
     justifyContent: "space-between",
   },
   topRow: {
     alignItems: "flex-end",
+    paddingHorizontal: normalize.width(25),
   },
   balanceLabel: {
     color: "white",
@@ -164,14 +180,14 @@ const styles = StyleSheet.create({
   },
   balanceContainer: {
     alignItems: "baseline",
-    gap: normalize.width(6),
+    gap: normalize.width(4),
   },
   balanceValue: {
     color: "white",
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     lineHeight: normalize.font(14),
-    paddingVertical: normalize.height(4),
+    paddingVertical: normalize.height(2),
   },
   currencyText: {
     color: "white",

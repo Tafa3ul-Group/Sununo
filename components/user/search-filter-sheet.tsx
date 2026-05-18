@@ -17,11 +17,16 @@ import {
 import { SolarBedBold, SolarMagnifierBold, SolarMapPointBold, SolarMoonBold, SolarSunBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { Colors, normalize, Shadows, Spacing } from "@/constants/theme";
-import { useGetCityNamesQuery } from "@/store/api/customerApiSlice";
-import { AppButton } from "./app-button";
+import {
+    useGetCityNamesQuery,
+    useGetCustomerChaletDetailsQuery,
+    useGetChaletAvailabilityQuery } from "@/store/api/customerApiSlice";
+import { PrimaryButton } from "./primary-button";
+import { SecondaryButton } from "./secondary-button";
 import { GuestCounter } from "./guest-counter";
 import { MainTabs, TabType } from "./MainTabs";
 import { RangeCalendar } from "./range-calendar";
+import { isRTL } from "@/i18n";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -36,13 +41,18 @@ const STATIC_CITIES = [
   { id: "babylon", name: "بابل", icon: "map" },
 ];
 
-export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filters: any) => void }>((props, ref) => {
-  const { onApply } = props;
+interface SearchFilterSheetProps {
+  onApply?: (filters: any) => void;
+  chaletId?: string;
+}
+
+export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetProps>((props, ref) => {
+  const { onApply, chaletId } = props;
   const { dismiss } = useBottomSheetModal();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const isArabic = i18n.language === "ar";
 
-  const [activeTab, setActiveTab] = useState<TabType>("WHEN");
+  const [activeTab, setActiveTab] = useState<TabType>("WHERE");
   const [selectedCity, setSelectedCity] = useState<string>("");
   const [selectedCityName, setSelectedCityName] = useState<string>("");
   const [searchText, setSearchText] = useState("");
@@ -52,6 +62,63 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
   const [children, setChildren] = useState(0);
   const [checkIn, setCheckIn] = useState<Date | null>(null);
   const [checkOut, setCheckOut] = useState<Date | null>(null);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+
+  // Dynamic layout helper to guarantee perfect RTL/LTR alignment under any system RTL state
+  const rowDirection = isArabic ? (isRTL ? "row" : "row-reverse") : (isRTL ? "row-reverse" : "row");
+  const textAlignment = isArabic ? "right" : "left";
+  const buttonAlign = isArabic
+    ? (isRTL ? "flex-end" : "flex-start")
+    : (isRTL ? "flex-start" : "flex-end");
+
+  // Fetch chalet details if chaletId is provided
+  const { data: chaletDetailsResponse } = useGetCustomerChaletDetailsQuery(chaletId || "", {
+    skip: !chaletId
+  });
+  const chaletDetails = chaletDetailsResponse?.data || chaletDetailsResponse;
+
+  // Fetch chalet availability if chaletId is provided
+  const { data: availabilityData = [] } = useGetChaletAvailabilityQuery(
+    {
+      id: chaletId || "",
+      month: currentMonth.getMonth() + 1,
+      year: currentMonth.getFullYear()
+    },
+    { skip: !chaletId }
+  );
+
+  // Map availability to fully booked dates (format: YYYY-MM-DD to match RangeCalendar reservedDates)
+  const bookedDates = useMemo(() => {
+    if (
+      !chaletId ||
+      !availabilityData ||
+      !Array.isArray(availabilityData) ||
+      !chaletDetails?.shifts
+    )
+      return [];
+
+    const dateCounts: Record<number, number> = {};
+    const viewedMonth = currentMonth.getMonth();
+    const viewedYear = currentMonth.getFullYear();
+
+    availabilityData.forEach((b: any) => {
+      const parts = b.bookingDate.split("T")[0].split("-");
+      const bYear = parseInt(parts[0], 10);
+      const bMonth = parseInt(parts[1], 10) - 1;
+      const bDay = parseInt(parts[2], 10);
+
+      if (bMonth === viewedMonth && bYear === viewedYear) {
+        dateCounts[bDay] = (dateCounts[bDay] || 0) + 1;
+      }
+    });
+
+    const totalShifts = chaletDetails.shifts.length;
+    if (totalShifts === 0) return [];
+
+    return Object.keys(dateCounts)
+      .filter((d) => dateCounts[Number(d)] >= totalShifts)
+      .map((d) => `${viewedYear}-${String(viewedMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`);
+  }, [availabilityData, chaletDetails, currentMonth, chaletId]);
 
   // Fetch cities from backend
   const { data: citiesData } = useGetCityNamesQuery(undefined);
@@ -69,16 +136,16 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
 
   const handleNext = useCallback(() => {
     Keyboard.dismiss();
-    if (activeTab === "WHEN") {
+    if (activeTab === "WHERE") {
+      setActiveTab("WHEN");
+    } else if (activeTab === "WHEN") {
       if (whenStep === 1) {
         setWhenStep(2);
       } else {
         setActiveTab("WHO");
       }
     } else if (activeTab === "WHO") {
-      setActiveTab("WHERE");
-    } else {
-      // WHERE — apply and close
+      // WHO — apply and close
       if (onApply) {
         onApply({
           cityId: selectedCity || null,
@@ -108,20 +175,25 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
     []
   );
 
+  const handleDismiss = useCallback(() => {
+    setActiveTab("WHERE");
+    setWhenStep(1);
+  }, []);
+
   const renderWhereContent = () => (
     <View style={styles.tabContent}>
-      <View style={[styles.searchBar, isArabic ? styles.ltrRow : styles.rtlRow]}>
+      <View style={[styles.searchBar, { flexDirection: rowDirection, alignItems: "center" }]}>
+        <SolarMagnifierBold size={22} color={Colors.text.muted} />
         <TextInput
-          placeholder="ابحث"
-          style={[styles.searchInput, isArabic ? styles.rtlText : styles.ltrText]}
+          placeholder={t("searchFilter.search")}
+          style={[styles.searchInput, { textAlign: textAlignment }]}
           placeholderTextColor={Colors.text.muted}
           value={searchText}
           onChangeText={setSearchText}
         />
-        <SolarMagnifierBold size={22} color={Colors.text.muted} />
       </View>
 
-      {cities.filter(city => city.name.includes(searchText)).map((city) => (
+      {cities.filter((city: any) => city.name.includes(searchText)).map((city: any) => (
         <TouchableOpacity
           key={city.id}
           onPress={() => {
@@ -130,17 +202,17 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
           }}
           style={[
             styles.cityItem,
-            isArabic ? styles.ltrRow : styles.rtlRow,
+            { flexDirection: rowDirection, alignItems: "center", justifyContent: "flex-start" },
             selectedCity === city.id && styles.selectedCityItem,
           ]}
         >
-          <ThemedText style={[styles.cityName, isArabic ? styles.rtlText : styles.ltrText]}>{city.name}</ThemedText>
-          <View style={styles.cityRight}>
+          <View style={[styles.cityRight, isArabic ? { marginLeft: 8 } : { marginRight: 8 }]}>
             <SolarMapPointBold
               size={24}
               color={Colors.primary}
             />
           </View>
+          <ThemedText style={[styles.cityName, { textAlign: textAlignment }]}>{city.name}</ThemedText>
         </TouchableOpacity>
       ))}
     </View>
@@ -155,15 +227,16 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
         }}
         initialStartDate={checkIn ?? undefined}
         initialEndDate={checkOut ?? undefined}
+        reservedDates={bookedDates}
       />
       <View style={styles.calendarFooter}>
         <View style={styles.legendWrapper}>
           <View style={styles.legendItem}>
-            <ThemedText style={styles.legendText}>وقت النهاية</ThemedText>
+            <ThemedText style={styles.legendText}>{t("searchFilter.endTime")}</ThemedText>
             <View style={[styles.dot, { backgroundColor: "#15AB64" }]} />
           </View>
           <View style={styles.legendItem}>
-            <ThemedText style={styles.legendText}>وقت البداية</ThemedText>
+            <ThemedText style={styles.legendText}>{t("searchFilter.startTime")}</ThemedText>
             <View style={[styles.dot, { backgroundColor: "#035DF9" }]} />
           </View>
         </View>
@@ -171,69 +244,222 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
     </View>
   );
 
-  const renderWhenPeriodsContent = () => (
-    <View style={styles.tabContent}>
-      <View style={styles.periodsContainer}>
-        {/* Period List */}
-        <View style={styles.periodList}>
-          <TouchableOpacity
-            style={[
-              styles.periodItem,
-              selectedPeriod === "morning" && styles.selectedPeriodItem,
-            ]}
-            onPress={() => setSelectedPeriod("morning")}
-          >
-            <SolarSunBold
-              size={34}
-              color={selectedPeriod === "morning" ? "#F64200" : Colors.text.muted}
-            />
-            <ThemedText style={styles.periodLabel}>
-              الفترة الصباحية
-            </ThemedText>
-          </TouchableOpacity>
+  const renderWhenPeriodsContent = () => {
+    // Render dynamic shifts if chaletDetails has shifts defined
+    if (chaletDetails?.shifts && chaletDetails.shifts.length > 0) {
+      return (
+        <View style={styles.tabContent}>
+          <View style={styles.periodsContainer}>
+            <View style={styles.periodList}>
+              {chaletDetails.shifts.map((shift: any) => {
+                const shiftName = isRTL
+                  ? shift.name?.ar || shift.name
+                  : shift.name?.en || shift.name;
+                const isSelected = selectedPeriod === shift.id;
 
-          <TouchableOpacity
-            style={[
-              styles.periodItem,
-              selectedPeriod === "evening" && styles.selectedPeriodItem,
-            ]}
-            onPress={() => setSelectedPeriod("evening")}
-          >
-            <SolarMoonBold
-              size={34}
-              color={selectedPeriod === "evening" ? "#035DF9" : Colors.text.muted}
-            />
-            <ThemedText style={styles.periodLabel}>
-              الفترة المسائية
-            </ThemedText>
-          </TouchableOpacity>
+                const isMorning = shift.name?.en?.toLowerCase().includes("morning") || shift.name?.ar?.includes("صباح");
+                const isEvening = shift.name?.en?.toLowerCase().includes("evening") || shift.name?.ar?.includes("مساء");
 
-          <TouchableOpacity
-            style={[
-              styles.periodItem,
-              selectedPeriod === "overnight" && styles.selectedPeriodItem,
-            ]}
-            onPress={() => setSelectedPeriod("overnight")}
-          >
-            <SolarBedBold
-              size={34}
-              color={selectedPeriod === "overnight" ? "#15AB64" : Colors.text.muted}
-            />
-            <ThemedText style={styles.periodLabel}>المبيت</ThemedText>
-          </TouchableOpacity>
+                return (
+                  <TouchableOpacity
+                    key={shift.id}
+                    style={[
+                      styles.periodItem,
+                      { flexDirection: rowDirection, justifyContent: "space-between", alignItems: "center" },
+                      isSelected && styles.selectedPeriodItem,
+                    ]}
+                    onPress={() => setSelectedPeriod(shift.id)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={{ flexDirection: rowDirection, alignItems: "center", gap: 16, flex: 1 }}>
+                      {isMorning ? (
+                        <SolarSunBold
+                          size={34}
+                          color={isSelected ? "#F64200" : Colors.text.muted}
+                        />
+                      ) : isEvening ? (
+                        <SolarMoonBold
+                          size={34}
+                          color={isSelected ? "#035DF9" : Colors.text.muted}
+                        />
+                      ) : (
+                        <SolarBedBold
+                          size={34}
+                          color={isSelected ? "#15AB64" : Colors.text.muted}
+                        />
+                      )}
+                      <ThemedText style={[styles.periodLabel, { textAlign: textAlignment }]}>
+                        {shiftName}
+                      </ThemedText>
+                    </View>
+
+                    {/* Radio Button Selector */}
+                    <View style={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: 10,
+                      borderWidth: 2,
+                      borderColor: isSelected ? "#15AB64" : "#D1D5DB",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      backgroundColor: "white",
+                    }}>
+                      {isSelected && (
+                        <View style={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: 5,
+                          backgroundColor: "#15AB64",
+                        }} />
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        </View>
+      );
+    }
+
+    // Fallback to static periods
+    return (
+      <View style={styles.tabContent}>
+        <View style={styles.periodsContainer}>
+          <View style={styles.periodList}>
+            <TouchableOpacity
+              style={[
+                styles.periodItem,
+                { flexDirection: rowDirection, justifyContent: "space-between", alignItems: "center" },
+                selectedPeriod === "morning" && styles.selectedPeriodItem,
+              ]}
+              onPress={() => setSelectedPeriod("morning")}
+              activeOpacity={0.8}
+            >
+              <View style={{ flexDirection: rowDirection, alignItems: "center", gap: 16, flex: 1 }}>
+                <SolarSunBold
+                  size={34}
+                  color={selectedPeriod === "morning" ? "#F64200" : Colors.text.muted}
+                />
+                <ThemedText style={[styles.periodLabel, { textAlign: textAlignment }]}>
+                  {t("searchFilter.morningShift")}
+                </ThemedText>
+              </View>
+              {/* Radio Button Selector */}
+              <View style={{
+                width: 20,
+                height: 20,
+                borderRadius: 10,
+                borderWidth: 2,
+                borderColor: selectedPeriod === "morning" ? "#15AB64" : "#D1D5DB",
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: "white",
+              }}>
+                {selectedPeriod === "morning" && (
+                  <View style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: 5,
+                    backgroundColor: "#15AB64",
+                  }} />
+                )}
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.periodItem,
+                { flexDirection: rowDirection, justifyContent: "space-between", alignItems: "center" },
+                selectedPeriod === "evening" && styles.selectedPeriodItem,
+              ]}
+              onPress={() => setSelectedPeriod("evening")}
+              activeOpacity={0.8}
+            >
+              <View style={{ flexDirection: rowDirection, alignItems: "center", gap: 16, flex: 1 }}>
+                <SolarMoonBold
+                  size={34}
+                  color={selectedPeriod === "evening" ? "#035DF9" : Colors.text.muted}
+                />
+                <ThemedText style={[styles.periodLabel, { textAlign: textAlignment }]}>
+                  {t("searchFilter.eveningShift")}
+                </ThemedText>
+              </View>
+              {/* Radio Button Selector */}
+              <View style={{
+                width: 20,
+                height: 20,
+                borderRadius: 10,
+                borderWidth: 2,
+                borderColor: selectedPeriod === "evening" ? "#15AB64" : "#D1D5DB",
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: "white",
+              }}>
+                {selectedPeriod === "evening" && (
+                  <View style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: 5,
+                    backgroundColor: "#15AB64",
+                  }} />
+                )}
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.periodItem,
+                { flexDirection: rowDirection, justifyContent: "space-between", alignItems: "center" },
+                selectedPeriod === "overnight" && styles.selectedPeriodItem,
+              ]}
+              onPress={() => setSelectedPeriod("overnight")}
+              activeOpacity={0.8}
+            >
+              <View style={{ flexDirection: rowDirection, alignItems: "center", gap: 16, flex: 1 }}>
+                <SolarBedBold
+                  size={34}
+                  color={selectedPeriod === "overnight" ? "#15AB64" : Colors.text.muted}
+                />
+                <ThemedText style={[styles.periodLabel, { textAlign: textAlignment }]}>
+                  {t("searchFilter.overnightShift")}
+                </ThemedText>
+              </View>
+              {/* Radio Button Selector */}
+              <View style={{
+                width: 20,
+                height: 20,
+                borderRadius: 10,
+                borderWidth: 2,
+                borderColor: selectedPeriod === "overnight" ? "#15AB64" : "#D1D5DB",
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: "white",
+              }}>
+                {selectedPeriod === "overnight" && (
+                  <View style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: 5,
+                    backgroundColor: "#15AB64",
+                  }} />
+                )}
+              </View>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   const renderWhoContent = () => (
     <View style={styles.tabContent}>
       <View style={styles.whoContainer}>
         {/* Adults Counter */}
-        <View style={[styles.guestItem, isArabic ? styles.rtlRow : styles.ltrRow, { justifyContent: "space-between" }]}>
-          <View style={[styles.guestInfo, { marginRight: isArabic ? 12 : 0, marginLeft: isArabic ? 0 : 12 }]}>
-            <ThemedText style={[styles.guestLabel, isArabic ? styles.rtlText : styles.ltrText]}>البالغين</ThemedText>
-            <ThemedText style={[styles.guestSubLabel, isArabic ? styles.rtlText : styles.ltrText]}>18 واكبر</ThemedText>
+        <View style={[styles.guestItem, { flexDirection: rowDirection, justifyContent: "space-between" }]}>
+          <View style={styles.guestInfo}>
+            <ThemedText style={[styles.guestLabel, { textAlign: textAlignment }]}>{t("searchFilter.adults")}</ThemedText>
+            <ThemedText style={[styles.guestSubLabel, { textAlign: textAlignment }]}>{t("searchFilter.adultsDesc")}</ThemedText>
           </View>
           <GuestCounter
             value={adults}
@@ -243,10 +469,10 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
         </View>
 
         {/* Children Counter */}
-        <View style={[styles.guestItem, isArabic ? styles.rtlRow : styles.ltrRow, { justifyContent: "space-between" }]}>
-          <View style={[styles.guestInfo, { marginRight: isArabic ? 12 : 0, marginLeft: isArabic ? 0 : 12 }]}>
-            <ThemedText style={[styles.guestLabel, isArabic ? styles.rtlText : styles.ltrText]}>الاطفال</ThemedText>
-            <ThemedText style={[styles.guestSubLabel, isArabic ? styles.rtlText : styles.ltrText]}>0 - 18</ThemedText>
+        <View style={[styles.guestItem, { flexDirection: rowDirection, justifyContent: "space-between" }]}>
+          <View style={styles.guestInfo}>
+            <ThemedText style={[styles.guestLabel, { textAlign: textAlignment }]}>{t("searchFilter.children")}</ThemedText>
+            <ThemedText style={[styles.guestSubLabel, { textAlign: textAlignment }]}>{t("searchFilter.childrenDesc")}</ThemedText>
           </View>
           <GuestCounter
             value={children}
@@ -281,6 +507,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
       android_keyboardInputMode="adjustResize"
+      onDismiss={handleDismiss}
     >
       {/* Tabs Header - sits at the top of the sheet */}
       <View style={styles.headerWrapper}>
@@ -291,17 +518,14 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
       <View style={styles.contentCard}>
         {/* Step Indicators (Green Dots) - Visible in WHEN tab */}
         {activeTab === "WHEN" && (
-          <View style={styles.stepIndicators}>
-            <TouchableOpacity
-              onPress={() => setWhenStep(2)}
-              activeOpacity={0.7}
-              style={[
-                styles.stepDot,
-                {
-                  backgroundColor:
-                    whenStep === 2 ? "#15AB64" : "#15AB6433" },
-              ]}
-            />
+          <View style={[
+            styles.stepIndicators,
+            {
+              flexDirection: rowDirection,
+              right: isArabic ? undefined : 24,
+              left: isArabic ? 24 : undefined
+            }
+          ]}>
             <TouchableOpacity
               onPress={() => setWhenStep(1)}
               activeOpacity={0.7}
@@ -310,6 +534,16 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
                 {
                   backgroundColor:
                     whenStep === 1 ? "#15AB64" : "#15AB6433" },
+              ]}
+            />
+            <TouchableOpacity
+              onPress={() => setWhenStep(2)}
+              activeOpacity={0.7}
+              style={[
+                styles.stepDot,
+                {
+                  backgroundColor:
+                    whenStep === 2 ? "#15AB64" : "#15AB6433" },
               ]}
             />
           </View>
@@ -336,13 +570,38 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, { onApply?: (filte
 
         {/* Fixed Footer Button */}
         <View style={styles.mainFooter}>
-          <AppButton
-            label={activeTab === "WHERE" ? "بحث" : "التالية"}
-            onPress={handleNext}
-            isActive={true}
-            activeColor={activeTab === "WHEN" ? "#15AB64" : activeTab === "WHO" ? "#F64200" : "#035DF9"}
-            style={styles.nextButton}
-          />
+          {activeTab === "WHEN" && whenStep === 2 ? (
+            <View style={[styles.periodsActionRow, { flexDirection: rowDirection, marginTop: 8, paddingBottom: 16 }]}>
+              <View style={styles.periodsActionItem}>
+                <SecondaryButton
+                  label={t("searchFilter.editDays")}
+                  onPress={() => setWhenStep(1)}
+                  isActive={false}
+                  style={{ width: "100%", flex: 1 }}
+                  inactiveTextColor="#15AB64"
+                  variant="inverse"
+                />
+              </View>
+              <View style={styles.periodsActionItem}>
+                <SecondaryButton
+                  label={t("searchFilter.skipToGuests")}
+                  onPress={() => setActiveTab("WHO")}
+                  isActive={true}
+                  style={{ width: "100%", flex: 1 }}
+                  activeColor="#15AB64"
+                  variant="default"
+                />
+              </View>
+            </View>
+          ) : (
+            <PrimaryButton
+              label={activeTab === "WHO" ? t("searchFilter.apply") : t("searchFilter.next")}
+              onPress={handleNext}
+              isActive={true}
+              activeColor={activeTab === "WHEN" ? "#15AB64" : activeTab === "WHO" ? "#F64200" : "#035DF9"}
+              style={StyleSheet.flatten([styles.nextButton, { alignSelf: buttonAlign }])}
+            />
+          )}
         </View>
       </View>
     </BottomSheetModal>
@@ -356,8 +615,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     marginVertical: Spacing.md,
-    zIndex: 10,
-    ...Shadows.medium },
+    zIndex: 10 },
   contentCard: {
     flex: 1,
     backgroundColor: "white",
@@ -378,7 +636,7 @@ const styles = StyleSheet.create({
     flex: 1 },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 24 },
+    paddingBottom: 48 },
   tabContent: {
     paddingHorizontal: 24 },
   searchBar: {
@@ -408,7 +666,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
-    flex: 1,
     marginHorizontal: 8 },
   cityRight: {
     backgroundColor: "white",
@@ -419,8 +676,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     ...Shadows.small },
   calendarFooter: {
-    marginTop: 10,
-    alignItems: "flex-end" },
+    marginTop: 20,
+    marginBottom: 40,
+    alignItems: "flex-start" },
   legendWrapper: {
     flexDirection: "row",
     gap: 12 },
@@ -448,8 +706,8 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: "#F0F2F5" },
   nextButton: {
-    width: 100,
-    height: 36 },
+    width: 140,
+    height: 46 },
   whoContainer: {
     paddingTop: 10 },
   stepIndicators: {
@@ -468,8 +726,8 @@ const styles = StyleSheet.create({
   periodList: {
     gap: 12 },
   periodItem: {
-    flexDirection: "row-reverse",
     alignItems: "center",
+    justifyContent: "flex-start",
     backgroundColor: "#F7FCF9",
     borderRadius: 16,
     height: 64,
@@ -479,13 +737,18 @@ const styles = StyleSheet.create({
     gap: 16 },
   selectedPeriodItem: {
     borderColor: "#15AB64",
-    backgroundColor: "white" },
+    backgroundColor: "#EEFBF4" },
   periodLabel: {
     fontSize: 14,
     fontFamily: "Alexandria-Medium",
-    color: "#1A1A1A",
-    flex: 1,
-    textAlign: "right" },
+    color: "#1A1A1A" },
+  periodsActionRow: {
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 20,
+    paddingBottom: 10 },
+  periodsActionItem: {
+    flex: 1 },
   guestItem: {
     alignItems: "center",
     backgroundColor: "white",
@@ -494,10 +757,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1,
     borderColor: "#F0F2F5",
-    minHeight: normalize.height(94),
-    ...Shadows.small },
+    minHeight: normalize.height(94) },
   guestInfo: { 
-    // Removed flex: 1 to allow space-between to push it
   },
   guestLabel: {
     fontSize: 14,
