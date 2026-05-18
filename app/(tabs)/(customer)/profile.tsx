@@ -34,10 +34,18 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 
 export default function CustomerProfileScreen() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { user: authUser } = useSelector((state: RootState) => state.auth);
     const router = useRouter();
     const insets = useSafeAreaInsets();
+
+    const isArabic = i18n.language === 'ar';
+    const rowDirection = isArabic
+        ? isRTL ? "row" : "row-reverse"
+        : isRTL ? "row-reverse" : "row";
+
+    const textStart: "left" | "right" = isArabic === isRTL ? "left" : "right";
+    const alignStart: "flex-start" | "flex-end" = isArabic === isRTL ? "flex-start" : "flex-end";
 
     const languageSheetRef = useRef<BottomSheetModal>(null);
     const logoutSheetRef = useRef<BottomSheetModal>(null);
@@ -96,7 +104,7 @@ export default function CustomerProfileScreen() {
     return (
         <View style={[styles.container, { paddingTop: insets.top }]}>
             <HeaderSection
-                title={isRTL ? 'الملف الشخصي' : 'Profile'}
+                title={isArabic ? 'الملف الشخصي' : 'Profile'}
                 showBackButton
                 onBackPress={() => router.back()}
             />
@@ -107,24 +115,24 @@ export default function CustomerProfileScreen() {
             >
                 {/* User Card */}
                 <TouchableOpacity
-                    style={[styles.userCard, { flexDirection: 'row' }]}
+                    style={[styles.userCard, { flexDirection: rowDirection }]}
                     onPress={() => router.push('/profile-edit')}
                     activeOpacity={0.9}
                 >
-                    {/* Inner avatar and name/phone block - natively aligns together on start side */}
-                    <View style={[styles.avatarAndInfo, { flexDirection: 'row' }]}>
+                    {/* Inner avatar and name/phone block */}
+                    <View style={[styles.avatarAndInfo, { flexDirection: rowDirection }]}>
                         <View style={styles.avatarWrap}>
                             <Image
                                 source={getImageSrc(userData?.image || userData?.imageUrl)}
                                 style={styles.avatarImg}
                             />
                         </View>
-                        <View style={[styles.userInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                            <Text style={[styles.userName, { textAlign: isRTL ? 'right' : 'left' }]}>
-                                {userData?.name || (isRTL ? 'المستخدم' : 'User')}
+                        <View style={[styles.userInfo, { alignItems: alignStart }]}>
+                            <Text style={[styles.userName, { textAlign: textStart }]}>
+                                {userData?.name || (isArabic ? 'المستخدم' : 'User')}
                             </Text>
                             {!!userData?.phone && (
-                                <Text style={[styles.userPhone, { textAlign: isRTL ? 'right' : 'left' }]}>
+                                <Text style={[styles.userPhone, { textAlign: textStart }]}>
                                     {userData.phone}
                                 </Text>
                             )}
@@ -148,7 +156,7 @@ export default function CustomerProfileScreen() {
                     {menuItems.map((item) => (
                         <TouchableOpacity
                             key={item.id}
-                            style={[styles.menuRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}
+                            style={[styles.menuRow, { flexDirection: rowDirection }]}
                             onPress={() => {
                                 if (item.action) {
                                     item.action();
@@ -159,7 +167,7 @@ export default function CustomerProfileScreen() {
                             activeOpacity={0.7}
                         >
                             {/* Icon first, then label right next to it */}
-                            <View style={styles.menuItemStart}>
+                            <View style={[styles.menuItemStart, { flexDirection: rowDirection }]}>
                                 <ProfileShape size={normalize.width(42)} type={item.shape}>
                                     {item.icon}
                                 </ProfileShape>
