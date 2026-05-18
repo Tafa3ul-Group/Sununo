@@ -971,39 +971,19 @@ export default function CompleteBookingScreen() {
         </ThemedText>
       </View>
 
-      <View style={styles.inlinePaymentSection}>
-        <ThemedText style={[styles.inlinePaymentTitle, { textAlign: textStart }]}>
-          {t("booking.paymentMethod") || "طريقة الدفع"}
-        </ThemedText>
-
-        <View style={[styles.paymentMethodsGrid, { justifyContent: isArabic ? "flex-end" : "flex-start" }]}>
-          <TouchableOpacity
-            style={[
-              styles.methodCard,
-              { flex: 0, width: 120 },
-              selectedMethod === "wayl" && styles.methodCardActive,
-            ]}
-            onPress={() => setSelectedMethod("wayl")}
-          >
-            <View
-              style={[
-                styles.methodIconContainer,
-                {
-                  backgroundColor:
-                    selectedMethod === "wayl" ? "#10B981" : "#ECFDF5",
-                },
-              ]}
-            >
-              <SolarCardBold
-                size={24}
-                color={selectedMethod === "wayl" ? "white" : "#10B981"}
-              />
+      <View style={[styles.infoSectionCard, { marginTop: 8 }]}>
+        <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection, marginBottom: 0, alignItems: "center" }]}>
+          <ThemedText style={[styles.infoLabel, { fontWeight: "700", textAlign: textStart }]}>
+            {t("booking.paymentMethod") || "طريقة الدفع"}
+          </ThemedText>
+          <View style={{ flexDirection: rowDirection, alignItems: "center", gap: 8 }}>
+            <View style={{ backgroundColor: "#ECFDF5", padding: 6, borderRadius: 8 }}>
+              <SolarCardBold size={18} color="#10B981" />
             </View>
-            <ThemedText style={styles.methodName}>
+            <ThemedText style={[styles.infoValue, { color: "#10B981", fontFamily: "Alexandria-SemiBold", textAlign: textEnd }]}>
               {t("booking.wayl")}
             </ThemedText>
-            {selectedMethod === "wayl" && <View style={styles.selectedDot} />}
-          </TouchableOpacity>
+          </View>
         </View>
       </View>
     </View>
