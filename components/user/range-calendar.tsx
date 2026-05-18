@@ -29,9 +29,16 @@ interface RangeCalendarProps {
   initialStartDate?: Date;
   initialEndDate?: Date;
   reservedDates?: string[]; // ISO strings or YYYY-MM-DD
+  selectionMode?: "single" | "range";
 }
 
-export const RangeCalendar: React.FC<RangeCalendarProps> = ({ onSelect, initialStartDate, initialEndDate, reservedDates = [] }) => {
+export const RangeCalendar: React.FC<RangeCalendarProps> = ({
+  onSelect,
+  initialStartDate,
+  initialEndDate,
+  reservedDates = [],
+  selectionMode = "range",
+}) => {
   const { i18n } = useTranslation();
     
   const [viewDate, setViewDate] = useState(initialStartDate || new Date()); // The month currently being viewed
@@ -95,9 +102,17 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({ onSelect, initialS
     const dateStr = date.toISOString().split('T')[0];
     if (reservedDates.includes(dateStr)) return;
 
+    if (selectionMode === "single") {
+      setStartDate(pressedDate);
+      setEndDate(null);
+      onSelect?.(pressedDate, null);
+      return;
+    }
+
     if (!startDate || (startDate && endDate)) {
       setStartDate(pressedDate);
       setEndDate(null);
+      onSelect?.(pressedDate, null);
     } else {
       const start = new Date(startDate);
       start.setHours(0, 0, 0, 0);
