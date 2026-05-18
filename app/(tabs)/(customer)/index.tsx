@@ -243,17 +243,9 @@ export default function HomeScreen() {
     return map;
   }, [allAmenities]);
 
-  // Build query params from Redux filter state
+  // Build query params for Home Screen (ignores global search filters to keep index unfiltered)
   const queryParams = React.useMemo(() => {
     const params: any = { page: 1, limit: 10 };
-    if (activeFilters?.cityId) params.cityId = activeFilters.cityId;
-    if (activeFilters?.search) params.search = activeFilters.search;
-    if (activeFilters?.maxGuests) params.maxGuests = activeFilters.maxGuests;
-    if (activeFilters?.checkIn)
-      params.checkIn = activeFilters.checkIn.split("T")[0];
-    if (activeFilters?.checkOut)
-      params.checkOut = activeFilters.checkOut.split("T")[0];
-    if (activeFilters?.period) params.period = activeFilters.period;
 
     // Use real amenity ID from API if available, otherwise send the slug as fallback
     if (activeFilter !== "all") {
@@ -261,7 +253,7 @@ export default function HomeScreen() {
       params.amenityIds = [realId || activeFilter];
     }
     return params;
-  }, [activeFilters, activeFilter, amenityIdMap]);
+  }, [activeFilter, amenityIdMap]);
 
   // Fetch data from the backend
   const { data: bannersResponse } = useGetBannersQuery(undefined);
@@ -375,10 +367,7 @@ export default function HomeScreen() {
         {/* Header */}
         <HeaderSection isHome />
 
-        {/* Active Filter Indicator */}
-        {activeFilters?.isActive && (
-          <ActiveFilterBanner filter={activeFilters} isRTL={isRTL} />
-        )}
+
 
         {/* Banners Swiper */}
         {banners?.length > 0 && <BannerSwiper data={banners} />}
@@ -449,7 +438,7 @@ export default function HomeScreen() {
         <View
           style={[
             styles.sectionHeader,
-            { justifyContent: isRTL ? "flex-end" : "flex-start" },
+            { justifyContent: "flex-start" },
           ]}
         >
           <ThemedText

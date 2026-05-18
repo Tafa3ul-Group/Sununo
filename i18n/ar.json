@@ -307,5 +307,21 @@
       "bath": "الحمام"
     },
     "empty": "لا توجد صور في هذا القسم حالياً"
+  },
+  "searchFilter": {
+    "search": "ابحث",
+    "next": "التالية",
+    "apply": "بحث",
+    "adults": "البالغين",
+    "adultsDesc": "18 واكبر",
+    "children": "الاطفال",
+    "childrenDesc": "0 - 18",
+    "morningShift": "الفترة الصباحية",
+    "eveningShift": "الفترة المسائية",
+    "overnightShift": "المبيت",
+    "endTime": "وقت النهاية",
+    "startTime": "وقت البداية",
+    "editDays": "تعديل الأيام",
+    "skipToGuests": "الذهاب للضيوف"
   }
 }

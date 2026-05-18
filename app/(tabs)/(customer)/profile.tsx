@@ -6,12 +6,13 @@ import {
     SolarHeartBold,
     SolarLogoutBold,
     SolarPhoneBold,
+    SolarProfileEdit,
     SolarShieldBold,
 } from '@/components/icons/solar-icons';
 import { LanguageSheet } from '@/components/user/language-sheet';
 import { LogoutSheet } from '@/components/user/logout-sheet';
 import { WalletCard } from '@/components/user/wallet-card';
-import { normalize } from '@/constants/theme';
+import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
 import { isRTL } from "@/i18n";
 import { RootState } from '@/store';
@@ -106,26 +107,33 @@ export default function CustomerProfileScreen() {
             >
                 {/* User Card */}
                 <TouchableOpacity
-                    style={[styles.userCard, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}
+                    style={styles.userCard}
                     onPress={() => router.push('/profile-edit')}
                     activeOpacity={0.9}
                 >
-                    {/* Avatar always on the right in RTL, left in LTR */}
-                    <View style={styles.avatarWrap}>
-                        <Image
-                            source={getImageSrc(userData?.image || userData?.imageUrl)}
-                            style={styles.avatarImg}
-                        />
-                    </View>
-                    <View style={[styles.userInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                        <Text style={[styles.userName, { textAlign: isRTL ? 'right' : 'left' }]}>
-                            {userData?.name || (isRTL ? 'المستخدم' : 'User')}
-                        </Text>
-                        {!!userData?.phone && (
-                            <Text style={[styles.userPhone, { textAlign: isRTL ? 'right' : 'left' }]}>
-                                {userData.phone}
+                    {/* Inner avatar and name/phone block - natively aligns together on start side */}
+                    <View style={styles.avatarAndInfo}>
+                        <View style={styles.avatarWrap}>
+                            <Image
+                                source={getImageSrc(userData?.image || userData?.imageUrl)}
+                                style={styles.avatarImg}
+                            />
+                        </View>
+                        <View style={[styles.userInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                            <Text style={[styles.userName, { textAlign: isRTL ? 'right' : 'left' }]}>
+                                {userData?.name || (isRTL ? 'المستخدم' : 'User')}
                             </Text>
-                        )}
+                            {!!userData?.phone && (
+                                <Text style={[styles.userPhone, { textAlign: isRTL ? 'right' : 'left' }]}>
+                                    {userData.phone}
+                                </Text>
+                            )}
+                        </View>
+                    </View>
+
+                    {/* Edit Icon on the opposite end */}
+                    <View style={styles.editIconWrap}>
+                        <SolarProfileEdit size={32} color={Colors.primary} />
                     </View>
                 </TouchableOpacity>
 
@@ -187,6 +195,8 @@ const styles = StyleSheet.create({
         paddingTop: normalize.height(16),
     },
     userCard: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
         backgroundColor: '#FFFFFF',
         borderRadius: normalize.radius(20),
@@ -195,7 +205,16 @@ const styles = StyleSheet.create({
         marginBottom: normalize.height(16),
         borderWidth: 1,
         borderColor: '#F3F4F6',
+    },
+    avatarAndInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
         gap: normalize.width(12),
+        flex: 1,
+    },
+    editIconWrap: {
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     userInfo: {
         flex: 1,

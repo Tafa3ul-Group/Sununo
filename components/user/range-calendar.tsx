@@ -84,12 +84,16 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({ onSelect, initialS
   }, [year, month]);
 
   const handleDayPress = (date: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const pressedDate = new Date(date);
+    pressedDate.setHours(0, 0, 0, 0);
+
+    if (pressedDate < today) return;
+
     // Check if reserved
     const dateStr = date.toISOString().split('T')[0];
     if (reservedDates.includes(dateStr)) return;
-
-    const pressedDate = new Date(date);
-    pressedDate.setHours(0, 0, 0, 0);
 
     if (!startDate || (startDate && endDate)) {
       setStartDate(pressedDate);
@@ -177,13 +181,17 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({ onSelect, initialS
 
           <View style={[styles.grid, { flexDirection: 'row' }]}>
             {calendarDays.map((item, index) => {
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              const isPast = item.date < today;
+
               const time = item.date.getTime();
               const isStart = !!startDate && time === startDate.getTime();
               const isEnd = !!endDate && time === endDate.getTime();
               const inRange = isInRange(item.date);
               
               const dateStr = item.date.toISOString().split('T')[0];
-              const isReserved = reservedDates.includes(dateStr);
+              const isReserved = reservedDates.includes(dateStr) || isPast;
 
               return (
                 <View key={`${item.day}-${index}`} style={styles.dayCellContainer}>

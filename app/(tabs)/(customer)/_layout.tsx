@@ -38,6 +38,7 @@ export default function CustomerLayout() {
       adults: filters.adults ?? 2,
       children: filters.children ?? 0,
       isActive: true }));
+    router.push("/(customer)/filter-results");
   };
 
   return (
