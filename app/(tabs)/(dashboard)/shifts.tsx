@@ -2,6 +2,7 @@ import { HeaderSection } from '@/components/header-section';
 import {
   SolarAddCircleBold,
   SolarAltArrowDownBold,
+  SolarAltArrowLeftBold,
   SolarAltArrowRightBold,
   SolarAltArrowRightLowBold,
   SolarAltArrowUpBold,
@@ -16,12 +17,14 @@ import {
   SolarInfoCircleBold,
   SolarLightbulbBold,
   SolarMoonBold,
+  SolarMapPointBold,
   SolarPenBold,
   SolarRefreshBold,
   SolarShieldBold,
   SolarSunBold,
   SolarTrashBinBold
 } from '@/components/icons/solar-icons';
+import { getImageSrc } from '@/hooks/useImageSrc';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { Colors, normalize, Shadows, Spacing } from '@/constants/theme';
 import { RootState } from '@/store';
@@ -84,7 +87,7 @@ function ShiftPricingView({ shift, isRTL, onEdit }: { shift: any; isRTL: boolean
     </View>
   );
 
-  const flexDirection = isRTL ? 'row-reverse' : 'row';
+  const flexDirection = 'row';
 
   return (
     <View style={styles.pricingSectionContainer}>
@@ -251,7 +254,7 @@ function DayVisualizer({
                   onPress={() => onAddShift(slot.h)}
                   activeOpacity={0.7}
                 >
-                  <Text style={[styles.hourText, slot.isCurrent && { color: Colors.primary, fontFamily: "Alexandria-Medium" }]}>
+                  <Text style={[styles.hourText, slot.isCurrent && { color: Colors.primary, fontFamily: "Alexandria-Black" }]}>
                     {slot.h % 12 || 12}
                   </Text>
                 </TouchableOpacity>
@@ -446,8 +449,8 @@ export default function ShiftsAndPricesScreen() {
     return false;
   };
 
-  const textAlign = isRTL ? 'right' : 'left';
-  const flexDirection = isRTL ? 'row-reverse' : 'row';
+  const textAlign = 'left';
+  const flexDirection = 'row';
 
   const calculateDuration = (start: string, end: string) => {
     if (!start || !end) return 0;
@@ -864,7 +867,7 @@ export default function ShiftsAndPricesScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container]}>
+    <SafeAreaView style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       <StatusBar style="dark" />
       <HeaderSection
         title={chaletName || (isRTL ? 'اختر الشاليه' : 'Select Chalet')}
@@ -876,6 +879,62 @@ export default function ShiftsAndPricesScreen() {
 
       <View style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          {selectedChaletId && (
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                router.push({
+                  pathname: '/(tabs)/(dashboard)/chalet-details',
+                  params: { id: selectedChaletId }
+                });
+              }}
+              style={styles.chaletDetailsShortcutCard}
+            >
+              <View style={[styles.row, { flex: 1, justifyContent: 'space-between', flexDirection }]}>
+                <View style={[styles.row, { flex: 1, flexDirection }]}>
+                  {/* Chalet Cover Image with Status Dot */}
+                  <View style={styles.shortcutImageContainer}>
+                    <Image
+                      source={getImageSrc(chalet?.images?.[0]?.url)}
+                      style={styles.shortcutImage}
+                    />
+                    <View
+                      style={[
+                        styles.shortcutStatusDot,
+                        { backgroundColor: chalet?.isActive ? '#10B981' : '#9CA3AF' }
+                      ]}
+                    />
+                  </View>
+
+                  {/* Chalet details info */}
+                  <View style={{ flex: 1, marginHorizontal: 12, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
+                    <Text style={[styles.shortcutTitle, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
+                      {chaletName || ''}
+                    </Text>
+                    <View style={[styles.row, { flexDirection, gap: 4, marginTop: 2, opacity: 0.8 }]}>
+                      <SolarMapPointBold size={11} color="#6B7280" />
+                      <Text style={[styles.shortcutSubtitle, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
+                        {isRTL ? (chalet?.address?.ar || chalet?.region?.name || 'موقع غير محدّد') : (chalet?.address?.en || chalet?.region?.enName || 'Location not specified')}
+                      </Text>
+                    </View>
+                    <View style={[styles.row, { flexDirection, gap: 4, marginTop: 6 }]}>
+                      <SolarPenBold size={10} color={Colors.primary} />
+                      <Text style={styles.shortcutActionLink}>
+                        {isRTL ? 'تعديل تفاصيل الشاليه وصور الغطاء والظهور' : 'Edit chalet details, photos & visibility'}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+                {isRTL ? (
+                  <SolarAltArrowLeftBold size={16} color={Colors.primary} style={{ opacity: 0.7 }} />
+                ) : (
+                  <SolarAltArrowRightBold size={16} color={Colors.primary} style={{ opacity: 0.7 }} />
+                )}
+              </View>
+            </TouchableOpacity>
+          )}
+
           <View style={styles.section}>
             <View style={[styles.sectionHeader, { flexDirection }]}>
               <SolarCalendarBold size={24} color={Colors.primary} />
@@ -894,7 +953,7 @@ export default function ShiftsAndPricesScreen() {
                   containerStyle={styles.swipeableContainer}
                 >
                   <View style={[styles.cardFlat, !shift.isActive && styles.cardInactive]}>
-                    <View style={[styles.row, { padding: 16, borderBottomWidth: isExpanded ? 1 : 0, borderBottomColor: '#F0F2F7', justifyContent: 'space-between' }, isRTL && { flexDirection: 'row-reverse' }]}>
+                    <View style={[styles.row, { padding: 16, borderBottomWidth: isExpanded ? 1 : 0, borderBottomColor: '#F0F2F7', justifyContent: 'space-between' }]}>
                       <TouchableOpacity 
                         style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }} 
                         onPress={() => setExpandedShift(isExpanded ? null : shift.id)}
@@ -908,9 +967,9 @@ export default function ShiftsAndPricesScreen() {
                         {isExpanded ? <SolarAltArrowUpBold size={20} color={Colors.border} /> : <SolarAltArrowDownBold size={20} color={Colors.border} />}
                       </TouchableOpacity>
 
-                      <View style={[styles.row, { marginLeft: isRTL ? 0 : 16, marginRight: isRTL ? 16 : 0 }, isRTL && { flexDirection: 'row-reverse' }]}>
+                      <View style={[styles.row, { marginLeft: isRTL ? 0 : 16, marginRight: isRTL ? 16 : 0 }]}>
                         <View style={{ alignItems: 'flex-end', marginRight: isRTL ? 0 : 8, marginLeft: isRTL ? 8 : 0 }}>
-                          <Text style={{ fontSize: 8, fontFamily: "Alexandria-Medium", color: shift.isActive ? Colors.primary : '#9CA3AF' }}>
+                          <Text style={{ fontSize: 8, fontFamily: 'Alexandria-Bold', color: shift.isActive ? Colors.primary : '#9CA3AF' }}>
                             {isRTL ? (shift.isActive ? 'نشطة' : 'متوقفة') : (shift.isActive ? 'Active' : 'Inactive')}
                           </Text>
                         </View>
@@ -953,7 +1012,7 @@ export default function ShiftsAndPricesScreen() {
                     <Text style={styles.detailTextLarge}>{isRTL ? `قبل ${p.daysBeforeBooking} أيام: ${p.penaltyPercentage}%` : `${p.daysBeforeBooking} days: ${p.penaltyPercentage}%`}</Text>
                   </View>
                 ))}
-                <Text style={{ color: Colors.primary, fontFamily: "Alexandria-Medium", textAlign: 'center' }}>{isRTL ? 'تعديل سياسة الاسترجاع' : 'Edit Refund Policy'}</Text>
+                <Text style={{ color: Colors.primary, fontFamily: "Alexandria-Bold", textAlign: 'center' }}>{isRTL ? 'تعديل سياسة الاسترجاع' : 'Edit Refund Policy'}</Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -962,14 +1021,14 @@ export default function ShiftsAndPricesScreen() {
 
       {/* Add Shift Modal */}
       <BottomSheetModal ref={shiftSheetRef} index={0} snapPoints={['60%', '90%']} backdropComponent={renderBackdrop}>
-        <BottomSheetScrollView contentContainerStyle={{ padding: 20 }}>
+        <BottomSheetScrollView contentContainerStyle={{ padding: 20, direction: isRTL ? 'rtl' : 'ltr' }}>
           <Text style={styles.modalTitle}>{isRTL ? 'إعداد الفترة' : 'Shift Setup'}</Text>
           <DayVisualizer shifts={shifts} isRTL={isRTL} onEditShift={handleEditShift} onAddShift={handleAddShiftAtHour} currentShiftForm={shiftForm} selectedId={selectedShift?.id} />
 
-          <View style={[styles.row, { justifyContent: 'space-between', marginVertical: 20 }, isRTL && { flexDirection: 'row-reverse' }]}>
+          <View style={[styles.row, { justifyContent: 'space-between', marginVertical: 20 }]}>
             <View>
               <Text style={styles.label}>{isRTL ? 'حالة الفترة' : 'Shift Status'}</Text>
-              <Text style={{ fontSize: 8, color: '#666' }}>{isRTL ? 'تفعيل أو إيقاف هذه الفترة تماماً' : 'Enable or disable this shift globally'}</Text>
+              <Text style={{ fontSize: 12, color: '#666' }}>{isRTL ? 'تفعيل أو إيقاف هذه الفترة تماماً' : 'Enable or disable this shift globally'}</Text>
             </View>
             <Switch
               value={shiftForm.isActive}
@@ -997,14 +1056,14 @@ export default function ShiftsAndPricesScreen() {
         <BottomSheetFlatList
           data={pricingForm}
           keyExtractor={(item) => `day-${item.dayOfWeek}`}
-          contentContainerStyle={{ paddingBottom: 120 }}
+          contentContainerStyle={{ paddingBottom: 120, direction: isRTL ? 'rtl' : 'ltr' }}
           ListHeaderComponent={
             <View style={{ padding: 20 }}>
-              <View style={[styles.row, { justifyContent: 'space-between', marginBottom: 12 }, isRTL && { flexDirection: 'row-reverse' }]}>
+              <View style={[styles.row, { justifyContent: 'space-between', marginBottom: 12 }]}>
                 <View>
                   <Text style={styles.modalTitleCompact}>{isRTL ? 'إعداد أسعار الأسبوع' : 'Weekly Pricing'}</Text>
                   {selectedShift && (
-                    <Text style={{ fontSize: 8, color: Colors.primary, fontFamily: "Alexandria-Medium", marginTop: 2 }}>
+                    <Text style={{ fontSize: 12, color: Colors.primary, fontFamily: 'Alexandria-Bold', marginTop: 2 }}>
                       {isRTL ? (selectedShift.name?.ar || selectedShift.name) : (selectedShift.name?.en || selectedShift.name)}
                     </Text>
                   )}
@@ -1015,7 +1074,7 @@ export default function ShiftsAndPricesScreen() {
               </View>
 
               <View style={[styles.shiftStatusHighlight, { flexDirection: 'row' }]}>
-                <View style={[styles.row, { flex: 1 }, isRTL && { flexDirection: 'row-reverse' }]}>
+                <View style={[styles.row, { flex: 1 }]}>
                   <View style={[styles.statusIconCircle, { backgroundColor: modalActiveStatus ? Colors.primary + '15' : '#F3F4F6' }]}>
                     <SolarShieldBold size={20} color={modalActiveStatus ? Colors.primary : '#9CA3AF'} />
                   </View>
@@ -1035,12 +1094,12 @@ export default function ShiftsAndPricesScreen() {
               </View>
 
               <View style={styles.quickActionCardNew}>
-                <View style={[styles.row, { justifyContent: 'space-between', marginBottom: 12 }, isRTL && { flexDirection: 'row-reverse' }]}>
-                  <View style={[styles.row, isRTL && { flexDirection: 'row-reverse' }]}>
+                <View style={[styles.row, { justifyContent: 'space-between', marginBottom: 12 }]}>
+                  <View style={[styles.row]}>
                     <SolarLightbulbBold size={16} color="#FFF" style={{ marginHorizontal: 4 }} />
                     <Text style={styles.quickLabelNew}>{isRTL ? 'إجراءات سريعة لجميع الأيام' : 'Quick Batch Actions'}</Text>
                   </View>
-                  <View style={[styles.row, { gap: 8 }, isRTL && { flexDirection: 'row-reverse' }]}>
+                  <View style={[styles.row, { gap: 8 }]}>
                     <TouchableOpacity onPress={handleEnableAllDays} style={styles.miniQuickBtn}>
                       <Text style={styles.miniQuickBtnText}>{isRTL ? 'تفعيل الكل' : 'Enable All'}</Text>
                     </TouchableOpacity>
@@ -1050,9 +1109,9 @@ export default function ShiftsAndPricesScreen() {
                   </View>
                 </View>
 
-                <View style={[styles.row, { backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 12, padding: 4 }, isRTL && { flexDirection: 'row-reverse' }]}>
+                <View style={[styles.row, { backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 12, padding: 4 }]}>
                   <BottomSheetTextInput
-                    style={[styles.quickInputNew, { flex: 1, height: 44, paddingHorizontal: 12, textAlign: isRTL ? 'right' : 'left' }]}
+                    style={[styles.quickInputNew, { flex: 1, height: 44, paddingHorizontal: 12, textAlign: 'left' }]}
                     keyboardType="numeric"
                     placeholder={isRTL ? "أدخل السعر الموحد..." : "Enter uniform price..."}
                     placeholderTextColor="rgba(255,255,255,0.5)"
@@ -1063,7 +1122,7 @@ export default function ShiftsAndPricesScreen() {
                     onPress={handleApplyBulkPrice}
                     style={{ backgroundColor: '#FFF', paddingHorizontal: 16, height: 36, borderRadius: 8, justifyContent: 'center', marginHorizontal: 4 }}
                   >
-                    <Text style={{ color: Colors.primary, fontFamily: "Alexandria-Medium", fontSize: 8 }}>{isRTL ? 'تطبيق السعر' : 'Apply Price'}</Text>
+                    <Text style={{ color: Colors.primary, fontFamily: 'Alexandria-Bold', fontSize: 12 }}>{isRTL ? 'تطبيق السعر' : 'Apply Price'}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -1082,8 +1141,8 @@ export default function ShiftsAndPricesScreen() {
                 { marginHorizontal: 20, flexDirection: 'row' }
               ]}>
                 <View style={{ flex: 1 }}>
-                  <View style={[styles.row, { justifyContent: 'space-between', marginBottom: item.price > 1 ? 12 : 0 }, isRTL && { flexDirection: 'row-reverse' }]}>
-                    <View style={[styles.row, isRTL && { flexDirection: 'row-reverse' }]}>
+                  <View style={[styles.row, { justifyContent: 'space-between', marginBottom: item.price > 1 ? 12 : 0 }]}>
+                    <View style={[styles.row]}>
                       <View style={[
                         styles.dayIndicator,
                         (item.dayOfWeek === 5 || item.dayOfWeek === 6) && { backgroundColor: '#FEE4E2' }
@@ -1098,8 +1157,8 @@ export default function ShiftsAndPricesScreen() {
                       <Text style={[styles.dayFullName, { marginHorizontal: 12 }]}>{dayName}</Text>
                     </View>
 
-                    <View style={[styles.row, isRTL && { flexDirection: 'row-reverse' }]}>
-                      <Text style={{ fontSize: 8, color: isStopped ? '#999' : Colors.primary, fontFamily: "Alexandria-Medium", marginRight: isRTL ? 0 : 8, marginLeft: isRTL ? 8 : 0 }}>
+                    <View style={[styles.row]}>
+                      <Text style={{ fontSize: 12, color: isStopped ? '#999' : Colors.primary, fontFamily: 'Alexandria-Bold', marginRight: isRTL ? 0 : 8, marginLeft: isRTL ? 8 : 0 }}>
                         {isStopped ? (isRTL ? 'متوقف' : 'Stopped') : (isRTL ? 'نشط' : 'Active')}
                       </Text>
                       <Switch
@@ -1112,10 +1171,10 @@ export default function ShiftsAndPricesScreen() {
                   </View>
 
                   {!isStopped && (
-                    <View style={[styles.priceControlWrapper, isRTL && { flexDirection: 'row-reverse' }]}>
+                    <View style={[styles.priceControlWrapper]}>
                       <SolarBanknoteBold size={20} color={Colors.primary} style={{ marginHorizontal: 8 }} />
                       <BottomSheetTextInput
-                        style={[styles.pricingInputModern, { flex: 1, textAlign: isRTL ? 'right' : 'left' }]}
+                        style={[styles.pricingInputModern, { flex: 1, textAlign: 'left' }]}
                         keyboardType="numeric"
                         value={String(item.price)}
                         placeholder="0"
@@ -1142,7 +1201,7 @@ export default function ShiftsAndPricesScreen() {
 
       {/* Policy Modal */}
       <BottomSheetModal ref={policySheetRef} index={0} snapPoints={['70%']} backdropComponent={renderBackdrop}>
-        <BottomSheetScrollView contentContainerStyle={{ padding: 20 }}>
+        <BottomSheetScrollView contentContainerStyle={{ padding: 20, direction: isRTL ? 'rtl' : 'ltr' }}>
           <Text style={styles.modalTitleCompact}>{isRTL ? 'سياسة الاسترجاع' : 'Refund Policy'}</Text>
           {policyForm.map((p, i) => (
             <View key={i} style={styles.policyFormCard}>
@@ -1175,74 +1234,121 @@ const styles = StyleSheet.create({
   scrollContent: { padding: 16, paddingBottom: 100 },
   section: { marginBottom: 24 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  sectionTitle: { fontSize: 14, fontFamily: "Alexandria-Medium", color: '#000' },
+  sectionTitle: { fontSize: 18, fontFamily: "Alexandria-Black", color: '#000' },
   row: { flexDirection: 'row', alignItems: 'center' },
   cardFlat: { backgroundColor: '#fff', borderRadius: 20, marginBottom: 12, borderWidth: 1, borderColor: '#F0F2F7', overflow: 'hidden', ...Shadows.small },
   cardHeader: { padding: 16 },
-  cardTitle: { fontSize: 14, fontFamily: "Alexandria-Medium" },
-  timeBadgeText: { color: Colors.primary, fontSize: 8, fontFamily: "Alexandria-Medium" },
+  cardTitle: { fontSize: 16, fontFamily: "Alexandria-Black" },
+  timeBadgeText: { color: Colors.primary, fontSize: 12, fontFamily: "Alexandria-Bold" },
   expandedContent: { padding: 16, backgroundColor: '#F9FAFB', borderTopWidth: 1, borderTopColor: '#F0F2F7' },
   pricingSectionContainer: { backgroundColor: '#fff', borderRadius: 16, padding: 12 },
   expandedHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  expandedTitle: { fontSize: 14, fontFamily: "Alexandria-Medium" },
+  expandedTitle: { fontSize: 14, fontFamily: "Alexandria-Bold" },
   editBadge: { backgroundColor: Colors.primary + '10', padding: 6, borderRadius: 8 },
-  editBadgeText: { fontSize: 8, color: Colors.primary, fontFamily: "Alexandria-Medium" },
+  editBadgeText: { fontSize: 10, color: Colors.primary, fontFamily: "Alexandria-Bold" },
   emptyPricingCard: { padding: 20, alignItems: 'center', borderStyle: 'dashed', borderWidth: 1, borderColor: '#DDD', borderRadius: 12 },
-  emptyPricingText: { fontSize: 8, color: '#999', marginTop: 8 },
+  emptyPricingText: { fontSize: 12, color: '#999', marginTop: 8 },
   setPriceBtn: { backgroundColor: Colors.primary, padding: 8, borderRadius: 8, marginTop: 10 },
-  setPriceBtnText: { color: '#fff', fontSize: 8 },
+  setPriceBtnText: { color: '#fff', fontSize: 11 },
   pricingGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   pricingMiniCard: { width: '23%', aspectRatio: 1, backgroundColor: '#F9FAFB', borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   weekendMiniCard: { backgroundColor: '#FFF5F5' },
   closedMiniCard: { opacity: 0.5 },
-  miniCardDay: { fontSize: 8, color: '#666' },
+  miniCardDay: { fontSize: 10, color: '#666' },
   miniCardPriceRow: { alignItems: 'center' },
-  miniCardPrice: { fontSize: 8, fontFamily: "Alexandria-Medium" },
+  miniCardPrice: { fontSize: 11, fontFamily: "Alexandria-Black" },
   miniCardCurrency: { fontSize: 8, color: '#999' },
   closedBadgeMini: { backgroundColor: '#FEE4E2', padding: 2, borderRadius: 4 },
   closedBadgeTextMini: { fontSize: 8, color: '#D92D20' },
   hoursGridContainer: { marginVertical: 16, padding: 16, backgroundColor: '#F9FAFB', borderRadius: 16 },
   gridHeader: { alignItems: 'center', marginBottom: 12 },
-  gridTitleLarge: { fontSize: 14, fontFamily: "Alexandria-Medium" },
-  legendText: { fontSize: 8, color: '#666' },
+  gridTitleLarge: { fontSize: 16, fontFamily: "Alexandria-Black" },
+  legendText: { fontSize: 10, color: '#666' },
   gridContent: { gap: 6 },
   hourGridRow: { flexDirection: 'row', alignItems: 'center', height: 40 },
   rowIconOuter: { width: 30 },
   hourSquare: { flex: 1, height: 36, backgroundColor: '#fff', borderWidth: 1, borderColor: '#EEE', justifyContent: 'center', alignItems: 'center' },
   hourSquareMerged: { height: 36, backgroundColor: Colors.primary, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 4 },
-  hourText: { fontSize: 8, color: '#999' },
-  shiftOverlayText: { fontSize: 8, color: '#fff', fontFamily: "Alexandria-Medium" },
+  hourText: { fontSize: 12, color: '#999' },
+  shiftOverlayText: { fontSize: 10, color: '#fff', fontFamily: "Alexandria-Bold" },
   swipeableContainer: { borderRadius: 20 },
   swipeActions: { flexDirection: 'row', height: '100%' },
   swipeAction: { width: 70, justifyContent: 'center', alignItems: 'center' },
-  swipeActionText: { fontSize: 8, fontFamily: "Alexandria-Medium" },
-  modalTitle: { fontSize: 14, fontFamily: "Alexandria-Medium", marginBottom: 20 },
-  modalTitleCompact: { fontSize: 14, fontFamily: "Alexandria-Medium" },
-  label: { fontSize: 14, fontFamily: "Alexandria-Medium", marginBottom: 8 },
+  swipeActionText: { fontSize: 10, fontFamily: "Alexandria-Bold" },
+  modalTitle: { fontSize: 20, fontFamily: "Alexandria-Black", marginBottom: 20 },
+  modalTitleCompact: { fontSize: 18, fontFamily: "Alexandria-Black" },
+  label: { fontSize: 14, fontFamily: "Alexandria-Bold", marginBottom: 8 },
   input: { backgroundColor: '#F3F4F6', height: 50, borderRadius: 12, paddingHorizontal: 16, marginBottom: 16 },
   saveBtn: { backgroundColor: Colors.primary, padding: 16, borderRadius: 12, alignItems: 'center' },
-  saveBtnText: { color: '#fff', fontFamily: "Alexandria-Medium" },
+  saveBtnText: { color: '#fff', fontFamily: "Alexandria-Black" },
   quickActionCardNew: { backgroundColor: Colors.primary, padding: 16, borderRadius: 16, marginTop: 12 },
-  quickLabelNew: { color: '#fff', fontSize: 8, marginBottom: 4 },
-  quickInputNew: { color: '#fff', fontSize: 14, fontFamily: "Alexandria-Medium" },
+  quickLabelNew: { color: '#fff', fontSize: 12, marginBottom: 4 },
+  quickInputNew: { color: '#fff', fontSize: 18, fontFamily: "Alexandria-Black" },
   pricingRowModern: { padding: 16, backgroundColor: '#fff', borderRadius: 16, marginBottom: 10, borderWidth: 1, borderColor: '#EEE' },
   pricingRowStopped: { backgroundColor: '#F9FAFB', opacity: 0.7 },
-  dayFullName: { fontSize: 14, fontFamily: "Alexandria-Medium" },
+  dayFullName: { fontSize: 14, fontFamily: "Alexandria-Bold" },
   priceControlWrapper: { marginTop: 12, backgroundColor: '#F3F4F6', borderRadius: 10, padding: 8 },
-  pricingInputModern: { fontSize: 14, fontFamily: "Alexandria-Medium", textAlign: 'center' },
+  pricingInputModern: { fontSize: 16, fontFamily: "Alexandria-Black", textAlign: 'center' },
   pricingFloatingFooter: { padding: 16, borderTopWidth: 1, borderTopColor: '#EEE', backgroundColor: '#fff' },
   applyBtnLargeModern: { backgroundColor: Colors.primary, padding: 16, borderRadius: 12, alignItems: 'center' },
-  applyBtnTextLarge: { color: '#fff', fontFamily: "Alexandria-Medium" },
+  applyBtnTextLarge: { color: '#fff', fontFamily: "Alexandria-Black" },
   inactiveBadge: { backgroundColor: '#F2F4F7', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, justifyContent: 'center' },
-  inactiveBadgeText: { fontSize: 8, color: '#667085', fontFamily: "Alexandria-Medium" },
+  inactiveBadgeText: { fontSize: 10, color: '#667085', fontFamily: 'Alexandria-Bold' },
   policyFormCard: { padding: 16, backgroundColor: '#F9FAFB', borderRadius: 12, marginBottom: 12 },
   chaletSelectCard: { padding: 16, borderBottomWidth: 1, borderBottomColor: '#EEE' },
   dayIndicator: { width: 32, height: 32, borderRadius: 16, backgroundColor: Colors.primary + '10', justifyContent: 'center', alignItems: 'center' },
-  dayIndicatorText: { fontSize: 14, fontFamily: "Alexandria-Medium", color: Colors.primary },
+  dayIndicatorText: { fontSize: 14, fontFamily: 'Alexandria-Black', color: Colors.primary },
   cardInactive: { backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' },
   shiftStatusHighlight: { backgroundColor: '#fff', padding: 16, borderRadius: 20, marginBottom: 20, borderWidth: 1, borderColor: '#F0F2F7', alignItems: 'center', ...Shadows.small },
   statusIconCircle: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
-  statusLabelLarge: { fontSize: 14, fontFamily: "Alexandria-Medium", color: '#1F2937' },
-  statusValueLarge: { fontSize: 8, fontFamily: "Alexandria-Medium", marginTop: 2 },
+  statusLabelLarge: { fontSize: 14, fontFamily: 'Alexandria-Bold', color: '#1F2937' },
+  statusValueLarge: { fontSize: 11, fontFamily: 'Alexandria-Medium', marginTop: 2 },
   miniQuickBtn: { backgroundColor: 'rgba(255,255,255,0.3)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
-  miniQuickBtnText: { color: '#fff', fontSize: 8, fontFamily: "Alexandria-Medium" } });
+  miniQuickBtnText: { color: '#fff', fontSize: 10, fontFamily: 'Alexandria-Bold' },
+  chaletDetailsShortcutCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 22,
+    padding: 12,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    ...Shadows.small,
+  },
+  shortcutImageContainer: {
+    position: 'relative',
+    width: 64,
+    height: 64,
+    borderRadius: 14,
+    overflow: 'hidden',
+    backgroundColor: '#F5F5F7',
+  },
+  shortcutImage: {
+    width: '100%',
+    height: '100%',
+  },
+  shortcutStatusDot: {
+    position: 'absolute',
+    top: 4,
+    left: 4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 2,
+    borderColor: '#FFF',
+  },
+  shortcutTitle: {
+    fontSize: 14,
+    fontFamily: 'Alexandria-Bold',
+    color: '#1F2937',
+  },
+  shortcutSubtitle: {
+    fontSize: 11,
+    fontFamily: 'Alexandria-Medium',
+    color: '#6B7280',
+  },
+  shortcutActionLink: {
+    fontSize: 9,
+    fontFamily: 'Alexandria-Bold',
+    color: Colors.primary,
+  }
+});

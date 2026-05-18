@@ -86,8 +86,6 @@ export default function AddChaletScreen() {
     nameEn: '',
     descriptionAr: '',
     descriptionEn: '',
-    maxAdults: '4',
-    maxChildren: '2',
     cityId: '',
     cityName: '',
     depositPercentage: '25',
@@ -95,13 +93,13 @@ export default function AddChaletScreen() {
     whatsapp: '',
     policiesAr: '',
     policiesEn: '',
-    basePrice: '',
     area: '',
     bedrooms: '',
     bathrooms: '',
     latitude: '33.3152',
     longitude: '44.3661',
-    baseCapacity: '4',
+    capacity: '4',
+    priceCapacity: '4',
     extraPersonPrice: '10000' });
 
   const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
@@ -341,9 +339,8 @@ export default function AddChaletScreen() {
       formData.append('cityId', form.cityId);
       formData.append('latitude', form.latitude || '33.3152');
       formData.append('longitude', form.longitude || '44.3661');
-      formData.append('maxAdults', form.maxAdults || '1');
-      formData.append('maxChildren', form.maxChildren || '0');
-      formData.append('baseCapacity', form.baseCapacity || '1');
+      formData.append('capacity', form.capacity || '1');
+      formData.append('priceCapacity', form.priceCapacity || '1');
       formData.append('extraPersonPrice', form.extraPersonPrice || '0');
       
       // Filter only active shifts for submission
@@ -352,7 +349,7 @@ export default function AddChaletScreen() {
         startTime: s.startTime?.split(':').slice(0, 2).join(':'),
         endTime: s.endTime?.split(':').slice(0, 2).join(':') }));
       formData.append('shifts', JSON.stringify(activeShifts));
-
+ 
       // ── Optional fields ──
       if (form.descriptionAr) {
         formData.append('description', JSON.stringify({ ar: form.descriptionAr, en: form.descriptionEn || form.descriptionAr }));
@@ -363,7 +360,6 @@ export default function AddChaletScreen() {
       if (form.phone) formData.append('phone', form.phone);
       if (form.whatsapp) formData.append('whatsapp', form.whatsapp);
       if (form.depositPercentage) formData.append('depositPercentage', form.depositPercentage);
-      if (form.basePrice) formData.append('basePrice', form.basePrice);
       if (form.area) formData.append('area', form.area);
       if (form.bedrooms) formData.append('bedrooms', form.bedrooms);
       if (form.bathrooms) formData.append('bathrooms', form.bathrooms);
@@ -447,8 +443,8 @@ export default function AddChaletScreen() {
     }
   };
 
-  const textAlign = isRTL ? 'right' : 'left';
-  const flexDirection = isRTL ? 'row-reverse' : 'row';
+  const textAlign = 'left';
+  const flexDirection = 'row';
 
   // ── Shift Row (Matching Screenshot) ──
   const renderShiftRow = (shift: ShiftData, index: number) => {
@@ -500,7 +496,7 @@ export default function AddChaletScreen() {
   };
 
   return (
-    <View style={[styles.container]}>
+    <View style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       <StatusBar style="dark" />
 
       <KeyboardAvoidingView
@@ -612,19 +608,6 @@ export default function AddChaletScreen() {
               </View>
 
               <View style={styles.sectionCard}>
-                {/* السعر الأساسي */}
-                <View style={styles.inputGroup}>
-                  <Text style={[styles.label, { textAlign }]}>{isRTL ? 'السعر التجريبي / الأساسي (د.ع)' : 'Base Price (IQD)'}</Text>
-                  <TextInput
-                    style={[styles.input, { textAlign: 'left' }]}
-                    placeholder="e.g. 150000"
-                    placeholderTextColor="#BCBCBC"
-                    keyboardType="numeric"
-                    value={form.basePrice}
-                    onChangeText={(val) => setForm({ ...form, basePrice: val })}
-                  />
-                </View>
-
                 {/* المواصفات الأساسية */}
                 <View style={[styles.rowInputs, { flexDirection }]}>
                   <View style={[styles.inputGroup, { flex: 1 }]}>
@@ -656,7 +639,7 @@ export default function AddChaletScreen() {
                   />
                 </View>
 
-                {/* نسبة العربون */}
+                {/* نسبة العربون (%) */}
                 <View style={styles.inputGroup}>
                   <Text style={[styles.label, { textAlign }]}>{isRTL ? 'نسبة العربون (%)' : 'Deposit %'}</Text>
                   <TextInput
@@ -688,47 +671,42 @@ export default function AddChaletScreen() {
                 </View>
               </View>
 
-              {/* Max Adults / Children (Matching Screenshot) */}
+              {/* Capacity & Extra Pricing */}
               <View style={styles.sectionCard}>
-                <ThemedText type="h2" style={[styles.sectionHeader, { textAlign }]}>{isRTL ? 'السعة الأقصى للأشخاص' : 'Maximum Capacity'}</ThemedText>
+                <ThemedText type="h2" style={[styles.sectionHeader, { textAlign }]}>{isRTL ? 'السعة والتسعير الإضافي' : 'Capacity & Extra Pricing'}</ThemedText>
                 
                 <View style={styles.capacityList}>
-                  {/* Adults Card */}
+                  {/* Max Capacity Card */}
                   <View style={[styles.capacityCard, { flexDirection }]}>
                     <GuestCounter 
-                      value={parseInt(form.maxAdults) || 1} 
-                      onIncrement={() => setForm({ ...form, maxAdults: (parseInt(form.maxAdults || '1') + 1).toString() })}
-                      onDecrement={() => setForm({ ...form, maxAdults: Math.max(1, parseInt(form.maxAdults || '1') - 1).toString() })}
+                      value={parseInt(form.capacity) || 1} 
+                      onIncrement={() => setForm({ ...form, capacity: (parseInt(form.capacity || '1') + 1).toString() })}
+                      onDecrement={() => setForm({ ...form, capacity: Math.max(1, parseInt(form.capacity || '1') - 1).toString() })}
                     />
                     <View style={[styles.capacityInfo, { alignItems: 'flex-start' }]}>
-                      <Text style={styles.capacityLabel}>{isRTL ? 'البالغين' : 'Adults'}</Text>
-                      <Text style={styles.capacitySubLabel}>{isRTL ? '18 وأكبر' : '18 and above'}</Text>
+                      <Text style={styles.capacityLabel}>{isRTL ? 'سعة الشاليه (الحد الأقصى للزيادة)' : 'Chalet Capacity'}</Text>
+                      <Text style={styles.capacitySubLabel}>{isRTL ? 'الحد الكلي المسموح به بعد الزيادة' : 'Maximum total guests allowed'}</Text>
                     </View>
                   </View>
 
-                  {/* Children Card */}
+                  {/* Price Capacity Card */}
                   <View style={[styles.capacityCard, { flexDirection }]}>
                     <GuestCounter 
-                      value={parseInt(form.maxChildren) || 0} 
-                      onIncrement={() => setForm({ ...form, maxChildren: (parseInt(form.maxChildren || '0') + 1).toString() })}
-                      onDecrement={() => setForm({ ...form, maxChildren: Math.max(0, parseInt(form.maxChildren || '0') - 1).toString() })}
+                      value={parseInt(form.priceCapacity) || 1} 
+                      onIncrement={() => setForm({ ...form, priceCapacity: (parseInt(form.priceCapacity || '1') + 1).toString() })}
+                      onDecrement={() => setForm({ ...form, priceCapacity: Math.max(1, parseInt(form.priceCapacity || '1') - 1).toString() })}
                     />
                     <View style={[styles.capacityInfo, { alignItems: 'flex-start' }]}>
-                      <Text style={styles.capacityLabel}>{isRTL ? 'الأطفال' : 'Children'}</Text>
-                      <Text style={styles.capacitySubLabel}>{isRTL ? 'تحت 18 سنة' : 'Under 18'}</Text>
+                      <Text style={styles.capacityLabel}>{isRTL ? 'سعة المبلغ (العدد المشمول بالسعر)' : 'Price Capacity'}</Text>
+                      <Text style={styles.capacitySubLabel}>{isRTL ? 'العدد المشمول بسعر الفترة الأساسي' : 'Base guests covered under standard shift price'}</Text>
                     </View>
                   </View>
 
                   <View style={[styles.rowInputs, { flexDirection, marginTop: 12 }]}>
                     <View style={[styles.inputGroup, { flex: 1 }]}>
-                      <Text style={[styles.label, { textAlign }]}>{isRTL ? 'السعة الأساسية' : 'Base Cap.'}</Text>
-                      <TextInput style={[styles.input, { textAlign: 'center' }]} keyboardType="numeric" value={form.baseCapacity} onChangeText={(val) => setForm({ ...form, baseCapacity: val })} />
-                      <Text style={[styles.smallLabel, { textAlign }]}>{isRTL ? 'مشمولة بالسعر' : 'Incl. in price'}</Text>
-                    </View>
-                    <View style={[styles.inputGroup, { flex: 2 }]}>
                       <Text style={[styles.label, { textAlign }]}>{isRTL ? 'سعر الشخص الإضافي' : 'Extra Person Price'}</Text>
                       <TextInput style={[styles.input, { textAlign: 'center' }]} keyboardType="numeric" value={form.extraPersonPrice} onChangeText={(val) => setForm({ ...form, extraPersonPrice: val })} />
-                      <Text style={[styles.smallLabel, { textAlign }]}>{isRTL ? 'لكل شخص فوق السعة' : 'Per person above cap'}</Text>
+                      <Text style={[styles.smallLabel, { textAlign }]}>{isRTL ? 'لكل شخص إضافي فوق سعة المبلغ' : 'Per extra guest above price capacity'}</Text>
                     </View>
                   </View>
                 </View>
@@ -1036,15 +1014,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#F1F5F9',
     paddingBottom: Platform.OS === 'ios' ? 34 : Spacing.md },
   sectionCard: { backgroundColor: 'transparent', padding: 0, gap: Spacing.md, marginBottom: Spacing.md },
-  sectionHeader: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: Colors.text.primary, marginBottom: 2 },
+  sectionHeader: { fontSize: normalize.font(16), fontFamily: "Alexandria-Black", color: Colors.text.primary, marginBottom: 2 },
   rowInputs: { gap: Spacing.sm },
   inputGroup: { gap: 6 },
-  label: { ...Typography.caption, color: Colors.text.primary, fontFamily: "Alexandria-Medium", fontSize: normalize.font(14) },
-  smallLabel: { ...Typography.caption, color: Colors.text.muted, fontFamily: "Alexandria-Medium", fontSize: normalize.font(8) },
+  label: { ...Typography.caption, color: Colors.text.primary, fontFamily: "Alexandria-Black", fontSize: normalize.font(14) },
+  smallLabel: { ...Typography.caption, color: Colors.text.muted, fontFamily: "Alexandria-SemiBold", fontSize: normalize.font(12) },
   input: {
     height: normalize.height(48), backgroundColor: '#FFFFFF', borderRadius: normalize.radius(12),
     paddingHorizontal: Spacing.md, borderWidth: 1, borderColor: '#E8E8E8',
-    fontSize: normalize.font(14), color: Colors.text.primary, fontFamily: "Alexandria-Medium" },
+    fontSize: normalize.font(15), color: Colors.text.primary, fontFamily: "Alexandria-Regular" },
   textArea: { height: normalize.height(100), paddingTop: 18, textAlignVertical: 'top' },
   // Map
   mapPreviewContainer: {
@@ -1055,18 +1033,18 @@ const styles = StyleSheet.create({
   editLocBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     backgroundColor: 'rgba(3, 93, 249, 0.9)', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 100 },
-  editLocText: { color: Colors.white, fontSize: normalize.font(8), fontFamily: "Alexandria-Medium" },
+  editLocText: { color: Colors.white, fontSize: normalize.font(12), fontFamily: "Alexandria-Bold" },
   // Shifts
   shiftsHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  shiftHint: { fontSize: normalize.font(14), color: Colors.text.muted, fontFamily: "Alexandria-Medium", marginBottom: 4 },
-  pricingTitle: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: Colors.text.primary },
+  shiftHint: { fontSize: normalize.font(13), color: Colors.text.muted, fontFamily: "Alexandria-Regular", marginBottom: 4 },
+  pricingTitle: { fontSize: normalize.font(14), fontFamily: "Alexandria-Bold", color: Colors.text.primary },
   dayPricingGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
   dayPriceItem: { alignItems: 'center', gap: 4, width: '13%' },
-  dayLabel: { fontSize: normalize.font(8), fontFamily: "Alexandria-Medium", color: Colors.text.muted },
+  dayLabel: { fontSize: normalize.font(10), fontFamily: "Alexandria-Black", color: Colors.text.muted },
   dayPriceInput: {
     width: '100%', height: 36, backgroundColor: '#F8FAFC', borderRadius: 8,
     borderWidth: 1, borderColor: '#E2E8F0', textAlign: 'center',
-    fontSize: normalize.font(8), color: Colors.text.primary, fontFamily: "Alexandria-Medium", paddingHorizontal: 2 },
+    fontSize: normalize.font(11), color: Colors.text.primary, fontFamily: "Alexandria-Medium", paddingHorizontal: 2 },
   // Shift Card Row (Matches Screenshot)
   shiftListContainer: { gap: 12, marginBottom: 16 },
   shiftCardRow: {
@@ -1077,14 +1055,14 @@ const styles = StyleSheet.create({
   shiftActions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   shiftEditBtn: { width: 32, height: 32, justifyContent: 'center', alignItems: 'center' },
   shiftInfo: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, justifyContent: 'flex-end' },
-  shiftIconLarge: { fontSize: 14 },
-  shiftValueName: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: Colors.text.primary },
-  shiftPriceText: { color: Colors.text.primary, fontFamily: "Alexandria-Medium" },
+  shiftIconLarge: { fontSize: 24 },
+  shiftValueName: { fontSize: normalize.font(15), fontFamily: "Alexandria-Bold", color: Colors.text.primary },
+  shiftPriceText: { color: Colors.text.primary, fontFamily: "Alexandria-Black" },
   addShiftBtnFull: {
     flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center',
     paddingVertical: 12, borderStyle: 'dashed', borderWidth: 1.5, borderColor: Colors.primary + '40',
     borderRadius: 14, marginTop: 8 },
-  addShiftBtnFullText: { color: Colors.primary, fontFamily: "Alexandria-Medium" },
+  addShiftBtnFullText: { color: Colors.primary, fontFamily: "Alexandria-Bold" },
   // Capacity (Matches Screenshot)
   capacityList: { gap: 12, marginTop: 8 },
   capacityCard: {
@@ -1092,16 +1070,16 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderColor: '#F1F5F9', padding: 16,
     justifyContent: 'space-between', alignItems: 'center' },
   capacityInfo: { flex: 1, gap: 2 },
-  capacityLabel: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: Colors.text.primary },
-  capacitySubLabel: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: Colors.text.muted },
+  capacityLabel: { fontSize: normalize.font(18), fontFamily: "Alexandria-Bold", color: Colors.text.primary },
+  capacitySubLabel: { fontSize: normalize.font(14), fontFamily: "Alexandria-Regular", color: Colors.text.muted },
   // Modal Edit
   shiftModalCard: { backgroundColor: '#F8FAFC', borderRadius: 16, padding: 16, gap: 16 },
   pricingSectionModal: { gap: 12 },
   modalDeleteBtn: { paddingVertical: 16, alignItems: 'center' },
-  modalDeleteText: { color: Colors.error, fontFamily: "Alexandria-Medium" },
+  modalDeleteText: { color: Colors.error, fontFamily: "Alexandria-Bold" },
   // Amenity Categories & Feature Rows
   categorySectionTitle: {
-    fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: Colors.text.primary,
+    fontSize: normalize.font(16), fontFamily: "Alexandria-Black", color: Colors.text.primary,
     textAlign: 'center', marginBottom: 8 },
   featuresList: { gap: 8 },
   featureRow: {
@@ -1119,17 +1097,17 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 3 },
-  featureIconText: { fontSize: normalize.font(14), color: '#FFFFFF' },
+  featureIconText: { fontSize: normalize.font(20), color: '#FFFFFF' },
   featureName: {
-    fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: Colors.text.primary,
+    fontSize: normalize.font(14), fontFamily: "Alexandria-Bold", color: Colors.text.primary,
     flex: 1 },
   checkbox: {
     width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: '#D1D5DB',
     justifyContent: 'center', alignItems: 'center' },
   checkboxActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
-  checkboxCheck: { color: '#FFFFFF', fontSize: normalize.font(14), fontFamily: "Alexandria-Medium" },
-  uploadText: { marginTop: normalize.height(4), color: Colors.text.muted, fontSize: normalize.font(8), fontFamily: "Alexandria-Medium" },
-  photoHint: { fontSize: normalize.font(8), color: Colors.text.muted, fontFamily: "Alexandria-Medium", marginBottom: 4 },
+  checkboxCheck: { color: '#FFFFFF', fontSize: normalize.font(14), fontFamily: "Alexandria-Bold" },
+  uploadText: { marginTop: normalize.height(4), color: Colors.text.muted, fontSize: normalize.font(12), fontFamily: "Alexandria-SemiBold" },
+  photoHint: { fontSize: normalize.font(12), color: Colors.text.muted, fontFamily: "Alexandria-Regular", marginBottom: 4 },
   imageContainer: { gap: Spacing.sm },
   imageItem: { width: normalize.width(100), height: normalize.width(100), borderRadius: normalize.radius(16), overflow: 'hidden', position: 'relative' },
   uploadedImage: { width: '100%', height: '100%' },
@@ -1139,7 +1117,7 @@ const styles = StyleSheet.create({
     borderRadius: normalize.radius(16), borderWidth: 2, borderColor: Colors.border, borderStyle: 'dashed',
     justifyContent: 'center', alignItems: 'center' },
   coverBadge: { position: 'absolute', bottom: 6, start: 6, backgroundColor: Colors.primary, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
-  coverBadgeText: { color: '#FFFFFF', fontSize: normalize.font(8), fontFamily: "Alexandria-Medium" },
+  coverBadgeText: { color: '#FFFFFF', fontSize: normalize.font(9), fontFamily: "Alexandria-Bold" },
   // Amenity Wizard Progress
   amenityProgressContainer: {
     flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 24, marginBottom: 12 },
@@ -1155,9 +1133,9 @@ const styles = StyleSheet.create({
   modalOptions: { flexDirection: 'row', justifyContent: 'space-around', width: '100%', marginBottom: Spacing.lg },
   modalOption: { alignItems: 'center', gap: Spacing.sm },
   modalIcon: { width: normalize.width(70), height: normalize.width(70), borderRadius: normalize.radius(35), justifyContent: 'center', alignItems: 'center' },
-  modalOptionText: { ...Typography.body, fontFamily: "Alexandria-Medium" },
+  modalOptionText: { ...Typography.body, fontFamily: "Alexandria-SemiBold" },
   pickerItem: { width: '100%', paddingVertical: Spacing.md, paddingHorizontal: Spacing.lg, borderBottomWidth: 1, borderBottomColor: Colors.border },
-  pickerItemText: { ...Typography.body, fontSize: normalize.font(14), color: Colors.text.primary },
+  pickerItemText: { ...Typography.body, fontSize: normalize.font(16), color: Colors.text.primary },
   modalSearchContainer: {
     alignItems: 'center',
     backgroundColor: '#F8FAFC',
@@ -1172,4 +1150,10 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     color: Colors.text.primary,
-    fontFamily: "Alexandria-Medium" } });
+    fontFamily: "Alexandria-Regular" },
+  shiftRow: { flexDirection: 'row', gap: Spacing.sm, paddingHorizontal: 14, marginBottom: 10 },
+  timeSelectBtn: { height: 48, backgroundColor: '#FFFFFF', borderRadius: 12, borderWidth: 1, borderColor: '#E2E8F0', justifyContent: 'center', alignItems: 'center' },
+  timeSelectText: { fontSize: normalize.font(15), fontFamily: "Alexandria-Bold", color: Colors.text.primary },
+  bulkPricingRow: { flexDirection: 'row', gap: 8, alignItems: 'center', marginBottom: 8 },
+  bulkBtn: { paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#EFF6FF', borderRadius: 8, borderWidth: 1, borderColor: '#DBEAFE' },
+  bulkBtnText: { color: Colors.primary, fontSize: normalize.font(12), fontFamily: "Alexandria-Bold" } });
