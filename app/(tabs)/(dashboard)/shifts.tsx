@@ -2,6 +2,7 @@ import { HeaderSection } from '@/components/header-section';
 import {
   SolarAddCircleBold,
   SolarAltArrowDownBold,
+  SolarAltArrowLeftBold,
   SolarAltArrowRightBold,
   SolarAltArrowRightLowBold,
   SolarAltArrowUpBold,
@@ -16,12 +17,14 @@ import {
   SolarInfoCircleBold,
   SolarLightbulbBold,
   SolarMoonBold,
+  SolarMapPointBold,
   SolarPenBold,
   SolarRefreshBold,
   SolarShieldBold,
   SolarSunBold,
   SolarTrashBinBold
 } from '@/components/icons/solar-icons';
+import { getImageSrc } from '@/hooks/useImageSrc';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { Colors, normalize, Shadows, Spacing } from '@/constants/theme';
 import { RootState } from '@/store';
@@ -876,6 +879,62 @@ export default function ShiftsAndPricesScreen() {
 
       <View style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          {selectedChaletId && (
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                router.push({
+                  pathname: '/(tabs)/(dashboard)/chalet-details',
+                  params: { id: selectedChaletId }
+                });
+              }}
+              style={styles.chaletDetailsShortcutCard}
+            >
+              <View style={[styles.row, { flex: 1, justifyContent: 'space-between', flexDirection }]}>
+                <View style={[styles.row, { flex: 1, flexDirection }]}>
+                  {/* Chalet Cover Image with Status Dot */}
+                  <View style={styles.shortcutImageContainer}>
+                    <Image
+                      source={getImageSrc(chalet?.images?.[0]?.url)}
+                      style={styles.shortcutImage}
+                    />
+                    <View
+                      style={[
+                        styles.shortcutStatusDot,
+                        { backgroundColor: chalet?.isActive ? '#10B981' : '#9CA3AF' }
+                      ]}
+                    />
+                  </View>
+
+                  {/* Chalet details info */}
+                  <View style={{ flex: 1, marginHorizontal: 12, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
+                    <Text style={[styles.shortcutTitle, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
+                      {chaletName || ''}
+                    </Text>
+                    <View style={[styles.row, { flexDirection, gap: 4, marginTop: 2, opacity: 0.8 }]}>
+                      <SolarMapPointBold size={11} color="#6B7280" />
+                      <Text style={[styles.shortcutSubtitle, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
+                        {isRTL ? (chalet?.address?.ar || chalet?.region?.name || 'موقع غير محدّد') : (chalet?.address?.en || chalet?.region?.enName || 'Location not specified')}
+                      </Text>
+                    </View>
+                    <View style={[styles.row, { flexDirection, gap: 4, marginTop: 6 }]}>
+                      <SolarPenBold size={10} color={Colors.primary} />
+                      <Text style={styles.shortcutActionLink}>
+                        {isRTL ? 'تعديل تفاصيل الشاليه وصور الغطاء والظهور' : 'Edit chalet details, photos & visibility'}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+                {isRTL ? (
+                  <SolarAltArrowLeftBold size={16} color={Colors.primary} style={{ opacity: 0.7 }} />
+                ) : (
+                  <SolarAltArrowRightBold size={16} color={Colors.primary} style={{ opacity: 0.7 }} />
+                )}
+              </View>
+            </TouchableOpacity>
+          )}
+
           <View style={styles.section}>
             <View style={[styles.sectionHeader, { flexDirection }]}>
               <SolarCalendarBold size={24} color={Colors.primary} />
@@ -1245,4 +1304,51 @@ const styles = StyleSheet.create({
   statusLabelLarge: { fontSize: 14, fontFamily: 'Alexandria-Bold', color: '#1F2937' },
   statusValueLarge: { fontSize: 11, fontFamily: 'Alexandria-Medium', marginTop: 2 },
   miniQuickBtn: { backgroundColor: 'rgba(255,255,255,0.3)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
-  miniQuickBtnText: { color: '#fff', fontSize: 10, fontFamily: 'Alexandria-Bold' } });
+  miniQuickBtnText: { color: '#fff', fontSize: 10, fontFamily: 'Alexandria-Bold' },
+  chaletDetailsShortcutCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 22,
+    padding: 12,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    ...Shadows.small,
+  },
+  shortcutImageContainer: {
+    position: 'relative',
+    width: 64,
+    height: 64,
+    borderRadius: 14,
+    overflow: 'hidden',
+    backgroundColor: '#F5F5F7',
+  },
+  shortcutImage: {
+    width: '100%',
+    height: '100%',
+  },
+  shortcutStatusDot: {
+    position: 'absolute',
+    top: 4,
+    left: 4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 2,
+    borderColor: '#FFF',
+  },
+  shortcutTitle: {
+    fontSize: 14,
+    fontFamily: 'Alexandria-Bold',
+    color: '#1F2937',
+  },
+  shortcutSubtitle: {
+    fontSize: 11,
+    fontFamily: 'Alexandria-Medium',
+    color: '#6B7280',
+  },
+  shortcutActionLink: {
+    fontSize: 9,
+    fontFamily: 'Alexandria-Bold',
+    color: Colors.primary,
+  }
+});

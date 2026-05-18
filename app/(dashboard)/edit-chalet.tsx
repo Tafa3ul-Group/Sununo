@@ -95,10 +95,10 @@ export default function EditChaletScreen() {
 
   const [form, setForm] = useState({
     nameAr: '', nameEn: '', descriptionAr: '', descriptionEn: '',
-    maxAdults: '4', maxChildren: '2', cityId: '', cityName: '',
+    capacity: '4', cityId: '', cityName: '',
     depositPercentage: '25', phone: '', whatsapp: '',
     policiesAr: '', policiesEn: '', latitude: '', longitude: '',
-    basePrice: '', area: '', bedrooms: '', bathrooms: '' });
+    area: '', bedrooms: '', bathrooms: '' });
 
   const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
 
@@ -189,8 +189,7 @@ export default function EditChaletScreen() {
       setForm({
         nameAr: chalet.name?.ar || chalet.name || '', nameEn: chalet.name?.en || '',
         descriptionAr: chalet.description?.ar || chalet.description || '', descriptionEn: chalet.description?.en || '',
-        maxAdults: chalet.maxAdults?.toString() || chalet.maxGuests?.toString() || '4',
-        maxChildren: chalet.maxChildren?.toString() || '0',
+        capacity: chalet.capacity?.toString() || '4',
         cityId: chalet.cityId || chalet.region?.cityId || '',
         cityName: (() => {
           const c = chalet.city || chalet.region?.city;
@@ -201,7 +200,6 @@ export default function EditChaletScreen() {
         phone: chalet.phone || '', whatsapp: chalet.whatsapp || '',
         policiesAr: chalet.policies?.ar || '', policiesEn: chalet.policies?.en || '',
         latitude: chalet.latitude?.toString() || '', longitude: chalet.longitude?.toString() || '',
-        basePrice: chalet.basePrice?.toString() || '',
         area: chalet.area?.toString() || '',
         bedrooms: chalet.bedrooms?.toString() || '',
         bathrooms: chalet.bathrooms?.toString() || '' });
@@ -322,10 +320,9 @@ export default function EditChaletScreen() {
         cityId: form.cityId,
         latitude: form.latitude ? parseFloat(form.latitude) : null,
         longitude: form.longitude ? parseFloat(form.longitude) : null,
-        phone: form.phone || null, whatsapp: form.whatsapp || null,
-        maxAdults: parseInt(form.maxAdults) || 1, maxChildren: parseInt(form.maxChildren) || 0,
+         phone: form.phone || null, whatsapp: form.whatsapp || null,
+        capacity: parseInt(form.capacity) || 1,
         depositPercentage: parseFloat(form.depositPercentage) || 0,
-        basePrice: parseFloat(form.basePrice) || 0,
         area: parseInt(form.area) || 0,
         bedrooms: parseInt(form.bedrooms) || 0,
         bathrooms: parseInt(form.bathrooms) || 0,
@@ -473,10 +470,6 @@ export default function EditChaletScreen() {
               </View>
 
               <View style={styles.sectionCard}>
-                <View style={styles.inputGroup}>
-                  <Text style={[styles.label, { textAlign }]}>{isRTL ? 'السعر التجريبي / الأساسي (د.ع)' : 'Base Price (IQD)'}</Text>
-                  <TextInput style={[styles.input, { textAlign: 'left' }]} placeholder="e.g. 150000" placeholderTextColor="#BCBCBC" keyboardType="numeric" value={form.basePrice} onChangeText={(val) => setForm({ ...form, basePrice: val })} />
-                </View>
                 <View style={[styles.rowInputs, { flexDirection }]}>
                   <View style={[styles.inputGroup, { flex: 1 }]}>
                     <Text style={[styles.label, { textAlign }]}>{isRTL ? 'المساحة (م²)' : 'Area (m²)'}</Text>
@@ -513,15 +506,11 @@ export default function EditChaletScreen() {
                 <View style={styles.shiftListContainer}>{shifts.map((shift, index) => renderShiftRow(shift, index))}</View>
               </View>
               <View style={styles.sectionCard}>
-                <ThemedText type="h2" style={[styles.sectionHeader, { textAlign }]}>{isRTL ? 'السعة الأقصى للأشخاص' : 'Maximum Capacity'}</ThemedText>
+                <ThemedText type="h2" style={[styles.sectionHeader, { textAlign }]}>{isRTL ? 'السعة القصوى للأشخاص' : 'Maximum Capacity'}</ThemedText>
                 <View style={styles.capacityList}>
                   <View style={[styles.capacityCard, { flexDirection }]}>
-                    <GuestCounter value={parseInt(form.maxAdults) || 1} onIncrement={() => setForm({ ...form, maxAdults: (parseInt(form.maxAdults || '1') + 1).toString() })} onDecrement={() => setForm({ ...form, maxAdults: Math.max(1, parseInt(form.maxAdults || '1') - 1).toString() })} />
-                    <View style={[styles.capacityInfo, { alignItems: 'flex-start' }]}><Text style={styles.capacityLabel}>{isRTL ? 'البالغين' : 'Adults'}</Text><Text style={styles.capacitySubLabel}>{isRTL ? '18 وأكبر' : '18 and above'}</Text></View>
-                  </View>
-                  <View style={[styles.capacityCard, { flexDirection }]}>
-                    <GuestCounter value={parseInt(form.maxChildren) || 0} onIncrement={() => setForm({ ...form, maxChildren: (parseInt(form.maxChildren || '0') + 1).toString() })} onDecrement={() => setForm({ ...form, maxChildren: Math.max(0, parseInt(form.maxChildren || '0') - 1).toString() })} />
-                    <View style={[styles.capacityInfo, { alignItems: 'flex-start' }]}><Text style={styles.capacityLabel}>{isRTL ? 'الاطفال' : 'Children'}</Text><Text style={styles.capacitySubLabel}>{isRTL ? '0 - 18' : '0 - 18 years'}</Text></View>
+                    <GuestCounter value={parseInt(form.capacity) || 1} onIncrement={() => setForm({ ...form, capacity: (parseInt(form.capacity || '1') + 1).toString() })} onDecrement={() => setForm({ ...form, capacity: Math.max(1, parseInt(form.capacity || '1') - 1).toString() })} />
+                    <View style={[styles.capacityInfo, { alignItems: 'flex-start' }]}><Text style={styles.capacityLabel}>{isRTL ? 'سعة الشاليه (السعة القصوى الكلية)' : 'Max Capacity'}</Text><Text style={styles.capacitySubLabel}>{isRTL ? 'الحد الكلي المسموح به بعد الزيادة' : 'Maximum total guests allowed'}</Text></View>
                   </View>
                 </View>
               </View>

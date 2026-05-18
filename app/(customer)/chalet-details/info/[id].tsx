@@ -42,37 +42,45 @@ export default function ChaletInfoScreen() {
       const val = isRTL ? terms?.ar || terms : terms?.en || terms;
       return typeof val === "string" ? val : val?.ar || val?.en || "";
     } else {
-      const p = policiesData?.policies;
-      const cp = policiesData?.cancellationPolicy;
-      const policiesText = isRTL ? p?.ar || p : p?.en || p;
-      const cancelText = isRTL ? cp?.ar || cp : cp?.en || cp;
-
-      const pStr =
-        typeof policiesText === "string"
-          ? policiesText
-          : policiesText?.ar || policiesText?.en || "";
-      const cStr =
-        typeof cancelText === "string"
-          ? cancelText
-          : cancelText?.ar || cancelText?.en || "";
+      const rawRules = Array.isArray(policiesData) ? policiesData : [];
 
       return (
         <View>
-          <ThemedText style={styles.sectionTitle}>
-            {isRTL ? "سياسات عامة" : "General Policies"}
-          </ThemedText>
-          <ThemedText style={styles.content}>
-            {pStr || t("common.noData")}
-          </ThemedText>
-
-          <View style={styles.divider} />
-
-          <ThemedText style={styles.sectionTitle}>
-            {isRTL ? "سياسة الإلغاء" : "Cancellation Policy"}
-          </ThemedText>
-          <ThemedText style={styles.content}>
-            {cStr || t("common.noData")}
-          </ThemedText>
+          {rawRules.length > 0 ? (
+            <View style={styles.rulesList}>
+              {rawRules.map((rule: any, index: number) => {
+                const rTitle = isRTL ? rule.title?.ar || rule.title : rule.title?.en || rule.title;
+                const rDesc = isRTL ? rule.description?.ar || rule.description : rule.description?.en || rule.description;
+                
+                const titleStr = typeof rTitle === 'string' ? rTitle : rTitle?.ar || rTitle?.en || '';
+                const descStr = typeof rDesc === 'string' ? rDesc : rDesc?.ar || rDesc?.en || '';
+                
+                if (!titleStr && !descStr) return null;
+                
+                return (
+                  <View key={index} style={styles.ruleCard}>
+                    <View style={[styles.ruleHeaderRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                      <View style={styles.ruleNumberCircle}>
+                        <ThemedText style={styles.ruleNumberText}>{index + 1}</ThemedText>
+                      </View>
+                      <ThemedText style={[styles.ruleTitleText, { textAlign: isRTL ? 'right' : 'left' }]}>
+                        {titleStr}
+                      </ThemedText>
+                    </View>
+                    {descStr ? (
+                      <ThemedText style={[styles.ruleDescText, { textAlign: isRTL ? 'right' : 'left', paddingStart: isRTL ? 0 : 34, paddingEnd: isRTL ? 34 : 0 }]}>
+                        {descStr}
+                      </ThemedText>
+                    ) : null}
+                  </View>
+                );
+              })}
+            </View>
+          ) : (
+            <ThemedText style={styles.content}>
+              {t("common.noData")}
+            </ThemedText>
+          )}
         </View>
       );
     }
@@ -91,30 +99,19 @@ export default function ChaletInfoScreen() {
       />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.headerIconContainer}>
-          <View style={styles.iconCircle}>
-            <Icon size={40} color="white" />
-          </View>
-          <ThemedText style={styles.pageTitle}>{title}</ThemedText>
-        </View>
-
-        {isLoading ? (
-          <ActivityIndicator
-            size="large"
-            color={Colors.primary}
-            style={{ marginTop: 50 }}
-          />
-        ) : (
-          <View style={styles.card}>
-            {typeof getContent() === "string" ? (
+        <View style={styles.card}>
+          {isLoading ? (
+            <ActivityIndicator size="large" color={Colors.primary} />
+          ) : (
+            typeof getContent() === "string" ? (
               <ThemedText style={styles.content}>
-                {getContent() || t("common.noData")}
+                {getContent() as string || t("common.noData")}
               </ThemedText>
             ) : (
-              getContent()
-            )}
-          </View>
-        )}
+              getContent() as React.ReactNode
+            )
+          )}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -123,30 +120,21 @@ export default function ChaletInfoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white" },
+    backgroundColor: "#F9FAFB" },
   scrollContent: {
-    padding: 20,
-    paddingTop: 40 },
-  headerIconContainer: {
-    alignItems: "center",
-    marginBottom: 30 },
-  iconCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: Colors.primary,
-    justifyContent: "center",
-    alignItems: "center",
+    padding: 20 },
+  header: {
+    backgroundColor: "white",
+    paddingTop: 16,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F3F4F6",
     marginBottom: 15,
     shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
-    shadowRadius: 15,
-    elevation: 8 },
-  pageTitle: {
-    fontSize: 22,
-    fontFamily: "Alexandria-Black",
-    color: "#111827" },
+    shadowRadius: 15 },
   card: {
     backgroundColor: "white",
     borderRadius: 24,
@@ -158,11 +146,6 @@ const styles = StyleSheet.create({
     elevation: 2,
     borderWidth: 1,
     borderColor: "#F3F4F6" },
-  sectionTitle: {
-    fontSize: 18,
-    fontFamily: "Alexandria-Black",
-    color: Colors.primary,
-    marginBottom: 12 },
   content: {
     fontSize: 15,
     lineHeight: 24,
@@ -172,4 +155,39 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: "#F3F4F6",
-    marginVertical: 20 } });
+    marginVertical: 20 },
+  rulesList: {
+    gap: 12,
+    marginTop: 8,
+    marginBottom: 8 },
+  ruleCard: {
+    backgroundColor: "#F8FAFC",
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#E2E8F0" },
+  ruleHeaderRow: {
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 6 },
+  ruleNumberCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#FFEBEA",
+    justifyContent: "center",
+    alignItems: "center" },
+  ruleNumberText: {
+    fontSize: 12,
+    fontFamily: "Alexandria-Bold",
+    color: "#EF4444" },
+  ruleTitleText: {
+    fontSize: 14,
+    fontFamily: "Alexandria-Bold",
+    color: "#1F2937",
+    flex: 1 },
+  ruleDescText: {
+    fontSize: 12,
+    fontFamily: "Alexandria-Medium",
+    color: "#4B5563",
+    lineHeight: 18 } });

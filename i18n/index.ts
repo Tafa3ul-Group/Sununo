@@ -78,7 +78,7 @@ i18n.use(initReactI18next).init({
   // Skip layout synchronization during SSR
   if (Platform.OS === 'web' && typeof window === 'undefined') return;
 
-  const isArabic = i18n.language === 'ar';
+  const isArabic = i18n.language ? i18n.language.startsWith('ar') : false;
   
   // Only trigger reload if layout and language are mismatched AND we are on native
   // On Web, we handle this via document.dir and localStorage synchronously above
@@ -161,7 +161,7 @@ export const tr = (obj: any): string => {
 
   const lang = i18n.language;
 
-  if (lang === "ar") {
+  if (lang ? lang.startsWith("ar") : false) {
     return (
       obj.nameAr ||
       obj.name_ar ||

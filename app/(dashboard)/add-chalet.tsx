@@ -86,8 +86,6 @@ export default function AddChaletScreen() {
     nameEn: '',
     descriptionAr: '',
     descriptionEn: '',
-    maxAdults: '4',
-    maxChildren: '2',
     cityId: '',
     cityName: '',
     depositPercentage: '25',
@@ -95,13 +93,13 @@ export default function AddChaletScreen() {
     whatsapp: '',
     policiesAr: '',
     policiesEn: '',
-    basePrice: '',
     area: '',
     bedrooms: '',
     bathrooms: '',
     latitude: '33.3152',
     longitude: '44.3661',
-    baseCapacity: '4',
+    capacity: '4',
+    priceCapacity: '4',
     extraPersonPrice: '10000' });
 
   const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
@@ -341,9 +339,8 @@ export default function AddChaletScreen() {
       formData.append('cityId', form.cityId);
       formData.append('latitude', form.latitude || '33.3152');
       formData.append('longitude', form.longitude || '44.3661');
-      formData.append('maxAdults', form.maxAdults || '1');
-      formData.append('maxChildren', form.maxChildren || '0');
-      formData.append('baseCapacity', form.baseCapacity || '1');
+      formData.append('capacity', form.capacity || '1');
+      formData.append('priceCapacity', form.priceCapacity || '1');
       formData.append('extraPersonPrice', form.extraPersonPrice || '0');
       
       // Filter only active shifts for submission
@@ -352,7 +349,7 @@ export default function AddChaletScreen() {
         startTime: s.startTime?.split(':').slice(0, 2).join(':'),
         endTime: s.endTime?.split(':').slice(0, 2).join(':') }));
       formData.append('shifts', JSON.stringify(activeShifts));
-
+ 
       // ── Optional fields ──
       if (form.descriptionAr) {
         formData.append('description', JSON.stringify({ ar: form.descriptionAr, en: form.descriptionEn || form.descriptionAr }));
@@ -363,7 +360,6 @@ export default function AddChaletScreen() {
       if (form.phone) formData.append('phone', form.phone);
       if (form.whatsapp) formData.append('whatsapp', form.whatsapp);
       if (form.depositPercentage) formData.append('depositPercentage', form.depositPercentage);
-      if (form.basePrice) formData.append('basePrice', form.basePrice);
       if (form.area) formData.append('area', form.area);
       if (form.bedrooms) formData.append('bedrooms', form.bedrooms);
       if (form.bathrooms) formData.append('bathrooms', form.bathrooms);
@@ -612,19 +608,6 @@ export default function AddChaletScreen() {
               </View>
 
               <View style={styles.sectionCard}>
-                {/* السعر الأساسي */}
-                <View style={styles.inputGroup}>
-                  <Text style={[styles.label, { textAlign }]}>{isRTL ? 'السعر التجريبي / الأساسي (د.ع)' : 'Base Price (IQD)'}</Text>
-                  <TextInput
-                    style={[styles.input, { textAlign: 'left' }]}
-                    placeholder="e.g. 150000"
-                    placeholderTextColor="#BCBCBC"
-                    keyboardType="numeric"
-                    value={form.basePrice}
-                    onChangeText={(val) => setForm({ ...form, basePrice: val })}
-                  />
-                </View>
-
                 {/* المواصفات الأساسية */}
                 <View style={[styles.rowInputs, { flexDirection }]}>
                   <View style={[styles.inputGroup, { flex: 1 }]}>
@@ -656,7 +639,7 @@ export default function AddChaletScreen() {
                   />
                 </View>
 
-                {/* نسبة العربون */}
+                {/* نسبة العربون (%) */}
                 <View style={styles.inputGroup}>
                   <Text style={[styles.label, { textAlign }]}>{isRTL ? 'نسبة العربون (%)' : 'Deposit %'}</Text>
                   <TextInput
@@ -688,47 +671,42 @@ export default function AddChaletScreen() {
                 </View>
               </View>
 
-              {/* Max Adults / Children (Matching Screenshot) */}
+              {/* Capacity & Extra Pricing */}
               <View style={styles.sectionCard}>
-                <ThemedText type="h2" style={[styles.sectionHeader, { textAlign }]}>{isRTL ? 'السعة الأقصى للأشخاص' : 'Maximum Capacity'}</ThemedText>
+                <ThemedText type="h2" style={[styles.sectionHeader, { textAlign }]}>{isRTL ? 'السعة والتسعير الإضافي' : 'Capacity & Extra Pricing'}</ThemedText>
                 
                 <View style={styles.capacityList}>
-                  {/* Adults Card */}
+                  {/* Max Capacity Card */}
                   <View style={[styles.capacityCard, { flexDirection }]}>
                     <GuestCounter 
-                      value={parseInt(form.maxAdults) || 1} 
-                      onIncrement={() => setForm({ ...form, maxAdults: (parseInt(form.maxAdults || '1') + 1).toString() })}
-                      onDecrement={() => setForm({ ...form, maxAdults: Math.max(1, parseInt(form.maxAdults || '1') - 1).toString() })}
+                      value={parseInt(form.capacity) || 1} 
+                      onIncrement={() => setForm({ ...form, capacity: (parseInt(form.capacity || '1') + 1).toString() })}
+                      onDecrement={() => setForm({ ...form, capacity: Math.max(1, parseInt(form.capacity || '1') - 1).toString() })}
                     />
                     <View style={[styles.capacityInfo, { alignItems: 'flex-start' }]}>
-                      <Text style={styles.capacityLabel}>{isRTL ? 'البالغين' : 'Adults'}</Text>
-                      <Text style={styles.capacitySubLabel}>{isRTL ? '18 وأكبر' : '18 and above'}</Text>
+                      <Text style={styles.capacityLabel}>{isRTL ? 'سعة الشاليه (الحد الأقصى للزيادة)' : 'Chalet Capacity'}</Text>
+                      <Text style={styles.capacitySubLabel}>{isRTL ? 'الحد الكلي المسموح به بعد الزيادة' : 'Maximum total guests allowed'}</Text>
                     </View>
                   </View>
 
-                  {/* Children Card */}
+                  {/* Price Capacity Card */}
                   <View style={[styles.capacityCard, { flexDirection }]}>
                     <GuestCounter 
-                      value={parseInt(form.maxChildren) || 0} 
-                      onIncrement={() => setForm({ ...form, maxChildren: (parseInt(form.maxChildren || '0') + 1).toString() })}
-                      onDecrement={() => setForm({ ...form, maxChildren: Math.max(0, parseInt(form.maxChildren || '0') - 1).toString() })}
+                      value={parseInt(form.priceCapacity) || 1} 
+                      onIncrement={() => setForm({ ...form, priceCapacity: (parseInt(form.priceCapacity || '1') + 1).toString() })}
+                      onDecrement={() => setForm({ ...form, priceCapacity: Math.max(1, parseInt(form.priceCapacity || '1') - 1).toString() })}
                     />
                     <View style={[styles.capacityInfo, { alignItems: 'flex-start' }]}>
-                      <Text style={styles.capacityLabel}>{isRTL ? 'الأطفال' : 'Children'}</Text>
-                      <Text style={styles.capacitySubLabel}>{isRTL ? 'تحت 18 سنة' : 'Under 18'}</Text>
+                      <Text style={styles.capacityLabel}>{isRTL ? 'سعة المبلغ (العدد المشمول بالسعر)' : 'Price Capacity'}</Text>
+                      <Text style={styles.capacitySubLabel}>{isRTL ? 'العدد المشمول بسعر الفترة الأساسي' : 'Base guests covered under standard shift price'}</Text>
                     </View>
                   </View>
 
                   <View style={[styles.rowInputs, { flexDirection, marginTop: 12 }]}>
                     <View style={[styles.inputGroup, { flex: 1 }]}>
-                      <Text style={[styles.label, { textAlign }]}>{isRTL ? 'السعة الأساسية' : 'Base Cap.'}</Text>
-                      <TextInput style={[styles.input, { textAlign: 'center' }]} keyboardType="numeric" value={form.baseCapacity} onChangeText={(val) => setForm({ ...form, baseCapacity: val })} />
-                      <Text style={[styles.smallLabel, { textAlign }]}>{isRTL ? 'مشمولة بالسعر' : 'Incl. in price'}</Text>
-                    </View>
-                    <View style={[styles.inputGroup, { flex: 2 }]}>
                       <Text style={[styles.label, { textAlign }]}>{isRTL ? 'سعر الشخص الإضافي' : 'Extra Person Price'}</Text>
                       <TextInput style={[styles.input, { textAlign: 'center' }]} keyboardType="numeric" value={form.extraPersonPrice} onChangeText={(val) => setForm({ ...form, extraPersonPrice: val })} />
-                      <Text style={[styles.smallLabel, { textAlign }]}>{isRTL ? 'لكل شخص فوق السعة' : 'Per person above cap'}</Text>
+                      <Text style={[styles.smallLabel, { textAlign }]}>{isRTL ? 'لكل شخص إضافي فوق سعة المبلغ' : 'Per extra guest above price capacity'}</Text>
                     </View>
                   </View>
                 </View>
@@ -1172,4 +1150,10 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     color: Colors.text.primary,
-    fontFamily: "Alexandria-Regular" } });
+    fontFamily: "Alexandria-Regular" },
+  shiftRow: { flexDirection: 'row', gap: Spacing.sm, paddingHorizontal: 14, marginBottom: 10 },
+  timeSelectBtn: { height: 48, backgroundColor: '#FFFFFF', borderRadius: 12, borderWidth: 1, borderColor: '#E2E8F0', justifyContent: 'center', alignItems: 'center' },
+  timeSelectText: { fontSize: normalize.font(15), fontFamily: "Alexandria-Bold", color: Colors.text.primary },
+  bulkPricingRow: { flexDirection: 'row', gap: 8, alignItems: 'center', marginBottom: 8 },
+  bulkBtn: { paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#EFF6FF', borderRadius: 8, borderWidth: 1, borderColor: '#DBEAFE' },
+  bulkBtnText: { color: Colors.primary, fontSize: normalize.font(12), fontFamily: "Alexandria-Bold" } });
