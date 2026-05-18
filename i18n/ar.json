@@ -151,7 +151,7 @@
     "complete": "اكتمال الحجز",
     "shooket": "شوكت",
     "mano": "منو",
-    "details": "التفاصيل",
+    "where": "وين",
     "deleteDay": "حذف اليوم",
     "next": "التالي",
     "adults": "البالغين",
@@ -310,7 +310,7 @@
   },
   "searchFilter": {
     "search": "ابحث",
-    "next": "التالية",
+    "next": "التالي",
     "apply": "بحث",
     "adults": "البالغين",
     "adultsDesc": "18 واكبر",
@@ -322,6 +322,6 @@
     "endTime": "وقت النهاية",
     "startTime": "وقت البداية",
     "editDays": "تعديل الأيام",
-    "skipToGuests": "الذهاب للضيوف"
+    "skipToGuests": "التالي"
   }
 }

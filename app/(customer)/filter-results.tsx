@@ -1,4 +1,5 @@
 import { HeaderSection } from "@/components/header-section";
+import { MotionIcon } from "@/components/icons/motion-icons";
 import {
   SolarCalendarMinimalisticBold,
   SolarClockCircleBold,
@@ -7,7 +8,6 @@ import {
   SolarMapPointBold,
   SolarStarBold,
   SolarUsersGroupBold,
-  SolarWidgetBold,
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { Colors, normalize, Shadows, Spacing } from "@/constants/theme";
@@ -177,18 +177,18 @@ export default function FilterResultsScreen() {
       </View>
 
       <View style={styles.cardDetails}>
-        <View style={[styles.cardHeader, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+        <View style={styles.cardHeader}>
           <ThemedText style={[styles.cardTitle, { textAlign: isRTL ? "right" : "left" }]}>
             {item.title}
           </ThemedText>
 
-          <View style={[styles.ratingContainer, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+          <View style={styles.ratingContainer}>
             <SolarStarBold size={14} color="#FBBF24" />
             <ThemedText style={styles.ratingText}>{item.rating}</ThemedText>
           </View>
         </View>
 
-        <View style={[styles.locationContainer, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+        <View style={styles.locationContainer}>
           <SolarMapPointBold size={14} color={Colors.text.muted} />
           <ThemedText style={[styles.locationText, { textAlign: isRTL ? "right" : "left" }]}>
             {item.location}
@@ -215,12 +215,9 @@ export default function FilterResultsScreen() {
             showsHorizontalScrollIndicator={false}
             data={activePills}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={[
-              styles.pillsList,
-              { flexDirection: isRTL ? "row-reverse" : "row" },
-            ]}
+            contentContainerStyle={styles.pillsList}
             renderItem={({ item }) => (
-              <View style={[styles.pill, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+              <View style={styles.pill}>
                 {item.icon}
                 <ThemedText style={styles.pillText}>{item.text}</ThemedText>
                 <TouchableOpacity onPress={item.onRemove} style={styles.pillClose}>
@@ -245,11 +242,15 @@ export default function FilterResultsScreen() {
           showsVerticalScrollIndicator={false}
         />
       ) : (
-        /* Premium Empty State */
+        /* Premium Empty State with MotionIcon Animation */
         <View style={styles.centerContainer}>
-          <View style={styles.emptyIconCircle}>
-            <SolarWidgetBold size={48} color={Colors.primary} opacity={0.6} />
-          </View>
+          <MotionIcon
+            name="error404"
+            size={200}
+            autoPlay
+            loop
+            style={styles.emptyAnimation}
+          />
           <ThemedText style={styles.emptyTitle}>
             {isRTL ? "عذراً، لا توجد نتائج مطابقة" : "No Matching Chalets Found"}
           </ThemedText>
@@ -286,10 +287,12 @@ const styles = StyleSheet.create({
     borderBottomColor: "#F3F4F6",
   },
   pillsList: {
+    flexDirection: "row",
     paddingHorizontal: 16,
     gap: 8,
   },
   pill: {
+    flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#F3F7FF",
     paddingHorizontal: 12,
@@ -364,6 +367,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   cardHeader: {
+    flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 8,
@@ -376,6 +380,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   ratingContainer: {
+    flexDirection: "row",
     alignItems: "center",
     gap: 4,
   },
@@ -385,6 +390,7 @@ const styles = StyleSheet.create({
     color: "#374151",
   },
   locationContainer: {
+    flexDirection: "row",
     alignItems: "center",
     gap: 6,
   },
@@ -394,16 +400,8 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     flex: 1,
   },
-  emptyIconCircle: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: "#F7FCF9",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: "#EBF8F2",
+  emptyAnimation: {
+    marginBottom: 10,
   },
   emptyTitle: {
     fontSize: 18,

@@ -107,12 +107,12 @@ export default function CustomerProfileScreen() {
             >
                 {/* User Card */}
                 <TouchableOpacity
-                    style={styles.userCard}
+                    style={[styles.userCard, { flexDirection: 'row' }]}
                     onPress={() => router.push('/profile-edit')}
                     activeOpacity={0.9}
                 >
                     {/* Inner avatar and name/phone block - natively aligns together on start side */}
-                    <View style={styles.avatarAndInfo}>
+                    <View style={[styles.avatarAndInfo, { flexDirection: 'row' }]}>
                         <View style={styles.avatarWrap}>
                             <Image
                                 source={getImageSrc(userData?.image || userData?.imageUrl)}

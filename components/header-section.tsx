@@ -154,7 +154,7 @@ export function HeaderSection({
         {/* Center Title */}
         {!isHome && (
           <View style={styles.titleWrapper}>
-            <ThemedText style={styles.headerTitle}>
+            <ThemedText style={styles.headerTitle} numberOfLines={1} adjustsFontSizeToFit>
               {title}
             </ThemedText>
           </View>
@@ -260,7 +260,6 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
-    lineHeight: normalize.font(14),
     textAlign: 'center' },
   logoCircle: {
     width: normalize.width(42),

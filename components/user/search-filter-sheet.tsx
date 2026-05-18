@@ -190,7 +190,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
         />
       </View>
 
-      {cities.filter(city => city.name.includes(searchText)).map((city) => (
+      {cities.filter((city: any) => city.name.includes(searchText)).map((city: any) => (
         <TouchableOpacity
           key={city.id}
           onPress={() => {
@@ -262,30 +262,54 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
                     key={shift.id}
                     style={[
                       styles.periodItem,
-                      { flexDirection: rowDirection },
+                      { flexDirection: rowDirection, justifyContent: "space-between", alignItems: "center" },
                       isSelected && styles.selectedPeriodItem,
                     ]}
                     onPress={() => setSelectedPeriod(shift.id)}
+                    activeOpacity={0.8}
                   >
-                    {isMorning ? (
-                      <SolarSunBold
-                        size={34}
-                        color={isSelected ? "#F64200" : Colors.text.muted}
-                      />
-                    ) : isEvening ? (
-                      <SolarMoonBold
-                        size={34}
-                        color={isSelected ? "#035DF9" : Colors.text.muted}
-                      />
-                    ) : (
-                      <SolarBedBold
-                        size={34}
-                        color={isSelected ? "#15AB64" : Colors.text.muted}
-                      />
-                    )}
-                    <ThemedText style={[styles.periodLabel, { textAlign: textAlignment }]}>
-                      {shiftName}
-                    </ThemedText>
+                    <View style={{ flexDirection: rowDirection, alignItems: "center", gap: 16, flex: 1 }}>
+                      {isMorning ? (
+                        <SolarSunBold
+                          size={34}
+                          color={isSelected ? "#F64200" : Colors.text.muted}
+                        />
+                      ) : isEvening ? (
+                        <SolarMoonBold
+                          size={34}
+                          color={isSelected ? "#035DF9" : Colors.text.muted}
+                        />
+                      ) : (
+                        <SolarBedBold
+                          size={34}
+                          color={isSelected ? "#15AB64" : Colors.text.muted}
+                        />
+                      )}
+                      <ThemedText style={[styles.periodLabel, { textAlign: textAlignment }]}>
+                        {shiftName}
+                      </ThemedText>
+                    </View>
+
+                    {/* Radio Button Selector */}
+                    <View style={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: 10,
+                      borderWidth: 2,
+                      borderColor: isSelected ? "#15AB64" : "#D1D5DB",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      backgroundColor: "white",
+                    }}>
+                      {isSelected && (
+                        <View style={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: 5,
+                          backgroundColor: "#15AB64",
+                        }} />
+                      )}
+                    </View>
                   </TouchableOpacity>
                 );
               })}
@@ -303,52 +327,121 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
             <TouchableOpacity
               style={[
                 styles.periodItem,
-                { flexDirection: rowDirection },
+                { flexDirection: rowDirection, justifyContent: "space-between", alignItems: "center" },
                 selectedPeriod === "morning" && styles.selectedPeriodItem,
               ]}
               onPress={() => setSelectedPeriod("morning")}
+              activeOpacity={0.8}
             >
-              <SolarSunBold
-                size={34}
-                color={selectedPeriod === "morning" ? "#F64200" : Colors.text.muted}
-              />
-              <ThemedText style={[styles.periodLabel, { textAlign: textAlignment }]}>
-                {t("searchFilter.morningShift")}
-              </ThemedText>
+              <View style={{ flexDirection: rowDirection, alignItems: "center", gap: 16, flex: 1 }}>
+                <SolarSunBold
+                  size={34}
+                  color={selectedPeriod === "morning" ? "#F64200" : Colors.text.muted}
+                />
+                <ThemedText style={[styles.periodLabel, { textAlign: textAlignment }]}>
+                  {t("searchFilter.morningShift")}
+                </ThemedText>
+              </View>
+              {/* Radio Button Selector */}
+              <View style={{
+                width: 20,
+                height: 20,
+                borderRadius: 10,
+                borderWidth: 2,
+                borderColor: selectedPeriod === "morning" ? "#15AB64" : "#D1D5DB",
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: "white",
+              }}>
+                {selectedPeriod === "morning" && (
+                  <View style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: 5,
+                    backgroundColor: "#15AB64",
+                  }} />
+                )}
+              </View>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[
                 styles.periodItem,
-                { flexDirection: rowDirection },
+                { flexDirection: rowDirection, justifyContent: "space-between", alignItems: "center" },
                 selectedPeriod === "evening" && styles.selectedPeriodItem,
               ]}
               onPress={() => setSelectedPeriod("evening")}
+              activeOpacity={0.8}
             >
-              <SolarMoonBold
-                size={34}
-                color={selectedPeriod === "evening" ? "#035DF9" : Colors.text.muted}
-              />
-              <ThemedText style={[styles.periodLabel, { textAlign: textAlignment }]}>
-                {t("searchFilter.eveningShift")}
-              </ThemedText>
+              <View style={{ flexDirection: rowDirection, alignItems: "center", gap: 16, flex: 1 }}>
+                <SolarMoonBold
+                  size={34}
+                  color={selectedPeriod === "evening" ? "#035DF9" : Colors.text.muted}
+                />
+                <ThemedText style={[styles.periodLabel, { textAlign: textAlignment }]}>
+                  {t("searchFilter.eveningShift")}
+                </ThemedText>
+              </View>
+              {/* Radio Button Selector */}
+              <View style={{
+                width: 20,
+                height: 20,
+                borderRadius: 10,
+                borderWidth: 2,
+                borderColor: selectedPeriod === "evening" ? "#15AB64" : "#D1D5DB",
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: "white",
+              }}>
+                {selectedPeriod === "evening" && (
+                  <View style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: 5,
+                    backgroundColor: "#15AB64",
+                  }} />
+                )}
+              </View>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[
                 styles.periodItem,
-                { flexDirection: rowDirection },
+                { flexDirection: rowDirection, justifyContent: "space-between", alignItems: "center" },
                 selectedPeriod === "overnight" && styles.selectedPeriodItem,
               ]}
               onPress={() => setSelectedPeriod("overnight")}
+              activeOpacity={0.8}
             >
-              <SolarBedBold
-                size={34}
-                color={selectedPeriod === "overnight" ? "#15AB64" : Colors.text.muted}
-              />
-              <ThemedText style={[styles.periodLabel, { textAlign: textAlignment }]}>
-                {t("searchFilter.overnightShift")}
-              </ThemedText>
+              <View style={{ flexDirection: rowDirection, alignItems: "center", gap: 16, flex: 1 }}>
+                <SolarBedBold
+                  size={34}
+                  color={selectedPeriod === "overnight" ? "#15AB64" : Colors.text.muted}
+                />
+                <ThemedText style={[styles.periodLabel, { textAlign: textAlignment }]}>
+                  {t("searchFilter.overnightShift")}
+                </ThemedText>
+              </View>
+              {/* Radio Button Selector */}
+              <View style={{
+                width: 20,
+                height: 20,
+                borderRadius: 10,
+                borderWidth: 2,
+                borderColor: selectedPeriod === "overnight" ? "#15AB64" : "#D1D5DB",
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: "white",
+              }}>
+                {selectedPeriod === "overnight" && (
+                  <View style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: 5,
+                    backgroundColor: "#15AB64",
+                  }} />
+                )}
+              </View>
             </TouchableOpacity>
           </View>
         </View>
@@ -475,13 +568,14 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
         {/* Fixed Footer Button */}
         <View style={styles.mainFooter}>
           {activeTab === "WHEN" && whenStep === 2 ? (
-            <View style={[styles.periodsActionRow, { flexDirection: rowDirection, marginTop: 0, paddingBottom: 0 }]}>
+            <View style={[styles.periodsActionRow, { flexDirection: rowDirection, marginTop: 8, paddingBottom: 16 }]}>
               <View style={styles.periodsActionItem}>
                 <SecondaryButton
                   label={t("searchFilter.editDays")}
                   onPress={() => setWhenStep(1)}
                   isActive={false}
-                  style={{ width: "100%" }}
+                  style={{ width: "100%", flex: 1 }}
+                  inactiveTextColor="#15AB64"
                   variant="inverse"
                 />
               </View>
@@ -490,7 +584,8 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
                   label={t("searchFilter.skipToGuests")}
                   onPress={() => setActiveTab("WHO")}
                   isActive={true}
-                  style={{ width: "100%" }}
+                  style={{ width: "100%", flex: 1 }}
+                  activeColor="#15AB64"
                   variant="default"
                 />
               </View>
@@ -637,6 +732,9 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: "transparent",
     gap: 16 },
+  selectedPeriodItem: {
+    borderColor: "#15AB64",
+    backgroundColor: "#EEFBF4" },
   periodLabel: {
     fontSize: 14,
     fontFamily: "Alexandria-Medium",
@@ -656,8 +754,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1,
     borderColor: "#F0F2F5",
-    minHeight: normalize.height(94),
-    ...Shadows.small },
+    minHeight: normalize.height(94) },
   guestInfo: { 
   },
   guestLabel: {
