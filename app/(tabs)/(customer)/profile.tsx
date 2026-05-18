@@ -266,6 +266,8 @@ const styles = StyleSheet.create({
         fontSize: normalize.font(14),
         fontFamily: "Alexandria-Medium",
         color: '#374151',
+        lineHeight: normalize.font(20),
+        paddingBottom: 2,
     },
     logoutText: {
         color: '#EF4444',

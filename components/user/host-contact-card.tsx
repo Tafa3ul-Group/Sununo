@@ -12,12 +12,14 @@ const SCALE = (SCREEN_WIDTH - 40) / SVG_WIDTH;
 
 interface HostContactCardProps {
   name: string;
+  phone?: string;
   avatar: any;
   isRTL: boolean;
 }
 
 export const HostContactCard: React.FC<HostContactCardProps> = ({
   name,
+  phone,
   avatar,
   isRTL,
 }) => {
@@ -62,8 +64,8 @@ export const HostContactCard: React.FC<HostContactCardProps> = ({
             styles.infoColumn,
             {
               alignItems: "flex-start",
-              marginRight: isRTL ? 85 * SCALE : 15 * SCALE,
-              marginLeft: isRTL ? 15 * SCALE : 85 * SCALE,
+              marginLeft: 85 * SCALE,
+              marginRight: 15 * SCALE,
             },
           ]}
         >
@@ -73,15 +75,18 @@ export const HostContactCard: React.FC<HostContactCardProps> = ({
           <ThemedText style={styles.hostName} numberOfLines={1}>
             {name}
           </ThemedText>
+          {phone ? (
+            <ThemedText style={styles.hostPhone} numberOfLines={1}>
+              {phone}
+            </ThemedText>
+          ) : null}
         </View>
 
         {/* Fixed to position derived from SVG */}
         <View
           style={[
             styles.avatarContainer,
-            isRTL
-              ? { right: (SVG_WIDTH - 304.627 - 56.6) * SCALE }
-              : { left: 12.3 * SCALE },
+            { left: 12.3 * SCALE },
           ]}
         >
           <ExpoImage source={avatar} style={styles.avatar} contentFit="cover" />
@@ -119,6 +124,12 @@ const styles = StyleSheet.create({
     color: "#111827",
     fontFamily: "Alexandria-Medium",
     marginTop: -2,
+  },
+  hostPhone: {
+    fontSize: 10,
+    color: "#6B7280",
+    fontFamily: "Alexandria-Medium",
+    marginTop: 2,
   },
   avatarContainer: {
     position: "absolute",

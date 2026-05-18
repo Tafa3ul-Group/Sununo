@@ -104,12 +104,12 @@ export function HeaderSection({
           styles.topRow,
           {
             marginBottom,
-            flexDirection: isRTL ? 'row-reverse' : 'row'
+            flexDirection: (isHome && isRTL) ? 'row-reverse' : 'row'
           },
         ]}
       >
         {/* LEFT SIDE (Start side) */}
-        <View style={[styles.headerSide, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+        <View style={[styles.headerSide, { alignItems: (isHome && isRTL) ? 'flex-end' : 'flex-start' }]}>
           {isHome ? (
             <View style={styles.homeLeftGroup}>
               {stateUserType !== "guest" && (
@@ -154,19 +154,19 @@ export function HeaderSection({
         {/* Center Title */}
         {!isHome && (
           <View style={styles.titleWrapper}>
-            <ThemedText style={styles.headerTitle} numberOfLines={1} adjustsFontSizeToFit>
+            <ThemedText style={styles.headerTitle}>
               {title}
             </ThemedText>
           </View>
         )}
 
         {/* RIGHT SIDE (End side) */}
-        <View style={[styles.headerSide, { alignItems: isRTL ? 'flex-start' : 'flex-end' }]}>
-          {showLogo && (
-            <View style={isHome ? styles.logoCircleHome : styles.logoCircle}>
+        <View style={[styles.headerSide, { alignItems: (isHome && isRTL) ? 'flex-start' : 'flex-end' }]}>
+          {isHome && (
+            <View style={styles.logoCircleHome}>
               <Image
                 source={isRTL ? require("@/assets/arlogo.svg") : require("@/assets/logo.svg")}
-                style={isHome ? styles.logoImgHome : styles.logoImg}
+                style={styles.logoImgHome}
                 contentFit="contain"
               />
             </View>

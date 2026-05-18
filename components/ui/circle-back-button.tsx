@@ -6,6 +6,8 @@ import { normalize, Colors } from '@/constants/theme';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 
+import { isRTL } from '@/i18n';
+
 interface CircleBackButtonProps {
   style?: StyleProp<ViewStyle>;
   onPress?: () => void;
@@ -16,8 +18,8 @@ const AR_BACK_PATH = "M16.9467 0L16.984 0.0319551C16.9918 0.563434 17.0077 1.119
 
 export function CircleBackButton({ style, onPress }: CircleBackButtonProps) {
   const router = useRouter();
-  const { language, userType } = useSelector((state: RootState) => state.auth);
-  const isArabic = language === 'ar';
+  const { userType } = useSelector((state: RootState) => state.auth);
+  const isArabic = isRTL;
 
   const handleBack = () => {
     if (onPress) {
@@ -48,7 +50,7 @@ export function CircleBackButton({ style, onPress }: CircleBackButtonProps) {
           viewBox="0 0 17 24" 
           fill="none"
         >
-          <Path d={isArabic ? AR_BACK_PATH : EN_BACK_PATH} fill={Colors.primary} />
+          <Path d={isArabic ? EN_BACK_PATH : AR_BACK_PATH} fill={Colors.primary} />
         </Svg>
       </View>
     </TouchableOpacity>

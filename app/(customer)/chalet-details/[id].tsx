@@ -8,7 +8,9 @@ import {
     SolarShieldCheckBold,
     SolarStarBold,
     SolarSunBold,
-    SolarWidgetBold
+    SolarWidgetBold,
+    SolarAltArrowRightBold,
+    SolarChaletRulesBold
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { CircleBackButton } from "@/components/ui/circle-back-button";
@@ -104,20 +106,22 @@ export default function ChaletDetailScreen() {
 
   // Fetch chalet details from the backend
   const { data: chaletData, isLoading, error, refetch } =
-    useGetCustomerChaletDetailsQuery(chaletId);
-  const { data: reviewsResponse } = useGetChaletReviewsQuery({
+    useGetCustomerChaletDetailsQuery(chaletId, { refetchOnMountOrArgChange: true });
+  const { data: reviewsResponse, refetch: refetchReviews } = useGetChaletReviewsQuery({
     chaletId,
     page: 1,
-    limit: 5 });
+    limit: 5 }, { refetchOnMountOrArgChange: true });
   const [createReview] = useCreateReviewMutation();
   const [addFavorite] = useAddFavoriteMutation();
   const [removeFavorite] = useRemoveFavoriteMutation();
 
   // New queries for similar chalets and addons
-  const { data: similarResponse } = useGetSimilarChaletsQuery(chaletId);
-  const { data: addons = [] } = useGetChaletAddonsQuery(chaletId);
-  const { data: canReviewData } = useCheckCanReviewQuery(chaletId, {
-    skip: userType === "guest" });
+  const { data: similarResponse, refetch: refetchSimilar } = useGetSimilarChaletsQuery(chaletId, { refetchOnMountOrArgChange: true });
+  const { data: addons = [], refetch: refetchAddons } = useGetChaletAddonsQuery(chaletId, { refetchOnMountOrArgChange: true });
+  const { data: canReviewData, refetch: refetchCanReview } = useCheckCanReviewQuery(chaletId, {
+    skip: userType === "guest",
+    refetchOnMountOrArgChange: true
+  });
   const { data: favoriteIds = [], refetch: refetchFavorites } =
     useGetFavoriteIdsQuery(undefined, {
       skip: userType === "guest" });
@@ -128,7 +132,11 @@ export default function ChaletDetailScreen() {
   useFocusEffect(
     useCallback(() => {
       refetch();
-    }, [refetch])
+      if (refetchReviews) refetchReviews();
+      if (refetchSimilar) refetchSimilar();
+      if (refetchAddons) refetchAddons();
+      if (refetchCanReview && userType !== "guest") refetchCanReview();
+    }, [refetch, refetchReviews, refetchSimilar, refetchAddons, refetchCanReview, userType])
   );
 
   const isFavorite = useMemo(
@@ -404,12 +412,12 @@ export default function ChaletDetailScreen() {
           <CircleBackButton
             style={[
               styles.backBtnOriginal,
-              isRTL ? { right: 20 } : { left: 20 },
+              isRTL ? { left: 20 } : { right: 20 },
             ]}
           />
 
           <TouchableOpacity
-            style={[styles.favoriteBtn, isRTL ? { left: 20 } : { right: 20 }]}
+            style={[styles.favoriteBtn, isRTL ? { right: 20 } : { left: 20 }]}
             onPress={handleToggleFavorite}
           >
             <SolarHeartBold
@@ -728,7 +736,7 @@ export default function ChaletDetailScreen() {
           </View>
 
           {/* المضيف */}
-          <HostContactCard name={hostName} avatar={hostAvatar} isRTL={isRTL} />
+          <HostContactCard name={hostName} phone={chalet.owner?.phone} avatar={hostAvatar} isRTL={isRTL} />
 
           {/* التقييم والمراجعات */}
           <View
@@ -899,46 +907,27 @@ export default function ChaletDetailScreen() {
           <View
             style={[
               styles.infoIconsGrid,
-              { flexDirection: 'row' },
+              { flexDirection: 'row', justifyContent: 'flex-start' },
             ]}
           >
             {[
               {
-                label: t("booking.terms"),
-                Icon: SolarKeyBold,
+                label: isRTL ? "شروط الشاليه" : "Chalet Rules",
+                Icon: SolarChaletRulesBold,
                 color: "#035DF9",
-                shapePath: SHAPES.blue,
-                onPress: () =>
-                  router.push({
-                    pathname: `/(customer)/chalet-details/info/${chaletId}`,
-                    params: { type: "terms" } }) },
-              {
-                label: t("booking.policy"),
-                Icon: SolarForbiddenBold,
-                color: "#F64200",
-                shapePath: SHAPES.red,
-                onPress: () =>
-                  router.push({
-                    pathname: `/(customer)/chalet-details/info/${chaletId}`,
-                    params: { type: "policies" } }) },
-              {
-                label: isRTL ? "التحقق" : "Verified",
-                Icon: SolarShieldCheckBold,
-                color: "#15AB64",
                 shapePath: SHAPES.green,
-                onPress: undefined },
-              {
-                label: isRTL ? "الفترات" : "Shifts",
-                Icon: SolarClockCircleBold,
-                color: "#EF79D7",
-                shapePath: SHAPES.pink,
-                onPress: undefined },
+                onPress: () =>
+                  router.push({
+                    pathname: `/(customer)/chalet-details/info/${chaletId}` as any,
+                    params: { type: "terms" }
+                  })
+              }
             ].map((item, i) => (
               <TouchableOpacity
                 key={i}
                 style={styles.infoIconCell}
                 onPress={item.onPress}
-                activeOpacity={item.onPress ? 0.7 : 1}
+                activeOpacity={0.7}
               >
                 <View style={styles.infoGearWrap}>
                   <Svg width={55} height={55} viewBox="0 0 60 60">
@@ -1472,4 +1461,49 @@ const styles = StyleSheet.create({
   emptyReviewsText: {
     fontSize: 14,
     color: '#64748B',
-    fontFamily: "Alexandria-Medium" } });
+    fontFamily: "Alexandria-Medium" },
+  rulesChevronCard: {
+    backgroundColor: "#F8FAFC",
+    borderRadius: 20,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    marginVertical: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  rulesRowLayout: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  rulesIconBadge: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  rulesTextContainerCell: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
+  rulesCardTitleText: {
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
+    color: "#111827",
+    marginBottom: 4,
+  },
+  rulesCardSubtitleText: {
+    fontSize: 11,
+    fontFamily: "Alexandria-Medium",
+    color: "#64748B",
+    lineHeight: 16,
+  },
+  rulesChevronBadge: {
+    justifyContent: "center",
+    alignItems: "center",
+  } });

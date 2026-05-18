@@ -1,4 +1,4 @@
-import { SolarCheckCircleBold, SolarCloseCircleBold, SolarMenuDotsBold, SolarNotebookBold, SolarShieldWarningBold, SolarSmartHomeBold, SolarTextBold } from '@/components/icons/solar-icons';
+import { SolarCheckCircleBold, SolarCloseCircleBold, SolarMenuDotsBold, SolarNotebookBold, SolarShieldWarningBold, SolarSmartHomeBold } from '@/components/icons/solar-icons';
 import { ThemedText } from '@/components/themed-text';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { Colors, normalize, Spacing } from '@/constants/theme';
@@ -42,12 +42,12 @@ export default function EditChaletDetailsScreen() {
   useEffect(() => {
     if (chalet) {
       setForm({
-        policiesAr: chalet.policies?.ar || '',
-        policiesEn: chalet.policies?.en || '',
+        policiesAr: chalet.terms?.policiesAr || chalet.policies?.ar || '',
+        policiesEn: chalet.terms?.policiesEn || chalet.policies?.en || '',
         termsAr: chalet.terms?.ar || '',
         termsEn: chalet.terms?.en || '',
-        cancellationAr: chalet.cancellationPolicy?.ar || '',
-        cancellationEn: chalet.cancellationPolicy?.en || '',
+        cancellationAr: chalet.terms?.cancellationAr || chalet.cancellationPolicy?.ar || '',
+        cancellationEn: chalet.terms?.cancellationEn || chalet.cancellationPolicy?.en || '',
         checkInTime: chalet.checkInTime || '',
         checkOutTime: chalet.checkOutTime || '' });
     }
@@ -56,9 +56,14 @@ export default function EditChaletDetailsScreen() {
   const handleSave = async () => {
     try {
       const payload = {
-        policies: { ar: form.policiesAr, en: form.policiesEn || form.policiesAr },
-        terms: { ar: form.termsAr, en: form.termsEn || form.termsAr },
-        cancellationPolicy: { ar: form.cancellationAr, en: form.cancellationEn || form.cancellationAr },
+        terms: {
+          ar: form.termsAr,
+          en: form.termsEn || form.termsAr,
+          policiesAr: form.policiesAr,
+          policiesEn: form.policiesEn || form.policiesAr,
+          cancellationAr: form.cancellationAr,
+          cancellationEn: form.cancellationEn || form.cancellationAr
+        },
         checkInTime: form.checkInTime,
         checkOutTime: form.checkOutTime };
 
