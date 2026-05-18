@@ -9,10 +9,11 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.dudes.sununo",
+      "bundleIdentifier": "com.sununo.app",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "نحتاج الوصول لموقعك لإظهار الشاليهات القريبة منك وتحديد موقع شاليك على الخارطة.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "نحتاج الوصول لموقعك لإظهار الشاليهات القريبة منك وتحديد موقع شاليك على الخارطة."
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "نحتاج الوصول لموقعك لإظهار الشاليهات القريبة منك وتحديد موقع شاليك على الخارطة.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -32,7 +33,7 @@
         "ACCESS_FINE_LOCATION",
         "FOREGROUND_SERVICE"
       ],
-      "package": "com.dudes.sununo"
+      "package": "com.sununo.app"
     },
     "web": {
       "output": "static",
