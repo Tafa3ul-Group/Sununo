@@ -68,17 +68,6 @@ export const LogoutSheet = React.forwardRef<BottomSheetModal, LogoutSheetProps>(
           </ThemedText>
 
           <View style={styles.actions}>
-            {/* Cancel */}
-            <TouchableOpacity
-              style={styles.cancelBtn}
-              onPress={handleDismiss}
-              activeOpacity={0.8}
-            >
-              <ThemedText style={styles.cancelText}>
-                {isRTL ? "إلغاء" : "Cancel"}
-              </ThemedText>
-            </TouchableOpacity>
-
             {/* Logout */}
             <TouchableOpacity
               style={styles.logoutBtn}
@@ -87,6 +76,17 @@ export const LogoutSheet = React.forwardRef<BottomSheetModal, LogoutSheetProps>(
             >
               <ThemedText style={styles.logoutText}>
                 {isRTL ? "خروج" : "Logout"}
+              </ThemedText>
+            </TouchableOpacity>
+
+            {/* Cancel */}
+            <TouchableOpacity
+              style={styles.cancelBtn}
+              onPress={handleDismiss}
+              activeOpacity={0.8}
+            >
+              <ThemedText style={styles.cancelText}>
+                {isRTL ? "إلغاء" : "Cancel"}
               </ThemedText>
             </TouchableOpacity>
           </View>

@@ -357,7 +357,7 @@ export default function CompleteBookingScreen() {
   const [cvv, setCvv] = useState("");
   const [selectedMethod, setSelectedMethod] = useState<
     "sindi_pay" | "wayl" | "wallet"
-  >("sindi_pay");
+  >("wayl");
 
   const { data: platformConfig } = useGetPlatformConfigQuery({});
   const [cardName, setCardName] = useState("");
@@ -755,7 +755,7 @@ export default function CompleteBookingScreen() {
 
       <View style={styles.infoSectionCard}>
         <ThemedText
-          style={[styles.sectionTitle, isRTL ? styles.rtlText : styles.ltrText]}
+          style={[styles.sectionTitle, isArabic ? styles.rtlText : styles.ltrText]}
         >
           {t("booking.customerInfo")}
         </ThemedText>
@@ -779,7 +779,7 @@ export default function CompleteBookingScreen() {
           <ThemedText
             style={[
               styles.sectionTitle,
-              isRTL ? styles.rtlText : styles.ltrText,
+              isArabic ? styles.rtlText : styles.ltrText,
             ]}
           >
             {t("booking.bookingInfo")}
@@ -863,9 +863,9 @@ export default function CompleteBookingScreen() {
 
       <View style={styles.infoSectionCard}>
         <ThemedText
-          style={[styles.sectionTitle, isRTL ? styles.rtlText : styles.ltrText]}
+          style={[styles.sectionTitle, isArabic ? styles.rtlText : styles.ltrText]}
         >
-          {isRTL ? "ملاحظات إضافية" : "Special Requests"}
+          {isArabic ? "ملاحظات إضافية" : "Special Requests"}
         </ThemedText>
         <View style={styles.divider} />
         <TextInput
@@ -875,11 +875,11 @@ export default function CompleteBookingScreen() {
               height: 100,
               textAlignVertical: "top",
               paddingTop: 12,
-              textAlign: isRTL ? "right" : "left",
+              textAlign: isArabic ? "right" : "left",
             },
           ]}
           placeholder={
-            isRTL
+            isArabic
               ? "أي طلبات خاصة أو ملاحظات للمالك..."
               : "Any special requests or notes for the owner..."
           }
@@ -893,7 +893,7 @@ export default function CompleteBookingScreen() {
       <ThemedText
         style={[
           styles.paymentMainTitle,
-          isRTL ? styles.rtlText : styles.ltrText,
+          isArabic ? styles.rtlText : styles.ltrText,
         ]}
       >
         {t("booking.paymentTitle")}
@@ -911,7 +911,7 @@ export default function CompleteBookingScreen() {
           style={[
             styles.paymentLabel,
             paymentType === "DEPOSIT" && styles.paymentLabelActive,
-            isRTL ? styles.rtlText : styles.ltrText,
+            isArabic ? styles.rtlText : styles.ltrText,
           ]}
         >
           {t("booking.depositPay")}
@@ -938,7 +938,7 @@ export default function CompleteBookingScreen() {
           style={[
             styles.paymentLabel,
             paymentType === "FULL" && styles.paymentLabelActive,
-            isRTL ? styles.rtlText : styles.ltrText,
+            isArabic ? styles.rtlText : styles.ltrText,
           ]}
         >
           {t("booking.fullPay")}
@@ -970,103 +970,40 @@ export default function CompleteBookingScreen() {
         <ThemedText
           style={[
             styles.inlinePaymentTitle,
-            isRTL ? styles.rtlText : styles.ltrText,
+            isArabic ? styles.rtlText : styles.ltrText,
           ]}
         >
           {t("booking.paymentMethod") || "طريقة الدفع"}
         </ThemedText>
 
-        <View style={styles.paymentMethodsGrid}>
-          {platformConfig?.isSindiPayEnabled && (
-            <TouchableOpacity
+        <View style={[styles.paymentMethodsGrid, { justifyContent: isArabic ? "flex-end" : "flex-start" }]}>
+          <TouchableOpacity
+            style={[
+              styles.methodCard,
+              { flex: 0, width: 120 },
+              selectedMethod === "wayl" && styles.methodCardActive,
+            ]}
+            onPress={() => setSelectedMethod("wayl")}
+          >
+            <View
               style={[
-                styles.methodCard,
-                selectedMethod === "sindi_pay" && styles.methodCardActive,
+                styles.methodIconContainer,
+                {
+                  backgroundColor:
+                    selectedMethod === "wayl" ? "#10B981" : "#ECFDF5",
+                },
               ]}
-              onPress={() => setSelectedMethod("sindi_pay")}
             >
-              <View
-                style={[
-                  styles.methodIconContainer,
-                  {
-                    backgroundColor:
-                      selectedMethod === "sindi_pay" ? "#6366F1" : "#EEF2FF",
-                  },
-                ]}
-              >
-                <SolarCardBold
-                  size={24}
-                  color={selectedMethod === "sindi_pay" ? "white" : "#6366F1"}
-                />
-              </View>
-              <ThemedText style={styles.methodName}>
-                {t("booking.sindiPay")}
-              </ThemedText>
-              {selectedMethod === "sindi_pay" && (
-                <View style={styles.selectedDot} />
-              )}
-            </TouchableOpacity>
-          )}
-
-          {platformConfig?.isWaylEnabled && (
-            <TouchableOpacity
-              style={[
-                styles.methodCard,
-                selectedMethod === "wayl" && styles.methodCardActive,
-              ]}
-              onPress={() => setSelectedMethod("wayl")}
-            >
-              <View
-                style={[
-                  styles.methodIconContainer,
-                  {
-                    backgroundColor:
-                      selectedMethod === "wayl" ? "#10B981" : "#ECFDF5",
-                  },
-                ]}
-              >
-                <SolarCardBold
-                  size={24}
-                  color={selectedMethod === "wayl" ? "white" : "#10B981"}
-                />
-              </View>
-              <ThemedText style={styles.methodName}>
-                {t("booking.wayl")}
-              </ThemedText>
-              {selectedMethod === "wayl" && <View style={styles.selectedDot} />}
-            </TouchableOpacity>
-          )}
-
-          {platformConfig?.isWalletEnabled && (
-            <TouchableOpacity
-              style={[
-                styles.methodCard,
-                selectedMethod === "wallet" && styles.methodCardActive,
-              ]}
-              onPress={() => setSelectedMethod("wallet")}
-            >
-              <View
-                style={[
-                  styles.methodIconContainer,
-                  {
-                    backgroundColor:
-                      selectedMethod === "wallet" ? "#F97316" : "#FFF7ED",
-                  },
-                ]}
-              >
-                <SolarWalletBold
-                  size={24}
-                  color={selectedMethod === "wallet" ? "white" : "#F97316"}
-                />
-              </View>
-              <ThemedText style={styles.methodName}>
-                {t("booking.wallet")}
-              </ThemedText>
-              {selectedMethod === "wallet" && (
-                <View style={styles.selectedDot} />
-              )}
-            </TouchableOpacity>
-          )}
+              <SolarCardBold
+                size={24}
+                color={selectedMethod === "wayl" ? "white" : "#10B981"}
+              />
+            </View>
+            <ThemedText style={styles.methodName}>
+              {t("booking.wayl")}
+            </ThemedText>
+            {selectedMethod === "wayl" && <View style={styles.selectedDot} />}
+          </TouchableOpacity>
         </View>
       </View>
     </View>
