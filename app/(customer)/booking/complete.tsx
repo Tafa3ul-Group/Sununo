@@ -86,6 +86,11 @@ export default function CompleteBookingScreen() {
       ? "row-reverse"
       : "row";
 
+  // When I18nManager.isRTL is true, React Native natively flips text alignments.
+  // "left" renders visually on the right, and "right" renders visually on the left.
+  const textStart: "left" | "right" = isArabic === isRTL ? "left" : "right";
+  const textEnd: "left" | "right" = isArabic === isRTL ? "right" : "left";
+
   const getFilterDateRange = (): Date[] => {
     if (!savedFilter?.checkIn) return [];
     const start = new Date(savedFilter.checkIn);
@@ -754,34 +759,31 @@ export default function CompleteBookingScreen() {
       </View>
 
       <View style={styles.infoSectionCard}>
-        <ThemedText
-          style={[styles.sectionTitle, isArabic ? styles.rtlText : styles.ltrText]}
-        >
+        <ThemedText style={[styles.sectionTitle, { textAlign: textStart }]}>
           {t("booking.customerInfo")}
         </ThemedText>
         <View style={styles.divider} />
-        <View style={[styles.infoRow, styles.row]}>
-          <ThemedText style={styles.infoLabel}>{t("booking.name")}</ThemedText>
-          <ThemedText style={styles.infoValue}>
+        <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
+          <ThemedText style={[styles.infoLabel, { textAlign: textStart }]}>
+            {t("booking.name")}
+          </ThemedText>
+          <ThemedText style={[styles.infoValue, { textAlign: textEnd }]}>
             {user?.name || t("booking.nameValue")}
           </ThemedText>
         </View>
-        <View style={[styles.infoRow, styles.row]}>
-          <ThemedText style={styles.infoLabel}>{t("booking.phone")}</ThemedText>
-          <ThemedText style={[styles.infoValue, { direction: "ltr" }]}>
+        <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
+          <ThemedText style={[styles.infoLabel, { textAlign: textStart }]}>
+            {t("booking.phone")}
+          </ThemedText>
+          <ThemedText style={[styles.infoValue, { textAlign: textEnd, direction: "ltr" }]}>
             {user?.phone || t("booking.phoneValue")}
           </ThemedText>
         </View>
       </View>
 
       <View style={styles.infoSectionCard}>
-        <View style={[styles.sectionHeaderRow, styles.row]}>
-          <ThemedText
-            style={[
-              styles.sectionTitle,
-              isArabic ? styles.rtlText : styles.ltrText,
-            ]}
-          >
+        <View style={[styles.sectionHeaderRow, styles.row, { flexDirection: rowDirection }]}>
+          <ThemedText style={[styles.sectionTitle, { textAlign: textStart }]}>
             {t("booking.bookingInfo")}
           </ThemedText>
           <TouchableOpacity
@@ -794,15 +796,21 @@ export default function CompleteBookingScreen() {
           </TouchableOpacity>
         </View>
         <View style={styles.divider} />
-        <View style={[styles.infoRow, styles.row]}>
-          <ThemedText style={styles.infoLabel}>{t("booking.date")}</ThemedText>
-          <ThemedText style={styles.infoValue}>{bookingDateString}</ThemedText>
+        <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
+          <ThemedText style={[styles.infoLabel, { textAlign: textStart }]}>
+            {t("booking.date")}
+          </ThemedText>
+          <ThemedText style={[styles.infoValue, { textAlign: textEnd }]}>
+            {bookingDateString}
+          </ThemedText>
         </View>
-        <View style={[styles.infoRow, styles.row]}>
-          <ThemedText style={styles.infoLabel}>{t("booking.shift")}</ThemedText>
-          <ThemedText style={styles.infoValue}>
+        <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
+          <ThemedText style={[styles.infoLabel, { textAlign: textStart }]}>
+            {t("booking.shift")}
+          </ThemedText>
+          <ThemedText style={[styles.infoValue, { textAlign: textEnd }]}>
             {selectedDates.length > 1
-              ? isRTL
+              ? isArabic
                 ? "فترات متعددة"
                 : "Multiple Shifts"
               : (function () {
@@ -812,48 +820,48 @@ export default function CompleteBookingScreen() {
                     (s: any) => s.id === shiftId,
                   );
                   return shift
-                    ? isRTL
+                    ? isArabic
                       ? shift.name?.ar || shift.name
                       : shift.name?.en || shift.name
                     : t("booking.noShift");
                 })()}
           </ThemedText>
         </View>
-        <View style={[styles.infoRow, styles.row]}>
-          <ThemedText style={styles.infoLabel}>
+        <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
+          <ThemedText style={[styles.infoLabel, { textAlign: textStart }]}>
             {t("booking.guests")}
           </ThemedText>
-          <ThemedText style={styles.infoValue}>
+          <ThemedText style={[styles.infoValue, { textAlign: textEnd }]}>
             {adultCount + childrenCount}
           </ThemedText>
         </View>
         <View style={styles.divider} />
-        <View style={[styles.infoRow, styles.row]}>
-          <ThemedText style={styles.infoLabel}>
-            {t("booking.shiftPrice") || (isRTL ? "سعر الفترة" : "Shift Price")}
+        <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
+          <ThemedText style={[styles.infoLabel, { textAlign: textStart }]}>
+            {t("booking.shiftPrice") || (isArabic ? "سعر الفترة" : "Shift Price")}
           </ThemedText>
-          <ThemedText style={styles.infoValue}>
+          <ThemedText style={[styles.infoValue, { textAlign: textEnd }]}>
             {selectedShiftPrice.toLocaleString()} {t("common.iqd")}
           </ThemedText>
         </View>
         {extraGuestsPrice > 0 && (
-          <View style={[styles.infoRow, styles.row]}>
-            <ThemedText style={styles.infoLabel}>
-              {isRTL ? "رسوم الأشخاص الإضافيين" : "Extra Guest Fees"}
+          <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
+            <ThemedText style={[styles.infoLabel, { textAlign: textStart }]}>
+              {isArabic ? "رسوم الأشخاص الإضافيين" : "Extra Guest Fees"}
             </ThemedText>
-            <ThemedText style={styles.infoValue}>
+            <ThemedText style={[styles.infoValue, { textAlign: textEnd }]}>
               {extraGuestsPrice.toLocaleString()} {t("common.iqd")}
             </ThemedText>
           </View>
         )}
-        <View style={[styles.infoRow, styles.row]}>
-          <ThemedText style={[styles.infoLabel, { fontWeight: "700" }]}>
+        <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
+          <ThemedText style={[styles.infoLabel, { fontWeight: "700", textAlign: textStart }]}>
             {t("booking.totalAmount")}
           </ThemedText>
           <ThemedText
             style={[
               styles.infoValue,
-              { fontFamily: "Alexandria-Medium", color: Colors.primary },
+              { fontFamily: "Alexandria-Medium", color: Colors.primary, textAlign: textEnd },
             ]}
           >
             {totalPrice.toLocaleString()} {t("common.iqd")}
@@ -862,9 +870,7 @@ export default function CompleteBookingScreen() {
       </View>
 
       <View style={styles.infoSectionCard}>
-        <ThemedText
-          style={[styles.sectionTitle, isArabic ? styles.rtlText : styles.ltrText]}
-        >
+        <ThemedText style={[styles.sectionTitle, { textAlign: textStart }]}>
           {isArabic ? "ملاحظات إضافية" : "Special Requests"}
         </ThemedText>
         <View style={styles.divider} />
@@ -875,7 +881,7 @@ export default function CompleteBookingScreen() {
               height: 100,
               textAlignVertical: "top",
               paddingTop: 12,
-              textAlign: isArabic ? "right" : "left",
+              textAlign: textStart,
             },
           ]}
           placeholder={
@@ -890,12 +896,7 @@ export default function CompleteBookingScreen() {
         />
       </View>
 
-      <ThemedText
-        style={[
-          styles.paymentMainTitle,
-          isArabic ? styles.rtlText : styles.ltrText,
-        ]}
-      >
+      <ThemedText style={[styles.paymentMainTitle, { textAlign: textStart }]}>
         {t("booking.paymentTitle")}
       </ThemedText>
 
@@ -904,6 +905,7 @@ export default function CompleteBookingScreen() {
           styles.paymentOptionCard,
           paymentType === "DEPOSIT" && styles.paymentOptionActive,
           styles.row,
+          { flexDirection: rowDirection },
         ]}
         onPress={() => setPaymentType("DEPOSIT")}
       >
@@ -911,7 +913,7 @@ export default function CompleteBookingScreen() {
           style={[
             styles.paymentLabel,
             paymentType === "DEPOSIT" && styles.paymentLabelActive,
-            isArabic ? styles.rtlText : styles.ltrText,
+            { textAlign: textStart },
           ]}
         >
           {t("booking.depositPay")}
@@ -920,6 +922,7 @@ export default function CompleteBookingScreen() {
           style={[
             styles.paymentVal,
             paymentType === "DEPOSIT" && styles.paymentValActive,
+            { textAlign: textEnd },
           ]}
         >
           {depositAmount.toLocaleString()} {t("common.iqd")}
@@ -931,6 +934,7 @@ export default function CompleteBookingScreen() {
           styles.paymentOptionCard,
           paymentType === "FULL" && styles.paymentOptionActive,
           styles.row,
+          { flexDirection: rowDirection },
         ]}
         onPress={() => setPaymentType("FULL")}
       >
@@ -938,7 +942,7 @@ export default function CompleteBookingScreen() {
           style={[
             styles.paymentLabel,
             paymentType === "FULL" && styles.paymentLabelActive,
-            isArabic ? styles.rtlText : styles.ltrText,
+            { textAlign: textStart },
           ]}
         >
           {t("booking.fullPay")}
@@ -947,6 +951,7 @@ export default function CompleteBookingScreen() {
           style={[
             styles.paymentVal,
             paymentType === "FULL" && styles.paymentValActive,
+            { textAlign: textEnd },
           ]}
         >
           {totalPrice.toLocaleString()} {t("common.iqd")}
@@ -967,12 +972,7 @@ export default function CompleteBookingScreen() {
       </View>
 
       <View style={styles.inlinePaymentSection}>
-        <ThemedText
-          style={[
-            styles.inlinePaymentTitle,
-            isArabic ? styles.rtlText : styles.ltrText,
-          ]}
-        >
+        <ThemedText style={[styles.inlinePaymentTitle, { textAlign: textStart }]}>
           {t("booking.paymentMethod") || "طريقة الدفع"}
         </ThemedText>
 
