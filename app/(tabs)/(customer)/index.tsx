@@ -477,7 +477,7 @@ export default function HomeScreen() {
               style={{ marginTop: 20 }}
             />
           ) : POPULAR_CHALETS.length > 0 ? (
-            POPULAR_CHALETS.map((item, index) => (
+            POPULAR_CHALETS.map((item: any, index: number) => (
               <HorizontalCard
                 key={index}
                 chalet={item}

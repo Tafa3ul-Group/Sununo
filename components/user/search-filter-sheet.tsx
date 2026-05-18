@@ -219,7 +219,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
   );
 
   const renderWhenCalendarContent = () => (
-    <View style={styles.tabContent}>
+    <View style={[styles.tabContent, { paddingHorizontal: 12 }]}>
       <RangeCalendar
         onSelect={(start, end) => {
           setCheckIn(start);
@@ -595,7 +595,13 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
             </View>
           ) : (
             <PrimaryButton
-              label={activeTab === "WHO" ? t("searchFilter.apply") : t("searchFilter.next")}
+              label={
+                activeTab === "WHEN" && whenStep === 1
+                  ? (isArabic ? "تم" : "Done")
+                  : activeTab === "WHO"
+                    ? t("searchFilter.apply")
+                    : t("searchFilter.next")
+              }
               onPress={handleNext}
               isActive={true}
               activeColor={activeTab === "WHEN" ? "#15AB64" : activeTab === "WHO" ? "#F64200" : "#035DF9"}
@@ -700,14 +706,15 @@ const styles = StyleSheet.create({
     borderRadius: 9 },
   mainFooter: {
     paddingHorizontal: 24,
-    paddingTop: 12,
-    paddingBottom: Platform.OS === "ios" ? 34 : 24,
+    paddingTop: 16,
+    paddingBottom: Platform.OS === "ios" ? 40 : 28,
     backgroundColor: "white",
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: "#F0F2F5" },
   nextButton: {
-    width: 140,
-    height: 46 },
+    width: "100%",
+    height: 52,
+    borderRadius: 16 },
   whoContainer: {
     paddingTop: 10 },
   stepIndicators: {

@@ -59,8 +59,17 @@ export default function FilterResultsScreen() {
     if (activeFilters?.search) params.search = activeFilters.search;
     if (activeFilters?.maxGuests) {
       params.maxGuests = activeFilters.maxGuests;
-      // Send maxAdults too for backend field compatibility
+      // Send maxAdults for backend capacity checking
       params.maxAdults = activeFilters.maxGuests;
+    }
+    if (activeFilters?.checkIn) {
+      params.checkIn = activeFilters.checkIn.split("T")[0];
+    }
+    if (activeFilters?.checkOut) {
+      params.checkOut = activeFilters.checkOut.split("T")[0];
+    }
+    if (activeFilters?.period) {
+      params.period = activeFilters.period;
     }
     return params;
   }, [activeFilters]);
@@ -99,7 +108,7 @@ export default function FilterResultsScreen() {
             chalet.region?.name ||
             "",
         price: priceVal.toLocaleString(),
-        image: chalet.images?.[0]?.url || chalet.image || "",
+        image: getImageSrc(chalet.images?.[0]?.url || chalet.image || ""),
         images: chalet.images || [],
         rating: chalet.averageRating || chalet.rating || 0,
         reviewsCount: chalet.reviewsCount || chalet.reviewCount || 0,
@@ -192,7 +201,7 @@ export default function FilterResultsScreen() {
     <HorizontalCard
       chalet={item}
       onPress={() => router.push(`/chalet-details/${item.id}`)}
-      shapeIndex={index}
+      shapeIndex={2}
       isFavorite={item.isFavorite}
       onToggleFavorite={() => handleToggleFavorite(item.id)}
     />
