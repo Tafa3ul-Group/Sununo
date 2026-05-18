@@ -52,7 +52,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
   const { t, i18n } = useTranslation();
   const isArabic = i18n.language === "ar";
 
-  const [activeTab, setActiveTab] = useState<TabType>("WHEN");
+  const [activeTab, setActiveTab] = useState<TabType>("WHERE");
   const [selectedCity, setSelectedCity] = useState<string>("");
   const [selectedCityName, setSelectedCityName] = useState<string>("");
   const [searchText, setSearchText] = useState("");
@@ -67,6 +67,9 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
   // Dynamic layout helper to guarantee perfect RTL/LTR alignment under any system RTL state
   const rowDirection = isArabic ? (isRTL ? "row" : "row-reverse") : (isRTL ? "row-reverse" : "row");
   const textAlignment = isArabic ? "right" : "left";
+  const buttonAlign = isArabic
+    ? (isRTL ? "flex-end" : "flex-start")
+    : (isRTL ? "flex-start" : "flex-end");
 
   // Fetch chalet details if chaletId is provided
   const { data: chaletDetailsResponse } = useGetCustomerChaletDetailsQuery(chaletId || "", {
@@ -133,16 +136,16 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
 
   const handleNext = useCallback(() => {
     Keyboard.dismiss();
-    if (activeTab === "WHEN") {
+    if (activeTab === "WHERE") {
+      setActiveTab("WHEN");
+    } else if (activeTab === "WHEN") {
       if (whenStep === 1) {
         setWhenStep(2);
       } else {
         setActiveTab("WHO");
       }
     } else if (activeTab === "WHO") {
-      setActiveTab("WHERE");
-    } else {
-      // WHERE — apply and close
+      // WHO — apply and close
       if (onApply) {
         onApply({
           cityId: selectedCity || null,
@@ -173,7 +176,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
   );
 
   const handleDismiss = useCallback(() => {
-    setActiveTab("WHEN");
+    setActiveTab("WHERE");
     setWhenStep(1);
   }, []);
 
@@ -592,11 +595,11 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
             </View>
           ) : (
             <PrimaryButton
-              label={activeTab === "WHERE" ? t("searchFilter.apply") : t("searchFilter.next")}
+              label={activeTab === "WHO" ? t("searchFilter.apply") : t("searchFilter.next")}
               onPress={handleNext}
               isActive={true}
               activeColor={activeTab === "WHEN" ? "#15AB64" : activeTab === "WHO" ? "#F64200" : "#035DF9"}
-              style={styles.nextButton}
+              style={StyleSheet.flatten([styles.nextButton, { alignSelf: buttonAlign }])}
             />
           )}
         </View>
@@ -703,7 +706,7 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: "#F0F2F5" },
   nextButton: {
-    width: "100%",
+    width: 140,
     height: 46 },
   whoContainer: {
     paddingTop: 10 },

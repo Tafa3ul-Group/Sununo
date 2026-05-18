@@ -1,4 +1,5 @@
 import { HeaderSection } from "@/components/header-section";
+import { HorizontalCard } from "@/components/user/horizontal-card";
 import { MotionIcon } from "@/components/icons/motion-icons";
 import {
   SolarCalendarMinimalisticBold,
@@ -71,10 +72,10 @@ export default function FilterResultsScreen() {
     const chalets = chaletsResponse?.data || [];
     return chalets.map((chalet: any) => ({
       id: chalet.id,
-      title: isRTL ? chalet.nameAr || chalet.name : chalet.nameEn || chalet.name,
+      title: isRTL ? chalet.nameAr || chalet.name?.ar || chalet.name : chalet.nameEn || chalet.name?.en || chalet.name,
       location: isRTL
-        ? chalet.region?.nameAr || chalet.region?.name || ""
-        : chalet.region?.nameEn || chalet.region?.name || "",
+        ? chalet.region?.name?.ar || chalet.region?.nameAr || chalet.region?.name || ""
+        : chalet.region?.name?.en || chalet.region?.nameEn || chalet.region?.name || "",
       price: Number(chalet.basePrice || 0).toLocaleString(),
       image: getImageSrc(chalet.images?.[0]?.url || "")?.uri,
       rating: chalet.rating || 4.7,
@@ -146,56 +147,14 @@ export default function FilterResultsScreen() {
   };
 
   // Render chalet item card
-  const renderChaletCard = ({ item }: { item: any }) => (
-    <TouchableOpacity
-      style={styles.card}
+  const renderChaletCard = ({ item, index }: { item: any; index: number }) => (
+    <HorizontalCard
+      chalet={item}
       onPress={() => router.push(`/chalet-details/${item.id}`)}
-      activeOpacity={0.9}
-    >
-      <View style={styles.imageContainer}>
-        {item.image ? (
-          <Image source={{ uri: item.image }} style={styles.cardImage} />
-        ) : (
-          <View style={styles.imagePlaceholder} />
-        )}
-
-        {/* Favorite Icon */}
-        <TouchableOpacity
-          style={styles.favoriteButton}
-          onPress={() => handleToggleFavorite(item.id)}
-          activeOpacity={0.8}
-        >
-          <SolarHeartBold size={20} color={item.isFavorite ? "#EF4444" : "rgba(255,255,255,0.75)"} />
-        </TouchableOpacity>
-
-        {/* Price Tag */}
-        <View style={[styles.priceTag, { right: isRTL ? undefined : 12, left: isRTL ? 12 : undefined }]}>
-          <ThemedText style={styles.priceText}>
-            {item.price} {isRTL ? "د.ع" : "IQD"}
-          </ThemedText>
-        </View>
-      </View>
-
-      <View style={styles.cardDetails}>
-        <View style={styles.cardHeader}>
-          <ThemedText style={[styles.cardTitle, { textAlign: isRTL ? "right" : "left" }]}>
-            {item.title}
-          </ThemedText>
-
-          <View style={styles.ratingContainer}>
-            <SolarStarBold size={14} color="#FBBF24" />
-            <ThemedText style={styles.ratingText}>{item.rating}</ThemedText>
-          </View>
-        </View>
-
-        <View style={styles.locationContainer}>
-          <SolarMapPointBold size={14} color={Colors.text.muted} />
-          <ThemedText style={[styles.locationText, { textAlign: isRTL ? "right" : "left" }]}>
-            {item.location}
-          </ThemedText>
-        </View>
-      </View>
-    </TouchableOpacity>
+      shapeIndex={index}
+      isFavorite={item.isFavorite}
+      onToggleFavorite={() => handleToggleFavorite(item.id)}
+    />
   );
 
   return (

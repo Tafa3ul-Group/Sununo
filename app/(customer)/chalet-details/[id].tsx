@@ -199,19 +199,43 @@ export default function ChaletDetailScreen() {
       chalet.description ||
       "";
 
+  const filterPeriod = useSelector((state: RootState) => state.filter.period);
+
+  const availableShifts = useMemo(() => {
+    if (!chalet?.shifts || chalet.shifts.length === 0) return [];
+    if (!filterPeriod) return chalet.shifts;
+
+    return chalet.shifts.filter((shift: any) => {
+      if (shift.id === filterPeriod) return true;
+
+      const isMorning = shift.type === 'MORNING' || (shift.name?.en?.toLowerCase().includes('morning')) || (shift.name?.ar?.includes('صباح'));
+      const isEvening = shift.type === 'EVENING' || (shift.name?.en?.toLowerCase().includes('evening')) || (shift.name?.ar?.includes('مساء'));
+      const isOvernight = shift.type === 'OVERNIGHT' || (shift.name?.en?.toLowerCase().includes('overnight')) || (shift.name?.ar?.includes('مبيت'));
+
+      if (filterPeriod === "morning") return isMorning;
+      if (filterPeriod === "evening") return isEvening;
+      if (filterPeriod === "overnight") return isOvernight;
+
+      return false;
+    });
+  }, [chalet?.shifts, filterPeriod]);
+
   useEffect(() => {
-    if (chalet?.shifts?.length > 0 && !selectedShiftId) {
-      setSelectedShiftId(chalet.shifts[0].id);
+    if (availableShifts.length > 0) {
+      const exists = availableShifts.some((s: any) => s.id === selectedShiftId);
+      if (!exists) {
+        setSelectedShiftId(availableShifts[0].id);
+      }
     }
-  }, [chalet?.shifts]);
+  }, [availableShifts, selectedShiftId]);
 
   const selectedShift = useMemo(() => {
-    if (!chalet?.shifts || chalet.shifts.length === 0) return null;
+    if (!availableShifts || availableShifts.length === 0) return null;
     return (
-      chalet.shifts.find((s: any) => s.id === selectedShiftId) ||
-      chalet.shifts[0]
+      availableShifts.find((s: any) => s.id === selectedShiftId) ||
+      availableShifts[0]
     );
-  }, [chalet?.shifts, selectedShiftId]);
+  }, [availableShifts, selectedShiftId]);
 
   const displayPrice = useMemo(() => {
     if (
@@ -477,8 +501,8 @@ export default function ChaletDetailScreen() {
             isRTL={isRTL}
           />
           <View style={styles.shiftsGrid}>
-            {chalet.shifts && chalet.shifts.length > 0 ? (
-              chalet.shifts.map((shift: any, index: number) => {
+            {availableShifts && availableShifts.length > 0 ? (
+              availableShifts.map((shift: any, index: number) => {
               const isSelected = selectedShift?.id === shift.id;
               const minShiftPrice =
                 shift.pricing && shift.pricing.length > 0
