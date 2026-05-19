@@ -86,7 +86,7 @@ export function PrimaryButton({
       activeOpacity={0.8}
       onPress={onPress}
       disabled={disabled}
-      style={[styles.hybridContainer, { height }, style]}
+      style={[styles.hybridContainer, { height, direction: isRTL ? 'rtl' : 'ltr' }, style]}
     >
       {/* Logical Start Curve */}
       <View style={{ width: scaledPartWidth, height: scaledPartHeight }}>
