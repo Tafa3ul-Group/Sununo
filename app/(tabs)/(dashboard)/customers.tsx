@@ -128,20 +128,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center' },
   avatarText: {
-    fontSize: normalize.font(18),
+    fontSize: normalize.font(14),
     color: Colors.text.primary,
-    fontFamily: "Alexandria-Bold" },
+    fontFamily: "Alexandria-Medium" },
   info: {
     flex: 1 },
   customerName: {
-    fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Black",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
   customerPhone: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     color: Colors.text.muted,
     marginTop: 2,
-    fontFamily: "Alexandria-Regular" },
+    fontFamily: "Alexandria-Medium" },
   contactButton: {
     padding: Spacing.sm,
     backgroundColor: Colors.white,
@@ -158,14 +158,14 @@ const styles = StyleSheet.create({
   stat: {
     flex: 1 },
   statLabel: {
-    fontSize: normalize.font(10),
+    fontSize: normalize.font(8),
     color: Colors.text.muted,
     marginBottom: 2,
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     textTransform: 'uppercase' },
   statValue: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
   emptyContainer: {
     marginTop: 100,

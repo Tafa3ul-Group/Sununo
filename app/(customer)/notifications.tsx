@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, RefreshControl } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, RefreshControl, I18nManager } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
@@ -10,7 +10,7 @@ import { SolarAltArrowRightBold } from "@/components/icons/solar-icons";
 import { useRouter } from 'expo-router';
 import { HeaderSection } from '@/components/header-section';
 import { useGetNotificationsQuery, useMarkNotificationAsReadMutation } from '@/store/api/customerApiSlice';
-import { isRTL } from "@/i18n";
+import { isRTL, getFlexDirection } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -25,7 +25,10 @@ interface Notification {
 export default function NotificationsScreen() {
     const { t } = useTranslation();
     const { language } = useSelector((state: RootState) => state.auth);
-        const router = useRouter();
+    const router = useRouter();
+
+    const isArabic = language === "ar";
+    const textStart: "left" | "right" = isArabic ? "right" : "left";
 
     // Fetch notifications from the backend
     const { data: notificationsResponse, isLoading, refetch } = useGetNotificationsQuery({ page: 1, limit: 50 });
@@ -62,7 +65,7 @@ export default function NotificationsScreen() {
       });
 
       return { today, yesterday, older };
-    }, [notificationsResponse, isRTL, t]);
+    }, [notificationsResponse, isArabic, t]);
     const handleNotificationPress = (item: Notification) => {
         if (!item.isRead) {
             markAsRead(item.id);
@@ -72,18 +75,18 @@ export default function NotificationsScreen() {
     const renderItem = (item: Notification) => (
         <TouchableOpacity 
             key={item.id} 
-            style={[styles.notificationCard, { flexDirection: 'row' }]}
+            style={[styles.notificationCard, { flexDirection: getFlexDirection(isArabic) }]}
             onPress={() => handleNotificationPress(item)}
             activeOpacity={0.7}
         >
             {/* Content section */}
             <View style={[styles.cardContent, { alignItems: 'flex-start' }]}>
-                <ThemedText style={styles.titleText}>{item.title}</ThemedText>
-                <ThemedText style={[styles.messageText, { textAlign: isRTL ? 'right' : 'left' }]}>{item.message}</ThemedText>
+                <ThemedText style={[styles.titleText, { textAlign: textStart }]}>{item.title}</ThemedText>
+                <ThemedText style={[styles.messageText, { textAlign: textStart }]}>{item.message}</ThemedText>
             </View>
 
             {/* Header section with orange dot and time */}
-            <View style={[styles.cardLeft, { flexDirection: 'row' }]}>
+            <View style={[styles.cardLeft, { flexDirection: getFlexDirection(isArabic) }]}>
                 <ThemedText style={styles.timeText}>{item.time}</ThemedText>
                 {!item.isRead && <View style={styles.orangeDot} />}
             </View>
@@ -136,7 +139,7 @@ export default function NotificationsScreen() {
                 {/* Empty state */}
                 {!isLoading && groupedNotifications.today.length === 0 && groupedNotifications.yesterday.length === 0 && groupedNotifications.older.length === 0 && (
                     <View style={{ alignItems: 'center', paddingTop: 80 }}>
-                        <ThemedText style={{ fontSize: 16, color: '#9CA3AF', fontFamily: 'Alexandria-Bold' }}>
+                        <ThemedText style={{ fontSize: 14, color: '#9CA3AF', fontFamily: "Alexandria-Medium" }}>
                             {isRTL ? 'لا توجد إشعارات' : 'No notifications'}
                         </ThemedText>
                     </View>
@@ -158,7 +161,7 @@ const styles = StyleSheet.create({
         marginBottom: 10 },
     sectionTitle: {
         fontSize: 14,
-        fontFamily: "Alexandria-Bold",
+        fontFamily: "Alexandria-Medium",
         color: '#9CA3AF' },
     notificationCard: {
         flexDirection: 'row',
@@ -179,18 +182,18 @@ const styles = StyleSheet.create({
         borderRadius: 6,
         backgroundColor: '#FF4500' },
     timeText: {
-        fontSize: 12,
+        fontSize: 8,
         color: '#9CA3AF',
-        fontFamily: "Alexandria-SemiBold" },
+        fontFamily: "Alexandria-Medium" },
     cardContent: {
         flex: 1 },
     titleText: {
-        fontSize: 16,
-        fontFamily: "Alexandria-Black",
+        fontSize: 14,
+        fontFamily: "Alexandria-Medium",
         color: '#111827' },
     messageText: {
-        fontSize: 13,
+        fontSize: 14,
         color: '#6B7280',
         marginTop: 2,
-     fontFamily: "Alexandria-Regular" }
+     fontFamily: "Alexandria-Medium" }
 });

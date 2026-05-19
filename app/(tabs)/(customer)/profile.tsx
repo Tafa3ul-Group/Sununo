@@ -6,14 +6,15 @@ import {
     SolarHeartBold,
     SolarLogoutBold,
     SolarPhoneBold,
+    SolarProfileEdit,
     SolarShieldBold,
 } from '@/components/icons/solar-icons';
 import { LanguageSheet } from '@/components/user/language-sheet';
 import { LogoutSheet } from '@/components/user/logout-sheet';
 import { WalletCard } from '@/components/user/wallet-card';
-import { normalize } from '@/constants/theme';
+import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
-import { isRTL } from "@/i18n";
+import { getFlexDirection } from "@/i18n";
 import { RootState } from '@/store';
 import { useGetMeQuery } from '@/store/api/apiSlice';
 import { useGetCustomerWalletQuery } from '@/store/api/customerApiSlice';
@@ -28,15 +29,23 @@ import {
     Text,
     TouchableOpacity,
     View,
+    I18nManager,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 
 export default function CustomerProfileScreen() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { user: authUser } = useSelector((state: RootState) => state.auth);
     const router = useRouter();
     const insets = useSafeAreaInsets();
+
+    const isArabic = i18n.language === 'ar';
+    const rowDirection = getFlexDirection(isArabic);
+
+    const textStart: "left" | "right" = isArabic ? "right" : "left";
+    const needsCounter = isArabic !== I18nManager.isRTL;
+    const alignStart: "flex-start" | "flex-end" = needsCounter ? "flex-end" : "flex-start";
 
     const languageSheetRef = useRef<BottomSheetModal>(null);
     const logoutSheetRef = useRef<BottomSheetModal>(null);
@@ -95,7 +104,7 @@ export default function CustomerProfileScreen() {
     return (
         <View style={[styles.container, { paddingTop: insets.top }]}>
             <HeaderSection
-                title={isRTL ? 'الملف الشخصي' : 'Profile'}
+                title={isArabic ? 'الملف الشخصي' : 'Profile'}
                 showBackButton
                 onBackPress={() => router.back()}
             />
@@ -106,26 +115,33 @@ export default function CustomerProfileScreen() {
             >
                 {/* User Card */}
                 <TouchableOpacity
-                    style={[styles.userCard, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}
+                    style={[styles.userCard, { flexDirection: rowDirection }]}
                     onPress={() => router.push('/profile-edit')}
                     activeOpacity={0.9}
                 >
-                    {/* Avatar always on the right in RTL, left in LTR */}
-                    <View style={styles.avatarWrap}>
-                        <Image
-                            source={getImageSrc(userData?.image || userData?.imageUrl)}
-                            style={styles.avatarImg}
-                        />
-                    </View>
-                    <View style={[styles.userInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                        <Text style={[styles.userName, { textAlign: isRTL ? 'right' : 'left' }]}>
-                            {userData?.name || (isRTL ? 'المستخدم' : 'User')}
-                        </Text>
-                        {!!userData?.phone && (
-                            <Text style={[styles.userPhone, { textAlign: isRTL ? 'right' : 'left' }]}>
-                                {userData.phone}
+                    {/* Inner avatar and name/phone block */}
+                    <View style={[styles.avatarAndInfo, { flexDirection: rowDirection }]}>
+                        <View style={styles.avatarWrap}>
+                            <Image
+                                source={getImageSrc(userData?.image || userData?.imageUrl)}
+                                style={styles.avatarImg}
+                            />
+                        </View>
+                        <View style={[styles.userInfo, { alignItems: alignStart }]}>
+                            <Text style={[styles.userName, { textAlign: textStart }]}>
+                                {userData?.name || (isArabic ? 'المستخدم' : 'User')}
                             </Text>
-                        )}
+                            {!!userData?.phone && (
+                                <Text style={[styles.userPhone, { textAlign: textStart }]}>
+                                    {userData.phone}
+                                </Text>
+                            )}
+                        </View>
+                    </View>
+
+                    {/* Edit Icon on the opposite end */}
+                    <View style={styles.editIconWrap}>
+                        <SolarProfileEdit size={32} color={Colors.primary} />
                     </View>
                 </TouchableOpacity>
 
@@ -140,7 +156,7 @@ export default function CustomerProfileScreen() {
                     {menuItems.map((item) => (
                         <TouchableOpacity
                             key={item.id}
-                            style={[styles.menuRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}
+                            style={[styles.menuRow, { flexDirection: rowDirection }]}
                             onPress={() => {
                                 if (item.action) {
                                     item.action();
@@ -151,7 +167,7 @@ export default function CustomerProfileScreen() {
                             activeOpacity={0.7}
                         >
                             {/* Icon first, then label right next to it */}
-                            <View style={styles.menuItemStart}>
+                            <View style={[styles.menuItemStart, { flexDirection: rowDirection }]}>
                                 <ProfileShape size={normalize.width(42)} type={item.shape}>
                                     {item.icon}
                                 </ProfileShape>
@@ -187,6 +203,8 @@ const styles = StyleSheet.create({
         paddingTop: normalize.height(16),
     },
     userCard: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
         backgroundColor: '#FFFFFF',
         borderRadius: normalize.radius(20),
@@ -195,7 +213,16 @@ const styles = StyleSheet.create({
         marginBottom: normalize.height(16),
         borderWidth: 1,
         borderColor: '#F3F4F6',
+    },
+    avatarAndInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
         gap: normalize.width(12),
+        flex: 1,
+    },
+    editIconWrap: {
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     userInfo: {
         flex: 1,
@@ -247,6 +274,8 @@ const styles = StyleSheet.create({
         fontSize: normalize.font(14),
         fontFamily: "Alexandria-Medium",
         color: '#374151',
+        lineHeight: normalize.font(20),
+        paddingBottom: 2,
     },
     logoutText: {
         color: '#EF4444',

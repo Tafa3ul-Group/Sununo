@@ -1,25 +1,24 @@
 import {
-    SolarCalendarMinimalisticBold,
-    SolarClockCircleBold,
-    SolarCloseBold,
-    SolarCloseCircleBold,
-    SolarFireBold,
-    SolarHeartBold,
-    SolarHome2Bold,
-    SolarMagnifierBold,
-    SolarMapBoldDuotone,
-    SolarMapPointBold,
-    SolarSettingsBold,
-    SolarStarBold,
-    SolarTreeBold,
-    SolarUsersGroupBold,
-    SolarWaterBold,
-    SolarWidgetBold,
-    SolarWifiBold,
-    SolarWindBold
+  SolarCalendarMinimalisticBold,
+  SolarClockCircleBold,
+  SolarCloseBold,
+  SolarCloseCircleBold,
+  SolarFireBold,
+  SolarHeartBold,
+  SolarHome2Bold,
+  SolarMagnifierBold,
+  SolarMapBoldDuotone,
+  SolarMapPointBold,
+  SolarSettingsBold,
+  SolarStarBold,
+  SolarTreeBold,
+  SolarUsersGroupBold,
+  SolarWaterBold,
+  SolarWidgetBold,
+  SolarWifiBold,
+  SolarWindBold,
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
-import { AppDrawer, AppDrawerRef } from "@/components/user/app-drawer";
 import { AppMap } from "@/components/user/app-map";
 import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
 import { LoginPromptModal } from "@/components/user/login-prompt-modal";
@@ -28,17 +27,19 @@ import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize, Shadows } from "@/constants/theme";
 import { RootState } from "@/store";
 import {
-    useGetChaletReviewsQuery,
-    useGetCustomerChaletDetailsQuery,
-    useGetFavoriteIdsQuery,
-    useGetSimilarChaletsQuery,
-    useToggleFavoriteMutation } from "@/store/api/customerApiSlice";
+  useGetChaletReviewsQuery,
+  useGetCustomerChaletDetailsQuery,
+  useGetFavoriteIdsQuery,
+  useGetSimilarChaletsQuery,
+  useToggleFavoriteMutation,
+} from "@/store/api/customerApiSlice";
 import {
-    BottomSheetBackdrop,
-    BottomSheetFooter,
-    BottomSheetModal,
-    BottomSheetScrollView,
-    BottomSheetTextInput } from "@gorhom/bottom-sheet";
+  BottomSheetBackdrop,
+  BottomSheetFooter,
+  BottomSheetModal,
+  BottomSheetScrollView,
+  BottomSheetTextInput,
+} from "@gorhom/bottom-sheet";
 import { useTranslation } from "react-i18next";
 import Animated, { FadeInUp } from "react-native-reanimated";
 
@@ -51,33 +52,37 @@ import * as Location from "expo-location";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import React, {
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState } from "react";
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
-    ActivityIndicator,
-    Dimensions,
-    Image,
-    Keyboard,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View } from "react-native";
+  ActivityIndicator,
+  Dimensions,
+  Image,
+  Keyboard,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  I18nManager,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const MAPBOX_ACCESS_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
+import { isRTL, getFlexDirection } from "@/i18n";
 import { useGetChaletsMapQuery } from "@/store/api/apiSlice";
-import { isRTL } from "@/i18n";
 
 const SHAPES = {
-  blue: "M29.4165 59.9929C32.7707 60.1573 33.8516 57.4154 36.6494 56.5727C39.068 55.844 42.1373 57.9136 44.602 56.1435C46.9761 54.4385 47.1003 51.1778 49.39 49.5262C50.4402 48.7686 52.2285 48.273 53.3904 47.6556C57.9159 45.2507 55.39 40.9854 56.6649 37.1198C57.1904 35.527 59.1812 33.5316 59.751 31.5682C61.0163 27.2086 57.083 25.3948 56.3847 21.7944C55.9755 19.6849 56.7103 16.6837 55.7598 14.6214C54.353 11.5687 50.787 11.9068 48.8393 9.92411C46.9162 7.96647 46.7071 4.83632 44.0101 3.40727C41.8302 2.25218 38.8321 3.99511 36.9305 3.46716C34.6099 2.82303 33.5786 0.936956 30.7928 0.00846604C26.7125 -0.17205 26.2613 2.58433 22.9082 3.49519C20.8505 4.05394 17.7655 1.94318 15.3255 3.77446C12.937 5.5671 12.9572 8.61484 10.6792 10.3017C9.69816 11.028 7.80148 11.597 6.71476 12.167C2.02929 14.6248 4.47819 18.6917 3.31327 22.6894C2.84735 24.2881 0.782415 26.4167 0.259212 28.2376C-0.909281 32.3028 2.18416 34.1827 3.35303 37.3834C4.22685 39.776 3.04536 42.7163 4.19953 45.2418C5.67644 48.4732 9.28102 47.9739 11.2678 50.1348C13.0367 52.0591 13.2797 55.0582 15.8605 56.4423C18.0647 57.6243 21.3307 55.8827 23.1837 56.5279C25.7251 57.4128 26.4182 58.9797 29.4165 59.9929Z" };
+  blue: "M29.4165 59.9929C32.7707 60.1573 33.8516 57.4154 36.6494 56.5727C39.068 55.844 42.1373 57.9136 44.602 56.1435C46.9761 54.4385 47.1003 51.1778 49.39 49.5262C50.4402 48.7686 52.2285 48.273 53.3904 47.6556C57.9159 45.2507 55.39 40.9854 56.6649 37.1198C57.1904 35.527 59.1812 33.5316 59.751 31.5682C61.0163 27.2086 57.083 25.3948 56.3847 21.7944C55.9755 19.6849 56.7103 16.6837 55.7598 14.6214C54.353 11.5687 50.787 11.9068 48.8393 9.92411C46.9162 7.96647 46.7071 4.83632 44.0101 3.40727C41.8302 2.25218 38.8321 3.99511 36.9305 3.46716C34.6099 2.82303 33.5786 0.936956 30.7928 0.00846604C26.7125 -0.17205 26.2613 2.58433 22.9082 3.49519C20.8505 4.05394 17.7655 1.94318 15.3255 3.77446C12.937 5.5671 12.9572 8.61484 10.6792 10.3017C9.69816 11.028 7.80148 11.597 6.71476 12.167C2.02929 14.6248 4.47819 18.6917 3.31327 22.6894C2.84735 24.2881 0.782415 26.4167 0.259212 28.2376C-0.909281 32.3028 2.18416 34.1827 3.35303 37.3834C4.22685 39.776 3.04536 42.7163 4.19953 45.2418C5.67644 48.4732 9.28102 47.9739 11.2678 50.1348C13.0367 52.0591 13.2797 55.0582 15.8605 56.4423C18.0647 57.6243 21.3307 55.8827 23.1837 56.5279C25.7251 57.4128 26.4182 58.9797 29.4165 59.9929Z",
+};
 
 const FEATURE_ICON_MAP: Record<string, any> = {
   bbq: SolarFireBold,
@@ -90,7 +95,8 @@ const FEATURE_ICON_MAP: Record<string, any> = {
   bathroom: SolarWaterBold,
   entertainment: SolarWidgetBold,
   services: SolarSettingsBold,
-  default: SolarWidgetBold };
+  default: SolarWidgetBold,
+};
 
 const CARD_COLORS = ["#035DF9", "#15AB64", "#F64300"];
 
@@ -102,10 +108,15 @@ function SectionHeader({ title, isRTL }: { title: string; isRTL: boolean }) {
         justifyContent: "center",
         marginBottom: 10,
         marginTop: 15,
-        alignItems: 'flex-start' }}
+        alignItems: "flex-start",
+      }}
     >
       <ThemedText
-        style={{ fontSize: 18, fontFamily: "Tajawal-Black", color: "#111827" }}
+        style={{
+          fontSize: 14,
+          fontFamily: "Alexandria-Medium",
+          color: "#111827",
+        }}
       >
         {title}
       </ThemedText>
@@ -114,25 +125,55 @@ function SectionHeader({ title, isRTL }: { title: string; isRTL: boolean }) {
 }
 
 // ── Active Filter Banner ──────────────────────────────────────────────────────
-function ActiveFilterBanner({ filter, isRTL, onClear }: { filter: any; isRTL: boolean; onClear: () => void }) {
+function ActiveFilterBanner({
+  filter,
+  isRTL,
+  onClear,
+}: {
+  filter: any;
+  isRTL: boolean;
+  onClear: () => void;
+}) {
   const filterItems = useMemo(() => {
     const items = [];
     if (filter.cityName) {
-      items.push({ id: 'city', text: filter.cityName, icon: <SolarMapPointBold size={14} color={Colors.primary} /> });
+      items.push({
+        id: "city",
+        text: filter.cityName,
+        icon: <SolarMapPointBold size={14} color={Colors.primary} />,
+      });
     }
     if (filter.checkIn) {
-      const dateText = new Date(filter.checkIn).toLocaleDateString(isRTL ? "ar" : "en", { month: "short", day: "numeric" });
-      items.push({ id: 'date', text: dateText, icon: <SolarCalendarMinimalisticBold size={14} color={Colors.primary} /> });
+      const dateText = new Date(filter.checkIn).toLocaleDateString(
+        isRTL ? "ar" : "en",
+        { month: "short", day: "numeric" },
+      );
+      items.push({
+        id: "date",
+        text: dateText,
+        icon: (
+          <SolarCalendarMinimalisticBold size={14} color={Colors.primary} />
+        ),
+      });
     }
     if (filter.period) {
       const periodMap: Record<string, string> = {
         morning: isRTL ? "صباحي" : "Morning",
         evening: isRTL ? "مسائي" : "Evening",
-        overnight: isRTL ? "مبيت" : "Overnight" };
-      items.push({ id: 'period', text: periodMap[filter.period] || filter.period, icon: <SolarClockCircleBold size={14} color={Colors.primary} /> });
+        overnight: isRTL ? "مبيت" : "Overnight",
+      };
+      items.push({
+        id: "period",
+        text: periodMap[filter.period] || filter.period,
+        icon: <SolarClockCircleBold size={14} color={Colors.primary} />,
+      });
     }
     if (filter.maxGuests) {
-      items.push({ id: 'guests', text: `${filter.maxGuests} ${isRTL ? "ضيف" : "guests"}`, icon: <SolarUsersGroupBold size={14} color={Colors.primary} /> });
+      items.push({
+        id: "guests",
+        text: `${filter.maxGuests} ${isRTL ? "ضيف" : "guests"}`,
+        icon: <SolarUsersGroupBold size={14} color={Colors.primary} />,
+      });
     }
     return items;
   }, [filter, isRTL]);
@@ -141,24 +182,29 @@ function ActiveFilterBanner({ filter, isRTL, onClear }: { filter: any; isRTL: bo
 
   return (
     <View style={filterBannerStyles.container}>
-      <View style={[filterBannerStyles.content, { flexDirection: 'row' }]}>
-        <ScrollView 
-          horizontal 
+      <View style={[filterBannerStyles.content, { flexDirection: "row" }]}>
+        <ScrollView
+          horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={[filterBannerStyles.scrollContent, { flexDirection: 'row' }]}
+          contentContainerStyle={[
+            filterBannerStyles.scrollContent,
+            { flexDirection: "row" },
+          ]}
         >
           {filterItems.map((item) => (
-            <View key={item.id} style={[filterBannerStyles.pill, { flexDirection: 'row' }]}>
+            <View
+              key={item.id}
+              style={[filterBannerStyles.pill, { flexDirection: "row" }]}
+            >
               {item.icon}
-              <ThemedText style={filterBannerStyles.pillText}>{item.text}</ThemedText>
+              <ThemedText style={filterBannerStyles.pillText}>
+                {item.text}
+              </ThemedText>
             </View>
           ))}
         </ScrollView>
 
-        <TouchableOpacity
-          style={filterBannerStyles.clearBtn}
-          onPress={onClear}
-        >
+        <TouchableOpacity style={filterBannerStyles.clearBtn} onPress={onClear}>
           <SolarCloseBold size={16} color={Colors.primary} />
         </TouchableOpacity>
       </View>
@@ -167,14 +213,17 @@ function ActiveFilterBanner({ filter, isRTL, onClear }: { filter: any; isRTL: bo
 }
 
 export default function ExploreScreen() {
+  const { language, isAuthenticated, user, userType } = useSelector(
+    (state: RootState) => state.auth,
+  );
+  const isRTL = language === "ar";
+  const textStart: "left" | "right" = isRTL ? "right" : "left";
+  const flexDir: "row" | "row-reverse" = (isRTL === I18nManager.isRTL) ? "row" : "row-reverse";
   const router = useRouter();
   const { id, showMyLocation } = useLocalSearchParams();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const { language, isAuthenticated, user } = useSelector(
-    (state: RootState) => state.auth,
-  );
-  
+
   // Map State
   const [zoom, setZoom] = useState(6);
   const [cameraPosition, setCameraPosition] = useState<[number, number]>([
@@ -192,34 +241,38 @@ export default function ExploreScreen() {
 
   // Bottom Sheet Ref for Filters
   const filterSheetRef = useRef<BottomSheetModal>(null);
-  const drawerRef = useRef<AppDrawerRef>(null);
   const dispatch = useDispatch();
 
   // Global Filters from Redux
-  const activeFilters = useSelector((state: RootState) => (state as any).filter);
+  const activeFilters = useSelector(
+    (state: RootState) => (state as any).filter,
+  );
 
   // API Data
   const { data: chaletsResponse, isLoading: isChaletsLoading } =
     useGetChaletsMapQuery({
       limit: zoom >= 14 ? 300 : zoom >= 10 ? 150 : zoom >= 6 ? 80 : 40,
       search: search || activeFilters?.search || undefined,
-      maxAdults: maxAdults ? parseInt(maxAdults) : (activeFilters?.maxGuests || undefined),
+      maxAdults: maxAdults
+        ? parseInt(maxAdults)
+        : activeFilters?.maxGuests || undefined,
       minPrice: minPrice ? parseInt(minPrice) : undefined,
       maxPrice: maxPrice ? parseInt(maxPrice) : undefined,
       cityId: activeFilters?.cityId || undefined,
-      checkIn: activeFilters?.checkIn?.split("T")[0],
-      period: activeFilters?.period,
-      zoom: Math.round(zoom) });
+      zoom: Math.round(zoom),
+    });
 
   const chaletsRaw = chaletsResponse?.data || [];
 
   const [selectedChalet, setSelectedChalet] = useState<any>(null);
   const browsingRegionRef = useRef<{ center: [number, number]; zoom: number }>({
     center: [44.36, 33.31],
-    zoom: 6 });
+    zoom: 6,
+  });
   const [currentMapRegion, setCurrentMapRegion] = useState({
     center: [44.36, 33.31] as [number, number],
-    zoom: 6 });
+    zoom: 6,
+  });
   // Moved FILTER_OPTIONS inside component to use translations
   const FILTER_OPTIONS = useMemo(
     () => [
@@ -232,7 +285,8 @@ export default function ExploreScreen() {
             color={isActive ? "white" : Colors.primary}
           />
         ),
-        activeColor: Colors.primary },
+        activeColor: Colors.primary,
+      },
       {
         id: "pool",
         label: t("home.categories.pool"),
@@ -242,14 +296,16 @@ export default function ExploreScreen() {
             color={isActive ? "white" : Colors.secondary}
           />
         ),
-        activeColor: Colors.secondary },
+        activeColor: Colors.secondary,
+      },
       {
         id: "bbq",
         label: t("home.categories.bbq"),
         icon: (isActive: boolean) => (
           <SolarFireBold size={18} color={isActive ? "white" : Colors.accent} />
         ),
-        activeColor: Colors.accent },
+        activeColor: Colors.accent,
+      },
       {
         id: "garden",
         label: t("home.categories.garden"),
@@ -259,7 +315,8 @@ export default function ExploreScreen() {
             color={isActive ? "white" : Colors.secondary}
           />
         ),
-        activeColor: Colors.secondary },
+        activeColor: Colors.secondary,
+      },
     ],
     [t],
   );
@@ -301,7 +358,8 @@ export default function ExploreScreen() {
           maxAdults: item.maxAdults,
           maxChildren: item.maxChildren,
           bedrooms: item.bedrooms,
-          bathrooms: item.bathrooms };
+          bathrooms: item.bathrooms,
+        };
       });
   }, [chaletsRaw, isRTL]);
 
@@ -374,7 +432,8 @@ export default function ExploreScreen() {
       subscription = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.High,
-          distanceInterval: 5 },
+          distanceInterval: 5,
+        },
         (newLoc) => {
           setLocation(newLoc);
         },
@@ -393,23 +452,27 @@ export default function ExploreScreen() {
   // Fetch full details when a chalet is selected
   const { data: chaletFullDetails, isLoading: isDetailsLoading } =
     useGetCustomerChaletDetailsQuery(selectedChalet?.id, {
-      skip: !selectedChalet?.id });
+      skip: !selectedChalet?.id,
+    });
 
   const { data: reviewsResponse } = useGetChaletReviewsQuery(
     { chaletId: selectedChalet?.id, page: 1, limit: 5 },
     {
-      skip: !selectedChalet?.id },
+      skip: !selectedChalet?.id,
+    },
   );
 
   const { data: similarResponse } = useGetSimilarChaletsQuery(
     selectedChalet?.id,
     {
-      skip: !selectedChalet?.id },
+      skip: !selectedChalet?.id,
+    },
   );
 
   const { data: favoriteIds = [], refetch: refetchFavorites } =
     useGetFavoriteIdsQuery(undefined, {
-      skip: !isAuthenticated });
+      skip: !isAuthenticated,
+    });
 
   const [toggleFavorite] = useToggleFavoriteMutation();
 
@@ -439,11 +502,16 @@ export default function ExploreScreen() {
             ]}
           >
             <View
-              style={[
-                styles.footerContent,
-                { flexDirection: 'row-reverse' },
-              ]}
+              style={[styles.footerContent, { flexDirection: flexDir }]}
             >
+              <View style={[styles.priceContainer, { alignItems: isRTL ? "flex-end" : "flex-start", justifyContent: "center" }]}>
+                <ThemedText style={[styles.footerPrice, { textAlign: textStart }]}>
+                  {isRTL ? "" : "IQD "}
+                  {selectedChalet.price}
+                  {isRTL ? " د.ع" : ""}
+                </ThemedText>
+              </View>
+
               <PrimaryButton
                 label={isRTL ? "احجز الان" : "Book Now"}
                 onPress={() => {
@@ -458,12 +526,6 @@ export default function ExploreScreen() {
                 }}
                 style={{ width: normalize.width(140) }}
               />
-
-              <View style={styles.priceContainer}>
-                <ThemedText style={styles.footerPrice}>
-                  {selectedChalet.price} IQD
-                </ThemedText>
-              </View>
             </View>
           </View>
         </BottomSheetFooter>
@@ -479,7 +541,8 @@ export default function ExploreScreen() {
     if (!selectedChalet) {
       setPreSelectionRegion({
         center: currentMapRegion.center,
-        zoom: currentMapRegion.zoom });
+        zoom: currentMapRegion.zoom,
+      });
     }
 
     setSelectedChalet(chalet);
@@ -513,7 +576,8 @@ export default function ExploreScreen() {
         setRoute(data.routes[0].geometry);
         setRouteInfo({
           distance: (data.routes[0].distance / 1000).toFixed(1),
-          duration: Math.round(data.routes[0].duration / 60) });
+          duration: Math.round(data.routes[0].duration / 60),
+        });
       }
     } catch (e) {
       console.error("Routing error:", e);
@@ -587,7 +651,7 @@ export default function ExploreScreen() {
             <TextInput
               style={[
                 styles.searchInput,
-                { textAlign: isRTL ? "right" : "left" },
+                { textAlign: textStart },
               ]}
               placeholder={
                 isRTL
@@ -608,13 +672,13 @@ export default function ExploreScreen() {
 
         {/* Active Filter Indicator */}
         {activeFilters?.isActive && (
-          <ActiveFilterBanner 
-            filter={activeFilters} 
-            isRTL={isRTL} 
+          <ActiveFilterBanner
+            filter={activeFilters}
+            isRTL={isRTL}
             onClear={() => {
               const { clearFilters } = require("@/store/filterSlice");
               dispatch(clearFilters());
-            }} 
+            }}
           />
         )}
 
@@ -637,7 +701,8 @@ export default function ExploreScreen() {
               {
                 backgroundColor: "#FEE2E2",
                 borderColor: "#EF4444",
-                borderWidth: 1 },
+                borderWidth: 1,
+              },
             ]}
             onPress={() => {
               setRoute(null);
@@ -729,7 +794,8 @@ export default function ExploreScreen() {
                                 ? Colors.primary
                                 : "rgba(255,255,255,0.5)",
                             width: activeImageIndex === index ? 10 : 8,
-                            height: activeImageIndex === index ? 10 : 8 },
+                            height: activeImageIndex === index ? 10 : 8,
+                          },
                         ]}
                       />
                     ),
@@ -738,10 +804,7 @@ export default function ExploreScreen() {
               </View>
 
               <View
-                style={[
-                  styles.mainInfoRow,
-                  { flexDirection: 'row-reverse' },
-                ]}
+                style={[styles.mainInfoRow, { flexDirection: flexDir }]}
               >
                 {/* Rating */}
                 <View style={styles.ratingSection}>
@@ -753,10 +816,7 @@ export default function ExploreScreen() {
 
                 {/* Title and Location */}
                 <View
-                  style={[
-                    styles.titleSection,
-                    { alignItems: 'flex-start' },
-                  ]}
+                  style={[styles.titleSection, { alignItems: "flex-start" }]}
                 >
                   <ThemedText style={styles.chaletTitleMain}>
                     {typeof selectedChalet?.title === "string"
@@ -776,12 +836,7 @@ export default function ExploreScreen() {
               </View>
 
               {/* Specifications Section */}
-              <View
-                style={[
-                  styles.specsSection,
-                  { alignItems: 'flex-start' },
-                ]}
-              >
+              <View style={[styles.specsSection, { alignItems: "flex-start" }]}>
                 <ThemedText style={styles.sectionLabel}>
                   {isRTL ? "المواصفات الاساسية" : "Basic Specifications"}
                 </ThemedText>
@@ -790,7 +845,7 @@ export default function ExploreScreen() {
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={[
                     styles.specsContainer,
-                    { flexDirection: 'row' },
+                    { flexDirection: "row" },
                   ]}
                 >
                   <View style={styles.specChip}>
@@ -848,7 +903,8 @@ export default function ExploreScreen() {
                                   padding: 12,
                                   alignItems: "center",
                                   gap: 12,
-                                  flexDirection: 'row' }}
+                                  flexDirection: "row",
+                                }}
                               >
                                 <View
                                   style={{
@@ -857,7 +913,8 @@ export default function ExploreScreen() {
                                     borderRadius: 20,
                                     backgroundColor: "white",
                                     justifyContent: "center",
-                                    alignItems: "center" }}
+                                    alignItems: "center",
+                                  }}
                                 >
                                   <SolarClockCircleBold
                                     size={20}
@@ -867,13 +924,15 @@ export default function ExploreScreen() {
                                 <View
                                   style={{
                                     flex: 1,
-                                    alignItems: 'flex-start' }}
+                                    alignItems: "flex-start",
+                                  }}
                                 >
                                   <ThemedText
                                     style={{
                                       fontSize: 14,
-                                      fontFamily: "Tajawal-Bold",
-                                      color: "#1F2937" }}
+                                      fontFamily: "Alexandria-Medium",
+                                      color: "#1F2937",
+                                    }}
                                   >
                                     {isRTL
                                       ? shift.name?.ar || shift.name
@@ -881,10 +940,11 @@ export default function ExploreScreen() {
                                   </ThemedText>
                                   <ThemedText
                                     style={{
-                                      fontSize: 12,
-                                      fontFamily: "Tajawal-Medium",
+                                      fontSize: 8,
+                                      fontFamily: "Alexandria-Medium",
                                       color: "#6B7280",
-                                      marginTop: 2 }}
+                                      marginTop: 2,
+                                    }}
                                   >
                                     {formatShiftTime(shift.startTime)} -{" "}
                                     {formatShiftTime(shift.endTime)}
@@ -906,10 +966,11 @@ export default function ExploreScreen() {
                         />
                         <View
                           style={{
-                            flexDirection: 'row',
+                            flexDirection: "row",
                             flexWrap: "wrap",
                             justifyContent: "space-between",
-                            marginVertical: 15 }}
+                            marginVertical: 15,
+                          }}
                         >
                           {(chaletDetails.chaletFeatures || []).map(
                             (item: any, idx: number) => {
@@ -923,14 +984,16 @@ export default function ExploreScreen() {
                                   style={{
                                     width: "23%",
                                     alignItems: "center",
-                                    marginBottom: 20 }}
+                                    marginBottom: 20,
+                                  }}
                                 >
                                   <View
                                     style={{
                                       width: 55,
                                       height: 55,
                                       justifyContent: "center",
-                                      alignItems: "center" }}
+                                      alignItems: "center",
+                                    }}
                                   >
                                     <Svg
                                       height={55}
@@ -950,10 +1013,11 @@ export default function ExploreScreen() {
                                   </View>
                                   <ThemedText
                                     style={{
-                                      fontSize: 11,
-                                      fontFamily: "Tajawal-Bold",
+                                      fontSize: 8,
+                                      fontFamily: "Alexandria-Medium",
                                       marginTop: 6,
-                                      textAlign: "center" }}
+                                      textAlign: "center",
+                                    }}
                                   >
                                     {isRTL
                                       ? feature.name?.ar
@@ -976,15 +1040,17 @@ export default function ExploreScreen() {
                         />
                         <View
                           style={{
-                            alignItems: 'flex-start',
-                            marginBottom: 10 }}
+                            alignItems: "flex-start",
+                            marginBottom: 10,
+                          }}
                         >
                           <ThemedText
                             style={{
                               fontSize: 14,
                               color: "#64748B",
                               lineHeight: 22,
-                              textAlign: isRTL ? "right" : "left" }}
+                              textAlign: textStart,
+                            }}
                           >
                             {isRTL
                               ? chaletDetails.description?.ar
@@ -1023,7 +1089,8 @@ export default function ExploreScreen() {
                           <View style={styles.mapInner}>
                             <Image
                               source={{
-                                uri: `https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+${Colors.primary.replace("#", "")}(${chaletDetails.longitude || 44.3661},${chaletDetails.latitude || 33.3152})/${chaletDetails.longitude || 44.3661},${chaletDetails.latitude || 33.3152},14/600x300@2x?access_token=${MAPBOX_ACCESS_TOKEN}` }}
+                                uri: `https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+${Colors.primary.replace("#", "")}(${chaletDetails.longitude || 44.3661},${chaletDetails.latitude || 33.3152})/${chaletDetails.longitude || 44.3661},${chaletDetails.latitude || 33.3152},14/600x300@2x?access_token=${MAPBOX_ACCESS_TOKEN}`,
+                              }}
                               style={{ width: "100%", height: "100%" }}
                               resizeMode="cover"
                             />
@@ -1034,13 +1101,15 @@ export default function ExploreScreen() {
                               alignItems: "center",
                               backgroundColor: "white",
                               borderBottomLeftRadius: 20,
-                              borderBottomRightRadius: 20 }}
+                              borderBottomRightRadius: 20,
+                            }}
                           >
                             <ThemedText
                               style={{
-                                fontSize: 16,
-                                fontFamily: "Tajawal-Black",
-                                color: Colors.primary }}
+                                fontSize: 14,
+                                fontFamily: "Alexandria-Medium",
+                                color: Colors.primary,
+                              }}
                             >
                               {isRTL
                                 ? chaletDetails.region?.name?.ar
@@ -1051,10 +1120,11 @@ export default function ExploreScreen() {
                             </ThemedText>
                             <ThemedText
                               style={{
-                                fontSize: 12,
+                                fontSize: 8,
                                 color: "#64748B",
-                                fontFamily: "Tajawal-Medium",
-                                marginTop: 2 }}
+                                fontFamily: "Alexandria-Medium",
+                                marginTop: 2,
+                              }}
                             >
                               {isRTL
                                 ? "انقر لرؤية الموقع بدقة"
@@ -1084,14 +1154,16 @@ export default function ExploreScreen() {
                                   style={[
                                     styles.revHeaderMerged,
                                     {
-                                      flexDirection: 'row-reverse' },
+                                      flexDirection: flexDir,
+                                    },
                                   ]}
                                 >
                                   <View
                                     style={[
                                       styles.revRatingCornerMerged,
                                       {
-                                        flexDirection: 'row-reverse' },
+                                        flexDirection: flexDir,
+                                      },
                                     ]}
                                   >
                                     <ThemedText style={styles.revRateNumMerged}>
@@ -1106,14 +1178,16 @@ export default function ExploreScreen() {
                                     style={[
                                       styles.userInfoRowMerged,
                                       {
-                                        flexDirection: 'row-reverse' },
+                                        flexDirection: flexDir,
+                                      },
                                     ]}
                                   >
                                     <View
                                       style={[
                                         styles.nameAndBodyMerged,
                                         {
-                                          alignItems: 'flex-start' },
+                                          alignItems: "flex-start",
+                                        },
                                         isRTL
                                           ? { marginRight: 15 }
                                           : { marginLeft: 15 },
@@ -1128,7 +1202,8 @@ export default function ExploreScreen() {
                                         style={[
                                           styles.revMessageMerged,
                                           {
-                                            textAlign: isRTL ? "right" : "left" },
+                                             textAlign: textStart,
+                                          },
                                         ]}
                                       >
                                         {reviewItem.comment}
@@ -1149,7 +1224,8 @@ export default function ExploreScreen() {
                             style={{
                               textAlign: "center",
                               color: "#94A3B8",
-                              marginTop: 10 }}
+                              marginTop: 10,
+                            }}
                           >
                             {isRTL ? "لا توجد تقييمات بعد" : "No reviews yet"}
                           </ThemedText>
@@ -1181,7 +1257,8 @@ export default function ExploreScreen() {
                                 : "0",
                               rating: item.rating || 0,
                               image: getImageSrc(item.images?.[0]?.url),
-                              color: CARD_COLORS[index % CARD_COLORS.length] }),
+                              color: CARD_COLORS[index % CARD_COLORS.length],
+                            }),
                           )}
                           onPressCard={(id) => {
                             router.push(`/chalet-details/${id}`);
@@ -1227,7 +1304,8 @@ export default function ExploreScreen() {
               contentContainerStyle={{
                 paddingVertical: 10,
                 gap: 10,
-                flexDirection: 'row' }}
+                flexDirection: "row",
+              }}
             >
               {FILTER_OPTIONS.map((filter) => (
                 <SecondaryButton
@@ -1249,7 +1327,7 @@ export default function ExploreScreen() {
             <BottomSheetTextInput
               style={[
                 styles.modalInput,
-                { textAlign: isRTL ? "right" : "left" },
+                { textAlign: textStart },
               ]}
               placeholder={isRTL ? "مثلاً: 5" : "e.g. 5"}
               keyboardType="numeric"
@@ -1262,16 +1340,11 @@ export default function ExploreScreen() {
             <Text style={styles.filterSectionLabel}>
               {isRTL ? "نطاق السعر (د.ع)" : "Price Range (IQD)"}
             </Text>
-            <View
-              style={[
-                styles.priceRow,
-                { flexDirection: 'row' },
-              ]}
-            >
+            <View style={[styles.priceRow, { flexDirection: "row" }]}>
               <BottomSheetTextInput
                 style={[
                   styles.modalInput,
-                  { flex: 1, textAlign: isRTL ? "right" : "left" },
+                  { flex: 1, textAlign: textStart },
                 ]}
                 placeholder={isRTL ? "من" : "Min"}
                 keyboardType="numeric"
@@ -1282,7 +1355,7 @@ export default function ExploreScreen() {
               <BottomSheetTextInput
                 style={[
                   styles.modalInput,
-                  { flex: 1, textAlign: isRTL ? "right" : "left" },
+                  { flex: 1, textAlign: textStart },
                 ]}
                 placeholder={isRTL ? "إلى" : "Max"}
                 keyboardType="numeric"
@@ -1308,7 +1381,6 @@ export default function ExploreScreen() {
           </View>
         </BottomSheetScrollView>
       </BottomSheetModal>
-      <AppDrawer ref={drawerRef} />
       <LoginPromptModal
         isVisible={showLoginPrompt}
         onClose={() => setShowLoginPrompt(false)}
@@ -1325,16 +1397,19 @@ export default function ExploreScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white" },
+    backgroundColor: "white",
+  },
   topOverlay: {
     position: "absolute",
     top: 0,
     width: "100%",
-    zIndex: 10 },
+    zIndex: 10,
+  },
   filterChips: {
     paddingHorizontal: 16,
     gap: 8,
-    paddingBottom: 8 },
+    paddingBottom: 8,
+  },
   filterChip: {
     backgroundColor: "white",
     paddingHorizontal: 16,
@@ -1342,37 +1417,46 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: "center",
     gap: 8,
-    ...Shadows.small },
+    ...Shadows.small,
+  },
   filterChipText: {
-    fontSize: 13,
-    fontFamily: "Tajawal-SemiBold",
-    color: "#1F2937" },
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
+    color: "#1F2937",
+  },
   bottomSheet: {
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
-    ...Shadows.large },
+    ...Shadows.large,
+  },
   sheetContent: {
     flex: 1,
-    padding: 20 },
+    padding: 20,
+  },
   cardContainer: {
-    width: "100%" },
+    width: "100%",
+  },
   cardHeader: {
-    gap: 16 },
+    gap: 16,
+  },
   chaletThumb: {
     width: 100,
     height: 100,
     borderRadius: 16,
-    backgroundColor: "#F3F4F6" },
+    backgroundColor: "#F3F4F6",
+  },
   imageCarouselContainer: {
     width: "100%",
     height: 250,
     borderRadius: 24,
     overflow: "hidden",
-    backgroundColor: "#F3F4F6" },
+    backgroundColor: "#F3F4F6",
+  },
   carouselImage: {
     width: SCREEN_WIDTH - 40,
     height: 250,
-    resizeMode: "cover" },
+    resizeMode: "cover",
+  },
   imageCountBadge: {
     position: "absolute",
     bottom: 12,
@@ -1380,49 +1464,60 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.6)",
     paddingHorizontal: 12,
     paddingVertical: 4,
-    borderRadius: 12 },
+    borderRadius: 12,
+  },
   imageCountText: {
     color: "white",
-    fontSize: 11,
-    fontFamily: "Tajawal-Bold" },
+    fontSize: 8,
+    fontFamily: "Alexandria-Medium",
+  },
   headerInfo: {
     flex: 1,
     justifyContent: "center",
-    gap: 4 },
+    gap: 4,
+  },
   chaletTitle: {
-    fontSize: 18,
-    fontFamily: "Tajawal-Black",
-    color: "#111827" },
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
+    color: "#111827",
+  },
   locationRow: {
     alignItems: "center",
-    gap: 4 },
+    gap: 4,
+  },
   chaletLocation: {
-    fontSize: 13,
+    fontSize: 14,
     color: "#6B7280",
-    fontFamily: "Tajawal-Medium" },
+    fontFamily: "Alexandria-Medium",
+  },
   ratingRow: {
     alignItems: "center",
-    marginTop: 4 },
+    marginTop: 4,
+  },
   priceText: {
-    fontSize: 15,
-    fontFamily: "Tajawal-Black",
-    color: Colors.primary },
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
+    color: Colors.primary,
+  },
   dot: {
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#D1D5DB" },
+    backgroundColor: "#D1D5DB",
+  },
   ratingText: {
     fontSize: 14,
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Medium",
     color: "#1F2937",
-    marginLeft: 4 },
+    marginLeft: 4,
+  },
   rightNavActions: {
     position: "absolute",
     right: 20,
     top: SCREEN_HEIGHT * 0.35,
     gap: 12,
-    zIndex: 30 },
+    zIndex: 30,
+  },
   navInfoCard: {
     flex: 1,
     backgroundColor: "white",
@@ -1431,19 +1526,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     ...Shadows.medium,
-    paddingHorizontal: 20 },
+    paddingHorizontal: 20,
+  },
   navInfoItem: {
     alignItems: "center",
-    flex: 1 },
+    flex: 1,
+  },
   navInfoVal: {
-    fontSize: 18,
-    fontFamily: "Tajawal-Black",
-    color: Colors.primary },
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
+    color: Colors.primary,
+  },
   navInfoLbl: {
-    fontSize: 10,
+    fontSize: 8,
     color: "#9CA3AF",
-    fontFamily: "Tajawal-Bold",
-    textTransform: "uppercase" },
+    fontFamily: "Alexandria-Medium",
+    textTransform: "uppercase",
+  },
   navCircleFab: {
     width: 64,
     height: 64,
@@ -1452,11 +1551,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     ...Shadows.medium,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.2)" },
+    borderColor: "rgba(255,255,255,0.2)",
+  },
   navSeparator: {
     width: 1,
     height: 24,
-    backgroundColor: "#E5E7EB" },
+    backgroundColor: "#E5E7EB",
+  },
   navActionBtn: {
     backgroundColor: Colors.primary,
     flexDirection: "row",
@@ -1466,15 +1567,18 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 12,
     marginTop: 12,
-    alignSelf: "flex-start" },
+    alignSelf: "flex-start",
+  },
   navActionText: {
     color: "white",
-    fontSize: 13,
-    fontFamily: "Tajawal-Bold" },
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
+  },
   enhancedInfoGrid: {
     marginTop: 24,
     paddingHorizontal: 0,
-    gap: 8 },
+    gap: 8,
+  },
   enhancedInfoItem: {
     flex: 1,
     alignItems: "center",
@@ -1483,23 +1587,28 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     borderColor: "#F1F5F9",
-    ...Shadows.small },
+    ...Shadows.small,
+  },
   enhancedInfoValue: {
-    fontSize: 15,
-    fontFamily: "Tajawal-Black",
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
     color: "#1E293B",
-    marginTop: 6 },
+    marginTop: 6,
+  },
   enhancedInfoLabel: {
-    fontSize: 10,
-    fontFamily: "Tajawal-Medium",
+    fontSize: 8,
+    fontFamily: "Alexandria-Medium",
     color: "#64748B",
     marginTop: 2,
-    textTransform: "uppercase" },
+    textTransform: "uppercase",
+  },
   cardActionsWrapper: {
     marginTop: 24,
-    paddingBottom: 20 },
+    paddingBottom: 20,
+  },
   mainActionsRow: {
-    gap: 12 },
+    gap: 12,
+  },
   navOutlineBtn: {
     flex: 1,
     height: 54,
@@ -1509,18 +1618,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 8 },
+    gap: 8,
+  },
   navOutlineText: {
     fontSize: 14,
-    fontFamily: "Tajawal-Bold",
-    color: Colors.primary },
+    fontFamily: "Alexandria-Medium",
+    color: Colors.primary,
+  },
 
   // New Design Styles
   mainInfoRow: {
     justifyContent: "space-between",
     alignItems: "flex-start",
     marginTop: 20,
-    paddingHorizontal: 4 },
+    paddingHorizontal: 4,
+  },
   ratingSection: {
     flexDirection: "row",
     alignItems: "center",
@@ -1528,44 +1640,54 @@ const styles = StyleSheet.create({
     backgroundColor: "#F8FAFC",
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 12 },
+    borderRadius: 12,
+  },
   ratingValue: {
-    fontSize: 16,
-    fontFamily: "Tajawal-Bold",
-    color: "#1E293B" },
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
+    color: "#1E293B",
+  },
   titleSection: {
     flex: 1,
-    paddingHorizontal: 12 },
+    paddingHorizontal: 12,
+  },
   chaletTitleMain: {
-    fontSize: 22,
-    fontFamily: "Tajawal-Black",
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
     color: "#111827",
-    textAlign: "right" },
+    textAlign: "right",
+  },
   chaletLocationSub: {
-    fontSize: 15,
+    fontSize: 14,
     color: "#6B7280",
-    fontFamily: "Tajawal-Medium",
-    marginTop: 2 },
+    fontFamily: "Alexandria-Medium",
+    marginTop: 2,
+  },
   specsSection: {
-    marginTop: 24 },
+    marginTop: 24,
+  },
   sectionLabel: {
-    fontSize: 18,
-    fontFamily: "Tajawal-Bold",
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
     color: "#1E293B",
     marginBottom: 12,
-    paddingHorizontal: 4 },
+    paddingHorizontal: 4,
+  },
   specsContainer: {
     gap: 8,
-    paddingHorizontal: 4 },
+    paddingHorizontal: 4,
+  },
   specChip: {
     backgroundColor: "#F1F5F9",
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 10 },
+    borderRadius: 10,
+  },
   specText: {
     fontSize: 14,
-    fontFamily: "Tajawal-Bold",
-    color: "#334155" },
+    fontFamily: "Alexandria-Medium",
+    color: "#334155",
+  },
   favoriteBtn: {
     position: "absolute",
     top: 16,
@@ -1576,7 +1698,8 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     justifyContent: "center",
     alignItems: "center",
-    ...Shadows.medium },
+    ...Shadows.medium,
+  },
   paginationDots: {
     position: "absolute",
     bottom: 16,
@@ -1584,25 +1707,30 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    gap: 6 },
+    gap: 6,
+  },
   footerSpacer: {
-    height: 0 },
+    height: 0,
+  },
   footerContentInFlow: {
     backgroundColor: "white",
     paddingHorizontal: 20,
     paddingTop: 16,
-    marginTop: 20 },
+    marginTop: 20,
+  },
   stickyFooterMain: {
     backgroundColor: "white",
     borderTopWidth: 1,
     borderTopColor: "#F1F5F9",
     paddingHorizontal: 20,
     paddingTop: 16,
-    ...Shadows.large },
+    ...Shadows.large,
+  },
   footerContent: {
     alignItems: "center",
     justifyContent: "space-between",
-    gap: 20 },
+    gap: 20,
+  },
   mapCardFlat: {
     backgroundColor: "white",
     borderRadius: 20,
@@ -1610,22 +1738,27 @@ const styles = StyleSheet.create({
     ...Shadows.medium,
     marginVertical: 10,
     borderWidth: 1,
-    borderColor: "#F1F5F9" },
+    borderColor: "#F1F5F9",
+  },
   mapInner: {
     width: "100%",
     height: 180,
-    backgroundColor: "#F3F4F6" },
+    backgroundColor: "#F3F4F6",
+  },
   priceContainer: {
-    flex: 1 },
+    flex: 1,
+  },
   footerPrice: {
-    fontSize: 24,
-    fontFamily: "Tajawal-Black",
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
     color: "#000000",
-    textAlign: "right" },
+    textAlign: "right",
+  },
   bookButtonCustom: {
     flexDirection: "row",
     alignItems: "center",
-    height: 54 },
+    height: 54,
+  },
   buttonMainShape: {
     backgroundColor: Colors.primary,
     height: 54,
@@ -1634,24 +1767,28 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 16,
     zIndex: 2,
-    minWidth: 100 },
+    minWidth: 100,
+  },
   buttonSideShape: {
     backgroundColor: Colors.primary,
     width: 34,
     height: 44,
     borderRadius: 17,
     marginHorizontal: -12,
-    zIndex: 1 },
+    zIndex: 1,
+  },
   bookButtonText: {
     color: "white",
-    fontSize: 16,
-    fontFamily: "Tajawal-Bold" },
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
+  },
   loaderOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(255,255,255,0.3)",
     justifyContent: "center",
     alignItems: "center",
-    zIndex: 1000 },
+    zIndex: 1000,
+  },
 
   // Advanced Filtering Styles
   searchBarContainer: {
@@ -1659,7 +1796,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 12,
-    width: "100%" },
+    width: "100%",
+  },
   searchInputWrapper: {
     flex: 1,
     height: 56,
@@ -1671,12 +1809,14 @@ const styles = StyleSheet.create({
     gap: 12,
     borderWidth: 1.5,
     borderColor: "#F1F5F9",
-    ...Shadows.medium },
+    ...Shadows.medium,
+  },
   searchInput: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: "Alexandria-Medium",
-    color: "#1F2937" },
+    color: "#1F2937",
+  },
   filterButtonCircle: {
     width: 52,
     height: 52,
@@ -1684,7 +1824,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     justifyContent: "center",
     alignItems: "center",
-    ...Shadows.medium },
+    ...Shadows.medium,
+  },
   filterActiveDot: {
     position: "absolute",
     top: 12,
@@ -1694,85 +1835,105 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: Colors.accent,
     borderWidth: 2,
-    borderColor: Colors.primary },
+    borderColor: Colors.primary,
+  },
 
   // Modal Styles
   filterModalContent: {
     flex: 1,
-    padding: 24 },
+    padding: 24,
+  },
   filterModalTitle: {
-    fontSize: 20,
-    fontFamily: "Tajawal-Black",
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
     color: "#111827",
     marginBottom: 24,
-    textAlign: "center" },
+    textAlign: "center",
+  },
   filterSection: {
-    marginBottom: 24 },
+    marginBottom: 24,
+  },
   filterSectionLabel: {
     fontSize: 14,
-    fontFamily: "Tajawal-Bold",
+    fontFamily: "Alexandria-Medium",
     color: "#374151",
-    marginBottom: 12 },
+    marginBottom: 12,
+  },
   modalInput: {
     height: 52,
     backgroundColor: "#F9FAFB",
     borderRadius: 14,
     paddingHorizontal: 16,
-    fontSize: 15,
-    fontFamily: "Tajawal-Medium",
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
     color: "#111827",
     borderWidth: 1,
-    borderColor: "#E5E7EB" },
+    borderColor: "#E5E7EB",
+  },
   priceRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12 },
+    gap: 12,
+  },
   priceSpacer: {
     width: 10,
     height: 1,
-    backgroundColor: "#9CA3AF" },
+    backgroundColor: "#9CA3AF",
+  },
   modalActions: {
     flexDirection: "row",
     gap: 12,
     marginTop: 10,
-    paddingBottom: 20 },
+    paddingBottom: 20,
+  },
   revComplexCardFlat: {
     backgroundColor: "#F8FAFC",
     borderRadius: 16,
     padding: 16,
-    marginBottom: 12 },
+    marginBottom: 12,
+  },
   revHeaderMerged: {
     alignItems: "flex-start",
-    justifyContent: "space-between" },
+    justifyContent: "space-between",
+  },
   revRatingCornerMerged: {
     alignItems: "center",
-    gap: 4 },
+    gap: 4,
+  },
   revRateNumMerged: {
     fontSize: 14,
-    fontFamily: "Tajawal-Bold" },
+    fontFamily: "Alexandria-Medium",
+  },
   userInfoRowMerged: {
     flex: 1,
-    alignItems: "flex-start" },
+    alignItems: "flex-start",
+  },
   nameAndBodyMerged: {
-    flex: 1 },
+    flex: 1,
+  },
   reviewerNameMerged: {
-    fontSize: 15,
-    fontFamily: "Tajawal-Bold",
-    color: "#1E293B" },
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
+    color: "#1E293B",
+  },
   revMessageMerged: {
-    fontSize: 13,
-    fontFamily: "Tajawal-Medium",
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
     color: "#64748B",
-    marginTop: 4 },
+    marginTop: 4,
+  },
   avatarCircleMerged: {
     width: 40,
     height: 40,
     borderRadius: 20,
     overflow: "hidden",
-    backgroundColor: "#E2E8F0" },
+    backgroundColor: "#E2E8F0",
+  },
   userAvatarImgMerged: {
     width: "100%",
-    height: "100%" } });
+    height: "100%",
+  },
+});
 
 const filterBannerStyles = StyleSheet.create({
   container: {
@@ -1784,16 +1945,19 @@ const filterBannerStyles = StyleSheet.create({
     ...Shadows.small,
     borderWidth: 1,
     borderColor: "#F3F4F6",
-    overflow: "hidden" },
+    overflow: "hidden",
+  },
   content: {
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 12,
-    paddingVertical: 8 },
+    paddingVertical: 8,
+  },
   scrollContent: {
     alignItems: "center",
     justifyContent: "center",
-    gap: 8 },
+    gap: 8,
+  },
   pill: {
     flexDirection: "row",
     alignItems: "center",
@@ -1801,11 +1965,15 @@ const filterBannerStyles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 12,
-    gap: 6 },
+    gap: 6,
+  },
   pillText: {
-    fontSize: 12,
+    fontSize: 8,
     fontFamily: "Alexandria-Medium",
-    color: Colors.primary },
+    color: Colors.primary,
+  },
   clearBtn: {
     padding: 4,
-    marginLeft: 4 } });
+    marginLeft: 4,
+  },
+});

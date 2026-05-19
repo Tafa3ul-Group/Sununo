@@ -89,14 +89,14 @@ const styles = StyleSheet.create({
     padding: 30,
     borderRadius: 50 },
   title: {
-    fontSize: normalize.font(24),
-    fontFamily: 'Alexandria-Black',
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: '#1E293B',
     marginBottom: 15,
     textAlign: 'center' },
   description: {
     fontSize: normalize.font(14),
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: "Alexandria-Medium",
     color: '#64748B',
     textAlign: 'center',
     lineHeight: 22,
@@ -110,8 +110,8 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: 30 },
   infoText: {
-    fontSize: normalize.font(12),
-    fontFamily: 'Alexandria-Bold',
+    fontSize: normalize.font(8),
+    fontFamily: "Alexandria-Medium",
     color: '#475569',
     textAlign: 'center' },
   button: {

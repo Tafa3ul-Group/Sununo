@@ -29,9 +29,16 @@ interface RangeCalendarProps {
   initialStartDate?: Date;
   initialEndDate?: Date;
   reservedDates?: string[]; // ISO strings or YYYY-MM-DD
+  selectionMode?: "single" | "range";
 }
 
-export const RangeCalendar: React.FC<RangeCalendarProps> = ({ onSelect, initialStartDate, initialEndDate, reservedDates = [] }) => {
+export const RangeCalendar: React.FC<RangeCalendarProps> = ({
+  onSelect,
+  initialStartDate,
+  initialEndDate,
+  reservedDates = [],
+  selectionMode = "range",
+}) => {
   const { i18n } = useTranslation();
     
   const [viewDate, setViewDate] = useState(initialStartDate || new Date()); // The month currently being viewed
@@ -84,16 +91,28 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({ onSelect, initialS
   }, [year, month]);
 
   const handleDayPress = (date: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const pressedDate = new Date(date);
+    pressedDate.setHours(0, 0, 0, 0);
+
+    if (pressedDate < today) return;
+
     // Check if reserved
     const dateStr = date.toISOString().split('T')[0];
     if (reservedDates.includes(dateStr)) return;
 
-    const pressedDate = new Date(date);
-    pressedDate.setHours(0, 0, 0, 0);
+    if (selectionMode === "single") {
+      setStartDate(pressedDate);
+      setEndDate(null);
+      onSelect?.(pressedDate, null);
+      return;
+    }
 
     if (!startDate || (startDate && endDate)) {
       setStartDate(pressedDate);
       setEndDate(null);
+      onSelect?.(pressedDate, null);
     } else {
       const start = new Date(startDate);
       start.setHours(0, 0, 0, 0);
@@ -177,13 +196,17 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({ onSelect, initialS
 
           <View style={[styles.grid, { flexDirection: 'row' }]}>
             {calendarDays.map((item, index) => {
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              const isPast = item.date < today;
+
               const time = item.date.getTime();
               const isStart = !!startDate && time === startDate.getTime();
               const isEnd = !!endDate && time === endDate.getTime();
               const inRange = isInRange(item.date);
               
               const dateStr = item.date.toISOString().split('T')[0];
-              const isReserved = reservedDates.includes(dateStr);
+              const isReserved = reservedDates.includes(dateStr) || isPast;
 
               return (
                 <View key={`${item.day}-${index}`} style={styles.dayCellContainer}>
@@ -243,8 +266,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center' },
   monthTitle: {
-    fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Black",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: "#1A1A1A",
     letterSpacing: 0.5 },
   daysHeader: {
@@ -256,8 +279,8 @@ const styles = StyleSheet.create({
   dayHeaderText: {
     flex: 1,
     textAlign: "center",
-    fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Black",
+    fontSize: normalize.font(8),
+    fontFamily: "Alexandria-Medium",
     color: "#15AB64" },
   grid: {
     flexWrap: "wrap",
@@ -285,12 +308,12 @@ const styles = StyleSheet.create({
     width: '100%' },
   dayText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     color: "#1A1A1A" },
   disabledDayText: {
     color: "#D1D5DB",
     opacity: 0,
-    fontFamily: "Alexandria-Regular"
+    fontFamily: "Alexandria-Medium"
   },
   startDaySelected: {
     backgroundColor: Colors.primary,
@@ -300,14 +323,14 @@ const styles = StyleSheet.create({
     borderRadius: normalize.radius(12) },
   selectedDayText: {
     color: "white",
-    fontFamily: "Alexandria-Bold" },
+    fontFamily: "Alexandria-Medium" },
   inRangeDayText: {
     color: "#1A1A1A",
-    fontFamily: "Alexandria-Regular"
+    fontFamily: "Alexandria-Medium"
   },
   bookedDayText: {
     color: "#9CA3AF",
-    fontFamily: "Alexandria-Regular" },
+    fontFamily: "Alexandria-Medium" },
   scribbleOverlay: {
     position: 'absolute',
     top: 0,
@@ -341,17 +364,17 @@ const styles = StyleSheet.create({
   yearItemSelected: {
     backgroundColor: Colors.primary },
   yearText: {
-    fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Bold",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: '#1A1A1A' },
   yearTextSelected: {
     color: 'white',
-    fontFamily: "Alexandria-Regular"
+    fontFamily: "Alexandria-Medium"
   },
   closeYearBtn: {
     paddingVertical: normalize.height(10),
     paddingHorizontal: normalize.width(20) },
   closeYearText: {
     color: Colors.primary,
-    fontFamily: "Alexandria-Black",
+    fontFamily: "Alexandria-Medium",
     fontSize: normalize.font(14) } });

@@ -2,28 +2,30 @@ import { Redirect, useRouter } from "expo-router";
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
-    ActivityIndicator,
-    Dimensions,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    TouchableOpacity,
-    View } from "react-native";
+  ActivityIndicator,
+  Dimensions,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  I18nManager,
+} from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 
 import { HeaderSection } from "@/components/header-section";
 import {
-    SolarCalendarMinimalisticBold,
-    SolarClockCircleBold,
-    SolarCloseBold,
-    SolarFireBold,
-    SolarMapPointBold,
-    SolarTreeBold,
-    SolarUsersGroupBold,
-    SolarWaterBold,
-    SolarWidgetBold
+  SolarCalendarMinimalisticBold,
+  SolarClockCircleBold,
+  SolarCloseBold,
+  SolarFireBold,
+  SolarMapPointBold,
+  SolarTreeBold,
+  SolarUsersGroupBold,
+  SolarWaterBold,
+  SolarWidgetBold,
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { AppMap } from "@/components/user/app-map";
@@ -33,43 +35,72 @@ import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize, Shadows } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
+import { isRTL, getFlexDirection } from "@/i18n";
 import { RootState } from "@/store";
 import { useGetAmenitiesQuery } from "@/store/api/apiSlice";
 import {
-    useBrowseCustomerChaletsQuery,
-    useGetBannersQuery,
-    useGetFavoriteIdsQuery,
-    useToggleFavoriteMutation } from "@/store/api/customerApiSlice";
+  useBrowseCustomerChaletsQuery,
+  useGetBannersQuery,
+  useGetFavoriteIdsQuery,
+  useToggleFavoriteMutation,
+} from "@/store/api/customerApiSlice";
 import { clearFilters } from "@/store/filterSlice";
-import { isRTL } from "@/i18n";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 // Fallback colors for chalet cards
 const CARD_COLORS = [Colors.primary, Colors.secondary, Colors.accent];
 
 // ── Active Filter Banner ──────────────────────────────────────────────────────
-function ActiveFilterBanner({ filter, isRTL }: { filter: any; isRTL: boolean }) {
+function ActiveFilterBanner({
+  filter,
+  isRTL,
+}: {
+  filter: any;
+  isRTL: boolean;
+}) {
   const dispatch = useDispatch();
   const { t } = useTranslation();
 
   const filterItems = useMemo(() => {
     const items = [];
     if (filter.cityName) {
-      items.push({ id: 'city', text: filter.cityName, icon: <SolarMapPointBold size={14} color={Colors.primary} /> });
+      items.push({
+        id: "city",
+        text: filter.cityName,
+        icon: <SolarMapPointBold size={14} color={Colors.primary} />,
+      });
     }
     if (filter.checkIn) {
-      const dateText = new Date(filter.checkIn).toLocaleDateString(isRTL ? "ar" : "en", { month: "short", day: "numeric" });
-      items.push({ id: 'date', text: dateText, icon: <SolarCalendarMinimalisticBold size={14} color={Colors.primary} /> });
+      const dateText = new Date(filter.checkIn).toLocaleDateString(
+        isRTL ? "ar" : "en",
+        { month: "short", day: "numeric" },
+      );
+      items.push({
+        id: "date",
+        text: dateText,
+        icon: (
+          <SolarCalendarMinimalisticBold size={14} color={Colors.primary} />
+        ),
+      });
     }
     if (filter.period) {
       const periodMap: Record<string, string> = {
         morning: isRTL ? "صباحي" : "Morning",
         evening: isRTL ? "مسائي" : "Evening",
-        overnight: isRTL ? "مبيت" : "Overnight" };
-      items.push({ id: 'period', text: periodMap[filter.period] || filter.period, icon: <SolarClockCircleBold size={14} color={Colors.primary} /> });
+        overnight: isRTL ? "مبيت" : "Overnight",
+      };
+      items.push({
+        id: "period",
+        text: periodMap[filter.period] || filter.period,
+        icon: <SolarClockCircleBold size={14} color={Colors.primary} />,
+      });
     }
     if (filter.maxGuests) {
-      items.push({ id: 'guests', text: `${filter.maxGuests} ${isRTL ? "ضيف" : "guests"}`, icon: <SolarUsersGroupBold size={14} color={Colors.primary} /> });
+      items.push({
+        id: "guests",
+        text: `${filter.maxGuests} ${isRTL ? "ضيف" : "guests"}`,
+        icon: <SolarUsersGroupBold size={14} color={Colors.primary} />,
+      });
     }
     return items;
   }, [filter, isRTL]);
@@ -78,16 +109,24 @@ function ActiveFilterBanner({ filter, isRTL }: { filter: any; isRTL: boolean }) 
 
   return (
     <View style={filterBannerStyles.container}>
-      <View style={[filterBannerStyles.content, { flexDirection: 'row' }]}>
-        <ScrollView 
-          horizontal 
+      <View style={[filterBannerStyles.content, { flexDirection: "row" }]}>
+        <ScrollView
+          horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={[filterBannerStyles.scrollContent, { flexDirection: 'row' }]}
+          contentContainerStyle={[
+            filterBannerStyles.scrollContent,
+            { flexDirection: "row" },
+          ]}
         >
           {filterItems.map((item) => (
-            <View key={item.id} style={[filterBannerStyles.pill, { flexDirection: 'row' }]}>
+            <View
+              key={item.id}
+              style={[filterBannerStyles.pill, { flexDirection: "row" }]}
+            >
               {item.icon}
-              <ThemedText style={filterBannerStyles.pillText}>{item.text}</ThemedText>
+              <ThemedText style={filterBannerStyles.pillText}>
+                {item.text}
+              </ThemedText>
             </View>
           ))}
         </ScrollView>
@@ -113,16 +152,19 @@ const filterBannerStyles = StyleSheet.create({
     ...Shadows.small,
     borderWidth: 1,
     borderColor: "#F3F4F6",
-    overflow: "hidden" },
+    overflow: "hidden",
+  },
   content: {
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 12,
-    paddingVertical: 8 },
+    paddingVertical: 8,
+  },
   scrollContent: {
     alignItems: "center",
     justifyContent: "center",
-    gap: 8 },
+    gap: 8,
+  },
   pill: {
     flexDirection: "row",
     alignItems: "center",
@@ -130,23 +172,33 @@ const filterBannerStyles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 12,
-    gap: 6 },
+    gap: 6,
+  },
   pillText: {
-    fontSize: 12,
+    fontSize: 8,
     fontFamily: "Alexandria-Medium",
-    color: Colors.primary },
+    color: Colors.primary,
+  },
   clearBtn: {
     padding: 4,
-    marginLeft: 4 } });
+    marginLeft: 4,
+  },
+});
 
 export default function HomeScreen() {
-  const { userType } = useSelector((state: RootState) => state.auth);
-  const activeFilters = useSelector((state: RootState) => (state as any).filter);
+  const { userType, language } = useSelector((state: RootState) => state.auth);
+  const isRTL = language === "ar";
+  const activeFilters = useSelector(
+    (state: RootState) => (state as any).filter,
+  );
   const dispatch = useDispatch();
   const router = useRouter();
   const { t, i18n } = useTranslation();
-    const [activeFilter, setActiveFilter] = React.useState("all");
+  const [activeFilter, setActiveFilter] = React.useState("all");
   const insets = useSafeAreaInsets();
+
+  const textStart: "left" | "right" = isRTL ? "right" : "left";
+  const flexDir: "row" | "row-reverse" = (isRTL === I18nManager.isRTL) ? "row" : "row-reverse";
 
   // Fetch all amenities to resolve real IDs for pool/bbq/garden filters
   const { data: allAmenities = [] } = useGetAmenitiesQuery();
@@ -155,35 +207,50 @@ export default function HomeScreen() {
   const amenityIdMap = useMemo(() => {
     const map: Record<string, string> = {};
     allAmenities.forEach((amenity: any) => {
-      const nameEn = (amenity.name?.en || amenity.nameEn || amenity.name || "").toLowerCase();
+      const nameEn = (
+        amenity.name?.en ||
+        amenity.nameEn ||
+        amenity.name ||
+        ""
+      ).toLowerCase();
       const nameAr = (amenity.name?.ar || amenity.nameAr || "").toLowerCase();
       const slug = (amenity.slug || amenity.key || "").toLowerCase();
 
       // Match pool
-      if (nameEn.includes("pool") || nameAr.includes("مسبح") || slug.includes("pool")) {
+      if (
+        nameEn.includes("pool") ||
+        nameAr.includes("مسبح") ||
+        slug.includes("pool")
+      ) {
         map["pool"] = amenity.id;
       }
       // Match bbq
-      if (nameEn.includes("bbq") || nameEn.includes("barbecue") || nameEn.includes("grill") || nameAr.includes("شواء") || nameAr.includes("باربيكيو") || slug.includes("bbq")) {
+      if (
+        nameEn.includes("bbq") ||
+        nameEn.includes("barbecue") ||
+        nameEn.includes("grill") ||
+        nameAr.includes("شواء") ||
+        nameAr.includes("باربيكيو") ||
+        slug.includes("bbq")
+      ) {
         map["bbq"] = amenity.id;
       }
       // Match garden
-      if (nameEn.includes("garden") || nameEn.includes("yard") || nameAr.includes("حديقة") || slug.includes("garden")) {
+      if (
+        nameEn.includes("garden") ||
+        nameEn.includes("yard") ||
+        nameAr.includes("حديقة") ||
+        slug.includes("garden")
+      ) {
         map["garden"] = amenity.id;
       }
     });
     return map;
   }, [allAmenities]);
 
-  // Build query params from Redux filter state
+  // Build query params for Home Screen (ignores global search filters to keep index unfiltered)
   const queryParams = React.useMemo(() => {
     const params: any = { page: 1, limit: 10 };
-    if (activeFilters?.cityId) params.cityId = activeFilters.cityId;
-    if (activeFilters?.search) params.search = activeFilters.search;
-    if (activeFilters?.maxGuests) params.maxGuests = activeFilters.maxGuests;
-    if (activeFilters?.checkIn) params.checkIn = activeFilters.checkIn.split("T")[0];
-    if (activeFilters?.checkOut) params.checkOut = activeFilters.checkOut.split("T")[0];
-    if (activeFilters?.period) params.period = activeFilters.period;
 
     // Use real amenity ID from API if available, otherwise send the slug as fallback
     if (activeFilter !== "all") {
@@ -191,7 +258,7 @@ export default function HomeScreen() {
       params.amenityIds = [realId || activeFilter];
     }
     return params;
-  }, [activeFilters, activeFilter, amenityIdMap]);
+  }, [activeFilter, amenityIdMap]);
 
   // Fetch data from the backend
   const { data: bannersResponse } = useGetBannersQuery(undefined);
@@ -215,7 +282,8 @@ export default function HomeScreen() {
   const banners = (bannersResponse || []).map((b: any) => ({
     id: b.id,
     image: b.imageUrl,
-    title: isRTL ? b.title?.ar || b.title : b.title?.en || b.title }));
+    title: isRTL ? b.title?.ar || b.title : b.title?.en || b.title,
+  }));
 
   if (userType === "owner") return <Redirect href="/(tabs)/(dashboard)/home" />;
 
@@ -246,7 +314,8 @@ export default function HomeScreen() {
           : "0",
       rating: chalet.averageRating || 0,
       color: CARD_COLORS[index % CARD_COLORS.length],
-      image: getImageSrc(chalet.images?.[0]?.url) }));
+      image: getImageSrc(chalet.images?.[0]?.url),
+    }));
   }, [chaletsResponse, isRTL]);
 
   const FILTER_OPTIONS = [
@@ -259,7 +328,8 @@ export default function HomeScreen() {
           color={isActive ? "white" : Colors.primary}
         />
       ),
-      activeColor: Colors.primary },
+      activeColor: Colors.primary,
+    },
     {
       id: "pool",
       label: t("home.categories.pool"),
@@ -269,14 +339,16 @@ export default function HomeScreen() {
           color={isActive ? "white" : Colors.secondary}
         />
       ),
-      activeColor: Colors.secondary },
+      activeColor: Colors.secondary,
+    },
     {
       id: "bbq",
       label: t("home.categories.bbq"),
       icon: (isActive: boolean) => (
         <SolarFireBold size={18} color={isActive ? "white" : Colors.accent} />
       ),
-      activeColor: Colors.accent },
+      activeColor: Colors.accent,
+    },
     {
       id: "garden",
       label: t("home.categories.garden"),
@@ -286,7 +358,8 @@ export default function HomeScreen() {
           color={isActive ? "white" : Colors.secondary}
         />
       ),
-      activeColor: Colors.secondary },
+      activeColor: Colors.secondary,
+    },
   ];
 
   return (
@@ -299,36 +372,32 @@ export default function HomeScreen() {
         {/* Header */}
         <HeaderSection isHome />
 
-        {/* Active Filter Indicator */}
-        {activeFilters?.isActive && (
-          <ActiveFilterBanner filter={activeFilters} isRTL={isRTL} />
-        )}
+
 
         {/* Banners Swiper */}
         {banners?.length > 0 && <BannerSwiper data={banners} />}
 
         {/* Nearby / Map */}
-        <View
-          style={[
-            styles.sectionHeader,
-            { flexDirection: 'row-reverse' },
-          ]}
-        >
-          <TouchableOpacity onPress={() => router.push("/(tabs)/(customer)/explore")}>
-            <ThemedText style={styles.seeAll}>{t("home.openMap")}</ThemedText>
-          </TouchableOpacity>
+        <View style={[styles.sectionHeader, { flexDirection: flexDir }]}>
           <ThemedText
             style={[
               styles.sectionTitle,
-              { textAlign: isRTL ? "right" : "left" },
+              { textAlign: textStart },
             ]}
           >
             {t("home.categories.nearby")}
           </ThemedText>
+          <TouchableOpacity
+            onPress={() => router.push("/(tabs)/(customer)/explore")}
+          >
+            <ThemedText style={styles.seeAll}>{t("home.openMap")}</ThemedText>
+          </TouchableOpacity>
         </View>
         <TouchableOpacity
           activeOpacity={0.9}
-          onPress={() => router.push("/(tabs)/(customer)/explore?showMyLocation=1")}
+          onPress={() =>
+            router.push("/(tabs)/(customer)/explore?showMyLocation=1")
+          }
           style={styles.mapContainer}
         >
           <AppMap
@@ -341,23 +410,18 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         {/* Popular / Recent */}
-        <View
-          style={[
-            styles.sectionHeader,
-            { flexDirection: 'row-reverse' },
-          ]}
-        >
-          <TouchableOpacity>
-            <ThemedText style={styles.seeAll}>{t("home.seeAll")}</ThemedText>
-          </TouchableOpacity>
+        <View style={[styles.sectionHeader, { flexDirection: flexDir }]}>
           <ThemedText
             style={[
               styles.sectionTitle,
-              { textAlign: isRTL ? "right" : "left" },
+              { textAlign: textStart },
             ]}
           >
             {t("home.recentBookings")}
           </ThemedText>
+          <TouchableOpacity>
+            <ThemedText style={styles.seeAll}>{t("home.seeAll")}</ThemedText>
+          </TouchableOpacity>
         </View>
 
         {chaletsLoading ? (
@@ -379,13 +443,13 @@ export default function HomeScreen() {
         <View
           style={[
             styles.sectionHeader,
-            { justifyContent: isRTL ? "flex-end" : "flex-start" },
+            { flexDirection: flexDir, justifyContent: "flex-start" },
           ]}
         >
           <ThemedText
             style={[
               styles.sectionTitle,
-              { textAlign: isRTL ? "right" : "left" },
+              { textAlign: textStart },
             ]}
           >
             {t("home.recommended")}
@@ -396,9 +460,7 @@ export default function HomeScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.tabsContainer}
         >
-          <View
-            style={{ flexDirection: 'row', gap: 10 }}
-          >
+          <View style={{ flexDirection: flexDir, gap: 10 }}>
             {FILTER_OPTIONS.map((filter) => (
               <SecondaryButton
                 key={filter.id}
@@ -420,7 +482,7 @@ export default function HomeScreen() {
               style={{ marginTop: 20 }}
             />
           ) : POPULAR_CHALETS.length > 0 ? (
-            POPULAR_CHALETS.map((item, index) => (
+            POPULAR_CHALETS.map((item: any, index: number) => (
               <HorizontalCard
                 key={index}
                 chalet={item}
@@ -467,37 +529,43 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     marginTop: 20,
-    marginBottom: 10 },
+    marginBottom: 10,
+  },
   sectionTitle: {
-    fontSize: normalize.font(20),
-    fontFamily: "Alexandria-Black",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
-    lineHeight: normalize.font(28),
-    flexShrink: 1 },
+    lineHeight: normalize.font(14),
+    flexShrink: 1,
+  },
   seeAll: {
-    fontSize: normalize.font(13),
+    fontSize: normalize.font(14),
     color: Colors.primary,
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "Alexandria-Medium",
     textDecorationLine: "underline",
-    lineHeight: normalize.font(18) },
+    lineHeight: normalize.font(14),
+  },
   mapContainer: {
     height: 210,
     marginHorizontal: 16,
     borderRadius: 28,
     overflow: "hidden",
     backgroundColor: "#F3F4F6",
-    marginTop: 10 },
+    marginTop: 10,
+  },
   map: { flex: 1 },
   mapOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "transparent" },
+    backgroundColor: "transparent",
+  },
   listPadding: { paddingHorizontal: 16 },
   tabsContainer: { paddingHorizontal: 16, marginVertical: 10 },
   swiperWrapper: { marginVertical: 10 },
   loaderContainer: {
     height: 200,
     justifyContent: "center",
-    alignItems: "center" },
+    alignItems: "center",
+  },
   emptyContainer: {
     alignItems: "center",
     justifyContent: "center",
@@ -507,7 +575,8 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     marginTop: 10,
     borderWidth: 1,
-    borderColor: "#F3F4F6" },
+    borderColor: "#F3F4F6",
+  },
   emptyIconContainer: {
     width: 100,
     height: 100,
@@ -515,26 +584,32 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary + "10",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 16 },
+    marginBottom: 16,
+  },
   emptyTitle: {
-    fontSize: normalize.font(18),
-    fontFamily: "Alexandria-Bold",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     textAlign: "center",
-    marginBottom: 8 },
+    marginBottom: 8,
+  },
   emptyDesc: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.secondary,
     textAlign: "center",
     marginBottom: 24,
-    lineHeight: 20 },
+    lineHeight: 20,
+  },
   clearButton: {
     backgroundColor: Colors.primary,
     paddingHorizontal: 24,
     paddingVertical: 12,
-    borderRadius: 16 },
+    borderRadius: 16,
+  },
   clearButtonText: {
     color: Colors.white,
-    fontFamily: "Alexandria-SemiBold",
-    fontSize: normalize.font(14) } });
+    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(14),
+  },
+});

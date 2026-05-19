@@ -292,5 +292,21 @@
       "bath": "Bath"
     },
     "empty": "No images available in this section"
+  },
+  "searchFilter": {
+    "search": "Search",
+    "next": "Next",
+    "apply": "Search",
+    "adults": "Adults",
+    "adultsDesc": "18 and older",
+    "children": "Children",
+    "childrenDesc": "0 - 18",
+    "morningShift": "Morning Shift",
+    "eveningShift": "Evening Shift",
+    "overnightShift": "Overnight",
+    "endTime": "End Time",
+    "startTime": "Start Time",
+    "editDays": "Edit Days",
+    "skipToGuests": "Next"
   }
 }

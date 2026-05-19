@@ -18,7 +18,8 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  View } from "react-native";
+  View,
+  I18nManager } from "react-native";
 import { useSelector } from "react-redux";
 import { ThemedText } from "./themed-text";
 import { CircleBackButton } from "./ui/circle-back-button";
@@ -65,11 +66,13 @@ export function HeaderSection({
   marginBottom = 0,
   isHome = false }: HeaderSectionProps) {
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { userType: stateUserType, language } = useSelector(
     (state: RootState) => state.auth,
   );
-    const [selectedCategory, setSelectedCategory] = React.useState("all");
+  const [selectedCategory, setSelectedCategory] = React.useState("all");
+
+  const isArabic = i18n.language ? i18n.language.startsWith("ar") : false;
 
   const CATEGORIES = [
     {
@@ -90,9 +93,13 @@ export function HeaderSection({
       icon: <SolarStarBold size={normalize.width(18)} /> },
   ];
 
-  const textAlign = isRTL ? "right" : "left";
-  const startAlign = isRTL ? "flex-end" : "flex-start";
-  const endAlign = isRTL ? "flex-start" : "flex-end";
+  const textAlign: "left" | "right" = isArabic ? "right" : "left";
+  // RN auto-mirrors flex-start/flex-end when I18nManager.isRTL=true
+  // So when language matches native RTL, use natural values
+  const needsCounter = isArabic !== I18nManager.isRTL;
+  const startAlign: "flex-start" | "flex-end" = needsCounter ? "flex-end" : "flex-start";
+  const endAlign: "flex-start" | "flex-end" = needsCounter ? "flex-start" : "flex-end";
+  const rowDir: "row" | "row-reverse" = needsCounter ? "row-reverse" : "row";
 
   return (
     <View style={[styles.container]}>
@@ -103,40 +110,40 @@ export function HeaderSection({
         style={[
           styles.topRow,
           {
-            marginBottom },
+            marginBottom,
+            flexDirection: rowDir
+          },
         ]}
       >
-        {/* LEFT SIDE - in LTR this is Back/Extra, in RTL this is Logo */}
-        <View
-          style={[
-            styles.headerSide,
-            { alignItems: isRTL ? 'flex-end' : 'flex-start' }
-          ]}
-        >
-          {isRTL ? (
-            showLogo && (
-              <View style={isHome ? styles.logoCircleHome : styles.logoCircle}>
-                <Image
-                  source={require("@/assets/arlogo.svg")}
-                  style={isHome ? styles.logoImgHome : styles.logoImg}
-                  contentFit="contain"
+        {/* LEFT SIDE (Start side) */}
+        <View style={[styles.headerSide, { alignItems: startAlign }]}>
+          {isHome ? (
+            <View style={[styles.homeLeftGroup, { flexDirection: rowDir }]}>
+              {stateUserType !== "guest" && (
+                <TouchableOpacity
+                  onPress={() => router.push("/(customer)/notifications")}
+                  style={styles.avatarContainerHome}
+                >
+                  <SolarBellBingBoldDuotone
+                    size={normalize.width(28)}
+                    color={Colors.primary}
+                  />
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                onPress={() => router.push("/(customer)/search")}
+                style={styles.searchPillHome}
+              >
+                <SolarMagnifierBold
+                  size={normalize.width(24)}
+                  color={Colors.primary}
                 />
-              </View>
-            )
+              </TouchableOpacity>
+            </View>
           ) : (
-            isHome ? (
-              <View style={styles.homeLeftGroup}>
-                {stateUserType !== "guest" && (
-                  <TouchableOpacity
-                    onPress={() => router.push("/(customer)/notifications")}
-                    style={styles.avatarContainerHome}
-                  >
-                    <SolarBellBingBoldDuotone
-                      size={normalize.width(28)}
-                      color={Colors.primary}
-                    />
-                  </TouchableOpacity>
-                )}
+            <View style={[styles.homeLeftGroup, { flexDirection: rowDir }]}>
+              {showBackButton && <CircleBackButton onPress={onBackPress} />}
+              {extraIcon === "search" && (
                 <TouchableOpacity
                   onPress={() => router.push("/(customer)/search")}
                   style={styles.searchPillHome}
@@ -146,23 +153,8 @@ export function HeaderSection({
                     color={Colors.primary}
                   />
                 </TouchableOpacity>
-              </View>
-            ) : (
-              <View style={styles.homeLeftGroup}>
-                {showBackButton && <CircleBackButton onPress={onBackPress} />}
-                {extraIcon === "search" && (
-                  <TouchableOpacity
-                    onPress={() => router.push("/(customer)/search")}
-                    style={styles.searchPillHome}
-                  >
-                    <SolarMagnifierBold
-                      size={normalize.width(24)}
-                      color={Colors.primary}
-                    />
-                  </TouchableOpacity>
-                )}
-              </View>
-            )
+              )}
+            </View>
           )}
         </View>
 
@@ -175,63 +167,16 @@ export function HeaderSection({
           </View>
         )}
 
-        {/* RIGHT SIDE - in LTR this is Logo, in RTL this is Back/Extra */}
-        <View
-          style={[
-            styles.headerSide,
-            { alignItems: isRTL ? 'flex-start' : 'flex-end' },
-          ]}
-        >
-          {isRTL ? (
-            isHome ? (
-              <View style={styles.homeLeftGroup}>
-                <TouchableOpacity
-                  onPress={() => router.push("/(customer)/search")}
-                  style={styles.searchPillHome}
-                >
-                  <SolarMagnifierBold
-                    size={normalize.width(24)}
-                    color={Colors.primary}
-                  />
-                </TouchableOpacity>
-                {stateUserType !== "guest" && (
-                  <TouchableOpacity
-                    onPress={() => router.push("/(customer)/notifications")}
-                    style={styles.avatarContainerHome}
-                  >
-                    <SolarBellBingBoldDuotone
-                      size={normalize.width(28)}
-                      color={Colors.primary}
-                    />
-                  </TouchableOpacity>
-                )}
-              </View>
-            ) : (
-              <View style={styles.homeLeftGroup}>
-                 {extraIcon === "search" && (
-                  <TouchableOpacity
-                    onPress={() => router.push("/(customer)/search")}
-                    style={styles.searchPillHome}
-                  >
-                    <SolarMagnifierBold
-                      size={normalize.width(24)}
-                      color={Colors.primary}
-                    />
-                  </TouchableOpacity>
-                )}
-                {showBackButton && <CircleBackButton onPress={onBackPress} />}
-              </View>
-            )
-          ) : (
-            showLogo && (
-              <View style={isHome ? styles.logoCircleHome : styles.logoCircle}>
-                <Image
-                  source={require("@/assets/logo.svg")}
-                  style={isHome ? styles.logoImgHome : styles.logoImg}
-                  contentFit="contain"
-                />
-              </View>
-            )
+        {/* RIGHT SIDE (End side) */}
+        <View style={[styles.headerSide, { alignItems: endAlign }]}>
+          {isHome && (
+            <View style={styles.logoCircleHome}>
+              <Image
+                source={isArabic ? require("@/assets/arlogo.svg") : require("@/assets/logo.svg")}
+                style={styles.logoImgHome}
+                contentFit="contain"
+              />
+            </View>
           )}
         </View>
       </View>
@@ -242,7 +187,7 @@ export function HeaderSection({
           <View
             style={[
               styles.searchBar,
-              { flexDirection: 'row' },
+              { flexDirection: rowDir },
             ]}
           >
             <SolarMagnifierBold
@@ -265,7 +210,7 @@ export function HeaderSection({
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={[
             styles.categoriesContent,
-            { flexDirection: 'row' },
+            { flexDirection: rowDir },
           ]}
           style={styles.categoriesScroll}
         >
@@ -275,7 +220,7 @@ export function HeaderSection({
               onPress={() => setSelectedCategory(cat.id)}
               style={[
                 styles.categoryItem,
-                { flexDirection: 'row' },
+                { flexDirection: rowDir },
                 selectedCategory === cat.id && styles.categoryItemActive,
               ]}
             >
@@ -319,10 +264,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: normalize.width(10) },
   headerTitle: {
-    fontSize: normalize.font(18),
-    fontFamily: "Alexandria-SemiBold",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
-    lineHeight: normalize.font(24),
     textAlign: 'center' },
   logoCircle: {
     width: normalize.width(42),
@@ -398,9 +342,9 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     marginHorizontal: Spacing.sm,
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(14),
     color: Colors.text.primary,
-    fontFamily: "Alexandria-Regular" },
+    fontFamily: "Alexandria-Medium" },
   categoriesScroll: {
     paddingHorizontal: Spacing.md,
     marginBottom: Spacing.md },
@@ -420,8 +364,8 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
-    lineHeight: normalize.font(20),
+    lineHeight: normalize.font(14),
     paddingVertical: normalize.height(1) },
   categoryLabelActive: {
     color: Colors.background,
-    fontFamily: "Alexandria-Regular" } });
+    fontFamily: "Alexandria-Medium" } });

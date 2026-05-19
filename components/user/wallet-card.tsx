@@ -1,9 +1,15 @@
 import { ThemedText } from "@/components/themed-text";
 import { normalize } from "@/constants/theme";
-import { isRTL } from "@/i18n";
+import { getFlexDirection } from "@/i18n";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
+import {
+  Dimensions,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  I18nManager
+} from "react-native";
 import Svg, { ClipPath, Defs, G, Path, Rect } from "react-native-svg";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -18,11 +24,17 @@ export const WalletCard = ({
   onWithdraw,
 }: WalletCardProps) => {
   const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === "ar";
+  const rowDir = getFlexDirection(isArabic);
+
   return (
     <View style={styles.container}>
       {/* SVG Background - Mirrored for LTR to keep focal points consistent */}
       <View
-        style={[styles.svgWrapper, { transform: [{ scaleX: isRTL ? 1 : -1 }] }]}
+        style={[
+          styles.svgWrapper,
+          { transform: [{ scaleX: isArabic ? 1 : -1 }] },
+        ]}
       >
         <Svg
           width="100%"
@@ -77,55 +89,56 @@ export const WalletCard = ({
 
       {/* Content Overlay */}
       <View style={styles.contentOverlay}>
-        <View style={[styles.topRow, { alignItems: "flex-start" }]}>
+        <View
+          style={[
+            styles.topRow,
+            {
+              alignItems: isArabic === I18nManager.isRTL ? "flex-end" : "flex-start",
+            },
+          ]}
+        >
           <ThemedText
             style={[
               styles.balanceLabel,
-              { textAlign: isRTL ? "right" : "left" },
+              { textAlign: isArabic ? "left" : "right" },
             ]}
           >
             {t("profile.wallet.balance")}
           </ThemedText>
         </View>
 
-        <View style={[styles.bottomRow, { flexDirection: "row" }]}>
-          {isRTL ? (
-            <>
-              <TouchableOpacity
-                style={styles.withdrawButton}
-                onPress={onWithdraw}
-                activeOpacity={0.8}
-              >
-                <ThemedText style={styles.withdrawText}>
-                  {t("profile.wallet.withdraw")}
-                </ThemedText>
-              </TouchableOpacity>
-              <View style={[styles.balanceContainer, { flexDirection: "row" }]}>
-                <ThemedText style={styles.balanceValue}>{balance}</ThemedText>
-                <ThemedText style={styles.currencyText}>
-                  {t("common.iqd")}
-                </ThemedText>
-              </View>
-            </>
-          ) : (
-            <>
-              <View style={[styles.balanceContainer, { flexDirection: "row" }]}>
-                <ThemedText style={styles.balanceValue}>{balance}</ThemedText>
-                <ThemedText style={styles.currencyText}>
-                  {t("common.iqd")}
-                </ThemedText>
-              </View>
-              <TouchableOpacity
-                style={styles.withdrawButton}
-                onPress={onWithdraw}
-                activeOpacity={0.8}
-              >
-                <ThemedText style={styles.withdrawText}>
-                  {t("profile.wallet.withdraw")}
-                </ThemedText>
-              </TouchableOpacity>
-            </>
-          )}
+        <View style={[styles.bottomRow, { flexDirection: rowDir }]}>
+          <>
+            <TouchableOpacity
+              style={[
+                styles.withdrawButton,
+                {
+                  [isArabic ? "marginRight" : "marginLeft"]: normalize.width(6),
+                },
+              ]}
+              onPress={onWithdraw}
+              activeOpacity={0.8}
+            >
+              <ThemedText style={styles.withdrawText}>
+                {t("profile.wallet.withdraw")}
+              </ThemedText>
+            </TouchableOpacity>
+            <View
+              style={[
+                styles.balanceContainer,
+                {
+                  flexDirection: rowDir,
+                  [isArabic ? "marginLeft" : "marginRight"]:
+                    normalize.width(25),
+                },
+              ]}
+            >
+              <ThemedText style={styles.balanceValue}>{balance}</ThemedText>
+              <ThemedText style={styles.currencyText}>
+                {t("common.iqd")}
+              </ThemedText>
+            </View>
+          </>
         </View>
       </View>
     </View>
@@ -145,18 +158,18 @@ const styles = StyleSheet.create({
   },
   contentOverlay: {
     flex: 1,
-    paddingHorizontal: normalize.width(25),
     paddingTop: normalize.height(18),
     paddingBottom: normalize.height(30),
     justifyContent: "space-between",
   },
   topRow: {
     alignItems: "flex-end",
+    paddingHorizontal: normalize.width(25),
   },
   balanceLabel: {
     color: "white",
-    fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Black",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
   },
   bottomRow: {
     alignItems: "flex-end",
@@ -164,19 +177,19 @@ const styles = StyleSheet.create({
   },
   balanceContainer: {
     alignItems: "baseline",
-    gap: normalize.width(6),
+    gap: normalize.width(4),
   },
   balanceValue: {
     color: "white",
-    fontSize: normalize.font(28),
-    fontFamily: "Alexandria-Black",
-    lineHeight: normalize.font(36),
-    paddingVertical: normalize.height(4),
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
+    lineHeight: normalize.font(14),
+    paddingVertical: normalize.height(2),
   },
   currencyText: {
     color: "white",
-    fontSize: normalize.font(18),
-    fontFamily: "Alexandria-Bold",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
   },
   withdrawButton: {
     width: normalize.width(120),
@@ -186,7 +199,7 @@ const styles = StyleSheet.create({
   },
   withdrawText: {
     color: "white",
-    fontSize: normalize.font(20),
-    fontFamily: "Alexandria-Black",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
   },
 });

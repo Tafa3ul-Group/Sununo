@@ -44,11 +44,11 @@ const filterSlice = createSlice({
       Object.assign(state, action.payload);
       // Mark as active if any meaningful filter is set
       state.isActive =
-        !!action.payload.cityId ||
-        !!action.payload.search ||
-        !!action.payload.checkIn ||
-        !!action.payload.period ||
-        (action.payload.maxGuests != null && action.payload.maxGuests > 0);
+        !!state.cityId ||
+        !!state.search ||
+        !!state.checkIn ||
+        !!state.period ||
+        (state.maxGuests != null && state.maxGuests > 0);
     },
     clearFilters: () => initialState,
   },

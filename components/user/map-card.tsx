@@ -2,9 +2,11 @@ import { ThemedText } from "@/components/themed-text";
 import { Colors, Shadows } from "@/constants/theme";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
+import { Image, StyleSheet, Text, TouchableOpacity, View, I18nManager } from "react-native";
 import { SolarCloseCircleBold, SolarStarBold } from "@/components/icons/solar-icons";
-import { isRTL } from "@/i18n";
+import { isRTL, getFlexDirection } from "@/i18n";
 
 interface MapCardProps {
   title: string;
@@ -24,15 +26,21 @@ export const MapCard = ({
   price,
   onPress,
   onClose }: MapCardProps) => {
-  const { i18n } = useTranslation();
+  const { language } = useSelector((state: RootState) => state.auth);
+  const isArabic = language === "ar";
+  const rowDir = getFlexDirection(isArabic);
+  const rowReverseDir = getFlexDirection(!isArabic);
   
+  const needsCounter = isArabic !== I18nManager.isRTL;
+  const alignStart: "flex-start" | "flex-end" = needsCounter ? "flex-end" : "flex-start";
+  const ratingBoxDir = I18nManager.isRTL ? "row-reverse" : "row";
   return (
     <TouchableOpacity
       activeOpacity={0.9}
       onPress={onPress}
       style={[
         styles.container,
-        { flexDirection: 'row' },
+        { flexDirection: rowDir },
       ]}
     >
       <Image source={{ uri: image }} style={styles.image} />
@@ -41,7 +49,7 @@ export const MapCard = ({
         <View
           style={[
             styles.header,
-            { flexDirection: 'row-reverse' },
+            { flexDirection: rowReverseDir },
           ]}
         >
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
@@ -50,11 +58,11 @@ export const MapCard = ({
           <View
             style={[
               styles.titleSection,
-              { alignItems: 'flex-start' },
+              { alignItems: alignStart },
             ]}
           >
             <ThemedText
-              style={[styles.title, { textAlign: isRTL ? "right" : "left" }]}
+              style={[styles.title, { textAlign: isArabic ? "right" : "left" }]}
               numberOfLines={1}
             >
               {title}
@@ -62,7 +70,7 @@ export const MapCard = ({
             <ThemedText
               style={[
                 styles.location,
-                { textAlign: isRTL ? "right" : "left" },
+                { textAlign: isArabic ? "right" : "left" },
               ]}
               numberOfLines={1}
             >
@@ -74,22 +82,22 @@ export const MapCard = ({
         <View
           style={[
             styles.footer,
-            { flexDirection: 'row-reverse' },
+            { flexDirection: rowReverseDir },
           ]}
         >
           <View
             style={[
               styles.ratingContainer,
-              { flexDirection: 'row-reverse' },
+              { flexDirection: ratingBoxDir },
             ]}
           >
-            <Text style={styles.rating}>{rating}</Text>
             <SolarStarBold size={14} color="#035DF9" />
+            <Text style={styles.rating}>{rating}</Text>
           </View>
           <ThemedText
-            style={[styles.price, { textAlign: isRTL ? "right" : "left" }]}
+            style={[styles.price, { textAlign: isArabic ? "right" : "left" }]}
           >
-            {price} {isRTL ? "/ شفت" : "/ shift"}
+            {price} {isArabic ? "/ شفت" : "/ shift"}
           </ThemedText>
         </View>
       </View>
@@ -123,14 +131,14 @@ const styles = StyleSheet.create({
   titleSection: {
     flex: 1 },
   title: {
-    fontSize: 16,
-    fontFamily: "Alexandria-Black",
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
     color: "#111827" },
   location: {
-    fontSize: 12,
+    fontSize: 8,
     color: "#6B7280",
     marginTop: 2,
-   fontFamily: "Alexandria-Regular" },
+   fontFamily: "Alexandria-Medium" },
   closeButton: {
     padding: 2 },
   footer: {
@@ -141,9 +149,9 @@ const styles = StyleSheet.create({
     gap: 4 },
   rating: {
     fontSize: 14,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: "#111827" },
   price: {
-    fontSize: 13,
-    fontFamily: "Alexandria-Black",
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
     color: Colors.primary } });

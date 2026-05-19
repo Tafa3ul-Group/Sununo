@@ -22,7 +22,8 @@ import {
     StyleSheet,
     TextInput,
     TouchableOpacity,
-    View
+    View,
+    I18nManager
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 // import { normalize } from "@/constants/theme";
@@ -37,6 +38,7 @@ const normalize = {
   radius: (size: number) => size * scale };
 
 export function LoginScreen() {
+  const textStart: "left" | "right" = isRTL === I18nManager.isRTL ? "left" : "right";
   const { t, i18n } = useTranslation();
     const dispatch = useDispatch();
   const router = useRouter();
@@ -169,7 +171,7 @@ export function LoginScreen() {
           {/* Login Form */}
           <View style={styles.formContainer}>
             <View style={[styles.headerRow, { alignItems: 'flex-start' }]}>
-              <ThemedText style={[styles.title, { textAlign: isRTL ? 'right' : 'left' }]}>{t('auth.login')}</ThemedText>
+              <ThemedText style={[styles.title, { textAlign: textStart }]}>{t('auth.login')}</ThemedText>
               {!isOwner && (
                 <View style={[styles.subtextRow, { flexDirection: 'row' }]}>
                   <ThemedText style={styles.subtitle}>
@@ -186,9 +188,9 @@ export function LoginScreen() {
 
             {step === "phone" ? (
               <View style={styles.inputGroup}>
-                <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('auth.phone')}</ThemedText>
+                <ThemedText style={[styles.label, { textAlign: textStart }]}>{t('auth.phone')}</ThemedText>
                 <TextInput
-                  style={[styles.input, { textAlign: isRTL ? 'right' : 'left' }]}
+                  style={[styles.input, { textAlign: textStart }]}
                   placeholder={t('auth.phonePlaceholder')}
                   value={phone}
                   onChangeText={setPhone}
@@ -199,7 +201,7 @@ export function LoginScreen() {
               </View>
             ) : (
               <View style={styles.inputGroup}>
-                <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('auth.verificationCode')}</ThemedText>
+                <ThemedText style={[styles.label, { textAlign: textStart }]}>{t('auth.verificationCode')}</ThemedText>
                 <OtpInput 
                   code={code} 
                   setCode={setCode} 
@@ -267,11 +269,11 @@ const styles = StyleSheet.create({
   headerRow: {
     marginBottom: 28 },
   title: {
-    fontSize: 20,
-    fontFamily: "Alexandria-Black",
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
     color: "#1E293B",
     marginBottom: normalize.height(4),
-    lineHeight: normalize.font(32),
+    lineHeight: normalize.font(14),
     paddingTop: normalize.height(8) },
   subtextRow: {
     alignItems: "center" },
@@ -282,12 +284,12 @@ const styles = StyleSheet.create({
   linkText: {
     fontSize: normalize.font(14),
     color: "#0061FE",
-    fontFamily: "Alexandria-Bold" },
+    fontFamily: "Alexandria-Medium" },
   inputGroup: {
     marginBottom: normalize.height(25) },
   label: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "Alexandria-Medium",
     color: "#1E293B",
     marginBottom: normalize.height(10) },
   input: {
@@ -299,7 +301,7 @@ const styles = StyleSheet.create({
     borderColor: "#E2E8F0",
     paddingHorizontal: normalize.width(18),
     paddingVertical: normalize.height(10),
-    fontSize: normalize.font(15),
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: "#1E293B" },
   loginBtn: {
@@ -314,9 +316,9 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center" },
   guestLinkText: {
-    fontSize: normalize.font(15),
+    fontSize: normalize.font(14),
     color: "#94A3B8",
-    fontFamily: "Alexandria-Bold" },
+    fontFamily: "Alexandria-Medium" },
   bottomWaveContainer: {
     position: "absolute",
     bottom: 0,
@@ -324,9 +326,9 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: -1 },
   devHint: {
-    fontSize: 12,
+    fontSize: 8,
     color: "#94A3B8",
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "Alexandria-Medium",
     textAlign: "center",
     marginTop: 8 },
   ownerHintRow: {
@@ -335,12 +337,12 @@ const styles = StyleSheet.create({
     marginTop: 12,
     gap: 4 },
   ownerHintText: {
-    fontSize: 13,
+    fontSize: 14,
     color: "#64748B",
     fontFamily: "Alexandria-Medium" },
   ownerHintLink: {
-    fontSize: 13,
+    fontSize: 14,
     color: "#0061FE",
-    fontFamily: "Alexandria-Bold" } });
+    fontFamily: "Alexandria-Medium" } });
 // Default export for Expo Router
 export default LoginScreen;

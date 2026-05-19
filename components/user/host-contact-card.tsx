@@ -12,14 +12,17 @@ const SCALE = (SCREEN_WIDTH - 40) / SVG_WIDTH;
 
 interface HostContactCardProps {
   name: string;
+  phone?: string;
   avatar: any;
   isRTL: boolean;
 }
 
 export const HostContactCard: React.FC<HostContactCardProps> = ({
   name,
+  phone,
   avatar,
-  isRTL }) => {
+  isRTL,
+}) => {
   return (
     <View style={styles.container}>
       <Svg
@@ -55,36 +58,35 @@ export const HostContactCard: React.FC<HostContactCardProps> = ({
         )}
       </Svg>
 
-      <View
-        style={[
-          styles.contentOverlay,
-          { flexDirection: 'row' },
-        ]}
-      >
+      <View style={[styles.contentOverlay, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
         <View
           style={[
             styles.infoColumn,
             {
-              alignItems: 'flex-start',
+              alignItems: isRTL ? "flex-end" : "flex-start",
+              marginLeft: isRTL ? 15 * SCALE : 85 * SCALE,
               marginRight: isRTL ? 85 * SCALE : 15 * SCALE,
-              marginLeft: isRTL ? 15 * SCALE : 85 * SCALE },
+            },
           ]}
         >
-          <ThemedText style={styles.hostLabel}>
+          <ThemedText style={[styles.hostLabel, { textAlign: isRTL ? "right" : "left" }]}>
             {isRTL ? "المضيف" : "Host"}
           </ThemedText>
-          <ThemedText style={styles.hostName} numberOfLines={1}>
+          <ThemedText style={[styles.hostName, { textAlign: isRTL ? "right" : "left" }]} numberOfLines={1}>
             {name}
           </ThemedText>
+          {phone ? (
+            <ThemedText style={[styles.hostPhone, { textAlign: isRTL ? "right" : "left" }]} numberOfLines={1}>
+              {phone}
+            </ThemedText>
+          ) : null}
         </View>
 
         {/* Fixed to position derived from SVG */}
         <View
           style={[
             styles.avatarContainer,
-            isRTL
-              ? { right: (SVG_WIDTH - 304.627 - 56.6) * SCALE }
-              : { left: 12.3 * SCALE },
+            isRTL ? { right: 12.3 * SCALE, left: "auto" } : { left: 12.3 * SCALE, right: "auto" },
           ]}
         >
           <ExpoImage source={avatar} style={styles.avatar} contentFit="cover" />
@@ -100,24 +102,35 @@ const styles = StyleSheet.create({
     width: SCREEN_WIDTH - 40,
     height: SVG_HEIGHT * SCALE,
     justifyContent: "center",
-    alignItems: "center" },
+    alignItems: "center",
+  },
   contentOverlay: {
     position: "absolute",
     width: "100%",
     height: "100%",
     paddingHorizontal: 15 * SCALE,
-    alignItems: "center" },
+    alignItems: "center",
+  },
   infoColumn: {
-    flex: 1 },
+    flex: 1,
+  },
   hostLabel: {
-    fontSize: 12,
+    fontSize: 8,
     color: "#040404ff",
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "Alexandria-Medium",
+  },
   hostName: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#111827",
-    fontFamily: "Alexandria-Black",
-    marginTop: -2 },
+    fontFamily: "Alexandria-Medium",
+    marginTop: -2,
+  },
+  hostPhone: {
+    fontSize: 10,
+    color: "#6B7280",
+    fontFamily: "Alexandria-Medium",
+    marginTop: 2,
+  },
   avatarContainer: {
     position: "absolute",
     top: 14.6 * SCALE,
@@ -127,7 +140,10 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     backgroundColor: "#C5C5C5",
     borderWidth: 2,
-    borderColor: "white" },
+    borderColor: "white",
+  },
   avatar: {
     width: "100%",
-    height: "100%" } });
+    height: "100%",
+  },
+});

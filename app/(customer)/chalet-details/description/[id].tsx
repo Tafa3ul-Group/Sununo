@@ -1,4 +1,4 @@
-import { View, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
+import { View, StyleSheet, ScrollView, ActivityIndicator, I18nManager } from "react-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ThemedText } from "@/components/themed-text";
@@ -14,14 +14,15 @@ import { isRTL } from "@/i18n";
 export default function ChaletDescriptionScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t, i18n } = useTranslation();
-    const router = useRouter();
+  const isArabic = i18n.language === "ar";
+  const router = useRouter();
   const { userType } = useSelector((state: RootState) => state.auth);
 
   const { data: response, isLoading } = useGetCustomerChaletDetailsQuery(id as string);
   const chalet = response?.data || response;
 
   const title = t('chalet.details.overview');
-  const description = isRTL
+  const description = isArabic
     ? chalet?.description?.ar || chalet?.descriptionAr || chalet?.description || ""
     : chalet?.description?.en || chalet?.descriptionEn || chalet?.description || "";
 
@@ -49,8 +50,8 @@ export default function ChaletDescriptionScreen() {
           <ActivityIndicator size="large" color={Colors.primary} style={{ marginTop: 50 }} />
         ) : (
           <View style={styles.card}>
-            <ThemedText style={[styles.content, { textAlign: isRTL ? 'right' : 'left' }]}>
-              {description || (isRTL ? "لا يوجد وصف متوفر" : "No description available")}
+            <ThemedText style={[styles.content, { textAlign: isArabic ? 'right' : 'left' }]}>
+              {description || (isArabic ? "لا يوجد وصف متوفر" : "No description available")}
             </ThemedText>
           </View>
         )}
@@ -83,8 +84,8 @@ const styles = StyleSheet.create({
     shadowRadius: 15,
     elevation: 8 },
   pageTitle: {
-    fontSize: 22,
-    fontFamily: 'Alexandria-Black',
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
     color: '#111827' },
   card: {
     backgroundColor: 'white',
@@ -94,7 +95,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F3F4F6' },
   content: {
-    fontSize: 15,
+    fontSize: 14,
     lineHeight: 24,
     color: '#4B5563',
-    fontFamily: 'Alexandria-Medium' } });
+    fontFamily: "Alexandria-Medium" } });
