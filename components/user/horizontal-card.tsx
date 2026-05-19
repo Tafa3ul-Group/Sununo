@@ -4,6 +4,8 @@ import { Colors, normalize } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
 import { getFlexDirection } from "@/i18n";
 import {
   Dimensions,
@@ -75,11 +77,14 @@ export function HorizontalCard({
 
   const config = SHAPES_CONFIG[shapeIndex % SHAPES_CONFIG.length];
 
-  const isArabic = i18n.language ? i18n.language.startsWith("ar") : false;
+  const { language } = useSelector((state: RootState) => state.auth);
+  const isArabic = language === "ar";
   const textStart: "left" | "right" = isArabic ? "right" : "left";
   const rowDirection = getFlexDirection(isArabic);
   const rowReverseDir = getFlexDirection(!isArabic);
   const ratingBoxDir = I18nManager.isRTL ? "row-reverse" : "row";
+  const needsCounter = isArabic !== I18nManager.isRTL;
+  const alignStart: "flex-start" | "flex-end" = needsCounter ? "flex-end" : "flex-start";
 
   return (
     <TouchableOpacity
@@ -104,7 +109,7 @@ export function HorizontalCard({
             <View
               style={[
                 styles.upperText,
-                { alignItems: isArabic ? 'flex-end' : 'flex-start' },
+                { alignItems: alignStart },
               ]}
             >
               <ThemedText

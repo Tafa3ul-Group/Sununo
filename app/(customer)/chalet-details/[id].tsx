@@ -7,7 +7,7 @@ import {
   SolarMoonBold,
   SolarStarBold,
   SolarSunBold,
-  SolarWidgetBold
+  SolarWidgetBold,
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { CircleBackButton } from "@/components/ui/circle-back-button";
@@ -20,7 +20,6 @@ import { ReviewSubmissionSheet } from "@/components/user/review-submission-sheet
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize, Shadows } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
-import { isRTL, getFlexDirection } from "@/i18n";
 import { RootState } from "@/store";
 import {
   useAddFavoriteMutation,
@@ -55,12 +54,12 @@ import {
   ActivityIndicator,
   Alert,
   Dimensions,
+  I18nManager,
   Image,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
-  I18nManager,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { useSelector } from "react-redux";
@@ -92,12 +91,12 @@ function SectionHeader({ title, isRTL }: { title: string; isRTL: boolean }) {
   const textStart: "left" | "right" = isRTL ? "right" : "left";
   // alignItems is auto-mirrored by RN when I18nManager.isRTL=true
   const needsCounter = isRTL !== I18nManager.isRTL;
-  const alignStart: "flex-start" | "flex-end" = needsCounter ? "flex-end" : "flex-start";
+  const alignStart: "flex-start" | "flex-end" = needsCounter
+    ? "flex-end"
+    : "flex-start";
   return (
     <View style={[styles.sectionHeaderContainer, { alignItems: alignStart }]}>
-      <ThemedText
-        style={[styles.sectionTitle, { textAlign: textStart }]}
-      >
+      <ThemedText style={[styles.sectionTitle, { textAlign: textStart }]}>
         {title}
       </ThemedText>
     </View>
@@ -117,16 +116,19 @@ const CARD_COLORS = [
 export default function ChaletDetailScreen() {
   const { t, i18n } = useTranslation();
   const { userType, language } = useSelector((state: RootState) => state.auth);
-  // isRTL = is the app language Arabic (updated reactively via i18n)
-  const isRTL = i18n.language ? i18n.language.startsWith("ar") : false;
+  const isRTL = language === "ar";
   // textStart: NOT auto-mirrored by RN, so direct mapping is correct
   const textStart: "left" | "right" = isRTL ? "right" : "left";
   // flexDir: React Native auto-mirrors "row" when I18nManager.isRTL=true.
   // So we must account for native RTL state to avoid double-mirroring.
   // When language matches native direction → "row" (natural flow)
   // When language differs from native direction → "row-reverse" (counter-mirror)
-  const flexDir: "row" | "row-reverse" = (isRTL === I18nManager.isRTL) ? "row" : "row-reverse";
+  const flexDir: "row" | "row-reverse" =
+    isRTL === I18nManager.isRTL ? "row" : "row-reverse";
   const needsCounter = isRTL !== I18nManager.isRTL;
+  const alignStart: "flex-start" | "flex-end" = needsCounter
+    ? "flex-end"
+    : "flex-start";
   const { id } = useLocalSearchParams();
   const chaletId = id as string;
   const router = useRouter();
@@ -448,11 +450,14 @@ export default function ChaletDetailScreen() {
                 }
                 style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }}
               >
-                <Image source={typeof img === "string" ? { uri: img } : img} style={styles.headerImage} />
+                <Image
+                  source={typeof img === "string" ? { uri: img } : img}
+                  style={styles.headerImage}
+                />
               </TouchableOpacity>
             ))}
           </ScrollView>
-           <CircleBackButton
+          <CircleBackButton
             style={[
               styles.backBtnOriginal,
               needsCounter ? { right: 20 } : { left: 20 },
@@ -490,24 +495,19 @@ export default function ChaletDetailScreen() {
                 justifyContent: "space-between",
                 alignItems: "center",
                 width: "100%",
+                gap: 12,
               }}
             >
-              <View style={{ flex: 1, marginRight: isRTL ? 12 : 0, marginLeft: isRTL ? 0 : 12 }}>
+              <View style={{ flex: 1 }}>
                 <ThemedText
-                  style={[
-                    styles.mainTitle,
-                    { textAlign: textStart },
-                  ]}
+                  style={[styles.mainTitle, { textAlign: textStart }]}
                   numberOfLines={2}
                 >
                   {chaletName}
                 </ThemedText>
               </View>
               <View
-                style={[
-                  styles.ratingGroupLeft,
-                  { flexDirection: flexDir },
-                ]}
+                style={[styles.ratingGroupLeft, { flexDirection: flexDir }]}
               >
                 <ThemedText style={styles.ratingVal}>
                   {chaletRating.toFixed(1)}
@@ -518,10 +518,7 @@ export default function ChaletDetailScreen() {
 
             <View style={{ width: "100%", marginTop: 4 }}>
               <ThemedText
-                style={[
-                  styles.locationSub,
-                  { textAlign: textStart },
-                ]}
+                style={[styles.locationSub, { textAlign: textStart }]}
               >
                 {chaletCategory ? `${chaletCategory} • ` : ""}
                 {chaletLocation}
@@ -583,7 +580,10 @@ export default function ChaletDetailScreen() {
                       );
                     })()}
                     <View
-                      style={[styles.shiftInfo, { alignItems: "flex-start", marginHorizontal: 12 }]}
+                      style={[
+                        styles.shiftInfo,
+                        { alignItems: "flex-start", marginHorizontal: 12 },
+                      ]}
                     >
                       <ThemedText style={styles.shiftName}>
                         {isRTL
@@ -620,11 +620,12 @@ export default function ChaletDetailScreen() {
           {facilities.length > 0 && (
             <>
               <View
-                style={[
-                  styles.facilitiesHeader,
-                  { flexDirection: flexDir },
-                ]}
+                style={[styles.facilitiesHeader, { flexDirection: flexDir }]}
               >
+                <SectionHeader
+                  title={t("chalet.details.facilities")}
+                  isRTL={isRTL}
+                />
                 <TouchableOpacity
                   onPress={() =>
                     router.push(`/chalet-details/facilities/${chaletId}`)
@@ -634,10 +635,6 @@ export default function ChaletDetailScreen() {
                     {t("home.seeAll")}
                   </ThemedText>
                 </TouchableOpacity>
-                <SectionHeader
-                  title={t("chalet.details.facilities")}
-                  isRTL={isRTL}
-                />
               </View>
               <View style={[styles.facilitiesGrid, { flexDirection: flexDir }]}>
                 {facilities.slice(0, 8).map((f: any, i: number) => (
@@ -673,10 +670,7 @@ export default function ChaletDetailScreen() {
             style={[styles.descriptionContainer, { alignItems: "flex-start" }]}
           >
             <ThemedText
-              style={[
-                styles.descriptionText,
-                { textAlign: textStart },
-              ]}
+              style={[styles.descriptionText, { textAlign: textStart }]}
             >
               {chaletDescription}
             </ThemedText>
@@ -764,12 +758,7 @@ export default function ChaletDetailScreen() {
           />
 
           {/* التقييم والمراجعات */}
-          <View
-            style={[
-              styles.ctaRowReviewMerged,
-              { flexDirection: flexDir },
-            ]}
-          >
+          <View style={[styles.ctaRowReviewMerged, { flexDirection: flexDir }]}>
             <SecondaryButton
               label={t("chalet.details.reviews")}
               iconLabel={String(reviewCount)}
@@ -832,10 +821,7 @@ export default function ChaletDetailScreen() {
             return (
               <View key={reviewItem?.id || i} style={styles.revComplexCardFlat}>
                 <View
-                  style={[
-                    styles.revHeaderMerged,
-                    { flexDirection: flexDir },
-                  ]}
+                  style={[styles.revHeaderMerged, { flexDirection: flexDir }]}
                 >
                   <View
                     style={[
@@ -867,7 +853,7 @@ export default function ChaletDetailScreen() {
                       <ThemedText
                         style={[
                           styles.revMessageMerged,
-                           { textAlign: textStart },
+                          { textAlign: textStart },
                         ]}
                       >
                         {reviewComment}
@@ -957,7 +943,9 @@ export default function ChaletDetailScreen() {
                     <item.Icon size={24} color="white" />
                   </View>
                 </View>
-                <ThemedText style={[styles.infoLabelText, { marginHorizontal: 16 }]}>
+                <ThemedText
+                  style={[styles.infoLabelText, { marginHorizontal: 16 }]}
+                >
                   {item.label}
                 </ThemedText>
               </TouchableOpacity>
@@ -990,16 +978,16 @@ export default function ChaletDetailScreen() {
       </ScrollView>
 
       {/* الفوتر */}
-      <View
-        style={[styles.flatUltimateFooter, { flexDirection: flexDir }]}
-      >
-        <View style={[styles.footerTextSide]}>
-          <ThemedText style={styles.footerPriceBig}>
+      <View style={[styles.flatUltimateFooter, { flexDirection: flexDir }]}>
+        <View style={[styles.footerTextSide, { alignItems: alignStart }]}>
+          <ThemedText style={[styles.footerPriceBig, { textAlign: textStart }]}>
             {displayPrice} {t("common.iqd")}
           </ThemedText>
           <View style={[styles.footerMetaRow, { flexDirection: flexDir }]}>
             <SolarClockCircleBold size={12} color="#9CA3AF" />
-            <ThemedText style={styles.footerMetaSmall}>
+            <ThemedText
+              style={[styles.footerMetaSmall, { textAlign: textStart }]}
+            >
               {selectedShift
                 ? isRTL
                   ? selectedShift.name?.ar || selectedShift.name

@@ -2,6 +2,8 @@ import { ThemedText } from "@/components/themed-text";
 import { Colors, Shadows } from "@/constants/theme";
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
 import { Image, StyleSheet, Text, TouchableOpacity, View, I18nManager } from "react-native";
 import { SolarCloseCircleBold, SolarStarBold } from "@/components/icons/solar-icons";
 import { isRTL, getFlexDirection } from "@/i18n";
@@ -24,8 +26,8 @@ export const MapCard = ({
   price,
   onPress,
   onClose }: MapCardProps) => {
-  const { i18n } = useTranslation();
-  const isArabic = i18n.language === "ar";
+  const { language } = useSelector((state: RootState) => state.auth);
+  const isArabic = language === "ar";
   const rowDir = getFlexDirection(isArabic);
   const rowReverseDir = getFlexDirection(!isArabic);
   
