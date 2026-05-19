@@ -116,7 +116,7 @@ const CARD_COLORS = [
 export default function ChaletDetailScreen() {
   const { t, i18n } = useTranslation();
   const { userType, language } = useSelector((state: RootState) => state.auth);
-  const isRTL = language === "ar";
+  const isRTL = i18n.language ? i18n.language.startsWith("ar") : true;
   // textStart: NOT auto-mirrored by RN, so direct mapping is correct
   const textStart: "left" | "right" = isRTL ? "right" : "left";
   // flexDir: React Native auto-mirrors "row" when I18nManager.isRTL=true.
@@ -460,14 +460,14 @@ export default function ChaletDetailScreen() {
           <CircleBackButton
             style={[
               styles.backBtnOriginal,
-              needsCounter ? { right: 20 } : { left: 20 },
+              I18nManager.isRTL ? { right: 20, left: "auto" } : { left: 20, right: "auto" },
             ]}
           />
 
           <TouchableOpacity
             style={[
               styles.favoriteBtn,
-              needsCounter ? { left: 20 } : { right: 20 },
+              I18nManager.isRTL ? { left: 20, right: "auto" } : { right: 20, left: "auto" },
             ]}
             onPress={handleToggleFavorite}
           >
@@ -476,19 +476,65 @@ export default function ChaletDetailScreen() {
               color={isFavorite ? "#EA2129" : "#FFFFFF"}
             />
           </TouchableOpacity>
-          <View style={[styles.paginationDots, { flexDirection: "row" }]}>
-            {images.map((_: string, i: number) => (
-              <View
-                key={i}
-                style={[styles.dot, activeImage === i && styles.activeDot]}
-              />
-            ))}
+          <View
+            style={{
+              position: "absolute",
+              bottom: 20,
+              left: 20,
+              right: 20,
+              flexDirection: flexDir,
+              alignItems: "center",
+              justifyContent: "space-between",
+              zIndex: 10,
+            }}
+          >
+            <TouchableOpacity
+              activeOpacity={0.9}
+              onPress={() =>
+                router.push({
+                  pathname: "/(customer)/chalet-details/gallery",
+                  params: { id: chaletId },
+                })
+              }
+              style={{
+                backgroundColor: "rgba(255, 255, 255, 0.9)",
+                paddingHorizontal: 14,
+                paddingVertical: 8,
+                borderRadius: 20,
+                borderWidth: 1,
+                borderColor: "#E5E7EB",
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                elevation: 3,
+              }}
+            >
+              <ThemedText
+                style={{
+                  fontSize: 12,
+                  fontFamily: "Alexandria-Medium",
+                  color: "#374151",
+                }}
+              >
+                {isRTL ? "تصفح بحسب المرافق" : "Browse by facilities"}
+              </ThemedText>
+            </TouchableOpacity>
+
+            <View style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
+              {images.map((_: string, i: number) => (
+                <View
+                  key={i}
+                  style={[styles.dot, activeImage === i && styles.activeDot]}
+                />
+              ))}
+            </View>
           </View>
         </View>
 
         <View style={styles.infoWrapper}>
           {/* العنوان والتقييم */}
-          <View style={[styles.titleSection, { marginBottom: 20 }]}>
+          <View style={[styles.titleSection, { alignItems: alignStart, width: "100%", marginBottom: 20 }]}>
             <View
               style={{
                 flexDirection: flexDir,
@@ -498,9 +544,9 @@ export default function ChaletDetailScreen() {
                 gap: 12,
               }}
             >
-              <View style={{ flex: 1 }}>
+              <View style={{ flex: 1, alignItems: alignStart }}>
                 <ThemedText
-                  style={[styles.mainTitle, { textAlign: textStart }]}
+                  style={[styles.mainTitle, { textAlign: textStart, width: "100%" }]}
                   numberOfLines={2}
                 >
                   {chaletName}
@@ -516,9 +562,9 @@ export default function ChaletDetailScreen() {
               </View>
             </View>
 
-            <View style={{ width: "100%", marginTop: 4 }}>
+            <View style={{ width: "100%", marginTop: 4, alignItems: alignStart }}>
               <ThemedText
-                style={[styles.locationSub, { textAlign: textStart }]}
+                style={[styles.locationSub, { textAlign: textStart, width: "100%" }]}
               >
                 {chaletCategory ? `${chaletCategory} • ` : ""}
                 {chaletLocation}
