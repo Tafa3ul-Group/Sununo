@@ -342,6 +342,12 @@ export const apiSlice = createApi({
       providesTags: ["Booking", "Chalet"],
     }),
 
+    // Get provider chalet stats
+    getProviderChaletStats: builder.query({
+      query: (chaletId) => `/provider/chalets/${chaletId}/stats`,
+      providesTags: ["Booking", "Chalet"],
+    }),
+
     // Update provider profile
     updateProviderProfile: builder.mutation({
       query: (data) => ({
@@ -589,6 +595,7 @@ export const {
 
   useGetProviderProfileQuery,
   useGetProviderStatsQuery,
+  useGetProviderChaletStatsQuery,
   useUpdateProviderProfileMutation,
   useUpdateProfileMutation,
   useUpdateProfileImageMutation,
