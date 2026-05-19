@@ -44,6 +44,8 @@ export default function FilterResultsScreen() {
   const isArabic = i18n.language === "ar";
   const insets = useSafeAreaInsets();
 
+  const { userType } = useSelector((state: RootState) => state.auth);
+
   // Read active filters from Redux store
   const activeFilters = useSelector(
     (state: RootState) => (state as any).filter,
@@ -51,7 +53,7 @@ export default function FilterResultsScreen() {
 
   // Fetch favorite chalet IDs
   const { data: favoriteIds = [], refetch: refetchFavorites } =
-    useGetFavoriteIdsQuery();
+    useGetFavoriteIdsQuery(undefined, { skip: userType === "guest" });
   const [toggleFavorite] = useToggleFavoriteMutation();
 
   // Construct search API query params from the Redux filters

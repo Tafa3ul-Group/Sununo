@@ -3,9 +3,9 @@ import { ThemedText } from "@/components/themed-text";
 import { CircleBackButton } from "@/components/ui/circle-back-button";
 import { AuthToggle } from "@/components/user/auth-toggle";
 import { OtpInput } from "@/components/user/otp-input";
-import { SecondaryButton } from "@/components/user/secondary-button";
+import { PrimaryButton } from "@/components/user/primary-button";
 import { normalize } from "@/constants/theme";
-import { isRTL } from "@/i18n";
+
 import {
     useLoginMutation,
     useRegisterProviderMutation,
@@ -53,9 +53,14 @@ function StepProgress({ current, total }: { current: number; total: number }) {
 }
 
 export default function RegisterScreen() {
-  const textStart: "left" | "right" = isRTL === I18nManager.isRTL ? "left" : "right";
   const { t, i18n } = useTranslation();
-    const router = useRouter();
+  const isArabic = i18n.language ? i18n.language.startsWith("ar") : true;
+  const textStart: "left" | "right" = isArabic === I18nManager.isRTL ? "left" : "right";
+  const textEnd: "left" | "right" = isArabic === I18nManager.isRTL ? "right" : "left";
+  const alignStart: "flex-start" | "flex-end" = isArabic === I18nManager.isRTL ? "flex-start" : "flex-end";
+  const rowDir: "row" | "row-reverse" = isArabic === I18nManager.isRTL ? "row" : "row-reverse";
+
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
 
@@ -107,17 +112,42 @@ export default function RegisterScreen() {
       if (!formData.name || !formData.phone) {
         Alert.alert(
           t("common.error"),
-          isRTL ? "يرجى ملء الاسم ورقم الهاتف" : "Please enter name and phone",
+          isArabic ? "يرجى ملء الاسم ورقم الهاتف" : "Please enter name and phone",
         );
         return;
       }
-      if (accountType === "owner") setStep("BUSINESS");
-      else handleCustomerRegister();
+
+      // Clean phone number
+      const cleanPhone = formData.phone.trim().replace(/[\s\-\(\)]/g, "");
+      
+      const iraqiPhoneRegex = /^(\+?964|00964|0)?7[3-9]\d{8}$/;
+      const genericPhoneRegex = /^\d{10,15}$/;
+      
+      if (!iraqiPhoneRegex.test(cleanPhone) && !genericPhoneRegex.test(cleanPhone)) {
+        Alert.alert(
+          t("common.error"), 
+          isArabic 
+            ? "يرجى إدخال رقم هاتف صالح يتكون من 10 أو 11 رقماً (مثال: 07701234567)" 
+            : "Please enter a valid phone number with 10 or 11 digits (e.g., 07701234567)"
+        );
+        return;
+      }
+
+      // Update form state with the cleaned phone number
+      setFormData(prev => {
+        const updated = { ...prev, phone: cleanPhone };
+        if (accountType === "owner") {
+          setStep("BUSINESS");
+        } else {
+          handleCustomerRegister(cleanPhone);
+        }
+        return updated;
+      });
     } else if (step === "BUSINESS") {
       if (!formData.businessNameAr) {
         Alert.alert(
           t("common.error"),
-          isRTL ? "يرجى ملء اسم الشاليه" : "Please enter chalet name",
+          isArabic ? "يرجى ملء اسم الشاليه" : "Please enter chalet name",
         );
         return;
       }
@@ -135,10 +165,11 @@ export default function RegisterScreen() {
     }
   };
 
-  const handleCustomerRegister = async () => {
+  const handleCustomerRegister = async (overridePhone?: string) => {
     try {
+      const phoneToUse = overridePhone || formData.phone;
       // For customers, we just trigger login to get OTP
-      const res = await login({ phone: formData.phone }).unwrap();
+      const res = await login({ phone: phoneToUse }).unwrap();
       // Auto-fill OTP code if returned in response (dev/staging env)
       if (res?.code) {
         setOtpCode(String(res.code));
@@ -153,11 +184,12 @@ export default function RegisterScreen() {
   };
 
   // Task 2.3 & 2.5: Fixed payload and duplicate account error handling
-  const handleOwnerRegister = async () => {
+  const handleOwnerRegister = async (overridePhone?: string) => {
     try {
+      const phoneToUse = overridePhone || formData.phone;
       // Task 2.3: Build payload without commercialRegNo if empty
       const payload: any = {
-        phone: formData.phone,
+        phone: phoneToUse,
         name: formData.name,
         businessName: {
           ar: formData.businessNameAr,
@@ -180,14 +212,14 @@ export default function RegisterScreen() {
 
       if (isDuplicate) {
         Alert.alert(
-          isRTL ? "حساب موجود مسبقاً" : "Account Already Exists",
-          isRTL
+          isArabic ? "حساب موجود مسبقاً" : "Account Already Exists",
+          isArabic
             ? "يوجد حساب مالك مرتبط بهذا الرقم. هل تريد تسجيل الدخول؟"
             : "An owner account already exists for this number. Would you like to log in?",
           [
-            { text: isRTL ? "إلغاء" : "Cancel", style: "cancel" },
+            { text: isArabic ? "إلغاء" : "Cancel", style: "cancel" },
             {
-              text: isRTL ? "تسجيل الدخول" : "Log In",
+              text: isArabic ? "تسجيل الدخول" : "Log In",
               onPress: () => router.replace("/login") },
           ],
         );
@@ -219,7 +251,7 @@ export default function RegisterScreen() {
       if (accountType === "owner" && resolvedUserType !== "owner") {
         Alert.alert(
           t("common.error"),
-          isRTL
+          isArabic
             ? "تعذر تفعيل حساب المالك لهذا الرقم. يرجى المحاولة من جديد."
             : "Could not activate an owner account for this phone number. Please try again.",
         );
@@ -248,6 +280,7 @@ export default function RegisterScreen() {
       <View
         style={[
           styles.header,
+          { flexDirection: rowDir }
         ]}
       >
         <CircleBackButton onPress={prevStep} />
@@ -287,7 +320,7 @@ export default function RegisterScreen() {
                   { textAlign: textStart },
                 ]}
               >
-                {isRTL ? "المعلومات الأساسية" : "Basic Information"}
+                {isArabic ? "المعلومات الأساسية" : "Basic Information"}
               </ThemedText>
 
               <View style={styles.inputGroup}>
@@ -305,7 +338,7 @@ export default function RegisterScreen() {
                     { textAlign: textStart },
                   ]}
                   placeholder={
-                    isRTL ? "ادخل اسمك الكامل" : "Enter your full name"
+                    isArabic ? "ادخل اسمك الكامل" : "Enter your full name"
                   }
                   value={formData.name}
                   onChangeText={(val) =>
@@ -339,18 +372,19 @@ export default function RegisterScreen() {
                 />
               </View>
 
-              <SecondaryButton
+              <PrimaryButton
                 label={
                   accountType === "owner"
-                    ? isRTL
+                    ? isArabic
                       ? "التالي"
                       : "Next"
-                    : isRTL
+                    : isArabic
                       ? "إرسال الرمز"
                       : "Send Code"
                 }
                 onPress={nextStep}
                 style={styles.mainBtn}
+                activeColor="#0061FE"
               />
             </View>
           )}
@@ -366,7 +400,7 @@ export default function RegisterScreen() {
                   { textAlign: textStart },
                 ]}
               >
-                {isRTL ? "معلومات الشاليه" : "Chalet Information"}
+                {isArabic ? "معلومات الشاليه" : "Chalet Information"}
               </ThemedText>
 
               <View style={styles.inputGroup}>
@@ -376,7 +410,7 @@ export default function RegisterScreen() {
                     { textAlign: textStart },
                   ]}
                 >
-                  {isRTL
+                  {isArabic
                     ? "اسم الشاليه (بالعربية) *"
                     : "Chalet Name (Arabic) *"}
                 </ThemedText>
@@ -386,7 +420,7 @@ export default function RegisterScreen() {
                     { textAlign: textStart },
                   ]}
                   placeholder={
-                    isRTL ? "مثلاً: شاليه النخيل" : "e.g. Al Nakheel Chalet"
+                    isArabic ? "مثلاً: شاليه النخيل" : "e.g. Al Nakheel Chalet"
                   }
                   value={formData.businessNameAr}
                   onChangeText={(val) =>
@@ -403,7 +437,7 @@ export default function RegisterScreen() {
                     { textAlign: textStart },
                   ]}
                 >
-                  {isRTL
+                  {isArabic
                     ? "اسم الشاليه (بالانجليزية)"
                     : "Chalet Name (English)"}
                 </ThemedText>
@@ -413,7 +447,7 @@ export default function RegisterScreen() {
                     { textAlign: textStart },
                   ]}
                   placeholder={
-                    isRTL
+                    isArabic
                       ? "مثلاً: Al Nakheel Chalet"
                       : "e.g. Al Nakheel Chalet"
                   }
@@ -432,7 +466,7 @@ export default function RegisterScreen() {
                     { textAlign: textStart },
                   ]}
                 >
-                  {isRTL
+                  {isArabic
                     ? "رقم السجل التجاري (إن وجد)"
                     : "Commercial Registration (Optional)"}
                 </ThemedText>
@@ -450,11 +484,12 @@ export default function RegisterScreen() {
                 />
               </View>
 
-              <SecondaryButton
-                label={isRTL ? "إرسال الطلب" : "Submit & Send Code"}
+              <PrimaryButton
+                label={isArabic ? "إرسال الطلب" : "Submit & Send Code"}
                 onPress={nextStep}
                 style={styles.mainBtn}
-                isLoading={isRegisteringProvider}
+                loading={isRegisteringProvider}
+                activeColor="#0061FE"
               />
             </View>
           )}
@@ -470,7 +505,7 @@ export default function RegisterScreen() {
                   { textAlign: textStart },
                 ]}
               >
-                {isRTL ? "التحقق من الهاتف" : "Verify Phone"}
+                {isArabic ? "التحقق من الهاتف" : "Verify Phone"}
               </ThemedText>
               <ThemedText
                 style={[
@@ -478,7 +513,7 @@ export default function RegisterScreen() {
                    { textAlign: textStart },
                 ]}
               >
-                {isRTL
+                {isArabic
                   ? `أدخل الرمز المرسل إلى ${formData.phone}`
                   : `Enter code sent to ${formData.phone}`}
               </ThemedText>
@@ -487,11 +522,12 @@ export default function RegisterScreen() {
                 <OtpInput code={otpCode} setCode={setOtpCode} length={6} />
               </View>
 
-              <SecondaryButton
-                label={isRTL ? "تحقق وتفعيل" : "Verify & Activate"}
+              <PrimaryButton
+                label={isArabic ? "تحقق وتفعيل" : "Verify & Activate"}
                 onPress={handleVerify}
                 style={styles.mainBtn}
-                isLoading={isVerifying}
+                loading={isVerifying}
+                activeColor="#0061FE"
               />
             </View>
           )}
