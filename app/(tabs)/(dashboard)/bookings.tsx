@@ -387,20 +387,15 @@ export default function BookingsScreen() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={styles.safeArea}>
         <DashboardHeader
+          title={isRTL ? 'الحجوزات' : 'Bookings'}
           showSearch={false}
-          onSearchPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          }}
+          showBackButton={true}
         />
         <View style={{ flex: 1 }}>
           <View style={{ flex: 1 }}>
             {/* Fixed Section: Header + Filter */}
             <View style={styles.fixedHeaderArea}>
-              <Animated.View
-                entering={FadeInUp.duration(400).springify().damping(18)}
-                style={[styles.bookingsHeader, { flexDirection: 'row' }]}
-              >
-                <Text style={styles.bookingsTitle}>{isRTL ? 'الحجوزات' : 'Bookings'}</Text>
+              <View style={[styles.bookingsHeader, { flexDirection: 'row', justifyContent: 'flex-end' }]}>
                 <View style={{ transform: [{ scale: 0.92 }] }}>
                   <SecondaryButton
                     label={getButtonLabel()}
@@ -412,7 +407,7 @@ export default function BookingsScreen() {
                     }}
                   />
                 </View>
-              </Animated.View>
+              </View>
 
               {/* Filter Bar */}
               <Animated.View

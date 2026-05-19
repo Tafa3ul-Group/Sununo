@@ -40,11 +40,11 @@ export default function DashboardNonTabLayout() {
       />
       <Stack.Screen
         name="chalet-details"
-        options={{ headerShown: false }}
+        options={{ title: isRTL ? 'إعدادات الشاليه' : 'Chalet Settings' }}
       />
       <Stack.Screen
         name="booking-details"
-        options={{ headerShown: false }}
+        options={{ title: isRTL ? 'تفاصيل الحجز' : 'Booking Details' }}
       />
     </Stack>
   );

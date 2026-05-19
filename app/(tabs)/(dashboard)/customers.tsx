@@ -2,9 +2,8 @@ import { SolarPhoneBold, SolarUsersGroupRoundedBold } from "@/components/icons/s
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Image } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing, Typography, normalize, Shadows } from '@/constants/theme';
-import { HeaderSection } from '@/components/header-section';
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { useTranslation } from 'react-i18next';
@@ -71,13 +70,10 @@ export default function CustomersScreen() {
   );
 
   return (
-    <SafeAreaView style={[styles.safeArea]}>
-      <HeaderSection 
-        userType={userType} 
-        userName={user?.name} 
+    <View style={[styles.safeArea]}>
+      <DashboardHeader 
         title={t('tabs.customers')}
         showSearch={false}
-        showCategories={false}
         showBackButton={true}
       />
       <View style={styles.container}>
@@ -96,7 +92,7 @@ export default function CustomersScreen() {
           }
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

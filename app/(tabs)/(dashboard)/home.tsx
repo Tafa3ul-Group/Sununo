@@ -815,6 +815,7 @@ export default function HomeScreen() {
   return (
     <View style={[styles.safeArea, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       <DashboardHeader
+        showLogo={true}
         showSearch={false}
         onSearchPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

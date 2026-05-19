@@ -140,14 +140,6 @@ export default function BookingDetailsPage() {
 
   return (
     <View style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
-      {/* Dashboard Header */}
-      <DashboardHeader
-        title={isRTL ? 'تفاصيل الحجز' : 'Booking Details'}
-        showBackButton={true}
-        showSearch={false}
-        customRightComponent={<View style={{ width: normalize.width(80) }} />}
-      />
-
       <ScrollView
         contentContainerStyle={[
           styles.scrollContent,

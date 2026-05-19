@@ -1,9 +1,8 @@
 import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'expo-router';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator, RefreshControl } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, normalize } from '@/constants/theme';
-import { HeaderSection } from '@/components/header-section';
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { useGetPayoutsQuery, useRequestPayoutMutation, useGetProviderStatsQuery, useGetProviderProfileQuery } from '@/store/api/apiSlice';
@@ -159,15 +158,11 @@ export default function RevenueScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea]}>
-      <HeaderSection 
-        userType={userType} 
-        userName={user?.name} 
+    <View style={[styles.safeArea]}>
+      <DashboardHeader 
         title={isRTL ? 'الأرباح' : 'Revenue'}
         showSearch={false}
-        showCategories={false}
         showBackButton={true}
-        showExtra={false}
       />
       <ScrollView 
         style={styles.container} 
@@ -345,7 +340,7 @@ export default function RevenueScreen() {
           />
         </BottomSheetScrollView>
       </BottomSheetModal>
-    </SafeAreaView>
+    </View>
   );
 }
 

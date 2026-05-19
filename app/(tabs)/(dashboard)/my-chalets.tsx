@@ -1,4 +1,3 @@
-import { HeaderSection } from '@/components/header-section';
 import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
 import { RootState } from '@/store';
@@ -27,7 +26,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { useSelector } from 'react-redux';
 import { isRTL } from "@/i18n";
 
@@ -55,7 +54,7 @@ export default function MyChaletsScreen() {
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           router.push({
-            pathname: '/(tabs)/(dashboard)/chalet-details',
+            pathname: '/(dashboard)/chalet-details',
             params: { id: item.id }
           });
         }}
@@ -117,15 +116,11 @@ export default function MyChaletsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { direction: isRTL ? 'rtl' : 'ltr' }]}>
-      <HeaderSection
-        userType={userType}
+    <View style={[styles.safeArea, { direction: isRTL ? 'rtl' : 'ltr' }]}>
+      <DashboardHeader
         title={t('tabs.myChalets')}
         showSearch={false}
-        showCategories={false}
-        showProfile={true}
-        showLogo={false}
-        marginBottom={4}
+        showBackButton={true}
       />
 
       <ScrollView
@@ -169,7 +164,7 @@ export default function MyChaletsScreen() {
           )}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

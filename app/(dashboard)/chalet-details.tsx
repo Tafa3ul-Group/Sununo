@@ -647,20 +647,6 @@ export default function ChaletDetailsScreen() {
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
 
-      {/* Flat Sticky Premium Header */}
-      <SafeAreaView edges={['top']} style={styles.flatHeader}>
-        <View style={[styles.flatHeaderContent, { flexDirection: flexRow }]}>
-          <CircleBackButton
-            onPress={() => router.back()}
-            style={{ width: 40, height: 40, borderRadius: 20 }}
-          />
-          <Text style={styles.flatHeaderTitle}>
-            {isRTL ? 'إعدادات الشاليه' : 'Chalet Settings'}
-          </Text>
-          <View style={{ width: 40 }} />
-        </View>
-      </SafeAreaView>
-
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
