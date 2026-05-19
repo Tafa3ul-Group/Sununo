@@ -1,13 +1,13 @@
 import {
-    SolarChaletRulesBold,
-    SolarClockCircleBold,
-    SolarForbiddenBold,
-    SolarHeartBold,
-    SolarMapPointBold,
-    SolarMoonBold,
-    SolarStarBold,
-    SolarSunBold,
-    SolarWidgetBold,
+  SolarChaletRulesBold,
+  SolarClockCircleBold,
+  SolarForbiddenBold,
+  SolarHeartBold,
+  SolarMapPointBold,
+  SolarMoonBold,
+  SolarStarBold,
+  SolarSunBold,
+  SolarWidgetBold,
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { CircleBackButton } from "@/components/ui/circle-back-button";
@@ -22,44 +22,44 @@ import { Colors, normalize, Shadows } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { RootState } from "@/store";
 import {
-    useAddFavoriteMutation,
-    useCheckCanReviewQuery,
-    useCreateReviewMutation,
-    useGetChaletAddonsQuery,
-    useGetChaletReviewsQuery,
-    useGetCustomerChaletDetailsQuery,
-    useGetFavoriteIdsQuery,
-    useGetSimilarChaletsQuery,
-    useRemoveFavoriteMutation,
-    useToggleFavoriteMutation,
+  useAddFavoriteMutation,
+  useCheckCanReviewQuery,
+  useCreateReviewMutation,
+  useGetChaletAddonsQuery,
+  useGetChaletReviewsQuery,
+  useGetCustomerChaletDetailsQuery,
+  useGetFavoriteIdsQuery,
+  useGetSimilarChaletsQuery,
+  useRemoveFavoriteMutation,
+  useToggleFavoriteMutation,
 } from "@/store/api/customerApiSlice";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import Constants from "expo-constants";
 import { Image as ExpoImage } from "expo-image";
 import {
-    Stack,
-    useFocusEffect,
-    useLocalSearchParams,
-    useRouter,
+  Stack,
+  useFocusEffect,
+  useLocalSearchParams,
+  useRouter,
 } from "expo-router";
 import React, {
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
 } from "react";
 import { useTranslation } from "react-i18next";
 import {
-    ActivityIndicator,
-    Alert,
-    Dimensions,
-    I18nManager,
-    Image,
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  I18nManager,
+  Image,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { useSelector } from "react-redux";
@@ -88,8 +88,10 @@ const SHAPE_COLORS: Record<ShapeKey, string> = {
 };
 
 function SectionHeader({ title, isRTL }: { title: string; isRTL: boolean }) {
-  const textStart: "left" | "right" = isRTL === I18nManager.isRTL ? "left" : "right";
-  const alignStart: "flex-start" | "flex-end" = isRTL === I18nManager.isRTL ? "flex-start" : "flex-end";
+  const textStart: "left" | "right" =
+    isRTL === I18nManager.isRTL ? "left" : "right";
+  const alignStart: "flex-start" | "flex-end" =
+    isRTL === I18nManager.isRTL ? "flex-start" : "flex-end";
   return (
     <View style={[styles.sectionHeaderContainer, { alignItems: alignStart }]}>
       <ThemedText style={[styles.sectionTitle, { textAlign: textStart }]}>
@@ -113,14 +115,18 @@ export default function ChaletDetailScreen() {
   const { t, i18n } = useTranslation();
   const { userType, language } = useSelector((state: RootState) => state.auth);
   const isRTL = i18n.language ? i18n.language.startsWith("ar") : true;
-  
+
   // textStart: dynamic alignment accounting for React Native native mirroring
-  const textStart: "left" | "right" = isRTL === I18nManager.isRTL ? "left" : "right";
+  const textStart: "left" | "right" =
+    isRTL === I18nManager.isRTL ? "left" : "right";
   // flexDir: dynamic flexDirection accounting for native mirroring
-  const flexDir: "row" | "row-reverse" = isRTL === I18nManager.isRTL ? "row" : "row-reverse";
-  const alignStart: "flex-start" | "flex-end" = isRTL === I18nManager.isRTL ? "flex-start" : "flex-end";
-  const alignEnd: "flex-start" | "flex-end" = isRTL === I18nManager.isRTL ? "flex-end" : "flex-start";
-  
+  const flexDir: "row" | "row-reverse" =
+    isRTL === I18nManager.isRTL ? "row" : "row-reverse";
+  const alignStart: "flex-start" | "flex-end" =
+    isRTL === I18nManager.isRTL ? "flex-start" : "flex-end";
+  const alignEnd: "flex-start" | "flex-end" =
+    isRTL === I18nManager.isRTL ? "flex-end" : "flex-start";
+
   const { id } = useLocalSearchParams();
   const chaletId = id as string;
   const router = useRouter();
@@ -453,8 +459,12 @@ export default function ChaletDetailScreen() {
             style={[
               styles.backBtnOriginal,
               isRTL
-                ? (I18nManager.isRTL ? { left: 20, right: "auto" } : { right: 20, left: "auto" })
-                : (I18nManager.isRTL ? { right: 20, left: "auto" } : { left: 20, right: "auto" }),
+                ? I18nManager.isRTL
+                  ? { left: 20, right: "auto" }
+                  : { right: 20, left: "auto" }
+                : I18nManager.isRTL
+                  ? { right: 20, left: "auto" }
+                  : { left: 20, right: "auto" },
             ]}
           />
 
@@ -462,8 +472,12 @@ export default function ChaletDetailScreen() {
             style={[
               styles.favoriteBtn,
               isRTL
-                ? (I18nManager.isRTL ? { right: 20, left: "auto" } : { left: 20, right: "auto" })
-                : (I18nManager.isRTL ? { left: 20, right: "auto" } : { right: 20, left: "auto" }),
+                ? I18nManager.isRTL
+                  ? { right: 20, left: "auto" }
+                  : { left: 20, right: "auto" }
+                : I18nManager.isRTL
+                  ? { left: 20, right: "auto" }
+                  : { right: 20, left: "auto" },
             ]}
             onPress={handleToggleFavorite}
           >
@@ -502,7 +516,9 @@ export default function ChaletDetailScreen() {
               }}
             />
 
-            <View style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
+            <View
+              style={{ flexDirection: "row", gap: 6, alignItems: "center" }}
+            >
               {images.map((_: string, i: number) => (
                 <View
                   key={i}
@@ -515,7 +531,9 @@ export default function ChaletDetailScreen() {
 
         <View style={styles.infoWrapper}>
           {/* العنوان والتقييم */}
-          <View style={{ alignItems: alignStart, width: "100%", marginBottom: 20 }}>
+          <View
+            style={{ alignItems: alignStart, width: "100%", marginBottom: 20 }}
+          >
             <View
               style={{
                 flexDirection: flexDir === "row" ? "row-reverse" : "row",
@@ -526,7 +544,9 @@ export default function ChaletDetailScreen() {
               }}
             >
               {/* التقييم — دائماً على الجانب الأبعد عن الاسم */}
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+              >
                 <SolarStarBold size={14} color="#035DF9" />
                 <ThemedText style={styles.ratingVal}>
                   {chaletRating.toFixed(1)}
@@ -535,7 +555,10 @@ export default function ChaletDetailScreen() {
               {/* الاسم — يمين في عربي، يسار في إنجليزي */}
               <View style={{ flex: 1, alignItems: alignStart }}>
                 <ThemedText
-                  style={[styles.mainTitle, { textAlign: textStart, width: "100%" }]}
+                  style={[
+                    styles.mainTitle,
+                    { textAlign: textStart, width: "100%" },
+                  ]}
                   numberOfLines={2}
                 >
                   {chaletName}
@@ -543,9 +566,14 @@ export default function ChaletDetailScreen() {
               </View>
             </View>
 
-            <View style={{ width: "100%", marginTop: 4, alignItems: alignStart }}>
+            <View
+              style={{ width: "100%", marginTop: 4, alignItems: alignStart }}
+            >
               <ThemedText
-                style={[styles.locationSub, { textAlign: textStart, width: "100%" }]}
+                style={[
+                  styles.locationSub,
+                  { textAlign: textStart, width: "100%" },
+                ]}
               >
                 {chaletCategory ? `${chaletCategory} • ` : ""}
                 {chaletLocation}
