@@ -1,4 +1,3 @@
-import { HeaderSection } from '@/components/header-section';
 import {
     SolarBanknoteBold,
     SolarCardBold,

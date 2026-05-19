@@ -1,4 +1,4 @@
-import { HeaderSection } from '@/components/header-section';
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import {
   SolarAddCircleBold,
   SolarAltArrowDownBold,
@@ -867,14 +867,12 @@ export default function ShiftsAndPricesScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
+    <View style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
       <StatusBar style="dark" />
-      <HeaderSection
+      <DashboardHeader
         title={chaletName || (isRTL ? 'اختر الشاليه' : 'Select Chalet')}
-        subtitle={isRTL ? 'إدارة الفترات والأسعار' : 'Manage shifts & prices'}
-        showBackButton={true}
         showSearch={false}
-        onExtraIconPress={() => ownerChalets.length > 1 ? chaletSelectSheetRef.current?.present() : refetchShifts()}
+        showBackButton={true}
       />
 
       <View style={styles.container}>
@@ -885,7 +883,7 @@ export default function ShiftsAndPricesScreen() {
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                 router.push({
-                  pathname: '/(tabs)/(dashboard)/chalet-details',
+                  pathname: '/(dashboard)/chalet-details',
                   params: { id: selectedChaletId }
                 });
               }}
@@ -1223,8 +1221,7 @@ export default function ShiftsAndPricesScreen() {
           ))}
         </BottomSheetView>
       </BottomSheetModal>
-
-    </SafeAreaView>
+    </View>
   );
 }
 

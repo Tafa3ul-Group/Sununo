@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, normalize } from '@/constants/theme';
-import { HeaderSection } from '@/components/header-section';
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { useTranslation } from 'react-i18next';
@@ -117,15 +116,11 @@ export default function TransactionsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea]}>
-      <HeaderSection 
-        userType={userType} 
-        userName={user?.name} 
+    <View style={[styles.safeArea]}>
+      <DashboardHeader 
         title={isRTL ? 'سجل المعاملات' : 'Transactions'}
         showSearch={false}
-        showCategories={false}
         showBackButton={true}
-        showExtra={false}
       />
 
       {/* Filter Pills - Scrollable */}
@@ -178,7 +173,7 @@ export default function TransactionsScreen() {
           />
         )}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
