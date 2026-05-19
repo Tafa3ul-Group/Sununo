@@ -30,6 +30,7 @@
   },
   "home": {
     "welcome": "Welcome",
+    "search": "Search",
     "searchPlaceholder": "Search for a chalet...",
     "categories": {
       "all": "All",

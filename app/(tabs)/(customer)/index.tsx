@@ -266,7 +266,7 @@ export default function HomeScreen() {
     useBrowseCustomerChaletsQuery(queryParams);
 
   const { data: favoriteIds = [], refetch: refetchFavorites } =
-    useGetFavoriteIdsQuery();
+    useGetFavoriteIdsQuery(undefined, { skip: userType === "guest" });
   const [toggleFavorite] = useToggleFavoriteMutation();
 
   const handleToggleFavorite = async (id: string) => {

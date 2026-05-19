@@ -30,6 +30,7 @@
   },
   "home": {
     "welcome": "أهلاً بك",
+    "search": "البحث",
     "searchPlaceholder": "ابحث عن شاليه...",
     "categories": {
       "all": "الكل",

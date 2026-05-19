@@ -6,7 +6,7 @@ import {
 import { ThemedText } from "@/components/themed-text";
 import { HorizontalCard } from "@/components/user/horizontal-card";
 import { Colors } from "@/constants/theme";
-import { isRTL, getFlexDirection } from "@/i18n";
+import { getFlexDirection } from "@/i18n";
 import { useBrowseCustomerChaletsQuery } from "@/store/api/customerApiSlice";
 import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
@@ -45,7 +45,7 @@ export default function SearchScreen() {
       title: isArabic
         ? chalet.name?.ar || chalet.nameAr || chalet.name || ""
         : chalet.name?.en || chalet.nameEn || chalet.name || "",
-      location: isRTL
+      location: isArabic
         ? chalet.region?.name?.ar ||
           chalet.region?.nameAr ||
           chalet.region?.name ||
@@ -60,7 +60,7 @@ export default function SearchScreen() {
         chalet.images?.[0]?.url ||
         "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500&auto=format&fit=crop",
     }));
-  }, [chaletsResponse, isRTL]);
+  }, [chaletsResponse, isArabic]);
 
   const renderItem = ({ item }: { item: any }) => (
     <View style={styles.cardWrapper}>
@@ -114,7 +114,7 @@ export default function SearchScreen() {
             <SolarMagnifierBold size={40} color={Colors.primary} />
           </View>
           <ThemedText style={styles.emptyText}>
-            {isRTL
+            {isArabic
               ? "ابدأ البحث عن الشاليهات المفضلة لديك"
               : "Start searching for your favorite chalets"}
           </ThemedText>
@@ -122,7 +122,7 @@ export default function SearchScreen() {
       ) : chalets.length === 0 ? (
         <View style={styles.centerContainer}>
           <ThemedText style={styles.emptyText}>
-            {isRTL
+            {isArabic
               ? "لا توجد نتائج مطابقة لبحثك"
               : "No results matching your search"}
           </ThemedText>

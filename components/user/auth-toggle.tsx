@@ -38,11 +38,13 @@ const TOGGLE_HEIGHT = normalize.height(80);
 interface AuthToggleProps {
   activeType: "owner" | "customer";
   onChange: (type: "owner" | "customer") => void;
+  disabled?: boolean;
 }
 
 export const AuthToggle: React.FC<AuthToggleProps> = ({
   activeType,
-  onChange }) => {
+  onChange,
+  disabled = false }) => {
   const { t, i18n } = useTranslation();
   
   // 0: owner, 1: customer
@@ -105,7 +107,7 @@ export const AuthToggle: React.FC<AuthToggleProps> = ({
     ] }));
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, disabled && { opacity: 0.6 }]}>
       <View style={StyleSheet.absoluteFill}>
         <Svg width={TOGGLE_WIDTH} height={TOGGLE_HEIGHT} viewBox="0 0 280 80">
           <Path
@@ -123,7 +125,7 @@ export const AuthToggle: React.FC<AuthToggleProps> = ({
         </Svg>
       </View>
 
-      <View style={[styles.buttonsContainer, { flexDirection: 'row' }]}>
+      <View style={[styles.buttonsContainer, { flexDirection: 'row' }]} pointerEvents={disabled ? "none" : "auto"}>
         <TouchableOpacity onPress={() => onChange("owner")} style={styles.tabButton} activeOpacity={1}>
           <AnimatedText style={[styles.tabText, tab0Style]}>{t('auth.owner')}</AnimatedText>
         </TouchableOpacity>

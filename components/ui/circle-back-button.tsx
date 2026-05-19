@@ -2,7 +2,7 @@ import { Colors, normalize } from '@/constants/theme';
 import { RootState } from '@/store';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { I18nManager, StyleProp, StyleSheet, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { StyleProp, StyleSheet, TouchableOpacity, View, ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { useSelector } from 'react-redux';
 
@@ -20,7 +20,8 @@ export function CircleBackButton({ style, onPress }: CircleBackButtonProps) {
   const router = useRouter();
   const { i18n } = useTranslation();
   const { userType } = useSelector((state: RootState) => state.auth);
-  const backPath = I18nManager.isRTL ? AR_BACK_PATH : EN_BACK_PATH;
+  const isArabic = i18n.language ? i18n.language.startsWith("ar") : false;
+  const backPath = isArabic ? AR_BACK_PATH : EN_BACK_PATH;
 
   const handleBack = () => {
     if (onPress) {
@@ -30,25 +31,25 @@ export function CircleBackButton({ style, onPress }: CircleBackButtonProps) {
     } else {
       // Fallback to home if no history, prevents going back to splash/login
       // Using specific routes ensures we go to the correct dashboard and avoids TS errors
-      const fallbackRoute = userType === 'owner'
-        ? '/(tabs)/(dashboard)/home'
+      const fallbackRoute = userType === 'owner' 
+        ? '/(tabs)/(dashboard)/home' 
         : '/(tabs)/(customer)';
-
+      
       router.replace(fallbackRoute as any);
     }
   };
 
   return (
-    <TouchableOpacity
-      onPress={handleBack}
+    <TouchableOpacity 
+      onPress={handleBack} 
       style={[styles.container, style]}
       activeOpacity={0.7}
     >
       <View style={styles.iconWrapper}>
-        <Svg
-          width={normalize.width(16)}
-          height={normalize.height(16)}
-          viewBox="0 0 17 24"
+        <Svg 
+          width={normalize.width(16)} 
+          height={normalize.height(16)} 
+          viewBox="0 0 17 24" 
           fill="none"
         >
           <Path d={backPath} fill={Colors.primary} />
@@ -72,6 +73,5 @@ const styles = StyleSheet.create({
   iconWrapper: {
     // Center the custom SVG path correctly
     justifyContent: 'center',
-    alignItems: 'center'
-  }
+    alignItems: 'center' }
 });

@@ -78,13 +78,17 @@ export default function CompleteBookingScreen() {
   const [activeTab, setActiveTab] = useState<TabType>("WHEN");
   const [paymentType, setPaymentType] = useState<"DEPOSIT" | "FULL">("DEPOSIT");
   const { formatShiftTime } = useFormatTime();
-  const isArabic = i18n.language === "ar";
-  const rowDirection = getFlexDirection(isArabic);
+  const isArabic = i18n.language ? i18n.language.startsWith("ar") : false;
+  const rowDirection: "row" | "row-reverse" =
+    isArabic === I18nManager.isRTL ? "row" : "row-reverse";
 
   // textAlign is absolute, so direct mapping is correct regardless of native RTL state
   const textStart: "left" | "right" = isArabic ? "right" : "left";
   const textEnd: "left" | "right" = isArabic ? "left" : "right";
-  const alignStart: "flex-start" | "flex-end" = isArabic !== I18nManager.isRTL ? "flex-end" : "flex-start";
+  const alignStart: "flex-start" | "flex-end" =
+    isArabic === I18nManager.isRTL ? "flex-start" : "flex-end";
+  const alignEnd: "flex-start" | "flex-end" =
+    isArabic === I18nManager.isRTL ? "flex-end" : "flex-start";
 
   const getFilterDateRange = (): Date[] => {
     if (!savedFilter?.checkIn) return [];
@@ -987,7 +991,7 @@ export default function CompleteBookingScreen() {
   const renderCalendarSheet = () => (
     <BottomSheetModal
       ref={calendarSheetRef}
-      snapPoints={["70%"]}
+      snapPoints={["65%"]}
       backdropComponent={(props) => (
         <BottomSheetBackdrop
           {...props}
@@ -998,28 +1002,27 @@ export default function CompleteBookingScreen() {
       handleIndicatorStyle={{ backgroundColor: "#CBD5E1", width: 40 }}
     >
       <BottomSheetView
-        style={[styles.calendarSheetContent, { paddingTop: 40 }]}
+        style={{ paddingHorizontal: 16, paddingTop: 10, flex: 1 }}
       >
-        <View style={styles.calendarCardDrawer}>
-          <RangeCalendar
-            onSelect={handleCalendarSelect}
-            initialStartDate={selectedStartDate ?? undefined}
-            initialEndDate={selectedEndDate ?? undefined}
-            reservedDates={bookedDateStrings}
-            selectionMode="single"
+        <RangeCalendar
+          onSelect={handleCalendarSelect}
+          initialStartDate={selectedStartDate ?? undefined}
+          initialEndDate={selectedEndDate ?? undefined}
+          reservedDates={bookedDateStrings}
+          selectionMode="single"
+        />
+        <View style={{ marginTop: 20, paddingHorizontal: 4 }}>
+          <PrimaryButton
+            label={isArabic ? "تم" : "Done"}
+            onPress={() => calendarSheetRef.current?.dismiss()}
+            style={{
+              width: "100%",
+              shadowOpacity: 0,
+              elevation: 0,
+              height: 54,
+              borderRadius: 12,
+            }}
           />
-          <View style={{ marginTop: 20 }}>
-            <PrimaryButton
-              label={isArabic ? "تم" : "Done"}
-              onPress={() => calendarSheetRef.current?.dismiss()}
-              style={{
-                width: "100%",
-                shadowOpacity: 0,
-                elevation: 0,
-                height: 56,
-              }}
-            />
-          </View>
         </View>
       </BottomSheetView>
     </BottomSheetModal>

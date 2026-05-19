@@ -74,6 +74,22 @@ export function HeaderSection({
 
   const isArabic = i18n.language ? i18n.language.startsWith("ar") : false;
 
+  const [logoStateIndex, setLogoStateIndex] = React.useState(0);
+  const logoColors = [Colors.primary, "#EF4444", "#15AB64"];
+  const [currentLogoAr, setCurrentLogoAr] = React.useState(isArabic);
+
+  React.useEffect(() => {
+    setCurrentLogoAr(isArabic);
+    setLogoStateIndex(0);
+  }, [isArabic]);
+
+  const handleLogoPress = () => {
+    setCurrentLogoAr((prev) => !prev);
+    setLogoStateIndex((prev) => (prev + 1) % logoColors.length);
+  };
+
+  const currentLogoColor = logoColors[logoStateIndex];
+
   const CATEGORIES = [
     {
       id: "all",
@@ -100,6 +116,7 @@ export function HeaderSection({
   const startAlign: "flex-start" | "flex-end" = needsCounter ? "flex-end" : "flex-start";
   const endAlign: "flex-start" | "flex-end" = needsCounter ? "flex-start" : "flex-end";
   const rowDir: "row" | "row-reverse" = needsCounter ? "row-reverse" : "row";
+  const homeRowDir: "row" | "row-reverse" = needsCounter ? "row" : "row-reverse";
 
   return (
     <View style={[styles.container]}>
@@ -111,12 +128,12 @@ export function HeaderSection({
           styles.topRow,
           {
             marginBottom,
-            flexDirection: rowDir
+            flexDirection: isHome ? homeRowDir : rowDir
           },
         ]}
       >
         {/* LEFT SIDE (Start side) */}
-        <View style={[styles.headerSide, { alignItems: startAlign }]}>
+        <View style={[styles.headerSide, { alignItems: isHome ? endAlign : startAlign }]}>
           {isHome ? (
             <View style={[styles.homeLeftGroup, { flexDirection: rowDir }]}>
               {stateUserType !== "guest" && (
@@ -168,15 +185,19 @@ export function HeaderSection({
         )}
 
         {/* RIGHT SIDE (End side) */}
-        <View style={[styles.headerSide, { alignItems: endAlign }]}>
+        <View style={[styles.headerSide, { alignItems: isHome ? startAlign : endAlign }]}>
           {isHome && (
-            <View style={styles.logoCircleHome}>
+            <TouchableOpacity
+              onPress={handleLogoPress}
+              style={{ justifyContent: "center", alignItems: "center", paddingVertical: 4 }}
+              activeOpacity={0.8}
+            >
               <Image
-                source={isArabic ? require("@/assets/arlogo.svg") : require("@/assets/logo.svg")}
-                style={styles.logoImgHome}
+                source={currentLogoAr ? require("@/assets/arlogo.svg") : require("@/assets/logo.svg")}
+                style={{ width: 75, height: 25, tintColor: currentLogoColor }}
                 contentFit="contain"
               />
-            </View>
+            </TouchableOpacity>
           )}
         </View>
       </View>
@@ -321,16 +342,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#FFFFFF" },
-  logoCircleHome: {
-    width: normalize.width(54),
-    height: normalize.width(54),
-    borderRadius: 999,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#FFFFFF" },
-  logoImgHome: {
-    width: "65%",
-    height: "65%" },
   searchContainer: {
     paddingHorizontal: Spacing.md,
     marginBottom: Spacing.md },

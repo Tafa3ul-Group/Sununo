@@ -16,6 +16,7 @@ import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
     Dimensions,
+    I18nManager,
     Image,
     Modal,
     ScrollView,
@@ -76,6 +77,12 @@ export default function GalleryScreen() {
   const chaletId = id as string;
   const { t, i18n } = useTranslation();
   const { userType } = useSelector((state: RootState) => state.auth);
+  
+  const isArabic = i18n.language ? i18n.language.startsWith("ar") : true;
+  const flexDir: "row" | "row-reverse" = isArabic === I18nManager.isRTL ? "row" : "row-reverse";
+  const alignStart: "flex-start" | "flex-end" = isArabic === I18nManager.isRTL ? "flex-start" : "flex-end";
+  const textStart: "left" | "right" = isArabic === I18nManager.isRTL ? "left" : "right";
+
   const [activeFilter, setActiveFilter] = useState("all");
   const [viewerVisible, setViewerVisible] = useState(false);
   const [viewerImage, setViewerImage] = useState("");
@@ -92,7 +99,7 @@ export default function GalleryScreen() {
     // Group images by category
     chalet.images.forEach((img: any) => {
       const categoryId = img.amenityCategory?.id || "general";
-      const categoryName = isRTL
+      const categoryName = isArabic
         ? img.amenityCategory?.name?.ar ||
           img.amenityCategory?.name ||
           t("gallery.categories.general")
@@ -113,7 +120,7 @@ export default function GalleryScreen() {
     });
 
     return Object.values(grouped);
-  }, [chalet.images, isRTL, t]);
+  }, [chalet.images, isArabic, t]);
 
   const CATEGORIES = useMemo(() => {
     const cats = [
@@ -202,7 +209,7 @@ export default function GalleryScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.catList}
         >
-          <View style={{ flexDirection: "row", gap: 10 }}>
+          <View style={{ flexDirection: flexDir, gap: 10 }}>
             {CATEGORIES.map((filter) => (
               <SecondaryButton
                 key={filter.id}
@@ -239,7 +246,7 @@ export default function GalleryScreen() {
             </TouchableOpacity>
 
             {/* Small Grid */}
-            <View style={[styles.smallGrid, { flexDirection: "row" }]}>
+            <View style={[styles.smallGrid, { flexDirection: flexDir }]}>
               {section.images.slice(1, 4).map((img, i) => (
                 <TouchableOpacity
                   key={i}

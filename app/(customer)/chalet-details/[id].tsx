@@ -88,12 +88,10 @@ const SHAPE_COLORS: Record<ShapeKey, string> = {
 };
 
 function SectionHeader({ title, isRTL }: { title: string; isRTL: boolean }) {
-  const textStart: "left" | "right" = isRTL ? "right" : "left";
-  // alignItems is auto-mirrored by RN when I18nManager.isRTL=true
-  const needsCounter = isRTL !== I18nManager.isRTL;
-  const alignStart: "flex-start" | "flex-end" = needsCounter
-    ? "flex-end"
-    : "flex-start";
+  const textStart: "left" | "right" =
+    isRTL === I18nManager.isRTL ? "left" : "right";
+  const alignStart: "flex-start" | "flex-end" =
+    isRTL === I18nManager.isRTL ? "flex-start" : "flex-end";
   return (
     <View style={[styles.sectionHeaderContainer, { alignItems: alignStart }]}>
       <ThemedText style={[styles.sectionTitle, { textAlign: textStart }]}>
@@ -117,18 +115,20 @@ export default function ChaletDetailScreen() {
   const { t, i18n } = useTranslation();
   const { userType, language } = useSelector((state: RootState) => state.auth);
   const isRTL = i18n.language ? i18n.language.startsWith("ar") : true;
-  // textStart: NOT auto-mirrored by RN, so direct mapping is correct
-  const textStart: "left" | "right" = isRTL ? "right" : "left";
-  // flexDir: React Native auto-mirrors "row" when I18nManager.isRTL=true.
-  // So we must account for native RTL state to avoid double-mirroring.
-  // When language matches native direction → "row" (natural flow)
-  // When language differs from native direction → "row-reverse" (counter-mirror)
+
+  // textStart: dynamic alignment accounting for React Native native mirroring
+  const textStart: "left" | "right" =
+    isRTL === I18nManager.isRTL ? "left" : "right";
+  const textEnd: "left" | "right" =
+    isRTL === I18nManager.isRTL ? "right" : "left";
+  // flexDir: dynamic flexDirection accounting for native mirroring
   const flexDir: "row" | "row-reverse" =
     isRTL === I18nManager.isRTL ? "row" : "row-reverse";
-  const needsCounter = isRTL !== I18nManager.isRTL;
-  const alignStart: "flex-start" | "flex-end" = needsCounter
-    ? "flex-end"
-    : "flex-start";
+  const alignStart: "flex-start" | "flex-end" =
+    isRTL === I18nManager.isRTL ? "flex-start" : "flex-end";
+  const alignEnd: "flex-start" | "flex-end" =
+    isRTL === I18nManager.isRTL ? "flex-end" : "flex-start";
+
   const { id } = useLocalSearchParams();
   const chaletId = id as string;
   const router = useRouter();
@@ -141,6 +141,7 @@ export default function ChaletDetailScreen() {
   const {
     data: chaletData,
     isLoading,
+    isFetching,
     error,
     refetch,
   } = useGetCustomerChaletDetailsQuery(chaletId, {
@@ -388,7 +389,7 @@ export default function ChaletDetailScreen() {
     return [];
   }, [chalet.chaletFeatures, chalet.amenities, isRTL]);
 
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return (
       <View
         style={[
@@ -461,8 +462,12 @@ export default function ChaletDetailScreen() {
             style={[
               styles.backBtnOriginal,
               isRTL
-                ? (I18nManager.isRTL ? { left: 20, right: "auto" } : { right: 20, left: "auto" })
-                : (I18nManager.isRTL ? { right: 20, left: "auto" } : { left: 20, right: "auto" }),
+                ? I18nManager.isRTL
+                  ? { left: 20, right: "auto" }
+                  : { right: 20, left: "auto" }
+                : I18nManager.isRTL
+                  ? { right: 20, left: "auto" }
+                  : { left: 20, right: "auto" },
             ]}
           />
 
@@ -470,8 +475,12 @@ export default function ChaletDetailScreen() {
             style={[
               styles.favoriteBtn,
               isRTL
-                ? (I18nManager.isRTL ? { right: 20, left: "auto" } : { left: 20, right: "auto" })
-                : (I18nManager.isRTL ? { left: 20, right: "auto" } : { right: 20, left: "auto" }),
+                ? I18nManager.isRTL
+                  ? { right: 20, left: "auto" }
+                  : { left: 20, right: "auto" }
+                : I18nManager.isRTL
+                  ? { left: 20, right: "auto" }
+                  : { right: 20, left: "auto" },
             ]}
             onPress={handleToggleFavorite}
           >
@@ -510,7 +519,9 @@ export default function ChaletDetailScreen() {
               }}
             />
 
-            <View style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
+            <View
+              style={{ flexDirection: "row", gap: 6, alignItems: "center" }}
+            >
               {images.map((_: string, i: number) => (
                 <View
                   key={i}
@@ -523,37 +534,49 @@ export default function ChaletDetailScreen() {
 
         <View style={styles.infoWrapper}>
           {/* العنوان والتقييم */}
-          <View style={[styles.titleSection, { alignItems: alignStart, width: "100%", marginBottom: 20 }]}>
+          <View
+            style={{ alignItems: alignStart, width: "100%", marginBottom: 20 }}
+          >
             <View
               style={{
-                flexDirection: flexDir,
+                flexDirection: flexDir === "row" ? "row-reverse" : "row",
                 justifyContent: "space-between",
                 alignItems: "center",
                 width: "100%",
                 gap: 12,
               }}
             >
+              {/* التقييم — دائماً على الجانب الأبعد عن الاسم */}
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+              >
+                <SolarStarBold size={14} color="#035DF9" />
+                <ThemedText style={styles.ratingVal}>
+                  {chaletRating.toFixed(1)}
+                </ThemedText>
+              </View>
+              {/* الاسم — يمين في عربي، يسار في إنجليزي */}
               <View style={{ flex: 1, alignItems: alignStart }}>
                 <ThemedText
-                  style={[styles.mainTitle, { textAlign: textStart, width: "100%" }]}
+                  style={[
+                    styles.mainTitle,
+                    { textAlign: textStart, width: "100%" },
+                  ]}
                   numberOfLines={2}
                 >
                   {chaletName}
                 </ThemedText>
               </View>
-              <View
-                style={[styles.ratingGroupLeft, { flexDirection: flexDir }]}
-              >
-                <ThemedText style={styles.ratingVal}>
-                  {chaletRating.toFixed(1)}
-                </ThemedText>
-                <SolarStarBold size={14} color="#035DF9" />
-              </View>
             </View>
 
-            <View style={{ width: "100%", marginTop: 4, alignItems: alignStart }}>
+            <View
+              style={{ width: "100%", marginTop: 4, alignItems: alignStart }}
+            >
               <ThemedText
-                style={[styles.locationSub, { textAlign: textStart, width: "100%" }]}
+                style={[
+                  styles.locationSub,
+                  { textAlign: textStart, width: "100%" },
+                ]}
               >
                 {chaletCategory ? `${chaletCategory} • ` : ""}
                 {chaletLocation}
@@ -578,9 +601,9 @@ export default function ChaletDetailScreen() {
             ))}
           </View>
 
-          {/* الشفتات المتوفرة */}
+          {/* الفترات المتوفرة */}
           <SectionHeader
-            title={isRTL ? "الشفتات المتوفرة" : "Available Shifts"}
+            title={isRTL ? "الفترات المتوفرة" : "Available Periods"}
             isRTL={isRTL}
           />
           <View style={styles.shiftsGrid}>
@@ -617,22 +640,22 @@ export default function ChaletDetailScreen() {
                     <View
                       style={[
                         styles.shiftInfo,
-                        { alignItems: "flex-start", marginHorizontal: 12 },
+                        { alignItems: alignStart, marginHorizontal: 12 },
                       ]}
                     >
-                      <ThemedText style={styles.shiftName}>
+                      <ThemedText style={[styles.shiftName, { textAlign: textStart }]}>
                         {isRTL
                           ? shift.name?.ar || shift.name
                           : shift.name?.en || shift.name}
                       </ThemedText>
-                      <ThemedText style={styles.shiftTime}>
+                      <ThemedText style={[styles.shiftTime, { textAlign: textStart }]}>
                         {formatShiftTime(shift.startTime)} -{" "}
                         {formatShiftTime(shift.endTime)}
                       </ThemedText>
                     </View>
                     {minShiftPrice && (
-                      <View style={{ alignItems: "flex-end" }}>
-                        <ThemedText style={styles.shiftPrice}>
+                      <View style={{ alignItems: alignEnd }}>
+                        <ThemedText style={[styles.shiftPrice, { textAlign: textEnd }]}>
                           {minShiftPrice} {t("common.iqd")}
                         </ThemedText>
                       </View>
@@ -1013,39 +1036,41 @@ export default function ChaletDetailScreen() {
       </ScrollView>
 
       {/* الفوتر */}
-      <View style={[styles.flatUltimateFooter, { flexDirection: flexDir }]}>
-        <View style={[styles.footerTextSide, { alignItems: alignStart }]}>
-          <ThemedText style={[styles.footerPriceBig, { textAlign: textStart }]}>
-            {displayPrice} {t("common.iqd")}
-          </ThemedText>
-          <View style={[styles.footerMetaRow, { flexDirection: flexDir }]}>
-            <SolarClockCircleBold size={12} color="#9CA3AF" />
-            <ThemedText
-              style={[styles.footerMetaSmall, { textAlign: textStart }]}
-            >
-              {selectedShift
-                ? isRTL
-                  ? selectedShift.name?.ar || selectedShift.name
-                  : selectedShift.name?.en || selectedShift.name
-                : t("chalet.details.morningShift")}
+      {availableShifts && availableShifts.length > 0 && (
+        <View style={[styles.flatUltimateFooter, { flexDirection: flexDir }]}>
+          <View style={[styles.footerTextSide, { alignItems: alignStart }]}>
+            <ThemedText style={[styles.footerPriceBig, { textAlign: textStart }]}>
+              {displayPrice} {t("common.iqd")}
             </ThemedText>
+            <View style={[styles.footerMetaRow, { flexDirection: flexDir }]}>
+              <SolarClockCircleBold size={12} color="#9CA3AF" />
+              <ThemedText
+                style={[styles.footerMetaSmall, { textAlign: textStart }]}
+              >
+                {selectedShift
+                  ? isRTL
+                    ? selectedShift.name?.ar || selectedShift.name
+                    : selectedShift.name?.en || selectedShift.name
+                  : t("chalet.details.morningShift")}
+              </ThemedText>
+            </View>
+          </View>
+
+          <View style={styles.footerBtnSide}>
+            <PrimaryButton
+              label={t("chalet.details.bookNow")}
+              onPress={() => {
+                if (userType === "guest") {
+                  setShowLoginPrompt(true);
+                } else {
+                  router.push(`/(customer)/booking/complete?id=${chaletId}`);
+                }
+              }}
+              style={styles.footerFlatBtn}
+            />
           </View>
         </View>
-
-        <View style={styles.footerBtnSide}>
-          <PrimaryButton
-            label={t("chalet.details.bookNow")}
-            onPress={() => {
-              if (userType === "guest") {
-                setShowLoginPrompt(true);
-              } else {
-                router.push(`/(customer)/booking/complete?id=${chaletId}`);
-              }
-            }}
-            style={styles.footerFlatBtn}
-          />
-        </View>
-      </View>
+      )}
 
       <ReviewSubmissionSheet
         ref={reviewSheetRef}

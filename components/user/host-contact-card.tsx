@@ -1,9 +1,9 @@
 import { Image as ExpoImage } from "expo-image";
 import React from "react";
-import { Dimensions, StyleSheet, View } from "react-native";
+import { useTranslation } from "react-i18next";
+import { Dimensions, I18nManager, StyleSheet, View } from "react-native";
 import Svg, { Path, Rect } from "react-native-svg";
 import { ThemedText } from "../themed-text";
-import { isRTL } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SVG_WIDTH = 375;
@@ -14,15 +14,35 @@ interface HostContactCardProps {
   name: string;
   phone?: string;
   avatar: any;
-  isRTL: boolean;
+  isRTL?: boolean; // kept for backward compat but ignored — uses useTranslation internally
 }
 
 export const HostContactCard: React.FC<HostContactCardProps> = ({
   name,
   phone,
   avatar,
-  isRTL,
 }) => {
+  const { i18n } = useTranslation();
+  const isArabic = i18n.language === "ar";
+
+  // When I18nManager.isRTL is true, React Native natively mirrors layouts and alignments.
+  const textStart: "left" | "right" =
+    isArabic === I18nManager.isRTL ? "left" : "right";
+  const alignStart: "flex-start" | "flex-end" =
+    isArabic === I18nManager.isRTL ? "flex-start" : "flex-end";
+
+  // Absolute avatar positioning: swap left/right if not natively mirrored
+  const avatarPosition =
+    isArabic === I18nManager.isRTL
+      ? { left: 12.3 * SCALE, right: "auto" }
+      : { right: 12.3 * SCALE, left: "auto" };
+
+  // Margin spacing to prevent text overlapping avatar
+  const infoMargins =
+    isArabic === I18nManager.isRTL
+      ? { marginLeft: 85 * SCALE, marginRight: 15 * SCALE }
+      : { marginRight: 85 * SCALE, marginLeft: 15 * SCALE };
+
   return (
     <View style={styles.container}>
       <Svg
@@ -45,7 +65,7 @@ export const HostContactCard: React.FC<HostContactCardProps> = ({
           fill="#F0F6F5"
         />
         {/* Orange Badge - Directional */}
-        {isRTL ? (
+        {isArabic ? (
           <Path
             d="M311.773 64.5139C307.455 60.0597 304.406 54.2479 303.351 47.6158C301.712 37.3064 305.271 27.3987 312.064 20.6509L294.965 20.7994C293.726 28.6828 291.168 31.4063 282.943 32.9287L282.826 52.1331C290.782 53.565 293.222 56.448 294.906 64.2969L311.773 64.5139Z"
             fill="#F64300"
@@ -58,37 +78,37 @@ export const HostContactCard: React.FC<HostContactCardProps> = ({
         )}
       </Svg>
 
-      <View style={[styles.contentOverlay, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+      <View style={[styles.contentOverlay, { flexDirection: "row" }]}>
         <View
           style={[
             styles.infoColumn,
             {
-              alignItems: isRTL ? "flex-end" : "flex-start",
-              marginLeft: isRTL ? 15 * SCALE : 85 * SCALE,
-              marginRight: isRTL ? 85 * SCALE : 15 * SCALE,
+              alignItems: alignStart,
             },
+            infoMargins,
           ]}
         >
-          <ThemedText style={[styles.hostLabel, { textAlign: isRTL ? "right" : "left" }]}>
-            {isRTL ? "المضيف" : "Host"}
+          <ThemedText style={[styles.hostLabel, { textAlign: textStart }]}>
+            {isArabic ? "المضيف" : "Host"}
           </ThemedText>
-          <ThemedText style={[styles.hostName, { textAlign: isRTL ? "right" : "left" }]} numberOfLines={1}>
+          <ThemedText
+            style={[styles.hostName, { textAlign: textStart }]}
+            numberOfLines={1}
+          >
             {name}
           </ThemedText>
           {phone ? (
-            <ThemedText style={[styles.hostPhone, { textAlign: isRTL ? "right" : "left" }]} numberOfLines={1}>
+            <ThemedText
+              style={[styles.hostPhone, { textAlign: textStart }]}
+              numberOfLines={1}
+            >
               {phone}
             </ThemedText>
           ) : null}
         </View>
 
         {/* Fixed to position derived from SVG */}
-        <View
-          style={[
-            styles.avatarContainer,
-            isRTL ? { right: 12.3 * SCALE, left: "auto" } : { left: 12.3 * SCALE, right: "auto" },
-          ]}
-        >
+        <View style={[styles.avatarContainer, avatarPosition]}>
           <ExpoImage source={avatar} style={styles.avatar} contentFit="cover" />
         </View>
       </View>
