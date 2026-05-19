@@ -78,13 +78,17 @@ export default function CompleteBookingScreen() {
   const [activeTab, setActiveTab] = useState<TabType>("WHEN");
   const [paymentType, setPaymentType] = useState<"DEPOSIT" | "FULL">("DEPOSIT");
   const { formatShiftTime } = useFormatTime();
-  const isArabic = i18n.language === "ar";
-  const rowDirection = getFlexDirection(isArabic);
+  const isArabic = i18n.language ? i18n.language.startsWith("ar") : false;
+  const rowDirection: "row" | "row-reverse" =
+    isArabic === I18nManager.isRTL ? "row" : "row-reverse";
 
   // textAlign is absolute, so direct mapping is correct regardless of native RTL state
   const textStart: "left" | "right" = isArabic ? "right" : "left";
   const textEnd: "left" | "right" = isArabic ? "left" : "right";
-  const alignStart: "flex-start" | "flex-end" = isArabic !== I18nManager.isRTL ? "flex-end" : "flex-start";
+  const alignStart: "flex-start" | "flex-end" =
+    isArabic === I18nManager.isRTL ? "flex-start" : "flex-end";
+  const alignEnd: "flex-start" | "flex-end" =
+    isArabic === I18nManager.isRTL ? "flex-end" : "flex-start";
 
   const getFilterDateRange = (): Date[] => {
     if (!savedFilter?.checkIn) return [];
