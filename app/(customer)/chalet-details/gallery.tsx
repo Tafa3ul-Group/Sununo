@@ -16,6 +16,7 @@ import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
     Dimensions,
+    I18nManager,
     Image,
     Modal,
     ScrollView,
