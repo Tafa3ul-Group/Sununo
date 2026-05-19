@@ -66,9 +66,11 @@ export function DashboardHeader({
 
         {/* Center: Title */}
         {title ? (
-          <Text style={styles.flatHeaderTitle}>
-            {title}
-          </Text>
+          <View style={styles.titleContainer}>
+            <Text style={styles.flatHeaderTitle} numberOfLines={1}>
+              {title}
+            </Text>
+          </View>
         ) : (
           <View style={{ flex: 1 }} />
         )}
@@ -132,6 +134,16 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-Bold",
     color: Colors.text.primary,
+  },
+  titleContainer: {
+    position: 'absolute',
+    left: 80,
+    right: 80,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: -1,
   },
   flatDeleteButton: {
     width: 40,

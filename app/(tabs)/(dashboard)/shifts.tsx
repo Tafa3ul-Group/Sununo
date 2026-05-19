@@ -2,8 +2,6 @@ import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import {
   SolarAddCircleBold,
   SolarAltArrowDownBold,
-  SolarAltArrowLeftBold,
-  SolarAltArrowRightBold,
   SolarAltArrowRightLowBold,
   SolarAltArrowUpBold,
   SolarBanknoteBold,
@@ -17,28 +15,22 @@ import {
   SolarInfoCircleBold,
   SolarLightbulbBold,
   SolarMoonBold,
-  SolarMapPointBold,
   SolarPenBold,
   SolarRefreshBold,
   SolarShieldBold,
   SolarSunBold,
   SolarTrashBinBold
 } from '@/components/icons/solar-icons';
-import { getImageSrc } from '@/hooks/useImageSrc';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { Colors, normalize, Shadows, Spacing } from '@/constants/theme';
 import { RootState } from '@/store';
 import {
-  useCreateChaletPolicyMutation,
   useCreateShiftMutation,
-  useDeleteChaletPolicyMutation,
   useDeleteShiftMutation,
-  useGetChaletCancellationPoliciesQuery,
   useGetChaletShiftsQuery,
   useGetOwnerChaletDetailsQuery,
   useGetOwnerChaletsQuery,
   useGetShiftPricingQuery,
-  useSetChaletPoliciesMutation,
   useSetShiftPricingMutation,
   useUpdateShiftMutation,
   useUpdateShiftPricingDayMutation
@@ -51,7 +43,6 @@ import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Alert,
-  Image,
   Platform,
   StyleSheet,
   Switch,
@@ -62,6 +53,7 @@ import {
 } from 'react-native';
 import { Swipeable, ScrollView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Image as ExpoImage } from 'expo-image';
 import { useSelector } from 'react-redux';
 import { formatPrice } from '@/utils/format';
 import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput, BottomSheetView } from '@gorhom/bottom-sheet';
@@ -294,21 +286,99 @@ function DayVisualizer({
   );
 }
 
+const getShiftIcon = (shift: any, shiftName: string) => {
+  const type = (shift?.type || "").toUpperCase();
+  if (type === "MORNING") {
+    return require("../../../assets/shifts/morning.svg");
+  }
+  if (type === "EVENING" || type === "NIGHT") {
+    return require("../../../assets/shifts/night.svg");
+  }
+  if (type === "OVERNIGHT") {
+    return require("../../../assets/shifts/overnight.svg");
+  }
+  if (type === "CUSTOM" || type === "CUSTEM") {
+    return require("../../../assets/shifts/custem.svg");
+  }
+
+  // Fallback to name checking
+  const nameAr = (shiftName || "").toLowerCase();
+  const nameEn = (shiftName || "").toLowerCase();
+  if (nameAr.includes("صباح") || nameEn.includes("morning")) {
+    return require("../../../assets/shifts/morning.svg");
+  }
+  if (nameAr.includes("مساء") || nameAr.includes("ليل") || nameEn.includes("evening") || nameEn.includes("night") || nameEn.includes("eveningshift")) {
+    return require("../../../assets/shifts/night.svg");
+  }
+  if (nameAr.includes("مبيت") || nameEn.includes("overnight")) {
+    return require("../../../assets/shifts/overnight.svg");
+  }
+
+  // Fallback to time-based detection
+  const startTime = shift?.startTime || "";
+  if (startTime) {
+    const hour = parseInt(startTime.split(":")[0]);
+    if (!isNaN(hour)) {
+      if (hour >= 5 && hour < 14) {
+        return require("../../../assets/shifts/morning.svg");
+      } else if (hour >= 14 && hour < 20) {
+        return require("../../../assets/shifts/night.svg");
+      } else {
+        return require("../../../assets/shifts/overnight.svg");
+      }
+    }
+  }
+
+  // Default fallback
+  return require("../../../assets/shifts/custem.svg");
+};
+
+const areAllHoursCovered = (shiftsList: any[]) => {
+  if (!shiftsList || shiftsList.length === 0) return false;
+  
+  const hoursCovered = new Array(24).fill(false);
+  
+  shiftsList.forEach((s: any) => {
+    if (!s.startTime || !s.endTime) return;
+    const sT = parseInt(s.startTime.split(':')[0]);
+    const sE = parseInt(s.endTime.split(':')[0]);
+    if (isNaN(sT) || isNaN(sE)) return;
+    
+    for (let h = 0; h < 24; h++) {
+      const isNight = sT > sE;
+      const is24Hours = sT === sE;
+      const isCovered = is24Hours 
+        ? true 
+        : isNight 
+          ? (h >= sT || h < sE) 
+          : (h >= sT && h < sE);
+      
+      if (isCovered) {
+        hoursCovered[h] = true;
+      }
+    }
+  });
+  
+  return hoursCovered.every(covered => covered === true);
+};
+
 export default function ShiftsAndPricesScreen() {
   const router = useRouter();
   const { id: initialId } = useLocalSearchParams();
   const [selectedChaletId, setSelectedChaletId] = useState<string | null>(initialId as string || null);
   const { t } = useTranslation();
-  const { language } = useSelector((state: RootState) => state.auth);
+  const { language, selectedChalet } = useSelector((state: RootState) => state.auth);
   
   const { data: ownerChaletsResponse, isLoading: isLoadingOwnerChalets } = useGetOwnerChaletsQuery({});
   const ownerChalets = ownerChaletsResponse?.data || [];
 
   React.useEffect(() => {
-    if (!selectedChaletId && ownerChalets.length > 0) {
+    if (selectedChalet?.id && selectedChalet.id !== 'all') {
+      setSelectedChaletId(selectedChalet.id);
+    } else if (!selectedChaletId && ownerChalets.length > 0) {
       setSelectedChaletId(ownerChalets[0].id);
     }
-  }, [ownerChalets, selectedChaletId]);
+  }, [ownerChalets, selectedChaletId, selectedChalet?.id]);
 
   const [expandedShift, setExpandedShift] = useState<string | null>(null);
 
@@ -317,13 +387,11 @@ export default function ShiftsAndPricesScreen() {
 
   const shiftSheetRef = useRef<BottomSheetModal>(null);
   const pricingSheetRef = useRef<BottomSheetModal>(null);
-  const policySheetRef = useRef<BottomSheetModal>(null);
   const chaletSelectSheetRef = useRef<BottomSheetModal>(null);
 
   const [selectedShift, setSelectedShift] = useState<any>(null);
   const [shiftForm, setShiftForm] = useState({ name: '', startTime: '08:00', endTime: '23:00', price: '', isActive: true });
   const [pricingForm, setPricingForm] = useState<any[]>([]);
-  const [policyForm, setPolicyForm] = useState<any[]>([]);
   const [modalActiveStatus, setModalActiveStatus] = useState(true);
   const [bulkPrice, setBulkPrice] = useState('');
 
@@ -356,8 +424,7 @@ export default function ShiftsAndPricesScreen() {
     }, [shifts, isRTL])
   );
 
-  const { data: policiesResponse, isLoading: isLoadingPolicies } = useGetChaletCancellationPoliciesQuery(selectedChaletId, { skip: !selectedChaletId });
-  const policies = policiesResponse?.data || policiesResponse;
+
 
   React.useEffect(() => {
     setSelectedShift(null);
@@ -369,9 +436,6 @@ export default function ShiftsAndPricesScreen() {
   const [deleteShift] = useDeleteShiftMutation();
   const [setShiftPricing, { isLoading: isSettingPricing }] = useSetShiftPricingMutation();
   const [updateShiftPricingDay] = useUpdateShiftPricingDayMutation();
-  const [setChaletPolicies, { isLoading: isSavingPolicies }] = useSetChaletPoliciesMutation();
-  const [createChaletPolicy] = useCreateChaletPolicyMutation();
-  const [deleteChaletPolicy] = useDeleteChaletPolicyMutation();
 
   const [activePicker, setActivePicker] = useState<'start' | 'end' | null>(null);
 
@@ -449,7 +513,7 @@ export default function ShiftsAndPricesScreen() {
     return false;
   };
 
-  const textAlign = 'left';
+  const textAlign = isRTL ? 'right' : 'left';
   const flexDirection = 'row';
 
   const calculateDuration = (start: string, end: string) => {
@@ -760,51 +824,6 @@ export default function ShiftsAndPricesScreen() {
     }
   };
 
-  const handleEditPolicies = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    const existingPolicies = policies || [];
-    setPolicyForm(existingPolicies.length > 0 ? existingPolicies.map((p: any) => ({ ...p })) : [{ daysBeforeBooking: 7, penaltyPercentage: 50 }]);
-    policySheetRef.current?.present();
-  };
-
-  const addPolicyTier = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setPolicyForm([...policyForm, { daysBeforeBooking: 1, penaltyPercentage: 100 }]);
-  };
-
-  const removePolicyTier = async (index: number) => {
-    const policy = policyForm[index];
-    if (policy.id) {
-      try {
-        await deleteChaletPolicy({ chaletId: selectedChaletId, policyId: policy.id }).unwrap();
-        Toast.show({ type: 'success', text1: isRTL ? 'تم الحذف' : 'Deleted' });
-      } catch (e) {
-        Toast.show({ type: 'error', text1: isRTL ? 'خطأ في الحذف' : 'Delete failed' });
-        return;
-      }
-    }
-    setPolicyForm(policyForm.filter((_, i) => i !== index));
-  };
-
-  const updatePolicyTier = (index: number, field: string, value: string) => {
-    const newForm = [...policyForm];
-    newForm[index] = { ...newForm[index], [field]: parseInt(value) || 0 };
-    setPolicyForm(newForm);
-  };
-
-  const savePolicies = async () => {
-    try {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      const cleanPolicies = policyForm.map(p => ({ daysBeforeBooking: p.daysBeforeBooking, penaltyPercentage: p.penaltyPercentage }));
-      await setChaletPolicies({ chaletId: selectedChaletId, data: { policies: cleanPolicies } }).unwrap();
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Toast.show({ type: 'success', text1: isRTL ? 'تم التحديث' : 'Refund policy updated' });
-      policySheetRef.current?.dismiss();
-    } catch (e: any) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error' });
-    }
-  };
 
   const toggleShiftStatus = async (shift: any) => {
     try {
@@ -841,7 +860,7 @@ export default function ShiftsAndPricesScreen() {
     );
   };
 
-  if (isLoadingShifts || isLoadingPolicies) {
+  if (isLoadingShifts) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={Colors.primary} />
@@ -877,62 +896,6 @@ export default function ShiftsAndPricesScreen() {
 
       <View style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          {selectedChaletId && (
-            <TouchableOpacity
-              activeOpacity={0.85}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                router.push({
-                  pathname: '/(dashboard)/chalet-details',
-                  params: { id: selectedChaletId }
-                });
-              }}
-              style={styles.chaletDetailsShortcutCard}
-            >
-              <View style={[styles.row, { flex: 1, justifyContent: 'space-between', flexDirection }]}>
-                <View style={[styles.row, { flex: 1, flexDirection }]}>
-                  {/* Chalet Cover Image with Status Dot */}
-                  <View style={styles.shortcutImageContainer}>
-                    <Image
-                      source={getImageSrc(chalet?.images?.[0]?.url)}
-                      style={styles.shortcutImage}
-                    />
-                    <View
-                      style={[
-                        styles.shortcutStatusDot,
-                        { backgroundColor: chalet?.isActive ? '#10B981' : '#9CA3AF' }
-                      ]}
-                    />
-                  </View>
-
-                  {/* Chalet details info */}
-                  <View style={{ flex: 1, marginHorizontal: 12, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
-                    <Text style={[styles.shortcutTitle, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
-                      {chaletName || ''}
-                    </Text>
-                    <View style={[styles.row, { flexDirection, gap: 4, marginTop: 2, opacity: 0.8 }]}>
-                      <SolarMapPointBold size={11} color="#6B7280" />
-                      <Text style={[styles.shortcutSubtitle, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
-                        {isRTL ? (chalet?.address?.ar || chalet?.region?.name || 'موقع غير محدّد') : (chalet?.address?.en || chalet?.region?.enName || 'Location not specified')}
-                      </Text>
-                    </View>
-                    <View style={[styles.row, { flexDirection, gap: 4, marginTop: 6 }]}>
-                      <SolarPenBold size={10} color={Colors.primary} />
-                      <Text style={styles.shortcutActionLink}>
-                        {isRTL ? 'تعديل تفاصيل الشاليه وصور الغطاء والظهور' : 'Edit chalet details, photos & visibility'}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-                {isRTL ? (
-                  <SolarAltArrowLeftBold size={16} color={Colors.primary} style={{ opacity: 0.7 }} />
-                ) : (
-                  <SolarAltArrowRightBold size={16} color={Colors.primary} style={{ opacity: 0.7 }} />
-                )}
-              </View>
-            </TouchableOpacity>
-          )}
-
           <View style={styles.section}>
             <View style={[styles.sectionHeader, { flexDirection }]}>
               <SolarCalendarBold size={24} color={Colors.primary} />
@@ -942,6 +905,24 @@ export default function ShiftsAndPricesScreen() {
             {shifts?.map((shift: any, index: number) => {
               const isExpanded = expandedShift === shift.id;
               const shiftName = isRTL ? (shift.name?.ar || shift.name) : (shift.name?.en || shift.name);
+              const sT = parseInt(shift.startTime?.split(':')[0] || '0');
+              const sE = parseInt(shift.endTime?.split(':')[0] || '0');
+              const type = (shift?.type || "").toUpperCase();
+              const nameLower = shiftName.toLowerCase();
+              
+              const isMorning = type === 'MORNING' || 
+                                nameLower.includes('morning') || 
+                                nameLower.includes('صباح') || 
+                                nameLower.includes('يوم') ||
+                                (type !== 'EVENING' && type !== 'NIGHT' && type !== 'OVERNIGHT' && 
+                                 !nameLower.includes('evening') && !nameLower.includes('مساء') && 
+                                 !nameLower.includes('night') && !nameLower.includes('ليل') && 
+                                 !nameLower.includes('overnight') && !nameLower.includes('مبيت') && 
+                                 sT >= 5 && sT < 15);
+              
+              const isNight = !isMorning;
+              const accentColor = isNight ? "#7C3AED" : "#035DF9";
+
               return (
                 <Swipeable
                   key={shift.id}
@@ -950,34 +931,77 @@ export default function ShiftsAndPricesScreen() {
                   renderLeftActions={isRTL ? () => renderShiftActions(shift, shiftName) : undefined}
                   containerStyle={styles.swipeableContainer}
                 >
-                  <View style={[styles.cardFlat, !shift.isActive && styles.cardInactive]}>
-                    <View style={[styles.row, { padding: 16, borderBottomWidth: isExpanded ? 1 : 0, borderBottomColor: '#F0F2F7', justifyContent: 'space-between' }]}>
+                  <View 
+                    style={[
+                      styles.cardFlat, 
+                      !shift.isActive && styles.cardInactive,
+                      {
+                        borderLeftWidth: isRTL ? 1 : 4,
+                        borderRightWidth: isRTL ? 4 : 1,
+                        borderLeftColor: isRTL ? "#F1F5F9" : (shift.isActive ? accentColor : '#9CA3AF'),
+                        borderRightColor: isRTL ? (shift.isActive ? accentColor : '#9CA3AF') : "#F1F5F9",
+                      }
+                    ]}
+                  >
+                    <View style={[styles.row, { padding: 12, borderBottomWidth: isExpanded ? 1 : 0, borderBottomColor: '#F0F2F7', justifyContent: 'space-between', flexDirection }]}>
                       <TouchableOpacity 
-                        style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }} 
+                        style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12 }} 
                         onPress={() => setExpandedShift(isExpanded ? null : shift.id)}
                       >
-                        <View style={{ flex: 1 }}>
-                          <View style={[styles.row, { flexDirection }]}>
-                            <Text style={[styles.cardTitle, !shift.isActive && { color: '#9CA3AF' }]}>{shiftName}</Text>
+                        <ExpoImage
+                          source={getShiftIcon(shift, shiftName)}
+                          style={{
+                            width: 28,
+                            height: 28,
+                            opacity: shift.isActive ? 1 : 0.5,
+                          }}
+                          contentFit="contain"
+                        />
+
+                        <View style={{ flex: 1, gap: 2 }}>
+                          <Text style={[
+                            styles.cardTitle, 
+                            { 
+                              color: shift.isActive ? accentColor : '#9CA3AF',
+                              fontFamily: 'Alexandria-SemiBold',
+                              fontSize: 15,
+                              textAlign: 'left'
+                            }
+                          ]}>
+                            {shiftName}
+                          </Text>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                            <SolarClockCircleBold size={12} color="#94A3B8" />
+                            <Text style={{
+                              fontSize: 11,
+                              color: "#94A3B8",
+                              fontFamily: "Alexandria-Medium"
+                            }}>
+                              {formatTime12h(shift.startTime)} - {formatTime12h(shift.endTime)}
+                            </Text>
                           </View>
-                          <Text style={[styles.timeBadgeText, !shift.isActive && { color: '#9CA3AF' }]}>{formatTime12h(shift.startTime)} - {formatTime12h(shift.endTime)}</Text>
                         </View>
-                        {isExpanded ? <SolarAltArrowUpBold size={20} color={Colors.border} /> : <SolarAltArrowDownBold size={20} color={Colors.border} />}
                       </TouchableOpacity>
 
-                      <View style={[styles.row, { marginLeft: isRTL ? 0 : 16, marginRight: isRTL ? 16 : 0 }]}>
-                        <View style={{ alignItems: 'flex-end', marginRight: isRTL ? 0 : 8, marginLeft: isRTL ? 8 : 0 }}>
-                          <Text style={{ fontSize: 8, fontFamily: 'Alexandria-Bold', color: shift.isActive ? Colors.primary : '#9CA3AF' }}>
-                            {isRTL ? (shift.isActive ? 'نشطة' : 'متوقفة') : (shift.isActive ? 'Active' : 'Inactive')}
-                          </Text>
-                        </View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: isRTL ? 0 : 12, marginRight: isRTL ? 12 : 0, gap: 8 }}>
                         <Switch 
                           value={shift.isActive} 
                           onValueChange={() => toggleShiftStatus(shift)}
-                          trackColor={{ false: '#D1D5DB', true: Colors.primary + '40' }}
-                          thumbColor={shift.isActive ? Colors.primary : '#9CA3AF'}
-                          style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
+                          trackColor={{ false: '#E2E8F0', true: Colors.primary }}
+                          thumbColor={Platform.OS === 'ios' ? undefined : '#FFFFFF'}
+                          ios_backgroundColor="#E2E8F0"
+                          style={{ transform: [{ scaleX: 0.85 }, { scaleY: 0.85 }] }}
                         />
+                        <TouchableOpacity 
+                          onPress={() => setExpandedShift(isExpanded ? null : shift.id)}
+                          style={{ padding: 4 }}
+                        >
+                          {isExpanded ? (
+                            <SolarAltArrowUpBold size={18} color="#94A3B8" />
+                          ) : (
+                            <SolarAltArrowDownBold size={18} color="#94A3B8" />
+                          )}
+                        </TouchableOpacity>
                       </View>
                     </View>
                     {isExpanded && (
@@ -990,29 +1014,44 @@ export default function ShiftsAndPricesScreen() {
               );
             })}
 
-            <SecondaryButton
-              label={isRTL ? 'إضافة فترة (Shift) إضافية' : 'Add another shift'}
-              onPress={handleAddShift}
-              icon={<SolarAddCircleBold size={20} color={Colors.primary} />}
-              style={{ marginTop: 12 }}
-            />
-          </View>
-
-          <View style={[styles.section, { marginTop: 32 }]}>
-            <View style={[styles.sectionHeader, { flexDirection }]}>
-              <SolarBanknoteBold size={22} color={Colors.primary} />
-              <Text style={[styles.sectionTitle, { textAlign, marginLeft: 8, marginRight: 8 }]}>{isRTL ? 'سياسة الاسترجاع' : 'Refund Policy'}</Text>
-            </View>
-            <TouchableOpacity style={styles.cardFlat} onPress={handleEditPolicies}>
-              <View style={{ padding: 20 }}>
-                {policies?.map((p: any, i: number) => (
-                  <View key={i} style={[styles.row, { marginBottom: 12 }]}>
-                    <Text style={styles.detailTextLarge}>{isRTL ? `قبل ${p.daysBeforeBooking} أيام: ${p.penaltyPercentage}%` : `${p.daysBeforeBooking} days: ${p.penaltyPercentage}%`}</Text>
-                  </View>
-                ))}
-                <Text style={{ color: Colors.primary, fontFamily: "Alexandria-Bold", textAlign: 'center' }}>{isRTL ? 'تعديل سياسة الاسترجاع' : 'Edit Refund Policy'}</Text>
+            {!areAllHoursCovered(shifts) ? (
+              <SecondaryButton
+                label={isRTL ? 'إضافة فترة (Shift) إضافية' : 'Add another shift'}
+                onPress={handleAddShift}
+                icon={<SolarAddCircleBold size={20} color={Colors.primary} />}
+                style={{ marginTop: 12 }}
+              />
+            ) : (
+              <View 
+                style={{ 
+                  marginTop: 16, 
+                  padding: 16, 
+                  borderRadius: 16, 
+                  backgroundColor: Colors.primary + '08', 
+                  borderWidth: 1, 
+                  borderColor: Colors.primary + '18', 
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 12
+                }}
+              >
+                <SolarInfoCircleBold size={22} color={Colors.primary} />
+                <Text 
+                  style={{ 
+                    flex: 1,
+                    fontSize: 13, 
+                    color: '#1E293B', 
+                    fontFamily: 'Alexandria-Medium',
+                    lineHeight: 19,
+                    textAlign: 'left'
+                  }}
+                >
+                  {isRTL 
+                    ? 'جميع ساعات اليوم مغطاة بالفترات الحالية، لا توجد ساعات شاغرة لإضافة فترة جديدة.' 
+                    : 'All hours of the day are covered by current shifts. No vacant hours available to add a new shift.'}
+                </Text>
               </View>
-            </TouchableOpacity>
+            )}
           </View>
         </ScrollView>
       </View>
@@ -1197,19 +1236,7 @@ export default function ShiftsAndPricesScreen() {
         />
       </BottomSheetModal>
 
-      {/* Policy Modal */}
-      <BottomSheetModal ref={policySheetRef} index={0} snapPoints={['70%']} backdropComponent={renderBackdrop}>
-        <BottomSheetScrollView contentContainerStyle={{ padding: 20, direction: isRTL ? 'rtl' : 'ltr' }}>
-          <Text style={styles.modalTitleCompact}>{isRTL ? 'سياسة الاسترجاع' : 'Refund Policy'}</Text>
-          {policyForm.map((p, i) => (
-            <View key={i} style={styles.policyFormCard}>
-              <BottomSheetTextInput keyboardType="numeric" value={String(p.daysBeforeBooking)} onChangeText={v => updatePolicyTier(i, 'daysBeforeBooking', v)} />
-              <BottomSheetTextInput keyboardType="numeric" value={String(p.penaltyPercentage)} onChangeText={v => updatePolicyTier(i, 'penaltyPercentage', v)} />
-            </View>
-          ))}
-          <TouchableOpacity style={styles.saveBtn} onPress={savePolicies}><Text style={styles.saveBtnText}>{isRTL ? 'حفظ' : 'Save'}</Text></TouchableOpacity>
-        </BottomSheetScrollView>
-      </BottomSheetModal>
+
 
       {/* Chalet Select Modal */}
       <BottomSheetModal ref={chaletSelectSheetRef} index={0} snapPoints={['50%']} backdropComponent={renderBackdrop}>
@@ -1231,11 +1258,23 @@ const styles = StyleSheet.create({
   scrollContent: { padding: 16, paddingBottom: 100 },
   section: { marginBottom: 24 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  sectionTitle: { fontSize: 18, fontFamily: "Alexandria-Black", color: '#000' },
+  sectionTitle: { fontSize: 16, fontFamily: "Alexandria-Bold", color: '#0F172A' },
   row: { flexDirection: 'row', alignItems: 'center' },
-  cardFlat: { backgroundColor: '#fff', borderRadius: 20, marginBottom: 12, borderWidth: 1, borderColor: '#F0F2F7', overflow: 'hidden', ...Shadows.small },
+  cardFlat: { 
+    backgroundColor: '#fff', 
+    borderRadius: 16, 
+    marginBottom: 12, 
+    borderWidth: 1, 
+    borderColor: '#F1F5F9', 
+    overflow: 'hidden', 
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2
+  },
   cardHeader: { padding: 16 },
-  cardTitle: { fontSize: 16, fontFamily: "Alexandria-Black" },
+  cardTitle: { fontSize: 14, fontFamily: "Alexandria-SemiBold", color: '#1E293B' },
   timeBadgeText: { color: Colors.primary, fontSize: 12, fontFamily: "Alexandria-Bold" },
   expandedContent: { padding: 16, backgroundColor: '#F9FAFB', borderTopWidth: 1, borderTopColor: '#F0F2F7' },
   pricingSectionContainer: { backgroundColor: '#fff', borderRadius: 16, padding: 12 },
@@ -1253,13 +1292,13 @@ const styles = StyleSheet.create({
   closedMiniCard: { opacity: 0.5 },
   miniCardDay: { fontSize: 10, color: '#666' },
   miniCardPriceRow: { alignItems: 'center' },
-  miniCardPrice: { fontSize: 11, fontFamily: "Alexandria-Black" },
+  miniCardPrice: { fontSize: 11, fontFamily: "Alexandria-SemiBold", color: '#1E293B' },
   miniCardCurrency: { fontSize: 8, color: '#999' },
   closedBadgeMini: { backgroundColor: '#FEE4E2', padding: 2, borderRadius: 4 },
   closedBadgeTextMini: { fontSize: 8, color: '#D92D20' },
   hoursGridContainer: { marginVertical: 16, padding: 16, backgroundColor: '#F9FAFB', borderRadius: 16 },
   gridHeader: { alignItems: 'center', marginBottom: 12 },
-  gridTitleLarge: { fontSize: 16, fontFamily: "Alexandria-Black" },
+  gridTitleLarge: { fontSize: 14, fontFamily: "Alexandria-Bold", color: '#0F172A' },
   legendText: { fontSize: 10, color: '#666' },
   gridContent: { gap: 6 },
   hourGridRow: { flexDirection: 'row', alignItems: 'center', height: 40 },
@@ -1272,26 +1311,25 @@ const styles = StyleSheet.create({
   swipeActions: { flexDirection: 'row', height: '100%' },
   swipeAction: { width: 70, justifyContent: 'center', alignItems: 'center' },
   swipeActionText: { fontSize: 10, fontFamily: "Alexandria-Bold" },
-  modalTitle: { fontSize: 20, fontFamily: "Alexandria-Black", marginBottom: 20 },
-  modalTitleCompact: { fontSize: 18, fontFamily: "Alexandria-Black" },
+  modalTitle: { fontSize: 18, fontFamily: "Alexandria-Bold", color: '#0F172A', marginBottom: 20 },
+  modalTitleCompact: { fontSize: 16, fontFamily: "Alexandria-Bold", color: '#0F172A' },
   label: { fontSize: 14, fontFamily: "Alexandria-Bold", marginBottom: 8 },
   input: { backgroundColor: '#F3F4F6', height: 50, borderRadius: 12, paddingHorizontal: 16, marginBottom: 16 },
   saveBtn: { backgroundColor: Colors.primary, padding: 16, borderRadius: 12, alignItems: 'center' },
-  saveBtnText: { color: '#fff', fontFamily: "Alexandria-Black" },
+  saveBtnText: { color: '#fff', fontFamily: "Alexandria-Bold" },
   quickActionCardNew: { backgroundColor: Colors.primary, padding: 16, borderRadius: 16, marginTop: 12 },
   quickLabelNew: { color: '#fff', fontSize: 12, marginBottom: 4 },
-  quickInputNew: { color: '#fff', fontSize: 18, fontFamily: "Alexandria-Black" },
+  quickInputNew: { color: '#fff', fontSize: 16, fontFamily: "Alexandria-Bold" },
   pricingRowModern: { padding: 16, backgroundColor: '#fff', borderRadius: 16, marginBottom: 10, borderWidth: 1, borderColor: '#EEE' },
   pricingRowStopped: { backgroundColor: '#F9FAFB', opacity: 0.7 },
   dayFullName: { fontSize: 14, fontFamily: "Alexandria-Bold" },
   priceControlWrapper: { marginTop: 12, backgroundColor: '#F3F4F6', borderRadius: 10, padding: 8 },
-  pricingInputModern: { fontSize: 16, fontFamily: "Alexandria-Black", textAlign: 'center' },
+  pricingInputModern: { fontSize: 16, fontFamily: "Alexandria-Bold", textAlign: 'center' },
   pricingFloatingFooter: { padding: 16, borderTopWidth: 1, borderTopColor: '#EEE', backgroundColor: '#fff' },
   applyBtnLargeModern: { backgroundColor: Colors.primary, padding: 16, borderRadius: 12, alignItems: 'center' },
-  applyBtnTextLarge: { color: '#fff', fontFamily: "Alexandria-Black" },
+  applyBtnTextLarge: { color: '#fff', fontFamily: "Alexandria-Bold" },
   inactiveBadge: { backgroundColor: '#F2F4F7', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, justifyContent: 'center' },
   inactiveBadgeText: { fontSize: 10, color: '#667085', fontFamily: 'Alexandria-Bold' },
-  policyFormCard: { padding: 16, backgroundColor: '#F9FAFB', borderRadius: 12, marginBottom: 12 },
   chaletSelectCard: { padding: 16, borderBottomWidth: 1, borderBottomColor: '#EEE' },
   dayIndicator: { width: 32, height: 32, borderRadius: 16, backgroundColor: Colors.primary + '10', justifyContent: 'center', alignItems: 'center' },
   dayIndicatorText: { fontSize: 14, fontFamily: 'Alexandria-Black', color: Colors.primary },
@@ -1301,51 +1339,5 @@ const styles = StyleSheet.create({
   statusLabelLarge: { fontSize: 14, fontFamily: 'Alexandria-Bold', color: '#1F2937' },
   statusValueLarge: { fontSize: 11, fontFamily: 'Alexandria-Medium', marginTop: 2 },
   miniQuickBtn: { backgroundColor: 'rgba(255,255,255,0.3)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
-  miniQuickBtnText: { color: '#fff', fontSize: 10, fontFamily: 'Alexandria-Bold' },
-  chaletDetailsShortcutCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 22,
-    padding: 12,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    ...Shadows.small,
-  },
-  shortcutImageContainer: {
-    position: 'relative',
-    width: 64,
-    height: 64,
-    borderRadius: 14,
-    overflow: 'hidden',
-    backgroundColor: '#F5F5F7',
-  },
-  shortcutImage: {
-    width: '100%',
-    height: '100%',
-  },
-  shortcutStatusDot: {
-    position: 'absolute',
-    top: 4,
-    left: 4,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    borderWidth: 2,
-    borderColor: '#FFF',
-  },
-  shortcutTitle: {
-    fontSize: 14,
-    fontFamily: 'Alexandria-Bold',
-    color: '#1F2937',
-  },
-  shortcutSubtitle: {
-    fontSize: 11,
-    fontFamily: 'Alexandria-Medium',
-    color: '#6B7280',
-  },
-  shortcutActionLink: {
-    fontSize: 9,
-    fontFamily: 'Alexandria-Bold',
-    color: Colors.primary,
-  }
+  miniQuickBtnText: { color: '#fff', fontSize: 10, fontFamily: 'Alexandria-Bold' }
 });

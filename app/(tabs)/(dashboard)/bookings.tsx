@@ -390,24 +390,24 @@ export default function BookingsScreen() {
           title={isRTL ? 'الحجوزات' : 'Bookings'}
           showSearch={false}
           showBackButton={true}
+          customRightComponent={
+            <View style={{ transform: [{ scale: 0.92 }] }}>
+              <SecondaryButton
+                label={getButtonLabel()}
+                icon={<SolarCalendarBold size={18} color={Colors.black} />}
+                inactiveTextColor={Colors.black}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  calendarSheetRef.current?.present();
+                }}
+              />
+            </View>
+          }
         />
         <View style={{ flex: 1 }}>
           <View style={{ flex: 1 }}>
             {/* Fixed Section: Header + Filter */}
             <View style={styles.fixedHeaderArea}>
-              <View style={[styles.bookingsHeader, { flexDirection: 'row', justifyContent: 'flex-end' }]}>
-                <View style={{ transform: [{ scale: 0.92 }] }}>
-                  <SecondaryButton
-                    label={getButtonLabel()}
-                    icon={<SolarCalendarBold size={18} color={Colors.black} />}
-                    inactiveTextColor={Colors.black}
-                    onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      calendarSheetRef.current?.present();
-                    }}
-                  />
-                </View>
-              </View>
 
               {/* Filter Bar */}
               <Animated.View
@@ -477,7 +477,7 @@ export default function BookingsScreen() {
               contentContainerStyle={styles.scrollContent}
               onEndReached={handleLoadMore}
               onEndReachedThreshold={0.5}
-              ListHeaderComponent={<View style={{ height: 5 }} />}
+              ListHeaderComponent={null}
               ListEmptyComponent={
                 isBookingsFetching && recentBookings.length === 0 ? (
                   <View style={styles.loadingContainer}>
@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: normalize.width(14),
-    paddingTop: normalize.height(5),
+    paddingTop: 0,
     paddingBottom: normalize.height(10)
   },
   loadingContainer: {
@@ -787,7 +787,7 @@ const styles = StyleSheet.create({
     marginBottom: 0
   },
   filterContainer: {
-    gap: normalize.width(8),
+    gap: normalize.width(2),
     paddingHorizontal: normalize.width(16),
     alignItems: 'center'
   },
@@ -879,7 +879,7 @@ const styles = StyleSheet.create({
   fixedHeaderArea: {
     backgroundColor: Colors.white,
     zIndex: 10,
-    paddingBottom: normalize.height(5)
+    paddingBottom: 0
   },
   noBookings: {
     padding: normalize.width(30),
