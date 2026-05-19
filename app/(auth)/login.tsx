@@ -156,6 +156,7 @@ export function LoginScreen() {
   const [devAutoFilled, setDevAutoFilled] = useState(false);
 
   function handleTypeChange(type: "owner" | "customer") {
+    if (step === "otp") return;
     setLocalUserType(type);
     dispatch(setUserType(type));
   }
@@ -258,6 +259,7 @@ export function LoginScreen() {
             <AuthToggle 
               activeType={localUserType}
               onChange={handleTypeChange} 
+              disabled={step === "otp"}
             />
           </View>
 
