@@ -74,6 +74,22 @@ export function HeaderSection({
 
   const isArabic = i18n.language ? i18n.language.startsWith("ar") : false;
 
+  const [logoStateIndex, setLogoStateIndex] = React.useState(0);
+  const logoColors = [Colors.primary, "#F64200", "#15AB64", "#EF4444"];
+  const [currentLogoAr, setCurrentLogoAr] = React.useState(isArabic);
+
+  React.useEffect(() => {
+    setCurrentLogoAr(isArabic);
+    setLogoStateIndex(0);
+  }, [isArabic]);
+
+  const handleLogoPress = () => {
+    setCurrentLogoAr((prev) => !prev);
+    setLogoStateIndex((prev) => (prev + 1) % logoColors.length);
+  };
+
+  const currentLogoColor = logoColors[logoStateIndex];
+
   const CATEGORIES = [
     {
       id: "all",
@@ -171,13 +187,17 @@ export function HeaderSection({
         {/* RIGHT SIDE (End side) */}
         <View style={[styles.headerSide, { alignItems: isHome ? startAlign : endAlign }]}>
           {isHome && (
-            <View style={styles.logoCircleHome}>
+            <TouchableOpacity
+              onPress={handleLogoPress}
+              style={styles.logoCircleHome}
+              activeOpacity={0.8}
+            >
               <Image
-                source={isArabic ? require("@/assets/arlogo.svg") : require("@/assets/logo.svg")}
-                style={styles.logoImgHome}
+                source={currentLogoAr ? require("@/assets/arlogo.svg") : require("@/assets/logo.svg")}
+                style={[styles.logoImgHome, { tintColor: currentLogoColor }]}
                 contentFit="contain"
               />
-            </View>
+            </TouchableOpacity>
           )}
         </View>
       </View>
