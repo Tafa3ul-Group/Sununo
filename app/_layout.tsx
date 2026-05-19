@@ -72,12 +72,7 @@ function RootLayoutNav() {
     if (loaded || error) SplashScreen.hideAsync();
   }, [loaded, error]);
 
-  // ── Language Sync ─────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (language && i18n.language !== language) {
-      applyAppLanguage(language);
-    }
-  }, [language, i18n]);
+
 
   // ── Push Notifications ────────────────────────────────────────────────────
   // يعمل عند تحميل الخطوط + عند تغيّر حالة المصادقة

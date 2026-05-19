@@ -23,7 +23,8 @@ const IDENTITY_BLUE = '#035DF9';
 import { PaymentConfirmationSheet, PaymentConfirmationSheetRef } from '@/components/payment-confirmation-modal';
 
 import { ErrorState } from '@/components/ui/error-state';
-import { isRTL } from "@/i18n";
+import { isRTL, getFlexDirection } from "@/i18n";
+import { I18nManager } from "react-native";
 
 export default function BookingDetailsPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -123,12 +124,17 @@ export default function BookingDetailsPage() {
     }
   };
 
+  const rowDirection = getFlexDirection(isRTL);
+  const textStart: "left" | "right" = isRTL === I18nManager.isRTL ? "left" : "right";
+  const textEnd: "left" | "right" = isRTL === I18nManager.isRTL ? "right" : "left";
+  const alignEnd: "flex-start" | "flex-end" = isRTL === I18nManager.isRTL ? "flex-end" : "flex-start";
+
   const renderInfoRow = (label: string, value: string | React.ReactNode, isBlue: boolean = false) => (
-    <View style={[styles.infoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-      <Text style={[styles.infoLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{label}</Text>
-      <View style={{ flex: 1, alignItems: isRTL ? 'flex-start' : 'flex-end' }}>
+    <View style={[styles.infoRow, { flexDirection: rowDirection }]}>
+      <Text style={[styles.infoLabel, { textAlign: textStart }]}>{label}</Text>
+      <View style={{ flex: 1, alignItems: alignEnd }}>
         {typeof value === 'string' ? (
-          <Text style={[styles.infoValue, isBlue && styles.blueValue, { textAlign: isRTL ? 'left' : 'right' }]}>{value}</Text>
+          <Text style={[styles.infoValue, isBlue && styles.blueValue, { textAlign: textEnd }]}>{value}</Text>
         ) : (
           value
         )}

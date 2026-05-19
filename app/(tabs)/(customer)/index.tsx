@@ -9,6 +9,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
+  I18nManager,
 } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -34,7 +35,7 @@ import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize, Shadows } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
-import { isRTL } from "@/i18n";
+import { isRTL, getFlexDirection } from "@/i18n";
 import { RootState } from "@/store";
 import { useGetAmenitiesQuery } from "@/store/api/apiSlice";
 import {
@@ -185,7 +186,8 @@ const filterBannerStyles = StyleSheet.create({
 });
 
 export default function HomeScreen() {
-  const { userType } = useSelector((state: RootState) => state.auth);
+  const { userType, language } = useSelector((state: RootState) => state.auth);
+  const isRTL = language === "ar";
   const activeFilters = useSelector(
     (state: RootState) => (state as any).filter,
   );
@@ -194,6 +196,9 @@ export default function HomeScreen() {
   const { t, i18n } = useTranslation();
   const [activeFilter, setActiveFilter] = React.useState("all");
   const insets = useSafeAreaInsets();
+
+  const textStart: "left" | "right" = isRTL ? "right" : "left";
+  const flexDir: "row" | "row-reverse" = (isRTL === I18nManager.isRTL) ? "row" : "row-reverse";
 
   // Fetch all amenities to resolve real IDs for pool/bbq/garden filters
   const { data: allAmenities = [] } = useGetAmenitiesQuery();
@@ -373,20 +378,20 @@ export default function HomeScreen() {
         {banners?.length > 0 && <BannerSwiper data={banners} />}
 
         {/* Nearby / Map */}
-        <View style={[styles.sectionHeader, { flexDirection: "row-reverse" }]}>
+        <View style={[styles.sectionHeader, { flexDirection: flexDir }]}>
+          <ThemedText
+            style={[
+              styles.sectionTitle,
+              { textAlign: textStart },
+            ]}
+          >
+            {t("home.categories.nearby")}
+          </ThemedText>
           <TouchableOpacity
             onPress={() => router.push("/(tabs)/(customer)/explore")}
           >
             <ThemedText style={styles.seeAll}>{t("home.openMap")}</ThemedText>
           </TouchableOpacity>
-          <ThemedText
-            style={[
-              styles.sectionTitle,
-              { textAlign: isRTL ? "right" : "left" },
-            ]}
-          >
-            {t("home.categories.nearby")}
-          </ThemedText>
         </View>
         <TouchableOpacity
           activeOpacity={0.9}
@@ -405,18 +410,18 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         {/* Popular / Recent */}
-        <View style={[styles.sectionHeader, { flexDirection: "row-reverse" }]}>
-          <TouchableOpacity>
-            <ThemedText style={styles.seeAll}>{t("home.seeAll")}</ThemedText>
-          </TouchableOpacity>
+        <View style={[styles.sectionHeader, { flexDirection: flexDir }]}>
           <ThemedText
             style={[
               styles.sectionTitle,
-              { textAlign: isRTL ? "right" : "left" },
+              { textAlign: textStart },
             ]}
           >
             {t("home.recentBookings")}
           </ThemedText>
+          <TouchableOpacity>
+            <ThemedText style={styles.seeAll}>{t("home.seeAll")}</ThemedText>
+          </TouchableOpacity>
         </View>
 
         {chaletsLoading ? (
@@ -438,13 +443,13 @@ export default function HomeScreen() {
         <View
           style={[
             styles.sectionHeader,
-            { justifyContent: "flex-start" },
+            { flexDirection: flexDir, justifyContent: "flex-start" },
           ]}
         >
           <ThemedText
             style={[
               styles.sectionTitle,
-              { textAlign: isRTL ? "right" : "left" },
+              { textAlign: textStart },
             ]}
           >
             {t("home.recommended")}
@@ -455,7 +460,7 @@ export default function HomeScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.tabsContainer}
         >
-          <View style={{ flexDirection: "row", gap: 10 }}>
+          <View style={{ flexDirection: flexDir, gap: 10 }}>
             {FILTER_OPTIONS.map((filter) => (
               <SecondaryButton
                 key={filter.id}

@@ -22,7 +22,8 @@ import {
     StyleSheet,
     TextInput,
     TouchableOpacity,
-    View
+    View,
+    I18nManager
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 // import { normalize } from "@/constants/theme";
@@ -37,6 +38,7 @@ const normalize = {
   radius: (size: number) => size * scale };
 
 export function LoginScreen() {
+  const textStart: "left" | "right" = isRTL === I18nManager.isRTL ? "left" : "right";
   const { t, i18n } = useTranslation();
     const dispatch = useDispatch();
   const router = useRouter();
@@ -169,7 +171,7 @@ export function LoginScreen() {
           {/* Login Form */}
           <View style={styles.formContainer}>
             <View style={[styles.headerRow, { alignItems: 'flex-start' }]}>
-              <ThemedText style={[styles.title, { textAlign: isRTL ? 'right' : 'left' }]}>{t('auth.login')}</ThemedText>
+              <ThemedText style={[styles.title, { textAlign: textStart }]}>{t('auth.login')}</ThemedText>
               {!isOwner && (
                 <View style={[styles.subtextRow, { flexDirection: 'row' }]}>
                   <ThemedText style={styles.subtitle}>
@@ -186,9 +188,9 @@ export function LoginScreen() {
 
             {step === "phone" ? (
               <View style={styles.inputGroup}>
-                <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('auth.phone')}</ThemedText>
+                <ThemedText style={[styles.label, { textAlign: textStart }]}>{t('auth.phone')}</ThemedText>
                 <TextInput
-                  style={[styles.input, { textAlign: isRTL ? 'right' : 'left' }]}
+                  style={[styles.input, { textAlign: textStart }]}
                   placeholder={t('auth.phonePlaceholder')}
                   value={phone}
                   onChangeText={setPhone}
@@ -199,7 +201,7 @@ export function LoginScreen() {
               </View>
             ) : (
               <View style={styles.inputGroup}>
-                <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{t('auth.verificationCode')}</ThemedText>
+                <ThemedText style={[styles.label, { textAlign: textStart }]}>{t('auth.verificationCode')}</ThemedText>
                 <OtpInput 
                   code={code} 
                   setCode={setCode} 

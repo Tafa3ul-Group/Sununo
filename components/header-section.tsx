@@ -18,7 +18,8 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  View } from "react-native";
+  View,
+  I18nManager } from "react-native";
 import { useSelector } from "react-redux";
 import { ThemedText } from "./themed-text";
 import { CircleBackButton } from "./ui/circle-back-button";
@@ -69,7 +70,10 @@ export function HeaderSection({
   const { userType: stateUserType, language } = useSelector(
     (state: RootState) => state.auth,
   );
-    const [selectedCategory, setSelectedCategory] = React.useState("all");
+  const [selectedCategory, setSelectedCategory] = React.useState("all");
+
+  // Use Redux language (updated immediately on change) instead of static isRTL
+  const isArabic = language === "ar";
 
   const CATEGORIES = [
     {
@@ -90,9 +94,13 @@ export function HeaderSection({
       icon: <SolarStarBold size={normalize.width(18)} /> },
   ];
 
-  const textAlign = isRTL ? "right" : "left";
-  const startAlign = isRTL ? "flex-end" : "flex-start";
-  const endAlign = isRTL ? "flex-start" : "flex-end";
+  const textAlign: "left" | "right" = isArabic ? "right" : "left";
+  // RN auto-mirrors flex-start/flex-end when I18nManager.isRTL=true
+  // So when language matches native RTL, use natural values
+  const needsCounter = isArabic !== I18nManager.isRTL;
+  const startAlign: "flex-start" | "flex-end" = needsCounter ? "flex-end" : "flex-start";
+  const endAlign: "flex-start" | "flex-end" = needsCounter ? "flex-start" : "flex-end";
+  const rowDir: "row" | "row-reverse" = needsCounter ? "row-reverse" : "row";
 
   return (
     <View style={[styles.container]}>
@@ -104,12 +112,12 @@ export function HeaderSection({
           styles.topRow,
           {
             marginBottom,
-            flexDirection: (isHome && isRTL) ? 'row-reverse' : 'row'
+            flexDirection: isArabic ? 'row-reverse' : 'row'
           },
         ]}
       >
         {/* LEFT SIDE (Start side) */}
-        <View style={[styles.headerSide, { alignItems: (isHome && isRTL) ? 'flex-end' : 'flex-start' }]}>
+        <View style={[styles.headerSide, { alignItems: isArabic ? 'flex-end' : 'flex-start' }]}>
           {isHome ? (
             <View style={styles.homeLeftGroup}>
               {stateUserType !== "guest" && (
@@ -161,11 +169,11 @@ export function HeaderSection({
         )}
 
         {/* RIGHT SIDE (End side) */}
-        <View style={[styles.headerSide, { alignItems: (isHome && isRTL) ? 'flex-start' : 'flex-end' }]}>
+        <View style={[styles.headerSide, { alignItems: isArabic ? 'flex-start' : 'flex-end' }]}>
           {isHome && (
             <View style={styles.logoCircleHome}>
               <Image
-                source={isRTL ? require("@/assets/arlogo.svg") : require("@/assets/logo.svg")}
+                source={isArabic ? require("@/assets/arlogo.svg") : require("@/assets/logo.svg")}
                 style={styles.logoImgHome}
                 contentFit="contain"
               />
@@ -180,7 +188,7 @@ export function HeaderSection({
           <View
             style={[
               styles.searchBar,
-              { flexDirection: isRTL ? 'row-reverse' : 'row' },
+              { flexDirection: rowDir },
             ]}
           >
             <SolarMagnifierBold

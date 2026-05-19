@@ -14,7 +14,7 @@ import { LogoutSheet } from '@/components/user/logout-sheet';
 import { WalletCard } from '@/components/user/wallet-card';
 import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
-import { isRTL } from "@/i18n";
+import { getFlexDirection } from "@/i18n";
 import { RootState } from '@/store';
 import { useGetMeQuery } from '@/store/api/apiSlice';
 import { useGetCustomerWalletQuery } from '@/store/api/customerApiSlice';
@@ -29,6 +29,7 @@ import {
     Text,
     TouchableOpacity,
     View,
+    I18nManager,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
@@ -40,12 +41,11 @@ export default function CustomerProfileScreen() {
     const insets = useSafeAreaInsets();
 
     const isArabic = i18n.language === 'ar';
-    const rowDirection = isArabic
-        ? isRTL ? "row" : "row-reverse"
-        : isRTL ? "row-reverse" : "row";
+    const rowDirection = getFlexDirection(isArabic);
 
-    const textStart: "left" | "right" = isArabic === isRTL ? "left" : "right";
-    const alignStart: "flex-start" | "flex-end" = isArabic === isRTL ? "flex-start" : "flex-end";
+    const textStart: "left" | "right" = isArabic ? "right" : "left";
+    const needsCounter = isArabic !== I18nManager.isRTL;
+    const alignStart: "flex-start" | "flex-end" = needsCounter ? "flex-end" : "flex-start";
 
     const languageSheetRef = useRef<BottomSheetModal>(null);
     const logoutSheetRef = useRef<BottomSheetModal>(null);

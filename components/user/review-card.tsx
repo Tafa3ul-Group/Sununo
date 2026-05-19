@@ -9,7 +9,8 @@ import {
     ScrollView,
     StyleSheet,
     TouchableOpacity,
-    View } from "react-native";
+    View,
+    I18nManager } from "react-native";
 import Svg, { ClipPath, Defs, G, Path, Image as SvgImage } from "react-native-svg";
 import { isRTL } from "@/i18n";
 
@@ -46,6 +47,7 @@ interface ReviewCardProps {
 }
 
 export function ReviewCard({ review, onDelete, onPressChalet }: ReviewCardProps) {
+  const textStart: "left" | "right" = isRTL === I18nManager.isRTL ? "left" : "right";
   const { i18n, t } = useTranslation();
     
   const config = SHAPES_CONFIG[0]; // Using first shape for simplicity or random
@@ -78,10 +80,10 @@ export function ReviewCard({ review, onDelete, onPressChalet }: ReviewCardProps)
           </Svg>
         </TouchableOpacity>
 
-        <View style={[styles.chaletInfo, { [isRTL ? 'marginRight' : 'marginLeft']: 15, alignItems: 'flex-start' }]}>
-          <ThemedText style={[styles.chaletTitle, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>{review.chaletTitle}</ThemedText>
-          <ThemedText style={[styles.chaletLocation, { textAlign: isRTL ? 'right' : 'left' }]}>{review.chaletLocation}</ThemedText>
-          <ThemedText style={[styles.priceText, { textAlign: isRTL ? 'right' : 'left' }]}>
+        <View style={[styles.chaletInfo, { [textStart === 'left' ? 'marginLeft' : 'marginRight']: 15, alignItems: 'flex-start' }]}>
+          <ThemedText style={[styles.chaletTitle, { textAlign: textStart }]} numberOfLines={1}>{review.chaletTitle}</ThemedText>
+          <ThemedText style={[styles.chaletLocation, { textAlign: textStart }]}>{review.chaletLocation}</ThemedText>
+          <ThemedText style={[styles.priceText, { textAlign: textStart }]}>
             {isRTL ? (
                 `${t('common.iqd')} ${review.price} / ${t('common.shift')}`
             ) : (
@@ -114,7 +116,7 @@ export function ReviewCard({ review, onDelete, onPressChalet }: ReviewCardProps)
 
       {/* Bottom Section: Comment + Gallery + Date */}
       <View style={[styles.bottomSection, { alignItems: 'flex-start' }]}>
-        <ThemedText style={[styles.commentText, { textAlign: isRTL ? 'right' : 'left' }]}>
+        <ThemedText style={[styles.commentText, { textAlign: textStart }]}>
           {review.comment}
         </ThemedText>
 

@@ -10,7 +10,7 @@ import { useRouter } from 'expo-router';
 import { useGetNotificationsQuery } from '@/store/api/apiSlice';
 import { useState } from 'react';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import { isRTL } from "@/i18n";
+import { isRTL, getFlexDirection } from "@/i18n";
 
 interface Notification {
   id: string;
@@ -46,7 +46,7 @@ export default function NotificationsScreen() {
         const timeStr = date.toLocaleTimeString(isRTL ? 'ar-IQ' : 'en-US', { hour: '2-digit', minute: '2-digit' });
 
         return (
-            <View key={item.id} style={[styles.notificationCard, { flexDirection: 'row' }]}>
+            <View key={item.id} style={[styles.notificationCard, { flexDirection: getFlexDirection(isRTL) }]}>
                 {/* Content section */}
                 <View style={[styles.cardContent, { alignItems: 'flex-start' }]}>
                     <ThemedText style={[styles.titleText, { textAlign: isRTL ? 'right' : 'left' }]}>{item.title}</ThemedText>
@@ -54,7 +54,7 @@ export default function NotificationsScreen() {
                 </View>
 
                 {/* Header section with orange dot and time */}
-                <View style={[styles.cardLeft, { flexDirection: 'row' }]}>
+                <View style={[styles.cardLeft, { flexDirection: getFlexDirection(isRTL) }]}>
                     <ThemedText style={styles.timeText}>{timeStr}</ThemedText>
                     {!item.readAt && <View style={styles.orangeDot} />}
                 </View>

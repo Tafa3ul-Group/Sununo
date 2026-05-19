@@ -7,7 +7,7 @@ import {
 import { ThemedText } from "@/components/themed-text";
 import { ReviewSubmissionSheet } from "@/components/user/review-submission-sheet";
 import { SecondarySelect } from "@/components/user/secondary-select";
-import { isRTL } from "@/i18n";
+import { isRTL, getFlexDirection } from "@/i18n";
 import {
   useCheckCanReviewQuery,
   useCreateReviewMutation,
@@ -23,7 +23,8 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  View
+  View,
+  I18nManager
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -45,7 +46,8 @@ export default function ReviewsScreen() {
   const { t, i18n } = useTranslation();
   const { id } = useLocalSearchParams();
   const chaletId = id as string;
-  const isArabic = isRTL || i18n.language === "ar";
+  const isArabic = i18n.language === "ar";
+  const textStart: "left" | "right" = isArabic ? "right" : "left";
   const [userRating, setUserRating] = useState(0);
   const [filterValue, setFilterValue] = useState("latest");
   const reviewSheetRef = useRef<BottomSheetModal>(null);
@@ -151,12 +153,12 @@ export default function ReviewsScreen() {
             return (
               <View key={idx} style={styles.revCardFlat}>
                 <View
-                  style={[styles.revHeader, { flexDirection: "row-reverse" }]}
+                  style={[styles.revHeader, { flexDirection: getFlexDirection(isRTL) }]}
                 >
                   <View
                     style={[
                       styles.ratingBadge,
-                      { flexDirection: "row-reverse" },
+                      { flexDirection: getFlexDirection(isRTL) },
                     ]}
                   >
                     <SolarStarBold size={14} color="#035DF9" />
@@ -167,7 +169,7 @@ export default function ReviewsScreen() {
                   <View
                     style={[
                       styles.userInfoRow,
-                      { flexDirection: "row-reverse" },
+                      { flexDirection: getFlexDirection(isRTL) },
                     ]}
                   >
                     <View
@@ -184,8 +186,8 @@ export default function ReviewsScreen() {
                       </ThemedText>
                       <ThemedText
                         style={[
-                          styles.revBodyText,
-                          { textAlign: isRTL ? "right" : "left" },
+                           styles.revBodyText,
+                           { textAlign: textStart },
                         ]}
                       >
                         {reviewBody}

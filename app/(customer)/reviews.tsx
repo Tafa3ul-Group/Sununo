@@ -13,14 +13,15 @@ import {
   View
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { isRTL } from "@/i18n";
+import { getFlexDirection } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function ReviewsScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
-    const [activeTab, setActiveTab] = useState<"pending" | "reviewed">("pending");
+  const isArabic = i18n.language === "ar";
+  const [activeTab, setActiveTab] = useState<"pending" | "reviewed">("pending");
   const insets = useSafeAreaInsets();
 
   // Fetch completed bookings (pending review) and all bookings
@@ -38,10 +39,10 @@ export default function ReviewsScreen() {
       .map((booking: any) => ({
         id: booking.id,
         chaletId: booking.chalet?.id || '',
-        chaletTitle: isRTL 
+        chaletTitle: isArabic 
           ? (booking.chalet?.name?.ar || booking.chalet?.nameAr || booking.chalet?.name || '') 
           : (booking.chalet?.name?.en || booking.chalet?.nameEn || booking.chalet?.name || ''),
-        chaletLocation: isRTL
+        chaletLocation: isArabic
           ? (booking.chalet?.region?.name?.ar || booking.chalet?.region?.nameAr || booking.chalet?.region?.name || '')
           : (booking.chalet?.region?.name?.en || booking.chalet?.region?.nameEn || booking.chalet?.region?.name || ''),
         price: booking.chalet?.basePrice ? Number(booking.chalet.basePrice).toLocaleString() : '0',
@@ -60,10 +61,10 @@ export default function ReviewsScreen() {
       .map((booking: any) => ({
         id: booking.review?.id || booking.id,
         chaletId: booking.chalet?.id || '',
-        chaletTitle: isRTL
+        chaletTitle: isArabic
           ? (booking.chalet?.nameAr || booking.chalet?.name || '')
           : (booking.chalet?.nameEn || booking.chalet?.name || ''),
-        chaletLocation: isRTL
+        chaletLocation: isArabic
           ? (booking.chalet?.region?.nameAr || booking.chalet?.region?.name || '')
           : (booking.chalet?.region?.nameEn || booking.chalet?.region?.name || ''),
         price: booking.chalet?.basePrice ? Number(booking.chalet.basePrice).toLocaleString() : '0',
@@ -77,7 +78,7 @@ export default function ReviewsScreen() {
         status: 'reviewed' as const }));
 
     return { pending, reviewed };
-  }, [completedBookings, allBookings, isRTL]);
+  }, [completedBookings, allBookings, isArabic]);
 
   const filteredReviews = activeTab === 'pending' ? reviews.pending : reviews.reviewed;
 
@@ -103,14 +104,14 @@ export default function ReviewsScreen() {
       />
 
       {/* Tabs with fixed components to prevent shape shifting */}
-      <View style={[styles.tabsWrapper, { flexDirection: isRTL ? 'row' : 'row' }]}>
+      <View style={[styles.tabsWrapper, { flexDirection: getFlexDirection(isArabic) }]}>
         <View style={styles.tabItem}>
           <SecondaryButton
             label={t('reviews.reviewed')}
             onPress={() => setActiveTab('reviewed')}
             isActive={activeTab === 'reviewed'}
             style={{ width: '100%' }}
-            iconPosition={isRTL ? "left" : "right"}
+            iconPosition={isArabic ? "left" : "right"}
             variant="default"
           />
         </View>
@@ -120,7 +121,7 @@ export default function ReviewsScreen() {
             onPress={() => setActiveTab('pending')}
             isActive={activeTab === 'pending'}
             style={{ width: '100%' }}
-            iconPosition={isRTL ? "right" : "left"}
+            iconPosition={isArabic ? "right" : "left"}
             variant="inverse"
           />
         </View>

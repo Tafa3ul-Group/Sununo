@@ -1,6 +1,6 @@
 import { SolarAddBold, SolarMinusBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
-import { isRTL } from "@/i18n";
+import { getFlexDirection } from "@/i18n";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
@@ -21,17 +21,19 @@ export const GuestCounter: React.FC<GuestCounterProps> = ({
   style,
 }) => {
   const { i18n } = useTranslation();
+  const isArabic = i18n.language === 'ar';
+  const flexDir = getFlexDirection(isArabic);
   const btnSize = 38;
 
   return (
-    <View style={[styles.container, { flexDirection: "row" }, style]}>
-      {/* Child 1: Minus in RTL, Plus in LTR */}
+    <View style={[styles.container, { flexDirection: flexDir }, style]}>
+      {/* Minus Button (Logical Left) */}
       <TouchableOpacity
-        onPress={isRTL ? onDecrement : onIncrement}
+        onPress={onDecrement}
         activeOpacity={0.8}
         style={[
           styles.buttonWrapper,
-          isRTL ? styles.mirror : undefined,
+          isArabic ? styles.mirror : undefined,
           { width: btnSize, height: btnSize },
         ]}
       >
@@ -43,11 +45,7 @@ export const GuestCounter: React.FC<GuestCounterProps> = ({
         </Svg>
         <View style={styles.iconOverlay}>
           <View style={styles.iconCircle}>
-            {isRTL ? (
-              <SolarMinusBold size={14} color="white" />
-            ) : (
-              <SolarAddBold size={14} color="white" />
-            )}
+            <SolarMinusBold size={14} color="white" />
           </View>
         </View>
       </TouchableOpacity>
@@ -57,13 +55,13 @@ export const GuestCounter: React.FC<GuestCounterProps> = ({
         <ThemedText style={styles.valueText}>{value}</ThemedText>
       </View>
 
-      {/* Child 3: Plus in RTL, Minus in LTR */}
+      {/* Plus Button (Logical Right) */}
       <TouchableOpacity
-        onPress={isRTL ? onIncrement : onDecrement}
+        onPress={onIncrement}
         activeOpacity={0.8}
         style={[
           styles.buttonWrapper,
-          !isRTL ? styles.mirror : undefined,
+          !isArabic ? styles.mirror : undefined,
           { width: btnSize, height: btnSize },
         ]}
       >
@@ -75,11 +73,7 @@ export const GuestCounter: React.FC<GuestCounterProps> = ({
         </Svg>
         <View style={styles.iconOverlay}>
           <View style={styles.iconCircle}>
-            {isRTL ? (
-              <SolarAddBold size={14} color="white" />
-            ) : (
-              <SolarMinusBold size={14} color="white" />
-            )}
+            <SolarAddBold size={14} color="white" />
           </View>
         </View>
       </TouchableOpacity>

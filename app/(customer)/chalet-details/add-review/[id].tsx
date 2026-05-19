@@ -15,7 +15,8 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  View
+  View,
+  I18nManager
 } from "react-native";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -23,6 +24,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 export default function AddReviewScreen() {
   const { id: chaletId } = useLocalSearchParams<{ id: string }>();
   const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === "ar";
   const router = useRouter();
 
   const [rating, setRating] = useState(0);
@@ -33,7 +35,7 @@ export default function AddReviewScreen() {
     if (rating === 0) {
       Alert.alert(
         t("common.error"),
-        isRTL ? "يرجى اختيار التقييم أولاً" : "Please select a rating first",
+        isArabic ? "يرجى اختيار التقييم أولاً" : "Please select a rating first",
       );
       return;
     }
@@ -103,12 +105,12 @@ export default function AddReviewScreen() {
 
           <View style={styles.inputContainer}>
             <ThemedText style={styles.inputLabel}>
-              {isRTL ? "تعليقك (اختياري)" : "Your comment (optional)"}
+              {isArabic ? "تعليقك (اختياري)" : "Your comment (optional)"}
             </ThemedText>
             <TextInput
               style={[
                 styles.textInput,
-                { textAlign: isRTL ? "right" : "left" },
+                { textAlign: isArabic ? "right" : "left" },
               ]}
               placeholder={t("profile.review.placeholder")}
               multiline

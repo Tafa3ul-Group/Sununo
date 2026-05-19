@@ -8,7 +8,8 @@ import {
     TextStyle,
     TouchableOpacity,
     View,
-    ViewStyle } from "react-native";
+    ViewStyle,
+    StyleProp } from "react-native";
 
 interface SecondaryButtonProps {
   label: string;
@@ -21,8 +22,8 @@ interface SecondaryButtonProps {
   inactiveColor?: string;
   activeTextColor?: string;
   inactiveTextColor?: string;
-  style?: ViewStyle;
-  textStyle?: TextStyle;
+  style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
   isLoading?: boolean;
   height?: number;
   variant?: "default" | "inverse"; // Added to let you choose the logic

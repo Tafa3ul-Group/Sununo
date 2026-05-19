@@ -97,6 +97,8 @@ i18n.use(initReactI18next).init({
 // ──────────────────────────────────────────────────────────
 // 2. ASYNC refinement (Native only)
 // ──────────────────────────────────────────────────────────
+const RELOAD_FLAG = "is_reloading_for_lang";
+
 const refineLanguageFromStorage = async () => {
   if (Platform.OS === 'web') return; // Handled synchronously on Web
 
@@ -109,12 +111,25 @@ const refineLanguageFromStorage = async () => {
     }
 
     if (saved && saved !== i18n.language) {
+      const isReloading = await AsyncStorage.getItem(RELOAD_FLAG);
+      if (isReloading === "true") {
+        // We just reloaded, so native I18nManager failed to update (Dev client bug).
+        // Let's just update JS state and clear flag.
+        await AsyncStorage.removeItem(RELOAD_FLAG);
+        isRTL = saved === 'ar';
+        await i18n.changeLanguage(saved);
+        return;
+      }
+
       const needsRTL = saved === 'ar';
       if (I18nManager.isRTL !== needsRTL) {
+        await AsyncStorage.setItem(RELOAD_FLAG, "true");
         await changeLanguage(saved as "en" | "ar");
       } else {
         await i18n.changeLanguage(saved);
       }
+    } else {
+      await AsyncStorage.removeItem(RELOAD_FLAG);
     }
   } catch (e) {
     console.error("Failed to load language from storage", e);
@@ -149,6 +164,7 @@ export const changeLanguage = async (lng: "en" | "ar") => {
       I18nManager.swapLeftAndRightInRTL(isRTL);
     }
 
+    await AsyncStorage.setItem(RELOAD_FLAG, "true");
     setTimeout(() => {
       reloadApp();
     }, 500);
@@ -182,6 +198,10 @@ export const tr = (obj: any): string => {
   );
 };
 
-export const isRTL = I18nManager.isRTL;
+export let isRTL = I18nManager.isRTL;
+
+export const getFlexDirection = (desiredRTL: boolean): "row" | "row-reverse" => {
+  return desiredRTL === I18nManager.isRTL ? "row" : "row-reverse";
+};
 
 export default i18n;

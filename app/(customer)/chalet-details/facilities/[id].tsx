@@ -3,7 +3,7 @@ import { SolarWidgetBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { Colors } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
-import { isRTL } from "@/i18n";
+import { isRTL, getFlexDirection } from "@/i18n";
 import { RootState } from "@/store";
 import { useGetCustomerChaletDetailsQuery } from "@/store/api/customerApiSlice";
 import { Stack, useLocalSearchParams } from "expo-router";
@@ -16,6 +16,7 @@ import {
     ScrollView,
     StyleSheet,
     View,
+    I18nManager,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
@@ -55,19 +56,19 @@ const FacilityCard = ({
   subtext?: string;
   color: string;
   iconId?: string | null;
-  isRTL: boolean;
+  isArabic: boolean;
 }) => {
   // iconId from API is a UUID → load as image from server
   const imageSource = iconId ? getImageSrc(iconId) : null;
 
   return (
-    <View style={[styles.cardContainer, { flexDirection: "row-reverse" }]}>
+    <View style={[styles.cardContainer, { flexDirection: getFlexDirection(isArabic) }]}>
       <View
         style={[
           styles.textSide,
           {
             alignItems: "flex-start",
-            [isRTL ? "marginRight" : "marginLeft"]: 15,
+            [isArabic ? "marginRight" : "marginLeft"]: 15,
           },
         ]}
       >
@@ -76,7 +77,7 @@ const FacilityCard = ({
           <ThemedText
             style={[
               styles.cardSubtext,
-              { textAlign: isRTL ? "right" : "left" },
+              { textAlign: isArabic ? "right" : "left" },
             ]}
           >
             {subtext}
@@ -106,6 +107,7 @@ const FacilityCard = ({
 export default function FacilitiesScreen() {
   const { id } = useLocalSearchParams();
   const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === "ar";
   const { userType } = useSelector((state: RootState) => state.auth);
 
   const { data: response, isLoading } = useGetCustomerChaletDetailsQuery(id);
@@ -129,7 +131,7 @@ export default function FacilitiesScreen() {
 
       if (!grouped[categoryId]) {
         grouped[categoryId] = {
-          name: isRTL
+          name: isArabic
             ? category?.name?.ar || category?.name
             : category?.name?.en || category?.name,
           colorIndex: colorIdx++,
@@ -139,7 +141,7 @@ export default function FacilitiesScreen() {
 
       grouped[categoryId].features.push({
         id: feature.id,
-        name: isRTL
+        name: isArabic
           ? feature.name?.ar || feature.name
           : feature.name?.en || feature.name,
         // icon field from API is a UUID pointing to an image on the server
@@ -149,7 +151,7 @@ export default function FacilitiesScreen() {
     });
 
     return Object.values(grouped);
-  }, [chaletData, isRTL]);
+  }, [chaletData, isArabic]);
 
   if (isLoading) {
     return (
@@ -180,7 +182,7 @@ export default function FacilitiesScreen() {
         <View style={{ paddingHorizontal: 20 }}>
           {categories.map((cat, idx) => (
             <View key={idx}>
-              <SectionHeader title={cat.name} isRTL={isRTL} />
+              <SectionHeader title={cat.name} isRTL={isArabic} />
               {cat.features.map((feat, featIdx) => {
                 const color =
                   CATEGORY_COLORS[cat.colorIndex % CATEGORY_COLORS.length];
@@ -192,7 +194,7 @@ export default function FacilitiesScreen() {
                     subtext={feat.value}
                     color={color}
                     iconId={feat.iconId}
-                    isRTL={isRTL}
+                    isArabic={isArabic}
                   />
                 );
               })}
@@ -202,7 +204,7 @@ export default function FacilitiesScreen() {
           {categories.length === 0 && (
             <View style={{ marginTop: 100, alignItems: "center" }}>
               <ThemedText style={{ color: "#9CA3AF" }}>
-                {isRTL ? "لا توجد مرافق متاحة" : "No facilities available"}
+                {isArabic ? "لا توجد مرافق متاحة" : "No facilities available"}
               </ThemedText>
             </View>
           )}

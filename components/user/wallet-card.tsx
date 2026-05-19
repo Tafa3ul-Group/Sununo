@@ -3,8 +3,9 @@ import { normalize } from "@/constants/theme";
 import { isRTL } from "@/i18n";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
+import { I18nManager, Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
 import Svg, { ClipPath, Defs, G, Path, Rect } from "react-native-svg";
+import { getFlexDirection } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -18,11 +19,14 @@ export const WalletCard = ({
   onWithdraw,
 }: WalletCardProps) => {
   const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === "ar";
+  const rowDir = getFlexDirection(isArabic);
+
   return (
     <View style={styles.container}>
       {/* SVG Background - Mirrored for LTR to keep focal points consistent */}
       <View
-        style={[styles.svgWrapper, { transform: [{ scaleX: isRTL ? 1 : -1 }] }]}
+        style={[styles.svgWrapper, { transform: [{ scaleX: isArabic ? 1 : -1 }] }]}
       >
         <Svg
           width="100%"
@@ -81,46 +85,19 @@ export const WalletCard = ({
           <ThemedText
             style={[
               styles.balanceLabel,
-              { textAlign: isRTL ? "right" : "left" },
+              { textAlign: isArabic ? "right" : "left" },
             ]}
           >
             {t("profile.wallet.balance")}
           </ThemedText>
         </View>
 
-        <View style={[styles.bottomRow, { flexDirection: "row" }]}>
-          {isRTL ? (
-            <>
-              <TouchableOpacity
-                style={[
-                  styles.withdrawButton,
-                  { marginLeft: normalize.width(6) },
-                ]}
-                onPress={onWithdraw}
-                activeOpacity={0.8}
-              >
-                <ThemedText style={styles.withdrawText}>
-                  {t("profile.wallet.withdraw")}
-                </ThemedText>
-              </TouchableOpacity>
-              <View
-                style={[
-                  styles.balanceContainer,
-                  { flexDirection: "row", marginRight: normalize.width(25) },
-                ]}
-              >
-                <ThemedText style={styles.balanceValue}>{balance}</ThemedText>
-                <ThemedText style={styles.currencyText}>
-                  {t("common.iqd")}
-                </ThemedText>
-              </View>
-            </>
-          ) : (
+        <View style={[styles.bottomRow, { flexDirection: rowDir }]}>
             <>
               <View
                 style={[
                   styles.balanceContainer,
-                  { flexDirection: "row", marginLeft: normalize.width(25) },
+                  { flexDirection: rowDir, [isArabic ? "marginRight" : "marginLeft"]: normalize.width(25) },
                 ]}
               >
                 <ThemedText style={styles.balanceValue}>{balance}</ThemedText>
@@ -131,7 +108,7 @@ export const WalletCard = ({
               <TouchableOpacity
                 style={[
                   styles.withdrawButton,
-                  { marginRight: normalize.width(6) },
+                  { [isArabic ? "marginLeft" : "marginRight"]: normalize.width(6) },
                 ]}
                 onPress={onWithdraw}
                 activeOpacity={0.8}
@@ -141,7 +118,6 @@ export const WalletCard = ({
                 </ThemedText>
               </TouchableOpacity>
             </>
-          )}
         </View>
       </View>
     </View>

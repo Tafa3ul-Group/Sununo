@@ -13,7 +13,7 @@ import { MainTabs, TabType } from "@/components/user/MainTabs";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { RangeCalendar } from "@/components/user/range-calendar";
 import { Colors, normalize } from "@/constants/theme";
-import { isRTL } from "@/i18n";
+import { getFlexDirection } from "@/i18n";
 import { RootState } from "@/store";
 import {
   useCreateCustomerBookingMutation,
@@ -38,6 +38,7 @@ import {
   ActivityIndicator,
   Alert,
   Dimensions,
+  I18nManager,
   Platform,
   ScrollView,
   StyleSheet,
@@ -78,18 +79,12 @@ export default function CompleteBookingScreen() {
   const [paymentType, setPaymentType] = useState<"DEPOSIT" | "FULL">("DEPOSIT");
   const { formatShiftTime } = useFormatTime();
   const isArabic = i18n.language === "ar";
-  const rowDirection = isArabic
-    ? isRTL
-      ? "row"
-      : "row-reverse"
-    : isRTL
-      ? "row-reverse"
-      : "row";
+  const rowDirection = getFlexDirection(isArabic);
 
-  // When I18nManager.isRTL is true, React Native natively flips text alignments.
-  // "left" renders visually on the right, and "right" renders visually on the left.
-  const textStart: "left" | "right" = isArabic === isRTL ? "left" : "right";
-  const textEnd: "left" | "right" = isArabic === isRTL ? "right" : "left";
+  // textAlign is absolute, so direct mapping is correct regardless of native RTL state
+  const textStart: "left" | "right" = isArabic ? "right" : "left";
+  const textEnd: "left" | "right" = isArabic ? "left" : "right";
+  const alignStart: "flex-start" | "flex-end" = isArabic !== I18nManager.isRTL ? "flex-end" : "flex-start";
 
   const getFilterDateRange = (): Date[] => {
     if (!savedFilter?.checkIn) return [];
@@ -478,8 +473,8 @@ export default function CompleteBookingScreen() {
       try {
         if (selectedDates.length === 0) {
           Alert.alert(
-            isRTL ? "تنبيه" : "Alert",
-            isRTL ? "يرجى اختيار تاريخ الحجز" : "Please select a booking date",
+            isArabic ? "تنبيه" : "Alert",
+            isArabic ? "يرجى اختيار تاريخ الحجز" : "Please select a booking date",
           );
           setActiveTab("WHEN");
           return;
@@ -490,8 +485,8 @@ export default function CompleteBookingScreen() {
         );
         if (!allDaysHaveShifts) {
           Alert.alert(
-            isRTL ? "تنبيه" : "Alert",
-            isRTL
+            isArabic ? "تنبيه" : "Alert",
+            isArabic
               ? "يرجى اختيار فترة لكل يوم مختار"
               : "Please select a shift for every selected day",
           );
@@ -551,8 +546,8 @@ export default function CompleteBookingScreen() {
           }
         } else {
           Alert.alert(
-            isRTL ? "خطأ" : "Error",
-            isRTL
+            isArabic ? "خطأ" : "Error",
+            isArabic
               ? "معلومات الشاليه غير مكتملة"
               : "Chalet information is incomplete",
           );
@@ -701,7 +696,7 @@ export default function CompleteBookingScreen() {
       <HorizontalCard
         chalet={{
           id: chaletDetails?.id || "",
-          title: isRTL
+          title: isArabic
             ? chaletDetails?.nameAr ||
               chaletDetails?.name?.ar ||
               chaletDetails?.name ||
@@ -710,7 +705,7 @@ export default function CompleteBookingScreen() {
               chaletDetails?.name?.en ||
               chaletDetails?.name ||
               "",
-          location: isRTL
+          location: isArabic
             ? chaletDetails?.region?.name?.ar ||
               chaletDetails?.region?.nameAr ||
               chaletDetails?.region?.name ||
@@ -746,7 +741,7 @@ export default function CompleteBookingScreen() {
           </View>
         </View>
         <ThemedText style={styles.mapAddressLabel}>
-          {isRTL
+          {isArabic
             ? chaletDetails?.region?.name?.ar ||
               chaletDetails?.region?.nameAr ||
               chaletDetails?.region?.name ||
@@ -1015,7 +1010,7 @@ export default function CompleteBookingScreen() {
           />
           <View style={{ marginTop: 20 }}>
             <PrimaryButton
-              label={isRTL ? "تم" : "Done"}
+              label={isArabic ? "تم" : "Done"}
               onPress={() => calendarSheetRef.current?.dismiss()}
               style={{
                 width: "100%",
@@ -1100,10 +1095,10 @@ export default function CompleteBookingScreen() {
               style={{ marginTop: 40, marginBottom: 20 }}
             />
             <ThemedText style={styles.successTitle}>
-              {isRTL ? "جاري التحقق من الدفع..." : "Verifying Payment..."}
+              {isArabic ? "جاري التحقق من الدفع..." : "Verifying Payment..."}
             </ThemedText>
             <ThemedText style={styles.successSub}>
-              {isRTL
+              {isArabic
                 ? "يرجى الانتظار بينما نتأكد من حالة العملية، قد يستغرق ذلك لحظات."
                 : "Please wait while we confirm your transaction, this may take a few moments."}
             </ThemedText>
@@ -1118,10 +1113,10 @@ export default function CompleteBookingScreen() {
               resizeMode="contain"
             />
             <ThemedText style={styles.successTitle}>
-              {isRTL ? "تم الدفع بنجاح!" : "Payment Successful!"}
+              {isArabic ? "تم الدفع بنجاح!" : "Payment Successful!"}
             </ThemedText>
             <ThemedText style={styles.successSub}>
-              {isRTL
+              {isArabic
                 ? "تم تأكيد الدفع بنجاح، جاري تحويلك..."
                 : "Payment confirmed successfully, redirecting..."}
             </ThemedText>
@@ -1143,15 +1138,15 @@ export default function CompleteBookingScreen() {
               <ThemedText style={{ fontSize: 14 }}>❌</ThemedText>
             </View>
             <ThemedText style={[styles.successTitle, { color: "#EF4444" }]}>
-              {isRTL ? "فشلت عملية الدفع" : "Payment Failed"}
+              {isArabic ? "فشلت عملية الدفع" : "Payment Failed"}
             </ThemedText>
             <ThemedText style={styles.successSub}>
-              {isRTL
+              {isArabic
                 ? "نعتذر، لم نتمكن من تأكيد عملية الدفع. يرجى المحاولة مرة أخرى."
                 : "Sorry, we couldn't confirm the payment. Please try again."}
             </ThemedText>
             <PrimaryButton
-              label={isRTL ? "إغلاق" : "Close"}
+              label={isArabic ? "إغلاق" : "Close"}
               onPress={() => processingSheetRef.current?.dismiss()}
               style={{ width: "100%", height: 56, marginTop: 10 }}
             />
@@ -1173,15 +1168,15 @@ export default function CompleteBookingScreen() {
               <ThemedText style={{ fontSize: 14 }}>⏳</ThemedText>
             </View>
             <ThemedText style={[styles.successTitle, { color: "#F59E0B" }]}>
-              {isRTL ? "انتهت مهلة التحقق" : "Verification Timeout"}
+              {isArabic ? "انتهت مهلة التحقق" : "Verification Timeout"}
             </ThemedText>
             <ThemedText style={styles.successSub}>
-              {isRTL
+              {isArabic
                 ? "لم نتلقَّ تأكيداً بعد. يرجى مراجعة قائمة حجوزاتك لاحقاً للتأكد من الحالة."
                 : "We haven't received confirmation yet. Please check your bookings later for status."}
             </ThemedText>
             <PrimaryButton
-              label={isRTL ? "الذهاب للحجوزات" : "Go to Bookings"}
+              label={isArabic ? "الذهاب للحجوزات" : "Go to Bookings"}
               onPress={() => {
                 processingSheetRef.current?.dismiss();
                 router.replace("/(tabs)/(customer)/bookings");
@@ -1212,7 +1207,7 @@ export default function CompleteBookingScreen() {
             activeTab={activeTab}
             onChange={setActiveTab}
             tabs={BOOKING_TABS}
-            labels={{ WHERE: isRTL ? "التفاصيل" : "Details" }}
+            labels={{ WHERE: isArabic ? "التفاصيل" : "Details" }}
           />
         </View>
 
@@ -1226,12 +1221,12 @@ export default function CompleteBookingScreen() {
                   style={[styles.dayHeaderRow, { flexDirection: rowDirection }]}
                 >
                   <ThemedText style={styles.dayHeaderText}>
-                    {isRTL ? "اختر يوماً للبدء" : "Select a day to start"}
+                    {isArabic ? "اختر يوماً للبدء" : "Select a day to start"}
                   </ThemedText>
                 </View>
                 <View style={styles.shiftsContainer}>
                   {availableShifts?.map((shift: any) => {
-                    const shiftName = isRTL
+                    const shiftName = isArabic
                       ? shift.name?.ar || shift.name
                       : shift.name?.en || shift.name;
                     const isMorning =
@@ -1244,7 +1239,7 @@ export default function CompleteBookingScreen() {
                         key={`preview-${shift.id}`}
                         style={[
                           styles.shiftCardFlat,
-                          { flexDirection: "row", opacity: 0.6 },
+                          { flexDirection: rowDirection, opacity: 0.6 },
                         ]}
                       >
                         <View style={styles.shiftIconCircleFlat}>
@@ -1257,7 +1252,7 @@ export default function CompleteBookingScreen() {
                         <View
                           style={[
                             styles.shiftInfoFlat,
-                            { alignItems: "flex-start" },
+                            { alignItems: alignStart, marginHorizontal: 12 },
                           ]}
                         >
                           <ThemedText style={styles.shiftNameFlat}>
@@ -1287,7 +1282,7 @@ export default function CompleteBookingScreen() {
                   })}
                 </View>
                 <PrimaryButton
-                  label={isRTL ? "اختيار يوم" : "Choose a Day"}
+                  label={isArabic ? "اختيار يوم" : "Choose a Day"}
                   onPress={() => calendarSheetRef.current?.present()}
                   style={{
                     width: "100%",
@@ -1305,19 +1300,19 @@ export default function CompleteBookingScreen() {
                   style={[styles.dayHeaderRow, { flexDirection: rowDirection }]}
                 >
                   <ThemedText style={styles.dayHeaderText}>
-                    {isRTL ? `يوم ${day}` : `Day ${day}`}
+                    {isArabic ? `يوم ${day}` : `Day ${day}`}
                   </ThemedText>
                   <TouchableOpacity
                     onPress={() => {
                       Alert.alert(
-                        isRTL ? "تأكيد" : "Confirm",
-                        isRTL
+                        isArabic ? "تأكيد" : "Confirm",
+                        isArabic
                           ? "هل أنت متأكد من حذف هذا اليوم؟"
                           : "Are you sure you want to delete this day?",
                         [
-                          { text: isRTL ? "إلغاء" : "Cancel" },
+                          { text: isArabic ? "إلغاء" : "Cancel" },
                           {
-                            text: isRTL ? "حذف" : "Delete",
+                            text: isArabic ? "حذف" : "Delete",
                             onPress: () => toggleDayDate(day),
                             style: "destructive",
                           },
@@ -1340,7 +1335,7 @@ export default function CompleteBookingScreen() {
                   {availableShifts?.map((shift: any) => {
                     const isSelected = selectedShifts[day] === shift.id;
                     const isBooked = isShiftBookedForDay(day, shift.id);
-                    const shiftName = isRTL
+                    const shiftName = isArabic
                       ? shift.name?.ar || shift.name
                       : shift.name?.en || shift.name;
 
@@ -1362,7 +1357,7 @@ export default function CompleteBookingScreen() {
                         disabled={isBooked}
                         style={[
                           styles.shiftCardFlat,
-                          { flexDirection: "row" },
+                          { flexDirection: rowDirection },
                           isSelected && {
                             borderColor: "#035DF9",
                             borderWidth: 1.5,
@@ -1396,7 +1391,7 @@ export default function CompleteBookingScreen() {
                         <View
                           style={[
                             styles.shiftInfoFlat,
-                            { alignItems: "flex-start" },
+                            { alignItems: alignStart, marginHorizontal: 12 },
                             { flex: 1 },
                           ]}
                         >
@@ -1445,7 +1440,7 @@ export default function CompleteBookingScreen() {
             {selectedDates.length > 0 && (
               <View style={{ paddingHorizontal: 12, marginTop: 10 }}>
                 <PrimaryButton
-                  label={isRTL ? "تغيير التاريخ" : "Change Date"}
+                  label={isArabic ? "تغيير التاريخ" : "Change Date"}
                   onPress={() => calendarSheetRef.current?.present()}
                   style={{ width: "100%", shadowOpacity: 0, elevation: 0 }}
                 />
@@ -1454,17 +1449,17 @@ export default function CompleteBookingScreen() {
           </>
         ) : activeTab === "WHO" ? (
           <View style={styles.whoContainer}>
-            <View style={[styles.whoCard, { flexDirection: "row" }]}>
+            <View style={[styles.whoCard, { flexDirection: rowDirection }]}>
               <View
                 style={[
                   styles.guestInfo,
-                  isRTL ? styles.rtlAlign : styles.ltrAlign,
+                  { alignItems: alignStart }
                 ]}
               >
                 <ThemedText
                   style={[
                     styles.guestLabel,
-                    isRTL ? styles.rtlText : styles.ltrText,
+                    { textAlign: textStart }
                   ]}
                 >
                   {t("booking.adults")}
@@ -1472,7 +1467,7 @@ export default function CompleteBookingScreen() {
                 <ThemedText
                   style={[
                     styles.guestSubLabel,
-                    isRTL ? styles.rtlText : styles.ltrText,
+                    { textAlign: textStart }
                   ]}
                 >
                   {t("booking.adultsDesc")}
@@ -1485,8 +1480,8 @@ export default function CompleteBookingScreen() {
                   if (adultCount < max) setAdultCount(adultCount + 1);
                   else
                     Alert.alert(
-                      isRTL ? "تنبيه" : "Alert",
-                      isRTL
+                      isArabic ? "تنبيه" : "Alert",
+                      isArabic
                         ? `الحد الاقصى للبالغين هو ${max}`
                         : `Max adults is ${max}`,
                     );
@@ -1500,20 +1495,20 @@ export default function CompleteBookingScreen() {
                 styles.whoCard,
                 {
                   marginTop: 12,
-                  flexDirection: "row",
+                  flexDirection: rowDirection,
                 },
               ]}
             >
               <View
                 style={[
                   styles.guestInfo,
-                  isRTL ? styles.rtlAlign : styles.ltrAlign,
+                  { alignItems: alignStart }
                 ]}
               >
                 <ThemedText
                   style={[
                     styles.guestLabel,
-                    isRTL ? styles.rtlText : styles.ltrText,
+                    { textAlign: textStart }
                   ]}
                 >
                   {t("booking.children")}
@@ -1521,7 +1516,7 @@ export default function CompleteBookingScreen() {
                 <ThemedText
                   style={[
                     styles.guestSubLabel,
-                    isRTL ? styles.rtlText : styles.ltrText,
+                    { textAlign: textStart }
                   ]}
                 >
                   {t("booking.childrenDesc")}
@@ -1534,8 +1529,8 @@ export default function CompleteBookingScreen() {
                   if (childrenCount < max) setChildrenCount(childrenCount + 1);
                   else
                     Alert.alert(
-                      isRTL ? "تنبيه" : "Alert",
-                      isRTL
+                      isArabic ? "تنبيه" : "Alert",
+                      isArabic
                         ? `الحد الاقصى للأطفال هو ${max}`
                         : `Max children is ${max}`,
                     );
@@ -1949,13 +1944,11 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: "#1E293B",
-    textAlign: isRTL ? "right" : "left",
   },
   infoValue: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: "#64748B",
-    textAlign: isRTL ? "left" : "right",
   },
   sectionHeaderRow: { justifyContent: "space-between", alignItems: "center" },
   editBtn: {
@@ -2017,7 +2010,7 @@ const styles = StyleSheet.create({
   rtlText: { textAlign: "right" },
   ltrText: { textAlign: "left" },
   row: { flexDirection: "row" },
-  rtlRow: { flexDirection: isRTL ? "row-reverse" : "row" },
+  rtlRow: { flexDirection: "row" },
   ltrRow: { flexDirection: "row" },
   rtlAlign: { alignItems: "flex-end" },
   ltrAlign: { alignItems: "flex-start" },

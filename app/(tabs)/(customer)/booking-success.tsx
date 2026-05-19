@@ -5,13 +5,13 @@ import { HorizontalCard } from "@/components/user/horizontal-card";
 import { Colors, normalize } from "@/constants/theme";
 import { useFormatTime } from "@/hooks/useFormatTime";
 import { getImageSrc } from "@/hooks/useImageSrc";
-import { isRTL } from "@/i18n";
+import { isRTL, getFlexDirection } from "@/i18n";
 import { useGetCustomerBookingDetailsQuery } from "@/store/api/customerApiSlice";
 import { Image as ExpoImage } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, ScrollView, StyleSheet, View, I18nManager } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function BookingSuccessDetailsScreen() {
@@ -20,6 +20,9 @@ export default function BookingSuccessDetailsScreen() {
   const { id } = useLocalSearchParams();
   const bookingId = id as string;
   const { formatShiftTime } = useFormatTime();
+
+  const textStart: "left" | "right" = isRTL === I18nManager.isRTL ? "left" : "right";
+  const textEnd: "left" | "right" = isRTL === I18nManager.isRTL ? "right" : "left";
 
   // Fetch booking details from the backend
   const { data: booking, isLoading } = useGetCustomerBookingDetailsQuery(
@@ -65,16 +68,16 @@ export default function BookingSuccessDetailsScreen() {
   }, [booking, isRTL, t]);
 
   const renderInfoRow = (label: string, value: string | React.ReactNode) => (
-    <View style={[styles.infoRow, { flexDirection: "row" }]}>
+    <View style={[styles.infoRow, { flexDirection: getFlexDirection(isRTL) }]}>
       <ThemedText
-        style={[styles.infoLabel, { textAlign: isRTL ? "right" : "left" }]}
+        style={[styles.infoLabel, { textAlign: textStart }]}
       >
         {label}
       </ThemedText>
       <View style={{ flex: 1, alignItems: isRTL ? "flex-start" : "flex-end" }}>
         {typeof value === "string" ? (
           <ThemedText
-            style={[styles.infoValue, { textAlign: isRTL ? "left" : "right" }]}
+            style={[styles.infoValue, { textAlign: textEnd }]}
           >
             {value}
           </ThemedText>
@@ -153,7 +156,7 @@ export default function BookingSuccessDetailsScreen() {
           <ThemedText
             style={[
               styles.sectionTitle,
-              { textAlign: isRTL ? "right" : "left" },
+              { textAlign: textStart },
             ]}
           >
             {t("booking.customerInfo")}
@@ -173,14 +176,14 @@ export default function BookingSuccessDetailsScreen() {
           <ThemedText
             style={[
               styles.sectionTitle,
-              { textAlign: isRTL ? "right" : "left" },
+              { textAlign: textStart },
             ]}
           >
             {t("booking.bookingInfo")}
           </ThemedText>
           <View style={styles.divider} />
 
-          <View style={[styles.infoRow, { flexDirection: "row" }]}>
+          <View style={[styles.infoRow, { flexDirection: getFlexDirection(isRTL) }]}>
             <ThemedText style={styles.infoLabel}>
               {t("booking.bookingStatus")}
             </ThemedText>
@@ -215,14 +218,14 @@ export default function BookingSuccessDetailsScreen() {
           <ThemedText
             style={[
               styles.sectionTitle,
-              { textAlign: isRTL ? "right" : "left" },
+              { textAlign: textStart },
             ]}
           >
             {t("booking.paymentDetails")}
           </ThemedText>
           <View style={styles.divider} />
 
-          <View style={[styles.infoRow, { flexDirection: "row" }]}>
+          <View style={[styles.infoRow, { flexDirection: getFlexDirection(isRTL) }]}>
             <ThemedText style={styles.infoLabel}>
               {t("booking.paymentStatus")}
             </ThemedText>

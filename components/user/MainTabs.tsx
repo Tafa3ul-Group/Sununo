@@ -1,4 +1,4 @@
-import { isRTL } from "@/i18n";
+import { getFlexDirection } from "@/i18n";
 import React, { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -51,7 +51,9 @@ export function MainTabs({
   tabs = DEFAULT_TABS,
   labels = {},
 }: MainTabsProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === 'ar';
+  const flexDir = getFlexDirection(isArabic);
 
   const transition = useSharedValue(0);
   const tabList = useMemo(
@@ -77,13 +79,13 @@ export function MainTabs({
   // --- مصفوفات التحكم (عدل الأرقام هنا) ---
   // الترتيب حسب مصفوفة tabs المرسلة للكمبوننت
   // ==========================================
-  const xOffsets = isRTL ? [120, 0, -120] : [-120, 0, 120];
+  const xOffsets = isArabic ? [120, 0, -120] : [-120, 0, 120];
   const yOffsets = [0, 0, 0];
   const rtlTextOffsets = [2, 0, -2]; // إزاحة النص للعربي لتوسيط أفضل
   const ltrTextOffsets = [-2, 0, 2]; // إزاحة النص للإنجليزي لتوسيط أفضل
   const scales = [1, 1, 1];
 
-  const currentTextOffsets = isRTL ? rtlTextOffsets : ltrTextOffsets;
+  const currentTextOffsets = isArabic ? rtlTextOffsets : ltrTextOffsets;
   // ==========================================
 
   const circleGroupProps = useAnimatedProps(() => {
@@ -176,7 +178,7 @@ export function MainTabs({
         </Svg>
       </View>
 
-      <View style={[styles.buttonsContainer, { flexDirection: "row" }]}>
+      <View style={[styles.buttonsContainer, { flexDirection: flexDir }]}>
         {tabList.map(function (tab, idx) {
           const textStyle = tabStyles[idx];
 

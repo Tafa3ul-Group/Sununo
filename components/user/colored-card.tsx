@@ -80,7 +80,15 @@ export function ColoredCard({
   isFavorite = false,
   onToggleFavorite }: ColoredCardProps) {
   const { i18n } = useTranslation();
-    const currentIndex = shapeIndex % SHAPES_CONFIG.length;
+  const isArabic = i18n.language ? i18n.language.startsWith("ar") : false;
+  const textStart: "left" | "right" = isArabic ? "right" : "left";
+  const needsCounter = isArabic !== I18nManager.isRTL;
+  const alignSelfStart: "flex-start" | "flex-end" = needsCounter ? "flex-end" : "flex-start";
+  const footerDirection: "row" | "row-reverse" = needsCounter ? "row-reverse" : "row";
+  const footerJustify: "flex-start" | "flex-end" = needsCounter ? "flex-end" : "flex-start";
+  const ratingDirection: "row" | "row-reverse" = needsCounter ? "row-reverse" : "row";
+
+  const currentIndex = shapeIndex % SHAPES_CONFIG.length;
   const config = SHAPES_CONFIG[currentIndex];
 
   return (
@@ -93,7 +101,7 @@ export function ColoredCard({
       <TouchableOpacity
         style={[
           styles.favoriteButton,
-          isRTL ? { right: 12 } : { left: 12 },
+          isArabic ? { right: 12 } : { left: 12 },
         ]}
         onPress={onToggleFavorite}
       >
@@ -138,11 +146,11 @@ export function ColoredCard({
         <View
           style={[
             styles.titleWrapper,
-            { alignSelf: isRTL ? "flex-end" : "flex-start" },
+            { alignSelf: alignSelfStart },
           ]}
         >
           <ThemedText
-            style={[styles.title, { textAlign: isRTL ? "right" : "left" }]}
+            style={[styles.title, { textAlign: textStart }]}
             numberOfLines={1}
           >
             {title}
@@ -152,11 +160,11 @@ export function ColoredCard({
         <View
           style={[
             styles.locationWrapper,
-            { alignSelf: isRTL ? "flex-end" : "flex-start" },
+            { alignSelf: alignSelfStart },
           ]}
         >
           <ThemedText
-            style={[styles.location, { textAlign: isRTL ? "right" : "left" }]}
+            style={[styles.location, { textAlign: textStart }]}
             numberOfLines={1}
           >
             {location}
@@ -167,15 +175,15 @@ export function ColoredCard({
           style={[
             styles.footer,
             {
-              flexDirection: 'row-reverse',
-              justifyContent: isRTL ? "flex-end" : "flex-start" },
+              flexDirection: footerDirection,
+              justifyContent: footerJustify },
           ]}
         >
           {/* Rating */}
           <View
             style={[
               styles.ratingContainer,
-              { flexDirection: 'row' },
+              { flexDirection: ratingDirection, gap: 4 },
             ]}
           >
             <SolarStarBold size={12} color="#FFFFFF" />
@@ -190,12 +198,14 @@ export function ColoredCard({
             ]}
           >
             <ThemedText
-              style={[styles.price, { textAlign: isRTL ? "right" : "left" }]}
+              style={[styles.price, { textAlign: textStart }]}
               numberOfLines={1}
             >
-              {price}{" "}
+              {isArabic ? "" : "IQD "}
+              {price}
+              {isArabic ? " د.ع" : ""}{" "}
               <ThemedText style={styles.priceUnit}>
-                {isRTL ? "/ شفت" : "/ shift"}
+                {isArabic ? "/ شفت" : "/ shift"}
               </ThemedText>
             </ThemedText>
           </View>

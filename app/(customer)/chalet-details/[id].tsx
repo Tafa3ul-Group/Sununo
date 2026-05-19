@@ -20,7 +20,7 @@ import { ReviewSubmissionSheet } from "@/components/user/review-submission-sheet
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize, Shadows } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
-import { isRTL } from "@/i18n";
+import { isRTL, getFlexDirection } from "@/i18n";
 import { RootState } from "@/store";
 import {
   useAddFavoriteMutation,
@@ -60,6 +60,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
+  I18nManager,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { useSelector } from "react-redux";
@@ -88,10 +89,14 @@ const SHAPE_COLORS: Record<ShapeKey, string> = {
 };
 
 function SectionHeader({ title, isRTL }: { title: string; isRTL: boolean }) {
+  const textStart: "left" | "right" = isRTL ? "right" : "left";
+  // alignItems is auto-mirrored by RN when I18nManager.isRTL=true
+  const needsCounter = isRTL !== I18nManager.isRTL;
+  const alignStart: "flex-start" | "flex-end" = needsCounter ? "flex-end" : "flex-start";
   return (
-    <View style={[styles.sectionHeaderContainer, { alignItems: "flex-start" }]}>
+    <View style={[styles.sectionHeaderContainer, { alignItems: alignStart }]}>
       <ThemedText
-        style={[styles.sectionTitle, { textAlign: isRTL ? "right" : "left" }]}
+        style={[styles.sectionTitle, { textAlign: textStart }]}
       >
         {title}
       </ThemedText>
@@ -110,6 +115,16 @@ const CARD_COLORS = [
 ];
 
 export default function ChaletDetailScreen() {
+  const { userType, language } = useSelector((state: RootState) => state.auth);
+  // isRTL = is the app language Arabic (updated reactively via Redux)
+  const isRTL = language === "ar";
+  // textStart: NOT auto-mirrored by RN, so direct mapping is correct
+  const textStart: "left" | "right" = isRTL ? "right" : "left";
+  // flexDir: React Native auto-mirrors "row" when I18nManager.isRTL=true.
+  // So we must account for native RTL state to avoid double-mirroring.
+  // When language matches native direction → "row" (natural flow)
+  // When language differs from native direction → "row-reverse" (counter-mirror)
+  const flexDir: "row" | "row-reverse" = (isRTL === I18nManager.isRTL) ? "row" : "row-reverse";
   const { id } = useLocalSearchParams();
   const chaletId = id as string;
   const router = useRouter();
@@ -118,7 +133,6 @@ export default function ChaletDetailScreen() {
   const reviewSheetRef = React.useRef<BottomSheetModal>(null);
   const bannerScrollRef = useRef<ScrollView>(null);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-  const { userType } = useSelector((state: RootState) => state.auth);
 
   // Fetch chalet details from the backend
   const {
@@ -433,7 +447,7 @@ export default function ChaletDetailScreen() {
                 }
                 style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }}
               >
-                <Image source={img} style={styles.headerImage} />
+                <Image source={typeof img === "string" ? { uri: img } : img} style={styles.headerImage} />
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -464,32 +478,45 @@ export default function ChaletDetailScreen() {
         </View>
 
         <View style={styles.infoWrapper}>
-          {/* العنوان */}
-          <View style={[styles.titleSection, { flexDirection: "row-reverse" }]}>
+          {/* العنوان والتقييم */}
+          <View style={[styles.titleSection, { marginBottom: 20 }]}>
             <View
-              style={[
-                styles.ratingGroupLeft,
-                isRTL ? { marginRight: 15 } : { marginLeft: 15 },
-              ]}
+              style={{
+                flexDirection: flexDir,
+                justifyContent: "space-between",
+                alignItems: "center",
+                width: "100%",
+              }}
             >
-              <ThemedText style={styles.ratingVal}>
-                {chaletRating.toFixed(1)}
-              </ThemedText>
-              <SolarStarBold size={14} color="#035DF9" />
-            </View>
-            <View style={{ alignItems: "flex-start", flex: 1 }}>
-              <ThemedText
+              <View style={{ flex: 1, marginRight: isRTL ? 12 : 0, marginLeft: isRTL ? 0 : 12 }}>
+                <ThemedText
+                  style={[
+                    styles.mainTitle,
+                    { textAlign: textStart },
+                  ]}
+                  numberOfLines={2}
+                >
+                  {chaletName}
+                </ThemedText>
+              </View>
+              <View
                 style={[
-                  styles.mainTitle,
-                  { textAlign: isRTL ? "right" : "left" },
+                  styles.ratingGroupLeft,
+                  { flexDirection: flexDir },
                 ]}
               >
-                {chaletName}
-              </ThemedText>
+                <ThemedText style={styles.ratingVal}>
+                  {chaletRating.toFixed(1)}
+                </ThemedText>
+                <SolarStarBold size={14} color="#035DF9" />
+              </View>
+            </View>
+
+            <View style={{ width: "100%", marginTop: 4 }}>
               <ThemedText
                 style={[
                   styles.locationSub,
-                  { textAlign: isRTL ? "right" : "left" },
+                  { textAlign: textStart },
                 ]}
               >
                 {chaletCategory ? `${chaletCategory} • ` : ""}
@@ -500,7 +527,7 @@ export default function ChaletDetailScreen() {
 
           {/* المواصفات الأساسية */}
           <SectionHeader title={t("chalet.details.specs")} isRTL={isRTL} />
-          <View style={[styles.specsRow, { flexDirection: "row" }]}>
+          <View style={[styles.specsRow, { flexDirection: flexDir }]}>
             {[
               { label: `${chalet.area || 0} م`, id: "area" },
               {
@@ -534,7 +561,7 @@ export default function ChaletDetailScreen() {
                 return (
                   <View
                     key={shift.id || index}
-                    style={[styles.shiftCard, { flexDirection: "row" }]}
+                    style={[styles.shiftCard, { flexDirection: flexDir }]}
                   >
                     {(() => {
                       const isMorning =
@@ -552,7 +579,7 @@ export default function ChaletDetailScreen() {
                       );
                     })()}
                     <View
-                      style={[styles.shiftInfo, { alignItems: "flex-start" }]}
+                      style={[styles.shiftInfo, { alignItems: "flex-start", marginHorizontal: 12 }]}
                     >
                       <ThemedText style={styles.shiftName}>
                         {isRTL
@@ -591,7 +618,7 @@ export default function ChaletDetailScreen() {
               <View
                 style={[
                   styles.facilitiesHeader,
-                  { flexDirection: "row-reverse" },
+                  { flexDirection: flexDir },
                 ]}
               >
                 <TouchableOpacity
@@ -644,7 +671,7 @@ export default function ChaletDetailScreen() {
             <ThemedText
               style={[
                 styles.descriptionText,
-                { textAlign: isRTL ? "right" : "left" },
+                { textAlign: textStart },
               ]}
             >
               {chaletDescription}
@@ -736,9 +763,20 @@ export default function ChaletDetailScreen() {
           <View
             style={[
               styles.ctaRowReviewMerged,
-              { flexDirection: "row-reverse" },
+              { flexDirection: flexDir },
             ]}
           >
+            <SecondaryButton
+              label={t("chalet.details.reviews")}
+              iconLabel={String(reviewCount)}
+              iconPosition="right"
+              isActive={true}
+              onPress={() => router.push(`/chalet-details/reviews/${chaletId}`)}
+              style={{ width: isRTL ? 160 : 140, marginHorizontal: 8 }}
+              height={46}
+              variant={isRTL ? undefined : "inverse"}
+            />
+
             <TouchableOpacity
               style={styles.pillTouch}
               onPress={() => router.push(`/chalet-details/reviews/${chaletId}`)}
@@ -746,36 +784,25 @@ export default function ChaletDetailScreen() {
               <Svg
                 width={86}
                 height={46}
-                viewBox="0 0 54 29"
+                viewBox={isRTL ? "0 0 54 29" : "0 0 63 29"}
                 style={StyleSheet.absoluteFill}
               >
                 <Path
                   d={
                     isRTL
                       ? "M0 14.5C0 6.49187 6.49187 0 14.5 0H46C49.3137 0 52 2.68629 52 6V23C52 26.3137 49.3137 29 46 29H14.5C6.49187 29 0 22.5081 0 14.5Z"
-                      : "M52 14.5C52 6.49187 45.5081 0 37.5 0H6C2.68629 0 0 2.68629 0 6V23C0 26.3137 2.68629 29 6 29H37.5C45.5081 29 52 22.5081 52 14.5V14.5Z"
+                      : "M0 14.5C0 6.49187 6.49187 0 14.5 0H57C60.3137 0 63 2.68629 63 6V23C63 26.3137 60.3137 29 57 29H14.5C6.49187 29 0 22.5081 0 14.5Z"
                   }
                   fill="#035DF9"
                 />
               </Svg>
-              <View style={[styles.pillContent, { flexDirection: "row" }]}>
+              <View style={[styles.pillContent, { flexDirection: flexDir }]}>
+                <SolarStarBold size={18} color="white" />
                 <ThemedText style={styles.customRatingText}>
                   {chaletRating.toFixed(1)}
                 </ThemedText>
-                <SolarStarBold size={18} color="white" />
               </View>
             </TouchableOpacity>
-
-            <SecondaryButton
-              label={t("chalet.details.reviews")}
-              iconLabel={String(reviewCount)}
-              iconPosition="right"
-              isActive={true}
-              onPress={() => router.push(`/chalet-details/reviews/${chaletId}`)}
-              style={{ flex: 1, marginHorizontal: 8 }}
-              height={46}
-              variant={isRTL ? "inverse" : undefined}
-            />
           </View>
 
           {/* المراجعات */}
@@ -803,13 +830,13 @@ export default function ChaletDetailScreen() {
                 <View
                   style={[
                     styles.revHeaderMerged,
-                    { flexDirection: "row-reverse" },
+                    { flexDirection: flexDir },
                   ]}
                 >
                   <View
                     style={[
                       styles.revRatingCornerMerged,
-                      { flexDirection: "row-reverse" },
+                      { flexDirection: flexDir },
                     ]}
                   >
                     <ThemedText style={styles.revRateNumMerged}>
@@ -820,7 +847,7 @@ export default function ChaletDetailScreen() {
                   <View
                     style={[
                       styles.userInfoRowMerged,
-                      { flexDirection: "row-reverse" },
+                      { flexDirection: flexDir },
                     ]}
                   >
                     <View
@@ -836,7 +863,7 @@ export default function ChaletDetailScreen() {
                       <ThemedText
                         style={[
                           styles.revMessageMerged,
-                          { textAlign: isRTL ? "right" : "left" },
+                           { textAlign: textStart },
                         ]}
                       >
                         {reviewComment}
@@ -895,7 +922,7 @@ export default function ChaletDetailScreen() {
           <View
             style={[
               styles.infoIconsGrid,
-              { flexDirection: "row", justifyContent: "flex-start" },
+              { flexDirection: flexDir, justifyContent: "flex-start" },
             ]}
           >
             {[
@@ -914,7 +941,7 @@ export default function ChaletDetailScreen() {
             ].map((item, i) => (
               <TouchableOpacity
                 key={i}
-                style={styles.infoIconCell}
+                style={[styles.infoIconCell, { flexDirection: flexDir }]}
                 onPress={item.onPress}
                 activeOpacity={0.7}
               >
@@ -926,7 +953,7 @@ export default function ChaletDetailScreen() {
                     <item.Icon size={24} color="white" />
                   </View>
                 </View>
-                <ThemedText style={styles.infoLabelText}>
+                <ThemedText style={[styles.infoLabelText, { marginHorizontal: 16 }]}>
                   {item.label}
                 </ThemedText>
               </TouchableOpacity>
@@ -960,8 +987,24 @@ export default function ChaletDetailScreen() {
 
       {/* الفوتر */}
       <View
-        style={[styles.flatUltimateFooter, { flexDirection: "row-reverse" }]}
+        style={[styles.flatUltimateFooter, { flexDirection: flexDir }]}
       >
+        <View style={[styles.footerTextSide]}>
+          <ThemedText style={styles.footerPriceBig}>
+            {displayPrice} {t("common.iqd")}
+          </ThemedText>
+          <View style={[styles.footerMetaRow, { flexDirection: flexDir }]}>
+            <SolarClockCircleBold size={12} color="#9CA3AF" />
+            <ThemedText style={styles.footerMetaSmall}>
+              {selectedShift
+                ? isRTL
+                  ? selectedShift.name?.ar || selectedShift.name
+                  : selectedShift.name?.en || selectedShift.name
+                : t("chalet.details.morningShift")}
+            </ThemedText>
+          </View>
+        </View>
+
         <View style={styles.footerBtnSide}>
           <PrimaryButton
             label={t("chalet.details.bookNow")}
@@ -974,21 +1017,6 @@ export default function ChaletDetailScreen() {
             }}
             style={styles.footerFlatBtn}
           />
-        </View>
-        <View style={[styles.footerTextSide, { alignItems: "flex-start" }]}>
-          <ThemedText style={styles.footerPriceBig}>
-            {displayPrice} {t("common.iqd")}
-          </ThemedText>
-          <View style={[styles.footerMetaRow, { flexDirection: "row" }]}>
-            <SolarClockCircleBold size={12} color="#9CA3AF" />
-            <ThemedText style={styles.footerMetaSmall}>
-              {selectedShift
-                ? isRTL
-                  ? selectedShift.name?.ar || selectedShift.name
-                  : selectedShift.name?.en || selectedShift.name
-                : t("chalet.details.morningShift")}
-            </ThemedText>
-          </View>
         </View>
       </View>
 

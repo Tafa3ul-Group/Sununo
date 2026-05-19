@@ -52,7 +52,7 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { useSelector } from 'react-redux';
-import { isRTL } from "@/i18n";
+import { isRTL, getFlexDirection } from "@/i18n";
 
 // ── Types ──
 interface ShiftPricing { dayOfWeek: number; price: number; }
@@ -392,8 +392,8 @@ export default function EditChaletScreen() {
   const nextStep = () => { if (!isStepValid) return; if (currentStep < steps.length - 1) setCurrentStep(currentStep + 1); };
   const prevStep = () => { if (currentStep > 0) setCurrentStep(currentStep - 1); };
 
-  const textAlign = isRTL ? 'right' : 'left';
-  const flexDirection = isRTL ? 'row-reverse' : 'row';
+  const textAlign = isRTL === I18nManager.isRTL ? 'left' : 'right';
+  const flexDirection = getFlexDirection(isRTL);
 
   const renderShiftRow = (shift: ShiftData, index: number) => {
     const isActive = shift.isActive;
@@ -401,7 +401,7 @@ export default function EditChaletScreen() {
     let icon = '☀️';
     if (shift.type === 'EVENING') icon = '🌙';
     if (shift.type === 'OVERNIGHT') icon = '🌙💤';
-    const flexDirection = isRTL ? 'row-reverse' : 'row';
+    const flexDirection = getFlexDirection(isRTL);
 
     return (
       <TouchableOpacity key={index} activeOpacity={0.8} onPress={() => toggleShiftActive(index)} style={[styles.shiftCardRow, isActive && styles.shiftCardRowActive]}>

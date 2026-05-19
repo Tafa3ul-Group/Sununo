@@ -3,6 +3,7 @@ import { ThemedText } from "@/components/themed-text";
 import { CircleBackButton } from "@/components/ui/circle-back-button";
 import { AuthToggle } from "@/components/user/auth-toggle";
 import { OtpInput } from "@/components/user/otp-input";
+import { SecondaryButton } from "@/components/user/secondary-button";
 import { normalize } from "@/constants/theme";
 import { isRTL } from "@/i18n";
 import {
@@ -22,7 +23,8 @@ import {
     ScrollView,
     StyleSheet,
     TextInput,
-    View
+    View,
+    I18nManager
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch } from "react-redux";
@@ -51,6 +53,7 @@ function StepProgress({ current, total }: { current: number; total: number }) {
 }
 
 export default function RegisterScreen() {
+  const textStart: "left" | "right" = isRTL === I18nManager.isRTL ? "left" : "right";
   const { t, i18n } = useTranslation();
     const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -281,7 +284,7 @@ export default function RegisterScreen() {
               <ThemedText
                 style={[
                   styles.stepTitle,
-                  { textAlign: isRTL ? "right" : "left" },
+                  { textAlign: textStart },
                 ]}
               >
                 {isRTL ? "المعلومات الأساسية" : "Basic Information"}
@@ -291,7 +294,7 @@ export default function RegisterScreen() {
                 <ThemedText
                   style={[
                     styles.label,
-                    { textAlign: isRTL ? "right" : "left" },
+                    { textAlign: textStart },
                   ]}
                 >
                   {t("auth.fullName")} *
@@ -299,7 +302,7 @@ export default function RegisterScreen() {
                 <TextInput
                   style={[
                     styles.input,
-                    { textAlign: isRTL ? "right" : "left" },
+                    { textAlign: textStart },
                   ]}
                   placeholder={
                     isRTL ? "ادخل اسمك الكامل" : "Enter your full name"
@@ -316,7 +319,7 @@ export default function RegisterScreen() {
                 <ThemedText
                   style={[
                     styles.label,
-                    { textAlign: isRTL ? "right" : "left" },
+                    { textAlign: textStart },
                   ]}
                 >
                   {t("auth.phone")} *
@@ -324,7 +327,7 @@ export default function RegisterScreen() {
                 <TextInput
                   style={[
                     styles.input,
-                    { textAlign: isRTL ? "right" : "left" },
+                    { textAlign: textStart },
                   ]}
                   placeholder="077XXXXXXXX"
                   value={formData.phone}
@@ -360,7 +363,7 @@ export default function RegisterScreen() {
               <ThemedText
                 style={[
                   styles.stepTitle,
-                  { textAlign: isRTL ? "right" : "left" },
+                  { textAlign: textStart },
                 ]}
               >
                 {isRTL ? "معلومات الشاليه" : "Chalet Information"}
@@ -370,7 +373,7 @@ export default function RegisterScreen() {
                 <ThemedText
                   style={[
                     styles.label,
-                    { textAlign: isRTL ? "right" : "left" },
+                    { textAlign: textStart },
                   ]}
                 >
                   {isRTL
@@ -380,7 +383,7 @@ export default function RegisterScreen() {
                 <TextInput
                   style={[
                     styles.input,
-                    { textAlign: isRTL ? "right" : "left" },
+                    { textAlign: textStart },
                   ]}
                   placeholder={
                     isRTL ? "مثلاً: شاليه النخيل" : "e.g. Al Nakheel Chalet"
@@ -397,7 +400,7 @@ export default function RegisterScreen() {
                 <ThemedText
                   style={[
                     styles.label,
-                    { textAlign: isRTL ? "right" : "left" },
+                    { textAlign: textStart },
                   ]}
                 >
                   {isRTL
@@ -407,7 +410,7 @@ export default function RegisterScreen() {
                 <TextInput
                   style={[
                     styles.input,
-                    { textAlign: isRTL ? "right" : "left" },
+                    { textAlign: textStart },
                   ]}
                   placeholder={
                     isRTL
@@ -426,7 +429,7 @@ export default function RegisterScreen() {
                 <ThemedText
                   style={[
                     styles.label,
-                    { textAlign: isRTL ? "right" : "left" },
+                    { textAlign: textStart },
                   ]}
                 >
                   {isRTL
@@ -436,7 +439,7 @@ export default function RegisterScreen() {
                 <TextInput
                   style={[
                     styles.input,
-                    { textAlign: isRTL ? "right" : "left" },
+                    { textAlign: textStart },
                   ]}
                   placeholder="CR-XXXXXX"
                   value={formData.commercialRegNo}
@@ -464,15 +467,15 @@ export default function RegisterScreen() {
               <ThemedText
                 style={[
                   styles.stepTitle,
-                  { textAlign: isRTL ? "right" : "left" },
+                  { textAlign: textStart },
                 ]}
               >
                 {isRTL ? "التحقق من الهاتف" : "Verify Phone"}
               </ThemedText>
               <ThemedText
                 style={[
-                  styles.stepSubtitle,
-                  { textAlign: isRTL ? "right" : "left" },
+                   styles.stepSubtitle,
+                   { textAlign: textStart },
                 ]}
               >
                 {isRTL

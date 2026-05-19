@@ -6,7 +6,7 @@ import {
 import { ThemedText } from "@/components/themed-text";
 import { HorizontalCard } from "@/components/user/horizontal-card";
 import { Colors } from "@/constants/theme";
-import { isRTL } from "@/i18n";
+import { isRTL, getFlexDirection } from "@/i18n";
 import { useBrowseCustomerChaletsQuery } from "@/store/api/customerApiSlice";
 import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
@@ -17,7 +17,8 @@ import {
     StyleSheet,
     TextInput,
     TouchableOpacity,
-    View
+    View,
+    I18nManager
 } from "react-native";
 import {
     useSafeAreaInsets
@@ -25,6 +26,8 @@ import {
 
 export default function SearchScreen() {
   const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === "ar";
+  const textStart: "left" | "right" = isArabic ? "right" : "left";
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const insets = useSafeAreaInsets();
@@ -39,7 +42,7 @@ export default function SearchScreen() {
     const data = chaletsResponse?.data || [];
     return data.map((chalet: any) => ({
       id: chalet.id,
-      title: isRTL
+      title: isArabic
         ? chalet.name?.ar || chalet.nameAr || chalet.name || ""
         : chalet.name?.en || chalet.nameEn || chalet.name || "",
       location: isRTL
@@ -80,13 +83,13 @@ export default function SearchScreen() {
       />
 
       <View style={styles.searchContainer}>
-        <View style={[styles.searchBar, { flexDirection: "row" }]}>
+        <View style={[styles.searchBar, { flexDirection: getFlexDirection(isArabic) }]}>
           <SolarMagnifierBold size={20} color={Colors.primary} />
           <TextInput
             placeholder={t("home.searchPlaceholder")}
             style={[
               styles.searchInput,
-              { textAlign: isRTL ? "right" : "left" },
+              { textAlign: textStart },
             ]}
             value={searchQuery}
             onChangeText={setSearchQuery}

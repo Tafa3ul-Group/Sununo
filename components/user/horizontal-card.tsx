@@ -74,13 +74,20 @@ export function HorizontalCard({
 
   const config = SHAPES_CONFIG[shapeIndex % SHAPES_CONFIG.length];
 
+  const isArabic = i18n.language ? i18n.language.startsWith("ar") : false;
+  const textStart: "left" | "right" = isArabic ? "right" : "left";
+  const containerDir: "row" | "row-reverse" = isArabic ? "row" : "row-reverse";
+  const topRowDir: "row" | "row-reverse" = isArabic ? "row" : "row-reverse";
+  const bottomRowDir: "row" | "row-reverse" = isArabic ? "row-reverse" : "row";
+  const ratingBoxDir: "row" | "row-reverse" = isArabic ? "row" : "row-reverse";
+
   return (
     <TouchableOpacity
       activeOpacity={0.9}
       onPress={onPress}
       style={[
         styles.container,
-        { flexDirection: 'row-reverse' },
+        { flexDirection: containerDir },
         style,
       ]}
     >
@@ -90,7 +97,7 @@ export function HorizontalCard({
         <View
           style={[
             styles.topRow,
-            { flexDirection: 'row-reverse' },
+            { flexDirection: topRowDir },
           ]}
         >
           <View style={styles.leftColumn}>
@@ -111,15 +118,15 @@ export function HorizontalCard({
             <View
               style={[
                 styles.upperText,
-                { alignItems: 'flex-start' },
+                { alignItems: isArabic ? 'flex-end' : 'flex-start' },
               ]}
             >
               <ThemedText
-                style={[styles.title, { textAlign: isRTL ? "right" : "left" }]}
+                style={[styles.title, { textAlign: textStart }]}
                 numberOfLines={1}
               >
                 {typeof chalet.title === "object"
-                  ? isRTL
+                  ? isArabic
                     ? chalet.title.ar
                     : chalet.title.en
                   : chalet.title}
@@ -127,12 +134,12 @@ export function HorizontalCard({
               <ThemedText
                 style={[
                   styles.location,
-                  { textAlign: isRTL ? "right" : "left" },
+                  { textAlign: textStart },
                 ]}
                 numberOfLines={1}
               >
                 {typeof chalet.location === "object"
-                  ? isRTL
+                  ? isArabic
                     ? chalet.location.ar
                     : chalet.location.en
                   : chalet.location}
@@ -145,13 +152,13 @@ export function HorizontalCard({
         <View
           style={[
             styles.bottomRow,
-            { flexDirection: 'row-reverse' },
+            { flexDirection: bottomRowDir },
           ]}
         >
           <View
             style={[
               styles.ratingBox,
-              { flexDirection: 'row' },
+              { flexDirection: ratingBoxDir, gap: 4 },
             ]}
           >
             <ThemedText style={styles.ratingText}>
@@ -170,13 +177,13 @@ export function HorizontalCard({
             ]}
           >
             <ThemedText style={styles.price}>
-              {isRTL ? "" : "IQD "}
+              {isArabic ? "" : "IQD "}
               {chalet.price}
-              {isRTL ? " د.ع" : ""}
+              {isArabic ? " د.ع" : ""}
             </ThemedText>
             <ThemedText style={styles.priceLabel}>
               {" "}
-              / {isRTL ? "شفت" : "Shift"}
+              / {isArabic ? "شفت" : "Shift"}
             </ThemedText>
           </View>
         </View>

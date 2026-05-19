@@ -15,7 +15,7 @@ import { HeaderSection } from "@/components/header-section";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
-import { isRTL } from "@/i18n";
+import { getFlexDirection } from "@/i18n";
 
 export default function ChaletInfoScreen() {
   const { id, type } = useLocalSearchParams<{
@@ -23,6 +23,7 @@ export default function ChaletInfoScreen() {
     type: "terms" | "policies";
   }>();
   const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === "ar";
     const router = useRouter();
   const { userType } = useSelector((state: RootState) => state.auth);
 
@@ -35,19 +36,19 @@ export default function ChaletInfoScreen() {
 
   const isLoading = isTermsLoading || isPoliciesLoading;
   const title = type === "terms" 
-    ? (isRTL ? "شروط وقوانين الشاليه" : "Chalet Terms & Conditions") 
-    : (isRTL ? "شروط وقوانين الشاليه" : "Chalet Rules");
+    ? (isArabic ? "شروط وقوانين الشاليه" : "Chalet Terms & Conditions") 
+    : (isArabic ? "شروط وقوانين الشاليه" : "Chalet Rules");
   const Icon = type === "terms" ? SolarKeyBold : SolarForbiddenBold;
 
   const getContent = () => {
     if (type === "terms") {
-      const termsText = isRTL ? terms?.ar || terms : terms?.en || terms;
+      const termsText = isArabic ? terms?.ar || terms : terms?.en || terms;
       const tStr = typeof termsText === "string" ? termsText : termsText?.ar || termsText?.en || "";
       
-      const policiesText = isRTL ? terms?.policiesAr : terms?.policiesEn || terms?.policiesAr;
+      const policiesText = isArabic ? terms?.policiesAr : terms?.policiesEn || terms?.policiesAr;
       const pStr = typeof policiesText === "string" ? policiesText : "";
       
-      const cancellationText = isRTL ? terms?.cancellationAr : terms?.cancellationEn || terms?.cancellationAr;
+      const cancellationText = isArabic ? terms?.cancellationAr : terms?.cancellationEn || terms?.cancellationAr;
       const cStr = typeof cancellationText === "string" ? cancellationText : "";
 
       if (!pStr && !cStr) {
@@ -71,7 +72,7 @@ export default function ChaletInfoScreen() {
           {pStr ? (
             <View>
               <ThemedText style={styles.sectionTitle}>
-                {isRTL ? "السياسات العامة" : "General Policies"}
+                {isArabic ? "السياسات العامة" : "General Policies"}
               </ThemedText>
               <ThemedText style={styles.content}>
                 {pStr}
@@ -83,7 +84,7 @@ export default function ChaletInfoScreen() {
           {cStr ? (
             <View>
               <ThemedText style={styles.sectionTitle}>
-                {isRTL ? "سياسة الإلغاء" : "Cancellation Policy"}
+                {isArabic ? "سياسة الإلغاء" : "Cancellation Policy"}
               </ThemedText>
               <ThemedText style={styles.content}>
                 {cStr}
@@ -104,18 +105,14 @@ export default function ChaletInfoScreen() {
         return (
           <View>
             {policiesData.map((rule: any, idx: number) => {
-              const ruleTitle = isRTL
-                ? rule.title?.ar || rule.title || ""
-                : rule.title?.en || rule.title || "";
-              const ruleDesc = isRTL
-                ? rule.description?.ar || rule.description || ""
-                : rule.description?.en || rule.description || "";
-
+              const ruleTitle = isArabic ? rule.title?.ar || rule.title : rule.title?.en || rule.title;
+              const ruleDesc = isArabic ? rule.description?.ar || rule.description : rule.description?.en || rule.description;
+              
               return (
-                <View key={idx} style={styles.ruleItem}>
-                  <View style={[styles.ruleHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <View key={rule.id || idx} style={styles.ruleItem}>
+                  <View style={[styles.ruleHeader, { flexDirection: getFlexDirection(isArabic) }]}>
                     <View style={styles.ruleBullet} />
-                    <ThemedText style={styles.ruleTitleText}>
+                    <ThemedText style={[styles.ruleTitleText, { textAlign: isArabic ? "right" : "left" }]}>
                       {ruleTitle}
                     </ThemedText>
                   </View>
@@ -133,8 +130,8 @@ export default function ChaletInfoScreen() {
       // Fallback if policiesData is not an array (e.g. old structure)
       const p = (policiesData as any)?.policies;
       const cp = (policiesData as any)?.cancellationPolicy;
-      const policiesText = isRTL ? p?.ar || p : p?.en || p;
-      const cancelText = isRTL ? cp?.ar || cp : cp?.en || cp;
+      const policiesText = isArabic ? p?.ar || p : p?.en || p;
+      const cancelText = isArabic ? cp?.ar || cp : cp?.en || cp;
 
       const pStr =
         typeof policiesText === "string"
@@ -148,7 +145,7 @@ export default function ChaletInfoScreen() {
       return (
         <View>
           <ThemedText style={styles.sectionTitle}>
-            {isRTL ? "سياسات عامة" : "General Policies"}
+            {isArabic ? "سياسات عامة" : "General Policies"}
           </ThemedText>
           <ThemedText style={styles.content}>
             {pStr || t("common.noData")}
@@ -157,7 +154,7 @@ export default function ChaletInfoScreen() {
           <View style={styles.divider} />
 
           <ThemedText style={styles.sectionTitle}>
-            {isRTL ? "سياسة الإلغاء" : "Cancellation Policy"}
+            {isArabic ? "سياسة الإلغاء" : "Cancellation Policy"}
           </ThemedText>
           <ThemedText style={styles.content}>
             {cStr || t("common.noData")}
@@ -272,7 +269,6 @@ const styles = StyleSheet.create({
     fontFamily: "Alexandria-Medium",
     color: "#111827",
     flex: 1,
-    textAlign: "left",
   },
   ruleDescText: {
     fontSize: 13,

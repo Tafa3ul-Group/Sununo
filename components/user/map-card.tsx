@@ -4,7 +4,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SolarCloseCircleBold, SolarStarBold } from "@/components/icons/solar-icons";
-import { isRTL } from "@/i18n";
+import { isRTL, getFlexDirection } from "@/i18n";
 
 interface MapCardProps {
   title: string;
@@ -25,14 +25,17 @@ export const MapCard = ({
   onPress,
   onClose }: MapCardProps) => {
   const { i18n } = useTranslation();
-  
+  const isArabic = i18n.language === "ar";
+  const rowDir = getFlexDirection(isArabic);
+  // for row-reverse, we invert the language check
+  const rowReverseDir = getFlexDirection(!isArabic);
   return (
     <TouchableOpacity
       activeOpacity={0.9}
       onPress={onPress}
       style={[
         styles.container,
-        { flexDirection: 'row' },
+        { flexDirection: rowDir },
       ]}
     >
       <Image source={{ uri: image }} style={styles.image} />
@@ -41,7 +44,7 @@ export const MapCard = ({
         <View
           style={[
             styles.header,
-            { flexDirection: 'row-reverse' },
+            { flexDirection: rowReverseDir },
           ]}
         >
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
@@ -54,15 +57,14 @@ export const MapCard = ({
             ]}
           >
             <ThemedText
-              style={[styles.title, { textAlign: isRTL ? "right" : "left" }]}
+              style={[styles.title, { textAlign: isArabic ? "right" : "left" }]}
               numberOfLines={1}
             >
               {title}
             </ThemedText>
             <ThemedText
-              style={[
                 styles.location,
-                { textAlign: isRTL ? "right" : "left" },
+                { textAlign: isArabic ? "right" : "left" },
               ]}
               numberOfLines={1}
             >
@@ -74,22 +76,22 @@ export const MapCard = ({
         <View
           style={[
             styles.footer,
-            { flexDirection: 'row-reverse' },
+            { flexDirection: rowReverseDir },
           ]}
         >
           <View
             style={[
               styles.ratingContainer,
-              { flexDirection: 'row-reverse' },
+              { flexDirection: rowReverseDir },
             ]}
           >
             <Text style={styles.rating}>{rating}</Text>
             <SolarStarBold size={14} color="#035DF9" />
           </View>
           <ThemedText
-            style={[styles.price, { textAlign: isRTL ? "right" : "left" }]}
+            style={[styles.price, { textAlign: isArabic ? "right" : "left" }]}
           >
-            {price} {isRTL ? "/ شفت" : "/ shift"}
+            {price} {isArabic ? "/ شفت" : "/ shift"}
           </ThemedText>
         </View>
       </View>

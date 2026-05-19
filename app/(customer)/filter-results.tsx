@@ -11,7 +11,7 @@ import { ThemedText } from "@/components/themed-text";
 import { HorizontalCard } from "@/components/user/horizontal-card";
 import { Colors, Shadows } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
-import { isRTL } from "@/i18n";
+import { isRTL, getFlexDirection } from "@/i18n";
 import { RootState } from "@/store";
 import { unwrapListResponse } from "@/store/api/apiSlice";
 import {
@@ -29,7 +29,8 @@ import {
     FlatList,
     StyleSheet,
     TouchableOpacity,
-    View
+    View,
+    I18nManager
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
@@ -39,7 +40,8 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 export default function FilterResultsScreen() {
   const router = useRouter();
   const dispatch = useDispatch();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === "ar";
   const insets = useSafeAreaInsets();
 
   // Read active filters from Redux store
@@ -95,7 +97,7 @@ export default function FilterResultsScreen() {
 
       return {
         id: chalet.id,
-        title: isRTL
+        title: isArabic
           ? chalet.name?.ar || chalet.nameAr || chalet.name || ""
           : chalet.name?.en || chalet.nameEn || chalet.name || "",
         location: isRTL
@@ -224,9 +226,9 @@ export default function FilterResultsScreen() {
             showsHorizontalScrollIndicator={false}
             data={activePills}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.pillsList}
+            contentContainerStyle={[styles.pillsList, { flexDirection: getFlexDirection(isArabic) }]}
             renderItem={({ item }) => (
-              <View style={styles.pill}>
+              <View style={[styles.pill, { flexDirection: getFlexDirection(isArabic) }]}>
                 {item.icon}
                 <ThemedText style={styles.pillText}>{item.text}</ThemedText>
                 <TouchableOpacity

@@ -69,6 +69,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  I18nManager,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
@@ -76,7 +77,7 @@ import { useDispatch, useSelector } from "react-redux";
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const MAPBOX_ACCESS_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
-import { isRTL } from "@/i18n";
+import { isRTL, getFlexDirection } from "@/i18n";
 import { useGetChaletsMapQuery } from "@/store/api/apiSlice";
 
 const SHAPES = {
@@ -212,13 +213,16 @@ function ActiveFilterBanner({
 }
 
 export default function ExploreScreen() {
+  const { language, isAuthenticated, user, userType } = useSelector(
+    (state: RootState) => state.auth,
+  );
+  const isRTL = language === "ar";
+  const textStart: "left" | "right" = isRTL ? "right" : "left";
+  const flexDir: "row" | "row-reverse" = (isRTL === I18nManager.isRTL) ? "row" : "row-reverse";
   const router = useRouter();
   const { id, showMyLocation } = useLocalSearchParams();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const { language, isAuthenticated, user } = useSelector(
-    (state: RootState) => state.auth,
-  );
 
   // Map State
   const [zoom, setZoom] = useState(6);
@@ -498,8 +502,16 @@ export default function ExploreScreen() {
             ]}
           >
             <View
-              style={[styles.footerContent, { flexDirection: "row-reverse" }]}
+              style={[styles.footerContent, { flexDirection: flexDir }]}
             >
+              <View style={[styles.priceContainer, { alignItems: isRTL ? "flex-end" : "flex-start", justifyContent: "center" }]}>
+                <ThemedText style={[styles.footerPrice, { textAlign: textStart }]}>
+                  {isRTL ? "" : "IQD "}
+                  {selectedChalet.price}
+                  {isRTL ? " د.ع" : ""}
+                </ThemedText>
+              </View>
+
               <PrimaryButton
                 label={isRTL ? "احجز الان" : "Book Now"}
                 onPress={() => {
@@ -514,12 +526,6 @@ export default function ExploreScreen() {
                 }}
                 style={{ width: normalize.width(140) }}
               />
-
-              <View style={styles.priceContainer}>
-                <ThemedText style={styles.footerPrice}>
-                  {selectedChalet.price} IQD
-                </ThemedText>
-              </View>
             </View>
           </View>
         </BottomSheetFooter>
@@ -645,7 +651,7 @@ export default function ExploreScreen() {
             <TextInput
               style={[
                 styles.searchInput,
-                { textAlign: isRTL ? "right" : "left" },
+                { textAlign: textStart },
               ]}
               placeholder={
                 isRTL
@@ -798,7 +804,7 @@ export default function ExploreScreen() {
               </View>
 
               <View
-                style={[styles.mainInfoRow, { flexDirection: "row-reverse" }]}
+                style={[styles.mainInfoRow, { flexDirection: flexDir }]}
               >
                 {/* Rating */}
                 <View style={styles.ratingSection}>
@@ -1043,7 +1049,7 @@ export default function ExploreScreen() {
                               fontSize: 14,
                               color: "#64748B",
                               lineHeight: 22,
-                              textAlign: isRTL ? "right" : "left",
+                              textAlign: textStart,
                             }}
                           >
                             {isRTL
@@ -1148,7 +1154,7 @@ export default function ExploreScreen() {
                                   style={[
                                     styles.revHeaderMerged,
                                     {
-                                      flexDirection: "row-reverse",
+                                      flexDirection: flexDir,
                                     },
                                   ]}
                                 >
@@ -1156,7 +1162,7 @@ export default function ExploreScreen() {
                                     style={[
                                       styles.revRatingCornerMerged,
                                       {
-                                        flexDirection: "row-reverse",
+                                        flexDirection: flexDir,
                                       },
                                     ]}
                                   >
@@ -1172,7 +1178,7 @@ export default function ExploreScreen() {
                                     style={[
                                       styles.userInfoRowMerged,
                                       {
-                                        flexDirection: "row-reverse",
+                                        flexDirection: flexDir,
                                       },
                                     ]}
                                   >
@@ -1196,7 +1202,7 @@ export default function ExploreScreen() {
                                         style={[
                                           styles.revMessageMerged,
                                           {
-                                            textAlign: isRTL ? "right" : "left",
+                                             textAlign: textStart,
                                           },
                                         ]}
                                       >
@@ -1321,7 +1327,7 @@ export default function ExploreScreen() {
             <BottomSheetTextInput
               style={[
                 styles.modalInput,
-                { textAlign: isRTL ? "right" : "left" },
+                { textAlign: textStart },
               ]}
               placeholder={isRTL ? "مثلاً: 5" : "e.g. 5"}
               keyboardType="numeric"
@@ -1338,7 +1344,7 @@ export default function ExploreScreen() {
               <BottomSheetTextInput
                 style={[
                   styles.modalInput,
-                  { flex: 1, textAlign: isRTL ? "right" : "left" },
+                  { flex: 1, textAlign: textStart },
                 ]}
                 placeholder={isRTL ? "من" : "Min"}
                 keyboardType="numeric"
@@ -1349,7 +1355,7 @@ export default function ExploreScreen() {
               <BottomSheetTextInput
                 style={[
                   styles.modalInput,
-                  { flex: 1, textAlign: isRTL ? "right" : "left" },
+                  { flex: 1, textAlign: textStart },
                 ]}
                 placeholder={isRTL ? "إلى" : "Max"}
                 keyboardType="numeric"
