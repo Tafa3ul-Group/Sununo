@@ -6,6 +6,7 @@ import { ThemedText } from "@/components/themed-text";
 import { AuthToggle } from "@/components/user/auth-toggle";
 import { OtpInput } from "@/components/user/otp-input";
 import { PrimaryButton } from "@/components/user/primary-button";
+import { SecondaryButton } from "@/components/user/secondary-button";
 import { RootState } from "@/store";
 import { useLoginMutation, useVerifyPhoneMutation } from "@/store/api/apiSlice";
 import { setCredentials, setUserType } from "@/store/authSlice";
@@ -324,13 +325,35 @@ export function LoginScreen() {
               </View>
             )}
 
-            <PrimaryButton
-              label={step === "phone" ? t('auth.login') : t('auth.verify')}
-              onPress={handleAction}
-              style={styles.loginBtn}
-              activeColor="#0061FE"
-              loading={isLoginLoading || isVerifyLoading}
-            />
+            {step === "phone" ? (
+              <PrimaryButton
+                label={t('auth.login')}
+                onPress={handleAction}
+                style={styles.loginBtn}
+                activeColor="#0061FE"
+                loading={isLoginLoading}
+              />
+            ) : (
+              <View style={styles.actionsRow}>
+                <SecondaryButton
+                  label={isArabic ? "تعديل الرقم" : "Edit Number"}
+                  onPress={() => {
+                    setStep("phone");
+                    setDevAutoFilled(false);
+                  }}
+                  isActive={false}
+                  style={{ flex: 1 }}
+                />
+                <SecondaryButton
+                  label={t('auth.verify')}
+                  onPress={handleAction}
+                  isActive={true}
+                  isLoading={isVerifyLoading}
+                  style={{ flex: 1 }}
+                  variant="inverse"
+                />
+              </View>
+            )}
 
             {!isOwner && (
               <TouchableOpacity 
@@ -420,6 +443,11 @@ const styles = StyleSheet.create({
     paddingVertical: normalize.height(12),
     shadowOpacity: 0,
     elevation: 0 },
+  actionsRow: {
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 16,
+    width: "100%" },
   guestLink: {
     marginTop: 24,
     width: "100%",
