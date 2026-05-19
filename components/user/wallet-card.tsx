@@ -51,15 +51,15 @@ export const WalletCard = ({
         </View>
 
         <View style={[styles.bottomRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
+          <View style={[styles.balanceContainer, { flexDirection: isRTL ? 'row' : 'row-reverse', paddingHorizontal: normalize.width(25) }]}>
+            <ThemedText style={styles.balanceValue}>{balance}</ThemedText>
+            <ThemedText style={styles.currencyText}>{t("common.iqd")}</ThemedText>
+          </View>
           <TouchableOpacity style={styles.withdrawButton} onPress={onWithdraw} activeOpacity={0.8}>
             <ThemedText style={styles.withdrawText}>
               {t("profile.wallet.withdraw")}
             </ThemedText>
           </TouchableOpacity>
-          <View style={[styles.balanceContainer, { flexDirection: isRTL ? 'row' : 'row-reverse', paddingHorizontal: normalize.width(25) }]}>
-            <ThemedText style={styles.balanceValue}>{balance}</ThemedText>
-            <ThemedText style={styles.currencyText}>{t("common.iqd")}</ThemedText>
-          </View>
         </View>
       </View>
     </View>

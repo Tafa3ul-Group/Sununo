@@ -1034,39 +1034,41 @@ export default function ChaletDetailScreen() {
       </ScrollView>
 
       {/* الفوتر */}
-      <View style={[styles.flatUltimateFooter, { flexDirection: flexDir }]}>
-        <View style={[styles.footerTextSide, { alignItems: alignStart }]}>
-          <ThemedText style={[styles.footerPriceBig, { textAlign: textStart }]}>
-            {displayPrice} {t("common.iqd")}
-          </ThemedText>
-          <View style={[styles.footerMetaRow, { flexDirection: flexDir }]}>
-            <SolarClockCircleBold size={12} color="#9CA3AF" />
-            <ThemedText
-              style={[styles.footerMetaSmall, { textAlign: textStart }]}
-            >
-              {selectedShift
-                ? isRTL
-                  ? selectedShift.name?.ar || selectedShift.name
-                  : selectedShift.name?.en || selectedShift.name
-                : t("chalet.details.morningShift")}
+      {availableShifts && availableShifts.length > 0 && (
+        <View style={[styles.flatUltimateFooter, { flexDirection: flexDir }]}>
+          <View style={[styles.footerTextSide, { alignItems: alignStart }]}>
+            <ThemedText style={[styles.footerPriceBig, { textAlign: textStart }]}>
+              {displayPrice} {t("common.iqd")}
             </ThemedText>
+            <View style={[styles.footerMetaRow, { flexDirection: flexDir }]}>
+              <SolarClockCircleBold size={12} color="#9CA3AF" />
+              <ThemedText
+                style={[styles.footerMetaSmall, { textAlign: textStart }]}
+              >
+                {selectedShift
+                  ? isRTL
+                    ? selectedShift.name?.ar || selectedShift.name
+                    : selectedShift.name?.en || selectedShift.name
+                  : t("chalet.details.morningShift")}
+              </ThemedText>
+            </View>
+          </View>
+
+          <View style={styles.footerBtnSide}>
+            <PrimaryButton
+              label={t("chalet.details.bookNow")}
+              onPress={() => {
+                if (userType === "guest") {
+                  setShowLoginPrompt(true);
+                } else {
+                  router.push(`/(customer)/booking/complete?id=${chaletId}`);
+                }
+              }}
+              style={styles.footerFlatBtn}
+            />
           </View>
         </View>
-
-        <View style={styles.footerBtnSide}>
-          <PrimaryButton
-            label={t("chalet.details.bookNow")}
-            onPress={() => {
-              if (userType === "guest") {
-                setShowLoginPrompt(true);
-              } else {
-                router.push(`/(customer)/booking/complete?id=${chaletId}`);
-              }
-            }}
-            style={styles.footerFlatBtn}
-          />
-        </View>
-      </View>
+      )}
 
       <ReviewSubmissionSheet
         ref={reviewSheetRef}
