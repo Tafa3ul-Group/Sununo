@@ -119,6 +119,8 @@ export default function ChaletDetailScreen() {
   // textStart: dynamic alignment accounting for React Native native mirroring
   const textStart: "left" | "right" =
     isRTL === I18nManager.isRTL ? "left" : "right";
+  const textEnd: "left" | "right" =
+    isRTL === I18nManager.isRTL ? "right" : "left";
   // flexDir: dynamic flexDirection accounting for native mirroring
   const flexDir: "row" | "row-reverse" =
     isRTL === I18nManager.isRTL ? "row" : "row-reverse";
@@ -599,9 +601,9 @@ export default function ChaletDetailScreen() {
             ))}
           </View>
 
-          {/* الشفتات المتوفرة */}
+          {/* الفترات المتوفرة */}
           <SectionHeader
-            title={isRTL ? "الشفتات المتوفرة" : "Available Shifts"}
+            title={isRTL ? "الفترات المتوفرة" : "Available Periods"}
             isRTL={isRTL}
           />
           <View style={styles.shiftsGrid}>
@@ -638,22 +640,22 @@ export default function ChaletDetailScreen() {
                     <View
                       style={[
                         styles.shiftInfo,
-                        { alignItems: "flex-start", marginHorizontal: 12 },
+                        { alignItems: alignStart, marginHorizontal: 12 },
                       ]}
                     >
-                      <ThemedText style={styles.shiftName}>
+                      <ThemedText style={[styles.shiftName, { textAlign: textStart }]}>
                         {isRTL
                           ? shift.name?.ar || shift.name
                           : shift.name?.en || shift.name}
                       </ThemedText>
-                      <ThemedText style={styles.shiftTime}>
+                      <ThemedText style={[styles.shiftTime, { textAlign: textStart }]}>
                         {formatShiftTime(shift.startTime)} -{" "}
                         {formatShiftTime(shift.endTime)}
                       </ThemedText>
                     </View>
                     {minShiftPrice && (
-                      <View style={{ alignItems: "flex-end" }}>
-                        <ThemedText style={styles.shiftPrice}>
+                      <View style={{ alignItems: alignEnd }}>
+                        <ThemedText style={[styles.shiftPrice, { textAlign: textEnd }]}>
                           {minShiftPrice} {t("common.iqd")}
                         </ThemedText>
                       </View>
