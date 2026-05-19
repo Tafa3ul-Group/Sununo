@@ -139,6 +139,7 @@ export default function ChaletDetailScreen() {
   const {
     data: chaletData,
     isLoading,
+    isFetching,
     error,
     refetch,
   } = useGetCustomerChaletDetailsQuery(chaletId, {
@@ -386,7 +387,7 @@ export default function ChaletDetailScreen() {
     return [];
   }, [chalet.chaletFeatures, chalet.amenities, isRTL]);
 
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return (
       <View
         style={[
