@@ -987,7 +987,7 @@ export default function CompleteBookingScreen() {
   const renderCalendarSheet = () => (
     <BottomSheetModal
       ref={calendarSheetRef}
-      snapPoints={["70%"]}
+      snapPoints={["65%"]}
       backdropComponent={(props) => (
         <BottomSheetBackdrop
           {...props}
@@ -998,28 +998,27 @@ export default function CompleteBookingScreen() {
       handleIndicatorStyle={{ backgroundColor: "#CBD5E1", width: 40 }}
     >
       <BottomSheetView
-        style={[styles.calendarSheetContent, { paddingTop: 40 }]}
+        style={{ paddingHorizontal: 16, paddingTop: 10, flex: 1 }}
       >
-        <View style={styles.calendarCardDrawer}>
-          <RangeCalendar
-            onSelect={handleCalendarSelect}
-            initialStartDate={selectedStartDate ?? undefined}
-            initialEndDate={selectedEndDate ?? undefined}
-            reservedDates={bookedDateStrings}
-            selectionMode="single"
+        <RangeCalendar
+          onSelect={handleCalendarSelect}
+          initialStartDate={selectedStartDate ?? undefined}
+          initialEndDate={selectedEndDate ?? undefined}
+          reservedDates={bookedDateStrings}
+          selectionMode="single"
+        />
+        <View style={{ marginTop: 20, paddingHorizontal: 4 }}>
+          <PrimaryButton
+            label={isArabic ? "تم" : "Done"}
+            onPress={() => calendarSheetRef.current?.dismiss()}
+            style={{
+              width: "100%",
+              shadowOpacity: 0,
+              elevation: 0,
+              height: 54,
+              borderRadius: 12,
+            }}
           />
-          <View style={{ marginTop: 20 }}>
-            <PrimaryButton
-              label={isArabic ? "تم" : "Done"}
-              onPress={() => calendarSheetRef.current?.dismiss()}
-              style={{
-                width: "100%",
-                shadowOpacity: 0,
-                elevation: 0,
-                height: 56,
-              }}
-            />
-          </View>
         </View>
       </BottomSheetView>
     </BottomSheetModal>
