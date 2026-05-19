@@ -75,7 +75,7 @@ export function HeaderSection({
   const isArabic = i18n.language ? i18n.language.startsWith("ar") : false;
 
   const [logoStateIndex, setLogoStateIndex] = React.useState(0);
-  const logoColors = [Colors.primary, "#F64200", "#15AB64", "#EF4444"];
+  const logoColors = [Colors.primary, "#EF4444", "#15AB64"];
   const [currentLogoAr, setCurrentLogoAr] = React.useState(isArabic);
 
   React.useEffect(() => {
