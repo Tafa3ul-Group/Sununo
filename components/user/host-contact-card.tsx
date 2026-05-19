@@ -58,25 +58,25 @@ export const HostContactCard: React.FC<HostContactCardProps> = ({
         )}
       </Svg>
 
-      <View style={[styles.contentOverlay, { flexDirection: "row" }]}>
+      <View style={[styles.contentOverlay, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
         <View
           style={[
             styles.infoColumn,
             {
-              alignItems: "flex-start",
-              marginLeft: 85 * SCALE,
-              marginRight: 15 * SCALE,
+              alignItems: isRTL ? "flex-end" : "flex-start",
+              marginLeft: isRTL ? 15 * SCALE : 85 * SCALE,
+              marginRight: isRTL ? 85 * SCALE : 15 * SCALE,
             },
           ]}
         >
-          <ThemedText style={styles.hostLabel}>
+          <ThemedText style={[styles.hostLabel, { textAlign: isRTL ? "right" : "left" }]}>
             {isRTL ? "المضيف" : "Host"}
           </ThemedText>
-          <ThemedText style={styles.hostName} numberOfLines={1}>
+          <ThemedText style={[styles.hostName, { textAlign: isRTL ? "right" : "left" }]} numberOfLines={1}>
             {name}
           </ThemedText>
           {phone ? (
-            <ThemedText style={styles.hostPhone} numberOfLines={1}>
+            <ThemedText style={[styles.hostPhone, { textAlign: isRTL ? "right" : "left" }]} numberOfLines={1}>
               {phone}
             </ThemedText>
           ) : null}
@@ -86,7 +86,7 @@ export const HostContactCard: React.FC<HostContactCardProps> = ({
         <View
           style={[
             styles.avatarContainer,
-            { left: 12.3 * SCALE },
+            isRTL ? { right: 12.3 * SCALE, left: "auto" } : { left: 12.3 * SCALE, right: "auto" },
           ]}
         >
           <ExpoImage source={avatar} style={styles.avatar} contentFit="cover" />

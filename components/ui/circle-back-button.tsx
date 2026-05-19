@@ -21,7 +21,7 @@ export function CircleBackButton({ style, onPress }: CircleBackButtonProps) {
   const { i18n } = useTranslation();
   const { userType } = useSelector((state: RootState) => state.auth);
   const isArabic = i18n.language ? i18n.language.startsWith("ar") : false;
-  const backPath = (isArabic === I18nManager.isRTL) ? EN_BACK_PATH : AR_BACK_PATH;
+  const backPath = (isArabic === I18nManager.isRTL) ? AR_BACK_PATH : EN_BACK_PATH;
 
   const handleBack = () => {
     if (onPress) {

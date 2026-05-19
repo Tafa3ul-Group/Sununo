@@ -460,14 +460,18 @@ export default function ChaletDetailScreen() {
           <CircleBackButton
             style={[
               styles.backBtnOriginal,
-              I18nManager.isRTL ? { right: 20, left: "auto" } : { left: 20, right: "auto" },
+              isRTL
+                ? (I18nManager.isRTL ? { left: 20, right: "auto" } : { right: 20, left: "auto" })
+                : (I18nManager.isRTL ? { right: 20, left: "auto" } : { left: 20, right: "auto" }),
             ]}
           />
 
           <TouchableOpacity
             style={[
               styles.favoriteBtn,
-              I18nManager.isRTL ? { left: 20, right: "auto" } : { right: 20, left: "auto" },
+              isRTL
+                ? (I18nManager.isRTL ? { right: 20, left: "auto" } : { left: 20, right: "auto" })
+                : (I18nManager.isRTL ? { left: 20, right: "auto" } : { right: 20, left: "auto" }),
             ]}
             onPress={handleToggleFavorite}
           >
@@ -488,38 +492,23 @@ export default function ChaletDetailScreen() {
               zIndex: 10,
             }}
           >
-            <TouchableOpacity
-              activeOpacity={0.9}
+            <PrimaryButton
+              variant="white"
+              label={isRTL ? "تصفح بحسب المرافق" : "Browse by facilities"}
               onPress={() =>
                 router.push({
                   pathname: "/(customer)/chalet-details/gallery",
                   params: { id: chaletId },
                 })
               }
-              style={{
-                backgroundColor: "rgba(255, 255, 255, 0.9)",
-                paddingHorizontal: 14,
-                paddingVertical: 8,
-                borderRadius: 20,
-                borderWidth: 1,
-                borderColor: "#E5E7EB",
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 4,
-                elevation: 3,
+              height={38}
+              activeTextColor="#374151"
+              textStyle={{
+                fontSize: 12,
+                fontFamily: "Alexandria-Medium",
+                lineHeight: 20,
               }}
-            >
-              <ThemedText
-                style={{
-                  fontSize: 12,
-                  fontFamily: "Alexandria-Medium",
-                  color: "#374151",
-                }}
-              >
-                {isRTL ? "تصفح بحسب المرافق" : "Browse by facilities"}
-              </ThemedText>
-            </TouchableOpacity>
+            />
 
             <View style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
               {images.map((_: string, i: number) => (
