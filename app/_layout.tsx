@@ -1,25 +1,24 @@
 // @@iconify-code-gen
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { changeLanguage as applyAppLanguage } from "@/i18n";
 import { persistor, RootState, store } from "@/store";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import {
     DarkTheme,
     DefaultTheme,
-    ThemeProvider } from "@react-navigation/native";
+    ThemeProvider
+} from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { I18nManager, Text, TextInput } from "react-native";
+import { Text, TextInput } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import Toast from "react-native-toast-message";
 import { Provider, useSelector } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-import { isRTL } from "@/i18n";
 
 // @ts-ignore
 if (Text.defaultProps == null) Text.defaultProps = {};
@@ -28,8 +27,7 @@ Text.defaultProps.style = {
   fontFamily: "Alexandria-Medium",
   includeFontPadding: false,
   textAlignVertical: "center",
-  writingDirection: I18nManager.isRTL ? "rtl" : "ltr",
-  textAlign: I18nManager.isRTL ? "right" : "left" };
+};
 
 // @ts-ignore
 if (TextInput.defaultProps == null) TextInput.defaultProps = {};
@@ -38,8 +36,7 @@ TextInput.defaultProps.style = {
   fontFamily: "Alexandria-Medium",
   includeFontPadding: false,
   textAlignVertical: "center",
-  writingDirection: I18nManager.isRTL ? "rtl" : "ltr",
-  textAlign: I18nManager.isRTL ? "right" : "left" };
+};
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();

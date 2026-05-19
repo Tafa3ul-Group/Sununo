@@ -1,13 +1,13 @@
 import {
-  SolarChaletRulesBold,
-  SolarClockCircleBold,
-  SolarForbiddenBold,
-  SolarHeartBold,
-  SolarMapPointBold,
-  SolarMoonBold,
-  SolarStarBold,
-  SolarSunBold,
-  SolarWidgetBold,
+    SolarChaletRulesBold,
+    SolarClockCircleBold,
+    SolarForbiddenBold,
+    SolarHeartBold,
+    SolarMapPointBold,
+    SolarMoonBold,
+    SolarStarBold,
+    SolarSunBold,
+    SolarWidgetBold,
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { CircleBackButton } from "@/components/ui/circle-back-button";
@@ -22,44 +22,44 @@ import { Colors, normalize, Shadows } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { RootState } from "@/store";
 import {
-  useAddFavoriteMutation,
-  useCheckCanReviewQuery,
-  useCreateReviewMutation,
-  useGetChaletAddonsQuery,
-  useGetChaletReviewsQuery,
-  useGetCustomerChaletDetailsQuery,
-  useGetFavoriteIdsQuery,
-  useGetSimilarChaletsQuery,
-  useRemoveFavoriteMutation,
-  useToggleFavoriteMutation,
+    useAddFavoriteMutation,
+    useCheckCanReviewQuery,
+    useCreateReviewMutation,
+    useGetChaletAddonsQuery,
+    useGetChaletReviewsQuery,
+    useGetCustomerChaletDetailsQuery,
+    useGetFavoriteIdsQuery,
+    useGetSimilarChaletsQuery,
+    useRemoveFavoriteMutation,
+    useToggleFavoriteMutation,
 } from "@/store/api/customerApiSlice";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import Constants from "expo-constants";
 import { Image as ExpoImage } from "expo-image";
 import {
-  Stack,
-  useFocusEffect,
-  useLocalSearchParams,
-  useRouter,
+    Stack,
+    useFocusEffect,
+    useLocalSearchParams,
+    useRouter,
 } from "expo-router";
 import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
 } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ActivityIndicator,
-  Alert,
-  Dimensions,
-  I18nManager,
-  Image,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Dimensions,
+    I18nManager,
+    Image,
+    ScrollView,
+    StyleSheet,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { useSelector } from "react-redux";
@@ -117,18 +117,11 @@ export default function ChaletDetailScreen() {
   const { t, i18n } = useTranslation();
   const { userType, language } = useSelector((state: RootState) => state.auth);
   const isRTL = i18n.language ? i18n.language.startsWith("ar") : true;
-  // textStart: NOT auto-mirrored by RN, so direct mapping is correct
+  // textStart: direct mapping based on current language
   const textStart: "left" | "right" = isRTL ? "right" : "left";
-  // flexDir: React Native auto-mirrors "row" when I18nManager.isRTL=true.
-  // So we must account for native RTL state to avoid double-mirroring.
-  // When language matches native direction → "row" (natural flow)
-  // When language differs from native direction → "row-reverse" (counter-mirror)
-  const flexDir: "row" | "row-reverse" =
-    isRTL === I18nManager.isRTL ? "row" : "row-reverse";
-  const needsCounter = isRTL !== I18nManager.isRTL;
-  const alignStart: "flex-start" | "flex-end" = needsCounter
-    ? "flex-end"
-    : "flex-start";
+  // flexDir: always use language-based direction, ignore I18nManager
+  const flexDir: "row" | "row-reverse" = isRTL ? "row" : "row-reverse";
+  const alignStart: "flex-start" | "flex-end" = isRTL ? "flex-end" : "flex-start";
   const { id } = useLocalSearchParams();
   const chaletId = id as string;
   const router = useRouter();
