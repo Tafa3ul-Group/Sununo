@@ -3,8 +3,8 @@ import { normalize } from "@/constants/theme";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { SolarStarBold, SolarHeartBold } from "@/components/icons/solar-icons";
-import { StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
-import { isRTL } from "@/i18n";
+import { I18nManager, StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
+import { getFlexDirection } from "@/i18n";
 import Svg, {
   ClipPath,
   Defs,
@@ -86,7 +86,7 @@ export function ColoredCard({
   const alignSelfStart: "flex-start" | "flex-end" = needsCounter ? "flex-end" : "flex-start";
   const footerDirection: "row" | "row-reverse" = needsCounter ? "row-reverse" : "row";
   const footerJustify: "flex-start" | "flex-end" = needsCounter ? "flex-end" : "flex-start";
-  const ratingDirection: "row" | "row-reverse" = needsCounter ? "row-reverse" : "row";
+  const ratingDirection: "row" | "row-reverse" = I18nManager.isRTL ? "row-reverse" : "row";
 
   const currentIndex = shapeIndex % SHAPES_CONFIG.length;
   const config = SHAPES_CONFIG[currentIndex];
@@ -101,7 +101,7 @@ export function ColoredCard({
       <TouchableOpacity
         style={[
           styles.favoriteButton,
-          isArabic ? { right: 12 } : { left: 12 },
+          needsCounter ? { left: 12 } : { right: 12 },
         ]}
         onPress={onToggleFavorite}
       >

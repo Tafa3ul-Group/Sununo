@@ -39,18 +39,22 @@ const CATEGORY_COLORS = [
   "#06B6D4",
 ];
 
-const SectionHeader = ({ title, isRTL }: { title: string; isRTL: boolean }) => (
-  <View style={[styles.sectionHeader, { alignItems: "flex-start" }]}>
-    <ThemedText style={styles.sectionTitle}>{title}</ThemedText>
-  </View>
-);
+const SectionHeader = ({ title, isArabic }: { title: string; isArabic: boolean }) => {
+  const needsCounter = isArabic !== I18nManager.isRTL;
+  const alignStart = needsCounter ? "flex-end" : "flex-start";
+  return (
+    <View style={[styles.sectionHeader, { alignItems: alignStart }]}>
+      <ThemedText style={styles.sectionTitle}>{title}</ThemedText>
+    </View>
+  );
+};
 
 const FacilityCard = ({
   label,
   subtext,
   color,
   iconId,
-  isRTL,
+  isArabic,
 }: {
   label: string;
   subtext?: string;
@@ -60,15 +64,16 @@ const FacilityCard = ({
 }) => {
   // iconId from API is a UUID → load as image from server
   const imageSource = iconId ? getImageSrc(iconId) : null;
+  const needsCounter = isArabic !== I18nManager.isRTL;
+  const alignStart = needsCounter ? "flex-end" : "flex-start";
 
   return (
-    <View style={[styles.cardContainer, { flexDirection: getFlexDirection(isArabic) }]}>
+    <View style={[styles.cardContainer, { flexDirection: getFlexDirection(isArabic), gap: 15 }]}>
       <View
         style={[
           styles.textSide,
           {
-            alignItems: "flex-start",
-            [isArabic ? "marginRight" : "marginLeft"]: 15,
+            alignItems: alignStart,
           },
         ]}
       >
@@ -182,7 +187,7 @@ export default function FacilitiesScreen() {
         <View style={{ paddingHorizontal: 20 }}>
           {categories.map((cat, idx) => (
             <View key={idx}>
-              <SectionHeader title={cat.name} isRTL={isArabic} />
+              <SectionHeader title={cat.name} isArabic={isArabic} />
               {cat.features.map((feat, featIdx) => {
                 const color =
                   CATEGORY_COLORS[cat.colorIndex % CATEGORY_COLORS.length];

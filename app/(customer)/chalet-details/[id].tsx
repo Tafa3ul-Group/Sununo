@@ -115,9 +115,10 @@ const CARD_COLORS = [
 ];
 
 export default function ChaletDetailScreen() {
+  const { t, i18n } = useTranslation();
   const { userType, language } = useSelector((state: RootState) => state.auth);
-  // isRTL = is the app language Arabic (updated reactively via Redux)
-  const isRTL = language === "ar";
+  // isRTL = is the app language Arabic (updated reactively via i18n)
+  const isRTL = i18n.language ? i18n.language.startsWith("ar") : false;
   // textStart: NOT auto-mirrored by RN, so direct mapping is correct
   const textStart: "left" | "right" = isRTL ? "right" : "left";
   // flexDir: React Native auto-mirrors "row" when I18nManager.isRTL=true.
@@ -128,7 +129,6 @@ export default function ChaletDetailScreen() {
   const { id } = useLocalSearchParams();
   const chaletId = id as string;
   const router = useRouter();
-  const { t, i18n } = useTranslation();
   const [activeImage, setActiveImage] = useState(0);
   const reviewSheetRef = React.useRef<BottomSheetModal>(null);
   const bannerScrollRef = useRef<ScrollView>(null);
@@ -635,7 +635,7 @@ export default function ChaletDetailScreen() {
                   isRTL={isRTL}
                 />
               </View>
-              <View style={[styles.facilitiesGrid, { flexDirection: "row" }]}>
+              <View style={[styles.facilitiesGrid, { flexDirection: flexDir }]}>
                 {facilities.slice(0, 8).map((f: any, i: number) => (
                   <View key={i} style={styles.facilityCell}>
                     <View style={styles.shapeCont}>

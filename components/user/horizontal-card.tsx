@@ -4,9 +4,10 @@ import { Colors, normalize } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { isRTL } from "@/i18n";
+import { getFlexDirection } from "@/i18n";
 import {
   Dimensions,
+  I18nManager,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -76,10 +77,9 @@ export function HorizontalCard({
 
   const isArabic = i18n.language ? i18n.language.startsWith("ar") : false;
   const textStart: "left" | "right" = isArabic ? "right" : "left";
-  const containerDir: "row" | "row-reverse" = isArabic ? "row" : "row-reverse";
-  const topRowDir: "row" | "row-reverse" = isArabic ? "row" : "row-reverse";
-  const bottomRowDir: "row" | "row-reverse" = isArabic ? "row-reverse" : "row";
-  const ratingBoxDir: "row" | "row-reverse" = isArabic ? "row" : "row-reverse";
+  const rowDirection = getFlexDirection(isArabic);
+  const rowReverseDir = getFlexDirection(!isArabic);
+  const ratingBoxDir = I18nManager.isRTL ? "row-reverse" : "row";
 
   return (
     <TouchableOpacity
@@ -87,7 +87,7 @@ export function HorizontalCard({
       onPress={onPress}
       style={[
         styles.container,
-        { flexDirection: containerDir },
+        { flexDirection: rowReverseDir },
         style,
       ]}
     >
@@ -97,23 +97,9 @@ export function HorizontalCard({
         <View
           style={[
             styles.topRow,
-            { flexDirection: topRowDir },
+            { flexDirection: rowDirection },
           ]}
         >
-          <View style={styles.leftColumn}>
-            {!hideFavorite && (
-              <TouchableOpacity
-                style={styles.heartCircle}
-                onPress={onToggleFavorite}
-              >
-                <SolarHeartBold
-                  size={normalize.width(20)}
-                  color={isFavorite ? "#EA2129" : "#9CA3AF"}
-                />
-              </TouchableOpacity>
-            )}
-          </View>
-
           <View style={styles.mainContent}>
             <View
               style={[
@@ -146,13 +132,26 @@ export function HorizontalCard({
               </ThemedText>
             </View>
           </View>
+
+          <View style={styles.leftColumn}>
+            {!hideFavorite && (
+              <TouchableOpacity
+                style={styles.heartCircle}
+                onPress={onToggleFavorite}
+              >
+                <SolarHeartBold
+                  size={normalize.width(20)}
+                  color={isFavorite ? "#EA2129" : "#9CA3AF"}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
-        {/* Bottom Row: Rating + Price */}
         <View
           style={[
             styles.bottomRow,
-            { flexDirection: bottomRowDir },
+            { flexDirection: rowReverseDir },
           ]}
         >
           <View
@@ -161,13 +160,13 @@ export function HorizontalCard({
               { flexDirection: ratingBoxDir, gap: 4 },
             ]}
           >
-            <ThemedText style={styles.ratingText}>
-              {chalet.rating || "4.5"}
-            </ThemedText>
             <SolarStarBold
               size={normalize.width(16)}
               color={Colors.secondary}
             />
+            <ThemedText style={styles.ratingText}>
+              {chalet.rating || "4.5"}
+            </ThemedText>
           </View>
 
           <View

@@ -66,14 +66,13 @@ export function HeaderSection({
   marginBottom = 0,
   isHome = false }: HeaderSectionProps) {
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { userType: stateUserType, language } = useSelector(
     (state: RootState) => state.auth,
   );
   const [selectedCategory, setSelectedCategory] = React.useState("all");
 
-  // Use Redux language (updated immediately on change) instead of static isRTL
-  const isArabic = language === "ar";
+  const isArabic = i18n.language ? i18n.language.startsWith("ar") : false;
 
   const CATEGORIES = [
     {
@@ -112,14 +111,14 @@ export function HeaderSection({
           styles.topRow,
           {
             marginBottom,
-            flexDirection: isArabic ? 'row-reverse' : 'row'
+            flexDirection: rowDir
           },
         ]}
       >
         {/* LEFT SIDE (Start side) */}
-        <View style={[styles.headerSide, { alignItems: isArabic ? 'flex-end' : 'flex-start' }]}>
+        <View style={[styles.headerSide, { alignItems: startAlign }]}>
           {isHome ? (
-            <View style={styles.homeLeftGroup}>
+            <View style={[styles.homeLeftGroup, { flexDirection: rowDir }]}>
               {stateUserType !== "guest" && (
                 <TouchableOpacity
                   onPress={() => router.push("/(customer)/notifications")}
@@ -142,7 +141,7 @@ export function HeaderSection({
               </TouchableOpacity>
             </View>
           ) : (
-            <View style={styles.homeLeftGroup}>
+            <View style={[styles.homeLeftGroup, { flexDirection: rowDir }]}>
               {showBackButton && <CircleBackButton onPress={onBackPress} />}
               {extraIcon === "search" && (
                 <TouchableOpacity
@@ -169,7 +168,7 @@ export function HeaderSection({
         )}
 
         {/* RIGHT SIDE (End side) */}
-        <View style={[styles.headerSide, { alignItems: isArabic ? 'flex-start' : 'flex-end' }]}>
+        <View style={[styles.headerSide, { alignItems: endAlign }]}>
           {isHome && (
             <View style={styles.logoCircleHome}>
               <Image
@@ -211,7 +210,7 @@ export function HeaderSection({
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={[
             styles.categoriesContent,
-            { flexDirection: 'row' },
+            { flexDirection: rowDir },
           ]}
           style={styles.categoriesScroll}
         >
@@ -221,7 +220,7 @@ export function HeaderSection({
               onPress={() => setSelectedCategory(cat.id)}
               style={[
                 styles.categoryItem,
-                { flexDirection: 'row' },
+                { flexDirection: rowDir },
                 selectedCategory === cat.id && styles.categoryItemActive,
               ]}
             >

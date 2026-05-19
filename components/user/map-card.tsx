@@ -2,7 +2,7 @@ import { ThemedText } from "@/components/themed-text";
 import { Colors, Shadows } from "@/constants/theme";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View, I18nManager } from "react-native";
 import { SolarCloseCircleBold, SolarStarBold } from "@/components/icons/solar-icons";
 import { isRTL, getFlexDirection } from "@/i18n";
 
@@ -27,8 +27,11 @@ export const MapCard = ({
   const { i18n } = useTranslation();
   const isArabic = i18n.language === "ar";
   const rowDir = getFlexDirection(isArabic);
-  // for row-reverse, we invert the language check
   const rowReverseDir = getFlexDirection(!isArabic);
+  
+  const needsCounter = isArabic !== I18nManager.isRTL;
+  const alignStart: "flex-start" | "flex-end" = needsCounter ? "flex-end" : "flex-start";
+  const ratingBoxDir = I18nManager.isRTL ? "row-reverse" : "row";
   return (
     <TouchableOpacity
       activeOpacity={0.9}
@@ -53,7 +56,7 @@ export const MapCard = ({
           <View
             style={[
               styles.titleSection,
-              { alignItems: 'flex-start' },
+              { alignItems: alignStart },
             ]}
           >
             <ThemedText
@@ -63,6 +66,7 @@ export const MapCard = ({
               {title}
             </ThemedText>
             <ThemedText
+              style={[
                 styles.location,
                 { textAlign: isArabic ? "right" : "left" },
               ]}
@@ -82,11 +86,11 @@ export const MapCard = ({
           <View
             style={[
               styles.ratingContainer,
-              { flexDirection: rowReverseDir },
+              { flexDirection: ratingBoxDir },
             ]}
           >
-            <Text style={styles.rating}>{rating}</Text>
             <SolarStarBold size={14} color="#035DF9" />
+            <Text style={styles.rating}>{rating}</Text>
           </View>
           <ThemedText
             style={[styles.price, { textAlign: isArabic ? "right" : "left" }]}
