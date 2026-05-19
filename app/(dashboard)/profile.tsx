@@ -32,7 +32,6 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     ActivityIndicator,
-    Alert,
     Image,
     KeyboardAvoidingView,
     Platform,
@@ -43,7 +42,9 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { useDispatch, useSelector } from 'react-redux';
+import Toast from 'react-native-toast-message';
 import { isRTL } from "@/i18n";
 
 const getCityName = (city: any, isArabic: boolean) => {
@@ -65,7 +66,8 @@ const getCityName = (city: any, isArabic: boolean) => {
 export default function ProviderProfileScreen() {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-    const { user: authUser } = useSelector((state: RootState) => state.auth);
+  const { user: authUser } = useSelector((state: RootState) => state.auth);
+  const { showConfirm } = useConfirmationDialog();
 
   const { data: userData } = useGetMeQuery(undefined);
   const user = userData?.data || userData || authUser;
@@ -111,37 +113,32 @@ export default function ProviderProfileScreen() {
   };
 
   const handleLogout = () => {
-    Alert.alert(
-      isRTL ? 'تسجيل الخروج' : 'Logout',
-      isRTL ? 'هل أنت متأكد من تسجيل الخروج؟' : 'Are you sure you want to logout?',
-      [
-        {
-          text: isRTL ? 'إلغاء' : 'Cancel',
-          style: 'cancel' },
-        {
-          text: isRTL ? 'خروج' : 'Logout',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await logoutApi(undefined).unwrap();
-            } catch {
-              // تجاهل خطأ السيرفر وأكمل الخروج
-            }
-            // Clear Redux state — the Auth Guard in _layout.tsx will redirect automatically
-            dispatch(logout());
-          } },
-      ],
-    );
+    showConfirm({
+      title: isRTL ? 'تسجيل الخروج' : 'Logout',
+      message: isRTL ? 'هل أنت متأكد من تسجيل الخروج؟' : 'Are you sure you want to logout?',
+      type: 'danger',
+      confirmLabel: isRTL ? 'خروج' : 'Logout',
+      cancelLabel: isRTL ? 'إلغاء' : 'Cancel',
+      onConfirm: async () => {
+        try {
+          await logoutApi(undefined).unwrap();
+        } catch {
+          // تجاهل خطأ السيرفر وأكمل الخروج
+        }
+        // Clear Redux state — the Auth Guard in _layout.tsx will redirect automatically
+        dispatch(logout());
+      }
+    });
   };
 
   const handleSaveProfile = async () => {
     if (!formData.name.trim()) {
-      Alert.alert(isRTL ? 'خطأ' : 'Error', isRTL ? 'يرجى إدخال الاسم' : 'Please enter your name');
+      Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: isRTL ? 'يرجى إدخال الاسم' : 'Please enter your name', position: 'bottom' });
       return;
     }
 
     if (!formData.cityId) {
-      Alert.alert(isRTL ? 'خطأ' : 'Error', isRTL ? 'يرجى اختيار المدينة' : 'Please select a city');
+      Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: isRTL ? 'يرجى اختيار المدينة' : 'Please select a city', position: 'bottom' });
       return;
     }
 
@@ -152,18 +149,12 @@ export default function ProviderProfileScreen() {
         birthday: formData.birthday.toISOString(),
         cityId: formData.cityId }).unwrap();
 
-      Alert.alert(
-        isRTL ? 'نجاح' : 'Success',
-        isRTL ? 'تم تحديث الملف الشخصي بنجاح' : 'Profile updated successfully'
-      );
+      Toast.show({ type: 'success', text1: isRTL ? 'نجاح' : 'Success', text2: isRTL ? 'تم تحديث الملف الشخصي بنجاح' : 'Profile updated successfully', position: 'bottom' });
       editProfileSheetRef.current?.dismiss();
     } catch (error: any) {
       console.error('Update Profile Error:', error);
       const errorMessage = error?.data?.message || (isRTL ? 'فشل تحديث الملف الشخصي' : 'Failed to update profile');
-      Alert.alert(
-        isRTL ? 'خطأ' : 'Error',
-        Array.isArray(errorMessage) ? errorMessage[0] : errorMessage
-      );
+      Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: Array.isArray(errorMessage) ? errorMessage[0] : errorMessage, position: 'bottom' });
     }
   };
 
@@ -203,10 +194,7 @@ export default function ProviderProfileScreen() {
       } catch (error: any) {
         console.error('Upload Image Error:', error);
         const errorMessage = error?.data?.message || (isRTL ? 'فشل تحديث الصورة' : 'Failed to update image');
-        Alert.alert(
-          isRTL ? 'خطأ' : 'Error',
-          Array.isArray(errorMessage) ? errorMessage[0] : errorMessage
-        );
+        Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: Array.isArray(errorMessage) ? errorMessage[0] : errorMessage, position: 'bottom' });
       }
     }
   };

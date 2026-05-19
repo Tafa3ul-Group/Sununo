@@ -39,7 +39,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState, useLayoutEffe
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
-  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -52,6 +51,7 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { useSelector } from 'react-redux';
+import { useConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { isRTL, getFlexDirection } from "@/i18n";
 
 // ── Types ──
@@ -83,6 +83,7 @@ export default function EditChaletScreen() {
   const { id } = useLocalSearchParams();
   const { t } = useTranslation();
   const { language } = useSelector((state: RootState) => state.auth);
+  const { showConfirm } = useConfirmationDialog();
   
   const { data: response, isLoading: isLoadingDetails } = useGetOwnerChaletDetailsQuery(id);
   const chalet = response?.data || response;
@@ -291,14 +292,20 @@ export default function EditChaletScreen() {
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') { Alert.alert(isRTL ? 'تنبيه' : 'Alert', isRTL ? 'نحتاج صلاحية الوصول للأستوديو' : 'Permission needed'); return; }
+    if (status !== 'granted') {
+      Toast.show({ type: 'info', text1: isRTL ? 'تنبيه' : 'Alert', text2: isRTL ? 'نحتاج صلاحية الوصول للأستوديو' : 'Permission needed' });
+      return;
+    }
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsMultipleSelection: true, quality: 0.8 });
     if (!result.canceled) setSelectedImages([...selectedImages, ...result.assets.map(a => a.uri)]);
   };
 
   const takePhoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') { Alert.alert(isRTL ? 'تنبيه' : 'Alert', isRTL ? 'نحتاج صلاحية الوصول للكاميرا' : 'Permission needed'); return; }
+    if (status !== 'granted') {
+      Toast.show({ type: 'info', text1: isRTL ? 'تنبيه' : 'Alert', text2: isRTL ? 'نحتاج صلاحية الوصول للكاميرا' : 'Permission needed' });
+      return;
+    }
     const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.8 });
     if (!result.canceled) setSelectedImages([...selectedImages, result.assets[0].uri]);
   };
@@ -358,17 +365,21 @@ export default function EditChaletScreen() {
   };
 
   const handleDelete = () => {
-    Alert.alert(
-      isRTL ? 'حذف الشاليه' : 'Delete Chalet',
-      isRTL ? 'هل أنت متأكد من حذف هذا الشاليه نهائياً؟ لا يمكن التراجع عن هذا الإجراء.' : 'Are you sure you want to permanently delete this chalet? This action cannot be undone.',
-      [
-        { text: isRTL ? 'إلغاء' : 'Cancel', style: 'cancel' },
-        { text: isRTL ? 'حذف' : 'Delete', style: 'destructive', onPress: async () => {
-          try { await deleteChalet(id).unwrap(); router.replace('/(tabs)/(dashboard)/home'); }
-          catch (err) { Alert.alert(isRTL ? 'خطأ' : 'Error', isRTL ? 'فشل حذف الشاليه' : 'Failed to delete chalet'); }
-        }}
-      ]
-    );
+    showConfirm({
+      title: isRTL ? 'حذف الشاليه' : 'Delete Chalet',
+      message: isRTL ? 'هل أنت متأكد من حذف هذا الشاليه نهائياً؟ لا يمكن التراجع عن هذا الإجراء.' : 'Are you sure you want to permanently delete this chalet? This action cannot be undone.',
+      type: 'danger',
+      confirmLabel: isRTL ? 'حذف' : 'Delete',
+      cancelLabel: isRTL ? 'إلغاء' : 'Cancel',
+      onConfirm: async () => {
+        try {
+          await deleteChalet(id).unwrap();
+          router.replace('/(tabs)/(dashboard)/home');
+        } catch (err) {
+          Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: isRTL ? 'فشل حذف الشاليه' : 'Failed to delete chalet' });
+        }
+      }
+    });
   };
 
   useLayoutEffect(() => {

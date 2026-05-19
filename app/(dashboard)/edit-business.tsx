@@ -13,7 +13,6 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     ActivityIndicator,
-    Alert,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
@@ -26,11 +25,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
 import { isRTL } from "@/i18n";
+import Toast from 'react-native-toast-message';
 
 export default function ProviderProfileScreen() {
   const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
-    const router = useRouter();
+  const router = useRouter();
+
 
   const { data: profile, isLoading, isError, refetch } = useGetProviderProfileQuery(undefined);
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProviderProfileMutation();
@@ -54,16 +55,20 @@ export default function ProviderProfileScreen() {
   const handleSave = async () => {
     try {
       await updateProfile(formData).unwrap();
-      Alert.alert(
-        isRTL ? 'نجاح' : 'Success',
-        isRTL ? 'تم تحديث البيانات بنجاح' : 'Profile updated successfully'
-      );
+      Toast.show({
+        type: 'success',
+        text1: isRTL ? 'نجاح' : 'Success',
+        text2: isRTL ? 'تم تحديث البيانات بنجاح' : 'Profile updated successfully',
+        position: 'bottom',
+      });
       router.back();
     } catch (error) {
-      Alert.alert(
-        isRTL ? 'خطأ' : 'Error',
-        isRTL ? 'فشل تحديث البيانات' : 'Failed to update profile'
-      );
+      Toast.show({
+        type: 'error',
+        text1: isRTL ? 'خطأ' : 'Error',
+        text2: isRTL ? 'فشل تحديث البيانات' : 'Failed to update profile',
+        position: 'bottom',
+      });
     }
   };
 

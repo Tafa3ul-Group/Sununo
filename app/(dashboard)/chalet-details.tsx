@@ -40,10 +40,11 @@ import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Alert, Animated, Dimensions, I18nManager, Image, ScrollView, StatusBar, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Animated, Dimensions, I18nManager, Image, ScrollView, StatusBar, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import Toast from 'react-native-toast-message';
+import { useConfirmationDialog } from '@/components/ui/confirmation-dialog';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const HERO_HEIGHT = 420;
@@ -55,6 +56,7 @@ const AR_BACK_PATH = "M0.0532856 0L0.0160198 0.0319551C0.00823021 0.563434 -0.00
 export default function ChaletDetailsScreen() {
   const { i18n } = useTranslation();
   const isRTL = i18n.language ? i18n.language.startsWith('ar') : false;
+  const { showConfirm } = useConfirmationDialog();
 
   // Robust layout bridge: 
   // - If I18nManager.isRTL is active, standard 'row' is already right-to-left. Manually forcing 'row-reverse' double-flips it back to LTR.
@@ -280,26 +282,22 @@ export default function ChaletDetailsScreen() {
   };
 
   const handleDeleteChaletImage = async (imageId: string) => {
-    Alert.alert(
-      isRTL ? 'تنبيه' : 'Warning',
-      isRTL ? 'هل أنت متأكد من حذف هذه الصورة؟' : 'Are you sure you want to delete this image?',
-      [
-        { text: isRTL ? 'إلغاء' : 'Cancel', style: 'cancel' },
-        {
-          text: isRTL ? 'حذف' : 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteImage({ chaletId: chaletId as string, imageId }).unwrap();
-              Toast.show({ type: 'success', text1: isRTL ? 'تم الحذف' : 'Deleted' });
-              refetch();
-            } catch {
-              Toast.show({ type: 'error', text1: isRTL ? 'فشل الحذف' : 'Delete failed' });
-            }
-          }
+    showConfirm({
+      title: isRTL ? 'حذف الصورة' : 'Delete Image',
+      message: isRTL ? 'هل أنت متأكد من حذف هذه الصورة؟' : 'Are you sure you want to delete this image?',
+      type: 'danger',
+      confirmLabel: isRTL ? 'حذف' : 'Delete',
+      cancelLabel: isRTL ? 'إلغاء' : 'Cancel',
+      onConfirm: async () => {
+        try {
+          await deleteImage({ chaletId: chaletId as string, imageId }).unwrap();
+          Toast.show({ type: 'success', text1: isRTL ? 'تم الحذف' : 'Deleted' });
+          refetch();
+        } catch {
+          Toast.show({ type: 'error', text1: isRTL ? 'فشل الحذف' : 'Delete failed' });
         }
-      ]
-    );
+      }
+    });
   };
 
   const handleSetAsCover = async (imageId: string) => {
@@ -335,10 +333,7 @@ export default function ChaletDetailsScreen() {
 
   const handleAddRule = async () => {
     if (!newRule.titleAr.trim() || !newRule.descriptionAr.trim()) {
-      Alert.alert(
-        isRTL ? 'تنبيه' : 'Alert',
-        isRTL ? 'يرجى كتابة العنوان والشرح للشرط بالعربية' : 'Please enter the title and description in Arabic'
-      );
+      Toast.show({ type: 'error', text1: isRTL ? 'تنبيه' : 'Alert', text2: isRTL ? 'يرجى كتابة العنوان والشرح للشرط بالعربية' : 'Please enter the title and description in Arabic', position: 'bottom' });
       return;
     }
 
@@ -381,41 +376,37 @@ export default function ChaletDetailsScreen() {
   };
 
   const handleRemoveRule = (id: string) => {
-    Alert.alert(
-      isRTL ? 'تأكيد الحذف' : 'Confirm Delete',
-      isRTL ? 'هل أنت متأكد من رغبتك في حذف هذا الشرط؟' : 'Are you sure you want to delete this rule?',
-      [
-        { text: isRTL ? 'إلغاء' : 'Cancel', style: 'cancel' },
-        {
-          text: isRTL ? 'حذف' : 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            setIsUpdatingRules(true);
-            try {
-              const updatedRules = rulesForm.rules.filter(r => r.id !== id);
+    showConfirm({
+      title: isRTL ? 'تأكيد الحذف' : 'Confirm Delete',
+      message: isRTL ? 'هل أنت متأكد من رغبتك في حذف هذا الشرط؟' : 'Are you sure you want to delete this rule?',
+      type: 'danger',
+      confirmLabel: isRTL ? 'حذف' : 'Delete',
+      cancelLabel: isRTL ? 'إلغاء' : 'Cancel',
+      onConfirm: async () => {
+        setIsUpdatingRules(true);
+        try {
+          const updatedRules = rulesForm.rules.filter(r => r.id !== id);
 
-              const payload = {
-                rules: updatedRules.map(r => ({
-                  title: { ar: r.titleAr, en: r.titleEn || r.titleAr },
-                  description: { ar: r.descriptionAr, en: r.descriptionEn || r.descriptionAr }
-                }))
-              };
+          const payload = {
+            rules: updatedRules.map(r => ({
+              title: { ar: r.titleAr, en: r.titleEn || r.titleAr },
+              description: { ar: r.descriptionAr, en: r.descriptionEn || r.descriptionAr }
+            }))
+          };
 
-              await updateChalet({ id: chaletId as string, data: payload }).unwrap();
+          await updateChalet({ id: chaletId as string, data: payload }).unwrap();
 
-              setRulesForm({ rules: updatedRules });
-              Toast.show({ type: 'success', text1: isRTL ? 'تم حذف الشرط بنجاح' : 'Rule deleted successfully' });
-              refetch();
-            } catch (err) {
-              console.error(err);
-              Toast.show({ type: 'error', text1: isRTL ? 'فشل حذف الشرط' : 'Failed to delete rule' });
-            } finally {
-              setIsUpdatingRules(false);
-            }
-          }
+          setRulesForm({ rules: updatedRules });
+          Toast.show({ type: 'success', text1: isRTL ? 'تم حذف الشرط بنجاح' : 'Rule deleted successfully' });
+          refetch();
+        } catch (err) {
+          console.error(err);
+          Toast.show({ type: 'error', text1: isRTL ? 'فشل حذف الشرط' : 'Failed to delete rule' });
+        } finally {
+          setIsUpdatingRules(false);
         }
-      ]
-    );
+      }
+    });
   };
 
   const startEditRule = (rule: RuleItem) => {
@@ -430,10 +421,7 @@ export default function ChaletDetailsScreen() {
 
   const handleSaveEditRule = async () => {
     if (!editForm || !editForm.titleAr.trim() || !editForm.descriptionAr.trim()) {
-      Alert.alert(
-        isRTL ? 'تنبيه' : 'Alert',
-        isRTL ? 'يرجى كتابة العنوان والشرح للشرط بالعربية' : 'Please enter the title and description in Arabic'
-      );
+      Toast.show({ type: 'error', text1: isRTL ? 'تنبيه' : 'Alert', text2: isRTL ? 'يرجى كتابة العنوان والشرح للشرط بالعربية' : 'Please enter the title and description in Arabic', position: 'bottom' });
       return;
     }
 
@@ -488,25 +476,21 @@ export default function ChaletDetailsScreen() {
   };
 
   const handleDelete = () => {
-    Alert.alert(
-      isRTL ? 'حذف الشاليه' : 'Delete Chalet',
-      isRTL ? 'هل أنت متأكد من حذف هذا الشاليه نهائياً؟ لا يمكن التراجع عن هذا الإجراء.' : 'Are you sure you want to permanently delete this chalet? This action cannot be undone.',
-      [
-        { text: isRTL ? 'إلغاء' : 'Cancel', style: 'cancel' },
-        {
-          text: isRTL ? 'حذف' : 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteChalet(chaletId as string).unwrap();
-              router.replace('/(tabs)/(dashboard)/home');
-            } catch {
-              Alert.alert(isRTL ? 'خطأ' : 'Error', isRTL ? 'فشل حذف الشاليه' : 'Failed to delete chalet');
-            }
-          }
+    showConfirm({
+      title: isRTL ? 'حذف الشاليه' : 'Delete Chalet',
+      message: isRTL ? 'هل أنت متأكد من حذف هذا الشاليه نهائياً؟ لا يمكن التراجع عن هذا الإجراء.' : 'Are you sure you want to permanently delete this chalet? This action cannot be undone.',
+      type: 'danger',
+      confirmLabel: isRTL ? 'حذف' : 'Delete',
+      cancelLabel: isRTL ? 'إلغاء' : 'Cancel',
+      onConfirm: async () => {
+        try {
+          await deleteChalet(chaletId as string).unwrap();
+          router.replace('/(tabs)/(dashboard)/home');
+        } catch {
+          Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: isRTL ? 'فشل حذف الشاليه' : 'Failed to delete chalet' });
         }
-      ]
-    );
+      }
+    });
   };
   const scrollY = useRef(new Animated.Value(0)).current;
 

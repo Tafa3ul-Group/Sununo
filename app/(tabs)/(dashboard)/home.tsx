@@ -38,13 +38,15 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
-  Alert, FlatList, ScrollView,
+  FlatList,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View
 } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
+import Toast from "react-native-toast-message";
 
 import { useSelector } from "react-redux";
 import { isRTL } from "@/i18n";
@@ -820,6 +822,22 @@ export default function HomeScreen() {
         onSearchPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         }}
+        customRightComponent={
+          <View style={{ transform: [{ scale: 0.92 }] }}>
+            <SecondaryButton
+              label={isRTL ? "إدارة الشفتات" : "Manage Shifts"}
+              inactiveTextColor={Colors.black}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                router.push({
+                  pathname: '/(tabs)/(dashboard)/shifts',
+                  params: selectedChalet?.id && selectedChalet.id !== 'all' ? { id: selectedChalet.id } : undefined
+                });
+              }}
+              icon={<SolarClockCircleLinear size={18} color={Colors.black} />}
+            />
+          </View>
+        }
       />
 
 
@@ -1258,7 +1276,7 @@ export default function HomeScreen() {
                           }, 3500);
                         } catch (e: any) {
                           console.error("External booking failed:", e);
-                          Alert.alert("Error", e?.data?.message || "Failed");
+                          Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: e?.data?.message || (isRTL ? 'فشل العملية' : 'Failed'), position: 'bottom' });
                         }
                       }}
                       isActive={true}
@@ -1299,7 +1317,7 @@ export default function HomeScreen() {
                         shiftSheetRef.current?.dismiss();
                         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
                       } catch (e: any) {
-                        Alert.alert("Error", e?.data?.message || "Failed to reopen");
+                        Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: e?.data?.message || (isRTL ? 'فشل إعادة الفتح' : 'Failed to reopen'), position: 'bottom' });
                       }
                     }}
                     isActive={true}

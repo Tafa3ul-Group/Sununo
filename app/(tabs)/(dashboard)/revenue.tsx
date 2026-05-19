@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'expo-router';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator, RefreshControl } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
 import { Colors, normalize } from '@/constants/theme';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { useSelector } from 'react-redux';
@@ -120,7 +120,7 @@ export default function RevenueScreen() {
   const handleWithdraw = async () => {
     const amount = parseFloat(withdrawAmount);
     if (!amount || amount <= 0) {
-      Alert.alert(isRTL ? 'خطأ' : 'Error', isRTL ? 'الرجاء إدخال مبلغ صحيح' : 'Please enter a valid amount');
+      Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: isRTL ? 'الرجاء إدخال مبلغ صحيح' : 'Please enter a valid amount', position: 'bottom' });
       return;
     }
 
@@ -135,7 +135,7 @@ export default function RevenueScreen() {
         position: 'bottom' });
     } catch (error: any) {
       const msg = error?.data?.message || (isRTL ? 'فشل طلب السحب' : 'Payout request failed');
-      Alert.alert(isRTL ? 'خطأ' : 'Error', typeof msg === 'string' ? msg : msg[0]);
+      Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: typeof msg === 'string' ? msg : msg[0], position: 'bottom' });
     }
   };
 

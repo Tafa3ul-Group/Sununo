@@ -30,7 +30,6 @@ import {
   SolarMagnifierBold } from "@/components/icons/solar-icons";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -77,6 +76,7 @@ export default function AddChaletScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { language } = useSelector((state: RootState) => state.auth);
+
   
   const [createChalet, { isLoading: isCreating }] = useCreateChaletMutation();
   const isLoading = isCreating;
@@ -272,7 +272,7 @@ export default function AddChaletScreen() {
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert(isRTL ? 'تنبيه' : 'Alert', isRTL ? 'نحتاج صلاحية الوصول للأستوديو' : 'Permission needed');
+      Toast.show({ type: 'info', text1: isRTL ? 'تنبيه' : 'Alert', text2: isRTL ? 'نحتاج صلاحية الوصول للأستوديو' : 'Permission needed' });
       return;
     }
 
@@ -293,7 +293,7 @@ export default function AddChaletScreen() {
   const takePhoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert(isRTL ? 'تنبيه' : 'Alert', isRTL ? 'نحتاج صلاحية الوصول للكاميرا' : 'Permission needed');
+      Toast.show({ type: 'info', text1: isRTL ? 'تنبيه' : 'Alert', text2: isRTL ? 'نحتاج صلاحية الوصول للكاميرا' : 'Permission needed' });
       return;
     }
 

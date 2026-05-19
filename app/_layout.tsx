@@ -20,6 +20,7 @@ import Toast from "react-native-toast-message";
 import { Provider, useSelector } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { isRTL } from "@/i18n";
+import { ConfirmationDialogProvider } from "@/components/ui/confirmation-dialog";
 
 // @ts-ignore
 if (Text.defaultProps == null) Text.defaultProps = {};
@@ -183,8 +184,10 @@ export default function RootLayout() {
       <PersistGate loading={null} persistor={persistor}>
         <GestureHandlerRootView style={{ flex: 1 }}>
           <BottomSheetModalProvider>
-            <RootLayoutNav />
-            <Toast />
+            <ConfirmationDialogProvider>
+              <RootLayoutNav />
+              <Toast />
+            </ConfirmationDialogProvider>
           </BottomSheetModalProvider>
         </GestureHandlerRootView>
       </PersistGate>
