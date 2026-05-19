@@ -126,6 +126,7 @@ export default function ChaletDetailScreen() {
   // When language matches native direction → "row" (natural flow)
   // When language differs from native direction → "row-reverse" (counter-mirror)
   const flexDir: "row" | "row-reverse" = (isRTL === I18nManager.isRTL) ? "row" : "row-reverse";
+  const needsCounter = isRTL !== I18nManager.isRTL;
   const { id } = useLocalSearchParams();
   const chaletId = id as string;
   const router = useRouter();
@@ -451,15 +452,18 @@ export default function ChaletDetailScreen() {
               </TouchableOpacity>
             ))}
           </ScrollView>
-          <CircleBackButton
+           <CircleBackButton
             style={[
               styles.backBtnOriginal,
-              isRTL ? { left: 20 } : { right: 20 },
+              needsCounter ? { right: 20 } : { left: 20 },
             ]}
           />
 
           <TouchableOpacity
-            style={[styles.favoriteBtn, isRTL ? { right: 20 } : { left: 20 }]}
+            style={[
+              styles.favoriteBtn,
+              needsCounter ? { left: 20 } : { right: 20 },
+            ]}
             onPress={handleToggleFavorite}
           >
             <SolarHeartBold

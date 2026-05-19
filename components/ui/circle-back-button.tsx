@@ -1,12 +1,12 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { StyleSheet, StyleProp, TouchableOpacity, ViewStyle, View } from 'react-native';
+import { StyleSheet, StyleProp, TouchableOpacity, ViewStyle, View, I18nManager } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { normalize, Colors } from '@/constants/theme';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 
-import { isRTL } from '@/i18n';
+import { useTranslation } from 'react-i18next';
 
 interface CircleBackButtonProps {
   style?: StyleProp<ViewStyle>;
@@ -18,8 +18,10 @@ const AR_BACK_PATH = "M16.9467 0L16.984 0.0319551C16.9918 0.563434 17.0077 1.119
 
 export function CircleBackButton({ style, onPress }: CircleBackButtonProps) {
   const router = useRouter();
+  const { i18n } = useTranslation();
   const { userType } = useSelector((state: RootState) => state.auth);
-  const isArabic = isRTL;
+  const isArabic = i18n.language ? i18n.language.startsWith("ar") : false;
+  const backPath = (isArabic === I18nManager.isRTL) ? EN_BACK_PATH : AR_BACK_PATH;
 
   const handleBack = () => {
     if (onPress) {
@@ -50,7 +52,7 @@ export function CircleBackButton({ style, onPress }: CircleBackButtonProps) {
           viewBox="0 0 17 24" 
           fill="none"
         >
-          <Path d={isArabic ? EN_BACK_PATH : AR_BACK_PATH} fill={Colors.primary} />
+          <Path d={backPath} fill={Colors.primary} />
         </Svg>
       </View>
     </TouchableOpacity>
