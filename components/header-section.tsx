@@ -100,6 +100,7 @@ export function HeaderSection({
   const startAlign: "flex-start" | "flex-end" = needsCounter ? "flex-end" : "flex-start";
   const endAlign: "flex-start" | "flex-end" = needsCounter ? "flex-start" : "flex-end";
   const rowDir: "row" | "row-reverse" = needsCounter ? "row-reverse" : "row";
+  const homeRowDir: "row" | "row-reverse" = needsCounter ? "row" : "row-reverse";
 
   return (
     <View style={[styles.container]}>
@@ -111,12 +112,12 @@ export function HeaderSection({
           styles.topRow,
           {
             marginBottom,
-            flexDirection: rowDir
+            flexDirection: isHome ? homeRowDir : rowDir
           },
         ]}
       >
         {/* LEFT SIDE (Start side) */}
-        <View style={[styles.headerSide, { alignItems: startAlign }]}>
+        <View style={[styles.headerSide, { alignItems: isHome ? endAlign : startAlign }]}>
           {isHome ? (
             <View style={[styles.homeLeftGroup, { flexDirection: rowDir }]}>
               {stateUserType !== "guest" && (
@@ -168,7 +169,7 @@ export function HeaderSection({
         )}
 
         {/* RIGHT SIDE (End side) */}
-        <View style={[styles.headerSide, { alignItems: endAlign }]}>
+        <View style={[styles.headerSide, { alignItems: isHome ? startAlign : endAlign }]}>
           {isHome && (
             <View style={styles.logoCircleHome}>
               <Image
