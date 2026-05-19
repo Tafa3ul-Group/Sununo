@@ -88,12 +88,8 @@ const SHAPE_COLORS: Record<ShapeKey, string> = {
 };
 
 function SectionHeader({ title, isRTL }: { title: string; isRTL: boolean }) {
-  const textStart: "left" | "right" = isRTL ? "right" : "left";
-  // alignItems is auto-mirrored by RN when I18nManager.isRTL=true
-  const needsCounter = isRTL !== I18nManager.isRTL;
-  const alignStart: "flex-start" | "flex-end" = needsCounter
-    ? "flex-end"
-    : "flex-start";
+  const textStart: "left" | "right" = isRTL === I18nManager.isRTL ? "left" : "right";
+  const alignStart: "flex-start" | "flex-end" = isRTL === I18nManager.isRTL ? "flex-start" : "flex-end";
   return (
     <View style={[styles.sectionHeaderContainer, { alignItems: alignStart }]}>
       <ThemedText style={[styles.sectionTitle, { textAlign: textStart }]}>
@@ -117,11 +113,14 @@ export default function ChaletDetailScreen() {
   const { t, i18n } = useTranslation();
   const { userType, language } = useSelector((state: RootState) => state.auth);
   const isRTL = i18n.language ? i18n.language.startsWith("ar") : true;
-  // textStart: direct mapping based on current language
-  const textStart: "left" | "right" = isRTL ? "right" : "left";
-  // flexDir: always use language-based direction, ignore I18nManager
-  const flexDir: "row" | "row-reverse" = isRTL ? "row" : "row-reverse";
-  const alignStart: "flex-start" | "flex-end" = isRTL ? "flex-end" : "flex-start";
+  
+  // textStart: dynamic alignment accounting for React Native native mirroring
+  const textStart: "left" | "right" = isRTL === I18nManager.isRTL ? "left" : "right";
+  // flexDir: dynamic flexDirection accounting for native mirroring
+  const flexDir: "row" | "row-reverse" = isRTL === I18nManager.isRTL ? "row" : "row-reverse";
+  const alignStart: "flex-start" | "flex-end" = isRTL === I18nManager.isRTL ? "flex-start" : "flex-end";
+  const alignEnd: "flex-start" | "flex-end" = isRTL === I18nManager.isRTL ? "flex-end" : "flex-start";
+  
   const { id } = useLocalSearchParams();
   const chaletId = id as string;
   const router = useRouter();
@@ -516,28 +515,27 @@ export default function ChaletDetailScreen() {
 
         <View style={styles.infoWrapper}>
           {/* العنوان والتقييم */}
-          <View style={[styles.titleSection, { alignItems: alignStart, width: "100%", marginBottom: 20 }]}>
+          <View style={{ alignItems: alignStart, width: "100%", marginBottom: 20 }}>
             <View
               style={{
-                flexDirection: 'row',
-                direction: isRTL ? 'rtl' : 'ltr',
+                flexDirection: flexDir === "row" ? "row-reverse" : "row",
                 justifyContent: "space-between",
                 alignItems: "center",
                 width: "100%",
                 gap: 12,
               }}
             >
-              <View
-                style={[styles.ratingGroupLeft, { flexDirection: 'row' }]}
-              >
+              {/* التقييم — دائماً على الجانب الأبعد عن الاسم */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                 <SolarStarBold size={14} color="#035DF9" />
                 <ThemedText style={styles.ratingVal}>
                   {chaletRating.toFixed(1)}
                 </ThemedText>
               </View>
-              <View style={{ flex: 1, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
+              {/* الاسم — يمين في عربي، يسار في إنجليزي */}
+              <View style={{ flex: 1, alignItems: alignStart }}>
                 <ThemedText
-                  style={[styles.mainTitle, { textAlign: isRTL ? 'right' : 'left', width: "100%" }]}
+                  style={[styles.mainTitle, { textAlign: textStart, width: "100%" }]}
                   numberOfLines={2}
                 >
                   {chaletName}
@@ -545,9 +543,9 @@ export default function ChaletDetailScreen() {
               </View>
             </View>
 
-            <View style={{ width: "100%", marginTop: 4, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
+            <View style={{ width: "100%", marginTop: 4, alignItems: alignStart }}>
               <ThemedText
-                style={[styles.locationSub, { textAlign: isRTL ? 'right' : 'left', width: "100%" }]}
+                style={[styles.locationSub, { textAlign: textStart, width: "100%" }]}
               >
                 {chaletCategory ? `${chaletCategory} • ` : ""}
                 {chaletLocation}
@@ -1007,15 +1005,15 @@ export default function ChaletDetailScreen() {
       </ScrollView>
 
       {/* الفوتر */}
-      <View style={[styles.flatUltimateFooter, { flexDirection: isRTL ? 'row' : 'row-reverse', direction: isRTL ? 'rtl' : 'ltr' }]}>
-        <View style={[styles.footerTextSide, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-          <ThemedText style={[styles.footerPriceBig, { textAlign: isRTL ? 'right' : 'left' }]}>
+      <View style={[styles.flatUltimateFooter, { flexDirection: flexDir }]}>
+        <View style={[styles.footerTextSide, { alignItems: alignStart }]}>
+          <ThemedText style={[styles.footerPriceBig, { textAlign: textStart }]}>
             {displayPrice} {t("common.iqd")}
           </ThemedText>
-          <View style={[styles.footerMetaRow, { flexDirection: 'row' }]}>
+          <View style={[styles.footerMetaRow, { flexDirection: flexDir }]}>
             <SolarClockCircleBold size={12} color="#9CA3AF" />
             <ThemedText
-              style={[styles.footerMetaSmall, { textAlign: isRTL ? 'right' : 'left' }]}
+              style={[styles.footerMetaSmall, { textAlign: textStart }]}
             >
               {selectedShift
                 ? isRTL
