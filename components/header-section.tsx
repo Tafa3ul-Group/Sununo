@@ -189,12 +189,12 @@ export function HeaderSection({
           {isHome && (
             <TouchableOpacity
               onPress={handleLogoPress}
-              style={styles.logoCircleHome}
+              style={{ justifyContent: "center", alignItems: "center", paddingVertical: 4 }}
               activeOpacity={0.8}
             >
               <Image
                 source={currentLogoAr ? require("@/assets/arlogo.svg") : require("@/assets/logo.svg")}
-                style={[styles.logoImgHome, { tintColor: currentLogoColor }]}
+                style={{ width: 75, height: 25, tintColor: currentLogoColor }}
                 contentFit="contain"
               />
             </TouchableOpacity>
@@ -342,16 +342,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#FFFFFF" },
-  logoCircleHome: {
-    width: normalize.width(54),
-    height: normalize.width(54),
-    borderRadius: 999,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#FFFFFF" },
-  logoImgHome: {
-    width: "65%",
-    height: "65%" },
   searchContainer: {
     paddingHorizontal: Spacing.md,
     marginBottom: Spacing.md },
