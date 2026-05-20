@@ -162,12 +162,36 @@ export default function BookingSuccessDetailsScreen() {
             {t("booking.customerInfo")}
           </ThemedText>
           <View style={styles.divider} />
-          {renderInfoRow(t("booking.name"), t("booking.nameValue"))}
+          {renderInfoRow(t("booking.name"), booking?.customer?.name || t("booking.nameValue"))}
           {renderInfoRow(
             t("booking.phone"),
             <ThemedText style={[styles.infoValue, { direction: "ltr" }]}>
-              {t("booking.phoneValue")}
+              {booking?.customer?.phone || t("booking.phoneValue")}
             </ThemedText>,
+          )}
+          
+          {/* Add this new section for ID images */}
+          {(booking?.idCardFrontImage || booking?.idCardBackImage) && (
+            <>
+              <View style={styles.divider} />
+              <ThemedText style={[styles.infoLabel, { marginTop: 6, marginBottom: 6 }]}>{isRTL ? 'صور الهوية' : 'ID Photos'}</ThemedText>
+              <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+                {booking.idCardFrontImage && (
+                  <ExpoImage
+                    source={getImageSrc(booking.idCardFrontImage)}
+                    style={{ width: 120, height: 80, borderRadius: 8, backgroundColor: '#F1F5F9' }}
+                    transition={200}
+                  />
+                )}
+                {booking.idCardBackImage && (
+                  <ExpoImage
+                    source={getImageSrc(booking.idCardBackImage)}
+                    style={{ width: 120, height: 80, borderRadius: 8, backgroundColor: '#F1F5F9' }}
+                    transition={200}
+                  />
+                )}
+              </View>
+            </>
           )}
         </View>
 
