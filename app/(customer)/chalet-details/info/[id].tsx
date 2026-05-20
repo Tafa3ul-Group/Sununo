@@ -1,21 +1,21 @@
+import { HeaderSection } from "@/components/header-section";
 import {
-  SolarForbiddenBold,
-  SolarKeyBold
+    SolarForbiddenBold,
+    SolarKeyBold
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { Colors } from "@/constants/theme";
+import { RootState } from "@/store";
 import {
-  useGetChaletRulesQuery,
-  useGetChaletTermsQuery } from "@/store/api/customerApiSlice";
+    useGetChaletRulesQuery,
+    useGetChaletTermsQuery
+} from "@/store/api/customerApiSlice";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
-import { HeaderSection } from "@/components/header-section";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
-import { RootState } from "@/store";
-import { getFlexDirection } from "@/i18n";
 
 export default function ChaletInfoScreen() {
   const { id, type } = useLocalSearchParams<{
@@ -24,6 +24,7 @@ export default function ChaletInfoScreen() {
   }>();
   const { t, i18n } = useTranslation();
   const isArabic = i18n.language === "ar";
+  const isRTL = isArabic;
     const router = useRouter();
   const { userType } = useSelector((state: RootState) => state.auth);
 
@@ -110,13 +111,13 @@ export default function ChaletInfoScreen() {
               
               return (
                 <View key={rule.id || idx} style={styles.ruleItem}>
-                  <View style={[styles.ruleHeader, { flexDirection: getFlexDirection(isArabic) }]}>
+                  <View style={[styles.ruleHeader, { flexDirection: 'row', direction: isRTL ? 'rtl' : 'ltr' }]}>
                     <View style={styles.ruleBullet} />
-                    <ThemedText style={[styles.ruleTitleText, { textAlign: isArabic ? "right" : "left" }]}>
+                    <ThemedText style={[styles.ruleTitleText, { textAlign: isRTL ? "right" : "left" }]}>
                       {ruleTitle}
                     </ThemedText>
                   </View>
-                  <ThemedText style={styles.ruleDescText}>
+                  <ThemedText style={[styles.ruleDescText, { textAlign: isRTL ? "right" : "left" }]}>
                     {ruleDesc}
                   </ThemedText>
                   {idx < policiesData.length - 1 && <View style={styles.ruleDivider} />}

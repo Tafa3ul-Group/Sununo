@@ -17,6 +17,7 @@ import { Text, TextInput } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import Toast from "react-native-toast-message";
+import { toastConfig } from "@/components/ui/toast-config";
 import { Provider, useSelector } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 
@@ -181,7 +182,7 @@ export default function RootLayout() {
         <GestureHandlerRootView style={{ flex: 1 }}>
           <BottomSheetModalProvider>
             <RootLayoutNav />
-            <Toast />
+            <Toast config={toastConfig} />
           </BottomSheetModalProvider>
         </GestureHandlerRootView>
       </PersistGate>

@@ -29,6 +29,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
 import { Image as ExpoImage } from "expo-image";
+import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import LottieView from "lottie-react-native";
@@ -90,6 +91,24 @@ export default function CompleteBookingScreen() {
   const alignEnd: "flex-start" | "flex-end" =
     isArabic === I18nManager.isRTL ? "flex-end" : "flex-start";
 
+  const pickImage = async (imageNumber: 1 | 2) => {
+    // No permissions request is needed for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      if (imageNumber === 1) {
+        setIdImage1(result.assets[0].uri);
+      } else {
+        setIdImage2(result.assets[0].uri);
+      }
+    }
+  };
+
   const getFilterDateRange = (): Date[] => {
     if (!savedFilter?.checkIn) return [];
     const start = new Date(savedFilter.checkIn);
@@ -104,6 +123,12 @@ export default function CompleteBookingScreen() {
     }
     return timestamps.map((time) => new Date(time));
   };
+
+  useEffect(() => {
+    if (guestType === "YOUTH") {
+      setChildrenCount(0);
+    }
+  }, [guestType]);
 
   const filterDateRange = useMemo(getFilterDateRange, [
     savedFilter?.checkIn,
@@ -371,6 +396,9 @@ export default function CompleteBookingScreen() {
   const [childrenCount, setChildrenCount] = useState(
     savedFilter?.children ?? 0,
   );
+  const [guestType, setGuestType] = useState<"FAMILY" | "YOUTH">("FAMILY");
+  const [idImage1, setIdImage1] = useState<string | null>(null);
+  const [idImage2, setIdImage2] = useState<string | null>(null);
 
   // Payment status polling
   const [isWaitingForPayment, setIsWaitingForPayment] = useState(false);
@@ -471,6 +499,15 @@ export default function CompleteBookingScreen() {
     if (activeTab === "WHEN") {
       setActiveTab("WHO");
     } else if (activeTab === "WHO") {
+      if (guestType === "FAMILY" && (!idImage1 || !idImage2)) {
+        Alert.alert(
+          isArabic ? "تنبيه" : "Alert",
+          isArabic
+            ? "يرجى رفع صورتي الهوية لإتمام الحجز للعائلات"
+            : "Please upload both ID photos for family bookings",
+        );
+        return;
+      }
       setActiveTab("WHERE");
     } else {
       // We are on DETAILS tab — create the booking via API
@@ -516,6 +553,7 @@ export default function CompleteBookingScreen() {
             paymentModel: paymentType.toLowerCase() as any,
             paymentMethod: selectedMethod,
             notes,
+            audienceType: guestType,
           }).unwrap();
 
           if (result.payment?.paymentUrl) {
@@ -1452,6 +1490,126 @@ export default function CompleteBookingScreen() {
           </>
         ) : activeTab === "WHO" ? (
           <View style={styles.whoContainer}>
+            <View style={{ marginBottom: 12 }}>
+              <ThemedText
+                style={[
+                  styles.guestLabel,
+                  { textAlign: textStart, marginBottom: 12, fontSize: 16 },
+                ]}
+              >
+                {isArabic ? "نوع الحجز" : "Booking Type"}
+              </ThemedText>
+              <View
+                style={[styles.guestTypeContainer, { flexDirection: rowDirection }]}
+              >
+                <TouchableOpacity
+                  style={[
+                    styles.guestTypeTab,
+                    guestType === "FAMILY" && styles.guestTypeTabActive,
+                  ]}
+                  onPress={() => setGuestType("FAMILY")}
+                >
+                  <ThemedText
+                    style={[
+                      styles.guestTypeText,
+                      guestType === "FAMILY" && styles.guestTypeTextActive,
+                    ]}
+                  >
+                    {isArabic ? "عائلات" : "Families"}
+                  </ThemedText>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.guestTypeTab,
+                    guestType === "YOUTH" && styles.guestTypeTabActive,
+                  ]}
+                  onPress={() => setGuestType("YOUTH")}
+                >
+                  <ThemedText
+                    style={[
+                      styles.guestTypeText,
+                      guestType === "YOUTH" && styles.guestTypeTextActive,
+                    ]}
+                  >
+                    {isArabic ? "شباب" : "Youth"}
+                  </ThemedText>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {guestType === "FAMILY" && (
+              <View style={styles.idUploadContainer}>
+                <ThemedText
+                  style={[
+                    styles.guestLabel,
+                    { textAlign: textStart, marginBottom: 12, fontSize: 16 },
+                  ]}
+                >
+                  {isArabic ? "رفع صور الهوية" : "Upload ID Photos"}
+                </ThemedText>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    gap: 12,
+                    justifyContent: "center",
+                  }}
+                >
+                  <TouchableOpacity
+                    style={styles.idUploadButton}
+                    onPress={() => pickImage(1)}
+                  >
+                    {idImage1 ? (
+                      <ExpoImage
+                        source={{ uri: idImage1 }}
+                        style={styles.idImagePreview}
+                      />
+                    ) : (
+                      <>
+                        <ThemedText style={{ fontSize: 24, color: "#94A3B8" }}>
+                          +
+                        </ThemedText>
+                        <ThemedText
+                          style={{
+                            fontSize: 12,
+                            color: "#94A3B8",
+                            fontFamily: "Alexandria-Medium",
+                          }}
+                        >
+                          {isArabic ? "الوجه الأول للهوية" : "ID Front Side"}
+                        </ThemedText>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.idUploadButton}
+                    onPress={() => pickImage(2)}
+                  >
+                    {idImage2 ? (
+                      <ExpoImage
+                        source={{ uri: idImage2 }}
+                        style={styles.idImagePreview}
+                      />
+                    ) : (
+                      <>
+                        <ThemedText style={{ fontSize: 24, color: "#94A3B8" }}>
+                          +
+                        </ThemedText>
+                        <ThemedText
+                          style={{
+                            fontSize: 12,
+                            color: "#94A3B8",
+                            fontFamily: "Alexandria-Medium",
+                          }}
+                        >
+                          {isArabic ? "الوجه الثاني للهوية" : "ID Back Side"}
+                        </ThemedText>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+            
             <View style={[styles.whoCard, { flexDirection: rowDirection }]}>
               <View
                 style={[
@@ -1493,56 +1651,48 @@ export default function CompleteBookingScreen() {
               />
             </View>
 
-            <View
-              style={[
-                styles.whoCard,
-                {
-                  marginTop: 12,
-                  flexDirection: rowDirection,
-                },
-              ]}
-            >
+            {guestType === "FAMILY" && (
               <View
                 style={[
-                  styles.guestInfo,
-                  { alignItems: alignStart }
+                  styles.whoCard,
+                  {
+                    marginTop: 12,
+                    flexDirection: rowDirection,
+                  },
                 ]}
               >
-                <ThemedText
-                  style={[
-                    styles.guestLabel,
-                    { textAlign: textStart }
-                  ]}
-                >
-                  {t("booking.children")}
-                </ThemedText>
-                <ThemedText
-                  style={[
-                    styles.guestSubLabel,
-                    { textAlign: textStart }
-                  ]}
-                >
-                  {t("booking.childrenDesc")}
-                </ThemedText>
+                <View style={[styles.guestInfo, { alignItems: alignStart }]}>
+                  <ThemedText
+                    style={[styles.guestLabel, { textAlign: textStart }]}
+                  >
+                    {t("booking.children")}
+                  </ThemedText>
+                  <ThemedText
+                    style={[styles.guestSubLabel, { textAlign: textStart }]}
+                  >
+                    {t("booking.childrenDesc")}
+                  </ThemedText>
+                </View>
+                <GuestCounter
+                  value={childrenCount}
+                  onIncrement={() => {
+                    const max = Number(chaletDetails?.maxChildren || 10);
+                    if (childrenCount < max)
+                      setChildrenCount(childrenCount + 1);
+                    else
+                      Alert.alert(
+                        isArabic ? "تنبيه" : "Alert",
+                        isArabic
+                          ? `الحد الاقصى للأطفال هو ${max}`
+                          : `Max children is ${max}`,
+                      );
+                  }}
+                  onDecrement={() =>
+                    setChildrenCount(Math.max(0, childrenCount - 1))
+                  }
+                />
               </View>
-              <GuestCounter
-                value={childrenCount}
-                onIncrement={() => {
-                  const max = Number(chaletDetails?.maxChildren || 10);
-                  if (childrenCount < max) setChildrenCount(childrenCount + 1);
-                  else
-                    Alert.alert(
-                      isArabic ? "تنبيه" : "Alert",
-                      isArabic
-                        ? `الحد الاقصى للأطفال هو ${max}`
-                        : `Max children is ${max}`,
-                    );
-                }}
-                onDecrement={() =>
-                  setChildrenCount(Math.max(0, childrenCount - 1))
-                }
-              />
-            </View>
+            )}
           </View>
         ) : (
           renderDetailsTab()
@@ -1792,6 +1942,55 @@ const styles = StyleSheet.create({
     flexShrink: 0,
     textAlign: "right",
     lineHeight: 22,
+  },
+  guestTypeContainer: {
+    backgroundColor: "white",
+    borderRadius: 16,
+    padding: 6,
+    height: 64,
+    borderWidth: 1,
+    borderColor: "#F1F5F9",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 6,
+  },
+  guestTypeTab: {
+    flex: 1,
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 12,
+  },
+  guestTypeTabActive: {
+    backgroundColor: "#F0F7FF",
+  },
+  guestTypeText: {
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
+    color: "#64748B",
+  },
+  guestTypeTextActive: {
+    color: "#035DF9",
+    fontFamily: "Alexandria-Medium",
+  },
+  idUploadContainer: {
+    marginBottom: 12,
+  },
+  idUploadButton: {
+    flex: 1,
+    height: 120,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: "#E2E8F0",
+    borderStyle: "dashed",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F8FAFC",
+    overflow: "hidden",
+  },
+  idImagePreview: {
+    width: "100%",
+    height: "100%",
   },
   whoContainer: { marginTop: 10 },
   whoCard: {

@@ -47,7 +47,7 @@ interface ReviewCardProps {
 }
 
 export function ReviewCard({ review, onDelete, onPressChalet }: ReviewCardProps) {
-  const textStart: "left" | "right" = isRTL === I18nManager.isRTL ? "left" : "right";
+  const textStart: "left" | "right" = isRTL ? "right" : "left";
   const { i18n, t } = useTranslation();
     
   const config = SHAPES_CONFIG[0]; // Using first shape for simplicity or random

@@ -21,7 +21,6 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from 'react-redux';
-import { isRTL } from "@/i18n";
 
 /**
  * DashboardTabBar - Standardized with CustomTabBar design
@@ -30,8 +29,9 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
   const router = useRouter();
   const dispatch = useDispatch();
   const { userType, language, selectedChalet } = useSelector((state: RootState) => state.auth);
-  const { t } = useTranslation();
-    const insets = useSafeAreaInsets();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
+  const insets = useSafeAreaInsets();
 
   const [showPopover, setShowPopover] = useState(false);
 
@@ -138,7 +138,8 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
         {
           bottom: Math.max(insets.bottom, 24),
           paddingHorizontal: normalize.width(23),
-          flexDirection: 'row'
+          flexDirection: 'row',
+          direction: isRTL ? 'rtl' : 'ltr'
         }
       ]}>
         <TouchableOpacity
@@ -169,7 +170,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
 
         <View style={[
           styles.tabCapsule,
-          { flexDirection: 'row' }
+          { flexDirection: 'row', direction: isRTL ? 'rtl' : 'ltr' }
         ]}>
           {pillTabs.map((route: any) => {
             const isActive = currentRouteName === route.name;
