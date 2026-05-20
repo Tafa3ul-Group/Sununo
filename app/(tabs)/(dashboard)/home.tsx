@@ -1310,10 +1310,10 @@ export default function HomeScreen() {
                     }}
                   />
 
-                  <View style={{ gap: 14 }}>
+                  <View style={{ flexDirection: 'row', gap: 14 }}>
                     <SecondaryButton
                       label={
-                        isRTL ? "عرض تفاصيل الحجز" : "View Booking Details"
+                        isRTL ? "عرض تفاصيل الحجز" : "View Details"
                       }
                       onPress={() => {
                         shiftSheetRef.current?.dismiss();
@@ -1324,7 +1324,7 @@ export default function HomeScreen() {
                       }}
                       isActive={true}
                       activeColor={IDENTITY_BLUE}
-                      style={{ height: 56, width: "100%" }}
+                      style={{ height: 50, flex: 1 }}
                     />
 
                     {(selectedShiftForAction.booking?.status === "confirmed" ||
@@ -1332,7 +1332,7 @@ export default function HomeScreen() {
                       selectedShiftForAction.booking?.status ===
                       "pending_payment") && (
                         <SecondaryButton
-                          label={isRTL ? "إلغاء الحجز" : "Cancel Booking"}
+                          label={isRTL ? "إلغاء الحجز" : "Cancel"}
                           onPress={() => {
                             shiftSheetRef.current?.dismiss();
                             handleOpenCancelSheet(
@@ -1341,7 +1341,7 @@ export default function HomeScreen() {
                           }}
                           isActive={true}
                           activeColor="#EF4444"
-                          style={{ height: 56, width: "100%" }}
+                          style={{ height: 50, flex: 1 }}
                         />
                       )}
                   </View>
@@ -1566,6 +1566,7 @@ const styles = StyleSheet.create({
   },
   calendarContainer: {
     paddingHorizontal: normalize.width(16),
+    marginTop: normalize.height(16),
     marginBottom: normalize.height(16)
   },
   calendarHeader: {
