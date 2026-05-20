@@ -103,7 +103,7 @@ export function DashboardHeader({
               </TouchableOpacity>
             )}
             <TouchableOpacity
-              onPress={onProfilePress || (() => router.push("/(dashboard)/profile"))}
+              onPress={onProfilePress || (() => router.push("/(tabs)/(dashboard)/profile"))}
               style={styles.profileCircle}
             >
               <SolarUserBold

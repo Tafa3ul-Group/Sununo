@@ -34,6 +34,7 @@ import {
   useUpdateChaletMutation,
   useUploadChaletImageMutation,
 } from '@/store/api/apiSlice';
+import { AmenitiesModal } from '@/components/dashboard/amenities-modal';
 import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput, BottomSheetView } from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
@@ -279,8 +280,14 @@ export default function ChaletDetailsScreen() {
       setSelectedImages([]);
       imagesModalRef.current?.dismiss();
       refetch();
-    } catch {
-      Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error' });
+    } catch (err: any) {
+      console.error(err);
+      const errMsg = err?.data?.message || err?.message || '';
+      Toast.show({
+        type: 'error',
+        text1: isRTL ? 'فشل الرفع' : 'Upload failed',
+        text2: errMsg,
+      });
     }
   };
 
@@ -1068,50 +1075,12 @@ export default function ChaletDetailsScreen() {
       </BottomSheetModal>
 
       {/* 2. Amenities Modal */}
-      <BottomSheetModal
+      <AmenitiesModal
         ref={amenitiesModalRef}
-        index={0}
-        snapPoints={['80%']}
-        backdropComponent={renderBackdrop}
-        backgroundStyle={{ borderRadius: 24 }}
-      >
-        <BottomSheetScrollView contentContainerStyle={[styles.modalScrollContent, { direction: isRTL ? 'rtl' : 'ltr' }]}>
-          <Text style={styles.modalTitle}>{isRTL ? 'المرافق والخدمات' : 'Amenities'}</Text>
-          {amenityCategories?.map((category: any) => (
-            <View key={category.id} style={{ marginBottom: 24 }}>
-              <Text style={[styles.modalSubTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? category.name?.ar : category.name?.en}</Text>
-              <View style={styles.amenitiesGrid}>
-                {category.features?.map((feature: any) => {
-                  const isSelected = selectedFeatures.includes(feature.id);
-                  return (
-                    <TouchableOpacity
-                      key={feature.id}
-                      style={[styles.amenityItem, isSelected && styles.amenityItemActive]}
-                      onPress={() => setSelectedFeatures(prev => prev.includes(feature.id) ? prev.filter(f => f !== feature.id) : [...prev, feature.id])}
-                    >
-                      <View style={styles.amenityIcon}>
-                        {feature.icon && feature.icon !== 'wifi' && feature.icon !== 'default' ? (
-                          <Image
-                            source={getImageSrc(feature.icon)}
-                            style={{ width: 22, height: 22 }}
-                            resizeMode="contain"
-                          />
-                        ) : (
-                          <Text style={{ fontSize: 20 }}>{feature.icon === 'wifi' ? '📶' : '✨'}</Text>
-                        )}
-                      </View>
-                      <Text style={styles.amenityName} numberOfLines={1}>{isRTL ? feature.name?.ar : feature.name?.en}</Text>
-                      {isSelected && <View style={styles.checkBadge}><Text style={{ color: '#fff', fontSize: 10 }}>✓</Text></View>}
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
-          ))}
-          <PrimaryButton label={isRTL ? 'حفظ المرافق' : 'Save Amenities'} onPress={handleUpdateAmenities} loading={isLinking} />
-          <View style={{ height: 40 }} />
-        </BottomSheetScrollView>
-      </BottomSheetModal>
+        chaletId={chaletId as string}
+        chalet={chalet}
+        refetchChalet={refetch}
+      />
 
       {/* 3. Images Modal */}
       <BottomSheetModal

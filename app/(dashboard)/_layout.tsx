@@ -21,10 +21,13 @@ export default function DashboardNonTabLayout() {
           />
         ) }}
     >
-      <Stack.Screen name="profile" options={{ title: "الملف الشخصي" }} />
       <Stack.Screen
         name="edit-business"
         options={{ title: "معلومات المصرف" }}
+      />
+      <Stack.Screen
+        name="edit-profile"
+        options={{ title: isRTL ? "المعلومات الشخصية" : "Personal Information" }}
       />
       <Stack.Screen
         name="add-chalet"

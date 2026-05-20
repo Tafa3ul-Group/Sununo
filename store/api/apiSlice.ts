@@ -126,6 +126,8 @@ export const apiSlice = createApi({
         url: `/provider/chalets/${chaletId}/images`,
         method: "POST",
         body: formData,
+        // Don't set Content-Type — FormData adds it automatically with boundary
+        headers: {},
       }),
       invalidatesTags: (result, error, { chaletId }) => [{ type: 'Chalet', id: chaletId }],
     }),
