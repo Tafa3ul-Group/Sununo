@@ -322,6 +322,15 @@ export const apiSlice = createApi({
       invalidatesTags: ["User"],
     }),
 
+    // Delete user profile
+    deleteProfile: builder.mutation({
+      query: () => ({
+        url: "/users/profile",
+        method: "DELETE",
+      }),
+      invalidatesTags: ["User"],
+    }),
+
     // Update user profile image
     updateProfileImage: builder.mutation({
       query: (data) => ({
@@ -601,6 +610,7 @@ export const {
   useUpdateProviderProfileMutation,
   useUpdateProfileMutation,
   useUpdateProfileImageMutation,
+  useDeleteProfileMutation,
   useGetProviderBookingsQuery,
   useGetProviderBookingDetailsQuery,
   useGetShiftAvailabilityQuery,

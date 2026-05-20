@@ -1,14 +1,16 @@
 import {
+  SolarAltArrowDownLinear,
   SolarCalendarBold,
+  SolarCameraBold,
+  SolarCheckCircleBold,
+  SolarLockBold,
   SolarMapPointBold,
-  SolarPenBold,
   SolarPhoneBold,
   SolarUserBold
 } from "@/components/icons/solar-icons";
 import { ThemedText } from '@/components/themed-text';
-import { Colors, normalize } from '@/constants/theme';
+import { Colors, normalize, Shadows } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
-import { isRTL } from "@/i18n";
 import { RootState } from '@/store';
 import {
   useGetCitiesQuery,
@@ -16,7 +18,7 @@ import {
   useUpdateProfileImageMutation,
   useUpdateProfileMutation
 } from '@/store/api/apiSlice';
-import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal } from '@gorhom/bottom-sheet';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
@@ -24,15 +26,17 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
+  I18nManager,
   Image,
   KeyboardAvoidingView,
+  Modal,
   Platform,
+  ScrollView,
   StyleSheet,
   TextInput,
   TouchableOpacity,
   View
 } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Toast from 'react-native-toast-message';
 import { useSelector } from 'react-redux';
 
@@ -53,7 +57,14 @@ const getCityName = (city: any, isArabic: boolean) => {
 };
 
 export default function EditProfileScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language ? i18n.language.startsWith('ar') : true;
+
+  const textStart: 'left' | 'right' = isArabic === I18nManager.isRTL ? 'left' : 'right';
+  const textEnd: 'left' | 'right' = isArabic === I18nManager.isRTL ? 'right' : 'left';
+  const alignStart: 'flex-start' | 'flex-end' = isArabic === I18nManager.isRTL ? 'flex-start' : 'flex-end';
+  const alignEnd: 'flex-start' | 'flex-end' = isArabic === I18nManager.isRTL ? 'flex-end' : 'flex-start';
+  const flexDir: 'row' | 'row-reverse' = isArabic === I18nManager.isRTL ? 'row' : 'row-reverse';
   const { user: authUser } = useSelector((state: RootState) => state.auth);
 
   const { data: userData } = useGetMeQuery(undefined);
@@ -88,12 +99,12 @@ export default function EditProfileScreen() {
 
   const handleSaveProfile = async () => {
     if (!formData.name.trim()) {
-      Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: isRTL ? 'يرجى إدخال الاسم' : 'Please enter your name', position: 'bottom' });
+      Toast.show({ type: 'error', text1: isArabic ? 'خطأ' : 'Error', text2: isArabic ? 'يرجى إدخال الاسم' : 'Please enter your name', position: 'bottom' });
       return;
     }
 
     if (!formData.cityId) {
-      Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: isRTL ? 'يرجى اختيار المدينة' : 'Please select a city', position: 'bottom' });
+      Toast.show({ type: 'error', text1: isArabic ? 'خطأ' : 'Error', text2: isArabic ? 'يرجى اختيار المدينة' : 'Please select a city', position: 'bottom' });
       return;
     }
 
@@ -105,12 +116,12 @@ export default function EditProfileScreen() {
         cityId: formData.cityId
       }).unwrap();
 
-      Toast.show({ type: 'success', text1: isRTL ? 'نجاح' : 'Success', text2: isRTL ? 'تم تحديث الملف الشخصي بنجاح' : 'Profile updated successfully', position: 'bottom' });
+      Toast.show({ type: 'success', text1: isArabic ? 'نجاح' : 'Success', text2: isArabic ? 'تم تحديث الملف الشخصي بنجاح' : 'Profile updated successfully', position: 'bottom' });
       router.back();
     } catch (error: any) {
       console.error('Update Profile Error:', error);
-      const errorMessage = error?.data?.message || (isRTL ? 'فشل تحديث الملف الشخصي' : 'Failed to update profile');
-      Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: Array.isArray(errorMessage) ? errorMessage[0] : errorMessage, position: 'bottom' });
+      const errorMessage = error?.data?.message || (isArabic ? 'فشل تحديث الملف الشخصي' : 'Failed to update profile');
+      Toast.show({ type: 'error', text1: isArabic ? 'خطأ' : 'Error', text2: Array.isArray(errorMessage) ? errorMessage[0] : errorMessage, position: 'bottom' });
     }
   };
 
@@ -148,11 +159,11 @@ export default function EditProfileScreen() {
 
       try {
         await updateProfileImage(imageFormData).unwrap();
-        Toast.show({ type: 'success', text1: isRTL ? 'نجاح' : 'Success', text2: isRTL ? 'تم تحديث الصورة بنجاح' : 'Profile image updated successfully', position: 'bottom' });
+        Toast.show({ type: 'success', text1: isArabic ? 'نجاح' : 'Success', text2: isArabic ? 'تم تحديث الصورة بنجاح' : 'Profile image updated successfully', position: 'bottom' });
       } catch (error: any) {
         console.error('Upload Image Error:', error);
-        const errorMessage = error?.data?.message || (isRTL ? 'فشل تحديث الصورة' : 'Failed to update image');
-        Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: Array.isArray(errorMessage) ? errorMessage[0] : errorMessage, position: 'bottom' });
+        const errorMessage = error?.data?.message || (isArabic ? 'فشل تحديث الصورة' : 'Failed to update image');
+        Toast.show({ type: 'error', text1: isArabic ? 'خطأ' : 'Error', text2: Array.isArray(errorMessage) ? errorMessage[0] : errorMessage, position: 'bottom' });
       }
     }
   };
@@ -160,124 +171,214 @@ export default function EditProfileScreen() {
   const selectedCityName = useMemo(() => {
     if (!formData.cityId) return '';
     const city = cities.find((c: any) => c.id === formData.cityId);
-    return getCityName(city || user?.city, isRTL);
-  }, [formData.cityId, cities, user?.city]);
+    return getCityName(city || user?.city, isArabic);
+  }, [formData.cityId, cities, user?.city, isArabic]);
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <View style={styles.container}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={{ flex: 1, backgroundColor: '#FFFFFF', direction: isRTL ? 'rtl' : 'ltr' }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
       >
-        <BottomSheetScrollView contentContainerStyle={styles.scrollContent}>
-          {/* Profile Image */}
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          {/* Profile Image Section */}
           <View style={styles.imageSection}>
-            <TouchableOpacity onPress={pickImage} style={styles.imageContainer}>
+            <TouchableOpacity onPress={pickImage} style={styles.imageContainer} activeOpacity={0.85}>
               <Image
                 source={user?.image ? getImageSrc(user.image) : { uri: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png' }}
                 style={styles.profileImage}
               />
-              <View style={styles.sheetEditBadge}>
+              <View style={styles.editBadge}>
                 {isUploadingImage ? (
                   <ActivityIndicator size="small" color={Colors.white} />
                 ) : (
-                  <SolarPenBold size={16} color={Colors.white} />
+                  <SolarCameraBold size={18} color={Colors.white} />
                 )}
               </View>
             </TouchableOpacity>
+            <TouchableOpacity onPress={pickImage} activeOpacity={0.7}>
+              <ThemedText style={[styles.changePhotoText, { textAlign: textStart }]}>
+                {isArabic ? 'تغيير الصورة الشخصية' : 'Change Profile Picture'}
+              </ThemedText>
+            </TouchableOpacity>
           </View>
 
-          {/* Form Fields */}
-          <View style={styles.formSection}>
+          {/* Personal Information Form */}
+          <View style={styles.card}>
+            <ThemedText style={[styles.cardHeaderTitle, { textAlign: textStart }]}>
+              {isArabic ? 'المعلومات الشخصية' : 'Personal Information'}
+            </ThemedText>
+
+            {/* Full Name */}
             <View style={styles.fieldContainer}>
-              <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'الاسم الكامل' : 'Full Name'}</ThemedText>
-              <View style={[styles.inputWrapper, { flexDirection: 'row' }]}>
+              <ThemedText style={[styles.label, { textAlign: textStart }]}>
+                {isArabic ? 'الاسم الكامل' : 'Full Name'}
+              </ThemedText>
+              <View style={[styles.inputWrapper, { flexDirection: flexDir }]}>
                 <SolarUserBold size={20} color={Colors.text.muted} />
                 <TextInput
-                  style={[styles.input, { textAlign: isRTL ? 'right' : 'left' }]}
+                  style={[styles.input, { textAlign: textStart }]}
                   value={formData.name}
                   onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
-                  placeholder={isRTL ? 'أدخل اسمك' : 'Enter your name'}
+                  placeholder={isArabic ? 'أدخل اسمك الكامل' : 'Enter your full name'}
                   placeholderTextColor={Colors.text.muted}
                 />
               </View>
             </View>
 
+            {/* Gender Control */}
             <View style={styles.fieldContainer}>
-              <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'رقم الهاتف' : 'Phone Number'}</ThemedText>
-              <View style={[styles.inputWrapper, styles.disabledInputWrapper, { flexDirection: 'row' }]}>
-                <SolarPhoneBold size={20} color={Colors.text.muted} />
-                <ThemedText style={[styles.input, { textAlign: isRTL ? 'right' : 'left', paddingTop: 14, direction: 'ltr' }]}>
-                  {user?.phone || ''}
-                </ThemedText>
-              </View>
-            </View>
-
-            <View style={styles.fieldContainer}>
-              <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'الجنس' : 'Gender'}</ThemedText>
-              <View style={[styles.genderContainer, { flexDirection: 'row' }]}>
+              <ThemedText style={[styles.label, { textAlign: textStart }]}>
+                {isArabic ? 'الجنس' : 'Gender'}
+              </ThemedText>
+              <View style={[styles.genderWrapper, { flexDirection: flexDir }]}>
                 <TouchableOpacity
-                  style={[styles.genderOption, formData.gender === 'male' && styles.genderOptionActive, { flex: 1 }]}
+                  style={[styles.genderOption, formData.gender === 'male' && styles.genderOptionActive]}
                   onPress={() => setFormData(prev => ({ ...prev, gender: 'male' }))}
+                  activeOpacity={0.8}
                 >
-                  <ThemedText style={[styles.genderText, formData.gender === 'male' && styles.genderTextActive]}>{isRTL ? 'ذكر' : 'Male'}</ThemedText>
+                  <ThemedText style={[styles.genderText, formData.gender === 'male' && styles.genderTextActive]}>
+                    {isArabic ? 'ذكر' : 'Male'}
+                  </ThemedText>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.genderOption, formData.gender === 'female' && styles.genderOptionActive, { flex: 1 }]}
+                  style={[styles.genderOption, formData.gender === 'female' && styles.genderOptionActive]}
                   onPress={() => setFormData(prev => ({ ...prev, gender: 'female' }))}
+                  activeOpacity={0.8}
                 >
-                  <ThemedText style={[styles.genderText, formData.gender === 'female' && styles.genderTextActive]}>{isRTL ? 'أنثى' : 'Female'}</ThemedText>
+                  <ThemedText style={[styles.genderText, formData.gender === 'female' && styles.genderTextActive]}>
+                    {isArabic ? 'أنثى' : 'Female'}
+                  </ThemedText>
                 </TouchableOpacity>
               </View>
             </View>
 
+            {/* Birthday Field */}
             <View style={styles.fieldContainer}>
-              <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'تاريخ الميلاد' : 'Birthday'}</ThemedText>
+              <ThemedText style={[styles.label, { textAlign: textStart }]}>
+                {isArabic ? 'تاريخ الميلاد' : 'Birthday'}
+              </ThemedText>
               <TouchableOpacity
-                style={[styles.inputWrapper, { flexDirection: 'row' }]}
+                style={[styles.inputWrapper, { flexDirection: flexDir }]}
                 onPress={() => setShowDatePicker(true)}
+                activeOpacity={0.7}
               >
                 <SolarCalendarBold size={20} color={Colors.text.muted} />
-                <ThemedText style={[styles.input, { textAlign: isRTL ? 'right' : 'left', paddingTop: 14 }]}>
-                  {formData.birthday.toLocaleDateString(isRTL ? 'ar-EG' : 'en-US')}
+                <ThemedText style={styles.inputTextValue}>
+                  {formData.birthday.toLocaleDateString(isArabic ? 'ar-EG' : 'en-US')}
                 </ThemedText>
               </TouchableOpacity>
-              {showDatePicker && (
-                <DateTimePicker
-                  value={formData.birthday}
-                  mode="date"
-                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                  onChange={(event, selectedDate) => {
-                    setShowDatePicker(false);
-                    if (selectedDate) setFormData(prev => ({ ...prev, birthday: selectedDate }));
-                  }}
-                  maximumDate={new Date()}
-                />
+              {Platform.OS === 'ios' ? (
+                <Modal
+                  transparent={true}
+                  animationType="slide"
+                  visible={showDatePicker}
+                  onRequestClose={() => setShowDatePicker(false)}
+                >
+                  <View style={styles.modalOverlay}>
+                    <View style={styles.modalContainer}>
+                      <View style={[styles.modalHeader, { flexDirection: flexDir }]}>
+                        <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                          <ThemedText style={styles.modalCloseText}>
+                            {isArabic ? 'إلغاء' : 'Cancel'}
+                          </ThemedText>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                          <ThemedText style={styles.modalDoneText}>
+                            {isArabic ? 'تم' : 'Done'}
+                          </ThemedText>
+                        </TouchableOpacity>
+                      </View>
+                      <View style={styles.modalPickerContainer}>
+                        <DateTimePicker
+                          value={formData.birthday}
+                          mode="date"
+                          display="spinner"
+                          textColor={Colors.text.primary}
+                          onChange={(event, selectedDate) => {
+                            if (selectedDate) setFormData(prev => ({ ...prev, birthday: selectedDate }));
+                          }}
+                          maximumDate={new Date()}
+                        />
+                      </View>
+                    </View>
+                  </View>
+                </Modal>
+              ) : (
+                showDatePicker && (
+                  <DateTimePicker
+                    value={formData.birthday}
+                    mode="date"
+                    display="default"
+                    onChange={(event, selectedDate) => {
+                      setShowDatePicker(false);
+                      if (selectedDate) setFormData(prev => ({ ...prev, birthday: selectedDate }));
+                    }}
+                    maximumDate={new Date()}
+                  />
+                )
               )}
             </View>
 
+            {/* City Field */}
             <View style={styles.fieldContainer}>
-              <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'المدينة' : 'City'}</ThemedText>
+              <ThemedText style={[styles.label, { textAlign: textStart }]}>
+                {isArabic ? 'المدينة' : 'City'}
+              </ThemedText>
               <TouchableOpacity
-                style={[styles.inputWrapper, { flexDirection: 'row' }]}
+                style={[styles.inputWrapper, { flexDirection: flexDir, justifyContent: 'space-between' }]}
                 onPress={() => citySheetRef.current?.present()}
+                activeOpacity={0.7}
               >
-                <SolarMapPointBold size={20} color={Colors.text.muted} />
-                <ThemedText style={[styles.input, { textAlign: isRTL ? 'right' : 'left', paddingTop: 14 }]}>
-                  {selectedCityName || (isRTL ? 'اختر المدينة' : 'Select City')}
-                </ThemedText>
+                <View style={{ flexDirection: flexDir, alignItems: 'center', gap: 12, flex: 1 }}>
+                  <SolarMapPointBold size={20} color={Colors.text.muted} />
+                  <ThemedText style={[styles.inputTextValue, !selectedCityName && { color: Colors.text.muted }]}>
+                    {selectedCityName || (isArabic ? 'اختر المدينة' : 'Select City')}
+                  </ThemedText>
+                </View>
+                <SolarAltArrowDownLinear size={16} color={Colors.text.muted} />
               </TouchableOpacity>
             </View>
           </View>
 
+          {/* Account Details Card */}
+          <View style={styles.card}>
+            <ThemedText style={[styles.cardHeaderTitle, { textAlign: textStart }]}>
+              {isArabic ? 'معلومات الحساب' : 'Account Details'}
+            </ThemedText>
+
+            {/* Phone Number (Read Only) */}
+            <View style={styles.fieldContainer}>
+              <View style={{ flexDirection: flexDir, justifyContent: 'space-between', alignItems: 'center' }}>
+                <ThemedText style={[styles.label, { textAlign: textStart }]}>
+                  {isArabic ? 'رقم الهاتف (غير قابل للتعديل)' : 'Phone Number (Read-only)'}
+                </ThemedText>
+                <SolarLockBold size={14} color={Colors.text.muted} />
+              </View>
+              <View style={[styles.inputWrapper, styles.disabledInputWrapper, { flexDirection: flexDir }]}>
+                <SolarPhoneBold size={20} color={Colors.text.muted} />
+                <ThemedText style={[styles.inputTextValue, styles.disabledInputText, { direction: 'ltr' }]}>
+                  {user?.phone || ''}
+                </ThemedText>
+              </View>
+            </View>
+          </View>
+
+          {/* Action Button */}
           <TouchableOpacity
             style={[styles.saveButton, (isUpdating || isUploadingImage) && styles.disabledButton]}
             onPress={handleSaveProfile}
             disabled={isUpdating || isUploadingImage}
+            activeOpacity={0.85}
           >
-            {isUpdating ? <ActivityIndicator color={Colors.white} /> : <ThemedText style={styles.saveButtonText}>{isRTL ? 'حفظ التغييرات' : 'Save Changes'}</ThemedText>}
+            {isUpdating ? (
+              <ActivityIndicator color={Colors.white} />
+            ) : (
+              <ThemedText style={styles.saveButtonText}>{isArabic ? 'حفظ التغييرات' : 'Save Changes'}</ThemedText>
+            )}
           </TouchableOpacity>
-        </BottomSheetScrollView>
+        </ScrollView>
 
         {/* City Picker Bottom Sheet */}
         <BottomSheetModal
@@ -290,80 +391,113 @@ export default function EditProfileScreen() {
           enablePanDownToClose
         >
           <View style={styles.citySheetContent}>
-            <ThemedText style={styles.sheetTitle}>{isRTL ? 'اختر المدينة' : 'Select City'}</ThemedText>
+            <ThemedText style={styles.sheetTitle}>{isArabic ? 'اختر المدينة' : 'Select City'}</ThemedText>
             <BottomSheetFlatList
               data={cities}
               keyExtractor={(item: any) => item.id}
+              contentContainerStyle={{ paddingBottom: 24 }}
               ListEmptyComponent={
                 <ThemedText style={styles.cityEmptyText}>
                   {isCitiesLoading
-                    ? (isRTL ? 'جاري تحميل المدن...' : 'Loading cities...')
+                    ? (isArabic ? 'جاري تحميل المدن...' : 'Loading cities...')
                     : isCitiesError
-                      ? (isRTL ? 'تعذر تحميل المدن' : 'Could not load cities')
-                      : (isRTL ? 'لا توجد مدن متاحة' : 'No cities available')}
+                      ? (isArabic ? 'تعذر تحميل المدن' : 'Could not load cities')
+                      : (isArabic ? 'لا توجد مدن متاحة' : 'No cities available')}
                 </ThemedText>
               }
               renderItem={({ item }: { item: any }) => (
                 <TouchableOpacity
-                  style={[styles.cityItem, { flexDirection: 'row' }]}
+                  style={[
+                    styles.cityItem,
+                    formData.cityId === item.id && styles.cityItemActive,
+                    { flexDirection: flexDir }
+                  ]}
                   onPress={() => {
                     setFormData(prev => ({ ...prev, cityId: item.id }));
                     citySheetRef.current?.dismiss();
                   }}
                 >
                   <ThemedText style={[styles.cityText, formData.cityId === item.id && styles.cityTextActive]}>
-                    {getCityName(item, isRTL)}
+                    {getCityName(item, isArabic)}
                   </ThemedText>
-                  {formData.cityId === item.id && <View style={styles.selectedDot} />}
+                  {formData.cityId === item.id && (
+                    <SolarCheckCircleBold size={20} color={Colors.primary} />
+                  )}
                 </TouchableOpacity>
               )}
             />
           </View>
         </BottomSheetModal>
       </KeyboardAvoidingView>
-    </GestureHandlerRootView>
+    </View >
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F8FAFC'
+  },
   scrollContent: {
-    padding: 20,
+    padding: 16,
     paddingBottom: 60
   },
   imageSection: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 28,
     marginTop: 10
   },
   imageContainer: {
     position: 'relative',
-    width: 110,
-    height: 110,
-    borderRadius: 55
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#FFFFFF',
+    ...Shadows.medium,
+    padding: 4
   },
   profileImage: {
     width: '100%',
     height: '100%',
-    borderRadius: 55
+    borderRadius: 56
   },
-  sheetEditBadge: {
+  editBadge: {
     position: 'absolute',
-    bottom: 0,
-    end: 0,
+    bottom: 2,
+    end: 2,
     backgroundColor: Colors.primary,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 3,
-    borderColor: 'white'
+    borderColor: '#FFFFFF',
+    ...Shadows.small
   },
-  formSection: {
-    gap: 16
+  changePhotoText: {
+    marginTop: 12,
+    fontSize: normalize.font(13),
+    fontFamily: "Alexandria-Medium",
+    color: Colors.primary,
+  },
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 16,
+    ...Shadows.small
+  },
+  cardHeaderTitle: {
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
+    color: Colors.text.primary,
+    fontWeight: '600',
+    marginBottom: 20,
   },
   fieldContainer: {
-    gap: 8
+    gap: 8,
+    marginBottom: 16
   },
   label: {
     fontSize: normalize.font(12),
@@ -371,44 +505,53 @@ const styles = StyleSheet.create({
     color: Colors.text.secondary
   },
   inputWrapper: {
-    minHeight: 56,
+    height: 52,
     backgroundColor: '#F8FAFC',
-    borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    alignItems: 'center'
+    borderColor: '#F0F0F0',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    gap: 12
   },
   disabledInputWrapper: {
-    backgroundColor: '#F1F5F9'
+    backgroundColor: '#F1F5F9',
+    borderColor: '#E2E8F0',
   },
   input: {
     flex: 1,
     fontSize: normalize.font(14),
+    color: Colors.text.primary,
+    height: '100%',
+    fontFamily: "Alexandria-Medium"
+  },
+  inputTextValue: {
+    fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
-    marginHorizontal: 12
   },
-  genderContainer: {
-    gap: 12
+  disabledInputText: {
+    color: Colors.text.secondary,
+  },
+  genderWrapper: {
+    height: 54,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 16,
+    padding: 4,
+    gap: 4
   },
   genderOption: {
-    minHeight: 52,
-    borderRadius: 16,
-    backgroundColor: '#F8FAFC',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    paddingVertical: 12,
+    flex: 1,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center'
   },
   genderOptionActive: {
-    borderColor: Colors.primary,
-    backgroundColor: '#EEF2FF'
+    backgroundColor: '#FFFFFF',
+    ...Shadows.small
   },
   genderText: {
-    fontSize: normalize.font(14),
+    fontSize: normalize.font(13),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.secondary
   },
@@ -418,14 +561,15 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     backgroundColor: Colors.primary,
-    height: 58,
+    height: 56,
     borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 30
+    marginTop: 10,
+    ...Shadows.medium
   },
   disabledButton: {
-    opacity: 0.7
+    opacity: 0.6
   },
   saveButtonText: {
     color: 'white',
@@ -437,15 +581,23 @@ const styles = StyleSheet.create({
     padding: 20
   },
   cityItem: {
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+    backgroundColor: '#F8FAFC',
     justifyContent: 'space-between',
     alignItems: 'center'
   },
+  cityItemActive: {
+    backgroundColor: '#EEF2FF',
+    borderWidth: 1,
+    borderColor: '#C7D2FE'
+  },
   cityText: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium"
+    fontSize: normalize.font(13),
+    fontFamily: "Alexandria-Medium",
+    color: Colors.text.primary
   },
   cityTextActive: {
     color: Colors.primary,
@@ -455,20 +607,49 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
     textAlign: 'center',
     color: Colors.text.muted,
-    fontSize: normalize.font(14),
+    fontSize: normalize.font(13),
     fontFamily: "Alexandria-Medium"
   },
-  selectedDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.primary
-  },
   sheetTitle: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(15),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
     textAlign: 'center',
     marginBottom: 16
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    justifyContent: 'flex-end',
+  },
+  modalContainer: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+  },
+  modalHeader: {
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  modalDoneText: {
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
+    color: Colors.primary,
+  },
+  modalCloseText: {
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
+    color: Colors.text.secondary,
+  },
+  modalPickerContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    width: '100%'
   }
 });
