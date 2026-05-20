@@ -95,6 +95,7 @@ export const customerApi = apiSlice.injectEndpoints({
         bookingDate: string;
         adultsCount?: number;
         childrenCount?: number;
+        guestsCount?: number;
         addonIds?: string[];
         paymentModel: "DEPOSIT" | "FULL";
         useWalletBalance?: boolean;

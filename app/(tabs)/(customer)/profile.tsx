@@ -8,6 +8,7 @@ import {
     SolarPhoneBold,
     SolarProfileEdit,
     SolarShieldBold,
+    SolarTrashBinBold,
 } from '@/components/icons/solar-icons';
 import { LanguageSheet } from '@/components/user/language-sheet';
 import { LogoutSheet } from '@/components/user/logout-sheet';
@@ -17,7 +18,8 @@ import { getImageSrc } from '@/hooks/useImageSrc';
 import { getFlexDirection } from "@/i18n";
 import { RootState } from '@/store';
 import { useGetMeQuery } from '@/store/api/apiSlice';
-import { useGetCustomerWalletQuery } from '@/store/api/customerApiSlice';
+import { useGetCustomerWalletQuery, useDeleteCustomerAccountMutation } from '@/store/api/customerApiSlice';
+import { logout } from '@/store/authSlice';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
 import React, { useRef } from 'react';
@@ -30,9 +32,10 @@ import {
     TouchableOpacity,
     View,
     I18nManager,
+    Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 
 export default function CustomerProfileScreen() {
     const { t, i18n } = useTranslation();
@@ -52,6 +55,44 @@ export default function CustomerProfileScreen() {
 
     const { data: meData } = useGetMeQuery(undefined);
     const { data: walletData } = useGetCustomerWalletQuery(undefined);
+
+    const dispatch = useDispatch();
+    const [deleteCustomerAccount] = useDeleteCustomerAccountMutation();
+
+    const handleDeleteAccount = () => {
+        Alert.alert(
+            isArabic ? 'حذف الحساب' : 'Delete Account',
+            isArabic 
+                ? 'هل أنت متأكد من رغبتك في حذف حسابك نهائياً؟ هذا الإجراء لا يمكن التراجع عنه وسيؤدي إلى حذف جميع بياناتك.' 
+                : 'Are you sure you want to permanently delete your account? This action cannot be undone and will delete all your data.',
+            [
+                {
+                    text: isArabic ? 'إلغاء' : 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: isArabic ? 'حذف الحساب' : 'Delete Account',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            await deleteCustomerAccount(undefined).unwrap();
+                            Alert.alert(
+                                isArabic ? 'تم الحذف' : 'Deleted',
+                                isArabic ? 'تم حذف حسابك بنجاح.' : 'Your account has been successfully deleted.'
+                            );
+                            dispatch(logout());
+                        } catch (err: any) {
+                            console.error('Delete Account Error:', err);
+                            Alert.alert(
+                                isArabic ? 'خطأ' : 'Error',
+                                isArabic ? 'فشل في حذف الحساب. يرجى المحاولة لاحقاً.' : 'Failed to delete account. Please try again later.'
+                            );
+                        }
+                    }
+                }
+            ]
+        );
+    };
 
     const userData = (meData as any)?.data || meData || authUser;
     const walletBalance = walletData?.balance
@@ -91,6 +132,13 @@ export default function CustomerProfileScreen() {
             title: t('profile.privacyPolicy'),
             shape: 'blue' as const,
             icon: <SolarShieldBold size={20} color="white" />,
+        },
+        {
+            id: 'deleteAccount',
+            title: isArabic ? 'حذف الحساب' : 'Delete Account',
+            shape: 'red' as const,
+            icon: <SolarTrashBinBold size={20} color="white" />,
+            action: handleDeleteAccount,
         },
         {
             id: 'logout',
@@ -174,7 +222,7 @@ export default function CustomerProfileScreen() {
                                 <Text
                                     style={[
                                         styles.menuLabelText,
-                                        item.id === 'logout' && styles.logoutText,
+                                        (item.id === 'logout' || item.id === 'deleteAccount') && styles.logoutText,
                                     ]}
                                 >
                                     {item.title}
