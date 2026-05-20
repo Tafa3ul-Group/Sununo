@@ -198,47 +198,31 @@ export default function GalleryScreen() {
         </View>
       </Modal>
 
-      {/* Simplified Custom Header to match image */}
-      <View style={[styles.header, { flexDirection: flexDir }]}>
-        <View style={styles.headerSide} />
-        <ThemedText style={styles.headerTitle}>{t("headers.gallery")}</ThemedText>
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-           {isArabic ? (
-             <SolarAltArrowRightBold size={24} color="#035DF9" />
-           ) : (
-             <SolarAltArrowLeftBold size={24} color="#035DF9" />
-           )}
-        </TouchableOpacity>
-      </View>
+      <HeaderSection
+        title={t("headers.gallery")}
+        showBackButton
+        onBackPress={() => router.back()}
+      />
 
       {/* Categories Filter (Matching Image) */}
       <View style={styles.catArea}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={[styles.catList, { flexDirection: flexDir }]}
+          contentContainerStyle={styles.catList}
         >
-          {CATEGORIES.map((filter) => {
-            const isActive = activeFilter === filter.id;
-            return (
-              <TouchableOpacity
+          <View style={{ flexDirection: flexDir, gap: 10 }}>
+            {CATEGORIES.map((filter) => (
+              <SecondaryButton
                 key={filter.id}
-                style={[
-                  styles.categoryTab,
-                  { flexDirection: flexDir },
-                  isActive && { borderColor: filter.activeColor, backgroundColor: filter.activeColor }
-                ]}
+                label={filter.label}
+                isActive={activeFilter === filter.id}
+                activeColor={filter.activeColor}
+                icon={filter.icon(activeFilter === filter.id)}
                 onPress={() => setActiveFilter(filter.id)}
-              >
-                <ThemedText style={[styles.categoryTabText, isActive && { color: "white" }]}>
-                  {filter.label}
-                </ThemedText>
-                <View style={[styles.categoryIconCircle, isActive && { backgroundColor: "rgba(255,255,255,0.2)" }]}>
-                  {filter.icon(isActive)}
-                </View>
-              </TouchableOpacity>
-            );
-          })}
+              />
+            ))}
+          </View>
         </ScrollView>
       </View>
 
