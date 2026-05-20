@@ -1,31 +1,34 @@
 import { HeaderSection } from "@/components/header-section";
 import { SectionIcon } from "@/components/icons/section-icon";
 import {
-    SolarCloseCircleBold,
-    SolarFireBold,
-    SolarHome2Bold,
-    SolarWaterBold,
-    SolarWidgetBold
+  SolarCloseCircleBold,
+  SolarFireBold,
+  SolarHome2Bold,
+  SolarWaterBold,
+  SolarWidgetBold,
+  SolarAltArrowLeftBold,
+  SolarAltArrowRightBold
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { SecondaryButton } from "@/components/user/secondary-button";
-import { Colors } from "@/constants/theme";
+import { Colors, normalize } from "@/constants/theme";
 import { RootState } from "@/store";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-    Dimensions,
-    I18nManager,
-    Image,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    View
+  Dimensions,
+  I18nManager,
+  Image,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
+import { Image as ExpoImage } from "expo-image";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -36,25 +39,25 @@ import { useGetCustomerChaletDetailsQuery } from "@/store/api/customerApiSlice";
 // Categories mapping helper
 const CATEGORY_ICONS: Record<string, any> = {
   pool: (isActive: boolean) => (
-    <SolarWaterBold size={18} color={isActive ? "white" : Colors.secondary} />
+    <SolarWaterBold size={18} color={isActive ? "white" : "#035DF9"} />
   ),
   bbq: (isActive: boolean) => (
-    <SolarFireBold size={18} color={isActive ? "white" : Colors.accent} />
+    <SolarFireBold size={18} color={isActive ? "white" : "#035DF9"} />
   ),
   kitchen: (isActive: boolean) => (
-    <SolarHome2Bold size={18} color={isActive ? "white" : Colors.secondary} />
+    <SolarHome2Bold size={18} color={isActive ? "white" : "#035DF9"} />
   ),
   bath: (isActive: boolean) => (
-    <SolarWaterBold size={18} color={isActive ? "white" : Colors.primary} />
+    <SolarWaterBold size={18} color={isActive ? "white" : "#035DF9"} />
   ),
   default: (isActive: boolean) => (
-    <SolarWidgetBold size={18} color={isActive ? "white" : Colors.primary} />
+    <SolarWidgetBold size={18} color={isActive ? "white" : "#035DF9"} />
   ),
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
-  pool: Colors.secondary,
-  bbq: Colors.accent,
+  pool: "#035DF9",
+  bbq: "#F64200",
   kitchen: "#15AB64",
   bath: "#035DF9",
   default: Colors.primary,
@@ -79,9 +82,9 @@ export default function GalleryScreen() {
   const { userType } = useSelector((state: RootState) => state.auth);
   
   const isArabic = i18n.language ? i18n.language.startsWith("ar") : true;
-  const flexDir: "row" | "row-reverse" = isArabic === I18nManager.isRTL ? "row" : "row-reverse";
-  const alignStart: "flex-start" | "flex-end" = isArabic === I18nManager.isRTL ? "flex-start" : "flex-end";
-  const textStart: "left" | "right" = isArabic === I18nManager.isRTL ? "left" : "right";
+  const flexDir: "row" | "row-reverse" = isArabic ? "row-reverse" : "row";
+  const alignStart: "flex-start" | "flex-end" = isArabic ? "flex-end" : "flex-start";
+  const textStart: "left" | "right" = isArabic ? "right" : "left";
 
   const [activeFilter, setActiveFilter] = useState("all");
   const [viewerVisible, setViewerVisible] = useState(false);
@@ -154,9 +157,13 @@ export default function GalleryScreen() {
   }, [gallerySections, t]);
 
   const openViewer = (url: any) => {
-    setViewerImage(
-      typeof url === "string" ? url : Image.resolveAssetSource(url).uri,
-    );
+    if (typeof url === "string") {
+      setViewerImage(url);
+    } else if (url && url.uri) {
+      setViewerImage(url.uri);
+    } else {
+      setViewerImage(Image.resolveAssetSource(url).uri);
+    }
     setViewerVisible(true);
   };
 
@@ -191,36 +198,47 @@ export default function GalleryScreen() {
         </View>
       </Modal>
 
-      {/* Header */}
-      <HeaderSection
-        title={t("headers.gallery")}
-        showBackButton
-        showLogo={true}
-        showSearch={false}
-        showCategories={false}
-        userType={userType}
-        onBackPress={() => router.back()}
-      />
+      {/* Simplified Custom Header to match image */}
+      <View style={[styles.header, { flexDirection: flexDir }]}>
+        <View style={styles.headerSide} />
+        <ThemedText style={styles.headerTitle}>{t("headers.gallery")}</ThemedText>
+        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+           {isArabic ? (
+             <SolarAltArrowRightBold size={24} color="#035DF9" />
+           ) : (
+             <SolarAltArrowLeftBold size={24} color="#035DF9" />
+           )}
+        </TouchableOpacity>
+      </View>
 
-      {/* Categories Filter (Home Page Style) */}
+      {/* Categories Filter (Matching Image) */}
       <View style={styles.catArea}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.catList}
+          contentContainerStyle={[styles.catList, { flexDirection: flexDir }]}
         >
-          <View style={{ flexDirection: flexDir, gap: 10 }}>
-            {CATEGORIES.map((filter) => (
-              <SecondaryButton
+          {CATEGORIES.map((filter) => {
+            const isActive = activeFilter === filter.id;
+            return (
+              <TouchableOpacity
                 key={filter.id}
-                label={filter.label}
-                isActive={activeFilter === filter.id}
-                activeColor={filter.activeColor}
-                icon={filter.icon(activeFilter === filter.id)}
+                style={[
+                  styles.categoryTab,
+                  { flexDirection: flexDir },
+                  isActive && { borderColor: filter.activeColor, backgroundColor: filter.activeColor }
+                ]}
                 onPress={() => setActiveFilter(filter.id)}
-              />
-            ))}
-          </View>
+              >
+                <ThemedText style={[styles.categoryTabText, isActive && { color: "white" }]}>
+                  {filter.label}
+                </ThemedText>
+                <View style={[styles.categoryIconCircle, isActive && { backgroundColor: "rgba(255,255,255,0.2)" }]}>
+                  {filter.icon(isActive)}
+                </View>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
       </View>
 
@@ -239,9 +257,10 @@ export default function GalleryScreen() {
               onPress={() => openViewer(section.images[0])}
               style={styles.imageCard}
             >
-              <Image
-                source={{ uri: section.images[0] }}
+              <ExpoImage
+                source={section.images[0]}
                 style={styles.bigImage}
+                contentFit="cover"
               />
             </TouchableOpacity>
 
@@ -254,7 +273,11 @@ export default function GalleryScreen() {
                   activeOpacity={0.9}
                   onPress={() => openViewer(img)}
                 >
-                  <Image source={{ uri: img }} style={styles.smallImage} />
+                  <ExpoImage 
+                    source={img} 
+                    style={styles.smallImage}
+                    contentFit="cover"
+                  />
                 </TouchableOpacity>
               ))}
             </View>
@@ -277,12 +300,66 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFFFFF",
   },
+  header: {
+    height: 60,
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    backgroundColor: "#FFF",
+  },
+  headerSide: {
+    width: 44,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontFamily: "Alexandria-Medium",
+    color: "#1E293B",
+  },
+  backBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
   catArea: {
-    paddingVertical: 10,
+    paddingVertical: 15,
   },
   catList: {
     paddingHorizontal: 20,
-    paddingBottom: 5,
+    gap: 12,
+  },
+  categoryTab: {
+    paddingLeft: 16,
+    paddingRight: 6,
+    paddingVertical: 6,
+    borderRadius: 12,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#F1F5F9",
+    alignItems: "center",
+    gap: 10,
+  },
+  categoryTabText: {
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
+    color: "#035DF9",
+  },
+  categoryIconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: "#F8FAFC",
+    justifyContent: "center",
+    alignItems: "center",
   },
   scrollContent: {
     paddingBottom: 40,

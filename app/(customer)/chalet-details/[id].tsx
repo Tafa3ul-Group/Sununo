@@ -532,51 +532,34 @@ export default function ChaletDetailScreen() {
         <View style={styles.infoWrapper}>
           {/* العنوان والتقييم */}
           <View
-            style={{ alignItems: alignStart, width: "100%", marginBottom: 20 }}
+            style={{
+              flexDirection: isRTL ? 'row-reverse' : 'row',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              width: '100%',
+              marginBottom: 20
+            }}
           >
-            <View
-              style={{
-                flexDirection: flexDir === "row" ? "row-reverse" : "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                width: "100%",
-                gap: 12,
-              }}
-            >
-              {/* التقييم — دائماً على الجانب الأبعد عن الاسم */}
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
-              >
-                <SolarStarBold size={14} color="#035DF9" />
-                <ThemedText style={styles.ratingVal}>
-                  {chaletRating.toFixed(1)}
-                </ThemedText>
-              </View>
-              {/* الاسم — يمين في عربي، يسار في إنجليزي */}
-              <View style={{ flex: 1, alignItems: alignStart }}>
-                <ThemedText
-                  style={[
-                    styles.mainTitle,
-                    { textAlign: textStart, width: "100%" },
-                  ]}
-                  numberOfLines={2}
-                >
-                  {chaletName}
-                </ThemedText>
-              </View>
-            </View>
-
-            <View
-              style={{ width: "100%", marginTop: 4, alignItems: alignStart }}
-            >
+            <View style={{ flex: 1 }}>
               <ThemedText
-                style={[
-                  styles.locationSub,
-                  { textAlign: textStart, width: "100%" },
-                ]}
+                style={[styles.mainTitle, { textAlign: isRTL ? 'right' : 'left' }]}
+                numberOfLines={2}
+              >
+                {chaletName}
+              </ThemedText>
+              <ThemedText
+                style={[styles.locationSub, { textAlign: isRTL ? 'right' : 'left', marginTop: 4 }]}
               >
                 {chaletCategory ? `${chaletCategory} • ` : ""}
                 {chaletLocation}
+              </ThemedText>
+            </View>
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 4, marginLeft: isRTL ? 0 : 12, marginRight: isRTL ? 12 : 0 }}
+            >
+              <SolarStarBold size={14} color="#035DF9" />
+              <ThemedText style={styles.ratingVal}>
+                {chaletRating.toFixed(1)}
               </ThemedText>
             </View>
           </View>

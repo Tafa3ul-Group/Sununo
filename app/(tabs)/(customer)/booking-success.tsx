@@ -58,6 +58,36 @@ export default function BookingSuccessDetailsScreen() {
     ? Number(booking.remainingAmount).toLocaleString()
     : "0";
 
+  const paymentStatusInfo = useMemo(() => {
+    const status = booking?.paymentStatus;
+    const deposit = Number(booking?.depositAmount || 0);
+    const remaining = Number(booking?.remainingAmount || 0);
+    const total = Number(booking?.totalPrice || 0);
+
+    if (status === 'paid' || (remaining === 0 && total > 0)) {
+      return {
+        text: t('booking.status.paid'),
+        style: styles.statusBadgeBlue,
+        textStyle: styles.statusBadgeTextBlue,
+      };
+    }
+    
+    if (deposit > 0 && remaining > 0) {
+      return {
+        text: isRTL ? 'عربون مدفوع' : 'Deposit Paid',
+        style: styles.statusBadgeOrange,
+        textStyle: styles.statusBadgeTextOrange,
+      };
+    }
+
+    // Default case (e.g., payment pending, not paid at all)
+    return {
+      text: isRTL ? 'غير مدفوع' : 'Unpaid',
+      style: styles.statusBadgeGray,
+      textStyle: styles.statusBadgeTextGray,
+    };
+  }, [booking, t, isRTL]);
+
   const shiftInfo = useMemo(() => {
     if (!booking?.shift) return t("booking.morningShift");
     const name = isRTL
@@ -256,23 +286,9 @@ export default function BookingSuccessDetailsScreen() {
             <View
               style={[isRTL ? { marginRight: "auto" } : { marginLeft: "auto" }]}
             >
-              <View
-                style={
-                  booking?.paymentStatus === "paid"
-                    ? styles.statusBadgeBlue
-                    : styles.statusBadgeGray
-                }
-              >
-                <ThemedText
-                  style={
-                    booking?.paymentStatus === "paid"
-                      ? styles.statusBadgeTextBlue
-                      : styles.statusBadgeTextGray
-                  }
-                >
-                  {booking?.paymentStatus === "paid"
-                    ? t("booking.status.paid")
-                    : t("booking.status.deferred")}
+              <View style={paymentStatusInfo.style}>
+                <ThemedText style={paymentStatusInfo.textStyle}>
+                  {paymentStatusInfo.text}
                 </ThemedText>
               </View>
             </View>
@@ -364,6 +380,17 @@ const styles = StyleSheet.create({
   },
   statusBadgeTextBlue: {
     color: "#FFF",
+    fontSize: normalize.font(8),
+    fontFamily: "Alexandria-Medium",
+  },
+  statusBadgeOrange: {
+    backgroundColor: '#FFF7ED',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  statusBadgeTextOrange: {
+    color: '#F97316',
     fontSize: normalize.font(8),
     fontFamily: "Alexandria-Medium",
   },
