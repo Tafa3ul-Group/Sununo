@@ -32,7 +32,7 @@ export function DashboardHeader({
   onSearchPress,
   onDeletePress,
   customRightComponent,
-  marginBottom = 8
+  marginBottom = 0
 }: DashboardHeaderProps) {
   const router = useRouter();
   const [logoLang, setLogoLang] = useState<'ar' | 'en'>(isRTL ? 'ar' : 'en');

@@ -12,7 +12,7 @@ export default function DashboardNonTabLayout() {
     <Stack
       screenOptions={{
         headerShown: true,
-        contentStyle: { direction: isRTL ? "rtl" : "ltr" },
+        contentStyle: { direction: isRTL ? "rtl" : "ltr", backgroundColor: "#FFFFFF" },
         header: (props) => (
           <DashboardHeader 
             title={props.options.title}

@@ -171,13 +171,16 @@ export default function ChaletDetailsScreen() {
         bathrooms: chalet.bathrooms?.toString() || ''
       });
       setRulesForm({
-        rules: chalet.rules ? chalet.rules.map((r: any, idx: number) => ({
-          id: r.id || String(idx),
-          titleAr: r.title?.ar || r.title || '',
-          titleEn: r.title?.en || '',
-          descriptionAr: r.description?.ar || r.description || '',
-          descriptionEn: r.description?.en || '',
-        })) : []
+        rules: chalet.rules ? chalet.rules.map((r: any, idx: number) => {
+          const item = Array.isArray(r) ? (r[0] || {}) : r;
+          return {
+            id: item.id || String(idx),
+            titleAr: item.title?.ar || item.title || '',
+            titleEn: item.title?.en || '',
+            descriptionAr: item.description?.ar || item.description || '',
+            descriptionEn: item.description?.en || '',
+          };
+        }) : []
       });
     }
   }, [chalet]);

@@ -74,25 +74,31 @@ function ShiftPricingView({ shift, isRTL, onEdit }: { shift: any; isRTL: boolean
     </View>
   );
 
-  const flexDirection = 'row';
-
   return (
-    <View style={styles.pricingSectionContainer}>
-      <View style={[styles.expandedHeader, { flexDirection, marginBottom: 16, alignItems: 'center', justifyContent: 'space-between' }]}>
-        <View style={[styles.row, { flexDirection, alignItems: 'center' }]}>
-          <SolarBanknoteBold size={18} color={Colors.primary} style={{ marginHorizontal: 6 }} />
-          <Text style={styles.expandedTitle}>{isRTL ? 'تخصيص أسعار الأيام' : 'Daily Pricing'}</Text>
+    <View style={{ backgroundColor: '#fff', borderRadius: 24, padding: 20, marginVertical: 12 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 4 }}>
+          <View style={{ width: 20, height: 20, backgroundColor: '#93C5FD', borderRadius: 6, justifyContent: 'center', alignItems: 'center' }}>
+            <View style={{ width: 10, height: 10, backgroundColor: '#2563EB', borderRadius: 5 }} />
+          </View>
+          <Text style={{ fontSize: 18, fontFamily: "Alexandria-SemiBold", color: '#111827' }}>
+            {isRTL ? 'تخصيص أسعار الأيام' : 'Daily Pricing'}
+          </Text>
         </View>
+
         <TouchableOpacity
           onPress={() => onEdit(pricing)}
-          style={styles.editBadge}
+          style={{ backgroundColor: '#EFF6FF', paddingVertical: 10, paddingHorizontal: 16, borderRadius: 14, alignItems: 'center', gap: 6 }}
+          activeOpacity={0.8}
         >
-          <SolarPenBold size={12} color={Colors.primary} style={{ marginHorizontal: 4 }} />
-          <Text style={styles.editBadgeText}>{isRTL ? 'تعديل الأسعار' : 'Edit Prices'}</Text>
+          <SolarPenBold size={16} color="#2563EB" />
+          <Text style={{ fontSize: 12, color: '#2563EB', fontFamily: "Alexandria-SemiBold" }}>
+            {isRTL ? 'تعديل الأسعار' : 'Edit Prices'}
+          </Text>
         </TouchableOpacity>
       </View>
 
-      <View style={[styles.pricingGrid, { flexDirection: 'row' }]}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, rowGap: 12 }}>
         {fullPricing.map((item) => {
           const isWeekend = item.dayOfWeek === 5 || item.dayOfWeek === 6;
           const isClosed = item.price <= 1;
@@ -101,34 +107,40 @@ function ShiftPricingView({ shift, isRTL, onEdit }: { shift: any; isRTL: boolean
             <TouchableOpacity
               key={`mini-day-${item.dayOfWeek}`}
               style={[
-                styles.pricingMiniCard,
-                isWeekend && styles.weekendMiniCard,
-                isClosed && styles.closedMiniCard
+                {
+                   width: '23%',
+                   height: 75,
+                   backgroundColor: '#F9FAFB',
+                   borderRadius: 16,
+                   alignItems: 'center',
+                   justifyContent: 'center',
+                   gap: 6
+                },
+                isWeekend && { backgroundColor: '#FFF5F5' },
+                isClosed && { opacity: 0.5 }
               ]}
               onPress={() => onEdit(pricing)}
               activeOpacity={0.8}
             >
               <Text style={[
-                styles.miniCardDay,
-                isWeekend && { color: Colors.error },
-                isClosed && { color: '#999' }
+                { fontSize: 12, color: '#6B7280', fontFamily: "Alexandria-Medium" },
+                isWeekend && { color: '#F97316' },
+                isClosed && { color: '#9CA3AF' }
               ]}>
                 {daysShort[item.dayOfWeek]}
               </Text>
 
               {isClosed ? (
-                <View style={styles.closedBadgeMini}>
-                  <Text style={styles.closedBadgeTextMini}>{isRTL ? 'مغلق' : 'OFF'}</Text>
+                <View style={{ backgroundColor: '#FEE2E2', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
+                  <Text style={{ fontSize: 10, color: '#DC2626', fontFamily: "Alexandria-SemiBold" }}>{isRTL ? 'مغلق' : 'OFF'}</Text>
                 </View>
               ) : (
-                <View style={styles.miniCardPriceRow}>
-                  <Text style={[
-                    styles.miniCardPrice,
-                    isWeekend && { color: Colors.error }
-                  ]}>
-                    {formatPrice(item.price)}
-                  </Text>
-                </View>
+                <Text style={[
+                  { fontSize: 15, fontFamily: "Alexandria-Medium", color: '#111827' },
+                  isWeekend && { color: '#F97316' }
+                ]}>
+                  {Number(item.price).toLocaleString()}
+                </Text>
               )}
             </TouchableOpacity>
           );
