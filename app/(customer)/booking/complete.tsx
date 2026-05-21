@@ -417,8 +417,20 @@ export default function CompleteBookingScreen() {
       !hasFilterDates || filterDateKeys.has(getDateKeyForDay(day)),
     [filterDateKeys, getDateKeyForDay, hasFilterDates],
   );
-  const selectedShiftPrice = useMemo(() => {
-    let total = 0;
+  const pricingCalculations = useMemo(() => {
+    let totalBasePrice = 0;
+    let totalExtraGuestsPrice = 0;
+    let explanationRows: Array<{
+      day: number;
+      dateStr: string;
+      basePrice: number;
+      extraGuestsCount: number;
+      extraGuestsPrice: number;
+      capacityLimit: number;
+    }> = [];
+
+    const totalGuestsNow = adultCount;
+
     selectedDates.forEach((day) => {
       const shiftId = selectedShifts[day];
       if (shiftId) {
@@ -428,20 +440,84 @@ export default function CompleteBookingScreen() {
           const pricing = shift.pricing?.find(
             (p: any) => p.dayOfWeek === dayOfWeek,
           );
-          total += pricing
+
+          let basePrice = pricing
             ? Number(pricing.price)
             : Number(chaletDetails?.basePrice || 0);
+
+          let selectedCapacityLimit = Number(chaletDetails?.priceCapacity || 2);
+
+          if (pricing?.capacityPricings && pricing.capacityPricings.length > 0) {
+            const sortedTiers = [...pricing.capacityPricings].sort(
+              (a: any, b: any) => b.guestCount - a.guestCount
+            );
+            const bestTier = sortedTiers.find((t: any) => t.guestCount <= totalGuestsNow);
+            if (bestTier) {
+              basePrice = Number(bestTier.price);
+              selectedCapacityLimit = bestTier.guestCount;
+            }
+          }
+
+          let extraGuestsCount = 0;
+          let extraGuestsPrice = 0;
+          if (totalGuestsNow > selectedCapacityLimit) {
+            extraGuestsCount = totalGuestsNow - selectedCapacityLimit;
+            extraGuestsPrice = extraGuestsCount * Number(chaletDetails?.extraPersonPrice || 0);
+          }
+
+          totalBasePrice += basePrice;
+          totalExtraGuestsPrice += extraGuestsPrice;
+
+          const date = getDateForDay(day);
+          const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+          explanationRows.push({
+            day,
+            dateStr,
+            basePrice,
+            extraGuestsCount,
+            extraGuestsPrice,
+            capacityLimit: selectedCapacityLimit,
+          });
         }
       }
     });
-    return total;
-  }, [selectedShifts, selectedDates, chaletDetails, currentMonth]);
+
+    const totalPrice = totalBasePrice + totalExtraGuestsPrice;
+    const depositPercentage = Number(chaletDetails?.depositPercentage || 0);
+    const depositAmount = Math.round((totalPrice * depositPercentage) / 100);
+    const remainingAmount = totalPrice - depositAmount;
+
+    return {
+      shiftBasePrice: totalBasePrice,
+      extraGuestsPrice: totalExtraGuestsPrice,
+      totalPrice,
+      depositAmount,
+      remainingAmount,
+      explanationRows,
+      totalGuestsNow,
+    };
+  }, [selectedShifts, selectedDates, chaletDetails, adultCount, currentMonth, getDayOfWeek, getDateForDay]);
+
+  const {
+    shiftBasePrice,
+    extraGuestsPrice,
+    totalPrice,
+    depositAmount,
+    remainingAmount,
+    explanationRows,
+  } = pricingCalculations;
+
+  const selectedShiftPrice = shiftBasePrice;
 
   const totalGuestsNow = adultCount;
-  const baseCapacity = Number(chaletDetails?.priceCapacity || 2);
   const extraPersonPrice = Number(chaletDetails?.extraPersonPrice || 0);
-  const extraGuestsCount = Math.max(0, totalGuestsNow - baseCapacity);
-  const extraGuestsPrice = extraGuestsCount * extraPersonPrice * selectedDates.length;
+
+  const capacityLimit = explanationRows.length > 0
+    ? explanationRows[0].capacityLimit
+    : Number(chaletDetails?.priceCapacity || 2);
+
+  const extraGuestsCount = Math.max(0, totalGuestsNow - capacityLimit);
 
   const isShiftBookedForDay = useCallback(
     (day: number, shiftId: string) => {
@@ -454,31 +530,15 @@ export default function CompleteBookingScreen() {
     [availabilityData, currentMonth],
   );
 
-  const calculateTotalPrice = () => {
-    let total = 0;
-    selectedDates.forEach((day) => {
-      const shiftId = selectedShifts[day];
-      if (shiftId) {
-        const shift = chaletDetails?.shifts?.find((s: any) => s.id === shiftId);
-        if (shift) {
-          const dayOfWeek = getDayOfWeek(day);
-          const pricing = shift.pricing?.find(
-            (p: any) => p.dayOfWeek === dayOfWeek,
-          );
-          total += pricing
-            ? Number(pricing.price)
-            : Number(chaletDetails?.basePrice || 0);
-        }
-      }
-    });
-    return total;
-  };
-
-  const shiftBasePrice = calculateTotalPrice();
-  const totalPrice = shiftBasePrice + extraGuestsPrice;
   const depositPercentage = Number(chaletDetails?.depositPercentage || 0);
-  const depositAmount = Math.round((totalPrice * depositPercentage) / 100);
-  const remainingAmount = totalPrice - depositAmount;
+
+  useEffect(() => {
+    if (depositPercentage === 0) {
+      setPaymentType("FULL");
+    } else {
+      setPaymentType("DEPOSIT");
+    }
+  }, [depositPercentage]);
 
   const bookingDateString =
     selectedDates.length > 0
@@ -937,34 +997,36 @@ export default function CompleteBookingScreen() {
         {t("booking.paymentTitle")}
       </ThemedText>
 
-      <TouchableOpacity
-        style={[
-          styles.paymentOptionCard,
-          paymentType === "DEPOSIT" && styles.paymentOptionActive,
-          styles.row,
-          { flexDirection: rowDirection },
-        ]}
-        onPress={() => setPaymentType("DEPOSIT")}
-      >
-        <ThemedText
+      {depositPercentage > 0 && (
+        <TouchableOpacity
           style={[
-            styles.paymentLabel,
-            paymentType === "DEPOSIT" && styles.paymentLabelActive,
-            { textAlign: textStart },
+            styles.paymentOptionCard,
+            paymentType === "DEPOSIT" && styles.paymentOptionActive,
+            styles.row,
+            { flexDirection: rowDirection },
           ]}
+          onPress={() => setPaymentType("DEPOSIT")}
         >
-          {t("booking.depositPay")}
-        </ThemedText>
-        <ThemedText
-          style={[
-            styles.paymentVal,
-            paymentType === "DEPOSIT" && styles.paymentValActive,
-            { textAlign: textEnd },
-          ]}
-        >
-          {depositAmount.toLocaleString()} {t("common.iqd")}
-        </ThemedText>
-      </TouchableOpacity>
+          <ThemedText
+            style={[
+              styles.paymentLabel,
+              paymentType === "DEPOSIT" && styles.paymentLabelActive,
+              { textAlign: textStart },
+            ]}
+          >
+            {t("booking.depositPay")} ({depositPercentage}%)
+          </ThemedText>
+          <ThemedText
+            style={[
+              styles.paymentVal,
+              paymentType === "DEPOSIT" && styles.paymentValActive,
+              { textAlign: textEnd },
+            ]}
+          >
+            {depositAmount.toLocaleString()} {t("common.iqd")}
+          </ThemedText>
+        </TouchableOpacity>
+      )}
 
       <TouchableOpacity
         style={[
@@ -1503,7 +1565,7 @@ export default function CompleteBookingScreen() {
                   </ThemedText>
                 </View>
                 <ThemedText style={styles.capacityRowValue}>
-                  {baseCapacity} {isArabic ? "أشخاص" : "guests"}
+                  {capacityLimit} {isArabic ? "أشخاص" : "guests"}
                 </ThemedText>
               </View>
 

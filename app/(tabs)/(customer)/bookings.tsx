@@ -56,6 +56,11 @@ export default function BookingsScreen() {
       startDate: booking.bookingDate,
       endDate: booking.bookingDate,
       totalPrice: booking.totalPrice || booking.amount || 0,
+      guestCount: booking.guestsCount || booking.guestCount || 0,
+      paymentModel: booking.paymentModel,
+      depositAmount: booking.depositAmount || 0,
+      remainingAmount: booking.remainingAmount || 0,
+      paymentStatus: booking.paymentStatus,
       chalet: {
         name: isArabic 
           ? (booking.chalet?.name?.ar || booking.chalet?.nameAr || booking.chalet?.name || '') 
@@ -68,11 +73,56 @@ export default function BookingsScreen() {
         images: booking.chalet?.images || [] } }));
   }, [bookingsResponse, isArabic]);
 
+  const formatBookingDate = (dateStr: string) => {
+    if (!dateStr) return '';
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return dateStr;
+      return date.toLocaleDateString(isArabic ? 'ar' : 'en-US', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const getPaymentStatusBadge = (item: any) => {
+    const status = item.paymentStatus;
+    const deposit = Number(item.depositAmount || 0);
+    const remaining = Number(item.remainingAmount || 0);
+    const total = Number(item.totalPrice || 0);
+
+    if (status === 'paid' || (remaining === 0 && total > 0)) {
+      return {
+        text: t('booking.status.paid') || (isArabic ? 'مدفوع' : 'Paid'),
+        color: '#FFFFFF',
+        bg: '#0284C7'
+      };
+    }
+    
+    if (deposit > 0 && remaining > 0) {
+      return {
+        text: isArabic ? 'عربون مدفوع' : 'Deposit Paid',
+        color: '#FFFFFF',
+        bg: '#F97316'
+      };
+    }
+
+    return {
+      text: isArabic ? 'غير مدفوع' : 'Unpaid',
+      color: '#FFFFFF',
+      bg: '#94A3B8'
+    };
+  };
+
   const renderBookingItem = (booking: any, index: number) => {
     const chaletName = booking.chalet?.name || '';
     const location = booking.chalet?.location || '';
     const shape = SHAPES_CONFIG[2];
     const imageSource = getImageSrc(booking.chalet?.images?.[0]?.url || booking.chalet?.images?.[0]);
+    const statusBadge = getPaymentStatusBadge(booking);
 
     return (
       <View key={booking.id} style={styles.bookingCardContainer}>
@@ -120,8 +170,26 @@ export default function BookingsScreen() {
         <View style={styles.bottomBlock}>
             <View style={[styles.detailRow, { flexDirection: 'row' }]}>
                 <ThemedText style={[styles.detailLabel, { textAlign: 'left' }]}>{t('booking.bookingDate')}</ThemedText>
-                <ThemedText style={[styles.detailValue, { textAlign: 'right' }]}>{t('booking.dateValue')}</ThemedText>
+                <ThemedText style={[styles.detailValue, { textAlign: 'right' }]}>{formatBookingDate(booking.startDate)}</ThemedText>
             </View>
+
+            <View style={[styles.detailRow, { flexDirection: 'row' }]}>
+                <ThemedText style={[styles.detailLabel, { textAlign: 'left' }]}>{t('booking.guests') || 'الأشخاص'}</ThemedText>
+                <ThemedText style={[styles.detailValue, { textAlign: 'right' }]}>{booking.guestCount} {isArabic ? 'أشخاص' : 'guests'}</ThemedText>
+            </View>
+
+            {booking.paymentModel === 'deposit' && Number(booking.depositAmount) > 0 ? (
+              <>
+                <View style={[styles.detailRow, { flexDirection: 'row' }]}>
+                    <ThemedText style={[styles.detailLabel, { textAlign: 'left' }]}>{t('booking.depositAmount') || 'مبلغ العربون'}</ThemedText>
+                    <ThemedText style={[styles.detailValue, { textAlign: 'right' }]}>{formatPrice(booking.depositAmount)}</ThemedText>
+                </View>
+                <View style={[styles.detailRow, { flexDirection: 'row' }]}>
+                    <ThemedText style={[styles.detailLabel, { textAlign: 'left' }]}>{t('booking.remainingAmount') || 'المبلغ المتبقي'}</ThemedText>
+                    <ThemedText style={[styles.detailValue, { textAlign: 'right' }]}>{formatPrice(booking.remainingAmount)}</ThemedText>
+                </View>
+              </>
+            ) : null}
 
             <View style={[styles.detailRow, { flexDirection: 'row' }]}>
                 <ThemedText style={[styles.detailLabel, { textAlign: 'left' }]}>{t('booking.finalAmount')}</ThemedText>
@@ -130,8 +198,8 @@ export default function BookingsScreen() {
 
             <View style={[styles.detailRow, { flexDirection: 'row' }]}>
                 <ThemedText style={[styles.detailLabel, { textAlign: 'left' }]}>{t('booking.paymentStatus')}</ThemedText>
-                <View style={styles.paidBadge}>
-                    <ThemedText style={styles.paidBadgeText}>{t('booking.status.paid')}</ThemedText>
+                <View style={[styles.paidBadge, { backgroundColor: statusBadge.bg }]}>
+                    <ThemedText style={[styles.paidBadgeText, { color: statusBadge.color }]}>{statusBadge.text}</ThemedText>
                 </View>
             </View>
 

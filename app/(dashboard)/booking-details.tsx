@@ -215,13 +215,9 @@ export default function BookingDetailsPage() {
           {renderInfoRow(isRTL ? "الفترة" : "Period", bShiftName)}
           {renderInfoRow(
             isRTL ? "الاشخاص" : "Persons",
-            data.childrenCount && data.childrenCount > 0
-              ? (isRTL
-                  ? `${data.adultsCount || 0} بالغين، ${data.childrenCount} اطفال`
-                  : `${data.adultsCount || 0} Adults, ${data.childrenCount} Children`)
-              : (isRTL
-                  ? `${data.adultsCount || data.guestsCount || 0} أشخاص`
-                  : `${data.adultsCount || data.guestsCount || 0} Persons`),
+            isRTL
+              ? `${data.guestsCount || data.guestCount || 0} أشخاص`
+              : `${data.guestsCount || data.guestCount || 0} Persons`,
           )}
         </View>
 
@@ -232,18 +228,35 @@ export default function BookingDetailsPage() {
               <Text style={styles.sectionTitle}>{isRTL ? 'معلومات الدفع' : 'Payment Information'}</Text>
             </View>
             <View style={styles.divider} />
+            {Number(data.basePrice || 0) > 0 && renderInfoRow(
+              isRTL ? "السعر الأساسي للفترة" : "Shift Base Price",
+              `${Number(data.basePrice || 0).toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
+            )}
+            {Number(data.extraGuestsPrice || 0) > 0 && renderInfoRow(
+              isRTL ? "رسوم الضيوف الإضافية" : "Extra Guests Fee",
+              `${Number(data.extraGuestsPrice || 0).toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
+            )}
+            {Number(data.addonsPrice || 0) > 0 && renderInfoRow(
+              isRTL ? "سعر الخدمات الإضافية" : "Addons Price",
+              `${Number(data.addonsPrice || 0).toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
+            )}
+            {(Number(data.extraGuestsPrice || 0) > 0 || Number(data.addonsPrice || 0) > 0) && <View style={styles.divider} />}
             {renderInfoRow(
               isRTL ? "المبلغ الكلي" : "Total Price",
               `${totalPrice.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
             )}
-            {renderInfoRow(
-              isRTL ? "المبلغ المدفوع (العربون)" : "Paid (Deposit)",
-              `${depositAmount.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
-            )}
-            {renderInfoRow(
-              isRTL ? "المبلغ المتبقي" : "Remaining Amount",
-              `${remainingAmount.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
-              true,
+            {data.paymentModel === 'deposit' && (
+              <>
+                {renderInfoRow(
+                  isRTL ? "المبلغ المدفوع (العربون)" : "Paid (Deposit)",
+                  `${depositAmount.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
+                )}
+                {renderInfoRow(
+                  isRTL ? "المبلغ المتبقي" : "Remaining Amount",
+                  `${remainingAmount.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
+                  true,
+                )}
+              </>
             )}
           </View>
         )}
