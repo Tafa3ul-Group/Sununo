@@ -1,5 +1,4 @@
 import { BookingCancellationSheet, BookingCancellationSheetRef } from '@/components/booking-cancellation-modal';
-import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import {
   SolarDangerCircleBold
 } from '@/components/icons/solar-icons';
