@@ -125,11 +125,6 @@ export default function CompleteBookingScreen() {
     return timestamps.map((time) => new Date(time));
   };
 
-  useEffect(() => {
-    if (guestType === "YOUTH") {
-      setChildrenCount(0);
-    }
-  }, [guestType]);
 
   const filterDateRange = useMemo(getFilterDateRange, [
     savedFilter?.checkIn,
@@ -394,9 +389,7 @@ export default function CompleteBookingScreen() {
   const [notes, setNotes] = useState("");
 
   const [adultCount, setAdultCount] = useState(savedFilter?.adults ?? 2);
-  const [childrenCount, setChildrenCount] = useState(
-    savedFilter?.children ?? 0,
-  );
+  const [childrenCount, setChildrenCount] = useState(0);
   const [guestType, setGuestType] = useState<"FAMILY" | "YOUTH">("FAMILY");
   const [idImage1, setIdImage1] = useState<string | null>(null);
   const [idImage2, setIdImage2] = useState<string | null>(null);
@@ -444,7 +437,7 @@ export default function CompleteBookingScreen() {
     return total;
   }, [selectedShifts, selectedDates, chaletDetails, currentMonth]);
 
-  const totalGuestsNow = adultCount + (guestType === "YOUTH" ? 0 : childrenCount);
+  const totalGuestsNow = adultCount;
   const baseCapacity = Number(chaletDetails?.priceCapacity || 2);
   const extraPersonPrice = Number(chaletDetails?.extraPersonPrice || 0);
   const extraGuestsCount = Math.max(0, totalGuestsNow - baseCapacity);
@@ -555,8 +548,8 @@ export default function CompleteBookingScreen() {
             shiftId: bookings[0].shiftId,
             bookingDate: bookings[0].bookingDate,
             adultsCount: adultCount,
-            childrenCount: guestType === "YOUTH" ? 0 : childrenCount,
-            guestsCount: adultCount + (guestType === "YOUTH" ? 0 : childrenCount),
+            childrenCount: 0,
+            guestsCount: adultCount,
             paymentModel: paymentType.toLowerCase() as any,
             paymentMethod: selectedMethod,
             notes,
@@ -876,7 +869,7 @@ export default function CompleteBookingScreen() {
             {t("booking.guests")}
           </ThemedText>
           <ThemedText style={[styles.infoValue, { textAlign: textEnd }]}>
-            {adultCount + (guestType === "YOUTH" ? 0 : childrenCount)}
+            {adultCount}
           </ThemedText>
         </View>
         <View style={styles.divider} />
@@ -1054,7 +1047,7 @@ export default function CompleteBookingScreen() {
           initialStartDate={selectedStartDate ?? undefined}
           initialEndDate={selectedEndDate ?? undefined}
           reservedDates={bookedDateStrings}
-          selectionMode="single"
+          selectionMode="range"
         />
         <View style={{ marginTop: 20, paddingHorizontal: 4 }}>
           <PrimaryButton
@@ -1725,7 +1718,7 @@ export default function CompleteBookingScreen() {
               <GuestCounter
                 value={adultCount}
                 onIncrement={() => {
-                  const totalNow = adultCount + (guestType === "YOUTH" ? 0 : childrenCount);
+                  const totalNow = adultCount;
                   const maxCap = Number(chaletDetails?.capacity || 50);
                   if (totalNow < maxCap) {
                     setAdultCount(adultCount + 1);
@@ -1742,50 +1735,6 @@ export default function CompleteBookingScreen() {
               />
             </View>
 
-            {guestType === "FAMILY" && (
-              <View
-                style={[
-                  styles.whoCard,
-                  {
-                    marginTop: 12,
-                    flexDirection: rowDirection,
-                  },
-                ]}
-              >
-                <View style={[styles.guestInfo, { alignItems: alignStart }]}>
-                  <ThemedText
-                    style={[styles.guestLabel, { textAlign: textStart }]}
-                  >
-                    {t("booking.children")}
-                  </ThemedText>
-                  <ThemedText
-                    style={[styles.guestSubLabel, { textAlign: textStart }]}
-                  >
-                    {t("booking.childrenDesc")}
-                  </ThemedText>
-                </View>
-                <GuestCounter
-                  value={childrenCount}
-                  onIncrement={() => {
-                    const totalNow = adultCount + childrenCount;
-                    const maxCap = Number(chaletDetails?.capacity || 50);
-                    if (totalNow < maxCap) {
-                      setChildrenCount(childrenCount + 1);
-                    } else {
-                      Alert.alert(
-                        isArabic ? "تنبيه" : "Alert",
-                        isArabic
-                          ? `السعة القصوى لهذا الشاليه هي ${maxCap} شخص. لديك حالياً ${totalNow} ضيف.`
-                          : `Maximum capacity for this chalet is ${maxCap} guests. You currently have ${totalNow}.`,
-                      );
-                    }
-                  }}
-                  onDecrement={() =>
-                    setChildrenCount(Math.max(0, childrenCount - 1))
-                  }
-                />
-              </View>
-            )}
           </View>
         ) : (
           renderDetailsTab()

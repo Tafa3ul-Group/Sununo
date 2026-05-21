@@ -59,7 +59,6 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
   const [whenStep, setWhenStep] = useState(1);
   const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null);
   const [adults, setAdults] = useState(2);
-  const [children, setChildren] = useState(0);
   const [checkIn, setCheckIn] = useState<Date | null>(null);
   const [checkOut, setCheckOut] = useState<Date | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -154,13 +153,13 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
           checkIn: checkIn ? checkIn.toISOString() : null,
           checkOut: checkOut ? checkOut.toISOString() : null,
           period: selectedPeriod,
-          maxGuests: adults + children,
+          maxGuests: adults,
           adults,
-          children });
+          children: 0 });
       }
       dismiss();
     }
-  }, [activeTab, whenStep, dismiss, onApply, selectedCity, selectedCityName, searchText, adults, children, selectedPeriod, checkIn, checkOut]);
+  }, [activeTab, whenStep, dismiss, onApply, selectedCity, selectedCityName, searchText, adults, selectedPeriod, checkIn, checkOut]);
 
   const renderBackdrop = useCallback(
     (backdropProps: any) => (
@@ -465,19 +464,6 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
             value={adults}
             onIncrement={() => setAdults(adults + 1)}
             onDecrement={() => setAdults(Math.max(1, adults - 1))}
-          />
-        </View>
-
-        {/* Children Counter */}
-        <View style={[styles.guestItem, { flexDirection: rowDirection, justifyContent: "space-between" }]}>
-          <View style={styles.guestInfo}>
-            <ThemedText style={[styles.guestLabel, { textAlign: textAlignment }]}>{t("searchFilter.children")}</ThemedText>
-            <ThemedText style={[styles.guestSubLabel, { textAlign: textAlignment }]}>{t("searchFilter.childrenDesc")}</ThemedText>
-          </View>
-          <GuestCounter
-            value={children}
-            onIncrement={() => setChildren(children + 1)}
-            onDecrement={() => setChildren(Math.max(0, children - 1))}
           />
         </View>
       </View>

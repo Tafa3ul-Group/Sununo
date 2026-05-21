@@ -215,9 +215,13 @@ export default function BookingDetailsPage() {
           {renderInfoRow(isRTL ? "الفترة" : "Period", bShiftName)}
           {renderInfoRow(
             isRTL ? "الاشخاص" : "Persons",
-            isRTL
-              ? `${data.adultsCount || 0} بالغين، ${data.childrenCount || 0} اطفال`
-              : `${data.adultsCount || 0} Adults, ${data.childrenCount || 0} Children`,
+            data.childrenCount && data.childrenCount > 0
+              ? (isRTL
+                  ? `${data.adultsCount || 0} بالغين، ${data.childrenCount} اطفال`
+                  : `${data.adultsCount || 0} Adults, ${data.childrenCount} Children`)
+              : (isRTL
+                  ? `${data.adultsCount || data.guestsCount || 0} أشخاص`
+                  : `${data.adultsCount || data.guestsCount || 0} Persons`),
           )}
         </View>
 

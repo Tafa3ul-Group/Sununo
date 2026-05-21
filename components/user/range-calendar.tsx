@@ -146,22 +146,31 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({
     setShowYearPicker(false);
   };
 
+  const monthTitleText = useMemo(() => {
+    const d = new Date(year, month, 1);
+    const locale = i18n.language === "ar" ? "ar-IQ-u-nu-latn" : "en-US";
+    return d.toLocaleString(locale, {
+      month: "long",
+      year: "numeric"
+    });
+  }, [year, month, i18n.language]);
+
   return (
     <View style={styles.container}>
       {/* Month Navigation Header */}
       <View style={[styles.header, { flexDirection: 'row' }]}>
         <TouchableOpacity onPress={() => changeMonth(-1)} style={styles.navBtn}>
-          {isRTL ? <SolarAltArrowRightBold size={20} color={Colors.text.primary} /> : <SolarAltArrowLeftBold size={20} color={Colors.text.primary} />}
+          <SolarAltArrowLeftBold size={20} color={Colors.text.primary} />
         </TouchableOpacity>
         
         <TouchableOpacity onPress={() => setShowYearPicker(!showYearPicker)} style={styles.titleWrapper}>
           <ThemedText style={styles.monthTitle}>
-            {MONTHS_NAMES[month]} {year}
+            {monthTitleText}
           </ThemedText>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => changeMonth(1)} style={styles.navBtn}>
-          {isRTL ? <SolarAltArrowLeftBold size={20} color={Colors.text.primary} /> : <SolarAltArrowRightBold size={20} color={Colors.text.primary} />}
+          <SolarAltArrowRightBold size={20} color={Colors.text.primary} />
         </TouchableOpacity>
       </View>
 
@@ -253,6 +262,7 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: 'center' },
   header: {
+    direction: 'ltr',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: normalize.height(20),
