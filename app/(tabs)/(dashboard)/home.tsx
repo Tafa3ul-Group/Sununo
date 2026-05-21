@@ -82,34 +82,34 @@ const format12H = (time: string | undefined | null, isRTL: boolean) => {
 const getShiftIcon = (shift: any) => {
   const type = (shift?.type || shift?.shift?.type || "").toUpperCase();
   if (type === "MORNING") {
-    return require("../../../assets/shifts/sun.svg");
+    return require("@/assets/shifts/morning.svg");
   }
   if (type === "EVENING" || type === "NIGHT") {
-    return require("../../../assets/shifts/night.svg");
+    return require("@/assets/shifts/night.svg");
   }
   if (type === "OVERNIGHT") {
-    return require("../../../assets/shifts/sleep.svg");
+    return require("@/assets/shifts/overnight.svg");
   }
   if (type === "CUSTOM" || type === "CUSTEM") {
-    return require("../../../assets/shifts/sun.svg");
+    return require("@/assets/shifts/custem.svg");
   }
 
   // Fallback to isOvernight flag
   if (shift?.isOvernight || shift?.shift?.isOvernight) {
-    return require("../../../assets/shifts/sleep.svg");
+    return require("@/assets/shifts/overnight.svg");
   }
 
   // Fallback to name checking
   const nameAr = (shift?.shiftName?.ar || shift?.shiftName || "").toLowerCase();
   const nameEn = (shift?.shiftName?.en || shift?.shiftName || "").toLowerCase();
   if (nameAr.includes("صباح") || nameEn.includes("morning")) {
-    return require("../../../assets/shifts/sun.svg");
+    return require("@/assets/shifts/morning.svg");
   }
   if (nameAr.includes("مساء") || nameAr.includes("ليل") || nameEn.includes("evening") || nameEn.includes("night") || nameEn.includes("eveningShift")) {
-    return require("../../../assets/shifts/night.svg");
+    return require("@/assets/shifts/night.svg");
   }
   if (nameAr.includes("مبيت") || nameEn.includes("overnight")) {
-    return require("../../../assets/shifts/sleep.svg");
+    return require("@/assets/shifts/overnight.svg");
   }
 
   // Fallback to time-based detection
@@ -118,17 +118,17 @@ const getShiftIcon = (shift: any) => {
     const hour = parseInt(startTime.split(":")[0]);
     if (!isNaN(hour)) {
       if (hour >= 5 && hour < 14) {
-        return require("../../../assets/shifts/sun.svg");
+        return require("@/assets/shifts/morning.svg");
       } else if (hour >= 14 && hour < 20) {
-        return require("../../../assets/shifts/night.svg");
+        return require("@/assets/shifts/night.svg");
       } else {
-        return require("../../../assets/shifts/sleep.svg");
+        return require("@/assets/shifts/overnight.svg");
       }
     }
   }
 
   // Default fallback
-  return require("../../../assets/shifts/sun.svg");
+  return require("@/assets/shifts/custem.svg");
 };
 
 export default function HomeScreen() {
@@ -832,7 +832,7 @@ export default function HomeScreen() {
         >
           <TouchableOpacity onPress={() => changeWeek(isRTL ? "prev" : "next")} style={{ padding: 6 }}>
             <ExpoImage
-              source={require("../../../assets/button/back.svg")}
+              source={require("@/assets/button/back.svg")}
               style={{
                 width: 13,
                 height: 18,
@@ -849,7 +849,7 @@ export default function HomeScreen() {
 
           <TouchableOpacity onPress={() => changeWeek(isRTL ? "next" : "prev")} style={{ padding: 6 }}>
             <ExpoImage
-              source={require("../../../assets/button/back.svg")}
+              source={require("@/assets/button/back.svg")}
               style={{
                 width: 13,
                 height: 18,
