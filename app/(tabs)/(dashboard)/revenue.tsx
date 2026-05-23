@@ -1,22 +1,22 @@
-import React, { useState, useRef, useCallback, useMemo } from 'react';
-import { useRouter } from 'expo-router';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
-import { Colors, normalize } from '@/constants/theme';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
-import { useGetPayoutsQuery, useRequestPayoutMutation, useGetProviderStatsQuery, useGetProviderProfileQuery } from '@/store/api/apiSlice';
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
-import { PrimaryButton } from '@/components/user/primary-button';
-import Toast from 'react-native-toast-message';
-import { isRTL } from "@/i18n";
-import { 
-  SolarWalletBold, 
-  SolarCalendarBold, 
-  SolarBanknoteBold, 
-  SolarUsersGroupBold, 
-  SolarAltArrowRightLinear 
+import {
+  SolarAltArrowRightLinear,
+  SolarBanknoteBold,
+  SolarCalendarBold,
+  SolarUsersGroupBold,
+  SolarWalletBold
 } from "@/components/icons/solar-icons";
+import { PrimaryButton } from '@/components/user/primary-button';
+import { Colors, normalize } from '@/constants/theme';
+import { isRTL } from "@/i18n";
+import { RootState } from '@/store';
+import { useGetPayoutsQuery, useGetProviderProfileQuery, useGetProviderStatsQuery, useRequestPayoutMutation } from '@/store/api/apiSlice';
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import { useRouter } from 'expo-router';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Toast from 'react-native-toast-message';
+import { useSelector } from 'react-redux';
 
 const PERIODS = [
   { id: 'week', ar: 'أسبوع', en: 'Week' },
@@ -84,7 +84,7 @@ export default function RevenueScreen() {
   }), [periodRange, selectedPeriod, selectedChalet?.id]);
 
   // API hooks
-  const { data: payoutsResponse, isLoading: isLoadingPayouts, refetch: refetchPayouts } = useGetPayoutsQuery({ 
+  const { data: payoutsResponse, isLoading: isLoadingPayouts, refetch: refetchPayouts } = useGetPayoutsQuery({
     limit: 5,
     ...periodRange,
   });
@@ -132,7 +132,8 @@ export default function RevenueScreen() {
         type: 'success',
         text1: isRTL ? 'تم بنجاح' : 'Success',
         text2: isRTL ? 'تم تقديم طلب السحب بنجاح' : 'Payout request submitted successfully',
-        position: 'bottom' });
+        position: 'bottom'
+      });
     } catch (error: any) {
       const msg = error?.data?.message || (isRTL ? 'فشل طلب السحب' : 'Payout request failed');
       Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: typeof msg === 'string' ? msg : msg[0], position: 'bottom' });
@@ -153,42 +154,43 @@ export default function RevenueScreen() {
       pending: { ar: 'قيد المراجعة', en: 'Pending' },
       approved: { ar: 'مقبول', en: 'Approved' },
       paid: { ar: 'تم الدفع', en: 'Paid' },
-      rejected: { ar: 'مرفوض', en: 'Rejected' } };
+      rejected: { ar: 'مرفوض', en: 'Rejected' }
+    };
     return isRTL ? labels[status]?.ar || status : labels[status]?.en || status;
   };
 
   return (
     <View style={[styles.safeArea]}>
-      <DashboardHeader 
+      <DashboardHeader
         title={isRTL ? 'الأرباح' : 'Revenue'}
         showSearch={false}
         showBackButton={true}
       />
-      <ScrollView 
-        style={styles.container} 
-        showsVerticalScrollIndicator={false} 
+      <ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl 
-            refreshing={isLoadingPayouts || isLoadingProfile || isLoadingStats} 
+          <RefreshControl
+            refreshing={isLoadingPayouts || isLoadingProfile || isLoadingStats}
             onRefresh={handleRefresh}
             tintColor={Colors.primary}
           />
         }
       >
-        
+
         {/* Balance Card */}
         <View style={styles.balanceCard}>
           <View style={styles.balanceCardInner}>
             <View style={[styles.decorCircle, styles.decorCircle1, { [isRTL ? 'left' : 'right']: -40 }]} />
             <View style={[styles.decorCircle, styles.decorCircle2, { [isRTL ? 'right' : 'left']: -20 }]} />
-            
+
             <Text style={styles.balanceLabel}>{isRTL ? 'إجمالي الرصيد' : 'Total Balance'}</Text>
             <Text style={styles.balanceValue}>{profile?.wallet?.balance?.toLocaleString() || '0'}</Text>
             <Text style={styles.balanceCurrency}>{isRTL ? 'دينار عراقي' : 'IQD'}</Text>
-            
-            <TouchableOpacity 
-              style={[styles.withdrawButton, { flexDirection: 'row' }]} 
+
+            <TouchableOpacity
+              style={[styles.withdrawButton, { flexDirection: 'row' }]}
               activeOpacity={0.85}
               onPress={() => withdrawSheetRef.current?.present()}
             >
@@ -217,7 +219,7 @@ export default function RevenueScreen() {
         {/* Quick Stats */}
         <View style={[styles.statsRow, { flexDirection: 'row' }]}>
           <View style={styles.statCard}>
-            <View style={[styles.statIconWrap, { backgroundColor: '#EFF6FF' }]}>  
+            <View style={[styles.statIconWrap, { backgroundColor: '#EFF6FF' }]}>
               <SolarCalendarBold size={20} color={Colors.primary} />
             </View>
             <Text style={styles.statValue}>{isLoadingStats ? '...' : stats.periodBookings}</Text>
@@ -242,7 +244,7 @@ export default function RevenueScreen() {
         {/* Recent Payouts */}
         <View style={[styles.sectionHeader, { flexDirection: 'row' }]}>
           <Text style={[styles.sectionTitle, { textAlign }]}>{isRTL ? 'طلبات السحب' : 'Payout Requests'}</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => router.push('/(tabs)/(dashboard)/transactions')}
             style={[styles.viewAllBtn, { flexDirection: 'row' }]}
             activeOpacity={0.7}
@@ -260,15 +262,15 @@ export default function RevenueScreen() {
               <View key={item.id}>
                 <View style={[styles.transactionItem, { flexDirection: 'row' }]}>
                   <View style={[
-                    styles.transactionIcon, 
+                    styles.transactionIcon,
                     { backgroundColor: item.status === 'paid' ? '#ECFDF5' : item.status === 'rejected' ? '#FEF2F2' : '#FFF7ED' }
                   ]}>
-                    <SolarBanknoteBold 
-                      size={20} 
-                      color={getStatusColor(item.status)} 
+                    <SolarBanknoteBold
+                      size={20}
+                      color={getStatusColor(item.status)}
                     />
                   </View>
-                  
+
                   <View style={[styles.transactionInfo, { alignItems: startAlign }]}>
                     <Text style={[styles.transactionTitle, { textAlign }]}>{isRTL ? 'طلب سحب' : 'Payout Request'}</Text>
                     <Text style={[styles.transactionDate, { textAlign }]}>
@@ -347,55 +349,66 @@ export default function RevenueScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.white },
+    backgroundColor: Colors.white
+  },
   container: {
     flex: 1,
-    backgroundColor: Colors.white },
+    backgroundColor: Colors.white
+  },
   scrollContent: {
     paddingHorizontal: 14,
     paddingTop: 8,
-    paddingBottom: 100 },
+    paddingBottom: 100
+  },
   // Balance Card
   balanceCard: {
     marginBottom: 20,
     borderRadius: 24,
-    overflow: 'hidden' },
+    overflow: 'hidden'
+  },
   balanceCardInner: {
     backgroundColor: Colors.primary,
     padding: 28,
     alignItems: 'center',
     position: 'relative',
-    overflow: 'hidden' },
+    overflow: 'hidden'
+  },
   decorCircle: {
     position: 'absolute',
     borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.06)' },
+    backgroundColor: 'rgba(255,255,255,0.06)'
+  },
   decorCircle1: {
     width: 180,
     height: 180,
-    top: -60 },
+    top: -60
+  },
   decorCircle2: {
     width: 120,
     height: 120,
-    bottom: -30 },
+    bottom: -30
+  },
   balanceLabel: {
     color: 'rgba(255,255,255,0.7)',
     fontSize: normalize.font(13),
     fontFamily: "Alexandria-SemiBold",
     marginBottom: 8,
     letterSpacing: 0.5,
-    textTransform: 'uppercase' },
+    textTransform: 'uppercase'
+  },
   balanceValue: {
     color: Colors.white,
     fontSize: normalize.font(36),
     fontFamily: "Alexandria-Black",
-    letterSpacing: -1 },
+    letterSpacing: -1
+  },
   balanceCurrency: {
     color: 'rgba(255,255,255,0.6)',
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-SemiBold",
     marginBottom: 20,
-    marginTop: 2 },
+    marginTop: 2
+  },
   withdrawButton: {
     backgroundColor: Colors.white,
     paddingHorizontal: 28,
@@ -403,15 +416,18 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8 },
+    gap: 8
+  },
   withdrawButtonText: {
     color: Colors.primary,
     fontFamily: "Alexandria-Bold",
-    fontSize: normalize.font(14) },
+    fontSize: normalize.font(14)
+  },
   // Period Filter
   periodRow: {
     gap: 8,
-    marginBottom: 20 },
+    marginBottom: 20
+  },
   periodPill: {
     flex: 1,
     paddingVertical: 10,
@@ -419,21 +435,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F8F9FB',
     borderWidth: 1,
-    borderColor: '#F0F0F0' },
+    borderColor: '#F0F0F0'
+  },
   periodPillActive: {
     backgroundColor: Colors.primary,
-    borderColor: Colors.primary },
+    borderColor: Colors.primary
+  },
   periodText: {
     fontSize: normalize.font(13),
     fontFamily: "Alexandria-SemiBold",
-    color: Colors.text.secondary },
+    color: Colors.text.secondary
+  },
   periodTextActive: {
     color: Colors.white,
-   fontFamily: "Alexandria-Regular" },
+    fontFamily: "Alexandria-Regular"
+  },
   // Stats
   statsRow: {
     gap: 10,
-    marginBottom: 28 },
+    marginBottom: 28
+  },
   statCard: {
     flex: 1,
     backgroundColor: Colors.white,
@@ -441,114 +462,138 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     borderColor: '#F0F0F0',
-    alignItems: 'center' },
+    alignItems: 'center'
+  },
   statIconWrap: {
     width: 40,
     height: 40,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10 },
+    marginBottom: 10
+  },
   statValue: {
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-Black",
-    color: Colors.text.primary },
+    color: Colors.text.primary
+  },
   statLabel: {
     fontSize: normalize.font(10),
     color: Colors.text.muted,
     fontFamily: "Alexandria-SemiBold",
     marginTop: 2,
-    textAlign: 'center' },
+    textAlign: 'center'
+  },
   // Section Header
   sectionHeader: {
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 14 },
+    marginBottom: 14
+  },
   sectionTitle: {
     fontSize: normalize.font(18),
     fontFamily: "Alexandria-Black",
-    color: Colors.text.primary },
+    color: Colors.text.primary
+  },
   viewAllBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 2 },
+    gap: 2
+  },
   viewAllText: {
     color: Colors.primary,
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-SemiBold" },
+    fontFamily: "Alexandria-SemiBold"
+  },
   // Transactions
   transactionsCard: {
     backgroundColor: Colors.white,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: '#F0F0F0',
-    overflow: 'hidden' },
+    overflow: 'hidden'
+  },
   transactionItem: {
     padding: 16,
     alignItems: 'center',
-    gap: 12 },
+    gap: 12
+  },
   transactionIcon: {
     width: 44,
     height: 44,
     borderRadius: 14,
     justifyContent: 'center',
-    alignItems: 'center' },
+    alignItems: 'center'
+  },
   transactionInfo: {
-    flex: 1 },
+    flex: 1
+  },
   transactionTitle: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Bold",
     color: Colors.text.primary,
-    marginBottom: 3 },
+    marginBottom: 3
+  },
   transactionDate: {
     fontSize: normalize.font(11),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "Alexandria-Medium"
+  },
   transactionAmount: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
-    marginBottom: 4 },
+    marginBottom: 4
+  },
   currencySmall: {
     fontSize: normalize.font(11),
     fontFamily: "Alexandria-SemiBold",
-    color: Colors.text.muted },
+    color: Colors.text.muted
+  },
   typeBadge: {
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 6 },
+    borderRadius: 6
+  },
   typeBadgeText: {
     fontSize: normalize.font(9),
     fontFamily: "Alexandria-Bold",
-    textTransform: 'uppercase' },
+    textTransform: 'uppercase'
+  },
   separator: {
     height: 1,
     backgroundColor: '#F5F5F5',
-    marginHorizontal: 16 },
+    marginHorizontal: 16
+  },
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 40,
-    gap: 10 },
+    gap: 10
+  },
   emptyText: {
     fontSize: normalize.font(13),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-SemiBold" },
+    fontFamily: "Alexandria-SemiBold"
+  },
   // Withdraw Sheet
   sheetContent: {
-    padding: 24 },
+    padding: 24
+  },
   sheetTitle: {
     fontSize: normalize.font(20),
     fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
     textAlign: 'center',
-    marginBottom: 4 },
+    marginBottom: 4
+  },
   sheetSubtitle: {
     fontSize: normalize.font(13),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium",
     textAlign: 'center',
-    marginBottom: 24 },
+    marginBottom: 24
+  },
   amountInputWrap: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -557,14 +602,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F0F0F0',
     paddingHorizontal: 20,
-    height: 60 },
+    height: 60
+  },
   amountInput: {
     flex: 1,
     fontSize: normalize.font(24),
     fontFamily: "Alexandria-Black",
     color: Colors.text.primary,
-    textAlign: 'center' },
+    textAlign: 'center'
+  },
   amountCurrency: {
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-Bold",
-    color: Colors.text.muted } });
+    color: Colors.text.muted
+  }
+});

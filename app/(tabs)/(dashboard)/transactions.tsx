@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Colors, normalize } from '@/constants/theme';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
-import { useTranslation } from 'react-i18next';
-import { useRouter } from 'expo-router';
-import { FlashList } from '@shopify/flash-list';
-import { useGetPayoutsQuery } from '@/store/api/apiSlice';
 import { SolarBanknoteBold } from "@/components/icons/solar-icons";
+import { Colors, normalize } from '@/constants/theme';
 import { isRTL } from "@/i18n";
+import { RootState } from '@/store';
+import { useGetPayoutsQuery } from '@/store/api/apiSlice';
+import { FlashList } from '@shopify/flash-list';
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSelector } from 'react-redux';
 
 const FILTERS = [
   { id: undefined, ar: 'الكل', en: 'All' },
@@ -28,9 +28,9 @@ export default function TransactionsScreen() {
   const endAlign = isRTL ? 'flex-start' : 'flex-end';
   const [activeFilter, setActiveFilter] = useState<string | undefined>(undefined);
 
-  const { data: payoutsResponse, isLoading, refetch } = useGetPayoutsQuery({ 
-    status: activeFilter, 
-    limit: 50 
+  const { data: payoutsResponse, isLoading, refetch } = useGetPayoutsQuery({
+    status: activeFilter,
+    limit: 50
   });
   const payouts = payoutsResponse?.data || payoutsResponse || [];
 
@@ -69,14 +69,15 @@ export default function TransactionsScreen() {
       pending: { ar: 'قيد المراجعة', en: 'Pending' },
       approved: { ar: 'مقبول', en: 'Approved' },
       paid: { ar: 'تم الدفع', en: 'Paid' },
-      rejected: { ar: 'مرفوض', en: 'Rejected' } };
+      rejected: { ar: 'مرفوض', en: 'Rejected' }
+    };
     return isRTL ? labels[status]?.ar || status : labels[status]?.en || status;
   };
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString(isRTL ? 'ar-IQ' : 'en-US', { 
-      month: 'short', 
+    return date.toLocaleDateString(isRTL ? 'ar-IQ' : 'en-US', {
+      month: 'short',
       day: 'numeric',
       year: 'numeric'
     });
@@ -85,16 +86,16 @@ export default function TransactionsScreen() {
   const renderTransactionItem = ({ item }: { item: any }) => {
     const statusColor = getStatusColor(item.status);
     const statusBg = getStatusBg(item.status);
-    
+
     return (
-      <TouchableOpacity 
+      <TouchableOpacity
         style={[styles.transactionItem, { flexDirection: 'row' }]}
         activeOpacity={0.7}
       >
         <View style={[styles.transactionIcon, { backgroundColor: statusBg }]}>
           <SolarBanknoteBold size={22} color={statusColor} />
         </View>
-        
+
         <View style={[styles.transactionInfo, { alignItems: startAlign }]}>
           <Text style={[styles.transactionTitle, { textAlign }]}>{isRTL ? 'طلب سحب' : 'Payout Request'}</Text>
           <Text style={[styles.transactionDate, { textAlign }]}>{formatDate(item.createdAt)}</Text>
@@ -117,7 +118,7 @@ export default function TransactionsScreen() {
 
   return (
     <View style={[styles.safeArea]}>
-      <DashboardHeader 
+      <DashboardHeader
         title={isRTL ? 'سجل المعاملات' : 'Transactions'}
         showSearch={false}
         showBackButton={true}
@@ -180,87 +181,107 @@ export default function TransactionsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.white },
+    backgroundColor: Colors.white
+  },
   // Filters
   filterContainer: {
     height: 52,
-    marginTop: 4 },
+    marginTop: 4
+  },
   filterPill: {
     paddingHorizontal: 18,
     paddingVertical: 9,
     borderRadius: 10,
     backgroundColor: '#F8F9FB',
     borderWidth: 1,
-    borderColor: '#F0F0F0' },
+    borderColor: '#F0F0F0'
+  },
   filterPillActive: {
     backgroundColor: Colors.primary,
-    borderColor: Colors.primary },
+    borderColor: Colors.primary
+  },
   filterText: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
-    color: Colors.text.secondary },
+    color: Colors.text.secondary
+  },
   filterTextActive: {
     color: Colors.white,
-   fontFamily: "Alexandria-Medium" },
+    fontFamily: "Alexandria-Medium"
+  },
   // List
   listContainer: {
     flex: 1,
-    backgroundColor: Colors.white },
+    backgroundColor: Colors.white
+  },
   listContent: {
     paddingHorizontal: 14,
-    paddingBottom: 100 },
+    paddingBottom: 100
+  },
   transactionItem: {
     paddingVertical: 16,
     alignItems: 'center',
-    gap: 12 },
+    gap: 12
+  },
   transactionIcon: {
     width: 48,
     height: 48,
     borderRadius: 16,
     justifyContent: 'center',
-    alignItems: 'center' },
+    alignItems: 'center'
+  },
   transactionInfo: {
-    flex: 1 },
+    flex: 1
+  },
   transactionTitle: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
-    marginBottom: 3 },
+    marginBottom: 3
+  },
   transactionDate: {
     fontSize: normalize.font(8),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "Alexandria-Medium"
+  },
   transactionAmount: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
-    marginBottom: 4 },
+    marginBottom: 4
+  },
   currencySmall: {
     fontSize: normalize.font(8),
     fontFamily: "Alexandria-Medium",
-    color: Colors.text.muted },
+    color: Colors.text.muted
+  },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
-    gap: 4 },
+    gap: 4
+  },
   statusDot: {
     width: 6,
     height: 6,
-    borderRadius: 3 },
+    borderRadius: 3
+  },
   statusBadgeText: {
     fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "Alexandria-Medium"
+  },
   separator: {
     height: 1,
-    backgroundColor: '#F5F5F5' },
+    backgroundColor: '#F5F5F5'
+  },
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 80,
-    gap: 8 },
+    gap: 8
+  },
   emptyIconWrap: {
     width: 80,
     height: 80,
@@ -268,14 +289,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F9FB',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8 },
+    marginBottom: 8
+  },
   emptyTitle: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
-    color: Colors.text.primary },
+    color: Colors.text.primary
+  },
   emptySubtitle: {
     fontSize: normalize.font(8),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium",
     textAlign: 'center',
-    paddingHorizontal: 40 } });
+    paddingHorizontal: 40
+  }
+});

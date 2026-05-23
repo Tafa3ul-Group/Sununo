@@ -1,6 +1,6 @@
 import { ChaletProgressTabs } from '@/components/chalet-progress-tabs';
 import { ThemedText } from '@/components/themed-text';
-import DateTimePicker from '@react-native-community/datetimepicker';
+
 import { AppMap } from '@/components/user/app-map';
 import { LocationPickerModal } from '@/components/user/location-picker-modal';
 import { PrimaryButton } from '@/components/user/primary-button';
@@ -15,6 +15,7 @@ import {
   useGetShiftDefaultsQuery } from '@/store/api/apiSlice';
 import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import * as ImagePicker from 'expo-image-picker';
+import { Image as ExpoImage } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
@@ -27,6 +28,9 @@ import {
   SolarAddCircleBold,
   SolarTrashBinBold,
   SolarPenBold,
+  SolarClockCircleBold,
+  SolarAltArrowLeftBold,
+  SolarInfoCircleBold,
   SolarMagnifierBold } from "@/components/icons/solar-icons";
 import {
   ActivityIndicator,
@@ -107,9 +111,11 @@ export default function AddChaletScreen() {
   const { data: amenityCategories } = useGetAmenityCategoriesQuery();
 
   const steps = useMemo(() => [
-    { id: 'details', title: isRTL ? 'التفاصيل' : 'Details' },
-    { id: 'extra', title: isRTL ? 'تفاصيل اضافية' : 'More Info' },
-    { id: 'amenities', title: isRTL ? 'المرافق والخدمات' : 'Amenities' },
+    { id: 'name', title: isRTL ? 'الاسماء' : 'Names', icon: '🏠' },
+    { id: 'location', title: isRTL ? 'الموقع' : 'Location', icon: '📍' },
+    { id: 'shifts', title: isRTL ? 'الفترات' : 'Shifts', icon: '⏰' },
+    { id: 'capacity', title: isRTL ? 'السعة' : 'Capacity', icon: '👥' },
+    { id: 'amenities', title: isRTL ? 'المرافق' : 'Amenities', icon: '✨' },
   ], [isRTL]);
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -152,9 +158,6 @@ export default function AddChaletScreen() {
   const editShiftSheetRef = useRef<BottomSheetModal>(null);
 
   const [editingShiftIndex, setEditingShiftIndex] = useState<number | null>(null);
-  const [showStartTimePicker, setShowStartTimePicker] = useState(false);
-  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
-  const [bulkPrice, setBulkPrice] = useState('');
 
   const formatTime12h = (timeStr: string) => {
     if (!timeStr) return '';
@@ -164,36 +167,13 @@ export default function AddChaletScreen() {
     return `${hours12}:${m.toString().padStart(2, '0')} ${period}`;
   };
 
-  const getTimeDate = (timeStr: string) => {
-    const [hours, minutes] = (timeStr || '08:00').split(':').map(Number);
-    const d = new Date();
-    d.setHours(hours || 0, minutes || 0, 0, 0);
-    return d;
-  };
-
-  const onTimeChange = (event: any, selectedDate?: Date, type: 'start' | 'end' = 'start') => {
-    if (Platform.OS === 'android') {
-      if (type === 'start') setShowStartTimePicker(false);
-      else setShowEndTimePicker(false);
-    }
-
-    if (selectedDate && editingShiftIndex !== null) {
-      const hours = selectedDate.getHours().toString().padStart(2, '0');
-      const minutes = selectedDate.getMinutes().toString().padStart(2, '0');
-      const timeStr = `${hours}:${minutes}`;
-      updateShiftField(editingShiftIndex, type === 'start' ? 'startTime' : 'endTime', timeStr);
-    }
-  };
-
-  const handleApplyBulkPrice = (type: 'weekdays' | 'weekends' | 'all') => {
-    if (editingShiftIndex === null || !bulkPrice) return;
-    if (type === 'weekdays') setWeekdayPrice(editingShiftIndex, bulkPrice);
-    else if (type === 'weekends') setWeekendPrice(editingShiftIndex, bulkPrice);
-    else {
-      setWeekdayPrice(editingShiftIndex, bulkPrice);
-      setWeekendPrice(editingShiftIndex, bulkPrice);
-    }
-    Toast.show({ type: 'info', text1: isRTL ? 'تم التطبيق' : 'Applied', text2: isRTL ? 'تم تحديث الأسعار بنجاح' : 'Prices updated successfully' });
+  const setUniformPrice = (shiftIndex: number, priceStr: string) => {
+    const price = parseInt(priceStr) || 0;
+    setShifts(prev => prev.map((shift, i) => {
+      if (i !== shiftIndex) return shift;
+      const newPricing = shift.pricing.map(p => ({ ...p, price }));
+      return { ...shift, pricing: newPricing };
+    }));
   };
 
   // Snap Points
@@ -224,6 +204,69 @@ export default function AddChaletScreen() {
   const toggleShiftActive = (index: number) => {
     setShifts(prev => prev.map((s, i) => i === index ? { ...s, isActive: !s.isActive } : s));
   };
+
+  const shiftTimeHelper = (timeStr: string, minutesToShift: number): string => {
+    if (!timeStr) return '';
+    const [hStr, mStr] = timeStr.split(':');
+    let h = parseInt(hStr, 10);
+    let m = parseInt(mStr, 10);
+    if (isNaN(h) || isNaN(m)) return timeStr;
+    let totalMinutes = h * 60 + m + minutesToShift;
+    totalMinutes = (totalMinutes % 1440 + 1440) % 1440;
+    const newH = Math.floor(totalMinutes / 60);
+    const newM = totalMinutes % 60;
+    return `${newH.toString().padStart(2, '0')}:${newM.toString().padStart(2, '0')}`;
+  };
+
+  const adjustShiftTime = (shiftIndex: number, field: 'startTime' | 'endTime', amount: number) => {
+    setShifts(prev => prev.map((shift, i) => {
+      if (i !== shiftIndex) return shift;
+      const newTime = shiftTimeHelper(shift[field], amount);
+      return { ...shift, [field]: newTime };
+    }));
+  };
+
+  // ── Overlap Detection ──
+  const getShiftIntervals = (startTime: string, endTime: string): { start: number; end: number }[] => {
+    if (!startTime || !endTime) return [];
+    const [sh, sm] = startTime.split(':').map(Number);
+    const [eh, em] = endTime.split(':').map(Number);
+    const s = (isNaN(sh) ? 0 : sh) * 60 + (isNaN(sm) ? 0 : sm);
+    const e = (isNaN(eh) ? 0 : eh) * 60 + (isNaN(em) ? 0 : em);
+    if (s === e) return [{ start: 0, end: 1440 }];
+    if (s > e) return [{ start: s, end: 1440 }, { start: 0, end: e }];
+    return [{ start: s, end: e }];
+  };
+
+  const shiftOverlapInfo = useMemo(() => {
+    const activeShifts = shifts.filter(s => s.isActive);
+    const overlappingIndices: number[] = [];
+    let conflictMsg: { ar: string; en: string } | undefined;
+    for (let i = 0; i < activeShifts.length; i++) {
+      for (let j = i + 1; j < activeShifts.length; j++) {
+        const ints1 = getShiftIntervals(activeShifts[i].startTime, activeShifts[i].endTime);
+        const ints2 = getShiftIntervals(activeShifts[j].startTime, activeShifts[j].endTime);
+        let overlapping = false;
+        for (const a of ints1) {
+          for (const b of ints2) {
+            if (Math.max(a.start, b.start) < Math.min(a.end, b.end)) { overlapping = true; break; }
+          }
+          if (overlapping) break;
+        }
+        if (overlapping) {
+          const idxI = shifts.indexOf(activeShifts[i]);
+          const idxJ = shifts.indexOf(activeShifts[j]);
+          if (!overlappingIndices.includes(idxI)) overlappingIndices.push(idxI);
+          if (!overlappingIndices.includes(idxJ)) overlappingIndices.push(idxJ);
+          conflictMsg = {
+            ar: `تداخل بين (${activeShifts[i].name.ar}) و (${activeShifts[j].name.ar})`,
+            en: `Overlap between (${activeShifts[i].name.en}) and (${activeShifts[j].name.en})`
+          };
+        }
+      }
+    }
+    return { hasOverlap: overlappingIndices.length > 0, overlappingIndices, conflictMsg };
+  }, [shifts]);
 
   const openEditShift = (index: number) => {
     setEditingShiftIndex(index);
@@ -318,17 +361,34 @@ export default function AddChaletScreen() {
   };
 
   const handleSave = async () => {
+    // ── Full validation before submit ──
     if (!form.nameAr) {
       Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: isRTL ? 'يرجى ملء اسم الشاليه' : 'Please fill chalet name', position: 'bottom' });
+      setCurrentStep(0);
       return;
     }
     if (!form.cityId) {
       Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: isRTL ? 'يرجى اختيار المدينة' : 'Please select a city', position: 'bottom' });
+      setCurrentStep(1);
       return;
     }
-    if (shifts.length === 0) {
-      Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: isRTL ? 'يجب إضافة شفت واحد على الأقل' : 'At least one shift is required', position: 'bottom' });
+
+    const activeShifts = shifts.filter(s => s.isActive);
+    if (activeShifts.length === 0) {
+      Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: isRTL ? 'يجب تفعيل شفت واحد على الأقل' : 'At least one shift must be active', position: 'bottom' });
+      setCurrentStep(2);
       return;
+    }
+
+    // Validate each active shift has at least 1 pricing entry > 0
+    for (const shift of activeShifts) {
+      const hasValidPricing = shift.pricing.some(p => p.price > 0);
+      if (!hasValidPricing) {
+        const shiftName = isRTL ? shift.name.ar : shift.name.en;
+        Toast.show({ type: 'error', text1: isRTL ? 'خطأ في الأسعار' : 'Pricing Error', text2: isRTL ? `يجب تحديد سعر أكبر من صفر للشفت: ${shiftName}` : `Set a price > 0 for shift: ${shiftName}`, position: 'bottom' });
+        setCurrentStep(2);
+        return;
+      }
     }
 
     try {
@@ -344,18 +404,22 @@ export default function AddChaletScreen() {
       formData.append('extraPersonPrice', form.extraPersonPrice || '0');
       
       // Filter only active shifts for submission
-      const activeShifts = shifts.filter(s => s.isActive).map(s => ({
-        ...s,
+      const shiftsPayload = activeShifts.map(s => ({
+        name: s.name,
         startTime: s.startTime?.split(':').slice(0, 2).join(':'),
-        endTime: s.endTime?.split(':').slice(0, 2).join(':') }));
-      formData.append('shifts', JSON.stringify(activeShifts));
+        endTime: s.endTime?.split(':').slice(0, 2).join(':'),
+        type: s.type,
+        isActive: s.isActive,
+        pricing: s.pricing.filter(p => p.price > 0),
+      }));
+      formData.append('shifts', JSON.stringify(shiftsPayload));
  
       // ── Optional fields ──
       if (form.descriptionAr) {
         formData.append('description', JSON.stringify({ ar: form.descriptionAr, en: form.descriptionEn || form.descriptionAr }));
       }
       if (form.policiesAr) {
-        formData.append('policies', JSON.stringify({ ar: form.policiesAr, en: form.policiesEn || form.policiesAr }));
+        formData.append('terms', JSON.stringify({ ar: form.policiesAr, en: form.policiesEn || form.policiesAr }));
       }
       if (form.phone) formData.append('phone', form.phone);
       if (form.whatsapp) formData.append('whatsapp', form.whatsapp);
@@ -388,7 +452,8 @@ export default function AddChaletScreen() {
       router.back();
     } catch (error: any) {
       console.error('Error creating chalet:', error);
-      const errorMessage = error?.data?.message?.[0] || error?.data?.message || (isRTL ? 'فشل إرسال البيانات، حاول لاحقاً' : 'Failed to save data, try again');
+      const rawMsg = error?.data?.message;
+      const errorMessage = Array.isArray(rawMsg) ? rawMsg[0] : (rawMsg || (isRTL ? 'فشل إرسال البيانات، حاول لاحقاً' : 'Failed to save data, try again'));
       Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage), position: 'bottom' });
     }
   };
@@ -401,12 +466,18 @@ export default function AddChaletScreen() {
 
   const isStepValid = useMemo(() => {
     switch (currentStep) {
-      case 0:
-        return !!form.nameAr && !!form.cityId;
-      case 1:
-        // Must have at least one active shift
-        return shifts.some(s => s.isActive);
-      case 2:
+      case 0: // Names
+        return !!form.nameAr;
+      case 1: // Location
+        return !!form.cityId;
+      case 2: { // Shifts
+        const activeShifts = shifts.filter(s => s.isActive);
+        if (activeShifts.length === 0) return false;
+        return activeShifts.every(s => s.pricing.some(p => p.price > 0));
+      }
+      case 3: // Capacity — has defaults, always valid
+        return true;
+      case 4: // Amenities — optional
         return true;
       default:
         return true;
@@ -414,10 +485,24 @@ export default function AddChaletScreen() {
   }, [currentStep, form, shifts]);
 
   const nextStep = () => {
-    if (!isStepValid) return;
+    if (!isStepValid) {
+      if (currentStep === 0) {
+        if (!form.nameAr) Toast.show({ type: 'error', text1: isRTL ? 'مطلوب' : 'Required', text2: isRTL ? 'يرجى إدخال اسم الشاليه بالعربي' : 'Please enter chalet name in Arabic', position: 'bottom' });
+      } else if (currentStep === 1) {
+        if (!form.cityId) Toast.show({ type: 'error', text1: isRTL ? 'مطلوب' : 'Required', text2: isRTL ? 'يرجى اختيار المدينة' : 'Please select a city', position: 'bottom' });
+      } else if (currentStep === 2) {
+        const activeShifts = shifts.filter(s => s.isActive);
+        if (activeShifts.length === 0) {
+          Toast.show({ type: 'error', text1: isRTL ? 'مطلوب' : 'Required', text2: isRTL ? 'يجب تفعيل شفت واحد على الأقل' : 'Activate at least one shift', position: 'bottom' });
+        } else {
+          Toast.show({ type: 'error', text1: isRTL ? 'مطلوب' : 'Required', text2: isRTL ? 'يجب تحديد أسعار أكبر من صفر لكل شفت مفعّل' : 'Set prices > 0 for all active shifts', position: 'bottom' });
+        }
+      }
+      return;
+    }
     
     // Internal Amenity sub-steps
-    if (currentStep === 2 && amenityCategories) {
+    if (currentStep === 4 && amenityCategories) {
       if (currentAmenitySubStep < amenityCategories.length - 1) {
         setCurrentAmenitySubStep(currentAmenitySubStep + 1);
         return;
@@ -433,7 +518,7 @@ export default function AddChaletScreen() {
 
   const prevStep = () => {
     // Internal Amenity sub-steps
-    if (currentStep === 2 && currentAmenitySubStep > 0) {
+    if (currentStep === 4 && currentAmenitySubStep > 0) {
       setCurrentAmenitySubStep(currentAmenitySubStep - 1);
       return;
     }
@@ -443,17 +528,18 @@ export default function AddChaletScreen() {
     }
   };
 
-  const textAlign = 'left';
-  const flexDirection = 'row';
-
-  // ── Shift Row (Matching Screenshot) ──
+  const textAlign = 'left' as const;
+  const flexDirection = 'row' as const;
+  // ── Shift Row ──
   const renderShiftRow = (shift: ShiftData, index: number) => {
     const isActive = shift.isActive;
     const weekdayPrice = shift.pricing.find(p => p.dayOfWeek === 0)?.price || 0;
     
-    let icon = '☀️';
-    if (shift.type === 'EVENING') icon = '🌙';
-    if (shift.type === 'OVERNIGHT') icon = '🌙💤';
+    const shiftIcon = shift.type === 'MORNING'
+      ? require('../../assets/tabs/sun.svg')
+      : shift.type === 'EVENING'
+        ? require('../../assets/tabs/night.svg')
+        : require('../../assets/tabs/sleep.svg');
 
     return (
       <TouchableOpacity 
@@ -480,15 +566,23 @@ export default function AddChaletScreen() {
             </View>
           </View>
 
-          {/* Name & Price */}
+          {/* Name & Price & Time */}
           <View style={[styles.shiftInfo, { flexDirection }]}>
-            <Text style={styles.shiftValueName}>
-              {isRTL ? shift.name.ar : shift.name.en}
-              {isActive && weekdayPrice > 0 && (
-                <Text style={styles.shiftPriceText}> ({weekdayPrice.toLocaleString()})</Text>
-              )}
-            </Text>
-            <Text style={styles.shiftIconLarge}>{icon}</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.shiftValueName}>
+                {isRTL ? shift.name.ar : shift.name.en}
+                {isActive && weekdayPrice > 0 && (
+                  <Text style={styles.shiftPriceText}> ({weekdayPrice.toLocaleString()})</Text>
+                )}
+              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                <SolarClockCircleBold size={11} color="#94A3B8" />
+                <Text style={{ fontSize: 10, color: '#94A3B8', fontFamily: 'Alexandria-Medium' }}>
+                  {formatTime12h(shift.startTime)} - {formatTime12h(shift.endTime)}
+                </Text>
+              </View>
+            </View>
+            <ExpoImage source={shiftIcon} style={{ width: 26, height: 26 }} contentFit="contain" />
           </View>
         </View>
       </TouchableOpacity>
@@ -512,13 +606,12 @@ export default function AddChaletScreen() {
             isRTL={isRTL}
           />
 
-          {/* ═══════════ Step 0: التفاصيل ═══════════ */}
+          {/* ═══════════ Step 0: الاسماء ═══════════ */}
           {currentStep === 0 && (
             <>
               <View style={styles.sectionCard}>
-                {/* اسم الشاليه عربي */}
                 <View style={styles.inputGroup}>
-                  <Text style={[styles.label, { textAlign }]}>{isRTL ? 'اسم الشاليه (عربي)' : 'Chalet Name (AR)'}</Text>
+                  <Text style={[styles.label, { textAlign }]}>{isRTL ? 'اسم الشاليه (عربي) *' : 'Chalet Name (AR) *'}</Text>
                   <TextInput
                     style={[styles.input, { textAlign }]}
                     placeholder={isRTL ? "اسم الشاليه بالعربي" : "e.g. شاليه الورد"}
@@ -527,8 +620,6 @@ export default function AddChaletScreen() {
                     onChangeText={(val) => setForm({ ...form, nameAr: val })}
                   />
                 </View>
-
-                {/* اسم الشاليه إنجليزي */}
                 <View style={styles.inputGroup}>
                   <Text style={[styles.label, { textAlign }]}>{isRTL ? 'اسم الشاليه (إنجليزي)' : 'Chalet Name (EN)'}</Text>
                   <TextInput
@@ -539,8 +630,9 @@ export default function AddChaletScreen() {
                     onChangeText={(val) => setForm({ ...form, nameEn: val })}
                   />
                 </View>
+              </View>
 
-                {/* وصف الشاليه عربي */}
+              <View style={styles.sectionCard}>
                 <View style={styles.inputGroup}>
                   <Text style={[styles.label, { textAlign }]}>{isRTL ? 'وصف الشاليه (عربي)' : 'Description (AR)'}</Text>
                   <TextInput
@@ -553,8 +645,6 @@ export default function AddChaletScreen() {
                     onChangeText={(val) => setForm({ ...form, descriptionAr: val })}
                   />
                 </View>
-
-                {/* وصف الشاليه إنجليزي */}
                 <View style={styles.inputGroup}>
                   <Text style={[styles.label, { textAlign }]}>{isRTL ? 'وصف الشاليه (إنجليزي)' : 'Description (EN)'}</Text>
                   <TextInput
@@ -568,11 +658,15 @@ export default function AddChaletScreen() {
                   />
                 </View>
               </View>
+            </>
+          )}
 
+          {/* ═══════════ Step 1: الموقع ═══════════ */}
+          {currentStep === 1 && (
+            <>
               <View style={styles.sectionCard}>
-                {/* المدينة */}
                 <View style={styles.inputGroup}>
-                  <Text style={[styles.label, { textAlign }]}>{isRTL ? 'المدينة' : 'City'}</Text>
+                  <Text style={[styles.label, { textAlign }]}>{isRTL ? 'المدينة *' : 'City *'}</Text>
                   <TouchableOpacity
                     style={[styles.input, { justifyContent: 'center' }]}
                     onPress={() => citySheetRef.current?.present()}
@@ -583,7 +677,6 @@ export default function AddChaletScreen() {
                   </TouchableOpacity>
                 </View>
 
-                {/* الموقع */}
                 <View style={styles.inputGroup}>
                   <TouchableOpacity
                     style={styles.mapPreviewContainer}
@@ -608,7 +701,7 @@ export default function AddChaletScreen() {
               </View>
 
               <View style={styles.sectionCard}>
-                {/* المواصفات الأساسية */}
+                <ThemedText type="h2" style={[styles.sectionHeader, { textAlign }]}>{isRTL ? 'المواصفات' : 'Specifications'}</ThemedText>
                 <View style={[styles.rowInputs, { flexDirection }]}>
                   <View style={[styles.inputGroup, { flex: 1 }]}>
                     <Text style={[styles.label, { textAlign }]}>{isRTL ? 'المساحة (م²)' : 'Area (m²)'}</Text>
@@ -624,54 +717,28 @@ export default function AddChaletScreen() {
                   </View>
                 </View>
               </View>
+            </>
+          )}
 
+          {/* ═══════════ Step 2: الفترات ═══════════ */}
+          {currentStep === 2 && (
+            <>
               <View style={styles.sectionCard}>
-                {/* رقم الهاتف */}
-                <View style={styles.inputGroup}>
-                  <Text style={[styles.label, { textAlign }]}>{isRTL ? 'رقم الهاتف' : 'Phone'}</Text>
-                  <TextInput
-                    style={[styles.input, { textAlign: 'left' }]}
-                    placeholder="+964..."
-                    placeholderTextColor="#BCBCBC"
-                    keyboardType="phone-pad"
-                    value={form.phone}
-                    onChangeText={(val) => setForm({ ...form, phone: val })}
-                  />
+                <View style={[styles.shiftsHeaderRow, { flexDirection }]}>
+                  <ThemedText type="h2" style={styles.sectionHeader}>
+                    {isRTL ? 'الفترات المتاحة' : 'Available Shifts'}
+                  </ThemedText>
                 </View>
-
-                {/* نسبة العربون (%) */}
-                <View style={styles.inputGroup}>
-                  <Text style={[styles.label, { textAlign }]}>{isRTL ? 'نسبة العربون (%)' : 'Deposit %'}</Text>
-                  <TextInput
-                    style={[styles.input, { textAlign: 'left' }]}
-                    placeholder="25"
-                    placeholderTextColor="#BCBCBC"
-                    keyboardType="numeric"
-                    value={form.depositPercentage}
-                    onChangeText={(val) => setForm({ ...form, depositPercentage: val })}
-                  />
+                <View style={styles.shiftListContainer}>
+                  {shifts.map((shift, index) => renderShiftRow(shift, index))}
                 </View>
               </View>
             </>
           )}
 
-          {/* ═══════════ Step 1: تفاصيل اضافية ═══════════ */}
-          {currentStep === 1 && (
+          {/* ═══════════ Step 3: السعة والتسعير ═══════════ */}
+          {currentStep === 3 && (
             <>
-              {/* Shifts Section */}
-              <View style={styles.sectionCard}>
-                <View style={[styles.shiftsHeaderRow, { flexDirection }]}>
-                  <ThemedText type="h2" style={styles.sectionHeader}>
-                    {isRTL ? 'الفترات' : 'Shifts'}
-                  </ThemedText>
-                </View>
-
-                <View style={styles.shiftListContainer}>
-                  {shifts.map((shift, index) => renderShiftRow(shift, index))}
-                </View>
-              </View>
-
-              {/* Capacity & Extra Pricing */}
               <View style={styles.sectionCard}>
                 <ThemedText type="h2" style={[styles.sectionHeader, { textAlign }]}>{isRTL ? 'السعة والتسعير الإضافي' : 'Capacity & Extra Pricing'}</ThemedText>
                 
@@ -711,32 +778,81 @@ export default function AddChaletScreen() {
                   </View>
                 </View>
               </View>
+
+              <View style={styles.sectionCard}>
+                <ThemedText type="h2" style={[styles.sectionHeader, { textAlign }]}>{isRTL ? 'معلومات التواصل' : 'Contact Info'}</ThemedText>
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.label, { textAlign }]}>{isRTL ? 'رقم الهاتف' : 'Phone'}</Text>
+                  <TextInput
+                    style={[styles.input, { textAlign: 'left' }]}
+                    placeholder="+964..."
+                    placeholderTextColor="#BCBCBC"
+                    keyboardType="phone-pad"
+                    value={form.phone}
+                    onChangeText={(val) => setForm({ ...form, phone: val })}
+                  />
+                </View>
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.label, { textAlign }]}>{isRTL ? 'نسبة العربون (%)' : 'Deposit %'}</Text>
+                  <TextInput
+                    style={[styles.input, { textAlign: 'left' }]}
+                    placeholder="25"
+                    placeholderTextColor="#BCBCBC"
+                    keyboardType="numeric"
+                    value={form.depositPercentage}
+                    onChangeText={(val) => setForm({ ...form, depositPercentage: val })}
+                  />
+                </View>
+              </View>
             </>
           )}
 
-          {/* ═══════════ Step 2: المرافق والخدمات (Internal Wizard) ═══════════ */}
-          {currentStep === 2 && amenityCategories && amenityCategories[currentAmenitySubStep] && (
+          {/* ═══════════ Step 4: المرافق والخدمات ═══════════ */}
+          {currentStep === 4 && amenityCategories && amenityCategories[currentAmenitySubStep] && (
             <View key={amenityCategories[currentAmenitySubStep].id}>
-              {/* Category Card */}
               <View style={styles.sectionCard}>
-                <Text style={[styles.categorySectionTitle, { textAlign }]}>
+                <Text style={[styles.categorySectionTitle, { textAlign: 'center' }]}>
                   {isRTL ? amenityCategories[currentAmenitySubStep].name?.ar : amenityCategories[currentAmenitySubStep].name?.en}
                 </Text>
                 
-                <View style={styles.featuresList}>
+                {/* Feature Cards - matching amenities-modal design */}
+                <View style={{ gap: 12, marginBottom: 24 }}>
                   {amenityCategories[currentAmenitySubStep].features?.map((feature: any) => {
                     const isSelected = selectedFeatures.includes(feature.id);
                     return (
                       <TouchableOpacity
                         key={feature.id}
-                        style={[styles.featureRow, isSelected && styles.featureRowActive]}
+                        style={[
+                          styles.swiperFeatureCard,
+                          isSelected && styles.swiperFeatureCardActive,
+                          { flexDirection }
+                        ]}
                         onPress={() => toggleFeature(feature.id)}
                         activeOpacity={0.7}
                       >
-                        <View style={[styles.featureRowInner, { flexDirection }]}>
-                          <View style={[styles.featureInfo, { flexDirection }]}>
-                            <View style={[styles.featureIconContainer, { backgroundColor: isSelected ? Colors.primary : '#F1F5F9' }]}>
-                              <Text style={styles.featureIconText}>
+                        {/* Checkbox */}
+                        <View style={styles.swiperCheckboxContainer}>
+                          {isSelected ? (
+                            <View style={styles.swiperCheckboxActive}>
+                              <Text style={styles.swiperCheckmark}>✓</Text>
+                            </View>
+                          ) : (
+                            <View style={styles.swiperCheckboxInactive} />
+                          )}
+                        </View>
+
+                        {/* Info */}
+                        <View style={[styles.swiperFeatureInfo, { flexDirection }]}>
+                          <Text style={[styles.swiperFeatureName, { textAlign }]}>
+                            {isRTL ? feature.name?.ar : feature.name?.en}
+                          </Text>
+                          {/* Orange Badge */}
+                          <View style={styles.orangeBadgeContainer}>
+                            <View style={[styles.orangeBadgeLayer, { transform: [{ rotate: '0deg' }] }]} />
+                            <View style={[styles.orangeBadgeLayer, { transform: [{ rotate: '30deg' }] }]} />
+                            <View style={[styles.orangeBadgeLayer, { transform: [{ rotate: '60deg' }] }]} />
+                            <View style={styles.orangeBadgeContent}>
+                              <Text style={{ fontSize: 14 }}>
                                 {feature.icon === 'wifi' ? '📶' : 
                                  feature.icon === 'parking' ? '🚗' : 
                                  feature.icon === 'generator' ? '⚡' : 
@@ -747,14 +863,6 @@ export default function AddChaletScreen() {
                                  feature.icon === 'bbq' ? '🔥' : '✨'}
                               </Text>
                             </View>
-                            <View style={{ flex: 1, gap: 2 }}>
-                              <Text style={[styles.featureName, { textAlign }]}>
-                                {isRTL ? feature.name?.ar : feature.name?.en}
-                              </Text>
-                            </View>
-                          </View>
-                          <View style={[styles.checkbox, isSelected && styles.checkboxActive]}>
-                            {isSelected && <Text style={styles.checkboxCheck}>✓</Text>}
                           </View>
                         </View>
                       </TouchableOpacity>
@@ -762,47 +870,45 @@ export default function AddChaletScreen() {
                   })}
                 </View>
 
-                {/* Section Specific Photos */}
-                <View style={{ marginTop: 20 }}>
-                  <Text style={[styles.photoHint, { textAlign }]}>
-                    {isRTL ? 'صور هذا المرفق' : 'Photos for this section'}
+                {/* Section Photos */}
+                <View style={{ marginTop: 4 }}>
+                  <Text style={[styles.swiperSectionTitle, { textAlign }]}>
+                    {isRTL ? 'صور هذا المرفق' : 'Amenity Images'}
                   </Text>
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.imageContainer, { flexDirection }]}>
-                    {(imagesByCategory[amenityCategories[currentAmenitySubStep].id] || []).map((uri, index) => (
-                      <View key={index} style={styles.imageItem}>
-                        <Image source={{ uri }} style={styles.uploadedImage} />
-                        <TouchableOpacity 
-                          style={[styles.removeImageButton, isRTL ? { right: normalize.width(6) } : { left: normalize.width(6) }]} 
-                          onPress={() => removeImage(index, amenityCategories[currentAmenitySubStep].id)}
-                        >
-                          <SolarCloseCircleBold size={24} color={Colors.error} />
-                        </TouchableOpacity>
-                      </View>
-                    ))}
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingVertical: 4 }}>
                     <TouchableOpacity 
-                      style={styles.imageUpload} 
+                      style={styles.swiperUploadBtn}
                       onPress={() => {
                         setUploadingCategoryId(amenityCategories[currentAmenitySubStep].id);
                         imageSourceSheetRef.current?.present();
                       }}
                     >
-                      <SolarCameraBold size={32} color={Colors.text.muted} />
-                      <Text style={styles.uploadText}>{isRTL ? 'إضافة صور' : 'Add Photos'}</Text>
+                      <SolarCameraBold size={24} color="#94A3B8" />
                     </TouchableOpacity>
+                    {(imagesByCategory[amenityCategories[currentAmenitySubStep].id] || []).map((uri, index) => (
+                      <View key={index} style={styles.swiperImageContainer}>
+                        <Image source={{ uri }} style={styles.swiperImage} />
+                        <TouchableOpacity 
+                          style={styles.swiperImageDeleteBtn}
+                          onPress={() => removeImage(index, amenityCategories[currentAmenitySubStep].id)}
+                        >
+                          <Text style={styles.swiperImageDeleteText}>×</Text>
+                        </TouchableOpacity>
+                      </View>
+                    ))}
                   </ScrollView>
                 </View>
 
-                {/* Progress Dots (Clickable) */}
-                <View style={styles.amenityProgressContainer}>
-                  {amenityCategories.map((_, idx) => (
+                {/* Progress Dots */}
+                <View style={[styles.swiperPaginationDots, { flexDirection, marginTop: 20 }]}>
+                  {amenityCategories.map((_: any, idx: number) => (
                     <TouchableOpacity
                       key={idx}
                       onPress={() => setCurrentAmenitySubStep(idx)}
                       hitSlop={{ top: 15, bottom: 15, left: 10, right: 10 }}
                       style={[
-                        styles.amenityDot, 
-                        currentAmenitySubStep === idx && styles.amenityDotActive,
-                        currentAmenitySubStep > idx && styles.amenityDotPassed
+                        styles.swiperDot, 
+                        currentAmenitySubStep === idx && styles.swiperDotActive,
                       ]} 
                     />
                   ))}
@@ -811,23 +917,22 @@ export default function AddChaletScreen() {
             </View>
           )}
 
-          {/* General Photos (Optional extra step or inside first/last?) */}
-          {currentStep === 2 && currentAmenitySubStep === 0 && (
+          {/* General Photos */}
+          {currentStep === 4 && currentAmenitySubStep === 0 && (
              <View style={styles.sectionCard}>
                 <ThemedText type="h2" style={styles.sectionHeader}>{isRTL ? 'صور الشاليه العامة' : 'General Photos'}</ThemedText>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.imageContainer, { flexDirection }]}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingVertical: 4 }}>
+                  <TouchableOpacity style={styles.swiperUploadBtn} onPress={() => { setUploadingCategoryId('general'); imageSourceSheetRef.current?.present(); }}>
+                    <SolarGalleryBold size={24} color="#94A3B8" />
+                  </TouchableOpacity>
                   {(imagesByCategory['general'] || []).map((uri, index) => (
-                    <View key={index} style={styles.imageItem}>
-                      <Image source={{ uri }} style={styles.uploadedImage} />
-                      <TouchableOpacity style={[styles.removeImageButton, isRTL ? { right: normalize.width(6) } : { left: normalize.width(6) }]} onPress={() => removeImage(index, 'general')}>
-                        <SolarCloseCircleBold size={24} color={Colors.error} />
+                    <View key={index} style={styles.swiperImageContainer}>
+                      <Image source={{ uri }} style={styles.swiperImage} />
+                      <TouchableOpacity style={styles.swiperImageDeleteBtn} onPress={() => removeImage(index, 'general')}>
+                        <Text style={styles.swiperImageDeleteText}>×</Text>
                       </TouchableOpacity>
                     </View>
                   ))}
-                  <TouchableOpacity style={styles.imageUpload} onPress={() => { setUploadingCategoryId('general'); imageSourceSheetRef.current?.present(); }}>
-                    <SolarGalleryBold size={32} color={Colors.text.muted} />
-                    <Text style={styles.uploadText}>{isRTL ? 'إضافة صور' : 'Add'}</Text>
-                  </TouchableOpacity>
                 </ScrollView>
              </View>
           )}
@@ -943,65 +1048,196 @@ export default function AddChaletScreen() {
       />
 
       {/* Edit Shift Modal */}
-      <BottomSheetModal ref={editShiftSheetRef} index={0} snapPoints={editShiftSnapPoints} backdropComponent={renderBackdrop} backgroundStyle={{ borderRadius: normalize.radius(24) }}>
-        <BottomSheetView style={styles.sheetContent}>
-          {editingShiftIndex !== null && (
-            <ScrollView style={{ width: '100%' }} showsVerticalScrollIndicator={false}>
-              <Text style={styles.modalTitle}>{isRTL ? 'تعديل الفترة' : 'Edit Shift'}</Text>
-              
-              <View style={styles.shiftModalCard}>
-                <View style={styles.inputGroup}>
-                  <Text style={[styles.label, { textAlign }]}>{isRTL ? 'اسم الشفت (عربي)' : 'Name (AR)'}</Text>
-                  <TextInput style={[styles.input, { textAlign }]} value={shifts[editingShiftIndex].name.ar} onChangeText={(val) => updateShiftField(editingShiftIndex, 'nameAr', val)} />
+      <BottomSheetModal ref={editShiftSheetRef} index={0} snapPoints={editShiftSnapPoints} backdropComponent={renderBackdrop} backgroundStyle={{ borderRadius: 28, backgroundColor: '#FFFFFF' }}>
+        <BottomSheetView style={{ flex: 1, padding: 20 }}>
+          {editingShiftIndex !== null && (() => {
+            const shift = shifts[editingShiftIndex];
+            const shiftName = isRTL ? shift.name.ar : shift.name.en;
+
+            const uniformPrice = shift.pricing[0]?.price || 0;
+
+            const parseTimeDisplay = (timeStr: string) => {
+              if (!timeStr) return { time: '00:00', period: '' };
+              const [h, m] = timeStr.split(':').map(Number);
+              const hours12 = h % 12 || 12;
+              const period = h >= 12 ? (isRTL ? 'مساءاً' : 'PM') : (isRTL ? 'صباحاً' : 'AM');
+              return { time: `${hours12.toString().padStart(2, '0')}:${(m || 0).toString().padStart(2, '0')}`, period };
+            };
+
+            const startDisplay = parseTimeDisplay(shift.startTime);
+            const endDisplay = parseTimeDisplay(shift.endTime);
+
+            const isCurrentOverlapping = shiftOverlapInfo.overlappingIndices.includes(editingShiftIndex);
+
+            return (
+              <ScrollView showsVerticalScrollIndicator={false}>
+                {/* Shift Name Header (Editable) */}
+                <View style={{
+                  backgroundColor: '#F8FAFC',
+                  borderRadius: 16,
+                  paddingVertical: 12,
+                  paddingHorizontal: 16,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 10,
+                  marginBottom: 24,
+                  borderWidth: 1,
+                  borderColor: '#E2E8F0',
+                }}>
+
+                  <TextInput
+                    style={{ flex: 1, fontSize: 16, fontFamily: 'Alexandria-Bold', color: '#1E293B', textAlign: 'left' }}
+                    value={isRTL ? shift.name.ar : shift.name.en}
+                    onChangeText={(val) => updateShiftField(editingShiftIndex, isRTL ? 'nameAr' : 'nameEn', val)}
+                    placeholder={isRTL ? 'اسم الفترة' : 'Shift name'}
+                    placeholderTextColor="#94A3B8"
+                  />
                 </View>
 
-                <View style={[styles.shiftRow, { flexDirection, gap: 12, paddingHorizontal: 0 }]}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.label, { textAlign, marginBottom: 8 }]}>{isRTL ? 'وقت البداية' : 'Start Time'}</Text>
-                    <TouchableOpacity style={styles.timeSelectBtn} onPress={() => setShowStartTimePicker(true)}>
-                      <Text style={styles.timeSelectText}>{formatTime12h(shifts[editingShiftIndex].startTime)}</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.label, { textAlign, marginBottom: 8 }]}>{isRTL ? 'وقت النهاية' : 'End Time'}</Text>
-                    <TouchableOpacity style={styles.timeSelectBtn} onPress={() => setShowEndTimePicker(true)}>
-                      <Text style={styles.timeSelectText}>{formatTime12h(shifts[editingShiftIndex].endTime)}</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                <View style={styles.pricingSectionModal}>
-                  <Text style={[styles.pricingTitle, { textAlign }]}>{isRTL ? 'الأسعار (د.ع)' : 'Pricing (IQD)'}</Text>
-                  <View style={[styles.bulkPricingRow, { flexDirection }]}>
-                    <TextInput style={[styles.input, { flex: 1, height: 40 }]} placeholder={isRTL ? 'السعر...' : 'Price...'} keyboardType="numeric" value={bulkPrice} onChangeText={setBulkPrice} />
-                    <TouchableOpacity style={styles.bulkBtn} onPress={() => handleApplyBulkPrice('all')}><Text style={styles.bulkBtnText}>{isRTL ? 'الكل' : 'All'}</Text></TouchableOpacity>
-                    <TouchableOpacity style={styles.bulkBtn} onPress={() => handleApplyBulkPrice('weekdays')}><Text style={styles.bulkBtnText}>{isRTL ? 'الأسبوع' : 'Week'}</Text></TouchableOpacity>
-                    <TouchableOpacity style={styles.bulkBtn} onPress={() => handleApplyBulkPrice('weekends')}><Text style={styles.bulkBtnText}>{isRTL ? 'الجمعة' : 'W.E'}</Text></TouchableOpacity>
-                  </View>
-                  <View style={[styles.dayPricingGrid, { flexDirection }]}>
-                    {shifts[editingShiftIndex].pricing.map((p) => (
-                      <View key={p.dayOfWeek} style={styles.dayPriceItem}>
-                        <Text style={styles.dayLabel}>{isRTL ? DAY_NAMES_AR[p.dayOfWeek] : DAY_NAMES_EN[p.dayOfWeek]}</Text>
-                        <TextInput style={styles.dayPriceInput} value={p.price.toString()} onChangeText={(val) => updateShiftPricing(editingShiftIndex, p.dayOfWeek, val)} keyboardType="numeric" />
+                {/* Time Card (matching shifts.tsx) */}
+                <View style={[{
+                  backgroundColor: '#fff',
+                  borderRadius: 20,
+                  padding: 16,
+                  borderWidth: 1,
+                  borderColor: '#F0F2F7',
+                  marginBottom: 20,
+                }, isCurrentOverlapping && { borderColor: '#FCA5A5', backgroundColor: '#FFF5F5' }]}>
+                  {/* Header */}
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                    <Text style={[{ fontSize: 13, fontFamily: 'Alexandria-Bold', color: '#475569' }, isCurrentOverlapping && { color: '#991B1B' }]}>
+                      {isRTL ? 'أوقات الفترة' : 'Shift Times'}
+                    </Text>
+                    {isCurrentOverlapping && (
+                      <View style={{ backgroundColor: '#FEE4E2', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 }}>
+                        <Text style={{ fontSize: 10, color: '#D92D20', fontFamily: 'Alexandria-Bold' }}>
+                          {isRTL ? 'تداخل' : 'Overlap'}
+                        </Text>
                       </View>
-                    ))}
+                    )}
                   </View>
-                </View>
-              </View>
 
-              <PrimaryButton label={isRTL ? 'تم' : 'Done'} onPress={() => editShiftSheetRef.current?.dismiss()} style={{ marginTop: 20 }} />
-            </ScrollView>
-          )}
+                  {/* Start / End Time */}
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    {/* Start Time */}
+                    <View style={{ flex: 1, alignItems: 'center' }}>
+                      <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Medium', color: '#64748B' }}>
+                        {isRTL ? 'وقت البدء' : 'Start Time'}
+                      </Text>
+                      <View style={{ alignItems: 'center', marginTop: 6 }}>
+                        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+                          <TouchableOpacity onPress={() => adjustShiftTime(editingShiftIndex, 'startTime', -30)} style={styles.adjustTimeBtnSmall}>
+                            <Text style={styles.adjustTimeBtnTextSmall}>-</Text>
+                          </TouchableOpacity>
+                          <Text style={[styles.timeValueText, isCurrentOverlapping && { color: '#D92D20' }]}>
+                            {formatTime12h(shift.startTime)}
+                          </Text>
+                          <TouchableOpacity onPress={() => adjustShiftTime(editingShiftIndex, 'startTime', 30)} style={styles.adjustTimeBtnSmall}>
+                            <Text style={styles.adjustTimeBtnTextSmall}>+</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    </View>
+
+                    <View style={{ width: 1, height: '80%', backgroundColor: '#E2E8F0', alignSelf: 'center' }} />
+
+                    {/* End Time */}
+                    <View style={{ flex: 1, alignItems: 'center' }}>
+                      <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Medium', color: '#64748B' }}>
+                        {isRTL ? 'وقت الانتهاء' : 'End Time'}
+                      </Text>
+                      <View style={{ alignItems: 'center', marginTop: 6 }}>
+                        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+                          <TouchableOpacity onPress={() => adjustShiftTime(editingShiftIndex, 'endTime', -30)} style={styles.adjustTimeBtnSmall}>
+                            <Text style={styles.adjustTimeBtnTextSmall}>-</Text>
+                          </TouchableOpacity>
+                          <Text style={[styles.timeValueText, isCurrentOverlapping && { color: '#D92D20' }]}>
+                            {formatTime12h(shift.endTime)}
+                          </Text>
+                          <TouchableOpacity onPress={() => adjustShiftTime(editingShiftIndex, 'endTime', 30)} style={styles.adjustTimeBtnSmall}>
+                            <Text style={styles.adjustTimeBtnTextSmall}>+</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+
+                  {/* Overlap Warning */}
+                  {isCurrentOverlapping && shiftOverlapInfo.conflictMsg && (
+                    <View style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      backgroundColor: '#FEE4E2',
+                      borderRadius: 8,
+                      padding: 10,
+                      marginTop: 12,
+                      gap: 6
+                    }}>
+                      <SolarInfoCircleBold size={16} color="#D92D20" />
+                      <Text style={{ color: '#D92D20', fontSize: 11, fontFamily: 'Alexandria-Medium', flex: 1, textAlign: 'left' }}>
+                        {isRTL
+                          ? `تنبيه: ${shiftOverlapInfo.conflictMsg.ar}. يجب تغيير الوقت.`
+                          : `Warning: ${shiftOverlapInfo.conflictMsg.en}. Please change the time.`}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+
+                {/* Price Section */}
+                <Text style={{ fontSize: 15, fontFamily: 'Alexandria-Bold', color: '#1E293B', textAlign: 'left', marginBottom: 12 }}>
+                  {isRTL ? 'تحديد السعر' : 'Set Price'}
+                </Text>
+
+                <View style={{
+                  backgroundColor: '#F8FAFC',
+                  borderRadius: 14,
+                  paddingVertical: 4,
+                  paddingHorizontal: 16,
+                  borderWidth: 1,
+                  borderColor: '#E2E8F0',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginBottom: 32,
+                }}>
+                  <Text style={{ fontSize: 14, fontFamily: 'Alexandria-Medium', color: '#94A3B8', marginEnd: 12 }}>
+                    {isRTL ? 'د.ع' : 'IQD'}
+                  </Text>
+                  <TextInput
+                    style={{
+                      flex: 1,
+                      fontSize: 18,
+                      fontFamily: 'Alexandria-Bold',
+                      color: '#1E293B',
+                      textAlign: 'right',
+                      paddingVertical: 14,
+                    }}
+                    value={uniformPrice > 0 ? uniformPrice.toLocaleString() : ''}
+                    onChangeText={(val) => setUniformPrice(editingShiftIndex, val.replace(/,/g, ''))}
+                    keyboardType="numeric"
+                    placeholder="600,000"
+                    placeholderTextColor="#CBD5E1"
+                  />
+                </View>
+
+                {/* Buttons */}
+                <View style={{ flexDirection: 'row', gap: 12 }}>
+                  <SecondaryButton
+                    label={isRTL ? 'الغاء' : 'Cancel'}
+                    onPress={() => editShiftSheetRef.current?.dismiss()}
+                    style={{ flex: 1 }}
+                  />
+                  <SecondaryButton
+                    label={isRTL ? 'تاكيد' : 'Confirm'}
+                    onPress={() => editShiftSheetRef.current?.dismiss()}
+                    isActive={true}
+                    style={{ flex: 1 }}
+                  />
+                </View>
+              </ScrollView>
+            );
+          })()}
         </BottomSheetView>
       </BottomSheetModal>
-      <LocationPickerModal
-        visible={isLocationModalVisible}
-        onClose={() => setIsLocationModalVisible(false)}
-        initialLocation={{ latitude: parseFloat(form.latitude), longitude: parseFloat(form.longitude) }}
-        onSelect={(lat, lng) => {
-          setForm({ ...form, latitude: lat.toString(), longitude: lng.toString() });
-        }}
-      />
     </View>
   );
 }
@@ -1156,4 +1392,173 @@ const styles = StyleSheet.create({
   timeSelectText: { fontSize: normalize.font(15), fontFamily: "Alexandria-Bold", color: Colors.text.primary },
   bulkPricingRow: { flexDirection: 'row', gap: 8, alignItems: 'center', marginBottom: 8 },
   bulkBtn: { paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#EFF6FF', borderRadius: 8, borderWidth: 1, borderColor: '#DBEAFE' },
-  bulkBtnText: { color: Colors.primary, fontSize: normalize.font(12), fontFamily: "Alexandria-Bold" } });
+  bulkBtnText: { color: Colors.primary, fontSize: normalize.font(12), fontFamily: "Alexandria-Bold" },
+
+  // ── Time Adjustment Styles (matching shifts.tsx) ──
+  adjustTimeBtnSmall: {
+    backgroundColor: Colors.primary + '10',
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.primary + '20',
+  },
+  adjustTimeBtnTextSmall: {
+    fontSize: 14,
+    fontFamily: 'Alexandria-Bold',
+    color: Colors.primary,
+    lineHeight: 18,
+  },
+  timeValueText: {
+    fontSize: 13,
+    fontFamily: 'Alexandria-Bold',
+    color: '#0F172A',
+    minWidth: 70,
+    textAlign: 'center',
+  },
+
+  // ── Swiper Amenity Styles (matching amenities-modal) ──
+  swiperFeatureCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 62,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.02,
+    shadowRadius: 6,
+    elevation: 1,
+  },
+  swiperFeatureCardActive: {
+    borderColor: '#BFDBFE',
+    backgroundColor: '#F0F7FF',
+  },
+  swiperCheckboxContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  swiperCheckboxActive: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#0066FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  swiperCheckmark: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontFamily: 'Alexandria-Bold',
+    marginTop: -1,
+  },
+  swiperCheckboxInactive: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: '#CBD5E1',
+    backgroundColor: '#FFFFFF',
+  },
+  swiperFeatureInfo: {
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  swiperFeatureName: {
+    fontSize: 14,
+    fontFamily: 'Alexandria-SemiBold',
+    color: Colors.text.primary,
+    flex: 1,
+  },
+  orangeBadgeContainer: {
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  orangeBadgeLayer: {
+    position: 'absolute',
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: '#FF5B00',
+  },
+  orangeBadgeContent: {
+    zIndex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  swiperSectionTitle: {
+    fontSize: 14,
+    fontFamily: 'Alexandria-Bold',
+    color: Colors.text.primary,
+    marginBottom: 12,
+    marginTop: 8,
+  },
+  swiperUploadBtn: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
+    borderStyle: 'dashed',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  swiperImageContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    position: 'relative',
+  },
+  swiperImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+  },
+  swiperImageDeleteBtn: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    backgroundColor: '#EF4444',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  swiperImageDeleteText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontFamily: 'Alexandria-Bold',
+    marginTop: -2.5,
+  },
+  swiperPaginationDots: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
+  swiperDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#E2E8F0',
+  },
+  swiperDotActive: {
+    backgroundColor: '#0066FF',
+    width: 18,
+  } });

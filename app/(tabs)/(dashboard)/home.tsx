@@ -4,34 +4,29 @@ import {
 } from "@/components/booking-cancellation-modal";
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { PendingApprovalScreen } from "@/components/dashboard/pending-approval";
+import { ShiftActionSheet } from "@/components/dashboard/shift-action-sheet";
 import {
   SolarCalendarBold,
   SolarClockCircleLinear,
-  SolarLockBold,
-  SolarPhoneBold,
   SolarUserBold
 } from "@/components/icons/solar-icons";
 import { ErrorState } from "@/components/ui/error-state";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize } from "@/constants/theme";
-import { getImageSrc } from "@/hooks/useImageSrc";
 import { RootState } from "@/store";
 import {
-  useCreateExternalBookingMutation,
   useDeleteExternalBookingMutation,
   useGetFullyBookedStatusQuery,
   useGetProviderBookingsQuery,
   useGetProviderProfileQuery,
   useGetShiftAvailabilityQuery,
   useMarkBookingCompletedMutation,
-  useRejectBookingMutation,
-  useUpdateShiftPricingDayMutation
+  useRejectBookingMutation
 } from "@/store/api/apiSlice";
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput, BottomSheetView } from "@gorhom/bottom-sheet";
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView, BottomSheetView } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
 import { Image as ExpoImage } from "expo-image";
 import { useRouter } from "expo-router";
-import LottieView from "lottie-react-native";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -44,7 +39,6 @@ import {
   View
 } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import Toast from "react-native-toast-message";
 
 import { isRTL } from "@/i18n";
 import { useSelector } from "react-redux";
@@ -148,16 +142,9 @@ export default function HomeScreen() {
 
   const [markAsCompleted, { isLoading: isStatusLoading }] =
     useMarkBookingCompletedMutation();
-  const [createExternalBooking, { isLoading: isCreatingExternal }] =
-    useCreateExternalBookingMutation();
   const [deleteExternalBooking, { isLoading: isDeletingExternal }] =
     useDeleteExternalBookingMutation();
-  const [updateShiftPricingDay, { isLoading: isUpdatingPricing }] =
-    useUpdateShiftPricingDayMutation();
 
-  const [externalNotes, setExternalNotes] = React.useState("");
-  const [externalCustomerName, setExternalCustomerName] = React.useState("");
-  const [externalCustomerPhone, setExternalCustomerPhone] = React.useState("");
   const [baseDate, setBaseDate] = React.useState(new Date());
   const [selectedDate, setSelectedDate] = React.useState(new Date());
   const [isFilterByDate] = React.useState(true);
@@ -167,7 +154,6 @@ export default function HomeScreen() {
   >(null);
   const [selectedShiftForAction, setSelectedShiftForAction] =
     React.useState<any>(null);
-  const [showExternalSuccess, setShowExternalSuccess] = React.useState(false);
 
   const cancelSheetRef = React.useRef<BookingCancellationSheetRef>(null);
   const shiftSheetRef = React.useRef<BottomSheetModal>(null);
@@ -822,535 +808,18 @@ export default function HomeScreen() {
         }}
       />
 
-      <BottomSheetModal
+      <ShiftActionSheet
         ref={shiftSheetRef}
-        enableDynamicSizing={true}
-        backdropComponent={renderBackdrop}
-        enablePanDownToClose
-        onDismiss={() => {
-          setSelectedShiftForAction(null);
-          setExternalNotes("");
-          setExternalCustomerName("");
-          setExternalCustomerPhone("");
-          setShowExternalSuccess(false);
-        }}
-      >
-        <BottomSheetView
-          style={[styles.sheetContent]}
-        >
-          {selectedShiftForAction && (
-            <>
-              {showExternalSuccess ? (
-                <View style={styles.successAnimationContainer}>
-                  <LottieView
-                    source={require("../../../components/icons/motions/success.json")}
-                    autoPlay
-                    loop={false}
-                    onAnimationFinish={() => {
-                      shiftSheetRef.current?.dismiss();
-                    }}
-                    style={[styles.successLottie, { height: 300 }]}
-                    resizeMode="contain"
-                  />
-                  <Text style={styles.successAnimationText}>
-                    {isRTL
-                      ? "تم تأكيد الحجز الخارجي بنجاح"
-                      : "External booking confirmed successfully"}
-                  </Text>
-                </View>
-              ) : selectedShiftForAction.isAvailable ? (
-                <View style={{ padding: 24 }}>
-                  {/* Premium Shift info summary card header */}
-                  <View
-                    style={{
-                      backgroundColor: "#F8FAFC",
-                      borderRadius: 16,
-                      padding: 16,
-                      borderWidth: 1,
-                      borderColor: "#E2E8F0",
-                      marginBottom: 24,
-                      gap: 12,
-                    }}
-                  >
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Text
-                        style={{
-                          fontSize: normalize.font(16),
-                          fontFamily: "Alexandria-Bold",
-                          color: "#1E293B",
-                          textAlign,
-                        }}
-                      >
-                        {isRTL
-                          ? selectedShiftForAction.shiftName?.ar || selectedShiftForAction.shiftName
-                          : selectedShiftForAction.shiftName?.en || selectedShiftForAction.shiftName}
-                      </Text>
-                      {/* Beautiful glowing dot inside the shift header */}
-                      <View
-                        style={{
-                          backgroundColor: "#ECFDF5",
-                          paddingHorizontal: 10,
-                          paddingVertical: 4,
-                          borderRadius: 9999,
-                          borderWidth: 1,
-                          borderColor: "#A7F3D0",
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                        }}
-                      >
-                        <View
-                          style={{
-                            width: 6,
-                            height: 6,
-                            borderRadius: 3,
-                            backgroundColor: "#10B981",
-                            [isRTL ? "marginLeft" : "marginRight"]: 6,
-                          }}
-                        />
-                        <Text
-                          style={{
-                            fontSize: normalize.font(11),
-                            fontFamily: "Alexandria-Bold",
-                            color: "#059669",
-                          }}
-                        >
-                          {isRTL ? "متاح للحجز" : "Available"}
-                        </Text>
-                      </View>
-                    </View>
-
-                    {/* Date and Time Details */}
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        gap: 16,
-                        borderTopWidth: 1,
-                        borderTopColor: "#E2E8F0",
-                        paddingTop: 12,
-                      }}
-                    >
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
-                        <SolarCalendarBold size={16} color={IDENTITY_BLUE} />
-                        <Text
-                          style={{
-                            fontSize: normalize.font(12),
-                            fontFamily: "Alexandria-SemiBold",
-                            color: "#475569",
-                          }}
-                        >
-                          {dateString}
-                        </Text>
-                      </View>
-
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                        <SolarClockCircleLinear size={16} color={IDENTITY_BLUE} />
-                        <Text
-                          style={{
-                            fontSize: normalize.font(12),
-                            fontFamily: "Alexandria-SemiBold",
-                            color: "#475569",
-                          }}
-                        >
-                          {format12H(selectedShiftForAction.startTime, isRTL)} -{" "}
-                          {format12H(selectedShiftForAction.endTime, isRTL)}
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-
-                  <View style={{ width: "100%" }}>
-                    {/* Customer Name Input with embedded icon */}
-                    <Text
-                      style={[
-                        styles.inputLabel,
-                        { textAlign, color: "#475569", fontFamily: "Alexandria-SemiBold" }
-                      ]}
-                    >
-                      {isRTL ? "اسم الزبون (اختياري)" : "Customer Name (Optional)"}
-                    </Text>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        backgroundColor: "#F8FAFC",
-                        borderRadius: 14,
-                        borderWidth: 1,
-                        borderColor: "#E2E8F0",
-                        height: 54,
-                        paddingHorizontal: 16,
-                        marginBottom: 20,
-                        gap: 10,
-                      }}
-                    >
-                      <SolarUserBold size={18} color="#94A3B8" />
-                      <BottomSheetTextInput
-                        style={{
-                          flex: 1,
-                          height: "100%",
-                          fontFamily: "Alexandria-Regular",
-                          fontSize: normalize.font(14),
-                          color: "#1E293B",
-                          textAlign,
-                        }}
-                        placeholder={isRTL ? "أدخل اسم الزبون..." : "Enter customer name..."}
-                        placeholderTextColor="#94A3B8"
-                        value={externalCustomerName}
-                        onChangeText={setExternalCustomerName}
-                      />
-                    </View>
-
-                    {/* Customer Phone Input with embedded icon */}
-                    <Text
-                      style={[
-                        styles.inputLabel,
-                        { textAlign, color: "#475569", fontFamily: "Alexandria-SemiBold" }
-                      ]}
-                    >
-                      {isRTL ? "رقم الهاتف (اختياري)" : "Phone Number (Optional)"}
-                    </Text>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        backgroundColor: "#F8FAFC",
-                        borderRadius: 14,
-                        borderWidth: 1,
-                        borderColor: "#E2E8F0",
-                        height: 54,
-                        paddingHorizontal: 16,
-                        marginBottom: 20,
-                        gap: 10,
-                      }}
-                    >
-                      <SolarPhoneBold size={18} color="#94A3B8" />
-                      <BottomSheetTextInput
-                        style={{
-                          flex: 1,
-                          height: "100%",
-                          fontFamily: "Alexandria-Regular",
-                          fontSize: normalize.font(14),
-                          color: "#1E293B",
-                          textAlign,
-                        }}
-                        placeholder={isRTL ? "07xxxxxxxx" : "07xxxxxxxx"}
-                        placeholderTextColor="#94A3B8"
-                        value={externalCustomerPhone}
-                        onChangeText={setExternalCustomerPhone}
-                        keyboardType="phone-pad"
-                      />
-                    </View>
-
-                    {/* Notes TextArea with modern border container */}
-                    <Text
-                      style={[
-                        styles.inputLabel,
-                        { textAlign, color: "#475569", fontFamily: "Alexandria-SemiBold" }
-                      ]}
-                    >
-                      {isRTL
-                        ? "ملاحظات إضافية (اختياري)"
-                        : "Additional Notes (Optional)"}
-                    </Text>
-                    <View
-                      style={{
-                        backgroundColor: "#F8FAFC",
-                        borderRadius: 14,
-                        borderWidth: 1,
-                        borderColor: "#E2E8F0",
-                        padding: 12,
-                        minHeight: 100,
-                        marginBottom: 24,
-                      }}
-                    >
-                      <BottomSheetTextInput
-                        style={{
-                          flex: 1,
-                          fontFamily: "Alexandria-Regular",
-                          fontSize: normalize.font(14),
-                          color: "#1E293B",
-                          textAlign,
-                          textAlignVertical: "top",
-                        }}
-                        placeholder={
-                          isRTL
-                            ? "أدخل أي ملاحظات أخرى (مثال: دفعة مقدمة)..."
-                            : "Enter any other notes (e.g. down payment)..."
-                        }
-                        placeholderTextColor="#94A3B8"
-                        value={externalNotes}
-                        onChangeText={setExternalNotes}
-                        multiline
-                      />
-                    </View>
-
-                    <SecondaryButton
-                      label={
-                        isRTL
-                          ? "تأكيد الحجز الخارجي"
-                          : "Confirm External Booking"
-                      }
-                      onPress={async () => {
-                        try {
-                          console.log("Starting external booking creation...");
-                          const result = await createExternalBooking({
-                            chaletId: selectedChalet?.id!,
-                            shiftId:
-                              selectedShiftForAction.shiftId ||
-                              selectedShiftForAction.id,
-                            date: dateString,
-                            notes: externalNotes,
-                            customerName: externalCustomerName,
-                            customerPhone: externalCustomerPhone
-                          }).unwrap();
-                          console.log("Booking created successfully:", result);
-
-                          refreshAvailability();
-                          setExternalNotes("");
-                          setShowExternalSuccess(true);
-                          Haptics.notificationAsync(
-                            Haptics.NotificationFeedbackType.Success,
-                          );
-
-                          // Fallback: If animation doesn't finish or play, dismiss after 3 seconds
-                          setTimeout(() => {
-                            shiftSheetRef.current?.dismiss();
-                          }, 3500);
-                        } catch (e: any) {
-                          console.error("External booking failed:", e);
-                          Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: e?.data?.message || (isRTL ? 'فشل العملية' : 'Failed'), position: 'bottom' });
-                        }
-                      }}
-                      isActive={true}
-                      activeColor={IDENTITY_BLUE}
-                      isLoading={isCreatingExternal}
-                      style={{ height: 50 }}
-                    />
-                  </View>
-                </View>
-              ) : selectedShiftForAction.isClosed ? (
-                <View style={{ padding: 24, alignItems: "center" }}>
-                  <View style={[styles.avatarPlaceholder, { width: 80, height: 80, borderRadius: 40, backgroundColor: "#F1F5F9", marginBottom: 20 }]}>
-                    <SolarLockBold size={40} color="#64748B" />
-                  </View>
-                  <Text style={[styles.sheetTitle, { marginBottom: 8 }]}>
-                    {isRTL ? "هذه الفترة مغلقة" : "This shift is closed"}
-                  </Text>
-                  <Text style={{ textAlign: "center", color: "#64748B", fontFamily: "Alexandria-Regular", fontSize: normalize.font(14), marginBottom: 32 }}>
-                    {isRTL
-                      ? "لقد قمت بإغلاق هذه الفترة يدوياً. لن يتمكن الزبائن من حجزها حتى تقوم بإعادة فتحها."
-                      : "You have manually closed this shift. Customers won't be able to book it until you reopen it."}
-                  </Text>
-
-                  <SecondaryButton
-                    label={isRTL ? "إلغاء الإغلاق (إعادة الفتح)" : "Un-close (Reopen)"}
-                    onPress={async () => {
-                      try {
-                        if (!selectedShiftForAction.pricingId) {
-                          throw new Error("Pricing ID not found");
-                        }
-                        await updateShiftPricingDay({
-                          shiftId: selectedShiftForAction.shiftId || selectedShiftForAction.id,
-                          pricingId: selectedShiftForAction.pricingId,
-                          price: 50000, // Default price or could be something else
-                        }).unwrap();
-
-                        refreshAvailability();
-                        shiftSheetRef.current?.dismiss();
-                        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                      } catch (e: any) {
-                        Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: e?.data?.message || (isRTL ? 'فشل إعادة الفتح' : 'Failed to reopen'), position: 'bottom' });
-                      }
-                    }}
-                    isActive={true}
-                    activeColor={IDENTITY_BLUE}
-                    isLoading={isUpdatingPricing}
-                    style={{ height: 56, width: "100%" }}
-                  />
-                </View>
-              ) : (
-                <View style={{ padding: 24 }}>
-                  <View style={{ alignItems: "center", marginBottom: 28 }}>
-                    <View
-                      style={[
-                        styles.avatarPlaceholder,
-                        {
-                          width: 72,
-                          height: 72,
-                          borderRadius: 24,
-                          marginBottom: 16,
-                          elevation: 4,
-                          shadowColor: "#000",
-                          shadowOffset: { width: 0, height: 4 },
-                          shadowOpacity: 0.1,
-                          shadowRadius: 8
-                        },
-                      ]}
-                    >
-                      {(() => {
-                        const customer = selectedShiftForAction.booking?.customer;
-                        const customerImageId =
-                          typeof customer?.image === "string"
-                            ? customer.image
-                            : customer?.image?.url ||
-                            customer?.image?.id ||
-                            customer?.imageUrl;
-
-                        return customerImageId ? (
-                          <ExpoImage
-                            source={getImageSrc(customerImageId)}
-                            style={{ width: "100%", height: "100%" }}
-                          />
-                        ) : (
-                          <SolarUserBold size={36} color="#FFF" />
-                        );
-                      })()}
-                    </View>
-                    <Text
-                      style={[
-                        styles.sheetTitle,
-                        { marginBottom: 2, fontSize: normalize.font(20) },
-                      ]}
-                    >
-                      {selectedShiftForAction.booking?.customer?.name ||
-                        selectedShiftForAction.booking?.externalCustomerName ||
-                        (selectedShiftForAction.booking?.status === "external"
-                          ? isRTL
-                            ? "حجز خارجي"
-                            : "External Booking"
-                          : isRTL
-                            ? "زبون"
-                            : "Customer")}
-                    </Text>
-                    {(selectedShiftForAction.booking?.customer?.phone ||
-                      selectedShiftForAction.booking?.externalCustomerPhone) && (
-                        <Text
-                          style={[
-                            styles.customerPhone,
-                            { marginBottom: 8, direction: "ltr" },
-                          ]}
-                        >
-                          {selectedShiftForAction.booking?.customer?.phone ||
-                            selectedShiftForAction.booking?.externalCustomerPhone}
-                        </Text>
-                      )}
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: "center",
-                        gap: 8
-                      }}
-                    >
-                      <Text
-                        style={{
-                          color: "#64748B",
-                          fontFamily: "Alexandria-SemiBold",
-                          fontSize: normalize.font(14),
-                          letterSpacing: 0.5
-                        }}
-                      >
-                        {selectedShiftForAction.booking?.bookingCode || "#---"}
-                      </Text>
-                      <View
-                        style={[
-                          styles.statusBadge,
-                          {
-                            paddingVertical: 4,
-                            paddingHorizontal: 10,
-                            backgroundColor:
-                              selectedShiftForAction.booking?.status ===
-                                "confirmed"
-                                ? "#ECFDF5"
-                                : selectedShiftForAction.booking?.status ===
-                                  "external"
-                                  ? "#FEF2F2"
-                                  : "#F1F5F9",
-                            borderColor: "transparent",
-                            borderRadius: 6
-                          },
-                        ]}
-                      >
-                        <Text
-                          style={[
-                            styles.statusText,
-                            {
-                              fontSize: normalize.font(11),
-                              color:
-                                selectedShiftForAction.booking?.status ===
-                                  "confirmed"
-                                  ? "#10B981"
-                                  : selectedShiftForAction.booking?.status ===
-                                    "external"
-                                    ? "#EF4444"
-                                    : "#64748B"
-                            },
-                          ]}
-                        >
-                          {selectedShiftForAction.booking?.status ===
-                            "confirmed"
-                            ? isRTL
-                              ? "حجز مؤكد"
-                              : "Confirmed"
-                            : selectedShiftForAction.booking?.status ===
-                              "external"
-                              ? isRTL
-                                ? "حجز خارجي"
-                                : "External"
-                              : selectedShiftForAction.booking?.status}
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-
-                  <View
-                    style={{
-                      height: 1,
-                      backgroundColor: "#F1F5F9",
-                      marginBottom: 24
-                    }}
-                  />
-
-                  <View style={{ flexDirection: 'row', gap: 14 }}>
-                    <SecondaryButton
-                      label={
-                        isRTL ? "عرض تفاصيل الحجز" : "View Details"
-                      }
-                      onPress={() => {
-                        shiftSheetRef.current?.dismiss();
-                        openBookingDetails(
-                          selectedShiftForAction.booking?.id ||
-                          selectedShiftForAction.bookingId,
-                        );
-                      }}
-                      isActive={true}
-                      activeColor={IDENTITY_BLUE}
-                      style={{ height: 50, flex: 1 }}
-                    />
-
-                    {(selectedShiftForAction.booking?.status === "confirmed" ||
-                      selectedShiftForAction.booking?.status === "external" ||
-                      selectedShiftForAction.booking?.status ===
-                      "pending_payment") && (
-                        <SecondaryButton
-                          label={isRTL ? "إلغاء الحجز" : "Cancel"}
-                          onPress={() => {
-                            shiftSheetRef.current?.dismiss();
-                            handleOpenCancelSheet(
-                              selectedShiftForAction.booking,
-                            );
-                          }}
-                          isActive={true}
-                          activeColor="#EF4444"
-                          style={{ height: 50, flex: 1 }}
-                        />
-                      )}
-                  </View>
-                </View>
-              )}
-            </>
-          )}
-        </BottomSheetView>
-      </BottomSheetModal>
+        selectedShiftForAction={selectedShiftForAction}
+        selectedChaletId={selectedChalet?.id}
+        dateString={dateString}
+        isRTL={isRTL}
+        onDismiss={() => setSelectedShiftForAction(null)}
+        refreshAvailability={refreshAvailability}
+        openBookingDetails={openBookingDetails}
+        handleOpenCancelSheet={handleOpenCancelSheet}
+        format12H={format12H}
+      />
 
       <BookingCancellationSheet
         ref={cancelSheetRef}
@@ -1566,7 +1035,7 @@ const styles = StyleSheet.create({
   },
   calendarContainer: {
     paddingHorizontal: normalize.width(16),
-    marginTop: normalize.height(16),
+    marginTop: normalize.height(4),
     marginBottom: normalize.height(16)
   },
   calendarHeader: {
