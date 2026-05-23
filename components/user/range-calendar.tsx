@@ -29,9 +29,16 @@ interface RangeCalendarProps {
   initialStartDate?: Date;
   initialEndDate?: Date;
   reservedDates?: string[]; // ISO strings or YYYY-MM-DD
+  selectionMode?: "single" | "range";
 }
 
-export const RangeCalendar: React.FC<RangeCalendarProps> = ({ onSelect, initialStartDate, initialEndDate, reservedDates = [] }) => {
+export const RangeCalendar: React.FC<RangeCalendarProps> = ({
+  onSelect,
+  initialStartDate,
+  initialEndDate,
+  reservedDates = [],
+  selectionMode = "range",
+}) => {
   const { i18n } = useTranslation();
     
   const [viewDate, setViewDate] = useState(initialStartDate || new Date()); // The month currently being viewed
@@ -95,9 +102,17 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({ onSelect, initialS
     const dateStr = date.toISOString().split('T')[0];
     if (reservedDates.includes(dateStr)) return;
 
+    if (selectionMode === "single") {
+      setStartDate(pressedDate);
+      setEndDate(null);
+      onSelect?.(pressedDate, null);
+      return;
+    }
+
     if (!startDate || (startDate && endDate)) {
       setStartDate(pressedDate);
       setEndDate(null);
+      onSelect?.(pressedDate, null);
     } else {
       const start = new Date(startDate);
       start.setHours(0, 0, 0, 0);
@@ -131,22 +146,31 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({ onSelect, initialS
     setShowYearPicker(false);
   };
 
+  const monthTitleText = useMemo(() => {
+    const d = new Date(year, month, 1);
+    const locale = i18n.language === "ar" ? "ar-IQ-u-nu-latn" : "en-US";
+    return d.toLocaleString(locale, {
+      month: "long",
+      year: "numeric"
+    });
+  }, [year, month, i18n.language]);
+
   return (
     <View style={styles.container}>
       {/* Month Navigation Header */}
       <View style={[styles.header, { flexDirection: 'row' }]}>
         <TouchableOpacity onPress={() => changeMonth(-1)} style={styles.navBtn}>
-          {isRTL ? <SolarAltArrowRightBold size={20} color={Colors.text.primary} /> : <SolarAltArrowLeftBold size={20} color={Colors.text.primary} />}
+          <SolarAltArrowLeftBold size={20} color={Colors.text.primary} />
         </TouchableOpacity>
         
         <TouchableOpacity onPress={() => setShowYearPicker(!showYearPicker)} style={styles.titleWrapper}>
           <ThemedText style={styles.monthTitle}>
-            {MONTHS_NAMES[month]} {year}
+            {monthTitleText}
           </ThemedText>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => changeMonth(1)} style={styles.navBtn}>
-          {isRTL ? <SolarAltArrowLeftBold size={20} color={Colors.text.primary} /> : <SolarAltArrowRightBold size={20} color={Colors.text.primary} />}
+          <SolarAltArrowRightBold size={20} color={Colors.text.primary} />
         </TouchableOpacity>
       </View>
 
@@ -238,6 +262,7 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: 'center' },
   header: {
+    direction: 'ltr',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: normalize.height(20),

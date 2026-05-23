@@ -1,14 +1,15 @@
 import { ThemedText } from "@/components/themed-text";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { isRTL } from "@/i18n";
 import {
     ActivityIndicator,
+    StyleProp,
     StyleSheet,
     TextStyle,
     TouchableOpacity,
     View,
-    ViewStyle } from "react-native";
+    ViewStyle
+} from "react-native";
 
 interface SecondaryButtonProps {
   label: string;
@@ -21,11 +22,11 @@ interface SecondaryButtonProps {
   inactiveColor?: string;
   activeTextColor?: string;
   inactiveTextColor?: string;
-  style?: ViewStyle;
-  textStyle?: TextStyle;
+  style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
   isLoading?: boolean;
   height?: number;
-  variant?: "default" | "inverse"; // Added to let you choose the logic
+  variant?: "default" | "inverse" | "outline"; // Added to let you choose the logic
 }
 
 export function SecondaryButton({
@@ -45,17 +46,13 @@ export function SecondaryButton({
   height = 46,
   variant = "default" }: SecondaryButtonProps) {
   const { i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
   
-  // Use EXACT original logic based on variant
-  const finalIconPosition =
-    iconPosition ||
-    (variant === "default"
-      ? isRTL
-        ? "right"
-        : "left"
-      : isRTL
-        ? "left"
-        : "right");
+  // Use logical start/end concept to let React Native automatically handle RTL layout
+  const isIconOnStart =
+    iconPosition
+      ? (isRTL ? iconPosition === "right" : iconPosition === "left")
+      : (variant === "default");
 
   const bgColor = isActive ? activeColor : "white";
   const borderColor = isActive ? activeColor : "#E5E7EB";
@@ -73,14 +70,14 @@ export function SecondaryButton({
       style={[
         styles.container,
         {
-          flexDirection: finalIconPosition === "right" ? "row-reverse" : "row",
+          flexDirection: isIconOnStart ? "row" : "row-reverse",
           gap: -1.5 },
         style,
         isLoading && { opacity: 0.7 },
       ]}
       disabled={isLoading}
     >
-      {/* Icon Section - Kept EXACTLY as original */}
+      {/* Icon Section */}
       <View
         style={[
           styles.iconWrapper,
@@ -90,13 +87,10 @@ export function SecondaryButton({
             backgroundColor: bgColor,
             borderColor: borderColor,
             borderWidth: 1.5,
-            borderTopRightRadius:
-              finalIconPosition === "right" ? height / 2 : 8,
-            borderBottomRightRadius:
-              finalIconPosition === "right" ? height / 2 : 8,
-            borderTopLeftRadius: finalIconPosition === "left" ? height / 2 : 8,
-            borderBottomLeftRadius:
-              finalIconPosition === "left" ? height / 2 : 8,
+            borderTopStartRadius: isIconOnStart ? height / 2 : 8,
+            borderBottomStartRadius: isIconOnStart ? height / 2 : 8,
+            borderTopEndRadius: isIconOnStart ? 8 : height / 2,
+            borderBottomEndRadius: isIconOnStart ? 8 : height / 2,
             justifyContent: "center",
             alignItems: "center" },
         ]}
@@ -132,7 +126,7 @@ export function SecondaryButton({
         )}
       </View>
 
-      {/* Label Section - Kept EXACTLY as original */}
+      {/* Label Section */}
       <View
         style={[
           styles.textWrapper,
@@ -142,10 +136,10 @@ export function SecondaryButton({
             borderColor: borderColor,
             height: height,
             paddingHorizontal: 20,
-            borderTopLeftRadius: finalIconPosition === "right" ? 10 : 8,
-            borderBottomLeftRadius: finalIconPosition === "right" ? 10 : 8,
-            borderTopRightRadius: finalIconPosition === "left" ? 10 : 8,
-            borderBottomRightRadius: finalIconPosition === "left" ? 10 : 8,
+            borderTopStartRadius: isIconOnStart ? 8 : 10,
+            borderBottomStartRadius: isIconOnStart ? 8 : 10,
+            borderTopEndRadius: isIconOnStart ? 10 : 8,
+            borderBottomEndRadius: isIconOnStart ? 10 : 8,
             borderWidth: 1.5 },
         ]}
       >

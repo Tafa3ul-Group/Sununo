@@ -10,7 +10,8 @@ import {
   Platform,
   StyleSheet,
   TouchableOpacity,
-  View } from "react-native";
+  View
+} from "react-native";
 import { useSelector } from "react-redux";
 
 const { Colors, normalize, Shadows } = Theme;
@@ -35,7 +36,8 @@ import Animated, {
   useSharedValue,
   withRepeat,
   withSequence,
-  withTiming } from "react-native-reanimated";
+  withTiming
+} from "react-native-reanimated";
 
 interface MarkerData {
   id: string;
@@ -115,7 +117,8 @@ export const AppMap = ({
         if (status === "granted") {
           // Get initial position
           let currentLocation = await Location.getCurrentPositionAsync({
-            accuracy: Location.Accuracy.Balanced });
+            accuracy: Location.Accuracy.Balanced
+          });
           setLocation(currentLocation);
 
           // Watch for changes
@@ -174,7 +177,8 @@ export const AppMap = ({
           cameraRef.current?.setCamera({
             centerCoordinate: markers[0].coordinates,
             zoomLevel: 14,
-            animationDuration: 1000 });
+            animationDuration: 1000
+          });
         } else {
           const lats = markers.map((m) => m.coordinates[1]);
           const lngs = markers.map((m) => m.coordinates[0]);
@@ -197,7 +201,8 @@ export const AppMap = ({
 
   const pulseStyle = useAnimatedStyle(() => ({
     transform: [{ scale: pulseScale.value }],
-    opacity: pulseOpacity.value }));
+    opacity: pulseOpacity.value
+  }));
 
   const routeShape = React.useMemo(() => {
     if (!route) return null;
@@ -207,8 +212,10 @@ export const AppMap = ({
         {
           type: "Feature",
           properties: {},
-          geometry: route },
-      ] };
+          geometry: route
+        },
+      ]
+    };
   }, [route]);
 
   if (loading) {
@@ -238,7 +245,8 @@ export const AppMap = ({
         <View style={styles.abstractMapBackground}>
           <Image
             source={{
-              uri: `https://api.mapbox.com/styles/v1/mapbox/light-v11/static/${markerOverlay}${fallbackLng},${fallbackLat},${zoomLevel}/800x800?access_token=${MAPBOX_ACCESS_TOKEN}` }}
+              uri: `https://api.mapbox.com/styles/v1/mapbox/light-v11/static/${markerOverlay}${fallbackLng},${fallbackLat},${zoomLevel}/800x800?access_token=${MAPBOX_ACCESS_TOKEN}`
+            }}
             style={styles.fallbackImage}
             contentFit="cover"
           />
@@ -254,7 +262,8 @@ export const AppMap = ({
               {
                 position: "absolute",
                 top: 150 + idx * 100,
-                left: 50 + idx * 40 * (idx % 2 === 0 ? 1 : -1) },
+                left: 50 + idx * 40 * (idx % 2 === 0 ? 1 : -1)
+              },
             ]}
           >
             <View style={styles.markerCircle}>
@@ -345,8 +354,9 @@ export const AppMap = ({
               style={[
                 styles.userLocationMarker,
                 isNavigating &&
-                  location.coords.heading !== null && {
-                    transform: [{ rotate: `${location.coords.heading}deg` }] },
+                location.coords.heading !== null && {
+                  transform: [{ rotate: `${location.coords.heading}deg` }]
+                },
               ]}
             >
               {/* Premium Pulse for driving mode */}
@@ -357,7 +367,8 @@ export const AppMap = ({
                   {
                     backgroundColor: isNavigating
                       ? "rgba(59, 130, 246, 0.4)"
-                      : Colors.primary },
+                      : Colors.primary
+                  },
                 ]}
               />
 
@@ -378,7 +389,8 @@ export const AppMap = ({
                       {
                         transform: [
                           { rotate: `${location.coords.heading}deg` },
-                        ] },
+                        ]
+                      },
                     ]}
                   >
                     <View style={styles.headingArrow} />
@@ -450,7 +462,8 @@ export const AppMap = ({
                 lineWidth: 10,
                 lineCap: "round",
                 lineJoin: "round",
-                lineOpacity: 1 }}
+                lineOpacity: 1
+              }}
             />
           </Mapbox.ShapeSource>
         )}
@@ -463,30 +476,37 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F3F4F6",
-    overflow: "hidden" },
+    overflow: "hidden"
+  },
   map: {
-    flex: 1 },
+    flex: 1
+  },
   loading: {
     justifyContent: "center",
-    alignItems: "center" },
+    alignItems: "center"
+  },
   fallbackContainer: {
     position: "relative",
     height: "100%",
     width: "100%",
     backgroundColor: "#E5E7EB",
     justifyContent: "center",
-    alignItems: "center" },
+    alignItems: "center"
+  },
   abstractMapBackground: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "#F8F9FA" },
+    backgroundColor: "#F8F9FA"
+  },
   fallbackImage: {
     width: "100%",
     height: "100%",
-    opacity: 0.9 },
+    opacity: 0.9
+  },
   customMarkerUI: {
     alignItems: "center",
     justifyContent: "center",
-    width: 100 },
+    width: 100
+  },
   markerCircle: {
     width: 52,
     height: 52,
@@ -499,10 +519,12 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
-    elevation: 3 },
+    elevation: 3
+  },
   markerImage: {
     width: "100%",
-    height: "100%" },
+    height: "100%"
+  },
   markerTitle: {
     fontSize: 8,
     fontFamily: "Alexandria-Medium",
@@ -513,7 +535,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 8,
-    ...SafeShadows.small },
+    ...SafeShadows.small
+  },
   fallbackOverlay: {
     position: "absolute",
     bottom: 20,
@@ -523,19 +546,22 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignSelf: "center",
     borderWidth: 1,
-    borderColor: "#E5E7EB" },
+    borderColor: "#E5E7EB"
+  },
   fallbackText: {
     fontSize: 8,
     color: "#6B7280",
     fontFamily: "Alexandria-Medium",
-    textAlign: "center" },
+    textAlign: "center"
+  },
   fabContainer: {
     position: "absolute",
     bottom: normalize.height(100),
     right: normalize.width(16),
     left: normalize.width(16),
     flexDirection: "row",
-    justifyContent: "center" },
+    justifyContent: "center"
+  },
   fab: {
     backgroundColor: "white",
     paddingHorizontal: 20,
@@ -546,18 +572,22 @@ const styles = StyleSheet.create({
     ...SafeShadows.medium,
     borderWidth: 1,
     borderColor: "#F3F4F6",
-    gap: 8 },
+    gap: 8
+  },
   fabActive: {
     backgroundColor: Theme.Colors.primary,
-    borderColor: Theme.Colors.primary },
+    borderColor: Theme.Colors.primary
+  },
   fabText: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "Alexandria-Medium"
+  },
   userLocationMarker: {
     width: 30,
     height: 30,
     alignItems: "center",
-    justifyContent: "center" },
+    justifyContent: "center"
+  },
   userLocationDot: {
     width: 14,
     height: 14,
@@ -566,17 +596,20 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "white",
     zIndex: 2,
-    ...SafeShadows.small },
+    ...SafeShadows.small
+  },
   userLocationPulse: {
     position: "absolute",
     width: 28,
     height: 28,
     borderRadius: 14,
     backgroundColor: Theme.Colors.primary,
-    zIndex: 1 },
+    zIndex: 1
+  },
   simpleMarker: {
     alignItems: "center",
-    justifyContent: "center" },
+    justifyContent: "center"
+  },
   markerPin: {
     width: 24,
     height: 24,
@@ -584,7 +617,8 @@ const styles = StyleSheet.create({
     backgroundColor: Theme.Colors.primary,
     borderWidth: 3,
     borderColor: "white",
-    ...SafeShadows.medium },
+    ...SafeShadows.medium
+  },
   navPuck: {
     width: 20,
     height: 20,
@@ -593,7 +627,8 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: "white",
     alignItems: "center",
-    justifyContent: "center" },
+    justifyContent: "center"
+  },
   puckArrow: {
     width: 0,
     height: 0,
@@ -605,14 +640,16 @@ const styles = StyleSheet.create({
     borderLeftColor: "transparent",
     borderRightColor: "transparent",
     borderBottomColor: "white",
-    transform: [{ translateY: -2 }] },
+    transform: [{ translateY: -2 }]
+  },
   markerDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
     backgroundColor: Theme.Colors.primary,
     position: "absolute",
-    bottom: -10 },
+    bottom: -10
+  },
   headingArrowContainer: {
     position: "absolute",
     top: -10,
@@ -620,7 +657,8 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: "center",
     justifyContent: "flex-start",
-    zIndex: 10 },
+    zIndex: 10
+  },
   headingArrow: {
     width: 0,
     height: 0,
@@ -631,4 +669,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 16,
     borderLeftColor: "transparent",
     borderRightColor: "transparent",
-    borderBottomColor: Theme.Colors.primary } });
+    borderBottomColor: Theme.Colors.primary
+  }
+});

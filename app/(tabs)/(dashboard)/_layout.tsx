@@ -1,5 +1,5 @@
 import { DashboardTabBar } from "@/components/dashboard/dashboard-tab-bar";
-import { SolarBanknoteBold, SolarHomeSmileBoldDuotone, SolarNotesBoldDuotone } from "@/components/icons/solar-icons";
+import { SolarHomeSmileBoldDuotone, SolarNotesBoldDuotone, SolarUserBold } from "@/components/icons/solar-icons";
 import { RootState } from "@/store";
 import { Redirect, Tabs } from "expo-router";
 import React from "react";
@@ -40,12 +40,13 @@ export default function DashboardLayout() {
           ) }}
       />
       <Tabs.Screen
-        name="revenue"
+        name="profile"
         options={{
           tabBarIcon: ({ color, size }) => (
-            <SolarBanknoteBold size={size} color={color} />
+            <SolarUserBold size={size} color={color} />
           ) }}
       />
+      <Tabs.Screen name="revenue" options={{ href: null }} />
       <Tabs.Screen name="shifts" options={{ href: null }} />
       <Tabs.Screen name="chalet-details" options={{ href: null }} />
       <Tabs.Screen name="transactions" options={{ href: null }} />

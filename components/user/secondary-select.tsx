@@ -2,6 +2,7 @@ import { BottomSheetBackdrop, BottomSheetModal } from "@gorhom/bottom-sheet";
 import React, { useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  I18nManager,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -85,7 +86,7 @@ export function SecondarySelect({
                 key={opt.value}
                 style={[
                   styles.optionRow,
-                  { flexDirection: isArabic ? "row-reverse" : "row" },
+                  { flexDirection: isArabic === I18nManager.isRTL ? "row" : "row-reverse" },
                   isSelected && styles.optionRowSelected,
                 ]}
                 onPress={() => {
@@ -99,8 +100,7 @@ export function SecondarySelect({
                     { textAlign: isArabic ? "right" : "left" },
                     isSelected && styles.optionTextSelected,
                     isSelected && {
-                      marginRight: isArabic ? 10 : 0,
-                      marginLeft: isArabic ? 0 : 10,
+                      marginStart: 10,
                     },
                   ]}
                 >

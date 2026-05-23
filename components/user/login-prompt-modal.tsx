@@ -3,7 +3,6 @@ import { View, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 import { ThemedText } from '../themed-text';
 import { Colors, normalize, Shadows } from '@/constants/theme';
 import { SolarUserBold, SolarCloseBold } from '@/components/icons/solar-icons';
-import { PrimaryButton } from './primary-button';
 import { SecondaryButton } from './secondary-button';
 import { useTranslation } from 'react-i18next';
 import { isRTL } from "@/i18n";
@@ -52,12 +51,15 @@ export const LoginPromptModal: React.FC<LoginPromptModalProps> = ({ isVisible, o
             <SecondaryButton 
               label={isRTL ? 'إلغاء' : 'Cancel'} 
               onPress={onClose}
+              isActive={false}
               style={{ flex: 1 }}
             />
-            <PrimaryButton 
+            <SecondaryButton 
               label={isRTL ? 'تسجيل الدخول' : 'Login'} 
               onPress={onLogin}
-              style={{ flex: 1.5 }}
+              isActive={true}
+              variant="inverse"
+              style={{ flex: 1 }}
             />
           </View>
         </View>

@@ -59,7 +59,6 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
   const [whenStep, setWhenStep] = useState(1);
   const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null);
   const [adults, setAdults] = useState(2);
-  const [children, setChildren] = useState(0);
   const [checkIn, setCheckIn] = useState<Date | null>(null);
   const [checkOut, setCheckOut] = useState<Date | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -68,8 +67,8 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
   const rowDirection = isArabic ? (isRTL ? "row" : "row-reverse") : (isRTL ? "row-reverse" : "row");
   const textAlignment = isArabic ? "right" : "left";
   const buttonAlign = isArabic
-    ? (isRTL ? "flex-end" : "flex-start")
-    : (isRTL ? "flex-start" : "flex-end");
+    ? (isRTL ? "flex-start" : "flex-end")
+    : (isRTL ? "flex-end" : "flex-start");
 
   // Fetch chalet details if chaletId is provided
   const { data: chaletDetailsResponse } = useGetCustomerChaletDetailsQuery(chaletId || "", {
@@ -154,13 +153,13 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
           checkIn: checkIn ? checkIn.toISOString() : null,
           checkOut: checkOut ? checkOut.toISOString() : null,
           period: selectedPeriod,
-          maxGuests: adults + children,
+          maxGuests: adults,
           adults,
-          children });
+          children: 0 });
       }
       dismiss();
     }
-  }, [activeTab, whenStep, dismiss, onApply, selectedCity, selectedCityName, searchText, adults, children, selectedPeriod, checkIn, checkOut]);
+  }, [activeTab, whenStep, dismiss, onApply, selectedCity, selectedCityName, searchText, adults, selectedPeriod, checkIn, checkOut]);
 
   const renderBackdrop = useCallback(
     (backdropProps: any) => (
@@ -206,7 +205,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
             selectedCity === city.id && styles.selectedCityItem,
           ]}
         >
-          <View style={[styles.cityRight, isArabic ? { marginLeft: 8 } : { marginRight: 8 }]}>
+          <View style={[styles.cityRight, { marginEnd: 8 }]}>
             <SolarMapPointBold
               size={24}
               color={Colors.primary}
@@ -219,7 +218,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
   );
 
   const renderWhenCalendarContent = () => (
-    <View style={styles.tabContent}>
+    <View style={[styles.tabContent, { paddingHorizontal: 12 }]}>
       <RangeCalendar
         onSelect={(start, end) => {
           setCheckIn(start);
@@ -467,19 +466,6 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
             onDecrement={() => setAdults(Math.max(1, adults - 1))}
           />
         </View>
-
-        {/* Children Counter */}
-        <View style={[styles.guestItem, { flexDirection: rowDirection, justifyContent: "space-between" }]}>
-          <View style={styles.guestInfo}>
-            <ThemedText style={[styles.guestLabel, { textAlign: textAlignment }]}>{t("searchFilter.children")}</ThemedText>
-            <ThemedText style={[styles.guestSubLabel, { textAlign: textAlignment }]}>{t("searchFilter.childrenDesc")}</ThemedText>
-          </View>
-          <GuestCounter
-            value={children}
-            onIncrement={() => setChildren(children + 1)}
-            onDecrement={() => setChildren(Math.max(0, children - 1))}
-          />
-        </View>
       </View>
     </View>
   );
@@ -520,11 +506,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
         {activeTab === "WHEN" && (
           <View style={[
             styles.stepIndicators,
-            {
-              flexDirection: rowDirection,
-              right: isArabic ? undefined : 24,
-              left: isArabic ? 24 : undefined
-            }
+            { flexDirection: rowDirection }
           ]}>
             <TouchableOpacity
               onPress={() => setWhenStep(1)}
@@ -595,7 +577,13 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
             </View>
           ) : (
             <PrimaryButton
-              label={activeTab === "WHO" ? t("searchFilter.apply") : t("searchFilter.next")}
+              label={
+                activeTab === "WHEN" && whenStep === 1
+                  ? (isArabic ? "تم" : "Done")
+                  : activeTab === "WHO"
+                    ? t("searchFilter.apply")
+                    : t("searchFilter.next")
+              }
               onPress={handleNext}
               isActive={true}
               activeColor={activeTab === "WHEN" ? "#15AB64" : activeTab === "WHO" ? "#F64200" : "#035DF9"}
@@ -700,21 +688,22 @@ const styles = StyleSheet.create({
     borderRadius: 9 },
   mainFooter: {
     paddingHorizontal: 24,
-    paddingTop: 12,
-    paddingBottom: Platform.OS === "ios" ? 34 : 24,
+    paddingTop: 16,
+    paddingBottom: Platform.OS === "ios" ? 40 : 28,
     backgroundColor: "white",
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: "#F0F2F5" },
   nextButton: {
-    width: 140,
-    height: 46 },
+    width: "100%",
+    height: 52,
+    borderRadius: 16 },
   whoContainer: {
     paddingTop: 10 },
   stepIndicators: {
     flexDirection: "row",
     position: "absolute",
     top: 16,
-    right: 24,
+    start: 24,
     gap: 8,
     zIndex: 100 },
   stepDot: {
@@ -753,11 +742,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "white",
     borderRadius: 20,
-    padding: 16,
-    marginBottom: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#F0F2F5",
-    minHeight: normalize.height(94) },
+    borderColor: "#F0F2F5" },
   guestInfo: { 
   },
   guestLabel: {

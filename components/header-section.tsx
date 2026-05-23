@@ -18,7 +18,8 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  View } from "react-native";
+  View,
+  I18nManager } from "react-native";
 import { useSelector } from "react-redux";
 import { ThemedText } from "./themed-text";
 import { CircleBackButton } from "./ui/circle-back-button";
@@ -65,11 +66,29 @@ export function HeaderSection({
   marginBottom = 0,
   isHome = false }: HeaderSectionProps) {
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { userType: stateUserType, language } = useSelector(
     (state: RootState) => state.auth,
   );
-    const [selectedCategory, setSelectedCategory] = React.useState("all");
+  const [selectedCategory, setSelectedCategory] = React.useState("all");
+
+  const isArabic = i18n.language ? i18n.language.startsWith("ar") : false;
+
+  const [logoStateIndex, setLogoStateIndex] = React.useState(0);
+  const logoColors = [Colors.primary, "#EF4444", "#15AB64"];
+  const [currentLogoAr, setCurrentLogoAr] = React.useState(isArabic);
+
+  React.useEffect(() => {
+    setCurrentLogoAr(isArabic);
+    setLogoStateIndex(0);
+  }, [isArabic]);
+
+  const handleLogoPress = () => {
+    setCurrentLogoAr((prev) => !prev);
+    setLogoStateIndex((prev) => (prev + 1) % logoColors.length);
+  };
+
+  const currentLogoColor = logoColors[logoStateIndex];
 
   const CATEGORIES = [
     {
@@ -90,9 +109,14 @@ export function HeaderSection({
       icon: <SolarStarBold size={normalize.width(18)} /> },
   ];
 
-  const textAlign = isRTL ? "right" : "left";
-  const startAlign = isRTL ? "flex-end" : "flex-start";
-  const endAlign = isRTL ? "flex-start" : "flex-end";
+  const textAlign: "left" | "right" = isArabic ? "right" : "left";
+  // RN auto-mirrors flex-start/flex-end when I18nManager.isRTL=true
+  // So when language matches native RTL, use natural values
+  const needsCounter = isArabic !== I18nManager.isRTL;
+  const startAlign: "flex-start" | "flex-end" = needsCounter ? "flex-end" : "flex-start";
+  const endAlign: "flex-start" | "flex-end" = needsCounter ? "flex-start" : "flex-end";
+  const rowDir: "row" | "row-reverse" = needsCounter ? "row-reverse" : "row";
+  const homeRowDir: "row" | "row-reverse" = needsCounter ? "row" : "row-reverse";
 
   return (
     <View style={[styles.container]}>
@@ -104,14 +128,14 @@ export function HeaderSection({
           styles.topRow,
           {
             marginBottom,
-            flexDirection: (isHome && isRTL) ? 'row-reverse' : 'row'
+            flexDirection: isHome ? homeRowDir : rowDir
           },
         ]}
       >
         {/* LEFT SIDE (Start side) */}
-        <View style={[styles.headerSide, { alignItems: (isHome && isRTL) ? 'flex-end' : 'flex-start' }]}>
+        <View style={[styles.headerSide, { alignItems: isHome ? endAlign : startAlign }]}>
           {isHome ? (
-            <View style={styles.homeLeftGroup}>
+            <View style={[styles.homeLeftGroup, { flexDirection: rowDir }]}>
               {stateUserType !== "guest" && (
                 <TouchableOpacity
                   onPress={() => router.push("/(customer)/notifications")}
@@ -134,7 +158,7 @@ export function HeaderSection({
               </TouchableOpacity>
             </View>
           ) : (
-            <View style={styles.homeLeftGroup}>
+            <View style={[styles.homeLeftGroup, { flexDirection: rowDir }]}>
               {showBackButton && <CircleBackButton onPress={onBackPress} />}
               {extraIcon === "search" && (
                 <TouchableOpacity
@@ -161,15 +185,19 @@ export function HeaderSection({
         )}
 
         {/* RIGHT SIDE (End side) */}
-        <View style={[styles.headerSide, { alignItems: (isHome && isRTL) ? 'flex-start' : 'flex-end' }]}>
+        <View style={[styles.headerSide, { alignItems: isHome ? startAlign : endAlign }]}>
           {isHome && (
-            <View style={styles.logoCircleHome}>
+            <TouchableOpacity
+              onPress={handleLogoPress}
+              style={{ justifyContent: "center", alignItems: "center", paddingVertical: 4 }}
+              activeOpacity={0.8}
+            >
               <Image
-                source={isRTL ? require("@/assets/arlogo.svg") : require("@/assets/logo.svg")}
-                style={styles.logoImgHome}
+                source={currentLogoAr ? require("@/assets/arlogo.svg") : require("@/assets/logo.svg")}
+                style={{ width: 75, height: 25, tintColor: currentLogoColor }}
                 contentFit="contain"
               />
-            </View>
+            </TouchableOpacity>
           )}
         </View>
       </View>
@@ -180,7 +208,7 @@ export function HeaderSection({
           <View
             style={[
               styles.searchBar,
-              { flexDirection: isRTL ? 'row-reverse' : 'row' },
+              { flexDirection: rowDir },
             ]}
           >
             <SolarMagnifierBold
@@ -203,7 +231,7 @@ export function HeaderSection({
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={[
             styles.categoriesContent,
-            { flexDirection: 'row' },
+            { flexDirection: rowDir },
           ]}
           style={styles.categoriesScroll}
         >
@@ -213,7 +241,7 @@ export function HeaderSection({
               onPress={() => setSelectedCategory(cat.id)}
               style={[
                 styles.categoryItem,
-                { flexDirection: 'row' },
+                { flexDirection: rowDir },
                 selectedCategory === cat.id && styles.categoryItemActive,
               ]}
             >
@@ -314,16 +342,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#FFFFFF" },
-  logoCircleHome: {
-    width: normalize.width(54),
-    height: normalize.width(54),
-    borderRadius: 999,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#FFFFFF" },
-  logoImgHome: {
-    width: "65%",
-    height: "65%" },
   searchContainer: {
     paddingHorizontal: Spacing.md,
     marginBottom: Spacing.md },

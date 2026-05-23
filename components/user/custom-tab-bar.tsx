@@ -4,14 +4,16 @@ import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
-import { isRTL } from "@/i18n";
+import { isRTL, getFlexDirection } from "@/i18n";
 
 /**
  * CustomTabBar - Refined Active Indicator 40x40
  */
 export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) => {
   const { userType, language } = useSelector((state: RootState) => state.auth);
-    const insets = useSafeAreaInsets();
+  const isArabic = language === 'ar';
+  const flexDir = getFlexDirection(isArabic);
+  const insets = useSafeAreaInsets();
 
   const currentRouteIndex = state.index;
   const currentRouteName = state.routes[currentRouteIndex].name;

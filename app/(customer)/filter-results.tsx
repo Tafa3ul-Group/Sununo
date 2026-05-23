@@ -1,37 +1,36 @@
 import { HeaderSection } from "@/components/header-section";
-import { HorizontalCard } from "@/components/user/horizontal-card";
 import { MotionIcon } from "@/components/icons/motion-icons";
 import {
-  SolarCalendarMinimalisticBold,
-  SolarClockCircleBold,
-  SolarCloseBold,
-  SolarHeartBold,
-  SolarMapPointBold,
-  SolarStarBold,
-  SolarUsersGroupBold,
+    SolarCalendarMinimalisticBold,
+    SolarClockCircleBold,
+    SolarCloseBold,
+    SolarMapPointBold,
+    SolarUsersGroupBold
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
-import { Colors, normalize, Shadows, Spacing } from "@/constants/theme";
+import { HorizontalCard } from "@/components/user/horizontal-card";
+import { Colors, Shadows } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
-import { isRTL } from "@/i18n";
+import { isRTL, getFlexDirection } from "@/i18n";
 import { RootState } from "@/store";
+import { unwrapListResponse } from "@/store/api/apiSlice";
 import {
-  useBrowseCustomerChaletsQuery,
-  useGetFavoriteIdsQuery,
-  useToggleFavoriteMutation,
+    useBrowseCustomerChaletsQuery,
+    useGetFavoriteIdsQuery,
+    useToggleFavoriteMutation,
 } from "@/store/api/customerApiSlice";
 import { clearFilters, setFilters } from "@/store/filterSlice";
 import { useRouter } from "expo-router";
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ActivityIndicator,
-  Dimensions,
-  FlatList,
-  Image,
-  StyleSheet,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Dimensions,
+    FlatList,
+    StyleSheet,
+    TouchableOpacity,
+    View,
+    I18nManager
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
@@ -41,14 +40,20 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 export default function FilterResultsScreen() {
   const router = useRouter();
   const dispatch = useDispatch();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === "ar";
   const insets = useSafeAreaInsets();
 
+  const { userType } = useSelector((state: RootState) => state.auth);
+
   // Read active filters from Redux store
-  const activeFilters = useSelector((state: RootState) => (state as any).filter);
+  const activeFilters = useSelector(
+    (state: RootState) => (state as any).filter,
+  );
 
   // Fetch favorite chalet IDs
-  const { data: favoriteIds = [], refetch: refetchFavorites } = useGetFavoriteIdsQuery();
+  const { data: favoriteIds = [], refetch: refetchFavorites } =
+    useGetFavoriteIdsQuery(undefined, { skip: userType === "guest" });
   const [toggleFavorite] = useToggleFavoriteMutation();
 
   // Construct search API query params from the Redux filters
@@ -56,33 +61,65 @@ export default function FilterResultsScreen() {
     const params: any = { page: 1, limit: 30 };
     if (activeFilters?.cityId) params.cityId = activeFilters.cityId;
     if (activeFilters?.search) params.search = activeFilters.search;
-    if (activeFilters?.maxGuests) params.maxGuests = activeFilters.maxGuests;
-    if (activeFilters?.checkIn) params.checkIn = activeFilters.checkIn.split("T")[0];
-    if (activeFilters?.checkOut) params.checkOut = activeFilters.checkOut.split("T")[0];
-    if (activeFilters?.period) params.period = activeFilters.period;
+    if (activeFilters?.maxGuests) {
+      params.maxGuests = activeFilters.maxGuests;
+      // Send maxAdults for backend capacity checking
+      params.maxAdults = activeFilters.maxGuests;
+    }
+    if (activeFilters?.checkIn) {
+      params.checkIn = activeFilters.checkIn.split("T")[0];
+    }
+    if (activeFilters?.checkOut) {
+      params.checkOut = activeFilters.checkOut.split("T")[0];
+    }
+    if (activeFilters?.period) {
+      params.period = activeFilters.period;
+    }
     return params;
   }, [activeFilters]);
 
   // Request filtered chalets
-  const { data: chaletsResponse, isLoading, isFetching, refetch } =
-    useBrowseCustomerChaletsQuery(queryParams);
+  const {
+    data: chaletsResponse,
+    isLoading,
+    isFetching,
+    refetch,
+  } = useBrowseCustomerChaletsQuery(queryParams);
 
-  // Transform chalets payload
+  // Transform chalets payload using robust unwrapping and fallbacks
   const filteredChalets = useMemo(() => {
-    const chalets = chaletsResponse?.data || [];
-    return chalets.map((chalet: any) => ({
-      id: chalet.id,
-      title: isRTL ? chalet.nameAr || chalet.name?.ar || chalet.name : chalet.nameEn || chalet.name?.en || chalet.name,
-      location: isRTL
-        ? chalet.region?.name?.ar || chalet.region?.nameAr || chalet.region?.name || ""
-        : chalet.region?.name?.en || chalet.region?.nameEn || chalet.region?.name || "",
-      price: Number(chalet.basePrice || 0).toLocaleString(),
-      image: getImageSrc(chalet.images?.[0]?.url || "")?.uri,
-      rating: chalet.rating || 4.7,
-      reviewsCount: chalet.reviewsCount || 18,
-      isFavorite: favoriteIds.includes(chalet.id),
-    }));
-  }, [chaletsResponse, favoriteIds]);
+    const chalets = unwrapListResponse(chaletsResponse);
+    return chalets.map((chalet: any) => {
+      // Find the price: either shift pricing or base price
+      const priceVal = chalet.shifts?.[0]?.pricing?.[0]?.price
+        ? Number(chalet.shifts[0].pricing[0].price)
+        : chalet.basePrice
+          ? Number(chalet.basePrice)
+          : 0;
+
+      return {
+        id: chalet.id,
+        title: isArabic
+          ? chalet.name?.ar || chalet.nameAr || chalet.name || ""
+          : chalet.name?.en || chalet.nameEn || chalet.name || "",
+        location: isRTL
+          ? chalet.region?.name?.ar ||
+            chalet.region?.nameAr ||
+            chalet.region?.name ||
+            ""
+          : chalet.region?.name?.en ||
+            chalet.region?.nameEn ||
+            chalet.region?.name ||
+            "",
+        price: priceVal.toLocaleString(),
+        image: getImageSrc(chalet.images?.[0]?.url || chalet.image || ""),
+        images: chalet.images || [],
+        rating: chalet.averageRating || chalet.rating || 0,
+        reviewsCount: chalet.reviewsCount || chalet.reviewCount || 0,
+        isFavorite: favoriteIds.includes(chalet.id),
+      };
+    });
+  }, [chaletsResponse, favoriteIds, isRTL]);
 
   const handleToggleFavorite = async (id: string) => {
     try {
@@ -101,19 +138,27 @@ export default function FilterResultsScreen() {
         id: "city",
         text: activeFilters.cityName,
         icon: <SolarMapPointBold size={14} color={Colors.primary} />,
-        onRemove: () => dispatch(setFilters({ ...activeFilters, cityId: null, cityName: null })),
+        onRemove: () =>
+          dispatch(
+            setFilters({ ...activeFilters, cityId: null, cityName: null }),
+          ),
       });
     }
     if (activeFilters?.checkIn) {
       const dateText = new Date(activeFilters.checkIn).toLocaleDateString(
         isRTL ? "ar" : "en",
-        { month: "short", day: "numeric" }
+        { month: "short", day: "numeric" },
       );
       pills.push({
         id: "date",
         text: dateText,
-        icon: <SolarCalendarMinimalisticBold size={14} color={Colors.primary} />,
-        onRemove: () => dispatch(setFilters({ ...activeFilters, checkIn: null, checkOut: null })),
+        icon: (
+          <SolarCalendarMinimalisticBold size={14} color={Colors.primary} />
+        ),
+        onRemove: () =>
+          dispatch(
+            setFilters({ ...activeFilters, checkIn: null, checkOut: null }),
+          ),
       });
     }
     if (activeFilters?.period) {
@@ -126,7 +171,8 @@ export default function FilterResultsScreen() {
         id: "period",
         text: periodMap[activeFilters.period] || activeFilters.period,
         icon: <SolarClockCircleBold size={14} color={Colors.primary} />,
-        onRemove: () => dispatch(setFilters({ ...activeFilters, period: null })),
+        onRemove: () =>
+          dispatch(setFilters({ ...activeFilters, period: null })),
       });
     }
     if (activeFilters?.maxGuests) {
@@ -134,7 +180,15 @@ export default function FilterResultsScreen() {
         id: "guests",
         text: `${activeFilters.maxGuests} ${isRTL ? "ضيوف" : "guests"}`,
         icon: <SolarUsersGroupBold size={14} color={Colors.primary} />,
-        onRemove: () => dispatch(setFilters({ ...activeFilters, maxGuests: null, adults: 2, children: 0 })),
+        onRemove: () =>
+          dispatch(
+            setFilters({
+              ...activeFilters,
+              maxGuests: null,
+              adults: 2,
+              children: 0,
+            }),
+          ),
       });
     }
     return pills;
@@ -151,7 +205,7 @@ export default function FilterResultsScreen() {
     <HorizontalCard
       chalet={item}
       onPress={() => router.push(`/chalet-details/${item.id}`)}
-      shapeIndex={index}
+      shapeIndex={2}
       isFavorite={item.isFavorite}
       onToggleFavorite={() => handleToggleFavorite(item.id)}
     />
@@ -174,12 +228,15 @@ export default function FilterResultsScreen() {
             showsHorizontalScrollIndicator={false}
             data={activePills}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.pillsList}
+            contentContainerStyle={[styles.pillsList, { flexDirection: getFlexDirection(isArabic) }]}
             renderItem={({ item }) => (
-              <View style={styles.pill}>
+              <View style={[styles.pill, { flexDirection: getFlexDirection(isArabic) }]}>
                 {item.icon}
                 <ThemedText style={styles.pillText}>{item.text}</ThemedText>
-                <TouchableOpacity onPress={item.onRemove} style={styles.pillClose}>
+                <TouchableOpacity
+                  onPress={item.onRemove}
+                  style={styles.pillClose}
+                >
                   <SolarCloseBold size={12} color={Colors.text.muted} />
                 </TouchableOpacity>
               </View>
@@ -211,7 +268,9 @@ export default function FilterResultsScreen() {
             style={styles.emptyAnimation}
           />
           <ThemedText style={styles.emptyTitle}>
-            {isRTL ? "عذراً، لا توجد نتائج مطابقة" : "No Matching Chalets Found"}
+            {isRTL
+              ? "عذراً، لا توجد نتائج مطابقة"
+              : "No Matching Chalets Found"}
           </ThemedText>
           <ThemedText style={styles.emptyDesc}>
             {isRTL

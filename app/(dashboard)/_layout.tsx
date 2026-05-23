@@ -12,7 +12,7 @@ export default function DashboardNonTabLayout() {
     <Stack
       screenOptions={{
         headerShown: true,
-        contentStyle: { direction: isRTL ? "rtl" : "ltr" },
+        contentStyle: { direction: isRTL ? "rtl" : "ltr", backgroundColor: "#FFFFFF" },
         header: (props) => (
           <DashboardHeader 
             title={props.options.title}
@@ -21,10 +21,13 @@ export default function DashboardNonTabLayout() {
           />
         ) }}
     >
-      <Stack.Screen name="profile" options={{ title: "الملف الشخصي" }} />
       <Stack.Screen
         name="edit-business"
         options={{ title: "معلومات المصرف" }}
+      />
+      <Stack.Screen
+        name="edit-profile"
+        options={{ title: isRTL ? "المعلومات الشخصية" : "Personal Information" }}
       />
       <Stack.Screen
         name="add-chalet"
@@ -40,11 +43,15 @@ export default function DashboardNonTabLayout() {
       />
       <Stack.Screen
         name="chalet-details"
-        options={{ headerShown: false }}
+        options={{ title: isRTL ? 'إعدادات الشاليه' : 'Chalet Settings' }}
+      />
+      <Stack.Screen
+        name="shifts"
+        options={{ title: isRTL ? 'إدارة الفترات' : 'Manage Shifts' }}
       />
       <Stack.Screen
         name="booking-details"
-        options={{ headerShown: false }}
+        options={{ title: isRTL ? 'تفاصيل الحجز' : 'Booking Details' }}
       />
     </Stack>
   );

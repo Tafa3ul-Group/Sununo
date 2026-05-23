@@ -3,47 +3,69 @@ import {
     ProfileShape,
     SolarCalendarBold,
     SolarGlobalBold,
-    SolarHeartBold,
+    SolarReviewsHeartBold,
     SolarLogoutBold,
     SolarPhoneBold,
     SolarProfileEdit,
     SolarShieldBold,
+    SolarUserBlockBoldDuotone,
 } from '@/components/icons/solar-icons';
 import { LanguageSheet } from '@/components/user/language-sheet';
 import { LogoutSheet } from '@/components/user/logout-sheet';
+import { DeleteAccountSheet } from '@/components/user/delete-account-sheet';
 import { WalletCard } from '@/components/user/wallet-card';
 import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
-import { isRTL } from "@/i18n";
+import { getFlexDirection } from "@/i18n";
 import { RootState } from '@/store';
 import { useGetMeQuery } from '@/store/api/apiSlice';
 import { useGetCustomerWalletQuery } from '@/store/api/customerApiSlice';
+
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
-import React, { useRef } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     Image,
+    RefreshControl,
     ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
     View,
+    I18nManager,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 
 export default function CustomerProfileScreen() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { user: authUser } = useSelector((state: RootState) => state.auth);
     const router = useRouter();
     const insets = useSafeAreaInsets();
 
+    const isArabic = i18n.language === 'ar';
+    const rowDirection = getFlexDirection(isArabic);
+
+    const textStart: "left" | "right" = isArabic ? "right" : "left";
+    const needsCounter = isArabic !== I18nManager.isRTL;
+    const alignStart: "flex-start" | "flex-end" = needsCounter ? "flex-end" : "flex-start";
+
     const languageSheetRef = useRef<BottomSheetModal>(null);
     const logoutSheetRef = useRef<BottomSheetModal>(null);
+    const deleteSheetRef = useRef<BottomSheetModal>(null);
 
-    const { data: meData } = useGetMeQuery(undefined);
-    const { data: walletData } = useGetCustomerWalletQuery(undefined);
+    const { data: meData, refetch: refetchMe } = useGetMeQuery(undefined);
+    const { data: walletData, refetch: refetchWallet } = useGetCustomerWalletQuery(undefined);
+
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const onRefresh = useCallback(async () => {
+        setIsRefreshing(true);
+        await Promise.all([refetchMe(), refetchWallet()]);
+        setIsRefreshing(false);
+    }, [refetchMe, refetchWallet]);
+
+
 
     const userData = (meData as any)?.data || meData || authUser;
     const walletBalance = walletData?.balance
@@ -62,7 +84,7 @@ export default function CustomerProfileScreen() {
             id: 'reviews',
             title: t('headers.reviews'),
             shape: 'blue' as const,
-            icon: <SolarHeartBold size={20} color="white" />,
+            icon: <SolarReviewsHeartBold size={20} color="white" />,
             route: '/reviews',
         },
         {
@@ -85,6 +107,13 @@ export default function CustomerProfileScreen() {
             icon: <SolarShieldBold size={20} color="white" />,
         },
         {
+            id: 'deleteAccount',
+            title: isArabic ? 'حذف الحساب' : 'Delete Account',
+            shape: 'red' as const,
+            icon: <SolarUserBlockBoldDuotone size={20} color="white" />,
+            action: () => deleteSheetRef.current?.present(),
+        },
+        {
             id: 'logout',
             title: t('profile.logout'),
             shape: 'red' as const,
@@ -96,7 +125,7 @@ export default function CustomerProfileScreen() {
     return (
         <View style={[styles.container, { paddingTop: insets.top }]}>
             <HeaderSection
-                title={isRTL ? 'الملف الشخصي' : 'Profile'}
+                title={isArabic ? 'الملف الشخصي' : 'Profile'}
                 showBackButton
                 onBackPress={() => router.back()}
             />
@@ -104,27 +133,35 @@ export default function CustomerProfileScreen() {
             <ScrollView
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={isRefreshing}
+                        onRefresh={onRefresh}
+                        tintColor={Colors.primary}
+                        colors={[Colors.primary]}
+                    />
+                }
             >
                 {/* User Card */}
                 <TouchableOpacity
-                    style={[styles.userCard, { flexDirection: 'row' }]}
+                    style={[styles.userCard, { flexDirection: rowDirection }]}
                     onPress={() => router.push('/profile-edit')}
                     activeOpacity={0.9}
                 >
-                    {/* Inner avatar and name/phone block - natively aligns together on start side */}
-                    <View style={[styles.avatarAndInfo, { flexDirection: 'row' }]}>
+                    {/* Inner avatar and name/phone block */}
+                    <View style={[styles.avatarAndInfo, { flexDirection: rowDirection }]}>
                         <View style={styles.avatarWrap}>
                             <Image
                                 source={getImageSrc(userData?.image || userData?.imageUrl)}
                                 style={styles.avatarImg}
                             />
                         </View>
-                        <View style={[styles.userInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                            <Text style={[styles.userName, { textAlign: isRTL ? 'right' : 'left' }]}>
-                                {userData?.name || (isRTL ? 'المستخدم' : 'User')}
+                        <View style={[styles.userInfo, { alignItems: alignStart }]}>
+                            <Text style={[styles.userName, { textAlign: textStart }]}>
+                                {userData?.name || (isArabic ? 'المستخدم' : 'User')}
                             </Text>
                             {!!userData?.phone && (
-                                <Text style={[styles.userPhone, { textAlign: isRTL ? 'right' : 'left' }]}>
+                                <Text style={[styles.userPhone, { textAlign: textStart }]}>
                                     {userData.phone}
                                 </Text>
                             )}
@@ -148,7 +185,7 @@ export default function CustomerProfileScreen() {
                     {menuItems.map((item) => (
                         <TouchableOpacity
                             key={item.id}
-                            style={[styles.menuRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}
+                            style={[styles.menuRow, { flexDirection: rowDirection }]}
                             onPress={() => {
                                 if (item.action) {
                                     item.action();
@@ -159,14 +196,14 @@ export default function CustomerProfileScreen() {
                             activeOpacity={0.7}
                         >
                             {/* Icon first, then label right next to it */}
-                            <View style={styles.menuItemStart}>
+                            <View style={[styles.menuItemStart, { flexDirection: rowDirection }]}>
                                 <ProfileShape size={normalize.width(42)} type={item.shape}>
                                     {item.icon}
                                 </ProfileShape>
                                 <Text
                                     style={[
                                         styles.menuLabelText,
-                                        item.id === 'logout' && styles.logoutText,
+                                        (item.id === 'logout' || item.id === 'deleteAccount') && styles.logoutText,
                                     ]}
                                 >
                                     {item.title}
@@ -181,6 +218,7 @@ export default function CustomerProfileScreen() {
 
             <LanguageSheet ref={languageSheetRef} />
             <LogoutSheet ref={logoutSheetRef} />
+            <DeleteAccountSheet ref={deleteSheetRef} />
         </View>
     );
 }

@@ -1,10 +1,5 @@
-import { HeaderSection } from '@/components/header-section';
 import {
-    SolarBanknoteBold,
-    SolarCardBold,
-    SolarMapPointBold,
-    SolarPenBold,
-    SolarShopBold
+    SolarShieldWarningBold
 } from "@/components/icons/solar-icons";
 import { ThemedText } from '@/components/themed-text';
 import { Colors, normalize } from '@/constants/theme';
@@ -14,7 +9,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     ActivityIndicator,
-    Alert,
+    I18nManager,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
@@ -26,45 +21,124 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
-import { isRTL } from "@/i18n";
+import Toast from 'react-native-toast-message';
+import { Image } from 'expo-image';
+import { PrimaryButton } from '@/components/user/primary-button';
+
+const zainCashLogo = require('@/assets/zaincash.png');
+const qiLogo = require('@/assets/qi.svg');
+
+function validateZainCash(text: string): string | null {
+  if (!text) {
+    return null;
+  }
+  const clean = text.replace(/[\s\-\(\)]/g, "");
+  
+  if (/[^\d+]/.test(clean) || (clean.includes("+") && !clean.startsWith("+"))) {
+    return "يجب أن يحتوي رقم الهاتف على أرقام فقط";
+  }
+
+  const hasIraqiPrefix = clean.startsWith("07") || 
+                         clean.startsWith("7") || 
+                         clean.startsWith("+9647") || 
+                         clean.startsWith("9647") || 
+                         clean.startsWith("009647");
+
+  if (!hasIraqiPrefix) {
+    return "يجب أن يبدأ رقم الهاتف بـ 07 أو 7 أو 9647+";
+  }
+
+  if (clean.startsWith("07") && clean.length !== 11) {
+    return "رقم الهاتف يجب أن يكون 11 رقماً";
+  } else if (clean.startsWith("7") && clean.length !== 10) {
+    return "رقم الهاتف يجب أن يكون 10 أرقام";
+  } else if (clean.startsWith("+9647") && clean.length !== 13) {
+    return "رقم الهاتف يجب أن يكون 13 رقماً";
+  } else if (clean.startsWith("9647") && clean.length !== 12) {
+    return "رقم الهاتف يجب أن يكون 12 رقماً";
+  } else if (clean.startsWith("009647") && clean.length !== 14) {
+    return "رقم الهاتف يجب أن يكون 14 رقماً";
+  }
+
+  return null;
+}
+
+function validateQiCard(text: string): string | null {
+  if (!text) {
+    return null;
+  }
+  const clean = text.replace(/[\s\-\(\)]/g, "");
+  if (!/^\d{10}$/.test(clean)) {
+    return "يجب أن يتكون رقم بطاقة كي من 10 أرقام";
+  }
+  return null;
+}
 
 export default function ProviderProfileScreen() {
   const { t, i18n } = useTranslation();
+  const isArabic = i18n.language ? i18n.language.startsWith('ar') : true;
   const dispatch = useDispatch();
-    const router = useRouter();
+  const router = useRouter();
+
+  const textStart: 'left' | 'right' = isArabic === I18nManager.isRTL ? 'left' : 'right';
+  const flexDir: 'row' | 'row-reverse' = isArabic === I18nManager.isRTL ? 'row' : 'row-reverse';
 
   const { data: profile, isLoading, isError, refetch } = useGetProviderProfileQuery(undefined);
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProviderProfileMutation();
 
   const [formData, setFormData] = useState({
-    bankName: '',
-    bankAccountNo: '',
-    iban: '' });
+    zainCash: '',
+    qi: ''
+  });
+
+  const [errors, setErrors] = useState<{ zainCash?: string | null; qi?: string | null }>({});
 
   const profileData = profile?.data || profile;
 
   useEffect(() => {
     if (profileData) {
       setFormData({
-        bankName: profileData.bankName || '',
-        bankAccountNo: profileData.bankAccountNo || '',
-        iban: profileData.iban || '' });
+        zainCash: profileData.zainCash || '',
+        qi: profileData.qi || ''
+      });
     }
-  }, [profileData, isRTL]);
+  }, [profileData]);
 
   const handleSave = async () => {
+    const zainCashErr = validateZainCash(formData.zainCash);
+    const qiErr = validateQiCard(formData.qi);
+
+    if (zainCashErr || qiErr) {
+      setErrors({
+        zainCash: zainCashErr,
+        qi: qiErr
+      });
+      Toast.show({
+        type: 'error',
+        text1: isArabic ? 'خطأ في المدخلات' : 'Validation Error',
+        text2: isArabic ? 'يرجى تصحيح الأخطاء قبل الحفظ' : 'Please correct the errors before saving',
+        position: 'bottom',
+      });
+      return;
+    }
+
+    setErrors({});
     try {
       await updateProfile(formData).unwrap();
-      Alert.alert(
-        isRTL ? 'نجاح' : 'Success',
-        isRTL ? 'تم تحديث البيانات بنجاح' : 'Profile updated successfully'
-      );
+      Toast.show({
+        type: 'success',
+        text1: isArabic ? 'نجاح' : 'Success',
+        text2: isArabic ? 'تم تحديث البيانات بنجاح' : 'Profile updated successfully',
+        position: 'bottom',
+      });
       router.back();
     } catch (error) {
-      Alert.alert(
-        isRTL ? 'خطأ' : 'Error',
-        isRTL ? 'فشل تحديث البيانات' : 'Failed to update profile'
-      );
+      Toast.show({
+        type: 'error',
+        text1: isArabic ? 'خطأ' : 'Error',
+        text2: isArabic ? 'فشل تحديث البيانات' : 'Failed to update profile',
+        position: 'bottom',
+      });
     }
   };
 
@@ -76,20 +150,49 @@ export default function ProviderProfileScreen() {
     );
   }
 
-  const renderField = (label: string, value: string, key: string, IconComponent: React.ElementType, placeholder: string, multiline = false) => (
+  const renderField = (
+    label: string,
+    value: string,
+    key: string,
+    imageSource: any,
+    placeholder: string,
+    error: string | null = null,
+    keyboardType: 'default' | 'phone-pad' | 'numeric' = 'phone-pad'
+  ) => (
     <View style={styles.fieldContainer}>
-      <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{label}</ThemedText>
-      <View style={[styles.inputWrapper, multiline && styles.multilineWrapper, { flexDirection: 'row-reverse' }]}>
+      <ThemedText style={[styles.label, { textAlign: textStart }]}>{label}</ThemedText>
+      <View style={[
+        styles.inputWrapper, 
+        error ? { borderColor: '#EF4444' } : null,
+        { flexDirection: flexDir }
+      ]}>
+        {imageSource && (
+          <Image 
+            source={imageSource} 
+            style={{ width: 30, height: 30, borderRadius: 6, resizeMode: 'contain', marginEnd: 8 }} 
+          />
+        )}
         <TextInput
-          style={[styles.input, multiline && styles.multilineInput, { textAlign: isRTL ? 'right' : 'left' }]}
+          style={[styles.input, { textAlign: textStart }]}
           value={value}
-          onChangeText={(text) => setFormData(prev => ({ ...prev, [key]: text }))}
+          onChangeText={(text) => {
+            setFormData(prev => ({ ...prev, [key]: text }));
+            if (key === 'zainCash') {
+              setErrors(prev => ({ ...prev, zainCash: validateZainCash(text) }));
+            } else if (key === 'qi') {
+              setErrors(prev => ({ ...prev, qi: validateQiCard(text) }));
+            }
+          }}
           placeholder={placeholder}
           placeholderTextColor={Colors.text.muted}
-          multiline={multiline}
+          keyboardType={keyboardType}
         />
-        <IconComponent size={20} color={Colors.text.muted} />
       </View>
+      {error && (
+        <ThemedText style={[styles.errorText, { textAlign: textStart }]}>
+          {error}
+        </ThemedText>
+      )}
     </View>
   );
 
@@ -109,42 +212,49 @@ export default function ProviderProfileScreen() {
             />
           }
         >
+          <View style={styles.warningCard}>
+            <View style={[styles.warningHeader, { flexDirection: flexDir }]}>
+              <SolarShieldWarningBold size={20} color="#B45309" />
+              <ThemedText style={styles.warningTitle}>
+                {isArabic ? 'ملاحظة هامة وحساسة' : 'Important & Sensitive Note'}
+              </ThemedText>
+            </View>
+            <ThemedText style={[styles.warningText, { textAlign: textStart }]}>
+              {isArabic 
+                ? 'يرجى التأكد من صحة رقم زين كاش ورقم بطاقة كي بدقة. أي خطأ في هذه البيانات قد يؤدي إلى فشل تحويل مستحقاتك المالية أو إرسالها إلى حساب آخر.'
+                : 'Please verify your Zain Cash and Qi Card numbers carefully. Any incorrect details may lead to payout failures or sending funds to the wrong account.'}
+            </ThemedText>
+          </View>
+
           <View style={styles.section}>
-            {/* Redundant title removed */}
             {renderField(
-              isRTL ? 'اسم البنك' : 'Bank Name',
-              formData.bankName,
-              'bankName',
-              SolarBanknoteBold,
-              isRTL ? 'اسم المصرف' : 'Bank name'
+              isArabic ? 'رقم زين كاش' : 'Zain Cash Number',
+              formData.zainCash,
+              'zainCash',
+              zainCashLogo,
+              '07xxxxxxxx',
+              errors.zainCash,
+              'phone-pad'
             )}
             {renderField(
-              isRTL ? 'رقم الحساب' : 'Account Number',
-              formData.bankAccountNo,
-              'bankAccountNo',
-              SolarCardBold,
-              '1234567890'
-            )}
-            {renderField(
-              isRTL ? 'IBAN (اختياري)' : 'IBAN (Optional)',
-              formData.iban,
-              'iban',
-              SolarBanknoteBold,
-              'IQ00 BANK 0000 ...'
+              isArabic ? 'رقم بطاقة كي' : 'Qi Card Number',
+              formData.qi,
+              'qi',
+              qiLogo,
+              isArabic ? 'رقم البطاقة المكون من 10 أرقام' : '10-digit card number',
+              errors.qi,
+              'numeric'
             )}
           </View>
 
-          <TouchableOpacity 
-            style={[styles.saveButton, isUpdating && styles.disabledButton]} 
+          <PrimaryButton
+            label={isArabic ? 'حفظ التعديلات' : 'Save Changes'}
             onPress={handleSave}
+            loading={isUpdating}
             disabled={isUpdating}
-          >
-            {isUpdating ? (
-              <ActivityIndicator color={Colors.white} />
-            ) : (
-              <ThemedText style={styles.saveButtonText}>{isRTL ? 'حفظ التعديلات' : 'Save Changes'}</ThemedText>
-            )}
-          </TouchableOpacity>
+            height={54}
+            style={{ marginTop: 24 }}
+          />
 
         </ScrollView>
       </KeyboardAvoidingView>
@@ -211,4 +321,29 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: Colors.white,
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium" } });
+    fontFamily: "Alexandria-Medium" },
+  errorText: {
+    color: '#EF4444',
+    fontSize: normalize.font(12),
+    fontFamily: "Alexandria-Medium",
+    marginTop: 6 },
+  warningCard: {
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 24,
+    gap: 8 },
+  warningHeader: {
+    alignItems: 'center',
+    gap: 8 },
+  warningTitle: {
+    fontSize: normalize.font(14),
+    fontFamily: 'Alexandria-Bold',
+    color: '#B45309' },
+  warningText: {
+    fontSize: normalize.font(12),
+    fontFamily: 'Alexandria-Medium',
+    color: '#D97706',
+    lineHeight: 18 } });

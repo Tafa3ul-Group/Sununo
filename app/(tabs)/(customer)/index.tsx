@@ -1,15 +1,17 @@
 import { Redirect, useRouter } from "expo-router";
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ActivityIndicator,
   Dimensions,
+  RefreshControl,
   ScrollView,
   StatusBar,
   StyleSheet,
   TouchableOpacity,
   View,
+  I18nManager,
 } from "react-native";
+import { BannerSkeleton, HorizontalSwiperSkeleton, HorizontalCardSkeleton } from "@/components/ui/skeleton-loader";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
@@ -34,7 +36,7 @@ import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize, Shadows } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
-import { isRTL } from "@/i18n";
+import { isRTL, getFlexDirection } from "@/i18n";
 import { RootState } from "@/store";
 import { useGetAmenitiesQuery } from "@/store/api/apiSlice";
 import {
@@ -185,7 +187,8 @@ const filterBannerStyles = StyleSheet.create({
 });
 
 export default function HomeScreen() {
-  const { userType } = useSelector((state: RootState) => state.auth);
+  const { userType, language } = useSelector((state: RootState) => state.auth);
+  const isRTL = language === "ar";
   const activeFilters = useSelector(
     (state: RootState) => (state as any).filter,
   );
@@ -194,6 +197,9 @@ export default function HomeScreen() {
   const { t, i18n } = useTranslation();
   const [activeFilter, setActiveFilter] = React.useState("all");
   const insets = useSafeAreaInsets();
+
+  const textStart: "left" | "right" = isRTL ? "right" : "left";
+  const flexDir: "row" | "row-reverse" = (isRTL === I18nManager.isRTL) ? "row" : "row-reverse";
 
   // Fetch all amenities to resolve real IDs for pool/bbq/garden filters
   const { data: allAmenities = [] } = useGetAmenitiesQuery();
@@ -256,13 +262,24 @@ export default function HomeScreen() {
   }, [activeFilter, amenityIdMap]);
 
   // Fetch data from the backend
-  const { data: bannersResponse } = useGetBannersQuery(undefined);
-  const { data: chaletsResponse, isLoading: chaletsLoading } =
+  const { data: bannersResponse, isFetching: bannersFetching, refetch: refetchBanners } = useGetBannersQuery(undefined);
+  const { data: chaletsResponse, isLoading: chaletsLoading, isFetching: chaletsFetching, refetch: refetchChalets } =
     useBrowseCustomerChaletsQuery(queryParams);
 
   const { data: favoriteIds = [], refetch: refetchFavorites } =
-    useGetFavoriteIdsQuery();
+    useGetFavoriteIdsQuery(undefined, { skip: userType === "guest" });
   const [toggleFavorite] = useToggleFavoriteMutation();
+
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await Promise.all([
+      refetchBanners(),
+      refetchChalets(),
+      userType !== "guest" ? refetchFavorites() : Promise.resolve(),
+    ]);
+    setIsRefreshing(false);
+  }, [refetchBanners, refetchChalets, refetchFavorites, userType]);
 
   const handleToggleFavorite = async (id: string) => {
     try {
@@ -363,6 +380,14 @@ export default function HomeScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            tintColor={Colors.primary}
+            colors={[Colors.primary]}
+          />
+        }
       >
         {/* Header */}
         <HeaderSection isHome />
@@ -370,23 +395,27 @@ export default function HomeScreen() {
 
 
         {/* Banners Swiper */}
-        {banners?.length > 0 && <BannerSwiper data={banners} />}
+        {bannersFetching && !bannersResponse ? (
+          <BannerSkeleton />
+        ) : banners?.length > 0 ? (
+          <BannerSwiper data={banners} />
+        ) : null}
 
         {/* Nearby / Map */}
-        <View style={[styles.sectionHeader, { flexDirection: "row-reverse" }]}>
+        <View style={[styles.sectionHeader, { flexDirection: flexDir }]}>
+          <ThemedText
+            style={[
+              styles.sectionTitle,
+              { textAlign: textStart },
+            ]}
+          >
+            {t("home.categories.nearby")}
+          </ThemedText>
           <TouchableOpacity
             onPress={() => router.push("/(tabs)/(customer)/explore")}
           >
             <ThemedText style={styles.seeAll}>{t("home.openMap")}</ThemedText>
           </TouchableOpacity>
-          <ThemedText
-            style={[
-              styles.sectionTitle,
-              { textAlign: isRTL ? "right" : "left" },
-            ]}
-          >
-            {t("home.categories.nearby")}
-          </ThemedText>
         </View>
         <TouchableOpacity
           activeOpacity={0.9}
@@ -405,24 +434,22 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         {/* Popular / Recent */}
-        <View style={[styles.sectionHeader, { flexDirection: "row-reverse" }]}>
-          <TouchableOpacity>
-            <ThemedText style={styles.seeAll}>{t("home.seeAll")}</ThemedText>
-          </TouchableOpacity>
+        <View style={[styles.sectionHeader, { flexDirection: flexDir }]}>
           <ThemedText
             style={[
               styles.sectionTitle,
-              { textAlign: isRTL ? "right" : "left" },
+              { textAlign: textStart },
             ]}
           >
             {t("home.recentBookings")}
           </ThemedText>
+          <TouchableOpacity>
+            <ThemedText style={styles.seeAll}>{t("home.seeAll")}</ThemedText>
+          </TouchableOpacity>
         </View>
 
         {chaletsLoading ? (
-          <View style={styles.loaderContainer}>
-            <ActivityIndicator size="large" color={Colors.primary} />
-          </View>
+          <HorizontalSwiperSkeleton count={2} />
         ) : (
           <View style={styles.swiperWrapper}>
             <HorizontalSwiper
@@ -438,13 +465,13 @@ export default function HomeScreen() {
         <View
           style={[
             styles.sectionHeader,
-            { justifyContent: "flex-start" },
+            { flexDirection: flexDir, justifyContent: "flex-start" },
           ]}
         >
           <ThemedText
             style={[
               styles.sectionTitle,
-              { textAlign: isRTL ? "right" : "left" },
+              { textAlign: textStart },
             ]}
           >
             {t("home.recommended")}
@@ -455,7 +482,7 @@ export default function HomeScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.tabsContainer}
         >
-          <View style={{ flexDirection: "row", gap: 10 }}>
+          <View style={{ flexDirection: flexDir, gap: 10 }}>
             {FILTER_OPTIONS.map((filter) => (
               <SecondaryButton
                 key={filter.id}
@@ -471,13 +498,13 @@ export default function HomeScreen() {
 
         <View style={styles.listPadding}>
           {chaletsLoading ? (
-            <ActivityIndicator
-              size="small"
-              color={Colors.primary}
-              style={{ marginTop: 20 }}
-            />
+            <View style={{ gap: 12 }}>
+              <HorizontalCardSkeleton />
+              <HorizontalCardSkeleton />
+              <HorizontalCardSkeleton />
+            </View>
           ) : POPULAR_CHALETS.length > 0 ? (
-            POPULAR_CHALETS.map((item, index) => (
+            POPULAR_CHALETS.map((item: any, index: number) => (
               <HorizontalCard
                 key={index}
                 chalet={item}

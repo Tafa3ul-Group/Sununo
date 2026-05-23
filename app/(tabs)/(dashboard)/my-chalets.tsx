@@ -1,4 +1,3 @@
-import { HeaderSection } from '@/components/header-section';
 import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
 import { RootState } from '@/store';
@@ -27,7 +26,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { useSelector } from 'react-redux';
 import { isRTL } from "@/i18n";
 
@@ -35,9 +34,9 @@ export default function MyChaletsScreen() {
   const router = useRouter();
   const { userType, language } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
-  const textAlign = isRTL ? 'right' : 'left';
-  const startAlign = isRTL ? 'flex-end' : 'flex-start';
-  const endAlign = isRTL ? 'flex-start' : 'flex-end';
+  const textAlign = 'left';
+  const startAlign = 'flex-start';
+  const endAlign = 'flex-end';
 
   const { data: chaletsResponse, isLoading, refetch, isFetching } = useGetOwnerChaletsQuery({});
   const chalets = chaletsResponse?.data || chaletsResponse || [];
@@ -55,7 +54,7 @@ export default function MyChaletsScreen() {
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           router.push({
-            pathname: '/(tabs)/(dashboard)/chalet-details',
+            pathname: '/(dashboard)/chalet-details',
             params: { id: item.id }
           });
         }}
@@ -117,15 +116,11 @@ export default function MyChaletsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea]}>
-      <HeaderSection
-        userType={userType}
+    <View style={[styles.safeArea, { direction: isRTL ? 'rtl' : 'ltr' }]}>
+      <DashboardHeader
         title={t('tabs.myChalets')}
         showSearch={false}
-        showCategories={false}
-        showProfile={true}
-        showLogo={false}
-        marginBottom={4}
+        showBackButton={true}
       />
 
       <ScrollView
@@ -169,7 +164,7 @@ export default function MyChaletsScreen() {
           )}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -193,8 +188,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8 },
   sectionTitle: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(18),
+    fontFamily: "Alexandria-Black",
     color: Colors.text.primary },
   countBadge: {
     backgroundColor: Colors.primary,
@@ -205,8 +200,8 @@ const styles = StyleSheet.create({
     alignItems: 'center' },
   countBadgeText: {
     color: Colors.white,
-    fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium" },
+    fontSize: normalize.font(11),
+    fontFamily: "Alexandria-Black" },
   addChaletBtn: {
     width: 36,
     height: 36,
@@ -249,14 +244,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 6 },
   chaletName: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(15),
+    fontFamily: "Alexandria-Bold",
     color: Colors.text.primary },
   locationRow: {
     alignItems: 'center',
     gap: 3 },
   locationLabel: {
-    fontSize: normalize.font(8),
+    fontSize: normalize.font(11),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium" },
   chipRow: {
@@ -270,8 +265,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     gap: 4 },
   statChipText: {
-    fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium" },
+    fontSize: normalize.font(11),
+    fontFamily: "Alexandria-Bold" },
   editBtn: {
     width: 32,
     height: 32,
@@ -296,11 +291,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8 },
   emptyTitle: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(16),
+    fontFamily: "Alexandria-Bold",
     color: Colors.text.primary },
   emptySubtitle: {
-    fontSize: normalize.font(8),
+    fontSize: normalize.font(12),
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium",
     textAlign: 'center',

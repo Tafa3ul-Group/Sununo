@@ -95,10 +95,13 @@ export const customerApi = apiSlice.injectEndpoints({
         bookingDate: string;
         adultsCount?: number;
         childrenCount?: number;
+        guestsCount?: number;
         addonIds?: string[];
         paymentModel: "DEPOSIT" | "FULL";
+        paymentMethod?: "sindi_pay" | "wayl" | "wallet";
         useWalletBalance?: boolean;
         notes?: string;
+        audienceType?: "FAMILY" | "YOUTH";
         cardHolderName?: string;
         cardNumber?: string;
         expiry?: string;

@@ -1,25 +1,25 @@
 // @@iconify-code-gen
+import { ConfirmationDialogProvider } from "@/components/ui/confirmation-dialog";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { changeLanguage as applyAppLanguage } from "@/i18n";
 import { persistor, RootState, store } from "@/store";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import {
-    DarkTheme,
-    DefaultTheme,
-    ThemeProvider } from "@react-navigation/native";
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider
+} from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { I18nManager, Text, TextInput } from "react-native";
+import { Text, TextInput } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import Toast from "react-native-toast-message";
 import { Provider, useSelector } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-import { isRTL } from "@/i18n";
 
 // @ts-ignore
 if (Text.defaultProps == null) Text.defaultProps = {};
@@ -28,8 +28,7 @@ Text.defaultProps.style = {
   fontFamily: "Alexandria-Medium",
   includeFontPadding: false,
   textAlignVertical: "center",
-  writingDirection: I18nManager.isRTL ? "rtl" : "ltr",
-  textAlign: I18nManager.isRTL ? "right" : "left" };
+};
 
 // @ts-ignore
 if (TextInput.defaultProps == null) TextInput.defaultProps = {};
@@ -38,8 +37,7 @@ TextInput.defaultProps.style = {
   fontFamily: "Alexandria-Medium",
   includeFontPadding: false,
   textAlignVertical: "center",
-  writingDirection: I18nManager.isRTL ? "rtl" : "ltr",
-  textAlign: I18nManager.isRTL ? "right" : "left" };
+};
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
@@ -55,7 +53,8 @@ function RootLayoutNav() {
   const [notificationRetryNonce, setNotificationRetryNonce] = useState(0);
 
   const [loaded, error] = useFonts({
-    "Alexandria-Medium": require("@expo-google-fonts/alexandria/500Medium/Alexandria_500Medium.ttf") });
+    "Alexandria-Medium": require("@expo-google-fonts/alexandria/500Medium/Alexandria_500Medium.ttf")
+  });
 
   // ── Auth Guard ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -72,12 +71,7 @@ function RootLayoutNav() {
     if (loaded || error) SplashScreen.hideAsync();
   }, [loaded, error]);
 
-  // ── Language Sync ─────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (language && i18n.language !== language) {
-      applyAppLanguage(language);
-    }
-  }, [language, i18n]);
+
 
   // ── Push Notifications ────────────────────────────────────────────────────
   // يعمل عند تحميل الخطوط + عند تغيّر حالة المصادقة
@@ -164,8 +158,17 @@ function RootLayoutNav() {
 
   if (!loaded && !error) return null;
 
+  const navigationTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: "#FFFFFF",
+      card: "#FFFFFF",
+    },
+  };
+
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={navigationTheme}>
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
@@ -188,8 +191,10 @@ export default function RootLayout() {
       <PersistGate loading={null} persistor={persistor}>
         <GestureHandlerRootView style={{ flex: 1 }}>
           <BottomSheetModalProvider>
-            <RootLayoutNav />
-            <Toast />
+            <ConfirmationDialogProvider>
+              <RootLayoutNav />
+              <Toast />
+            </ConfirmationDialogProvider>
           </BottomSheetModalProvider>
         </GestureHandlerRootView>
       </PersistGate>

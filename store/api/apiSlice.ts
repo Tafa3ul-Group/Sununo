@@ -126,6 +126,8 @@ export const apiSlice = createApi({
         url: `/provider/chalets/${chaletId}/images`,
         method: "POST",
         body: formData,
+        // Don't set Content-Type — FormData adds it automatically with boundary
+        headers: {},
       }),
       invalidatesTags: (result, error, { chaletId }) => [{ type: 'Chalet', id: chaletId }],
     }),
@@ -320,6 +322,15 @@ export const apiSlice = createApi({
       invalidatesTags: ["User"],
     }),
 
+    // Delete user profile
+    deleteProfile: builder.mutation({
+      query: () => ({
+        url: "/users/profile",
+        method: "DELETE",
+      }),
+      invalidatesTags: ["User"],
+    }),
+
     // Update user profile image
     updateProfileImage: builder.mutation({
       query: (data) => ({
@@ -339,6 +350,12 @@ export const apiSlice = createApi({
     // Get provider stats
     getProviderStats: builder.query({
       query: () => "/provider/profile/stats",
+      providesTags: ["Booking", "Chalet"],
+    }),
+
+    // Get provider chalet stats
+    getProviderChaletStats: builder.query({
+      query: (chaletId) => `/provider/chalets/${chaletId}/stats`,
       providesTags: ["Booking", "Chalet"],
     }),
 
@@ -407,7 +424,7 @@ export const apiSlice = createApi({
 
     // Get fully booked status for days
     getFullyBookedStatus: builder.query<
-      { date: string; isFullyBooked: boolean }[],
+      { date: string; isFullyBooked: boolean; bookings: { type: 'internal' | 'external' }[] }[],
       { chaletId: string; from: string; to: string }
     >({
       query: ({ chaletId, ...params }) => ({
@@ -589,9 +606,11 @@ export const {
 
   useGetProviderProfileQuery,
   useGetProviderStatsQuery,
+  useGetProviderChaletStatsQuery,
   useUpdateProviderProfileMutation,
   useUpdateProfileMutation,
   useUpdateProfileImageMutation,
+  useDeleteProfileMutation,
   useGetProviderBookingsQuery,
   useGetProviderBookingDetailsQuery,
   useGetShiftAvailabilityQuery,

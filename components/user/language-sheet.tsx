@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback } from "react";
-import { StyleSheet, View, TouchableOpacity, Image } from "react-native";
+import { StyleSheet, View, TouchableOpacity, Image, I18nManager } from "react-native";
 import {
   BottomSheetModal,
   BottomSheetView,
@@ -67,14 +67,14 @@ export const LanguageSheet = React.forwardRef<BottomSheetModal, LanguageSheetPro
         backgroundStyle={styles.background}
       >
         <BottomSheetView style={styles.content}>
-          <ThemedText style={styles.title}>اختيار اللغة</ThemedText>
+          <ThemedText style={styles.title}>{currentLang === "ar" ? "اختيار اللغة" : "Choose Language"}</ThemedText>
           <View style={styles.list}>
             {languages.map((lang) => (
               <TouchableOpacity
                 key={lang.id}
                 style={[
                   styles.item,
-                  { flexDirection: currentLang === "ar" ? "row-reverse" : "row" },
+                  { flexDirection: (currentLang === "ar") === I18nManager.isRTL ? "row" : "row-reverse" },
                   currentLang === lang.id && styles.activeItem,
                 ]}
                 onPress={() => handleSelect(lang.id)}
@@ -90,7 +90,7 @@ export const LanguageSheet = React.forwardRef<BottomSheetModal, LanguageSheetPro
                 <View
                   style={[
                     styles.langInfo,
-                    { flexDirection: currentLang === "ar" ? "row-reverse" : "row" },
+                    { flexDirection: (currentLang === "ar") === I18nManager.isRTL ? "row" : "row-reverse" },
                   ]}
                 >
                    <ThemedText style={[

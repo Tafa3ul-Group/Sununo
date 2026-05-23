@@ -110,7 +110,8 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
   if (currentOptions?.href === null) return null;
 
   const currentRouteName = state.routes[currentRouteIndex].name;
-  const visibleRouteNames = ['home', 'bookings', 'revenue'];
+  if (currentRouteName === 'profile' || currentRouteName === 'revenue') return null;
+  const visibleRouteNames = ['home', 'bookings', 'profile'];
   const visibleRoutes = state.routes.filter((route: any) => visibleRouteNames.includes(route.name));
 
   if (visibleRoutes.length === 0) return null;

@@ -30,6 +30,7 @@
   },
   "home": {
     "welcome": "Welcome",
+    "search": "Search",
     "searchPlaceholder": "Search for a chalet...",
     "categories": {
       "all": "All",
@@ -151,6 +152,7 @@
     "complete": "Booking Completion",
     "shooket": "When",
     "mano": "Who",
+    "where": "Where",
     "details": "Details",
     "deleteDay": "Delete Day",
     "next": "Next",
@@ -221,7 +223,10 @@
     "noShift": "No shift selected",
     "noDate": "No date selected",
     "bookingError": "An error occurred during booking",
-    "shiftPrice": "Shift Price"
+    "shiftPrice": "Shift Price",
+    "extraGuestNote": "Note: The base price includes up to {{count}} guests. Each additional guest costs {{price}} IQD per day.",
+    "extraGuestApplied": "{{count}} extra guests added. Extra cost: {{price}} IQD.",
+    "extraGuestFees": "Extra Guest Fees"
   },
   "headers": {
     "notifications": "Notifications",

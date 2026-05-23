@@ -1,9 +1,7 @@
 import { BookingCancellationSheet, BookingCancellationSheetRef } from '@/components/booking-cancellation-modal';
-import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import {
   SolarDangerCircleBold
 } from '@/components/icons/solar-icons';
-import { ThemedText } from '@/components/themed-text';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
@@ -14,11 +12,11 @@ import { Image as ExpoImage } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ActivityIndicator, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSelector } from 'react-redux';
 
 const IDENTITY_BLUE = '#035DF9';
+const SCREEN_WIDTH = Dimensions.get('window').width;
 
 import { PaymentConfirmationSheet, PaymentConfirmationSheetRef } from '@/components/payment-confirmation-modal';
 
@@ -29,7 +27,7 @@ export default function BookingDetailsPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { language } = useSelector((state: RootState) => state.auth);
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const cancelSheetRef = React.useRef<BookingCancellationSheetRef>(null);
   const confirmPaymentSheetRef = React.useRef<PaymentConfirmationSheetRef>(null);
 
@@ -37,19 +35,19 @@ export default function BookingDetailsPage() {
   const [deleteExternalBooking, { isLoading: isDeletingExternal }] = useDeleteExternalBookingMutation();
   const [markAsPaid, { isLoading: isPaying }] = useMarkBookingCompletedMutation();
   const [isSuccessNavigating, setIsSuccessNavigating] = React.useState(false);
+  const [expandedImage, setExpandedImage] = React.useState<string | null>(null);
 
   const { data: bookingDetailsData, isLoading, error, refetch } = useGetProviderBookingDetailsQuery(id as string, { skip: !id });
 
-  if (isLoading) return <View style={styles.loadingContainer}><ActivityIndicator size="large" color={IDENTITY_BLUE} /></View>;
-
   const data = bookingDetailsData?.data || bookingDetailsData;
-  console.log('[BookingDetails] data:', { id: data?.id, extName: data?.externalCustomerName, extPhone: data?.externalCustomerPhone });
+
+  if (isLoading) return <View style={styles.loadingContainer}><ActivityIndicator size="large" color={IDENTITY_BLUE} /></View>;
 
   if ((error || !data || !data.id) && !isSuccessNavigating) {
     const is404 = (error as any)?.status === 404;
     const errorMessage = (error as any)?.data?.message || (error as any)?.message;
     return (
-      <ErrorState 
+      <ErrorState
         type={is404 ? 'error404' : 'failed'}
         message={errorMessage}
         onBack={() => router.back()}
@@ -77,6 +75,12 @@ export default function BookingDetailsPage() {
     : bChaletImage?.url || bChaletImage?.id || bChaletImage?.imageUrl;
 
   const chaletImageSource = getImageSrc(chaletImageId);
+
+  // Customer ID card images
+  const customerIdFront = data.customer?.idCardFrontImage;
+  const customerIdBack = data.customer?.idCardBackImage;
+  const hasIdCards = !bIsExternal && (customerIdFront || customerIdBack);
+  console.log('[BookingDetails] customer ID cards:', { customerIdFront, customerIdBack, hasIdCards, tenantCategory: data.customer?.tenantCategory });
 
   const depositAmount = Number(data.depositAmount || 0);
   const remainingAmount = Number(data.remainingAmount || 0);
@@ -123,10 +127,17 @@ export default function BookingDetailsPage() {
     }
   };
 
-  const renderInfoRow = (label: string, value: string | React.ReactNode, isBlue: boolean = false) => (
-    <View style={[styles.infoRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-      <Text style={[styles.infoLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{label}</Text>
-      <View style={{ flex: 1, alignItems: isRTL ? 'flex-start' : 'flex-end' }}>
+  const renderInfoRow = (label: string, value: string | React.ReactNode, isBlue: boolean = false, subLabel?: string) => (
+    <View style={[styles.infoRow, { alignItems: 'center' }]}>
+      <View style={{ flex: 1, alignItems: 'flex-start', paddingLeft: isRTL ? 16 : 0, paddingRight: isRTL ? 0 : 16 }}>
+        <Text style={[styles.infoLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{label}</Text>
+        {subLabel && (
+          <Text style={{ fontSize: 11, color: '#94A3B8', fontFamily: 'Alexandria-Regular', marginTop: 2, textAlign: isRTL ? 'right' : 'left', writingDirection: isRTL ? 'rtl' : 'ltr' }}>
+            {subLabel}
+          </Text>
+        )}
+      </View>
+      <View style={{ flex: 0, alignItems: 'flex-end' }}>
         {typeof value === 'string' ? (
           <Text style={[styles.infoValue, isBlue && styles.blueValue, { textAlign: isRTL ? 'left' : 'right' }]}>{value}</Text>
         ) : (
@@ -142,15 +153,21 @@ export default function BookingDetailsPage() {
 
   return (
     <View style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
-      {/* Dashboard Header */}
-      <DashboardHeader
-        title={isRTL ? 'تفاصيل الحجز' : 'Booking Details'}
-        showBackButton={true}
-        showSearch={false}
-        customRightComponent={<View style={{ width: normalize.width(80) }} />}
-      />
-
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.scrollContent,
+          {
+            paddingBottom: bIsCancelled
+              ? normalize.height(24)
+              : bIsExternal
+                ? normalize.height(120)
+                : remainingAmount > 0
+                  ? normalize.height(180)
+                  : normalize.height(120)
+          }
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
 
         {/* Cancelled Status Card */}
         {bIsCancelled && (
@@ -169,6 +186,7 @@ export default function BookingDetailsPage() {
             </Text>
           </View>
         )}
+
 
         {/* Chalet Information Section */}
         <View style={styles.infoSectionCard}>
@@ -199,8 +217,72 @@ export default function BookingDetailsPage() {
           <View style={styles.divider} />
           {renderInfoRow(isRTL ? 'الاسم' : 'Name', bCustomerName)}
           {renderInfoRow(isRTL ? 'رقم الهاتف' : 'Phone', <Text style={[styles.infoValue, { direction: 'ltr' }]}>{data.customer?.phone || data.externalCustomerPhone || '--'}</Text>)}
+          {!bIsExternal && data.customer?.tenantCategory && renderInfoRow(
+            isRTL ? 'الفئة' : 'Category',
+            <View style={[
+              styles.tenantCategoryBadge,
+              { backgroundColor: data.customer.tenantCategory === 'family' ? '#EFF6FF' : '#F0FDF4' }
+            ]}>
+              <Text style={[
+                styles.tenantCategoryText,
+                { color: data.customer.tenantCategory === 'family' ? '#2563EB' : '#16A34A' }
+              ]}>
+                {data.customer.tenantCategory === 'family'
+                  ? (isRTL ? 'عوائل' : 'Family')
+                  : (isRTL ? 'شباب' : 'Youth')}
+              </Text>
+            </View>
+          )}
           {data.notes && renderInfoRow(isRTL ? 'ملاحظات' : 'Notes', data.notes)}
         </View>
+
+        {/* Customer ID Card Images */}
+        {hasIdCards && (
+          <View style={styles.infoSectionCard}>
+            <View style={[styles.sectionTitleRow]}>
+              <Text style={styles.sectionTitle}>{isRTL ? 'صور الهوية' : 'ID Card Images'}</Text>
+            </View>
+            <View style={styles.divider} />
+            <View style={styles.idCardsRow}>
+              {customerIdFront && (
+                <TouchableOpacity
+                  style={styles.idCardWrapper}
+                  activeOpacity={0.85}
+                  onPress={() => {
+                    const src = getImageSrc(customerIdFront);
+                    setExpandedImage(typeof src === 'object' ? src.uri : null);
+                  }}
+                >
+                  <ExpoImage
+                    source={getImageSrc(customerIdFront)}
+                    style={styles.idCardImage}
+                    contentFit="cover"
+                    transition={200}
+                  />
+                  <Text style={styles.idCardLabel}>{isRTL ? 'الوجه الأمامي' : 'Front'}</Text>
+                </TouchableOpacity>
+              )}
+              {customerIdBack && (
+                <TouchableOpacity
+                  style={styles.idCardWrapper}
+                  activeOpacity={0.85}
+                  onPress={() => {
+                    const src = getImageSrc(customerIdBack);
+                    setExpandedImage(typeof src === 'object' ? src.uri : null);
+                  }}
+                >
+                  <ExpoImage
+                    source={getImageSrc(customerIdBack)}
+                    style={styles.idCardImage}
+                    contentFit="cover"
+                    transition={200}
+                  />
+                  <Text style={styles.idCardLabel}>{isRTL ? 'الوجه الخلفي' : 'Back'}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        )}
 
         {/* Booking Information */}
         <View style={styles.infoSectionCard}>
@@ -211,10 +293,14 @@ export default function BookingDetailsPage() {
           {renderInfoRow(isRTL ? "التاريخ" : "Date", data.bookingDate)}
           {renderInfoRow(isRTL ? "الفترة" : "Period", bShiftName)}
           {renderInfoRow(
-            isRTL ? "الاشخاص" : "Persons",
-            isRTL
-              ? `${data.adultsCount || 0} بالغين، ${data.childrenCount || 0} اطفال`
-              : `${data.adultsCount || 0} Adults, ${data.childrenCount || 0} Children`,
+            isRTL ? "عدد الأشخاص" : "Guests",
+            `${data.guestsCount || 0} ${isRTL ? "شخص" : "persons"}`,
+          )}
+          {data.guestsCount > (data.chalet?.priceCapacity || data.chalet?.capacity || 0) && (
+            renderInfoRow(
+              isRTL ? "الأشخاص الإضافيين (فوق السعة)" : "Extra Guests (Above Capacity)",
+              `${data.guestsCount - (data.chalet?.priceCapacity || data.chalet?.capacity || 0)} ${isRTL ? "شخص" : "persons"}`,
+            )
           )}
         </View>
 
@@ -226,7 +312,21 @@ export default function BookingDetailsPage() {
             </View>
             <View style={styles.divider} />
             {renderInfoRow(
-              isRTL ? "المبلغ الكلي" : "Total Price",
+              isRTL ? "المبلغ الأساسي" : "Base Price",
+              `${Number(data.basePrice || 0).toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
+            )}
+            {Number(data.extraGuestsPrice) > 0 && renderInfoRow(
+              isRTL ? "مبلغ الزيادة" : "Extra Charge",
+              <Text style={[styles.infoValue, { color: '#F59E0B', fontFamily: 'Alexandria-SemiBold' }]}>
+                {`+${Number(data.extraGuestsPrice).toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`}
+              </Text>,
+              false,
+              isRTL 
+                ? `(سعة إضافية - ${Number(data.chalet?.extraPersonPrice || 0).toLocaleString()} د.ع للفرد)` 
+                : `(Capacity - ${Number(data.chalet?.extraPersonPrice || 0).toLocaleString()} IQD/person)`
+            )}
+            {renderInfoRow(
+              isRTL ? "المبلغ النهائي" : "Final Price",
               `${totalPrice.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
             )}
             {renderInfoRow(
@@ -240,8 +340,6 @@ export default function BookingDetailsPage() {
             )}
           </View>
         )}
-
-        <View style={{ height: 20 }} />
       </ScrollView>
 
       {/* Bottom Actions Footer */}
@@ -300,6 +398,30 @@ export default function BookingDetailsPage() {
         totalPrice={data.totalPrice || 0}
         paymentModel={data.paymentModel || 'deposit'}
       />
+
+      {/* Expanded Image Modal */}
+      {expandedImage && (
+        <TouchableOpacity
+          style={styles.expandedOverlay}
+          activeOpacity={1}
+          onPress={() => setExpandedImage(null)}
+        >
+          <View style={styles.expandedContainer}>
+            <ExpoImage
+              source={{ uri: expandedImage }}
+              style={styles.expandedImage}
+              contentFit="contain"
+              transition={200}
+            />
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setExpandedImage(null)}
+            >
+              <Text style={styles.closeButtonText}>✕</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -310,7 +432,7 @@ const styles = StyleSheet.create({
   errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFFFFF', padding: 20 },
   errorText: { color: '#64748B', marginTop: 16 },
   backBtn: { marginTop: 20 },
-  backBtnText: { color: IDENTITY_BLUE, fontFamily: "Alexandria-Medium" },
+  backBtnText: { color: IDENTITY_BLUE, fontFamily: "Alexandria-SemiBold" },
   menuCircle: {
     width: normalize.width(42),
     height: normalize.width(42),
@@ -319,51 +441,130 @@ const styles = StyleSheet.create({
     borderColor: "#F1F5F9",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F8F9FB" },
+    backgroundColor: "#F8F9FB"
+  },
   cancelledCard: {
     backgroundColor: '#FFF5F5',
     borderRadius: 20,
     padding: 16,
     borderWidth: 1,
     borderColor: '#FEE2E2',
-    marginBottom: 16 },
+    marginBottom: 16
+  },
   cancelledHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    marginBottom: 12 },
+    marginBottom: 12
+  },
   warningIconWrapper: {
     width: 36,
     height: 36,
     borderRadius: 18,
     backgroundColor: '#FFE5E5',
     justifyContent: 'center',
-    alignItems: 'center' },
+    alignItems: 'center'
+  },
   cancelledTitle: {
     flex: 1,
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(16),
+    fontFamily: "Alexandria-SemiBold",
     color: '#EA2129',
-    textAlign: 'left',
-    lineHeight: normalize.font(14) },
+    textAlign: isRTL ? 'right' : 'left',
+    lineHeight: normalize.font(24)
+  },
   cancelledDivider: {
     height: 1,
     backgroundColor: '#FEE2E2',
     marginVertical: 4,
-    marginBottom: 12 },
+    marginBottom: 12
+  },
   cancelledReason: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "Alexandria-SemiBold",
     color: '#1E293B',
-    textAlign: 'left',
-    lineHeight: normalize.font(14) },
-  scrollContent: { paddingBottom: normalize.height(160), paddingHorizontal: 20 },
+    textAlign: isRTL ? 'right' : 'left',
+    lineHeight: normalize.font(20)
+  },
+  scrollContent: { paddingHorizontal: 20, paddingTop: 20 },
+  // Tenant Category Badge
+  tenantCategoryBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  tenantCategoryText: {
+    fontSize: normalize.font(13),
+    fontFamily: 'Alexandria-SemiBold',
+    lineHeight: normalize.font(18),
+  },
+  // ID Card Images
+  idCardsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 4,
+  },
+  idCardWrapper: {
+    flex: 1,
+    borderRadius: 14,
+    overflow: 'hidden',
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  idCardImage: {
+    width: '100%',
+    height: normalize.height(120),
+  },
+  idCardLabel: {
+    fontSize: normalize.font(12),
+    fontFamily: 'Alexandria-Medium',
+    color: '#64748B',
+    textAlign: 'center',
+    paddingVertical: 6,
+  },
+  // Expanded Image Modal
+  expandedOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 9999,
+  },
+  expandedContainer: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  expandedImage: {
+    width: SCREEN_WIDTH - 20,
+    height: '70%',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: normalize.height(60),
+    right: 20,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontFamily: 'Alexandria-SemiBold',
+  },
   chaletSimpleRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   simpleImageWrapper: { width: 80, height: 80, borderRadius: 16, overflow: 'hidden', backgroundColor: '#F1F5F9' },
   simpleChaletImage: { width: '100%', height: '100%' },
   simpleChaletText: { flex: 1, alignItems: 'flex-start' },
-  simpleChaletName: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#1E293B', textAlign: 'left', lineHeight: normalize.font(14) },
-  simpleChaletLocation: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#64748B', textAlign: 'left', lineHeight: normalize.font(14), marginTop: 4 },
+  simpleChaletName: { fontSize: normalize.font(16), fontFamily: "Alexandria-SemiBold", color: '#1E293B', textAlign: isRTL ? 'right' : 'left', lineHeight: normalize.font(22) },
+  simpleChaletLocation: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#64748B', textAlign: isRTL ? 'right' : 'left', lineHeight: normalize.font(20), marginTop: 4 },
   infoSectionCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
@@ -371,14 +572,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F1F5F9',
     marginBottom: 12,
-    paddingBottom: 24 },
+    paddingBottom: 24
+  },
   sectionTitleRow: { width: '100%', marginBottom: 8, alignItems: 'flex-start' },
-  sectionTitle: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: IDENTITY_BLUE, textAlign: 'left', lineHeight: normalize.font(14) },
+  sectionTitle: { fontSize: normalize.font(14), fontFamily: "Alexandria-SemiBold", color: IDENTITY_BLUE, textAlign: isRTL ? 'right' : 'left', lineHeight: normalize.font(20) },
   divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 10 },
   infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  infoLabel: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#1E293B', textAlign: 'left', lineHeight: normalize.font(14) },
-  infoValue: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#64748B', textAlign: 'right', lineHeight: normalize.font(14) },
-  blueValue: { color: IDENTITY_BLUE, fontFamily: "Alexandria-Medium", textAlign: 'right', lineHeight: normalize.font(14) },
+  infoLabel: { fontSize: normalize.font(14), fontFamily: "Alexandria-SemiBold", color: '#1E293B', textAlign: isRTL ? 'right' : 'left', lineHeight: normalize.font(20) },
+  infoValueContainer: { flex: 1, alignItems: 'flex-end' },
+  infoValue: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#64748B', textAlign: isRTL ? 'left' : 'right', lineHeight: normalize.font(22) },
+  blueValue: { color: IDENTITY_BLUE, fontFamily: "Alexandria-SemiBold", textAlign: isRTL ? 'left' : 'right', lineHeight: normalize.font(22) },
   bottomActions: {
     position: 'absolute',
     bottom: 0,
@@ -391,8 +594,12 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: normalize.radius(24),
     borderTopRightRadius: normalize.radius(24),
     borderTopWidth: 1,
-    borderTopColor: '#F1F5F9' },
+    borderTopColor: '#F1F5F9'
+  },
   payButton: {
-    marginBottom: 12 },
+    marginBottom: 12
+  },
   cancelButton: {
-    width: '100%' } });
+    width: '100%'
+  }
+});

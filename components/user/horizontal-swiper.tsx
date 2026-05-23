@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import {
   Dimensions,
   FlatList,
+  I18nManager,
   StyleSheet,
   View,
   NativeSyntheticEvent,
@@ -62,7 +63,7 @@ export function HorizontalSwiper({ data, onPressCard, onIndexChange, favoriteIds
         snapToInterval={ITEM_WIDTH + SEPARATOR_WIDTH}
         snapToAlignment="center"
         decelerationRate="fast"
-        contentContainerStyle={[styles.listContent, { flexDirection: 'row' }]}
+        contentContainerStyle={styles.listContent}
         pagingEnabled={false}
         ItemSeparatorComponent={() => (
           <View style={{ width: SEPARATOR_WIDTH }} />

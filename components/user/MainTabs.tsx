@@ -1,5 +1,5 @@
-import { isRTL } from "@/i18n";
-import React, { useEffect } from "react";
+import { getFlexDirection } from "@/i18n";
+import React, { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Dimensions,
@@ -29,43 +29,63 @@ const WHEN_COLOR = "#15AB64";
 const WHERE_COLOR = "#035DF9";
 
 export type TabType = "WHERE" | "WHEN" | "WHO";
+type TabLabels = Partial<Record<TabType, string>>;
 
 interface MainTabsProps {
   activeTab: TabType;
   onChange: (tab: TabType) => void;
+  tabs?: TabType[];
+  labels?: TabLabels;
 }
 
-export function MainTabs({ activeTab, onChange }: MainTabsProps) {
+const TAB_COLORS: Record<TabType, string> = {
+  WHERE: WHERE_COLOR,
+  WHEN: WHEN_COLOR,
+  WHO: WHO_COLOR,
+};
+const DEFAULT_TABS: TabType[] = ["WHERE", "WHEN", "WHO"];
+
+export function MainTabs({
+  activeTab,
+  onChange,
+  tabs = DEFAULT_TABS,
+  labels = {},
+}: MainTabsProps) {
   const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === 'ar';
+  const flexDir = getFlexDirection(isArabic);
 
   const transition = useSharedValue(0);
-  // Re-ordered to start with SHOOKET (WHEN), then MANO (WHO), then DETAILS (WHERE)
-  const tabList: TabType[] = ["WHERE", "WHEN", "WHO"];
+  const tabList = useMemo(
+    () => tabs.slice(0, 3) as [TabType, TabType, TabType],
+    [tabs],
+  );
+  const tabColors = useMemo(
+    () => tabList.map((tab) => TAB_COLORS[tab]) as [string, string, string],
+    [tabList],
+  );
 
   useEffect(() => {
-    let target = 0;
-    if (activeTab === "WHERE") target = 0;
-    else if (activeTab === "WHEN") target = 1;
-    else target = 2; // WHO
+    const target = Math.max(0, tabList.indexOf(activeTab));
 
     transition.value = withSpring(target, {
       damping: 18,
       stiffness: 120,
       mass: 1,
     });
-  }, [activeTab]);
+  }, [activeTab, tabList]);
 
   // ==========================================
   // --- مصفوفات التحكم (عدل الأرقام هنا) ---
-  // الترتيب: [DETAILS, SHOOKET, MANO]
+  // الترتيب حسب مصفوفة tabs المرسلة للكمبوننت
   // ==========================================
-  const xOffsets = isRTL ? [120, 0, -120] : [-120, 0, 120];
+  const xOffsets = isArabic ? [120, 0, -120] : [-120, 0, 120];
   const yOffsets = [0, 0, 0];
   const rtlTextOffsets = [2, 0, -2]; // إزاحة النص للعربي لتوسيط أفضل
   const ltrTextOffsets = [-2, 0, 2]; // إزاحة النص للإنجليزي لتوسيط أفضل
   const scales = [1, 1, 1];
 
-  const currentTextOffsets = isRTL ? rtlTextOffsets : ltrTextOffsets;
+  const currentTextOffsets = isArabic ? rtlTextOffsets : ltrTextOffsets;
   // ==========================================
 
   const circleGroupProps = useAnimatedProps(() => {
@@ -91,7 +111,7 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
       fill: interpolateColor(
         transition.value,
         [0, 1, 2],
-        [WHERE_COLOR, WHEN_COLOR, WHO_COLOR],
+        tabColors,
       ),
     };
   });
@@ -100,8 +120,8 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
     return {
       color: interpolateColor(
         transition.value,
-        [0, 0.4],
-        ["#FFFFFF", WHERE_COLOR],
+        [0, 1, 2],
+        ["#FFFFFF", tabColors[0], tabColors[0]],
       ),
       transform: [
         { scale: interpolate(transition.value, [0, 1], [1.05, 1]) },
@@ -114,8 +134,8 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
     return {
       color: interpolateColor(
         transition.value,
-        [0.4, 1, 1.6],
-        [WHEN_COLOR, "#FFFFFF", WHEN_COLOR],
+        [0, 1, 2],
+        [tabColors[1], "#FFFFFF", tabColors[1]],
       ),
       transform: [
         { scale: interpolate(transition.value, [0, 1, 2], [1, 1.05, 1]) },
@@ -128,8 +148,8 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
     return {
       color: interpolateColor(
         transition.value,
-        [1.6, 2],
-        [WHO_COLOR, "#FFFFFF"],
+        [0, 1, 2],
+        [tabColors[2], tabColors[2], "#FFFFFF"],
       ),
       transform: [
         { scale: interpolate(transition.value, [1, 2], [1, 1.05]) },
@@ -158,14 +178,17 @@ export function MainTabs({ activeTab, onChange }: MainTabsProps) {
         </Svg>
       </View>
 
-      <View style={[styles.buttonsContainer, { flexDirection: "row" }]}>
+      <View style={[styles.buttonsContainer, { flexDirection: flexDir }]}>
         {tabList.map(function (tab, idx) {
           const textStyle = tabStyles[idx];
 
-          let label = "";
-          if (tab === "WHEN") label = t("booking.shooket");
-          else if (tab === "WHO") label = t("booking.mano");
-          else label = t("booking.where");
+          const label =
+            labels[tab] ||
+            (tab === "WHEN"
+              ? t("booking.shooket")
+              : tab === "WHO"
+                ? t("booking.mano")
+                : t("booking.where"));
 
           return (
             <TouchableOpacity
@@ -197,7 +220,7 @@ const styles = StyleSheet.create({
   buttonsContainer: {
     position: "absolute",
     top: 0,
-    left: 0,
+    start: 0,
     width: 344,
     height: 80,
     flexDirection: "row",

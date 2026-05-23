@@ -1,11 +1,11 @@
-import React from "react";
-import { StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
-import Svg, { Path } from "react-native-svg";
 import { SolarAddBold, SolarMinusBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
+import { getFlexDirection } from "@/i18n";
+import React from "react";
 import { useTranslation } from "react-i18next";
+import { StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
+import Svg, { Path } from "react-native-svg";
 import { normalize } from "../../constants/theme";
-import { isRTL } from "@/i18n";
 
 interface GuestCounterProps {
   value: number;
@@ -18,25 +18,35 @@ export const GuestCounter: React.FC<GuestCounterProps> = ({
   value,
   onIncrement,
   onDecrement,
-  style }) => {
+  style,
+}) => {
   const { i18n } = useTranslation();
-    const btnSize = 38;
+  const isArabic = i18n.language === 'ar';
+  const flexDir = getFlexDirection(isArabic);
+  const btnSize = 38;
 
   return (
-    <View style={[styles.container, { flexDirection: 'row' }, style]}>
-      {/* Child 1: Minus in RTL, Plus in LTR */}
+    <View style={[styles.container, { flexDirection: flexDir }, style]}>
+      {/* Minus Button (Logical Left) */}
       <TouchableOpacity
-        onPress={isRTL ? onDecrement : onIncrement}
+        onPress={onDecrement}
         activeOpacity={0.8}
-        style={[styles.buttonWrapper, isRTL ? styles.mirror : undefined, { width: btnSize, height: btnSize }]}
+        style={[
+          styles.buttonWrapper,
+          isArabic ? styles.mirror : undefined,
+          { width: btnSize, height: btnSize },
+        ]}
       >
         <Svg width={btnSize} height={btnSize} viewBox="0 0 29 29" fill="none">
-          <Path d="M0 14.5C0 6.49187 6.49187 0 14.5 0H25.375C27.377 0 29 1.62297 29 3.625V25.375C29 27.377 27.377 29 25.375 29H14.5C6.49187 29 0 22.5081 0 14.5Z" fill="#F64200" />
+          <Path
+            d="M0 14.5C0 6.49187 6.49187 0 14.5 0H25.375C27.377 0 29 1.62297 29 3.625V25.375C29 27.377 27.377 29 25.375 29H14.5C6.49187 29 0 22.5081 0 14.5Z"
+            fill="#F64200"
+          />
         </Svg>
         <View style={styles.iconOverlay}>
-            <View style={styles.iconCircle}>
-                {isRTL ? <SolarMinusBold size={14} color="white" /> : <SolarAddBold size={14} color="white" />}
-            </View>
+          <View style={styles.iconCircle}>
+            <SolarMinusBold size={14} color="white" />
+          </View>
         </View>
       </TouchableOpacity>
 
@@ -45,19 +55,26 @@ export const GuestCounter: React.FC<GuestCounterProps> = ({
         <ThemedText style={styles.valueText}>{value}</ThemedText>
       </View>
 
-      {/* Child 3: Plus in RTL, Minus in LTR */}
+      {/* Plus Button (Logical Right) */}
       <TouchableOpacity
-        onPress={isRTL ? onIncrement : onDecrement}
+        onPress={onIncrement}
         activeOpacity={0.8}
-        style={[styles.buttonWrapper, !isRTL ? styles.mirror : undefined, { width: btnSize, height: btnSize }]}
+        style={[
+          styles.buttonWrapper,
+          !isArabic ? styles.mirror : undefined,
+          { width: btnSize, height: btnSize },
+        ]}
       >
         <Svg width={btnSize} height={btnSize} viewBox="0 0 29 29" fill="none">
-          <Path d="M0 14.5C0 6.49187 6.49187 0 14.5 0H25.375C27.377 0 29 1.62297 29 3.625V25.375C29 27.377 27.377 29 25.375 29H14.5C6.49187 29 0 22.5081 0 14.5Z" fill="#F64200" />
+          <Path
+            d="M0 14.5C0 6.49187 6.49187 0 14.5 0H25.375C27.377 0 29 1.62297 29 3.625V25.375C29 27.377 27.377 29 25.375 29H14.5C6.49187 29 0 22.5081 0 14.5Z"
+            fill="#F64200"
+          />
         </Svg>
         <View style={styles.iconOverlay}>
-            <View style={styles.iconCircle}>
-                {isRTL ? <SolarAddBold size={14} color="white" /> : <SolarMinusBold size={14} color="white" />}
-            </View>
+          <View style={styles.iconCircle}>
+            <SolarAddBold size={14} color="white" />
+          </View>
         </View>
       </TouchableOpacity>
     </View>
@@ -68,16 +85,20 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4 },
+    gap: 4,
+  },
   buttonWrapper: {
     justifyContent: "center",
-    alignItems: "center" },
+    alignItems: "center",
+  },
   mirror: {
-    transform: [{ scaleX: -1 }] },
+    transform: [{ scaleX: -1 }],
+  },
   iconOverlay: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: "center",
-    alignItems: "center" },
+    alignItems: "center",
+  },
   iconCircle: {
     width: 22,
     height: 22,
@@ -85,14 +106,18 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: "rgba(255, 255, 255, 0.4)",
     justifyContent: "center",
-    alignItems: "center" },
+    alignItems: "center",
+  },
   valueBlock: {
     backgroundColor: "#F64200",
     width: 42,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 6 },
+    borderRadius: 6,
+  },
   valueText: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
-    color: "white" } });
+    color: "white",
+  },
+});
