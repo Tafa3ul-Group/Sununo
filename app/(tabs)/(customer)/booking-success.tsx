@@ -21,8 +21,8 @@ export default function BookingSuccessDetailsScreen() {
   const bookingId = id as string;
   const { formatShiftTime } = useFormatTime();
 
-  const textStart: "left" | "right" = isRTL === I18nManager.isRTL ? "left" : "right";
-  const textEnd: "left" | "right" = isRTL === I18nManager.isRTL ? "right" : "left";
+  const textStart: "left" | "right" = isRTL ? "right" : "left";
+  const textEnd: "left" | "right" = isRTL ? "left" : "right";
 
   // Fetch booking details from the backend
   const { data: booking, isLoading } = useGetCustomerBookingDetailsQuery(

@@ -142,10 +142,8 @@ function validatePhoneNumber(text: string): string | null {
 export function LoginScreen() {
   const { t, i18n } = useTranslation();
   const isArabic = i18n.language ? i18n.language.startsWith("ar") : true;
-  const textStart: "left" | "right" =
-    isArabic === I18nManager.isRTL ? "left" : "right";
-  const textEnd: "left" | "right" =
-    isArabic === I18nManager.isRTL ? "right" : "left";
+  const textStart: "left" | "right" = isArabic ? "right" : "left";
+  const textEnd: "left" | "right" = isArabic ? "left" : "right";
   const alignStart: "flex-start" | "flex-end" =
     isArabic === I18nManager.isRTL ? "flex-start" : "flex-end";
   const rowDir: "row" | "row-reverse" =

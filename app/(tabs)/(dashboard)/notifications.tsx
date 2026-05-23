@@ -69,7 +69,7 @@ export default function NotificationsScreen() {
                 <View style={[styles.headerInner, { flexDirection: 'row' }]}>
                     <ThemedText style={styles.headerTitle}>{t('headers.notifications')}</ThemedText>
                     <CircleBackButton
-                        style={[styles.backButton, isRTL ? { right: 0 } : { left: 0 }]}
+                        style={[styles.backButton, { end: 0 }]}
                         onPress={() => router.back()}
                     />
                 </View>
@@ -119,7 +119,6 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         backgroundColor: 'white' },
     headerInner: {
-        flexDirection: 'row-reverse',
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',

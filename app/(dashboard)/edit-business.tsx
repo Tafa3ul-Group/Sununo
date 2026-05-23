@@ -78,7 +78,7 @@ export default function ProviderProfileScreen() {
   const renderField = (label: string, value: string, key: string, IconComponent: React.ElementType, placeholder: string, multiline = false) => (
     <View style={styles.fieldContainer}>
       <ThemedText style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{label}</ThemedText>
-      <View style={[styles.inputWrapper, multiline && styles.multilineWrapper, { flexDirection: 'row-reverse' }]}>
+      <View style={[styles.inputWrapper, multiline && styles.multilineWrapper]}>
         <TextInput
           style={[styles.input, multiline && styles.multilineInput, { textAlign: isRTL ? 'right' : 'left' }]}
           value={value}
