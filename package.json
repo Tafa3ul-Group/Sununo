@@ -69,7 +69,6 @@
     "@iconify-json/solar": "^1.2.5",
     "@iconify/json": "^2.2.451",
     "@types/react": "~19.1.0",
-    "eas-cli": "^18.8.1",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
     "typescript": "~5.9.2"
