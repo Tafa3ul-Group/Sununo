@@ -1,3 +1,4 @@
+import { AmenitiesModal } from '@/components/dashboard/amenities-modal';
 import {
   ProfileShape,
   SolarAddSquareBold,
@@ -16,8 +17,10 @@ import {
   SolarTrashBinBold,
   SolarUsersGroupBold
 } from "@/components/icons/solar-icons";
-import { CircleBackButton } from '@/components/ui/circle-back-button';
+import { useConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { AppMap } from '@/components/user/app-map';
 import { GuestCounter } from '@/components/user/guest-counter';
+import { LocationPickerModal } from '@/components/user/location-picker-modal';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
@@ -40,8 +43,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Alert, Animated, Dimensions, I18nManager, Image, ScrollView, StatusBar, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ActivityIndicator, Animated, Dimensions, I18nManager, Image, ScrollView, StatusBar, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import Toast from 'react-native-toast-message';
 
@@ -55,6 +57,7 @@ const AR_BACK_PATH = "M0.0532856 0L0.0160198 0.0319551C0.00823021 0.563434 -0.00
 export default function ChaletDetailsScreen() {
   const { i18n } = useTranslation();
   const isRTL = i18n.language ? i18n.language.startsWith('ar') : false;
+  const { showConfirm } = useConfirmationDialog();
 
   // Robust layout bridge: 
   // - If I18nManager.isRTL is active, standard 'row' is already right-to-left. Manually forcing 'row-reverse' double-flips it back to LTR.
@@ -85,6 +88,7 @@ export default function ChaletDetailsScreen() {
 
   const [isActive, setIsActive] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [locationPickerVisible, setLocationPickerVisible] = useState(false);
 
   // Modal Refs
   const basicInfoModalRef = useRef<BottomSheetModal>(null);
@@ -94,6 +98,7 @@ export default function ChaletDetailsScreen() {
   const imagesModalRef = useRef<BottomSheetModal>(null);
   const citySheetRef = useRef<BottomSheetModal>(null);
   const rulesModalRef = useRef<BottomSheetModal>(null);
+  const addressModalRef = useRef<BottomSheetModal>(null);
 
   // Form States
   const [basicForm, setBasicForm] = useState({
@@ -155,8 +160,8 @@ export default function ChaletDetailsScreen() {
         capacity: chalet.capacity?.toString() || '0',
         priceCapacity: chalet.priceCapacity?.toString() || '0',
         extraPersonPrice: chalet.extraPersonPrice?.toString() || '0',
-        cityId: chalet.cityId || '',
-        cityName: isRTL ? chalet.city?.name?.ar : chalet.city?.name?.en || '',
+        cityId: chalet.city?.id || chalet.cityId || '',
+        cityName: (isRTL ? chalet.city?.name : (chalet.city?.enName || chalet.city?.name)) || '',
         depositPercentage: chalet.depositPercentage?.toString() || '25',
         phone: chalet.phone || '',
         whatsapp: chalet.whatsapp || '',
@@ -169,13 +174,16 @@ export default function ChaletDetailsScreen() {
         bathrooms: chalet.bathrooms?.toString() || ''
       });
       setRulesForm({
-        rules: chalet.rules ? chalet.rules.map((r: any, idx: number) => ({
-          id: r.id || String(idx),
-          titleAr: r.title?.ar || r.title || '',
-          titleEn: r.title?.en || '',
-          descriptionAr: r.description?.ar || r.description || '',
-          descriptionEn: r.description?.en || '',
-        })) : []
+        rules: chalet.rules ? chalet.rules.map((r: any, idx: number) => {
+          const item = Array.isArray(r) ? (r[0] || {}) : r;
+          return {
+            id: item.id || String(idx),
+            titleAr: item.title?.ar || item.title || '',
+            titleEn: item.title?.en || '',
+            descriptionAr: item.description?.ar || item.description || '',
+            descriptionEn: item.description?.en || '',
+          };
+        }) : []
       });
     }
   }, [chalet]);
@@ -274,32 +282,34 @@ export default function ChaletDetailsScreen() {
       setSelectedImages([]);
       imagesModalRef.current?.dismiss();
       refetch();
-    } catch {
-      Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error' });
+    } catch (err: any) {
+      console.error(err);
+      const errMsg = err?.data?.message || err?.message || '';
+      Toast.show({
+        type: 'error',
+        text1: isRTL ? 'فشل الرفع' : 'Upload failed',
+        text2: errMsg,
+      });
     }
   };
 
   const handleDeleteChaletImage = async (imageId: string) => {
-    Alert.alert(
-      isRTL ? 'تنبيه' : 'Warning',
-      isRTL ? 'هل أنت متأكد من حذف هذه الصورة؟' : 'Are you sure you want to delete this image?',
-      [
-        { text: isRTL ? 'إلغاء' : 'Cancel', style: 'cancel' },
-        {
-          text: isRTL ? 'حذف' : 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteImage({ chaletId: chaletId as string, imageId }).unwrap();
-              Toast.show({ type: 'success', text1: isRTL ? 'تم الحذف' : 'Deleted' });
-              refetch();
-            } catch {
-              Toast.show({ type: 'error', text1: isRTL ? 'فشل الحذف' : 'Delete failed' });
-            }
-          }
+    showConfirm({
+      title: isRTL ? 'حذف الصورة' : 'Delete Image',
+      message: isRTL ? 'هل أنت متأكد من حذف هذه الصورة؟' : 'Are you sure you want to delete this image?',
+      type: 'danger',
+      confirmLabel: isRTL ? 'حذف' : 'Delete',
+      cancelLabel: isRTL ? 'إلغاء' : 'Cancel',
+      onConfirm: async () => {
+        try {
+          await deleteImage({ chaletId: chaletId as string, imageId }).unwrap();
+          Toast.show({ type: 'success', text1: isRTL ? 'تم الحذف' : 'Deleted' });
+          refetch();
+        } catch {
+          Toast.show({ type: 'error', text1: isRTL ? 'فشل الحذف' : 'Delete failed' });
         }
-      ]
-    );
+      }
+    });
   };
 
   const handleSetAsCover = async (imageId: string) => {
@@ -335,10 +345,7 @@ export default function ChaletDetailsScreen() {
 
   const handleAddRule = async () => {
     if (!newRule.titleAr.trim() || !newRule.descriptionAr.trim()) {
-      Alert.alert(
-        isRTL ? 'تنبيه' : 'Alert',
-        isRTL ? 'يرجى كتابة العنوان والشرح للشرط بالعربية' : 'Please enter the title and description in Arabic'
-      );
+      Toast.show({ type: 'error', text1: isRTL ? 'تنبيه' : 'Alert', text2: isRTL ? 'يرجى كتابة العنوان والشرح للشرط بالعربية' : 'Please enter the title and description in Arabic', position: 'bottom' });
       return;
     }
 
@@ -381,41 +388,37 @@ export default function ChaletDetailsScreen() {
   };
 
   const handleRemoveRule = (id: string) => {
-    Alert.alert(
-      isRTL ? 'تأكيد الحذف' : 'Confirm Delete',
-      isRTL ? 'هل أنت متأكد من رغبتك في حذف هذا الشرط؟' : 'Are you sure you want to delete this rule?',
-      [
-        { text: isRTL ? 'إلغاء' : 'Cancel', style: 'cancel' },
-        {
-          text: isRTL ? 'حذف' : 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            setIsUpdatingRules(true);
-            try {
-              const updatedRules = rulesForm.rules.filter(r => r.id !== id);
+    showConfirm({
+      title: isRTL ? 'تأكيد الحذف' : 'Confirm Delete',
+      message: isRTL ? 'هل أنت متأكد من رغبتك في حذف هذا الشرط؟' : 'Are you sure you want to delete this rule?',
+      type: 'danger',
+      confirmLabel: isRTL ? 'حذف' : 'Delete',
+      cancelLabel: isRTL ? 'إلغاء' : 'Cancel',
+      onConfirm: async () => {
+        setIsUpdatingRules(true);
+        try {
+          const updatedRules = rulesForm.rules.filter(r => r.id !== id);
 
-              const payload = {
-                rules: updatedRules.map(r => ({
-                  title: { ar: r.titleAr, en: r.titleEn || r.titleAr },
-                  description: { ar: r.descriptionAr, en: r.descriptionEn || r.descriptionAr }
-                }))
-              };
+          const payload = {
+            rules: updatedRules.map(r => ({
+              title: { ar: r.titleAr, en: r.titleEn || r.titleAr },
+              description: { ar: r.descriptionAr, en: r.descriptionEn || r.descriptionAr }
+            }))
+          };
 
-              await updateChalet({ id: chaletId as string, data: payload }).unwrap();
+          await updateChalet({ id: chaletId as string, data: payload }).unwrap();
 
-              setRulesForm({ rules: updatedRules });
-              Toast.show({ type: 'success', text1: isRTL ? 'تم حذف الشرط بنجاح' : 'Rule deleted successfully' });
-              refetch();
-            } catch (err) {
-              console.error(err);
-              Toast.show({ type: 'error', text1: isRTL ? 'فشل حذف الشرط' : 'Failed to delete rule' });
-            } finally {
-              setIsUpdatingRules(false);
-            }
-          }
+          setRulesForm({ rules: updatedRules });
+          Toast.show({ type: 'success', text1: isRTL ? 'تم حذف الشرط بنجاح' : 'Rule deleted successfully' });
+          refetch();
+        } catch (err) {
+          console.error(err);
+          Toast.show({ type: 'error', text1: isRTL ? 'فشل حذف الشرط' : 'Failed to delete rule' });
+        } finally {
+          setIsUpdatingRules(false);
         }
-      ]
-    );
+      }
+    });
   };
 
   const startEditRule = (rule: RuleItem) => {
@@ -430,10 +433,7 @@ export default function ChaletDetailsScreen() {
 
   const handleSaveEditRule = async () => {
     if (!editForm || !editForm.titleAr.trim() || !editForm.descriptionAr.trim()) {
-      Alert.alert(
-        isRTL ? 'تنبيه' : 'Alert',
-        isRTL ? 'يرجى كتابة العنوان والشرح للشرط بالعربية' : 'Please enter the title and description in Arabic'
-      );
+      Toast.show({ type: 'error', text1: isRTL ? 'تنبيه' : 'Alert', text2: isRTL ? 'يرجى كتابة العنوان والشرح للشرط بالعربية' : 'Please enter the title and description in Arabic', position: 'bottom' });
       return;
     }
 
@@ -488,25 +488,21 @@ export default function ChaletDetailsScreen() {
   };
 
   const handleDelete = () => {
-    Alert.alert(
-      isRTL ? 'حذف الشاليه' : 'Delete Chalet',
-      isRTL ? 'هل أنت متأكد من حذف هذا الشاليه نهائياً؟ لا يمكن التراجع عن هذا الإجراء.' : 'Are you sure you want to permanently delete this chalet? This action cannot be undone.',
-      [
-        { text: isRTL ? 'إلغاء' : 'Cancel', style: 'cancel' },
-        {
-          text: isRTL ? 'حذف' : 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteChalet(chaletId as string).unwrap();
-              router.replace('/(tabs)/(dashboard)/home');
-            } catch {
-              Alert.alert(isRTL ? 'خطأ' : 'Error', isRTL ? 'فشل حذف الشاليه' : 'Failed to delete chalet');
-            }
-          }
+    showConfirm({
+      title: isRTL ? 'حذف الشاليه' : 'Delete Chalet',
+      message: isRTL ? 'هل أنت متأكد من حذف هذا الشاليه نهائياً؟ لا يمكن التراجع عن هذا الإجراء.' : 'Are you sure you want to permanently delete this chalet? This action cannot be undone.',
+      type: 'danger',
+      confirmLabel: isRTL ? 'حذف' : 'Delete',
+      cancelLabel: isRTL ? 'إلغاء' : 'Cancel',
+      onConfirm: async () => {
+        try {
+          await deleteChalet(chaletId as string).unwrap();
+          router.replace('/(tabs)/(dashboard)/home');
+        } catch {
+          Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: isRTL ? 'فشل حذف الشاليه' : 'Failed to delete chalet' });
         }
-      ]
-    );
+      }
+    });
   };
   const scrollY = useRef(new Animated.Value(0)).current;
 
@@ -565,31 +561,38 @@ export default function ChaletDetailsScreen() {
     {
       key: 'photos',
       done: heroImages.length > 0,
-      label: isRTL ? 'صور الشاليه' : 'Photos'
+      label: isRTL ? 'صور الشاليه' : 'Photos',
+      onPress: () => imagesModalRef.current?.present(),
     },
     {
       key: 'price',
       done: Number(chalet?.extraPersonPrice || 0) > 0,
-      label: isRTL ? 'سعر الشخص الإضافي' : 'Extra person price'
+      label: isRTL ? 'سعر الشخص الإضافي' : 'Extra person price',
+      onPress: () => capacityModalRef.current?.present(),
     },
     {
       key: 'capacity',
       done: Number(chalet?.capacity || 0) > 0,
-      label: isRTL ? 'السعة القصوى للشاليه' : 'Capacity'
+      label: isRTL ? 'السعة القصوى' : 'Capacity',
+      onPress: () => capacityModalRef.current?.present(),
     },
     {
       key: 'amenities',
       done: activeAmenities.length > 0,
-      label: isRTL ? 'المرافق' : 'Amenities'
+      label: isRTL ? 'المرافق' : 'Amenities',
+      onPress: () => amenitiesModalRef.current?.present(),
     },
     {
       key: 'rules',
       done: chalet?.rules && chalet.rules.length > 0,
-      label: isRTL ? 'الشروط والقوانين' : 'Rules & Policies'
+      label: isRTL ? 'الشروط والقوانين' : 'Rules',
+      onPress: () => rulesModalRef.current?.present(),
     }
   ];
   const completedItems = completionItems.filter((item) => item.done).length;
   const completionPercent = Math.round((completedItems / completionItems.length) * 100);
+  const isFullyComplete = completionPercent === 100;
+  const incompleteItems = completionItems.filter((item) => !item.done);
 
   const renderSettingsRow = ({
     icon: IconComponent,
@@ -755,46 +758,51 @@ export default function ChaletDetailsScreen() {
             </View>
           </View>
 
-          {/* 4. Listing Readiness Card */}
-          <View style={styles.readinessCardNew}>
-            <View style={[styles.readinessHeaderNew, { flexDirection: flexRow }]}>
-              <View style={{ flex: 1, alignItems: flexStart }}>
-                <Text style={[styles.readinessTitleNew, { textAlign: isRTL ? 'right' : 'left' }]}>
-                  {isRTL ? 'جاهزية الملف التعريفي' : 'Profile completeness'}
-                </Text>
-                <Text style={[styles.readinessSubtitleNew, { textAlign: isRTL ? 'right' : 'left' }]}>
-                  {isRTL ? 'أكمل المتطلبات لزيادة فرصة الحجز ونسبة ثقة الزبائن' : 'Complete setup to increase bookings and customer trust'}
-                </Text>
-              </View>
-              <View style={styles.readinessScoreNew}>
-                <Text style={styles.readinessScoreTextNew}>{completionPercent}%</Text>
-              </View>
-            </View>
-
-            {/* Progress Bar */}
-            <View style={styles.progressBarBgNew}>
-              <View style={[styles.progressBarFillNew, { width: `${completionPercent}%` }]} />
-            </View>
-
-            {/* Readiness requirements pills */}
-            <View style={[styles.pillsContainerNew, { flexDirection: flexRow }]}>
-              {completionItems.map((item) => (
-                <View
-                  key={item.key}
-                  style={[
-                    styles.readinessPillNew,
-                    item.done ? styles.readinessPillDoneNew : styles.readinessPillTodoNew,
-                    { flexDirection: flexRow }
-                  ]}
-                >
-                  <SolarCheckCircleBold size={12} color={item.done ? '#10B981' : '#94A3B8'} />
-                  <Text style={[styles.readinessPillTextNew, item.done && styles.readinessPillTextDoneNew]}>
-                    {item.label}
+          {/* 4. Listing Readiness Card — hidden when fully complete */}
+          {!isFullyComplete && (
+            <View style={styles.readinessCardNew}>
+              <View style={[styles.readinessHeaderNew, { flexDirection: flexRow }]}>
+                <View style={{ flex: 1, alignItems: flexStart }}>
+                  <Text style={[styles.readinessTitleNew, { textAlign: isRTL ? 'right' : 'left' }]}>
+                    {isRTL ? 'متطلبات الجاهزية' : 'Setup Requirements'}
+                  </Text>
+                  <Text style={[styles.readinessSubtitleNew, { textAlign: isRTL ? 'right' : 'left' }]}>
+                    {isRTL
+                      ? `أكمل ${incompleteItems.length} متطلبات لتفعيل الشاليه`
+                      : `Complete ${incompleteItems.length} items to activate your chalet`}
                   </Text>
                 </View>
-              ))}
+                <View style={styles.readinessScoreNew}>
+                  <Text style={styles.readinessScoreTextNew}>{completedItems}/{completionItems.length}</Text>
+                </View>
+              </View>
+
+              {/* Progress Bar */}
+              <View style={styles.progressBarBgNew}>
+                <View style={[styles.progressBarFillNew, {
+                  width: `${completionPercent}%`,
+                  backgroundColor: completionPercent >= 80 ? '#10B981' : completionPercent >= 50 ? '#F59E0B' : '#EF4444'
+                }]} />
+              </View>
+
+              {/* Only show incomplete items as actionable badges */}
+              <View style={[styles.pillsContainerNew, { flexDirection: flexRow }]}>
+                {incompleteItems.map((item) => (
+                  <TouchableOpacity
+                    key={item.key}
+                    activeOpacity={0.7}
+                    onPress={item.onPress}
+                    style={[styles.readinessPillTodoAction, { flexDirection: flexRow }]}
+                  >
+                    <SolarCloseCircleBold size={13} color="#EF4444" />
+                    <Text style={styles.readinessPillTextTodoAction}>
+                      {item.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
-          </View>
+          )}
 
           {/* ──── Settings Group 1 ──── */}
           <Text style={[styles.settingsGroupTitle, { textAlign: isRTL ? 'right' : 'left', alignSelf: flexStart }]}>
@@ -824,6 +832,7 @@ export default function ChaletDetailsScreen() {
               value: isRTL ? `المطلوب دفع ${basicForm.depositPercentage}% من القيمة الكلية` : `Required ${basicForm.depositPercentage}% deposit for booking`,
               onPress: () => depositModalRef.current?.present()
             })}
+
             {renderSettingsRow({
               icon: SolarClockCircleBold,
               shape: 'info',
@@ -838,6 +847,73 @@ export default function ChaletDetailsScreen() {
               }
             })}
           </View>
+
+          {/* ──── Location Map Card ──── */}
+          <Text style={[styles.settingsGroupTitle, { textAlign: isRTL ? 'right' : 'left', alignSelf: flexStart }]}>
+            {isRTL ? 'موقع الشاليه' : 'Chalet Location'}
+          </Text>
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => setLocationPickerVisible(true)}
+            style={styles.locationMapCard}
+          >
+            {basicForm.latitude && basicForm.longitude ? (
+              <>
+                <View style={styles.locationMapContainer}>
+                  <AppMap
+                    style={styles.locationMapPreview}
+                    centerCoordinate={[parseFloat(basicForm.longitude), parseFloat(basicForm.latitude)]}
+                    zoomLevel={14}
+                    interactive={false}
+                    showMarker={true}
+                  />
+                  {/* Edit overlay */}
+                  <View style={styles.locationMapOverlay}>
+                    <View style={styles.locationEditBadge}>
+                      <SolarPenBold size={14} color="white" />
+                      <Text style={styles.locationEditText}>
+                        {isRTL ? 'تعديل الموقع' : 'Edit Location'}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+                <View style={[styles.locationInfoBar, { flexDirection: flexRow }]}>
+                  <View style={[styles.locationInfoLeft, { flexDirection: flexRow, alignItems: 'center' }]}>
+                    <SolarMapPointBold size={16} color={Colors.primary} />
+                    <View style={{ marginHorizontal: 8, flex: 1 }}>
+                      <Text style={[styles.locationCoordsText, { textAlign: isRTL ? 'right' : 'left' }]}>
+                        {Number(basicForm.latitude).toFixed(5)}, {Number(basicForm.longitude).toFixed(5)}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              </>
+            ) : (
+              <View style={styles.locationEmptyState}>
+                <SolarMapPointBold size={36} color={Colors.text.muted} />
+                <Text style={styles.locationEmptyTitle}>
+                  {isRTL ? 'لم يتم تحديد الموقع بعد' : 'No location set'}
+                </Text>
+                <Text style={styles.locationEmptySubtitle}>
+                  {isRTL ? 'اضغط هنا لتحديد موقع الشاليه على الخريطة' : 'Tap here to pin your chalet on the map'}
+                </Text>
+                <View style={styles.locationSetButton}>
+                  <SolarMapPointBold size={16} color="white" />
+                  <Text style={styles.locationSetButtonText}>
+                    {isRTL ? 'تحديد الموقع' : 'Set Location'}
+                  </Text>
+                </View>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          {renderSettingsRow({
+            icon: SolarPenBold,
+            shape: 'blue',
+            label: isRTL ? 'العنوان والمدينة' : 'Address & City',
+            value: basicForm.addressAr || (isRTL ? 'لم يتم تعيين العنوان' : 'Address not set'),
+            onPress: () => addressModalRef.current?.present()
+          })}
 
           {/* ──── Settings Group 2 ──── */}
           <Text style={[styles.settingsGroupTitle, { textAlign: isRTL ? 'right' : 'left', alignSelf: flexStart }]}>
@@ -911,6 +987,84 @@ export default function ChaletDetailsScreen() {
       </ScrollView>
 
 
+      {/* ─── Address & City Modal ─── */}
+      <BottomSheetModal
+        ref={addressModalRef}
+        index={0}
+        snapPoints={['65%']}
+        backdropComponent={renderBackdrop}
+        handleIndicatorStyle={{ backgroundColor: '#D1D5DB', width: 36 }}
+        backgroundStyle={{ borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
+      >
+        <BottomSheetScrollView contentContainerStyle={[styles.modalScrollContent, { direction: isRTL ? 'rtl' : 'ltr' }]}>
+          <Text style={styles.modalTitle}>{isRTL ? 'العنوان والمدينة' : 'Address & City'}</Text>
+
+          <View style={styles.modalInputGroup}>
+            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'العنوان بالعربية' : 'Address (Arabic)'}</Text>
+            <BottomSheetTextInput
+              style={[styles.modalInput, { textAlign: isRTL ? 'right' : 'left' }]}
+              placeholder={isRTL ? 'مثال: أربيل - عينكاوا' : 'e.g. Erbil - Ainkawa'}
+              placeholderTextColor="#C0C7D0"
+              value={basicForm.addressAr}
+              onChangeText={(val) => setBasicForm({ ...basicForm, addressAr: val })}
+            />
+          </View>
+
+          <View style={styles.modalInputGroup}>
+            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'العنوان بالإنجليزية' : 'Address (English)'}</Text>
+            <BottomSheetTextInput
+              style={[styles.modalInput, { textAlign: isRTL ? 'right' : 'left' }]}
+              placeholder={isRTL ? 'Erbil - Ainkawa' : 'e.g. Erbil - Ainkawa'}
+              placeholderTextColor="#C0C7D0"
+              value={basicForm.addressEn}
+              onChangeText={(val) => setBasicForm({ ...basicForm, addressEn: val })}
+            />
+          </View>
+
+          <View style={styles.modalInputGroup}>
+            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'المدينة' : 'City'}</Text>
+            <TouchableOpacity
+              style={[styles.modalInput, { flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', justifyContent: 'space-between' }]}
+              activeOpacity={0.7}
+              onPress={() => citySheetRef.current?.present()}
+            >
+              <Text style={{ fontSize: normalize.font(13), fontFamily: 'Alexandria-Medium', color: basicForm.cityName ? Colors.text.primary : '#C0C7D0', flex: 1, textAlign: isRTL ? 'right' : 'left' }}>
+                {basicForm.cityName || (isRTL ? 'اختر المدينة' : 'Select City')}
+              </Text>
+              <SolarMapPointBold size={16} color={basicForm.cityName ? Colors.primary : '#94A3B8'} />
+            </TouchableOpacity>
+          </View>
+
+          <PrimaryButton
+            label={isRTL ? 'حفظ العنوان والمدينة' : 'Save Address & City'}
+            onPress={async () => {
+              if (!basicForm.addressAr.trim()) {
+                Toast.show({ type: 'error', text1: isRTL ? 'يرجى إدخال العنوان بالعربية' : 'Please enter the Arabic address' });
+                return;
+              }
+              try {
+                const payload: any = {
+                  address: {
+                    ar: basicForm.addressAr.trim(),
+                    en: basicForm.addressEn.trim() || basicForm.addressAr.trim()
+                  }
+                };
+                if (basicForm.cityId) payload.cityId = basicForm.cityId;
+                await updateChalet({ id: chaletId as string, data: payload }).unwrap();
+                Toast.show({ type: 'success', text1: isRTL ? 'تم تحديث العنوان بنجاح' : 'Address updated successfully' });
+                addressModalRef.current?.dismiss();
+                refetch();
+              } catch {
+                Toast.show({ type: 'error', text1: isRTL ? 'فشل تحديث العنوان' : 'Failed to update address' });
+              }
+            }}
+            loading={isUpdating}
+            style={{ marginTop: 20 }}
+          />
+          <View style={{ height: 40 }} />
+        </BottomSheetScrollView>
+      </BottomSheetModal>
+
       {/* ─── Modals ─── */}
 
       {/* 1. Basic Info Modal */}
@@ -925,91 +1079,63 @@ export default function ChaletDetailsScreen() {
           <Text style={styles.modalTitle}>{isRTL ? 'المعلومات الأساسية' : 'Basic Information'}</Text>
 
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'اسم الشاليه (عربي)' : 'Name (AR)'}</Text>
+            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'left' : 'right' }]}>{isRTL ? 'اسم الشاليه (عربي)' : 'Name (AR)'}</Text>
             <BottomSheetTextInput
               style={[styles.modalInput, { textAlign: isRTL ? 'right' : 'left' }]}
+              placeholder={isRTL ? 'أدخل اسم الشاليه بالعربية' : 'Enter chalet name in Arabic'}
+              placeholderTextColor="#C0C7D0"
               value={basicForm.nameAr}
               onChangeText={(val) => setBasicForm({ ...basicForm, nameAr: val })}
             />
           </View>
 
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'اسم الشاليه (English)' : 'Name (EN)'}</Text>
+            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'left' : 'right' }]}>{isRTL ? 'اسم الشاليه (English)' : 'Name (EN)'}</Text>
             <BottomSheetTextInput
               style={[styles.modalInput, { textAlign: isRTL ? 'right' : 'left' }]}
+              placeholder={isRTL ? 'Enter chalet name in English' : 'Enter chalet name in English'}
+              placeholderTextColor="#C0C7D0"
               value={basicForm.nameEn}
               onChangeText={(val) => setBasicForm({ ...basicForm, nameEn: val })}
             />
           </View>
 
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'وصف الشاليه (عربي)' : 'Description (AR)'}</Text>
+            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'left' : 'right' }]}>{isRTL ? 'وصف الشاليه (عربي)' : 'Description (AR)'}</Text>
             <BottomSheetTextInput
               style={[styles.modalInput, styles.modalTextArea, { textAlign: isRTL ? 'right' : 'left' }]}
               multiline
               numberOfLines={4}
+              placeholder={isRTL ? 'أدخل وصف الشاليه بالعربية...' : 'Enter chalet description in Arabic...'}
+              placeholderTextColor="#C0C7D0"
               value={basicForm.descriptionAr}
               onChangeText={(val) => setBasicForm({ ...basicForm, descriptionAr: val })}
             />
           </View>
 
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'وصف الشاليه (English)' : 'Description (EN)'}</Text>
+            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'left' : 'right' }]}>{isRTL ? 'وصف الشاليه (English)' : 'Description (EN)'}</Text>
             <BottomSheetTextInput
               style={[styles.modalInput, styles.modalTextArea, { textAlign: isRTL ? 'right' : 'left' }]}
               multiline
               numberOfLines={4}
+              placeholder={isRTL ? 'Enter chalet description in English...' : 'Enter chalet description in English...'}
+              placeholderTextColor="#C0C7D0"
               value={basicForm.descriptionEn}
               onChangeText={(val) => setBasicForm({ ...basicForm, descriptionEn: val })}
             />
           </View>
 
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'العنوان (عربي)' : 'Address (AR)'}</Text>
+            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'left' : 'right' }]}>{isRTL ? 'رقم الهاتف' : 'Phone'}</Text>
             <BottomSheetTextInput
               style={[styles.modalInput, { textAlign: isRTL ? 'right' : 'left' }]}
-              value={basicForm.addressAr}
-              onChangeText={(val) => setBasicForm({ ...basicForm, addressAr: val })}
+              keyboardType="phone-pad"
+              placeholder={isRTL ? 'مثال: 07xxxxxxxxx' : 'e.g. 07xxxxxxxxx'}
+              placeholderTextColor="#C0C7D0"
+              value={basicForm.phone}
+              onChangeText={(val) => setBasicForm({ ...basicForm, phone: val })}
             />
-          </View>
-
-          <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'العنوان (English)' : 'Address (EN)'}</Text>
-            <BottomSheetTextInput
-              style={[styles.modalInput, { textAlign: isRTL ? 'right' : 'left' }]}
-              value={basicForm.addressEn}
-              onChangeText={(val) => setBasicForm({ ...basicForm, addressEn: val })}
-            />
-          </View>
-
-          <View style={{ flexDirection: 'row', gap: 10 }}>
-            <View style={[styles.modalInputGroup, { flex: 1 }]}>
-              <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'رقم الهاتف' : 'Phone'}</Text>
-              <BottomSheetTextInput
-                style={[styles.modalInput, { textAlign: isRTL ? 'right' : 'left' }]}
-                keyboardType="phone-pad"
-                value={basicForm.phone}
-                onChangeText={(val) => setBasicForm({ ...basicForm, phone: val })}
-              />
-            </View>
-            <View style={[styles.modalInputGroup, { flex: 1 }]}>
-              <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'واتساب' : 'WhatsApp'}</Text>
-              <BottomSheetTextInput
-                style={[styles.modalInput, { textAlign: isRTL ? 'right' : 'left' }]}
-                keyboardType="phone-pad"
-                value={basicForm.whatsapp}
-                onChangeText={(val) => setBasicForm({ ...basicForm, whatsapp: val })}
-              />
-            </View>
-          </View>
-
-          <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'المدينة' : 'City'}</Text>
-            <TouchableOpacity style={styles.modalInput} onPress={() => citySheetRef.current?.present()}>
-              <Text style={{ color: basicForm.cityName ? Colors.text.primary : Colors.text.muted, textAlign: isRTL ? 'right' : 'left', marginTop: 14 }}>
-                {basicForm.cityName || (isRTL ? 'اختر المدينة' : 'Select City')}
-              </Text>
-            </TouchableOpacity>
           </View>
 
           <PrimaryButton label={isRTL ? 'حفظ المعلومات' : 'Save Info'} onPress={handleUpdateBasic} loading={isUpdating} style={{ marginTop: 20 }} />
@@ -1081,50 +1207,12 @@ export default function ChaletDetailsScreen() {
       </BottomSheetModal>
 
       {/* 2. Amenities Modal */}
-      <BottomSheetModal
+      <AmenitiesModal
         ref={amenitiesModalRef}
-        index={0}
-        snapPoints={['80%']}
-        backdropComponent={renderBackdrop}
-        backgroundStyle={{ borderRadius: 24 }}
-      >
-        <BottomSheetScrollView contentContainerStyle={[styles.modalScrollContent, { direction: isRTL ? 'rtl' : 'ltr' }]}>
-          <Text style={styles.modalTitle}>{isRTL ? 'المرافق والخدمات' : 'Amenities'}</Text>
-          {amenityCategories?.map((category: any) => (
-            <View key={category.id} style={{ marginBottom: 24 }}>
-              <Text style={[styles.modalSubTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? category.name?.ar : category.name?.en}</Text>
-              <View style={styles.amenitiesGrid}>
-                {category.features?.map((feature: any) => {
-                  const isSelected = selectedFeatures.includes(feature.id);
-                  return (
-                    <TouchableOpacity
-                      key={feature.id}
-                      style={[styles.amenityItem, isSelected && styles.amenityItemActive]}
-                      onPress={() => setSelectedFeatures(prev => prev.includes(feature.id) ? prev.filter(f => f !== feature.id) : [...prev, feature.id])}
-                    >
-                      <View style={styles.amenityIcon}>
-                        {feature.icon && feature.icon !== 'wifi' && feature.icon !== 'default' ? (
-                          <Image
-                            source={getImageSrc(feature.icon)}
-                            style={{ width: 22, height: 22 }}
-                            resizeMode="contain"
-                          />
-                        ) : (
-                          <Text style={{ fontSize: 20 }}>{feature.icon === 'wifi' ? '📶' : '✨'}</Text>
-                        )}
-                      </View>
-                      <Text style={styles.amenityName} numberOfLines={1}>{isRTL ? feature.name?.ar : feature.name?.en}</Text>
-                      {isSelected && <View style={styles.checkBadge}><Text style={{ color: '#fff', fontSize: 10 }}>✓</Text></View>}
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
-          ))}
-          <PrimaryButton label={isRTL ? 'حفظ المرافق' : 'Save Amenities'} onPress={handleUpdateAmenities} loading={isLinking} />
-          <View style={{ height: 40 }} />
-        </BottomSheetScrollView>
-      </BottomSheetModal>
+        chaletId={chaletId as string}
+        chalet={chalet}
+        refetchChalet={refetch}
+      />
 
       {/* 3. Images Modal */}
       <BottomSheetModal
@@ -1441,6 +1529,30 @@ export default function ChaletDetailsScreen() {
           />
         </BottomSheetView>
       </BottomSheetModal>
+
+      {/* Location Picker Modal */}
+      <LocationPickerModal
+        visible={locationPickerVisible}
+        onClose={() => setLocationPickerVisible(false)}
+        initialLocation={
+          basicForm.latitude && basicForm.longitude
+            ? { latitude: parseFloat(basicForm.latitude), longitude: parseFloat(basicForm.longitude) }
+            : undefined
+        }
+        onSelect={async (lat, lng) => {
+          try {
+            setBasicForm(prev => ({ ...prev, latitude: lat.toString(), longitude: lng.toString() }));
+            await updateChalet({
+              id: chaletId as string,
+              data: { latitude: lat, longitude: lng }
+            }).unwrap();
+            Toast.show({ type: 'success', text1: isRTL ? 'تم تحديث الموقع بنجاح' : 'Location updated successfully' });
+            refetch();
+          } catch {
+            Toast.show({ type: 'error', text1: isRTL ? 'فشل تحديث الموقع' : 'Failed to update location' });
+          }
+        }}
+      />
     </View>
 
 
@@ -1622,6 +1734,14 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(11),
     fontFamily: "Alexandria-Regular",
     color: Colors.text.muted,
+  },
+  locationFieldInput: {
+    fontSize: normalize.font(12),
+    fontFamily: 'Alexandria-Regular',
+    color: Colors.text.primary,
+    paddingVertical: 2,
+    paddingHorizontal: 0,
+    margin: 0,
   },
   avatarWrap: {
     width: normalize.width(66),
@@ -1828,6 +1948,22 @@ const styles = StyleSheet.create({
     color: '#10B981',
     fontFamily: "Alexandria-Bold",
   },
+  readinessPillTodoAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 10,
+    gap: 6,
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+  },
+  readinessPillTextTodoAction: {
+    fontSize: normalize.font(11),
+    fontFamily: "Alexandria-Bold",
+    color: '#DC2626',
+  },
   aboutPreviewCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
@@ -1850,6 +1986,23 @@ const styles = StyleSheet.create({
   modalScrollContent: {
     padding: 20,
     paddingBottom: 40
+  },
+  basicFormSection: {
+    marginBottom: 20,
+  },
+  basicFormSectionTitle: {
+    fontSize: normalize.font(13),
+    fontFamily: 'Alexandria-Bold',
+    color: Colors.text.muted,
+    marginBottom: 8,
+    paddingHorizontal: 4,
+  },
+  basicFormCard: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   modalTitle: {
     fontSize: normalize.font(20),
@@ -1885,6 +2038,7 @@ const styles = StyleSheet.create({
     color: Colors.text.primary
   },
   modalTextArea: {
+    height: 'auto',
     minHeight: 100,
     paddingTop: 16,
     textAlignVertical: 'top'
@@ -2205,5 +2359,175 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E2E8F0',
     marginBottom: 10,
-  }
+  },
+  // Location Map Card Styles
+  locationMapCard: {
+    borderRadius: normalize.radius(20),
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    overflow: 'hidden',
+  },
+  locationMapContainer: {
+    height: normalize.height(180),
+    position: 'relative',
+    overflow: 'hidden',
+    borderTopLeftRadius: normalize.radius(20),
+    borderTopRightRadius: normalize.radius(20),
+  },
+  locationMapPreview: {
+    ...StyleSheet.absoluteFillObject,
+    borderTopLeftRadius: normalize.radius(20),
+    borderTopRightRadius: normalize.radius(20),
+  },
+  locationMapOverlay: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    zIndex: 10,
+  },
+  locationEditBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    gap: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  locationEditText: {
+    fontSize: normalize.font(11),
+    fontFamily: 'Alexandria-Bold',
+    color: 'white',
+  },
+  locationInfoBar: {
+    paddingHorizontal: normalize.width(14),
+    paddingVertical: normalize.height(12),
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+  },
+  locationInfoLeft: {
+    flex: 1,
+    gap: 4,
+  },
+  locationAddressText: {
+    fontSize: normalize.font(13),
+    fontFamily: 'Alexandria-Bold',
+    color: '#374151',
+  },
+  locationCoordsText: {
+    fontSize: normalize.font(10),
+    fontFamily: 'Alexandria-Regular',
+    color: '#94A3B8',
+    marginTop: 2,
+  },
+  locationEmptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: normalize.height(32),
+    paddingHorizontal: normalize.width(20),
+    gap: 6,
+  },
+  locationEmptyTitle: {
+    fontSize: normalize.font(14),
+    fontFamily: 'Alexandria-Bold',
+    color: '#374151',
+    marginTop: 8,
+  },
+  locationEmptySubtitle: {
+    fontSize: normalize.font(11),
+    fontFamily: 'Alexandria-Regular',
+    color: '#94A3B8',
+    textAlign: 'center',
+  },
+  locationSetButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 14,
+    gap: 6,
+    marginTop: 12,
+  },
+  locationSetButtonText: {
+    fontSize: normalize.font(12),
+    fontFamily: 'Alexandria-Bold',
+    color: 'white',
+  },
+  locationTextInputsCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: normalize.radius(20),
+    padding: normalize.width(14),
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+  },
+  locationInputLabel: {
+    fontSize: normalize.font(11),
+    fontFamily: 'Alexandria-Bold',
+    color: '#6B7280',
+    marginBottom: 6,
+  },
+  locationTextInput: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: normalize.font(13),
+    fontFamily: 'Alexandria-Regular',
+    color: Colors.text.primary,
+  },
+  locationCityPicker: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    gap: 8,
+  },
+  locationCityText: {
+    flex: 1,
+    fontSize: normalize.font(13),
+    fontFamily: 'Alexandria-Medium',
+  },
+  locationDetailsCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: normalize.radius(20),
+    padding: normalize.width(16),
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    gap: 14,
+  },
+  locationDetailField: {
+    gap: 6,
+  },
+  locationDetailLabel: {
+    fontSize: normalize.font(12),
+    fontFamily: 'Alexandria-Bold',
+    color: '#6B7280',
+    paddingHorizontal: 4,
+  },
+  locationDetailInput: {
+    height: 48,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingHorizontal: 14,
+    fontSize: normalize.font(13),
+    fontFamily: 'Alexandria-Medium',
+    color: Colors.text.primary,
+  },
 });

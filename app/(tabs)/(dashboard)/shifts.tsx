@@ -41,7 +41,6 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
-  Alert,
   I18nManager,
   Keyboard,
   Platform,
@@ -53,6 +52,7 @@ import {
 } from 'react-native';
 import { ScrollView, Swipeable } from 'react-native-gesture-handler';
 import Toast from 'react-native-toast-message';
+import { useConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { useSelector } from 'react-redux';
 
 function ShiftPricingView({ shift, isRTL, onEdit }: { shift: any; isRTL: boolean; onEdit: (data?: any[]) => void }) {
@@ -74,25 +74,31 @@ function ShiftPricingView({ shift, isRTL, onEdit }: { shift: any; isRTL: boolean
     </View>
   );
 
-  const flexDirection = 'row';
-
   return (
-    <View style={styles.pricingSectionContainer}>
-      <View style={[styles.expandedHeader, { flexDirection, marginBottom: 16, alignItems: 'center', justifyContent: 'space-between' }]}>
-        <View style={[styles.row, { flexDirection, alignItems: 'center' }]}>
-          <SolarBanknoteBold size={18} color={Colors.primary} style={{ marginHorizontal: 6 }} />
-          <Text style={styles.expandedTitle}>{isRTL ? 'تخصيص أسعار الأيام' : 'Daily Pricing'}</Text>
+    <View style={{ backgroundColor: '#fff', borderRadius: 24, padding: 20, marginVertical: 12 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 4 }}>
+          <View style={{ width: 20, height: 20, backgroundColor: '#93C5FD', borderRadius: 6, justifyContent: 'center', alignItems: 'center' }}>
+            <View style={{ width: 10, height: 10, backgroundColor: '#2563EB', borderRadius: 5 }} />
+          </View>
+          <Text style={{ fontSize: 18, fontFamily: "Alexandria-SemiBold", color: '#111827' }}>
+            {isRTL ? 'تخصيص أسعار الأيام' : 'Daily Pricing'}
+          </Text>
         </View>
+
         <TouchableOpacity
           onPress={() => onEdit(pricing)}
-          style={styles.editBadge}
+          style={{ backgroundColor: '#EFF6FF', paddingVertical: 10, paddingHorizontal: 16, borderRadius: 14, alignItems: 'center', gap: 6 }}
+          activeOpacity={0.8}
         >
-          <SolarPenBold size={12} color={Colors.primary} style={{ marginHorizontal: 4 }} />
-          <Text style={styles.editBadgeText}>{isRTL ? 'تعديل الأسعار' : 'Edit Prices'}</Text>
+          <SolarPenBold size={16} color="#2563EB" />
+          <Text style={{ fontSize: 12, color: '#2563EB', fontFamily: "Alexandria-SemiBold" }}>
+            {isRTL ? 'تعديل الأسعار' : 'Edit Prices'}
+          </Text>
         </TouchableOpacity>
       </View>
 
-      <View style={[styles.pricingGrid, { flexDirection: 'row' }]}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, rowGap: 12 }}>
         {fullPricing.map((item) => {
           const isWeekend = item.dayOfWeek === 5 || item.dayOfWeek === 6;
           const isClosed = item.price <= 1;
@@ -101,34 +107,40 @@ function ShiftPricingView({ shift, isRTL, onEdit }: { shift: any; isRTL: boolean
             <TouchableOpacity
               key={`mini-day-${item.dayOfWeek}`}
               style={[
-                styles.pricingMiniCard,
-                isWeekend && styles.weekendMiniCard,
-                isClosed && styles.closedMiniCard
+                {
+                   width: '23%',
+                   height: 75,
+                   backgroundColor: '#F9FAFB',
+                   borderRadius: 16,
+                   alignItems: 'center',
+                   justifyContent: 'center',
+                   gap: 6
+                },
+                isWeekend && { backgroundColor: '#FFF5F5' },
+                isClosed && { opacity: 0.5 }
               ]}
               onPress={() => onEdit(pricing)}
               activeOpacity={0.8}
             >
               <Text style={[
-                styles.miniCardDay,
-                isWeekend && { color: Colors.error },
-                isClosed && { color: '#999' }
+                { fontSize: 12, color: '#6B7280', fontFamily: "Alexandria-Medium" },
+                isWeekend && { color: '#F97316' },
+                isClosed && { color: '#9CA3AF' }
               ]}>
                 {daysShort[item.dayOfWeek]}
               </Text>
 
               {isClosed ? (
-                <View style={styles.closedBadgeMini}>
-                  <Text style={styles.closedBadgeTextMini}>{isRTL ? 'مغلق' : 'OFF'}</Text>
+                <View style={{ backgroundColor: '#FEE2E2', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
+                  <Text style={{ fontSize: 10, color: '#DC2626', fontFamily: "Alexandria-SemiBold" }}>{isRTL ? 'مغلق' : 'OFF'}</Text>
                 </View>
               ) : (
-                <View style={styles.miniCardPriceRow}>
-                  <Text style={[
-                    styles.miniCardPrice,
-                    isWeekend && { color: Colors.error }
-                  ]}>
-                    {formatPrice(item.price)}
-                  </Text>
-                </View>
+                <Text style={[
+                  { fontSize: 15, fontFamily: "Alexandria-Medium", color: '#111827' },
+                  isWeekend && { color: '#F97316' }
+                ]}>
+                  {Number(item.price).toLocaleString()}
+                </Text>
               )}
             </TouchableOpacity>
           );
@@ -274,30 +286,33 @@ const checkShiftOverlaps = (shiftsList: any[]): { hasOverlap: boolean; overlappi
 const areAllHoursCovered = (shiftsList: any[]) => {
   if (!shiftsList || shiftsList.length === 0) return false;
 
-  const hoursCovered = new Array(24).fill(false);
+  const minutesCovered = new Array(1440).fill(false);
 
   shiftsList.forEach((s: any) => {
     if (!s.startTime || !s.endTime) return;
-    const sT = parseInt(s.startTime.split(':')[0]);
-    const sE = parseInt(s.endTime.split(':')[0]);
+
+    const getMinutes = (timeStr: string): number => {
+      const parts = timeStr.split(':').map(Number);
+      const h = parts[0];
+      const m = parts[1] || 0;
+      return h * 60 + m;
+    };
+
+    const sT = getMinutes(s.startTime);
+    const sE = getMinutes(s.endTime);
     if (isNaN(sT) || isNaN(sE)) return;
 
-    for (let h = 0; h < 24; h++) {
-      const isNight = sT > sE;
-      const is24Hours = sT === sE;
-      const isCovered = is24Hours
-        ? true
-        : isNight
-          ? (h >= sT || h < sE)
-          : (h >= sT && h < sE);
-
-      if (isCovered) {
-        hoursCovered[h] = true;
-      }
+    if (sT === sE) {
+      for (let m = 0; m < 1440; m++) minutesCovered[m] = true;
+    } else if (sT > sE) {
+      for (let m = sT; m < 1440; m++) minutesCovered[m] = true;
+      for (let m = 0; m < sE; m++) minutesCovered[m] = true;
+    } else {
+      for (let m = sT; m < sE; m++) minutesCovered[m] = true;
     }
   });
 
-  return hoursCovered.every(covered => covered === true);
+  return minutesCovered.every(covered => covered === true);
 };
 
 export default function ShiftsAndPricesScreen() {
@@ -307,6 +322,7 @@ export default function ShiftsAndPricesScreen() {
   const { t } = useTranslation();
   const { language, selectedChalet } = useSelector((state: RootState) => state.auth);
   const isRTL = language === 'ar';
+  const { showConfirm } = useConfirmationDialog();
 
   const formatTime12h = (timeStr: string) => {
     if (!timeStr) return '';
@@ -406,7 +422,7 @@ export default function ShiftsAndPricesScreen() {
     
     const otherShifts = (shiftsList || []).filter(s => {
       if (currentShiftId && String(s.id) === String(currentShiftId)) return false;
-      return s.isActive;
+      return true;
     });
 
     if (otherShifts.length === 0) {
@@ -766,7 +782,7 @@ export default function ShiftsAndPricesScreen() {
       startTime: normalizeTime(shift.startTime) || '08:00',
       endTime: normalizeTime(shift.endTime) || '23:00',
       price: '',
-      isActive: shift.isActive ?? true
+      isActive: true
     });
     shiftSheetRef.current?.present();
   };
@@ -801,7 +817,7 @@ export default function ShiftsAndPricesScreen() {
         name: { ar: shiftForm.name, en: shiftForm.name },
         startTime,
         endTime,
-        isActive: shiftForm.isActive
+        isActive: true
       };
       if (selectedShift) {
         await updateShift({ chaletId: selectedChaletId, shiftId: selectedShift.id, data }).unwrap();
@@ -1053,22 +1069,21 @@ export default function ShiftsAndPricesScreen() {
   };
 
   const confirmDeleteShift = (shiftId: string) => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    Alert.alert(
-      isRTL ? 'حذف الفترة' : 'Delete Shift',
-      isRTL ? 'هل أنت متأكد من حذف هذه الفترة؟' : 'Are you sure you want to delete this shift?',
-      [
-        { text: isRTL ? 'إلغاء' : 'Cancel', style: 'cancel' },
-        {
-          text: isRTL ? 'حذف' : 'Delete', style: 'destructive', onPress: async () => {
-            try {
-              await deleteShift({ chaletId: selectedChaletId, shiftId }).unwrap();
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            } catch (e) { }
-          }
-        }
-      ]
-    );
+    showConfirm({
+      title: isRTL ? 'تنبيه: حذف الفترة' : 'Warning: Delete Shift',
+      message: isRTL 
+        ? 'تحذير: سيؤدي حذف هذه الفترة إلى مسح كافة الأسعار اليومية المخصصة لها نهائياً، وسيصبح هذا الوقت شاغراً. هل أنت متأكد من رغبتك في الحذف؟'
+        : 'Warning: Deleting this shift will permanently erase all its custom daily prices, and this time slot will become vacant. Are you sure you want to proceed?',
+      type: 'danger',
+      confirmLabel: isRTL ? 'تأكيد الحذف' : 'Confirm Delete',
+      cancelLabel: isRTL ? 'إلغاء' : 'Cancel',
+      onConfirm: async () => {
+        try {
+          await deleteShift({ chaletId: selectedChaletId, shiftId }).unwrap();
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        } catch (e) { }
+      }
+    });
   };
 
   if (isLoadingShifts) {
@@ -1247,12 +1262,21 @@ export default function ShiftsAndPricesScreen() {
               );
             })}
 
-            <SecondaryButton
-              label={isRTL ? 'إضافة فترة (Shift) إضافية' : 'Add another shift'}
-              onPress={handleAddShift}
-              icon={<SolarAddCircleBold size={20} color={Colors.primary} />}
-              style={{ marginTop: 12 }}
-            />
+            {areAllHoursCovered(shifts) ? (
+              <View style={styles.fullyBookedCard}>
+                <SolarInfoCircleBold size={20} color="#0369A1" />
+                <Text style={styles.fullyBookedText}>
+                  {isRTL ? 'لايوجد وقت شاغر لاضافة شفت جديد' : 'No available free time to add a new shift'}
+                </Text>
+              </View>
+            ) : (
+              <SecondaryButton
+                label={isRTL ? 'إضافة فترة (Shift) إضافية' : 'Add another shift'}
+                onPress={handleAddShift}
+                icon={<SolarAddCircleBold size={20} color={Colors.primary} />}
+                style={{ marginTop: 12 }}
+              />
+            )}
           </View>
         </ScrollView>
       </View>
@@ -1268,30 +1292,6 @@ export default function ShiftsAndPricesScreen() {
               <SolarCloseBold size={20} color="#000" />
             </TouchableOpacity>
           </View>
-
-          <View style={[styles.row, { justifyContent: 'space-between', marginVertical: 12, flexDirection }]}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.label, { textAlign: 'left' }]}>{isRTL ? 'حالة الفترة' : 'Shift Status'}</Text>
-              <Text style={{ fontSize: 11, color: '#64748B', fontFamily: 'Alexandria-Medium', textAlign: 'left' }}>
-                {isRTL ? 'تفعيل أو إيقاف هذه الفترة تماماً' : 'Enable or disable this shift globally'}
-              </Text>
-            </View>
-            <Switch
-              value={shiftForm.isActive}
-              onValueChange={v => setShiftForm({ ...shiftForm, isActive: v })}
-              trackColor={{ false: '#D1D1D6', true: Colors.primary }}
-            />
-          </View>
-
-          {/* Name Label */}
-          <Text style={[styles.label, { textAlign: 'left' }]}>{isRTL ? 'الاسم' : 'Name'}</Text>
-          <BottomSheetTextInput 
-            style={[styles.input, { fontFamily: 'Alexandria-Medium' }]} 
-            placeholder={isRTL ? 'مثال: الفترة الصباحية' : 'e.g. Morning Shift'}
-            value={shiftForm.name} 
-            onChangeText={t => setShiftForm({ ...shiftForm, name: t })} 
-          />
-
           <View style={[
             styles.editTimeRowCard, 
             { marginBottom: 20, marginTop: 10 },
@@ -1397,16 +1397,29 @@ export default function ShiftsAndPricesScreen() {
             )}
           </View>
 
-          <Text style={[styles.label, { textAlign: 'left' }]}>
-            {!selectedShift ? (isRTL ? 'السعر الأساسي اليومي' : 'Base Daily Price') : (isRTL ? 'تحديث السعر لجميع الأيام (اختياري)' : 'Update price for all days (Optional)')}
-          </Text>
+          {/* Name Label */}
+          <Text style={[styles.label, { textAlign: 'left' }]}>{isRTL ? 'الاسم' : 'Name'}</Text>
           <BottomSheetTextInput 
             style={[styles.input, { fontFamily: 'Alexandria-Medium' }]} 
-            keyboardType="numeric"
-            placeholder={isRTL ? 'مثال: 50000' : 'e.g. 50000'}
-            value={shiftForm.price} 
-            onChangeText={t => setShiftForm({ ...shiftForm, price: t })} 
+            placeholder={isRTL ? 'مثال: الفترة الصباحية' : 'e.g. Morning Shift'}
+            value={shiftForm.name} 
+            onChangeText={t => setShiftForm({ ...shiftForm, name: t })} 
           />
+
+          {!selectedShift && (
+            <>
+              <Text style={[styles.label, { textAlign: 'left' }]}>
+                {isRTL ? 'السعر الأساسي اليومي' : 'Base Daily Price'}
+              </Text>
+              <BottomSheetTextInput 
+                style={[styles.input, { fontFamily: 'Alexandria-Medium' }]} 
+                keyboardType="numeric"
+                placeholder={isRTL ? 'مثال: 50000' : 'e.g. 50000'}
+                value={shiftForm.price} 
+                onChangeText={t => setShiftForm({ ...shiftForm, price: t })} 
+              />
+            </>
+          )}
 
           <TouchableOpacity 
             style={[styles.saveBtn, singleShiftOverlapInfo.hasOverlap && { opacity: 0.5 }]} 
@@ -1908,5 +1921,22 @@ const styles = StyleSheet.create({
     color: '#92400E',
     flex: 1,
     textAlign: 'auto',
+  },
+  fullyBookedCard: {
+    backgroundColor: '#F0F9FF',
+    borderWidth: 1,
+    borderColor: '#BAE6FD',
+    borderRadius: 16,
+    padding: 14,
+    marginTop: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  fullyBookedText: {
+    fontSize: 13,
+    fontFamily: 'Alexandria-SemiBold',
+    color: '#0369A1',
   }
 });

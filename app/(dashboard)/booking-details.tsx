@@ -12,10 +12,11 @@ import { Image as ExpoImage } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSelector } from 'react-redux';
 
 const IDENTITY_BLUE = '#035DF9';
+const SCREEN_WIDTH = Dimensions.get('window').width;
 
 import { PaymentConfirmationSheet, PaymentConfirmationSheetRef } from '@/components/payment-confirmation-modal';
 
@@ -34,13 +35,13 @@ export default function BookingDetailsPage() {
   const [deleteExternalBooking, { isLoading: isDeletingExternal }] = useDeleteExternalBookingMutation();
   const [markAsPaid, { isLoading: isPaying }] = useMarkBookingCompletedMutation();
   const [isSuccessNavigating, setIsSuccessNavigating] = React.useState(false);
+  const [expandedImage, setExpandedImage] = React.useState<string | null>(null);
 
   const { data: bookingDetailsData, isLoading, error, refetch } = useGetProviderBookingDetailsQuery(id as string, { skip: !id });
 
-  if (isLoading) return <View style={styles.loadingContainer}><ActivityIndicator size="large" color={IDENTITY_BLUE} /></View>;
-
   const data = bookingDetailsData?.data || bookingDetailsData;
-  console.log('[BookingDetails] data:', { id: data?.id, extName: data?.externalCustomerName, extPhone: data?.externalCustomerPhone });
+
+  if (isLoading) return <View style={styles.loadingContainer}><ActivityIndicator size="large" color={IDENTITY_BLUE} /></View>;
 
   if ((error || !data || !data.id) && !isSuccessNavigating) {
     const is404 = (error as any)?.status === 404;
@@ -74,6 +75,12 @@ export default function BookingDetailsPage() {
     : bChaletImage?.url || bChaletImage?.id || bChaletImage?.imageUrl;
 
   const chaletImageSource = getImageSrc(chaletImageId);
+
+  // Customer ID card images
+  const customerIdFront = data.customer?.idCardFrontImage;
+  const customerIdBack = data.customer?.idCardBackImage;
+  const hasIdCards = !bIsExternal && (customerIdFront || customerIdBack);
+  console.log('[BookingDetails] customer ID cards:', { customerIdFront, customerIdBack, hasIdCards, tenantCategory: data.customer?.tenantCategory });
 
   const depositAmount = Number(data.depositAmount || 0);
   const remainingAmount = Number(data.remainingAmount || 0);
@@ -173,6 +180,7 @@ export default function BookingDetailsPage() {
           </View>
         )}
 
+
         {/* Chalet Information Section */}
         <View style={styles.infoSectionCard}>
           <View style={[styles.sectionTitleRow]}>
@@ -202,8 +210,72 @@ export default function BookingDetailsPage() {
           <View style={styles.divider} />
           {renderInfoRow(isRTL ? 'الاسم' : 'Name', bCustomerName)}
           {renderInfoRow(isRTL ? 'رقم الهاتف' : 'Phone', <Text style={[styles.infoValue, { direction: 'ltr' }]}>{data.customer?.phone || data.externalCustomerPhone || '--'}</Text>)}
+          {!bIsExternal && data.customer?.tenantCategory && renderInfoRow(
+            isRTL ? 'الفئة' : 'Category',
+            <View style={[
+              styles.tenantCategoryBadge,
+              { backgroundColor: data.customer.tenantCategory === 'family' ? '#EFF6FF' : '#F0FDF4' }
+            ]}>
+              <Text style={[
+                styles.tenantCategoryText,
+                { color: data.customer.tenantCategory === 'family' ? '#2563EB' : '#16A34A' }
+              ]}>
+                {data.customer.tenantCategory === 'family'
+                  ? (isRTL ? 'عوائل' : 'Family')
+                  : (isRTL ? 'شباب' : 'Youth')}
+              </Text>
+            </View>
+          )}
           {data.notes && renderInfoRow(isRTL ? 'ملاحظات' : 'Notes', data.notes)}
         </View>
+
+        {/* Customer ID Card Images */}
+        {hasIdCards && (
+          <View style={styles.infoSectionCard}>
+            <View style={[styles.sectionTitleRow]}>
+              <Text style={styles.sectionTitle}>{isRTL ? 'صور الهوية' : 'ID Card Images'}</Text>
+            </View>
+            <View style={styles.divider} />
+            <View style={styles.idCardsRow}>
+              {customerIdFront && (
+                <TouchableOpacity
+                  style={styles.idCardWrapper}
+                  activeOpacity={0.85}
+                  onPress={() => {
+                    const src = getImageSrc(customerIdFront);
+                    setExpandedImage(typeof src === 'object' ? src.uri : null);
+                  }}
+                >
+                  <ExpoImage
+                    source={getImageSrc(customerIdFront)}
+                    style={styles.idCardImage}
+                    contentFit="cover"
+                    transition={200}
+                  />
+                  <Text style={styles.idCardLabel}>{isRTL ? 'الوجه الأمامي' : 'Front'}</Text>
+                </TouchableOpacity>
+              )}
+              {customerIdBack && (
+                <TouchableOpacity
+                  style={styles.idCardWrapper}
+                  activeOpacity={0.85}
+                  onPress={() => {
+                    const src = getImageSrc(customerIdBack);
+                    setExpandedImage(typeof src === 'object' ? src.uri : null);
+                  }}
+                >
+                  <ExpoImage
+                    source={getImageSrc(customerIdBack)}
+                    style={styles.idCardImage}
+                    contentFit="cover"
+                    transition={200}
+                  />
+                  <Text style={styles.idCardLabel}>{isRTL ? 'الوجه الخلفي' : 'Back'}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        )}
 
         {/* Booking Information */}
         <View style={styles.infoSectionCard}>
@@ -214,10 +286,22 @@ export default function BookingDetailsPage() {
           {renderInfoRow(isRTL ? "التاريخ" : "Date", data.bookingDate)}
           {renderInfoRow(isRTL ? "الفترة" : "Period", bShiftName)}
           {renderInfoRow(
-            isRTL ? "الاشخاص" : "Persons",
-            isRTL
-              ? `${data.guestsCount || data.guestCount || 0} أشخاص`
-              : `${data.guestsCount || data.guestCount || 0} Persons`,
+            isRTL ? "عدد الأشخاص" : "Guests",
+            `${data.guestsCount || 0} ${isRTL ? "شخص" : "persons"}`,
+          )}
+          {Number(data.extraGuestsPrice) > 0 && (
+            <>
+              {renderInfoRow(
+                isRTL ? "سعر الشخص الإضافي" : "Extra Person Price",
+                `${Number(data.chalet?.extraPersonPrice || 0).toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
+              )}
+              {renderInfoRow(
+                isRTL ? "مبلغ الزيادة" : "Extra Guests Charge",
+                <Text style={[styles.infoValue, { color: '#F59E0B', fontFamily: 'Alexandria-SemiBold' }]}>
+                  {`${Number(data.extraGuestsPrice).toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`}
+                </Text>,
+              )}
+            </>
           )}
         </View>
 
@@ -228,35 +312,18 @@ export default function BookingDetailsPage() {
               <Text style={styles.sectionTitle}>{isRTL ? 'معلومات الدفع' : 'Payment Information'}</Text>
             </View>
             <View style={styles.divider} />
-            {Number(data.basePrice || 0) > 0 && renderInfoRow(
-              isRTL ? "السعر الأساسي للفترة" : "Shift Base Price",
-              `${Number(data.basePrice || 0).toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
-            )}
-            {Number(data.extraGuestsPrice || 0) > 0 && renderInfoRow(
-              isRTL ? "رسوم الضيوف الإضافية" : "Extra Guests Fee",
-              `${Number(data.extraGuestsPrice || 0).toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
-            )}
-            {Number(data.addonsPrice || 0) > 0 && renderInfoRow(
-              isRTL ? "سعر الخدمات الإضافية" : "Addons Price",
-              `${Number(data.addonsPrice || 0).toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
-            )}
-            {(Number(data.extraGuestsPrice || 0) > 0 || Number(data.addonsPrice || 0) > 0) && <View style={styles.divider} />}
             {renderInfoRow(
               isRTL ? "المبلغ الكلي" : "Total Price",
               `${totalPrice.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
             )}
-            {data.paymentModel === 'deposit' && (
-              <>
-                {renderInfoRow(
-                  isRTL ? "المبلغ المدفوع (العربون)" : "Paid (Deposit)",
-                  `${depositAmount.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
-                )}
-                {renderInfoRow(
-                  isRTL ? "المبلغ المتبقي" : "Remaining Amount",
-                  `${remainingAmount.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
-                  true,
-                )}
-              </>
+            {renderInfoRow(
+              isRTL ? "المبلغ المدفوع (العربون)" : "Paid (Deposit)",
+              `${depositAmount.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
+            )}
+            {renderInfoRow(
+              isRTL ? "المبلغ المتبقي" : "Remaining Amount",
+              `${remainingAmount.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
+              true,
             )}
           </View>
         )}
@@ -318,6 +385,30 @@ export default function BookingDetailsPage() {
         totalPrice={data.totalPrice || 0}
         paymentModel={data.paymentModel || 'deposit'}
       />
+
+      {/* Expanded Image Modal */}
+      {expandedImage && (
+        <TouchableOpacity
+          style={styles.expandedOverlay}
+          activeOpacity={1}
+          onPress={() => setExpandedImage(null)}
+        >
+          <View style={styles.expandedContainer}>
+            <ExpoImage
+              source={{ uri: expandedImage }}
+              style={styles.expandedImage}
+              contentFit="contain"
+              transition={200}
+            />
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setExpandedImage(null)}
+            >
+              <Text style={styles.closeButtonText}>✕</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -383,6 +474,78 @@ const styles = StyleSheet.create({
     lineHeight: normalize.font(20)
   },
   scrollContent: { paddingHorizontal: 20 },
+  // Tenant Category Badge
+  tenantCategoryBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  tenantCategoryText: {
+    fontSize: normalize.font(13),
+    fontFamily: 'Alexandria-SemiBold',
+    lineHeight: normalize.font(18),
+  },
+  // ID Card Images
+  idCardsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 4,
+  },
+  idCardWrapper: {
+    flex: 1,
+    borderRadius: 14,
+    overflow: 'hidden',
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  idCardImage: {
+    width: '100%',
+    height: normalize.height(120),
+  },
+  idCardLabel: {
+    fontSize: normalize.font(12),
+    fontFamily: 'Alexandria-Medium',
+    color: '#64748B',
+    textAlign: 'center',
+    paddingVertical: 6,
+  },
+  // Expanded Image Modal
+  expandedOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 9999,
+  },
+  expandedContainer: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  expandedImage: {
+    width: SCREEN_WIDTH - 20,
+    height: '70%',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: normalize.height(60),
+    right: 20,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontFamily: 'Alexandria-SemiBold',
+  },
   chaletSimpleRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   simpleImageWrapper: { width: 80, height: 80, borderRadius: 16, overflow: 'hidden', backgroundColor: '#F1F5F9' },
   simpleChaletImage: { width: '100%', height: '100%' },

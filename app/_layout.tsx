@@ -1,11 +1,12 @@
 // @@iconify-code-gen
+import { ConfirmationDialogProvider } from "@/components/ui/confirmation-dialog";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { persistor, RootState, store } from "@/store";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import {
-    DarkTheme,
-    DefaultTheme,
-    ThemeProvider
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { Stack, useRouter, useSegments } from "expo-router";
@@ -17,7 +18,6 @@ import { Text, TextInput } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import Toast from "react-native-toast-message";
-import { toastConfig } from "@/components/ui/toast-config";
 import { Provider, useSelector } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 
@@ -53,7 +53,8 @@ function RootLayoutNav() {
   const [notificationRetryNonce, setNotificationRetryNonce] = useState(0);
 
   const [loaded, error] = useFonts({
-    "Alexandria-Medium": require("@expo-google-fonts/alexandria/500Medium/Alexandria_500Medium.ttf") });
+    "Alexandria-Medium": require("@expo-google-fonts/alexandria/500Medium/Alexandria_500Medium.ttf")
+  });
 
   // ── Auth Guard ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -157,8 +158,17 @@ function RootLayoutNav() {
 
   if (!loaded && !error) return null;
 
+  const navigationTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: "#FFFFFF",
+      card: "#FFFFFF",
+    },
+  };
+
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={navigationTheme}>
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
@@ -181,8 +191,10 @@ export default function RootLayout() {
       <PersistGate loading={null} persistor={persistor}>
         <GestureHandlerRootView style={{ flex: 1 }}>
           <BottomSheetModalProvider>
-            <RootLayoutNav />
-            <Toast config={toastConfig} />
+            <ConfirmationDialogProvider>
+              <RootLayoutNav />
+              <Toast />
+            </ConfirmationDialogProvider>
           </BottomSheetModalProvider>
         </GestureHandlerRootView>
       </PersistGate>

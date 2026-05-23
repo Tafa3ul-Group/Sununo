@@ -153,47 +153,52 @@ export default function ReviewsScreen() {
             return (
               <View key={idx} style={styles.revCardFlat}>
                 <View
-                  style={[styles.revHeader, { flexDirection: getFlexDirection(isArabic) }]}
+                  style={[styles.revHeader, { flexDirection: getFlexDirection(isRTL) }]}
                 >
-                  <View style={styles.avatarCircle}>
-                    <Image
-                      source={{ uri: rev.avatar }}
-                      style={styles.userAvatarImg}
-                    />
-                  </View>
-
-                  <View
-                    style={[
-                      styles.nameAndBody,
-                      {
-                        alignItems: isArabic ? "flex-end" : "flex-start",
-                        marginHorizontal: 12,
-                      },
-                    ]}
-                  >
-                    <ThemedText style={[styles.reviewerNameText, { textAlign: isArabic ? "right" : "left" }]}>
-                      {reviewerName}
-                    </ThemedText>
-                    <ThemedText
-                      style={[
-                        styles.revBodyText,
-                        { textAlign: isArabic ? "right" : "left" },
-                      ]}
-                    >
-                      {reviewBody}
-                    </ThemedText>
-                  </View>
-
                   <View
                     style={[
                       styles.ratingBadge,
-                      { flexDirection: getFlexDirection(isArabic) },
+                      { flexDirection: getFlexDirection(isRTL) },
                     ]}
                   >
                     <SolarStarBold size={14} color="#035DF9" />
                     <ThemedText style={styles.rateNumText}>
                       {rev.rating}
                     </ThemedText>
+                  </View>
+                  <View
+                    style={[
+                      styles.userInfoRow,
+                      { flexDirection: getFlexDirection(isRTL) },
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.nameAndBody,
+                        {
+                          alignItems: "flex-start",
+                          [isRTL ? "marginRight" : "marginLeft"]: 15,
+                        },
+                      ]}
+                    >
+                      <ThemedText style={styles.reviewerNameText}>
+                        {reviewerName}
+                      </ThemedText>
+                      <ThemedText
+                        style={[
+                           styles.revBodyText,
+                           { textAlign: textStart },
+                        ]}
+                      >
+                        {reviewBody}
+                      </ThemedText>
+                    </View>
+                    <View style={styles.avatarCircle}>
+                      <Image
+                        source={{ uri: rev.avatar }}
+                        style={styles.userAvatarImg}
+                      />
+                    </View>
                   </View>
                 </View>
                 {rev.images.length > 0 && (

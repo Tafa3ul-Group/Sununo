@@ -1,37 +1,38 @@
-import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, ActivityIndicator, FlatList, RefreshControl } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
-import { Colors, Shadows } from '@/constants/theme';
 import { ThemedText } from '@/components/themed-text';
 import { CircleBackButton } from '@/components/ui/circle-back-button';
-import { useRouter } from 'expo-router';
+import { Colors, Shadows } from '@/constants/theme';
+import { getFlexDirection, isRTL } from "@/i18n";
+import { RootState } from '@/store';
 import { useGetNotificationsQuery } from '@/store/api/apiSlice';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import { isRTL, getFlexDirection } from "@/i18n";
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSelector } from 'react-redux';
 
 interface Notification {
-  id: string;
-  title: string;
-  text: string;
-  createdAt: string;
-  readAt: string | null;
-  type: string;
-  redirectType?: string;
-  redirectId?: string;
+    id: string;
+    title: string;
+    text: string;
+    createdAt: string;
+    readAt: string | null;
+    type: string;
+    redirectType?: string;
+    redirectId?: string;
 }
 
 export default function NotificationsScreen() {
     const { t } = useTranslation();
     const { language } = useSelector((state: RootState) => state.auth);
-        const router = useRouter();
+    const router = useRouter();
     const [page, setPage] = useState(1);
 
     const { data: response, isLoading, isFetching, refetch } = useGetNotificationsQuery({
         page,
-        limit: 15 });
+        limit: 15
+    });
 
     const notifications = response?.data || [];
 
@@ -113,20 +114,24 @@ export default function NotificationsScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'white' },
+        backgroundColor: 'white'
+    },
     header: {
         paddingHorizontal: 20,
         paddingVertical: 10,
-        backgroundColor: 'white' },
+        backgroundColor: 'white'
+    },
     headerInner: {
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',
-        height: 48 },
+        height: 48
+    },
     headerTitle: {
         fontSize: 14,
         fontFamily: "Alexandria-Medium",
-        color: '#111827' },
+        color: '#111827'
+    },
     backButton: {
         position: 'absolute',
         width: 44,
@@ -137,19 +142,21 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         ...Shadows.small,
         borderWidth: 1,
-        borderColor: '#F3F4F6' },
+        borderColor: '#F3F4F6'
+    },
     scrollContent: {
         paddingHorizontal: 20,
         paddingBottom: 40,
-        paddingTop: 10 },
+        paddingTop: 10
+    },
     centerContainer: {
-        flex: 1, 
-        justifyContent: 'center', 
-        alignItems: 'center', 
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
         marginTop: 100
     },
     emptyText: {
-        color: '#9CA3AF', 
+        color: '#9CA3AF',
         fontFamily: "Alexandria-Medium"
     },
     notificationCard: {
@@ -160,11 +167,13 @@ const styles = StyleSheet.create({
         marginBottom: 12,
         borderWidth: 1,
         borderColor: '#F3F4F6',
-        alignItems: 'center' },
+        alignItems: 'center'
+    },
     cardLeft: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8 },
+        gap: 8
+    },
     orangeDot: {
         width: 12,
         height: 12,
@@ -174,14 +183,17 @@ const styles = StyleSheet.create({
     timeText: {
         fontSize: 8,
         color: '#9CA3AF',
-        fontFamily: "Alexandria-Medium" },
+        fontFamily: "Alexandria-Medium"
+    },
     cardContent: {
-        flex: 1 },
+        flex: 1
+    },
     titleText: {
         fontSize: 14,
         fontFamily: "Alexandria-Medium",
         color: '#111827',
-        marginBottom: 2 },
+        marginBottom: 2
+    },
     messageText: {
         fontSize: 14,
         color: '#6B7280',

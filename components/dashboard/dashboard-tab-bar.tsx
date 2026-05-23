@@ -21,6 +21,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from 'react-redux';
+import { isRTL } from "@/i18n";
 
 /**
  * DashboardTabBar - Standardized with CustomTabBar design
@@ -29,9 +30,8 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
   const router = useRouter();
   const dispatch = useDispatch();
   const { userType, language, selectedChalet } = useSelector((state: RootState) => state.auth);
-  const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
-  const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
+    const insets = useSafeAreaInsets();
 
   const [showPopover, setShowPopover] = useState(false);
 
@@ -110,7 +110,8 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
   if (currentOptions?.href === null) return null;
 
   const currentRouteName = state.routes[currentRouteIndex].name;
-  const visibleRouteNames = ['home', 'bookings', 'revenue'];
+  if (currentRouteName === 'profile' || currentRouteName === 'revenue') return null;
+  const visibleRouteNames = ['home', 'bookings', 'profile'];
   const visibleRoutes = state.routes.filter((route: any) => visibleRouteNames.includes(route.name));
 
   if (visibleRoutes.length === 0) return null;
@@ -138,8 +139,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
         {
           bottom: Math.max(insets.bottom, 24),
           paddingHorizontal: normalize.width(23),
-          flexDirection: 'row',
-          direction: isRTL ? 'rtl' : 'ltr'
+          flexDirection: 'row'
         }
       ]}>
         <TouchableOpacity
@@ -170,7 +170,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
 
         <View style={[
           styles.tabCapsule,
-          { flexDirection: 'row', direction: isRTL ? 'rtl' : 'ltr' }
+          { flexDirection: 'row' }
         ]}>
           {pillTabs.map((route: any) => {
             const isActive = currentRouteName === route.name;

@@ -61,36 +61,6 @@ export default function BookingSuccessDetailsScreen() {
   const extraGuestsPriceVal = Number(booking?.extraGuestsPrice || 0);
   const addonsPriceVal = Number(booking?.addonsPrice || 0);
 
-  const paymentStatusInfo = useMemo(() => {
-    const status = booking?.paymentStatus;
-    const deposit = Number(booking?.depositAmount || 0);
-    const remaining = Number(booking?.remainingAmount || 0);
-    const total = Number(booking?.totalPrice || 0);
-
-    if (status === 'paid' || (remaining === 0 && total > 0)) {
-      return {
-        text: t('booking.status.paid'),
-        style: styles.statusBadgeBlue,
-        textStyle: styles.statusBadgeTextBlue,
-      };
-    }
-    
-    if (deposit > 0 && remaining > 0) {
-      return {
-        text: isRTL ? 'عربون مدفوع' : 'Deposit Paid',
-        style: styles.statusBadgeOrange,
-        textStyle: styles.statusBadgeTextOrange,
-      };
-    }
-
-    // Default case (e.g., payment pending, not paid at all)
-    return {
-      text: isRTL ? 'غير مدفوع' : 'Unpaid',
-      style: styles.statusBadgeGray,
-      textStyle: styles.statusBadgeTextGray,
-    };
-  }, [booking, t, isRTL]);
-
   const shiftInfo = useMemo(() => {
     if (!booking?.shift) return t("booking.morningShift");
     const name = isRTL
@@ -195,36 +165,12 @@ export default function BookingSuccessDetailsScreen() {
             {t("booking.customerInfo")}
           </ThemedText>
           <View style={styles.divider} />
-          {renderInfoRow(t("booking.name"), booking?.customer?.name || t("booking.nameValue"))}
+          {renderInfoRow(t("booking.name"), t("booking.nameValue"))}
           {renderInfoRow(
             t("booking.phone"),
             <ThemedText style={[styles.infoValue, { direction: "ltr" }]}>
-              {booking?.customer?.phone || t("booking.phoneValue")}
+              {t("booking.phoneValue")}
             </ThemedText>,
-          )}
-          
-          {/* Add this new section for ID images */}
-          {(booking?.idCardFrontImage || booking?.idCardBackImage) && (
-            <>
-              <View style={styles.divider} />
-              <ThemedText style={[styles.infoLabel, { marginTop: 6, marginBottom: 6 }]}>{isRTL ? 'صور الهوية' : 'ID Photos'}</ThemedText>
-              <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
-                {booking.idCardFrontImage && (
-                  <ExpoImage
-                    source={getImageSrc(booking.idCardFrontImage)}
-                    style={{ width: 120, height: 80, borderRadius: 8, backgroundColor: '#F1F5F9' }}
-                    transition={200}
-                  />
-                )}
-                {booking.idCardBackImage && (
-                  <ExpoImage
-                    source={getImageSrc(booking.idCardBackImage)}
-                    style={{ width: 120, height: 80, borderRadius: 8, backgroundColor: '#F1F5F9' }}
-                    transition={200}
-                  />
-                )}
-              </View>
-            </>
           )}
         </View>
 
@@ -289,9 +235,23 @@ export default function BookingSuccessDetailsScreen() {
             <View
               style={[isRTL ? { marginRight: "auto" } : { marginLeft: "auto" }]}
             >
-              <View style={paymentStatusInfo.style}>
-                <ThemedText style={paymentStatusInfo.textStyle}>
-                  {paymentStatusInfo.text}
+              <View
+                style={
+                  booking?.paymentStatus === "paid"
+                    ? styles.statusBadgeBlue
+                    : styles.statusBadgeGray
+                }
+              >
+                <ThemedText
+                  style={
+                    booking?.paymentStatus === "paid"
+                      ? styles.statusBadgeTextBlue
+                      : styles.statusBadgeTextGray
+                  }
+                >
+                  {booking?.paymentStatus === "paid"
+                    ? t("booking.status.paid")
+                    : t("booking.status.deferred")}
                 </ThemedText>
               </View>
             </View>
@@ -401,17 +361,6 @@ const styles = StyleSheet.create({
   },
   statusBadgeTextBlue: {
     color: "#FFF",
-    fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium",
-  },
-  statusBadgeOrange: {
-    backgroundColor: '#FFF7ED',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  statusBadgeTextOrange: {
-    color: '#F97316',
     fontSize: normalize.font(8),
     fontFamily: "Alexandria-Medium",
   },

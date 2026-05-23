@@ -1,14 +1,14 @@
-import { SolarPhoneBold, SolarUsersGroupRoundedBold } from "@/components/icons/solar-icons";
-import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Image } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
-import { Colors, Spacing, Typography, normalize, Shadows } from '@/constants/theme';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
-import { useTranslation } from 'react-i18next';
+import { SolarPhoneBold, SolarUsersGroupRoundedBold } from "@/components/icons/solar-icons";
 import { ThemedText } from '@/components/themed-text';
+import { Colors, normalize, Shadows, Spacing, Typography } from '@/constants/theme';
 import { isRTL } from "@/i18n";
+import { RootState } from '@/store';
+import { FlashList } from '@shopify/flash-list';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSelector } from 'react-redux';
 
 // Mock data for customers
 const MOCK_CUSTOMERS = [
@@ -18,34 +18,37 @@ const MOCK_CUSTOMERS = [
     phone: '0770 123 4567',
     totalBookings: 5,
     lastVisit: 'قبل يومين',
-    initial: 'أ' },
+    initial: 'أ'
+  },
   {
     id: '2',
     name: 'سارة خالد',
     phone: '0780 987 6543',
     totalBookings: 3,
     lastVisit: 'قبل أسبوع',
-    initial: 'س' },
+    initial: 'س'
+  },
   {
     id: '3',
     name: 'حسين محمود',
     phone: '0750 444 5555',
     totalBookings: 1,
     lastVisit: 'قبل شهر',
-    initial: 'ح' }
+    initial: 'ح'
+  }
 ];
 
 export default function CustomersScreen() {
   const { user, userType, language } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
-  
+
   const renderCustomerItem = ({ item }: { item: typeof MOCK_CUSTOMERS[0] }) => (
     <TouchableOpacity style={styles.customerCard}>
       <View style={[styles.cardContent, { flexDirection: 'row' }]}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>{item.initial}</Text>
         </View>
-        
+
         <View style={[styles.info, { alignItems: 'flex-start' }]}>
           <ThemedText type="h2" style={[styles.customerName, { textAlign: isRTL ? 'right' : 'left' }]}>{item.name}</ThemedText>
           <ThemedText style={[styles.customerPhone, { textAlign: isRTL ? 'right' : 'left' }]}>{item.phone}</ThemedText>
@@ -71,7 +74,7 @@ export default function CustomersScreen() {
 
   return (
     <View style={[styles.safeArea]}>
-      <DashboardHeader 
+      <DashboardHeader
         title={t('tabs.customers')}
         showSearch={false}
         showBackButton={true}
@@ -99,14 +102,17 @@ export default function CustomersScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.white },
+    backgroundColor: Colors.white
+  },
   container: {
     flex: 1,
-    backgroundColor: Colors.white },
+    backgroundColor: Colors.white
+  },
   listContent: {
     paddingHorizontal: Spacing.md,
     paddingTop: 16,
-    paddingBottom: 100 },
+    paddingBottom: 100
+  },
   customerCard: {
     backgroundColor: Colors.white,
     borderRadius: 24,
@@ -115,63 +121,78 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
     ...Shadows.small,
-    shadowOpacity: 0.03 },
+    shadowOpacity: 0.03
+  },
   cardContent: {
     alignItems: 'center',
     gap: Spacing.md,
-    marginBottom: Spacing.md },
+    marginBottom: Spacing.md
+  },
   avatar: {
     width: 48,
     height: 48,
     borderRadius: 24,
     backgroundColor: '#F2F2F7',
     justifyContent: 'center',
-    alignItems: 'center' },
+    alignItems: 'center'
+  },
   avatarText: {
     fontSize: normalize.font(14),
     color: Colors.text.primary,
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "Alexandria-Medium"
+  },
   info: {
-    flex: 1 },
+    flex: 1
+  },
   customerName: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
-    color: Colors.text.primary },
+    color: Colors.text.primary
+  },
   customerPhone: {
     fontSize: normalize.font(14),
     color: Colors.text.muted,
     marginTop: 2,
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "Alexandria-Medium"
+  },
   contactButton: {
     padding: Spacing.sm,
     backgroundColor: Colors.white,
     borderRadius: normalize.radius(10),
     borderWidth: 1,
-    borderColor: Colors.border },
+    borderColor: Colors.border
+  },
   statsRow: {
     backgroundColor: '#F9FAFB',
     padding: 14,
     borderRadius: 16,
     flexDirection: 'row',
     borderWidth: 1,
-    borderColor: '#F1F5F9' },
+    borderColor: '#F1F5F9'
+  },
   stat: {
-    flex: 1 },
+    flex: 1
+  },
   statLabel: {
     fontSize: normalize.font(8),
     color: Colors.text.muted,
     marginBottom: 2,
     fontFamily: "Alexandria-Medium",
-    textTransform: 'uppercase' },
+    textTransform: 'uppercase'
+  },
   statValue: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
-    color: Colors.text.primary },
+    color: Colors.text.primary
+  },
   emptyContainer: {
     marginTop: 100,
     alignItems: 'center',
-    opacity: 0.5 },
+    opacity: 0.5
+  },
   emptyText: {
     ...Typography.body,
     marginTop: Spacing.md,
-    color: Colors.text.secondary } });
+    color: Colors.text.secondary
+  }
+});

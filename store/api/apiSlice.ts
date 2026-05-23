@@ -126,6 +126,8 @@ export const apiSlice = createApi({
         url: `/provider/chalets/${chaletId}/images`,
         method: "POST",
         body: formData,
+        // Don't set Content-Type — FormData adds it automatically with boundary
+        headers: {},
       }),
       invalidatesTags: (result, error, { chaletId }) => [{ type: 'Chalet', id: chaletId }],
     }),
@@ -316,6 +318,15 @@ export const apiSlice = createApi({
         url: "/users/profile",
         method: "PUT",
         body: data,
+      }),
+      invalidatesTags: ["User"],
+    }),
+
+    // Delete user profile
+    deleteProfile: builder.mutation({
+      query: () => ({
+        url: "/users/profile",
+        method: "DELETE",
       }),
       invalidatesTags: ["User"],
     }),
@@ -599,6 +610,7 @@ export const {
   useUpdateProviderProfileMutation,
   useUpdateProfileMutation,
   useUpdateProfileImageMutation,
+  useDeleteProfileMutation,
   useGetProviderBookingsQuery,
   useGetProviderBookingDetailsQuery,
   useGetShiftAvailabilityQuery,

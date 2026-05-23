@@ -170,7 +170,7 @@ export function HorizontalCard({
               color={Colors.secondary}
             />
             <ThemedText style={styles.ratingText}>
-              {(chalet.rating || chalet.averageRating || 0).toFixed(1)}
+              {chalet.rating || "4.5"}
             </ThemedText>
           </View>
 

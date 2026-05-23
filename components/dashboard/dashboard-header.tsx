@@ -32,7 +32,7 @@ export function DashboardHeader({
   onSearchPress,
   onDeletePress,
   customRightComponent,
-  marginBottom = 8
+  marginBottom = 0
 }: DashboardHeaderProps) {
   const router = useRouter();
   const [logoLang, setLogoLang] = useState<'ar' | 'en'>(isRTL ? 'ar' : 'en');
@@ -103,7 +103,7 @@ export function DashboardHeader({
               </TouchableOpacity>
             )}
             <TouchableOpacity
-              onPress={onProfilePress || (() => router.push("/(dashboard)/profile"))}
+              onPress={onProfilePress || (() => router.push("/(tabs)/(dashboard)/profile"))}
               style={styles.profileCircle}
             >
               <SolarUserBold

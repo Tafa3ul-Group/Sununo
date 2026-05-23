@@ -11,6 +11,7 @@ import {
   SolarMapPointBold,
   SolarStarBold } from "./icons/solar-icons";
 import { ThemedText } from "./themed-text";
+import { isRTL } from "@/i18n";
 
 interface ChaletCardProps {
   chalet: any;
@@ -25,8 +26,7 @@ const STAR_SHAPE =
 export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
   const router = useRouter();
   const { i18n } = useTranslation();
-  const isRTL = i18n.language === "ar";
-  const [isFavorite, setIsFavorite] = React.useState(false);
+    const [isFavorite, setIsFavorite] = React.useState(false);
 
   if (!chalet) return null;
 
@@ -73,7 +73,7 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
           {/* التقييم في زاوية اليمنى صريحاً وبنفس المسافة */}
           <View style={styles.ratingOverlay}>
             <ThemedText style={styles.ratingText}>
-              {(chalet.rating || chalet.averageRating || 0).toFixed(1)}
+              {chalet.rating || "4.5"}
             </ThemedText>
             <SolarStarBold size={normalize.width(16)} color="#FFB801" />
           </View>

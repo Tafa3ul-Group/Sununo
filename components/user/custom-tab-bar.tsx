@@ -4,16 +4,14 @@ import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
+import { isRTL } from "@/i18n";
 
 /**
  * CustomTabBar - Refined Active Indicator 40x40
  */
 export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) => {
   const { userType, language } = useSelector((state: RootState) => state.auth);
-  const { i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
-  const insets = useSafeAreaInsets();
+    const insets = useSafeAreaInsets();
 
   const currentRouteIndex = state.index;
   const currentRouteName = state.routes[currentRouteIndex].name;
@@ -61,8 +59,7 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
         { 
           bottom: Math.max(insets.bottom, 24),
           paddingHorizontal: SIDE_PADDING,
-          flexDirection: 'row',
-          direction: isRTL ? 'rtl' : 'ltr'
+          flexDirection: 'row'
         }
       ]}>
         {/* Isolated Button (Map for Customer) */}
@@ -84,7 +81,7 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
         </TouchableOpacity>
 
         {/* Tab Capsule */}
-        <View style={[styles.tabCapsule, { flexDirection: 'row', direction: isRTL ? 'rtl' : 'ltr' }]}>
+        <View style={[styles.tabCapsule, { flexDirection: 'row' }]}>
           {pillTabs.map((route: any) => {
             const isActive = currentRouteName === route.name;
             return (
