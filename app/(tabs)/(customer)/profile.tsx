@@ -3,12 +3,12 @@ import {
     ProfileShape,
     SolarCalendarBold,
     SolarGlobalBold,
-    SolarHeartBold,
+    SolarReviewsHeartBold,
     SolarLogoutBold,
     SolarPhoneBold,
     SolarProfileEdit,
     SolarShieldBold,
-    SolarTrashBinBold,
+    SolarUserBlockBoldDuotone,
 } from '@/components/icons/solar-icons';
 import { LanguageSheet } from '@/components/user/language-sheet';
 import { LogoutSheet } from '@/components/user/logout-sheet';
@@ -84,7 +84,7 @@ export default function CustomerProfileScreen() {
             id: 'reviews',
             title: t('headers.reviews'),
             shape: 'blue' as const,
-            icon: <SolarHeartBold size={20} color="white" />,
+            icon: <SolarReviewsHeartBold size={20} color="white" />,
             route: '/reviews',
         },
         {
@@ -110,7 +110,7 @@ export default function CustomerProfileScreen() {
             id: 'deleteAccount',
             title: isArabic ? 'حذف الحساب' : 'Delete Account',
             shape: 'red' as const,
-            icon: <SolarTrashBinBold size={20} color="white" />,
+            icon: <SolarUserBlockBoldDuotone size={20} color="white" />,
             action: () => deleteSheetRef.current?.present(),
         },
         {
