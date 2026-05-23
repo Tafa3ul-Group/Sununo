@@ -742,11 +742,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "white",
     borderRadius: 20,
-    padding: 16,
-    marginBottom: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#F0F2F5",
-    minHeight: normalize.height(94) },
+    borderColor: "#F0F2F5" },
   guestInfo: { 
   },
   guestLabel: {
