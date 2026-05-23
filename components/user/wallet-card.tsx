@@ -73,15 +73,18 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginVertical: normalize.height(4),
     overflow: "hidden",
+    direction: "ltr",
   },
   svgWrapper: {
     ...StyleSheet.absoluteFillObject,
+    direction: "ltr",
   },
   contentOverlay: {
     flex: 1,
     paddingTop: normalize.height(18),
     paddingBottom: normalize.height(30),
     justifyContent: "space-between",
+    direction: "ltr",
   },
   topRow: {
     paddingHorizontal: normalize.width(25),

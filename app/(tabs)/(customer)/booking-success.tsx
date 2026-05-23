@@ -57,6 +57,9 @@ export default function BookingSuccessDetailsScreen() {
   const remainingAmount = booking?.remainingAmount
     ? Number(booking.remainingAmount).toLocaleString()
     : "0";
+  const basePriceVal = Number(booking?.basePrice || 0);
+  const extraGuestsPriceVal = Number(booking?.extraGuestsPrice || 0);
+  const addonsPriceVal = Number(booking?.addonsPrice || 0);
 
   const shiftInfo = useMemo(() => {
     if (!booking?.shift) return t("booking.morningShift");
@@ -205,7 +208,7 @@ export default function BookingSuccessDetailsScreen() {
           {renderInfoRow(t("booking.shift"), shiftInfo)}
           {renderInfoRow(
             t("booking.guests"),
-            booking?.guestCount?.toString() || t("booking.guestsValue"),
+            (booking?.guestsCount ?? booking?.guestCount ?? 0).toString(),
           )}
           {renderInfoRow(
             t("booking.totalAmount"),
@@ -254,17 +257,35 @@ export default function BookingSuccessDetailsScreen() {
             </View>
           </View>
 
+          {basePriceVal > 0 && renderInfoRow(
+            isRTL ? "السعر الأساسي للفترة" : "Shift Base Price",
+            `${basePriceVal.toLocaleString()} ${t("common.iqd")}`,
+          )}
+          {extraGuestsPriceVal > 0 && renderInfoRow(
+            isRTL ? "رسوم الضيوف الإضافية" : "Extra Guests Fee",
+            `${extraGuestsPriceVal.toLocaleString()} ${t("common.iqd")}`,
+          )}
+          {addonsPriceVal > 0 && renderInfoRow(
+            isRTL ? "سعر الخدمات الإضافية" : "Addons Price",
+            `${addonsPriceVal.toLocaleString()} ${t("common.iqd")}`,
+          )}
+          {(extraGuestsPriceVal > 0 || addonsPriceVal > 0) && <View style={styles.divider} />}
+
           {renderInfoRow(
             t("booking.totalAmount"),
             `${totalPrice} ${t("common.iqd")}`,
           )}
-          {renderInfoRow(
-            t("booking.depositAmount"),
-            `${depositAmount} ${t("common.iqd")}`,
-          )}
-          {renderInfoRow(
-            t("booking.remainingAmount"),
-            `${remainingAmount} ${t("common.iqd")}`,
+          {booking?.paymentModel === 'deposit' && (
+            <>
+              {renderInfoRow(
+                t("booking.depositAmount"),
+                `${depositAmount} ${t("common.iqd")}`,
+              )}
+              {renderInfoRow(
+                t("booking.remainingAmount"),
+                `${remainingAmount} ${t("common.iqd")}`,
+              )}
+            </>
           )}
         </View>
       </ScrollView>

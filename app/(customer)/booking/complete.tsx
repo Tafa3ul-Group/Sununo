@@ -1,9 +1,11 @@
 import { HeaderSection } from "@/components/header-section";
 import {
   SolarCardBold,
+  SolarInfoCircleBold,
   SolarMapPointBold,
   SolarMoonBold,
   SolarSunBold,
+  SolarUsersGroupRoundedBold,
   SolarWalletBold,
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
@@ -29,6 +31,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
 import { Image as ExpoImage } from "expo-image";
+import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import LottieView from "lottie-react-native";
@@ -79,8 +82,7 @@ export default function CompleteBookingScreen() {
   const [paymentType, setPaymentType] = useState<"DEPOSIT" | "FULL">("DEPOSIT");
   const { formatShiftTime } = useFormatTime();
   const isArabic = i18n.language ? i18n.language.startsWith("ar") : false;
-  const rowDirection: "row" | "row-reverse" =
-    isArabic === I18nManager.isRTL ? "row" : "row-reverse";
+  const rowDirection: "row" | "row-reverse" = isArabic ? "row-reverse" : "row";
 
   // textAlign is absolute, so direct mapping is correct regardless of native RTL state
   const textStart: "left" | "right" = isArabic ? "right" : "left";
@@ -89,6 +91,24 @@ export default function CompleteBookingScreen() {
     isArabic === I18nManager.isRTL ? "flex-start" : "flex-end";
   const alignEnd: "flex-start" | "flex-end" =
     isArabic === I18nManager.isRTL ? "flex-end" : "flex-start";
+
+  const pickImage = async (imageNumber: 1 | 2) => {
+    // No permissions request is needed for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      if (imageNumber === 1) {
+        setIdImage1(result.assets[0].uri);
+      } else {
+        setIdImage2(result.assets[0].uri);
+      }
+    }
+  };
 
   const getFilterDateRange = (): Date[] => {
     if (!savedFilter?.checkIn) return [];
@@ -104,6 +124,7 @@ export default function CompleteBookingScreen() {
     }
     return timestamps.map((time) => new Date(time));
   };
+
 
   const filterDateRange = useMemo(getFilterDateRange, [
     savedFilter?.checkIn,
@@ -368,9 +389,10 @@ export default function CompleteBookingScreen() {
   const [notes, setNotes] = useState("");
 
   const [adultCount, setAdultCount] = useState(savedFilter?.adults ?? 2);
-  const [childrenCount, setChildrenCount] = useState(
-    savedFilter?.children ?? 0,
-  );
+  const [childrenCount, setChildrenCount] = useState(0);
+  const [guestType, setGuestType] = useState<"FAMILY" | "YOUTH">("FAMILY");
+  const [idImage1, setIdImage1] = useState<string | null>(null);
+  const [idImage2, setIdImage2] = useState<string | null>(null);
 
   // Payment status polling
   const [isWaitingForPayment, setIsWaitingForPayment] = useState(false);
@@ -395,8 +417,20 @@ export default function CompleteBookingScreen() {
       !hasFilterDates || filterDateKeys.has(getDateKeyForDay(day)),
     [filterDateKeys, getDateKeyForDay, hasFilterDates],
   );
-  const selectedShiftPrice = useMemo(() => {
-    let total = 0;
+  const pricingCalculations = useMemo(() => {
+    let totalBasePrice = 0;
+    let totalExtraGuestsPrice = 0;
+    let explanationRows: Array<{
+      day: number;
+      dateStr: string;
+      basePrice: number;
+      extraGuestsCount: number;
+      extraGuestsPrice: number;
+      capacityLimit: number;
+    }> = [];
+
+    const totalGuestsNow = adultCount;
+
     selectedDates.forEach((day) => {
       const shiftId = selectedShifts[day];
       if (shiftId) {
@@ -406,16 +440,84 @@ export default function CompleteBookingScreen() {
           const pricing = shift.pricing?.find(
             (p: any) => p.dayOfWeek === dayOfWeek,
           );
-          total += pricing
+
+          let basePrice = pricing
             ? Number(pricing.price)
             : Number(chaletDetails?.basePrice || 0);
+
+          let selectedCapacityLimit = Number(chaletDetails?.priceCapacity || 2);
+
+          if (pricing?.capacityPricings && pricing.capacityPricings.length > 0) {
+            const sortedTiers = [...pricing.capacityPricings].sort(
+              (a: any, b: any) => b.guestCount - a.guestCount
+            );
+            const bestTier = sortedTiers.find((t: any) => t.guestCount <= totalGuestsNow);
+            if (bestTier) {
+              basePrice = Number(bestTier.price);
+              selectedCapacityLimit = bestTier.guestCount;
+            }
+          }
+
+          let extraGuestsCount = 0;
+          let extraGuestsPrice = 0;
+          if (totalGuestsNow > selectedCapacityLimit) {
+            extraGuestsCount = totalGuestsNow - selectedCapacityLimit;
+            extraGuestsPrice = extraGuestsCount * Number(chaletDetails?.extraPersonPrice || 0);
+          }
+
+          totalBasePrice += basePrice;
+          totalExtraGuestsPrice += extraGuestsPrice;
+
+          const date = getDateForDay(day);
+          const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+          explanationRows.push({
+            day,
+            dateStr,
+            basePrice,
+            extraGuestsCount,
+            extraGuestsPrice,
+            capacityLimit: selectedCapacityLimit,
+          });
         }
       }
     });
-    return total;
-  }, [selectedShifts, selectedDates, chaletDetails, currentMonth]);
 
-  const extraGuestsPrice = 0;
+    const totalPrice = totalBasePrice + totalExtraGuestsPrice;
+    const depositPercentage = Number(chaletDetails?.depositPercentage || 0);
+    const depositAmount = Math.round((totalPrice * depositPercentage) / 100);
+    const remainingAmount = totalPrice - depositAmount;
+
+    return {
+      shiftBasePrice: totalBasePrice,
+      extraGuestsPrice: totalExtraGuestsPrice,
+      totalPrice,
+      depositAmount,
+      remainingAmount,
+      explanationRows,
+      totalGuestsNow,
+    };
+  }, [selectedShifts, selectedDates, chaletDetails, adultCount, currentMonth, getDayOfWeek, getDateForDay]);
+
+  const {
+    shiftBasePrice,
+    extraGuestsPrice,
+    totalPrice,
+    depositAmount,
+    remainingAmount,
+    explanationRows,
+  } = pricingCalculations;
+
+  const selectedShiftPrice = shiftBasePrice;
+
+  const totalGuestsNow = adultCount;
+  const extraPersonPrice = Number(chaletDetails?.extraPersonPrice || 0);
+
+  const capacityLimit = explanationRows.length > 0
+    ? explanationRows[0].capacityLimit
+    : Number(chaletDetails?.priceCapacity || 2);
+
+  const extraGuestsCount = Math.max(0, totalGuestsNow - capacityLimit);
 
   const isShiftBookedForDay = useCallback(
     (day: number, shiftId: string) => {
@@ -428,30 +530,15 @@ export default function CompleteBookingScreen() {
     [availabilityData, currentMonth],
   );
 
-  const calculateTotalPrice = () => {
-    let total = 0;
-    selectedDates.forEach((day) => {
-      const shiftId = selectedShifts[day];
-      if (shiftId) {
-        const shift = chaletDetails?.shifts?.find((s: any) => s.id === shiftId);
-        if (shift) {
-          const dayOfWeek = getDayOfWeek(day);
-          const pricing = shift.pricing?.find(
-            (p: any) => p.dayOfWeek === dayOfWeek,
-          );
-          total += pricing
-            ? Number(pricing.price)
-            : Number(chaletDetails?.basePrice || 0);
-        }
-      }
-    });
-    return total;
-  };
-
-  const totalPrice = calculateTotalPrice();
   const depositPercentage = Number(chaletDetails?.depositPercentage || 0);
-  const depositAmount = Math.round((totalPrice * depositPercentage) / 100);
-  const remainingAmount = totalPrice - depositAmount;
+
+  useEffect(() => {
+    if (depositPercentage === 0) {
+      setPaymentType("FULL");
+    } else {
+      setPaymentType("DEPOSIT");
+    }
+  }, [depositPercentage]);
 
   const bookingDateString =
     selectedDates.length > 0
@@ -471,6 +558,15 @@ export default function CompleteBookingScreen() {
     if (activeTab === "WHEN") {
       setActiveTab("WHO");
     } else if (activeTab === "WHO") {
+      if (guestType === "FAMILY" && (!idImage1 || !idImage2)) {
+        Alert.alert(
+          isArabic ? "تنبيه" : "Alert",
+          isArabic
+            ? "يرجى رفع صورتي الهوية لإتمام الحجز للعائلات"
+            : "Please upload both ID photos for family bookings",
+        );
+        return;
+      }
       setActiveTab("WHERE");
     } else {
       // We are on DETAILS tab — create the booking via API
@@ -512,10 +608,12 @@ export default function CompleteBookingScreen() {
             shiftId: bookings[0].shiftId,
             bookingDate: bookings[0].bookingDate,
             adultsCount: adultCount,
-            childrenCount: childrenCount,
+            childrenCount: 0,
+            guestsCount: adultCount,
             paymentModel: paymentType.toLowerCase() as any,
             paymentMethod: selectedMethod,
             notes,
+            audienceType: guestType,
           }).unwrap();
 
           if (result.payment?.paymentUrl) {
@@ -831,7 +929,7 @@ export default function CompleteBookingScreen() {
             {t("booking.guests")}
           </ThemedText>
           <ThemedText style={[styles.infoValue, { textAlign: textEnd }]}>
-            {adultCount + childrenCount}
+            {adultCount}
           </ThemedText>
         </View>
         <View style={styles.divider} />
@@ -899,34 +997,36 @@ export default function CompleteBookingScreen() {
         {t("booking.paymentTitle")}
       </ThemedText>
 
-      <TouchableOpacity
-        style={[
-          styles.paymentOptionCard,
-          paymentType === "DEPOSIT" && styles.paymentOptionActive,
-          styles.row,
-          { flexDirection: rowDirection },
-        ]}
-        onPress={() => setPaymentType("DEPOSIT")}
-      >
-        <ThemedText
+      {depositPercentage > 0 && (
+        <TouchableOpacity
           style={[
-            styles.paymentLabel,
-            paymentType === "DEPOSIT" && styles.paymentLabelActive,
-            { textAlign: textStart },
+            styles.paymentOptionCard,
+            paymentType === "DEPOSIT" && styles.paymentOptionActive,
+            styles.row,
+            { flexDirection: rowDirection },
           ]}
+          onPress={() => setPaymentType("DEPOSIT")}
         >
-          {t("booking.depositPay")}
-        </ThemedText>
-        <ThemedText
-          style={[
-            styles.paymentVal,
-            paymentType === "DEPOSIT" && styles.paymentValActive,
-            { textAlign: textEnd },
-          ]}
-        >
-          {depositAmount.toLocaleString()} {t("common.iqd")}
-        </ThemedText>
-      </TouchableOpacity>
+          <ThemedText
+            style={[
+              styles.paymentLabel,
+              paymentType === "DEPOSIT" && styles.paymentLabelActive,
+              { textAlign: textStart },
+            ]}
+          >
+            {t("booking.depositPay")} ({depositPercentage}%)
+          </ThemedText>
+          <ThemedText
+            style={[
+              styles.paymentVal,
+              paymentType === "DEPOSIT" && styles.paymentValActive,
+              { textAlign: textEnd },
+            ]}
+          >
+            {depositAmount.toLocaleString()} {t("common.iqd")}
+          </ThemedText>
+        </TouchableOpacity>
+      )}
 
       <TouchableOpacity
         style={[
@@ -1009,7 +1109,7 @@ export default function CompleteBookingScreen() {
           initialStartDate={selectedStartDate ?? undefined}
           initialEndDate={selectedEndDate ?? undefined}
           reservedDates={bookedDateStrings}
-          selectionMode="single"
+          selectionMode="range"
         />
         <View style={{ marginTop: 20, paddingHorizontal: 4 }}>
           <PrimaryButton
@@ -1452,6 +1552,207 @@ export default function CompleteBookingScreen() {
           </>
         ) : activeTab === "WHO" ? (
           <View style={styles.whoContainer}>
+            {/* Capacity Info Banner */}
+            <View style={styles.capacityBanner}>
+              {/* Base Capacity Row */}
+              <View style={[styles.capacityRow, { flexDirection: rowDirection }]}>
+                <View style={[styles.capacityIconWrapper, { backgroundColor: "#DBEAFE" }]}>
+                  <SolarUsersGroupRoundedBold size={18} color="#035DF9" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <ThemedText style={[styles.capacityRowLabel, { textAlign: textStart }]}>
+                    {isArabic ? "السعة الأساسية" : "Base Capacity"}
+                  </ThemedText>
+                </View>
+                <ThemedText style={styles.capacityRowValue}>
+                  {capacityLimit} {isArabic ? "أشخاص" : "guests"}
+                </ThemedText>
+              </View>
+
+              <View style={styles.capacityDivider} />
+
+              {/* Max Capacity Row */}
+              {chaletDetails?.capacity && (
+                <>
+                  <View style={[styles.capacityRow, { flexDirection: rowDirection }]}>
+                    <View style={[styles.capacityIconWrapper, { backgroundColor: "#FEE2E2" }]}>
+                      <SolarInfoCircleBold size={18} color="#EF4444" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <ThemedText style={[styles.capacityRowLabel, { textAlign: textStart }]}>
+                        {isArabic ? "الحد الأقصى" : "Maximum Capacity"}
+                      </ThemedText>
+                    </View>
+                    <ThemedText style={styles.capacityRowValue}>
+                      {chaletDetails.capacity} {isArabic ? "شخص" : "guests"}
+                    </ThemedText>
+                  </View>
+                  <View style={styles.capacityDivider} />
+                </>
+              )}
+
+              {/* Extra Person Price Row */}
+              {extraPersonPrice > 0 && (
+                <View style={[styles.capacityRow, { flexDirection: rowDirection }]}>
+                  <View style={[styles.capacityIconWrapper, { backgroundColor: "#FEF3C7" }]}>
+                    <SolarCardBold size={18} color="#F59E0B" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <ThemedText style={[styles.capacityRowLabel, { textAlign: textStart }]}>
+                      {isArabic ? "سعر الشخص الإضافي" : "Extra Person Price"}
+                    </ThemedText>
+                  </View>
+                  <ThemedText style={[styles.capacityRowValue, { color: "#F59E0B" }]}>
+                    {Number(extraPersonPrice).toLocaleString()} {t("common.iqd")}
+                  </ThemedText>
+                </View>
+              )}
+
+              {/* Extra Guests Warning */}
+              {extraGuestsCount > 0 && extraPersonPrice > 0 && (
+                <View style={[styles.extraGuestNotice, { flexDirection: rowDirection }]}>
+                  <SolarInfoCircleBold size={14} color="#F59E0B" />
+                  <ThemedText style={[styles.extraGuestNoticeText, { textAlign: textStart }]}>
+                    {isArabic
+                      ? `لديك ${extraGuestsCount} ${extraGuestsCount === 1 ? "شخص إضافي" : "أشخاص إضافيين"} × ${Number(extraPersonPrice).toLocaleString()} ${t("common.iqd")} × ${selectedDates.length} ${selectedDates.length === 1 ? "يوم" : "أيام"} = ${extraGuestsPrice.toLocaleString()} ${t("common.iqd")}`
+                      : `${extraGuestsCount} extra ${extraGuestsCount === 1 ? "guest" : "guests"} × ${Number(extraPersonPrice).toLocaleString()} ${t("common.iqd")} × ${selectedDates.length} ${selectedDates.length === 1 ? "day" : "days"} = ${extraGuestsPrice.toLocaleString()} ${t("common.iqd")}`}
+                  </ThemedText>
+                </View>
+              )}
+
+              {/* Max Capacity Reached Warning */}
+              {chaletDetails?.capacity && totalGuestsNow >= chaletDetails.capacity && (
+                <View style={[styles.capacityWarning, { flexDirection: rowDirection }]}>
+                  <SolarInfoCircleBold size={14} color="#EF4444" />
+                  <ThemedText style={[styles.capacityWarningText, { textAlign: textStart }]}>
+                    {isArabic
+                      ? "لقد وصلت للحد الأقصى من الضيوف"
+                      : "You've reached the maximum guest limit"}
+                  </ThemedText>
+                </View>
+              )}
+            </View>
+
+            <View style={{ marginBottom: 12 }}>
+              <ThemedText
+                style={[
+                  styles.guestLabel,
+                  { textAlign: textStart, marginBottom: 12, fontSize: 16 },
+                ]}
+              >
+                {isArabic ? "نوع الحجز" : "Booking Type"}
+              </ThemedText>
+              <View
+                style={[styles.guestTypeContainer, { flexDirection: rowDirection }]}
+              >
+                <TouchableOpacity
+                  style={[
+                    styles.guestTypeTab,
+                    guestType === "FAMILY" && styles.guestTypeTabActive,
+                  ]}
+                  onPress={() => setGuestType("FAMILY")}
+                >
+                  <ThemedText
+                    style={[
+                      styles.guestTypeText,
+                      guestType === "FAMILY" && styles.guestTypeTextActive,
+                    ]}
+                  >
+                    {isArabic ? "عائلات" : "Families"}
+                  </ThemedText>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.guestTypeTab,
+                    guestType === "YOUTH" && styles.guestTypeTabActive,
+                  ]}
+                  onPress={() => setGuestType("YOUTH")}
+                >
+                  <ThemedText
+                    style={[
+                      styles.guestTypeText,
+                      guestType === "YOUTH" && styles.guestTypeTextActive,
+                    ]}
+                  >
+                    {isArabic ? "شباب" : "Youth"}
+                  </ThemedText>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {guestType === "FAMILY" && (
+              <View style={styles.idUploadContainer}>
+                <ThemedText
+                  style={[
+                    styles.guestLabel,
+                    { textAlign: textStart, marginBottom: 12, fontSize: 16 },
+                  ]}
+                >
+                  {isArabic ? "رفع صور الهوية" : "Upload ID Photos"}
+                </ThemedText>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    gap: 12,
+                    justifyContent: "center",
+                  }}
+                >
+                  <TouchableOpacity
+                    style={styles.idUploadButton}
+                    onPress={() => pickImage(1)}
+                  >
+                    {idImage1 ? (
+                      <ExpoImage
+                        source={{ uri: idImage1 }}
+                        style={styles.idImagePreview}
+                      />
+                    ) : (
+                      <>
+                        <ThemedText style={{ fontSize: 24, color: "#94A3B8" }}>
+                          +
+                        </ThemedText>
+                        <ThemedText
+                          style={{
+                            fontSize: 12,
+                            color: "#94A3B8",
+                            fontFamily: "Alexandria-Medium",
+                          }}
+                        >
+                          {isArabic ? "الوجه الأول للهوية" : "ID Front Side"}
+                        </ThemedText>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.idUploadButton}
+                    onPress={() => pickImage(2)}
+                  >
+                    {idImage2 ? (
+                      <ExpoImage
+                        source={{ uri: idImage2 }}
+                        style={styles.idImagePreview}
+                      />
+                    ) : (
+                      <>
+                        <ThemedText style={{ fontSize: 24, color: "#94A3B8" }}>
+                          +
+                        </ThemedText>
+                        <ThemedText
+                          style={{
+                            fontSize: 12,
+                            color: "#94A3B8",
+                            fontFamily: "Alexandria-Medium",
+                          }}
+                        >
+                          {isArabic ? "الوجه الثاني للهوية" : "ID Back Side"}
+                        </ThemedText>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+            
             <View style={[styles.whoCard, { flexDirection: rowDirection }]}>
               <View
                 style={[
@@ -1479,70 +1780,23 @@ export default function CompleteBookingScreen() {
               <GuestCounter
                 value={adultCount}
                 onIncrement={() => {
-                  const max = Number(chaletDetails?.maxAdults || 10);
-                  if (adultCount < max) setAdultCount(adultCount + 1);
-                  else
+                  const totalNow = adultCount;
+                  const maxCap = Number(chaletDetails?.capacity || 50);
+                  if (totalNow < maxCap) {
+                    setAdultCount(adultCount + 1);
+                  } else {
                     Alert.alert(
                       isArabic ? "تنبيه" : "Alert",
                       isArabic
-                        ? `الحد الاقصى للبالغين هو ${max}`
-                        : `Max adults is ${max}`,
+                        ? `السعة القصوى لهذا الشاليه هي ${maxCap} شخص. لديك حالياً ${totalNow} ضيف.`
+                        : `Maximum capacity for this chalet is ${maxCap} guests. You currently have ${totalNow}.`,
                     );
+                  }
                 }}
                 onDecrement={() => setAdultCount(Math.max(1, adultCount - 1))}
               />
             </View>
 
-            <View
-              style={[
-                styles.whoCard,
-                {
-                  marginTop: 12,
-                  flexDirection: rowDirection,
-                },
-              ]}
-            >
-              <View
-                style={[
-                  styles.guestInfo,
-                  { alignItems: alignStart }
-                ]}
-              >
-                <ThemedText
-                  style={[
-                    styles.guestLabel,
-                    { textAlign: textStart }
-                  ]}
-                >
-                  {t("booking.children")}
-                </ThemedText>
-                <ThemedText
-                  style={[
-                    styles.guestSubLabel,
-                    { textAlign: textStart }
-                  ]}
-                >
-                  {t("booking.childrenDesc")}
-                </ThemedText>
-              </View>
-              <GuestCounter
-                value={childrenCount}
-                onIncrement={() => {
-                  const max = Number(chaletDetails?.maxChildren || 10);
-                  if (childrenCount < max) setChildrenCount(childrenCount + 1);
-                  else
-                    Alert.alert(
-                      isArabic ? "تنبيه" : "Alert",
-                      isArabic
-                        ? `الحد الاقصى للأطفال هو ${max}`
-                        : `Max children is ${max}`,
-                    );
-                }}
-                onDecrement={() =>
-                  setChildrenCount(Math.max(0, childrenCount - 1))
-                }
-              />
-            </View>
           </View>
         ) : (
           renderDetailsTab()
@@ -1792,6 +2046,55 @@ const styles = StyleSheet.create({
     flexShrink: 0,
     textAlign: "right",
     lineHeight: 22,
+  },
+  guestTypeContainer: {
+    backgroundColor: "white",
+    borderRadius: 16,
+    padding: 6,
+    height: 64,
+    borderWidth: 1,
+    borderColor: "#F1F5F9",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 6,
+  },
+  guestTypeTab: {
+    flex: 1,
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 12,
+  },
+  guestTypeTabActive: {
+    backgroundColor: "#F0F7FF",
+  },
+  guestTypeText: {
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
+    color: "#64748B",
+  },
+  guestTypeTextActive: {
+    color: "#035DF9",
+    fontFamily: "Alexandria-Medium",
+  },
+  idUploadContainer: {
+    marginBottom: 12,
+  },
+  idUploadButton: {
+    flex: 1,
+    height: 120,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: "#E2E8F0",
+    borderStyle: "dashed",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F8FAFC",
+    overflow: "hidden",
+  },
+  idImagePreview: {
+    width: "100%",
+    height: "100%",
   },
   whoContainer: { marginTop: 10 },
   whoCard: {
@@ -2057,5 +2360,74 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
     backgroundColor: Colors.primary,
+  },
+  capacityBanner: {
+    backgroundColor: "#F8FAFC",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+  },
+  capacityRow: {
+    alignItems: "center",
+    gap: 10,
+    paddingVertical: 8,
+  },
+  capacityIconWrapper: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  capacityRowLabel: {
+    fontSize: normalize.font(11),
+    fontFamily: "Alexandria-Medium",
+    color: "#475569",
+  },
+  capacityRowValue: {
+    fontSize: normalize.font(11),
+    fontFamily: "Alexandria-SemiBold",
+    color: "#1E293B",
+  },
+  capacityDivider: {
+    height: 1,
+    backgroundColor: "#E2E8F0",
+    marginVertical: 2,
+  },
+  extraGuestNotice: {
+    alignItems: "center",
+    gap: 8,
+    marginTop: 10,
+    backgroundColor: "#FFFBEB",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#F59E0B20",
+  },
+  extraGuestNoticeText: {
+    flex: 1,
+    fontSize: normalize.font(9),
+    fontFamily: "Alexandria-Medium",
+    color: "#92400E",
+    lineHeight: 18,
+  },
+  capacityWarning: {
+    alignItems: "center",
+    gap: 6,
+    marginTop: 8,
+    backgroundColor: "#FEF2F2",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#EF444420",
+  },
+  capacityWarningText: {
+    fontSize: normalize.font(9),
+    fontFamily: "Alexandria-Medium",
+    color: "#991B1B",
   },
 });

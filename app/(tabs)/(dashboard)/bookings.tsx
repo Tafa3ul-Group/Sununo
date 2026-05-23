@@ -335,6 +335,24 @@ export default function BookingsScreen() {
                 <Text style={styles.modernBookingDot}>•</Text>
                 <Text style={styles.modernBookingDate}>{formatBookingDate(item.bookingDate || item.date || item.createdAt?.split('T')[0])}</Text>
               </View>
+
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginTop: 4 }}>
+                <Text style={{ fontSize: normalize.font(11), color: '#64748B', fontFamily: 'Alexandria-Medium' }}>
+                  {isRTL ? `الاشخاص: ${item.guestsCount || item.guestCount || 0}` : `Guests: ${item.guestsCount || item.guestCount || 0}`}
+                </Text>
+                {!bIsExternal && item.paymentModel === 'deposit' && (
+                  <>
+                    <Text style={styles.modernBookingDot}>•</Text>
+                    <Text style={{ fontSize: normalize.font(11), color: '#F97316', fontFamily: 'Alexandria-Medium' }}>
+                      {isRTL ? `عربون: ${(Number(item.depositAmount) || 0).toLocaleString()} د.ع` : `Deposit: ${(Number(item.depositAmount) || 0).toLocaleString()} IQD`}
+                    </Text>
+                    <Text style={styles.modernBookingDot}>•</Text>
+                    <Text style={{ fontSize: normalize.font(11), color: '#035DF9', fontFamily: 'Alexandria-Medium' }}>
+                      {isRTL ? `متبقي: ${(Number(item.remainingAmount) || 0).toLocaleString()} د.ع` : `Remaining: ${(Number(item.remainingAmount) || 0).toLocaleString()} IQD`}
+                    </Text>
+                  </>
+                )}
+              </View>
             </View>
 
             {/* 3. Price (Left part in RTL) */}
@@ -390,24 +408,24 @@ export default function BookingsScreen() {
           title={isRTL ? 'الحجوزات' : 'Bookings'}
           showSearch={false}
           showBackButton={true}
-          customRightComponent={
-            <View style={{ transform: [{ scale: 0.92 }] }}>
-              <SecondaryButton
-                label={getButtonLabel()}
-                icon={<SolarCalendarBold size={18} color={Colors.black} />}
-                inactiveTextColor={Colors.black}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  calendarSheetRef.current?.present();
-                }}
-              />
-            </View>
-          }
         />
         <View style={{ flex: 1 }}>
           <View style={{ flex: 1 }}>
             {/* Fixed Section: Header + Filter */}
             <View style={styles.fixedHeaderArea}>
+              <View style={[styles.bookingsHeader, { flexDirection: 'row', justifyContent: 'flex-end' }]}>
+                <View style={{ transform: [{ scale: 0.92 }] }}>
+                  <SecondaryButton
+                    label={getButtonLabel()}
+                    icon={<SolarCalendarBold size={18} color={Colors.black} />}
+                    inactiveTextColor={Colors.black}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      calendarSheetRef.current?.present();
+                    }}
+                  />
+                </View>
+              </View>
 
               {/* Filter Bar */}
               <Animated.View
@@ -477,7 +495,7 @@ export default function BookingsScreen() {
               contentContainerStyle={styles.scrollContent}
               onEndReached={handleLoadMore}
               onEndReachedThreshold={0.5}
-              ListHeaderComponent={null}
+              ListHeaderComponent={<View style={{ height: 5 }} />}
               ListEmptyComponent={
                 isBookingsFetching && recentBookings.length === 0 ? (
                   <View style={styles.loadingContainer}>
@@ -567,7 +585,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: normalize.width(14),
-    paddingTop: 0,
+    paddingTop: normalize.height(5),
     paddingBottom: normalize.height(10)
   },
   loadingContainer: {
@@ -787,7 +805,7 @@ const styles = StyleSheet.create({
     marginBottom: 0
   },
   filterContainer: {
-    gap: normalize.width(2),
+    gap: normalize.width(8),
     paddingHorizontal: normalize.width(16),
     alignItems: 'center'
   },
@@ -879,7 +897,7 @@ const styles = StyleSheet.create({
   fixedHeaderArea: {
     backgroundColor: Colors.white,
     zIndex: 10,
-    paddingBottom: 0
+    paddingBottom: normalize.height(5)
   },
   noBookings: {
     padding: normalize.width(30),

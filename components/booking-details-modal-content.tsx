@@ -140,7 +140,9 @@ export const BookingDetailsModalContent = ({ id, isRTL, t, onClose, onOpenCancel
           <View style={[styles.detailRow, { flexDirection: 'row' }]}>
             <Text style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'الاشخاص' : 'Persons'}</Text>
             <Text style={[styles.value, { textAlign: isRTL ? 'left' : 'right' }]}>
-              {isRTL ? `${data.adults || 2} بالغين، ${data.children || 2} اطفال` : `${data.adults || 2} Adults, ${data.children || 2} Children`}
+              {data.children && data.children > 0
+                ? (isRTL ? `${data.adults || 2} بالغين، ${data.children} اطفال` : `${data.adults || 2} Adults, ${data.children} Children`)
+                : (isRTL ? `${data.adults || 2} بالغين` : `${data.adults || 2} Adults`)}
             </Text>
           </View>
         </View>
