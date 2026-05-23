@@ -127,12 +127,19 @@ export default function BookingDetailsPage() {
     }
   };
 
-  const renderInfoRow = (label: string, value: string | React.ReactNode, isBlue: boolean = false) => (
-    <View style={styles.infoRow}>
-      <Text style={styles.infoLabel}>{label}</Text>
-      <View style={styles.infoValueContainer}>
+  const renderInfoRow = (label: string, value: string | React.ReactNode, isBlue: boolean = false, subLabel?: string) => (
+    <View style={[styles.infoRow, { alignItems: 'center' }]}>
+      <View style={{ flex: 1, alignItems: 'flex-start', paddingLeft: isRTL ? 16 : 0, paddingRight: isRTL ? 0 : 16 }}>
+        <Text style={[styles.infoLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{label}</Text>
+        {subLabel && (
+          <Text style={{ fontSize: 11, color: '#94A3B8', fontFamily: 'Alexandria-Regular', marginTop: 2, textAlign: isRTL ? 'right' : 'left', writingDirection: isRTL ? 'rtl' : 'ltr' }}>
+            {subLabel}
+          </Text>
+        )}
+      </View>
+      <View style={{ flex: 0, alignItems: 'flex-end' }}>
         {typeof value === 'string' ? (
-          <Text style={[styles.infoValue, isBlue && styles.blueValue]}>{value}</Text>
+          <Text style={[styles.infoValue, isBlue && styles.blueValue, { textAlign: isRTL ? 'left' : 'right' }]}>{value}</Text>
         ) : (
           value
         )}
@@ -289,19 +296,11 @@ export default function BookingDetailsPage() {
             isRTL ? "عدد الأشخاص" : "Guests",
             `${data.guestsCount || 0} ${isRTL ? "شخص" : "persons"}`,
           )}
-          {Number(data.extraGuestsPrice) > 0 && (
-            <>
-              {renderInfoRow(
-                isRTL ? "سعر الشخص الإضافي" : "Extra Person Price",
-                `${Number(data.chalet?.extraPersonPrice || 0).toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
-              )}
-              {renderInfoRow(
-                isRTL ? "مبلغ الزيادة" : "Extra Guests Charge",
-                <Text style={[styles.infoValue, { color: '#F59E0B', fontFamily: 'Alexandria-SemiBold' }]}>
-                  {`${Number(data.extraGuestsPrice).toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`}
-                </Text>,
-              )}
-            </>
+          {data.guestsCount > (data.chalet?.priceCapacity || data.chalet?.capacity || 0) && (
+            renderInfoRow(
+              isRTL ? "الأشخاص الإضافيين (فوق السعة)" : "Extra Guests (Above Capacity)",
+              `${data.guestsCount - (data.chalet?.priceCapacity || data.chalet?.capacity || 0)} ${isRTL ? "شخص" : "persons"}`,
+            )
           )}
         </View>
 
@@ -313,7 +312,21 @@ export default function BookingDetailsPage() {
             </View>
             <View style={styles.divider} />
             {renderInfoRow(
-              isRTL ? "المبلغ الكلي" : "Total Price",
+              isRTL ? "المبلغ الأساسي" : "Base Price",
+              `${Number(data.basePrice || 0).toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
+            )}
+            {Number(data.extraGuestsPrice) > 0 && renderInfoRow(
+              isRTL ? "مبلغ الزيادة" : "Extra Charge",
+              <Text style={[styles.infoValue, { color: '#F59E0B', fontFamily: 'Alexandria-SemiBold' }]}>
+                {`+${Number(data.extraGuestsPrice).toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`}
+              </Text>,
+              false,
+              isRTL 
+                ? `(سعة إضافية - ${Number(data.chalet?.extraPersonPrice || 0).toLocaleString()} د.ع للفرد)` 
+                : `(Capacity - ${Number(data.chalet?.extraPersonPrice || 0).toLocaleString()} IQD/person)`
+            )}
+            {renderInfoRow(
+              isRTL ? "المبلغ النهائي" : "Final Price",
               `${totalPrice.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
             )}
             {renderInfoRow(
@@ -473,7 +486,7 @@ const styles = StyleSheet.create({
     textAlign: isRTL ? 'right' : 'left',
     lineHeight: normalize.font(20)
   },
-  scrollContent: { paddingHorizontal: 20 },
+  scrollContent: { paddingHorizontal: 20, paddingTop: 20 },
   // Tenant Category Badge
   tenantCategoryBadge: {
     paddingHorizontal: 12,

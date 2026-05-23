@@ -46,6 +46,10 @@ export default function DashboardNonTabLayout() {
         options={{ title: isRTL ? 'إعدادات الشاليه' : 'Chalet Settings' }}
       />
       <Stack.Screen
+        name="shifts"
+        options={{ title: isRTL ? 'إدارة الفترات' : 'Manage Shifts' }}
+      />
+      <Stack.Screen
         name="booking-details"
         options={{ title: isRTL ? 'تفاصيل الحجز' : 'Booking Details' }}
       />

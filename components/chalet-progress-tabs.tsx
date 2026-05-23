@@ -40,7 +40,7 @@ const STEP_SHAPES: (keyof typeof SHAPE_PATHS)[] = ['blue', 'green', 'pink', 'red
 export interface ChaletStep {
   id: string;
   title: string;
-  icon?: string;
+  icon?: string | React.ReactNode;
 }
 
 interface ChaletProgressTabsProps {
@@ -116,9 +116,13 @@ const StepNode: React.FC<{
           {isCompleted ? (
             <Text style={styles.checkText}>✓</Text>
           ) : (
-            <Text style={[styles.stepNumber, isFuture && { color: '#9CA3AF' }]}>
-              {step.icon || (index + 1).toString()}
-            </Text>
+            typeof step.icon === 'string' || !step.icon ? (
+              <Text style={[styles.stepNumber, isFuture && { color: '#9CA3AF' }]}>
+                {(step.icon as string) || (index + 1).toString()}
+              </Text>
+            ) : (
+              step.icon
+            )
           )}
         </View>
       </AnimatedView>

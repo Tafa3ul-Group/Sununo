@@ -419,8 +419,12 @@ export default function HomeScreen() {
             : shift.shiftName?.en || shift.shiftName;
           const isNight = shift.isOvernight;
           const isAvailable = shift.isAvailable;
-          const accentColor = isNight ? "#7C3AED" : "#035DF9";
-          const bgColor = isNight ? "#F5F3FF" : "#EFF6FF";
+          
+          // Determine colors based on availability
+          let accentColor = isNight ? "#7C3AED" : "#035DF9";
+          if (!isAvailable) {
+            accentColor = shift.isClosed ? "#EF4444" : "#64748B"; // Red if closed, Gray if booked
+          }
 
           return (
             <TouchableOpacity

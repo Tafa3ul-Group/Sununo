@@ -37,15 +37,17 @@ import {
   useUpdateChaletMutation,
   useUploadChaletImageMutation,
 } from '@/store/api/apiSlice';
+import { setSelectedChalet } from '@/store/authSlice';
 import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput, BottomSheetView } from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Animated, Dimensions, I18nManager, Image, ScrollView, StatusBar, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Animated, Dimensions, I18nManager, Image, ScrollView, StatusBar, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import Toast from 'react-native-toast-message';
+import { useDispatch } from 'react-redux';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const HERO_HEIGHT = 420;
@@ -58,6 +60,7 @@ export default function ChaletDetailsScreen() {
   const { i18n } = useTranslation();
   const isRTL = i18n.language ? i18n.language.startsWith('ar') : false;
   const { showConfirm } = useConfirmationDialog();
+  const dispatch = useDispatch();
 
   // Robust layout bridge: 
   // - If I18nManager.isRTL is active, standard 'row' is already right-to-left. Manually forcing 'row-reverse' double-flips it back to LTR.
@@ -840,8 +843,9 @@ export default function ChaletDetailsScreen() {
               value: isRTL ? 'تعديل أوقات الدخول والخروج وأسعار أيام الأسبوع' : 'Edit check-in/out times & weekday pricing',
               onPress: () => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                dispatch(setSelectedChalet({ id: chaletId as string, name: chaletName || '' }));
                 router.push({
-                  pathname: '/(tabs)/(dashboard)/shifts',
+                  pathname: '/(dashboard)/shifts',
                   params: { id: chaletId as string }
                 });
               }
@@ -1302,203 +1306,139 @@ export default function ChaletDetailsScreen() {
         index={0}
         snapPoints={['90%']}
         backdropComponent={renderBackdrop}
-        backgroundStyle={{ borderRadius: 24 }}
+        backgroundStyle={{ borderRadius: 28, backgroundColor: '#FAFBFC' }}
+        handleIndicatorStyle={{ backgroundColor: '#CBD5E1', width: 36 }}
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
+        android_keyboardInputMode="adjustResize"
       >
-        <BottomSheetScrollView contentContainerStyle={[styles.modalScrollContent, { direction: isRTL ? 'rtl' : 'ltr', paddingBottom: 60 }]}>
-          <View style={[styles.modalHeaderRow, { flexDirection: flexRow, justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }]}>
-            <Text style={styles.modalTitle}>{isRTL ? 'الشروط وقوانين الشاليه' : 'Chalet Rules & Policies'}</Text>
-            {isUpdatingRules && <ActivityIndicator size="small" color={Colors.primary} style={{ marginHorizontal: 8 }} />}
+        <BottomSheetScrollView contentContainerStyle={{ direction: isRTL ? 'rtl' : 'ltr', paddingHorizontal: 20, paddingTop: 8, paddingBottom: 80 }} keyboardShouldPersistTaps="handled">
+          {/* Header */}
+          <View style={{ flexDirection: flexRow, alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+            <View style={{ flexDirection: flexRow, alignItems: 'center', gap: 10 }}>
+              <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: Colors.primary + '12', justifyContent: 'center', alignItems: 'center' }}>
+                <SolarShieldWarningBold size={20} color={Colors.primary} />
+              </View>
+              <View>
+                <Text style={{ fontSize: 18, fontFamily: 'Alexandria-Bold', color: '#0F172A' }}>
+                  {isRTL ? 'الشروط والقوانين' : 'Rules & Policies'}
+                </Text>
+                <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Regular', color: '#94A3B8', marginTop: 1 }}>
+                  {isRTL ? `${rulesForm.rules.length} شرط مضاف` : `${rulesForm.rules.length} rules added`}
+                </Text>
+              </View>
+            </View>
+            {isUpdatingRules && <ActivityIndicator size="small" color={Colors.primary} />}
           </View>
-
-          {/* Section: Chalet Rules Points */}
-          <Text style={styles.modalSectionHeading}>{isRTL ? 'شروط الشاليه (نقاط)' : 'Chalet Rules (Points)'}</Text>
 
           {/* Current Rules List */}
           {rulesForm.rules.length > 0 ? (
-            <View style={styles.modalRulesList}>
+            <View style={{ gap: 10, marginBottom: 20 }}>
               {rulesForm.rules.map((rule, index) => {
                 if (editingRuleId === rule.id && editForm) {
                   return (
-                    <View key={rule.id} style={styles.modalRuleEditCard}>
-                      <Text style={styles.editCardTitle}>{isRTL ? 'تعديل الشرط' : 'Edit Rule'}</Text>
-
-                      {/* Arabic Inputs */}
-                      <View style={styles.modalInputGroup}>
-                        <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'العنوان بالعربية *' : 'Title (AR) *'}</Text>
-                        <BottomSheetTextInput
-                          style={[styles.modalInput, { textAlign: isRTL ? 'right' : 'left' }]}
-                          value={editForm.titleAr}
-                          onChangeText={(val) => setEditForm({ ...editForm, titleAr: val })}
-                        />
+                    <View key={rule.id} style={{ backgroundColor: '#FFF', borderRadius: 16, padding: 16, borderWidth: 1.5, borderColor: Colors.primary + '30', gap: 10 }}>
+                      <Text style={{ fontSize: 14, fontFamily: 'Alexandria-Bold', color: Colors.primary, marginBottom: 4 }}>{isRTL ? '✏️ تعديل الشرط' : '✏️ Edit Rule'}</Text>
+                      <View style={{ gap: 4 }}>
+                        <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Medium', color: '#64748B' }}>{isRTL ? 'العنوان بالعربية *' : 'Title (AR) *'}</Text>
+                        <BottomSheetTextInput style={{ backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, fontFamily: 'Alexandria-Regular', color: '#1E293B', borderWidth: 1, borderColor: '#E2E8F0', textAlign: isRTL ? 'right' : 'left' }} value={editForm.titleAr} onChangeText={(val) => setEditForm({ ...editForm, titleAr: val })} />
                       </View>
-
-                      <View style={styles.modalInputGroup}>
-                        <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'الشرح بالعربية *' : 'Description (AR) *'}</Text>
-                        <BottomSheetTextInput
-                          style={[styles.modalRuleTextArea, { textAlign: isRTL ? 'right' : 'left', minHeight: 60 }]}
-                          multiline
-                          value={editForm.descriptionAr}
-                          onChangeText={(val) => setEditForm({ ...editForm, descriptionAr: val })}
-                        />
+                      <View style={{ gap: 4 }}>
+                        <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Medium', color: '#64748B' }}>{isRTL ? 'الشرح بالعربية *' : 'Description (AR) *'}</Text>
+                        <BottomSheetTextInput style={{ backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, fontFamily: 'Alexandria-Regular', color: '#1E293B', borderWidth: 1, borderColor: '#E2E8F0', minHeight: 55, textAlignVertical: 'top', textAlign: isRTL ? 'right' : 'left' }} multiline value={editForm.descriptionAr} onChangeText={(val) => setEditForm({ ...editForm, descriptionAr: val })} />
                       </View>
-
-                      {/* English Inputs */}
-                      <View style={styles.modalInputGroup}>
-                        <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'العنوان بالإنجليزية' : 'Title (EN)'}</Text>
-                        <BottomSheetTextInput
-                          style={[styles.modalInput, { textAlign: isRTL ? 'right' : 'left' }]}
-                          value={editForm.titleEn}
-                          onChangeText={(val) => setEditForm({ ...editForm, titleEn: val })}
-                        />
+                      <View style={{ gap: 4 }}>
+                        <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Medium', color: '#94A3B8' }}>{isRTL ? 'العنوان بالإنجليزية' : 'Title (EN)'}</Text>
+                        <BottomSheetTextInput style={{ backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, fontFamily: 'Alexandria-Regular', color: '#1E293B', borderWidth: 1, borderColor: '#E2E8F0', textAlign: 'left' }} value={editForm.titleEn} onChangeText={(val) => setEditForm({ ...editForm, titleEn: val })} />
                       </View>
-
-                      <View style={styles.modalInputGroup}>
-                        <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'الشرح بالإنجليزية' : 'Description (EN)'}</Text>
-                        <BottomSheetTextInput
-                          style={[styles.modalRuleTextArea, { textAlign: isRTL ? 'right' : 'left', minHeight: 60 }]}
-                          multiline
-                          value={editForm.descriptionEn}
-                          onChangeText={(val) => setEditForm({ ...editForm, descriptionEn: val })}
-                        />
+                      <View style={{ gap: 4 }}>
+                        <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Medium', color: '#94A3B8' }}>{isRTL ? 'الشرح بالإنجليزية' : 'Description (EN)'}</Text>
+                        <BottomSheetTextInput style={{ backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, fontFamily: 'Alexandria-Regular', color: '#1E293B', borderWidth: 1, borderColor: '#E2E8F0', minHeight: 55, textAlignVertical: 'top', textAlign: 'left' }} multiline value={editForm.descriptionEn} onChangeText={(val) => setEditForm({ ...editForm, descriptionEn: val })} />
                       </View>
-
-                      {/* Action buttons */}
-                      <View style={[styles.editActionRow, { flexDirection: flexRow }]}>
-                        <TouchableOpacity
-                          onPress={handleSaveEditRule}
-                          disabled={isUpdatingRules}
-                          style={[styles.editActionBtn, styles.editSaveBtn, { flexDirection: flexRow }]}
-                        >
-                          <SolarCheckCircleBold size={18} color={Colors.white} />
-                          <Text style={styles.editActionText}>{isRTL ? 'حفظ' : 'Save'}</Text>
+                      <View style={{ flexDirection: flexRow, gap: 10, marginTop: 6 }}>
+                        <TouchableOpacity onPress={handleSaveEditRule} disabled={isUpdatingRules} style={{ flex: 1, flexDirection: flexRow, backgroundColor: Colors.primary, borderRadius: 10, paddingVertical: 10, justifyContent: 'center', alignItems: 'center', gap: 6 }}>
+                          <SolarCheckCircleBold size={16} color="#FFF" />
+                          <Text style={{ fontSize: 13, fontFamily: 'Alexandria-Bold', color: '#FFF' }}>{isRTL ? 'حفظ' : 'Save'}</Text>
                         </TouchableOpacity>
-
-                        <TouchableOpacity
-                          onPress={cancelEditRule}
-                          disabled={isUpdatingRules}
-                          style={[styles.editActionBtn, styles.editCancelBtn, { flexDirection: flexRow }]}
-                        >
-                          <SolarCloseCircleBold size={18} color="#4B5563" />
-                          <Text style={[styles.editActionText, { color: '#4B5563' }]}>{isRTL ? 'إلغاء' : 'Cancel'}</Text>
+                        <TouchableOpacity onPress={cancelEditRule} disabled={isUpdatingRules} style={{ flex: 1, flexDirection: flexRow, backgroundColor: '#F1F5F9', borderRadius: 10, paddingVertical: 10, justifyContent: 'center', alignItems: 'center', gap: 6 }}>
+                          <SolarCloseCircleBold size={16} color="#64748B" />
+                          <Text style={{ fontSize: 13, fontFamily: 'Alexandria-Bold', color: '#64748B' }}>{isRTL ? 'إلغاء' : 'Cancel'}</Text>
                         </TouchableOpacity>
                       </View>
                     </View>
                   );
                 }
-
                 return (
-                  <View key={rule.id} style={[styles.modalRuleCard, { padding: 10, marginBottom: 8 }]}>
-                    <View style={[styles.ruleCardHeader, { flexDirection: flexRow, justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: 0 }]}>
-                      <View style={[styles.ruleInfoCol, { flexDirection: flexRow, alignItems: 'center', flex: 1, gap: 10 }]}>
-                        <View style={styles.modalRuleNumber}>
-                          <Text style={styles.modalRuleNumberText}>{index + 1}</Text>
-                        </View>
-
-                        <View style={[styles.modalRuleText, { flex: 1, alignItems: flexStart }]}>
-                          <Text style={[styles.modalRuleTitle, { textAlign: isRTL ? 'right' : 'left', fontSize: 13, marginBottom: 2 }]}>
-                            {isRTL ? rule.titleAr : (rule.titleEn || rule.titleAr)}
-                          </Text>
-                          <Text style={[styles.modalRuleDesc, { textAlign: isRTL ? 'right' : 'left', fontSize: 11, color: '#4B5563' }]}>
-                            {isRTL ? rule.descriptionAr : (rule.descriptionEn || rule.descriptionAr)}
-                          </Text>
-                        </View>
-                      </View>
-
-                      <View style={[styles.ruleCardActions, { flexDirection: flexRow, gap: 8, marginStart: 8 }]}>
-                        <TouchableOpacity onPress={() => startEditRule(rule)} style={[styles.modalRuleEdit, { padding: 4 }]}>
-                          <SolarPenBold size={16} color={Colors.primary} />
-                        </TouchableOpacity>
-
-                        <TouchableOpacity onPress={() => handleRemoveRule(rule.id)} style={[styles.modalRuleDelete, { padding: 4 }]}>
-                          <SolarTrashBinBold size={16} color="#EF4444" />
-                        </TouchableOpacity>
-                      </View>
+                  <View key={rule.id} style={{ backgroundColor: '#FFF', borderRadius: 14, padding: 14, flexDirection: flexRow, alignItems: 'flex-start', gap: 12, borderWidth: 1, borderColor: '#F1F5F9' }}>
+                    <View style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: Colors.primary + '12', justifyContent: 'center', alignItems: 'center', marginTop: 2 }}>
+                      <Text style={{ fontSize: 12, fontFamily: 'Alexandria-Bold', color: Colors.primary }}>{index + 1}</Text>
+                    </View>
+                    <View style={{ flex: 1, alignItems: flexStart }}>
+                      <Text style={{ fontSize: 13, fontFamily: 'Alexandria-Bold', color: '#1E293B', textAlign: isRTL ? 'right' : 'left' }}>{isRTL ? rule.titleAr : (rule.titleEn || rule.titleAr)}</Text>
+                      <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Regular', color: '#64748B', marginTop: 3, textAlign: isRTL ? 'right' : 'left', lineHeight: 18 }}>{isRTL ? rule.descriptionAr : (rule.descriptionEn || rule.descriptionAr)}</Text>
+                    </View>
+                    <View style={{ flexDirection: flexRow, gap: 6 }}>
+                      <TouchableOpacity onPress={() => startEditRule(rule)} style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: Colors.primary + '10', justifyContent: 'center', alignItems: 'center' }}>
+                        <SolarPenBold size={14} color={Colors.primary} />
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => handleRemoveRule(rule.id)} style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: '#FEE2E2', justifyContent: 'center', alignItems: 'center' }}>
+                        <SolarTrashBinBold size={14} color="#EF4444" />
+                      </TouchableOpacity>
                     </View>
                   </View>
                 );
               })}
             </View>
           ) : (
-            <Text style={styles.modalNoRulesText}>
-              {isRTL ? 'لا توجد شروط مضافة حالياً. أضف شرطاً بالأسفل.' : 'No rules added yet. Add a rule below.'}
-            </Text>
+            <View style={{ backgroundColor: '#FFF', borderRadius: 16, padding: 24, alignItems: 'center', marginBottom: 20, borderWidth: 1, borderColor: '#F1F5F9' }}>
+              <SolarNotebookBold size={32} color="#CBD5E1" />
+              <Text style={{ fontSize: 13, fontFamily: 'Alexandria-Medium', color: '#94A3B8', marginTop: 10, textAlign: 'center' }}>{isRTL ? 'لا توجد شروط مضافة حالياً\nأضف شرطاً بالأسفل' : 'No rules added yet\nAdd a rule below'}</Text>
+            </View>
           )}
 
-          <View style={styles.modalDivider} />
-
-          {/* Add New Rule Form */}
-          <Text style={styles.modalRuleSubTitle}>{isRTL ? 'إضافة شرط أو سياسة جديدة' : 'Add New Rule or Policy'}</Text>
-
-          {/* Arabic Inputs Section */}
-          <View style={styles.formLangSection}>
-            <View style={[styles.langBadge, { marginBottom: 8, alignSelf: flexStart }]}><Text style={styles.langBadgeText}>العربية (Arabic)</Text></View>
-
-            <View style={styles.modalInputGroup}>
-              <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'عنوان الشرط بالعربية *' : 'Rule Title (AR) *'}</Text>
-              <BottomSheetTextInput
-                style={[styles.modalInput, { textAlign: isRTL ? 'right' : 'left' }]}
-                placeholder={isRTL ? "مثال: منع التدخين" : "e.g. No smoking"}
-                value={newRule.titleAr}
-                onChangeText={(val) => setNewRule({ ...newRule, titleAr: val })}
-              />
+          {/* Add New Rule Section */}
+          <View style={{ backgroundColor: '#FFF', borderRadius: 16, padding: 16, marginTop: 12, borderWidth: 1, borderColor: '#F1F5F9' }}>
+            <View style={{ flexDirection: flexRow, alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <SolarAddSquareBold size={18} color={Colors.primary} />
+              <Text style={{ fontSize: 14, fontFamily: 'Alexandria-Bold', color: '#0F172A' }}>{isRTL ? 'إضافة شرط جديد' : 'Add New Rule'}</Text>
             </View>
 
-            <View style={styles.modalInputGroup}>
-              <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'شرح الشرط بالعربية *' : 'Rule Description (AR) *'}</Text>
-              <BottomSheetTextInput
-                style={[styles.modalRuleTextArea, { textAlign: isRTL ? 'right' : 'left', minHeight: 65 }]}
-                multiline
-                placeholder={isRTL ? "مثال: يمنع التدخين تماماً داخل الغرف." : "e.g. Smoking is strictly prohibited inside."}
-                value={newRule.descriptionAr}
-                onChangeText={(val) => setNewRule({ ...newRule, descriptionAr: val })}
-              />
+            {/* Arabic */}
+            <View style={{ marginBottom: 14 }}>
+              <View style={{ flexDirection: flexRow, alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                <View style={{ backgroundColor: Colors.primary + '15', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                  <Text style={{ fontSize: 10, fontFamily: 'Alexandria-Bold', color: Colors.primary }}>العربية *</Text>
+                </View>
+              </View>
+              <View style={{ gap: 8 }}>
+                <BottomSheetTextInput style={{ backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, fontFamily: 'Alexandria-Regular', color: '#1E293B', borderWidth: 1, borderColor: '#E2E8F0', textAlign: isRTL ? 'right' : 'left' }} placeholder={isRTL ? "عنوان الشرط..." : "Rule title..."} placeholderTextColor="#CBD5E1" value={newRule.titleAr} onChangeText={(val) => setNewRule({ ...newRule, titleAr: val })} />
+                <BottomSheetTextInput style={{ backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, fontFamily: 'Alexandria-Regular', color: '#1E293B', borderWidth: 1, borderColor: '#E2E8F0', minHeight: 60, textAlignVertical: 'top', textAlign: isRTL ? 'right' : 'left' }} multiline placeholder={isRTL ? "شرح الشرط..." : "Rule description..."} placeholderTextColor="#CBD5E1" value={newRule.descriptionAr} onChangeText={(val) => setNewRule({ ...newRule, descriptionAr: val })} />
+              </View>
             </View>
+
+            {/* English */}
+            <View>
+              <View style={{ flexDirection: flexRow, alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                <View style={{ backgroundColor: '#F1F5F9', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                  <Text style={{ fontSize: 10, fontFamily: 'Alexandria-Bold', color: '#64748B' }}>English</Text>
+                </View>
+                <Text style={{ fontSize: 10, fontFamily: 'Alexandria-Regular', color: '#94A3B8' }}>{isRTL ? '(اختياري)' : '(optional)'}</Text>
+              </View>
+              <View style={{ gap: 8 }}>
+                <BottomSheetTextInput style={{ backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, fontFamily: 'Alexandria-Regular', color: '#1E293B', borderWidth: 1, borderColor: '#E2E8F0', textAlign: 'left' }} placeholder="Rule title..." placeholderTextColor="#CBD5E1" value={newRule.titleEn} onChangeText={(val) => setNewRule({ ...newRule, titleEn: val })} />
+                <BottomSheetTextInput style={{ backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, fontFamily: 'Alexandria-Regular', color: '#1E293B', borderWidth: 1, borderColor: '#E2E8F0', minHeight: 60, textAlignVertical: 'top', textAlign: 'left' }} multiline placeholder="Rule description..." placeholderTextColor="#CBD5E1" value={newRule.descriptionEn} onChangeText={(val) => setNewRule({ ...newRule, descriptionEn: val })} />
+              </View>
+            </View>
+
+            {/* Add Button */}
+            <PrimaryButton
+              label={isUpdatingRules ? (isRTL ? 'جاري الإضافة...' : 'Adding...') : (isRTL ? 'إضافة الشرط' : 'Add Rule')}
+              onPress={handleAddRule}
+              loading={isUpdatingRules}
+              style={{ marginTop: 16 }}
+            />
           </View>
 
-          {/* English Inputs Section */}
-          <View style={[styles.formLangSection, { marginTop: 12 }]}>
-            <View style={[styles.langBadge, { backgroundColor: '#F1F5F9', marginBottom: 8, alignSelf: flexStart }]}><Text style={[styles.langBadgeText, { color: '#64748B' }]}>الإنجليزية (English)</Text></View>
-
-            <View style={styles.modalInputGroup}>
-              <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'عنوان الشرط بالإنجليزية (اختياري)' : 'Rule Title (EN) (Optional)'}</Text>
-              <BottomSheetTextInput
-                style={[styles.modalInput, { textAlign: isRTL ? 'right' : 'left' }]}
-                placeholder={isRTL ? "مثال: No smoking" : "e.g. No smoking"}
-                value={newRule.titleEn}
-                onChangeText={(val) => setNewRule({ ...newRule, titleEn: val })}
-              />
-            </View>
-
-            <View style={styles.modalInputGroup}>
-              <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'شرح الشرط بالإنجليزية (اختياري)' : 'Rule Description (EN) (Optional)'}</Text>
-              <BottomSheetTextInput
-                style={[styles.modalRuleTextArea, { textAlign: isRTL ? 'right' : 'left', minHeight: 65 }]}
-                multiline
-                placeholder={isRTL ? "مثال: Smoking is strictly prohibited inside." : "e.g. Smoking is strictly prohibited inside."}
-                value={newRule.descriptionEn}
-                onChangeText={(val) => setNewRule({ ...newRule, descriptionEn: val })}
-              />
-            </View>
-          </View>
-
-          <TouchableOpacity
-            onPress={handleAddRule}
-            disabled={isUpdatingRules}
-            style={[styles.modalAddRuleBtn, { flexDirection: flexRow, opacity: isUpdatingRules ? 0.7 : 1, marginTop: 16 }]}
-          >
-            {isUpdatingRules ? (
-              <ActivityIndicator size="small" color={Colors.white} />
-            ) : (
-              <SolarAddSquareBold size={20} color={Colors.white} />
-            )}
-            <Text style={styles.modalAddRuleBtnText}>
-              {isUpdatingRules
-                ? (isRTL ? 'جاري إضافة الشرط أو السياسة...' : 'Adding Rule or Policy...')
-                : (isRTL ? 'إضافة الشرط أو السياسة' : 'Add Rule or Policy')}
-            </Text>
-          </TouchableOpacity>
-
-          <View style={{ height: 40 }} />
         </BottomSheetScrollView>
       </BottomSheetModal>
 

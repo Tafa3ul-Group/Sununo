@@ -1,4 +1,18 @@
+import { SolarCameraBold, SolarStarBold, SolarWifiBold } from '@/components/icons/solar-icons';
+import { useConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { Colors } from '@/constants/theme';
+import { getImageSrc } from '@/hooks/useImageSrc';
+import {
+  useDeleteChaletImageMutation,
+  useGetAmenityCategoriesQuery,
+  useGetChaletAmenitiesQuery,
+  useSetChaletAmenitiesMutation,
+  useUploadChaletImageMutation
+} from '@/store/api/apiSlice';
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import * as ImagePicker from 'expo-image-picker';
 import React, { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dimensions,
   I18nManager,
@@ -9,21 +23,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
-import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
-import * as ImagePicker from 'expo-image-picker';
-import { Colors } from '@/constants/theme';
-import { getImageSrc } from '@/hooks/useImageSrc';
-import { useConfirmationDialog } from '@/components/ui/confirmation-dialog';
-import {
-  useGetAmenityCategoriesQuery,
-  useGetChaletAmenitiesQuery,
-  useSetChaletAmenitiesMutation,
-  useUploadChaletImageMutation,
-  useDeleteChaletImageMutation
-} from '@/store/api/apiSlice';
-import { SolarCameraBold, SolarStarBold, SolarWifiBold } from '@/components/icons/solar-icons';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -298,11 +298,11 @@ export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
                             {/* Info (Right) */}
                             <View
                               style={[
-                                  styles.swiperFeatureInfo,
-                                  { flexDirection: I18nManager.isRTL ? 'row-reverse' : 'row' },
+                                styles.swiperFeatureInfo,
+                                { flexDirection: I18nManager.isRTL ? 'row-reverse' : 'row' },
                               ]}
                             >
-                              <Text style={[styles.swiperFeatureName, { textAlign: isRTL ? 'right' : 'left' }]}>
+                              <Text style={[styles.swiperFeatureName, { textAlign: isRTL ? 'left' : 'right' }]}>
                                 {isRTL ? feature.name?.ar : feature.name?.en}
                               </Text>
 
@@ -393,13 +393,13 @@ export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
                     ? 'حفظ المرافق والخدمات'
                     : 'Save Amenities'
                   : isRTL
-                  ? 'التالي'
-                  : 'Next'}
+                    ? 'التالي'
+                    : 'Next'}
               </Text>
             </TouchableOpacity>
           </View>
-        </BottomSheetView>
-      </BottomSheetModal>
+        </BottomSheetView >
+      </BottomSheetModal >
     );
   }
 );
