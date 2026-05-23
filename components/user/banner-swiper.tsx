@@ -86,7 +86,6 @@ export function BannerSwiper({ data }: { data?: any[] }) {
         renderItem={renderItem}
         keyExtractor={(item, index) => item.id?.toString() || index.toString()}
         horizontal
-        inverted={isRTL}
         showsHorizontalScrollIndicator={false}
         pagingEnabled={false}
         snapToInterval={SNAP_INTERVAL}
