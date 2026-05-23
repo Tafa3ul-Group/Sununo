@@ -424,7 +424,7 @@ export const apiSlice = createApi({
 
     // Get fully booked status for days
     getFullyBookedStatus: builder.query<
-      { date: string; isFullyBooked: boolean }[],
+      { date: string; isFullyBooked: boolean; bookings: { type: 'internal' | 'external' }[] }[],
       { chaletId: string; from: string; to: string }
     >({
       query: ({ chaletId, ...params }) => ({

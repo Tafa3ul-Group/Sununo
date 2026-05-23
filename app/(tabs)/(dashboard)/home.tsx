@@ -39,6 +39,7 @@ import {
   View
 } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
+import Svg, { Path } from "react-native-svg";
 
 import { isRTL } from "@/i18n";
 import { useSelector } from "react-redux";
@@ -52,6 +53,17 @@ const API_STATUS_MAP: Record<string, string> = {
 };
 
 const IDENTITY_BLUE = "#035DF9";
+
+const ScribbleIcon = () => (
+  <View style={styles.scribbleOverlay}>
+    <Svg width="34" height="21" viewBox="0 0 27 17" fill="none">
+      <Path
+        d="M0 16.3342C2.99573 15.595 6.40062 12.1931 8.87516 10.3499C10.7539 8.95056 12.5344 7.38786 14.3058 5.85133C15.4503 4.82162 19.3351 1.01248 20.5624 0.694205L20.6631 0.77428C20.0331 2.22304 14.0786 6.36758 12.7559 7.86821C11.9412 8.79263 7.05325 13.2599 7.16689 14.3823C8.4238 14.2945 20.3323 4.32336 22.0845 3.05699C22.8235 2.52284 25.1521 0.00923939 26.0467 0C25.8574 0.789872 23.2059 2.65758 22.4706 3.29904C20.984 4.59612 19.5563 5.88203 18.1625 7.28613C15.947 9.51811 13.851 11.1722 12.8732 14.3075C17.2857 12.4915 22.1018 7.57582 25.5124 4.21528C25.6825 4.04772 26.0097 3.8791 26.2404 3.85331L26.2836 3.96158C25.6618 5.40745 23.6597 6.68258 22.4926 7.82798C20.8697 9.42081 19.4171 10.9377 17.8686 12.5976C16.584 13.9747 15.835 14.5322 14.6548 16.1655C17.1806 14.0611 19.7304 11.9904 22.3426 9.9975C23.6692 8.98521 25.5394 7.29498 27 6.61685C26.3425 7.94963 24.3386 10.0783 23.3023 11.287C22.466 12.2624 20.8583 14.7933 20.0165 15.4373C20.7405 13.701 23.3785 10.5202 24.6847 9.04787L24.3797 8.92814C22.5227 10.2836 20.7462 11.839 18.9151 13.2C17.789 14.0368 14.9222 16.7536 13.7398 17L13.6411 16.9076C14.0857 15.7752 16.6737 13.1961 17.661 12.3097L17.6004 11.9123C16.9492 12.4276 16.274 12.9107 15.5771 13.36C14.9133 13.7883 13.7034 14.5621 12.9276 14.3859C11.7642 13.343 15.6221 9.27202 16.3942 8.42632L16.5078 7.99092C16.4879 8.0041 16.468 8.017 16.4482 8.03038C14.9312 9.05922 8.00045 15.1758 6.80779 14.882C6.77373 14.8736 6.7407 14.8611 6.70711 14.8507C6.35217 14.031 8.37052 11.9017 8.9202 11.2266L8.66679 10.9995C7.57776 11.9989 1.29986 17.3668 0 16.3342Z"
+        fill="#EF4444"
+      />
+    </Svg>
+  </View>
+);
 
 const formatDate = (date: Date) => {
   const d = new Date(date);
@@ -348,6 +360,17 @@ export default function HomeScreen() {
   const fullyBookedDays = React.useMemo(() => {
     if (!Array.isArray(daysStatus)) return [];
     return daysStatus.filter((d: any) => d.isFullyBooked).map((d: any) => d.date);
+  }, [daysStatus]);
+
+  const dayBookingsMap = React.useMemo(() => {
+    if (!Array.isArray(daysStatus)) return new Map();
+    const map = new Map<string, { type: 'internal' | 'external' }[]>();
+    for (const day of daysStatus) {
+      if (day.bookings && day.bookings.length > 0) {
+        map.set(day.date, day.bookings);
+      }
+    }
+    return map;
   }, [daysStatus]);
 
   const refreshAvailability = () => {
@@ -719,7 +742,9 @@ export default function HomeScreen() {
           {weekDays.map((date, idx) => {
             const isSelected =
               selectedDate.toDateString() === date.toDateString();
-            const isFullyBooked = fullyBookedDays.includes(formatDate(date));
+            const dateStr = formatDate(date);
+            const isFullyBooked = fullyBookedDays.includes(dateStr);
+            const dayBookings = dayBookingsMap.get(dateStr) || [];
             return (
               <TouchableOpacity
                 key={idx}
@@ -762,18 +787,24 @@ export default function HomeScreen() {
                   >
                     {date.getDate()}
                   </Text>
-                  {isFullyBooked && (
-                    <View style={styles.scribbleContainer}>
-                      <View style={[styles.scribbleLine, { transform: [{ rotate: "-28deg" }], top: "35%", width: "100%" }]} />
-                      <View style={[styles.scribbleLine, { transform: [{ rotate: "12deg" }], top: "55%", width: "95%" }]} />
-                      <View style={[styles.scribbleLine, { transform: [{ rotate: "-8deg" }], top: "45%", width: "110%" }]} />
-                      <View style={[styles.scribbleLine, { transform: [{ rotate: "22deg" }], top: "40%", width: "90%" }]} />
-                      <View style={[styles.scribbleLine, { transform: [{ rotate: "-15deg" }], top: "50%", width: "105%" }]} />
-                      <View style={[styles.scribbleLine, { transform: [{ rotate: "5deg" }], top: "48%", width: "100%" }]} />
-                      <View style={[styles.scribbleLine, { transform: [{ rotate: "-35deg" }], top: "42%", width: "85%" }]} />
-                    </View>
-                  )}
+                  {isFullyBooked && <ScribbleIcon />}
                 </View>
+                {dayBookings.length > 0 && (
+                  <View style={styles.bookingDotsRow}>
+                    {dayBookings.map((b, i) => (
+                      <View
+                        key={i}
+                        style={[
+                          styles.bookingDot,
+                          {
+                            backgroundColor: b.type === 'external' ? '#F97316' : IDENTITY_BLUE,
+                          },
+                          isSelected && { backgroundColor: '#FFF' },
+                        ]}
+                      />
+                    ))}
+                  </View>
+                )}
               </TouchableOpacity>
             );
           })}
@@ -1089,17 +1120,33 @@ const styles = StyleSheet.create({
     alignItems: "center",
     zIndex: 10
   },
-  scribbleLine: {
+  scribbleOverlay: {
     position: "absolute",
-    height: 0.8,
-    backgroundColor: "#94A3B8",
-    opacity: 0.7
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10
   },
   fullyBookedDayItem: {
     // Original background
   },
   fullyBookedText: {
     color: "#94A3B8"
+  },
+  bookingDotsRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 3,
+    marginTop: 4,
+  },
+  bookingDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
   },
   dateText: { fontSize: normalize.font(14), fontFamily: "Alexandria-SemiBold" },
   selectedDateText: {
