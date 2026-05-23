@@ -13,8 +13,8 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const TOAST_WIDTH = Math.min(SCREEN_WIDTH * 0.92, 450);
 
 const isRTL = I18nManager.isRTL;
-const layoutDirection = isRTL ? 'row-reverse' : 'row';
-const textAlignment = isRTL ? 'right' : 'left';
+const layoutDirection = 'row' as const;
+const textAlignment = isRTL ? 'right' as const : 'left' as const;
 
 interface CustomToastProps extends BaseToastProps {
   type: 'success' | 'error' | 'info' | 'warning';

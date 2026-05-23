@@ -63,6 +63,7 @@ import {
   Dimensions,
   Image,
   Keyboard,
+  Linking,
   ScrollView,
   StyleSheet,
   Text,
@@ -429,6 +430,10 @@ export default function ExploreScreen() {
       let loc = await Location.getCurrentPositionAsync({});
       setLocation(loc);
 
+      // Center map on user location initially
+      setCameraPosition([loc.coords.longitude, loc.coords.latitude]);
+      setZoom(14);
+
       subscription = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.High,
@@ -504,7 +509,7 @@ export default function ExploreScreen() {
             <View
               style={[styles.footerContent, { flexDirection: flexDir }]}
             >
-              <View style={[styles.priceContainer, { alignItems: isRTL ? "flex-end" : "flex-start", justifyContent: "center" }]}>
+              <View style={[styles.priceContainer, { justifyContent: "center" }]}>
                 <ThemedText style={[styles.footerPrice, { textAlign: textStart }]}>
                   {isRTL ? "" : "IQD "}
                   {selectedChalet.price}
@@ -741,8 +746,8 @@ export default function ExploreScreen() {
         }}
       >
         <BottomSheetScrollView
-          style={styles.sheetContent}
-          contentContainerStyle={{ paddingBottom: insets.bottom + 120 }}
+          style={{ flex: 1 }}
+          contentContainerStyle={styles.sheetScrollContent}
         >
           {selectedChalet && (
             <View style={styles.cardContainer}>
@@ -803,29 +808,22 @@ export default function ExploreScreen() {
                 </View>
               </View>
 
+              {/* Title + Rating Row */}
               <View
                 style={[styles.mainInfoRow, { flexDirection: flexDir }]}
               >
-                {/* Rating */}
-                <View style={styles.ratingSection}>
-                  <ThemedText style={styles.ratingValue}>
-                    {selectedChalet.rating || "4.5"}
-                  </ThemedText>
-                  <SolarStarBold size={20} color={Colors.primary} />
-                </View>
-
-                {/* Title and Location */}
+                {/* Title and Location - first child = END side in RTL */}
                 <View
-                  style={[styles.titleSection, { alignItems: "flex-start" }]}
+                  style={styles.titleSection}
                 >
-                  <ThemedText style={styles.chaletTitleMain}>
+                  <ThemedText style={[styles.chaletTitleMain, { textAlign: textStart }]}>
                     {typeof selectedChalet?.title === "string"
                       ? selectedChalet.title
                       : (isRTL
                           ? selectedChalet?.title?.ar
                           : selectedChalet?.title?.en) || ""}
                   </ThemedText>
-                  <ThemedText style={styles.chaletLocationSub}>
+                  <ThemedText style={[styles.chaletLocationSub, { textAlign: textStart }]}>
                     {typeof selectedChalet?.location === "string"
                       ? selectedChalet.location
                       : (isRTL
@@ -833,42 +831,81 @@ export default function ExploreScreen() {
                           : selectedChalet?.location?.en) || ""}
                   </ThemedText>
                 </View>
+
+                {/* Rating - second child = START side in RTL */}
+                <View style={[styles.ratingSection, { flexDirection: "row" }]}>
+                  <ThemedText style={styles.ratingValue}>
+                    {selectedChalet.rating || "4.5"}
+                  </ThemedText>
+                  <SolarStarBold size={20} color={Colors.primary} />
+                </View>
               </View>
 
               {/* Specifications Section */}
-              <View style={[styles.specsSection, { alignItems: "flex-start" }]}>
-                <ThemedText style={styles.sectionLabel}>
+              <View style={styles.specsSection}>
+                <ThemedText style={[styles.sectionLabel, { textAlign: textStart }]}>
                   {isRTL ? "المواصفات الاساسية" : "Basic Specifications"}
                 </ThemedText>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={[
-                    styles.specsContainer,
-                    { flexDirection: "row" },
-                  ]}
-                >
+                <View style={[styles.specsContainer, { flexDirection: flexDir, flexWrap: "wrap" }]}>
+                  {selectedChalet.category && (
+                    <View style={styles.specChip}>
+                      <ThemedText style={styles.specText}>
+                        {typeof selectedChalet.category === "string"
+                          ? selectedChalet.category
+                          : (isRTL ? selectedChalet.category?.ar : selectedChalet.category?.en) || (isRTL ? "بستان مع بيت" : "Garden with house")}
+                      </ThemedText>
+                    </View>
+                  )}
+                  {!selectedChalet.category && (
+                    <View style={styles.specChip}>
+                      <ThemedText style={styles.specText}>
+                        {isRTL ? "بستان مع بيت" : "Garden with house"}
+                      </ThemedText>
+                    </View>
+                  )}
                   <View style={styles.specChip}>
                     <ThemedText style={styles.specText}>
-                      {isRTL ? "بستان مع بيت" : "Garden with house"}
+                      {selectedChalet.area || 0} {isRTL ? "م" : "m"}
                     </ThemedText>
                   </View>
                   <View style={styles.specChip}>
                     <ThemedText style={styles.specText}>
-                      {selectedChalet.area || 0} م
+                      {selectedChalet.bathrooms || 0} {isRTL ? "حمام" : "Bath"}
                     </ThemedText>
                   </View>
                   <View style={styles.specChip}>
                     <ThemedText style={styles.specText}>
-                      {selectedChalet.bathrooms || 0} حمام
+                      {selectedChalet.bedrooms || 0} {isRTL ? "غرف" : "Rooms"}
                     </ThemedText>
                   </View>
-                  <View style={styles.specChip}>
-                    <ThemedText style={styles.specText}>
-                      {selectedChalet.bedrooms || 0} غرف
-                    </ThemedText>
-                  </View>
-                </ScrollView>
+                </View>
+              </View>
+
+              {/* Go to Route Button */}
+              <View style={styles.routeButtonContainer}>
+                <SecondaryButton
+                  label={isRTL ? "اذهب للمسار" : "Get Directions"}
+                  isActive={true}
+                  activeColor="#22C55E"
+                  activeTextColor="#FFFFFF"
+                  icon={
+                    <Svg width={18} height={18} viewBox="0 0 20 20" fill="none">
+                      <Path d="M13.3023 8.21378C13.3526 8.18866 13.4075 8.174 13.4637 8.17068C13.5198 8.16735 13.5761 8.17543 13.629 8.19443C13.682 8.21343 13.7305 8.24296 13.7718 8.28123C13.813 8.3195 13.846 8.36572 13.8689 8.41712L17.3631 16.2521C17.9189 17.4979 16.6839 18.7913 15.5281 18.1738L10.6081 15.5471C10.2248 15.3429 9.77476 15.3429 9.39226 15.5471L4.47226 18.1738C3.31642 18.7913 2.08142 17.4988 2.63726 16.2521L3.94726 13.3146C4.10441 12.9623 4.37891 12.6755 4.72392 12.5029L13.3023 8.21378Z" fill="white"/>
+                      <Path opacity={0.5} d="M12.8251 7.0554C12.9213 7.00754 12.9953 6.9244 13.0316 6.82331C13.0679 6.72223 13.0638 6.61103 13.0201 6.5129L11.2276 2.49373C10.736 1.39123 9.26513 1.39123 8.77346 2.49373L5.4668 9.90873C5.43182 9.98715 5.42193 10.0745 5.43847 10.1587C5.45501 10.243 5.49717 10.32 5.55919 10.3794C5.62121 10.4388 5.70006 10.4776 5.78496 10.4904C5.86985 10.5033 5.95664 10.4896 6.03346 10.4512L12.8251 7.0554Z" fill="white"/>
+                    </Svg>
+                  }
+                  iconPosition={isRTL ? "left" : "right"}
+                  onPress={() => {
+                    if (selectedChalet?.coordinates) {
+                      const lat = selectedChalet.coordinates[1];
+                      const lng = selectedChalet.coordinates[0];
+                      const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+                      Linking.openURL(url);
+                    }
+                  }}
+                  style={{ flex: 1 }}
+                  height={52}
+                />
               </View>
 
               {/* Seamless Full Details Content (Visible when expanded) */}
@@ -1145,80 +1182,90 @@ export default function ExploreScreen() {
                         {reviews.length > 0 ? (
                           reviews
                             .slice(0, 2)
-                            .map((reviewItem: any, i: number) => (
-                              <View
-                                key={reviewItem.id || i}
-                                style={styles.revComplexCardFlat}
-                              >
+                            .map((reviewItem: any, i: number) => {
+                              const customer = reviewItem?.customer;
+                              const reviewerName =
+                                customer?.name || (isRTL ? "مستخدم سُنونو" : "Sununo User");
+                              const reviewComment = reviewItem?.comment || "";
+                              const reviewRating = reviewItem?.rating || 0;
+                              const reviewDate = reviewItem?.createdAt
+                                ? new Date(reviewItem.createdAt).toLocaleDateString()
+                                : "";
+                              return (
                                 <View
-                                  style={[
-                                    styles.revHeaderMerged,
-                                    {
-                                      flexDirection: flexDir,
-                                    },
-                                  ]}
+                                  key={reviewItem.id || i}
+                                  style={styles.revComplexCardFlat}
                                 >
                                   <View
                                     style={[
-                                      styles.revRatingCornerMerged,
-                                      {
-                                        flexDirection: flexDir,
-                                      },
+                                      styles.revHeaderMerged,
+                                      { flexDirection: flexDir },
                                     ]}
                                   >
-                                    <ThemedText style={styles.revRateNumMerged}>
-                                      {reviewItem.rating}
-                                    </ThemedText>
-                                    <SolarStarBold
-                                      size={14}
-                                      color={Colors.primary}
-                                    />
-                                  </View>
-                                  <View
-                                    style={[
-                                      styles.userInfoRowMerged,
-                                      {
-                                        flexDirection: flexDir,
-                                      },
-                                    ]}
-                                  >
+                                    {/* Avatar */}
+                                    <View style={styles.avatarCircleMerged}>
+                                      <Image
+                                        source={
+                                          customer?.image
+                                            ? getImageSrc(customer.image)
+                                            : require("@/assets/profile.svg")
+                                        }
+                                        style={styles.userAvatarImgMerged}
+                                      />
+                                    </View>
+
+                                    {/* Name + Comment */}
                                     <View
                                       style={[
                                         styles.nameAndBodyMerged,
                                         {
-                                          alignItems: "flex-start",
+                                          alignItems: isRTL ? "flex-end" : "flex-start",
+                                          marginHorizontal: 12,
                                         },
-                                        isRTL
-                                          ? { marginRight: 15 }
-                                          : { marginLeft: 15 },
                                       ]}
                                     >
                                       <ThemedText
-                                        style={styles.reviewerNameMerged}
+                                        style={[styles.reviewerNameMerged, { textAlign: textStart }]}
                                       >
-                                        {reviewItem.customer?.name}
+                                        {reviewerName}
                                       </ThemedText>
                                       <ThemedText
                                         style={[
                                           styles.revMessageMerged,
-                                          {
-                                             textAlign: textStart,
-                                          },
+                                          { textAlign: textStart },
                                         ]}
                                       >
-                                        {reviewItem.comment}
+                                        {reviewComment}
                                       </ThemedText>
                                     </View>
-                                    <View style={styles.avatarCircleMerged}>
-                                      <Image
-                                        source={require("@/assets/profile.svg")}
-                                        style={styles.userAvatarImgMerged}
-                                      />
+
+                                    {/* Rating */}
+                                    <View
+                                      style={[
+                                        styles.revRatingCornerMerged,
+                                        { flexDirection: flexDir },
+                                      ]}
+                                    >
+                                      <SolarStarBold size={14} color={Colors.primary} />
+                                      <ThemedText style={styles.revRateNumMerged}>
+                                        {reviewRating}
+                                      </ThemedText>
                                     </View>
                                   </View>
+
+                                  {/* Date */}
+                                  {reviewDate ? (
+                                    <View
+                                      style={[styles.dateWrapperMerged, { alignItems: "flex-end" }]}
+                                    >
+                                      <ThemedText style={styles.revTimeTextMerged}>
+                                        {reviewDate}
+                                      </ThemedText>
+                                    </View>
+                                  ) : null}
                                 </View>
-                              </View>
-                            ))
+                              );
+                            })
                         ) : (
                           <ThemedText
                             style={{
@@ -1429,9 +1476,10 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 30,
     ...Shadows.large,
   },
-  sheetContent: {
-    flex: 1,
-    padding: 20,
+  sheetScrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 120,
   },
   cardContainer: {
     width: "100%",
@@ -1631,7 +1679,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "flex-start",
     marginTop: 20,
-    paddingHorizontal: 4,
+    paddingHorizontal: 0,
+    width: "100%",
   },
   ratingSection: {
     flexDirection: "row",
@@ -1655,7 +1704,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Alexandria-Medium",
     color: "#111827",
-    textAlign: "right",
   },
   chaletLocationSub: {
     fontSize: 14,
@@ -1665,17 +1713,18 @@ const styles = StyleSheet.create({
   },
   specsSection: {
     marginTop: 24,
+    width: "100%",
   },
   sectionLabel: {
     fontSize: 14,
     fontFamily: "Alexandria-Medium",
     color: "#1E293B",
     marginBottom: 12,
-    paddingHorizontal: 4,
+    paddingHorizontal: 0,
   },
   specsContainer: {
     gap: 8,
-    paddingHorizontal: 4,
+    paddingHorizontal: 0,
   },
   specChip: {
     backgroundColor: "#F1F5F9",
@@ -1688,10 +1737,15 @@ const styles = StyleSheet.create({
     fontFamily: "Alexandria-Medium",
     color: "#334155",
   },
+  routeButtonContainer: {
+    marginTop: 20,
+    width: "100%",
+    alignSelf: "stretch",
+  },
   favoriteBtn: {
     position: "absolute",
     top: 16,
-    right: 16,
+    end: 16,
     backgroundColor: "white",
     width: 44,
     height: 44,
@@ -1932,6 +1986,14 @@ const styles = StyleSheet.create({
   userAvatarImgMerged: {
     width: "100%",
     height: "100%",
+  },
+  dateWrapperMerged: {
+    marginTop: 8,
+  },
+  revTimeTextMerged: {
+    fontSize: 13,
+    color: "#9CA3AF",
+    fontFamily: "Alexandria-Medium",
   },
 });
 

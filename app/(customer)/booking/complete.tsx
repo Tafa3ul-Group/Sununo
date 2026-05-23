@@ -82,7 +82,7 @@ export default function CompleteBookingScreen() {
   const [paymentType, setPaymentType] = useState<"DEPOSIT" | "FULL">("DEPOSIT");
   const { formatShiftTime } = useFormatTime();
   const isArabic = i18n.language ? i18n.language.startsWith("ar") : false;
-  const rowDirection: "row" | "row-reverse" = isArabic ? "row-reverse" : "row";
+  const rowDirection: "row" | "row-reverse" = isArabic === I18nManager.isRTL ? "row" : "row-reverse";
 
   // textAlign is absolute, so direct mapping is correct regardless of native RTL state
   const textStart: "left" | "right" = isArabic ? "right" : "left";

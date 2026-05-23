@@ -82,8 +82,8 @@ export default function GalleryScreen() {
   const { userType } = useSelector((state: RootState) => state.auth);
   
   const isArabic = i18n.language ? i18n.language.startsWith("ar") : true;
-  const flexDir: "row" | "row-reverse" = isArabic ? "row-reverse" : "row";
-  const alignStart: "flex-start" | "flex-end" = isArabic ? "flex-end" : "flex-start";
+  const flexDir: "row" | "row-reverse" = isArabic === I18nManager.isRTL ? "row" : "row-reverse";
+  const alignStart: "flex-start" | "flex-end" = isArabic === I18nManager.isRTL ? "flex-start" : "flex-end";
   const textStart: "left" | "right" = isArabic ? "right" : "left";
 
   const [activeFilter, setActiveFilter] = useState("all");

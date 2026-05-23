@@ -533,7 +533,7 @@ export default function ChaletDetailScreen() {
           {/* العنوان والتقييم */}
           <View
             style={{
-              flexDirection: isRTL ? 'row-reverse' : 'row',
+              flexDirection: flexDir,
               justifyContent: 'space-between',
               alignItems: 'flex-start',
               width: '100%',
@@ -542,20 +542,20 @@ export default function ChaletDetailScreen() {
           >
             <View style={{ flex: 1 }}>
               <ThemedText
-                style={[styles.mainTitle, { textAlign: isRTL ? 'right' : 'left' }]}
+                style={[styles.mainTitle, { textAlign: textStart }]}
                 numberOfLines={2}
               >
                 {chaletName}
               </ThemedText>
               <ThemedText
-                style={[styles.locationSub, { textAlign: isRTL ? 'right' : 'left', marginTop: 4 }]}
+                style={[styles.locationSub, { textAlign: textStart, marginTop: 4 }]}
               >
                 {chaletCategory ? `${chaletCategory} • ` : ""}
                 {chaletLocation}
               </ThemedText>
             </View>
             <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 4, marginLeft: isRTL ? 0 : 12, marginRight: isRTL ? 12 : 0 }}
+              style={{ flexDirection: "row", alignItems: "center", gap: 4, marginStart: 12 }}
             >
               <SolarStarBold size={14} color="#035DF9" />
               <ThemedText style={styles.ratingVal}>
