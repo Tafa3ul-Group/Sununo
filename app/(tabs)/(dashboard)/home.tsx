@@ -45,7 +45,7 @@ import {
   View
 } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
-
+import { SkeletonBox, BookingCardSkeleton } from "@/components/ui/skeleton-loader";
 import { useSelector } from "react-redux";
 import { isRTL } from "@/i18n";
 
@@ -409,7 +409,10 @@ export default function HomeScreen() {
   const renderShiftsGrid = () => {
     if (isAvailabilityFetching)
       return (
-        <ActivityIndicator color={IDENTITY_BLUE} style={{ padding: 20 }} />
+        <View style={{ padding: 16, gap: 10 }}>
+          <SkeletonBox width="100%" height={60} borderRadius={16} />
+          <SkeletonBox width="100%" height={60} borderRadius={16} />
+        </View>
       );
     const shifts = Array.isArray(availabilityData) ? availabilityData : [];
     if (shifts.length === 0) return null;

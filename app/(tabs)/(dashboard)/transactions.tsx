@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, RefreshControl } from 'react-native';
+import { BookingCardSkeleton } from '@/components/ui/skeleton-loader';
 import { Colors, normalize } from '@/constants/theme';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { useSelector } from 'react-redux';
@@ -28,11 +29,18 @@ export default function TransactionsScreen() {
   const endAlign = isRTL ? 'flex-start' : 'flex-end';
   const [activeFilter, setActiveFilter] = useState<string | undefined>(undefined);
 
-  const { data: payoutsResponse, isLoading, refetch } = useGetPayoutsQuery({ 
+  const { data: payoutsResponse, isLoading, isFetching, refetch } = useGetPayoutsQuery({ 
     status: activeFilter, 
     limit: 50 
   });
   const payouts = payoutsResponse?.data || payoutsResponse || [];
+
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await refetch();
+    setIsRefreshing(false);
+  }, [refetch]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -150,7 +158,12 @@ export default function TransactionsScreen() {
       {/* Transaction List */}
       <View style={styles.listContainer}>
         {isLoading ? (
-          <ActivityIndicator color={Colors.primary} style={{ marginTop: 60 }} size="large" />
+          <View style={{ padding: 16, gap: 12 }}>
+            <BookingCardSkeleton />
+            <BookingCardSkeleton />
+            <BookingCardSkeleton />
+            <BookingCardSkeleton />
+          </View>
         ) : (
           <FlashList
             data={Array.isArray(payouts) ? payouts : []}
@@ -159,6 +172,8 @@ export default function TransactionsScreen() {
             contentContainerStyle={styles.listContent}
             ItemSeparatorComponent={() => <View style={styles.separator} />}
             showsVerticalScrollIndicator={false}
+            onRefresh={onRefresh}
+            refreshing={isRefreshing}
             ListEmptyComponent={
               <View style={styles.emptyState}>
                 <View style={styles.emptyIconWrap}>

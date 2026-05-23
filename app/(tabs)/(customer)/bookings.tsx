@@ -1,17 +1,18 @@
 import { HeaderSection } from '@/components/header-section';
 import { SolarCalendarAddBold, SolarStarBold } from "@/components/icons/solar-icons";
 import { ThemedText } from '@/components/themed-text';
-import { normalize, Shadows } from '@/constants/theme';
+import { Colors, normalize, Shadows } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
 import { useGetCustomerBookingsQuery } from '@/store/api/customerApiSlice';
 import { formatPrice } from '@/utils/format';
 import { useRouter } from 'expo-router';
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { ClipPath, Defs, G, Path, Image as SvgImage } from 'react-native-svg';
 import { isRTL } from "@/i18n";
+import { BookingCardSkeleton } from '@/components/ui/skeleton-loader';
 
 // Global isRTL for styles
 
@@ -44,7 +45,14 @@ export default function BookingsScreen() {
   const isArabic = isRTL || i18n.language === 'ar';
 
   // Fetch bookings from the backend
-  const { data: bookingsResponse } = useGetCustomerBookingsQuery({ page: 1, limit: 20 });
+  const { data: bookingsResponse, isLoading: bookingsLoading, isFetching: bookingsFetching, refetch: refetchBookings } = useGetCustomerBookingsQuery({ page: 1, limit: 20 });
+
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await refetchBookings();
+    setIsRefreshing(false);
+  }, [refetchBookings]);
 
   // Transform API data to match UI format
   const bookings = useMemo(() => {
@@ -229,8 +237,23 @@ export default function BookingsScreen() {
       <ScrollView 
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            tintColor={Colors.primary}
+            colors={[Colors.primary]}
+          />
+        }
       >
-        {bookings.length > 0 ? (
+        {bookingsLoading ? (
+          <View style={{ gap: 12, paddingHorizontal: 16 }}>
+            <BookingCardSkeleton />
+            <BookingCardSkeleton />
+            <BookingCardSkeleton />
+            <BookingCardSkeleton />
+          </View>
+        ) : bookings.length > 0 ? (
           bookings.map(renderBookingItem)
         ) : (
           <View style={styles.emptyState}>
