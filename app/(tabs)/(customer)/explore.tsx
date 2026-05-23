@@ -253,7 +253,7 @@ export default function ExploreScreen() {
     useGetChaletsMapQuery({
       limit: zoom >= 14 ? 300 : zoom >= 10 ? 150 : zoom >= 6 ? 80 : 40,
       search: search || activeFilters?.search || undefined,
-      maxAdults: maxAdults
+      capacity: maxAdults
         ? parseInt(maxAdults)
         : activeFilters?.maxGuests || undefined,
       minPrice: minPrice ? parseInt(minPrice) : undefined,
