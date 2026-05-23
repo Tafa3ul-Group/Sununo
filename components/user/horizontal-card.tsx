@@ -82,7 +82,7 @@ export function HorizontalCard({
   const textStart: "left" | "right" = isArabic ? "right" : "left";
   const rowDirection = getFlexDirection(isArabic);
   const rowReverseDir = getFlexDirection(!isArabic);
-  const ratingBoxDir = I18nManager.isRTL ? "row-reverse" : "row";
+  const ratingBoxDir = getFlexDirection(isArabic);
   const needsCounter = isArabic !== I18nManager.isRTL;
   const alignStart: "flex-start" | "flex-end" = needsCounter ? "flex-end" : "flex-start";
 

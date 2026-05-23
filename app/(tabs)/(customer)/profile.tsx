@@ -22,10 +22,11 @@ import { useGetCustomerWalletQuery, useDeleteCustomerAccountMutation } from '@/s
 import { logout } from '@/store/authSlice';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
-import React, { useRef } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     Image,
+    RefreshControl,
     ScrollView,
     StyleSheet,
     Text,
@@ -53,8 +54,15 @@ export default function CustomerProfileScreen() {
     const languageSheetRef = useRef<BottomSheetModal>(null);
     const logoutSheetRef = useRef<BottomSheetModal>(null);
 
-    const { data: meData } = useGetMeQuery(undefined);
-    const { data: walletData } = useGetCustomerWalletQuery(undefined);
+    const { data: meData, refetch: refetchMe } = useGetMeQuery(undefined);
+    const { data: walletData, refetch: refetchWallet } = useGetCustomerWalletQuery(undefined);
+
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const onRefresh = useCallback(async () => {
+        setIsRefreshing(true);
+        await Promise.all([refetchMe(), refetchWallet()]);
+        setIsRefreshing(false);
+    }, [refetchMe, refetchWallet]);
 
     const dispatch = useDispatch();
     const [deleteCustomerAccount] = useDeleteCustomerAccountMutation();
@@ -160,6 +168,14 @@ export default function CustomerProfileScreen() {
             <ScrollView
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={isRefreshing}
+                        onRefresh={onRefresh}
+                        tintColor={Colors.primary}
+                        colors={[Colors.primary]}
+                    />
+                }
             >
                 {/* User Card */}
                 <TouchableOpacity

@@ -82,7 +82,7 @@ export default function CompleteBookingScreen() {
   const [paymentType, setPaymentType] = useState<"DEPOSIT" | "FULL">("DEPOSIT");
   const { formatShiftTime } = useFormatTime();
   const isArabic = i18n.language ? i18n.language.startsWith("ar") : false;
-  const rowDirection: "row" | "row-reverse" = isArabic ? "row-reverse" : "row";
+  const rowDirection: "row" | "row-reverse" = isArabic === I18nManager.isRTL ? "row" : "row-reverse";
 
   // textAlign is absolute, so direct mapping is correct regardless of native RTL state
   const textStart: "left" | "right" = isArabic ? "right" : "left";
@@ -275,37 +275,6 @@ export default function CompleteBookingScreen() {
     );
   }, [availableShifts, filterPeriod, shiftMatchesFilterPeriod]);
 
-  // Pre-fill selected shifts from the saved filter when possible.
-  useEffect(() => {
-    const initialShift =
-      filteredSelectedShift ||
-      (availableShifts.length === 1 ? availableShifts[0] : null);
-    if (initialShift && selectedDates.length > 0) {
-      setSelectedShifts((prev) => {
-        const next = { ...prev };
-        selectedDates.forEach((day) => {
-          const currentShift = availableShifts.find(
-            (shift: any) => shift.id === next[day],
-          );
-          const shouldUseFilterShift =
-            !!filteredSelectedShift &&
-            (!currentShift ||
-              !shiftMatchesFilterPeriod(currentShift, filterPeriod));
-          if (!next[day] || shouldUseFilterShift) {
-            next[day] = initialShift.id;
-          }
-        });
-        return next;
-      });
-    }
-  }, [
-    availableShifts,
-    filterPeriod,
-    filteredSelectedShift,
-    selectedDates,
-    shiftMatchesFilterPeriod,
-  ]);
-
   const [currentMonth, setCurrentMonth] = useState(getInitialMonth);
   const getDateForDay = useCallback(
     (day: number) =>
@@ -369,6 +338,60 @@ export default function CompleteBookingScreen() {
       ),
     [bookedDates, currentMonth],
   );
+
+  const isShiftBookedForDay = useCallback(
+    (day: number, shiftId: string) => {
+      const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      return availabilityData.some((b: any) => {
+        const bDate = b.bookingDate.split("T")[0];
+        return bDate === dateStr && b.shift?.id === shiftId;
+      });
+    },
+    [availabilityData, currentMonth],
+  );
+
+  // Pre-fill selected shifts from the saved filter when possible.
+  useEffect(() => {
+    const initialShift =
+      filteredSelectedShift ||
+      (availableShifts.length === 1 ? availableShifts[0] : null);
+    if (initialShift && selectedDates.length > 0) {
+      setSelectedShifts((prev) => {
+        const next = { ...prev };
+        selectedDates.forEach((day) => {
+          const currentShift = availableShifts.find(
+            (shift: any) => shift.id === next[day],
+          );
+          const shouldUseFilterShift =
+            !!filteredSelectedShift &&
+            (!currentShift ||
+              !shiftMatchesFilterPeriod(currentShift, filterPeriod));
+          
+          if (!next[day] || shouldUseFilterShift || isShiftBookedForDay(day, next[day])) {
+            const chosenShiftId = initialShift.id;
+            if (isShiftBookedForDay(day, chosenShiftId)) {
+              const alternativeShift = availableShifts.find(
+                (s: any) => !isShiftBookedForDay(day, s.id),
+              );
+              next[day] = alternativeShift ? alternativeShift.id : chosenShiftId;
+            } else {
+              next[day] = chosenShiftId;
+            }
+          }
+        });
+        return next;
+      });
+    }
+  }, [
+    availableShifts,
+    filterPeriod,
+    filteredSelectedShift,
+    selectedDates,
+    shiftMatchesFilterPeriod,
+    isShiftBookedForDay,
+  ]);
+
+
 
   // Success Sheet Ref
   const successSheetRef = React.useRef<BottomSheetModal>(null);
@@ -518,17 +541,6 @@ export default function CompleteBookingScreen() {
     : Number(chaletDetails?.priceCapacity || 2);
 
   const extraGuestsCount = Math.max(0, totalGuestsNow - capacityLimit);
-
-  const isShiftBookedForDay = useCallback(
-    (day: number, shiftId: string) => {
-      const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-      return availabilityData.some((b: any) => {
-        const bDate = b.bookingDate.split("T")[0];
-        return bDate === dateStr && b.shift?.id === shiftId;
-      });
-    },
-    [availabilityData, currentMonth],
-  );
 
   const depositPercentage = Number(chaletDetails?.depositPercentage || 0);
 
@@ -689,10 +701,19 @@ export default function CompleteBookingScreen() {
       const initialShift =
         filteredSelectedShift ||
         (availableShifts.length === 1 ? availableShifts[0] : null);
-      if (initialShift) {
+      
+      let activeShiftId = "";
+      if (filteredSelectedShift && !isShiftBookedForDay(day, filteredSelectedShift.id)) {
+        activeShiftId = filteredSelectedShift.id;
+      } else {
+        const nonBookedShift = availableShifts.find((s: any) => !isShiftBookedForDay(day, s.id));
+        activeShiftId = nonBookedShift ? nonBookedShift.id : (initialShift?.id || "");
+      }
+
+      if (activeShiftId) {
         setSelectedShifts((prevShifts) => ({
           ...prevShifts,
-          [day]: initialShift.id,
+          [day]: activeShiftId,
         }));
       }
       return updated;
@@ -733,12 +754,20 @@ export default function CompleteBookingScreen() {
       setSelectedShifts((prev) => {
         const next: Record<number, string> = {};
         nextDays.forEach((day) => {
-          next[day] = prev[day] || preferredShiftId;
+          const currentSelected = prev[day];
+          if (currentSelected && !isShiftBookedForDay(day, currentSelected)) {
+            next[day] = currentSelected;
+          } else if (preferredShiftId && !isShiftBookedForDay(day, preferredShiftId)) {
+            next[day] = preferredShiftId;
+          } else {
+            const nonBookedShift = availableShifts.find((s: any) => !isShiftBookedForDay(day, s.id));
+            next[day] = nonBookedShift ? nonBookedShift.id : preferredShiftId;
+          }
         });
         return next;
       });
     },
-    [availableShifts, filteredSelectedShift, selectedShifts],
+    [availableShifts, filteredSelectedShift, selectedShifts, isShiftBookedForDay],
   );
 
   const toggleShiftForDay = (day: number, shiftId: string) => {

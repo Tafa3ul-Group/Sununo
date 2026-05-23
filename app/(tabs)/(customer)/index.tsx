@@ -1,9 +1,9 @@
 import { Redirect, useRouter } from "expo-router";
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ActivityIndicator,
   Dimensions,
+  RefreshControl,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -11,6 +11,7 @@ import {
   View,
   I18nManager,
 } from "react-native";
+import { BannerSkeleton, HorizontalSwiperSkeleton, HorizontalCardSkeleton } from "@/components/ui/skeleton-loader";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
@@ -261,13 +262,24 @@ export default function HomeScreen() {
   }, [activeFilter, amenityIdMap]);
 
   // Fetch data from the backend
-  const { data: bannersResponse } = useGetBannersQuery(undefined);
-  const { data: chaletsResponse, isLoading: chaletsLoading } =
+  const { data: bannersResponse, isFetching: bannersFetching, refetch: refetchBanners } = useGetBannersQuery(undefined);
+  const { data: chaletsResponse, isLoading: chaletsLoading, isFetching: chaletsFetching, refetch: refetchChalets } =
     useBrowseCustomerChaletsQuery(queryParams);
 
   const { data: favoriteIds = [], refetch: refetchFavorites } =
     useGetFavoriteIdsQuery(undefined, { skip: userType === "guest" });
   const [toggleFavorite] = useToggleFavoriteMutation();
+
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await Promise.all([
+      refetchBanners(),
+      refetchChalets(),
+      userType !== "guest" ? refetchFavorites() : Promise.resolve(),
+    ]);
+    setIsRefreshing(false);
+  }, [refetchBanners, refetchChalets, refetchFavorites, userType]);
 
   const handleToggleFavorite = async (id: string) => {
     try {
@@ -368,6 +380,14 @@ export default function HomeScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            tintColor={Colors.primary}
+            colors={[Colors.primary]}
+          />
+        }
       >
         {/* Header */}
         <HeaderSection isHome />
@@ -375,7 +395,11 @@ export default function HomeScreen() {
 
 
         {/* Banners Swiper */}
-        {banners?.length > 0 && <BannerSwiper data={banners} />}
+        {bannersFetching && !bannersResponse ? (
+          <BannerSkeleton />
+        ) : banners?.length > 0 ? (
+          <BannerSwiper data={banners} />
+        ) : null}
 
         {/* Nearby / Map */}
         <View style={[styles.sectionHeader, { flexDirection: flexDir }]}>
@@ -425,9 +449,7 @@ export default function HomeScreen() {
         </View>
 
         {chaletsLoading ? (
-          <View style={styles.loaderContainer}>
-            <ActivityIndicator size="large" color={Colors.primary} />
-          </View>
+          <HorizontalSwiperSkeleton count={2} />
         ) : (
           <View style={styles.swiperWrapper}>
             <HorizontalSwiper
@@ -476,11 +498,11 @@ export default function HomeScreen() {
 
         <View style={styles.listPadding}>
           {chaletsLoading ? (
-            <ActivityIndicator
-              size="small"
-              color={Colors.primary}
-              style={{ marginTop: 20 }}
-            />
+            <View style={{ gap: 12 }}>
+              <HorizontalCardSkeleton />
+              <HorizontalCardSkeleton />
+              <HorizontalCardSkeleton />
+            </View>
           ) : POPULAR_CHALETS.length > 0 ? (
             POPULAR_CHALETS.map((item: any, index: number) => (
               <HorizontalCard

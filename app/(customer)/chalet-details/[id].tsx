@@ -88,8 +88,7 @@ const SHAPE_COLORS: Record<ShapeKey, string> = {
 };
 
 function SectionHeader({ title, isRTL }: { title: string; isRTL: boolean }) {
-  const textStart: "left" | "right" =
-    isRTL === I18nManager.isRTL ? "left" : "right";
+  const textStart: "left" | "right" = isRTL ? "right" : "left";
   const alignStart: "flex-start" | "flex-end" =
     isRTL === I18nManager.isRTL ? "flex-start" : "flex-end";
   return (
@@ -117,10 +116,8 @@ export default function ChaletDetailScreen() {
   const isRTL = i18n.language ? i18n.language.startsWith("ar") : true;
 
   // textStart: dynamic alignment accounting for React Native native mirroring
-  const textStart: "left" | "right" =
-    isRTL === I18nManager.isRTL ? "left" : "right";
-  const textEnd: "left" | "right" =
-    isRTL === I18nManager.isRTL ? "right" : "left";
+  const textStart: "left" | "right" = isRTL ? "right" : "left";
+  const textEnd: "left" | "right" = isRTL ? "left" : "right";
   // flexDir: dynamic flexDirection accounting for native mirroring
   const flexDir: "row" | "row-reverse" =
     isRTL === I18nManager.isRTL ? "row" : "row-reverse";
@@ -535,51 +532,34 @@ export default function ChaletDetailScreen() {
         <View style={styles.infoWrapper}>
           {/* العنوان والتقييم */}
           <View
-            style={{ alignItems: alignStart, width: "100%", marginBottom: 20 }}
+            style={{
+              flexDirection: flexDir,
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              width: '100%',
+              marginBottom: 20
+            }}
           >
-            <View
-              style={{
-                flexDirection: flexDir === "row" ? "row-reverse" : "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                width: "100%",
-                gap: 12,
-              }}
-            >
-              {/* التقييم — دائماً على الجانب الأبعد عن الاسم */}
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
-              >
-                <SolarStarBold size={14} color="#035DF9" />
-                <ThemedText style={styles.ratingVal}>
-                  {chaletRating.toFixed(1)}
-                </ThemedText>
-              </View>
-              {/* الاسم — يمين في عربي، يسار في إنجليزي */}
-              <View style={{ flex: 1, alignItems: alignStart }}>
-                <ThemedText
-                  style={[
-                    styles.mainTitle,
-                    { textAlign: textStart, width: "100%" },
-                  ]}
-                  numberOfLines={2}
-                >
-                  {chaletName}
-                </ThemedText>
-              </View>
-            </View>
-
-            <View
-              style={{ width: "100%", marginTop: 4, alignItems: alignStart }}
-            >
+            <View style={{ flex: 1 }}>
               <ThemedText
-                style={[
-                  styles.locationSub,
-                  { textAlign: textStart, width: "100%" },
-                ]}
+                style={[styles.mainTitle, { textAlign: textStart }]}
+                numberOfLines={2}
+              >
+                {chaletName}
+              </ThemedText>
+              <ThemedText
+                style={[styles.locationSub, { textAlign: textStart, marginTop: 4 }]}
               >
                 {chaletCategory ? `${chaletCategory} • ` : ""}
                 {chaletLocation}
+              </ThemedText>
+            </View>
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 4, marginStart: 12 }}
+            >
+              <SolarStarBold size={14} color="#035DF9" />
+              <ThemedText style={styles.ratingVal}>
+                {chaletRating.toFixed(1)}
               </ThemedText>
             </View>
           </View>
@@ -876,58 +856,55 @@ export default function ChaletDetailScreen() {
             const reviewDate = reviewItem?.createdAt
               ? new Date(reviewItem.createdAt).toLocaleDateString()
               : "";
-            return (
+             return (
               <View key={reviewItem?.id || i} style={styles.revComplexCardFlat}>
                 <View
                   style={[styles.revHeaderMerged, { flexDirection: flexDir }]}
                 >
+                  <View style={styles.avatarCircleMerged}>
+                    <ExpoImage
+                      source={
+                        customer?.image
+                          ? getImageSrc(customer.image)
+                          : require("@/assets/profile.svg")
+                      }
+                      style={styles.userAvatarImgMerged}
+                      contentFit="cover"
+                    />
+                  </View>
+
+                  <View
+                    style={[
+                      styles.nameAndBodyMerged,
+                      {
+                        alignItems: isRTL ? "flex-end" : "flex-start",
+                        marginHorizontal: 12,
+                      },
+                    ]}
+                  >
+                    <ThemedText style={[styles.reviewerNameMerged, { textAlign: isRTL ? "right" : "left" }]}>
+                      {reviewerName}
+                    </ThemedText>
+                    <ThemedText
+                      style={[
+                        styles.revMessageMerged,
+                        { textAlign: isRTL ? "right" : "left" },
+                      ]}
+                    >
+                      {reviewComment}
+                    </ThemedText>
+                  </View>
+
                   <View
                     style={[
                       styles.revRatingCornerMerged,
                       { flexDirection: flexDir },
                     ]}
                   >
+                    <SolarStarBold size={14} color="#035DF9" />
                     <ThemedText style={styles.revRateNumMerged}>
                       {reviewRating}
                     </ThemedText>
-                    <SolarStarBold size={14} color="#035DF9" />
-                  </View>
-                  <View
-                    style={[
-                      styles.userInfoRowMerged,
-                      { flexDirection: flexDir },
-                    ]}
-                  >
-                    <View
-                      style={[
-                        styles.nameAndBodyMerged,
-                        { alignItems: "flex-start" },
-                        isRTL ? { marginRight: 15 } : { marginLeft: 15 },
-                      ]}
-                    >
-                      <ThemedText style={styles.reviewerNameMerged}>
-                        {reviewerName}
-                      </ThemedText>
-                      <ThemedText
-                        style={[
-                          styles.revMessageMerged,
-                          { textAlign: textStart },
-                        ]}
-                      >
-                        {reviewComment}
-                      </ThemedText>
-                    </View>
-                    <View style={styles.avatarCircleMerged}>
-                      <ExpoImage
-                        source={
-                          customer?.image
-                            ? getImageSrc(customer.image)
-                            : require("@/assets/profile.svg")
-                        }
-                        style={styles.userAvatarImgMerged}
-                        contentFit="cover"
-                      />
-                    </View>
                   </View>
                 </View>
 

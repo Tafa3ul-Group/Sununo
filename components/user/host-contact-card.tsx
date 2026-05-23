@@ -26,8 +26,7 @@ export const HostContactCard: React.FC<HostContactCardProps> = ({
   const isArabic = i18n.language === "ar";
 
   // When I18nManager.isRTL is true, React Native natively mirrors layouts and alignments.
-  const textStart: "left" | "right" =
-    isArabic === I18nManager.isRTL ? "left" : "right";
+  const textStart: "left" | "right" = isArabic ? "right" : "left";
   const alignStart: "flex-start" | "flex-end" =
     isArabic === I18nManager.isRTL ? "flex-start" : "flex-end";
 

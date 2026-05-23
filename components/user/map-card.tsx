@@ -33,7 +33,7 @@ export const MapCard = ({
   
   const needsCounter = isArabic !== I18nManager.isRTL;
   const alignStart: "flex-start" | "flex-end" = needsCounter ? "flex-end" : "flex-start";
-  const ratingBoxDir = I18nManager.isRTL ? "row-reverse" : "row";
+  const ratingBoxDir = getFlexDirection(isArabic);
   return (
     <TouchableOpacity
       activeOpacity={0.9}

@@ -105,7 +105,7 @@ export function ColoredCard({
   const footerJustify: "flex-start" | "flex-end" = needsCounter
     ? "flex-end"
     : "flex-start";
-  const ratingDirection: "row" | "row-reverse" = I18nManager.isRTL
+  const ratingDirection: "row" | "row-reverse" = needsCounter
     ? "row-reverse"
     : "row";
 
@@ -122,7 +122,7 @@ export function ColoredCard({
       <TouchableOpacity
         style={[
           styles.favoriteButton,
-          needsCounter ? { left: 12 } : { right: 12 },
+          { end: 12 },
         ]}
         onPress={onToggleFavorite}
       >

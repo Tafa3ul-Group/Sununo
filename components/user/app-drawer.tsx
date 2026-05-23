@@ -19,6 +19,7 @@ import { useTranslation } from "react-i18next";
 import {
   Alert,
   Dimensions,
+  I18nManager,
   Image,
   StyleSheet,
   TouchableOpacity,
@@ -149,12 +150,12 @@ export const AppDrawer = forwardRef<AppDrawerRef>((props, ref) => {
         style={[
           styles.drawer,
           drawerStyle,
-          isRTL ? { right: 0 } : { left: 0 },
+          isRTL ? { end: 0 } : { start: 0 },
           { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 },
         ]}
       >
         {/* Header with Close Button */}
-        <View style={[styles.drawerHeader, { flexDirection: "row-reverse" }]}>
+        <View style={[styles.drawerHeader, { flexDirection: isRTL === I18nManager.isRTL ? "row" : "row-reverse" }]}>
           <TouchableOpacity onPress={close} style={styles.closeBtn}>
             <SolarCloseBold size={24} color="#64748B" />
           </TouchableOpacity>
