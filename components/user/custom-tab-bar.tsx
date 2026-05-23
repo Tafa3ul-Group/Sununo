@@ -61,7 +61,7 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
         { 
           bottom: Math.max(insets.bottom, 24),
           paddingHorizontal: SIDE_PADDING,
-          flexDirection: flexDir
+          flexDirection: 'row'
         }
       ]}>
         {/* Isolated Button (Map for Customer) */}
@@ -83,7 +83,7 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
         </TouchableOpacity>
 
         {/* Tab Capsule */}
-        <View style={[styles.tabCapsule, { flexDirection: flexDir }]}>
+        <View style={[styles.tabCapsule, { flexDirection: 'row' }]}>
           {pillTabs.map((route: any) => {
             const isActive = currentRouteName === route.name;
             return (

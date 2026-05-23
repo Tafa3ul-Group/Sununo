@@ -12,14 +12,15 @@ import {
 } from '@/components/icons/solar-icons';
 import { LanguageSheet } from '@/components/user/language-sheet';
 import { LogoutSheet } from '@/components/user/logout-sheet';
+import { DeleteAccountSheet } from '@/components/user/delete-account-sheet';
 import { WalletCard } from '@/components/user/wallet-card';
 import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
 import { getFlexDirection } from "@/i18n";
 import { RootState } from '@/store';
 import { useGetMeQuery } from '@/store/api/apiSlice';
-import { useGetCustomerWalletQuery, useDeleteCustomerAccountMutation } from '@/store/api/customerApiSlice';
-import { logout } from '@/store/authSlice';
+import { useGetCustomerWalletQuery } from '@/store/api/customerApiSlice';
+
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useRef, useState } from 'react';
@@ -33,10 +34,9 @@ import {
     TouchableOpacity,
     View,
     I18nManager,
-    Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 export default function CustomerProfileScreen() {
     const { t, i18n } = useTranslation();
@@ -53,6 +53,7 @@ export default function CustomerProfileScreen() {
 
     const languageSheetRef = useRef<BottomSheetModal>(null);
     const logoutSheetRef = useRef<BottomSheetModal>(null);
+    const deleteSheetRef = useRef<BottomSheetModal>(null);
 
     const { data: meData, refetch: refetchMe } = useGetMeQuery(undefined);
     const { data: walletData, refetch: refetchWallet } = useGetCustomerWalletQuery(undefined);
@@ -64,43 +65,7 @@ export default function CustomerProfileScreen() {
         setIsRefreshing(false);
     }, [refetchMe, refetchWallet]);
 
-    const dispatch = useDispatch();
-    const [deleteCustomerAccount] = useDeleteCustomerAccountMutation();
 
-    const handleDeleteAccount = () => {
-        Alert.alert(
-            isArabic ? 'حذف الحساب' : 'Delete Account',
-            isArabic 
-                ? 'هل أنت متأكد من رغبتك في حذف حسابك نهائياً؟ هذا الإجراء لا يمكن التراجع عنه وسيؤدي إلى حذف جميع بياناتك.' 
-                : 'Are you sure you want to permanently delete your account? This action cannot be undone and will delete all your data.',
-            [
-                {
-                    text: isArabic ? 'إلغاء' : 'Cancel',
-                    style: 'cancel',
-                },
-                {
-                    text: isArabic ? 'حذف الحساب' : 'Delete Account',
-                    style: 'destructive',
-                    onPress: async () => {
-                        try {
-                            await deleteCustomerAccount(undefined).unwrap();
-                            Alert.alert(
-                                isArabic ? 'تم الحذف' : 'Deleted',
-                                isArabic ? 'تم حذف حسابك بنجاح.' : 'Your account has been successfully deleted.'
-                            );
-                            dispatch(logout());
-                        } catch (err: any) {
-                            console.error('Delete Account Error:', err);
-                            Alert.alert(
-                                isArabic ? 'خطأ' : 'Error',
-                                isArabic ? 'فشل في حذف الحساب. يرجى المحاولة لاحقاً.' : 'Failed to delete account. Please try again later.'
-                            );
-                        }
-                    }
-                }
-            ]
-        );
-    };
 
     const userData = (meData as any)?.data || meData || authUser;
     const walletBalance = walletData?.balance
@@ -146,7 +111,7 @@ export default function CustomerProfileScreen() {
             title: isArabic ? 'حذف الحساب' : 'Delete Account',
             shape: 'red' as const,
             icon: <SolarTrashBinBold size={20} color="white" />,
-            action: handleDeleteAccount,
+            action: () => deleteSheetRef.current?.present(),
         },
         {
             id: 'logout',
@@ -253,6 +218,7 @@ export default function CustomerProfileScreen() {
 
             <LanguageSheet ref={languageSheetRef} />
             <LogoutSheet ref={logoutSheetRef} />
+            <DeleteAccountSheet ref={deleteSheetRef} />
         </View>
     );
 }
