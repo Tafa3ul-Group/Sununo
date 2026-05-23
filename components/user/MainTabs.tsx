@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
   buttonsContainer: {
     position: "absolute",
     top: 0,
-    left: 0,
+    start: 0,
     width: 344,
     height: 80,
     flexDirection: "row",

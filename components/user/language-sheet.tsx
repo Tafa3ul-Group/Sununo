@@ -67,7 +67,7 @@ export const LanguageSheet = React.forwardRef<BottomSheetModal, LanguageSheetPro
         backgroundStyle={styles.background}
       >
         <BottomSheetView style={styles.content}>
-          <ThemedText style={styles.title}>اختيار اللغة</ThemedText>
+          <ThemedText style={styles.title}>{currentLang === "ar" ? "اختيار اللغة" : "Choose Language"}</ThemedText>
           <View style={styles.list}>
             {languages.map((lang) => (
               <TouchableOpacity

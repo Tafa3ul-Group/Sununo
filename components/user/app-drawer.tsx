@@ -72,7 +72,7 @@ export const AppDrawer = forwardRef<AppDrawerRef>((props, ref) => {
         onPress: async () => {
           try {
             await logoutApi(undefined).unwrap();
-          } catch (e) {}
+          } catch (e) { }
           dispatch(logout());
           router.replace("/(auth)/login");
         },
