@@ -238,16 +238,16 @@ export default function ChaletDetailScreen() {
     : chalet.name?.en || chalet.nameEn || chalet.name || "";
   const chaletLocation = isRTL
     ? chalet.region?.name?.ar ||
-      chalet.region?.nameAr ||
-      chalet.region?.name ||
-      chalet.city?.name ||
-      ""
+    chalet.region?.nameAr ||
+    chalet.region?.name ||
+    chalet.city?.name ||
+    ""
     : chalet.region?.name?.en ||
-      chalet.region?.nameEn ||
-      chalet.region?.name ||
-      chalet.city?.enName ||
-      chalet.city?.name ||
-      "";
+    chalet.region?.nameEn ||
+    chalet.region?.name ||
+    chalet.city?.enName ||
+    chalet.city?.name ||
+    "";
   const chaletCategory = isRTL
     ? chalet.category?.ar || ""
     : chalet.category?.en || "";
@@ -258,9 +258,9 @@ export default function ChaletDetailScreen() {
   const chaletDescription = isRTL
     ? chalet.description?.ar || chalet.descriptionAr || chalet.description || ""
     : chalet.description?.en ||
-      chalet.descriptionEn ||
-      chalet.description ||
-      "";
+    chalet.descriptionEn ||
+    chalet.description ||
+    "";
 
   const availableShifts = useMemo(() => {
     if (!chalet?.shifts || chalet.shifts.length === 0) return [];
@@ -542,13 +542,13 @@ export default function ChaletDetailScreen() {
           >
             <View style={{ flex: 1 }}>
               <ThemedText
-                style={[styles.mainTitle, { textAlign: textStart }]}
+                style={[styles.mainTitle, { textAlign: isRTL ? "left" : "right" }]}
                 numberOfLines={2}
               >
                 {chaletName}
               </ThemedText>
               <ThemedText
-                style={[styles.locationSub, { textAlign: textStart, marginTop: 4 }]}
+                style={[styles.locationSub, { textAlign: isRTL ? "left" : "right", marginTop: 4 }]}
               >
                 {chaletCategory ? `${chaletCategory} • ` : ""}
                 {chaletLocation}
@@ -593,8 +593,8 @@ export default function ChaletDetailScreen() {
                 const minShiftPrice =
                   shift.pricing && shift.pricing.length > 0
                     ? Math.min(
-                        ...shift.pricing.map((p: any) => p.price),
-                      ).toLocaleString()
+                      ...shift.pricing.map((p: any) => p.price),
+                    ).toLocaleString()
                     : null;
 
                 return (
@@ -719,9 +719,9 @@ export default function ChaletDetailScreen() {
           <View style={styles.mapCardFlat}>
             <View style={styles.mapInner}>
               {showMap &&
-              MapboxComponent?.MapView &&
-              MapboxComponent?.Camera &&
-              MapboxComponent?.PointAnnotation ? (
+                MapboxComponent?.MapView &&
+                MapboxComponent?.Camera &&
+                MapboxComponent?.PointAnnotation ? (
                 <MapboxComponent.MapView
                   style={styles.mapView}
                   scrollEnabled={false}
@@ -856,7 +856,7 @@ export default function ChaletDetailScreen() {
             const reviewDate = reviewItem?.createdAt
               ? new Date(reviewItem.createdAt).toLocaleDateString()
               : "";
-             return (
+            return (
               <View key={reviewItem?.id || i} style={styles.revComplexCardFlat}>
                 <View
                   style={[styles.revHeaderMerged, { flexDirection: flexDir }]}
