@@ -21,7 +21,7 @@ export const GuestCounter: React.FC<GuestCounterProps> = ({
   style,
 }) => {
   const { i18n } = useTranslation();
-  const isArabic = i18n.language === 'ar';
+  const isArabic = i18n.language ? i18n.language.startsWith('ar') : false;
   const flexDir: "row" | "row-reverse" = (isArabic !== I18nManager.isRTL) ? "row-reverse" : "row";
   const btnSize = 38;
 

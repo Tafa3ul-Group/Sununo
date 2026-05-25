@@ -177,8 +177,8 @@ export function HeaderSection({
 
         {/* Center Title */}
         {!isHome && (
-          <View style={styles.titleWrapper}>
-            <ThemedText style={styles.headerTitle}>
+          <View style={[styles.titleWrapper, { alignItems: isArabic ? "flex-end" : "flex-start" }]}>
+            <ThemedText style={[styles.headerTitle, { textAlign: isArabic ? "right" : "left" }]}>
               {title}
             </ThemedText>
           </View>
