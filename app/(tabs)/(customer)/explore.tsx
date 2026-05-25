@@ -78,7 +78,7 @@ import { useDispatch, useSelector } from "react-redux";
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const MAPBOX_ACCESS_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
-import { isRTL, getFlexDirection } from "@/i18n";
+
 import { useGetChaletsMapQuery } from "@/store/api/apiSlice";
 import { setFilters, clearFilters } from "@/store/filterSlice";
 

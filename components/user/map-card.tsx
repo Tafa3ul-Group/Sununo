@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import { Image, StyleSheet, Text, TouchableOpacity, View, I18nManager } from "react-native";
 import { SolarCloseCircleBold, SolarStarBold } from "@/components/icons/solar-icons";
-import { isRTL, getFlexDirection } from "@/i18n";
+
 
 interface MapCardProps {
   title: string;
@@ -28,12 +28,11 @@ export const MapCard = ({
   onClose }: MapCardProps) => {
   const { language } = useSelector((state: RootState) => state.auth);
   const isArabic = language === "ar";
-  const rowDir = getFlexDirection(isArabic);
-  const rowReverseDir = getFlexDirection(!isArabic);
-  
   const needsCounter = isArabic !== I18nManager.isRTL;
+  const rowDir: "row" | "row-reverse" = needsCounter ? "row-reverse" : "row";
+  const rowReverseDir: "row" | "row-reverse" = needsCounter ? "row" : "row-reverse";
   const alignStart: "flex-start" | "flex-end" = needsCounter ? "flex-end" : "flex-start";
-  const ratingBoxDir = getFlexDirection(isArabic);
+  const ratingBoxDir = rowDir;
   return (
     <TouchableOpacity
       activeOpacity={0.9}

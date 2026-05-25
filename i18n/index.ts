@@ -198,7 +198,12 @@ export const tr = (obj: any): string => {
   );
 };
 
-export let isRTL = I18nManager.isRTL;
+export let isRTL = i18n.language ? i18n.language.startsWith('ar') : I18nManager.isRTL;
+
+// Keep isRTL in sync whenever the language changes at runtime
+i18n.on('languageChanged', (lng: string) => {
+  isRTL = lng ? lng.startsWith('ar') : I18nManager.isRTL;
+});
 
 export const getFlexDirection = (desiredRTL: boolean): "row" | "row-reverse" => {
   return desiredRTL === I18nManager.isRTL ? "row" : "row-reverse";

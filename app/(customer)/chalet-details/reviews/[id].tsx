@@ -7,7 +7,7 @@ import {
 import { ThemedText } from "@/components/themed-text";
 import { ReviewSubmissionSheet } from "@/components/user/review-submission-sheet";
 import { SecondarySelect } from "@/components/user/secondary-select";
-import { isRTL, getFlexDirection } from "@/i18n";
+
 import {
   useCheckCanReviewQuery,
   useCreateReviewMutation,
@@ -153,12 +153,12 @@ export default function ReviewsScreen() {
             return (
               <View key={idx} style={styles.revCardFlat}>
                 <View
-                  style={[styles.revHeader, { flexDirection: getFlexDirection(isRTL) }]}
+                  style={[styles.revHeader, { flexDirection: (isArabic !== I18nManager.isRTL) ? 'row-reverse' : 'row' }]}
                 >
                   <View
                     style={[
                       styles.ratingBadge,
-                      { flexDirection: getFlexDirection(isRTL) },
+                      { flexDirection: (isArabic !== I18nManager.isRTL) ? 'row-reverse' : 'row' },
                     ]}
                   >
                     <SolarStarBold size={14} color="#035DF9" />
@@ -169,7 +169,7 @@ export default function ReviewsScreen() {
                   <View
                     style={[
                       styles.userInfoRow,
-                      { flexDirection: getFlexDirection(isRTL) },
+                      { flexDirection: (isArabic !== I18nManager.isRTL) ? 'row-reverse' : 'row' },
                     ]}
                   >
                     <View
@@ -177,7 +177,7 @@ export default function ReviewsScreen() {
                         styles.nameAndBody,
                         {
                           alignItems: "flex-start",
-                          [isRTL ? "marginRight" : "marginLeft"]: 15,
+                          [isArabic ? "marginRight" : "marginLeft"]: 15,
                         },
                       ]}
                     >
@@ -214,7 +214,7 @@ export default function ReviewsScreen() {
                           source={{ uri: imgUri }}
                           style={[
                             styles.thumb,
-                            { [isRTL ? "marginLeft" : "marginRight"]: 12 },
+                            { [isArabic ? "marginLeft" : "marginRight"]: 12 },
                           ]}
                         />
                       ))}

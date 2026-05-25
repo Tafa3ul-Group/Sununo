@@ -9,7 +9,7 @@ import { HeaderSection } from "@/components/header-section";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
-import { isRTL } from "@/i18n";
+
 
 export default function ChaletDescriptionScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

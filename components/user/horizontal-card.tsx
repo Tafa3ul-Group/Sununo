@@ -6,7 +6,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
-import { getFlexDirection } from "@/i18n";
+
 import {
   Dimensions,
   I18nManager,
@@ -80,9 +80,11 @@ export function HorizontalCard({
   const { language } = useSelector((state: RootState) => state.auth);
   const isArabic = language === "ar";
   const textStart: "left" | "right" = isArabic ? "right" : "left";
-  const rowDirection = getFlexDirection(isArabic);
-  const rowReverseDir = getFlexDirection(!isArabic);
-  const ratingBoxDir = getFlexDirection(isArabic);
+  const flexRow: "row" | "row-reverse" = (isArabic !== I18nManager.isRTL) ? "row-reverse" : "row";
+  const flexRowInverse: "row" | "row-reverse" = (isArabic !== I18nManager.isRTL) ? "row" : "row-reverse";
+  const rowDirection = flexRow;
+  const rowReverseDir = flexRowInverse;
+  const ratingBoxDir = flexRow;
   const needsCounter = isArabic !== I18nManager.isRTL;
   const alignStart: "flex-start" | "flex-end" = needsCounter ? "flex-end" : "flex-start";
 

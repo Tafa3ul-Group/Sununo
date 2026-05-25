@@ -11,7 +11,7 @@ import { ThemedText } from "@/components/themed-text";
 import { HorizontalCard } from "@/components/user/horizontal-card";
 import { Colors, Shadows } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
-import { isRTL, getFlexDirection } from "@/i18n";
+
 import { RootState } from "@/store";
 import { unwrapListResponse } from "@/store/api/apiSlice";
 import {
@@ -102,7 +102,7 @@ export default function FilterResultsScreen() {
         title: isArabic
           ? chalet.name?.ar || chalet.nameAr || chalet.name || ""
           : chalet.name?.en || chalet.nameEn || chalet.name || "",
-        location: isRTL
+        location: isArabic
           ? chalet.region?.name?.ar ||
             chalet.region?.nameAr ||
             chalet.region?.name ||
@@ -119,7 +119,7 @@ export default function FilterResultsScreen() {
         isFavorite: favoriteIds.includes(chalet.id),
       };
     });
-  }, [chaletsResponse, favoriteIds, isRTL]);
+  }, [chaletsResponse, favoriteIds, isArabic]);
 
   const handleToggleFavorite = async (id: string) => {
     try {
@@ -146,7 +146,7 @@ export default function FilterResultsScreen() {
     }
     if (activeFilters?.checkIn) {
       const dateText = new Date(activeFilters.checkIn).toLocaleDateString(
-        isRTL ? "ar" : "en",
+        isArabic ? "ar" : "en",
         { month: "short", day: "numeric" },
       );
       pills.push({
@@ -163,9 +163,9 @@ export default function FilterResultsScreen() {
     }
     if (activeFilters?.period) {
       const periodMap: Record<string, string> = {
-        morning: isRTL ? "صباحي" : "Morning",
-        evening: isRTL ? "مسائي" : "Evening",
-        overnight: isRTL ? "مبيت" : "Overnight",
+        morning: isArabic ? "صباحي" : "Morning",
+        evening: isArabic ? "مسائي" : "Evening",
+        overnight: isArabic ? "مبيت" : "Overnight",
       };
       pills.push({
         id: "period",
@@ -178,7 +178,7 @@ export default function FilterResultsScreen() {
     if (activeFilters?.maxGuests) {
       pills.push({
         id: "guests",
-        text: `${activeFilters.maxGuests} ${isRTL ? "ضيوف" : "guests"}`,
+        text: `${activeFilters.maxGuests} ${isArabic ? "ضيوف" : "guests"}`,
         icon: <SolarUsersGroupBold size={14} color={Colors.primary} />,
         onRemove: () =>
           dispatch(
@@ -214,7 +214,7 @@ export default function FilterResultsScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <HeaderSection
-        title={isRTL ? "نتائج البحث" : "Filter Results"}
+        title={isArabic ? "نتائج البحث" : "Filter Results"}
         showBackButton={true}
         showLogo={false}
         onBackPress={() => router.back()}
@@ -228,9 +228,9 @@ export default function FilterResultsScreen() {
             showsHorizontalScrollIndicator={false}
             data={activePills}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={[styles.pillsList, { flexDirection: getFlexDirection(isArabic) }]}
+            contentContainerStyle={[styles.pillsList, { flexDirection: (isArabic !== I18nManager.isRTL) ? 'row-reverse' : 'row' }]}
             renderItem={({ item }) => (
-              <View style={[styles.pill, { flexDirection: getFlexDirection(isArabic) }]}>
+              <View style={[styles.pill, { flexDirection: (isArabic !== I18nManager.isRTL) ? 'row-reverse' : 'row' }]}>
                 {item.icon}
                 <ThemedText style={styles.pillText}>{item.text}</ThemedText>
                 <TouchableOpacity
@@ -268,18 +268,18 @@ export default function FilterResultsScreen() {
             style={styles.emptyAnimation}
           />
           <ThemedText style={styles.emptyTitle}>
-            {isRTL
+            {isArabic
               ? "عذراً، لا توجد نتائج مطابقة"
               : "No Matching Chalets Found"}
           </ThemedText>
           <ThemedText style={styles.emptyDesc}>
-            {isRTL
+            {isArabic
               ? "لم نجد شاليهات تطابق خيارات التصفية الحالية. جرب تغيير المحافظة أو التواريخ."
               : "We couldn't find any chalets matching your filters. Try resetting or tweaking them."}
           </ThemedText>
           <TouchableOpacity style={styles.resetButton} onPress={handleClearAll}>
             <ThemedText style={styles.resetButtonText}>
-              {isRTL ? "إعادة ضبط التصفية" : "Reset All Filters"}
+              {isArabic ? "إعادة ضبط التصفية" : "Reset All Filters"}
             </ThemedText>
           </TouchableOpacity>
         </View>
@@ -359,8 +359,8 @@ const styles = StyleSheet.create({
   favoriteButton: {
     position: "absolute",
     top: 12,
-    right: isRTL ? undefined : 12,
-    left: isRTL ? 12 : undefined,
+    right: I18nManager.isRTL ? undefined : 12,
+    left: I18nManager.isRTL ? 12 : undefined,
     width: 38,
     height: 38,
     borderRadius: 19,

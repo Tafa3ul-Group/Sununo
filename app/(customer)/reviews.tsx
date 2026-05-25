@@ -9,11 +9,11 @@ import { useTranslation } from "react-i18next";
 import {
   Dimensions,
   FlatList,
+  I18nManager,
   StyleSheet,
   View
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { getFlexDirection } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -104,7 +104,7 @@ export default function ReviewsScreen() {
       />
 
       {/* Tabs with fixed components to prevent shape shifting */}
-      <View style={[styles.tabsWrapper, { flexDirection: getFlexDirection(isArabic) }]}>
+      <View style={[styles.tabsWrapper, { flexDirection: (isArabic !== I18nManager.isRTL) ? 'row-reverse' : 'row' }]}>
         <View style={styles.tabItem}>
           <SecondaryButton
             label={t('reviews.reviewed')}

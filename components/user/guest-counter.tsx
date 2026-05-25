@@ -1,9 +1,9 @@
 import { SolarAddBold, SolarMinusBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
-import { getFlexDirection } from "@/i18n";
+
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
+import { I18nManager, StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { normalize } from "../../constants/theme";
 
@@ -22,7 +22,7 @@ export const GuestCounter: React.FC<GuestCounterProps> = ({
 }) => {
   const { i18n } = useTranslation();
   const isArabic = i18n.language === 'ar';
-  const flexDir = getFlexDirection(isArabic);
+  const flexDir: "row" | "row-reverse" = (isArabic !== I18nManager.isRTL) ? "row-reverse" : "row";
   const btnSize = 38;
 
   return (

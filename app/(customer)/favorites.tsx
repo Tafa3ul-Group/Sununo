@@ -12,13 +12,14 @@ import { HorizontalCard } from '@/components/user/horizontal-card';
 import { HeaderSection } from '@/components/header-section';
 import { useGetCustomerFavoritesQuery, useToggleFavoriteMutation } from '@/store/api/customerApiSlice';
 import { getImageSrc } from '@/hooks/useImageSrc';
-import { isRTL } from "@/i18n";
+
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function FavoritesScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { language } = useSelector((state: RootState) => state.auth);
+  const isRTL = i18n.language ? i18n.language.startsWith('ar') : false;
     const router = useRouter();
 
   // Fetch favorites from the backend
