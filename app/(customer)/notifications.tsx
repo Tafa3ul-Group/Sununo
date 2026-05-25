@@ -20,6 +20,8 @@ interface Notification {
   message: string;
   time: string;
   isRead: boolean;
+  redirectType?: string;
+  redirectId?: string;
 }
 
 export default function NotificationsScreen() {
@@ -50,9 +52,12 @@ export default function NotificationsScreen() {
         const notif: Notification = {
           id: item.id,
           title: item.title || t('notifications.newNotification'),
-          message: item.body || item.message || '',
+          message: item.text || item.body || item.message || '',
           time: new Date(item.createdAt).toLocaleTimeString(isRTL ? 'ar' : 'en', { hour: '2-digit', minute: '2-digit' }),
-          isRead: item.isRead || false };
+          isRead: !!item.readAt,
+          redirectType: item.redirectType,
+          redirectId: item.redirectId,
+        };
 
         const notifDate = new Date(item.createdAt).toDateString();
         if (notifDate === todayStr) {
@@ -69,6 +74,12 @@ export default function NotificationsScreen() {
     const handleNotificationPress = (item: Notification) => {
         if (!item.isRead) {
             markAsRead(item.id);
+        }
+        if (item.redirectType === 'booking' && item.redirectId) {
+            router.push({
+                pathname: '/(tabs)/(customer)/booking-success',
+                params: { id: item.redirectId }
+            });
         }
     };
 

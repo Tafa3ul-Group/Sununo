@@ -6,7 +6,7 @@ import { PrimaryButton } from '@/components/user/primary-button';
 import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
 import { RootState } from '@/store';
-import { useDeleteExternalBookingMutation, useGetProviderBookingDetailsQuery, useMarkBookingCompletedMutation, useRejectBookingMutation } from '@/store/api/apiSlice';
+import { useDeleteExternalBookingMutation, useGetProviderBookingDetailsQuery, useMarkBookingCompletedMutation, useRejectBookingMutation, useApproveBookingMutation } from '@/store/api/apiSlice';
 import * as Haptics from 'expo-haptics';
 import { Image as ExpoImage } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -14,6 +14,8 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSelector } from 'react-redux';
+import { useConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import Toast from 'react-native-toast-message';
 
 const IDENTITY_BLUE = '#035DF9';
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -34,12 +36,46 @@ export default function BookingDetailsPage() {
   const [rejectBooking, { isLoading: isRejectLoading }] = useRejectBookingMutation();
   const [deleteExternalBooking, { isLoading: isDeletingExternal }] = useDeleteExternalBookingMutation();
   const [markAsPaid, { isLoading: isPaying }] = useMarkBookingCompletedMutation();
+  const [approveBooking, { isLoading: isApproving }] = useApproveBookingMutation();
+  const { showConfirm } = useConfirmationDialog();
   const [isSuccessNavigating, setIsSuccessNavigating] = React.useState(false);
   const [expandedImage, setExpandedImage] = React.useState<string | null>(null);
 
   const { data: bookingDetailsData, isLoading, error, refetch } = useGetProviderBookingDetailsQuery(id as string, { skip: !id });
 
   const data = bookingDetailsData?.data || bookingDetailsData;
+
+  const handleApproveBooking = () => {
+    showConfirm({
+      title: isRTL ? 'تأكيد الحجز' : 'Confirm Booking',
+      message: isRTL ? 'هل أنت متأكد من الموافقة وتأكيد هذا الطلب؟' : 'Are you sure you want to approve and confirm this booking?',
+      type: 'info',
+      confirmLabel: isRTL ? 'تأكيد' : 'Confirm',
+      cancelLabel: isRTL ? 'إلغاء' : 'Cancel',
+      onConfirm: async () => {
+        try {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          await approveBooking(data.id).unwrap();
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          Toast.show({
+            type: 'success',
+            text1: isRTL ? 'تم تأكيد الطلب' : 'Request Confirmed',
+            text2: isRTL ? 'تمت الموافقة وتأكيد الحجز بنجاح' : 'Booking has been successfully approved and confirmed',
+            position: 'bottom'
+          });
+          refetch();
+        } catch (e: any) {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+          Toast.show({
+            type: 'error',
+            text1: isRTL ? 'فشل التأكيد' : 'Confirmation Failed',
+            text2: e?.data?.message || (isRTL ? 'حدث خطأ أثناء محاولة تأكيد الطلب' : 'An error occurred while confirming'),
+            position: 'bottom'
+          });
+        }
+      }
+    });
+  };
 
   if (isLoading) return <View style={styles.loadingContainer}><ActivityIndicator size="large" color={IDENTITY_BLUE} /></View>;
 
@@ -56,19 +92,22 @@ export default function BookingDetailsPage() {
     );
   }
 
+  const getLocalizedValue = (val: any) => {
+    if (!val) return '';
+    if (typeof val === 'string') return val;
+    if (typeof val === 'object') {
+      return isRTL ? (val.ar || val.en || '') : (val.en || val.ar || '');
+    }
+    return String(val);
+  };
+
   const bIsExternal = data.status === "external";
-  const bChaletName = isRTL
-    ? data.chalet?.name?.ar || data.chalet?.name
-    : data.chalet?.name?.en || data.chalet?.name;
-  const bChaletAddress = isRTL
-    ? data.chalet?.address?.ar || data.chalet?.address
-    : data.chalet?.address?.en || data.chalet?.address;
+  const bChaletName = getLocalizedValue(data.chalet?.name);
+  const bChaletAddress = getLocalizedValue(data.chalet?.address);
   const bCustomerName = bIsExternal
     ? data.externalCustomerName || (isRTL ? "حجز خارجي" : "External Booking")
     : data.customer?.name || t("common.user");
-  const bShiftName = isRTL
-    ? data.shift?.name?.ar || data.shift?.name
-    : data.shift?.name?.en || data.shift?.name;
+  const bShiftName = getLocalizedValue(data.shift?.name);
   const bChaletImage = data.chalet?.image || data.chalet?.images?.[0];
   const chaletImageId = typeof bChaletImage === 'string'
     ? bChaletImage
@@ -329,11 +368,11 @@ export default function BookingDetailsPage() {
               isRTL ? "المبلغ النهائي" : "Final Price",
               `${totalPrice.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
             )}
-            {renderInfoRow(
+            {data.status !== 'pending_approval' && renderInfoRow(
               isRTL ? "المبلغ المدفوع (العربون)" : "Paid (Deposit)",
               `${depositAmount.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
             )}
-            {renderInfoRow(
+            {data.status !== 'pending_approval' && renderInfoRow(
               isRTL ? "المبلغ المتبقي" : "Remaining Amount",
               `${remainingAmount.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
               true,
@@ -346,7 +385,15 @@ export default function BookingDetailsPage() {
       {!bIsCancelled && (
         <View style={styles.bottomActions}>
           {!bIsExternal && (
-            remainingAmount > 0 ? (
+            data.status === 'pending_approval' ? (
+              <PrimaryButton
+                label={isRTL ? 'تأكيد الطلب' : 'Confirm Request'}
+                onPress={handleApproveBooking}
+                loading={isApproving}
+                height={60}
+                style={styles.payButton}
+              />
+            ) : remainingAmount > 0 ? (
               <PrimaryButton
                 label={isRTL ? `تسديد المبلغ المتبقي ` : `Pay Remaining Balance`}
                 onPress={() => {
@@ -367,7 +414,7 @@ export default function BookingDetailsPage() {
             )
           )}
 
-          {(remainingAmount > 0 || bIsExternal) && (
+          {(remainingAmount > 0 || bIsExternal || data.status === 'pending_approval') && (
             <PrimaryButton
               label={isRTL ? 'إلغاء الحجز' : 'Cancel Booking'}
               onPress={() => cancelSheetRef.current?.present(bCustomerName, bCustomerPhone)}

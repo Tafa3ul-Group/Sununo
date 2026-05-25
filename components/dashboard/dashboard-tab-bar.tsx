@@ -1,5 +1,5 @@
 import {
-  SolarHome2Bold,
+  SolarHomeSmileBoldDuotone,
   SolarAddSquareBold,
   SolarEyeBold
 } from '@/components/icons/solar-icons';
@@ -11,7 +11,7 @@ import { useGetOwnerChaletsQuery } from '@/store/api/apiSlice';
 import * as Haptics from 'expo-haptics';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View, I18nManager } from 'react-native';
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -21,7 +21,6 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from 'react-redux';
-import { isRTL } from "@/i18n";
 
 /**
  * DashboardTabBar - Standardized with CustomTabBar design
@@ -30,8 +29,10 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
   const router = useRouter();
   const dispatch = useDispatch();
   const { userType, language, selectedChalet } = useSelector((state: RootState) => state.auth);
-  const { t } = useTranslation();
-    const insets = useSafeAreaInsets();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
+  const isDeviceRTL = I18nManager.isRTL;
+  const insets = useSafeAreaInsets();
 
   const [showPopover, setShowPopover] = useState(false);
 
@@ -139,7 +140,8 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
         {
           bottom: Math.max(insets.bottom, 24),
           paddingHorizontal: normalize.width(23),
-          flexDirection: 'row'
+          flexDirection: 'row',
+          direction: isRTL ? 'rtl' : 'ltr'
         }
       ]}>
         <TouchableOpacity
@@ -163,14 +165,14 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
                     resizeMode="cover"
                 />
             ) : (
-                <SolarHome2Bold size={normalize.width(28)} color="white" />
+                <SolarHomeSmileBoldDuotone size={normalize.width(28)} color="white" />
             )}
           </View>
         </TouchableOpacity>
 
         <View style={[
           styles.tabCapsule,
-          { flexDirection: 'row' }
+          { flexDirection: 'row', direction: isRTL ? 'rtl' : 'ltr' }
         ]}>
           {pillTabs.map((route: any) => {
             const isActive = currentRouteName === route.name;
@@ -206,18 +208,17 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
                 animatedStyle,
                 {
                   bottom: Math.max(insets.bottom, 24) + normalize.height(58),
-                  [isRTL ? 'right' : 'left']: normalize.width(16)
+                  ...(isDeviceRTL 
+                    ? (isRTL ? { left: normalize.width(16) } : { right: normalize.width(16) })
+                    : (isRTL ? { right: normalize.width(16) } : { left: normalize.width(16) }))
                 }
               ]}
             >
               <View style={styles.popoverContent}>
-                <TouchableOpacity 
-                  style={[styles.popoverHeader, { flexDirection: 'row' }]}
-                  onPress={() => { closePopover(); router.push('/(tabs)/(dashboard)/my-chalets'); }}
-                >
-                  <SolarHome2Bold size={20} color={Colors.primary} />
-                  <Text style={styles.popoverTitle}>{t('tabs.myChalets', 'شاليهاتي')}</Text>
-                </TouchableOpacity>
+                <View style={[styles.popoverHeader, { flexDirection: 'row', direction: isRTL ? 'rtl' : 'ltr' }]}>
+                  <SolarHomeSmileBoldDuotone size={20} color={Colors.primary} />
+                  <Text style={[styles.popoverTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('tabs.myChalets', 'شاليهاتي')}</Text>
+                </View>
 
                 <ScrollView style={styles.popoverList}>
 
@@ -227,7 +228,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
                       key={item.id}
                       style={[
                         styles.chaletItem,
-                        { flexDirection: 'row' },
+                        { flexDirection: 'row', direction: isRTL ? 'rtl' : 'ltr' },
                         selectedChalet?.id === item.id && { backgroundColor: '#F0F7FF' }
                       ]}
                       onPress={() => {
@@ -240,8 +241,8 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
                       }}
                     >
                       <Image source={getImageSrc(item.images?.[0]?.url)} style={styles.chaletThumb} />
-                      <View style={[styles.chaletItemInfo, { alignItems: 'flex-start' }]}>
-                        <Text style={styles.chaletItemName} numberOfLines={1}>
+                      <View style={[styles.chaletItemInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                        <Text style={[styles.chaletItemName, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
                           {isRTL ? (item.name?.ar || item.name) : (item.name?.en || item.name)}
                         </Text>
                       </View>
@@ -327,7 +328,7 @@ const styles = StyleSheet.create({
   addNewChaletBtn: {
     padding: 12, marginHorizontal: 12, marginTop: 4, borderRadius: 12,
     backgroundColor: '#F8F9FB', alignItems: 'center' },
-  addNewChaletText: { fontSize: 8, fontFamily: "Alexandria-Medium", color: Colors.primary },
+  addNewChaletText: { fontSize: 13, fontFamily: "Alexandria-Medium", color: Colors.primary },
   chaletAvatarImg: {
     width: '100%',
     height: '100%',

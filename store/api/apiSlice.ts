@@ -446,6 +446,18 @@ export const apiSlice = createApi({
       ],
     }),
 
+    // Approve booking
+    approveBooking: builder.mutation({
+      query: (id) => ({
+        url: `/provider/bookings/${id}/approve`,
+        method: "POST",
+      }),
+      invalidatesTags: (result, error, id) => [
+        "Booking",
+        { type: "Booking" as const, id },
+      ],
+    }),
+
     // Delete chalet
     deleteChalet: builder.mutation({
       query: (id) => ({
@@ -616,6 +628,7 @@ export const {
   useGetShiftAvailabilityQuery,
   useGetFullyBookedStatusQuery,
   useMarkBookingCompletedMutation,
+  useApproveBookingMutation,
   useCreateExternalBookingMutation,
   useDeleteExternalBookingMutation,
   useCancelBookingMutation,

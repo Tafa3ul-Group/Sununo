@@ -127,6 +127,11 @@ export default function ChaletDetailsScreen() {
     bathrooms: ''
   });
 
+  // Real-time Deposit Percentage Validation
+  const minDepositVal = chalet?.minDepositPercentage !== undefined ? Number(chalet.minDepositPercentage) : 0;
+  const currentDepositInputVal = parseFloat(basicForm.depositPercentage) || 0;
+  const isDepositInvalid = currentDepositInputVal < minDepositVal;
+
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
 
@@ -230,10 +235,25 @@ export default function ChaletDetailsScreen() {
   };
 
   const handleUpdateDeposit = async () => {
+    const minVal = chalet?.minDepositPercentage !== undefined ? Number(chalet.minDepositPercentage) : 0;
+    const inputVal = parseFloat(basicForm.depositPercentage) || 0;
+
+    if (inputVal < minVal) {
+      Toast.show({
+        type: 'error',
+        text1: isRTL ? 'تنبيه' : 'Alert',
+        text2: isRTL 
+          ? `نسبة العربون لا يمكن أن تكون أقل من نسبة عمولة الشاليه (${minVal}%)` 
+          : `Deposit percentage cannot be less than the chalet commission percentage (${minVal}%)`,
+        position: 'bottom'
+      });
+      return;
+    }
+
     try {
       await updateChalet({
         id: chaletId as string,
-        data: { depositPercentage: parseFloat(basicForm.depositPercentage) || 0 }
+        data: { depositPercentage: inputVal }
       }).unwrap();
       Toast.show({ type: 'success', text1: isRTL ? 'تم تحديث العربون' : 'Deposit updated' });
       depositModalRef.current?.dismiss();
@@ -1207,13 +1227,55 @@ export default function ChaletDetailsScreen() {
           <View style={styles.modalInputGroup}>
             <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'نسبة العربون %' : 'Deposit %'}</Text>
             <BottomSheetTextInput
-              style={[styles.modalInput, { textAlign: 'center' }]}
+              style={[
+                styles.modalInput, 
+                { 
+                  textAlign: 'center',
+                  borderColor: isDepositInvalid ? '#EF4444' : '#E2E8F0',
+                  borderWidth: isDepositInvalid ? 1.5 : 1,
+                  backgroundColor: isDepositInvalid ? '#FEF2F2' : '#F8FAFC'
+                }
+              ]}
               keyboardType="numeric"
               value={basicForm.depositPercentage}
               onChangeText={(val) => setBasicForm({ ...basicForm, depositPercentage: val })}
             />
           </View>
-          <PrimaryButton label={isRTL ? 'حفظ النسبة' : 'Save Percentage'} onPress={handleUpdateDeposit} loading={isUpdating} />
+          {chalet?.minDepositPercentage !== undefined && Number(chalet.minDepositPercentage) > 0 && (
+            <View style={{
+              flexDirection: isRTL ? 'row-reverse' : 'row',
+              alignItems: 'center',
+              backgroundColor: isDepositInvalid ? '#FEF2F2' : '#F8FAFC',
+              borderColor: isDepositInvalid ? '#FEE2E2' : '#E2E8F0',
+              borderWidth: 1,
+              borderRadius: 12,
+              padding: 12,
+              marginTop: 4,
+              marginBottom: 16,
+              gap: 10
+            }}>
+              <SolarShieldWarningBold size={20} color={isDepositInvalid ? '#EF4444' : '#64748B'} />
+              <View style={{ flex: 1 }}>
+                <Text style={{
+                  fontSize: normalize.font(11.5),
+                  fontFamily: 'Alexandria-Medium',
+                  color: isDepositInvalid ? '#991B1B' : '#475569',
+                  textAlign: isRTL ? 'right' : 'left',
+                  lineHeight: 17
+                }}>
+                  {isRTL 
+                    ? `قوانين المنصة تفرض أن تكون نسبة العربون مساوية لنسبة عمولة الشاليه (${chalet.minDepositPercentage}%) أو أكثر لضمان تفعيل الحجز.`
+                    : `Platform rules require the deposit to be equal to or greater than the chalet commission percentage (${chalet.minDepositPercentage}%) to confirm bookings.`}
+                </Text>
+              </View>
+            </View>
+          )}
+          <PrimaryButton 
+            label={isRTL ? 'حفظ النسبة' : 'Save Percentage'} 
+            onPress={handleUpdateDeposit} 
+            loading={isUpdating} 
+            disabled={isDepositInvalid}
+          />
         </BottomSheetView>
       </BottomSheetModal>
 
