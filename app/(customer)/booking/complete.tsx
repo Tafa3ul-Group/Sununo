@@ -404,7 +404,7 @@ export default function CompleteBookingScreen() {
   const [expiry, setExpiry] = useState("");
   const [cvv, setCvv] = useState("");
   const [selectedMethod, setSelectedMethod] = useState<
-    "sindi_pay" | "wayl" | "wallet"
+    "wayl" | "wallet"
   >("wayl");
 
   const { data: platformConfig } = useGetPlatformConfigQuery({});
@@ -628,21 +628,40 @@ export default function CompleteBookingScreen() {
             audienceType: guestType,
           }).unwrap();
 
-          if (result.payment?.paymentUrl) {
+          if (result.booking?.status === "pending_approval" || !result.payment) {
+            setCreatedBookingId(result.booking.id);
+            Alert.alert(
+              isArabic ? "تم إرسال طلب الحجز" : "Booking Request Sent",
+              isArabic
+                ? "تم إرسال طلب الحجز بنجاح! سيقوم صاحب الشاليه بمراجعة طلبك، وسيصلك إشعار بالدفع فور الموافقة عليه."
+                : "Your booking request has been sent successfully! The owner will review your request, and you will receive a notification to pay once approved.",
+              [
+                {
+                  text: isArabic ? "موافق" : "OK",
+                  onPress: () => {
+                    router.replace({
+                      pathname: "/(tabs)/(customer)/booking-success",
+                      params: { id: result.booking.id },
+                    });
+                  },
+                },
+              ],
+            );
+          } else if (result.payment?.paymentUrl) {
             setCreatedBookingId(result.booking.id);
             setPaymentTransactionId(result.payment.transactionId);
-
+ 
             // Open payment URL in auth session to catch the redirect
             setIsWaitingForPayment(true);
             setPollingStatus("pending");
             processingSheetRef.current?.present();
-
+ 
             try {
               const authResult = await WebBrowser.openAuthSessionAsync(
                 result.payment.paymentUrl,
                 "sununo://payment-callback",
               );
-
+ 
               // Start polling regardless of authResult to be sure
               startPaymentPolling(result.payment.transactionId);
             } catch (e) {
@@ -1836,7 +1855,9 @@ export default function CompleteBookingScreen() {
         <PrimaryButton
           label={
             activeTab === "WHERE"
-              ? t("booking.completePayment")
+              ? (chaletDetails?.bookingType === "delayed"
+                  ? (isArabic ? "إرسال طلب الحجز" : "Send Booking Request")
+                  : t("booking.completePayment"))
               : t("booking.next")
           }
           onPress={handleNext}

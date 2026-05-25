@@ -98,7 +98,7 @@ export const customerApi = apiSlice.injectEndpoints({
         guestsCount?: number;
         addonIds?: string[];
         paymentModel: "DEPOSIT" | "FULL";
-        paymentMethod?: "sindi_pay" | "wayl" | "wallet";
+        paymentMethod?: "wayl" | "wallet";
         useWalletBalance?: boolean;
         notes?: string;
         audienceType?: "FAMILY" | "YOUTH";
@@ -174,6 +174,18 @@ export const customerApi = apiSlice.injectEndpoints({
         url: `/customer/bookings/${id}/cancel`,
         method: "POST",
         body: { reason },
+      }),
+      invalidatesTags: (result: any, error: any, { id }: { id: string }) => [
+        "Booking",
+        { type: "Booking" as const, id },
+      ],
+    }),
+
+    payDelayedBooking: builder.mutation<any, { id: string; paymentMethod: "wayl" | "wallet"; paymentModel?: string }>({
+      query: ({ id, ...data }) => ({
+        url: `/customer/bookings/${id}/pay`,
+        method: "POST",
+        body: data,
       }),
       invalidatesTags: (result: any, error: any, { id }: { id: string }) => [
         "Booking",
@@ -472,6 +484,7 @@ export const {
   useGetCancellationPreviewQuery,
   useLazyGetCancellationPreviewQuery,
   useCancelCustomerBookingMutation,
+  usePayDelayedBookingMutation,
 
   // Favorites
   useAddFavoriteMutation,

@@ -1,18 +1,47 @@
 import { HeaderSection } from "@/components/header-section";
-import { SolarMapPointBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { HorizontalCard } from "@/components/user/horizontal-card";
 import { Colors, normalize } from "@/constants/theme";
 import { useFormatTime } from "@/hooks/useFormatTime";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { isRTL, getFlexDirection } from "@/i18n";
-import { useGetCustomerBookingDetailsQuery } from "@/store/api/customerApiSlice";
 import { Image as ExpoImage } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, ScrollView, StyleSheet, View, I18nManager } from "react-native";
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  View,
+  I18nManager,
+  TouchableOpacity,
+  Alert,
+  Platform,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SolarMapPointBold,
+  SolarCardBold,
+  SolarWalletBold,
+  SolarInfoCircleBold,
+} from "@/components/icons/solar-icons";
+import {
+  useGetCustomerBookingDetailsQuery,
+  usePayDelayedBookingMutation,
+  useLazyGetPaymentStatusQuery,
+} from "@/store/api/customerApiSlice";
+import * as WebBrowser from "expo-web-browser";
+
+const dismissBrowser = () => {
+  if (Platform.OS === "ios") {
+    try {
+      WebBrowser.dismissAuthSession();
+    } catch {
+      /* ignore */
+    }
+  }
+};
 
 export default function BookingSuccessDetailsScreen() {
   const { t, i18n } = useTranslation();
@@ -25,12 +54,140 @@ export default function BookingSuccessDetailsScreen() {
   const textEnd: "left" | "right" = isRTL ? "left" : "right";
 
   // Fetch booking details from the backend
-  const { data: booking, isLoading } = useGetCustomerBookingDetailsQuery(
+  const { data: booking, isLoading, refetch } = useGetCustomerBookingDetailsQuery(
     bookingId,
     {
       skip: !bookingId,
     },
   );
+
+  const [selectedMethod, setSelectedMethod] = useState<"wayl" | "wallet">("wayl");
+  const [payDelayedBooking, { isLoading: isPaying }] = usePayDelayedBookingMutation();
+  const [checkPaymentStatus] = useLazyGetPaymentStatusQuery();
+  const [isWaitingForPayment, setIsWaitingForPayment] = useState(false);
+  const [pollingStatus, setPollingStatus] = useState<"pending" | "success" | "failed" | "timeout">("pending");
+
+  const startPaymentPolling = async (transactionId: string) => {
+    let attempts = 0;
+    const maxAttempts = 20; // 20 * 3s = 60s (1 minute)
+
+    const interval = setInterval(async () => {
+      attempts++;
+      try {
+        const result = await checkPaymentStatus(transactionId).unwrap();
+        if (result?.status === "success") {
+          clearInterval(interval);
+          setPollingStatus("success");
+          dismissBrowser();
+          Alert.alert(
+            isRTL ? "تم الدفع بنجاح" : "Payment Successful",
+            isRTL ? "تم دفع قيمة الحجز بنجاح وتأكيد حجزك!" : "Your payment was successful and booking is confirmed!",
+            [{ text: isRTL ? "موافق" : "OK", onPress: () => refetch() }]
+          );
+          setIsWaitingForPayment(false);
+        } else if (result?.status === "failed") {
+          clearInterval(interval);
+          setPollingStatus("failed");
+          dismissBrowser();
+          Alert.alert(
+            isRTL ? "فشل الدفع" : "Payment Failed",
+            isRTL ? "نأسف، فشلت عملية الدفع. يرجى المحاولة مرة أخرى." : "Sorry, payment has failed. Please try again.",
+            [{ text: isRTL ? "موافق" : "OK" }]
+          );
+          setIsWaitingForPayment(false);
+        }
+      } catch (e) {
+        console.error("Polling error", e);
+      }
+
+      if (attempts >= maxAttempts) {
+        clearInterval(interval);
+        setPollingStatus("timeout");
+        dismissBrowser();
+        setIsWaitingForPayment(false);
+      }
+    }, 3000);
+  };
+
+  const handlePayNow = async () => {
+    try {
+      const result = await payDelayedBooking({
+        id: bookingId,
+        paymentMethod: selectedMethod,
+      }).unwrap();
+
+      if (result.payment?.paymentUrl) {
+        setIsWaitingForPayment(true);
+        setPollingStatus("pending");
+
+        try {
+          const authResult = await WebBrowser.openAuthSessionAsync(
+            result.payment.paymentUrl,
+            "sununo://payment-callback",
+          );
+
+          startPaymentPolling(result.payment.transactionId);
+        } catch (e) {
+          console.error("Browser error", e);
+          setIsWaitingForPayment(false);
+        }
+      } else if (selectedMethod === "wallet" || result.booking?.status === "confirmed") {
+        Alert.alert(
+          isRTL ? "تم تأكيد الحجز" : "Booking Confirmed",
+          isRTL ? "تم خصم قيمة الحجز من محفظتك وتأكيد حجزك بنجاح!" : "The booking amount has been deducted from your wallet and your booking is successfully confirmed!",
+          [{ text: isRTL ? "موافق" : "OK", onPress: () => refetch() }]
+        );
+      }
+    } catch (error: any) {
+      Alert.alert(
+        isRTL ? "خطأ" : "Error",
+        error?.data?.message || "فشلت عملية الدفع. يرجى المحاولة مرة أخرى."
+      );
+    }
+  };
+
+  const getStatusDetails = (status?: string) => {
+    switch (status) {
+      case "pending_approval":
+        return {
+          text: isRTL ? "بانتظار موافقة المالك" : "Pending Approval",
+          bg: "#FEF3C7",
+          color: "#D97706",
+        };
+      case "pending_payment":
+        return {
+          text: isRTL ? "تمت الموافقة، بانتظار الدفع" : "Awaiting Payment",
+          bg: "#FFE4E6",
+          color: "#E11D48",
+        };
+      case "confirmed":
+        return {
+          text: isRTL ? "مؤكد" : "Confirmed",
+          bg: "#DCFCE7",
+          color: "#16A34A",
+        };
+      case "completed":
+        return {
+          text: isRTL ? "مكتمل" : "Completed",
+          bg: "#DBEAFE",
+          color: "#2563EB",
+        };
+      case "cancelled":
+        return {
+          text: isRTL ? "ملغي" : "Cancelled",
+          bg: "#FEE2E2",
+          color: "#DC2626",
+        };
+      default:
+        return {
+          text: isRTL ? "مقبول" : "Accepted",
+          bg: "#E2E8F0",
+          color: "#475569",
+        };
+    }
+  };
+
+  const statusDetails = getStatusDetails(booking?.status);
 
   // Extract data from API response with fallbacks
   const chalet = booking?.chalet || ({} as any);
@@ -193,9 +350,9 @@ export default function BookingSuccessDetailsScreen() {
             <View
               style={[isRTL ? { marginRight: "auto" } : { marginLeft: "auto" }]}
             >
-              <View style={styles.statusBadgeBlue}>
-                <ThemedText style={styles.statusBadgeTextBlue}>
-                  {t("booking.status.accepted")}
+              <View style={[styles.statusBadgeCustom, { backgroundColor: statusDetails.bg }]}>
+                <ThemedText style={[styles.statusBadgeTextCustom, { color: statusDetails.color }]}>
+                  {statusDetails.text}
                 </ThemedText>
               </View>
             </View>
@@ -288,6 +445,85 @@ export default function BookingSuccessDetailsScreen() {
             </>
           )}
         </View>
+
+        {/* Pending Approval Alert */}
+        {booking?.status === "pending_approval" && (
+          <View style={styles.alertCard}>
+            <SolarInfoCircleBold size={24} color="#D97706" />
+            <ThemedText style={styles.alertText}>
+              {isRTL
+                ? "سيقوم صاحب الشاليه بمراجعة طلب حجزك وتأكيده قريباً. سيصلك إشعار بالدفع فور الموافقة."
+                : "The owner will review and confirm your booking request soon. You will receive a notification to pay once approved."}
+            </ThemedText>
+          </View>
+        )}
+
+        {/* Pending Payment Form */}
+        {booking?.status === "pending_payment" && (
+          <View style={styles.paymentSectionCard}>
+            <ThemedText style={[styles.sectionTitle, { textAlign: textStart }]}>
+              {isRTL ? "إتمام عملية الدفع وتأكيد الحجز" : "Complete Payment"}
+            </ThemedText>
+            <View style={styles.divider} />
+            <ThemedText style={[styles.paymentHelpText, { textAlign: textStart }]}>
+              {isRTL
+                ? "وافق صاحب الشاليه على طلب حجزك! يرجى اختيار طريقة الدفع المناسبة لتأكيد حجزك:"
+                : "The chalet owner approved your request! Please select your payment method to confirm your booking:"}
+            </ThemedText>
+
+            <View style={[styles.paymentMethodsGrid, { flexDirection: getFlexDirection(isRTL) }]}>
+              <TouchableOpacity
+                style={[
+                  styles.paymentMethodBtn,
+                  selectedMethod === "wayl" && styles.paymentMethodActive,
+                ]}
+                onPress={() => setSelectedMethod("wayl")}
+              >
+                <SolarCardBold size={22} color={selectedMethod === "wayl" ? "#FFF" : "#64748B"} />
+                <ThemedText
+                  style={[
+                    styles.paymentMethodText,
+                    selectedMethod === "wayl" && styles.paymentMethodTextActive,
+                  ]}
+                >
+                  {isRTL ? "دفع بالبطاقة" : "Card Payment"}
+                </ThemedText>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.paymentMethodBtn,
+                  selectedMethod === "wallet" && styles.paymentMethodActive,
+                ]}
+                onPress={() => setSelectedMethod("wallet")}
+              >
+                <SolarWalletBold size={22} color={selectedMethod === "wallet" ? "#FFF" : "#64748B"} />
+                <ThemedText
+                  style={[
+                    styles.paymentMethodText,
+                    selectedMethod === "wallet" && styles.paymentMethodTextActive,
+                  ]}
+                >
+                  {isRTL ? "المحفظة" : "Wallet"}
+                </ThemedText>
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity
+              style={styles.payBtn}
+              onPress={handlePayNow}
+              disabled={isPaying || isWaitingForPayment}
+            >
+              {isPaying || isWaitingForPayment ? (
+                <ActivityIndicator color="#FFF" />
+              ) : (
+                <ThemedText style={styles.payBtnText}>
+                  {isRTL ? "ادفع الآن وتأكيد الحجز" : "Pay Now & Confirm"}
+                </ThemedText>
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -374,5 +610,88 @@ const styles = StyleSheet.create({
     color: "#FFF",
     fontSize: normalize.font(8),
     fontFamily: "Alexandria-Medium",
+  },
+  statusBadgeCustom: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  statusBadgeTextCustom: {
+    fontSize: normalize.font(10),
+    fontFamily: "Alexandria-Medium",
+  },
+  alertCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFBEB",
+    borderColor: "#FDE68A",
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    gap: 12,
+  },
+  alertText: {
+    flex: 1,
+    fontSize: normalize.font(11),
+    fontFamily: "Alexandria-Medium",
+    color: "#B45309",
+    lineHeight: 18,
+  },
+  paymentSectionCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#F1F5F9",
+    marginBottom: 12,
+    paddingBottom: 20,
+  },
+  paymentHelpText: {
+    fontSize: normalize.font(11),
+    fontFamily: "Alexandria-Medium",
+    color: "#64748B",
+    marginBottom: 16,
+  },
+  paymentMethodsGrid: {
+    gap: 12,
+    marginBottom: 16,
+  },
+  paymentMethodBtn: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderRadius: 12,
+    paddingVertical: 14,
+    backgroundColor: "#F8FAFC",
+  },
+  paymentMethodActive: {
+    backgroundColor: "#035DF9",
+    borderColor: "#035DF9",
+  },
+  paymentMethodText: {
+    fontSize: normalize.font(12),
+    fontFamily: "Alexandria-Medium",
+    color: "#475569",
+  },
+  paymentMethodTextActive: {
+    color: "#FFF",
+    fontFamily: "Alexandria-SemiBold",
+  },
+  payBtn: {
+    backgroundColor: "#15AB64",
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  payBtnText: {
+    color: "#FFF",
+    fontSize: normalize.font(12),
+    fontFamily: "Alexandria-Bold",
   },
 });
