@@ -615,6 +615,8 @@ export default function CompleteBookingScreen() {
             shiftId: selectedShifts[day],
           }));
 
+          const isDelayedBooking = chaletDetails?.bookingType === "delayed";
+
           const result = await createBooking({
             chaletId,
             shiftId: bookings[0].shiftId,
@@ -622,8 +624,10 @@ export default function CompleteBookingScreen() {
             adultsCount: adultCount,
             childrenCount: 0,
             guestsCount: adultCount,
-            paymentModel: paymentType.toLowerCase() as any,
-            paymentMethod: selectedMethod,
+            ...(isDelayedBooking ? {} : {
+              paymentModel: paymentType.toLowerCase() as any,
+              paymentMethod: selectedMethod,
+            }),
             notes,
             audienceType: guestType,
           }).unwrap();
@@ -1041,98 +1045,118 @@ export default function CompleteBookingScreen() {
         />
       </View>
 
-      <ThemedText style={[styles.paymentMainTitle, { textAlign: textStart }]}>
-        {t("booking.paymentTitle")}
-      </ThemedText>
-
-      {depositPercentage > 0 && (
-        <TouchableOpacity
-          style={[
-            styles.paymentOptionCard,
-            paymentType === "DEPOSIT" && styles.paymentOptionActive,
-            styles.row,
-            { flexDirection: rowDirection },
-          ]}
-          onPress={() => setPaymentType("DEPOSIT")}
-        >
-          <ThemedText
-            style={[
-              styles.paymentLabel,
-              paymentType === "DEPOSIT" && styles.paymentLabelActive,
-              { textAlign: textStart },
-            ]}
-          >
-            {t("booking.depositPay")} ({depositPercentage}%)
-          </ThemedText>
-          <ThemedText
-            style={[
-              styles.paymentVal,
-              paymentType === "DEPOSIT" && styles.paymentValActive,
-              { textAlign: textEnd },
-            ]}
-          >
-            {depositAmount.toLocaleString()} {t("common.iqd")}
-          </ThemedText>
-        </TouchableOpacity>
-      )}
-
-      <TouchableOpacity
-        style={[
-          styles.paymentOptionCard,
-          paymentType === "FULL" && styles.paymentOptionActive,
-          styles.row,
-          { flexDirection: rowDirection },
-        ]}
-        onPress={() => setPaymentType("FULL")}
-      >
-        <ThemedText
-          style={[
-            styles.paymentLabel,
-            paymentType === "FULL" && styles.paymentLabelActive,
-            { textAlign: textStart },
-          ]}
-        >
-          {t("booking.fullPay")}
-        </ThemedText>
-        <ThemedText
-          style={[
-            styles.paymentVal,
-            paymentType === "FULL" && styles.paymentValActive,
-            { textAlign: textEnd },
-          ]}
-        >
-          {totalPrice.toLocaleString()} {t("common.iqd")}
-        </ThemedText>
-      </TouchableOpacity>
-
-      <View style={styles.agreementWrapper}>
-        <ThemedText style={styles.agreementText}>
-          {t("booking.agreement")}{" "}
-          <ThemedText style={styles.agreementLink}>
-            {t("booking.terms")}
-          </ThemedText>{" "}
-          {t("common.and")}{" "}
-          <ThemedText style={styles.agreementLink}>
-            {t("booking.policy")}
-          </ThemedText>
-        </ThemedText>
-      </View>
-
-      <View style={[styles.infoSectionCard, { marginTop: 8 }]}>
-        <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection, marginBottom: 0, alignItems: "center" }]}>
-          <ThemedText style={[styles.infoLabel, { fontWeight: "700", textAlign: textStart }]}>
-            {t("booking.paymentMethod") || "طريقة الدفع"}
-          </ThemedText>
-          <View style={{ flexDirection: rowDirection, alignItems: "center", gap: 8 }}>
-            <View style={{ backgroundColor: "#ECFDF5", padding: 6, borderRadius: 8 }}>
-              <SolarCardBold size={18} color="#10B981" />
-            </View>
-            <ThemedText style={[styles.infoValue, { color: "#10B981", fontFamily: "Alexandria-SemiBold", textAlign: textEnd }]}>
-              {t("booking.wayl")}
+      {chaletDetails?.bookingType === "delayed" ? (
+        /* ── Delayed Booking: No payment selection ── */
+        <View style={[styles.infoSectionCard, { marginTop: 16 }]}>
+          <View style={{ flexDirection: rowDirection, alignItems: "center", gap: 10, marginBottom: 10 }}>
+            <SolarInfoCircleBold size={22} color="#F59E0B" />
+            <ThemedText style={[styles.sectionTitle, { textAlign: textStart, flex: 1 }]}>
+              {isArabic ? "ملاحظة حول الحجز" : "Booking Note"}
             </ThemedText>
           </View>
+          <ThemedText style={{ color: "#64748B", fontSize: 13, fontFamily: "Alexandria-Medium", lineHeight: 22, textAlign: textStart }}>
+            {isArabic
+              ? "سيتم إرسال طلب الحجز إلى صاحب الشاليه للموافقة عليه. بعد الموافقة ستصلك رسالة عبر واتساب تحتوي على رابط لإتمام عملية الدفع."
+              : "Your booking request will be sent to the chalet owner for approval. Once approved, you will receive a WhatsApp message with a link to complete the payment."}
+          </ThemedText>
         </View>
-      </View>
+      ) : (
+        /* ── Instant Booking: Show payment selection ── */
+        <>
+          <ThemedText style={[styles.paymentMainTitle, { textAlign: textStart }]}>
+            {t("booking.paymentTitle")}
+          </ThemedText>
+
+          {depositPercentage > 0 && (
+            <TouchableOpacity
+              style={[
+                styles.paymentOptionCard,
+                paymentType === "DEPOSIT" && styles.paymentOptionActive,
+                styles.row,
+                { flexDirection: rowDirection },
+              ]}
+              onPress={() => setPaymentType("DEPOSIT")}
+            >
+              <ThemedText
+                style={[
+                  styles.paymentLabel,
+                  paymentType === "DEPOSIT" && styles.paymentLabelActive,
+                  { textAlign: textStart },
+                ]}
+              >
+                {t("booking.depositPay")} ({depositPercentage}%)
+              </ThemedText>
+              <ThemedText
+                style={[
+                  styles.paymentVal,
+                  paymentType === "DEPOSIT" && styles.paymentValActive,
+                  { textAlign: textEnd },
+                ]}
+              >
+                {depositAmount.toLocaleString()} {t("common.iqd")}
+              </ThemedText>
+            </TouchableOpacity>
+          )}
+
+          <TouchableOpacity
+            style={[
+              styles.paymentOptionCard,
+              paymentType === "FULL" && styles.paymentOptionActive,
+              styles.row,
+              { flexDirection: rowDirection },
+            ]}
+            onPress={() => setPaymentType("FULL")}
+          >
+            <ThemedText
+              style={[
+                styles.paymentLabel,
+                paymentType === "FULL" && styles.paymentLabelActive,
+                { textAlign: textStart },
+              ]}
+            >
+              {t("booking.fullPay")}
+            </ThemedText>
+            <ThemedText
+              style={[
+                styles.paymentVal,
+                paymentType === "FULL" && styles.paymentValActive,
+                { textAlign: textEnd },
+              ]}
+            >
+              {totalPrice.toLocaleString()} {t("common.iqd")}
+            </ThemedText>
+          </TouchableOpacity>
+
+          <View style={styles.agreementWrapper}>
+            <ThemedText style={styles.agreementText}>
+              {t("booking.agreement")}{" "}
+              <ThemedText style={styles.agreementLink}>
+                {t("booking.terms")}
+              </ThemedText>{" "}
+              {t("common.and")}{" "}
+              <ThemedText style={styles.agreementLink}>
+                {t("booking.policy")}
+              </ThemedText>
+            </ThemedText>
+          </View>
+
+          <View style={[styles.infoSectionCard, { marginTop: 8 }]}>
+            <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection, marginBottom: 0, alignItems: "center" }]}>
+              <ThemedText style={[styles.infoLabel, { fontWeight: "700", textAlign: textStart }]}>
+                {t("booking.paymentMethod") || "طريقة الدفع"}
+              </ThemedText>
+              <View style={{ flexDirection: rowDirection, alignItems: "center", gap: 8 }}>
+                <View style={{ backgroundColor: "#ECFDF5", padding: 6, borderRadius: 8 }}>
+                  <SolarCardBold size={18} color="#10B981" />
+                </View>
+                <ThemedText style={[styles.infoValue, { color: "#10B981", fontFamily: "Alexandria-SemiBold", textAlign: textEnd }]}>
+                  {t("booking.wayl")}
+                </ThemedText>
+              </View>
+            </View>
+          </View>
+        </>
+      )}
     </View>
   );
 
