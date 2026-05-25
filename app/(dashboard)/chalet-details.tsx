@@ -90,6 +90,7 @@ export default function ChaletDetailsScreen() {
   const chaletSummary = chaletStats.summary || {};
 
   const [isActive, setIsActive] = useState(false);
+  const [bookingType, setBookingType] = useState<'instant' | 'delayed'>('instant');
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [locationPickerVisible, setLocationPickerVisible] = useState(false);
 
@@ -155,6 +156,7 @@ export default function ChaletDetailsScreen() {
   useEffect(() => {
     if (chalet) {
       setIsActive(chalet.isActive);
+      setBookingType(chalet.bookingType || 'instant');
       setBasicForm({
         nameAr: chalet.name?.ar || chalet.name || '',
         nameEn: chalet.name?.en || '',
@@ -512,6 +514,7 @@ export default function ChaletDetailsScreen() {
   useEffect(() => {
     if (chalet) {
       setIsActive(chalet.isActive);
+      setBookingType(chalet.bookingType || 'instant');
     }
   }, [chalet]);
 
@@ -528,6 +531,26 @@ export default function ChaletDetailsScreen() {
     } catch {
       setIsActive(!value);
       Toast.show({ type: 'error', text1: isRTL ? 'تعذر تغيير الحالة' : 'Status update failed' });
+    }
+  };
+
+  const toggleBookingType = async (isDelayed: boolean) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const newType = isDelayed ? 'delayed' : 'instant';
+    const oldType = bookingType;
+    setBookingType(newType);
+    try {
+      await updateChalet({ id: chaletId as string, data: { bookingType: newType } }).unwrap();
+      Toast.show({
+        type: 'success',
+        text1: isDelayed
+          ? (isRTL ? 'تم تفعيل وضع القبول اليدوي' : 'Manual approval enabled')
+          : (isRTL ? 'تم تفعيل الحجز الفوري' : 'Instant booking enabled'),
+      });
+      refetch();
+    } catch {
+      setBookingType(oldType);
+      Toast.show({ type: 'error', text1: isRTL ? 'تعذر تغيير نوع الحجز' : 'Booking type update failed' });
     }
   };
 
@@ -843,7 +866,7 @@ export default function ChaletDetailsScreen() {
               value: isRTL ? 'تعديل أوقات الدخول والخروج وأسعار أيام الأسبوع' : 'Edit check-in/out times & weekday pricing',
               onPress: () => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                dispatch(setSelectedChalet({ id: chaletId as string, name: chaletName || '' }));
+                dispatch(setSelectedChalet({ id: chaletId as string, name: chaletName || '', image: coverImage?.url || null }));
                 router.push({
                   pathname: '/(dashboard)/shifts',
                   params: { id: chaletId as string }
@@ -965,6 +988,30 @@ export default function ChaletDetailsScreen() {
                   onValueChange={toggleStatus}
                   trackColor={{ false: '#D1D5DB', true: Colors.primary + '40' }}
                   thumbColor={isActive ? Colors.primary : '#9CA3AF'}
+                  style={{ transform: [{ scaleX: 0.85 }, { scaleY: 0.85 }] }}
+                />
+              )
+            })}
+          </View>
+
+          {/* ──── Booking Type ──── */}
+          <Text style={[styles.settingsGroupTitle, { textAlign: isRTL ? 'right' : 'left', alignSelf: flexStart }]}>
+            {isRTL ? 'نوع الحجز' : 'Booking Type'}
+          </Text>
+          <View style={styles.menuGroup}>
+            {renderSettingsRow({
+              icon: SolarClockCircleBold,
+              shape: bookingType === 'delayed' ? 'pink' : 'green',
+              label: isRTL ? 'يتطلب موافقة المالك قبل الدفع' : 'Require owner approval before payment',
+              value: bookingType === 'delayed'
+                ? (isRTL ? 'الحجز يتطلب موافقتك أولاً ثم يدفع الزبون' : 'Bookings require your approval before payment')
+                : (isRTL ? 'الزبون يحجز ويدفع مباشرة بدون انتظار' : 'Customers book and pay instantly'),
+              rightElement: (
+                <Switch
+                  value={bookingType === 'delayed'}
+                  onValueChange={toggleBookingType}
+                  trackColor={{ false: '#D1D5DB', true: Colors.primary + '40' }}
+                  thumbColor={bookingType === 'delayed' ? Colors.primary : '#9CA3AF'}
                   style={{ transform: [{ scaleX: 0.85 }, { scaleY: 0.85 }] }}
                 />
               )
