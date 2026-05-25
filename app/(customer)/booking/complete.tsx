@@ -908,7 +908,7 @@ export default function CompleteBookingScreen() {
       </View>
 
       <View style={styles.infoSectionCard}>
-        <ThemedText style={[styles.sectionTitle, { textAlign: textStart, width: "100%" }]}>
+        <ThemedText style={[styles.sectionTitle, { textAlign: textStart }]}>
           {t("booking.customerInfo")}
         </ThemedText>
         <View style={styles.divider} />
@@ -1019,7 +1019,7 @@ export default function CompleteBookingScreen() {
       </View>
 
       <View style={styles.infoSectionCard}>
-        <ThemedText style={[styles.sectionTitle, { textAlign: textStart, width: "100%" }]}>
+        <ThemedText style={[styles.sectionTitle, { textAlign: textStart }]}>
           {isArabic ? "ملاحظات إضافية" : "Special Requests"}
         </ThemedText>
         <View style={styles.divider} />
@@ -1063,7 +1063,7 @@ export default function CompleteBookingScreen() {
       ) : (
         /* ── Instant Booking: Show payment selection ── */
         <>
-          <ThemedText style={[styles.paymentMainTitle, { textAlign: textStart, width: "100%" }]}>
+          <ThemedText style={[styles.paymentMainTitle, { textAlign: textStart }]}>
             {t("booking.paymentTitle")}
           </ThemedText>
 
@@ -1395,7 +1395,7 @@ export default function CompleteBookingScreen() {
                 <View
                   style={[styles.dayHeaderRow, { flexDirection: rowDirection }]}
                 >
-                  <ThemedText style={[styles.dayHeaderText, { textAlign: textStart }]}>
+                  <ThemedText style={styles.dayHeaderText}>
                     {isArabic ? "اختر يوماً للبدء" : "Select a day to start"}
                   </ThemedText>
                 </View>
@@ -1430,16 +1430,16 @@ export default function CompleteBookingScreen() {
                             { alignItems: alignStart, marginHorizontal: 12 },
                           ]}
                         >
-                          <ThemedText style={[styles.shiftNameFlat, { textAlign: textStart }]}>
+                          <ThemedText style={styles.shiftNameFlat}>
                             {shiftName}
                           </ThemedText>
-                          <ThemedText style={[styles.shiftTimeFlat, { textAlign: textStart }]}>
+                          <ThemedText style={styles.shiftTimeFlat}>
                             {formatShiftTime(shift.startTime)} -{" "}
                             {formatShiftTime(shift.endTime)}
                           </ThemedText>
                         </View>
-                        <View style={{ alignItems: alignEnd }}>
-                          <ThemedText style={[styles.shiftPriceFlat, { textAlign: textEnd }]}>
+                        <View style={{ alignItems: "flex-end" }}>
+                          <ThemedText style={styles.shiftPriceFlat}>
                             {(() => {
                               const minPrice =
                                 shift.pricing && shift.pricing.length > 0
@@ -1474,7 +1474,7 @@ export default function CompleteBookingScreen() {
                 <View
                   style={[styles.dayHeaderRow, { flexDirection: rowDirection }]}
                 >
-                  <ThemedText style={[styles.dayHeaderText, { textAlign: textStart }]}>
+                  <ThemedText style={styles.dayHeaderText}>
                     {isArabic ? `يوم ${day}` : `Day ${day}`}
                   </ThemedText>
                   <TouchableOpacity
@@ -1573,7 +1573,6 @@ export default function CompleteBookingScreen() {
                           <ThemedText
                             style={[
                               styles.shiftNameFlat,
-                              { textAlign: textStart },
                               isSelected && {
                                 color: "#035DF9",
                                 fontFamily: "Alexandria-Medium",
@@ -1585,7 +1584,6 @@ export default function CompleteBookingScreen() {
                           <ThemedText
                             style={[
                               styles.shiftTimeFlat,
-                              { textAlign: textStart },
                               isSelected && { color: "#035DF9" },
                             ]}
                           >
@@ -1593,11 +1591,10 @@ export default function CompleteBookingScreen() {
                             {formatShiftTime(shift.endTime)}
                           </ThemedText>
                         </View>
-                        <View style={{ alignItems: alignEnd }}>
+                        <View style={{ alignItems: "flex-end" }}>
                           <ThemedText
                             style={[
                               styles.shiftPriceFlat,
-                              { textAlign: textEnd },
                               isSelected && {
                                 color: "#035DF9",
                                 fontFamily: "Alexandria-Medium",
@@ -1639,7 +1636,7 @@ export default function CompleteBookingScreen() {
                     {isArabic ? "السعة الأساسية" : "Base Capacity"}
                   </ThemedText>
                 </View>
-                <ThemedText style={[styles.capacityRowValue, { textAlign: textEnd }]}>
+                <ThemedText style={styles.capacityRowValue}>
                   {capacityLimit} {isArabic ? "أشخاص" : "guests"}
                 </ThemedText>
               </View>
@@ -1658,7 +1655,7 @@ export default function CompleteBookingScreen() {
                         {isArabic ? "الحد الأقصى" : "Maximum Capacity"}
                       </ThemedText>
                     </View>
-                    <ThemedText style={[styles.capacityRowValue, { textAlign: textEnd }]}>
+                    <ThemedText style={styles.capacityRowValue}>
                       {chaletDetails.capacity} {isArabic ? "شخص" : "guests"}
                     </ThemedText>
                   </View>
@@ -1677,7 +1674,7 @@ export default function CompleteBookingScreen() {
                       {isArabic ? "سعر الشخص الإضافي" : "Extra Person Price"}
                     </ThemedText>
                   </View>
-                  <ThemedText style={[styles.capacityRowValue, { color: "#F59E0B", textAlign: textEnd }]}>
+                  <ThemedText style={[styles.capacityRowValue, { color: "#F59E0B" }]}>
                     {Number(extraPersonPrice).toLocaleString()} {t("common.iqd")}
                   </ThemedText>
                 </View>
@@ -1712,7 +1709,7 @@ export default function CompleteBookingScreen() {
               <ThemedText
                 style={[
                   styles.guestLabel,
-                  { textAlign: textStart, marginBottom: 12, fontSize: 16, width: "100%" },
+                  { textAlign: textStart, marginBottom: 12, fontSize: 16 },
                 ]}
               >
                 {isArabic ? "نوع الحجز" : "Booking Type"}
@@ -1760,14 +1757,14 @@ export default function CompleteBookingScreen() {
                 <ThemedText
                   style={[
                     styles.guestLabel,
-                    { textAlign: textStart, marginBottom: 12, fontSize: 16, width: "100%" },
+                    { textAlign: textStart, marginBottom: 12, fontSize: 16 },
                   ]}
                 >
                   {isArabic ? "رفع صور الهوية" : "Upload ID Photos"}
                 </ThemedText>
                 <View
                   style={{
-                    flexDirection: rowDirection,
+                    flexDirection: "row",
                     gap: 12,
                     justifyContent: "center",
                   }}
@@ -1838,7 +1835,7 @@ export default function CompleteBookingScreen() {
                 <ThemedText
                   style={[
                     styles.guestLabel,
-                    { textAlign: textStart, width: "100%" }
+                    { textAlign: textStart }
                   ]}
                 >
                   {t("booking.adults")}
@@ -1846,7 +1843,7 @@ export default function CompleteBookingScreen() {
                 <ThemedText
                   style={[
                     styles.guestSubLabel,
-                    { textAlign: textStart, width: "100%" }
+                    { textAlign: textStart }
                   ]}
                 >
                   {t("booking.adultsDesc")}

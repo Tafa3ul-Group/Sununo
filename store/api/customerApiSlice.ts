@@ -97,7 +97,7 @@ export const customerApi = apiSlice.injectEndpoints({
         childrenCount?: number;
         guestsCount?: number;
         addonIds?: string[];
-        paymentModel?: "DEPOSIT" | "FULL";
+        paymentModel: "DEPOSIT" | "FULL";
         paymentMethod?: "wayl" | "wallet";
         useWalletBalance?: boolean;
         notes?: string;

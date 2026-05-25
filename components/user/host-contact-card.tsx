@@ -1,7 +1,7 @@
 import { Image as ExpoImage } from "expo-image";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Dimensions, I18nManager, StyleSheet, View, ViewStyle } from "react-native";
+import { Dimensions, I18nManager, StyleSheet, View } from "react-native";
 import Svg, { Path, Rect } from "react-native-svg";
 import { ThemedText } from "../themed-text";
 
@@ -31,13 +31,13 @@ export const HostContactCard: React.FC<HostContactCardProps> = ({
     isArabic === I18nManager.isRTL ? "flex-start" : "flex-end";
 
   // Absolute avatar positioning: swap left/right if not natively mirrored
-  const avatarPosition: ViewStyle =
+  const avatarPosition =
     isArabic === I18nManager.isRTL
       ? { left: 12.3 * SCALE, right: "auto" }
       : { right: 12.3 * SCALE, left: "auto" };
 
   // Margin spacing to prevent text overlapping avatar
-  const infoMargins: ViewStyle =
+  const infoMargins =
     isArabic === I18nManager.isRTL
       ? { marginLeft: 85 * SCALE, marginRight: 15 * SCALE }
       : { marginRight: 85 * SCALE, marginLeft: 15 * SCALE };
@@ -96,6 +96,14 @@ export const HostContactCard: React.FC<HostContactCardProps> = ({
           >
             {name}
           </ThemedText>
+          {phone ? (
+            <ThemedText
+              style={[styles.hostPhone, { textAlign: textStart }]}
+              numberOfLines={1}
+            >
+              {phone}
+            </ThemedText>
+          ) : null}
         </View>
 
         {/* Fixed to position derived from SVG */}

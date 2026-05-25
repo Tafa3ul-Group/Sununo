@@ -77,7 +77,8 @@ export function HorizontalCard({
 
   const config = SHAPES_CONFIG[shapeIndex % SHAPES_CONFIG.length];
 
-  const isArabic = i18n.language ? i18n.language.startsWith("ar") : false;
+  const { language } = useSelector((state: RootState) => state.auth);
+  const isArabic = language === "ar";
   const textStart: "left" | "right" = isArabic ? "right" : "left";
   const flexRow: "row" | "row-reverse" = (isArabic !== I18nManager.isRTL) ? "row-reverse" : "row";
   const flexRowInverse: "row" | "row-reverse" = (isArabic !== I18nManager.isRTL) ? "row" : "row-reverse";

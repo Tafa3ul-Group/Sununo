@@ -89,9 +89,11 @@ const SHAPE_COLORS: Record<ShapeKey, string> = {
 
 function SectionHeader({ title, isRTL }: { title: string; isRTL: boolean }) {
   const textStart: "left" | "right" = isRTL ? "right" : "left";
+  const alignStart: "flex-start" | "flex-end" =
+    isRTL === I18nManager.isRTL ? "flex-start" : "flex-end";
   return (
-    <View style={styles.sectionHeaderContainer}>
-      <ThemedText style={[styles.sectionTitle, { textAlign: textStart, width: "100%" }]}>
+    <View style={[styles.sectionHeaderContainer, { alignItems: alignStart }]}>
+      <ThemedText style={[styles.sectionTitle, { textAlign: textStart }]}>
         {title}
       </ThemedText>
     </View>
@@ -538,15 +540,15 @@ export default function ChaletDetailScreen() {
               marginBottom: 20
             }}
           >
-            <View style={{ flex: 1, alignItems: alignStart }}>
+            <View style={{ flex: 1 }}>
               <ThemedText
-                style={[styles.mainTitle, { textAlign: textStart, width: "100%" }]}
+                style={[styles.mainTitle, { textAlign: textStart }]}
                 numberOfLines={2}
               >
                 {chaletName}
               </ThemedText>
               <ThemedText
-                style={[styles.locationSub, { textAlign: textStart, width: "100%", marginTop: 4 }]}
+                style={[styles.locationSub, { textAlign: textStart, marginTop: 4 }]}
               >
                 {chaletCategory ? `${chaletCategory} • ` : ""}
                 {chaletLocation}
@@ -703,7 +705,7 @@ export default function ChaletDetailScreen() {
           {/* نظرة عامة */}
           <SectionHeader title={t("chalet.details.overview")} isRTL={isRTL} />
           <View
-            style={[styles.descriptionContainer, { alignItems: alignStart }]}
+            style={[styles.descriptionContainer, { alignItems: "flex-start" }]}
           >
             <ThemedText
               style={[styles.descriptionText, { textAlign: textStart }]}

@@ -59,10 +59,10 @@ export default function ChaletInfoScreen() {
         <View>
           {tStr ? (
             <View>
-              <ThemedText style={[styles.sectionTitle, { textAlign: isArabic ? "right" : "left" }]}>
+              <ThemedText style={styles.sectionTitle}>
                 {isArabic ? "الشروط والأحكام" : "Terms & Conditions"}
               </ThemedText>
-              <ThemedText style={[styles.content, { textAlign: isArabic ? "right" : "left" }]}>
+              <ThemedText style={styles.content}>
                 {tStr}
               </ThemedText>
               {(pStr || cStr) && <View style={styles.divider} />}
@@ -71,10 +71,10 @@ export default function ChaletInfoScreen() {
 
           {pStr ? (
             <View>
-              <ThemedText style={[styles.sectionTitle, { textAlign: isArabic ? "right" : "left" }]}>
+              <ThemedText style={styles.sectionTitle}>
                 {isArabic ? "السياسات العامة" : "General Policies"}
               </ThemedText>
-              <ThemedText style={[styles.content, { textAlign: isArabic ? "right" : "left" }]}>
+              <ThemedText style={styles.content}>
                 {pStr}
               </ThemedText>
               {cStr && <View style={styles.divider} />}
@@ -83,10 +83,10 @@ export default function ChaletInfoScreen() {
 
           {cStr ? (
             <View>
-              <ThemedText style={[styles.sectionTitle, { textAlign: isArabic ? "right" : "left" }]}>
+              <ThemedText style={styles.sectionTitle}>
                 {isArabic ? "سياسة الإلغاء" : "Cancellation Policy"}
               </ThemedText>
-              <ThemedText style={[styles.content, { textAlign: isArabic ? "right" : "left" }]}>
+              <ThemedText style={styles.content}>
                 {cStr}
               </ThemedText>
             </View>
@@ -116,7 +116,7 @@ export default function ChaletInfoScreen() {
                       {ruleTitle}
                     </ThemedText>
                   </View>
-                  <ThemedText style={[styles.ruleDescText, { textAlign: isArabic ? "right" : "left" }]}>
+                  <ThemedText style={styles.ruleDescText}>
                     {ruleDesc}
                   </ThemedText>
                   {idx < policiesData.length - 1 && <View style={styles.ruleDivider} />}
@@ -144,19 +144,19 @@ export default function ChaletInfoScreen() {
 
       return (
         <View>
-          <ThemedText style={[styles.sectionTitle, { textAlign: isArabic ? "right" : "left" }]}>
+          <ThemedText style={styles.sectionTitle}>
             {isArabic ? "سياسات عامة" : "General Policies"}
           </ThemedText>
-          <ThemedText style={[styles.content, { textAlign: isArabic ? "right" : "left" }]}>
+          <ThemedText style={styles.content}>
             {pStr || t("common.noData")}
           </ThemedText>
 
           <View style={styles.divider} />
 
-          <ThemedText style={[styles.sectionTitle, { textAlign: isArabic ? "right" : "left" }]}>
+          <ThemedText style={styles.sectionTitle}>
             {isArabic ? "سياسة الإلغاء" : "Cancellation Policy"}
           </ThemedText>
-          <ThemedText style={[styles.content, { textAlign: isArabic ? "right" : "left" }]}>
+          <ThemedText style={styles.content}>
             {cStr || t("common.noData")}
           </ThemedText>
         </View>
