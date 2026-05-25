@@ -451,7 +451,7 @@ export default function BookingSuccessDetailsScreen() {
 
         {/* Pending Approval Alert */}
         {booking?.status === "pending_approval" && (
-          <View style={styles.alertCard}>
+          <View style={[styles.alertCard, { flexDirection: getFlexDirection(isRTL) }]}>
             <SolarInfoCircleBold size={24} color="#D97706" />
             <ThemedText style={styles.alertText}>
               {isRTL
@@ -624,7 +624,7 @@ const styles = StyleSheet.create({
     fontFamily: "Alexandria-Medium",
   },
   alertCard: {
-    flexDirection: "row",
+    flexDirection: "row" as const,
     alignItems: "center",
     backgroundColor: "#FFFBEB",
     borderColor: "#FDE68A",

@@ -53,13 +53,17 @@ export function MainTabs({
 }: MainTabsProps) {
   const { t, i18n } = useTranslation();
   const isArabic = i18n.language === 'ar';
-  const flexDir: "row" | "row-reverse" = (isArabic !== I18nManager.isRTL) ? "row-reverse" : "row";
+  const needsFlip = isArabic !== I18nManager.isRTL;
 
   const transition = useSharedValue(0);
-  const tabList = useMemo(
-    () => tabs.slice(0, 3) as [TabType, TabType, TabType],
-    [tabs],
-  );
+
+  // For RTL: reverse the display order of tabs, but keep the SVG animation LTR.
+  // This way the circle always moves in the correct direction.
+  const tabList = useMemo(() => {
+    const base = tabs.slice(0, 3) as [TabType, TabType, TabType];
+    return needsFlip ? ([...base].reverse() as [TabType, TabType, TabType]) : base;
+  }, [tabs, needsFlip]);
+
   const tabColors = useMemo(
     () => tabList.map((tab) => TAB_COLORS[tab]) as [string, string, string],
     [tabList],
@@ -77,15 +81,11 @@ export function MainTabs({
 
   // ==========================================
   // --- مصفوفات التحكم (عدل الأرقام هنا) ---
-  // الترتيب حسب مصفوفة tabs المرسلة للكمبوننت
   // ==========================================
-  const xOffsets = isArabic ? [120, 0, -120] : [-120, 0, 120];
+  const xOffsets = [-120, 0, 120];
   const yOffsets = [0, 0, 0];
-  const rtlTextOffsets = [2, 0, -2]; // إزاحة النص للعربي لتوسيط أفضل
-  const ltrTextOffsets = [-2, 0, 2]; // إزاحة النص للإنجليزي لتوسيط أفضل
+  const textOffsets = [-2, 0, 2];
   const scales = [1, 1, 1];
-
-  const currentTextOffsets = isArabic ? rtlTextOffsets : ltrTextOffsets;
   // ==========================================
 
   const circleGroupProps = useAnimatedProps(() => {
@@ -125,7 +125,7 @@ export function MainTabs({
       ),
       transform: [
         { scale: interpolate(transition.value, [0, 1], [1.05, 1]) },
-        { translateX: currentTextOffsets[0] },
+        { translateX: textOffsets[0] },
       ],
     };
   });
@@ -139,7 +139,7 @@ export function MainTabs({
       ),
       transform: [
         { scale: interpolate(transition.value, [0, 1, 2], [1, 1.05, 1]) },
-        { translateX: currentTextOffsets[1] },
+        { translateX: textOffsets[1] },
       ],
     };
   });
@@ -153,7 +153,7 @@ export function MainTabs({
       ),
       transform: [
         { scale: interpolate(transition.value, [1, 2], [1, 1.05]) },
-        { translateX: currentTextOffsets[2] },
+        { translateX: textOffsets[2] },
       ],
     };
   });
@@ -178,7 +178,7 @@ export function MainTabs({
         </Svg>
       </View>
 
-      <View style={[styles.buttonsContainer, { flexDirection: flexDir }]}>
+      <View style={[styles.buttonsContainer, { flexDirection: "row" }]}>
         {tabList.map(function (tab, idx) {
           const textStyle = tabStyles[idx];
 
