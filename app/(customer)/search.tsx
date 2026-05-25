@@ -6,7 +6,7 @@ import {
 import { ThemedText } from "@/components/themed-text";
 import { HorizontalCard } from "@/components/user/horizontal-card";
 import { Colors } from "@/constants/theme";
-import { getFlexDirection } from "@/i18n";
+
 import { useBrowseCustomerChaletsQuery } from "@/store/api/customerApiSlice";
 import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
@@ -83,7 +83,7 @@ export default function SearchScreen() {
       />
 
       <View style={styles.searchContainer}>
-        <View style={[styles.searchBar, { flexDirection: getFlexDirection(isArabic) }]}>
+        <View style={[styles.searchBar, { flexDirection: (isArabic !== I18nManager.isRTL) ? 'row-reverse' : 'row' }]}>
           <SolarMagnifierBold size={20} color={Colors.primary} />
           <TextInput
             placeholder={t("home.searchPlaceholder")}

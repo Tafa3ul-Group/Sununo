@@ -10,7 +10,7 @@ import { SolarAltArrowRightBold } from "@/components/icons/solar-icons";
 import { useRouter } from 'expo-router';
 import { HeaderSection } from '@/components/header-section';
 import { useGetNotificationsQuery, useMarkNotificationAsReadMutation } from '@/store/api/customerApiSlice';
-import { isRTL, getFlexDirection } from "@/i18n";
+
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -51,7 +51,7 @@ export default function NotificationsScreen() {
           id: item.id,
           title: item.title || t('notifications.newNotification'),
           message: item.body || item.message || '',
-          time: new Date(item.createdAt).toLocaleTimeString(isRTL ? 'ar' : 'en', { hour: '2-digit', minute: '2-digit' }),
+          time: new Date(item.createdAt).toLocaleTimeString(isArabic ? 'ar' : 'en', { hour: '2-digit', minute: '2-digit' }),
           isRead: item.isRead || false };
 
         const notifDate = new Date(item.createdAt).toDateString();
@@ -75,7 +75,7 @@ export default function NotificationsScreen() {
     const renderItem = (item: Notification) => (
         <TouchableOpacity 
             key={item.id} 
-            style={[styles.notificationCard, { flexDirection: getFlexDirection(isArabic) }]}
+            style={[styles.notificationCard, { flexDirection: (isArabic !== I18nManager.isRTL) ? 'row-reverse' : 'row' }]}
             onPress={() => handleNotificationPress(item)}
             activeOpacity={0.7}
         >
@@ -86,7 +86,7 @@ export default function NotificationsScreen() {
             </View>
 
             {/* Header section with orange dot and time */}
-            <View style={[styles.cardLeft, { flexDirection: getFlexDirection(isArabic) }]}>
+            <View style={[styles.cardLeft, { flexDirection: (isArabic !== I18nManager.isRTL) ? 'row-reverse' : 'row' }]}>
                 <ThemedText style={styles.timeText}>{item.time}</ThemedText>
                 {!item.isRead && <View style={styles.orangeDot} />}
             </View>
@@ -130,7 +130,7 @@ export default function NotificationsScreen() {
                 {groupedNotifications.older.length > 0 && (
                     <>
                         <View style={[styles.sectionHeader, { alignItems: 'flex-start' }]}>
-                            <ThemedText style={styles.sectionTitle}>{t('notifications.older') || (isRTL ? 'أقدم' : 'Older')}</ThemedText>
+                            <ThemedText style={styles.sectionTitle}>{t('notifications.older') || (isArabic ? 'أقدم' : 'Older')}</ThemedText>
                         </View>
                         {groupedNotifications.older.map(renderItem)}
                     </>
@@ -140,7 +140,7 @@ export default function NotificationsScreen() {
                 {!isLoading && groupedNotifications.today.length === 0 && groupedNotifications.yesterday.length === 0 && groupedNotifications.older.length === 0 && (
                     <View style={{ alignItems: 'center', paddingTop: 80 }}>
                         <ThemedText style={{ fontSize: 14, color: '#9CA3AF', fontFamily: "Alexandria-Medium" }}>
-                            {isRTL ? 'لا توجد إشعارات' : 'No notifications'}
+                            {isArabic ? 'لا توجد إشعارات' : 'No notifications'}
                         </ThemedText>
                     </View>
                 )}

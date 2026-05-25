@@ -3,7 +3,7 @@ import { SolarWidgetBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { Colors } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
-import { isRTL, getFlexDirection } from "@/i18n";
+
 import { RootState } from "@/store";
 import { useGetCustomerChaletDetailsQuery } from "@/store/api/customerApiSlice";
 import { Stack, useLocalSearchParams } from "expo-router";
@@ -68,7 +68,7 @@ const FacilityCard = ({
   const alignStart = needsCounter ? "flex-end" : "flex-start";
 
   return (
-    <View style={[styles.cardContainer, { flexDirection: getFlexDirection(isArabic), gap: 15 }]}>
+    <View style={[styles.cardContainer, { flexDirection: (isArabic !== I18nManager.isRTL) ? 'row-reverse' : 'row', gap: 15 }]}>
       <View
         style={[
           styles.textSide,

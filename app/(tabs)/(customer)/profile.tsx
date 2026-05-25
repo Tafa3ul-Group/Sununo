@@ -16,7 +16,7 @@ import { DeleteAccountSheet } from '@/components/user/delete-account-sheet';
 import { WalletCard } from '@/components/user/wallet-card';
 import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
-import { getFlexDirection } from "@/i18n";
+
 import { RootState } from '@/store';
 import { useGetMeQuery } from '@/store/api/apiSlice';
 import { useGetCustomerWalletQuery } from '@/store/api/customerApiSlice';
@@ -45,7 +45,7 @@ export default function CustomerProfileScreen() {
     const insets = useSafeAreaInsets();
 
     const isArabic = i18n.language === 'ar';
-    const rowDirection = getFlexDirection(isArabic);
+    const rowDirection: 'row' | 'row-reverse' = (isArabic !== I18nManager.isRTL) ? 'row-reverse' : 'row';
 
     const textStart: "left" | "right" = isArabic ? "right" : "left";
     const needsCounter = isArabic !== I18nManager.isRTL;

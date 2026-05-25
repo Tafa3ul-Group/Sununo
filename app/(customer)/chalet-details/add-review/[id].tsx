@@ -3,7 +3,7 @@ import { SolarStarBold, SolarStarLinear } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { Shadows } from "@/constants/theme";
-import { isRTL } from "@/i18n";
+
 import { useCreateReviewMutation } from "@/store/api/customerApiSlice";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -58,7 +58,7 @@ export default function AddReviewScreen() {
       // For the demo purposes, we'll go back anyway if it's just a seed/demo environment issue
       Alert.alert(
         t("common.error"),
-        isRTL ? "حدث خطأ أثناء إرسال المراجعة" : "Error sending review",
+        isArabic ? "حدث خطأ أثناء إرسال المراجعة" : "Error sending review",
       );
     }
   };
@@ -79,7 +79,7 @@ export default function AddReviewScreen() {
       >
         <View style={styles.headerArea}>
           <ThemedText style={styles.title}>
-            {isRTL ? "كيف كانت تجربتك؟" : "How was your experience?"}
+            {isArabic ? "كيف كانت تجربتك؟" : "How was your experience?"}
           </ThemedText>
           <ThemedText style={styles.subtitle}>
             {t("profile.review.question")}

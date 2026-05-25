@@ -36,7 +36,7 @@ import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize, Shadows } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
-import { isRTL, getFlexDirection } from "@/i18n";
+
 import { RootState } from "@/store";
 import { useGetAmenitiesQuery } from "@/store/api/apiSlice";
 import {

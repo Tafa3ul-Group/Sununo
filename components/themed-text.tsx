@@ -1,5 +1,5 @@
 import { Typography } from "@/constants/theme";
-import { isRTL } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import {
   I18nManager,
   StyleSheet,
@@ -43,6 +43,9 @@ export function ThemedText({
   type = "default",
   ...rest
 }: ThemedTextProps) {
+  const { i18n } = useTranslation();
+  const isArabic = i18n.language ? i18n.language.startsWith('ar') : I18nManager.isRTL;
+
   const getStyleByType = (): TextStyle => {
     switch (type) {
       case "h1":
@@ -73,9 +76,19 @@ export function ThemedText({
     }
   };
 
+  // Compute direction dynamically at render time
+  // writingDirection controls text rendering (bidi), textAlign is only a fallback
+  const baseDir: TextStyle = {
+    writingDirection: isArabic ? "rtl" : "ltr",
+    textAlign: isArabic ? "right" : "left",
+  };
+
+  // Parent style comes LAST so it can override baseDir defaults
+  const finalStyle = withAutoLineHeight(style);
+
   return (
     <Text
-      style={[styles.base, getStyleByType(), withAutoLineHeight(style)]}
+      style={[styles.base, baseDir, getStyleByType(), finalStyle]}
       {...rest}
     />
   );
@@ -85,12 +98,11 @@ const styles = StyleSheet.create({
   base: {
     fontFamily: "Alexandria-Medium",
     includeFontPadding: false,
-    textAlignVertical: "center",
-    writingDirection: I18nManager.isRTL ? "rtl" : "ltr",
-    textAlign: I18nManager.isRTL ? "right" : "left" },
+    textAlignVertical: "center" },
   defaultSemiBold: {
     fontFamily: "Alexandria-Medium" },
   link: {
     color: "#2B66FF",
     textDecorationLine: "underline",
     fontFamily: "Alexandria-Medium" } });
+

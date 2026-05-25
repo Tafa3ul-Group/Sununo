@@ -33,7 +33,7 @@ import { Image as ExpoImage } from "expo-image";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 import { getImageSrc } from "@/hooks/useImageSrc";
-import { isRTL } from "@/i18n";
+
 import { useGetCustomerChaletDetailsQuery } from "@/store/api/customerApiSlice";
 
 // Categories mapping helper

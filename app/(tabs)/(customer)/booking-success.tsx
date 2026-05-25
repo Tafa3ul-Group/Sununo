@@ -4,7 +4,7 @@ import { HorizontalCard } from "@/components/user/horizontal-card";
 import { Colors, normalize } from "@/constants/theme";
 import { useFormatTime } from "@/hooks/useFormatTime";
 import { getImageSrc } from "@/hooks/useImageSrc";
-import { isRTL, getFlexDirection } from "@/i18n";
+
 import { Image as ExpoImage } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
@@ -50,6 +50,9 @@ export default function BookingSuccessDetailsScreen() {
   const bookingId = id as string;
   const { formatShiftTime } = useFormatTime();
 
+  const isRTL = i18n.language ? i18n.language.startsWith('ar') : false;
+  const needsFlip = isRTL !== I18nManager.isRTL;
+  const getFlexDirection = (rtl: boolean): "row" | "row-reverse" => (rtl !== I18nManager.isRTL) ? "row-reverse" : "row";
   const textStart: "left" | "right" = isRTL ? "right" : "left";
   const textEnd: "left" | "right" = isRTL ? "left" : "right";
 

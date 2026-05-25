@@ -23,7 +23,7 @@ import {
 import { useSelector } from "react-redux";
 import { ThemedText } from "./themed-text";
 import { CircleBackButton } from "./ui/circle-back-button";
-import { isRTL } from "@/i18n";
+
 
 interface HeaderSectionProps {
   userType?: UserType;

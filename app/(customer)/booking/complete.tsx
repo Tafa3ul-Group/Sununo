@@ -15,7 +15,7 @@ import { MainTabs, TabType } from "@/components/user/MainTabs";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { RangeCalendar } from "@/components/user/range-calendar";
 import { Colors, normalize } from "@/constants/theme";
-import { getFlexDirection } from "@/i18n";
+
 import { RootState } from "@/store";
 import {
   useCreateCustomerBookingMutation,

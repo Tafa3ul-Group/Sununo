@@ -1,8 +1,8 @@
-import { getFlexDirection } from "@/i18n";
 import React, { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Dimensions,
+  I18nManager,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -53,7 +53,7 @@ export function MainTabs({
 }: MainTabsProps) {
   const { t, i18n } = useTranslation();
   const isArabic = i18n.language === 'ar';
-  const flexDir = getFlexDirection(isArabic);
+  const flexDir: "row" | "row-reverse" = (isArabic !== I18nManager.isRTL) ? "row-reverse" : "row";
 
   const transition = useSharedValue(0);
   const tabList = useMemo(
