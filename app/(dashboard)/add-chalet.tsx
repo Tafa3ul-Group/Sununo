@@ -168,7 +168,6 @@ export default function AddChaletScreen() {
     descriptionEn: '',
     cityId: '',
     cityName: '',
-    depositPercentage: '25',
     phone: '',
     whatsapp: '',
     policiesAr: '',
@@ -485,7 +484,7 @@ export default function AddChaletScreen() {
 
   const handleSave = async () => {
     // ── Full validation before submit ──
-    if (!form.nameAr || !form.nameEn || !form.descriptionAr || !form.descriptionEn) {
+    if (!form.nameAr || !form.descriptionAr) {
       Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: isRTL ? 'يرجى ملء جميع الحقول المطلوبة في الأسماء' : 'Please fill all required name/description fields', position: 'bottom' });
       changeStep(0);
       return;
@@ -546,7 +545,6 @@ export default function AddChaletScreen() {
       }
       if (form.phone) formData.append('phone', form.phone);
       if (form.whatsapp) formData.append('whatsapp', form.whatsapp);
-      if (form.depositPercentage) formData.append('depositPercentage', form.depositPercentage);
       if (form.area) formData.append('area', form.area);
       if (form.bedrooms) formData.append('bedrooms', form.bedrooms);
       if (form.bathrooms) formData.append('bathrooms', form.bathrooms);
@@ -589,8 +587,8 @@ export default function AddChaletScreen() {
 
   const isStepValid = useMemo(() => {
     switch (currentStep) {
-      case 0: // Names & Descriptions — all 4 required
-        return !!form.nameAr && !!form.nameEn && !!form.descriptionAr && !!form.descriptionEn;
+      case 0: // Names & Descriptions — Arabic required, English optional
+        return !!form.nameAr && !!form.descriptionAr;
       case 1: { // Location + Phone
         if (!form.cityId) return false;
         if (!form.phone) return false;
@@ -617,12 +615,8 @@ export default function AddChaletScreen() {
       if (currentStep === 0) {
         if (!form.nameAr) {
           Toast.show({ type: 'error', text1: isRTL ? 'مطلوب' : 'Required', text2: isRTL ? 'يرجى إدخال اسم الشاليه بالعربي' : 'Please enter chalet name in Arabic', position: 'bottom' });
-        } else if (!form.nameEn) {
-          Toast.show({ type: 'error', text1: isRTL ? 'مطلوب' : 'Required', text2: isRTL ? 'يرجى إدخال اسم الشاليه بالإنجليزي' : 'Please enter chalet name in English', position: 'bottom' });
         } else if (!form.descriptionAr) {
           Toast.show({ type: 'error', text1: isRTL ? 'مطلوب' : 'Required', text2: isRTL ? 'يرجى إدخال وصف الشاليه بالعربي' : 'Please enter description in Arabic', position: 'bottom' });
-        } else if (!form.descriptionEn) {
-          Toast.show({ type: 'error', text1: isRTL ? 'مطلوب' : 'Required', text2: isRTL ? 'يرجى إدخال وصف الشاليه بالإنجليزي' : 'Please enter description in English', position: 'bottom' });
         }
       } else if (currentStep === 1) {
         if (!form.cityId) {
@@ -751,16 +745,17 @@ export default function AddChaletScreen() {
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8, backgroundColor: Colors.white }}>
           <ChaletProgressTabs
             steps={steps}
             currentStep={currentStep}
             onStepPress={(index) => { if (index <= currentStep) changeStep(index); }}
             isRTL={isRTL}
           />
+        </View>
 
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }, { scale: scaleAnim }] }}>
 
             {/* ═══════════ Step 0: الاسماء ═══════════ */}
@@ -778,7 +773,7 @@ export default function AddChaletScreen() {
                     />
                   </View>
                   <View style={styles.inputGroup}>
-                    <Text style={[styles.label, { textAlign }]}>{isRTL ? 'اسم الشاليه (إنجليزي)' : 'Chalet Name (EN)'} <Text style={styles.requiredStar}>{isRTL ? '* مطلوب' : '* Required'}</Text></Text>
+                    <Text style={[styles.label, { textAlign }]}>{isRTL ? 'اسم الشاليه (إنجليزي)' : 'Chalet Name (EN)'} <Text style={styles.optionalLabel}>{isRTL ? 'اختياري' : 'Optional'}</Text></Text>
                     <TextInput
                       style={[styles.input, { textAlign: 'left' }]}
                       placeholder="e.g. Rose Chalet"
@@ -803,7 +798,7 @@ export default function AddChaletScreen() {
                     />
                   </View>
                   <View style={styles.inputGroup}>
-                    <Text style={[styles.label, { textAlign }]}>{isRTL ? 'وصف الشاليه (إنجليزي)' : 'Description (EN)'} <Text style={styles.requiredStar}>{isRTL ? '* مطلوب' : '* Required'}</Text></Text>
+                    <Text style={[styles.label, { textAlign }]}>{isRTL ? 'وصف الشاليه (إنجليزي)' : 'Description (EN)'} <Text style={styles.optionalLabel}>{isRTL ? 'اختياري' : 'Optional'}</Text></Text>
                     <TextInput
                       style={[styles.input, styles.textArea, { textAlign: 'left' }]}
                       placeholder="Enter description in English..."
@@ -911,21 +906,6 @@ export default function AddChaletScreen() {
                   </View>
                   <View style={styles.shiftListContainer}>
                     {shifts.map((shift, index) => renderShiftRow(shift, index))}
-                  </View>
-
-                  <View style={[styles.inputGroup, { marginTop: 8 }]}>
-                    <Text style={[styles.label, { textAlign }]}>{isRTL ? 'نسبة العربون (%)' : 'Deposit %'}</Text>
-                    <TextInput
-                      style={[styles.input, { textAlign: 'center' }]}
-                      placeholder="25"
-                      placeholderTextColor="#BCBCBC"
-                      keyboardType="numeric"
-                      value={form.depositPercentage}
-                      onChangeText={(val) => {
-                        const num = parseInt(val) || 0;
-                        setForm({ ...form, depositPercentage: val === '' ? '' : Math.min(num, 100).toString() });
-                      }}
-                    />
                   </View>
                 </View>
               </>
@@ -1511,7 +1491,7 @@ export default function AddChaletScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.white },
-  scrollContent: { paddingHorizontal: 16, paddingTop: 20, paddingBottom: Spacing.xl },
+  scrollContent: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: Spacing.xl },
   footer: {
     flexDirection: 'row', gap: Spacing.md, paddingHorizontal: Spacing.lg, paddingVertical: Spacing.md,
     backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#F1F5F9',
@@ -1524,6 +1504,7 @@ const styles = StyleSheet.create({
   inputGroup: { gap: 6 },
   label: { ...Typography.caption, color: Colors.text.primary, fontFamily: "Alexandria-Black", fontSize: normalize.font(14), lineHeight: normalize.font(22) },
   requiredStar: { color: '#EF4444', fontSize: normalize.font(11), fontFamily: 'Alexandria-SemiBold' },
+  optionalLabel: { color: '#94A3B8', fontSize: normalize.font(11), fontFamily: 'Alexandria-SemiBold' },
   smallLabel: { ...Typography.caption, color: Colors.text.muted, fontFamily: "Alexandria-SemiBold", fontSize: normalize.font(12) },
   input: {
     height: normalize.height(48), backgroundColor: '#FFFFFF', borderRadius: normalize.radius(12),
