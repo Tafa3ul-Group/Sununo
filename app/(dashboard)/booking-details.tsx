@@ -23,6 +23,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 import { PaymentConfirmationSheet, PaymentConfirmationSheetRef } from '@/components/payment-confirmation-modal';
 
 import { ErrorState } from '@/components/ui/error-state';
+import { CountdownBadge } from '@/components/dashboard/countdown-badge';
 import { isRTL } from "@/i18n";
 
 export default function BookingDetailsPage() {
@@ -226,6 +227,15 @@ export default function BookingDetailsPage() {
           </View>
         )}
 
+        {/* Countdown Timer for Pending Approval */}
+        {data.status === 'pending_approval' && (
+          <CountdownBadge
+            createdAt={data.createdAt}
+            durationHours={data.chalet?.dailyHours || 1}
+            isRTL={isRTL}
+            variant="card"
+          />
+        )}
 
         {/* Chalet Information Section */}
         <View style={styles.infoSectionCard}>

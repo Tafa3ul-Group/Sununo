@@ -2,6 +2,7 @@ import { BookingCancellationSheet, BookingCancellationSheetRef } from '@/compone
 import { DashboardCalendar } from "@/components/dashboard/dashboard-calendar";
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { PendingApprovalScreen } from '@/components/dashboard/pending-approval';
+import { CountdownBadge } from '@/components/dashboard/countdown-badge';
 import {
   SolarCalendarBold,
   SolarCheckCircleBold,
@@ -277,9 +278,15 @@ export default function BookingsScreen() {
         case 'pending_payment':
         case 'new':
           return {
-            label: isRTL ? 'انتظار الدفع' : 'Pending',
+            label: isRTL ? 'انتظار الدفع' : 'Pending Payment',
             color: '#F59E0B',
             bg: '#FFFBEB'
+          };
+        case 'pending_approval':
+          return {
+            label: isRTL ? 'بانتظار القبول' : 'Awaiting Approval',
+            color: '#F97316',
+            bg: '#FFF7ED'
           };
         default:
           return {
@@ -326,6 +333,14 @@ export default function BookingsScreen() {
                     {statusInfo.label}
                   </Text>
                 </View>
+                {item.status === 'pending_approval' && (
+                  <CountdownBadge
+                    createdAt={item.createdAt}
+                    durationHours={item.chalet?.dailyHours || 1}
+                    isRTL={isRTL}
+                    variant="compact"
+                  />
+                )}
               </View>
 
               {chaletName && <Text style={[styles.modernBookingChalet, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>{chaletName}</Text>}
