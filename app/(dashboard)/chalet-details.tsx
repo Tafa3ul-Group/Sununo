@@ -91,6 +91,7 @@ export default function ChaletDetailsScreen() {
 
   const [isActive, setIsActive] = useState(false);
   const [bookingType, setBookingType] = useState<'instant' | 'delayed'>('instant');
+  const [dailyHours, setDailyHours] = useState(1);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [locationPickerVisible, setLocationPickerVisible] = useState(false);
 
@@ -535,6 +536,7 @@ export default function ChaletDetailsScreen() {
     if (chalet) {
       setIsActive(chalet.isActive);
       setBookingType(chalet.bookingType || 'instant');
+      setDailyHours(chalet.dailyHours || 1);
     }
   }, [chalet]);
 
@@ -571,6 +573,24 @@ export default function ChaletDetailsScreen() {
     } catch {
       setBookingType(oldType);
       Toast.show({ type: 'error', text1: isRTL ? 'تعذر تغيير نوع الحجز' : 'Booking type update failed' });
+    }
+  };
+
+  const updateDailyHours = async (newHours: number) => {
+    if (newHours < 1 || newHours > 5) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const oldHours = dailyHours;
+    setDailyHours(newHours);
+    try {
+      await updateChalet({ id: chaletId as string, data: { dailyHours: newHours } }).unwrap();
+      Toast.show({
+        type: 'success',
+        text1: isRTL ? `تم تحديث المدة إلى ${newHours} ساعة` : `Duration updated to ${newHours} hour${newHours > 1 ? 's' : ''}`,
+      });
+      refetch();
+    } catch {
+      setDailyHours(oldHours);
+      Toast.show({ type: 'error', text1: isRTL ? 'تعذر تحديث المدة' : 'Duration update failed' });
     }
   };
 
@@ -1036,6 +1056,53 @@ export default function ChaletDetailsScreen() {
                 />
               )
             })}
+          </View>
+
+          {/* ──── Daily Hours (Booking Duration) ──── */}
+          <Text style={[styles.settingsGroupTitle, { textAlign: isRTL ? 'right' : 'left', alignSelf: flexStart }]}>
+            {isRTL ? 'مدة الحجز' : 'Booking Duration'}
+          </Text>
+          <View style={styles.menuGroup}>
+            <View style={styles.menuRow}>
+              <ProfileShape size={normalize.width(36)} type="blue">
+                <SolarClockCircleBold size={18} color="white" />
+              </ProfileShape>
+              <View style={[styles.menuLabelContainer, { alignItems: flexStart, flex: 1 }]}>
+                <Text style={[styles.menuLabelText, { textAlign: isRTL ? 'right' : 'left' }]}>
+                  {isRTL ? 'مدة الحجز بالساعات' : 'Duration in Hours'}
+                </Text>
+                <Text style={[styles.menuValueText, { textAlign: isRTL ? 'right' : 'left' }]}>
+                  {isRTL ? `الحد الأقصى 5 ساعات • الدفلت ساعة واحدة` : `Max 5 hours • Default 1 hour`}
+                </Text>
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <TouchableOpacity
+                  onPress={() => updateDailyHours(dailyHours - 1)}
+                  disabled={dailyHours <= 1}
+                  style={{
+                    width: 32, height: 32, borderRadius: 16,
+                    backgroundColor: dailyHours <= 1 ? '#F1F5F9' : '#DBEAFE',
+                    justifyContent: 'center', alignItems: 'center',
+                  }}
+                >
+                  <Text style={{ fontSize: 18, fontWeight: '700', color: dailyHours <= 1 ? '#CBD5E1' : Colors.primary }}>−</Text>
+                </TouchableOpacity>
+                <Text style={{ fontSize: normalize.font(16), fontFamily: 'Alexandria-Bold', color: '#1E293B', minWidth: 24, textAlign: 'center' }}>
+                  {dailyHours}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => updateDailyHours(dailyHours + 1)}
+                  disabled={dailyHours >= 5}
+                  style={{
+                    width: 32, height: 32, borderRadius: 16,
+                    backgroundColor: dailyHours >= 5 ? '#F1F5F9' : '#DBEAFE',
+                    justifyContent: 'center', alignItems: 'center',
+                  }}
+                >
+                  <Text style={{ fontSize: 18, fontWeight: '700', color: dailyHours >= 5 ? '#CBD5E1' : Colors.primary }}>+</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
 
           {/* Danger Zone Group */}

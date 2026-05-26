@@ -2,6 +2,7 @@ import { BookingCancellationSheet, BookingCancellationSheetRef } from '@/compone
 import { DashboardCalendar } from "@/components/dashboard/dashboard-calendar";
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { PendingApprovalScreen } from '@/components/dashboard/pending-approval';
+import { CountdownBadge } from '@/components/dashboard/countdown-badge';
 import {
   SolarCalendarBold,
   SolarCheckCircleBold,
@@ -243,17 +244,27 @@ export default function BookingsScreen() {
     const getStatusInfo = (status: string) => {
       const s = status?.toLowerCase();
       switch (s) {
-        case 'pending_approval':
+        case 'external':
           return {
-            label: isRTL ? 'بانتظار الموافقة' : 'Pending Approval',
-            color: '#D97706',
-            bg: '#FEF3C7'
+            label: isRTL ? 'حجز خارجي' : 'External Booking',
+            color: '#6366F1',
+            bg: '#EEF2FF'
           };
-        case 'pending_payment':
+        case 'completed':
+        case 'finished':
           return {
-            label: isRTL ? 'بانتظار الدفع' : 'Pending Payment',
-            color: '#F59E0B',
-            bg: '#FFFBEB'
+            label: isRTL ? 'مكتمل' : 'Completed',
+            color: '#3B82F6',
+            bg: '#EFF6FF'
+          };
+        case 'cancelled':
+          const wasDepositPaid = item.paymentModel === 'deposit' && (Number(item.depositAmount) > 0);
+          return {
+            label: wasDepositPaid
+              ? (isRTL ? 'ملغي (عربون)' : 'Cancelled (Deposit)')
+              : (isRTL ? 'ملغي' : 'Cancelled'),
+            color: '#EF4444',
+            bg: '#FEF2F2'
           };
         case 'confirmed':
           const isDeposit = item.paymentModel === 'deposit';
@@ -264,37 +275,22 @@ export default function BookingsScreen() {
             color: '#10B981',
             bg: '#ECFDF5'
           };
-        case 'completed':
-        case 'finished':
+        case 'pending_payment':
+        case 'new':
           return {
-            label: isRTL ? 'مكتمل' : 'Completed',
-            color: '#3B82F6',
-            bg: '#EFF6FF'
+            label: isRTL ? 'انتظار الدفع' : 'Pending Payment',
+            color: '#F59E0B',
+            bg: '#FFFBEB'
           };
-        case 'cancelled':
+        case 'pending_approval':
           return {
-            label: isRTL ? 'ملغي' : 'Cancelled',
-            color: '#EF4444',
-            bg: '#FEF2F2'
-          };
-        case 'refunded':
-          return {
-            label: isRTL ? 'تم الاسترجاع' : 'Refunded',
-            color: '#64748B',
-            bg: '#F1F5F9'
-          };
-        case 'external':
-          return {
-            label: isRTL ? 'حجز خارجي' : 'External Booking',
-            color: '#6366F1',
-            bg: '#EEF2FF'
+            label: isRTL ? 'بانتظار القبول' : 'Awaiting Approval',
+            color: '#F97316',
+            bg: '#FFF7ED'
           };
         default:
-          const formattedDefault = status
-            ? status.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
-            : '';
           return {
-            label: formattedDefault || (isRTL ? 'غير معروف' : 'Unknown'),
+            label: status || (isRTL ? 'غير معروف' : 'Unknown'),
             color: '#64748B',
             bg: '#F8FAFC'
           };
@@ -318,9 +314,9 @@ export default function BookingsScreen() {
         >
           <View style={[styles.modernBookingInner, { flexDirection: 'row' }]}>
             {/* Info (Name, Chalet and Shift) */}
-            <View style={[styles.modernBookingInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+            <View style={[styles.modernBookingInfo, { alignItems: 'flex-start' }]}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                <Text style={[styles.modernBookingName, { textAlign: isRTL ? 'right' : 'left', flexShrink: 1 }]} numberOfLines={1}>{customerName}</Text>
+                <Text style={[styles.modernBookingName, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>{customerName}</Text>
                 <View style={{
                   backgroundColor: statusInfo.bg,
                   paddingHorizontal: 8,
@@ -337,6 +333,14 @@ export default function BookingsScreen() {
                     {statusInfo.label}
                   </Text>
                 </View>
+                {item.status === 'pending_approval' && (
+                  <CountdownBadge
+                    createdAt={item.createdAt}
+                    durationHours={item.chalet?.dailyHours || 1}
+                    isRTL={isRTL}
+                    variant="compact"
+                  />
+                )}
               </View>
 
               {chaletName && <Text style={[styles.modernBookingChalet, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>{chaletName}</Text>}
@@ -368,7 +372,7 @@ export default function BookingsScreen() {
 
             {/* 3. Price (Left part in RTL) */}
             {!bIsExternal && (
-              <View style={[styles.modernBookingPriceWrap, { alignItems: isRTL ? 'flex-start' : 'flex-end' }]}>
+              <View style={styles.modernBookingPriceWrap}>
                 <Text style={styles.modernBookingPrice}>
                   {(Number(item.totalPrice) || 0).toLocaleString()} {t('common.iqd')}
                 </Text>
