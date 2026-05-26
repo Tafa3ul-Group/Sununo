@@ -96,14 +96,7 @@ export const HostContactCard: React.FC<HostContactCardProps> = ({
           >
             {name}
           </ThemedText>
-          {phone ? (
-            <ThemedText
-              style={[styles.hostPhone, { textAlign: textStart }]}
-              numberOfLines={1}
-            >
-              {phone}
-            </ThemedText>
-          ) : null}
+
         </View>
 
         {/* Fixed to position derived from SVG */}

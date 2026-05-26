@@ -435,7 +435,7 @@ export default function BookingSuccessDetailsScreen() {
             t("booking.totalAmount"),
             `${totalPrice} ${t("common.iqd")}`,
           )}
-          {booking?.paymentModel === 'deposit' && (
+          {booking?.paymentModel === 'deposit' && (booking?.status === 'confirmed' || booking?.status === 'completed') && (
             <>
               {renderInfoRow(
                 t("booking.depositAmount"),

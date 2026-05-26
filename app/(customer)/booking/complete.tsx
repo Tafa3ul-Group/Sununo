@@ -846,7 +846,7 @@ export default function CompleteBookingScreen() {
   };
 
   const renderDetailsTab = () => (
-    <View style={styles.detailsContainer}>
+    <View style={[styles.detailsContainer, { direction: isArabic ? 'rtl' : 'ltr' }]}>
       <HorizontalCard
         chalet={{
           id: chaletDetails?.id || "",
@@ -1623,7 +1623,7 @@ export default function CompleteBookingScreen() {
             )}
           </>
         ) : activeTab === "WHO" ? (
-          <View style={styles.whoContainer}>
+          <View style={[styles.whoContainer, { direction: isArabic ? 'rtl' : 'ltr' }]}>
             {/* Capacity Info Banner */}
             <View style={styles.capacityBanner}>
               {/* Base Capacity Row */}
@@ -1636,7 +1636,7 @@ export default function CompleteBookingScreen() {
                     {isArabic ? "السعة الأساسية" : "Base Capacity"}
                   </ThemedText>
                 </View>
-                <ThemedText style={styles.capacityRowValue}>
+                <ThemedText style={[styles.capacityRowValue, { textAlign: textEnd }]}>
                   {capacityLimit} {isArabic ? "أشخاص" : "guests"}
                 </ThemedText>
               </View>
@@ -1655,7 +1655,7 @@ export default function CompleteBookingScreen() {
                         {isArabic ? "الحد الأقصى" : "Maximum Capacity"}
                       </ThemedText>
                     </View>
-                    <ThemedText style={styles.capacityRowValue}>
+                    <ThemedText style={[styles.capacityRowValue, { textAlign: textEnd }]}>
                       {chaletDetails.capacity} {isArabic ? "شخص" : "guests"}
                     </ThemedText>
                   </View>
@@ -1674,7 +1674,7 @@ export default function CompleteBookingScreen() {
                       {isArabic ? "سعر الشخص الإضافي" : "Extra Person Price"}
                     </ThemedText>
                   </View>
-                  <ThemedText style={[styles.capacityRowValue, { color: "#F59E0B" }]}>
+                  <ThemedText style={[styles.capacityRowValue, { color: "#F59E0B", textAlign: textEnd }]}>
                     {Number(extraPersonPrice).toLocaleString()} {t("common.iqd")}
                   </ThemedText>
                 </View>

@@ -104,11 +104,13 @@ export default function BookingsScreen() {
 
   const getPaymentStatusBadge = (item: any) => {
     const status = item.paymentStatus;
+    const bookingStatus = item.status;
     const deposit = Number(item.depositAmount || 0);
     const remaining = Number(item.remainingAmount || 0);
     const total = Number(item.totalPrice || 0);
 
-    if (status === 'paid' || (remaining === 0 && total > 0)) {
+    // Only show "Paid" if payment was actually completed
+    if (status === 'paid' || (remaining === 0 && total > 0 && (bookingStatus === 'confirmed' || bookingStatus === 'completed'))) {
       return {
         text: t('booking.status.paid') || (isArabic ? 'مدفوع' : 'Paid'),
         color: '#FFFFFF',
@@ -116,11 +118,30 @@ export default function BookingsScreen() {
       };
     }
 
-    if (deposit > 0 && remaining > 0) {
+    // Only show "Deposit Paid" if booking is confirmed/completed (payment actually went through)
+    if (deposit > 0 && remaining > 0 && (bookingStatus === 'confirmed' || bookingStatus === 'completed')) {
       return {
         text: isArabic ? 'عربون مدفوع' : 'Deposit Paid',
         color: '#FFFFFF',
         bg: '#F97316'
+      };
+    }
+
+    // Pending approval — no payment yet
+    if (bookingStatus === 'pending_approval') {
+      return {
+        text: isArabic ? 'بانتظار الموافقة' : 'Pending Approval',
+        color: '#FFFFFF',
+        bg: '#D97706'
+      };
+    }
+
+    // Pending payment — approved but not yet paid
+    if (bookingStatus === 'pending_payment') {
+      return {
+        text: isArabic ? 'بانتظار الدفع' : 'Awaiting Payment',
+        color: '#FFFFFF',
+        bg: '#E11D48'
       };
     }
 
@@ -192,7 +213,7 @@ export default function BookingsScreen() {
             <ThemedText style={[styles.detailValue, { textAlign: 'right' }]}>{booking.guestCount} {isArabic ? 'أشخاص' : 'guests'}</ThemedText>
           </View>
 
-          {booking.paymentModel === 'deposit' && Number(booking.depositAmount) > 0 ? (
+          {booking.paymentModel === 'deposit' && Number(booking.depositAmount) > 0 && (booking.status === 'confirmed' || booking.status === 'completed') ? (
             <>
               <View style={[styles.detailRow, { flexDirection: 'row' }]}>
                 <ThemedText style={[styles.detailLabel, { textAlign: 'left' }]}>{t('booking.depositAmount') || 'مبلغ العربون'}</ThemedText>

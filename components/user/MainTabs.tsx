@@ -53,16 +53,19 @@ export function MainTabs({
 }: MainTabsProps) {
   const { t, i18n } = useTranslation();
   const isArabic = i18n.language === 'ar';
-  const needsFlip = isArabic !== I18nManager.isRTL;
 
   const transition = useSharedValue(0);
 
-  // For RTL: reverse the display order of tabs, but keep the SVG animation LTR.
-  // This way the circle always moves in the correct direction.
+  // For Arabic: reverse the visual display order of tabs.
+  // LTR layout:    [WHERE] [WHEN] [WHO]   (left → right)
+  // Arabic layout: [WHO]   [WHEN] [WHERE] (left → right, reads right-to-left as وين، شوكت، منو)
+  // The SVG circle animates from position 0 (left) to position 2 (right) in both cases.
+  // By reversing the tab list, position 0 = WHO (left), position 2 = WHERE (right) in Arabic.
+  // When user taps "وين" (WHERE, which is at index 2), circle moves to the right = correct.
   const tabList = useMemo(() => {
     const base = tabs.slice(0, 3) as [TabType, TabType, TabType];
-    return needsFlip ? ([...base].reverse() as [TabType, TabType, TabType]) : base;
-  }, [tabs, needsFlip]);
+    return isArabic ? ([...base].reverse() as [TabType, TabType, TabType]) : base;
+  }, [tabs, isArabic]);
 
   const tabColors = useMemo(
     () => tabList.map((tab) => TAB_COLORS[tab]) as [string, string, string],
@@ -178,7 +181,8 @@ export function MainTabs({
         </Svg>
       </View>
 
-      <View style={[styles.buttonsContainer, { flexDirection: "row" }]}>
+      {/* Force LTR direction — we manually reverse the tabList array for Arabic */}
+      <View style={[styles.buttonsContainer, { direction: 'ltr' }]}>
         {tabList.map(function (tab, idx) {
           const textStyle = tabStyles[idx];
 
@@ -220,13 +224,13 @@ const styles = StyleSheet.create({
   buttonsContainer: {
     position: "absolute",
     top: 0,
-    start: 0,
     width: 344,
     height: 80,
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 0,
     zIndex: 20,
+    alignSelf: "center",
   },
   tabButton: {
     flex: 1,
