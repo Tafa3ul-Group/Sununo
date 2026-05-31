@@ -1655,10 +1655,10 @@ export default function ShiftsAndPricesScreen() {
                     opacity: isStopped ? 0.7 : 1,
                   }}
                 >
-                  {/* Day name + toggle */}
-                  <View style={{ flexDirection: isRTL ? 'row' : 'row-reverse', alignItems: 'center', gap: 12 }}>
+                  {/* Day name + save button beside it */}
+                  <View style={{ flexDirection: isRTL ? 'row' : 'row-reverse', alignItems: 'center', gap: 10 }}>
                     <View style={{ alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
-                      <Text style={{ fontSize: 14, fontFamily: 'Alexandria-SemiBold', color: isStopped ? '#94A3B8' : '#0F172A' }}>
+                      <Text style={{ fontSize: 16, fontFamily: 'Alexandria-Bold', color: isStopped ? '#94A3B8' : '#0F172A' }}>
                         {dayName}
                       </Text>
                       {isWeekend && (
@@ -1667,23 +1667,44 @@ export default function ShiftsAndPricesScreen() {
                         </Text>
                       )}
                     </View>
-                    <Switch
-                      value={!isStopped}
-                      trackColor={{ false: '#E2E8F0', true: Colors.primary + '55' }}
-                      thumbColor={!isStopped ? Colors.primary : '#94A3B8'}
-                      onValueChange={(val) => handleToggleDay(index, val)}
-                    />
+
+                    {!isStopped && (
+                      <TouchableOpacity
+                        onPress={() => handleSaveSingleDay(index)}
+                        disabled={savingIndexes[index]}
+                        activeOpacity={0.85}
+                        style={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: 12,
+                          backgroundColor: Colors.primary,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          shadowColor: Colors.primary,
+                          shadowOffset: { width: 0, height: 2 },
+                          shadowOpacity: 0.25,
+                          shadowRadius: 4,
+                          elevation: 3,
+                        }}
+                      >
+                        {savingIndexes[index] ? (
+                          <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                          <SolarBookmarkSquareMinimalisticBoldDuotone size={22} color="#fff" />
+                        )}
+                      </TouchableOpacity>
+                    )}
                   </View>
 
-                  {/* Price input + per-day save, or closed label */}
-                  {isStopped ? (
-                    <Text style={{ fontSize: 13, fontFamily: 'Alexandria-SemiBold', color: '#94A3B8' }}>
-                      {isRTL ? 'مغلق' : 'Closed'}
-                    </Text>
-                  ) : (
-                    <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 8 }}>
+                  {/* Price + on/off switch */}
+                  <View style={{ flexDirection: isRTL ? 'row' : 'row-reverse', alignItems: 'center', gap: 10 }}>
+                    {isStopped ? (
+                      <Text style={{ fontSize: 13, fontFamily: 'Alexandria-SemiBold', color: '#94A3B8' }}>
+                        {isRTL ? 'مغلق' : 'Closed'}
+                      </Text>
+                    ) : (
                       <View style={{
-                        flexDirection: isRTL ? 'row-reverse' : 'row',
+                        flexDirection: isRTL ? 'row' : 'row-reverse',
                         alignItems: 'center',
                         gap: 6,
                         backgroundColor: '#F8FAFC',
@@ -1717,34 +1738,18 @@ export default function ShiftsAndPricesScreen() {
                           {isRTL ? 'د.ع' : 'IQD'}
                         </Text>
                       </View>
+                    )}
 
-                      {/* Save this day individually */}
-                      <TouchableOpacity
-                        onPress={() => handleSaveSingleDay(index)}
-                        disabled={savingIndexes[index]}
-                        activeOpacity={0.85}
-                        style={{
-                          width: 44,
-                          height: 44,
-                          borderRadius: 12,
-                          backgroundColor: Colors.primary,
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          shadowColor: Colors.primary,
-                          shadowOffset: { width: 0, height: 2 },
-                          shadowOpacity: 0.25,
-                          shadowRadius: 4,
-                          elevation: 3,
-                        }}
-                      >
-                        {savingIndexes[index] ? (
-                          <ActivityIndicator size="small" color="#fff" />
-                        ) : (
-                          <SolarBookmarkSquareMinimalisticBoldDuotone size={24} color="#fff" />
-                        )}
-                      </TouchableOpacity>
+                    {/* On/off switch — always visible, centered */}
+                    <View style={{ height: 44, justifyContent: 'center' }}>
+                      <Switch
+                        value={!isStopped}
+                        trackColor={{ false: '#E2E8F0', true: Colors.primary + '55' }}
+                        thumbColor={!isStopped ? Colors.primary : '#94A3B8'}
+                        onValueChange={(val) => handleToggleDay(index, val)}
+                      />
                     </View>
-                  )}
+                  </View>
                 </View>
               );
             })}

@@ -726,7 +726,7 @@ export default function ChaletDetailsScreen() {
           {/* 1. Chalet Profile Card */}
           <TouchableOpacity
             style={[styles.profileCard, { flexDirection: flexRow }]}
-            onPress={() => imagesModalRef.current?.present()}
+        
             activeOpacity={0.9}
           >
             <View style={styles.avatarWrap}>
@@ -737,9 +737,7 @@ export default function ChaletDetailsScreen() {
                   <SolarGalleryBold size={24} color="white" />
                 </View>
               )}
-              <View style={styles.editBadge}>
-                <SolarPenBold size={12} color="white" />
-              </View>
+        
             </View>
 
             <View style={[styles.profileInfo, { alignItems: flexStart }]}>
@@ -755,12 +753,7 @@ export default function ChaletDetailsScreen() {
                   </View>
                 )}
               </View>
-              <View style={[styles.profileLocationRow, { flexDirection: flexRow, alignItems: 'center', gap: 4 }]}>
-                <SolarMapPointBold size={14} color="#64748B" />
-                <Text style={[styles.profileLocationText, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
-                  {chaletLocation || ''}
-                </Text>
-              </View>
+
               <View style={[styles.profileBadgesRow, { flexDirection: flexRow, alignItems: 'center', gap: 8, marginTop: 8 }]}>
                 {!isActive && (
                   <View style={[styles.approvalBadgeMini, { backgroundColor: '#F3F4F6' }]}>
@@ -774,10 +767,7 @@ export default function ChaletDetailsScreen() {
                     {chalet?.isApproved ? (isRTL ? 'نشط ومقبول' : 'Approved') : (isRTL ? 'قيد المراجعة' : 'Pending')}
                   </Text>
                 </View>
-                <View style={styles.ratingBadgeMini}>
-                  <SolarStarBold size={12} color="#F59E0B" />
-                  <Text style={styles.ratingTextMini}>{ratingValue.toFixed(1)}</Text>
-                </View>
+
               </View>
             </View>
           </TouchableOpacity>
@@ -802,13 +792,7 @@ export default function ChaletDetailsScreen() {
 
           {/* 3. Performance Stats Bar */}
           <View style={[styles.performanceStatsCard, { flexDirection: flexRow }]}>
-            <View style={styles.perfStatItem}>
-              <Text style={styles.perfStatValue}>
-                {isLoadingStats ? '...' : Number(totalEarnings || 0).toLocaleString()}
-                <Text style={styles.perfCurrency}> {isRTL ? 'د.ع' : 'IQD'}</Text>
-              </Text>
-              <Text style={styles.perfStatLabel}>{isRTL ? 'الأرباح' : 'Revenue'}</Text>
-            </View>
+
             <View style={styles.perfStatDivider} />
             <View style={styles.perfStatItem}>
               <Text style={styles.perfStatValue}>{isLoadingStats ? '...' : totalBookings}</Text>
