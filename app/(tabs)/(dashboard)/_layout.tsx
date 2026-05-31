@@ -4,7 +4,6 @@ import { RootState } from "@/store";
 import { Redirect, Tabs } from "expo-router";
 import React from "react";
 import { useSelector } from "react-redux";
-import { isRTL } from "@/i18n";
 
 export default function DashboardLayout() {
   const { userType, isAuthenticated, language } = useSelector((state: RootState) => state.auth);

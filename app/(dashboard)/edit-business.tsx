@@ -3,10 +3,10 @@ import {
 } from "@/components/icons/solar-icons";
 import { ThemedText } from '@/components/themed-text';
 import { Colors, normalize } from '@/constants/theme';
+import { useDirection } from '@/i18n';
 import { useGetProviderProfileQuery, useUpdateProviderProfileMutation } from '@/store/api/apiSlice';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
     ActivityIndicator,
     I18nManager,
@@ -75,13 +75,12 @@ function validateQiCard(text: string): string | null {
 }
 
 export default function ProviderProfileScreen() {
-  const { t, i18n } = useTranslation();
-  const isArabic = i18n.language ? i18n.language.startsWith('ar') : true;
+  const { isRTL: isArabic, rowDirection } = useDirection();
   const dispatch = useDispatch();
   const router = useRouter();
 
   const textStart: 'left' | 'right' = isArabic === I18nManager.isRTL ? 'left' : 'right';
-  const flexDir: 'row' | 'row-reverse' = isArabic === I18nManager.isRTL ? 'row' : 'row-reverse';
+  const flexDir: 'row' | 'row-reverse' = rowDirection;
 
   const { data: profile, isLoading, isError, refetch } = useGetProviderProfileQuery(undefined);
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProviderProfileMutation();

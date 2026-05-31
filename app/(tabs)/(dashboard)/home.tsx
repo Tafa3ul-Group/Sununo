@@ -41,7 +41,7 @@ import {
 import Animated, { FadeInDown } from "react-native-reanimated";
 import Svg, { Path } from "react-native-svg";
 
-import { isRTL } from "@/i18n";
+import { useDirection } from "@/i18n";
 import { useSelector } from "react-redux";
 
 // Status mapping from UI to API
@@ -144,6 +144,7 @@ export default function HomeScreen() {
     (state: RootState) => state.auth,
   );
   const { t } = useTranslation();
+  const { isRTL } = useDirection();
   const [activeTab, setActiveTab] = React.useState("new");
   const textAlign = 'left';
   const startAlign = 'flex-start';

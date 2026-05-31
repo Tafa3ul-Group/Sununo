@@ -1,17 +1,14 @@
 import { normalize } from "@/constants/theme";
 import React, { useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
 import {
   Dimensions,
   FlatList,
-  I18nManager,
   StyleSheet,
   View,
   NativeSyntheticEvent,
   NativeScrollEvent
 } from "react-native";
 import { HorizontalCard } from "./horizontal-card";
-import { isRTL } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const ITEM_WIDTH = SCREEN_WIDTH - 32;
@@ -25,7 +22,6 @@ interface HorizontalSwiperProps {
 }
 
 export function HorizontalSwiper({ data, onPressCard, onIndexChange, favoriteIds = [], onToggleFavorite }: HorizontalSwiperProps) {
-  const { i18n } = useTranslation();
     const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
 

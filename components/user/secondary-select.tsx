@@ -1,8 +1,6 @@
 import { BottomSheetBackdrop, BottomSheetModal } from "@gorhom/bottom-sheet";
 import React, { useCallback, useRef } from "react";
-import { useTranslation } from "react-i18next";
 import {
-  I18nManager,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -10,7 +8,7 @@ import {
 import { ThemedText } from "@/components/themed-text";
 import { SecondaryButton } from "./secondary-button";
 import { SolarAltArrowDownLinear } from "@/components/icons/solar-icons";
-import { isRTL } from "@/i18n";
+import { useDirection } from "@/i18n";
 
 export interface SelectOption {
   label: string;
@@ -31,9 +29,9 @@ export function SecondarySelect({
   onSelect,
   placeholder = "اختر...",
   style }: SecondarySelectProps) {
-  const { i18n } = useTranslation();
+  const { isRTL, rowDirection, textAlign } = useDirection();
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const isArabic = isRTL || i18n.language === "ar";
+  const isArabic = isRTL;
 
   const selectedOption = options.find((opt) => opt.value === value);
   const currentLabel = selectedOption ? selectedOption.label : placeholder;
@@ -75,7 +73,7 @@ export function SecondarySelect({
       >
         <View style={styles.sheetContent}>
           <ThemedText
-            style={[styles.sheetTitle, { textAlign: isArabic ? "right" : "left" }]}
+            style={[styles.sheetTitle, { textAlign }]}
           >
             {isArabic ? "اختر" : "Select"}
           </ThemedText>
@@ -86,7 +84,7 @@ export function SecondarySelect({
                 key={opt.value}
                 style={[
                   styles.optionRow,
-                  { flexDirection: isArabic === I18nManager.isRTL ? "row" : "row-reverse" },
+                  { flexDirection: rowDirection },
                   isSelected && styles.optionRowSelected,
                 ]}
                 onPress={() => {
@@ -97,7 +95,7 @@ export function SecondarySelect({
                 <ThemedText
                   style={[
                     styles.optionText,
-                    { textAlign: isArabic ? "right" : "left" },
+                    { textAlign },
                     isSelected && styles.optionTextSelected,
                     isSelected && {
                       marginStart: 10,

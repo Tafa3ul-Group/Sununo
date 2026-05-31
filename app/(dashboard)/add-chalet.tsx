@@ -24,7 +24,7 @@ import { PrimaryButton } from '@/components/user/primary-button';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { Colors, normalize, Spacing, Typography } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
-import { isRTL } from "@/i18n";
+import { useDirection } from "@/i18n";
 import { RootState } from '@/store';
 import {
   useCreateChaletMutation,
@@ -155,6 +155,7 @@ const createDefaultPricing = () => Array.from({ length: 7 }, (_, i) => ({
 export default function AddChaletScreen() {
   const router = useRouter();
   const { t } = useTranslation();
+  const { isRTL } = useDirection();
   const { language } = useSelector((state: RootState) => state.auth);
 
 

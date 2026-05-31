@@ -12,6 +12,7 @@ import {
     useVerifyPhoneMutation
 } from "@/store/api/apiSlice";
 import { setCredentials } from "@/store/authSlice";
+import { useDirection } from "@/i18n";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -23,8 +24,7 @@ import {
     ScrollView,
     StyleSheet,
     TextInput,
-    View,
-    I18nManager
+    View
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch } from "react-redux";
@@ -53,12 +53,10 @@ function StepProgress({ current, total }: { current: number; total: number }) {
 }
 
 export default function RegisterScreen() {
-  const { t, i18n } = useTranslation();
-  const isArabic = i18n.language ? i18n.language.startsWith("ar") : true;
-  const textStart: "left" | "right" = isArabic ? "right" : "left";
-  const textEnd: "left" | "right" = isArabic ? "left" : "right";
-  const alignStart: "flex-start" | "flex-end" = isArabic === I18nManager.isRTL ? "flex-start" : "flex-end";
-  const rowDir: "row" | "row-reverse" = isArabic === I18nManager.isRTL ? "row" : "row-reverse";
+  const { t } = useTranslation();
+  const { isRTL, rowDirection, textAlign } = useDirection();
+  const isArabic = isRTL;
+  const textStart = textAlign;
 
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -280,7 +278,7 @@ export default function RegisterScreen() {
       <View
         style={[
           styles.header,
-          { flexDirection: rowDir }
+          { flexDirection: rowDirection }
         ]}
       >
         <CircleBackButton onPress={prevStep} />

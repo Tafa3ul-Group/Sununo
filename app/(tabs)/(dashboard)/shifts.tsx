@@ -15,6 +15,7 @@ import { useConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { toastConfig } from '@/components/ui/toast-config';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { Colors, Shadows } from '@/constants/theme';
+import { useDirection } from '@/i18n';
 import { RootState } from '@/store';
 import {
   useCreateShiftMutation,
@@ -332,8 +333,8 @@ export default function ShiftsAndPricesScreen() {
   const { id: initialId } = useLocalSearchParams();
   const [selectedChaletId, setSelectedChaletId] = useState<string | null>(initialId as string || null);
   const { t } = useTranslation();
-  const { language, selectedChalet } = useSelector((state: RootState) => state.auth);
-  const isRTL = language === 'ar';
+  const { selectedChalet } = useSelector((state: RootState) => state.auth);
+  const { isRTL } = useDirection();
   const { showConfirm } = useConfirmationDialog();
 
   const formatTime12h = (timeStr: string) => {

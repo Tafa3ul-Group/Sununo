@@ -41,7 +41,6 @@ import {
   ActivityIndicator,
   Alert,
   Dimensions,
-  I18nManager,
   Platform,
   ScrollView,
   StyleSheet,
@@ -52,6 +51,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import { useFormatTime } from "../../../hooks/useFormatTime";
+import { useDirection } from "@/i18n";
 
 // dismissAuthSession is iOS-only — Android closes the browser automatically
 const dismissBrowser = () => {
@@ -71,7 +71,7 @@ const getLocalDateKey = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
 export default function CompleteBookingScreen() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
   const { id: chaletIdParam } = useLocalSearchParams();
   const chaletId = chaletIdParam as string;
@@ -81,16 +81,16 @@ export default function CompleteBookingScreen() {
   const [activeTab, setActiveTab] = useState<TabType>("WHEN");
   const [paymentType, setPaymentType] = useState<"DEPOSIT" | "FULL">("DEPOSIT");
   const { formatShiftTime } = useFormatTime();
-  const isArabic = i18n.language ? i18n.language.startsWith("ar") : false;
-  const rowDirection: "row" | "row-reverse" = isArabic === I18nManager.isRTL ? "row" : "row-reverse";
+  const { isRTL, rowDirection, textAlign } = useDirection();
+  const isArabic = isRTL;
 
   // textAlign is absolute, so direct mapping is correct regardless of native RTL state
-  const textStart: "left" | "right" = isArabic ? "right" : "left";
+  const textStart: "left" | "right" = textAlign;
   const textEnd: "left" | "right" = isArabic ? "left" : "right";
   const alignStart: "flex-start" | "flex-end" =
-    isArabic === I18nManager.isRTL ? "flex-start" : "flex-end";
+    rowDirection === "row" ? "flex-start" : "flex-end";
   const alignEnd: "flex-start" | "flex-end" =
-    isArabic === I18nManager.isRTL ? "flex-end" : "flex-start";
+    rowDirection === "row" ? "flex-end" : "flex-start";
 
   const pickImage = async (imageNumber: 1 | 2) => {
     // No permissions request is needed for launching the image library

@@ -11,7 +11,7 @@ import React, { forwardRef, useMemo, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
 import Svg, { Path } from "react-native-svg";
-import { isRTL } from "@/i18n";
+import { useDirection } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 // Base design width for normalization (e.g., iPhone 11/12 is ~390-414, but design units used 499 as container)
@@ -35,7 +35,8 @@ const ReviewSubmissionSheet = forwardRef<
     initialRating?: number;
   }
 >((props, ref) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const { textAlign } = useDirection();
     const [userRating, setUserRating] = useState(props.initialRating || 0);
   const [comment, setComment] = useState("");
 
@@ -115,7 +116,7 @@ const ReviewSubmissionSheet = forwardRef<
                 multiline
                 style={[
                   styles.textInput,
-                  { textAlign: isRTL ? "right" : "left" },
+                  { textAlign },
                 ]}
                 value={comment}
                 onChangeText={setComment}

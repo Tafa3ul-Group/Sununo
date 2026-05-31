@@ -1,6 +1,7 @@
 import { ThemedText } from '@/components/themed-text';
 import { CircleBackButton } from '@/components/ui/circle-back-button';
 import { Colors, Shadows } from '@/constants/theme';
+import { useDirection } from "@/i18n";
 import { RootState } from '@/store';
 import { useGetNotificationsQuery, useMarkNotificationAsReadMutation } from '@/store/api/customerApiSlice';
 import * as Haptics from 'expo-haptics';
@@ -24,8 +25,8 @@ interface Notification {
 }
 
 export default function NotificationsScreen() {
-    const { t, i18n } = useTranslation();
-    const isArabic = i18n.language === "ar";
+    const { t } = useTranslation();
+    const { isRTL, textAlign } = useDirection();
     const { userType } = useSelector((state: RootState) => state.auth);
     const router = useRouter();
     const [page, setPage] = useState(1);
@@ -66,23 +67,23 @@ export default function NotificationsScreen() {
 
     const renderItem = ({ item }: { item: Notification }) => {
         const date = new Date(item.createdAt);
-        const timeStr = date.toLocaleTimeString(isArabic ? 'ar-IQ' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+        const timeStr = date.toLocaleTimeString(isRTL ? 'ar-IQ' : 'en-US', { hour: '2-digit', minute: '2-digit' });
 
         return (
             <TouchableOpacity
                 key={item.id}
-                style={[styles.notificationCard, { flexDirection: 'row', direction: isArabic ? 'rtl' : 'ltr' }]}
+                style={[styles.notificationCard, { flexDirection: 'row', direction: isRTL ? 'rtl' : 'ltr' }]}
                 activeOpacity={0.7}
                 onPress={() => handleNotificationPress(item)}
             >
                 {/* Content section */}
                 <View style={[styles.cardContent, { alignItems: 'flex-start' }]}>
-                    <ThemedText style={[styles.titleText, { textAlign: isArabic ? 'right' : 'left' }]}>{item.title}</ThemedText>
-                    <ThemedText style={[styles.messageText, { textAlign: isArabic ? 'right' : 'left' }]}>{item.text}</ThemedText>
+                    <ThemedText style={[styles.titleText, { textAlign }]}>{item.title}</ThemedText>
+                    <ThemedText style={[styles.messageText, { textAlign }]}>{item.text}</ThemedText>
                 </View>
 
                 {/* Header section with orange dot and time */}
-                <View style={[styles.cardLeft, { flexDirection: 'row', direction: isArabic ? 'rtl' : 'ltr' }]}>
+                <View style={[styles.cardLeft, { flexDirection: 'row', direction: isRTL ? 'rtl' : 'ltr' }]}>
                     <ThemedText style={styles.timeText}>{timeStr}</ThemedText>
                     {!item.readAt && <View style={styles.orangeDot} />}
                 </View>
@@ -94,10 +95,10 @@ export default function NotificationsScreen() {
         <SafeAreaView style={[styles.container]}>
             {/* Header */}
             <View style={styles.header}>
-                <View style={[styles.headerInner, { flexDirection: 'row', direction: isArabic ? 'rtl' : 'ltr' }]}>
+                <View style={[styles.headerInner, { flexDirection: 'row', direction: isRTL ? 'rtl' : 'ltr' }]}>
                     <ThemedText style={styles.headerTitle}>{t('headers.notifications')}</ThemedText>
                     <CircleBackButton
-                        style={[styles.backButton, isArabic ? { left: 0 } : { right: 0 }]}
+                        style={[styles.backButton, { end: 0 }]}
                         onPress={() => router.back()}
                     />
                 </View>
@@ -122,7 +123,7 @@ export default function NotificationsScreen() {
                     ) : (
                         <Animated.View entering={FadeIn.duration(300)} style={styles.centerContainer}>
                             <ThemedText style={styles.emptyText}>
-                                {isArabic ? 'لا توجد إشعارات حالياً' : 'No notifications found'}
+                                {isRTL ? 'لا توجد إشعارات حالياً' : 'No notifications found'}
                             </ThemedText>
                         </Animated.View>
                     )

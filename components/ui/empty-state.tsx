@@ -5,7 +5,7 @@ import { ThemedText } from '../themed-text';
 import { Colors, normalize, Spacing } from '@/constants/theme';
 import { PrimaryButton } from '../user/primary-button';
 import { SolarInboxLinear } from '@/components/icons/solar-icons';
-import { isRTL } from "@/i18n";
+import { useDirection } from "@/i18n";
 
 interface EmptyStateProps {
   title?: string;
@@ -23,8 +23,9 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   actionLabel,
   onAction,
   style }) => {
-  const { t, i18n } = useTranslation();
-  
+  const { t } = useTranslation();
+  const { isRTL } = useDirection();
+
   return (
     <View style={[styles.container, style]}>
       <View style={styles.content}>

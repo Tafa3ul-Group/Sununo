@@ -5,7 +5,7 @@ import { SolarAltArrowLeftBold, SolarAltArrowRightBold } from "@/components/icon
 import { normalize, Colors } from "@/constants/theme";
 import { useTranslation } from "react-i18next";
 import Svg, { Path } from "react-native-svg";
-import { isRTL } from "@/i18n";
+import { useDirection } from "@/i18n";
 
 const DAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 const MONTHS_NAMES = [
@@ -40,7 +40,8 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({
   selectionMode = "range",
 }) => {
   const { i18n } = useTranslation();
-    
+  const { isRTL } = useDirection();
+
   const [viewDate, setViewDate] = useState(initialStartDate || new Date()); // The month currently being viewed
   const [startDate, setStartDate] = useState<Date | null>(initialStartDate || null);
   const [endDate, setEndDate] = useState<Date | null>(initialEndDate || null);

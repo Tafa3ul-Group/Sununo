@@ -1,10 +1,10 @@
 import { Colors, normalize } from '@/constants/theme';
 import { RootState } from '@/store';
 import React from 'react';
-import { I18nManager, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
+import { useDirection } from '@/i18n';
 
 
 /**
@@ -12,8 +12,7 @@ import { useTranslation } from 'react-i18next';
  */
 export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) => {
   const { userType, language } = useSelector((state: RootState) => state.auth);
-  const { i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
+  const { isRTL } = useDirection();
 
   const insets = useSafeAreaInsets();
 

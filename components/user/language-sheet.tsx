@@ -1,12 +1,12 @@
 import React, { useMemo, useCallback } from "react";
-import { StyleSheet, View, TouchableOpacity, Image, I18nManager } from "react-native";
+import { StyleSheet, View, TouchableOpacity, Image } from "react-native";
 import {
   BottomSheetModal,
   BottomSheetView,
   BottomSheetBackdrop } from "@gorhom/bottom-sheet";
 import { useTranslation } from "react-i18next";
 import { ThemedText } from "@/components/themed-text";
-import { changeLanguage } from "@/i18n";
+import { changeLanguage, useDirection } from "@/i18n";
 import { SolarCheckCircleBold } from "@/components/icons/solar-icons";
 import { useDispatch } from "react-redux";
 import { setLanguage } from "@/store/authSlice";
@@ -18,6 +18,7 @@ interface LanguageSheetProps {
 export const LanguageSheet = React.forwardRef<BottomSheetModal, LanguageSheetProps>(
   ({ onSelect }, ref) => {
     const { i18n } = useTranslation();
+    const { rowDirection } = useDirection();
     const dispatch = useDispatch();
     const currentLang = i18n.language;
 
@@ -74,7 +75,7 @@ export const LanguageSheet = React.forwardRef<BottomSheetModal, LanguageSheetPro
                 key={lang.id}
                 style={[
                   styles.item,
-                  { flexDirection: (currentLang === "ar") === I18nManager.isRTL ? "row" : "row-reverse" },
+                  { flexDirection: rowDirection },
                   currentLang === lang.id && styles.activeItem,
                 ]}
                 onPress={() => handleSelect(lang.id)}
@@ -90,7 +91,7 @@ export const LanguageSheet = React.forwardRef<BottomSheetModal, LanguageSheetPro
                 <View
                   style={[
                     styles.langInfo,
-                    { flexDirection: (currentLang === "ar") === I18nManager.isRTL ? "row" : "row-reverse" },
+                    { flexDirection: rowDirection },
                   ]}
                 >
                    <ThemedText style={[

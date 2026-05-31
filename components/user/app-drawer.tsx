@@ -9,7 +9,7 @@ import {
 } from "@/components/icons/solar-icons";
 import { Colors, Shadows } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
-import { isRTL } from "@/i18n";
+import { useDirection } from "@/i18n";
 import { RootState } from "@/store";
 import { useLogoutUserMutation } from "@/store/api/customerApiSlice";
 import { logout } from "@/store/authSlice";
@@ -19,7 +19,6 @@ import { useTranslation } from "react-i18next";
 import {
   Alert,
   Dimensions,
-  I18nManager,
   Image,
   StyleSheet,
   TouchableOpacity,
@@ -45,7 +44,8 @@ export interface AppDrawerRef {
 }
 
 export const AppDrawer = forwardRef<AppDrawerRef>((props, ref) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const { isRTL, rowDirection } = useDirection();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const dispatch = useDispatch();
@@ -155,7 +155,7 @@ export const AppDrawer = forwardRef<AppDrawerRef>((props, ref) => {
         ]}
       >
         {/* Header with Close Button */}
-        <View style={[styles.drawerHeader, { flexDirection: isRTL === I18nManager.isRTL ? "row" : "row-reverse" }]}>
+        <View style={[styles.drawerHeader, { flexDirection: rowDirection }]}>
           <TouchableOpacity onPress={close} style={styles.closeBtn}>
             <SolarCloseBold size={24} color="#64748B" />
           </TouchableOpacity>

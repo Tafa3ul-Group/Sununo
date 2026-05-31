@@ -12,7 +12,7 @@ import {
     View,
     I18nManager } from "react-native";
 import Svg, { ClipPath, Defs, G, Path, Image as SvgImage } from "react-native-svg";
-import { isRTL } from "@/i18n";
+import { useDirection } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -47,9 +47,12 @@ interface ReviewCardProps {
 }
 
 export function ReviewCard({ review, onDelete, onPressChalet }: ReviewCardProps) {
+  const { isRTL } = useDirection();
+  // Physical text alignment that emulates "logical start" (left in steady state);
+  // textAlign left/right are NOT auto-mirrored by RN, so keep the manager comparison.
   const textStart: "left" | "right" = isRTL === I18nManager.isRTL ? "left" : "right";
-  const { i18n, t } = useTranslation();
-    
+  const { t } = useTranslation();
+
   const config = SHAPES_CONFIG[0]; // Using first shape for simplicity or random
 
   return (

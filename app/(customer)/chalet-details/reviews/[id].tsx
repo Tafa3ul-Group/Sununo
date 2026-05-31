@@ -24,9 +24,9 @@ import {
   ScrollView,
   StyleSheet,
   View,
-  I18nManager
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useDirection } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -43,11 +43,12 @@ const SAMPLE_IMAGES = [
 
 export default function ReviewsScreen() {
   const router = useRouter();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams();
   const chaletId = id as string;
-  const isArabic = i18n.language === "ar";
-  const textStart: "left" | "right" = isArabic ? "right" : "left";
+  const { isRTL, rowDirection, textAlign } = useDirection();
+  const isArabic = isRTL;
+  const textStart: "left" | "right" = textAlign;
   const [userRating, setUserRating] = useState(0);
   const [filterValue, setFilterValue] = useState("latest");
   const reviewSheetRef = useRef<BottomSheetModal>(null);
@@ -153,12 +154,12 @@ export default function ReviewsScreen() {
             return (
               <View key={idx} style={styles.revCardFlat}>
                 <View
-                  style={[styles.revHeader, { flexDirection: (isArabic !== I18nManager.isRTL) ? 'row-reverse' : 'row' }]}
+                  style={[styles.revHeader, { flexDirection: rowDirection }]}
                 >
                   <View
                     style={[
                       styles.ratingBadge,
-                      { flexDirection: (isArabic !== I18nManager.isRTL) ? 'row-reverse' : 'row' },
+                      { flexDirection: rowDirection },
                     ]}
                   >
                     <SolarStarBold size={14} color="#035DF9" />
@@ -169,7 +170,7 @@ export default function ReviewsScreen() {
                   <View
                     style={[
                       styles.userInfoRow,
-                      { flexDirection: (isArabic !== I18nManager.isRTL) ? 'row-reverse' : 'row' },
+                      { flexDirection: rowDirection },
                     ]}
                   >
                     <View
@@ -177,7 +178,7 @@ export default function ReviewsScreen() {
                         styles.nameAndBody,
                         {
                           alignItems: "flex-start",
-                          [isArabic ? "marginRight" : "marginLeft"]: 15,
+                          marginStart: 15,
                         },
                       ]}
                     >
@@ -214,7 +215,7 @@ export default function ReviewsScreen() {
                           source={{ uri: imgUri }}
                           style={[
                             styles.thumb,
-                            { [isArabic ? "marginLeft" : "marginRight"]: 12 },
+                            { marginEnd: 12 },
                           ]}
                         />
                       ))}

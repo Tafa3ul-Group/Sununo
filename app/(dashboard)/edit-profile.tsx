@@ -11,6 +11,7 @@ import {
 import { ThemedText } from '@/components/themed-text';
 import { Colors, normalize, Shadows } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
+import { useDirection } from '@/i18n';
 import { RootState } from '@/store';
 import {
   useGetCitiesQuery,
@@ -23,7 +24,6 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   I18nManager,
@@ -57,14 +57,13 @@ const getCityName = (city: any, isArabic: boolean) => {
 };
 
 export default function EditProfileScreen() {
-  const { t, i18n } = useTranslation();
-  const isArabic = i18n.language ? i18n.language.startsWith('ar') : true;
+  const { isRTL: isArabic, rowDirection } = useDirection();
 
   const textStart: 'left' | 'right' = isArabic === I18nManager.isRTL ? 'left' : 'right';
   const textEnd: 'left' | 'right' = isArabic === I18nManager.isRTL ? 'right' : 'left';
   const alignStart: 'flex-start' | 'flex-end' = isArabic === I18nManager.isRTL ? 'flex-start' : 'flex-end';
   const alignEnd: 'flex-start' | 'flex-end' = isArabic === I18nManager.isRTL ? 'flex-end' : 'flex-start';
-  const flexDir: 'row' | 'row-reverse' = isArabic === I18nManager.isRTL ? 'row' : 'row-reverse';
+  const flexDir: 'row' | 'row-reverse' = rowDirection;
   const { user: authUser } = useSelector((state: RootState) => state.auth);
 
   const { data: userData } = useGetMeQuery(undefined);

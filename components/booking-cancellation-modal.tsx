@@ -20,7 +20,6 @@ import { SecondaryButton } from './user/secondary-button';
 // Static imports for Lottie files
 import errorAnim from './icons/motions/fail.json';
 import successAnim from './icons/motions/success.json';
-import { isRTL } from "@/i18n";
 
 interface BookingCancellationSheetProps {
   onConfirm: (reason: string) => void;

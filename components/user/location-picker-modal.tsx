@@ -4,7 +4,7 @@ import { Colors, Spacing, normalize, Typography } from '@/constants/theme';
 import { PrimaryButton } from './primary-button';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SolarCloseCircleBold, SolarMagnifierBold, SolarMapPointBold, SolarMapPointLinear } from "@/components/icons/solar-icons";
-import { isRTL } from "@/i18n";
+import { useDirection } from "@/i18n";
 
 const MAPBOX_ACCESS_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN || '';
 
@@ -33,6 +33,7 @@ interface LocationPickerModalProps {
 }
 
 export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocation }: LocationPickerModalProps) => {
+  const { isRTL, textAlign } = useDirection();
   const [region, setRegion] = useState({ latitude: 33.3152, longitude: 44.3661 });
   const [hasNativeMap] = useState(!!Mapbox);
   const cameraRef = useRef<any>(null);
@@ -162,7 +163,7 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <SolarCloseCircleBold size={28} color={Colors.text.primary} />
           </TouchableOpacity>
-          <Text style={[styles.title, { textAlign: isRTL ? 'right' : 'left' }]}>
+          <Text style={[styles.title, { textAlign }]}>
             {isRTL ? 'تحديد الموقع' : 'Set Location'}
           </Text>
           <View style={{ width: 40 }} />
@@ -174,7 +175,7 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
             <SolarMagnifierBold size={18} color="#94A3B8" />
             <TextInput
               ref={searchInputRef}
-              style={[styles.searchInput, { textAlign: isRTL ? 'right' : 'left' }]}
+              style={[styles.searchInput, { textAlign }]}
               placeholder={isRTL ? 'ابحث عن موقع أو مكان...' : 'Search for a place...'}
               placeholderTextColor="#94A3B8"
               value={searchQuery}
@@ -212,10 +213,10 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
                       <SolarMapPointBold size={16} color={Colors.primary} />
                     </View>
                     <View style={{ flex: 1 }}>
-                      <Text style={[styles.resultName, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
+                      <Text style={[styles.resultName, { textAlign }]} numberOfLines={1}>
                         {item.text}
                       </Text>
-                      <Text style={[styles.resultAddress, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
+                      <Text style={[styles.resultAddress, { textAlign }]} numberOfLines={1}>
                         {item.place_name}
                       </Text>
                     </View>

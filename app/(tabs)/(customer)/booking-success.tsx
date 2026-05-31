@@ -14,11 +14,11 @@ import {
   ScrollView,
   StyleSheet,
   View,
-  I18nManager,
   TouchableOpacity,
   Alert,
   Platform,
 } from "react-native";
+import { useDirection } from "@/i18n";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   SolarMapPointBold,
@@ -44,16 +44,14 @@ const dismissBrowser = () => {
 };
 
 export default function BookingSuccessDetailsScreen() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const bookingId = id as string;
   const { formatShiftTime } = useFormatTime();
 
-  const isRTL = i18n.language ? i18n.language.startsWith('ar') : false;
-  const needsFlip = isRTL !== I18nManager.isRTL;
-  const getFlexDirection = (rtl: boolean): "row" | "row-reverse" => (rtl !== I18nManager.isRTL) ? "row-reverse" : "row";
-  const textStart: "left" | "right" = isRTL ? "right" : "left";
+  const { isRTL, rowDirection, textAlign } = useDirection();
+  const textStart: "left" | "right" = textAlign;
   const textEnd: "left" | "right" = isRTL ? "left" : "right";
 
   // Fetch booking details from the backend
@@ -246,7 +244,7 @@ export default function BookingSuccessDetailsScreen() {
   }, [booking, isRTL, t]);
 
   const renderInfoRow = (label: string, value: string | React.ReactNode) => (
-    <View style={[styles.infoRow, { flexDirection: getFlexDirection(isRTL) }]}>
+    <View style={[styles.infoRow, { flexDirection: rowDirection }]}>
       <ThemedText
         style={[styles.infoLabel, { textAlign: textStart }]}
       >
@@ -361,7 +359,7 @@ export default function BookingSuccessDetailsScreen() {
           </ThemedText>
           <View style={styles.divider} />
 
-          <View style={[styles.infoRow, { flexDirection: getFlexDirection(isRTL) }]}>
+          <View style={[styles.infoRow, { flexDirection: rowDirection }]}>
             <ThemedText style={styles.infoLabel}>
               {t("booking.bookingStatus")}
             </ThemedText>
@@ -403,7 +401,7 @@ export default function BookingSuccessDetailsScreen() {
           </ThemedText>
           <View style={styles.divider} />
 
-          <View style={[styles.infoRow, { flexDirection: getFlexDirection(isRTL) }]}>
+          <View style={[styles.infoRow, { flexDirection: rowDirection }]}>
             <ThemedText style={styles.infoLabel}>
               {t("booking.paymentStatus")}
             </ThemedText>
@@ -466,7 +464,7 @@ export default function BookingSuccessDetailsScreen() {
 
         {/* Pending Approval Alert */}
         {booking?.status === "pending_approval" && (
-          <View style={[styles.alertCard, { flexDirection: getFlexDirection(isRTL) }]}>
+          <View style={[styles.alertCard, { flexDirection: rowDirection }]}>
             <SolarInfoCircleBold size={24} color="#D97706" />
             <ThemedText style={styles.alertText}>
               {isRTL
@@ -500,7 +498,7 @@ export default function BookingSuccessDetailsScreen() {
                   style={[
                     styles.paymentOptionCard,
                     paymentType === "DEPOSIT" && styles.paymentOptionActive,
-                    { flexDirection: getFlexDirection(isRTL) }
+                    { flexDirection: rowDirection }
                   ]}
                   onPress={() => setPaymentType("DEPOSIT")}
                 >
@@ -528,7 +526,7 @@ export default function BookingSuccessDetailsScreen() {
                   style={[
                     styles.paymentOptionCard,
                     paymentType === "FULL" && styles.paymentOptionActive,
-                    { flexDirection: getFlexDirection(isRTL) }
+                    { flexDirection: rowDirection }
                   ]}
                   onPress={() => setPaymentType("FULL")}
                 >
@@ -554,7 +552,7 @@ export default function BookingSuccessDetailsScreen() {
               </View>
             )}
 
-            <View style={[styles.paymentMethodsGrid, { flexDirection: getFlexDirection(isRTL) }]}>
+            <View style={[styles.paymentMethodsGrid, { flexDirection: rowDirection }]}>
               <TouchableOpacity
                 style={[
                   styles.paymentMethodBtn,

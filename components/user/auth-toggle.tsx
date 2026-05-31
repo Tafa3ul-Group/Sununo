@@ -18,7 +18,7 @@ import Animated, {
   useSharedValue,
   withSpring } from "react-native-reanimated";
 import Svg, { G, Path } from "react-native-svg";
-import { isRTL } from "@/i18n";
+import { useDirection } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const scale = SCREEN_WIDTH / 375;
@@ -45,8 +45,9 @@ export const AuthToggle: React.FC<AuthToggleProps> = ({
   activeType,
   onChange,
   disabled = false }) => {
-  const { t, i18n } = useTranslation();
-  
+  const { t } = useTranslation();
+  const { isRTL } = useDirection();
+
   // 0: owner, 1: customer
   const transition = useSharedValue(activeType === "owner" ? 0 : 1);
 

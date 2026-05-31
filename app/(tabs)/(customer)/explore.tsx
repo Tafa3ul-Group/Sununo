@@ -70,8 +70,8 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  I18nManager,
 } from "react-native";
+import { useDirection } from "@/i18n";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -215,12 +215,12 @@ function ActiveFilterBanner({
 }
 
 export default function ExploreScreen() {
-  const { language, isAuthenticated, user, userType } = useSelector(
+  const { isAuthenticated, user, userType } = useSelector(
     (state: RootState) => state.auth,
   );
-  const isRTL = language === "ar";
-  const textStart: "left" | "right" = isRTL ? "right" : "left";
-  const flexDir: "row" | "row-reverse" = (isRTL === I18nManager.isRTL) ? "row" : "row-reverse";
+  const { isRTL, rowDirection, textAlign } = useDirection();
+  const textStart: "left" | "right" = textAlign;
+  const flexDir: "row" | "row-reverse" = rowDirection;
   const router = useRouter();
   const { id, showMyLocation } = useLocalSearchParams();
   const { t } = useTranslation();

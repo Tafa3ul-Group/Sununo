@@ -1,11 +1,9 @@
 import { ThemedText } from "@/components/themed-text";
 import { Colors, Shadows } from "@/constants/theme";
 import React from "react";
-import { useTranslation } from "react-i18next";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store";
 import { Image, StyleSheet, Text, TouchableOpacity, View, I18nManager } from "react-native";
 import { SolarCloseCircleBold, SolarStarBold } from "@/components/icons/solar-icons";
+import { useDirection } from "@/i18n";
 
 
 interface MapCardProps {
@@ -26,12 +24,14 @@ export const MapCard = ({
   price,
   onPress,
   onClose }: MapCardProps) => {
-  const { language } = useSelector((state: RootState) => state.auth);
-  const isArabic = language === "ar";
-  const needsCounter = isArabic !== I18nManager.isRTL;
-  const rowDir: "row" | "row-reverse" = needsCounter ? "row-reverse" : "row";
-  const rowReverseDir: "row" | "row-reverse" = needsCounter ? "row" : "row-reverse";
-  const alignStart: "flex-start" | "flex-end" = needsCounter ? "flex-end" : "flex-start";
+  const { isRTL, rowDirection, textAlign } = useDirection();
+  const isArabic = isRTL;
+  const rowDir = rowDirection;
+  const rowReverseDir: "row" | "row-reverse" =
+    rowDirection === "row" ? "row-reverse" : "row";
+  // alignItems is NOT auto-mirrored by RN, so keep the explicit content-vs-manager comparison.
+  const alignStart: "flex-start" | "flex-end" =
+    isArabic === I18nManager.isRTL ? "flex-start" : "flex-end";
   const ratingBoxDir = rowDir;
   return (
     <TouchableOpacity
@@ -61,7 +61,7 @@ export const MapCard = ({
             ]}
           >
             <ThemedText
-              style={[styles.title, { textAlign: isArabic ? "right" : "left" }]}
+              style={[styles.title, { textAlign }]}
               numberOfLines={1}
             >
               {title}
@@ -69,7 +69,7 @@ export const MapCard = ({
             <ThemedText
               style={[
                 styles.location,
-                { textAlign: isArabic ? "right" : "left" },
+                { textAlign },
               ]}
               numberOfLines={1}
             >
@@ -94,7 +94,7 @@ export const MapCard = ({
             <Text style={styles.rating}>{rating}</Text>
           </View>
           <ThemedText
-            style={[styles.price, { textAlign: isArabic ? "right" : "left" }]}
+            style={[styles.price, { textAlign }]}
           >
             {price} {isArabic ? "/ شفت" : "/ shift"}
           </ThemedText>

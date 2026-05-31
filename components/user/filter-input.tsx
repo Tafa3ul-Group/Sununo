@@ -1,8 +1,7 @@
 import { ThemedText } from '@/components/themed-text';
 import { Colors, normalize, Spacing } from '@/constants/theme';
 import React from 'react';
-import { I18nManager, StyleSheet, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
-import { isRTL } from "@/i18n";
+import { StyleSheet, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 
 interface FilterInputProps {
   label: string;
