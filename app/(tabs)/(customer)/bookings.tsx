@@ -10,11 +10,9 @@ import { formatPrice } from '@/utils/format';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { RefreshControl, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { I18nManager, RefreshControl, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { ClipPath, Defs, G, Path, Image as SvgImage } from 'react-native-svg';
-
-// Global isRTL for styles
 
 const SHAPES_CONFIG = [
   {
@@ -47,6 +45,13 @@ export default function BookingsScreen() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const isArabic = i18n.language === 'ar';
+
+  // Direction helpers — mirror the canonical pattern used across booking screens.
+  // rowDirection accounts for the gap between the selected language and the
+  // physical layout direction (I18nManager.isRTL only updates after a reload).
+  const rowDirection: "row" | "row-reverse" = isArabic === I18nManager.isRTL ? "row" : "row-reverse";
+  const textStart: "left" | "right" = isArabic ? "right" : "left";
+  const textEnd: "left" | "right" = isArabic ? "left" : "right";
 
   // Fetch bookings from the backend
   const { data: bookingsResponse, isLoading: bookingsLoading, isFetching: bookingsFetching, refetch: refetchBookings } = useGetCustomerBookingsQuery({ page: 1, limit: 20 });
@@ -162,7 +167,7 @@ export default function BookingsScreen() {
     return (
       <View key={booking.id} style={styles.bookingCardContainer}>
         {/* Top Block: Image + Chalet Info */}
-        <View style={[styles.topBlock, { flexDirection: 'row' }]}>
+        <View style={[styles.topBlock, { flexDirection: rowDirection }]}>
           <View style={styles.imageBlock}>
             <Svg width={115} height={100} viewBox={shape.viewBox}>
               <Defs>
@@ -182,18 +187,18 @@ export default function BookingsScreen() {
             </Svg>
           </View>
 
-          <View style={[styles.chaletInfoContent, { marginLeft: 15 }]}>
-            <View style={{ alignItems: 'flex-start' }}>
-              <ThemedText style={[styles.chaletTitle, { textAlign: 'left' }]}>{chaletName}</ThemedText>
-              <ThemedText style={[styles.locationText, { textAlign: 'left' }]}>{location}</ThemedText>
+          <View style={styles.chaletInfoContent}>
+            <View style={{ alignItems: isArabic ? 'flex-end' : 'flex-start' }}>
+              <ThemedText style={[styles.chaletTitle, { textAlign: textStart }]}>{chaletName}</ThemedText>
+              <ThemedText style={[styles.locationText, { textAlign: textStart }]}>{location}</ThemedText>
             </View>
 
-            <View style={[styles.priceRatingRow, { flexDirection: 'row' }]}>
-              <ThemedText style={[styles.priceText, { textAlign: 'left' }]}>
+            <View style={[styles.priceRatingRow, { flexDirection: rowDirection }]}>
+              <ThemedText style={[styles.priceText, { textAlign: textStart }]}>
                 <ThemedText style={styles.priceLabel}>{isArabic ? "شفت / " : "Shift / "}</ThemedText>
                 {formatPrice(booking.chalet?.price)}
               </ThemedText>
-              <View style={[styles.ratingBox, { flexDirection: 'row' }]}>
+              <View style={[styles.ratingBox, { flexDirection: rowDirection }]}>
                 <ThemedText style={styles.ratingText}>{booking.chalet?.rating}</ThemedText>
                 <SolarStarBold size={14} color="#EA2129" />
               </View>
@@ -203,36 +208,36 @@ export default function BookingsScreen() {
 
         {/* Bottom Block: Booking Details */}
         <View style={styles.bottomBlock}>
-          <View style={[styles.detailRow, { flexDirection: 'row' }]}>
-            <ThemedText style={[styles.detailLabel, { textAlign: 'left' }]}>{t('booking.bookingDate')}</ThemedText>
-            <ThemedText style={[styles.detailValue, { textAlign: 'right' }]}>{formatBookingDate(booking.startDate)}</ThemedText>
+          <View style={[styles.detailRow, { flexDirection: rowDirection }]}>
+            <ThemedText style={[styles.detailLabel, { textAlign: textStart }]}>{t('booking.bookingDate')}</ThemedText>
+            <ThemedText style={[styles.detailValue, { textAlign: textEnd }]}>{formatBookingDate(booking.startDate)}</ThemedText>
           </View>
 
-          <View style={[styles.detailRow, { flexDirection: 'row' }]}>
-            <ThemedText style={[styles.detailLabel, { textAlign: 'left' }]}>{t('booking.guests') || 'الأشخاص'}</ThemedText>
-            <ThemedText style={[styles.detailValue, { textAlign: 'right' }]}>{booking.guestCount} {isArabic ? 'أشخاص' : 'guests'}</ThemedText>
+          <View style={[styles.detailRow, { flexDirection: rowDirection }]}>
+            <ThemedText style={[styles.detailLabel, { textAlign: textStart }]}>{t('booking.guests') || 'الأشخاص'}</ThemedText>
+            <ThemedText style={[styles.detailValue, { textAlign: textEnd }]}>{booking.guestCount} {isArabic ? 'أشخاص' : 'guests'}</ThemedText>
           </View>
 
           {booking.paymentModel === 'deposit' && Number(booking.depositAmount) > 0 && (booking.status === 'confirmed' || booking.status === 'completed') ? (
             <>
-              <View style={[styles.detailRow, { flexDirection: 'row' }]}>
-                <ThemedText style={[styles.detailLabel, { textAlign: 'left' }]}>{t('booking.depositAmount') || 'مبلغ العربون'}</ThemedText>
-                <ThemedText style={[styles.detailValue, { textAlign: 'right' }]}>{formatPrice(booking.depositAmount)}</ThemedText>
+              <View style={[styles.detailRow, { flexDirection: rowDirection }]}>
+                <ThemedText style={[styles.detailLabel, { textAlign: textStart }]}>{t('booking.depositAmount') || 'مبلغ العربون'}</ThemedText>
+                <ThemedText style={[styles.detailValue, { textAlign: textEnd }]}>{formatPrice(booking.depositAmount)}</ThemedText>
               </View>
-              <View style={[styles.detailRow, { flexDirection: 'row' }]}>
-                <ThemedText style={[styles.detailLabel, { textAlign: 'left' }]}>{t('booking.remainingAmount') || 'المبلغ المتبقي'}</ThemedText>
-                <ThemedText style={[styles.detailValue, { textAlign: 'right' }]}>{formatPrice(booking.remainingAmount)}</ThemedText>
+              <View style={[styles.detailRow, { flexDirection: rowDirection }]}>
+                <ThemedText style={[styles.detailLabel, { textAlign: textStart }]}>{t('booking.remainingAmount') || 'المبلغ المتبقي'}</ThemedText>
+                <ThemedText style={[styles.detailValue, { textAlign: textEnd }]}>{formatPrice(booking.remainingAmount)}</ThemedText>
               </View>
             </>
           ) : null}
 
-          <View style={[styles.detailRow, { flexDirection: 'row' }]}>
-            <ThemedText style={[styles.detailLabel, { textAlign: 'left' }]}>{t('booking.finalAmount')}</ThemedText>
-            <ThemedText style={[styles.detailValue, { textAlign: 'right' }]}>{formatPrice(booking.totalPrice)}</ThemedText>
+          <View style={[styles.detailRow, { flexDirection: rowDirection }]}>
+            <ThemedText style={[styles.detailLabel, { textAlign: textStart }]}>{t('booking.finalAmount')}</ThemedText>
+            <ThemedText style={[styles.detailValue, { textAlign: textEnd }]}>{formatPrice(booking.totalPrice)}</ThemedText>
           </View>
 
-          <View style={[styles.detailRow, { flexDirection: 'row' }]}>
-            <ThemedText style={[styles.detailLabel, { textAlign: 'left' }]}>{t('booking.paymentStatus')}</ThemedText>
+          <View style={[styles.detailRow, { flexDirection: rowDirection }]}>
+            <ThemedText style={[styles.detailLabel, { textAlign: textStart }]}>{t('booking.paymentStatus')}</ThemedText>
             <View style={[styles.paidBadge, { backgroundColor: statusBadge.bg }]}>
               <ThemedText style={[styles.paidBadgeText, { color: statusBadge.color }]}>{statusBadge.text}</ThemedText>
             </View>
@@ -313,7 +318,8 @@ const styles = StyleSheet.create({
   },
   topBlock: {
     padding: 16,
-    alignItems: 'center'
+    alignItems: 'center',
+    gap: 15
   },
   chaletInfoContent: { flex: 1, height: 100, justifyContent: 'space-between' },
   chaletTitle: { fontSize: 14, fontFamily: "Alexandria-Medium", color: '#1E293B' },

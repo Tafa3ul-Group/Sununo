@@ -846,7 +846,7 @@ export default function CompleteBookingScreen() {
   };
 
   const renderDetailsTab = () => (
-    <View style={[styles.detailsContainer, { direction: isArabic ? 'rtl' : 'ltr' }]}>
+    <View style={styles.detailsContainer}>
       <HorizontalCard
         chalet={{
           id: chaletDetails?.id || "",
@@ -1623,7 +1623,7 @@ export default function CompleteBookingScreen() {
             )}
           </>
         ) : activeTab === "WHO" ? (
-          <View style={[styles.whoContainer, { direction: isArabic ? 'rtl' : 'ltr' }]}>
+          <View style={styles.whoContainer}>
             {/* Capacity Info Banner */}
             <View style={styles.capacityBanner}>
               {/* Base Capacity Row */}

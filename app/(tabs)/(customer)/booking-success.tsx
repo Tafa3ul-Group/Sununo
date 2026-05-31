@@ -64,11 +64,24 @@ export default function BookingSuccessDetailsScreen() {
     },
   );
 
+  const depositPercentage = Number(booking?.chalet?.depositPercentage || 0);
+
   const [selectedMethod, setSelectedMethod] = useState<"wayl" | "wallet">("wayl");
+  const [paymentType, setPaymentType] = useState<"DEPOSIT" | "FULL">("FULL");
   const [payDelayedBooking, { isLoading: isPaying }] = usePayDelayedBookingMutation();
   const [checkPaymentStatus] = useLazyGetPaymentStatusQuery();
   const [isWaitingForPayment, setIsWaitingForPayment] = useState(false);
   const [pollingStatus, setPollingStatus] = useState<"pending" | "success" | "failed" | "timeout">("pending");
+
+  React.useEffect(() => {
+    if (booking) {
+      if (depositPercentage === 0) {
+        setPaymentType("FULL");
+      } else {
+        setPaymentType("DEPOSIT");
+      }
+    }
+  }, [booking, depositPercentage]);
 
   const startPaymentPolling = async (transactionId: string) => {
     let attempts = 0;
@@ -117,6 +130,7 @@ export default function BookingSuccessDetailsScreen() {
       const result = await payDelayedBooking({
         id: bookingId,
         paymentMethod: selectedMethod,
+        paymentModel: paymentType.toLowerCase(),
       }).unwrap();
 
       if (result.payment?.paymentUrl) {
@@ -220,6 +234,7 @@ export default function BookingSuccessDetailsScreen() {
   const basePriceVal = Number(booking?.basePrice || 0);
   const extraGuestsPriceVal = Number(booking?.extraGuestsPrice || 0);
   const addonsPriceVal = Number(booking?.addonsPrice || 0);
+  const depositAmountVal = Math.round((Number(booking?.totalPrice || 0) * depositPercentage) / 100);
 
   const shiftInfo = useMemo(() => {
     if (!booking?.shift) return t("booking.morningShift");
@@ -474,6 +489,71 @@ export default function BookingSuccessDetailsScreen() {
                 : "The chalet owner approved your request! Please select your payment method to confirm your booking:"}
             </ThemedText>
 
+            {/* Payment Options Selection (Deposit vs Full) */}
+            {depositPercentage > 0 && (
+              <View style={{ marginBottom: 16 }}>
+                <ThemedText style={[styles.paymentModelTitle, { textAlign: textStart }]}>
+                  {isRTL ? "خيارات الدفع" : "Payment Options"}
+                </ThemedText>
+
+                <TouchableOpacity
+                  style={[
+                    styles.paymentOptionCard,
+                    paymentType === "DEPOSIT" && styles.paymentOptionActive,
+                    { flexDirection: getFlexDirection(isRTL) }
+                  ]}
+                  onPress={() => setPaymentType("DEPOSIT")}
+                >
+                  <ThemedText
+                    style={[
+                      styles.paymentLabel,
+                      paymentType === "DEPOSIT" && styles.paymentLabelActive,
+                      { textAlign: textStart },
+                    ]}
+                  >
+                    {t("booking.depositPay")} ({depositPercentage}%)
+                  </ThemedText>
+                  <ThemedText
+                    style={[
+                      styles.paymentVal,
+                      paymentType === "DEPOSIT" && styles.paymentValActive,
+                      { textAlign: textEnd },
+                    ]}
+                  >
+                    {depositAmountVal.toLocaleString()} {t("common.iqd")}
+                  </ThemedText>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.paymentOptionCard,
+                    paymentType === "FULL" && styles.paymentOptionActive,
+                    { flexDirection: getFlexDirection(isRTL) }
+                  ]}
+                  onPress={() => setPaymentType("FULL")}
+                >
+                  <ThemedText
+                    style={[
+                      styles.paymentLabel,
+                      paymentType === "FULL" && styles.paymentLabelActive,
+                      { textAlign: textStart },
+                    ]}
+                  >
+                    {t("booking.fullPay")}
+                  </ThemedText>
+                  <ThemedText
+                    style={[
+                      styles.paymentVal,
+                      paymentType === "FULL" && styles.paymentValActive,
+                      { textAlign: textEnd },
+                    ]}
+                  >
+                    {Number(booking?.totalPrice || 0).toLocaleString()} {t("common.iqd")}
+                  </ThemedText>
+                </TouchableOpacity>
+              </View>
+            )}
+
             <View style={[styles.paymentMethodsGrid, { flexDirection: getFlexDirection(isRTL) }]}>
               <TouchableOpacity
                 style={[
@@ -521,7 +601,9 @@ export default function BookingSuccessDetailsScreen() {
                 <ActivityIndicator color="#FFF" />
               ) : (
                 <ThemedText style={styles.payBtnText}>
-                  {isRTL ? "ادفع الآن وتأكيد الحجز" : "Pay Now & Confirm"}
+                  {isRTL
+                    ? `ادفع الآن (${(paymentType === "DEPOSIT" ? depositAmountVal : Number(booking?.totalPrice || 0)).toLocaleString()} د.ع)`
+                    : `Pay Now (${(paymentType === "DEPOSIT" ? depositAmountVal : Number(booking?.totalPrice || 0)).toLocaleString()} IQD)`}
                 </ThemedText>
               )}
             </TouchableOpacity>
@@ -695,6 +777,45 @@ const styles = StyleSheet.create({
   payBtnText: {
     color: "#FFF",
     fontSize: normalize.font(12),
+    fontFamily: "Alexandria-Bold",
+  },
+  paymentModelTitle: {
+    fontSize: normalize.font(12),
+    fontFamily: "Alexandria-Medium",
+    color: "#1E293B",
+    marginBottom: 8,
+    marginTop: 4,
+  },
+  paymentOptionCard: {
+    marginBottom: 10,
+    backgroundColor: "#F8FAFC",
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1.5,
+    borderColor: "#E2E8F0",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  paymentOptionActive: {
+    borderColor: "#15AB64",
+    backgroundColor: "#F0FDF4",
+  },
+  paymentLabel: {
+    fontSize: normalize.font(12),
+    fontFamily: "Alexandria-Medium",
+    color: "#64748B",
+  },
+  paymentLabelActive: {
+    color: "#1E293B",
+    fontFamily: "Alexandria-SemiBold",
+  },
+  paymentVal: {
+    fontSize: normalize.font(12),
+    fontFamily: "Alexandria-Medium",
+    color: "#64748B",
+  },
+  paymentValActive: {
+    color: "#15AB64",
     fontFamily: "Alexandria-Bold",
   },
 });
