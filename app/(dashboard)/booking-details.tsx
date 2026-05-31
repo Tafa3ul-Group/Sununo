@@ -417,12 +417,30 @@ export default function BookingDetailsPage() {
               isRTL ? "المبلغ النهائي" : "Final Price",
               `${totalPrice.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
             )}
-            {data.status !== 'pending_approval' && renderInfoRow(
-              isRTL ? "المبلغ المدفوع (العربون)" : "Paid (Deposit)",
-              `${depositAmount.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
+
+            {/* Payment status — accurate, based on real payment (confirmed/completed) */}
+            {renderInfoRow(
+              isRTL ? "حالة الدفع" : "Payment Status",
+              <Text style={[styles.infoValue, { color: bIsPaid ? '#16A34A' : '#E11D48', fontFamily: 'Alexandria-SemiBold' }]}>
+                {bIsPaid
+                  ? (bIsDeposit && remainingAmount > 0
+                      ? (isRTL ? 'مدفوع جزئياً (عربون)' : 'Partially Paid (Deposit)')
+                      : (isRTL ? 'مدفوع بالكامل' : 'Fully Paid'))
+                  : (isRTL ? 'غير مدفوع' : 'Unpaid')}
+              </Text>,
             )}
-            {data.status !== 'pending_approval' && renderInfoRow(
-              isRTL ? "المبلغ المتبقي" : "Remaining Amount",
+
+            {/* Paid amount — only shown once payment actually went through */}
+            {bIsPaid && renderInfoRow(
+              bIsDeposit ? (isRTL ? "المبلغ المدفوع (العربون)" : "Paid (Deposit)") : (isRTL ? "المبلغ المدفوع" : "Amount Paid"),
+              <Text style={[styles.infoValue, { color: '#16A34A', fontFamily: 'Alexandria-SemiBold' }]}>
+                {`${bAmountPaid.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`}
+              </Text>,
+            )}
+
+            {/* Remaining cash to collect — only for a paid deposit booking */}
+            {bIsPaid && bIsDeposit && remainingAmount > 0 && renderInfoRow(
+              isRTL ? "المتبقي (يُستلم نقداً عند الوصول)" : "Remaining (Collect in cash)",
               `${remainingAmount.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
               true,
             )}
