@@ -1059,51 +1059,68 @@ export default function ChaletDetailsScreen() {
           </View>
 
           {/* ──── Daily Hours (Booking Duration) ──── */}
-          <Text style={[styles.settingsGroupTitle, { textAlign: isRTL ? 'right' : 'left', alignSelf: flexStart }]}>
-            {isRTL ? 'مدة الحجز' : 'Booking Duration'}
-          </Text>
-          <View style={styles.menuGroup}>
-            <View style={styles.menuRow}>
-              <ProfileShape size={normalize.width(36)} type="blue">
-                <SolarClockCircleBold size={18} color="white" />
-              </ProfileShape>
-              <View style={[styles.menuLabelContainer, { alignItems: flexStart, flex: 1 }]}>
-                <Text style={[styles.menuLabelText, { textAlign: isRTL ? 'right' : 'left' }]}>
-                  {isRTL ? 'مدة الحجز بالساعات' : 'Duration in Hours'}
-                </Text>
-                <Text style={[styles.menuValueText, { textAlign: isRTL ? 'right' : 'left' }]}>
-                  {isRTL ? `الحد الأقصى 5 ساعات • الدفلت ساعة واحدة` : `Max 5 hours • Default 1 hour`}
-                </Text>
+          {bookingType === 'delayed' && (
+            <>
+              <Text style={[styles.settingsGroupTitle, { textAlign: isRTL ? 'right' : 'left', alignSelf: flexStart }]}>
+                {isRTL ? 'مدة الحجز' : 'Booking Duration'}
+              </Text>
+              <View style={styles.menuGroup}>
+                <View style={styles.menuRow}>
+                  <ProfileShape size={normalize.width(36)} type="blue">
+                    <SolarClockCircleBold size={18} color="white" />
+                  </ProfileShape>
+                  <View style={[styles.menuLabelContainer, { alignItems: flexStart, flex: 1 }]}>
+                    <Text style={[styles.menuLabelText, { textAlign: isRTL ? 'right' : 'left' }]}>
+                      {isRTL ? 'مدة الحجز بالساعات' : 'Duration in Hours'}
+                    </Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <TouchableOpacity
+                      onPress={() => updateDailyHours(dailyHours - 1)}
+                      disabled={dailyHours <= 1}
+                      style={{
+                        width: 32, height: 32, borderRadius: 16,
+                        backgroundColor: dailyHours <= 1 ? '#F1F5F9' : '#DBEAFE',
+                        justifyContent: 'center', alignItems: 'center',
+                      }}
+                    >
+                      <Text style={{ fontSize: 18, fontWeight: '700', color: dailyHours <= 1 ? '#CBD5E1' : Colors.primary }}>−</Text>
+                    </TouchableOpacity>
+                    <Text style={{ fontSize: normalize.font(16), fontFamily: 'Alexandria-Bold', color: '#1E293B', minWidth: 24, textAlign: 'center' }}>
+                      {dailyHours}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => updateDailyHours(dailyHours + 1)}
+                      disabled={dailyHours >= 5}
+                      style={{
+                        width: 32, height: 32, borderRadius: 16,
+                        backgroundColor: dailyHours >= 5 ? '#F1F5F9' : '#DBEAFE',
+                        justifyContent: 'center', alignItems: 'center',
+                      }}
+                    >
+                      <Text style={{ fontSize: 18, fontWeight: '700', color: dailyHours >= 5 ? '#CBD5E1' : Colors.primary }}>+</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Booking duration info note */}
+                <View style={[styles.bookingDurationNoteCard, { flexDirection: flexRow, marginTop: 12, alignItems: 'flex-start' }]}>
+                  <SolarShieldWarningBold size={16} color="#0284C7" style={{ marginTop: 2 }} />
+                  <View style={{ flex: 1, gap: 2, alignItems: flexStart }}>
+                    <Text style={[styles.bookingDurationNoteTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
+                      {isRTL ? 'ما هي فائدة مدة الحجز؟' : 'What is the purpose of booking duration?'}
+                    </Text>
+                    <Text style={[styles.bookingDurationNoteText, { textAlign: isRTL ? 'right' : 'left' }]}>
+                      {isRTL
+                        ? 'هذا هو الوقت الأقصى المتاح لك للموافقة على طلب الحجز قبل إلغائه تلقائياً.'
+                        : 'This is the maximum time allowed to approve the booking request before it is automatically cancelled.'
+                      }
+                    </Text>
+                  </View>
+                </View>
               </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <TouchableOpacity
-                  onPress={() => updateDailyHours(dailyHours - 1)}
-                  disabled={dailyHours <= 1}
-                  style={{
-                    width: 32, height: 32, borderRadius: 16,
-                    backgroundColor: dailyHours <= 1 ? '#F1F5F9' : '#DBEAFE',
-                    justifyContent: 'center', alignItems: 'center',
-                  }}
-                >
-                  <Text style={{ fontSize: 18, fontWeight: '700', color: dailyHours <= 1 ? '#CBD5E1' : Colors.primary }}>−</Text>
-                </TouchableOpacity>
-                <Text style={{ fontSize: normalize.font(16), fontFamily: 'Alexandria-Bold', color: '#1E293B', minWidth: 24, textAlign: 'center' }}>
-                  {dailyHours}
-                </Text>
-                <TouchableOpacity
-                  onPress={() => updateDailyHours(dailyHours + 1)}
-                  disabled={dailyHours >= 5}
-                  style={{
-                    width: 32, height: 32, borderRadius: 16,
-                    backgroundColor: dailyHours >= 5 ? '#F1F5F9' : '#DBEAFE',
-                    justifyContent: 'center', alignItems: 'center',
-                  }}
-                >
-                  <Text style={{ fontSize: 18, fontWeight: '700', color: dailyHours >= 5 ? '#CBD5E1' : Colors.primary }}>+</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
+            </>
+          )}
 
           {/* Danger Zone Group */}
           <Text style={[styles.settingsGroupTitle, { color: '#EF4444', textAlign: isRTL ? 'right' : 'left', alignSelf: flexStart }]}>
@@ -1342,6 +1359,8 @@ export default function ChaletDetailsScreen() {
             onPress={handleUpdateDeposit} 
             loading={isUpdating} 
             disabled={isDepositInvalid}
+            activeColor={isDepositInvalid ? '#94A3B8' : undefined}
+            style={{ opacity: isDepositInvalid ? 0.8 : 1 }}
           />
         </BottomSheetView>
       </BottomSheetModal>
@@ -2645,5 +2664,24 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(13),
     fontFamily: 'Alexandria-Medium',
     color: Colors.text.primary,
+  },
+  bookingDurationNoteCard: {
+    backgroundColor: '#F0F9FF',
+    borderColor: '#BAE6FD',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    gap: 8,
+  },
+  bookingDurationNoteTitle: {
+    fontSize: normalize.font(12),
+    fontFamily: "Alexandria-Bold",
+    color: '#0369A1',
+  },
+  bookingDurationNoteText: {
+    fontSize: normalize.font(10),
+    fontFamily: "Alexandria-Medium",
+    color: '#0284C7',
+    lineHeight: 16,
   },
 });

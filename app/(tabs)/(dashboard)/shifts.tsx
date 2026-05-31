@@ -4,12 +4,14 @@ import {
   SolarAltArrowDownBold,
   SolarAltArrowUpBold,
   SolarBanknoteBold,
+  SolarBookmarkSquareMinimalisticBoldDuotone,
   SolarCalendarBold,
   SolarCheckCircleBold,
   SolarClockCircleBold,
   SolarCloseBold,
   SolarInfoCircleBold,
   SolarLightbulbBold,
+  SolarMapPointBold,
   SolarMoonBold,
   SolarPenBold,
   SolarShieldBold,
@@ -35,7 +37,7 @@ import { formatPrice } from '@/utils/format';
 import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput, BottomSheetView } from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
 import { Image as ExpoImage } from 'expo-image';
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter, useNavigation, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -53,6 +55,7 @@ import {
 import { ScrollView, Swipeable } from 'react-native-gesture-handler';
 import Toast from 'react-native-toast-message';
 import { useConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { toastConfig } from '@/components/ui/toast-config';
 import { useSelector } from 'react-redux';
 
 function ShiftPricingView({ shift, isRTL, onEdit }: { shift: any; isRTL: boolean; onEdit: (data?: any[]) => void }) {
@@ -101,7 +104,7 @@ function ShiftPricingView({ shift, isRTL, onEdit }: { shift: any; isRTL: boolean
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, rowGap: 12 }}>
         {fullPricing.map((item) => {
           const isWeekend = item.dayOfWeek === 5 || item.dayOfWeek === 6;
-          const isClosed = item.price <= 1;
+          const isClosed = item.price === 1;
 
           return (
             <TouchableOpacity
@@ -315,8 +318,26 @@ const areAllHoursCovered = (shiftsList: any[]) => {
   return minutesCovered.every(covered => covered === true);
 };
 
+const formatWithCommas = (num: number | string) => {
+  if (num === undefined || num === null || num === '') return '';
+  const clean = String(num).replace(/,/g, '');
+  const parsed = parseInt(clean);
+  if (isNaN(parsed)) return '';
+  return parsed.toLocaleString();
+};
+
+const cleanPriceNumber = (text: string): number => {
+  if (!text) return 0;
+  const clean = text.replace(/[^0-9]/g, '');
+  return parseInt(clean) || 0;
+};
+
 export default function ShiftsAndPricesScreen() {
   const router = useRouter();
+  const navigation = useNavigation();
+  const segments = useSegments();
+  const isInsideStack = segments[0] === '(dashboard)';
+
   const { id: initialId } = useLocalSearchParams();
   const [selectedChaletId, setSelectedChaletId] = useState<string | null>(initialId as string || null);
   const { t } = useTranslation();
@@ -369,6 +390,7 @@ export default function ShiftsAndPricesScreen() {
   const [pricingForm, setPricingForm] = useState<any[]>([]);
   const [modalActiveStatus, setModalActiveStatus] = useState(true);
   const [bulkPrice, setBulkPrice] = useState('');
+  const [savingIndexes, setSavingIndexes] = useState<Record<number, boolean>>({});
 
   const getMinutes = (timeStr: string): number => {
     if (!timeStr) return 0;
@@ -541,7 +563,15 @@ export default function ShiftsAndPricesScreen() {
   const { data: chaletResponse } = useGetOwnerChaletDetailsQuery(selectedChaletId, { skip: !selectedChaletId });
   const chalet = chaletResponse?.data || chaletResponse;
 
+  const chaletName = isRTL ? (chalet?.name?.ar || chalet?.name) : (chalet?.name?.en || chalet?.name);
 
+  React.useEffect(() => {
+    if (isInsideStack && chaletName) {
+      navigation.setOptions({
+        title: chaletName,
+      });
+    }
+  }, [chaletName, isInsideStack, navigation]);
 
   const firstShiftRef = useRef<any>(null);
 
@@ -869,63 +899,83 @@ export default function ShiftsAndPricesScreen() {
     setPricingForm(pricingForm.map(item => ({ ...item, price: p })));
   };
 
-  const handleEnableAllDays = async () => {
-    try {
+  const handleEnableAllDays = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    // Update local state
+    setPricingForm(pricingForm.map(item => ({
+      ...item,
+      price: item.price !== 1 ? item.price : (item.lastPrice || 50000)
+    })));
+  };
+
+  const handleDisableAllDays = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    // Update local state
+    setPricingForm(pricingForm.map(item => ({
+      ...item,
+      lastPrice: item.price !== 1 ? item.price : 50000,
+      price: 1
+    })));
+  };
+
+  const handleApplyBulkPrice = () => {
+    const p = cleanPriceNumber(bulkPrice);
+    if (bulkPrice !== '') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      const cleanPricing = pricingForm.map(item => ({
-        dayOfWeek: item.dayOfWeek,
-        price: item.price > 1 ? item.price : 50000
-      }));
       // Update local state
-      setPricingForm(pricingForm.map(item => ({
-        ...item,
-        price: item.price > 1 ? item.price : 50000
-      })));
-      await setShiftPricing({ shiftId: selectedShift.id, data: { pricing: cleanPricing } }).unwrap();
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch (e) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      setPricingForm(pricingForm.map(item => ({ ...item, price: p })));
+      setBulkPrice('');
+      Keyboard.dismiss();
     }
   };
 
-  const handleDisableAllDays = async () => {
-    try {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      const cleanPricing = pricingForm.map(item => ({
-        dayOfWeek: item.dayOfWeek,
-        price: 1
-      }));
-      // Update local state
-      setPricingForm(pricingForm.map(item => ({
-        ...item,
-        lastPrice: item.price > 1 ? item.price : 50000,
-        price: 1
-      })));
-      await setShiftPricing({ shiftId: selectedShift.id, data: { pricing: cleanPricing } }).unwrap();
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch (e) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-    }
-  };
+  const handleSaveSingleDay = async (index: number) => {
+    const item = pricingForm[index];
+    if (!selectedShift?.id) return;
 
-  const handleApplyBulkPrice = async () => {
-    const p = parseInt(bulkPrice) || 0;
-    if (p > 0) {
-      try {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-        const cleanPricing = pricingForm.map(item => ({
-          dayOfWeek: item.dayOfWeek,
-          price: p
-        }));
-        // Update local state
-        setPricingForm(pricingForm.map(item => ({ ...item, price: p })));
-        await setShiftPricing({ shiftId: selectedShift.id, data: { pricing: cleanPricing } }).unwrap();
-        setBulkPrice('');
-        Keyboard.dismiss();
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      } catch (e) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    try {
+      setSavingIndexes(prev => ({ ...prev, [index]: true }));
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      const priceVal = Math.max(0, cleanPriceNumber(String(item.price)));
+
+      // If the pricing item already has a database ID, we can PATCH it. Otherwise, we PUT the single day.
+      if (item.id) {
+        await updateShiftPricingDay({
+          shiftId: selectedShift.id,
+          pricingId: item.id,
+          price: priceVal,
+        }).unwrap();
+      } else {
+        await setShiftPricing({
+          shiftId: selectedShift.id,
+          data: {
+            pricing: [{ dayOfWeek: item.dayOfWeek, price: priceVal }]
+          }
+        }).unwrap();
       }
+
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      const dayName = isRTL
+        ? ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'][item.dayOfWeek]
+        : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][item.dayOfWeek];
+
+      Toast.show({
+        type: 'success',
+        text1: isRTL ? 'تم حفظ السعر بنجاح' : 'Price Saved Successfully',
+        text2: isRTL 
+          ? `تم تحديث سعر يوم ${dayName} إلى ${priceVal.toLocaleString()} د.ع` 
+          : `${dayName} price updated to ${priceVal.toLocaleString()} IQD`
+      });
+    } catch (e: any) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      let errorMsg = e.data?.message || (isRTL ? 'فشل حفظ السعر' : 'Failed to save price');
+      Toast.show({
+        type: 'error',
+        text1: isRTL ? 'خطأ' : 'Error',
+        text2: Array.isArray(errorMsg) ? errorMsg[0] : errorMsg
+      });
+    } finally {
+      setSavingIndexes(prev => ({ ...prev, [index]: false }));
     }
   };
 
@@ -935,40 +985,53 @@ export default function ShiftsAndPricesScreen() {
 
     // Update local state immediately
     const newP = [...pricingForm];
-    newP[index] = { ...newP[index] }; // Create new object reference
-    if (!val) newP[index].lastPrice = item.price > 1 ? item.price : 50000;
-    newP[index].price = newPrice;
+    newP[index] = {
+      ...newP[index],
+      price: newPrice,
+      lastPrice: !val ? (item.price !== 1 ? item.price : 50000) : item.lastPrice
+    };
     setPricingForm(newP);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
+    if (!selectedShift?.id) return;
     try {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      await updateShiftPricingDay({
-        shiftId: selectedShift.id,
-        pricingId: item.id,
-        price: newPrice
-      }).unwrap();
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch (e) {
-      // Rollback on error
-      const rollbackP = [...pricingForm];
-      rollbackP[index].price = item.price;
-      setPricingForm(rollbackP);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-    }
-  };
+      if (item.id) {
+        await updateShiftPricingDay({
+          shiftId: selectedShift.id,
+          pricingId: item.id,
+          price: newPrice,
+        }).unwrap();
+      } else {
+        await setShiftPricing({
+          shiftId: selectedShift.id,
+          data: {
+            pricing: [{ dayOfWeek: item.dayOfWeek, price: newPrice }]
+          }
+        }).unwrap();
+      }
 
-  const handleUpdateSinglePrice = async (index: number) => {
-    const item = pricingForm[index];
-    try {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      await updateShiftPricingDay({
-        shiftId: selectedShift.id,
-        pricingId: item.id,
-        price: item.price
-      }).unwrap();
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch (e) {
+      const dayName = isRTL
+        ? ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'][item.dayOfWeek]
+        : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][item.dayOfWeek];
+
+      Toast.show({
+        type: 'success',
+        text1: val 
+          ? (isRTL ? 'تم تفعيل اليوم' : 'Day Activated')
+          : (isRTL ? 'تم إيقاف اليوم' : 'Day Stopped'),
+        text2: val
+          ? (isRTL ? `تم تفعيل استقبال الحجوزات ليوم ${dayName}` : `Reservations enabled for ${dayName}`)
+          : (isRTL ? `تم إيقاف استقبال الحجوزات ليوم ${dayName}` : `Reservations disabled for ${dayName}`)
+      });
+    } catch (e: any) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      let errorMsg = e.data?.message || (isRTL ? 'فشل تعديل حالة اليوم' : 'Failed to update day status');
+      Toast.show({
+        type: 'error',
+        text1: isRTL ? 'خطأ' : 'Error',
+        text2: Array.isArray(errorMsg) ? errorMsg[0] : errorMsg
+      });
     }
   };
 
@@ -995,6 +1058,7 @@ export default function ShiftsAndPricesScreen() {
     const currentPrice = parseInt(String(newPricing[index].price)) || 0;
     newPricing[index].price = Math.max(0, currentPrice + amount);
     setPricingForm(newPricing);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
   const savePricing = async () => {
@@ -1094,8 +1158,6 @@ export default function ShiftsAndPricesScreen() {
     );
   }
 
-  const chaletName = isRTL ? (chalet?.name?.ar || chalet?.name) : (chalet?.name?.en || chalet?.name);
-
   const renderShiftActions = (shift: any, shiftName: string) => {
     return (
       <View style={styles.swipeActions}>
@@ -1114,11 +1176,13 @@ export default function ShiftsAndPricesScreen() {
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
-      <DashboardHeader
-        title={chaletName || (isRTL ? 'اختر الشاليه' : 'Select Chalet')}
-        showSearch={false}
-        showBackButton={true}
-      />
+      {!isInsideStack && (
+        <DashboardHeader
+          title={chaletName || (isRTL ? 'اختر الشاليه' : 'Select Chalet')}
+          showSearch={false}
+          showBackButton={true}
+        />
+      )}
 
       <View style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -1439,150 +1503,289 @@ export default function ShiftsAndPricesScreen() {
         backdropComponent={renderBackdrop}
         backgroundStyle={{ borderRadius: 32, backgroundColor: '#F8F9FA' }}
       >
-        <BottomSheetFlatList
-          data={pricingForm}
-          keyExtractor={(item) => `day-${item.dayOfWeek}`}
-          contentContainerStyle={{ paddingBottom: 120 }}
-          ListHeaderComponent={
-            <View style={{ padding: 20 }}>
-              <View style={[styles.row, { justifyContent: 'space-between', marginBottom: 12 }]}>
-                <View>
-                  <Text style={styles.modalTitleCompact}>{isRTL ? 'إعداد أسعار الأسبوع' : 'Weekly Pricing'}</Text>
-                  {selectedShift && (
-                    <Text style={{ fontSize: 12, color: Colors.primary, fontFamily: 'Alexandria-Bold', marginTop: 2 }}>
-                      {isRTL ? (selectedShift.name?.ar || selectedShift.name) : (selectedShift.name?.en || selectedShift.name)}
-                    </Text>
-                  )}
+        <BottomSheetScrollView contentContainerStyle={{ paddingBottom: 60 }}>
+          <View style={{ padding: 20 }}>
+            {/* Top Navigation / Centered Header Actions */}
+            <View style={{
+              flexDirection: isRTL ? 'row-reverse' : 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              paddingBottom: 16,
+              borderBottomWidth: 1,
+              borderBottomColor: '#F1F5F9',
+              marginBottom: 16
+            }}>
+              {/* Close Button */}
+              <TouchableOpacity
+                onPress={() => pricingSheetRef.current?.dismiss()}
+                style={{ width: 40, height: 40, backgroundColor: '#F1F5F9', borderRadius: 12, justifyContent: 'center', alignItems: 'center' }}
+              >
+                <SolarCloseBold size={20} color="#334155" />
+              </TouchableOpacity>
+
+              {/* Centered Modal Title */}
+              <Text style={{ fontSize: 16, fontFamily: 'Alexandria-Bold', color: '#0F172A', textAlign: 'center', flex: 1 }}>
+                {isRTL ? 'تخصيص أسعار الأيام' : 'Weekly Pricing'}
+              </Text>
+
+              {/* Invisible Spacer to keep Title perfectly centered */}
+              <View style={{ width: 40 }} />
+            </View>
+
+            {/* Chalet Title & Shift Info */}
+            <View style={{ alignItems: 'flex-start', marginBottom: 20 }}>
+              {/* Shift/Period Name - Highlighted prominently with a Clock Icon! */}
+              {selectedShift && (
+                <View style={[styles.row, { backgroundColor: Colors.primary + '15', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, gap: 6, marginBottom: 8 }]}>
+                  <SolarClockCircleBold size={14} color={Colors.primary} />
+                  <Text style={{ fontSize: 12, color: Colors.primary, fontFamily: 'Alexandria-Bold' }}>
+                    {isRTL ? `الفترة: ${selectedShift.name?.ar || selectedShift.name}` : `Shift: ${selectedShift.name?.en || selectedShift.name}`}
+                  </Text>
                 </View>
-                <TouchableOpacity onPress={() => pricingSheetRef.current?.dismiss()} style={{ backgroundColor: '#F3F4F6', padding: 8, borderRadius: 12 }}>
-                  <SolarCloseBold size={20} color="#000" />
-                </TouchableOpacity>
+              )}
+              
+              {(() => {
+                const activeChalet = ownerChalets.find((c: any) => c.id === selectedChaletId);
+                if (!activeChalet) return null;
+                return (
+                  <Text style={{ fontSize: 12, color: '#64748B', fontFamily: 'Alexandria-Medium', marginTop: 2 }}>
+                    {isRTL ? activeChalet.name?.ar : activeChalet.name?.en}
+                  </Text>
+                );
+              })()}
+            </View>
+
+            <View style={[styles.shiftStatusHighlight, { flexDirection: 'row' }]}>
+              <View style={[styles.row, { flex: 1 }]}>
+                <View style={[styles.statusIconCircle, { backgroundColor: modalActiveStatus ? Colors.primary + '15' : '#F3F4F6' }]}>
+                  <SolarShieldBold size={20} color={modalActiveStatus ? Colors.primary : '#9CA3AF'} />
+                </View>
+                <View style={{ marginHorizontal: 12 }}>
+                  <Text style={styles.statusLabelLarge}>{isRTL ? 'حالة الفترة الحالية' : 'Shift Status'}</Text>
+                  <Text style={[styles.statusValueLarge, { color: modalActiveStatus ? Colors.primary : '#9CA3AF' }]}>
+                    {isRTL ? (modalActiveStatus ? 'هذه الفترة نشطة الآن' : 'هذه الفترة متوقفة حالياً') : (modalActiveStatus ? 'Shift is currently active' : 'Shift is currently inactive')}
+                  </Text>
+                </View>
               </View>
+              <Switch
+                value={modalActiveStatus}
+                onValueChange={handleToggleShiftModal}
+                trackColor={{ false: '#D1D5DB', true: Colors.primary + '40' }}
+                thumbColor={modalActiveStatus ? Colors.primary : '#9CA3AF'}
+              />
+            </View>
 
-              <View style={[styles.shiftStatusHighlight, { flexDirection: 'row' }]}>
-                <View style={[styles.row, { flex: 1 }]}>
-                  <View style={[styles.statusIconCircle, { backgroundColor: modalActiveStatus ? Colors.primary + '15' : '#F3F4F6' }]}>
-                    <SolarShieldBold size={20} color={modalActiveStatus ? Colors.primary : '#9CA3AF'} />
+            <View style={styles.premiumQuickActionCard}>
+              <View style={[styles.row, { justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }]}>
+                <View style={[styles.row, { gap: 8 }]}>
+                  <View style={styles.quickActionIconWrapper}>
+                    <SolarLightbulbBold size={16} color={Colors.primary} />
                   </View>
-                  <View style={{ marginHorizontal: 12 }}>
-                    <Text style={styles.statusLabelLarge}>{isRTL ? 'حالة الفترة الحالية' : 'Shift Status'}</Text>
-                    <Text style={[styles.statusValueLarge, { color: modalActiveStatus ? Colors.primary : '#9CA3AF' }]}>
-                      {isRTL ? (modalActiveStatus ? 'هذه الفترة نشطة الآن' : 'هذه الفترة متوقفة حالياً') : (modalActiveStatus ? 'Shift is currently active' : 'Shift is currently inactive')}
-                    </Text>
-                  </View>
+                  <Text style={styles.quickActionTitle}>{isRTL ? 'إجراءات سريعة للأيام' : 'Batch Price Update'}</Text>
                 </View>
-                <Switch
-                  value={modalActiveStatus}
-                  onValueChange={handleToggleShiftModal}
-                  trackColor={{ false: '#D1D5DB', true: Colors.primary + '40' }}
-                  thumbColor={modalActiveStatus ? Colors.primary : '#9CA3AF'}
-                />
-              </View>
-
-              <View style={styles.quickActionCardNew}>
-                <View style={[styles.row, { justifyContent: 'space-between', marginBottom: 12 }]}>
-                  <View style={[styles.row]}>
-                    <SolarLightbulbBold size={16} color="#FFF" style={{ marginHorizontal: 4 }} />
-                    <Text style={styles.quickLabelNew}>{isRTL ? 'إجراءات سريعة لجميع الأيام' : 'Quick Batch Actions'}</Text>
-                  </View>
-                  <View style={[styles.row, { gap: 8 }]}>
-                    <TouchableOpacity onPress={handleEnableAllDays} style={styles.miniQuickBtn}>
-                      <Text style={styles.miniQuickBtnText}>{isRTL ? 'تفعيل الكل' : 'Enable All'}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={handleDisableAllDays} style={[styles.miniQuickBtn, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
-                      <Text style={styles.miniQuickBtnText}>{isRTL ? 'إيقاف الكل' : 'Disable All'}</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                <View style={[styles.row, { backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 12, padding: 4 }]}>
-                  <BottomSheetTextInput
-                    style={[styles.quickInputNew, { flex: 1, height: 44, paddingHorizontal: 12 }]}
-                    keyboardType="numeric"
-                    placeholder={isRTL ? "أدخل السعر الموحد..." : "Enter uniform price..."}
-                    placeholderTextColor="rgba(255,255,255,0.5)"
-                    value={bulkPrice}
-                    onChangeText={setBulkPrice}
-                  />
-                  <TouchableOpacity
-                    onPress={handleApplyBulkPrice}
-                    style={{ backgroundColor: '#FFF', paddingHorizontal: 16, height: 36, borderRadius: 8, justifyContent: 'center', marginHorizontal: 4 }}
-                  >
-                    <Text style={{ color: Colors.primary, fontFamily: 'Alexandria-Bold', fontSize: 12 }}>{isRTL ? 'تطبيق السعر' : 'Apply Price'}</Text>
+                
+                <View style={[styles.row, { gap: 6 }]}>
+                  <TouchableOpacity onPress={handleEnableAllDays} style={styles.premiumMiniQuickBtnActive} activeOpacity={0.8}>
+                    <Text style={styles.premiumMiniQuickBtnActiveText}>{isRTL ? 'تفعيل الكل' : 'Enable All'}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={handleDisableAllDays} style={styles.premiumMiniQuickBtnInactive} activeOpacity={0.8}>
+                    <Text style={styles.premiumMiniQuickBtnInactiveText}>{isRTL ? 'إيقاف الكل' : 'Disable All'}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
+
+              <Text style={styles.quickActionSubTitle}>
+                {isRTL ? 'عيّن سعراً موحداً لجميع الأيام المفتوحة دفعة واحدة:' : 'Set a uniform price across all open days at once:'}
+              </Text>
+
+              <View style={styles.premiumBulkInputRow}>
+                <View style={[styles.row, { flex: 1, gap: 10 }]}>
+                  <SolarBanknoteBold size={20} color="#64748B" />
+                  <BottomSheetTextInput
+                    style={styles.premiumBulkInput}
+                    keyboardType="numeric"
+                    placeholder={isRTL ? "أدخل السعر الموحد..." : "Enter uniform price..."}
+                    placeholderTextColor="#94A3B8"
+                    value={bulkPrice ? formatWithCommas(bulkPrice) : ''}
+                    onChangeText={t => setBulkPrice(String(cleanPriceNumber(t)))}
+                  />
+                </View>
+                
+                <TouchableOpacity
+                  onPress={handleApplyBulkPrice}
+                  style={[styles.premiumBulkApplyBtn, !bulkPrice && { backgroundColor: '#F1F5F9', shadowColor: 'transparent' }]}
+                  disabled={!bulkPrice}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.premiumBulkApplyBtnText, !bulkPrice && { color: '#94A3B8' }]}>
+                    {isRTL ? 'تطبيق' : 'Apply'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          }
-          renderItem={({ item, index }) => {
-            const isStopped = item.price <= 1;
+          </View>
+
+          {pricingForm.map((item, index) => {
+            const isStopped = item.price === 1;
+            const isWeekend = item.dayOfWeek === 5 || item.dayOfWeek === 6; // Friday & Saturday in Iraq/RTL
             const dayName = isRTL
               ? ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'][item.dayOfWeek]
               : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][item.dayOfWeek];
 
             return (
-              <View style={[
-                styles.pricingRowModern,
-                isStopped && styles.pricingRowStopped,
-                { marginHorizontal: 20, flexDirection: 'row' }
-              ]}>
+              <View
+                key={`day-${item.dayOfWeek}`}
+                style={[
+                  styles.pricingRowModern,
+                  isWeekend && { borderColor: '#FECACA', backgroundColor: '#FFFDFD' },
+                  isStopped && styles.pricingRowStopped,
+                  { marginHorizontal: 20, marginBottom: 12 }
+                ]}
+              >
                 <View style={{ flex: 1 }}>
-                  <View style={[styles.row, { justifyContent: 'space-between', marginBottom: item.price > 1 ? 12 : 0 }]}>
-                    <View style={[styles.row]}>
+                  {/* Top Day Label & Status Switch Header */}
+                  <View style={[styles.row, { justifyContent: 'space-between', alignItems: 'center' }]}>
+                    <View style={[styles.row, { gap: 8 }]}>
                       <View style={[
                         styles.dayIndicator,
-                        (item.dayOfWeek === 5 || item.dayOfWeek === 6) && { backgroundColor: '#FEE4E2' }
+                        isWeekend && { backgroundColor: '#FEE2E2' }
                       ]}>
                         <Text style={[
                           styles.dayIndicatorText,
-                          (item.dayOfWeek === 5 || item.dayOfWeek === 6) && { color: Colors.error }
+                          isWeekend && { color: '#DC2626' }
                         ]}>
                           {dayName.substring(0, 1)}
                         </Text>
                       </View>
-                      <Text style={[styles.dayFullName, { marginHorizontal: 12 }]}>{dayName}</Text>
+                      
+                      <Text style={[styles.dayFullName, isWeekend && { color: '#1E293B' }]}>{dayName}</Text>
+                      
+                      {isWeekend && (
+                        <View style={styles.weekendPill}>
+                          <Text style={styles.weekendPillText}>{isRTL ? 'عطلة نهاية الأسبوع' : 'Weekend'}</Text>
+                        </View>
+                      )}
                     </View>
 
-                    <View style={[styles.row]}>
-                      <Text style={{ fontSize: 12, color: isStopped ? '#999' : Colors.primary, fontFamily: 'Alexandria-Bold', marginRight: isRTL ? 0 : 8, marginLeft: isRTL ? 8 : 0 }}>
-                        {isStopped ? (isRTL ? 'متوقف' : 'Stopped') : (isRTL ? 'نشط' : 'Active')}
+                    <View style={[styles.row, { gap: 6 }]}>
+                      <Text style={{ fontSize: 11, color: isStopped ? '#94A3B8' : Colors.primary, fontFamily: 'Alexandria-Bold' }}>
+                        {isStopped ? (isRTL ? 'مغلق' : 'OFF') : (isRTL ? 'نشط' : 'ON')}
                       </Text>
                       <Switch
                         value={!isStopped}
-                        trackColor={{ false: '#D1D1D6', true: Colors.primary }}
-                        thumbColor={Platform.OS === 'ios' ? undefined : '#FFF'}
+                        trackColor={{ false: '#E2E8F0', true: Colors.primary + '35' }}
+                        thumbColor={!isStopped ? Colors.primary : '#94A3B8'}
                         onValueChange={(val) => handleToggleDay(index, val)}
                       />
                     </View>
                   </View>
 
+                  {/* Pricing Inputs controls (Fitts's Law compliant large hit targets) */}
                   {!isStopped && (
-                    <View style={[styles.priceControlWrapper]}>
-                      <SolarBanknoteBold size={20} color={Colors.primary} style={{ marginHorizontal: 8 }} />
-                      <BottomSheetTextInput
-                        style={[styles.pricingInputModern, { flex: 1 }]}
-                        keyboardType="numeric"
-                        value={String(item.price)}
-                        placeholder="0"
-                        onChangeText={t => {
-                          const newP = [...pricingForm];
-                          newP[index].price = parseInt(t) || 0;
-                          setPricingForm(newP);
-                        }}
-                      />
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
+                      {/* Stepper & Input Group */}
+                      <View style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        backgroundColor: '#F8FAFC',
+                        borderWidth: 1,
+                        borderColor: '#E2E8F0',
+                        borderRadius: 16,
+                        paddingHorizontal: 12,
+                        height: 52,
+                        flex: 1
+                      }}>
+                        {/* Stepper Down (-) button */}
+                        <TouchableOpacity
+                          onPress={() => adjustPrice(index, -5000)}
+                          style={{
+                            width: 36,
+                            height: 36,
+                            backgroundColor: '#E2E8F0',
+                            borderRadius: 10,
+                            justifyContent: 'center',
+                            alignItems: 'center'
+                          }}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={{ fontSize: 18, fontFamily: 'Alexandria-Bold', color: '#475569' }}>-</Text>
+                        </TouchableOpacity>
+
+                        {/* Text input of the price */}
+                        <BottomSheetTextInput
+                          style={{
+                            flex: 1,
+                            fontSize: 15,
+                            fontFamily: 'Alexandria-Bold',
+                            color: '#0F172A',
+                            textAlign: 'center',
+                            paddingVertical: 8
+                          }}
+                          keyboardType="numeric"
+                          value={item.price !== 1 ? formatWithCommas(item.price) : ''}
+                          placeholder="0"
+                          onChangeText={t => {
+                            const newP = [...pricingForm];
+                            newP[index] = { ...newP[index], price: cleanPriceNumber(t) };
+                            setPricingForm(newP);
+                          }}
+                        />
+
+                        {/* Stepper Up (+) button */}
+                        <TouchableOpacity
+                          onPress={() => adjustPrice(index, 5000)}
+                          style={{
+                            width: 36,
+                            height: 36,
+                            backgroundColor: '#E2E8F0',
+                            borderRadius: 10,
+                            justifyContent: 'center',
+                            alignItems: 'center'
+                          }}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={{ fontSize: 18, fontFamily: 'Alexandria-Bold', color: '#475569' }}>+</Text>
+                        </TouchableOpacity>
+                      </View>
+
+                      {/* Generous Space separating Save Button from Stepper box */}
+                      <View style={{ width: 16 }} />
+
+                      {/* Save Action Icon - Standalone, premium button at the absolute end! */}
                       <TouchableOpacity
-                        onPress={() => handleUpdateSinglePrice(index)}
-                        style={{ backgroundColor: Colors.primary, padding: 8, borderRadius: 8, marginLeft: 8 }}
+                        onPress={() => handleSaveSingleDay(index)}
+                        style={{
+                          width: 52,
+                          height: 52,
+                          backgroundColor: '#10B981', // Prominent emerald green
+                          borderRadius: 16,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          shadowColor: '#10B981',
+                          shadowOffset: { width: 0, height: 2 },
+                          shadowOpacity: 0.15,
+                          shadowRadius: 4,
+                          elevation: 2
+                        }}
+                        activeOpacity={0.7}
+                        disabled={savingIndexes[index]}
                       >
-                        <SolarCheckCircleBold size={18} color="#FFF" />
+                        {savingIndexes[index] ? (
+                          <ActivityIndicator size="small" color="#FFF" style={{ width: 18, height: 18 }} />
+                        ) : (
+                          <SolarBookmarkSquareMinimalisticBoldDuotone size={24} color="#FFF" />
+                        )}
                       </TouchableOpacity>
                     </View>
                   )}
                 </View>
               </View>
             );
-          }}
-        />
+          })}
+
+          <View style={{ height: 20 }} />
+        </BottomSheetScrollView>
+        <Toast config={toastConfig} topOffset={60} />
       </BottomSheetModal>
 
       {/* Edit All Times Modal */}
@@ -1593,127 +1796,130 @@ export default function ShiftsAndPricesScreen() {
         backdropComponent={renderBackdrop}
         backgroundStyle={{ borderRadius: 32, backgroundColor: '#F8F9FA' }}
       >
-        <BottomSheetScrollView contentContainerStyle={{ paddingBottom: 60 }}>
-          <View style={{ padding: 20 }}>
-            <View style={[styles.row, { justifyContent: 'space-between', marginBottom: 12 }]}>
-              <View>
-                <Text style={styles.modalTitleCompact}>{isRTL ? 'تعديل أوقات الفترات' : 'Edit Shift Times'}</Text>
-                <Text style={{ fontSize: 11, color: '#64748B', fontFamily: 'Alexandria-Medium', marginTop: 2 }}>
-                  {isRTL ? 'تعديل وقت البدء والانتهاء لكل فترة بمقدار نصف ساعة' : 'Adjust start and end times by half an hour'}
+        <BottomSheetView style={{ flex: 1 }}>
+          <BottomSheetScrollView contentContainerStyle={{ paddingBottom: 60 }}>
+            <View style={{ padding: 20 }}>
+              <View style={[styles.row, { justifyContent: 'space-between', marginBottom: 12 }]}>
+                <View>
+                  <Text style={styles.modalTitleCompact}>{isRTL ? 'تعديل أوقات الفترات' : 'Edit Shift Times'}</Text>
+                  <Text style={{ fontSize: 11, color: '#64748B', fontFamily: 'Alexandria-Medium', marginTop: 2 }}>
+                    {isRTL ? 'تعديل وقت البدء والانتهاء لكل فترة بمقدار نصف ساعة' : 'Adjust start and end times by half an hour'}
+                  </Text>
+                </View>
+                <TouchableOpacity onPress={() => editTimesSheetRef.current?.dismiss()} style={{ backgroundColor: '#F3F4F6', padding: 8, borderRadius: 12 }}>
+                  <SolarCloseBold size={20} color="#000" />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Overlap Warning Banner */}
+            {overlapInfo.hasOverlap && (
+              <View style={styles.overlapWarningCard}>
+                <SolarInfoCircleBold size={18} color="#D92D20" />
+                <Text style={styles.overlapWarningText}>
+                  {isRTL ? 'تنبيه: يوجد تداخل في الأوقات!' : 'Warning: Shift times overlap!'}{' '}
+                  {isRTL ? overlapInfo.conflictMsg?.ar : overlapInfo.conflictMsg?.en}
                 </Text>
               </View>
-              <TouchableOpacity onPress={() => editTimesSheetRef.current?.dismiss()} style={{ backgroundColor: '#F3F4F6', padding: 8, borderRadius: 12 }}>
-                <SolarCloseBold size={20} color="#000" />
+            )}
+
+            <View style={{ paddingHorizontal: 20, gap: 16 }}>
+              {tempShifts.map((item) => {
+                const shiftName = isRTL ? (item.name?.ar || item.name) : (item.name?.en || item.name);
+                const isOverlapping = overlapInfo.overlappingIds.includes(item.id);
+
+                return (
+                  <View
+                    key={item.id}
+                    style={[
+                      styles.editTimeRowCard,
+                      isOverlapping && { borderColor: '#FCA5A5', backgroundColor: '#FFF5F5' }
+                    ]}
+                  >
+                    <View style={[styles.row, { justifyContent: 'space-between', alignItems: 'center' }]}>
+                      <Text style={[styles.editTimeCardTitle, isOverlapping && { color: '#991B1B' }]}>{shiftName}</Text>
+                      {isOverlapping && (
+                        <View style={{ backgroundColor: '#FEE4E2', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 }}>
+                          <Text style={{ fontSize: 10, color: '#D92D20', fontFamily: 'Alexandria-Bold' }}>
+                            {isRTL ? 'تداخل' : 'Overlap'}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+
+                    <View style={[styles.row, { justifyContent: 'space-between', marginTop: 12, flexDirection }]}>
+                      {/* Start Time Section */}
+                      <View style={{ flex: 1, alignItems: 'center' }}>
+                        <Text style={styles.timeLabelText}>{isRTL ? 'وقت البدء' : 'Start Time'}</Text>
+                        <View style={[styles.row, { marginTop: 6, gap: 8 }]}>
+                          <TouchableOpacity
+                            onPress={() => adjustTempShiftTime(item.id, 'startTime', -30)}
+                            style={styles.adjustTimeBtnSmall}
+                          >
+                            <Text style={styles.adjustTimeBtnTextSmall}>-</Text>
+                          </TouchableOpacity>
+                          <Text style={styles.timeValueText}>{formatTime12h(item.startTime)}</Text>
+                          <TouchableOpacity
+                            onPress={() => adjustTempShiftTime(item.id, 'startTime', 30)}
+                            style={styles.adjustTimeBtnSmall}
+                          >
+                            <Text style={styles.adjustTimeBtnTextSmall}>+</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+
+                      {/* Divider */}
+                      <View style={{ width: 1, height: '80%', backgroundColor: isOverlapping ? '#FCA5A5' : '#E2E8F0', alignSelf: 'center' }} />
+
+                      {/* End Time Section */}
+                      <View style={{ flex: 1, alignItems: 'center' }}>
+                        <Text style={styles.timeLabelText}>{isRTL ? 'وقت الانتهاء' : 'End Time'}</Text>
+                        <View style={[styles.row, { marginTop: 6, gap: 8 }]}>
+                          <TouchableOpacity
+                            onPress={() => adjustTempShiftTime(item.id, 'endTime', -30)}
+                            style={styles.adjustTimeBtnSmall}
+                          >
+                            <Text style={styles.adjustTimeBtnTextSmall}>-</Text>
+                          </TouchableOpacity>
+                          <Text style={styles.timeValueText}>{formatTime12h(item.endTime)}</Text>
+                          <TouchableOpacity
+                            onPress={() => adjustTempShiftTime(item.id, 'endTime', 30)}
+                            style={styles.adjustTimeBtnSmall}
+                          >
+                            <Text style={styles.adjustTimeBtnTextSmall}>+</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+
+            <View style={{ padding: 20, marginTop: 20 }}>
+              <TouchableOpacity
+                onPress={handleSaveAllTimes}
+                style={[
+                  styles.saveAllBtn,
+                  (isSavingAllTimes || overlapInfo.hasOverlap) && { backgroundColor: '#CBD5E1', opacity: 0.8 }
+                ]}
+                disabled={isSavingAllTimes || overlapInfo.hasOverlap}
+              >
+                {isSavingAllTimes ? (
+                  <ActivityIndicator size="small" color="#FFF" />
+                ) : (
+                  <Text style={styles.saveAllBtnText}>
+                    {overlapInfo.hasOverlap
+                      ? (isRTL ? 'يرجى حل تداخل الأوقات أولاً' : 'Please resolve overlap first')
+                      : (isRTL ? 'حفظ التغييرات' : 'Save Changes')
+                    }
+                  </Text>
+                )}
               </TouchableOpacity>
             </View>
-          </View>
-
-          {/* Overlap Warning Banner */}
-          {overlapInfo.hasOverlap && (
-            <View style={styles.overlapWarningCard}>
-              <SolarInfoCircleBold size={18} color="#D92D20" />
-              <Text style={styles.overlapWarningText}>
-                {isRTL ? 'تنبيه: يوجد تداخل في الأوقات!' : 'Warning: Shift times overlap!'}{' '}
-                {isRTL ? overlapInfo.conflictMsg?.ar : overlapInfo.conflictMsg?.en}
-              </Text>
-            </View>
-          )}
-
-          <View style={{ paddingHorizontal: 20, gap: 16 }}>
-            {tempShifts.map((item) => {
-              const shiftName = isRTL ? (item.name?.ar || item.name) : (item.name?.en || item.name);
-              const isOverlapping = overlapInfo.overlappingIds.includes(item.id);
-
-              return (
-                <View
-                  key={item.id}
-                  style={[
-                    styles.editTimeRowCard,
-                    isOverlapping && { borderColor: '#FCA5A5', backgroundColor: '#FFF5F5' }
-                  ]}
-                >
-                  <View style={[styles.row, { justifyContent: 'space-between', alignItems: 'center' }]}>
-                    <Text style={[styles.editTimeCardTitle, isOverlapping && { color: '#991B1B' }]}>{shiftName}</Text>
-                    {isOverlapping && (
-                      <View style={{ backgroundColor: '#FEE4E2', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 }}>
-                        <Text style={{ fontSize: 10, color: '#D92D20', fontFamily: 'Alexandria-Bold' }}>
-                          {isRTL ? 'تداخل' : 'Overlap'}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-
-                  <View style={[styles.row, { justifyContent: 'space-between', marginTop: 12, flexDirection }]}>
-                    {/* Start Time Section */}
-                    <View style={{ flex: 1, alignItems: 'center' }}>
-                      <Text style={styles.timeLabelText}>{isRTL ? 'وقت البدء' : 'Start Time'}</Text>
-                      <View style={[styles.row, { marginTop: 6, gap: 8 }]}>
-                        <TouchableOpacity
-                          onPress={() => adjustTempShiftTime(item.id, 'startTime', -30)}
-                          style={styles.adjustTimeBtnSmall}
-                        >
-                          <Text style={styles.adjustTimeBtnTextSmall}>-</Text>
-                        </TouchableOpacity>
-                        <Text style={styles.timeValueText}>{formatTime12h(item.startTime)}</Text>
-                        <TouchableOpacity
-                          onPress={() => adjustTempShiftTime(item.id, 'startTime', 30)}
-                          style={styles.adjustTimeBtnSmall}
-                        >
-                          <Text style={styles.adjustTimeBtnTextSmall}>+</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-
-                    {/* Divider */}
-                    <View style={{ width: 1, height: '80%', backgroundColor: isOverlapping ? '#FCA5A5' : '#E2E8F0', alignSelf: 'center' }} />
-
-                    {/* End Time Section */}
-                    <View style={{ flex: 1, alignItems: 'center' }}>
-                      <Text style={styles.timeLabelText}>{isRTL ? 'وقت الانتهاء' : 'End Time'}</Text>
-                      <View style={[styles.row, { marginTop: 6, gap: 8 }]}>
-                        <TouchableOpacity
-                          onPress={() => adjustTempShiftTime(item.id, 'endTime', -30)}
-                          style={styles.adjustTimeBtnSmall}
-                        >
-                          <Text style={styles.adjustTimeBtnTextSmall}>-</Text>
-                        </TouchableOpacity>
-                        <Text style={styles.timeValueText}>{formatTime12h(item.endTime)}</Text>
-                        <TouchableOpacity
-                          onPress={() => adjustTempShiftTime(item.id, 'endTime', 30)}
-                          style={styles.adjustTimeBtnSmall}
-                        >
-                          <Text style={styles.adjustTimeBtnTextSmall}>+</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  </View>
-                </View>
-              );
-            })}
-          </View>
-
-          <View style={{ padding: 20, marginTop: 20 }}>
-            <TouchableOpacity
-              onPress={handleSaveAllTimes}
-              style={[
-                styles.saveAllBtn,
-                (isSavingAllTimes || overlapInfo.hasOverlap) && { backgroundColor: '#CBD5E1', opacity: 0.8 }
-              ]}
-              disabled={isSavingAllTimes || overlapInfo.hasOverlap}
-            >
-              {isSavingAllTimes ? (
-                <ActivityIndicator size="small" color="#FFF" />
-              ) : (
-                <Text style={styles.saveAllBtnText}>
-                  {overlapInfo.hasOverlap
-                    ? (isRTL ? 'يرجى حل تداخل الأوقات أولاً' : 'Please resolve overlap first')
-                    : (isRTL ? 'حفظ التغييرات' : 'Save Changes')
-                  }
-                </Text>
-              )}
-            </TouchableOpacity>
-          </View>
-        </BottomSheetScrollView>
+          </BottomSheetScrollView>
+          <Toast config={toastConfig} topOffset={60} />
+        </BottomSheetView>
       </BottomSheetModal>
 
       {/* Chalet Select Modal */}
@@ -1740,16 +1946,16 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center' },
   cardFlat: {
     backgroundColor: '#fff',
-    borderRadius: 16,
+    borderRadius: 20,
     marginBottom: 12,
     borderWidth: 1,
     borderColor: '#F1F5F9',
     overflow: 'hidden',
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2
+    shadowColor: "#1E293B",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.03,
+    shadowRadius: 10,
+    elevation: 1
   },
   cardHeader: { padding: 16 },
   cardTitle: { fontSize: 14, fontFamily: "Alexandria-SemiBold", color: '#1E293B' },
@@ -1796,17 +2002,276 @@ const styles = StyleSheet.create({
   input: { backgroundColor: '#F3F4F6', height: 50, borderRadius: 12, paddingHorizontal: 16, marginBottom: 16, textAlign: I18nManager.isRTL ? 'right' : 'left' },
   saveBtn: { backgroundColor: Colors.primary, padding: 16, borderRadius: 12, alignItems: 'center' },
   saveBtnText: { color: '#fff', fontFamily: "Alexandria-Bold" },
-  quickActionCardNew: { backgroundColor: Colors.primary, padding: 16, borderRadius: 16, marginTop: 12 },
+  quickActionCardNew: {
+    backgroundColor: Colors.primary,
+    padding: 16,
+    borderRadius: 24,
+    marginTop: 12,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 3,
+  },
   quickLabelNew: { color: '#fff', fontSize: 12, marginBottom: 4 },
   quickInputNew: { color: '#fff', fontSize: 16, fontFamily: "Alexandria-Bold", textAlign: I18nManager.isRTL ? 'right' : 'left' },
-  pricingRowModern: { padding: 16, backgroundColor: '#fff', borderRadius: 16, marginBottom: 10, borderWidth: 1, borderColor: '#EEE' },
+  pricingRowModern: {
+    padding: 16,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.02,
+    shadowRadius: 6,
+    elevation: 1,
+  },
   pricingRowStopped: { backgroundColor: '#F9FAFB', opacity: 0.7 },
   dayFullName: { fontSize: 14, fontFamily: "Alexandria-Bold" },
   priceControlWrapper: { marginTop: 12, backgroundColor: '#F3F4F6', borderRadius: 10, padding: 8 },
   pricingInputModern: { fontSize: 16, fontFamily: "Alexandria-Bold", textAlign: I18nManager.isRTL ? 'right' : 'left' },
-  pricingFloatingFooter: { padding: 16, borderTopWidth: 1, borderTopColor: '#EEE', backgroundColor: '#fff' },
-  applyBtnLargeModern: { backgroundColor: Colors.primary, padding: 16, borderRadius: 12, alignItems: 'center' },
-  applyBtnTextLarge: { color: '#fff', fontFamily: "Alexandria-Bold" },
+  singleSaveBtn: {
+    backgroundColor: '#10B981',
+    padding: 8,
+    borderRadius: 12,
+    marginHorizontal: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  adjustPriceBtnCompact: {
+    backgroundColor: '#F1F5F9',
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  adjustPriceBtnTextCompact: {
+    fontSize: 16,
+    color: '#334155',
+    fontFamily: 'Alexandria-Bold',
+    lineHeight: 18,
+  },
+  premiumQuickActionCard: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 24,
+    padding: 20,
+    marginHorizontal: 20,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  quickActionIconWrapper: {
+    width: 28,
+    height: 28,
+    backgroundColor: Colors.primary + '15',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  quickActionTitle: {
+    fontSize: 14,
+    fontFamily: 'Alexandria-Bold',
+    color: '#0F172A',
+  },
+  quickActionSubTitle: {
+    fontSize: 11,
+    fontFamily: 'Alexandria-Medium',
+    color: '#64748B',
+    marginTop: 12,
+    marginBottom: 10,
+  },
+  premiumMiniQuickBtnActive: {
+    backgroundColor: Colors.primary + '15',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+  },
+  premiumMiniQuickBtnActiveText: {
+    fontSize: 11,
+    fontFamily: 'Alexandria-Bold',
+    color: Colors.primary,
+  },
+  premiumMiniQuickBtnInactive: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+  },
+  premiumMiniQuickBtnInactiveText: {
+    fontSize: 11,
+    fontFamily: 'Alexandria-Bold',
+    color: '#64748B',
+  },
+  premiumBulkInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 4,
+  },
+  premiumBulkInput: {
+    flex: 1,
+    height: 40,
+    fontSize: 14,
+    fontFamily: 'Alexandria-Bold',
+    color: '#0F172A',
+    textAlign: I18nManager.isRTL ? 'right' : 'left',
+  },
+  premiumBulkApplyBtn: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 10,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  premiumBulkApplyBtnText: {
+    fontSize: 12,
+    color: '#FFF',
+    fontFamily: 'Alexandria-Bold',
+  },
+  weekendPill: {
+    backgroundColor: '#FEE2E2',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    marginHorizontal: 8,
+  },
+  weekendPillText: {
+    fontSize: 10,
+    fontFamily: 'Alexandria-Bold',
+    color: '#DC2626',
+  },
+  premiumAdjustPriceBtn: {
+    width: 40,
+    height: 40,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  premiumAdjustPriceBtnText: {
+    fontSize: 18,
+    fontFamily: 'Alexandria-Bold',
+    color: '#334155',
+    lineHeight: 20,
+  },
+  premiumSingleSaveBtn: {
+    width: 40,
+    height: 40,
+    backgroundColor: '#10B981',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  pricingFloatingFooter: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 20,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -8 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  pricingScrollFooter: {
+    padding: 20,
+    marginTop: 10,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+  },
+  premiumHeaderSaveBtn: {
+    backgroundColor: '#10B981', // Emerald green
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 14,
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  premiumHeaderSaveBtnText: {
+    fontSize: 13,
+    color: '#FFF',
+    fontFamily: 'Alexandria-Bold',
+  },
+  applyBtnLargeModern: {
+    backgroundColor: Colors.primary,
+    paddingVertical: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  applyBtnTextLarge: {
+    color: '#fff',
+    fontFamily: 'Alexandria-Bold',
+    fontSize: 15,
+  },
+  premiumPriceInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    marginTop: 12,
+  },
+  premiumPriceInput: {
+    flex: 1,
+    fontSize: 16,
+    fontFamily: 'Alexandria-Bold',
+    color: '#0F172A',
+    paddingVertical: 8,
+    textAlign: I18nManager.isRTL ? 'right' : 'left',
+  },
+  currencyBadge: {
+    backgroundColor: '#E2E8F0',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  currencyText: {
+    fontSize: 11,
+    fontFamily: 'Alexandria-Bold',
+    color: '#475569',
+  },
   inactiveBadge: { backgroundColor: '#F2F4F7', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, justifyContent: 'center' },
   inactiveBadgeText: { fontSize: 10, color: '#667085', fontFamily: 'Alexandria-Bold' },
   chaletSelectCard: { padding: 16, borderBottomWidth: 1, borderBottomColor: '#EEE' },
@@ -1820,30 +2285,33 @@ const styles = StyleSheet.create({
   miniQuickBtn: { backgroundColor: 'rgba(255,255,255,0.3)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
   miniQuickBtnText: { color: '#fff', fontSize: 10, fontFamily: 'Alexandria-Bold' },
   bulkTimeAdjustCard: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#EFF6FF',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 16,
-    padding: 14,
+    borderColor: '#DBEAFE',
+    borderRadius: 20,
+    padding: 16,
     marginBottom: 16,
   },
   bulkTimeAdjustTitle: {
     fontSize: 13,
     fontFamily: 'Alexandria-SemiBold',
-    color: '#334155',
+    color: '#1E40AF',
   },
   adjustTimeBtn: {
-    backgroundColor: Colors.primary + '10',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: Colors.primary + '20',
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 2,
   },
   adjustTimeBtnText: {
     fontSize: 12,
     fontFamily: 'Alexandria-Bold',
-    color: Colors.primary,
+    color: '#FFFFFF',
   },
   editTimeRowCard: {
     backgroundColor: '#fff',
@@ -1876,20 +2344,20 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   adjustTimeBtnSmall: {
-    backgroundColor: Colors.primary + '10',
-    width: 28,
-    height: 28,
-    borderRadius: 8,
+    backgroundColor: '#EFF6FF',
+    width: 38,
+    height: 38,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: Colors.primary + '20',
+    borderColor: '#DBEAFE',
   },
   adjustTimeBtnTextSmall: {
-    fontSize: 14,
+    fontSize: 18,
     fontFamily: 'Alexandria-Bold',
     color: Colors.primary,
-    lineHeight: 18,
+    lineHeight: 22,
   },
   saveAllBtn: {
     backgroundColor: Colors.primary,

@@ -191,7 +191,7 @@
     "cardName": "Cardholder Name",
     "cvv": "CVV/CVC",
     "enterName": "Enter Name",
-    "completePayment": "Complete Payment",
+    "completePayment": "Go to Payment & Confirmation",
     "paymentMethod": "Payment Method",
     "wallet": "Wallet",
     "sindiPay": "SindiPay",
