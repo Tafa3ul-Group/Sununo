@@ -197,6 +197,25 @@ export default function BookingDetailsPage() {
   const bCancelReason = data.cancelReason || data.cancellationReason || (isRTL ? 'غير محدد' : 'Not specified');
   const bCustomerPhone = data.customer?.phone || data.externalCustomerPhone;
 
+  // Accurate, status-driven banner for the owner.
+  const getOwnerStatusInfo = () => {
+    switch (data.status) {
+      case 'pending_approval':
+        return { text: isRTL ? 'بانتظار موافقتك' : 'Pending your approval', bg: '#FEF3C7', color: '#D97706' };
+      case 'pending_payment':
+        return { text: isRTL ? 'بانتظار دفع العميل' : 'Awaiting customer payment', bg: '#FFE4E6', color: '#E11D48' };
+      case 'confirmed':
+        return { text: isRTL ? 'مؤكد' : 'Confirmed', bg: '#DCFCE7', color: '#16A34A' };
+      case 'completed':
+        return { text: isRTL ? 'مكتمل' : 'Completed', bg: '#DBEAFE', color: '#2563EB' };
+      case 'external':
+        return { text: isRTL ? 'حجز خارجي' : 'External booking', bg: '#E2E8F0', color: '#475569' };
+      default:
+        return { text: isRTL ? 'ملغي' : 'Cancelled', bg: '#FEE2E2', color: '#DC2626' };
+    }
+  };
+  const ownerStatus = getOwnerStatusInfo();
+
   return (
     <View style={[styles.container]}>
       <ScrollView
@@ -229,6 +248,15 @@ export default function BookingDetailsPage() {
             <View style={styles.cancelledDivider} />
             <Text style={[styles.cancelledReason, { textAlign: textStart }]}>
               {bCancelReason}
+            </Text>
+          </View>
+        )}
+
+        {/* Status banner (accurate current state) */}
+        {!bIsCancelled && (
+          <View style={[styles.statusBanner, { backgroundColor: ownerStatus.bg }]}>
+            <Text style={[styles.statusBannerText, { color: ownerStatus.color, textAlign: 'center' }]}>
+              {ownerStatus.text}
             </Text>
           </View>
         )}
@@ -397,40 +425,11 @@ export default function BookingDetailsPage() {
         )}
       </ScrollView>
 
-      {/* Bottom Actions Footer */}
-      {!bIsCancelled && (
+      {/* Bottom Actions Footer — strictly driven by the booking status */}
+      {!bIsCancelled && data.status !== 'completed' && (
         <View style={styles.bottomActions}>
-          {!bIsExternal && (
-            data.status === 'pending_approval' ? (
-              <PrimaryButton
-                label={isRTL ? 'تأكيد الطلب' : 'Confirm Request'}
-                onPress={handleApproveBooking}
-                loading={isApproving}
-                height={60}
-                style={styles.payButton}
-              />
-            ) : remainingAmount > 0 ? (
-              <PrimaryButton
-                label={isRTL ? `تسديد المبلغ المتبقي ` : `Pay Remaining Balance`}
-                onPress={() => {
-                  confirmPaymentSheetRef.current?.present();
-                }}
-                height={60}
-                style={styles.payButton}
-              />
-            ) : (
-              <PrimaryButton
-                label={isRTL ? 'تم سداد المبلغ بالكامل' : 'Full amount paid'}
-                onPress={() => { }}
-                activeColor="#22C55E"
-                height={60}
-                style={styles.payButton}
-                disabled={true}
-              />
-            )
-          )}
-
-          {(remainingAmount > 0 || bIsExternal || data.status === 'pending_approval') && (
+          {bIsExternal ? (
+            /* Owner-created external block → can only be removed */
             <PrimaryButton
               label={isRTL ? 'إلغاء الحجز' : 'Cancel Booking'}
               onPress={() => cancelSheetRef.current?.present(bCustomerName, bCustomerPhone)}
@@ -438,6 +437,55 @@ export default function BookingDetailsPage() {
               isActive={true}
               height={50}
               style={styles.cancelButton}
+            />
+          ) : data.status === 'pending_approval' ? (
+            /* Request awaiting owner decision → approve or reject */
+            <>
+              <PrimaryButton
+                label={isRTL ? 'تأكيد الطلب' : 'Confirm Request'}
+                onPress={handleApproveBooking}
+                loading={isApproving}
+                height={60}
+                style={styles.payButton}
+              />
+              <PrimaryButton
+                label={isRTL ? 'رفض الطلب' : 'Reject Request'}
+                onPress={() => cancelSheetRef.current?.present(bCustomerName, bCustomerPhone)}
+                activeColor="#EA2129"
+                isActive={true}
+                height={50}
+                style={styles.cancelButton}
+              />
+            </>
+          ) : data.status === 'pending_payment' ? (
+            /* Approved, waiting for the customer to pay → owner cannot complete yet.
+               If the customer never pays, the booking is auto-cancelled by the cron. */
+            <PrimaryButton
+              label={isRTL ? 'بانتظار دفع العميل' : 'Awaiting customer payment'}
+              onPress={() => { }}
+              height={60}
+              style={styles.payButton}
+              disabled={true}
+            />
+          ) : remainingAmount > 0 ? (
+            /* Confirmed deposit booking → owner collects the remaining cash & completes */
+            <PrimaryButton
+              label={isRTL ? 'تسديد المبلغ المتبقي وإنهاء الحجز' : 'Collect Remaining & Complete'}
+              onPress={() => {
+                confirmPaymentSheetRef.current?.present();
+              }}
+              height={60}
+              style={styles.payButton}
+            />
+          ) : (
+            /* Confirmed & fully paid → completion happens automatically after the stay */
+            <PrimaryButton
+              label={isRTL ? 'تم سداد المبلغ بالكامل' : 'Full amount paid'}
+              onPress={() => { }}
+              activeColor="#22C55E"
+              height={60}
+              style={styles.payButton}
+              disabled={true}
             />
           )}
         </View>
@@ -547,6 +595,19 @@ const styles = StyleSheet.create({
     lineHeight: normalize.font(20)
   },
   scrollContent: { paddingHorizontal: 20, paddingTop: 20 },
+  statusBanner: {
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statusBannerText: {
+    fontSize: normalize.font(14),
+    fontFamily: 'Alexandria-SemiBold',
+    lineHeight: normalize.font(20),
+  },
   // Tenant Category Badge
   tenantCategoryBadge: {
     paddingHorizontal: 12,

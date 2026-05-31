@@ -173,7 +173,9 @@ export default function BookingSuccessDetailsScreen() {
         };
       case "pending_payment":
         return {
-          text: isRTL ? "تمت الموافقة، بانتظار الدفع" : "Awaiting Payment",
+          text: booking?.chalet?.bookingType === "delayed"
+            ? (isRTL ? "تمت الموافقة، بانتظار الدفع" : "Approved · Awaiting Payment")
+            : (isRTL ? "بانتظار الدفع" : "Awaiting Payment"),
           bg: "#FFE4E6",
           color: "#E11D48",
         };
@@ -249,6 +251,9 @@ export default function BookingSuccessDetailsScreen() {
   const amountPaidVal = Number(booking?.amountPaid || 0);
   const remainingAmountVal = Number(booking?.remainingAmount || 0);
   const cancellationReason = booking?.cancellationReason || booking?.cancelReason;
+  // Only delayed (approval-required) chalets are paid from this details page.
+  // Instant chalets are paid once, at booking creation — never re-charged here.
+  const isDelayedChalet = booking?.chalet?.bookingType === "delayed";
 
   const shiftInfo = useMemo(() => {
     if (!booking?.shift) return t("booking.morningShift");
@@ -518,8 +523,21 @@ export default function BookingSuccessDetailsScreen() {
           </View>
         )}
 
-        {/* Pending Payment Form */}
-        {isPendingPayment && (
+        {/* Instant chalet awaiting its initial payment — NO re-payment form here.
+            Payment for instant chalets happens once, at booking creation. */}
+        {isPendingPayment && !isDelayedChalet && (
+          <View style={[styles.alertCard, { flexDirection: getFlexDirection(isRTL) }]}>
+            <SolarInfoCircleBold size={24} color="#D97706" />
+            <ThemedText style={styles.alertText}>
+              {isRTL
+                ? "لم يتم تأكيد دفع هذا الحجز بعد. إذا أكملت الدفع فستتحدث الحالة تلقائياً، وإلا سيُلغى الحجز تلقائياً بعد انتهاء المهلة."
+                : "Payment for this booking has not been confirmed yet. The status will update automatically once payment completes; otherwise the booking will be cancelled after the timeout."}
+            </ThemedText>
+          </View>
+        )}
+
+        {/* Delayed chalet: complete payment after owner approval */}
+        {isPendingPayment && isDelayedChalet && (
           <View style={styles.paymentSectionCard}>
             <ThemedText style={[styles.sectionTitle, { textAlign: textStart }]}>
               {isRTL ? "إتمام عملية الدفع وتأكيد الحجز" : "Complete Payment"}
