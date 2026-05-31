@@ -33,22 +33,22 @@ import {
     Text,
     TouchableOpacity,
     View,
-    I18nManager,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
+import { useDirection } from '@/i18n';
 
 export default function CustomerProfileScreen() {
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const { user: authUser } = useSelector((state: RootState) => state.auth);
     const router = useRouter();
     const insets = useSafeAreaInsets();
 
-    const isArabic = i18n.language === 'ar';
-    const rowDirection: 'row' | 'row-reverse' = (isArabic !== I18nManager.isRTL) ? 'row-reverse' : 'row';
+    const { isRTL, rowDirection, textAlign } = useDirection();
+    const isArabic = isRTL;
 
-    const textStart: "left" | "right" = isArabic ? "right" : "left";
-    const needsCounter = isArabic !== I18nManager.isRTL;
+    const textStart: "left" | "right" = textAlign;
+    const needsCounter = rowDirection === 'row-reverse';
     const alignStart: "flex-start" | "flex-end" = needsCounter ? "flex-end" : "flex-start";
 
     const languageSheetRef = useRef<BottomSheetModal>(null);

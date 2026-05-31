@@ -22,7 +22,6 @@ import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
 import React from 'react';
 import { ActivityIndicator, Image, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { isRTL } from "@/i18n";
 
 const IDENTITY_BLUE = '#035DF9';
 

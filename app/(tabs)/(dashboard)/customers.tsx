@@ -2,7 +2,7 @@ import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { SolarPhoneBold, SolarUsersGroupRoundedBold } from "@/components/icons/solar-icons";
 import { ThemedText } from '@/components/themed-text';
 import { Colors, normalize, Shadows, Spacing, Typography } from '@/constants/theme';
-import { isRTL } from "@/i18n";
+import { useDirection } from "@/i18n";
 import { RootState } from '@/store';
 import { FlashList } from '@shopify/flash-list';
 import React from 'react';
@@ -41,6 +41,7 @@ const MOCK_CUSTOMERS = [
 export default function CustomersScreen() {
   const { user, userType, language } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
+  const { textAlign } = useDirection();
 
   const renderCustomerItem = ({ item }: { item: typeof MOCK_CUSTOMERS[0] }) => (
     <TouchableOpacity style={styles.customerCard}>
@@ -50,8 +51,8 @@ export default function CustomersScreen() {
         </View>
 
         <View style={[styles.info, { alignItems: 'flex-start' }]}>
-          <ThemedText type="h2" style={[styles.customerName, { textAlign: isRTL ? 'right' : 'left' }]}>{item.name}</ThemedText>
-          <ThemedText style={[styles.customerPhone, { textAlign: isRTL ? 'right' : 'left' }]}>{item.phone}</ThemedText>
+          <ThemedText type="h2" style={[styles.customerName, { textAlign }]}>{item.name}</ThemedText>
+          <ThemedText style={[styles.customerPhone, { textAlign }]}>{item.phone}</ThemedText>
         </View>
 
         <TouchableOpacity style={styles.contactButton}>
@@ -61,12 +62,12 @@ export default function CustomersScreen() {
 
       <View style={[styles.statsRow, { flexDirection: 'row' }]}>
         <View style={[styles.stat, { alignItems: 'flex-start' }]}>
-          <Text style={[styles.statLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{t('dashboard.stats.totalBookings')}</Text>
-          <Text style={[styles.statValue, { textAlign: isRTL ? 'right' : 'left' }]}>{item.totalBookings}</Text>
+          <Text style={[styles.statLabel, { textAlign }]}>{t('dashboard.stats.totalBookings')}</Text>
+          <Text style={[styles.statValue, { textAlign }]}>{item.totalBookings}</Text>
         </View>
         <View style={[styles.stat, { alignItems: 'flex-start' }]}>
-          <Text style={[styles.statLabel, { textAlign: isRTL ? 'right' : 'left' }]}>آخر زيارة</Text>
-          <Text style={[styles.statValue, { textAlign: isRTL ? 'right' : 'left' }]}>{item.lastVisit}</Text>
+          <Text style={[styles.statLabel, { textAlign }]}>آخر زيارة</Text>
+          <Text style={[styles.statValue, { textAlign }]}>{item.lastVisit}</Text>
         </View>
       </View>
     </TouchableOpacity>

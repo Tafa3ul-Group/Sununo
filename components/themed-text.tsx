@@ -1,7 +1,6 @@
 import { Typography } from "@/constants/theme";
-import { useTranslation } from "react-i18next";
+import { useDirection } from "@/i18n";
 import {
-  I18nManager,
   StyleSheet,
   Text,
   type TextProps,
@@ -43,8 +42,7 @@ export function ThemedText({
   type = "default",
   ...rest
 }: ThemedTextProps) {
-  const { i18n } = useTranslation();
-  const isArabic = i18n.language ? i18n.language.startsWith('ar') : I18nManager.isRTL;
+  const { isRTL, textAlign } = useDirection();
 
   const getStyleByType = (): TextStyle => {
     switch (type) {
@@ -79,8 +77,8 @@ export function ThemedText({
   // Compute direction dynamically at render time
   // writingDirection controls text rendering (bidi), textAlign is only a fallback
   const baseDir: TextStyle = {
-    writingDirection: isArabic ? "rtl" : "ltr",
-    textAlign: isArabic ? "right" : "left",
+    writingDirection: isRTL ? "rtl" : "ltr",
+    textAlign,
   };
 
   // Parent style comes LAST so it can override baseDir defaults

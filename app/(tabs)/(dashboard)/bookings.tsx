@@ -11,7 +11,7 @@ import {
 import { PrimaryButton } from '@/components/user/primary-button';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { Colors, normalize } from '@/constants/theme';
-import { isRTL } from "@/i18n";
+import { useDirection } from "@/i18n";
 import { RootState } from '@/store';
 import { useDeleteExternalBookingMutation, useGetProviderBookingsQuery, useGetProviderProfileQuery, useRejectBookingMutation } from '@/store/api/apiSlice';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
@@ -38,6 +38,7 @@ export default function BookingsScreen() {
   const router = useRouter();
   const { user, userType, language, selectedChalet } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
+  const { isRTL, textAlign } = useDirection();
 
   // API hooks
   const { data: profileResponse, refetch: refetchProfile } = useGetProviderProfileQuery(undefined);
@@ -316,7 +317,7 @@ export default function BookingsScreen() {
             {/* Info (Name, Chalet and Shift) */}
             <View style={[styles.modernBookingInfo, { alignItems: 'flex-start' }]}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                <Text style={[styles.modernBookingName, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>{customerName}</Text>
+                <Text style={[styles.modernBookingName, { textAlign }]} numberOfLines={1}>{customerName}</Text>
                 <View style={{
                   backgroundColor: statusInfo.bg,
                   paddingHorizontal: 8,
@@ -343,10 +344,10 @@ export default function BookingsScreen() {
                 )}
               </View>
 
-              {chaletName && <Text style={[styles.modernBookingChalet, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>{chaletName}</Text>}
+              {chaletName && <Text style={[styles.modernBookingChalet, { textAlign }]} numberOfLines={1}>{chaletName}</Text>}
 
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                <Text style={[styles.modernBookingShift, { textAlign: isRTL ? 'right' : 'left' }]}>{t('common.shift')} {shiftName}</Text>
+                <Text style={[styles.modernBookingShift, { textAlign }]}>{t('common.shift')} {shiftName}</Text>
                 <Text style={styles.modernBookingDot}>•</Text>
                 <Text style={styles.modernBookingDate}>{formatBookingDate(item.bookingDate || item.date || item.createdAt?.split('T')[0])}</Text>
               </View>

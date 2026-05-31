@@ -16,11 +16,11 @@ import {
     ScrollView,
     StyleSheet,
     View,
-    I18nManager,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
 import { useSelector } from "react-redux";
+import { useDirection } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -39,9 +39,9 @@ const CATEGORY_COLORS = [
   "#06B6D4",
 ];
 
-const SectionHeader = ({ title, isArabic }: { title: string; isArabic: boolean }) => {
-  const needsCounter = isArabic !== I18nManager.isRTL;
-  const alignStart = needsCounter ? "flex-end" : "flex-start";
+const SectionHeader = ({ title }: { title: string }) => {
+  const { rowDirection } = useDirection();
+  const alignStart = rowDirection === "row-reverse" ? "flex-end" : "flex-start";
   return (
     <View style={[styles.sectionHeader, { alignItems: alignStart }]}>
       <ThemedText style={styles.sectionTitle}>{title}</ThemedText>
@@ -54,21 +54,19 @@ const FacilityCard = ({
   subtext,
   color,
   iconId,
-  isArabic,
 }: {
   label: string;
   subtext?: string;
   color: string;
   iconId?: string | null;
-  isArabic: boolean;
 }) => {
   // iconId from API is a UUID → load as image from server
   const imageSource = iconId ? getImageSrc(iconId) : null;
-  const needsCounter = isArabic !== I18nManager.isRTL;
-  const alignStart = needsCounter ? "flex-end" : "flex-start";
+  const { rowDirection, textAlign } = useDirection();
+  const alignStart = rowDirection === "row-reverse" ? "flex-end" : "flex-start";
 
   return (
-    <View style={[styles.cardContainer, { flexDirection: (isArabic !== I18nManager.isRTL) ? 'row-reverse' : 'row', gap: 15 }]}>
+    <View style={[styles.cardContainer, { flexDirection: rowDirection, gap: 15 }]}>
       <View
         style={[
           styles.textSide,
@@ -82,7 +80,7 @@ const FacilityCard = ({
           <ThemedText
             style={[
               styles.cardSubtext,
-              { textAlign: isArabic ? "right" : "left" },
+              { textAlign },
             ]}
           >
             {subtext}
@@ -111,8 +109,9 @@ const FacilityCard = ({
 
 export default function FacilitiesScreen() {
   const { id } = useLocalSearchParams();
-  const { t, i18n } = useTranslation();
-  const isArabic = i18n.language === "ar";
+  const { t } = useTranslation();
+  const { isRTL } = useDirection();
+  const isArabic = isRTL;
   const { userType } = useSelector((state: RootState) => state.auth);
 
   const { data: response, isLoading } = useGetCustomerChaletDetailsQuery(id);
@@ -187,7 +186,7 @@ export default function FacilitiesScreen() {
         <View style={{ paddingHorizontal: 20 }}>
           {categories.map((cat, idx) => (
             <View key={idx}>
-              <SectionHeader title={cat.name} isArabic={isArabic} />
+              <SectionHeader title={cat.name} />
               {cat.features.map((feat, featIdx) => {
                 const color =
                   CATEGORY_COLORS[cat.colorIndex % CATEGORY_COLORS.length];
@@ -199,7 +198,6 @@ export default function FacilitiesScreen() {
                     subtext={feat.value}
                     color={color}
                     iconId={feat.iconId}
-                    isArabic={isArabic}
                   />
                 );
               })}

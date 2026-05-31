@@ -10,8 +10,9 @@ import { formatPrice } from '@/utils/format';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { I18nManager, RefreshControl, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useDirection } from '@/i18n';
 import Svg, { ClipPath, Defs, G, Path, Image as SvgImage } from 'react-native-svg';
 
 const SHAPES_CONFIG = [
@@ -42,15 +43,11 @@ const SHAPES_CONFIG = [
 ];
 
 export default function BookingsScreen() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
-  const isArabic = i18n.language === 'ar';
-
-  // Direction helpers — mirror the canonical pattern used across booking screens.
-  // rowDirection accounts for the gap between the selected language and the
-  // physical layout direction (I18nManager.isRTL only updates after a reload).
-  const rowDirection: "row" | "row-reverse" = isArabic === I18nManager.isRTL ? "row" : "row-reverse";
-  const textStart: "left" | "right" = isArabic ? "right" : "left";
+  const { isRTL, rowDirection, textAlign } = useDirection();
+  const isArabic = isRTL;
+  const textStart: "left" | "right" = textAlign;
   const textEnd: "left" | "right" = isArabic ? "left" : "right";
 
   // Fetch bookings from the backend

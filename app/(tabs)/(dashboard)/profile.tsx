@@ -23,12 +23,12 @@ import {
   useDeleteProfileMutation
 } from '@/store/api/apiSlice';
 import { logout } from '@/store/authSlice';
+import { useDirection } from '@/i18n';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
 import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  I18nManager,
   Image,
   ScrollView,
   StyleSheet,
@@ -41,14 +41,10 @@ import { useDispatch, useSelector } from 'react-redux';
 
 export default function ProviderProfileScreen() {
   const dispatch = useDispatch();
-  const { t, i18n } = useTranslation();
-  const isArabic = i18n.language ? i18n.language.startsWith('ar') : true;
+  const { t } = useTranslation();
+  const { isRTL: isArabic, rowDirection: flexDir, textAlign: textStart } = useDirection();
 
-  const textStart: 'left' | 'right' = isArabic === I18nManager.isRTL ? 'left' : 'right';
-  const textEnd: 'left' | 'right' = isArabic === I18nManager.isRTL ? 'right' : 'left';
-  const alignStart: 'flex-start' | 'flex-end' = isArabic === I18nManager.isRTL ? 'flex-start' : 'flex-end';
-  const alignEnd: 'flex-start' | 'flex-end' = isArabic === I18nManager.isRTL ? 'flex-end' : 'flex-start';
-  const flexDir: 'row' | 'row-reverse' = isArabic === I18nManager.isRTL ? 'row' : 'row-reverse';
+  const alignStart: 'flex-start' | 'flex-end' = flexDir === 'row' ? 'flex-start' : 'flex-end';
 
   const { user: authUser } = useSelector((state: RootState) => state.auth);
   const { showConfirm } = useConfirmationDialog();

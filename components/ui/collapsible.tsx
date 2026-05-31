@@ -1,16 +1,17 @@
 import { PropsWithChildren, useState } from 'react';
-import { I18nManager, StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { SolarAltArrowRightBold } from '@/components/icons/solar-icons';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { isRTL } from "@/i18n";
+import { useDirection } from "@/i18n";
 
 export function Collapsible({ children, title }: PropsWithChildren & { title: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const theme = useColorScheme() ?? 'light';
+  const { isRTL } = useDirection();
 
   return (
     <ThemedView>

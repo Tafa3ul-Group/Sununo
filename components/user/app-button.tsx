@@ -1,9 +1,8 @@
 import { ThemedText } from '@/components/themed-text';
 import { Colors, Spacing } from '@/constants/theme';
 import React from 'react';
-import { ActivityIndicator, I18nManager, StyleSheet, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { ActivityIndicator, StyleSheet, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { isRTL } from "@/i18n";
 
 interface AppButtonProps {
   label: string;

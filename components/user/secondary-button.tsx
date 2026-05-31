@@ -1,6 +1,5 @@
 import { ThemedText } from "@/components/themed-text";
 import React from "react";
-import { useTranslation } from "react-i18next";
 import {
     ActivityIndicator,
     StyleProp,
@@ -10,6 +9,7 @@ import {
     View,
     ViewStyle
 } from "react-native";
+import { useDirection } from "@/i18n";
 
 interface SecondaryButtonProps {
   label: string;
@@ -45,9 +45,9 @@ export function SecondaryButton({
   isLoading = false,
   height = 46,
   variant = "default" }: SecondaryButtonProps) {
-  const { i18n } = useTranslation();
-  const isRTL = i18n.language === "ar";
-  
+  const { isRTL } = useDirection();
+
+
   // Use logical start/end concept to let React Native automatically handle RTL layout
   const isIconOnStart =
     iconPosition

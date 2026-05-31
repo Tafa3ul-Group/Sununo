@@ -1,4 +1,4 @@
-import { View, StyleSheet, ScrollView, ActivityIndicator, I18nManager } from "react-native";
+import { View, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ThemedText } from "@/components/themed-text";
@@ -9,12 +9,14 @@ import { HeaderSection } from "@/components/header-section";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
+import { useDirection } from "@/i18n";
 
 
 export default function ChaletDescriptionScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { t, i18n } = useTranslation();
-  const isArabic = i18n.language === "ar";
+  const { t } = useTranslation();
+  const { isRTL, textAlign } = useDirection();
+  const isArabic = isRTL;
   const router = useRouter();
   const { userType } = useSelector((state: RootState) => state.auth);
 
@@ -50,7 +52,7 @@ export default function ChaletDescriptionScreen() {
           <ActivityIndicator size="large" color={Colors.primary} style={{ marginTop: 50 }} />
         ) : (
           <View style={styles.card}>
-            <ThemedText style={[styles.content, { textAlign: isArabic ? 'right' : 'left' }]}>
+            <ThemedText style={[styles.content, { textAlign }]}>
               {description || (isArabic ? "لا يوجد وصف متوفر" : "No description available")}
             </ThemedText>
           </View>

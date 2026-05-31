@@ -1,9 +1,7 @@
 import { Shadows } from "@/constants/theme";
 import React from "react";
-import { useTranslation } from "react-i18next";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { ThemedText } from "../themed-text";
-import { isRTL } from "@/i18n";
 
 interface Category {
   id: string;
@@ -22,8 +20,6 @@ export function CategoryTabs({
   categories,
   activeId,
   onSelect }: CategoryTabsProps) {
-  const { i18n } = useTranslation();
-  
   return (
     <View style={styles.container}>
       <ScrollView

@@ -16,15 +16,16 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  I18nManager
 } from "react-native";
+import { useDirection } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function AddReviewScreen() {
   const { id: chaletId } = useLocalSearchParams<{ id: string }>();
-  const { t, i18n } = useTranslation();
-  const isArabic = i18n.language === "ar";
+  const { t } = useTranslation();
+  const { isRTL, textAlign } = useDirection();
+  const isArabic = isRTL;
   const router = useRouter();
 
   const [rating, setRating] = useState(0);
@@ -110,7 +111,7 @@ export default function AddReviewScreen() {
             <TextInput
               style={[
                 styles.textInput,
-                { textAlign: isArabic ? "right" : "left" },
+                { textAlign },
               ]}
               placeholder={t("profile.review.placeholder")}
               multiline

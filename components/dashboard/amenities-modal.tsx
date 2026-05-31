@@ -12,7 +12,6 @@ import {
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import * as ImagePicker from 'expo-image-picker';
 import React, { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   Dimensions,
   I18nManager,
@@ -24,6 +23,7 @@ import {
   View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
+import { useDirection } from '@/i18n';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -57,8 +57,7 @@ interface AmenitiesModalProps {
 
 export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
   ({ chaletId, chalet, refetchChalet }, ref) => {
-    const { i18n } = useTranslation();
-    const isRTL = i18n.language ? i18n.language.startsWith('ar') : false;
+    const { isRTL } = useDirection();
     const { showConfirm } = useConfirmationDialog();
 
     const { data: amenityCategories } = useGetAmenityCategoriesQuery();

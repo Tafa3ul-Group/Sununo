@@ -1,10 +1,9 @@
 import { ThemedText } from "@/components/themed-text";
 import { Colors, normalize } from "@/constants/theme";
 import React, { useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import Svg, { Path } from "react-native-svg";
-import { isRTL } from "@/i18n";
+import { useDirection } from "@/i18n";
 
 const DAYS_EN = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 const DAYS_AR = ["أحد", "إثن", "ثلا", "أرب", "خمي", "جمع", "سبت"];
@@ -26,8 +25,8 @@ interface DashboardCalendarProps {
 }
 
 export const DashboardCalendar: React.FC<DashboardCalendarProps> = ({ onSelect, initialStartDate, initialEndDate }) => {
-  const { i18n } = useTranslation();
-  
+  const { isRTL } = useDirection();
+
   const [viewDate, setViewDate] = useState(initialStartDate || new Date());
   const [startDate, setStartDate] = useState<Date | null>(initialStartDate || null);
   const [endDate, setEndDate] = useState<Date | null>(initialEndDate || null);

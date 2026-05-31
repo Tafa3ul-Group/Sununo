@@ -9,7 +9,7 @@ import { ThemedText } from '@/components/themed-text';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
-import { isRTL } from "@/i18n";
+import { useDirection } from "@/i18n";
 import { RootState } from '@/store';
 import { useGetMeQuery } from '@/store/api/apiSlice';
 import {
@@ -19,7 +19,6 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
     ActivityIndicator,
     Alert,
@@ -42,7 +41,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function ProfileEditScreen() {
   const router = useRouter();
-  const { t, i18n } = useTranslation();
+  const { isRTL, textAlign } = useDirection();
     const { user: authUser } = useSelector((state: RootState) => state.auth);
 
   const { data: meData, refetch } = useGetMeQuery(undefined);
@@ -163,7 +162,7 @@ export default function ProfileEditScreen() {
               </ThemedText>
               <View style={styles.inputWrapper}>
                 <TextInput
-                  style={[styles.input, { textAlign: isRTL ? 'right' : 'left' }]}
+                  style={[styles.input, { textAlign }]}
                   value={name}
                   onChangeText={setName}
                   placeholder={isRTL ? 'أدخل اسمك الكامل' : 'Enter your full name'}
@@ -179,7 +178,7 @@ export default function ProfileEditScreen() {
               </ThemedText>
               <View style={styles.inputWrapper}>
                 <TextInput
-                  style={[styles.input, { textAlign: isRTL ? 'right' : 'left' }]}
+                  style={[styles.input, { textAlign }]}
                   value={birthDate}
                   onChangeText={setBirthDate}
                   placeholder="YYYY-MM-DD"

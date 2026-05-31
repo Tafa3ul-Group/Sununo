@@ -4,8 +4,7 @@ import { ThemedText } from '../themed-text';
 import { Colors, normalize, Shadows } from '@/constants/theme';
 import { SolarUserBold, SolarCloseBold } from '@/components/icons/solar-icons';
 import { SecondaryButton } from './secondary-button';
-import { useTranslation } from 'react-i18next';
-import { isRTL } from "@/i18n";
+import { useDirection } from "@/i18n";
 
 interface LoginPromptModalProps {
   isVisible: boolean;
@@ -14,8 +13,8 @@ interface LoginPromptModalProps {
 }
 
 export const LoginPromptModal: React.FC<LoginPromptModalProps> = ({ isVisible, onClose, onLogin }) => {
-  const { t, i18n } = useTranslation();
-  
+  const { isRTL } = useDirection();
+
   return (
     <Modal
       visible={isVisible}

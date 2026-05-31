@@ -8,7 +8,7 @@ import {
 } from "@/components/icons/solar-icons";
 import { PrimaryButton } from '@/components/user/primary-button';
 import { Colors, normalize } from '@/constants/theme';
-import { isRTL } from "@/i18n";
+import { useDirection } from "@/i18n";
 import { RootState } from '@/store';
 import { useGetPayoutsQuery, useGetProviderProfileQuery, useGetProviderStatsQuery, useRequestPayoutMutation } from '@/store/api/apiSlice';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
@@ -70,7 +70,7 @@ const PERIOD_LABELS: Record<string, { bookings: { ar: string; en: string }; inco
 export default function RevenueScreen() {
   const router = useRouter();
   const { user, userType, selectedChalet } = useSelector((state: RootState) => state.auth);
-  const textAlign = isRTL ? 'right' : 'left';
+  const { isRTL, textAlign } = useDirection();
   const startAlign = isRTL ? 'flex-end' : 'flex-start';
   const endAlign = isRTL ? 'flex-start' : 'flex-end';
   const [selectedPeriod, setSelectedPeriod] = useState('month');

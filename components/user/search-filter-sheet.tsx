@@ -26,7 +26,7 @@ import { SecondaryButton } from "./secondary-button";
 import { GuestCounter } from "./guest-counter";
 import { MainTabs, TabType } from "./MainTabs";
 import { RangeCalendar } from "./range-calendar";
-import { isRTL } from "@/i18n";
+import { useDirection } from "@/i18n";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -49,8 +49,9 @@ interface SearchFilterSheetProps {
 export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetProps>((props, ref) => {
   const { onApply, chaletId } = props;
   const { dismiss } = useBottomSheetModal();
-  const { t, i18n } = useTranslation();
-  const isArabic = i18n.language === "ar";
+  const { t } = useTranslation();
+  const { isRTL, rowDirection: hookRowDirection, textAlign } = useDirection();
+  const isArabic = isRTL;
 
   const [activeTab, setActiveTab] = useState<TabType>("WHERE");
   const [selectedCity, setSelectedCity] = useState<string>("");
@@ -63,9 +64,9 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
   const [checkOut, setCheckOut] = useState<Date | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  // Dynamic layout helper to guarantee perfect RTL/LTR alignment under any system RTL state
-  const rowDirection = isArabic ? (isRTL ? "row" : "row-reverse") : (isRTL ? "row-reverse" : "row");
-  const textAlignment = isArabic ? "right" : "left";
+  // Dynamic layout helpers from the central direction API.
+  const rowDirection = hookRowDirection;
+  const textAlignment = textAlign;
   const buttonAlign = isArabic
     ? (isRTL ? "flex-start" : "flex-end")
     : (isRTL ? "flex-end" : "flex-start");

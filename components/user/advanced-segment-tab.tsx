@@ -1,8 +1,7 @@
 import { ThemedText } from "@/components/themed-text";
 import { normalize, Spacing } from "@/constants/theme";
 import React from "react";
-import { I18nManager, StyleSheet, TouchableOpacity, View } from "react-native";
-import { isRTL } from "@/i18n";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 interface Tab {
   id: string;

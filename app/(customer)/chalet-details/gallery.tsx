@@ -18,7 +18,6 @@ import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Dimensions,
-  I18nManager,
   Image,
   Modal,
   ScrollView,
@@ -29,6 +28,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import { Image as ExpoImage } from "expo-image";
+import { useDirection } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -78,13 +78,10 @@ export default function GalleryScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const chaletId = id as string;
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { userType } = useSelector((state: RootState) => state.auth);
-  
-  const isArabic = i18n.language ? i18n.language.startsWith("ar") : true;
-  const flexDir: "row" | "row-reverse" = isArabic === I18nManager.isRTL ? "row" : "row-reverse";
-  const alignStart: "flex-start" | "flex-end" = isArabic === I18nManager.isRTL ? "flex-start" : "flex-end";
-  const textStart: "left" | "right" = isArabic ? "right" : "left";
+  const { isRTL, rowDirection } = useDirection();
+  const isArabic = isRTL;
 
   const [activeFilter, setActiveFilter] = useState("all");
   const [viewerVisible, setViewerVisible] = useState(false);
@@ -211,7 +208,7 @@ export default function GalleryScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.catList}
         >
-          <View style={{ flexDirection: flexDir, gap: 10 }}>
+          <View style={{ flexDirection: rowDirection, gap: 10 }}>
             {CATEGORIES.map((filter) => (
               <SecondaryButton
                 key={filter.id}
@@ -249,7 +246,7 @@ export default function GalleryScreen() {
             </TouchableOpacity>
 
             {/* Small Grid */}
-            <View style={[styles.smallGrid, { flexDirection: flexDir }]}>
+            <View style={[styles.smallGrid, { flexDirection: rowDirection }]}>
               {section.images.slice(1, 4).map((img, i) => (
                 <TouchableOpacity
                   key={i}

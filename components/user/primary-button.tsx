@@ -1,6 +1,5 @@
 import { ThemedText } from "@/components/themed-text";
 import React from "react";
-import { useTranslation } from "react-i18next";
 import {
     ActivityIndicator,
     StyleSheet,
@@ -10,6 +9,7 @@ import {
     ViewStyle,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
+import { useDirection } from "@/i18n";
 
 interface PrimaryButtonProps {
   label: string;
@@ -51,8 +51,7 @@ export function PrimaryButton({
   height = 46,
 }: PrimaryButtonProps) {
   const isWhite = variant === "white";
-  const { i18n } = useTranslation();
-  const isRTL = i18n.language === "ar";
+  const { isRTL } = useDirection();
   const defaultActiveColor = isWhite ? "white" : "#035DF9";
   const defaultActiveTextColor = isWhite ? "#6B7280" : "white";
 
