@@ -12,7 +12,7 @@ import { Image as ExpoImage } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Dimensions, I18nManager, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSelector } from 'react-redux';
 import { useConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import Toast from 'react-native-toast-message';
@@ -24,13 +24,19 @@ import { PaymentConfirmationSheet, PaymentConfirmationSheetRef } from '@/compone
 
 import { ErrorState } from '@/components/ui/error-state';
 import { CountdownBadge } from '@/components/dashboard/countdown-badge';
-import { isRTL } from "@/i18n";
 
 export default function BookingDetailsPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { language } = useSelector((state: RootState) => state.auth);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language ? i18n.language.startsWith('ar') : false;
+
+  // Robust layout bridge (same pattern as chalet-details)
+  const flexRow = isRTL ? (I18nManager.isRTL ? 'row' : 'row-reverse') : (I18nManager.isRTL ? 'row-reverse' : 'row') as 'row' | 'row-reverse';
+  const flexStart = isRTL ? (I18nManager.isRTL ? 'flex-start' : 'flex-end') : (I18nManager.isRTL ? 'flex-end' : 'flex-start') as 'flex-start' | 'flex-end';
+  const textStart = isRTL ? 'right' : 'left' as 'right' | 'left';
+  const textEnd = isRTL ? 'left' : 'right' as 'left' | 'right';
   const cancelSheetRef = React.useRef<BookingCancellationSheetRef>(null);
   const confirmPaymentSheetRef = React.useRef<PaymentConfirmationSheetRef>(null);
 
@@ -168,18 +174,18 @@ export default function BookingDetailsPage() {
   };
 
   const renderInfoRow = (label: string, value: string | React.ReactNode, isBlue: boolean = false, subLabel?: string) => (
-    <View style={[styles.infoRow, { alignItems: 'center' }]}>
-      <View style={{ flex: 1, alignItems: 'flex-start', paddingLeft: isRTL ? 16 : 0, paddingRight: isRTL ? 0 : 16 }}>
-        <Text style={[styles.infoLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{label}</Text>
+    <View style={[styles.infoRow, { flexDirection: flexRow, alignItems: 'center' }]}>
+      <View style={{ flex: 1, alignItems: flexStart, paddingLeft: isRTL ? 16 : 0, paddingRight: isRTL ? 0 : 16 }}>
+        <Text style={[styles.infoLabel, { textAlign: textStart }]}>{label}</Text>
         {subLabel && (
-          <Text style={{ fontSize: 11, color: '#94A3B8', fontFamily: 'Alexandria-Regular', marginTop: 2, textAlign: isRTL ? 'right' : 'left', writingDirection: isRTL ? 'rtl' : 'ltr' }}>
+          <Text style={{ fontSize: 11, color: '#94A3B8', fontFamily: 'Alexandria-Regular', marginTop: 2, textAlign: textStart, writingDirection: isRTL ? 'rtl' : 'ltr' }}>
             {subLabel}
           </Text>
         )}
       </View>
-      <View style={{ flex: 0, alignItems: 'flex-end' }}>
+      <View style={{ flex: 0, alignItems: isRTL ? 'flex-start' : 'flex-end' }}>
         {typeof value === 'string' ? (
-          <Text style={[styles.infoValue, isBlue && styles.blueValue, { textAlign: isRTL ? 'left' : 'right' }]}>{value}</Text>
+          <Text style={[styles.infoValue, isBlue && styles.blueValue, { textAlign: textEnd }]}>{value}</Text>
         ) : (
           value
         )}
@@ -192,7 +198,7 @@ export default function BookingDetailsPage() {
   const bCustomerPhone = data.customer?.phone || data.externalCustomerPhone;
 
   return (
-    <View style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
+    <View style={[styles.container]}>
       <ScrollView
         contentContainerStyle={[
           styles.scrollContent,
@@ -212,16 +218,16 @@ export default function BookingDetailsPage() {
         {/* Cancelled Status Card */}
         {bIsCancelled && (
           <View style={styles.cancelledCard}>
-            <View style={[styles.cancelledHeader]}>
+            <View style={[styles.cancelledHeader, { flexDirection: flexRow }]}>
               <View style={styles.warningIconWrapper}>
                 <SolarDangerCircleBold size={24} color="#EA2129" />
               </View>
-              <Text style={styles.cancelledTitle}>
+              <Text style={[styles.cancelledTitle, { textAlign: textStart }]}>
                 {isRTL ? 'تم إلغاء هذا الحجز بواسطتك' : 'This booking was cancelled by you'}
               </Text>
             </View>
             <View style={styles.cancelledDivider} />
-            <Text style={[styles.cancelledReason, { textAlign: isRTL ? 'right' : 'left' }]}>
+            <Text style={[styles.cancelledReason, { textAlign: textStart }]}>
               {bCancelReason}
             </Text>
           </View>
@@ -239,29 +245,29 @@ export default function BookingDetailsPage() {
 
         {/* Chalet Information Section */}
         <View style={styles.infoSectionCard}>
-          <View style={[styles.sectionTitleRow]}>
-            <Text style={styles.sectionTitle}>{isRTL ? 'معلومات الشاليه' : 'Chalet Information'}</Text>
+          <View style={[styles.sectionTitleRow, { alignItems: flexStart }]}>
+            <Text style={[styles.sectionTitle, { textAlign: textStart }]}>{isRTL ? 'معلومات الشاليه' : 'Chalet Information'}</Text>
           </View>
           <View style={styles.divider} />
 
-          <View style={[styles.chaletSimpleRow]}>
+          <View style={[styles.chaletSimpleRow, { flexDirection: flexRow }]}>
             <View style={styles.simpleImageWrapper}>
               <ExpoImage
                 source={chaletImageSource}
                 style={styles.simpleChaletImage}
               />
             </View>
-            <View style={[styles.simpleChaletText]}>
-              <Text style={styles.simpleChaletName}>{bChaletName}</Text>
-              <Text style={styles.simpleChaletLocation}>{bChaletAddress}</Text>
+            <View style={[styles.simpleChaletText, { alignItems: flexStart }]}>
+              <Text style={[styles.simpleChaletName, { textAlign: textStart }]}>{bChaletName}</Text>
+              <Text style={[styles.simpleChaletLocation, { textAlign: textStart }]}>{bChaletAddress}</Text>
             </View>
           </View>
         </View>
 
         {/* Customer Information */}
         <View style={styles.infoSectionCard}>
-          <View style={[styles.sectionTitleRow]}>
-            <Text style={styles.sectionTitle}>{isRTL ? 'معلومات الزبون' : 'Customer Information'}</Text>
+          <View style={[styles.sectionTitleRow, { alignItems: flexStart }]}>
+            <Text style={[styles.sectionTitle, { textAlign: textStart }]}>{isRTL ? 'معلومات الزبون' : 'Customer Information'}</Text>
           </View>
           <View style={styles.divider} />
           {renderInfoRow(isRTL ? 'الاسم' : 'Name', bCustomerName)}
@@ -288,8 +294,8 @@ export default function BookingDetailsPage() {
         {/* Customer ID Card Images */}
         {hasIdCards && (
           <View style={styles.infoSectionCard}>
-            <View style={[styles.sectionTitleRow]}>
-              <Text style={styles.sectionTitle}>{isRTL ? 'صور الهوية' : 'ID Card Images'}</Text>
+            <View style={[styles.sectionTitleRow, { alignItems: flexStart }]}>
+              <Text style={[styles.sectionTitle, { textAlign: textStart }]}>{isRTL ? 'صور الهوية' : 'ID Card Images'}</Text>
             </View>
             <View style={styles.divider} />
             <View style={styles.idCardsRow}>
@@ -335,8 +341,8 @@ export default function BookingDetailsPage() {
 
         {/* Booking Information */}
         <View style={styles.infoSectionCard}>
-          <View style={[styles.sectionTitleRow]}>
-            <Text style={styles.sectionTitle}>{isRTL ? 'معلومات الحجز' : 'Booking Information'}</Text>
+          <View style={[styles.sectionTitleRow, { alignItems: flexStart }]}>
+            <Text style={[styles.sectionTitle, { textAlign: textStart }]}>{isRTL ? 'معلومات الحجز' : 'Booking Information'}</Text>
           </View>
           <View style={styles.divider} />
           {renderInfoRow(isRTL ? "التاريخ" : "Date", data.bookingDate)}
@@ -356,8 +362,8 @@ export default function BookingDetailsPage() {
         {/* Payment Information */}
         {!bIsExternal && (
           <View style={styles.infoSectionCard}>
-            <View style={[styles.sectionTitleRow]}>
-              <Text style={styles.sectionTitle}>{isRTL ? 'معلومات الدفع' : 'Payment Information'}</Text>
+            <View style={[styles.sectionTitleRow, { alignItems: flexStart }]}>
+              <Text style={[styles.sectionTitle, { textAlign: textStart }]}>{isRTL ? 'معلومات الدفع' : 'Payment Information'}</Text>
             </View>
             <View style={styles.divider} />
             {renderInfoRow(
@@ -509,7 +515,6 @@ const styles = StyleSheet.create({
     marginBottom: 16
   },
   cancelledHeader: {
-    flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     marginBottom: 12
@@ -527,7 +532,6 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-SemiBold",
     color: '#EA2129',
-    textAlign: isRTL ? 'right' : 'left',
     lineHeight: normalize.font(24)
   },
   cancelledDivider: {
@@ -540,7 +544,6 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-SemiBold",
     color: '#1E293B',
-    textAlign: isRTL ? 'right' : 'left',
     lineHeight: normalize.font(20)
   },
   scrollContent: { paddingHorizontal: 20, paddingTop: 20 },
@@ -616,12 +619,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'Alexandria-SemiBold',
   },
-  chaletSimpleRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  chaletSimpleRow: { alignItems: 'center', gap: 16 },
   simpleImageWrapper: { width: 80, height: 80, borderRadius: 16, overflow: 'hidden', backgroundColor: '#F1F5F9' },
   simpleChaletImage: { width: '100%', height: '100%' },
-  simpleChaletText: { flex: 1, alignItems: 'flex-start' },
-  simpleChaletName: { fontSize: normalize.font(16), fontFamily: "Alexandria-SemiBold", color: '#1E293B', textAlign: isRTL ? 'right' : 'left', lineHeight: normalize.font(22) },
-  simpleChaletLocation: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#64748B', textAlign: isRTL ? 'right' : 'left', lineHeight: normalize.font(20), marginTop: 4 },
+  simpleChaletText: { flex: 1 },
+  simpleChaletName: { fontSize: normalize.font(16), fontFamily: "Alexandria-SemiBold", color: '#1E293B', lineHeight: normalize.font(22) },
+  simpleChaletLocation: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#64748B', lineHeight: normalize.font(20), marginTop: 4 },
   infoSectionCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
@@ -631,14 +634,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingBottom: 24
   },
-  sectionTitleRow: { width: '100%', marginBottom: 8, alignItems: 'flex-start' },
-  sectionTitle: { fontSize: normalize.font(14), fontFamily: "Alexandria-SemiBold", color: IDENTITY_BLUE, textAlign: isRTL ? 'right' : 'left', lineHeight: normalize.font(20) },
+  sectionTitleRow: { width: '100%', marginBottom: 8 },
+  sectionTitle: { fontSize: normalize.font(14), fontFamily: "Alexandria-SemiBold", color: IDENTITY_BLUE, lineHeight: normalize.font(20) },
   divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 10 },
-  infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  infoLabel: { fontSize: normalize.font(14), fontFamily: "Alexandria-SemiBold", color: '#1E293B', textAlign: isRTL ? 'right' : 'left', lineHeight: normalize.font(20) },
-  infoValueContainer: { flex: 1, alignItems: 'flex-end' },
-  infoValue: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#64748B', textAlign: isRTL ? 'left' : 'right', lineHeight: normalize.font(22) },
-  blueValue: { color: IDENTITY_BLUE, fontFamily: "Alexandria-SemiBold", textAlign: isRTL ? 'left' : 'right', lineHeight: normalize.font(22) },
+  infoRow: { justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  infoLabel: { fontSize: normalize.font(14), fontFamily: "Alexandria-SemiBold", color: '#1E293B', lineHeight: normalize.font(20) },
+  infoValueContainer: { flex: 1 },
+  infoValue: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#64748B', lineHeight: normalize.font(22) },
+  blueValue: { color: IDENTITY_BLUE, fontFamily: "Alexandria-SemiBold", lineHeight: normalize.font(22) },
   bottomActions: {
     position: 'absolute',
     bottom: 0,

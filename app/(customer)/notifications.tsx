@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, RefreshControl, I18nManager } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
@@ -20,6 +20,8 @@ interface Notification {
   message: string;
   time: string;
   isRead: boolean;
+  redirectType?: string;
+  redirectId?: string;
 }
 
 export default function NotificationsScreen() {
@@ -50,9 +52,12 @@ export default function NotificationsScreen() {
         const notif: Notification = {
           id: item.id,
           title: item.title || t('notifications.newNotification'),
-          message: item.body || item.message || '',
+          message: item.text || item.body || item.message || '',
           time: new Date(item.createdAt).toLocaleTimeString(isArabic ? 'ar' : 'en', { hour: '2-digit', minute: '2-digit' }),
-          isRead: item.isRead || false };
+          isRead: !!item.readAt || !!item.isRead,
+          redirectType: item.redirectType,
+          redirectId: item.redirectId,
+        };
 
         const notifDate = new Date(item.createdAt).toDateString();
         if (notifDate === todayStr) {
@@ -70,25 +75,44 @@ export default function NotificationsScreen() {
         if (!item.isRead) {
             markAsRead(item.id);
         }
+
+        // Navigate based on notification redirect type
+        if (item.redirectType === 'booking' && item.redirectId) {
+            router.push({ pathname: '/(tabs)/(customer)/booking-success', params: { id: item.redirectId } });
+        } else if (item.redirectType === 'wallet') {
+            router.push('/(tabs)/(customer)/profile');
+        }
     };
+
+    const dirStyle = isArabic ? 'rtl' : 'ltr';
+    const rowDirection = isArabic ? 'row-reverse' as const : 'row' as const;
 
     const renderItem = (item: Notification) => (
         <TouchableOpacity 
             key={item.id} 
-            style={[styles.notificationCard, { flexDirection: (isArabic !== I18nManager.isRTL) ? 'row-reverse' : 'row' }]}
+            style={[styles.notificationCard, { flexDirection: 'row', direction: isArabic ? 'rtl' : 'ltr' }]}
             onPress={() => handleNotificationPress(item)}
             activeOpacity={0.7}
         >
-            {/* Content section */}
-            <View style={[styles.cardContent, { alignItems: 'flex-start' }]}>
-                <ThemedText style={[styles.titleText, { textAlign: textStart }]}>{item.title}</ThemedText>
-                <ThemedText style={[styles.messageText, { textAlign: textStart }]}>{item.message}</ThemedText>
+            {/* Unread indicator dot */}
+            <View style={styles.dotContainer}>
+                {!item.isRead && <View style={styles.orangeDot} />}
             </View>
 
-            {/* Header section with orange dot and time */}
-            <View style={[styles.cardLeft, { flexDirection: (isArabic !== I18nManager.isRTL) ? 'row-reverse' : 'row' }]}>
-                <ThemedText style={styles.timeText}>{item.time}</ThemedText>
-                {!item.isRead && <View style={styles.orangeDot} />}
+            {/* Content */}
+            <View style={styles.cardContent}>
+                {/* Title row: title + time */}
+                <View style={[styles.titleRow, { flexDirection: 'row', direction: isArabic ? 'rtl' : 'ltr' }]}>
+                    <ThemedText style={[styles.titleText, { textAlign: textStart, writingDirection: dirStyle }]} numberOfLines={1}>
+                        {item.title}
+                    </ThemedText>
+                    <ThemedText style={styles.timeText}>{item.time}</ThemedText>
+                </View>
+
+                {/* Message */}
+                <ThemedText style={[styles.messageText, { textAlign: textStart, writingDirection: dirStyle }]} numberOfLines={2}>
+                    {item.message}
+                </ThemedText>
             </View>
         </TouchableOpacity>
     );
@@ -109,8 +133,10 @@ export default function NotificationsScreen() {
                 {/* Today Section */}
                 {groupedNotifications.today.length > 0 && (
                     <>
-                        <View style={[styles.sectionHeader, { alignItems: 'flex-start' }]}>
-                            <ThemedText style={styles.sectionTitle}>{t('notifications.today')}</ThemedText>
+                        <View style={styles.sectionHeader}>
+                            <ThemedText style={[styles.sectionTitle, { textAlign: textStart, writingDirection: dirStyle }]}>
+                                {t('notifications.today')}
+                            </ThemedText>
                         </View>
                         {groupedNotifications.today.map(renderItem)}
                     </>
@@ -119,8 +145,10 @@ export default function NotificationsScreen() {
                 {/* Yesterday Section */}
                 {groupedNotifications.yesterday.length > 0 && (
                     <>
-                        <View style={[styles.sectionHeader, { alignItems: 'flex-start' }]}>
-                            <ThemedText style={styles.sectionTitle}>{t('notifications.yesterday')}</ThemedText>
+                        <View style={styles.sectionHeader}>
+                            <ThemedText style={[styles.sectionTitle, { textAlign: textStart, writingDirection: dirStyle }]}>
+                                {t('notifications.yesterday')}
+                            </ThemedText>
                         </View>
                         {groupedNotifications.yesterday.map(renderItem)}
                     </>
@@ -129,8 +157,10 @@ export default function NotificationsScreen() {
                 {/* Older Section */}
                 {groupedNotifications.older.length > 0 && (
                     <>
-                        <View style={[styles.sectionHeader, { alignItems: 'flex-start' }]}>
-                            <ThemedText style={styles.sectionTitle}>{t('notifications.older') || (isArabic ? 'أقدم' : 'Older')}</ThemedText>
+                        <View style={styles.sectionHeader}>
+                            <ThemedText style={[styles.sectionTitle, { textAlign: textStart, writingDirection: dirStyle }]}>
+                                {t('notifications.older') || (isArabic ? 'أقدم' : 'Older')}
+                            </ThemedText>
                         </View>
                         {groupedNotifications.older.map(renderItem)}
                     </>
@@ -139,7 +169,7 @@ export default function NotificationsScreen() {
                 {/* Empty state */}
                 {!isLoading && groupedNotifications.today.length === 0 && groupedNotifications.yesterday.length === 0 && groupedNotifications.older.length === 0 && (
                     <View style={{ alignItems: 'center', paddingTop: 80 }}>
-                        <ThemedText style={{ fontSize: 14, color: '#9CA3AF', fontFamily: "Alexandria-Medium" }}>
+                        <ThemedText style={{ fontSize: 12, color: '#9CA3AF', fontFamily: "Alexandria-Medium" }}>
                             {isArabic ? 'لا توجد إشعارات' : 'No notifications'}
                         </ThemedText>
                     </View>
@@ -152,48 +182,68 @@ export default function NotificationsScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'white' },
+        backgroundColor: 'white',
+    },
     scrollContent: {
         paddingHorizontal: 20,
-        paddingBottom: 40 },
+        paddingBottom: 40,
+    },
     sectionHeader: {
         marginTop: 20,
-        marginBottom: 10 },
+        marginBottom: 8,
+    },
     sectionTitle: {
-        fontSize: 14,
+        fontSize: 12,
         fontFamily: "Alexandria-Medium",
-        color: '#9CA3AF' },
+        color: '#9CA3AF',
+    },
     notificationCard: {
-        flexDirection: 'row',
         backgroundColor: 'white',
-        borderRadius: 24,
-        padding: 16,
-        marginBottom: 12,
+        borderRadius: 16,
+        paddingVertical: 12,
+        paddingHorizontal: 14,
+        marginBottom: 8,
         borderWidth: 1,
         borderColor: '#F3F4F6',
-        alignItems: 'center' },
-    cardLeft: {
+        alignItems: 'flex-start',
+    },
+    dotContainer: {
+        width: 10,
+        paddingTop: 4,
+        alignItems: 'center',
+    },
+    orangeDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: '#FF4500',
+    },
+    titleRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8 },
-    orangeDot: {
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-        backgroundColor: '#FF4500' },
-    timeText: {
-        fontSize: 8,
-        color: '#9CA3AF',
-        fontFamily: "Alexandria-Medium" },
+        justifyContent: 'space-between',
+        marginBottom: 3,
+    },
     cardContent: {
-        flex: 1 },
+        flex: 1,
+        marginHorizontal: 8,
+    },
     titleText: {
-        fontSize: 14,
+        fontSize: 12,
         fontFamily: "Alexandria-Medium",
-        color: '#111827' },
+        color: '#111827',
+        flex: 1,
+    },
+    timeText: {
+        fontSize: 10,
+        color: '#9CA3AF',
+        fontFamily: "Alexandria-Medium",
+        marginHorizontal: 6,
+    },
     messageText: {
-        fontSize: 14,
+        fontSize: 11,
         color: '#6B7280',
-        marginTop: 2,
-     fontFamily: "Alexandria-Medium" }
+        fontFamily: "Alexandria-Medium",
+        lineHeight: 16,
+    },
 });

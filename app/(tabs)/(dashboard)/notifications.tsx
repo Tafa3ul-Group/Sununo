@@ -1,13 +1,13 @@
 import { ThemedText } from '@/components/themed-text';
 import { CircleBackButton } from '@/components/ui/circle-back-button';
 import { Colors, Shadows } from '@/constants/theme';
-import { getFlexDirection, isRTL } from "@/i18n";
 import { RootState } from '@/store';
-import { useGetNotificationsQuery } from '@/store/api/apiSlice';
+import { useGetNotificationsQuery, useMarkNotificationAsReadMutation } from '@/store/api/customerApiSlice';
+import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
@@ -24,10 +24,32 @@ interface Notification {
 }
 
 export default function NotificationsScreen() {
-    const { t } = useTranslation();
-    const { language } = useSelector((state: RootState) => state.auth);
+    const { t, i18n } = useTranslation();
+    const isArabic = i18n.language === "ar";
+    const { userType } = useSelector((state: RootState) => state.auth);
     const router = useRouter();
     const [page, setPage] = useState(1);
+    const [markAsRead] = useMarkNotificationAsReadMutation();
+
+    const handleNotificationPress = useCallback((item: Notification) => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+        // Mark as read
+        if (!item.readAt) {
+            markAsRead(item.id).catch(() => {});
+        }
+
+        // Navigate based on redirectType and userType
+        if (item.redirectType === 'booking' && item.redirectId) {
+            if (userType === 'owner') {
+                router.push({ pathname: '/(dashboard)/booking-details', params: { id: item.redirectId } });
+            } else {
+                router.push({ pathname: '/(tabs)/(customer)/booking-success', params: { id: item.redirectId } });
+            }
+        } else if (item.redirectType === 'payout') {
+            router.push('/(tabs)/(dashboard)/home');
+        }
+    }, [userType, router, markAsRead]);
 
     const { data: response, isLoading, isFetching, refetch } = useGetNotificationsQuery({
         page,
@@ -44,22 +66,27 @@ export default function NotificationsScreen() {
 
     const renderItem = ({ item }: { item: Notification }) => {
         const date = new Date(item.createdAt);
-        const timeStr = date.toLocaleTimeString(isRTL ? 'ar-IQ' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+        const timeStr = date.toLocaleTimeString(isArabic ? 'ar-IQ' : 'en-US', { hour: '2-digit', minute: '2-digit' });
 
         return (
-            <View key={item.id} style={[styles.notificationCard, { flexDirection: getFlexDirection(isRTL) }]}>
+            <TouchableOpacity
+                key={item.id}
+                style={[styles.notificationCard, { flexDirection: 'row', direction: isArabic ? 'rtl' : 'ltr' }]}
+                activeOpacity={0.7}
+                onPress={() => handleNotificationPress(item)}
+            >
                 {/* Content section */}
                 <View style={[styles.cardContent, { alignItems: 'flex-start' }]}>
-                    <ThemedText style={[styles.titleText, { textAlign: isRTL ? 'right' : 'left' }]}>{item.title}</ThemedText>
-                    <ThemedText style={[styles.messageText, { textAlign: isRTL ? 'right' : 'left' }]}>{item.text}</ThemedText>
+                    <ThemedText style={[styles.titleText, { textAlign: isArabic ? 'right' : 'left' }]}>{item.title}</ThemedText>
+                    <ThemedText style={[styles.messageText, { textAlign: isArabic ? 'right' : 'left' }]}>{item.text}</ThemedText>
                 </View>
 
                 {/* Header section with orange dot and time */}
-                <View style={[styles.cardLeft, { flexDirection: getFlexDirection(isRTL) }]}>
+                <View style={[styles.cardLeft, { flexDirection: 'row', direction: isArabic ? 'rtl' : 'ltr' }]}>
                     <ThemedText style={styles.timeText}>{timeStr}</ThemedText>
                     {!item.readAt && <View style={styles.orangeDot} />}
                 </View>
-            </View>
+            </TouchableOpacity>
         );
     };
 
@@ -67,10 +94,10 @@ export default function NotificationsScreen() {
         <SafeAreaView style={[styles.container]}>
             {/* Header */}
             <View style={styles.header}>
-                <View style={[styles.headerInner, { flexDirection: 'row' }]}>
+                <View style={[styles.headerInner, { flexDirection: 'row', direction: isArabic ? 'rtl' : 'ltr' }]}>
                     <ThemedText style={styles.headerTitle}>{t('headers.notifications')}</ThemedText>
                     <CircleBackButton
-                        style={[styles.backButton, { end: 0 }]}
+                        style={[styles.backButton, isArabic ? { left: 0 } : { right: 0 }]}
                         onPress={() => router.back()}
                     />
                 </View>
@@ -95,7 +122,7 @@ export default function NotificationsScreen() {
                     ) : (
                         <Animated.View entering={FadeIn.duration(300)} style={styles.centerContainer}>
                             <ThemedText style={styles.emptyText}>
-                                {isRTL ? 'لا توجد إشعارات حالياً' : 'No notifications found'}
+                                {isArabic ? 'لا توجد إشعارات حالياً' : 'No notifications found'}
                             </ThemedText>
                         </Animated.View>
                     )

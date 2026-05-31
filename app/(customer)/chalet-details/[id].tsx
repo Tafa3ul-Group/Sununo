@@ -2,6 +2,7 @@ import {
   SolarChaletRulesBold,
   SolarClockCircleBold,
   SolarForbiddenBold,
+  SolarForbiddenCircleLineDuotone,
   SolarHeartBold,
   SolarMapPointBold,
   SolarMoonBold,
@@ -88,12 +89,9 @@ const SHAPE_COLORS: Record<ShapeKey, string> = {
 };
 
 function SectionHeader({ title, isRTL }: { title: string; isRTL: boolean }) {
-  const textStart: "left" | "right" = isRTL ? "right" : "left";
-  const alignStart: "flex-start" | "flex-end" =
-    isRTL === I18nManager.isRTL ? "flex-start" : "flex-end";
   return (
-    <View style={[styles.sectionHeaderContainer, { alignItems: alignStart }]}>
-      <ThemedText style={[styles.sectionTitle, { textAlign: textStart }]}>
+    <View style={[styles.sectionHeaderContainer, { alignItems: "flex-start", direction: isRTL ? "rtl" : "ltr" }]}>
+      <ThemedText style={[styles.sectionTitle, { textAlign: isRTL ? "right" : "left" }]}>
         {title}
       </ThemedText>
     </View>
@@ -492,7 +490,8 @@ export default function ChaletDetailScreen() {
               bottom: 20,
               left: 20,
               right: 20,
-              flexDirection: flexDir,
+              flexDirection: "row",
+              direction: isRTL ? "rtl" : "ltr",
               alignItems: "center",
               justifyContent: "space-between",
               zIndex: 10,
@@ -533,7 +532,8 @@ export default function ChaletDetailScreen() {
           {/* العنوان والتقييم */}
           <View
             style={{
-              flexDirection: flexDir,
+              flexDirection: "row",
+              direction: isRTL ? "rtl" : "ltr",
               justifyContent: 'space-between',
               alignItems: 'flex-start',
               width: '100%',
@@ -566,7 +566,7 @@ export default function ChaletDetailScreen() {
 
           {/* المواصفات الأساسية */}
           <SectionHeader title={t("chalet.details.specs")} isRTL={isRTL} />
-          <View style={[styles.specsRow, { flexDirection: flexDir }]}>
+          <View style={[styles.specsRow, { flexDirection: 'row', direction: isRTL ? 'rtl' : 'ltr' }]}>
             {[
               { label: `${chalet.area || 0} م`, id: "area" },
               {
@@ -589,7 +589,6 @@ export default function ChaletDetailScreen() {
           <View style={styles.shiftsGrid}>
             {availableShifts && availableShifts.length > 0 ? (
               availableShifts.map((shift: any, index: number) => {
-                const isSelected = selectedShift?.id === shift.id;
                 const minShiftPrice =
                   shift.pricing && shift.pricing.length > 0
                     ? Math.min(
@@ -600,7 +599,7 @@ export default function ChaletDetailScreen() {
                 return (
                   <View
                     key={shift.id || index}
-                    style={[styles.shiftCard, { flexDirection: flexDir }]}
+                    style={[styles.shiftCard, { flexDirection: 'row', direction: isRTL ? 'rtl' : 'ltr' }]}
                   >
                     {(() => {
                       const isMorning =
@@ -620,22 +619,22 @@ export default function ChaletDetailScreen() {
                     <View
                       style={[
                         styles.shiftInfo,
-                        { alignItems: alignStart, marginHorizontal: 12 },
+                        { alignItems: 'flex-start', marginHorizontal: 12 },
                       ]}
                     >
-                      <ThemedText style={[styles.shiftName, { textAlign: textStart }]}>
+                      <ThemedText style={[styles.shiftName, { textAlign: isRTL ? 'right' : 'left' }]}>
                         {isRTL
                           ? shift.name?.ar || shift.name
                           : shift.name?.en || shift.name}
                       </ThemedText>
-                      <ThemedText style={[styles.shiftTime, { textAlign: textStart }]}>
+                      <ThemedText style={[styles.shiftTime, { textAlign: isRTL ? 'right' : 'left' }]}>
                         {formatShiftTime(shift.startTime)} -{" "}
                         {formatShiftTime(shift.endTime)}
                       </ThemedText>
                     </View>
                     {minShiftPrice && (
-                      <View style={{ alignItems: alignEnd }}>
-                        <ThemedText style={[styles.shiftPrice, { textAlign: textEnd }]}>
+                      <View style={{ alignItems: 'flex-start' }}>
+                        <ThemedText style={[styles.shiftPrice, { textAlign: isRTL ? 'right' : 'left' }]}>
                           {minShiftPrice} {t("common.iqd")}
                         </ThemedText>
                       </View>
@@ -644,12 +643,12 @@ export default function ChaletDetailScreen() {
                 );
               })
             ) : (
-              <View style={styles.closedChaletBox}>
-                <SolarForbiddenBold size={24} color="#EF4444" />
+              <View style={[styles.closedChaletBox, { direction: isRTL ? 'rtl' : 'ltr' }]}>
+                <SolarForbiddenCircleLineDuotone size={24} color="#EF4444" />
                 <ThemedText style={styles.closedChaletText}>
                   {isRTL
-                    ? "عذراً، هذا الشاليه غير متاح للحجز حالياً (مغلق)"
-                    : "Sorry, this chalet is currently unavailable for booking (Closed)"}
+                    ? "عذراً، لا تتوفر أي فترات حجز حالياً في هذا الشاليه."
+                    : "Sorry, no booking periods are currently available for this chalet."}
                 </ThemedText>
               </View>
             )}
@@ -1014,15 +1013,15 @@ export default function ChaletDetailScreen() {
 
       {/* الفوتر */}
       {availableShifts && availableShifts.length > 0 && (
-        <View style={[styles.flatUltimateFooter, { flexDirection: flexDir }]}>
-          <View style={[styles.footerTextSide, { alignItems: alignStart }]}>
-            <ThemedText style={[styles.footerPriceBig, { textAlign: textStart }]}>
+        <View style={[styles.flatUltimateFooter, { flexDirection: "row", direction: isRTL ? "rtl" : "ltr" }]}>
+          <View style={[styles.footerTextSide, { alignItems: "flex-start" }]}>
+            <ThemedText style={[styles.footerPriceBig, { textAlign: isRTL ? "right" : "left" }]}>
               {displayPrice} {t("common.iqd")}
             </ThemedText>
-            <View style={[styles.footerMetaRow, { flexDirection: flexDir }]}>
+            <View style={[styles.footerMetaRow, { flexDirection: "row", direction: isRTL ? "rtl" : "ltr" }]}>
               <SolarClockCircleBold size={12} color="#9CA3AF" />
               <ThemedText
-                style={[styles.footerMetaSmall, { textAlign: textStart }]}
+                style={[styles.footerMetaSmall, { textAlign: isRTL ? "right" : "left" }]}
               >
                 {selectedShift
                   ? isRTL
@@ -1225,14 +1224,15 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   closedChaletBox: {
-    backgroundColor: "#FEF2F2",
-    padding: 20,
-    borderRadius: 16,
+    backgroundColor: "#FFF5F5",
+    paddingVertical: 18,
+    paddingHorizontal: 20,
+    borderRadius: 20,
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: 14,
     borderWidth: 1,
-    borderColor: "#FEE2E2",
+    borderColor: "#FFE3E3",
   },
   closedChaletText: {
     flex: 1,

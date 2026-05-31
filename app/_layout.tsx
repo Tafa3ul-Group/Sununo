@@ -129,9 +129,13 @@ function RootLayoutNav() {
 
             if (!data) return;
 
-            // Deep linking بناءً على نوع الإشعار
+            // Deep linking بناءً على نوع الإشعار + نوع المستخدم
             if (data.type === "booking" && data.id) {
-              router.push(`/(customer)/booking/complete?id=${data.id}`);
+              if (userType === "owner") {
+                router.push({ pathname: "/(dashboard)/booking-details", params: { id: data.id } });
+              } else {
+                router.push({ pathname: "/(tabs)/(customer)/booking-success", params: { id: data.id } });
+              }
             } else if (data.type === "chalet" && data.id) {
               router.push(`/chalet-details/${data.id}`);
             } else if (data.type === "payout") {
@@ -148,7 +152,7 @@ function RootLayoutNav() {
       cleanup?.();
       if (retryTimeout) clearTimeout(retryTimeout);
     };
-  }, [loaded, isAuthenticated, authToken, notificationRetryNonce, router]);
+  }, [loaded, isAuthenticated, userType, authToken, notificationRetryNonce, router]);
 
   // ── إعادة تسجيل التوكن عند تسجيل الدخول ─────────────────────────────────
   useEffect(() => {
