@@ -726,7 +726,7 @@ export default function ChaletDetailsScreen() {
           {/* 1. Chalet Profile Card */}
           <TouchableOpacity
             style={[styles.profileCard, { flexDirection: flexRow }]}
-            onPress={() => imagesModalRef.current?.present()}
+        
             activeOpacity={0.9}
           >
             <View style={styles.avatarWrap}>
@@ -737,9 +737,7 @@ export default function ChaletDetailsScreen() {
                   <SolarGalleryBold size={24} color="white" />
                 </View>
               )}
-              <View style={styles.editBadge}>
-                <SolarPenBold size={12} color="white" />
-              </View>
+        
             </View>
 
             <View style={[styles.profileInfo, { alignItems: flexStart }]}>
@@ -755,12 +753,7 @@ export default function ChaletDetailsScreen() {
                   </View>
                 )}
               </View>
-              <View style={[styles.profileLocationRow, { flexDirection: flexRow, alignItems: 'center', gap: 4 }]}>
-                <SolarMapPointBold size={14} color="#64748B" />
-                <Text style={[styles.profileLocationText, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
-                  {chaletLocation || ''}
-                </Text>
-              </View>
+
               <View style={[styles.profileBadgesRow, { flexDirection: flexRow, alignItems: 'center', gap: 8, marginTop: 8 }]}>
                 {!isActive && (
                   <View style={[styles.approvalBadgeMini, { backgroundColor: '#F3F4F6' }]}>
@@ -769,15 +762,19 @@ export default function ChaletDetailsScreen() {
                     </Text>
                   </View>
                 )}
-                <View style={[styles.approvalBadgeMini, { backgroundColor: chalet?.isApproved ? '#ECFDF5' : '#FFFBEB' }]}>
+                <View style={[styles.approvalBadgeMini, {
+                  flexDirection: flexRow,
+                  backgroundColor: chalet?.isApproved ? '#ECFDF5' : '#FFFBEB',
+                  borderColor: chalet?.isApproved ? '#A7F3D0' : '#FDE68A',
+                }]}>
+                  {chalet?.isApproved
+                    ? <SolarCheckCircleBold size={16} color="#10B981" />
+                    : <SolarClockCircleBold size={16} color="#F59E0B" />}
                   <Text style={[styles.approvalTextMini, { color: chalet?.isApproved ? '#10B981' : '#F59E0B' }]}>
                     {chalet?.isApproved ? (isRTL ? 'نشط ومقبول' : 'Approved') : (isRTL ? 'قيد المراجعة' : 'Pending')}
                   </Text>
                 </View>
-                <View style={styles.ratingBadgeMini}>
-                  <SolarStarBold size={12} color="#F59E0B" />
-                  <Text style={styles.ratingTextMini}>{ratingValue.toFixed(1)}</Text>
-                </View>
+
               </View>
             </View>
           </TouchableOpacity>
@@ -802,13 +799,7 @@ export default function ChaletDetailsScreen() {
 
           {/* 3. Performance Stats Bar */}
           <View style={[styles.performanceStatsCard, { flexDirection: flexRow }]}>
-            <View style={styles.perfStatItem}>
-              <Text style={styles.perfStatValue}>
-                {isLoadingStats ? '...' : Number(totalEarnings || 0).toLocaleString()}
-                <Text style={styles.perfCurrency}> {isRTL ? 'د.ع' : 'IQD'}</Text>
-              </Text>
-              <Text style={styles.perfStatLabel}>{isRTL ? 'الأرباح' : 'Revenue'}</Text>
-            </View>
+
             <View style={styles.perfStatDivider} />
             <View style={styles.perfStatItem}>
               <Text style={styles.perfStatValue}>{isLoadingStats ? '...' : totalBookings}</Text>
@@ -1059,51 +1050,68 @@ export default function ChaletDetailsScreen() {
           </View>
 
           {/* ──── Daily Hours (Booking Duration) ──── */}
-          <Text style={[styles.settingsGroupTitle, { textAlign: isRTL ? 'right' : 'left', alignSelf: flexStart }]}>
-            {isRTL ? 'مدة الحجز' : 'Booking Duration'}
-          </Text>
-          <View style={styles.menuGroup}>
-            <View style={styles.menuRow}>
-              <ProfileShape size={normalize.width(36)} type="blue">
-                <SolarClockCircleBold size={18} color="white" />
-              </ProfileShape>
-              <View style={[styles.menuLabelContainer, { alignItems: flexStart, flex: 1 }]}>
-                <Text style={[styles.menuLabelText, { textAlign: isRTL ? 'right' : 'left' }]}>
-                  {isRTL ? 'مدة الحجز بالساعات' : 'Duration in Hours'}
-                </Text>
-                <Text style={[styles.menuValueText, { textAlign: isRTL ? 'right' : 'left' }]}>
-                  {isRTL ? `الحد الأقصى 5 ساعات • الدفلت ساعة واحدة` : `Max 5 hours • Default 1 hour`}
-                </Text>
+          {bookingType === 'delayed' && (
+            <>
+              <Text style={[styles.settingsGroupTitle, { textAlign: isRTL ? 'right' : 'left', alignSelf: flexStart }]}>
+                {isRTL ? 'مدة الحجز' : 'Booking Duration'}
+              </Text>
+              <View style={styles.menuGroup}>
+                <View style={styles.menuRow}>
+                  <ProfileShape size={normalize.width(36)} type="blue">
+                    <SolarClockCircleBold size={18} color="white" />
+                  </ProfileShape>
+                  <View style={[styles.menuLabelContainer, { alignItems: flexStart, flex: 1 }]}>
+                    <Text style={[styles.menuLabelText, { textAlign: isRTL ? 'right' : 'left' }]}>
+                      {isRTL ? 'مدة الحجز بالساعات' : 'Duration in Hours'}
+                    </Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <TouchableOpacity
+                      onPress={() => updateDailyHours(dailyHours - 1)}
+                      disabled={dailyHours <= 1}
+                      style={{
+                        width: 32, height: 32, borderRadius: 16,
+                        backgroundColor: dailyHours <= 1 ? '#F1F5F9' : '#DBEAFE',
+                        justifyContent: 'center', alignItems: 'center',
+                      }}
+                    >
+                      <Text style={{ fontSize: 18, fontWeight: '700', color: dailyHours <= 1 ? '#CBD5E1' : Colors.primary }}>−</Text>
+                    </TouchableOpacity>
+                    <Text style={{ fontSize: normalize.font(16), fontFamily: 'Alexandria-Bold', color: '#1E293B', minWidth: 24, textAlign: 'center' }}>
+                      {dailyHours}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => updateDailyHours(dailyHours + 1)}
+                      disabled={dailyHours >= 5}
+                      style={{
+                        width: 32, height: 32, borderRadius: 16,
+                        backgroundColor: dailyHours >= 5 ? '#F1F5F9' : '#DBEAFE',
+                        justifyContent: 'center', alignItems: 'center',
+                      }}
+                    >
+                      <Text style={{ fontSize: 18, fontWeight: '700', color: dailyHours >= 5 ? '#CBD5E1' : Colors.primary }}>+</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Booking duration info note */}
+                <View style={[styles.bookingDurationNoteCard, { flexDirection: flexRow, marginTop: 12, alignItems: 'flex-start' }]}>
+                  <SolarShieldWarningBold size={16} color="#0284C7" style={{ marginTop: 2 }} />
+                  <View style={{ flex: 1, gap: 2, alignItems: flexStart }}>
+                    <Text style={[styles.bookingDurationNoteTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
+                      {isRTL ? 'ما هي فائدة مدة الحجز؟' : 'What is the purpose of booking duration?'}
+                    </Text>
+                    <Text style={[styles.bookingDurationNoteText, { textAlign: isRTL ? 'right' : 'left' }]}>
+                      {isRTL
+                        ? 'هذا هو الوقت الأقصى المتاح لك للموافقة على طلب الحجز قبل إلغائه تلقائياً.'
+                        : 'This is the maximum time allowed to approve the booking request before it is automatically cancelled.'
+                      }
+                    </Text>
+                  </View>
+                </View>
               </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <TouchableOpacity
-                  onPress={() => updateDailyHours(dailyHours - 1)}
-                  disabled={dailyHours <= 1}
-                  style={{
-                    width: 32, height: 32, borderRadius: 16,
-                    backgroundColor: dailyHours <= 1 ? '#F1F5F9' : '#DBEAFE',
-                    justifyContent: 'center', alignItems: 'center',
-                  }}
-                >
-                  <Text style={{ fontSize: 18, fontWeight: '700', color: dailyHours <= 1 ? '#CBD5E1' : Colors.primary }}>−</Text>
-                </TouchableOpacity>
-                <Text style={{ fontSize: normalize.font(16), fontFamily: 'Alexandria-Bold', color: '#1E293B', minWidth: 24, textAlign: 'center' }}>
-                  {dailyHours}
-                </Text>
-                <TouchableOpacity
-                  onPress={() => updateDailyHours(dailyHours + 1)}
-                  disabled={dailyHours >= 5}
-                  style={{
-                    width: 32, height: 32, borderRadius: 16,
-                    backgroundColor: dailyHours >= 5 ? '#F1F5F9' : '#DBEAFE',
-                    justifyContent: 'center', alignItems: 'center',
-                  }}
-                >
-                  <Text style={{ fontSize: 18, fontWeight: '700', color: dailyHours >= 5 ? '#CBD5E1' : Colors.primary }}>+</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
+            </>
+          )}
 
           {/* Danger Zone Group */}
           <Text style={[styles.settingsGroupTitle, { color: '#EF4444', textAlign: isRTL ? 'right' : 'left', alignSelf: flexStart }]}>
@@ -1342,6 +1350,8 @@ export default function ChaletDetailsScreen() {
             onPress={handleUpdateDeposit} 
             loading={isUpdating} 
             disabled={isDepositInvalid}
+            activeColor={isDepositInvalid ? '#94A3B8' : undefined}
+            style={{ opacity: isDepositInvalid ? 0.8 : 1 }}
           />
         </BottomSheetView>
       </BottomSheetModal>
@@ -1790,12 +1800,17 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   approvalBadgeMini: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   approvalTextMini: {
-    fontSize: normalize.font(10),
+    fontSize: normalize.font(12),
     fontFamily: "Alexandria-Bold",
   },
   ratingBadgeMini: {
@@ -2645,5 +2660,24 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(13),
     fontFamily: 'Alexandria-Medium',
     color: Colors.text.primary,
+  },
+  bookingDurationNoteCard: {
+    backgroundColor: '#F0F9FF',
+    borderColor: '#BAE6FD',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    gap: 8,
+  },
+  bookingDurationNoteTitle: {
+    fontSize: normalize.font(12),
+    fontFamily: "Alexandria-Bold",
+    color: '#0369A1',
+  },
+  bookingDurationNoteText: {
+    fontSize: normalize.font(10),
+    fontFamily: "Alexandria-Medium",
+    color: '#0284C7',
+    lineHeight: 16,
   },
 });
