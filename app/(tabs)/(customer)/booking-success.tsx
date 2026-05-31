@@ -236,6 +236,20 @@ export default function BookingSuccessDetailsScreen() {
   const addonsPriceVal = Number(booking?.addonsPrice || 0);
   const depositAmountVal = Math.round((Number(booking?.totalPrice || 0) * depositPercentage) / 100);
 
+  // ── Derived state flags (single source of truth = booking.status) ──────────
+  const status = booking?.status;
+  const paymentModelVal = booking?.paymentModel; // 'deposit' | 'full' | undefined
+  const isPendingApproval = status === "pending_approval";
+  const isPendingPayment = status === "pending_payment";
+  const isConfirmed = status === "confirmed";
+  const isCompleted = status === "completed";
+  const isCancelled = status === "cancelled";
+  const isPaid = isConfirmed || isCompleted; // money has been received
+  const isDepositPayment = paymentModelVal === "deposit";
+  const amountPaidVal = Number(booking?.amountPaid || 0);
+  const remainingAmountVal = Number(booking?.remainingAmount || 0);
+  const cancellationReason = booking?.cancellationReason || booking?.cancelReason;
+
   const shiftInfo = useMemo(() => {
     if (!booking?.shift) return t("booking.morningShift");
     const name = isRTL
@@ -340,11 +354,14 @@ export default function BookingSuccessDetailsScreen() {
             {t("booking.customerInfo")}
           </ThemedText>
           <View style={styles.divider} />
-          {renderInfoRow(t("booking.name"), t("booking.nameValue"))}
+          {renderInfoRow(
+            t("booking.name"),
+            booking?.customer?.name || t("booking.nameValue"),
+          )}
           {renderInfoRow(
             t("booking.phone"),
             <ThemedText style={[styles.infoValue, { direction: "ltr" }]}>
-              {t("booking.phoneValue")}
+              {booking?.customer?.phone || t("booking.phoneValue")}
             </ThemedText>,
           )}
         </View>
@@ -411,21 +428,19 @@ export default function BookingSuccessDetailsScreen() {
               style={[isRTL ? { marginRight: "auto" } : { marginLeft: "auto" }]}
             >
               <View
-                style={
-                  booking?.paymentStatus === "paid"
-                    ? styles.statusBadgeBlue
-                    : styles.statusBadgeGray
-                }
+                style={isPaid ? styles.statusBadgeBlue : styles.statusBadgeGray}
               >
                 <ThemedText
                   style={
-                    booking?.paymentStatus === "paid"
+                    isPaid
                       ? styles.statusBadgeTextBlue
                       : styles.statusBadgeTextGray
                   }
                 >
-                  {booking?.paymentStatus === "paid"
-                    ? t("booking.status.paid")
+                  {isPaid
+                    ? (isDepositPayment && remainingAmountVal > 0
+                        ? (isRTL ? "مدفوع جزئياً (عربون)" : "Partially Paid (Deposit)")
+                        : t("booking.status.paid"))
                     : t("booking.status.deferred")}
                 </ThemedText>
               </View>
@@ -450,22 +465,22 @@ export default function BookingSuccessDetailsScreen() {
             t("booking.totalAmount"),
             `${totalPrice} ${t("common.iqd")}`,
           )}
-          {booking?.paymentModel === 'deposit' && (booking?.status === 'confirmed' || booking?.status === 'completed') && (
-            <>
-              {renderInfoRow(
-                t("booking.depositAmount"),
-                `${depositAmount} ${t("common.iqd")}`,
-              )}
-              {renderInfoRow(
-                t("booking.remainingAmount"),
-                `${remainingAmount} ${t("common.iqd")}`,
-              )}
-            </>
+          {isPaid && renderInfoRow(
+            isDepositPayment
+              ? (isRTL ? "المبلغ المدفوع (العربون)" : "Paid (Deposit)")
+              : (isRTL ? "المبلغ المدفوع" : "Amount Paid"),
+            <ThemedText style={[styles.infoValue, { color: "#16A34A", fontFamily: "Alexandria-SemiBold" }]}>
+              {`${amountPaidVal.toLocaleString()} ${t("common.iqd")}`}
+            </ThemedText>,
+          )}
+          {isPaid && isDepositPayment && remainingAmountVal > 0 && renderInfoRow(
+            isRTL ? "المبلغ المتبقي (يُدفع عند الوصول)" : "Remaining (Due on arrival)",
+            `${remainingAmount} ${t("common.iqd")}`,
           )}
         </View>
 
         {/* Pending Approval Alert */}
-        {booking?.status === "pending_approval" && (
+        {isPendingApproval && (
           <View style={[styles.alertCard, { flexDirection: getFlexDirection(isRTL) }]}>
             <SolarInfoCircleBold size={24} color="#D97706" />
             <ThemedText style={styles.alertText}>
@@ -476,8 +491,35 @@ export default function BookingSuccessDetailsScreen() {
           </View>
         )}
 
+        {/* Confirmed: awaiting the owner to complete the stay */}
+        {isConfirmed && (
+          <View style={[styles.alertCard, styles.alertCardSuccess, { flexDirection: getFlexDirection(isRTL) }]}>
+            <SolarInfoCircleBold size={24} color="#16A34A" />
+            <ThemedText style={[styles.alertText, { color: "#15803D" }]}>
+              {isRTL
+                ? (isDepositPayment && remainingAmountVal > 0
+                    ? "تم تأكيد حجزك بنجاح. يُدفع المبلغ المتبقي عند الوصول، وستظهر حالة الحجز \"مكتمل\" بعد انتهاء فترة الإقامة."
+                    : "تم تأكيد حجزك ودفع المبلغ بالكامل. ستظهر حالة الحجز \"مكتمل\" بعد انتهاء فترة الإقامة.")
+                : (isDepositPayment && remainingAmountVal > 0
+                    ? "Your booking is confirmed. The remaining balance is due on arrival, and the status will become \"Completed\" after the stay ends."
+                    : "Your booking is confirmed and fully paid. The status will become \"Completed\" after the stay ends.")}
+            </ThemedText>
+          </View>
+        )}
+
+        {/* Cancelled: show reason */}
+        {isCancelled && (
+          <View style={[styles.alertCard, styles.alertCardDanger, { flexDirection: getFlexDirection(isRTL) }]}>
+            <SolarInfoCircleBold size={24} color="#DC2626" />
+            <ThemedText style={[styles.alertText, { color: "#B91C1C" }]}>
+              {isRTL ? "تم إلغاء هذا الحجز." : "This booking has been cancelled."}
+              {cancellationReason ? `\n${cancellationReason}` : ""}
+            </ThemedText>
+          </View>
+        )}
+
         {/* Pending Payment Form */}
-        {booking?.status === "pending_payment" && (
+        {isPendingPayment && (
           <View style={styles.paymentSectionCard}>
             <ThemedText style={[styles.sectionTitle, { textAlign: textStart }]}>
               {isRTL ? "إتمام عملية الدفع وتأكيد الحجز" : "Complete Payment"}
@@ -715,6 +757,14 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
     gap: 12,
+  },
+  alertCardSuccess: {
+    backgroundColor: "#F0FDF4",
+    borderColor: "#BBF7D0",
+  },
+  alertCardDanger: {
+    backgroundColor: "#FEF2F2",
+    borderColor: "#FECACA",
   },
   alertText: {
     flex: 1,
