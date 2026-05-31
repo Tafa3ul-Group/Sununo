@@ -3,24 +3,18 @@ import {
   SolarAddCircleBold,
   SolarAltArrowDownBold,
   SolarAltArrowUpBold,
-  SolarBanknoteBold,
   SolarBookmarkSquareMinimalisticBoldDuotone,
   SolarCalendarBold,
-  SolarCheckCircleBold,
   SolarClockCircleBold,
   SolarCloseBold,
   SolarInfoCircleBold,
-  SolarLightbulbBold,
-  SolarMapPointBold,
-  SolarMoonBold,
   SolarPenBold,
-  SolarShieldBold,
-  SolarSunBold,
   SolarTrashBinBold
 } from '@/components/icons/solar-icons';
+import { useConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { toastConfig } from '@/components/ui/toast-config';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { Colors, Shadows } from '@/constants/theme';
-import i18n from "@/i18n";
 import { RootState } from '@/store';
 import {
   useCreateShiftMutation,
@@ -33,11 +27,10 @@ import {
   useUpdateShiftMutation,
   useUpdateShiftPricingDayMutation
 } from '@/store/api/apiSlice';
-import { formatPrice } from '@/utils/format';
-import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput, BottomSheetView } from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput, BottomSheetView } from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
 import { Image as ExpoImage } from 'expo-image';
-import { useFocusEffect, useLocalSearchParams, useRouter, useNavigation, useSegments } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useNavigation, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -54,8 +47,6 @@ import {
 } from 'react-native';
 import { ScrollView, Swipeable } from 'react-native-gesture-handler';
 import Toast from 'react-native-toast-message';
-import { useConfirmationDialog } from '@/components/ui/confirmation-dialog';
-import { toastConfig } from '@/components/ui/toast-config';
 import { useSelector } from 'react-redux';
 
 function ShiftPricingView({ shift, isRTL, onEdit }: { shift: any; isRTL: boolean; onEdit: (data?: any[]) => void }) {
@@ -1500,291 +1491,301 @@ export default function ShiftsAndPricesScreen() {
         ref={pricingSheetRef}
         index={0}
         snapPoints={['90%']}
+        enableDynamicSizing={false}
         backdropComponent={renderBackdrop}
         backgroundStyle={{ borderRadius: 32, backgroundColor: '#F8F9FA' }}
       >
-        <BottomSheetScrollView contentContainerStyle={{ paddingBottom: 60 }}>
-          <View style={{ padding: 20 }}>
-            {/* Top Navigation / Centered Header Actions */}
+        <View style={{ flex: 1 }}>
+          {/* Header */}
+          <View style={{
+            flexDirection: isRTL ? 'row-reverse' : 'row',
+            alignItems: 'center',
+            paddingHorizontal: 20,
+            paddingTop: 4,
+            paddingBottom: 16,
+            borderBottomWidth: 1,
+            borderBottomColor: '#EEF1F5',
+          }}>
+            <TouchableOpacity
+              onPress={() => pricingSheetRef.current?.dismiss()}
+              style={{ width: 38, height: 38, backgroundColor: '#F1F5F9', borderRadius: 12, justifyContent: 'center', alignItems: 'center' }}
+            >
+              <SolarCloseBold size={18} color="#334155" />
+            </TouchableOpacity>
+
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              <Text style={{ fontSize: 16, fontFamily: 'Alexandria-Bold', color: '#0F172A' }}>
+                {isRTL ? 'تخصيص أسعار الأيام' : 'Daily Pricing'}
+              </Text>
+              {selectedShift && (
+                <Text style={{ fontSize: 12, color: '#64748B', fontFamily: 'Alexandria-Medium', marginTop: 2 }}>
+                  {isRTL ? (selectedShift.name?.ar || selectedShift.name) : (selectedShift.name?.en || selectedShift.name)}
+                </Text>
+              )}
+            </View>
+
+            <View style={{ width: 38 }} />
+          </View>
+
+          <BottomSheetScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={{ padding: 20, paddingBottom: 24 }}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="interactive"
+          >
+            {/* Shift active toggle */}
             <View style={{
               flexDirection: isRTL ? 'row-reverse' : 'row',
-              justifyContent: 'space-between',
               alignItems: 'center',
-              paddingBottom: 16,
-              borderBottomWidth: 1,
-              borderBottomColor: '#F1F5F9',
-              marginBottom: 16
+              justifyContent: 'space-between',
+              backgroundColor: '#fff',
+              borderRadius: 16,
+              borderWidth: 1,
+              borderColor: '#EEF1F5',
+              paddingVertical: 14,
+              paddingHorizontal: 16,
+              marginBottom: 14,
             }}>
-              {/* Close Button */}
-              <TouchableOpacity
-                onPress={() => pricingSheetRef.current?.dismiss()}
-                style={{ width: 40, height: 40, backgroundColor: '#F1F5F9', borderRadius: 12, justifyContent: 'center', alignItems: 'center' }}
-              >
-                <SolarCloseBold size={20} color="#334155" />
-              </TouchableOpacity>
-
-              {/* Centered Modal Title */}
-              <Text style={{ fontSize: 16, fontFamily: 'Alexandria-Bold', color: '#0F172A', textAlign: 'center', flex: 1 }}>
-                {isRTL ? 'تخصيص أسعار الأيام' : 'Weekly Pricing'}
+              <Text style={{ fontSize: 14, fontFamily: 'Alexandria-SemiBold', color: '#0F172A' }}>
+                {isRTL ? 'استقبال الحجوزات لهذه الفترة' : 'Accept bookings for this shift'}
               </Text>
-
-              {/* Invisible Spacer to keep Title perfectly centered */}
-              <View style={{ width: 40 }} />
-            </View>
-
-            {/* Chalet Title & Shift Info */}
-            <View style={{ alignItems: 'flex-start', marginBottom: 20 }}>
-              {/* Shift/Period Name - Highlighted prominently with a Clock Icon! */}
-              {selectedShift && (
-                <View style={[styles.row, { backgroundColor: Colors.primary + '15', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, gap: 6, marginBottom: 8 }]}>
-                  <SolarClockCircleBold size={14} color={Colors.primary} />
-                  <Text style={{ fontSize: 12, color: Colors.primary, fontFamily: 'Alexandria-Bold' }}>
-                    {isRTL ? `الفترة: ${selectedShift.name?.ar || selectedShift.name}` : `Shift: ${selectedShift.name?.en || selectedShift.name}`}
-                  </Text>
-                </View>
-              )}
-              
-              {(() => {
-                const activeChalet = ownerChalets.find((c: any) => c.id === selectedChaletId);
-                if (!activeChalet) return null;
-                return (
-                  <Text style={{ fontSize: 12, color: '#64748B', fontFamily: 'Alexandria-Medium', marginTop: 2 }}>
-                    {isRTL ? activeChalet.name?.ar : activeChalet.name?.en}
-                  </Text>
-                );
-              })()}
-            </View>
-
-            <View style={[styles.shiftStatusHighlight, { flexDirection: 'row' }]}>
-              <View style={[styles.row, { flex: 1 }]}>
-                <View style={[styles.statusIconCircle, { backgroundColor: modalActiveStatus ? Colors.primary + '15' : '#F3F4F6' }]}>
-                  <SolarShieldBold size={20} color={modalActiveStatus ? Colors.primary : '#9CA3AF'} />
-                </View>
-                <View style={{ marginHorizontal: 12 }}>
-                  <Text style={styles.statusLabelLarge}>{isRTL ? 'حالة الفترة الحالية' : 'Shift Status'}</Text>
-                  <Text style={[styles.statusValueLarge, { color: modalActiveStatus ? Colors.primary : '#9CA3AF' }]}>
-                    {isRTL ? (modalActiveStatus ? 'هذه الفترة نشطة الآن' : 'هذه الفترة متوقفة حالياً') : (modalActiveStatus ? 'Shift is currently active' : 'Shift is currently inactive')}
-                  </Text>
-                </View>
-              </View>
               <Switch
                 value={modalActiveStatus}
                 onValueChange={handleToggleShiftModal}
-                trackColor={{ false: '#D1D5DB', true: Colors.primary + '40' }}
+                trackColor={{ false: '#D1D5DB', true: Colors.primary + '55' }}
                 thumbColor={modalActiveStatus ? Colors.primary : '#9CA3AF'}
               />
             </View>
 
-            <View style={styles.premiumQuickActionCard}>
-              <View style={[styles.row, { justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }]}>
-                <View style={[styles.row, { gap: 8 }]}>
-                  <View style={styles.quickActionIconWrapper}>
-                    <SolarLightbulbBold size={16} color={Colors.primary} />
-                  </View>
-                  <Text style={styles.quickActionTitle}>{isRTL ? 'إجراءات سريعة للأيام' : 'Batch Price Update'}</Text>
-                </View>
-                
-                <View style={[styles.row, { gap: 6 }]}>
-                  <TouchableOpacity onPress={handleEnableAllDays} style={styles.premiumMiniQuickBtnActive} activeOpacity={0.8}>
-                    <Text style={styles.premiumMiniQuickBtnActiveText}>{isRTL ? 'تفعيل الكل' : 'Enable All'}</Text>
+            {/* Apply same price to all days */}
+            <View style={{
+              backgroundColor: '#fff',
+              borderRadius: 16,
+              borderWidth: 1,
+              borderColor: '#EEF1F5',
+              padding: 16,
+              marginBottom: 20,
+            }}>
+              <View style={{
+                flexDirection: isRTL ? 'row-reverse' : 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 12,
+              }}>
+                <Text style={{ fontSize: 13, fontFamily: 'Alexandria-SemiBold', color: '#0F172A' }}>
+                  {isRTL ? 'سعر موحّد لكل الأيام' : 'One price for all days'}
+                </Text>
+                <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 14 }}>
+                  <TouchableOpacity onPress={handleEnableAllDays} activeOpacity={0.7}>
+                    <Text style={{ fontSize: 12, fontFamily: 'Alexandria-SemiBold', color: Colors.primary }}>
+                      {isRTL ? 'تفعيل الكل' : 'Enable all'}
+                    </Text>
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={handleDisableAllDays} style={styles.premiumMiniQuickBtnInactive} activeOpacity={0.8}>
-                    <Text style={styles.premiumMiniQuickBtnInactiveText}>{isRTL ? 'إيقاف الكل' : 'Disable All'}</Text>
+                  <TouchableOpacity onPress={handleDisableAllDays} activeOpacity={0.7}>
+                    <Text style={{ fontSize: 12, fontFamily: 'Alexandria-SemiBold', color: '#EF4444' }}>
+                      {isRTL ? 'إيقاف الكل' : 'Disable all'}
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>
 
-              <Text style={styles.quickActionSubTitle}>
-                {isRTL ? 'عيّن سعراً موحداً لجميع الأيام المفتوحة دفعة واحدة:' : 'Set a uniform price across all open days at once:'}
-              </Text>
-
-              <View style={styles.premiumBulkInputRow}>
-                <View style={[styles.row, { flex: 1, gap: 10 }]}>
-                  <SolarBanknoteBold size={20} color="#64748B" />
-                  <BottomSheetTextInput
-                    style={styles.premiumBulkInput}
-                    keyboardType="numeric"
-                    placeholder={isRTL ? "أدخل السعر الموحد..." : "Enter uniform price..."}
-                    placeholderTextColor="#94A3B8"
-                    value={bulkPrice ? formatWithCommas(bulkPrice) : ''}
-                    onChangeText={t => setBulkPrice(String(cleanPriceNumber(t)))}
-                  />
-                </View>
-                
+              <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 10 }}>
+                <BottomSheetTextInput
+                  style={{
+                    flex: 1,
+                    height: 48,
+                    backgroundColor: '#F8FAFC',
+                    borderWidth: 1,
+                    borderColor: '#E2E8F0',
+                    borderRadius: 12,
+                    paddingHorizontal: 14,
+                    fontSize: 15,
+                    fontFamily: 'Alexandria-SemiBold',
+                    color: '#0F172A',
+                    textAlign: isRTL ? 'right' : 'left',
+                  }}
+                  keyboardType="numeric"
+                  placeholder={isRTL ? 'السعر بالدينار' : 'Price (IQD)'}
+                  placeholderTextColor="#94A3B8"
+                  value={bulkPrice ? formatWithCommas(bulkPrice) : ''}
+                  onChangeText={t => setBulkPrice(String(cleanPriceNumber(t)))}
+                />
                 <TouchableOpacity
                   onPress={handleApplyBulkPrice}
-                  style={[styles.premiumBulkApplyBtn, !bulkPrice && { backgroundColor: '#F1F5F9', shadowColor: 'transparent' }]}
                   disabled={!bulkPrice}
                   activeOpacity={0.8}
+                  style={{
+                    height: 48,
+                    paddingHorizontal: 22,
+                    borderRadius: 12,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: bulkPrice ? Colors.primary : '#F1F5F9',
+                  }}
                 >
-                  <Text style={[styles.premiumBulkApplyBtnText, !bulkPrice && { color: '#94A3B8' }]}>
+                  <Text style={{ fontSize: 14, fontFamily: 'Alexandria-SemiBold', color: bulkPrice ? '#fff' : '#94A3B8' }}>
                     {isRTL ? 'تطبيق' : 'Apply'}
                   </Text>
                 </TouchableOpacity>
               </View>
             </View>
-          </View>
 
-          {pricingForm.map((item, index) => {
-            const isStopped = item.price === 1;
-            const isWeekend = item.dayOfWeek === 5 || item.dayOfWeek === 6; // Friday & Saturday in Iraq/RTL
-            const dayName = isRTL
-              ? ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'][item.dayOfWeek]
-              : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][item.dayOfWeek];
+            {/* Per-day list */}
+            {pricingForm.map((item, index) => {
+              const isStopped = item.price === 1;
+              const isWeekend = item.dayOfWeek === 5 || item.dayOfWeek === 6;
+              const dayName = isRTL
+                ? ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'][item.dayOfWeek]
+                : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][item.dayOfWeek];
 
-            return (
-              <View
-                key={`day-${item.dayOfWeek}`}
-                style={[
-                  styles.pricingRowModern,
-                  isWeekend && { borderColor: '#FECACA', backgroundColor: '#FFFDFD' },
-                  isStopped && styles.pricingRowStopped,
-                  { marginHorizontal: 20, marginBottom: 12 }
-                ]}
-              >
-                <View style={{ flex: 1 }}>
-                  {/* Top Day Label & Status Switch Header */}
-                  <View style={[styles.row, { justifyContent: 'space-between', alignItems: 'center' }]}>
-                    <View style={[styles.row, { gap: 8 }]}>
-                      <View style={[
-                        styles.dayIndicator,
-                        isWeekend && { backgroundColor: '#FEE2E2' }
-                      ]}>
-                        <Text style={[
-                          styles.dayIndicatorText,
-                          isWeekend && { color: '#DC2626' }
-                        ]}>
-                          {dayName.substring(0, 1)}
-                        </Text>
-                      </View>
-                      
-                      <Text style={[styles.dayFullName, isWeekend && { color: '#1E293B' }]}>{dayName}</Text>
-                      
+              return (
+                <View
+                  key={`day-${item.dayOfWeek}`}
+                  style={{
+                    flexDirection: isRTL ? 'row' : 'row-reverse',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    backgroundColor: '#fff',
+                    borderRadius: 16,
+                    borderWidth: 1,
+                    borderColor: '#EEF1F5',
+                    paddingVertical: 12,
+                    paddingHorizontal: 14,
+                    marginBottom: 10,
+                    opacity: isStopped ? 0.7 : 1,
+                  }}
+                >
+                  {/* Day name + toggle */}
+                  <View style={{ flexDirection: isRTL ? 'row' : 'row-reverse', alignItems: 'center', gap: 12 }}>
+                    <View style={{ alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
+                      <Text style={{ fontSize: 14, fontFamily: 'Alexandria-SemiBold', color: isStopped ? '#94A3B8' : '#0F172A' }}>
+                        {dayName}
+                      </Text>
                       {isWeekend && (
-                        <View style={styles.weekendPill}>
-                          <Text style={styles.weekendPillText}>{isRTL ? 'عطلة نهاية الأسبوع' : 'Weekend'}</Text>
-                        </View>
+                        <Text style={{ fontSize: 10, fontFamily: 'Alexandria-Medium', color: '#F97316', marginTop: 1 }}>
+                          {isRTL ? 'عطلة' : 'Weekend'}
+                        </Text>
                       )}
                     </View>
-
-                    <View style={[styles.row, { gap: 6 }]}>
-                      <Text style={{ fontSize: 11, color: isStopped ? '#94A3B8' : Colors.primary, fontFamily: 'Alexandria-Bold' }}>
-                        {isStopped ? (isRTL ? 'مغلق' : 'OFF') : (isRTL ? 'نشط' : 'ON')}
-                      </Text>
-                      <Switch
-                        value={!isStopped}
-                        trackColor={{ false: '#E2E8F0', true: Colors.primary + '35' }}
-                        thumbColor={!isStopped ? Colors.primary : '#94A3B8'}
-                        onValueChange={(val) => handleToggleDay(index, val)}
-                      />
-                    </View>
+                    <Switch
+                      value={!isStopped}
+                      trackColor={{ false: '#E2E8F0', true: Colors.primary + '55' }}
+                      thumbColor={!isStopped ? Colors.primary : '#94A3B8'}
+                      onValueChange={(val) => handleToggleDay(index, val)}
+                    />
                   </View>
 
-                  {/* Pricing Inputs controls (Fitts's Law compliant large hit targets) */}
-                  {!isStopped && (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
-                      {/* Stepper & Input Group */}
+                  {/* Price input + per-day save, or closed label */}
+                  {isStopped ? (
+                    <Text style={{ fontSize: 13, fontFamily: 'Alexandria-SemiBold', color: '#94A3B8' }}>
+                      {isRTL ? 'مغلق' : 'Closed'}
+                    </Text>
+                  ) : (
+                    <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 8 }}>
                       <View style={{
-                        flexDirection: 'row',
+                        flexDirection: isRTL ? 'row-reverse' : 'row',
                         alignItems: 'center',
+                        gap: 6,
                         backgroundColor: '#F8FAFC',
                         borderWidth: 1,
                         borderColor: '#E2E8F0',
-                        borderRadius: 16,
+                        borderRadius: 12,
                         paddingHorizontal: 12,
-                        height: 52,
-                        flex: 1
+                        height: 44,
+                        minWidth: 110,
                       }}>
-                        {/* Stepper Down (-) button */}
-                        <TouchableOpacity
-                          onPress={() => adjustPrice(index, -5000)}
-                          style={{
-                            width: 36,
-                            height: 36,
-                            backgroundColor: '#E2E8F0',
-                            borderRadius: 10,
-                            justifyContent: 'center',
-                            alignItems: 'center'
-                          }}
-                          activeOpacity={0.7}
-                        >
-                          <Text style={{ fontSize: 18, fontFamily: 'Alexandria-Bold', color: '#475569' }}>-</Text>
-                        </TouchableOpacity>
-
-                        {/* Text input of the price */}
                         <BottomSheetTextInput
                           style={{
                             flex: 1,
                             fontSize: 15,
                             fontFamily: 'Alexandria-Bold',
                             color: '#0F172A',
-                            textAlign: 'center',
-                            paddingVertical: 8
+                            textAlign: isRTL ? 'right' : 'left',
+                            paddingVertical: 0,
                           }}
                           keyboardType="numeric"
                           value={item.price !== 1 ? formatWithCommas(item.price) : ''}
                           placeholder="0"
+                          placeholderTextColor="#94A3B8"
                           onChangeText={t => {
                             const newP = [...pricingForm];
                             newP[index] = { ...newP[index], price: cleanPriceNumber(t) };
                             setPricingForm(newP);
                           }}
                         />
-
-                        {/* Stepper Up (+) button */}
-                        <TouchableOpacity
-                          onPress={() => adjustPrice(index, 5000)}
-                          style={{
-                            width: 36,
-                            height: 36,
-                            backgroundColor: '#E2E8F0',
-                            borderRadius: 10,
-                            justifyContent: 'center',
-                            alignItems: 'center'
-                          }}
-                          activeOpacity={0.7}
-                        >
-                          <Text style={{ fontSize: 18, fontFamily: 'Alexandria-Bold', color: '#475569' }}>+</Text>
-                        </TouchableOpacity>
+                        <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Medium', color: '#94A3B8' }}>
+                          {isRTL ? 'د.ع' : 'IQD'}
+                        </Text>
                       </View>
 
-                      {/* Generous Space separating Save Button from Stepper box */}
-                      <View style={{ width: 16 }} />
-
-                      {/* Save Action Icon - Standalone, premium button at the absolute end! */}
+                      {/* Save this day individually */}
                       <TouchableOpacity
                         onPress={() => handleSaveSingleDay(index)}
+                        disabled={savingIndexes[index]}
+                        activeOpacity={0.85}
                         style={{
-                          width: 52,
-                          height: 52,
-                          backgroundColor: '#10B981', // Prominent emerald green
-                          borderRadius: 16,
+                          width: 44,
+                          height: 44,
+                          borderRadius: 12,
+                          backgroundColor: Colors.primary,
                           justifyContent: 'center',
                           alignItems: 'center',
-                          shadowColor: '#10B981',
+                          shadowColor: Colors.primary,
                           shadowOffset: { width: 0, height: 2 },
-                          shadowOpacity: 0.15,
+                          shadowOpacity: 0.25,
                           shadowRadius: 4,
-                          elevation: 2
+                          elevation: 3,
                         }}
-                        activeOpacity={0.7}
-                        disabled={savingIndexes[index]}
                       >
                         {savingIndexes[index] ? (
-                          <ActivityIndicator size="small" color="#FFF" style={{ width: 18, height: 18 }} />
+                          <ActivityIndicator size="small" color="#fff" />
                         ) : (
-                          <SolarBookmarkSquareMinimalisticBoldDuotone size={24} color="#FFF" />
+                          <SolarBookmarkSquareMinimalisticBoldDuotone size={24} color="#fff" />
                         )}
                       </TouchableOpacity>
                     </View>
                   )}
                 </View>
-              </View>
-            );
-          })}
+              );
+            })}
+          </BottomSheetScrollView>
 
-          <View style={{ height: 20 }} />
-        </BottomSheetScrollView>
+          {/* Sticky Save footer */}
+          <View style={{
+            paddingHorizontal: 20,
+            paddingTop: 12,
+            paddingBottom: 28,
+            borderTopWidth: 1,
+            borderTopColor: '#EEF1F5',
+            backgroundColor: '#F8F9FA',
+          }}>
+            <TouchableOpacity
+              onPress={savePricing}
+              disabled={isSettingPricing}
+              activeOpacity={0.85}
+              style={{
+                flexDirection: isRTL ? 'row-reverse' : 'row',
+                gap: 8,
+                height: 54,
+                borderRadius: 16,
+                backgroundColor: Colors.primary,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              {isSettingPricing ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <>
+                  <SolarBookmarkSquareMinimalisticBoldDuotone size={20} color="#fff" />
+                  <Text style={{ fontSize: 15, fontFamily: 'Alexandria-Bold', color: '#fff' }}>
+                    {isRTL ? 'حفظ كل الأسعار' : 'Save All Prices'}
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
         <Toast config={toastConfig} topOffset={60} />
       </BottomSheetModal>
 
