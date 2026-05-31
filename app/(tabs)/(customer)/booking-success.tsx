@@ -251,9 +251,13 @@ export default function BookingSuccessDetailsScreen() {
   const amountPaidVal = Number(booking?.amountPaid || 0);
   const remainingAmountVal = Number(booking?.remainingAmount || 0);
   const cancellationReason = booking?.cancellationReason || booking?.cancelReason;
-  // Only delayed (approval-required) chalets are paid from this details page.
-  // Instant chalets are paid once, at booking creation — never re-charged here.
-  const isDelayedChalet = booking?.chalet?.bookingType === "delayed";
+  // The payment form on this details page is for delayed (approval-required)
+  // chalets, paid AFTER the owner approves. Instant chalets are paid once at
+  // creation and must never be re-charged here. We treat anything that is NOT
+  // explicitly "instant" as eligible (robust against a missing bookingType),
+  // and the backend /pay endpoint guards instant chalets as a backstop.
+  const isInstantChalet = booking?.chalet?.bookingType === "instant";
+  const isDelayedChalet = !isInstantChalet;
 
   const shiftInfo = useMemo(() => {
     if (!booking?.shift) return t("booking.morningShift");
@@ -446,7 +450,7 @@ export default function BookingSuccessDetailsScreen() {
                     ? (isDepositPayment && remainingAmountVal > 0
                         ? (isRTL ? "مدفوع جزئياً (عربون)" : "Partially Paid (Deposit)")
                         : t("booking.status.paid"))
-                    : t("booking.status.deferred")}
+                    : (isRTL ? "غير مدفوع" : "Unpaid")}
                 </ThemedText>
               </View>
             </View>
@@ -553,7 +557,7 @@ export default function BookingSuccessDetailsScreen() {
             {depositPercentage > 0 && (
               <View style={{ marginBottom: 16 }}>
                 <ThemedText style={[styles.paymentModelTitle, { textAlign: textStart }]}>
-                  {isRTL ? "خيارات الدفع" : "Payment Options"}
+                  {isRTL ? "اختر طريقة الدفع (لم يتم الدفع بعد)" : "Choose how to pay (not paid yet)"}
                 </ThemedText>
 
                 <TouchableOpacity
