@@ -762,7 +762,14 @@ export default function ChaletDetailsScreen() {
                     </Text>
                   </View>
                 )}
-                <View style={[styles.approvalBadgeMini, { backgroundColor: chalet?.isApproved ? '#ECFDF5' : '#FFFBEB' }]}>
+                <View style={[styles.approvalBadgeMini, {
+                  flexDirection: flexRow,
+                  backgroundColor: chalet?.isApproved ? '#ECFDF5' : '#FFFBEB',
+                  borderColor: chalet?.isApproved ? '#A7F3D0' : '#FDE68A',
+                }]}>
+                  {chalet?.isApproved
+                    ? <SolarCheckCircleBold size={16} color="#10B981" />
+                    : <SolarClockCircleBold size={16} color="#F59E0B" />}
                   <Text style={[styles.approvalTextMini, { color: chalet?.isApproved ? '#10B981' : '#F59E0B' }]}>
                     {chalet?.isApproved ? (isRTL ? 'نشط ومقبول' : 'Approved') : (isRTL ? 'قيد المراجعة' : 'Pending')}
                   </Text>
@@ -1793,12 +1800,17 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   approvalBadgeMini: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   approvalTextMini: {
-    fontSize: normalize.font(10),
+    fontSize: normalize.font(12),
     fontFamily: "Alexandria-Bold",
   },
   ratingBadgeMini: {
