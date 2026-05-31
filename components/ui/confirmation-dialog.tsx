@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useRef, useEff
 import { StyleSheet, View, Modal, TouchableOpacity, ActivityIndicator, Animated, Dimensions, TouchableWithoutFeedback } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Colors, Shadows } from '@/constants/theme';
-import { isRTL } from '@/i18n';
+import { useDirection } from '@/i18n';
 import { 
   SolarTrashBinBold, 
   SolarDangerCircleBold, 
@@ -84,6 +84,7 @@ const DIALOG_THEMES: Record<DialogType, {
 };
 
 export const ConfirmationDialogProvider = ({ children }: ConfirmationDialogProviderProps) => {
+  const { isRTL } = useDirection();
   const [visible, setVisible] = useState(false);
   const [options, setOptions] = useState<ConfirmDialogOptions | null>(null);
   const [isLoading, setIsLoading] = useState(false);

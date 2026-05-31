@@ -23,6 +23,7 @@ import {
 import { useSelector } from "react-redux";
 import { ThemedText } from "./themed-text";
 import { CircleBackButton } from "./ui/circle-back-button";
+import { useDirection, resolveRowDirection } from "@/i18n";
 
 
 interface HeaderSectionProps {
@@ -66,13 +67,14 @@ export function HeaderSection({
   marginBottom = 0,
   isHome = false }: HeaderSectionProps) {
   const router = useRouter();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const { isRTL, textAlign, rowDirection } = useDirection();
   const { userType: stateUserType, language } = useSelector(
     (state: RootState) => state.auth,
   );
   const [selectedCategory, setSelectedCategory] = React.useState("all");
 
-  const isArabic = i18n.language ? i18n.language.startsWith("ar") : false;
+  const isArabic = isRTL;
 
   const [logoStateIndex, setLogoStateIndex] = React.useState(0);
   const logoColors = [Colors.primary, "#EF4444", "#15AB64"];
@@ -109,14 +111,13 @@ export function HeaderSection({
       icon: <SolarStarBold size={normalize.width(18)} /> },
   ];
 
-  const textAlign: "left" | "right" = isArabic ? "right" : "left";
   // RN auto-mirrors flex-start/flex-end when I18nManager.isRTL=true
   // So when language matches native RTL, use natural values
-  const needsCounter = isArabic !== I18nManager.isRTL;
+  const needsCounter = isRTL !== I18nManager.isRTL;
   const startAlign: "flex-start" | "flex-end" = needsCounter ? "flex-end" : "flex-start";
   const endAlign: "flex-start" | "flex-end" = needsCounter ? "flex-start" : "flex-end";
-  const rowDir: "row" | "row-reverse" = needsCounter ? "row-reverse" : "row";
-  const homeRowDir: "row" | "row-reverse" = needsCounter ? "row" : "row-reverse";
+  const rowDir: "row" | "row-reverse" = rowDirection;
+  const homeRowDir: "row" | "row-reverse" = resolveRowDirection(!isRTL, I18nManager.isRTL);
 
   return (
     <View style={[styles.container]}>

@@ -65,6 +65,7 @@ import {
 import Svg, { Path } from "react-native-svg";
 import { useSelector } from "react-redux";
 import { useFormatTime } from "../../../hooks/useFormatTime";
+import { useDirection } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -88,10 +89,11 @@ const SHAPE_COLORS: Record<ShapeKey, string> = {
   red: "#F64200",
 };
 
-function SectionHeader({ title, isRTL }: { title: string; isRTL: boolean }) {
+function SectionHeader({ title }: { title: string }) {
+  const { isRTL, textAlign } = useDirection();
   return (
     <View style={[styles.sectionHeaderContainer, { alignItems: "flex-start", direction: isRTL ? "rtl" : "ltr" }]}>
-      <ThemedText style={[styles.sectionTitle, { textAlign: isRTL ? "right" : "left" }]}>
+      <ThemedText style={[styles.sectionTitle, { textAlign }]}>
         {title}
       </ThemedText>
     </View>
@@ -109,20 +111,19 @@ const CARD_COLORS = [
 ];
 
 export default function ChaletDetailScreen() {
-  const { t, i18n } = useTranslation();
-  const { userType, language } = useSelector((state: RootState) => state.auth);
-  const isRTL = i18n.language ? i18n.language.startsWith("ar") : true;
+  const { t } = useTranslation();
+  const { userType } = useSelector((state: RootState) => state.auth);
+  const { isRTL, rowDirection, textAlign } = useDirection();
 
   // textStart: dynamic alignment accounting for React Native native mirroring
-  const textStart: "left" | "right" = isRTL ? "right" : "left";
+  const textStart: "left" | "right" = textAlign;
   const textEnd: "left" | "right" = isRTL ? "left" : "right";
   // flexDir: dynamic flexDirection accounting for native mirroring
-  const flexDir: "row" | "row-reverse" =
-    isRTL === I18nManager.isRTL ? "row" : "row-reverse";
+  const flexDir: "row" | "row-reverse" = rowDirection;
   const alignStart: "flex-start" | "flex-end" =
-    isRTL === I18nManager.isRTL ? "flex-start" : "flex-end";
+    rowDirection === "row" ? "flex-start" : "flex-end";
   const alignEnd: "flex-start" | "flex-end" =
-    isRTL === I18nManager.isRTL ? "flex-end" : "flex-start";
+    rowDirection === "row" ? "flex-end" : "flex-start";
 
   const { id } = useLocalSearchParams();
   const chaletId = id as string;
@@ -565,7 +566,7 @@ export default function ChaletDetailScreen() {
           </View>
 
           {/* المواصفات الأساسية */}
-          <SectionHeader title={t("chalet.details.specs")} isRTL={isRTL} />
+          <SectionHeader title={t("chalet.details.specs")} />
           <View style={[styles.specsRow, { flexDirection: 'row', direction: isRTL ? 'rtl' : 'ltr' }]}>
             {[
               { label: `${chalet.area || 0} م`, id: "area" },
@@ -584,7 +585,6 @@ export default function ChaletDetailScreen() {
           {/* الفترات المتوفرة */}
           <SectionHeader
             title={isRTL ? "الفترات المتوفرة" : "Available Periods"}
-            isRTL={isRTL}
           />
           <View style={styles.shiftsGrid}>
             {availableShifts && availableShifts.length > 0 ? (
@@ -661,7 +661,6 @@ export default function ChaletDetailScreen() {
               >
                 <SectionHeader
                   title={t("chalet.details.facilities")}
-                  isRTL={isRTL}
                 />
                 <TouchableOpacity
                   onPress={() =>
@@ -702,7 +701,7 @@ export default function ChaletDetailScreen() {
           )}
 
           {/* نظرة عامة */}
-          <SectionHeader title={t("chalet.details.overview")} isRTL={isRTL} />
+          <SectionHeader title={t("chalet.details.overview")} />
           <View
             style={[styles.descriptionContainer, { alignItems: "flex-start" }]}
           >
@@ -714,7 +713,7 @@ export default function ChaletDetailScreen() {
           </View>
 
           {/* الموقع */}
-          <SectionHeader title={t("chalet.details.location")} isRTL={isRTL} />
+          <SectionHeader title={t("chalet.details.location")} />
           <View style={styles.mapCardFlat}>
             <View style={styles.mapInner}>
               {showMap &&
@@ -836,7 +835,7 @@ export default function ChaletDetailScreen() {
           </View>
 
           {/* المراجعات */}
-          <SectionHeader title={t("chalet.details.reviews")} isRTL={isRTL} />
+          <SectionHeader title={t("chalet.details.reviews")} />
           {reviews.length === 0 && (
             <View style={styles.emptyReviewsContainer}>
               <ThemedText style={styles.emptyReviewsText}>
@@ -942,7 +941,7 @@ export default function ChaletDetailScreen() {
             )}
 
           {/* معلومات تهمك */}
-          <SectionHeader title={t("common.details")} isRTL={isRTL} />
+          <SectionHeader title={t("common.details")} />
           <View
             style={[
               styles.infoIconsGrid,
@@ -987,7 +986,7 @@ export default function ChaletDetailScreen() {
           </View>
 
           {/* قد يعجبك ايضا */}
-          <SectionHeader title={t("chalet.details.related")} isRTL={isRTL} />
+          <SectionHeader title={t("chalet.details.related")} />
           <HorizontalSwiper
             data={(similarResponse || []).map((item: any, index: number) => ({
               id: item.id,

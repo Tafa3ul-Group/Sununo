@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, StyleSheet, Text, Linking, ScrollView, RefreshControl } from 'react-native';
-import { useTranslation } from 'react-i18next';
 import LottieView from 'lottie-react-native';
 import { Colors, normalize } from '@/constants/theme';
 import { PrimaryButton } from '@/components/user/primary-button';
@@ -8,10 +7,10 @@ import { SecondaryButton } from '@/components/user/secondary-button';
 import { SolarClockCircleBold, SolarLogoutBold } from '@/components/icons/solar-icons';
 import { logout } from '@/store/authSlice';
 import { useDispatch } from 'react-redux';
-import { isRTL } from "@/i18n";
+import { useDirection } from "@/i18n";
 
 export function PendingApprovalScreen({ onRefresh }: { onRefresh?: () => void }) {
-  const { t, i18n } = useTranslation();
+  const { isRTL } = useDirection();
   const dispatch = useDispatch();
     const [refreshing, setRefreshing] = React.useState(false);
 

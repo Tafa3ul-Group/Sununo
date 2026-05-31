@@ -5,10 +5,10 @@ import { RootState } from "@/store";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
-import { StyleSheet, TouchableOpacity, View, Text, I18nManager } from "react-native";
+import { StyleSheet, TouchableOpacity, View, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
-import { isRTL } from "@/i18n";
+import { useDirection } from "@/i18n";
 import { Image } from "expo-image";
 
 interface DashboardHeaderProps {
@@ -35,8 +35,8 @@ export function DashboardHeader({
   marginBottom = 0
 }: DashboardHeaderProps) {
   const router = useRouter();
+  const { isRTL, rowDirection } = useDirection();
   const [logoLang, setLogoLang] = useState<'ar' | 'en'>(isRTL ? 'ar' : 'en');
-  const flexRow = isRTL ? (I18nManager.isRTL ? 'row' : 'row-reverse') : (I18nManager.isRTL ? 'row-reverse' : 'row');
 
   const toggleLogo = () => {
     setLogoLang(prev => prev === 'ar' ? 'en' : 'ar');
@@ -45,7 +45,7 @@ export function DashboardHeader({
   return (
     <SafeAreaView edges={['top']} style={[styles.flatHeader, { marginBottom }]}>
       <StatusBar style="dark" />
-      <View style={[styles.flatHeaderContent, { flexDirection: flexRow }]}>
+      <View style={[styles.flatHeaderContent, { flexDirection: rowDirection }]}>
         {/* Left Side: Back button, Logo, or placeholder */}
         {showBackButton ? (
           <CircleBackButton
@@ -90,7 +90,7 @@ export function DashboardHeader({
           <View style={{ width: 40 }} />
         ) : (
           /* Home Group (Search & Profile) */
-          <View style={[styles.homeRightGroup, { flexDirection: flexRow }]}>
+          <View style={[styles.homeRightGroup, { flexDirection: rowDirection }]}>
             {showSearch && (
               <TouchableOpacity
                 onPress={onSearchPress}

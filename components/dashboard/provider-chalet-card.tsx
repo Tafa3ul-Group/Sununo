@@ -8,7 +8,6 @@ import {
   View,
   ViewStyle } from "react-native";
 import { SolarMapPointBold, SolarPenBold, SolarBanknoteBold } from "@/components/icons/solar-icons";
-import { isRTL } from "@/i18n";
 
 interface ProviderChaletCardProps {
   title: string;

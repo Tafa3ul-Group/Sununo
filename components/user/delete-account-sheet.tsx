@@ -1,5 +1,5 @@
 import { ThemedText } from "@/components/themed-text";
-import { isRTL } from "@/i18n";
+import { useDirection } from "@/i18n";
 import { useDeleteCustomerAccountMutation } from "@/store/api/customerApiSlice";
 import { logout } from "@/store/authSlice";
 import {
@@ -18,6 +18,7 @@ interface DeleteAccountSheetProps {
 export const DeleteAccountSheet = React.forwardRef<BottomSheetModal, DeleteAccountSheetProps>(
   ({ onDeleted }, ref) => {
     const dispatch = useDispatch();
+    const { isRTL } = useDirection();
     const [deleteAccount] = useDeleteCustomerAccountMutation();
     const [isDeleting, setIsDeleting] = useState(false);
 

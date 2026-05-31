@@ -1,7 +1,7 @@
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { SolarBanknoteBold } from "@/components/icons/solar-icons";
 import { Colors, normalize } from '@/constants/theme';
-import { isRTL } from "@/i18n";
+import { useDirection } from "@/i18n";
 import { RootState } from '@/store';
 import { useGetPayoutsQuery } from '@/store/api/apiSlice';
 import { FlashList } from '@shopify/flash-list';
@@ -23,7 +23,7 @@ export default function TransactionsScreen() {
   const router = useRouter();
   const { user, userType, language } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
-  const textAlign = isRTL ? 'right' : 'left';
+  const { isRTL, textAlign } = useDirection();
   const startAlign = isRTL ? 'flex-end' : 'flex-start';
   const endAlign = isRTL ? 'flex-start' : 'flex-end';
   const [activeFilter, setActiveFilter] = useState<string | undefined>(undefined);

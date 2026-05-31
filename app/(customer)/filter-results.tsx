@@ -30,18 +30,19 @@ import {
     StyleSheet,
     TouchableOpacity,
     View,
-    I18nManager
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
+import { useDirection } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function FilterResultsScreen() {
   const router = useRouter();
   const dispatch = useDispatch();
-  const { t, i18n } = useTranslation();
-  const isArabic = i18n.language === "ar";
+  const { t } = useTranslation();
+  const { isRTL, rowDirection } = useDirection();
+  const isArabic = isRTL;
   const insets = useSafeAreaInsets();
 
   const { userType } = useSelector((state: RootState) => state.auth);
@@ -228,9 +229,9 @@ export default function FilterResultsScreen() {
             showsHorizontalScrollIndicator={false}
             data={activePills}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={[styles.pillsList, { flexDirection: (isArabic !== I18nManager.isRTL) ? 'row-reverse' : 'row' }]}
+            contentContainerStyle={[styles.pillsList, { flexDirection: rowDirection }]}
             renderItem={({ item }) => (
-              <View style={[styles.pill, { flexDirection: (isArabic !== I18nManager.isRTL) ? 'row-reverse' : 'row' }]}>
+              <View style={[styles.pill, { flexDirection: rowDirection }]}>
                 {item.icon}
                 <ThemedText style={styles.pillText}>{item.text}</ThemedText>
                 <TouchableOpacity
@@ -359,8 +360,7 @@ const styles = StyleSheet.create({
   favoriteButton: {
     position: "absolute",
     top: 12,
-    right: I18nManager.isRTL ? undefined : 12,
-    left: I18nManager.isRTL ? 12 : undefined,
+    end: 12,
     width: 38,
     height: 38,
     borderRadius: 19,

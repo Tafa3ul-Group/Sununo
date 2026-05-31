@@ -10,11 +10,12 @@ import {
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, I18nManager, ScrollView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
 import { HeaderSection } from "@/components/header-section";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
+import { useDirection } from "@/i18n";
 
 
 export default function ChaletInfoScreen() {
@@ -22,8 +23,9 @@ export default function ChaletInfoScreen() {
     id: string;
     type: "terms" | "policies";
   }>();
-  const { t, i18n } = useTranslation();
-  const isArabic = i18n.language === "ar";
+  const { t } = useTranslation();
+  const { isRTL, rowDirection, textAlign } = useDirection();
+  const isArabic = isRTL;
     const router = useRouter();
   const { userType } = useSelector((state: RootState) => state.auth);
 
@@ -110,9 +112,9 @@ export default function ChaletInfoScreen() {
               
               return (
                 <View key={rule.id || idx} style={styles.ruleItem}>
-                  <View style={[styles.ruleHeader, { flexDirection: (isArabic !== I18nManager.isRTL) ? 'row-reverse' : 'row' }]}>
+                  <View style={[styles.ruleHeader, { flexDirection: rowDirection }]}>
                     <View style={styles.ruleBullet} />
-                    <ThemedText style={[styles.ruleTitleText, { textAlign: isArabic ? "right" : "left" }]}>
+                    <ThemedText style={[styles.ruleTitleText, { textAlign }]}>
                       {ruleTitle}
                     </ThemedText>
                   </View>

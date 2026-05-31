@@ -2,12 +2,12 @@ import React, { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Dimensions,
-  I18nManager,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { useDirection } from "@/i18n";
 import Animated, {
   interpolate,
   interpolateColor,
@@ -51,8 +51,8 @@ export function MainTabs({
   tabs = DEFAULT_TABS,
   labels = {},
 }: MainTabsProps) {
-  const { t, i18n } = useTranslation();
-  const isArabic = i18n.language === 'ar';
+  const { t } = useTranslation();
+  const { isRTL: isArabic } = useDirection();
 
   const transition = useSharedValue(0);
 

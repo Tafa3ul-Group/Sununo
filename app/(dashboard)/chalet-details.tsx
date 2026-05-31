@@ -24,6 +24,7 @@ import { LocationPickerModal } from '@/components/user/location-picker-modal';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
+import { useDirection } from '@/i18n';
 import {
   useDeleteChaletImageMutation,
   useDeleteChaletMutation,
@@ -43,7 +44,6 @@ import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Animated, Dimensions, I18nManager, Image, ScrollView, StatusBar, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import Toast from 'react-native-toast-message';
@@ -57,15 +57,13 @@ const EN_BACK_PATH = "M16.9467 0L16.984 0.0319551C16.9918 0.563434 17.0077 1.119
 const AR_BACK_PATH = "M0.0532856 0L0.0160198 0.0319551C0.00823021 0.563434 -0.00767517 1.11929 0.00434875 1.64861C0.305 2.1116 1.3663 3.01428 1.79865 3.39902C3.34419 4.77432 5.72956 6.6148 6.83738 8.37453C7.33712 9.15572 7.66209 10.0399 7.78914 10.9642C8.03564 12.8514 7.61991 14.7291 6.44174 16.2312C5.99476 16.801 5.28592 17.4728 4.75508 17.9938L2.04678 20.6073C1.61862 21.0236 0.851501 21.753 0.514236 22.2046C0.472057 22.8117 0.483946 23.3931 0.508917 24C1.05319 23.8061 2.03285 23.3157 2.60061 23.0547L6.748 21.1529C8.49312 20.321 10.9371 19.4531 12.3409 18.0823C13.3788 17.0688 14.0951 15.0354 14.0828 13.5511C14.4941 13.4266 15.5427 12.5735 15.9571 12.2832C16.3427 12.013 16.5669 11.8682 17 11.6452C16.3398 11.1658 15.6399 10.727 14.9598 10.2775C14.6831 10.0946 14.1493 9.80927 13.9231 9.61241C13.9031 8.79841 13.8296 8.21858 13.5334 7.45396C13.1414 6.44889 12.4771 5.57892 11.6184 4.94608C10.4105 4.04845 8.79041 3.58706 7.43149 3.00721C6.16934 2.46863 4.96171 1.92053 3.68105 1.40781C2.94184 1.1135 2.201 0.823459 1.45856 0.537748C0.998611 0.363519 0.499662 0.198389 0.0532856 0Z";
 
 export default function ChaletDetailsScreen() {
-  const { i18n } = useTranslation();
-  const isRTL = i18n.language ? i18n.language.startsWith('ar') : false;
+  const { isRTL, rowDirection } = useDirection();
   const { showConfirm } = useConfirmationDialog();
   const dispatch = useDispatch();
 
-  // Robust layout bridge: 
-  // - If I18nManager.isRTL is active, standard 'row' is already right-to-left. Manually forcing 'row-reverse' double-flips it back to LTR.
-  // - If I18nManager.isRTL is not active, we manually use 'row-reverse' in Arabic to achieve the correct right-to-left layout.
-  const flexRow = isRTL ? (I18nManager.isRTL ? 'row' : 'row-reverse') : (I18nManager.isRTL ? 'row-reverse' : 'row');
+  // Robust layout bridge:
+  // - flexRow follows the active language via the central direction API (handles forceRTL double-flip).
+  const flexRow = rowDirection;
   const flexStart = isRTL ? (I18nManager.isRTL ? 'flex-start' : 'flex-end') : (I18nManager.isRTL ? 'flex-end' : 'flex-start');
   const flexEnd = isRTL ? (I18nManager.isRTL ? 'flex-end' : 'flex-start') : (I18nManager.isRTL ? 'flex-start' : 'flex-end');
 

@@ -9,8 +9,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
-  I18nManager,
 } from "react-native";
+import { useDirection } from "@/i18n";
 import { BannerSkeleton, HorizontalSwiperSkeleton, HorizontalCardSkeleton } from "@/components/ui/skeleton-loader";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -187,19 +187,19 @@ const filterBannerStyles = StyleSheet.create({
 });
 
 export default function HomeScreen() {
-  const { userType, language } = useSelector((state: RootState) => state.auth);
-  const isRTL = language === "ar";
+  const { userType } = useSelector((state: RootState) => state.auth);
+  const { isRTL, rowDirection, textAlign } = useDirection();
   const activeFilters = useSelector(
     (state: RootState) => (state as any).filter,
   );
   const dispatch = useDispatch();
   const router = useRouter();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [activeFilter, setActiveFilter] = React.useState("all");
   const insets = useSafeAreaInsets();
 
-  const textStart: "left" | "right" = isRTL ? "right" : "left";
-  const flexDir: "row" | "row-reverse" = (isRTL === I18nManager.isRTL) ? "row" : "row-reverse";
+  const textStart: "left" | "right" = textAlign;
+  const flexDir: "row" | "row-reverse" = rowDirection;
 
   // Fetch all amenities to resolve real IDs for pool/bbq/garden filters
   const { data: allAmenities = [] } = useGetAmenitiesQuery();

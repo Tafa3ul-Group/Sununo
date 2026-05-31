@@ -1,5 +1,5 @@
 import { ThemedText } from "@/components/themed-text";
-import { isRTL } from "@/i18n";
+import { useDirection } from "@/i18n";
 import { useLogoutUserMutation } from "@/store/api/customerApiSlice";
 import { logout } from "@/store/authSlice";
 import {
@@ -17,6 +17,7 @@ interface LogoutSheetProps {
 
 export const LogoutSheet = React.forwardRef<BottomSheetModal, LogoutSheetProps>(
   ({ onLoggedOut }, ref) => {
+    const { isRTL } = useDirection();
     const dispatch = useDispatch();
     const [logoutApi] = useLogoutUserMutation();
 

@@ -18,16 +18,17 @@ import {
     TextInput,
     TouchableOpacity,
     View,
-    I18nManager
 } from "react-native";
 import {
     useSafeAreaInsets
 } from "react-native-safe-area-context";
+import { useDirection } from "@/i18n";
 
 export default function SearchScreen() {
-  const { t, i18n } = useTranslation();
-  const isArabic = i18n.language === "ar";
-  const textStart: "left" | "right" = isArabic ? "right" : "left";
+  const { t } = useTranslation();
+  const { isRTL, rowDirection, textAlign } = useDirection();
+  const isArabic = isRTL;
+  const textStart: "left" | "right" = textAlign;
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const insets = useSafeAreaInsets();
@@ -83,7 +84,7 @@ export default function SearchScreen() {
       />
 
       <View style={styles.searchContainer}>
-        <View style={[styles.searchBar, { flexDirection: (isArabic !== I18nManager.isRTL) ? 'row-reverse' : 'row' }]}>
+        <View style={[styles.searchBar, { flexDirection: rowDirection }]}>
           <SolarMagnifierBold size={20} color={Colors.primary} />
           <TextInput
             placeholder={t("home.searchPlaceholder")}

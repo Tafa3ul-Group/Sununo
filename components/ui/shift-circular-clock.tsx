@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-nati
 import Svg, { G, Path, Circle, Text as SvgText, Line } from 'react-native-svg';
 import { normalize, Colors } from '@/constants/theme';
 import { SolarIcon } from './solar-icon';
-import { isRTL } from "@/i18n";
 
 interface ShiftItem {
   shiftId: string;

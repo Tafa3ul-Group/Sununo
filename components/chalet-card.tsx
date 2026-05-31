@@ -3,7 +3,6 @@ import { getImageSrc } from "@/hooks/useImageSrc";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React from "react";
-import { useTranslation } from "react-i18next";
 import { StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import {
@@ -11,7 +10,7 @@ import {
   SolarMapPointBold,
   SolarStarBold } from "./icons/solar-icons";
 import { ThemedText } from "./themed-text";
-import { isRTL } from "@/i18n";
+import { useDirection } from "@/i18n";
 
 interface ChaletCardProps {
   chalet: any;
@@ -25,7 +24,7 @@ const STAR_SHAPE =
 
 export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
   const router = useRouter();
-  const { i18n } = useTranslation();
+  const { isRTL, textAlign } = useDirection();
     const [isFavorite, setIsFavorite] = React.useState(false);
 
   if (!chalet) return null;
@@ -99,7 +98,7 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
       <View style={styles.infoContainer}>
         <View style={{ width: '100%' }}>
           <ThemedText
-            style={[styles.title, { textAlign: isRTL ? "right" : "left" }]}
+            style={[styles.title, { textAlign }]}
           >
             {title}
           </ThemedText>
@@ -114,7 +113,7 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
         >
           <SolarMapPointBold size={normalize.width(14)} color="#9CA3AF" />
           <ThemedText
-            style={[styles.location, { textAlign: isRTL ? "right" : "left" }]}
+            style={[styles.location, { textAlign }]}
             numberOfLines={1}
           >
             {location}

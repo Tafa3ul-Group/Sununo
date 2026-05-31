@@ -8,6 +8,7 @@ import { SecondaryButton } from "@/components/user/secondary-button";
 import { RootState } from "@/store";
 import { useLoginMutation, useVerifyPhoneMutation } from "@/store/api/apiSlice";
 import { setCredentials, setUserType } from "@/store/authSlice";
+import { useDirection } from "@/i18n";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -140,22 +141,17 @@ function validatePhoneNumber(text: string): string | null {
 }
 
 export function LoginScreen() {
-  const { t, i18n } = useTranslation();
-  const isArabic = i18n.language ? i18n.language.startsWith("ar") : true;
-  const textStart: "left" | "right" = isArabic ? "right" : "left";
-  const textEnd: "left" | "right" = isArabic ? "left" : "right";
+  const { t } = useTranslation();
+  const { isRTL, rowDirection, textAlign } = useDirection();
+  const isArabic = isRTL;
+  const textStart = textAlign;
   const alignStart: "flex-start" | "flex-end" =
     isArabic === I18nManager.isRTL ? "flex-start" : "flex-end";
-  const rowDir: "row" | "row-reverse" =
-    isArabic === I18nManager.isRTL ? "row" : "row-reverse";
 
   const linkMargin =
     isArabic === I18nManager.isRTL
       ? { marginLeft: normalize.width(6) }
       : { marginRight: normalize.width(6) };
-
-  const hintMargin =
-    isArabic === I18nManager.isRTL ? { marginLeft: 6 } : { marginRight: 6 };
 
   const dispatch = useDispatch();
   const router = useRouter();
@@ -300,7 +296,7 @@ export function LoginScreen() {
               <ThemedText style={[styles.title, { textAlign: textStart }]}>
                 {t("auth.login")}
               </ThemedText>
-              <View style={[styles.subtextRow, { flexDirection: rowDir }]}>
+              <View style={[styles.subtextRow, { flexDirection: rowDirection }]}>
                 <ThemedText style={styles.subtitle}>
                   {isOwner
                     ? isArabic

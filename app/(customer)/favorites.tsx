@@ -2,8 +2,6 @@ import React, { useMemo } from 'react';
 import { View, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
 import { normalize } from '@/constants/theme';
 import { ThemedText } from '@/components/themed-text';
 import { SolarHeartBold } from "@/components/icons/solar-icons";
@@ -12,14 +10,14 @@ import { HorizontalCard } from '@/components/user/horizontal-card';
 import { HeaderSection } from '@/components/header-section';
 import { useGetCustomerFavoritesQuery, useToggleFavoriteMutation } from '@/store/api/customerApiSlice';
 import { getImageSrc } from '@/hooks/useImageSrc';
+import { useDirection } from '@/i18n';
 
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function FavoritesScreen() {
-  const { t, i18n } = useTranslation();
-  const { language } = useSelector((state: RootState) => state.auth);
-  const isRTL = i18n.language ? i18n.language.startsWith('ar') : false;
+  const { t } = useTranslation();
+  const { isRTL } = useDirection();
     const router = useRouter();
 
   // Fetch favorites from the backend

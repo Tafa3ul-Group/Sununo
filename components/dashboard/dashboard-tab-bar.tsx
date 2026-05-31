@@ -21,6 +21,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from 'react-redux';
+import { useDirection } from '@/i18n';
 
 /**
  * DashboardTabBar - Standardized with CustomTabBar design
@@ -29,8 +30,8 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
   const router = useRouter();
   const dispatch = useDispatch();
   const { userType, language, selectedChalet } = useSelector((state: RootState) => state.auth);
-  const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
+  const { t } = useTranslation();
+  const { isRTL, textAlign } = useDirection();
   const isDeviceRTL = I18nManager.isRTL;
   const insets = useSafeAreaInsets();
 
@@ -217,7 +218,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
               <View style={styles.popoverContent}>
                 <View style={[styles.popoverHeader, { flexDirection: 'row', direction: isRTL ? 'rtl' : 'ltr' }]}>
                   <SolarHomeSmileBoldDuotone size={20} color={Colors.primary} />
-                  <Text style={[styles.popoverTitle, { textAlign: isRTL ? 'right' : 'left' }]}>{t('tabs.myChalets', 'شاليهاتي')}</Text>
+                  <Text style={[styles.popoverTitle, { textAlign }]}>{t('tabs.myChalets', 'شاليهاتي')}</Text>
                 </View>
 
                 <ScrollView style={styles.popoverList}>
@@ -242,7 +243,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
                     >
                       <Image source={getImageSrc(item.images?.[0]?.url)} style={styles.chaletThumb} />
                       <View style={[styles.chaletItemInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                        <Text style={[styles.chaletItemName, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
+                        <Text style={[styles.chaletItemName, { textAlign }]} numberOfLines={1}>
                           {isRTL ? (item.name?.ar || item.name) : (item.name?.en || item.name)}
                         </Text>
                       </View>

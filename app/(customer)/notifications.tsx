@@ -2,14 +2,13 @@ import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
 import { Colors, normalize, Shadows } from '../../constants/theme';
 import { ThemedText } from '@/components/themed-text';
 import { SolarAltArrowRightBold } from "@/components/icons/solar-icons";
 import { useRouter } from 'expo-router';
 import { HeaderSection } from '@/components/header-section';
 import { useGetNotificationsQuery, useMarkNotificationAsReadMutation } from '@/store/api/customerApiSlice';
+import { useDirection } from '@/i18n';
 
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -26,11 +25,11 @@ interface Notification {
 
 export default function NotificationsScreen() {
     const { t } = useTranslation();
-    const { language } = useSelector((state: RootState) => state.auth);
     const router = useRouter();
 
-    const isArabic = language === "ar";
-    const textStart: "left" | "right" = isArabic ? "right" : "left";
+    const { isRTL, textAlign } = useDirection();
+    const isArabic = isRTL;
+    const textStart: "left" | "right" = textAlign;
 
     // Fetch notifications from the backend
     const { data: notificationsResponse, isLoading, refetch } = useGetNotificationsQuery({ page: 1, limit: 50 });
@@ -85,7 +84,6 @@ export default function NotificationsScreen() {
     };
 
     const dirStyle = isArabic ? 'rtl' : 'ltr';
-    const rowDirection = isArabic ? 'row-reverse' as const : 'row' as const;
 
     const renderItem = (item: Notification) => (
         <TouchableOpacity 

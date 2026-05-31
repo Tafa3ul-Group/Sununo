@@ -5,7 +5,18 @@ import { initReactI18next } from "react-i18next";
 import { DevSettings, I18nManager, Platform } from "react-native";
 
 import ar from "./ar.json";
+import { isContentRTL, pickTranslation, resolveRowDirection } from "./direction";
 import en from "./en.json";
+
+// Re-export the central direction API so existing `@/i18n` consumers keep working
+export {
+  isContentRTL,
+  pickTranslation,
+  resolveRowDirection,
+  resolveTextAlign,
+  useDirection,
+} from "./direction";
+export type { DirectionInfo } from "./direction";
 
 const resources = {
   en: { translation: en },
@@ -171,42 +182,33 @@ export const changeLanguage = async (lng: "en" | "ar") => {
   }
 };
 
-export const tr = (obj: any): string => {
-  if (!obj) return "";
-  if (typeof obj === "string") return obj;
+export const tr = (obj: any): string =>
+  pickTranslation(obj, isContentRTL(i18n.language));
 
-  const lang = i18n.language;
+export let isRTL = i18n.language ? isContentRTL(i18n.language) : I18nManager.isRTL;
 
-  if (lang ? lang.startsWith("ar") : false) {
-    return (
-      obj.nameAr ||
-      obj.name_ar ||
-      obj.translation?.ar ||
-      obj.name_translation?.ar ||
-      obj.name ||
-      ""
-    );
-  }
-
-  return (
-    obj.nameEn ||
-    obj.name_en ||
-    obj.displayName ||
-    obj.display_name ||
-    obj.name ||
-    ""
-  );
-};
-
-export let isRTL = i18n.language ? i18n.language.startsWith('ar') : I18nManager.isRTL;
-
-// Keep isRTL in sync whenever the language changes at runtime
+// Keep isRTL in sync whenever the language changes at runtime, and mirror the
+// language into Redux so `state.auth.language` never diverges from i18next.
+// i18next is the single source of truth; everything else is derived from it.
 i18n.on('languageChanged', (lng: string) => {
-  isRTL = lng ? lng.startsWith('ar') : I18nManager.isRTL;
+  isRTL = lng ? isContentRTL(lng) : I18nManager.isRTL;
+
+  // Lazy require avoids any module load-order / circular-import surprises.
+  if (lng === 'ar' || lng === 'en') {
+    try {
+      const { store } = require('@/store');
+      const { setLanguage } = require('@/store/authSlice');
+      if (store.getState().auth.language !== lng) {
+        store.dispatch(setLanguage(lng));
+      }
+    } catch {
+      // Store not ready yet (very early init) — initial language is persisted
+      // independently, so this is safe to skip.
+    }
+  }
 });
 
-export const getFlexDirection = (desiredRTL: boolean): "row" | "row-reverse" => {
-  return desiredRTL === I18nManager.isRTL ? "row" : "row-reverse";
-};
+export const getFlexDirection = (desiredRTL: boolean): "row" | "row-reverse" =>
+  resolveRowDirection(desiredRTL, I18nManager.isRTL);
 
 export default i18n;

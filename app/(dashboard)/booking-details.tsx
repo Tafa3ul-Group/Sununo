@@ -5,6 +5,7 @@ import {
 import { PrimaryButton } from '@/components/user/primary-button';
 import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
+import { useDirection } from '@/i18n';
 import { RootState } from '@/store';
 import { useDeleteExternalBookingMutation, useGetProviderBookingDetailsQuery, useMarkBookingCompletedMutation, useRejectBookingMutation, useApproveBookingMutation } from '@/store/api/apiSlice';
 import * as Haptics from 'expo-haptics';
@@ -29,13 +30,13 @@ export default function BookingDetailsPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { language } = useSelector((state: RootState) => state.auth);
-  const { t, i18n } = useTranslation();
-  const isRTL = i18n.language ? i18n.language.startsWith('ar') : false;
+  const { t } = useTranslation();
+  const { isRTL, rowDirection, textAlign } = useDirection();
 
   // Robust layout bridge (same pattern as chalet-details)
-  const flexRow = isRTL ? (I18nManager.isRTL ? 'row' : 'row-reverse') : (I18nManager.isRTL ? 'row-reverse' : 'row') as 'row' | 'row-reverse';
+  const flexRow = rowDirection;
   const flexStart = isRTL ? (I18nManager.isRTL ? 'flex-start' : 'flex-end') : (I18nManager.isRTL ? 'flex-end' : 'flex-start') as 'flex-start' | 'flex-end';
-  const textStart = isRTL ? 'right' : 'left' as 'right' | 'left';
+  const textStart = textAlign;
   const textEnd = isRTL ? 'left' : 'right' as 'left' | 'right';
   const cancelSheetRef = React.useRef<BookingCancellationSheetRef>(null);
   const confirmPaymentSheetRef = React.useRef<PaymentConfirmationSheetRef>(null);
@@ -180,7 +181,7 @@ export default function BookingDetailsPage() {
 
   const renderInfoRow = (label: string, value: string | React.ReactNode, isBlue: boolean = false, subLabel?: string) => (
     <View style={[styles.infoRow, { flexDirection: flexRow, alignItems: 'center' }]}>
-      <View style={{ flex: 1, alignItems: flexStart, paddingLeft: isRTL ? 16 : 0, paddingRight: isRTL ? 0 : 16 }}>
+      <View style={{ flex: 1, alignItems: flexStart, paddingEnd: 16 }}>
         <Text style={[styles.infoLabel, { textAlign: textStart }]}>{label}</Text>
         {subLabel && (
           <Text style={{ fontSize: 11, color: '#94A3B8', fontFamily: 'Alexandria-Regular', marginTop: 2, textAlign: textStart, writingDirection: isRTL ? 'rtl' : 'ltr' }}>

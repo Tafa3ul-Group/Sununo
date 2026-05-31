@@ -2,11 +2,9 @@
 import { normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { isRTL } from "@/i18n";
 import {
     Dimensions,
     FlatList,
-    I18nManager,
     Image,
     NativeScrollEvent,
     NativeSyntheticEvent,

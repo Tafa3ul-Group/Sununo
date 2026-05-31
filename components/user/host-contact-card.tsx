@@ -1,9 +1,9 @@
 import { Image as ExpoImage } from "expo-image";
 import React from "react";
-import { useTranslation } from "react-i18next";
 import { Dimensions, I18nManager, StyleSheet, View } from "react-native";
 import Svg, { Path, Rect } from "react-native-svg";
 import { ThemedText } from "../themed-text";
+import { useDirection } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SVG_WIDTH = 375;
@@ -22,11 +22,13 @@ export const HostContactCard: React.FC<HostContactCardProps> = ({
   phone,
   avatar,
 }) => {
-  const { i18n } = useTranslation();
-  const isArabic = i18n.language === "ar";
+  const { isRTL, textAlign } = useDirection();
+  const isArabic = isRTL;
 
-  // When I18nManager.isRTL is true, React Native natively mirrors layouts and alignments.
-  const textStart: "left" | "right" = isArabic ? "right" : "left";
+  // alignItems / absolute left-right are NOT auto-mirrored by RN, and the avatar
+  // position is tied to the directional SVG badge below, so keep the explicit
+  // content-vs-manager comparison to pick the physical placement.
+  const textStart = textAlign;
   const alignStart: "flex-start" | "flex-end" =
     isArabic === I18nManager.isRTL ? "flex-start" : "flex-end";
 
