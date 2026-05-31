@@ -132,6 +132,11 @@ export default function BookingDetailsPage() {
   const remainingAmount = Number(data.remainingAmount || 0);
   const totalPrice = Number(data.totalPrice || 0);
 
+  // Payment flags driven by the REAL payment status (not just "not pending_approval").
+  const bIsPaid = data.status === 'confirmed' || data.status === 'completed';
+  const bIsDeposit = data.paymentModel === 'deposit';
+  const bAmountPaid = Number(data.amountPaid || (bIsDeposit ? depositAmount : totalPrice));
+
   const handleConfirmCancellation = async (reason: string) => {
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
