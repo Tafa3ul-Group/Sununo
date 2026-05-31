@@ -717,6 +717,22 @@ export function SolarForbiddenBold({
   );
 }
 
+export function SolarForbiddenCircleLineDuotone({
+  size = 24,
+  color,
+  ...props
+}: SolarIconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+      <G fill="none" stroke={color || "currentColor"} strokeWidth="1.5">
+        <Path strokeLinecap="round" d="m18.5 5.5l-13 13" opacity="0.5" />
+        <Circle cx="12" cy="12" r="10" />
+      </G>
+    </Svg>
+  );
+}
+
+
 export function SolarShieldCheckBold({
   size = 24,
   color,
@@ -1534,6 +1550,7 @@ const IconMap: Record<string, React.FC<SolarIconProps>> = {
   "wind-bold": SolarWindBold,
   "key-bold": SolarKeyBold,
   "forbidden-bold": SolarForbiddenBold,
+  "forbidden-circle-line-duotone": SolarForbiddenCircleLineDuotone,
   "shield-check-bold": SolarShieldCheckBold,
   "clock-circle-bold": SolarClockCircleBold,
   "menu-dots-bold": SolarMenuDotsBold,
