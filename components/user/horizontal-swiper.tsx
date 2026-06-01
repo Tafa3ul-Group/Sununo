@@ -38,7 +38,7 @@ export function HorizontalSwiper({ data, onPressCard, onIndexChange, favoriteIds
     <View style={{ width: ITEM_WIDTH }}>
       <HorizontalCard
         chalet={item}
-        shapeIndex={index}
+        shapeIndex={2}
         onPress={() => onPressCard && onPressCard(item.id)}
         style={styles.cardOverride}
         isFavorite={favoriteIds.includes(item.id)}
@@ -53,7 +53,11 @@ export function HorizontalSwiper({ data, onPressCard, onIndexChange, favoriteIds
         ref={flatListRef}
         data={data}
         renderItem={renderItem}
-        keyExtractor={(item, index) => item?.id?.toString() || index.toString()}
+        keyExtractor={(item, index) =>
+          // Prefer a per-item unique id (e.g. bookingId) and always append the
+          // index so duplicate chalet ids (same chalet booked twice) can't collide.
+          `${item?.bookingId ?? item?.id ?? "item"}-${index}`
+        }
         horizontal
         showsHorizontalScrollIndicator={false}
         snapToInterval={ITEM_WIDTH + SEPARATOR_WIDTH}

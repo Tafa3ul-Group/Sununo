@@ -284,7 +284,19 @@ export default function HomeScreen() {
     () =>
       (Array.isArray(latestBookings) ? latestBookings : [])
         .filter((b: any) => b?.chalet)
-        .map((b: any) => ({ ...b.chalet, bookingId: b.id })),
+        .map((b: any) => {
+          const c = b.chalet;
+          return {
+            id: c.id,
+            bookingId: b.id,
+            // HorizontalCard expects `title`/`location` (it accepts the {ar,en} object)
+            title: c.name,
+            location: c.region?.name ?? c.city?.name ?? "",
+            image: c.images?.[0]?.url ?? c.images?.[0],
+            price: c.basePrice ? Number(c.basePrice).toLocaleString() : "0",
+            rating: c.averageRating ?? c.rating ?? 0,
+          };
+        }),
     [latestBookings],
   );
 

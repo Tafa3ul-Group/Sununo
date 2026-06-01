@@ -55,8 +55,11 @@ export const apiSlice = createApi({
   // customer's device (tags don't cross devices, and there's no realtime push).
   // So we keep client data fresh by refetching when a screen subscribes and when
   // the app regains focus / network — instead of serving long-lived stale cache.
-  keepUnusedDataFor: 30, // drop unused cache after 30s (was 60s default)
-  refetchOnMountOrArgChange: true, // re-opening a screen always fetches current data
+  keepUnusedDataFor: 60, // keep cache 60s after last use
+  // Refetch on mount only when the cached data is older than 30s — keeps owner
+  // edits fresh on re-open without refetching on every rapid navigation (which
+  // felt slow). Focus/reconnect below still refresh on foreground.
+  refetchOnMountOrArgChange: 30,
   refetchOnFocus: true, // refetch when the app returns to the foreground
   refetchOnReconnect: true, // refetch after network reconnects
   tagTypes: [
