@@ -67,9 +67,8 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
   // Dynamic layout helpers from the central direction API.
   const rowDirection = hookRowDirection;
   const textAlignment = textAlign;
-  const buttonAlign = isArabic
-    ? (isRTL ? "flex-start" : "flex-end")
-    : (isRTL ? "flex-end" : "flex-start");
+  // Cross-axis start alignment for the footer button, honoring direction.
+  const buttonAlign = isRTL ? "flex-end" : "flex-start";
 
   // Fetch chalet details if chaletId is provided
   const { data: chaletDetailsResponse } = useGetCustomerChaletDetailsQuery(chaletId || "", {
@@ -230,12 +229,12 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
         reservedDates={bookedDates}
       />
       <View style={styles.calendarFooter}>
-        <View style={styles.legendWrapper}>
-          <View style={styles.legendItem}>
+        <View style={[styles.legendWrapper, { flexDirection: rowDirection }]}>
+          <View style={[styles.legendItem, { flexDirection: rowDirection }]}>
             <ThemedText style={styles.legendText}>{t("searchFilter.endTime")}</ThemedText>
             <View style={[styles.dot, { backgroundColor: "#15AB64" }]} />
           </View>
-          <View style={styles.legendItem}>
+          <View style={[styles.legendItem, { flexDirection: rowDirection }]}>
             <ThemedText style={styles.legendText}>{t("searchFilter.startTime")}</ThemedText>
             <View style={[styles.dot, { backgroundColor: "#035DF9" }]} />
           </View>
@@ -758,11 +757,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#9CA3AF",
     marginTop: 2,
-    fontFamily: "Alexandria-Medium" },
-  // RTL Utilities
-  rtlText: { textAlign: "right" },
-  ltrText: { textAlign: "left" },
-  rtlRow: { flexDirection: "row-reverse" },
-  ltrRow: { flexDirection: "row" },
-  rtlAlign: { alignItems: "flex-end" },
-  ltrAlign: { alignItems: "flex-start" } });
+    fontFamily: "Alexandria-Medium" } });

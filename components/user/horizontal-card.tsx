@@ -56,7 +56,7 @@ interface HorizontalCardProps {
   onToggleFavorite?: () => void;
 }
 
-export function HorizontalCard({
+export const HorizontalCard = React.memo(function HorizontalCard({
   chalet,
   onPress,
   style,
@@ -65,8 +65,26 @@ export function HorizontalCard({
   isFavorite = false,
   onToggleFavorite }: HorizontalCardProps) {
   const { t, i18n } = useTranslation();
-  
+
+  const { language } = useSelector((state: RootState) => state.auth);
+  const isArabic = language === "ar";
+
+  const rtlStyles = React.useMemo(() => {
+    const needsCounter = isArabic !== I18nManager.isRTL;
+    const flexRow: "row" | "row-reverse" = needsCounter ? "row-reverse" : "row";
+    const flexRowInverse: "row" | "row-reverse" = needsCounter ? "row" : "row-reverse";
+    return {
+      textStart: (isArabic ? "right" : "left") as "left" | "right",
+      rowDirection: flexRow,
+      rowReverseDir: flexRowInverse,
+      ratingBoxDir: flexRow,
+      alignStart: (needsCounter ? "flex-end" : "flex-start") as "flex-start" | "flex-end",
+    };
+  }, [isArabic]);
+
   if (!chalet) return null;
+
+  const { textStart, rowDirection, rowReverseDir, ratingBoxDir, alignStart } = rtlStyles;
 
   const imageSource =
     typeof chalet.image === "string" && !chalet.image.startsWith("http")
@@ -76,17 +94,6 @@ export function HorizontalCard({
   const borderColor = chalet.color || Colors.secondary;
 
   const config = SHAPES_CONFIG[shapeIndex % SHAPES_CONFIG.length];
-
-  const { language } = useSelector((state: RootState) => state.auth);
-  const isArabic = language === "ar";
-  const textStart: "left" | "right" = isArabic ? "right" : "left";
-  const flexRow: "row" | "row-reverse" = (isArabic !== I18nManager.isRTL) ? "row-reverse" : "row";
-  const flexRowInverse: "row" | "row-reverse" = (isArabic !== I18nManager.isRTL) ? "row" : "row-reverse";
-  const rowDirection = flexRow;
-  const rowReverseDir = flexRowInverse;
-  const ratingBoxDir = flexRow;
-  const needsCounter = isArabic !== I18nManager.isRTL;
-  const alignStart: "flex-start" | "flex-end" = needsCounter ? "flex-end" : "flex-start";
 
   return (
     <TouchableOpacity
@@ -225,7 +232,7 @@ export function HorizontalCard({
       </View>
     </TouchableOpacity>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

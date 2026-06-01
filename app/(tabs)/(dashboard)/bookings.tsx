@@ -57,7 +57,7 @@ export default function BookingsScreen() {
 
   const handleOpenCancelSheet = (data: any) => {
     setCancellingBookingData(data);
-    const bIsExternal = data.bookingStatus === 'EXTERNAL' || data.status === 'external' || data.type === 'external';
+    const bIsExternal = data.status === 'external' || data.type === 'external';
     const customerName = bIsExternal
       ? data.externalCustomerName
       : (data.customer?.name || data.customer?.fullName);
@@ -234,7 +234,7 @@ export default function BookingsScreen() {
   };
 
   const renderBookingCard = ({ item, index }: { item: any; index: number }) => {
-    const bIsExternal = item.bookingStatus === 'EXTERNAL' || item.status === 'external';
+    const bIsExternal = item.status === 'external';
     const customer = item.customer;
     const customerName = bIsExternal
       ? item.externalCustomerName || (isRTL ? 'حجز خارجي' : 'External Booking')
@@ -315,7 +315,7 @@ export default function BookingsScreen() {
         >
           <View style={[styles.modernBookingInner, { flexDirection: 'row' }]}>
             {/* Info (Name, Chalet and Shift) */}
-            <View style={[styles.modernBookingInfo, { alignItems: 'flex-start' }]}>
+            <View style={[styles.modernBookingInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
                 <Text style={[styles.modernBookingName, { textAlign }]} numberOfLines={1}>{customerName}</Text>
                 <View style={{
@@ -365,6 +365,10 @@ export default function BookingsScreen() {
                     <Text style={styles.modernBookingDot}>•</Text>
                     <Text style={{ fontSize: normalize.font(11), color: '#035DF9', fontFamily: 'Alexandria-Medium' }}>
                       {isRTL ? `متبقي: ${(Number(item.remainingAmount) || 0).toLocaleString()} د.ع` : `Remaining: ${(Number(item.remainingAmount) || 0).toLocaleString()} IQD`}
+                    </Text>
+                    <Text style={styles.modernBookingDot}>•</Text>
+                    <Text style={{ fontSize: normalize.font(11), color: '#10B981', fontFamily: 'Alexandria-Medium' }}>
+                      {isRTL ? `المدفوع: ${(Number(item.amountPaid) || 0).toLocaleString()} د.ع` : `Amount Paid: ${(Number(item.amountPaid) || 0).toLocaleString()} IQD`}
                     </Text>
                   </>
                 )}

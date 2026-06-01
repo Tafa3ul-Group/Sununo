@@ -34,7 +34,7 @@ export default function ChaletInfoScreen() {
     { skip: type !== "terms" },
   );
   const { data: policiesData, isLoading: isPoliciesLoading } =
-    useGetChaletRulesQuery(id, { skip: type !== "policies" });
+    useGetChaletRulesQuery(id, { skip: !id });
 
   const isLoading = isTermsLoading || isPoliciesLoading;
   const title = type === "terms" 
@@ -44,17 +44,38 @@ export default function ChaletInfoScreen() {
 
   const getContent = () => {
     if (type === "terms") {
-      const termsText = isArabic ? terms?.ar || terms : terms?.en || terms;
-      const tStr = typeof termsText === "string" ? termsText : termsText?.ar || termsText?.en || "";
-      
-      const policiesText = isArabic ? terms?.policiesAr : terms?.policiesEn || terms?.policiesAr;
+      // `terms` may arrive as an object {ar,en}, a JSON string, or a plain string.
+      // Parse defensively so the terms always render correctly.
+      let parsed: any = terms;
+      if (typeof parsed === "string") {
+        try {
+          const p = JSON.parse(parsed);
+          if (p && typeof p === "object") parsed = p;
+        } catch {
+          /* keep as plain string */
+        }
+      }
+
+      const tStr =
+        typeof parsed === "string"
+          ? parsed
+          : (isArabic
+              ? parsed?.ar || parsed?.en
+              : parsed?.en || parsed?.ar) || "";
+
+      const policiesText = isArabic ? parsed?.policiesAr : parsed?.policiesEn || parsed?.policiesAr;
       const pStr = typeof policiesText === "string" ? policiesText : "";
-      
-      const cancellationText = isArabic ? terms?.cancellationAr : terms?.cancellationEn || terms?.cancellationAr;
+
+      const cancellationText = isArabic ? parsed?.cancellationAr : parsed?.cancellationEn || parsed?.cancellationAr;
       const cStr = typeof cancellationText === "string" ? cancellationText : "";
 
-      if (!pStr && !cStr) {
-        return tStr || t("common.noData");
+      // The owner's structured rules list also belongs on the terms page —
+      // it's often where the real "شروط/قوانين الشاليه" content lives.
+      const rulesList = Array.isArray(policiesData) ? policiesData : [];
+
+      // Nothing at all → show the no-data message.
+      if (!tStr && !pStr && !cStr && rulesList.length === 0) {
+        return t("common.noData");
       }
 
       return (
@@ -67,6 +88,32 @@ export default function ChaletInfoScreen() {
               <ThemedText style={styles.content}>
                 {tStr}
               </ThemedText>
+              {(pStr || cStr || rulesList.length > 0) && <View style={styles.divider} />}
+            </View>
+          ) : null}
+
+          {rulesList.length > 0 ? (
+            <View>
+              <ThemedText style={styles.sectionTitle}>
+                {isArabic ? "قوانين الشاليه" : "Chalet Rules"}
+              </ThemedText>
+              {rulesList.map((rule: any, idx: number) => {
+                const ruleTitle = isArabic ? rule.title?.ar || rule.title : rule.title?.en || rule.title;
+                const ruleDesc = isArabic ? rule.description?.ar || rule.description : rule.description?.en || rule.description;
+                return (
+                  <View key={rule.id || idx} style={styles.ruleItem}>
+                    <View style={[styles.ruleHeader, { flexDirection: rowDirection }]}>
+                      <View style={styles.ruleBullet} />
+                      <ThemedText style={[styles.ruleTitleText, { textAlign }]}>
+                        {ruleTitle}
+                      </ThemedText>
+                    </View>
+                    {ruleDesc ? (
+                      <ThemedText style={styles.ruleDescText}>{ruleDesc}</ThemedText>
+                    ) : null}
+                  </View>
+                );
+              })}
               {(pStr || cStr) && <View style={styles.divider} />}
             </View>
           ) : null}

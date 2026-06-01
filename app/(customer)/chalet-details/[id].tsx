@@ -289,9 +289,13 @@ export default function ChaletDetailScreen() {
       selectedShift.pricing &&
       selectedShift.pricing.length > 0
     ) {
-      return Math.min(
-        ...selectedShift.pricing.map((p: any) => p.price),
-      ).toLocaleString();
+      // Exclude closed days (price <= 1 sentinel) from the displayed minimum price.
+      const validPrices = selectedShift.pricing
+        .map((p: any) => Number(p.price))
+        .filter((p: number) => p > 1);
+      if (validPrices.length > 0) {
+        return Math.min(...validPrices).toLocaleString();
+      }
     }
     return chalet.basePrice ? Number(chalet.basePrice).toLocaleString() : "0";
   }, [selectedShift, chalet.basePrice]);
@@ -589,11 +593,11 @@ export default function ChaletDetailScreen() {
           <View style={styles.shiftsGrid}>
             {availableShifts && availableShifts.length > 0 ? (
               availableShifts.map((shift: any, index: number) => {
+                const validShiftPrices =
+                  shift.pricing?.map((p: any) => Number(p.price)).filter((p: number) => p > 1) || [];
                 const minShiftPrice =
-                  shift.pricing && shift.pricing.length > 0
-                    ? Math.min(
-                      ...shift.pricing.map((p: any) => p.price),
-                    ).toLocaleString()
+                  validShiftPrices.length > 0
+                    ? Math.min(...validShiftPrices).toLocaleString()
                     : null;
 
                 return (

@@ -24,7 +24,7 @@ const STAR_SHAPE =
 
 export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
   const router = useRouter();
-  const { isRTL, textAlign } = useDirection();
+  const { isRTL, textAlign, rowDirection } = useDirection();
     const [isFavorite, setIsFavorite] = React.useState(false);
 
   if (!chalet) return null;
@@ -45,9 +45,15 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
 
   let minPrice = chalet.price;
   if (chalet.shifts && chalet.shifts.length > 0) {
-    const prices = chalet.shifts.flatMap((s: any) => s.pricing?.map((p: any) => p.price) || []);
+    // Exclude "closed" days: a price of <= 1 is the sentinel for an unavailable
+    // day and must not be shown as the real (minimum) price.
+    const prices = chalet.shifts
+      .flatMap((s: any) => s.pricing?.map((p: any) => Number(p.price)) || [])
+      .filter((p: number) => p > 1);
     if (prices.length > 0) {
       minPrice = Math.min(...prices).toLocaleString();
+    } else if (chalet.basePrice) {
+      minPrice = Number(chalet.basePrice).toLocaleString();
     }
   } else if (chalet.basePrice) {
     minPrice = Number(chalet.basePrice).toLocaleString();
@@ -66,7 +72,7 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
         <View
           style={[
             styles.topActions,
-            { flexDirection: 'row' },
+            { flexDirection: rowDirection },
           ]}
         >
           {/* التقييم في زاوية اليمنى صريحاً وبنفس المسافة */}
@@ -108,7 +114,7 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
           style={[
             styles.locationRow,
             {
-              flexDirection: 'row' },
+              flexDirection: rowDirection },
           ]}
         >
           <SolarMapPointBold size={normalize.width(14)} color="#9CA3AF" />
@@ -129,7 +135,7 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
           <View
             style={[
               styles.priceRow,
-              { flexDirection: 'row' },
+              { flexDirection: rowDirection },
             ]}
           >
             <ThemedText style={styles.priceLabel}>

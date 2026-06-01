@@ -1533,11 +1533,11 @@ export default function ChaletDetailsScreen() {
                       </View>
                       <View style={{ gap: 4 }}>
                         <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Medium', color: '#94A3B8' }}>{isRTL ? 'العنوان بالإنجليزية' : 'Title (EN)'}</Text>
-                        <BottomSheetTextInput style={{ backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, fontFamily: 'Alexandria-Regular', color: '#1E293B', borderWidth: 1, borderColor: '#E2E8F0', textAlign: 'left' }} value={editForm.titleEn} onChangeText={(val) => setEditForm({ ...editForm, titleEn: val })} />
+                        <BottomSheetTextInput style={{ backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, fontFamily: 'Alexandria-Regular', color: '#1E293B', borderWidth: 1, borderColor: '#E2E8F0', textAlign: 'left' /* English input only */ }} value={editForm.titleEn} onChangeText={(val) => setEditForm({ ...editForm, titleEn: val })} />
                       </View>
                       <View style={{ gap: 4 }}>
                         <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Medium', color: '#94A3B8' }}>{isRTL ? 'الشرح بالإنجليزية' : 'Description (EN)'}</Text>
-                        <BottomSheetTextInput style={{ backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, fontFamily: 'Alexandria-Regular', color: '#1E293B', borderWidth: 1, borderColor: '#E2E8F0', minHeight: 55, textAlignVertical: 'top', textAlign: 'left' }} multiline value={editForm.descriptionEn} onChangeText={(val) => setEditForm({ ...editForm, descriptionEn: val })} />
+                        <BottomSheetTextInput style={{ backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, fontFamily: 'Alexandria-Regular', color: '#1E293B', borderWidth: 1, borderColor: '#E2E8F0', minHeight: 55, textAlignVertical: 'top', textAlign: 'left' /* English input only */ }} multiline value={editForm.descriptionEn} onChangeText={(val) => setEditForm({ ...editForm, descriptionEn: val })} />
                       </View>
                       <View style={{ flexDirection: flexRow, gap: 10, marginTop: 6 }}>
                         <TouchableOpacity onPress={handleSaveEditRule} disabled={isUpdatingRules} style={{ flex: 1, flexDirection: flexRow, backgroundColor: Colors.primary, borderRadius: 10, paddingVertical: 10, justifyContent: 'center', alignItems: 'center', gap: 6 }}>
@@ -1609,8 +1609,8 @@ export default function ChaletDetailsScreen() {
                 <Text style={{ fontSize: 10, fontFamily: 'Alexandria-Regular', color: '#94A3B8' }}>{isRTL ? '(اختياري)' : '(optional)'}</Text>
               </View>
               <View style={{ gap: 8 }}>
-                <BottomSheetTextInput style={{ backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, fontFamily: 'Alexandria-Regular', color: '#1E293B', borderWidth: 1, borderColor: '#E2E8F0', textAlign: 'left' }} placeholder="Rule title..." placeholderTextColor="#CBD5E1" value={newRule.titleEn} onChangeText={(val) => setNewRule({ ...newRule, titleEn: val })} />
-                <BottomSheetTextInput style={{ backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, fontFamily: 'Alexandria-Regular', color: '#1E293B', borderWidth: 1, borderColor: '#E2E8F0', minHeight: 60, textAlignVertical: 'top', textAlign: 'left' }} multiline placeholder="Rule description..." placeholderTextColor="#CBD5E1" value={newRule.descriptionEn} onChangeText={(val) => setNewRule({ ...newRule, descriptionEn: val })} />
+                <BottomSheetTextInput style={{ backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, fontFamily: 'Alexandria-Regular', color: '#1E293B', borderWidth: 1, borderColor: '#E2E8F0', textAlign: 'left' /* English input only */ }} placeholder="Rule title..." placeholderTextColor="#CBD5E1" value={newRule.titleEn} onChangeText={(val) => setNewRule({ ...newRule, titleEn: val })} />
+                <BottomSheetTextInput style={{ backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, fontFamily: 'Alexandria-Regular', color: '#1E293B', borderWidth: 1, borderColor: '#E2E8F0', minHeight: 60, textAlignVertical: 'top', textAlign: 'left' /* English input only */ }} multiline placeholder="Rule description..." placeholderTextColor="#CBD5E1" value={newRule.descriptionEn} onChangeText={(val) => setNewRule({ ...newRule, descriptionEn: val })} />
               </View>
             </View>
 

@@ -27,6 +27,12 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
     api.dispatch(logout());
   }
 
+  // Normalize error response shape so callers always have a message
+  if (result.error && !(result.error as any).message && (result.error as any).data) {
+    (result.error as any).message =
+      (result.error as any).data?.message || "Request failed";
+  }
+
   return result;
 };
 
@@ -44,6 +50,15 @@ export const unwrapListResponse = (response: any) => {
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithReauth,
+  // ── Freshness policy ──────────────────────────────────────────────────────
+  // Data edited by the owner on one device cannot be cache-invalidated on the
+  // customer's device (tags don't cross devices, and there's no realtime push).
+  // So we keep client data fresh by refetching when a screen subscribes and when
+  // the app regains focus / network — instead of serving long-lived stale cache.
+  keepUnusedDataFor: 30, // drop unused cache after 30s (was 60s default)
+  refetchOnMountOrArgChange: true, // re-opening a screen always fetches current data
+  refetchOnFocus: true, // refetch when the app returns to the foreground
+  refetchOnReconnect: true, // refetch after network reconnects
   tagTypes: [
     "Chalet",
     "User",
@@ -221,7 +236,9 @@ export const apiSlice = createApi({
         method: "POST",
         body: data,
       }),
-      invalidatesTags: ["Chalet"],
+      invalidatesTags: (result, error, { chaletId }) => [
+        { type: "Chalet" as const, id: chaletId },
+      ],
     }),
 
     updateShift: builder.mutation({
@@ -230,7 +247,9 @@ export const apiSlice = createApi({
         method: "PATCH",
         body: data,
       }),
-      invalidatesTags: ["Chalet"],
+      invalidatesTags: (result, error, { chaletId }) => [
+        { type: "Chalet" as const, id: chaletId },
+      ],
     }),
 
     deleteShift: builder.mutation({
@@ -238,7 +257,9 @@ export const apiSlice = createApi({
         url: `/provider/chalets/${chaletId}/shifts/${shiftId}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Chalet"],
+      invalidatesTags: (result, error, { chaletId }) => [
+        { type: "Chalet" as const, id: chaletId },
+      ],
     }),
 
     // Pricing Matrix Mutation
@@ -258,7 +279,9 @@ export const apiSlice = createApi({
         method: "PUT",
         body: data,
       }),
-      invalidatesTags: ["Chalet"],
+      invalidatesTags: (result, error, { chaletId }) => [
+        { type: "Chalet" as const, id: chaletId },
+      ],
     }),
 
     createChaletPolicy: builder.mutation({
@@ -267,7 +290,9 @@ export const apiSlice = createApi({
         method: "POST",
         body: data,
       }),
-      invalidatesTags: ["Chalet"],
+      invalidatesTags: (result, error, { chaletId }) => [
+        { type: "Chalet" as const, id: chaletId },
+      ],
     }),
 
     deleteChaletPolicy: builder.mutation({
@@ -275,7 +300,9 @@ export const apiSlice = createApi({
         url: `/provider/chalets/${chaletId}/cancellation-policies/${policyId}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Chalet"],
+      invalidatesTags: (result, error, { chaletId }) => [
+        { type: "Chalet" as const, id: chaletId },
+      ],
     }),
 
     updateShiftPricingDay: builder.mutation({

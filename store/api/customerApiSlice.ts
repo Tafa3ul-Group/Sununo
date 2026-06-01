@@ -62,14 +62,23 @@ export const customerApi = apiSlice.injectEndpoints({
 
     getChaletTerms: builder.query({
       query: (id: string) => `/customer/chalets/${id}/terms`,
+      providesTags: (result: any, error: any, id: string) => [
+        { type: "Chalet" as const, id },
+      ],
     }),
 
     getChaletPolicies: builder.query({
       query: (id: string) => `/customer/chalets/${id}/policies`,
+      providesTags: (result: any, error: any, id: string) => [
+        { type: "Chalet" as const, id },
+      ],
     }),
 
     getChaletRules: builder.query({
       query: (id: string) => `/customer/chalets/${id}/policies`,
+      providesTags: (result: any, error: any, id: string) => [
+        { type: "Chalet" as const, id },
+      ],
     }),
 
     /** Get chalet occupancy by month */
@@ -78,11 +87,17 @@ export const customerApi = apiSlice.injectEndpoints({
         url: `/customer/chalets/${id}/availability`,
         params: { month, year },
       }),
+      providesTags: (result: any, error: any, arg: { id: string; month: number; year: number }) => [
+        { type: "Chalet" as const, id: arg.id },
+      ],
     }),
 
     /** Get chalet images (public) */
     getChaletImages: builder.query({
       query: (id: string) => `/chalets/${id}/images`,
+      providesTags: (result: any, error: any, id: string) => [
+        { type: "Chalet" as const, id },
+      ],
     }),
 
     // ── Bookings (Customer) ────────────────────────────────────────────────
@@ -152,6 +167,15 @@ export const customerApi = apiSlice.injectEndpoints({
       }) {
         return currentArg !== previousArg;
       },
+      providesTags: ["Booking"],
+    }),
+
+    /** Get the customer's latest bookings (home "recent bookings" section) */
+    getLatestBookings: builder.query({
+      query: (limit: number = 5) => ({
+        url: "/customer/bookings/latest",
+        params: { limit },
+      }),
       providesTags: ["Booking"],
     }),
 
@@ -384,6 +408,7 @@ export const customerApi = apiSlice.injectEndpoints({
         url: "/notifications",
         params,
       }),
+      providesTags: ["Notification"],
     }),
 
     /** Mark notification as read */
@@ -392,11 +417,13 @@ export const customerApi = apiSlice.injectEndpoints({
         url: `/notifications/${id}/mark-as-read`,
         method: "PUT",
       }),
+      invalidatesTags: ["Notification"],
     }),
 
     /** Get notification settings */
     getNotificationSettings: builder.query({
       query: () => "/notifications/settings",
+      providesTags: ["Notification"],
     }),
 
     /** Update notification settings */
@@ -406,6 +433,7 @@ export const customerApi = apiSlice.injectEndpoints({
         method: "PUT",
         body: data,
       }),
+      invalidatesTags: ["Notification"],
     }),
 
     /** Register Firebase token */
@@ -433,6 +461,7 @@ export const customerApi = apiSlice.injectEndpoints({
     getCityNames: builder.query({
       query: () => "/cities/names",
       transformResponse: unwrapListResponse,
+      providesTags: ["Chalet"],
     }),
 
     /** Get regions for a specific city */
@@ -481,6 +510,7 @@ export const {
   useGetCustomerBookingsQuery,
   useLazyGetCustomerBookingsQuery,
   useGetCustomerBookingDetailsQuery,
+  useGetLatestBookingsQuery,
   useGetCancellationPreviewQuery,
   useLazyGetCancellationPreviewQuery,
   useCancelCustomerBookingMutation,

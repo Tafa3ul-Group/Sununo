@@ -14,7 +14,6 @@ import {
   ScrollView,
   StyleSheet,
   View,
-  I18nManager,
   TouchableOpacity,
   Alert,
   Platform,
@@ -32,6 +31,7 @@ import {
   useLazyGetPaymentStatusQuery,
 } from "@/store/api/customerApiSlice";
 import * as WebBrowser from "expo-web-browser";
+import { useDirection } from "@/i18n/direction";
 
 const dismissBrowser = () => {
   if (Platform.OS === "ios") {
@@ -44,16 +44,14 @@ const dismissBrowser = () => {
 };
 
 export default function BookingSuccessDetailsScreen() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const bookingId = id as string;
   const { formatShiftTime } = useFormatTime();
 
-  const isRTL = i18n.language ? i18n.language.startsWith('ar') : false;
-  const needsFlip = isRTL !== I18nManager.isRTL;
-  const getFlexDirection = (rtl: boolean): "row" | "row-reverse" => (rtl !== I18nManager.isRTL) ? "row-reverse" : "row";
-  const textStart: "left" | "right" = isRTL ? "right" : "left";
+  const { isRTL, rowDirection, textAlign } = useDirection();
+  const textStart = textAlign;
   const textEnd: "left" | "right" = isRTL ? "left" : "right";
 
   // Fetch booking details from the backend
@@ -64,7 +62,7 @@ export default function BookingSuccessDetailsScreen() {
     },
   );
 
-  const depositPercentage = Number(booking?.chalet?.depositPercentage || 0);
+  const depositPercentage = Number(booking?.chalet?.depositPercentage) || Number(booking?.chalet?.minDepositPercentage) || 0;
 
   const [selectedMethod, setSelectedMethod] = useState<"wayl" | "wallet">("wayl");
   const [paymentType, setPaymentType] = useState<"DEPOSIT" | "FULL">("FULL");
@@ -269,7 +267,7 @@ export default function BookingSuccessDetailsScreen() {
   }, [booking, isRTL, t]);
 
   const renderInfoRow = (label: string, value: string | React.ReactNode) => (
-    <View style={[styles.infoRow, { flexDirection: getFlexDirection(isRTL) }]}>
+    <View style={[styles.infoRow, { flexDirection: rowDirection }]}>
       <ThemedText
         style={[styles.infoLabel, { textAlign: textStart }]}
       >
@@ -387,7 +385,7 @@ export default function BookingSuccessDetailsScreen() {
           </ThemedText>
           <View style={styles.divider} />
 
-          <View style={[styles.infoRow, { flexDirection: getFlexDirection(isRTL) }]}>
+          <View style={[styles.infoRow, { flexDirection: rowDirection }]}>
             <ThemedText style={styles.infoLabel}>
               {t("booking.bookingStatus")}
             </ThemedText>
@@ -429,7 +427,7 @@ export default function BookingSuccessDetailsScreen() {
           </ThemedText>
           <View style={styles.divider} />
 
-          <View style={[styles.infoRow, { flexDirection: getFlexDirection(isRTL) }]}>
+          <View style={[styles.infoRow, { flexDirection: rowDirection }]}>
             <ThemedText style={styles.infoLabel}>
               {t("booking.paymentStatus")}
             </ThemedText>
@@ -490,7 +488,7 @@ export default function BookingSuccessDetailsScreen() {
 
         {/* Pending Approval Alert */}
         {isPendingApproval && (
-          <View style={[styles.alertCard, { flexDirection: getFlexDirection(isRTL) }]}>
+          <View style={[styles.alertCard, { flexDirection: rowDirection }]}>
             <SolarInfoCircleBold size={24} color="#D97706" />
             <ThemedText style={styles.alertText}>
               {isRTL
@@ -502,7 +500,7 @@ export default function BookingSuccessDetailsScreen() {
 
         {/* Confirmed: awaiting the owner to complete the stay */}
         {isConfirmed && (
-          <View style={[styles.alertCard, styles.alertCardSuccess, { flexDirection: getFlexDirection(isRTL) }]}>
+          <View style={[styles.alertCard, styles.alertCardSuccess, { flexDirection: rowDirection }]}>
             <SolarInfoCircleBold size={24} color="#16A34A" />
             <ThemedText style={[styles.alertText, { color: "#15803D" }]}>
               {isRTL
@@ -518,7 +516,7 @@ export default function BookingSuccessDetailsScreen() {
 
         {/* Cancelled: show reason */}
         {isCancelled && (
-          <View style={[styles.alertCard, styles.alertCardDanger, { flexDirection: getFlexDirection(isRTL) }]}>
+          <View style={[styles.alertCard, styles.alertCardDanger, { flexDirection: rowDirection }]}>
             <SolarInfoCircleBold size={24} color="#DC2626" />
             <ThemedText style={[styles.alertText, { color: "#B91C1C" }]}>
               {isRTL ? "تم إلغاء هذا الحجز." : "This booking has been cancelled."}
@@ -530,7 +528,7 @@ export default function BookingSuccessDetailsScreen() {
         {/* Instant chalet awaiting its initial payment — NO re-payment form here.
             Payment for instant chalets happens once, at booking creation. */}
         {isPendingPayment && !isDelayedChalet && (
-          <View style={[styles.alertCard, { flexDirection: getFlexDirection(isRTL) }]}>
+          <View style={[styles.alertCard, { flexDirection: rowDirection }]}>
             <SolarInfoCircleBold size={24} color="#D97706" />
             <ThemedText style={styles.alertText}>
               {isRTL
@@ -564,7 +562,7 @@ export default function BookingSuccessDetailsScreen() {
                   style={[
                     styles.paymentOptionCard,
                     paymentType === "DEPOSIT" && styles.paymentOptionActive,
-                    { flexDirection: getFlexDirection(isRTL) }
+                    { flexDirection: rowDirection }
                   ]}
                   onPress={() => setPaymentType("DEPOSIT")}
                 >
@@ -592,7 +590,7 @@ export default function BookingSuccessDetailsScreen() {
                   style={[
                     styles.paymentOptionCard,
                     paymentType === "FULL" && styles.paymentOptionActive,
-                    { flexDirection: getFlexDirection(isRTL) }
+                    { flexDirection: rowDirection }
                   ]}
                   onPress={() => setPaymentType("FULL")}
                 >
@@ -618,7 +616,7 @@ export default function BookingSuccessDetailsScreen() {
               </View>
             )}
 
-            <View style={[styles.paymentMethodsGrid, { flexDirection: getFlexDirection(isRTL) }]}>
+            <View style={[styles.paymentMethodsGrid, { flexDirection: rowDirection }]}>
               <TouchableOpacity
                 style={[
                   styles.paymentMethodBtn,

@@ -350,6 +350,19 @@ export default function CompleteBookingScreen() {
     [availabilityData, currentMonth],
   );
 
+  // A shift is "closed" on a given day when it has no valid pricing for that
+  // weekday (price missing or <= 1). This mirrors the backend availability rule
+  // (a shift with no ShiftPricing for the day cannot be booked), so a stopped
+  // shift renders disabled and non-clickable.
+  const isShiftClosedForDay = useCallback(
+    (day: number, shift: any) => {
+      const dow = getDateForDay(day).getDay();
+      const dayPricing = shift?.pricing?.find((p: any) => p.dayOfWeek === dow);
+      return !dayPricing || Number(dayPricing.price) <= 1;
+    },
+    [currentMonth],
+  );
+
   // Pre-fill selected shifts from the saved filter when possible.
   useEffect(() => {
     const initialShift =
@@ -427,6 +440,18 @@ export default function CompleteBookingScreen() {
   >(null);
   const [checkPaymentStatus] = useLazyGetPaymentStatusQuery();
   const processingSheetRef = React.useRef<BottomSheetModal>(null);
+  // Holds the payment-polling interval so it can be cleared on unmount.
+  const pollingIntervalRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Clear the polling interval if the screen unmounts mid-poll.
+  useEffect(() => {
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+    };
+  }, []);
 
   const getDateKeyForDay = useCallback(
     (day: number) =>
@@ -507,7 +532,7 @@ export default function CompleteBookingScreen() {
     });
 
     const totalPrice = totalBasePrice + totalExtraGuestsPrice;
-    const depositPercentage = Number(chaletDetails?.depositPercentage || 0);
+    const depositPercentage = Number(chaletDetails?.depositPercentage) || Number(chaletDetails?.minDepositPercentage) || 0;
     const depositAmount = Math.round((totalPrice * depositPercentage) / 100);
     const remainingAmount = totalPrice - depositAmount;
 
@@ -542,7 +567,7 @@ export default function CompleteBookingScreen() {
 
   const extraGuestsCount = Math.max(0, totalGuestsNow - capacityLimit);
 
-  const depositPercentage = Number(chaletDetails?.depositPercentage || 0);
+  const depositPercentage = Number(chaletDetails?.depositPercentage) || Number(chaletDetails?.minDepositPercentage) || 0;
 
   useEffect(() => {
     if (depositPercentage === 0) {
@@ -566,6 +591,10 @@ export default function CompleteBookingScreen() {
       : t("booking.noDate");
 
   const handleNext = async () => {
+    // Guard against double submission: ignore taps while a booking is being
+    // created or while we are waiting for a payment result (prevents the race
+    // where multiple createBooking() calls overwrite createdBookingId).
+    if (isCreatingBooking || isWaitingForPayment) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     if (activeTab === "WHEN") {
       setActiveTab("WHO");
@@ -795,6 +824,8 @@ export default function CompleteBookingScreen() {
 
   const toggleShiftForDay = (day: number, shiftId: string) => {
     if (isShiftBookedForDay(day, shiftId)) return;
+    const shiftObj = availableShifts.find((s: any) => s.id === shiftId);
+    if (shiftObj && isShiftClosedForDay(day, shiftObj)) return; // closed → not selectable
     setSelectedShifts((prev) => ({
       ...prev,
       [day]: prev[day] === shiftId ? "" : shiftId,
@@ -805,6 +836,12 @@ export default function CompleteBookingScreen() {
   const startPaymentPolling = async (transactionId: string) => {
     let attempts = 0;
     const maxAttempts = 20; // 20 * 3s = 60s (1 minute)
+
+    // Clear any previous interval before starting a new one.
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
 
     const interval = setInterval(async () => {
       attempts++;
@@ -836,6 +873,7 @@ export default function CompleteBookingScreen() {
 
       if (attempts >= maxAttempts) {
         clearInterval(interval);
+        pollingIntervalRef.current = null;
         setPollingStatus("timeout");
         dismissBrowser();
         setTimeout(() => {
@@ -843,6 +881,10 @@ export default function CompleteBookingScreen() {
         }, 1500);
       }
     }, 3000);
+
+    // Track the interval so it can be cleared on unmount (prevents the leak /
+    // state updates on an unmounted component).
+    pollingIntervalRef.current = interval;
   };
 
   const renderDetailsTab = () => (
@@ -962,18 +1004,20 @@ export default function CompleteBookingScreen() {
               ? isArabic
                 ? "فترات متعددة"
                 : "Multiple Shifts"
-              : (function () {
-                  const day = selectedDates[0];
-                  const shiftId = selectedShifts[day];
-                  const shift = chaletDetails?.shifts?.find(
-                    (s: any) => s.id === shiftId,
-                  );
-                  return shift
-                    ? isArabic
-                      ? shift.name?.ar || shift.name
-                      : shift.name?.en || shift.name
-                    : t("booking.noShift");
-                })()}
+              : selectedDates.length === 0
+                ? t("booking.noShift")
+                : (function () {
+                    const day = selectedDates[0];
+                    const shiftId = selectedShifts[day];
+                    const shift = chaletDetails?.shifts?.find(
+                      (s: any) => s.id === shiftId,
+                    );
+                    return shift
+                      ? isArabic
+                        ? shift.name?.ar || shift.name
+                        : shift.name?.en || shift.name
+                      : t("booking.noShift");
+                  })()}
           </ThemedText>
         </View>
         <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
@@ -1350,6 +1394,16 @@ export default function CompleteBookingScreen() {
                 ? "لم نتلقَّ تأكيداً بعد. يرجى مراجعة قائمة حجوزاتك لاحقاً للتأكد من الحالة."
                 : "We haven't received confirmation yet. Please check your bookings later for status."}
             </ThemedText>
+            {paymentTransactionId ? (
+              <PrimaryButton
+                label={isArabic ? "إعادة التحقق" : "Check Status Again"}
+                onPress={() => {
+                  setPollingStatus("pending");
+                  startPaymentPolling(paymentTransactionId);
+                }}
+                style={{ width: "100%", height: 56, marginTop: 10 }}
+              />
+            ) : null}
             <PrimaryButton
               label={isArabic ? "الذهاب للحجوزات" : "Go to Bookings"}
               onPress={() => {
@@ -1510,6 +1564,8 @@ export default function CompleteBookingScreen() {
                   {availableShifts?.map((shift: any) => {
                     const isSelected = selectedShifts[day] === shift.id;
                     const isBooked = isShiftBookedForDay(day, shift.id);
+                    const isClosed = isShiftClosedForDay(day, shift);
+                    const isDisabled = isBooked || isClosed;
                     const shiftName = isArabic
                       ? shift.name?.ar || shift.name
                       : shift.name?.en || shift.name;
@@ -1529,16 +1585,17 @@ export default function CompleteBookingScreen() {
                     return (
                       <TouchableOpacity
                         key={`${day}-${shift.id}`}
-                        disabled={isBooked}
+                        disabled={isDisabled}
+                        activeOpacity={isDisabled ? 1 : 0.7}
                         style={[
                           styles.shiftCardFlat,
                           { flexDirection: rowDirection },
-                          isSelected && {
+                          isSelected && !isDisabled && {
                             borderColor: "#035DF9",
                             borderWidth: 1.5,
                             backgroundColor: "#F0F7FF",
                           },
-                          isBooked && {
+                          isDisabled && {
                             opacity: 0.5,
                             backgroundColor: "#F1F5F9",
                           },
@@ -1592,18 +1649,32 @@ export default function CompleteBookingScreen() {
                           </ThemedText>
                         </View>
                         <View style={{ alignItems: "flex-end" }}>
-                          <ThemedText
-                            style={[
-                              styles.shiftPriceFlat,
-                              isSelected && {
-                                color: "#035DF9",
-                                fontFamily: "Alexandria-Medium",
-                              },
-                            ]}
-                          >
-                            {Number(shiftPrice).toLocaleString()}{" "}
-                            {t("common.iqd")}
-                          </ThemedText>
+                          {isClosed ? (
+                            <View style={styles.shiftClosedBadge}>
+                              <ThemedText style={styles.shiftClosedText}>
+                                {isArabic ? "مغلق" : "Closed"}
+                              </ThemedText>
+                            </View>
+                          ) : isBooked ? (
+                            <View style={styles.shiftClosedBadge}>
+                              <ThemedText style={styles.shiftClosedText}>
+                                {isArabic ? "محجوز" : "Booked"}
+                              </ThemedText>
+                            </View>
+                          ) : (
+                            <ThemedText
+                              style={[
+                                styles.shiftPriceFlat,
+                                isSelected && {
+                                  color: "#035DF9",
+                                  fontFamily: "Alexandria-Medium",
+                                },
+                              ]}
+                            >
+                              {Number(shiftPrice).toLocaleString()}{" "}
+                              {t("common.iqd")}
+                            </ThemedText>
+                          )}
                         </View>
                       </TouchableOpacity>
                     );
@@ -2075,6 +2146,17 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 10,
   },
+  shiftClosedBadge: {
+    backgroundColor: "#FEE2E2",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  shiftClosedText: {
+    fontSize: normalize.font(12),
+    fontFamily: "Alexandria-Medium",
+    color: "#DC2626",
+  },
   shiftCardFlat: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -2387,13 +2469,7 @@ const styles = StyleSheet.create({
     fontFamily: "Alexandria-Medium",
   },
   // RTL Utilities
-  rtlText: { textAlign: "right" },
-  ltrText: { textAlign: "left" },
   row: { flexDirection: "row" },
-  rtlRow: { flexDirection: "row" },
-  ltrRow: { flexDirection: "row" },
-  rtlAlign: { alignItems: "flex-end" },
-  ltrAlign: { alignItems: "flex-start" },
   paymentMethodsGrid: {
     flexDirection: "row",
     gap: 12,

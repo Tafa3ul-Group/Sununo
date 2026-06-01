@@ -43,6 +43,7 @@ import {
   useBrowseCustomerChaletsQuery,
   useGetBannersQuery,
   useGetFavoriteIdsQuery,
+  useGetLatestBookingsQuery,
   useToggleFavoriteMutation,
 } from "@/store/api/customerApiSlice";
 import { clearFilters } from "@/store/filterSlice";
@@ -270,6 +271,23 @@ export default function HomeScreen() {
     useGetFavoriteIdsQuery(undefined, { skip: userType === "guest" });
   const [toggleFavorite] = useToggleFavoriteMutation();
 
+  // Recent bookings (home "آخر الحجوزات" section) — real data from the backend.
+  const {
+    data: latestBookings = [],
+    isLoading: latestBookingsLoading,
+    refetch: refetchLatestBookings,
+  } = useGetLatestBookingsQuery(5, { skip: userType === "guest" });
+
+  // Map each recent booking to its chalet (carrying the bookingId) so the section
+  // uses the SAME chalet card shape, while tapping opens the booking.
+  const recentBookingChalets = useMemo(
+    () =>
+      (Array.isArray(latestBookings) ? latestBookings : [])
+        .filter((b: any) => b?.chalet)
+        .map((b: any) => ({ ...b.chalet, bookingId: b.id })),
+    [latestBookings],
+  );
+
   const [isRefreshing, setIsRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -277,9 +295,10 @@ export default function HomeScreen() {
       refetchBanners(),
       refetchChalets(),
       userType !== "guest" ? refetchFavorites() : Promise.resolve(),
+      userType !== "guest" ? refetchLatestBookings() : Promise.resolve(),
     ]);
     setIsRefreshing(false);
-  }, [refetchBanners, refetchChalets, refetchFavorites, userType]);
+  }, [refetchBanners, refetchChalets, refetchFavorites, refetchLatestBookings, userType]);
 
   const handleToggleFavorite = async (id: string) => {
     try {
@@ -443,22 +462,35 @@ export default function HomeScreen() {
           >
             {t("home.recentBookings")}
           </ThemedText>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push("/(tabs)/(customer)/bookings")}>
             <ThemedText style={styles.seeAll}>{t("home.seeAll")}</ThemedText>
           </TouchableOpacity>
         </View>
 
-        {chaletsLoading ? (
+        {latestBookingsLoading ? (
           <HorizontalSwiperSkeleton count={2} />
-        ) : (
+        ) : recentBookingChalets.length > 0 ? (
           <View style={styles.swiperWrapper}>
             <HorizontalSwiper
-              data={POPULAR_CHALETS}
-              onPressCard={navigateToDetails}
+              data={recentBookingChalets}
+              onPressCard={(chaletId: string) => {
+                const b = (Array.isArray(latestBookings) ? latestBookings : []).find(
+                  (x: any) => x?.chalet?.id === chaletId,
+                );
+                if (b?.id) {
+                  router.push({ pathname: "/(tabs)/(customer)/booking-success", params: { id: b.id } });
+                } else {
+                  navigateToDetails(chaletId);
+                }
+              }}
               favoriteIds={favoriteIds}
               onToggleFavorite={handleToggleFavorite}
             />
           </View>
+        ) : (
+          <ThemedText style={[styles.seeAll, { textAlign: textStart, paddingHorizontal: 16, opacity: 0.6 }]}>
+            {isRTL ? "لا توجد حجوزات حديثة بعد." : "No recent bookings yet."}
+          </ThemedText>
         )}
 
         {/* Recommended */}
