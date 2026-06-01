@@ -423,26 +423,26 @@ export default function BookingsScreen() {
         <DashboardHeader
           title={isRTL ? 'الحجوزات' : 'Bookings'}
           showSearch={false}
-          showBackButton={true}
+          showBackButton={false}
+          showLogo={true}
+          customRightComponent={
+            <View style={{ transform: [{ scale: 0.92 }] }}>
+              <SecondaryButton
+                label={getButtonLabel()}
+                icon={<SolarCalendarBold size={18} color={Colors.black} />}
+                inactiveTextColor={Colors.black}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  calendarSheetRef.current?.present();
+                }}
+              />
+            </View>
+          }
         />
         <View style={{ flex: 1 }}>
           <View style={{ flex: 1 }}>
-            {/* Fixed Section: Header + Filter */}
+            {/* Fixed Section: Filter */}
             <View style={styles.fixedHeaderArea}>
-              <View style={[styles.bookingsHeader, { flexDirection: 'row', justifyContent: 'flex-end' }]}>
-                <View style={{ transform: [{ scale: 0.92 }] }}>
-                  <SecondaryButton
-                    label={getButtonLabel()}
-                    icon={<SolarCalendarBold size={18} color={Colors.black} />}
-                    inactiveTextColor={Colors.black}
-                    onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      calendarSheetRef.current?.present();
-                    }}
-                  />
-                </View>
-              </View>
-
               {/* Filter Bar */}
               <Animated.View
                 entering={FadeInRight.delay(100).duration(400)}
@@ -913,6 +913,7 @@ const styles = StyleSheet.create({
   fixedHeaderArea: {
     backgroundColor: Colors.white,
     zIndex: 10,
+    paddingTop: normalize.height(16),
     paddingBottom: normalize.height(5)
   },
   noBookings: {

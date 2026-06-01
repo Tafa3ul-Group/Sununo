@@ -1,7 +1,7 @@
 import {
   SolarHomeSmileBoldDuotone,
   SolarAddSquareBold,
-  SolarEyeBold
+  SolarPenBold
 } from '@/components/icons/solar-icons';
 import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
@@ -256,7 +256,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
                           router.push({ pathname: '/(dashboard)/chalet-details', params: { id: item.id } });
                         }}
                       >
-                         <SolarEyeBold size={18} color={Colors.primary} />
+                         <SolarPenBold size={18} color={Colors.primary} />
                       </TouchableOpacity>
                     </TouchableOpacity>
                   ))}

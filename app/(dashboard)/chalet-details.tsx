@@ -30,6 +30,7 @@ import {
   useDeleteChaletMutation,
   useGetAmenityCategoriesQuery,
   useGetChaletAmenitiesQuery,
+  useGetChaletShiftsQuery,
   useGetCitiesQuery,
   useGetOwnerChaletDetailsQuery,
   useGetProviderChaletStatsQuery,
@@ -82,6 +83,8 @@ export default function ChaletDetailsScreen() {
   const { data: cities } = useGetCitiesQuery();
   const { data: amenityCategories } = useGetAmenityCategoriesQuery();
   const { data: currentAmenities } = useGetChaletAmenitiesQuery(chaletId as string, { skip: !chaletId });
+  const { data: shiftsResponse } = useGetChaletShiftsQuery(chaletId as string, { skip: !chaletId });
+  const shifts = shiftsResponse?.data || shiftsResponse || [];
 
   const chalet = response?.data || (response?.id ? response : null);
   const chaletStats = chaletStatsResponse?.data || chaletStatsResponse || {};
@@ -651,6 +654,31 @@ export default function ChaletDetailsScreen() {
       done: chalet?.rules && chalet.rules.length > 0,
       label: isRTL ? 'الشروط والقوانين' : 'Rules',
       onPress: () => rulesModalRef.current?.present(),
+    },
+    {
+      key: 'shifts',
+      done: Array.isArray(shifts) && shifts.length > 0,
+      label: isRTL ? 'الفترات (Shifts)' : 'Shifts',
+      onPress: () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        dispatch(setSelectedChalet({ id: chaletId as string, name: chaletName || '', image: coverImage?.url || null }));
+        router.push({
+          pathname: '/(dashboard)/shifts',
+          params: { id: chaletId as string }
+        });
+      },
+    },
+    {
+      key: 'location',
+      done: Boolean(chalet?.latitude && chalet?.longitude),
+      label: isRTL ? 'موقع الشاليه' : 'Location',
+      onPress: () => setLocationPickerVisible(true),
+    },
+    {
+      key: 'address',
+      done: Boolean((chalet?.address?.ar || chalet?.address?.en) && (chalet?.city?.id || chalet?.cityId)),
+      label: isRTL ? 'العنوان والمدينة' : 'Address & City',
+      onPress: () => addressModalRef.current?.present(),
     }
   ];
   const completedItems = completionItems.filter((item) => item.done).length;
@@ -1501,7 +1529,7 @@ export default function ChaletDetailsScreen() {
           <View style={{ flexDirection: flexRow, alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
             <View style={{ flexDirection: flexRow, alignItems: 'center', gap: 10 }}>
               <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: Colors.primary + '12', justifyContent: 'center', alignItems: 'center' }}>
-                <SolarShieldWarningBold size={20} color={Colors.primary} />
+                <SolarNotebookBold size={20} color={Colors.primary} />
               </View>
               <View>
                 <Text style={{ fontSize: 18, fontFamily: 'Alexandria-Bold', color: '#0F172A' }}>
@@ -1522,7 +1550,12 @@ export default function ChaletDetailsScreen() {
                 if (editingRuleId === rule.id && editForm) {
                   return (
                     <View key={rule.id} style={{ backgroundColor: '#FFF', borderRadius: 16, padding: 16, borderWidth: 1.5, borderColor: Colors.primary + '30', gap: 10 }}>
-                      <Text style={{ fontSize: 14, fontFamily: 'Alexandria-Bold', color: Colors.primary, marginBottom: 4 }}>{isRTL ? '✏️ تعديل الشرط' : '✏️ Edit Rule'}</Text>
+                      <View style={{ flexDirection: flexRow, alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <View style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: Colors.primary + '12', justifyContent: 'center', alignItems: 'center' }}>
+                          <SolarPenBold size={14} color={Colors.primary} />
+                        </View>
+                        <Text style={{ fontSize: 14, fontFamily: 'Alexandria-Bold', color: Colors.primary }}>{isRTL ? 'تعديل الشرط' : 'Edit Rule'}</Text>
+                      </View>
                       <View style={{ gap: 4 }}>
                         <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Medium', color: '#64748B' }}>{isRTL ? 'العنوان بالعربية *' : 'Title (AR) *'}</Text>
                         <BottomSheetTextInput style={{ backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, fontFamily: 'Alexandria-Regular', color: '#1E293B', borderWidth: 1, borderColor: '#E2E8F0', textAlign: isRTL ? 'right' : 'left' }} value={editForm.titleAr} onChangeText={(val) => setEditForm({ ...editForm, titleAr: val })} />
