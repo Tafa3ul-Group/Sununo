@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
+import { AppState } from 'react-native';
 import {
     FLUSH,
     PAUSE,
@@ -67,9 +68,21 @@ export const store = configureStore({
 
 export const persistor = persistStore(store);
 
-// Optional, but required for refetchOnFocus/refetchOnReconnect behaviors
-// see `setupListeners` docs - takes an optional callback as the 2nd arg for customization
-setupListeners(store.dispatch);
+// Required for refetchOnFocus/refetchOnReconnect to work in React Native.
+// The default setupListeners attaches to web `window` focus/online events, which
+// don't exist in RN — so we wire RTK Query's onFocus/onFocusLost to AppState.
+// This makes subscribed/stale queries refetch whenever the app returns to the
+// foreground, so the customer sees the owner's edits without a long delay.
+setupListeners(store.dispatch, (dispatch, { onFocus, onFocusLost }) => {
+  const subscription = AppState.addEventListener('change', (status) => {
+    if (status === 'active') {
+      dispatch(onFocus());
+    } else {
+      dispatch(onFocusLost());
+    }
+  });
+  return () => subscription.remove();
+});
 
 // Infer the `RootState` and `AppDispatch` types from the store itself
 export type RootState = ReturnType<typeof store.getState>;

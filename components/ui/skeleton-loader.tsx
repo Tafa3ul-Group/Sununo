@@ -7,7 +7,15 @@ import Animated, {
   withTiming,
   Easing,
 } from "react-native-reanimated";
+import Svg, { Path } from "react-native-svg";
 import { Colors, normalize } from "@/constants/theme";
+
+// The organic "blob" shape used by the real booking-card image (SHAPES_CONFIG[2]),
+// so the skeleton's image placeholder matches the actual card shape 1:1.
+const BOOKING_SHAPE = {
+  viewBox: "0 0 141 129",
+  path: "M77.0459 14.0977C86.8144 5.10784 99.2037 0.386687 110.42 2.50195C121.804 4.64892 131.346 13.705 135.513 30.8994C138.687 44.002 138.736 58.6286 136.25 71.833C133.77 85.0021 128.722 96.9923 121.482 104.651C109.519 117.308 92.5368 124.708 75.1924 126.547C57.8513 128.385 39.9659 124.682 26.1904 114.895C2.53265 98.088 -5.36999 65.526 9.69531 44.0059C15.0767 36.3186 23.5058 33.0498 41.1289 30.5859C50.2739 29.3071 56.0975 28.0172 61.1807 25.6816C66.2509 23.3521 70.7222 19.918 77.0449 14.0977H77.0459Z",
+};
 
 // ─── Core Skeleton Box ─────────────────────────────────────────────────────────
 
@@ -51,6 +59,46 @@ export const SkeletonBox: React.FC<SkeletonBoxProps> = ({
         style,
       ]}
     />
+  );
+};
+
+// ─── Shape Skeleton (matches the app's SVG blob shapes) ────────────────────────
+
+interface SkeletonShapeProps {
+  path: string;
+  viewBox: string;
+  width: number;
+  height: number;
+  color?: string;
+  style?: ViewStyle;
+}
+
+export const SkeletonShape: React.FC<SkeletonShapeProps> = ({
+  path,
+  viewBox,
+  width,
+  height,
+  color = "#E5E7EB",
+  style,
+}) => {
+  const opacity = useSharedValue(0.35);
+
+  useEffect(() => {
+    opacity.value = withRepeat(
+      withTiming(1, { duration: 900, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true,
+    );
+  }, []);
+
+  const animStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
+
+  return (
+    <Animated.View style={[{ width, height }, animStyle, style]}>
+      <Svg width={width} height={height} viewBox={viewBox}>
+        <Path d={path} fill={color} />
+      </Svg>
+    </Animated.View>
   );
 };
 
@@ -117,14 +165,34 @@ export const HorizontalCardSkeleton: React.FC = () => (
 
 export const BookingCardSkeleton: React.FC = () => (
   <View style={skeletonStyles.bookingCard}>
-    <View style={skeletonStyles.bookingCardRow}>
-      <SkeletonBox width={56} height={56} borderRadius={16} />
-      <View style={skeletonStyles.bookingCardBody}>
-        <SkeletonBox width="65%" height={14} borderRadius={6} />
-        <SkeletonBox width="45%" height={12} borderRadius={6} style={{ marginTop: 6 }} />
-        <SkeletonBox width="30%" height={10} borderRadius={6} style={{ marginTop: 6 }} />
+    {/* Top block: blob-shaped image + title/location/price (matches the real card) */}
+    <View style={skeletonStyles.bookingTopBlock}>
+      <SkeletonShape
+        path={BOOKING_SHAPE.path}
+        viewBox={BOOKING_SHAPE.viewBox}
+        width={115}
+        height={100}
+      />
+      <View style={skeletonStyles.bookingInfo}>
+        <SkeletonBox width="85%" height={15} borderRadius={6} />
+        <SkeletonBox width="55%" height={12} borderRadius={6} style={{ marginTop: 10 }} />
+        <View style={skeletonStyles.bookingPriceRow}>
+          <SkeletonBox width={90} height={13} borderRadius={6} />
+          <SkeletonBox width={44} height={22} borderRadius={8} />
+        </View>
       </View>
-      <SkeletonBox width={60} height={16} borderRadius={6} />
+    </View>
+
+    {/* Bottom block: detail rows + action button */}
+    <View style={skeletonStyles.bookingBottomBlock}>
+      {[0, 1, 2, 3].map((i) => (
+        <View key={i} style={skeletonStyles.bookingDetailRow}>
+          <SkeletonBox width={92} height={12} borderRadius={6} />
+          <SkeletonBox width={70} height={12} borderRadius={6} />
+        </View>
+      ))}
+      <View style={skeletonStyles.bookingDivider} />
+      <SkeletonBox width="55%" height={14} borderRadius={6} style={{ alignSelf: "center" }} />
     </View>
   </View>
 );
@@ -272,17 +340,48 @@ const skeletonStyles = StyleSheet.create({
     justifyContent: "center",
   },
   bookingCard: {
-    backgroundColor: "#fff",
-    borderRadius: 18,
-    padding: 14,
+    backgroundColor: "#FFF",
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "#F1F5F9",
+    overflow: "hidden",
   },
-  bookingCardRow: {
+  bookingTopBlock: {
     flexDirection: "row",
+    padding: 16,
     alignItems: "center",
-    gap: 12,
+    gap: 15,
   },
-  bookingCardBody: {
+  bookingInfo: {
     flex: 1,
+    height: 100,
+    justifyContent: "center",
+    gap: 0,
+  },
+  bookingPriceRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 16,
+  },
+  bookingBottomBlock: {
+    backgroundColor: "#FAFCFF",
+    borderTopWidth: 1,
+    borderTopColor: "#F1F5F9",
+    paddingHorizontal: 16,
+    paddingVertical: 18,
+  },
+  bookingDetailRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  bookingDivider: {
+    height: 1,
+    backgroundColor: "#E2E8F0",
+    opacity: 0.6,
+    marginVertical: 12,
   },
   statRow: {
     flexDirection: "row",

@@ -291,6 +291,7 @@
     "title": "Gallery",
     "categories": {
       "all": "All",
+      "general": "General",
       "pool": "Pool",
       "bbq": "BBQ",
       "kitchen": "Kitchen",

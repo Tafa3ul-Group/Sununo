@@ -7,6 +7,7 @@ import {
 import { ThemedText } from "@/components/themed-text";
 import { ReviewSubmissionSheet } from "@/components/user/review-submission-sheet";
 import { SecondarySelect } from "@/components/user/secondary-select";
+import { EmptyState } from "@/components/ui/empty-state";
 
 import {
   useCheckCanReviewQuery,
@@ -85,9 +86,15 @@ export default function ReviewsScreen() {
     }
   };
 
-  // Transform API data
+  // Transform API data + apply the selected sort (latest / highest / lowest)
   const reviews = useMemo(() => {
-    const items = reviewsResponse?.data || [];
+    const items = [...(reviewsResponse?.data || [])];
+    items.sort((a: any, b: any) => {
+      if (filterValue === "highest") return (b.rating || 0) - (a.rating || 0);
+      if (filterValue === "lowest") return (a.rating || 0) - (b.rating || 0);
+      // latest (default): newest first
+      return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+    });
     return items.map((rev: any) => ({
       name: rev.customer?.name || (isArabic ? "مستخدم" : "User"),
       rating: rev.rating || 0,
@@ -98,7 +105,7 @@ export default function ReviewsScreen() {
         "https://api.dicebear.com/7.x/avataaars/svg?seed=default",
       images: rev.images?.map((img: any) => img.url) || [],
     }));
-  }, [reviewsResponse, isArabic]);
+  }, [reviewsResponse, isArabic, filterValue]);
 
   // Calculate average rating
   const averageRating = useMemo(() => {
@@ -138,7 +145,12 @@ export default function ReviewsScreen() {
           </View>
         </View>
 
-        <View style={[styles.filterContainer, { alignItems: "flex-start" }]}>
+        <View
+          style={[
+            styles.filterContainer,
+            { alignItems: isRTL ? "flex-end" : "flex-start" },
+          ]}
+        >
           <SecondarySelect
             options={filterOptions}
             value={filterValue}
@@ -147,6 +159,17 @@ export default function ReviewsScreen() {
         </View>
 
         <View style={{ paddingHorizontal: 20 }}>
+          {reviews.length === 0 && !isLoading && (
+            <EmptyState
+              icon={<SolarStarBold size={normalize(56)} color="#15AB64" />}
+              title={isArabic ? "لا توجد تقييمات بعد" : "No reviews yet"}
+              description={
+                isArabic
+                  ? "كن أول من يقيّم هذا الشاليه بعد إقامتك."
+                  : "Be the first to review this chalet after your stay."
+              }
+            />
+          )}
           {reviews.map((rev: any, idx: number) => {
             const reviewerName = rev.name;
             const reviewBody = rev.body;
@@ -177,7 +200,7 @@ export default function ReviewsScreen() {
                       style={[
                         styles.nameAndBody,
                         {
-                          alignItems: "flex-start",
+                          alignItems: isRTL ? "flex-end" : "flex-start",
                           marginStart: 15,
                         },
                       ]}

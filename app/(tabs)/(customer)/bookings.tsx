@@ -2,6 +2,7 @@ import { HeaderSection } from '@/components/header-section';
 import { SolarCalendarAddBold, SolarStarBold } from "@/components/icons/solar-icons";
 import { ThemedText } from '@/components/themed-text';
 import { BookingCardSkeleton } from '@/components/ui/skeleton-loader';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Colors, normalize, Shadows } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
 
@@ -285,16 +286,13 @@ export default function BookingsScreen() {
         ) : bookings.length > 0 ? (
           bookings.map(renderBookingItem)
         ) : (
-          <View style={styles.emptyState}>
-            <SolarCalendarAddBold size={80} color="#E2E8F0" />
-            <ThemedText style={styles.emptyTitle}>{t('booking.noBookings')}</ThemedText>
-            <ThemedText style={styles.emptySubtitle}>
-              {t('booking.noBookingsDesc')}
-            </ThemedText>
-            <TouchableOpacity style={styles.exploreBtn} onPress={() => router.push('/(tabs)/(customer)/explore')}>
-              <ThemedText style={styles.exploreBtnText}>{t('booking.exploreNow')}</ThemedText>
-            </TouchableOpacity>
-          </View>
+          <EmptyState
+            icon={<SolarCalendarAddBold size={normalize.width(64)} color={Colors.primary} />}
+            title={t('booking.noBookings')}
+            description={t('booking.noBookingsDesc')}
+            actionLabel={t('booking.exploreNow')}
+            onAction={() => router.push('/(tabs)/(customer)/explore')}
+          />
         )}
       </ScrollView>
     </SafeAreaView>

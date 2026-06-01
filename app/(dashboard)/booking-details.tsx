@@ -134,8 +134,8 @@ export default function BookingDetailsPage() {
   const totalPrice = Number(data.totalPrice || 0);
 
   // Payment flags driven by the REAL payment status (not just "not pending_approval").
-  const bIsPaid = data.status === 'confirmed' || data.status === 'completed';
   const bIsDeposit = data.paymentModel === 'deposit';
+  const bIsPaid = Number(data.amountPaid || 0) >= (bIsDeposit ? depositAmount : totalPrice);
   const bAmountPaid = Number(data.amountPaid || (bIsDeposit ? depositAmount : totalPrice));
 
   const handleConfirmCancellation = async (reason: string) => {
@@ -255,6 +255,13 @@ export default function BookingDetailsPage() {
             <Text style={[styles.cancelledReason, { textAlign: textStart }]}>
               {bCancelReason}
             </Text>
+            {bIsDeposit && Number(data.refundAmount || 0) > 0 && (
+              <Text style={[styles.cancelledReason, { textAlign: textStart, marginTop: 8 }]}>
+                {isRTL
+                  ? `مبلغ الاسترداد: ${Number(data.refundAmount).toLocaleString()} د.ع`
+                  : `Refund Amount: ${Number(data.refundAmount).toLocaleString()} IQD`}
+              </Text>
+            )}
           </View>
         )}
 
@@ -440,7 +447,7 @@ export default function BookingDetailsPage() {
             )}
 
             {/* Remaining cash to collect — only for a paid deposit booking */}
-            {bIsPaid && bIsDeposit && remainingAmount > 0 && renderInfoRow(
+            {bIsPaid && bIsDeposit && Number(data.depositAmount || 0) > 0 && remainingAmount > 0 && renderInfoRow(
               isRTL ? "المتبقي (يُستلم نقداً عند الوصول)" : "Remaining (Collect in cash)",
               `${remainingAmount.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
               true,

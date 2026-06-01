@@ -144,11 +144,10 @@ export default function HomeScreen() {
     (state: RootState) => state.auth,
   );
   const { t } = useTranslation();
-  const { isRTL } = useDirection();
+  const { isRTL, textAlign } = useDirection();
   const [activeTab, setActiveTab] = React.useState("new");
-  const textAlign = 'left';
-  const startAlign = 'flex-start';
-  const endAlign = 'flex-end';
+  const startAlign = isRTL ? 'flex-end' : 'flex-start';
+  const endAlign = isRTL ? 'flex-start' : 'flex-end';
 
   const { data: profileResponse, refetch: refetchProfile } = useGetProviderProfileQuery(undefined);
   const profile = profileResponse?.data || profileResponse;
@@ -409,10 +408,10 @@ export default function HomeScreen() {
     router.push({ pathname: "/(dashboard)/booking-details", params: { id } });
   };
 
-  const openShiftActions = (shift: any) => {
+  const openShiftActions = React.useCallback((shift: any) => {
     setSelectedShiftForAction(shift);
     shiftSheetRef.current?.present();
-  };
+  }, []);
 
   const renderBackdrop = React.useCallback(
     (props: any) => (
@@ -427,7 +426,7 @@ export default function HomeScreen() {
   );
 
 
-  const renderShiftsGrid = () => {
+  const shiftsGrid = React.useMemo(() => {
     if (isAvailabilityFetching)
       return (
         <ActivityIndicator color={IDENTITY_BLUE} style={{ padding: 20 }} />
@@ -625,9 +624,9 @@ export default function HomeScreen() {
         })}
       </View>
     );
-  };
+  }, [availabilityData, isAvailabilityFetching, isRTL, startAlign, endAlign, textAlign, openShiftActions]);
 
-  const renderBookingItem = ({ item, index }: { item: any; index: number }) => {
+  const renderBookingItem = React.useCallback(({ item, index }: { item: any; index: number }) => {
     const customer = item.customer;
     const customerImageId =
       typeof customer?.image === "string"
@@ -648,7 +647,7 @@ export default function HomeScreen() {
 
       </Animated.View>
     );
-  };
+  }, [isRTL, t]);
 
   if (user && (profile ? !profile.isApproved : !user?.isApproved)) {
     return <PendingApprovalScreen onRefresh={refetchProfile} />;
@@ -792,7 +791,7 @@ export default function HomeScreen() {
                 </View>
                 {dayBookings.length > 0 && (
                   <View style={styles.bookingDotsRow}>
-                    {dayBookings.map((b, i) => (
+                    {dayBookings.map((b: any, i: number) => (
                       <View
                         key={i}
                         style={[
@@ -813,7 +812,7 @@ export default function HomeScreen() {
       </View>
 
       {selectedChalet?.id && (
-        <View style={styles.availabilitySection}>{renderShiftsGrid()}</View>
+        <View style={styles.availabilitySection}>{shiftsGrid}</View>
       )}
 
       <FlatList
@@ -822,7 +821,6 @@ export default function HomeScreen() {
         renderItem={renderBookingItem}
         contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
         style={{ flex: 1 }}
-        extraData={bookingsData?.data}
         onRefresh={() => {
           setCurrentPage(1);
           refreshAvailability();

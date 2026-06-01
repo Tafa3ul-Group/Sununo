@@ -334,7 +334,7 @@ export default function ShiftsAndPricesScreen() {
   const [selectedChaletId, setSelectedChaletId] = useState<string | null>(initialId as string || null);
   const { t } = useTranslation();
   const { selectedChalet } = useSelector((state: RootState) => state.auth);
-  const { isRTL } = useDirection();
+  const { isRTL, textAlign } = useDirection();
   const { showConfirm } = useConfirmationDialog();
 
   const formatTime12h = (timeStr: string) => {
@@ -609,10 +609,26 @@ export default function ShiftsAndPricesScreen() {
     return checkShiftOverlaps(tempShifts);
   }, [tempShifts]);
 
-  const handleOpenEditTimes = () => {
+  const handleOpenEditTimes = async () => {
     if (!shifts || shifts.length === 0) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    const copies = shifts.map((s: any) => ({
+
+    // Refetch the shifts list first so the editable copies reflect the latest
+    // server state. This avoids a race where another client/device changed the
+    // shift times after this screen loaded, which would otherwise let the user
+    // overwrite newer data with stale values.
+    let latestShifts = shifts;
+    try {
+      const refreshed = await refetchShifts().unwrap();
+      latestShifts = refreshed?.data || refreshed || shifts;
+    } catch {
+      // If the refetch fails (e.g. offline), fall back to the cached list.
+      latestShifts = shifts;
+    }
+
+    if (!latestShifts || latestShifts.length === 0) return;
+
+    const copies = latestShifts.map((s: any) => ({
       id: s.id,
       name: s.name,
       startTime: s.startTime?.substring(0, 5),
@@ -754,7 +770,6 @@ export default function ShiftsAndPricesScreen() {
     return false;
   };
 
-  const textAlign = 'left';
   const flexDirection = 'row';
 
   const calculateDuration = (start: string, end: string) => {
@@ -1269,7 +1284,7 @@ export default function ShiftsAndPricesScreen() {
                               color: shift.isActive ? accentColor : '#9CA3AF',
                               fontFamily: 'Alexandria-SemiBold',
                               fontSize: 15,
-                              textAlign: 'left'
+                              textAlign
                             }
                           ]}>
                             {shiftName}
@@ -1411,7 +1426,7 @@ export default function ShiftsAndPricesScreen() {
                 fontSize: 10,
                 color: isCurrentShiftOverlapping ? '#991B1B' : '#64748B',
                 fontFamily: 'Alexandria-Medium',
-                textAlign: 'left',
+                textAlign,
                 marginBottom: 4
               }}>
                 {isRTL ? 'الأوقات الشاغرة المتاحة للاختيار:' : 'Available free times for selection:'}
@@ -1420,7 +1435,7 @@ export default function ShiftsAndPricesScreen() {
                 fontSize: 11,
                 color: isCurrentShiftOverlapping ? '#B91C1C' : '#0284C7',
                 fontFamily: 'Alexandria-Bold',
-                textAlign: 'left'
+                textAlign
               }}>
                 {availableTimesText}
               </Text>
@@ -1443,9 +1458,9 @@ export default function ShiftsAndPricesScreen() {
                   fontSize: 11,
                   fontFamily: 'Alexandria-Medium',
                   flex: 1,
-                  textAlign: 'left'
+                  textAlign
                 }}>
-                  {isRTL 
+                  {isRTL
                     ? `تنبيه: ${singleShiftOverlapInfo.conflictMsg?.ar}. يجب تغيير الوقت.`
                     : `Warning: ${singleShiftOverlapInfo.conflictMsg?.en}. Please change the time.`}
                 </Text>
@@ -1454,7 +1469,7 @@ export default function ShiftsAndPricesScreen() {
           </View>
 
           {/* Name Label */}
-          <Text style={[styles.label, { textAlign: 'left' }]}>{isRTL ? 'الاسم' : 'Name'}</Text>
+          <Text style={[styles.label, { textAlign }]}>{isRTL ? 'الاسم' : 'Name'}</Text>
           <BottomSheetTextInput 
             style={[styles.input, { fontFamily: 'Alexandria-Medium' }]} 
             placeholder={isRTL ? 'مثال: الفترة الصباحية' : 'e.g. Morning Shift'}
@@ -1464,7 +1479,7 @@ export default function ShiftsAndPricesScreen() {
 
           {!selectedShift && (
             <>
-              <Text style={[styles.label, { textAlign: 'left' }]}>
+              <Text style={[styles.label, { textAlign }]}>
                 {isRTL ? 'السعر الأساسي اليومي' : 'Base Daily Price'}
               </Text>
               <BottomSheetTextInput 

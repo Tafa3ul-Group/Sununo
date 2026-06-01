@@ -41,7 +41,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function ProfileEditScreen() {
   const router = useRouter();
-  const { isRTL, textAlign } = useDirection();
+  const { isRTL, textAlign, rowDirection } = useDirection();
     const { user: authUser } = useSelector((state: RootState) => state.auth);
 
   const { data: meData, refetch } = useGetMeQuery(undefined);
@@ -263,7 +263,7 @@ export default function ProfileEditScreen() {
                 <View
                   style={[
                     styles.mapFooter,
-                    { flexDirection: 'row' },
+                    { flexDirection: rowDirection },
                   ]}
                 >
                   <ThemedText style={styles.locationName}>

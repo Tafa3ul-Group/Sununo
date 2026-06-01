@@ -182,21 +182,23 @@ function ActiveFilterBanner({
 
   if (filterItems.length === 0) return null;
 
+  const flexDir: "row" | "row-reverse" = isRTL ? "row-reverse" : "row";
+
   return (
     <View style={filterBannerStyles.container}>
-      <View style={[filterBannerStyles.content, { flexDirection: "row" }]}>
+      <View style={[filterBannerStyles.content, { flexDirection: flexDir }]}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={[
             filterBannerStyles.scrollContent,
-            { flexDirection: "row" },
+            { flexDirection: flexDir },
           ]}
         >
           {filterItems.map((item) => (
             <View
               key={item.id}
-              style={[filterBannerStyles.pill, { flexDirection: "row" }]}
+              style={[filterBannerStyles.pill, { flexDirection: flexDir }]}
             >
               {item.icon}
               <ThemedText style={filterBannerStyles.pillText}>
@@ -496,6 +498,65 @@ export default function ExploreScreen() {
   const chaletRating =
     chaletDetails.averageRating || selectedChalet?.rating || 0;
 
+  // Memoized similar-chalets data for HorizontalSwiper to avoid expensive
+  // re-transformation on every render.
+  const swiperData = useMemo(
+    () =>
+      (similarResponse || []).map((item: any, index: number) => ({
+        id: item.id,
+        title: isRTL
+          ? item.name?.ar || item.name
+          : item.name?.en || item.name,
+        location: isRTL
+          ? item.city?.name || ""
+          : item.city?.enName || item.city?.name || "",
+        price: item.basePrice
+          ? Number(item.basePrice).toLocaleString()
+          : "0",
+        rating: item.rating || 0,
+        image: getImageSrc(item.images?.[0]?.url),
+        color: CARD_COLORS[index % CARD_COLORS.length],
+      })),
+    [similarResponse, isRTL],
+  );
+
+  const handleSwiperCardPress = useCallback(
+    (cardId: string) => {
+      router.push(`/chalet-details/${cardId}`);
+    },
+    [router],
+  );
+
+  // Memoized review data with pre-computed image sources, transformed once
+  // instead of on every render.
+  const reviewData = useMemo(
+    () =>
+      (reviews || []).map((reviewItem: any, i: number) => {
+        const customer = reviewItem?.customer;
+        return {
+          key: reviewItem.id || i,
+          reviewerName:
+            customer?.name || (isRTL ? "مستخدم سُنونو" : "Sununo User"),
+          reviewComment: reviewItem?.comment || "",
+          reviewRating: reviewItem?.rating || 0,
+          reviewDate: reviewItem?.createdAt
+            ? new Date(reviewItem.createdAt).toLocaleDateString()
+            : "",
+          avatarSource: customer?.image
+            ? getImageSrc(customer.image)
+            : require("@/assets/profile.svg"),
+        };
+      }),
+    [reviews, isRTL],
+  );
+
+  // Memoized static map image URL for the selected chalet location.
+  const mapImageUri = useMemo(
+    () =>
+      `https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+${Colors.primary.replace("#", "")}(${chaletDetails.longitude || 44.3661},${chaletDetails.latitude || 33.3152})/${chaletDetails.longitude || 44.3661},${chaletDetails.latitude || 33.3152},14/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`,
+    [chaletDetails.longitude, chaletDetails.latitude],
+  );
+
   const renderFooter = useCallback(
     (props: any) => {
       if (!selectedChalet) return null;
@@ -537,7 +598,7 @@ export default function ExploreScreen() {
         </BottomSheetFooter>
       );
     },
-    [selectedChalet, isRTL, insets.bottom],
+    [selectedChalet, isRTL, insets.bottom, flexDir, textStart, userType, router],
   );
 
   const handleSelectChalet = (chalet: any) => {
@@ -645,7 +706,6 @@ export default function ExploreScreen() {
         isNavigating={isNavigating}
         zoomLevel={zoom}
         centerCoordinate={cameraPosition}
-        onPress={() => Keyboard.dismiss()}
         onCameraChanged={handleCameraChanged}
       />
 
@@ -838,7 +898,7 @@ export default function ExploreScreen() {
                 </View>
 
                 {/* Rating - second child = START side in RTL */}
-                <View style={[styles.ratingSection, { flexDirection: "row" }]}>
+                <View style={[styles.ratingSection, { flexDirection: flexDir }]}>
                   <ThemedText style={styles.ratingValue}>
                     {selectedChalet.rating || "4.5"}
                   </ThemedText>
@@ -945,7 +1005,7 @@ export default function ExploreScreen() {
                                   padding: 12,
                                   alignItems: "center",
                                   gap: 12,
-                                  flexDirection: "row",
+                                  flexDirection: flexDir,
                                 }}
                               >
                                 <View
@@ -966,7 +1026,7 @@ export default function ExploreScreen() {
                                 <View
                                   style={{
                                     flex: 1,
-                                    alignItems: "flex-start",
+                                    alignItems: isRTL ? "flex-end" : "flex-start",
                                   }}
                                 >
                                   <ThemedText
@@ -1008,7 +1068,7 @@ export default function ExploreScreen() {
                         />
                         <View
                           style={{
-                            flexDirection: "row",
+                            flexDirection: flexDir,
                             flexWrap: "wrap",
                             justifyContent: "space-between",
                             marginVertical: 15,
@@ -1130,9 +1190,7 @@ export default function ExploreScreen() {
                         <View style={styles.mapCardFlat}>
                           <View style={styles.mapInner}>
                             <Image
-                              source={{
-                                uri: `https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+${Colors.primary.replace("#", "")}(${chaletDetails.longitude || 44.3661},${chaletDetails.latitude || 33.3152})/${chaletDetails.longitude || 44.3661},${chaletDetails.latitude || 33.3152},14/600x300@2x?access_token=${MAPBOX_ACCESS_TOKEN}`,
-                              }}
+                              source={{ uri: mapImageUri }}
                               style={{ width: "100%", height: "100%" }}
                               resizeMode="cover"
                             />
@@ -1184,21 +1242,17 @@ export default function ExploreScreen() {
                           title={isRTL ? "التقييمات" : "Reviews"}
                           isRTL={isRTL}
                         />
-                        {reviews.length > 0 ? (
-                          reviews
+                        {reviewData.length > 0 ? (
+                          reviewData
                             .slice(0, 2)
-                            .map((reviewItem: any, i: number) => {
-                              const customer = reviewItem?.customer;
-                              const reviewerName =
-                                customer?.name || (isRTL ? "مستخدم سُنونو" : "Sununo User");
-                              const reviewComment = reviewItem?.comment || "";
-                              const reviewRating = reviewItem?.rating || 0;
-                              const reviewDate = reviewItem?.createdAt
-                                ? new Date(reviewItem.createdAt).toLocaleDateString()
-                                : "";
+                            .map((review: any) => {
+                              const reviewerName = review.reviewerName;
+                              const reviewComment = review.reviewComment;
+                              const reviewRating = review.reviewRating;
+                              const reviewDate = review.reviewDate;
                               return (
                                 <View
-                                  key={reviewItem.id || i}
+                                  key={review.key}
                                   style={styles.revComplexCardFlat}
                                 >
                                   <View
@@ -1210,11 +1264,7 @@ export default function ExploreScreen() {
                                     {/* Avatar */}
                                     <View style={styles.avatarCircleMerged}>
                                       <Image
-                                        source={
-                                          customer?.image
-                                            ? getImageSrc(customer.image)
-                                            : require("@/assets/profile.svg")
-                                        }
+                                        source={review.avatarSource}
                                         style={styles.userAvatarImgMerged}
                                       />
                                     </View>
@@ -1295,26 +1345,8 @@ export default function ExploreScreen() {
                           isRTL={isRTL}
                         />
                         <HorizontalSwiper
-                          data={(similarResponse || []).map(
-                            (item: any, index: number) => ({
-                              id: item.id,
-                              title: isRTL
-                                ? item.name?.ar || item.name
-                                : item.name?.en || item.name,
-                              location: isRTL
-                                ? item.city?.name || ""
-                                : item.city?.enName || item.city?.name || "",
-                              price: item.basePrice
-                                ? Number(item.basePrice).toLocaleString()
-                                : "0",
-                              rating: item.rating || 0,
-                              image: getImageSrc(item.images?.[0]?.url),
-                              color: CARD_COLORS[index % CARD_COLORS.length],
-                            }),
-                          )}
-                          onPressCard={(id) => {
-                            router.push(`/chalet-details/${id}`);
-                          }}
+                          data={swiperData}
+                          onPressCard={handleSwiperCardPress}
                           favoriteIds={favoriteIds}
                           onToggleFavorite={handleToggleFavorite}
                         />
@@ -1356,7 +1388,7 @@ export default function ExploreScreen() {
               contentContainerStyle={{
                 paddingVertical: 10,
                 gap: 10,
-                flexDirection: "row",
+                flexDirection: flexDir,
               }}
             >
               {FILTER_OPTIONS.map((filter) => (
@@ -1392,7 +1424,7 @@ export default function ExploreScreen() {
             <Text style={styles.filterSectionLabel}>
               {isRTL ? "نطاق السعر (د.ع)" : "Price Range (IQD)"}
             </Text>
-            <View style={[styles.priceRow, { flexDirection: "row" }]}>
+            <View style={[styles.priceRow, { flexDirection: flexDir }]}>
               <BottomSheetTextInput
                 style={[
                   styles.modalInput,
@@ -1811,7 +1843,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Alexandria-Medium",
     color: "#000000",
-    textAlign: "right",
   },
   bookButtonCustom: {
     flexDirection: "row",

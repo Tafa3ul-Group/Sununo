@@ -18,6 +18,7 @@ import {
 } from '@/components/icons/solar-icons';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { ThemedText } from '@/components/themed-text';
+import { resolveRowDirection } from '@/i18n/direction';
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
 import React from 'react';
@@ -62,7 +63,7 @@ export const BookingDetailsModalContent = ({ id, isRTL, t, onClose, onOpenCancel
   return (
     <View style={styles.mainContainer}>
       {/* Custom Header */}
-      <View style={[styles.header, { flexDirection: 'row' }]}>
+      <View style={[styles.header, { flexDirection: resolveRowDirection(isRTL) }]}>
         <TouchableOpacity style={styles.headerBtn} onPress={onClose}>
           {isRTL ? <SolarAltArrowRightLinear size={24} color={Colors.text.primary} /> : <SolarAltArrowLeftLinear size={24} color={Colors.text.primary} />}
         </TouchableOpacity>
@@ -75,12 +76,12 @@ export const BookingDetailsModalContent = ({ id, isRTL, t, onClose, onOpenCancel
       <BottomSheetScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Chalet Card */}
         <View style={styles.sectionCard}>
-          <View style={[styles.chaletRow, { flexDirection: 'row' }]}>
+          <View style={[styles.chaletRow, { flexDirection: resolveRowDirection(isRTL) }]}>
             <View style={[styles.chaletInfo, { alignItems: 'flex-start' }]}>
               <Text style={[styles.chaletName, { textAlign: isRTL ? 'right' : 'left' }]}>{bChaletName}</Text>
               <Text style={[styles.chaletLocation, { textAlign: isRTL ? 'right' : 'left' }]}>{bChaletAddress || (isRTL ? 'البصرة - الجزائر' : 'Basra - Algeria')}</Text>
               
-              <View style={[styles.ratingRow, { flexDirection: 'row' }]}>
+              <View style={[styles.ratingRow, { flexDirection: resolveRowDirection(isRTL) }]}>
                 <SolarStarBold size={14} color="#EF4444" />
                 <Text style={styles.ratingText}>4.5</Text>
               </View>

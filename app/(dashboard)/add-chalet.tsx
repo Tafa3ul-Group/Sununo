@@ -155,7 +155,7 @@ const createDefaultPricing = () => Array.from({ length: 7 }, (_, i) => ({
 export default function AddChaletScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { isRTL } = useDirection();
+  const { isRTL, rowDirection, textAlign } = useDirection();
   const { language } = useSelector((state: RootState) => state.auth);
 
 
@@ -668,8 +668,7 @@ export default function AddChaletScreen() {
     }
   };
 
-  const textAlign = 'left' as const;
-  const flexDirection = 'row' as const;
+  const flexDirection = rowDirection;
   // ── Shift Row ──
   const renderShiftRow = (shift: ShiftData, index: number) => {
     const isActive = shift.isActive;
