@@ -591,10 +591,11 @@ export default function CompleteBookingScreen() {
       : t("booking.noDate");
 
   const handleNext = async () => {
-    // Guard against double submission: ignore taps while a booking is being
-    // created or while we are waiting for a payment result (prevents the race
-    // where multiple createBooking() calls overwrite createdBookingId).
-    if (isCreatingBooking || isWaitingForPayment) return;
+    // Guard against double submission ONLY while the create request is in flight
+    // (prevents the race where rapid taps fire multiple createBooking() calls).
+    // Do NOT also block on isWaitingForPayment — that would dead-lock the button
+    // if a payment session was opened and the user returned without completing.
+    if (isCreatingBooking) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     if (activeTab === "WHEN") {
       setActiveTab("WHO");
@@ -849,7 +850,9 @@ export default function CompleteBookingScreen() {
         const result = await checkPaymentStatus(transactionId).unwrap();
         if (result?.status === "success") {
           clearInterval(interval);
+          pollingIntervalRef.current = null;
           setPollingStatus("success");
+          setIsWaitingForPayment(false);
           dismissBrowser();
           // Wait a bit then show success sheet
           setTimeout(() => {
@@ -858,7 +861,9 @@ export default function CompleteBookingScreen() {
           }, 1500);
         } else if (result?.status === "failed") {
           clearInterval(interval);
+          pollingIntervalRef.current = null;
           setPollingStatus("failed");
+          setIsWaitingForPayment(false);
           dismissBrowser();
           setTimeout(() => {
             processingSheetRef.current?.dismiss();
@@ -875,6 +880,7 @@ export default function CompleteBookingScreen() {
         clearInterval(interval);
         pollingIntervalRef.current = null;
         setPollingStatus("timeout");
+        setIsWaitingForPayment(false);
         dismissBrowser();
         setTimeout(() => {
           processingSheetRef.current?.dismiss();
@@ -1028,38 +1034,44 @@ export default function CompleteBookingScreen() {
             {adultCount}
           </ThemedText>
         </View>
-        <View style={styles.divider} />
-        <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
-          <ThemedText style={[styles.infoLabel, { textAlign: textStart }]}>
-            {t("booking.shiftPrice") || (isArabic ? "سعر الفترة" : "Shift Price")}
-          </ThemedText>
-          <ThemedText style={[styles.infoValue, { textAlign: textEnd }]}>
-            {selectedShiftPrice.toLocaleString()} {t("common.iqd")}
-          </ThemedText>
-        </View>
-        {extraGuestsPrice > 0 && (
-          <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
-            <ThemedText style={[styles.infoLabel, { textAlign: textStart }]}>
-              {isArabic ? "رسوم الأشخاص الإضافيين" : "Extra Guest Fees"}
-            </ThemedText>
-            <ThemedText style={[styles.infoValue, { textAlign: textEnd }]}>
-              {extraGuestsPrice.toLocaleString()} {t("common.iqd")}
-            </ThemedText>
-          </View>
+        {/* Price/total summary — hidden for delayed (request-only) chalets, where
+            payment happens later after the owner approves. */}
+        {chaletDetails?.bookingType !== "delayed" && (
+          <>
+            <View style={styles.divider} />
+            <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
+              <ThemedText style={[styles.infoLabel, { textAlign: textStart }]}>
+                {t("booking.shiftPrice") || (isArabic ? "سعر الفترة" : "Shift Price")}
+              </ThemedText>
+              <ThemedText style={[styles.infoValue, { textAlign: textEnd }]}>
+                {selectedShiftPrice.toLocaleString()} {t("common.iqd")}
+              </ThemedText>
+            </View>
+            {extraGuestsPrice > 0 && (
+              <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
+                <ThemedText style={[styles.infoLabel, { textAlign: textStart }]}>
+                  {isArabic ? "رسوم الأشخاص الإضافيين" : "Extra Guest Fees"}
+                </ThemedText>
+                <ThemedText style={[styles.infoValue, { textAlign: textEnd }]}>
+                  {extraGuestsPrice.toLocaleString()} {t("common.iqd")}
+                </ThemedText>
+              </View>
+            )}
+            <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
+              <ThemedText style={[styles.infoLabel, { fontWeight: "700", textAlign: textStart }]}>
+                {t("booking.totalAmount")}
+              </ThemedText>
+              <ThemedText
+                style={[
+                  styles.infoValue,
+                  { fontFamily: "Alexandria-Medium", color: Colors.primary, textAlign: textEnd },
+                ]}
+              >
+                {totalPrice.toLocaleString()} {t("common.iqd")}
+              </ThemedText>
+            </View>
+          </>
         )}
-        <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
-          <ThemedText style={[styles.infoLabel, { fontWeight: "700", textAlign: textStart }]}>
-            {t("booking.totalAmount")}
-          </ThemedText>
-          <ThemedText
-            style={[
-              styles.infoValue,
-              { fontFamily: "Alexandria-Medium", color: Colors.primary, textAlign: textEnd },
-            ]}
-          >
-            {totalPrice.toLocaleString()} {t("common.iqd")}
-          </ThemedText>
-        </View>
       </View>
 
       <View style={styles.infoSectionCard}>
@@ -1495,11 +1507,13 @@ export default function CompleteBookingScreen() {
                         <View style={{ alignItems: "flex-end" }}>
                           <ThemedText style={styles.shiftPriceFlat}>
                             {(() => {
+                              // Exclude closed days (price <= 1 sentinel) from the min price.
+                              const valid = (shift.pricing || [])
+                                .map((p: any) => Number(p.price))
+                                .filter((p: number) => p > 1);
                               const minPrice =
-                                shift.pricing && shift.pricing.length > 0
-                                  ? Math.min(
-                                      ...shift.pricing.map((p: any) => p.price),
-                                    )
+                                valid.length > 0
+                                  ? Math.min(...valid)
                                   : chaletDetails?.basePrice || 0;
                               return Number(minPrice).toLocaleString();
                             })()}{" "}
