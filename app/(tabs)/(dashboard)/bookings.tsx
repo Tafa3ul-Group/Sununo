@@ -6,7 +6,9 @@ import { CountdownBadge } from '@/components/dashboard/countdown-badge';
 import {
   SolarCalendarBold,
   SolarCheckCircleBold,
-  SolarCloseCircleBold
+  SolarClockCircleBold,
+  SolarCloseCircleBold,
+  SolarHourglassBold
 } from "@/components/icons/solar-icons";
 import { PrimaryButton } from '@/components/user/primary-button';
 import { SecondaryButton } from '@/components/user/secondary-button';
@@ -137,8 +139,10 @@ export default function BookingsScreen() {
 
 
   const statusMap: Record<string, string | undefined> = {
-    cancelled: 'cancelled',
-    confirmed: 'confirmed'
+    pending_approval: 'pending_approval',
+    confirmed: 'confirmed',
+    completed: 'completed',
+    cancelled: 'cancelled'
   };
 
   const { data: bookingsResponse, isFetching: isBookingsFetching, isLoading: isBookingsLoading, refetch: refetchBookings } = useGetProviderBookingsQuery({
@@ -245,47 +249,60 @@ export default function BookingsScreen() {
     const getStatusInfo = (status: string) => {
       const s = status?.toLowerCase();
       switch (s) {
+        // حجز خارجي أنشأه المشغل لحجب الوردية
         case 'external':
           return {
-            label: isRTL ? 'حجز خارجي' : 'External Booking',
+            label: isRTL ? 'حجز خارجي' : 'External',
             color: '#6366F1',
             bg: '#EEF2FF'
           };
+        // انتهى موعد الحجز
         case 'completed':
-        case 'finished':
           return {
             label: isRTL ? 'مكتمل' : 'Completed',
             color: '#3B82F6',
             bg: '#EFF6FF'
           };
-        case 'cancelled':
-          const wasDepositPaid = item.paymentModel === 'deposit' && (Number(item.depositAmount) > 0);
+        // ملغي
+        case 'cancelled': {
+          const depositKept = item.paymentModel === 'deposit' && Number(item.depositAmount) > 0;
           return {
-            label: wasDepositPaid
-              ? (isRTL ? 'ملغي (عربون)' : 'Cancelled (Deposit)')
+            label: depositKept
+              ? (isRTL ? 'ملغي (عربون محتجز)' : 'Cancelled (Deposit kept)')
               : (isRTL ? 'ملغي' : 'Cancelled'),
             color: '#EF4444',
             bg: '#FEF2F2'
           };
-        case 'confirmed':
+        }
+        // ملغي مع استرجاع المبلغ
+        case 'refunded':
+          return {
+            label: isRTL ? 'مسترجع' : 'Refunded',
+            color: '#8B5CF6',
+            bg: '#F5F3FF'
+          };
+        // مؤكد (تم الدفع)
+        case 'confirmed': {
           const isDeposit = item.paymentModel === 'deposit';
           return {
             label: isDeposit
-              ? (isRTL ? 'مؤكد بعربون' : 'Confirmed w/ Deposit')
-              : (isRTL ? 'مدفوع بالكامل' : 'Paid in Full'),
+              ? (isRTL ? 'مؤكد (عربون)' : 'Confirmed (Deposit)')
+              : (isRTL ? 'مؤكد (مدفوع كامل)' : 'Confirmed (Paid)'),
             color: '#10B981',
             bg: '#ECFDF5'
           };
+        }
+        // بانتظار إتمام الدفع
         case 'pending_payment':
-        case 'new':
           return {
-            label: isRTL ? 'انتظار الدفع' : 'Pending Payment',
+            label: isRTL ? 'بانتظار الدفع' : 'Pending Payment',
             color: '#F59E0B',
             bg: '#FFFBEB'
           };
+        // بانتظار موافقة المشغل (حجوزات الشاليهات المؤجلة)
         case 'pending_approval':
           return {
-            label: isRTL ? 'بانتظار القبول' : 'Awaiting Approval',
+            label: isRTL ? 'بانتظار الموافقة' : 'Awaiting Approval',
             color: '#F97316',
             bg: '#FFF7ED'
           };
@@ -462,9 +479,19 @@ export default function BookingsScreen() {
                   {[
                     { id: 'all', label: t('home.categories.all') || (isRTL ? 'الكل' : 'All') },
                     {
+                      id: 'pending_approval',
+                      label: isRTL ? 'بانتظار الموافقة' : 'Awaiting Approval',
+                      icon: <SolarHourglassBold size={18} color={activeFilter === 'pending_approval' ? 'white' : Colors.primary} />
+                    },
+                    {
                       id: 'confirmed',
-                      label: isRTL ? 'مقبول' : 'Accepted',
+                      label: isRTL ? 'مؤكد' : 'Confirmed',
                       icon: <SolarCheckCircleBold size={18} color={activeFilter === 'confirmed' ? 'white' : Colors.primary} />
+                    },
+                    {
+                      id: 'completed',
+                      label: isRTL ? 'مكتمل' : 'Completed',
+                      icon: <SolarClockCircleBold size={18} color={activeFilter === 'completed' ? 'white' : Colors.primary} />
                     },
                     {
                       id: 'cancelled',
