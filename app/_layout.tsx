@@ -93,8 +93,10 @@ function RootLayoutNav() {
         const token = await registerForPushNotificationsAsync();
 
         if (token) {
-          // 2. إظهار التوكن للمطوّر في التيرمنل فقط
-          console.log("[Layout] Expo Push Token:", token);
+          // 2. إظهار التوكن للمطوّر في التيرمنل فقط (وضع التطوير فقط)
+          if (__DEV__) {
+            console.log("[Layout] Expo Push Token:", token);
+          }
 
           // 3. تسجيل التوكن في الباكند
           const baseUrl =
@@ -180,10 +182,6 @@ function RootLayoutNav() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="(customer)" options={{ headerShown: false }} />
         <Stack.Screen name="(dashboard)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="modal"
-          options={{ presentation: "modal", title: "Modal" }}
-        />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>

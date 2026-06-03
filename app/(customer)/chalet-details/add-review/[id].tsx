@@ -42,11 +42,8 @@ export default function AddReviewScreen() {
     }
 
     try {
-      // Note: In a real scenario, we'd need the bookingId.
-      // For this UI demo/link, we use chaletId as reference or assume the latest booking.
-      // But the API expects bookingId. We'll handle errors gracefully.
       await createReview({
-        bookingId: chaletId, // Placeholder, usually would pass the actual booking ID
+        chaletId,
         rating,
         comment,
       }).unwrap();

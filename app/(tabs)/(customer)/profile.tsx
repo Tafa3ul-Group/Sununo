@@ -14,12 +14,13 @@ import { LanguageSheet } from '@/components/user/language-sheet';
 import { LogoutSheet } from '@/components/user/logout-sheet';
 import { DeleteAccountSheet } from '@/components/user/delete-account-sheet';
 import { WalletCard } from '@/components/user/wallet-card';
+import { PRIVACY_POLICY_URL, SUPPORT_WHATSAPP, toWhatsAppNumber } from '@/constants/links';
 import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
 
 import { RootState } from '@/store';
 import { useGetMeQuery } from '@/store/api/apiSlice';
-import { useGetCustomerWalletQuery } from '@/store/api/customerApiSlice';
+import { useGetCustomerWalletQuery, useGetSettingsQuery } from '@/store/api/customerApiSlice';
 
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
@@ -27,6 +28,7 @@ import React, { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     Image,
+    Linking,
     RefreshControl,
     ScrollView,
     StyleSheet,
@@ -57,6 +59,7 @@ export default function CustomerProfileScreen() {
 
     const { data: meData, refetch: refetchMe } = useGetMeQuery(undefined);
     const { data: walletData, refetch: refetchWallet } = useGetCustomerWalletQuery(undefined);
+    const { data: settingsData } = useGetSettingsQuery(undefined);
 
     const [isRefreshing, setIsRefreshing] = useState(false);
     const onRefresh = useCallback(async () => {
@@ -71,6 +74,22 @@ export default function CustomerProfileScreen() {
     const walletBalance = walletData?.balance
         ? Number(walletData.balance).toLocaleString()
         : '0';
+
+    const supportPhone = toWhatsAppNumber(
+        (settingsData as any)?.data?.adminPhone ||
+        (settingsData as any)?.adminPhone ||
+        SUPPORT_WHATSAPP,
+    );
+
+    const openContactUs = useCallback(() => {
+        Linking.openURL(`https://wa.me/${supportPhone}`).catch(() => {
+            Linking.openURL(`tel:+${supportPhone}`).catch(() => {});
+        });
+    }, [supportPhone]);
+
+    const openPrivacyPolicy = useCallback(() => {
+        Linking.openURL(PRIVACY_POLICY_URL).catch(() => {});
+    }, []);
 
     const menuItems = [
         {
@@ -99,12 +118,14 @@ export default function CustomerProfileScreen() {
             title: t('profile.contactUs'),
             shape: 'green' as const,
             icon: <SolarPhoneBold size={20} color="white" />,
+            action: openContactUs,
         },
         {
             id: 'privacy',
             title: t('profile.privacyPolicy'),
             shape: 'blue' as const,
             icon: <SolarShieldBold size={20} color="white" />,
+            action: openPrivacyPolicy,
         },
         {
             id: 'deleteAccount',
@@ -177,7 +198,7 @@ export default function CustomerProfileScreen() {
                 {/* Wallet Card */}
                 <WalletCard
                     balance={walletBalance}
-                    onWithdraw={() => router.push('/(tabs)/(customer)/bookings')}
+                    onWithdraw={() => router.push('/(customer)/wallet-transactions')}
                 />
 
                 {/* Menu Items */}

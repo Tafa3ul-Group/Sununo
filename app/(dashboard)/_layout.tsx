@@ -35,14 +35,6 @@ export default function DashboardNonTabLayout() {
         options={{ title: isArabic ? "إضافة شاليه" : "Add Chalet" }}
       />
       <Stack.Screen
-        name="edit-chalet"
-        options={{ title: isArabic ? "تعديل الشاليه" : "Edit Chalet" }}
-      />
-      <Stack.Screen
-        name="edit-details/[id]"
-        options={{ title: isArabic ? "تفاصيل الشاليه" : "Chalet Details" }}
-      />
-      <Stack.Screen
         name="chalet-details"
         options={{ title: isArabic ? 'إعدادات الشاليه' : 'Chalet Settings' }}
       />

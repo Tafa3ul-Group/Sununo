@@ -316,7 +316,7 @@ export default function ChaletDetailScreen() {
   const reviews = reviewsResponse?.data || [];
   const reviewCount =
     chalet.reviewsCount || reviewsResponse?.meta?.total || reviews.length || 0;
-  const hostName = chalet.owner?.name || (isRTL ? "مضيف عراقي" : "Iraqi Host");
+  const hostName = chalet.owner?.name || (isRTL ? "المضيف" : "Host");
   const hostAvatar = useMemo(() => {
     if (chalet.owner?.image) {
       return getImageSrc(chalet.owner.image);

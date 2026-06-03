@@ -50,7 +50,6 @@ export default function DashboardLayout() {
       <Tabs.Screen name="chalet-details" options={{ href: null }} />
       <Tabs.Screen name="transactions" options={{ href: null }} />
       <Tabs.Screen name="notifications" options={{ href: null }} />
-      <Tabs.Screen name="customers" options={{ href: null }} />
     </Tabs>
   );
 }

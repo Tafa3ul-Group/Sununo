@@ -60,7 +60,8 @@
     "exit": "Logout",
     "wallet": {
       "balance": "Current Balance",
-      "withdraw": "Withdraw"
+      "withdraw": "Withdraw",
+      "transactions": "Transactions"
     },
     "contactUs": "Contact Us",
     "privacyPolicy": "Privacy Policy",

@@ -22,6 +22,8 @@ import {
   useLogoutUserMutation,
   useDeleteProfileMutation
 } from '@/store/api/apiSlice';
+import { useGetSettingsQuery } from '@/store/api/customerApiSlice';
+import { PRIVACY_POLICY_URL, SUPPORT_WHATSAPP, toWhatsAppNumber } from '@/constants/links';
 import { logout } from '@/store/authSlice';
 import { useDirection } from '@/i18n';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
@@ -30,6 +32,7 @@ import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Image,
+  Linking,
   ScrollView,
   StyleSheet,
   Text,
@@ -57,6 +60,21 @@ export default function ProviderProfileScreen() {
 
   const [logoutApi] = useLogoutUserMutation();
   const [deleteProfile] = useDeleteProfileMutation();
+
+  const { data: settingsData } = useGetSettingsQuery(undefined);
+  const supportPhone = toWhatsAppNumber(
+    (settingsData as any)?.data?.adminPhone ||
+    (settingsData as any)?.adminPhone ||
+    SUPPORT_WHATSAPP,
+  );
+  const openContactUs = () => {
+    Linking.openURL(`https://wa.me/${supportPhone}`).catch(() => {
+      Linking.openURL(`tel:+${supportPhone}`).catch(() => {});
+    });
+  };
+  const openPrivacyPolicy = () => {
+    Linking.openURL(PRIVACY_POLICY_URL).catch(() => {});
+  };
 
   const router = useRouter();
   const languageSheetRef = useRef<BottomSheetModal>(null);
@@ -109,8 +127,8 @@ export default function ProviderProfileScreen() {
     { id: 'business', title: isArabic ? 'معلومات المصرف' : 'Bank Information', shape: 'blue' as const, icon: <SolarWalletBold size={20} color="white" />, route: '/(dashboard)/edit-business' },
     { id: 'revenue', title: isArabic ? 'الأرباح' : 'Earnings', shape: 'green' as const, icon: <SolarBanknoteBold size={20} color="white" />, route: '/(tabs)/(dashboard)/revenue' },
     { id: 'language', title: isArabic ? 'اللغة' : 'Language', shape: 'blue' as const, icon: <SolarGlobalBold size={20} color="white" />, action: openLanguageSheet },
-    { id: 'contact', title: isArabic ? 'تواصل معنا' : 'Contact Us', shape: 'green' as const, icon: <SolarPhoneBold size={20} color="white" /> },
-    { id: 'privacy', title: isArabic ? 'سياسة الخصوصية' : 'Privacy Policy', shape: 'blue' as const, icon: <SolarShieldBold size={20} color="white" /> },
+    { id: 'contact', title: isArabic ? 'تواصل معنا' : 'Contact Us', shape: 'green' as const, icon: <SolarPhoneBold size={20} color="white" />, action: openContactUs },
+    { id: 'privacy', title: isArabic ? 'سياسة الخصوصية' : 'Privacy Policy', shape: 'blue' as const, icon: <SolarShieldBold size={20} color="white" />, action: openPrivacyPolicy },
     { id: 'logout', title: isArabic ? 'تسجيل الخروج' : 'Logout', shape: 'red' as const, icon: <SolarLogoutBold size={20} color="white" />, action: handleLogout },
   ];
 

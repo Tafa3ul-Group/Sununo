@@ -170,7 +170,6 @@ export function LoginScreen() {
   const [phone, setPhone] = useState("");
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [code, setCode] = useState("");
-  const [devAutoFilled, setDevAutoFilled] = useState(false);
 
   function handleTypeChange(type: "owner" | "customer") {
     if (step === "otp") return;
@@ -182,7 +181,6 @@ export function LoginScreen() {
     const onBackPress = () => {
       if (step === "otp") {
         setStep("phone");
-        setDevAutoFilled(false);
         return true;
       }
       return false;
@@ -213,7 +211,6 @@ export function LoginScreen() {
         setPhone(cleanPhone);
         if (res?.code) {
           setCode(String(res.code));
-          setDevAutoFilled(true);
         }
         setStep("otp");
       } catch (err: any) {
@@ -353,13 +350,6 @@ export function LoginScreen() {
                   {t("auth.verificationCode")}
                 </ThemedText>
                 <OtpInput code={code} setCode={setCode} length={6} />
-                {devAutoFilled && (
-                  <ThemedText style={styles.devHint}>
-                    {isArabic
-                      ? "تم ملء الكود تلقائياً للاختبار"
-                      : "Code auto-filled for testing"}
-                  </ThemedText>
-                )}
               </View>
             )}
 
@@ -524,13 +514,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: -1,
-  },
-  devHint: {
-    fontSize: 8,
-    color: "#94A3B8",
-    fontFamily: "Alexandria-Medium",
-    textAlign: "center",
-    marginTop: 8,
   },
   ownerHintRow: {
     alignItems: "center",

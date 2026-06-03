@@ -2,7 +2,6 @@ import { HeaderSection } from '@/components/header-section';
 import {
     SolarAltArrowLeftBold,
     SolarAltArrowRightBold,
-    SolarMapPointBold,
     SolarPenBold
 } from '@/components/icons/solar-icons';
 import { ThemedText } from '@/components/themed-text';
@@ -13,8 +12,10 @@ import { useDirection } from "@/i18n";
 import { RootState } from '@/store';
 import { useGetMeQuery } from '@/store/api/apiSlice';
 import {
+    useChangePhoneNumberMutation,
     useUpdateProfileImageMutation,
-    useUpdateUserProfileMutation
+    useUpdateUserProfileMutation,
+    useVerifyPhoneNumberChangeMutation
 } from '@/store/api/customerApiSlice';
 import * as ImagePicker from 'expo-image-picker';
 import { Stack, useRouter } from 'expo-router';
@@ -25,6 +26,7 @@ import {
     Dimensions,
     Image,
     KeyboardAvoidingView,
+    Modal,
     Platform,
     ScrollView,
     StatusBar,
@@ -41,7 +43,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function ProfileEditScreen() {
   const router = useRouter();
-  const { isRTL, textAlign, rowDirection } = useDirection();
+  const { isRTL, textAlign } = useDirection();
     const { user: authUser } = useSelector((state: RootState) => state.auth);
 
   const { data: meData, refetch } = useGetMeQuery(undefined);
@@ -104,6 +106,69 @@ export default function ProfileEditScreen() {
       router.back();
     } catch (err: any) {
       const msg = err?.data?.message || (isRTL ? 'فشل التحديث' : 'Update failed');
+      Alert.alert(isRTL ? 'خطأ' : 'Error', Array.isArray(msg) ? msg[0] : msg);
+    }
+  };
+
+  // ── Phone change flow ──────────────────────────────────────────────────
+  const [changePhoneNumber, { isLoading: isRequestingChange }] =
+    useChangePhoneNumberMutation();
+  const [verifyPhoneNumberChange, { isLoading: isVerifyingChange }] =
+    useVerifyPhoneNumberChangeMutation();
+  const [phoneModalVisible, setPhoneModalVisible] = useState(false);
+  const [changeStep, setChangeStep] = useState<'phone' | 'otp'>('phone');
+  const [newPhone, setNewPhone] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+
+  const openPhoneChange = () => {
+    setNewPhone('');
+    setOtpCode('');
+    setChangeStep('phone');
+    setPhoneModalVisible(true);
+  };
+
+  const handleRequestPhoneChange = async () => {
+    const cleanPhone = newPhone.trim().replace(/[\s\-()]/g, '');
+    if (!cleanPhone || cleanPhone.length < 10) {
+      Alert.alert(
+        isRTL ? 'خطأ' : 'Error',
+        isRTL ? 'يرجى إدخال رقم هاتف صحيح' : 'Please enter a valid phone number',
+      );
+      return;
+    }
+    try {
+      const res: any = await changePhoneNumber({ phone: cleanPhone }).unwrap();
+      // Auto-fill OTP if the backend returns it (demo/staging environments)
+      if (res?.code) setOtpCode(String(res.code));
+      setChangeStep('otp');
+    } catch (err: any) {
+      const msg =
+        err?.data?.message ||
+        (isRTL ? 'فشل إرسال رمز التحقق' : 'Failed to send verification code');
+      Alert.alert(isRTL ? 'خطأ' : 'Error', Array.isArray(msg) ? msg[0] : msg);
+    }
+  };
+
+  const handleVerifyPhoneChange = async () => {
+    if (!otpCode.trim()) {
+      Alert.alert(
+        isRTL ? 'خطأ' : 'Error',
+        isRTL ? 'يرجى إدخال رمز التحقق' : 'Please enter the verification code',
+      );
+      return;
+    }
+    try {
+      await verifyPhoneNumberChange({ code: otpCode.trim() }).unwrap();
+      setPhoneModalVisible(false);
+      refetch();
+      Alert.alert(
+        isRTL ? 'تم' : 'Done',
+        isRTL ? 'تم تغيير رقم الهاتف بنجاح' : 'Phone number changed successfully',
+      );
+    } catch (err: any) {
+      const msg =
+        err?.data?.message ||
+        (isRTL ? 'رمز التحقق غير صحيح' : 'Invalid verification code');
       Alert.alert(isRTL ? 'خطأ' : 'Error', Array.isArray(msg) ? msg[0] : msg);
     }
   };
@@ -206,12 +271,7 @@ export default function ProfileEditScreen() {
                     </View>
                     <TouchableOpacity
                       style={styles.changePhoneBtn}
-                      onPress={() =>
-                        Alert.alert(
-                          'تغيير رقم الهاتف',
-                          'هذه الميزة ستكون متاحة قريباً',
-                        )
-                      }
+                      onPress={openPhoneChange}
                     >
                       <Text style={styles.changePhoneText}>تغيير رقم الهاتف</Text>
                     </TouchableOpacity>
@@ -220,12 +280,7 @@ export default function ProfileEditScreen() {
                   <>
                     <TouchableOpacity
                       style={styles.changePhoneBtn}
-                      onPress={() =>
-                        Alert.alert(
-                          'Change Phone',
-                          'This feature will be available soon',
-                        )
-                      }
+                      onPress={openPhoneChange}
                     >
                       <Text style={styles.changePhoneText}>Change Phone</Text>
                     </TouchableOpacity>
@@ -239,42 +294,6 @@ export default function ProfileEditScreen() {
                     </View>
                   </>
                 )}
-              </View>
-            </View>
-
-            {/* الموقع */}
-            <View style={styles.fieldGroup}>
-              <ThemedText style={styles.label}>
-                {isRTL ? 'موقعك' : 'Your Location'}
-              </ThemedText>
-              <View style={styles.mapCard}>
-                {/* Static map image */}
-                <Image
-                  source={{
-                    uri: 'https://miro.medium.com/v2/resize:fit:1400/1*qV3uDpS9mZc6jS1j75n6oA.png' }}
-                  style={styles.mapImage}
-                  resizeMode="cover"
-                />
-                {/* Pin overlay */}
-                <View style={styles.mapPinOverlay}>
-                  <SolarMapPointBold size={36} color={Colors.primary} />
-                </View>
-                {/* Footer */}
-                <View
-                  style={[
-                    styles.mapFooter,
-                    { flexDirection: rowDirection },
-                  ]}
-                >
-                  <ThemedText style={styles.locationName}>
-                    {isRTL ? 'البصرة - ابي الخصيب' : 'Basra - Abu Al-Khaseeb'}
-                  </ThemedText>
-                  <TouchableOpacity>
-                    <ThemedText style={styles.changeLocText}>
-                      {isRTL ? 'تغيير' : 'Change'}
-                    </ThemedText>
-                  </TouchableOpacity>
-                </View>
               </View>
             </View>
 
@@ -293,6 +312,78 @@ export default function ProfileEditScreen() {
           style={styles.submitBtn}
         />
       </View>
+
+      {/* ── Phone Change Modal ── */}
+      <Modal
+        visible={phoneModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPhoneModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>
+              {isRTL ? 'تغيير رقم الهاتف' : 'Change Phone Number'}
+            </Text>
+
+            {changeStep === 'phone' ? (
+              <>
+                <Text style={[styles.modalLabel, { textAlign }]}>
+                  {isRTL ? 'رقم الهاتف الجديد' : 'New phone number'}
+                </Text>
+                <TextInput
+                  style={[styles.modalInput, { textAlign }]}
+                  value={newPhone}
+                  onChangeText={setNewPhone}
+                  placeholder="07XXXXXXXXX"
+                  placeholderTextColor="#C4C4C4"
+                  keyboardType="phone-pad"
+                  autoFocus
+                />
+                <PrimaryButton
+                  label={isRTL ? 'إرسال رمز التحقق' : 'Send code'}
+                  onPress={handleRequestPhoneChange}
+                  loading={isRequestingChange}
+                  style={styles.modalBtn}
+                />
+              </>
+            ) : (
+              <>
+                <Text style={[styles.modalLabel, { textAlign }]}>
+                  {isRTL
+                    ? `أدخل رمز التحقق المُرسل إلى ${newPhone}`
+                    : `Enter the verification code sent to ${newPhone}`}
+                </Text>
+                <TextInput
+                  style={[styles.modalInput, { textAlign: 'center', letterSpacing: 6 }]}
+                  value={otpCode}
+                  onChangeText={setOtpCode}
+                  placeholder="------"
+                  placeholderTextColor="#C4C4C4"
+                  keyboardType="number-pad"
+                  maxLength={6}
+                  autoFocus
+                />
+                <PrimaryButton
+                  label={isRTL ? 'تأكيد التغيير' : 'Confirm change'}
+                  onPress={handleVerifyPhoneChange}
+                  loading={isVerifyingChange}
+                  style={styles.modalBtn}
+                />
+              </>
+            )}
+
+            <TouchableOpacity
+              onPress={() => setPhoneModalVisible(false)}
+              style={styles.modalCancelBtn}
+            >
+              <Text style={styles.modalCancelText}>
+                {isRTL ? 'إلغاء' : 'Cancel'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -458,4 +549,49 @@ const styles = StyleSheet.create({
   submitBtn: {
     width: '100%',
     height: normalize.height(54),
-    borderRadius: 27 } });
+    borderRadius: 27 },
+
+  // ── Phone change modal ───────────────────────────────────────────────────
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'center',
+    paddingHorizontal: normalize.width(24) },
+  modalCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: normalize.width(24) },
+  modalTitle: {
+    fontSize: normalize.font(16),
+    fontFamily: "Alexandria-Medium",
+    color: '#111827',
+    textAlign: 'center',
+    marginBottom: normalize.height(18) },
+  modalLabel: {
+    fontSize: normalize.font(13),
+    fontFamily: "Alexandria-Medium",
+    color: '#6B7280',
+    marginBottom: normalize.height(10) },
+  modalInput: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 14,
+    paddingHorizontal: normalize.width(16),
+    height: normalize.height(52),
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
+    color: '#111827',
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    marginBottom: normalize.height(18) },
+  modalBtn: {
+    width: '100%',
+    height: normalize.height(52),
+    borderRadius: 26 },
+  modalCancelBtn: {
+    marginTop: normalize.height(12),
+    alignItems: 'center',
+    paddingVertical: normalize.height(8) },
+  modalCancelText: {
+    fontSize: normalize.font(13),
+    fontFamily: "Alexandria-Medium",
+    color: '#9CA3AF' } });

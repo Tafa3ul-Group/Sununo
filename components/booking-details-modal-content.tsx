@@ -79,12 +79,14 @@ export const BookingDetailsModalContent = ({ id, isRTL, t, onClose, onOpenCancel
           <View style={[styles.chaletRow, { flexDirection: resolveRowDirection(isRTL) }]}>
             <View style={[styles.chaletInfo, { alignItems: 'flex-start' }]}>
               <Text style={[styles.chaletName, { textAlign: isRTL ? 'right' : 'left' }]}>{bChaletName}</Text>
-              <Text style={[styles.chaletLocation, { textAlign: isRTL ? 'right' : 'left' }]}>{bChaletAddress || (isRTL ? 'البصرة - الجزائر' : 'Basra - Algeria')}</Text>
-              
-              <View style={[styles.ratingRow, { flexDirection: resolveRowDirection(isRTL) }]}>
-                <SolarStarBold size={14} color="#EF4444" />
-                <Text style={styles.ratingText}>4.5</Text>
-              </View>
+              <Text style={[styles.chaletLocation, { textAlign: isRTL ? 'right' : 'left' }]}>{bChaletAddress || ''}</Text>
+
+              {data.chalet?.rating ? (
+                <View style={[styles.ratingRow, { flexDirection: resolveRowDirection(isRTL) }]}>
+                  <SolarStarBold size={14} color="#EF4444" />
+                  <Text style={styles.ratingText}>{Number(data.chalet.rating).toFixed(1)}</Text>
+                </View>
+              ) : null}
 
               <Text style={[styles.priceTag, { textAlign: isRTL ? 'right' : 'left' }]}>
                 {isRTL ? `IQD ${Number(data.totalPrice).toLocaleString()} / شفت` : `IQD ${Number(data.totalPrice).toLocaleString()} / Shift`}

@@ -20,6 +20,7 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  Alert,
   Dimensions,
   Pressable,
   ScrollView,
@@ -35,12 +36,6 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const DESIGN_BASE_WIDTH = 414; // Using iPhone Plus as base for more standard scaling
 const scale = SCREEN_WIDTH / DESIGN_BASE_WIDTH;
 const normalize = (size: number) => size * scale;
-
-const SAMPLE_IMAGES = [
-  "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=400",
-  "https://images.unsplash.com/photo-1540553016722-983e48a2cd10?w=400",
-  "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400",
-];
 
 export default function ReviewsScreen() {
   const router = useRouter();
@@ -79,10 +74,19 @@ export default function ReviewsScreen() {
 
   const handleReviewSubmit = async (rating: number, comment: string) => {
     try {
-      // Note: createReview requires a bookingId which should come from completed booking
-      console.log("Review Submitted:", { rating, comment, chaletId });
-    } catch (error) {
-      console.error("Review submission error:", error);
+      await createReview({ chaletId, rating, comment }).unwrap();
+      reviewSheetRef.current?.dismiss();
+      Alert.alert(
+        t("common.success"),
+        isArabic
+          ? "تم إرسال تقييمك بنجاح"
+          : "Your review was submitted successfully",
+      );
+    } catch (error: any) {
+      const msg =
+        error?.data?.message ||
+        (isArabic ? "تعذّر إرسال التقييم" : "Failed to submit review");
+      Alert.alert(t("common.error"), Array.isArray(msg) ? msg[0] : msg);
     }
   };
 

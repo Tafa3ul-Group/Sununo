@@ -78,7 +78,7 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
           {/* التقييم في زاوية اليمنى صريحاً وبنفس المسافة */}
           <View style={styles.ratingOverlay}>
             <ThemedText style={styles.ratingText}>
-              {chalet.rating || "4.5"}
+              {chalet.rating ? Number(chalet.rating).toFixed(1) : (isRTL ? "جديد" : "New")}
             </ThemedText>
             <SolarStarBold size={normalize.width(16)} color="#FFB801" />
           </View>

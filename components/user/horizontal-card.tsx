@@ -179,7 +179,7 @@ export const HorizontalCard = React.memo(function HorizontalCard({
               color={Colors.secondary}
             />
             <ThemedText style={styles.ratingText}>
-              {chalet.rating || "4.5"}
+              {chalet.rating ? Number(chalet.rating).toFixed(1) : (isArabic ? "جديد" : "New")}
             </ThemedText>
           </View>
 

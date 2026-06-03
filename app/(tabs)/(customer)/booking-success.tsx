@@ -337,7 +337,7 @@ export default function BookingSuccessDetailsScreen() {
           <View style={styles.mapSnippetWrapper}>
             <ExpoImage
               source={{
-                uri: `https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/47.98,30.50,13,0/600x300?access_token=${process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN}`,
+                uri: `https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/${chalet.longitude || 44.3661},${chalet.latitude || 33.3152},13,0/600x300?access_token=${process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN}`,
               }}
               style={styles.mapSnippet}
             />

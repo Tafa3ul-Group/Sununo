@@ -348,6 +348,11 @@ export const customerApi = apiSlice.injectEndpoints({
       providesTags: ["User"],
     }),
 
+    /** Get platform settings (includes admin/support contact phone) */
+    getSettings: builder.query({
+      query: () => "/settings",
+    }),
+
     // ── Account (Customer) ─────────────────────────────────────────────────
 
     /** Delete my account (Apple/Google compliance) */
@@ -534,6 +539,7 @@ export const {
   useGetCustomerWalletQuery,
   useGetCustomerTransactionsQuery,
   useGetMyWalletQuery,
+  useGetSettingsQuery,
 
   // Account
   useDeleteCustomerAccountMutation,

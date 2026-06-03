@@ -14,7 +14,7 @@ interface WalletCardProps {
 }
 
 export const WalletCard = ({
-  balance = "100,000",
+  balance = "0",
   onWithdraw,
 }: WalletCardProps) => {
   const { t } = useTranslation();
@@ -58,7 +58,7 @@ export const WalletCard = ({
           </View>
           <TouchableOpacity style={styles.withdrawButton} onPress={onWithdraw} activeOpacity={0.8}>
             <ThemedText style={styles.withdrawText}>
-              {t("profile.wallet.withdraw")}
+              {t("profile.wallet.transactions")}
             </ThemedText>
           </TouchableOpacity>
         </View>

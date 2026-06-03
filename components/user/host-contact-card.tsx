@@ -1,6 +1,7 @@
+import { toWhatsAppNumber } from "@/constants/links";
 import { Image as ExpoImage } from "expo-image";
 import React from "react";
-import { Dimensions, I18nManager, StyleSheet, View } from "react-native";
+import { Dimensions, I18nManager, Linking, StyleSheet, TouchableOpacity, View } from "react-native";
 import Svg, { Path, Rect } from "react-native-svg";
 import { ThemedText } from "../themed-text";
 import { useDirection } from "@/i18n";
@@ -44,8 +45,21 @@ export const HostContactCard: React.FC<HostContactCardProps> = ({
       ? { marginLeft: 85 * SCALE, marginRight: 15 * SCALE }
       : { marginRight: 85 * SCALE, marginLeft: 15 * SCALE };
 
+  const handleContact = () => {
+    if (!phone) return;
+    const num = toWhatsAppNumber(phone);
+    Linking.openURL(`https://wa.me/${num}`).catch(() => {
+      Linking.openURL(`tel:+${num}`).catch(() => {});
+    });
+  };
+
   return (
-    <View style={styles.container}>
+    <TouchableOpacity
+      style={styles.container}
+      onPress={handleContact}
+      disabled={!phone}
+      activeOpacity={0.85}
+    >
       <Svg
         width={SCREEN_WIDTH - 40}
         height={SVG_HEIGHT * SCALE}
@@ -106,7 +120,7 @@ export const HostContactCard: React.FC<HostContactCardProps> = ({
           <ExpoImage source={avatar} style={styles.avatar} contentFit="cover" />
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

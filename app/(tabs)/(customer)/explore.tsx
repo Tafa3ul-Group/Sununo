@@ -900,7 +900,7 @@ export default function ExploreScreen() {
                 {/* Rating - second child = START side in RTL */}
                 <View style={[styles.ratingSection, { flexDirection: flexDir }]}>
                   <ThemedText style={styles.ratingValue}>
-                    {selectedChalet.rating || "4.5"}
+                    {selectedChalet.rating ? Number(selectedChalet.rating).toFixed(1) : (isRTL ? "جديد" : "New")}
                   </ThemedText>
                   <SolarStarBold size={20} color={Colors.primary} />
                 </View>
@@ -1168,7 +1168,7 @@ export default function ExploreScreen() {
                         <HostContactCard
                           name={
                             chaletDetails.owner?.name ||
-                            (isRTL ? "مضيف عراقي" : "Iraqi Host")
+                            (isRTL ? "المضيف" : "Host")
                           }
                           avatar={
                             chaletDetails.owner?.image

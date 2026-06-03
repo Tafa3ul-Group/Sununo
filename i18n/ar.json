@@ -62,7 +62,8 @@
     "privacyPolicy": "سياسة الخصوصية",
     "wallet": {
       "balance": "رصيدك الحالي",
-      "withdraw": "سحب"
+      "withdraw": "سحب",
+      "transactions": "سجل المعاملات"
     },
     "edit": {
       "birthDate": "تاريخ الميلاد",
