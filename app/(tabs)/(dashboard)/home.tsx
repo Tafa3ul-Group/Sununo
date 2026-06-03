@@ -487,7 +487,7 @@ export default function HomeScreen() {
                   <View
                     style={[
                       styles.shiftNameGroup,
-                      { alignItems: startAlign },
+                      { alignItems: isRTL ? 'flex-start' : 'flex-end', marginLeft: isRTL ? 0 : 12, marginRight: isRTL ? 12 : 0 },
                     ]}
                   >
                     <Text
