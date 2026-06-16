@@ -563,8 +563,8 @@ export const ShiftActionSheet = forwardRef<BottomSheetModal, ShiftActionSheetPro
 
                   {(selectedShiftForAction.booking?.status === "confirmed" ||
                     selectedShiftForAction.booking?.status === "external" ||
-                    selectedShiftForAction.booking?.status ===
-                    "pending_payment") && (
+                    selectedShiftForAction.booking?.status === "pending_payment" ||
+                    selectedShiftForAction.booking?.status === "pending_approval") && (
                       <SecondaryButton
                         label={isRTL ? "إلغاء الحجز" : "Cancel"}
                         onPress={() => {

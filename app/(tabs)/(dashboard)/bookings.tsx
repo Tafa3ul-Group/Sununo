@@ -2,7 +2,6 @@ import { BookingCancellationSheet, BookingCancellationSheetRef } from '@/compone
 import { DashboardCalendar } from "@/components/dashboard/dashboard-calendar";
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { PendingApprovalScreen } from '@/components/dashboard/pending-approval';
-import { CountdownBadge } from '@/components/dashboard/countdown-badge';
 import {
   SolarCalendarBold,
   SolarCheckCircleBold,
@@ -18,7 +17,6 @@ import { RootState } from '@/store';
 import { useDeleteExternalBookingMutation, useGetProviderBookingsQuery, useGetProviderProfileQuery, useRejectBookingMutation } from '@/store/api/apiSlice';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
-import * as LocalAuthentication from 'expo-local-authentication';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -38,39 +36,22 @@ import { useSelector } from 'react-redux';
 
 export default function BookingsScreen() {
   const router = useRouter();
-  const { user, userType, language, selectedChalet } = useSelector((state: RootState) => state.auth);
+  const { user, userType, selectedChalet } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
-  const { isRTL, textAlign } = useDirection();
+  const { isRTL } = useDirection();
 
   // API hooks
   const { data: profileResponse, refetch: refetchProfile } = useGetProviderProfileQuery(undefined);
   const profile = profileResponse?.data || profileResponse;
 
-  const isOwner = userType === 'owner';
   const [activeFilter, setActiveFilter] = useState('all');
-  const [isBalanceVisible, setIsBalanceVisible] = useState(false);
-  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
   const cancelSheetRef = React.useRef<BookingCancellationSheetRef>(null);
   const calendarSheetRef = React.useRef<BottomSheetModal>(null);
 
   const [rejectBooking, { isLoading: isRejectLoading }] = useRejectBookingMutation();
   const [deleteExternalBooking, { isLoading: isDeletingExternal }] = useDeleteExternalBookingMutation();
-  const [cancellingBookingData, setCancellingBookingData] = useState<any>(null);
+  const [cancellingBookingData] = useState<any>(null);
 
-  const handleOpenCancelSheet = (data: any) => {
-    setCancellingBookingData(data);
-    const bIsExternal = data.status === 'external' || data.type === 'external';
-    const customerName = bIsExternal
-      ? data.externalCustomerName
-      : (data.customer?.name || data.customer?.fullName);
-    const customerPhone = bIsExternal
-      ? data.externalCustomerPhone
-      : (data.customer?.phone || data.customer?.phoneNumber);
-
-    setTimeout(() => {
-      cancelSheetRef.current?.present(customerName, customerPhone);
-    }, 100);
-  };
 
   const handleConfirmCancellation = async (reason: string) => {
     if (!cancellingBookingData) return;
@@ -145,7 +126,7 @@ export default function BookingsScreen() {
     cancelled: 'cancelled'
   };
 
-  const { data: bookingsResponse, isFetching: isBookingsFetching, isLoading: isBookingsLoading, refetch: refetchBookings } = useGetProviderBookingsQuery({
+  const { data: bookingsResponse, isFetching: isBookingsFetching, refetch: refetchBookings } = useGetProviderBookingsQuery({
     limit: 8,
     page: page,
     status: activeFilter !== 'all' ? statusMap[activeFilter] : undefined,
@@ -172,35 +153,6 @@ export default function BookingsScreen() {
   }
 
 
-  const handleToggleBalance = async () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-    if (isBalanceVisible) {
-      // Just hide it
-      setIsBalanceVisible(false);
-      return;
-    }
-
-    // Authenticate to show
-    const hasHardware = await LocalAuthentication.hasHardwareAsync();
-    const enrolled = await LocalAuthentication.isEnrolledAsync();
-
-    if (!hasHardware || !enrolled) {
-      // Fallback: show directly if no biometrics available
-      setIsBalanceVisible(true);
-      return;
-    }
-
-    const result = await LocalAuthentication.authenticateAsync({
-      promptMessage: isRTL ? 'تحقق من هويتك لعرض الرصيد' : 'Verify identity to show balance',
-      cancelLabel: isRTL ? 'إلغاء' : 'Cancel',
-      fallbackLabel: isRTL ? 'استخدم رمز المرور' : 'Use Passcode'
-    });
-
-    if (result.success) {
-      setIsBalanceVisible(true);
-    }
-  };
 
 
 
@@ -330,27 +282,16 @@ export default function BookingsScreen() {
             router.push({ pathname: '/(dashboard)/booking-details', params: { id: item.id } });
           }}
         >
-          <View style={[styles.modernBookingInner, { flexDirection: 'row' }]}>
-            {/* Info (Name, Chalet and Shift) */}
-            <View style={[styles.modernBookingInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                <Text style={[styles.modernBookingName, { textAlign }]} numberOfLines={1}>{customerName}</Text>
-                <View style={{
-                  backgroundColor: statusInfo.bg,
-                  paddingHorizontal: 8,
-                  paddingVertical: 2,
-                  borderRadius: 6,
-                  borderWidth: 1,
-                  borderColor: statusInfo.color + '20'
-                }}>
-                  <Text style={{
-                    color: statusInfo.color,
-                    fontSize: normalize.font(10),
-                    fontFamily: 'Alexandria-SemiBold'
-                  }}>
-                    {statusInfo.label}
-                  </Text>
-                </View>
+          {/* شريط لوني جانبي حسب حالة الحجز — I18nManager يضعه تلقائياً على الجانب الصحيح */}
+          <View style={[styles.cardAccentStrip, { backgroundColor: statusInfo.color, left: 0 }]} />
+
+          <View style={{ paddingHorizontal: normalize.width(14), paddingVertical: normalize.height(12) }}>
+            {/* صف 1: الاسم + باج الحالة */}
+            <View style={{ flexDirection: isRTL ? 'row' : 'row-reverse', alignItems: 'center', justifyContent: 'space-between', marginBottom: normalize.height(5) }}>
+              <Text style={[styles.modernBookingName, { flex: 0 }]} numberOfLines={1}>
+                {customerName}
+              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 {item.status === 'pending_approval' && (
                   <CountdownBadge
                     createdAt={item.createdAt}
@@ -359,47 +300,63 @@ export default function BookingsScreen() {
                     variant="compact"
                   />
                 )}
-              </View>
-
-              {chaletName && <Text style={[styles.modernBookingChalet, { textAlign }]} numberOfLines={1}>{chaletName}</Text>}
-
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                <Text style={[styles.modernBookingShift, { textAlign }]}>{t('common.shift')} {shiftName}</Text>
-                <Text style={styles.modernBookingDot}>•</Text>
-                <Text style={styles.modernBookingDate}>{formatBookingDate(item.bookingDate || item.date || item.createdAt?.split('T')[0])}</Text>
-              </View>
-
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginTop: 4 }}>
-                <Text style={{ fontSize: normalize.font(11), color: '#64748B', fontFamily: 'Alexandria-Medium' }}>
-                  {isRTL ? `الاشخاص: ${item.guestsCount || item.guestCount || 0}` : `Guests: ${item.guestsCount || item.guestCount || 0}`}
-                </Text>
-                {!bIsExternal && item.paymentModel === 'deposit' && (
-                  <>
-                    <Text style={styles.modernBookingDot}>•</Text>
-                    <Text style={{ fontSize: normalize.font(11), color: '#F97316', fontFamily: 'Alexandria-Medium' }}>
-                      {isRTL ? `عربون: ${(Number(item.depositAmount) || 0).toLocaleString()} د.ع` : `Deposit: ${(Number(item.depositAmount) || 0).toLocaleString()} IQD`}
-                    </Text>
-                    <Text style={styles.modernBookingDot}>•</Text>
-                    <Text style={{ fontSize: normalize.font(11), color: '#035DF9', fontFamily: 'Alexandria-Medium' }}>
-                      {isRTL ? `متبقي: ${(Number(item.remainingAmount) || 0).toLocaleString()} د.ع` : `Remaining: ${(Number(item.remainingAmount) || 0).toLocaleString()} IQD`}
-                    </Text>
-                    <Text style={styles.modernBookingDot}>•</Text>
-                    <Text style={{ fontSize: normalize.font(11), color: '#10B981', fontFamily: 'Alexandria-Medium' }}>
-                      {isRTL ? `المدفوع: ${(Number(item.amountPaid) || 0).toLocaleString()} د.ع` : `Amount Paid: ${(Number(item.amountPaid) || 0).toLocaleString()} IQD`}
-                    </Text>
-                  </>
-                )}
+                <View style={{
+                  backgroundColor: statusInfo.bg,
+                  paddingHorizontal: 8,
+                  paddingVertical: 3,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: statusInfo.color + '30',
+                }}>
+                  <Text style={{ color: statusInfo.color, fontSize: normalize.font(10), fontFamily: 'Alexandria-SemiBold' }}>
+                    {statusInfo.label}
+                  </Text>
+                </View>
               </View>
             </View>
 
-            {/* 3. Price (Left part in RTL) */}
-            {!bIsExternal && (
-              <View style={styles.modernBookingPriceWrap}>
+            {/* صف 2: اسم الشاليه + السعر */}
+            <View style={{ flexDirection: isRTL ? 'row' : 'row-reverse', alignItems: 'center', justifyContent: 'space-between', marginBottom: normalize.height(4) }}>
+              {chaletName
+                ? <Text style={[styles.modernBookingChalet, { flex: 0 }]} numberOfLines={1}>{chaletName}</Text>
+                : <View style={{ flex: 0 }} />
+              }
+              {!bIsExternal && (
                 <Text style={styles.modernBookingPrice}>
                   {(Number(item.totalPrice) || 0).toLocaleString()} {t('common.iqd')}
                 </Text>
-              </View>
-            )}
+              )}
+            </View>
+
+            {/* صف 3: الوردية + التاريخ */}
+            <View style={{ flexDirection: isRTL ? 'row' : 'row-reverse', alignItems: 'center', gap: 4, marginBottom: normalize.height(4) }}>
+              <Text style={styles.modernBookingShift}>{t('common.shift')} {shiftName}</Text>
+              <Text style={styles.modernBookingDot}>•</Text>
+              <Text style={styles.modernBookingDate}>{formatBookingDate(item.bookingDate || item.date || item.createdAt?.split('T')[0])}</Text>
+            </View>
+
+            {/* صف 4: عدد الأشخاص + تفاصيل العربون */}
+            <View style={{ flexDirection: isRTL ? 'row' : 'row-reverse', flexWrap: 'wrap', alignItems: 'center', gap: 5 }}>
+              <Text style={{ fontSize: normalize.font(11), color: '#64748B', fontFamily: 'Alexandria-Medium' }}>
+                {isRTL ? `${item.guestsCount || item.guestCount || 0} أشخاص` : `${item.guestsCount || item.guestCount || 0} guests`}
+              </Text>
+              {!bIsExternal && item.paymentModel === 'deposit' && (
+                <>
+                  <Text style={styles.modernBookingDot}>•</Text>
+                  <Text style={{ fontSize: normalize.font(11), color: '#F97316', fontFamily: 'Alexandria-Medium' }}>
+                    {isRTL ? `عربون: ${(Number(item.depositAmount) || 0).toLocaleString()} د.ع` : `Deposit: ${(Number(item.depositAmount) || 0).toLocaleString()} IQD`}
+                  </Text>
+                  {Number(item.remainingAmount) > 0 && (
+                    <>
+                      <Text style={styles.modernBookingDot}>•</Text>
+                      <Text style={{ fontSize: normalize.font(11), color: '#035DF9', fontFamily: 'Alexandria-Medium' }}>
+                        {isRTL ? `متبقي: ${(Number(item.remainingAmount) || 0).toLocaleString()} د.ع` : `Rem: ${(Number(item.remainingAmount) || 0).toLocaleString()} IQD`}
+                      </Text>
+                    </>
+                  )}
+                </>
+              )}
+            </View>
           </View>
         </TouchableOpacity>
       </Animated.View>
@@ -409,30 +366,6 @@ export default function BookingsScreen() {
   const renderBackdrop = React.useCallback((props: any) => (
     <BottomSheetBackdrop {...props} appearsOnIndex={0} disappearsOnIndex={-1} pressBehavior="close" />
   ), []);
-
-  const renderFilterButton = (filter: { id: string; label: string; icon?: React.ReactNode }) => {
-    const isActive = activeFilter === filter.id;
-    const isAll = filter.id === 'all';
-
-    return (
-      <View key={filter.id} style={{ transform: [{ scale: 0.92 }] }}>
-        {isAll ? (
-          <PrimaryButton
-            label={filter.label}
-            isActive={isActive}
-            onPress={() => setActiveFilter(filter.id)}
-          />
-        ) : (
-          <SecondaryButton
-            label={filter.label}
-            isActive={isActive}
-            icon={filter.icon}
-            onPress={() => setActiveFilter(filter.id)}
-          />
-        )}
-      </View>
-    );
-  };
 
   if (userType === 'owner' && (profile ? !profile.isApproved : !user?.isApproved)) {
     return <PendingApprovalScreen onRefresh={refetchProfile} />;
@@ -498,7 +431,7 @@ export default function BookingsScreen() {
                       label: isRTL ? 'ملغي' : 'Cancelled',
                       icon: <SolarCloseCircleBold size={18} color={activeFilter === 'cancelled' ? 'white' : Colors.primary} />
                     },
-                  ].map((filter, index) => {
+                  ].map((filter) => {
                     const isActive = activeFilter === filter.id;
                     const isAll = filter.id === 'all';
 
@@ -865,12 +798,19 @@ const styles = StyleSheet.create({
   },
   modernBookingCard: {
     backgroundColor: Colors.white,
-    borderRadius: normalize.radius(20),
-    borderWidth: 1.1,
-    borderColor: '#F1F3F5',
+    borderRadius: normalize.radius(16),
+    borderWidth: 1,
+    borderColor: '#EAECF0',
     overflow: 'hidden',
-    padding: normalize.width(10),
-    marginBottom: normalize.height(12), // Increased from 4
+    marginBottom: normalize.height(10),
+    position: 'relative',
+  },
+  cardAccentStrip: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: 4,
+    borderRadius: 2,
   },
   modernBookingInner: {
     alignItems: 'center',

@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../../.."
+		},
+		{
+			"path": "../../../../sununo-portal"
+		},
+		{
+			"path": "../../../../sununo-api"
+		}
+	],
+	"settings": {}
+}

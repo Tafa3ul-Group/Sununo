@@ -18,6 +18,7 @@ import {
   SolarUsersGroupBold
 } from "@/components/icons/solar-icons";
 import { useConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { StatusModal } from '@/components/ui/status-modal';
 import { AppMap } from '@/components/user/app-map';
 import { GuestCounter } from '@/components/user/guest-counter';
 import { LocationPickerModal } from '@/components/user/location-picker-modal';
@@ -136,6 +137,7 @@ export default function ChaletDetailsScreen() {
 
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [errorModal, setErrorModal] = useState<{ visible: boolean; title: string; message: string }>({ visible: false, title: '', message: '' });
 
   interface RuleItem {
     id: string;
@@ -311,11 +313,11 @@ export default function ChaletDetailsScreen() {
       refetch();
     } catch (err: any) {
       console.error(err);
-      const errMsg = err?.data?.message || err?.message || '';
-      Toast.show({
-        type: 'error',
-        text1: isRTL ? 'فشل الرفع' : 'Upload failed',
-        text2: errMsg,
+      const errMsg = err?.data?.message || err?.message || (isRTL ? 'حدث خطأ أثناء رفع الصور، حاول مرة أخرى' : 'Something went wrong while uploading, please try again');
+      setErrorModal({
+        visible: true,
+        title: isRTL ? 'فشل رفع الصور' : 'Upload failed',
+        message: errMsg,
       });
     }
   };
@@ -1709,6 +1711,16 @@ export default function ChaletDetailsScreen() {
             Toast.show({ type: 'error', text1: isRTL ? 'فشل تحديث الموقع' : 'Failed to update location' });
           }
         }}
+      />
+
+      {/* Error Status Modal (Lottie fail animation) */}
+      <StatusModal
+        visible={errorModal.visible}
+        type="failed"
+        title={errorModal.title}
+        message={errorModal.message}
+        buttonLabel={isRTL ? 'حسناً' : 'OK'}
+        onClose={() => setErrorModal({ visible: false, title: '', message: '' })}
       />
     </View>
 
