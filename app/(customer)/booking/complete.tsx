@@ -365,9 +365,15 @@ export default function CompleteBookingScreen() {
 
   // Pre-fill selected shifts from the saved filter when possible.
   useEffect(() => {
+    // Default to the first shift that actually has pricing (so the total/deposit
+    // isn't 0 when a chalet has multiple shifts and no period was pre-filtered).
     const initialShift =
       filteredSelectedShift ||
-      (availableShifts.length === 1 ? availableShifts[0] : null);
+      availableShifts.find((s: any) =>
+        s.pricing?.some((p: any) => Number(p.price) > 1),
+      ) ||
+      availableShifts[0] ||
+      null;
     if (initialShift && selectedDates.length > 0) {
       setSelectedShifts((prev) => {
         const next = { ...prev };
