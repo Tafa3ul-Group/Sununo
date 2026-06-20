@@ -252,8 +252,17 @@ export default function HomeScreen() {
   }, [allAmenities]);
 
   // Build query params for Home Screen (ignores global search filters to keep index unfiltered)
+  // Infinite scroll paging for the chalets list
+  const [page, setPage] = React.useState(1);
+  const [rawChalets, setRawChalets] = React.useState<any[]>([]);
+
+  // Reset paging whenever the active filter changes.
+  React.useEffect(() => {
+    setPage(1);
+  }, [activeFilter]);
+
   const queryParams = React.useMemo(() => {
-    const params: any = { page: 1, limit: 10 };
+    const params: any = { page, limit: 10 };
 
     // Use real amenity ID from API if available, otherwise send the slug as fallback
     if (activeFilter !== "all") {
@@ -261,12 +270,32 @@ export default function HomeScreen() {
       params.amenityIds = [realId || activeFilter];
     }
     return params;
-  }, [activeFilter, amenityIdMap]);
+  }, [activeFilter, amenityIdMap, page]);
 
   // Fetch data from the backend
   const { data: bannersResponse, isFetching: bannersFetching, refetch: refetchBanners } = useGetBannersQuery(undefined);
   const { data: chaletsResponse, isLoading: chaletsLoading, isFetching: chaletsFetching, refetch: refetchChalets } =
     useBrowseCustomerChaletsQuery(queryParams);
+
+  const totalPages = chaletsResponse?.meta?.totalPages || 1;
+  const hasMoreChalets = page < totalPages;
+
+  // Accumulate chalets across pages for infinite scroll (dedup by id).
+  React.useEffect(() => {
+    const incoming = chaletsResponse?.data || [];
+    if (!incoming.length && page > 1) return;
+    setRawChalets((prev) => {
+      if (page === 1) return incoming;
+      const seen = new Set(prev.map((c: any) => c.id));
+      return [...prev, ...incoming.filter((c: any) => !seen.has(c.id))];
+    });
+  }, [chaletsResponse, page]);
+
+  const loadMoreChalets = React.useCallback(() => {
+    if (!chaletsFetching && hasMoreChalets) {
+      setPage((p) => p + 1);
+    }
+  }, [chaletsFetching, hasMoreChalets]);
 
   const { data: favoriteIds = [], refetch: refetchFavorites } =
     useGetFavoriteIdsQuery(undefined, { skip: userType === "guest" });
@@ -334,9 +363,9 @@ export default function HomeScreen() {
   const navigateToDetails = (id: string) =>
     router.push(`/chalet-details/${id}`);
 
-  // Transform API data to match card format, with fallback to empty array
+  // Transform accumulated (paged) API data to card format
   const POPULAR_CHALETS = useMemo(() => {
-    const chalets = chaletsResponse?.data || [];
+    const chalets = rawChalets;
     return chalets.map((chalet: any, index: number) => ({
       id: chalet.id,
       title: isRTL
@@ -356,7 +385,7 @@ export default function HomeScreen() {
       color: CARD_COLORS[index % CARD_COLORS.length],
       image: getImageSrc(chalet.images?.[0]?.url),
     }));
-  }, [chaletsResponse, isRTL]);
+  }, [rawChalets, isRTL]);
 
   const FILTER_OPTIONS = [
     {
@@ -408,6 +437,15 @@ export default function HomeScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
+        onScroll={({ nativeEvent }) => {
+          const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+          const distanceFromBottom =
+            contentSize.height - (contentOffset.y + layoutMeasurement.height);
+          if (distanceFromBottom < 500) {
+            loadMoreChalets();
+          }
+        }}
+        scrollEventThrottle={200}
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}

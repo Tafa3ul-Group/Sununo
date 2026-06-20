@@ -2,6 +2,7 @@ import { SolarHeartBold, SolarStarBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { Colors, normalize } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
+import { Image as ExpoImage } from "expo-image";
 import { getStartingPrice } from "@/utils/format";
 import { useGetCustomerChaletDetailsQuery } from "@/store/api/customerApiSlice";
 import React from "react";
@@ -221,33 +222,30 @@ export const HorizontalCard = React.memo(function HorizontalCard({
         </View>
       </View>
 
-      {/* Image side */}
-      <View style={styles.imageWrapper}>
-        <Svg
-          height={normalize.height(88)}
-          width={normalize.width(98)}
-          viewBox={config.viewBox}
-        >
-          <Defs>
-            <ClipPath id={`clip-blob-${shapeIndex}`}>
-              <Path d={config.path} />
-            </ClipPath>
-          </Defs>
-          <G clipPath={`url(#clip-blob-${shapeIndex})`}>
-            <SvgImage
-              href={imageSource}
-              width={config.width}
-              height={config.height}
-              preserveAspectRatio="xMidYMid slice"
-            />
-          </G>
-          <Path
-            d={config.path}
-            stroke={borderColor}
-            strokeWidth="6"
-            fill="none"
-          />
-        </Svg>
+      {/* Image side — "D" shape: flat edge toward the text, rounded toward the
+          screen edge, with the chalet's colored outline. */}
+      <View
+        style={[
+          styles.imageWrapper,
+          {
+            borderColor,
+            borderWidth: 3,
+            // "D": flat left edge (toward text), rounded right edge (toward the
+            // screen edge) — matches the RTL layout.
+            borderTopLeftRadius: normalize.radius(14),
+            borderBottomLeftRadius: normalize.radius(14),
+            borderTopRightRadius: normalize.height(44),
+            borderBottomRightRadius: normalize.height(44),
+            overflow: "hidden",
+            backgroundColor: "#fff",
+          },
+        ]}
+      >
+        <ExpoImage
+          source={imageSource}
+          style={{ width: "100%", height: "100%" }}
+          contentFit="cover"
+        />
       </View>
     </TouchableOpacity>
   );
