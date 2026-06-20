@@ -461,45 +461,45 @@ export default function HomeScreen() {
           <View style={styles.mapOverlay} />
         </TouchableOpacity>
 
-        {/* Popular / Recent */}
-        <View style={[styles.sectionHeader, { flexDirection: flexDir }]}>
-          <ThemedText
-            style={[
-              styles.sectionTitle,
-              { textAlign: textStart },
-            ]}
-          >
-            {t("home.recentBookings")}
-          </ThemedText>
-          <TouchableOpacity onPress={() => router.push("/(tabs)/(customer)/bookings")}>
-            <ThemedText style={styles.seeAll}>{t("home.seeAll")}</ThemedText>
-          </TouchableOpacity>
-        </View>
+        {/* Recent bookings — hidden entirely when there's no data */}
+        {(latestBookingsLoading || recentBookingChalets.length > 0) && (
+          <>
+            <View style={[styles.sectionHeader, { flexDirection: flexDir }]}>
+              <ThemedText
+                style={[
+                  styles.sectionTitle,
+                  { textAlign: textStart },
+                ]}
+              >
+                {t("home.recentBookings")}
+              </ThemedText>
+              <TouchableOpacity onPress={() => router.push("/(tabs)/(customer)/bookings")}>
+                <ThemedText style={styles.seeAll}>{t("home.seeAll")}</ThemedText>
+              </TouchableOpacity>
+            </View>
 
-        {latestBookingsLoading ? (
-          <HorizontalSwiperSkeleton count={2} />
-        ) : recentBookingChalets.length > 0 ? (
-          <View style={styles.swiperWrapper}>
-            <HorizontalSwiper
-              data={recentBookingChalets}
-              onPressCard={(chaletId: string) => {
-                const b = (Array.isArray(latestBookings) ? latestBookings : []).find(
-                  (x: any) => x?.chalet?.id === chaletId,
-                );
-                if (b?.id) {
-                  router.push({ pathname: "/(tabs)/(customer)/booking-success", params: { id: b.id } });
-                } else {
-                  navigateToDetails(chaletId);
-                }
-              }}
-              favoriteIds={favoriteIds}
-              onToggleFavorite={handleToggleFavorite}
-            />
-          </View>
-        ) : (
-          <ThemedText style={[styles.seeAll, { textAlign: textStart, paddingHorizontal: 16, opacity: 0.6 }]}>
-            {isRTL ? "لا توجد حجوزات حديثة بعد." : "No recent bookings yet."}
-          </ThemedText>
+            {latestBookingsLoading ? (
+              <HorizontalSwiperSkeleton count={2} />
+            ) : (
+              <View style={styles.swiperWrapper}>
+                <HorizontalSwiper
+                  data={recentBookingChalets}
+                  onPressCard={(chaletId: string) => {
+                    const b = (Array.isArray(latestBookings) ? latestBookings : []).find(
+                      (x: any) => x?.chalet?.id === chaletId,
+                    );
+                    if (b?.id) {
+                      router.push({ pathname: "/(tabs)/(customer)/booking-success", params: { id: b.id } });
+                    } else {
+                      navigateToDetails(chaletId);
+                    }
+                  }}
+                  favoriteIds={favoriteIds}
+                  onToggleFavorite={handleToggleFavorite}
+                />
+              </View>
+            )}
+          </>
         )}
 
         {/* Recommended */}
