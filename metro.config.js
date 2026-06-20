@@ -6,6 +6,7 @@ const config = getDefaultConfig(__dirname);
 // Enable pnpm support
 config.resolver.unstable_enableSymlinks = true;
 config.resolver.unstable_enablePackageExports = true;
+config.resolver.useWatchman = false;
 config.resolver.nodeModulesPaths = [
   path.resolve(__dirname, 'node_modules'),
 ];
@@ -17,3 +18,5 @@ config.watchFolders = [
 ];
 
 module.exports = config;
+
+
