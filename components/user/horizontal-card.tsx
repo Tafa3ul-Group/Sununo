@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     fontFamily: "Alexandria-Medium" },
   imageWrapper: {
-    width: normalize.width(98),
-    height: normalize.height(88),
+    width: normalize.width(82),
+    height: normalize.height(72),
     justifyContent: "center",
     alignItems: "center" } });
