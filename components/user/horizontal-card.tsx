@@ -2,6 +2,8 @@ import { SolarHeartBold, SolarStarBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { Colors, normalize } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
+import { getStartingPrice } from "@/utils/format";
+import { useGetCustomerChaletDetailsQuery } from "@/store/api/customerApiSlice";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
@@ -81,6 +83,24 @@ export const HorizontalCard = React.memo(function HorizontalCard({
       alignStart: (needsCounter ? "flex-end" : "flex-start") as "flex-start" | "flex-end",
     };
   }, [isArabic]);
+
+  // The list endpoints don't include shift pricing, so when a real price isn't
+  // already provided we fetch the chalet's shifts via the details route and show
+  // the lowest active shift price ("starts from"). The request is skipped once a
+  // price is available (e.g. API-provided startingPrice), so it's a no-op then.
+  const hasPrice =
+    (chalet?.startingPrice != null && Number(chalet.startingPrice) > 0) ||
+    (chalet?.price != null &&
+      Number(String(chalet.price).replace(/,/g, "")) > 0);
+  const { data: detailResp } = useGetCustomerChaletDetailsQuery(chalet?.id, {
+    skip: !chalet?.id || hasPrice,
+  });
+  const detail = (detailResp as any)?.data ?? detailResp;
+  const resolvedPrice = hasPrice
+    ? chalet?.price
+    : detail
+      ? getStartingPrice(detail)
+      : chalet?.price ?? "0";
 
   if (!chalet) return null;
 
@@ -194,7 +214,7 @@ export const HorizontalCard = React.memo(function HorizontalCard({
             </ThemedText>
             <ThemedText style={styles.price}>
               {isArabic ? "" : "IQD "}
-              {chalet.price}
+              {resolvedPrice}
               {isArabic ? " د.ع" : ""}
             </ThemedText>
           </View>

@@ -567,7 +567,7 @@ export default function ExploreScreen() {
             ]}
           >
             <View
-              style={[styles.footerContent, { flexDirection: flexDir }]}
+              style={[styles.footerContent, { flexDirection: "row", direction: isRTL ? "rtl" : "ltr" }]}
             >
               <View style={[styles.priceContainer, { justifyContent: "center" }]}>
                 <ThemedText style={[styles.footerPrice, { textAlign: textStart }]}>
@@ -873,7 +873,7 @@ export default function ExploreScreen() {
 
               {/* Title + Rating Row */}
               <View
-                style={[styles.mainInfoRow, { flexDirection: flexDir }]}
+                style={[styles.mainInfoRow, { flexDirection: "row", direction: isRTL ? "rtl" : "ltr" }]}
               >
                 {/* Title and Location - first child = END side in RTL */}
                 <View
@@ -896,7 +896,7 @@ export default function ExploreScreen() {
                 </View>
 
                 {/* Rating - second child = START side in RTL */}
-                <View style={[styles.ratingSection, { flexDirection: flexDir }]}>
+                <View style={[styles.ratingSection, { flexDirection: "row", direction: isRTL ? "rtl" : "ltr" }]}>
                   <ThemedText style={styles.ratingValue}>
                     {selectedChalet.rating ? Number(selectedChalet.rating).toFixed(1) : (isRTL ? "جديد" : "New")}
                   </ThemedText>
@@ -909,7 +909,7 @@ export default function ExploreScreen() {
                 <ThemedText style={[styles.sectionLabel, { textAlign: textStart }]}>
                   {isRTL ? "المواصفات الاساسية" : "Basic Specifications"}
                 </ThemedText>
-                <View style={[styles.specsContainer, { flexDirection: flexDir, flexWrap: "wrap" }]}>
+                <View style={[styles.specsContainer, { flexDirection: "row", direction: isRTL ? "rtl" : "ltr", flexWrap: "wrap" }]}>
                   {selectedChalet.category && (
                     <View style={styles.specChip}>
                       <ThemedText style={styles.specText}>
@@ -1004,7 +1004,8 @@ export default function ExploreScreen() {
                                   padding: 12,
                                   alignItems: "center",
                                   gap: 12,
-                                  flexDirection: flexDir,
+                                  flexDirection: "row",
+                                  direction: isRTL ? "rtl" : "ltr",
                                 }}
                               >
                                 <View
@@ -1061,19 +1062,48 @@ export default function ExploreScreen() {
                       <Animated.View
                         entering={FadeInUp.delay(100).duration(300)}
                       >
-                        <SectionHeader
-                          title={isRTL ? "المرافق" : "Facilities"}
-                          isRTL={isRTL}
-                        />
                         <View
                           style={{
-                            flexDirection: flexDir,
+                            flexDirection: "row",
+                            direction: isRTL ? "rtl" : "ltr",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <SectionHeader
+                            title={isRTL ? "المرافق" : "Facilities"}
+                            isRTL={isRTL}
+                          />
+                          {(chaletDetails.chaletFeatures || []).length > 8 && (
+                            <TouchableOpacity
+                              onPress={() =>
+                                router.push(
+                                  `/chalet-details/facilities/${selectedChalet.id}`,
+                                )
+                              }
+                            >
+                              <ThemedText
+                                style={{
+                                  color: Colors.primary,
+                                  fontSize: 12,
+                                  fontFamily: "Alexandria-Medium",
+                                }}
+                              >
+                                {isRTL ? "عرض الكل" : "See all"}
+                              </ThemedText>
+                            </TouchableOpacity>
+                          )}
+                        </View>
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            direction: isRTL ? "rtl" : "ltr",
                             flexWrap: "wrap",
                             justifyContent: "space-between",
                             marginVertical: 15,
                           }}
                         >
-                          {(chaletDetails.chaletFeatures || []).map(
+                          {(chaletDetails.chaletFeatures || []).slice(0, 8).map(
                             (item: any, idx: number) => {
                               const feature = item.feature || item;
                               const Icon =
@@ -1258,7 +1288,7 @@ export default function ExploreScreen() {
                                   <View
                                     style={[
                                       styles.revHeaderMerged,
-                                      { flexDirection: flexDir },
+                                      { flexDirection: "row", direction: isRTL ? "rtl" : "ltr" },
                                     ]}
                                   >
                                     {/* Avatar */}
@@ -1298,7 +1328,7 @@ export default function ExploreScreen() {
                                     <View
                                       style={[
                                         styles.revRatingCornerMerged,
-                                        { flexDirection: flexDir },
+                                        { flexDirection: "row", direction: isRTL ? "rtl" : "ltr" },
                                       ]}
                                     >
                                       <SolarStarBold size={14} color={Colors.primary} />
