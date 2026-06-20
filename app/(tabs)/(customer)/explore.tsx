@@ -48,6 +48,7 @@ import { useFormatTime } from "@/hooks/useFormatTime";
 import Svg, { Path } from "react-native-svg";
 
 import { getImageSrc } from "@/hooks/useImageSrc";
+import { getStartingPrice } from "@/utils/format";
 import * as Location from "expo-location";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
@@ -346,7 +347,7 @@ export default function ExploreScreen() {
           id: item.id,
           title: item.name,
           location: item.address,
-          price: (item.basePrice || "0").toLocaleString(),
+          price: getStartingPrice(item),
           rating: item.rating || 0,
           color: Colors.primary,
           image: getImageSrc(mainImage?.url),
@@ -455,7 +456,6 @@ export default function ExploreScreen() {
 
   const { formatShiftTime } = useFormatTime();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [isExpanded, setIsExpanded] = useState(false);
 
   // Fetch full details when a chalet is selected
   const { data: chaletFullDetails, isLoading: isDetailsLoading } =
@@ -510,9 +510,7 @@ export default function ExploreScreen() {
         location: isRTL
           ? item.city?.name || ""
           : item.city?.enName || item.city?.name || "",
-        price: item.basePrice
-          ? Number(item.basePrice).toLocaleString()
-          : "0",
+        price: getStartingPrice(item),
         rating: item.rating || 0,
         image: getImageSrc(item.images?.[0]?.url),
         color: CARD_COLORS[index % CARD_COLORS.length],
@@ -799,16 +797,16 @@ export default function ExploreScreen() {
         ref={bottomSheetRef}
         index={0}
         snapPoints={snapPoints}
-        enableDynamicSizing={true}
+        // Must stay false: when true, the sheet measures its (variable) content
+        // height and fights the explicit snapPoints, so on first open the content
+        // renders mis-sized/out of order. Fixed snapPoints give a stable layout.
+        enableDynamicSizing={false}
         backdropComponent={renderBackdrop}
         footerComponent={renderFooter}
         onDismiss={handleDismissSheet}
         enablePanDownToClose
         handleIndicatorStyle={{ backgroundColor: "#E5E7EB", width: 40 }}
         style={styles.bottomSheet}
-        onChange={(index) => {
-          setIsExpanded(index >= 1);
-        }}
       >
         <BottomSheetScrollView
           style={{ flex: 1 }}
@@ -973,9 +971,10 @@ export default function ExploreScreen() {
                 />
               </View>
 
-              {/* Seamless Full Details Content (Visible when expanded) */}
-              {isExpanded && (
-                <View style={{ marginTop: 20 }}>
+              {/* Full Details Content — always rendered so every section is
+                  present and correctly ordered from first appearance, matching
+                  the single chalet detail page. */}
+              <View style={{ marginTop: 20 }}>
                   {isDetailsLoading ? (
                     <ActivityIndicator
                       size="small"
@@ -1161,27 +1160,10 @@ export default function ExploreScreen() {
                         </View>
                       </Animated.View>
 
-                      {/* Host Section */}
+                      {/* Location Section — kept before Host to match the
+                          single chalet detail page order. */}
                       <Animated.View
                         entering={FadeInUp.delay(200).duration(300)}
-                      >
-                        <HostContactCard
-                          name={
-                            chaletDetails.owner?.name ||
-                            (isRTL ? "المضيف" : "Host")
-                          }
-                          avatar={
-                            chaletDetails.owner?.image
-                              ? getImageSrc(chaletDetails.owner.image)
-                              : null
-                          }
-                          isRTL={isRTL}
-                        />
-                      </Animated.View>
-
-                      {/* Location Section */}
-                      <Animated.View
-                        entering={FadeInUp.delay(250).duration(300)}
                       >
                         <SectionHeader
                           title={isRTL ? "الموقع" : "Location"}
@@ -1232,6 +1214,24 @@ export default function ExploreScreen() {
                             </ThemedText>
                           </View>
                         </View>
+                      </Animated.View>
+
+                      {/* Host Section */}
+                      <Animated.View
+                        entering={FadeInUp.delay(250).duration(300)}
+                      >
+                        <HostContactCard
+                          name={
+                            chaletDetails.owner?.name ||
+                            (isRTL ? "المضيف" : "Host")
+                          }
+                          avatar={
+                            chaletDetails.owner?.image
+                              ? getImageSrc(chaletDetails.owner.image)
+                              : null
+                          }
+                          isRTL={isRTL}
+                        />
                       </Animated.View>
 
                       {/* Reviews Section */}
@@ -1354,7 +1354,6 @@ export default function ExploreScreen() {
                     </>
                   )}
                 </View>
-              )}
             </View>
           )}
         </BottomSheetScrollView>

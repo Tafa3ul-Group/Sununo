@@ -8,6 +8,7 @@ import { HorizontalCard } from "@/components/user/horizontal-card";
 import { Colors } from "@/constants/theme";
 
 import { useBrowseCustomerChaletsQuery } from "@/store/api/customerApiSlice";
+import { getStartingPrice } from "@/utils/format";
 import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -55,7 +56,7 @@ export default function SearchScreen() {
           chalet.region?.nameEn ||
           chalet.region?.name ||
           "",
-      price: chalet.basePrice ? Number(chalet.basePrice).toLocaleString() : "0",
+      price: getStartingPrice(chalet),
       rating: chalet.averageRating || 0,
       image:
         chalet.images?.[0]?.url ||

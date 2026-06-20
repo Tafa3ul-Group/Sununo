@@ -189,14 +189,13 @@ export const HorizontalCard = React.memo(function HorizontalCard({
               { flexDirection: 'row' },
             ]}
           >
+            <ThemedText style={styles.priceLabel}>
+              {isArabic ? "يبدأ من " : "Starts from "}
+            </ThemedText>
             <ThemedText style={styles.price}>
               {isArabic ? "" : "IQD "}
               {chalet.price}
               {isArabic ? " د.ع" : ""}
-            </ThemedText>
-            <ThemedText style={styles.priceLabel}>
-              {" "}
-              / {isArabic ? "شفت" : "Shift"}
             </ThemedText>
           </View>
         </View>

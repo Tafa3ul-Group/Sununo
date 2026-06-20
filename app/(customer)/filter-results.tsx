@@ -11,6 +11,7 @@ import { ThemedText } from "@/components/themed-text";
 import { HorizontalCard } from "@/components/user/horizontal-card";
 import { Colors, Shadows } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
+import { getStartingPrice } from "@/utils/format";
 
 import { RootState } from "@/store";
 import { unwrapListResponse } from "@/store/api/apiSlice";
@@ -91,13 +92,6 @@ export default function FilterResultsScreen() {
   const filteredChalets = useMemo(() => {
     const chalets = unwrapListResponse(chaletsResponse);
     return chalets.map((chalet: any) => {
-      // Find the price: either shift pricing or base price
-      const priceVal = chalet.shifts?.[0]?.pricing?.[0]?.price
-        ? Number(chalet.shifts[0].pricing[0].price)
-        : chalet.basePrice
-          ? Number(chalet.basePrice)
-          : 0;
-
       return {
         id: chalet.id,
         title: isArabic
@@ -112,7 +106,7 @@ export default function FilterResultsScreen() {
             chalet.region?.nameEn ||
             chalet.region?.name ||
             "",
-        price: priceVal.toLocaleString(),
+        price: getStartingPrice(chalet),
         image: getImageSrc(chalet.images?.[0]?.url || chalet.image || ""),
         images: chalet.images || [],
         rating: chalet.averageRating || chalet.rating || 0,

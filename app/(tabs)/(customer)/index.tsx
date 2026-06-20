@@ -36,6 +36,7 @@ import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize, Shadows } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
+import { getStartingPrice } from "@/utils/format";
 
 import { RootState } from "@/store";
 import { useGetAmenitiesQuery } from "@/store/api/apiSlice";
@@ -293,7 +294,7 @@ export default function HomeScreen() {
             title: c.name,
             location: c.region?.name ?? c.city?.name ?? "",
             image: c.images?.[0]?.url ?? c.images?.[0],
-            price: c.basePrice ? Number(c.basePrice).toLocaleString() : "0",
+            price: getStartingPrice(c),
             rating: c.averageRating ?? c.rating ?? 0,
           };
         }),
@@ -350,11 +351,7 @@ export default function HomeScreen() {
           chalet.region?.nameEn ||
           chalet.region?.name ||
           "",
-      price: chalet.shifts?.[0]?.pricing?.[0]?.price
-        ? Number(chalet.shifts[0].pricing[0].price).toLocaleString()
-        : chalet.basePrice
-          ? Number(chalet.basePrice).toLocaleString()
-          : "0",
+      price: getStartingPrice(chalet),
       rating: chalet.averageRating || 0,
       color: CARD_COLORS[index % CARD_COLORS.length],
       image: getImageSrc(chalet.images?.[0]?.url),

@@ -10,6 +10,7 @@ import { HorizontalCard } from '@/components/user/horizontal-card';
 import { HeaderSection } from '@/components/header-section';
 import { useGetCustomerFavoritesQuery, useToggleFavoriteMutation } from '@/store/api/customerApiSlice';
 import { getImageSrc } from '@/hooks/useImageSrc';
+import { getStartingPrice } from '@/utils/format';
 import { useDirection } from '@/i18n';
 
 
@@ -46,7 +47,7 @@ export default function FavoritesScreen() {
         location: isRTL
           ? (chalet.region?.name?.ar || chalet.region?.nameAr || chalet.region?.name || '')
           : (chalet.region?.name?.en || chalet.region?.nameEn || chalet.region?.name || ''),
-        price: chalet.basePrice ? Number(chalet.basePrice).toLocaleString() : '0',
+        price: getStartingPrice(chalet),
         rating: chalet.averageRating?.toFixed(1) || '0',
         image: getImageSrc(chalet.images?.[0]?.url),
         color: '#22C55E' };
