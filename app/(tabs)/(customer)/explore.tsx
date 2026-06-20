@@ -114,6 +114,7 @@ function SectionHeader({ title, isRTL }: { title: string; isRTL: boolean }) {
         marginBottom: 10,
         marginTop: 15,
         alignItems: "flex-start",
+        direction: isRTL ? "rtl" : "ltr",
       }}
     >
       <ThemedText
@@ -121,6 +122,7 @@ function SectionHeader({ title, isRTL }: { title: string; isRTL: boolean }) {
           fontSize: 14,
           fontFamily: "Alexandria-Medium",
           color: "#111827",
+          textAlign: isRTL ? "right" : "left",
         }}
       >
         {title}
@@ -881,14 +883,17 @@ export default function ExploreScreen() {
                 <View
                   style={styles.titleSection}
                 >
-                  <ThemedText style={[styles.chaletTitleMain, { textAlign: textStart }]}>
+                  <ThemedText
+                    style={[styles.chaletTitleMain, { textAlign: isRTL ? "left" : "right" }]}
+                    numberOfLines={2}
+                  >
                     {typeof selectedChalet?.title === "string"
                       ? selectedChalet.title
                       : (isRTL
                           ? selectedChalet?.title?.ar
                           : selectedChalet?.title?.en) || ""}
                   </ThemedText>
-                  <ThemedText style={[styles.chaletLocationSub, { textAlign: textStart }]}>
+                  <ThemedText style={[styles.chaletLocationSub, { textAlign: isRTL ? "left" : "right" }]}>
                     {typeof selectedChalet?.location === "string"
                       ? selectedChalet.location
                       : (isRTL
@@ -908,9 +913,10 @@ export default function ExploreScreen() {
 
               {/* Specifications Section */}
               <View style={styles.specsSection}>
-                <ThemedText style={[styles.sectionLabel, { textAlign: textStart }]}>
-                  {isRTL ? "المواصفات الاساسية" : "Basic Specifications"}
-                </ThemedText>
+                <SectionHeader
+                  title={isRTL ? "المواصفات الاساسية" : "Basic Specifications"}
+                  isRTL={isRTL}
+                />
                 <View style={[styles.specsContainer, { flexDirection: "row", direction: isRTL ? "rtl" : "ltr", flexWrap: "wrap" }]}>
                   {selectedChalet.category && (
                     <View style={styles.specChip}>
