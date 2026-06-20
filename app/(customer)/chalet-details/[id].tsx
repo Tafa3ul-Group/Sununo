@@ -705,16 +705,25 @@ export default function ChaletDetailScreen() {
           )}
 
           {/* نظرة عامة */}
-          <SectionHeader title={t("chalet.details.overview")} />
-          <View
-            style={[styles.descriptionContainer, { alignItems: "flex-start" }]}
-          >
-            <ThemedText
-              style={[styles.descriptionText, { textAlign: textStart }]}
-            >
-              {chaletDescription}
-            </ThemedText>
-          </View>
+          {chaletDescription ? (
+            <>
+              <SectionHeader title={t("chalet.details.overview")} />
+              <View style={styles.descriptionContainer}>
+                <ThemedText
+                  style={[
+                    styles.descriptionText,
+                    {
+                      width: "100%",
+                      textAlign: textStart,
+                      writingDirection: isRTL ? "rtl" : "ltr",
+                    },
+                  ]}
+                >
+                  {chaletDescription}
+                </ThemedText>
+              </View>
+            </>
+          ) : null}
 
           {/* الموقع */}
           <SectionHeader title={t("chalet.details.location")} />
