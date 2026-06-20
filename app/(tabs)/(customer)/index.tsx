@@ -2,6 +2,7 @@ import { Redirect, useRouter } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  ActivityIndicator,
   Dimensions,
   RefreshControl,
   ScrollView,
@@ -583,15 +584,24 @@ export default function HomeScreen() {
               <HorizontalCardSkeleton />
             </View>
           ) : POPULAR_CHALETS.length > 0 ? (
-            POPULAR_CHALETS.map((item: any, index: number) => (
-              <HorizontalCard
-                key={index}
-                chalet={item}
-                onPress={() => navigateToDetails(item.id)}
-                isFavorite={favoriteIds.includes(item.id)}
-                onToggleFavorite={() => handleToggleFavorite(item.id)}
-              />
-            ))
+            <>
+              {POPULAR_CHALETS.map((item: any, index: number) => (
+                <HorizontalCard
+                  key={item.id || index}
+                  chalet={item}
+                  onPress={() => navigateToDetails(item.id)}
+                  isFavorite={favoriteIds.includes(item.id)}
+                  onToggleFavorite={() => handleToggleFavorite(item.id)}
+                />
+              ))}
+              {chaletsFetching && page > 1 && (
+                <ActivityIndicator
+                  size="small"
+                  color={Colors.primary}
+                  style={{ marginVertical: 16 }}
+                />
+              )}
+            </>
           ) : (
             <View style={styles.emptyContainer}>
               <View style={styles.emptyIconContainer}>
