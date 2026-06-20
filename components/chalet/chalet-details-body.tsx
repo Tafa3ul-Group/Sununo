@@ -12,6 +12,7 @@ import { ThemedText } from "@/components/themed-text";
 import { HostContactCard } from "@/components/user/host-contact-card";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import {
+  SolarBedBold,
   SolarForbiddenCircleLineDuotone,
   SolarMoonBold,
   SolarSunBold,
@@ -226,10 +227,18 @@ export function ChaletDetailsBody({
               validPrices.length > 0
                 ? Math.min(...validPrices).toLocaleString()
                 : null;
+            const nameEn = shift.name?.en?.toLowerCase() || "";
+            const nameAr = shift.name?.ar || "";
+            const isOvernight =
+              shift.type === "OVERNIGHT" ||
+              nameEn.includes("overnight") ||
+              nameEn.includes("night") ||
+              nameAr.includes("مبيت");
             const isMorning =
-              shift.type === "MORNING" ||
-              shift.name?.en?.toLowerCase().includes("morning") ||
-              shift.name?.ar?.includes("صباح");
+              !isOvernight &&
+              (shift.type === "MORNING" ||
+                nameEn.includes("morning") ||
+                nameAr.includes("صباح"));
             return (
               <View
                 key={shift.id || index}
@@ -241,6 +250,8 @@ export function ChaletDetailsBody({
                 <View style={styles.shiftIconCircle}>
                   {isMorning ? (
                     <SolarSunBold size={22} color="#FBBF24" />
+                  ) : isOvernight ? (
+                    <SolarBedBold size={22} color="#0EA5E9" />
                   ) : (
                     <SolarMoonBold size={22} color="#6366F1" />
                   )}

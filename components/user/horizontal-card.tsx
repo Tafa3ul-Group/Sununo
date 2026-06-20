@@ -26,6 +26,10 @@ import Svg, {
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
+// "D" outline in a 0 0 100 88 viewBox: straight left edge, full semicircle on
+// the right. Inset by the stroke half-width so the colored outline isn't clipped.
+const D_PATH = "M3 3 H56 A41 41 0 0 1 56 85 H3 Z";
+
 const SHAPES_CONFIG = [
   {
     viewBox: "0 0 132 114",
@@ -222,31 +226,29 @@ export const HorizontalCard = React.memo(function HorizontalCard({
         </View>
       </View>
 
-      {/* Image side — "D" shape: flat edge toward the text, rounded toward the
-          screen edge, with the chalet's colored outline. */}
-      <View
-        style={[
-          styles.imageWrapper,
-          {
-            borderColor,
-            borderWidth: 3,
-            // "D": nearly-flat left edge (toward the text) and a full semicircle
-            // right edge (toward the screen). A large right radius caps to
-            // height/2 so the right side is always a complete half-circle.
-            borderTopLeftRadius: normalize.radius(8),
-            borderBottomLeftRadius: normalize.radius(8),
-            borderTopRightRadius: 999,
-            borderBottomRightRadius: 999,
-            overflow: "hidden",
-            backgroundColor: "#fff",
-          },
-        ]}
-      >
-        <ExpoImage
-          source={imageSource}
-          style={{ width: "100%", height: "100%" }}
-          contentFit="cover"
-        />
+      {/* Image side — clean "D": straight left edge (toward the text), full
+          semicircle on the right, with the chalet's colored outline. */}
+      <View style={styles.imageWrapper}>
+        <Svg
+          width={normalize.width(82)}
+          height={normalize.height(72)}
+          viewBox="0 0 100 88"
+        >
+          <Defs>
+            <ClipPath id={`d-clip-${shapeIndex}`}>
+              <Path d={D_PATH} />
+            </ClipPath>
+          </Defs>
+          <G clipPath={`url(#d-clip-${shapeIndex})`}>
+            <SvgImage
+              href={imageSource}
+              width={100}
+              height={88}
+              preserveAspectRatio="xMidYMid slice"
+            />
+          </G>
+          <Path d={D_PATH} stroke={borderColor} strokeWidth={5} fill="none" />
+        </Svg>
       </View>
     </TouchableOpacity>
   );
