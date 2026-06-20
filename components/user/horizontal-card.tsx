@@ -26,9 +26,12 @@ import Svg, {
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-// "D" outline in a 0 0 100 88 viewBox: straight left edge, full semicircle on
-// the right. Inset by the stroke half-width so the colored outline isn't clipped.
-const D_PATH = "M3 3 H56 A41 41 0 0 1 56 85 H3 Z";
+// "D" outline in a 0 0 100 88 viewBox (inset by the stroke half-width so the
+// colored outline isn't clipped). The bowl faces the text side: in RTL the image
+// sits on the right, so the curve bulges LEFT (toward the text) with a flat right
+// edge; in LTR it mirrors.
+const D_PATH_BOWL_LEFT = "M97 3 H44 A41 41 0 0 0 44 85 H97 Z";
+const D_PATH_BOWL_RIGHT = "M3 3 H56 A41 41 0 0 1 56 85 H3 Z";
 
 const SHAPES_CONFIG = [
   {
@@ -117,6 +120,8 @@ export const HorizontalCard = React.memo(function HorizontalCard({
       : chalet.image ||
         getImageSrc(chalet.images?.[0]?.url || chalet.images?.[0]);
   const borderColor = chalet.color || Colors.secondary;
+  // Bowl faces the text: RTL → image on the right → curve bulges left.
+  const dPath = isArabic ? D_PATH_BOWL_LEFT : D_PATH_BOWL_RIGHT;
 
   const config = SHAPES_CONFIG[shapeIndex % SHAPES_CONFIG.length];
 
@@ -236,7 +241,7 @@ export const HorizontalCard = React.memo(function HorizontalCard({
         >
           <Defs>
             <ClipPath id={`d-clip-${shapeIndex}`}>
-              <Path d={D_PATH} />
+              <Path d={dPath} />
             </ClipPath>
           </Defs>
           <G clipPath={`url(#d-clip-${shapeIndex})`}>
@@ -247,7 +252,7 @@ export const HorizontalCard = React.memo(function HorizontalCard({
               preserveAspectRatio="xMidYMid slice"
             />
           </G>
-          <Path d={D_PATH} stroke={borderColor} strokeWidth={5} fill="none" />
+          <Path d={dPath} stroke={borderColor} strokeWidth={5} fill="none" />
         </Svg>
       </View>
     </TouchableOpacity>
