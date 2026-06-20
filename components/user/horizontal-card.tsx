@@ -230,12 +230,13 @@ export const HorizontalCard = React.memo(function HorizontalCard({
           {
             borderColor,
             borderWidth: 3,
-            // "D": flat left edge (toward text), rounded right edge (toward the
-            // screen edge) — matches the RTL layout.
-            borderTopLeftRadius: normalize.radius(14),
-            borderBottomLeftRadius: normalize.radius(14),
-            borderTopRightRadius: normalize.height(44),
-            borderBottomRightRadius: normalize.height(44),
+            // "D": nearly-flat left edge (toward the text) and a full semicircle
+            // right edge (toward the screen). A large right radius caps to
+            // height/2 so the right side is always a complete half-circle.
+            borderTopLeftRadius: normalize.radius(8),
+            borderBottomLeftRadius: normalize.radius(8),
+            borderTopRightRadius: 999,
+            borderBottomRightRadius: 999,
             overflow: "hidden",
             backgroundColor: "#fff",
           },
