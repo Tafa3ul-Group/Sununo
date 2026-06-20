@@ -87,11 +87,15 @@ const styles = StyleSheet.create({
     marginVertical: 15 },
   otpContainer: {
     flexDirection: 'row',
+    // OTP digits are always read left-to-right; force LTR so they don't get
+    // reversed when the app content direction is RTL (Arabic).
+    direction: 'ltr',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8 },
   digitWrapper: {
     flexDirection: 'row',
+    direction: 'ltr',
     alignItems: 'center' },
   digitBox: {
     width: normalize.width(42),

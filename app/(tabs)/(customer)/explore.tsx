@@ -9,8 +9,10 @@ import {
   SolarMagnifierBold,
   SolarMapBoldDuotone,
   SolarMapPointBold,
+  SolarMoonBold,
   SolarSettingsBold,
   SolarStarBold,
+  SolarSunBold,
   SolarTreeBold,
   SolarUsersGroupBold,
   SolarWaterBold,
@@ -995,65 +997,95 @@ export default function ExploreScreen() {
                         />
                         <View style={{ gap: 10, marginBottom: 10 }}>
                           {(chaletDetails.shifts || []).map(
-                            (shift: any, index: number) => (
-                              <View
-                                key={shift.id || index}
-                                style={{
-                                  backgroundColor: "#F3F7FF",
-                                  borderRadius: 12,
-                                  padding: 12,
-                                  alignItems: "center",
-                                  gap: 12,
-                                  flexDirection: "row",
-                                  direction: isRTL ? "rtl" : "ltr",
-                                }}
-                              >
+                            (shift: any, index: number) => {
+                              const validShiftPrices =
+                                shift.pricing
+                                  ?.map((p: any) => Number(p.price))
+                                  .filter((p: number) => p > 1) || [];
+                              const minShiftPrice =
+                                validShiftPrices.length > 0
+                                  ? Math.min(...validShiftPrices).toLocaleString()
+                                  : null;
+                              const isMorning =
+                                shift.type === "MORNING" ||
+                                shift.name?.en
+                                  ?.toLowerCase()
+                                  .includes("morning") ||
+                                shift.name?.ar?.includes("صباح");
+                              return (
                                 <View
+                                  key={shift.id || index}
                                   style={{
-                                    width: 40,
-                                    height: 40,
-                                    borderRadius: 20,
-                                    backgroundColor: "white",
-                                    justifyContent: "center",
+                                    backgroundColor: "#F3F7FF",
+                                    borderRadius: 12,
+                                    padding: 12,
                                     alignItems: "center",
+                                    gap: 12,
+                                    flexDirection: "row",
+                                    direction: isRTL ? "rtl" : "ltr",
                                   }}
                                 >
-                                  <SolarClockCircleBold
-                                    size={20}
-                                    color={Colors.primary}
-                                  />
-                                </View>
-                                <View
-                                  style={{
-                                    flex: 1,
-                                    alignItems: isRTL ? "flex-end" : "flex-start",
-                                  }}
-                                >
-                                  <ThemedText
+                                  <View
                                     style={{
-                                      fontSize: 14,
-                                      fontFamily: "Alexandria-Medium",
-                                      color: "#1F2937",
+                                      width: 40,
+                                      height: 40,
+                                      borderRadius: 20,
+                                      backgroundColor: "white",
+                                      justifyContent: "center",
+                                      alignItems: "center",
                                     }}
                                   >
-                                    {isRTL
-                                      ? shift.name?.ar || shift.name
-                                      : shift.name?.en || shift.name}
-                                  </ThemedText>
-                                  <ThemedText
+                                    {isMorning ? (
+                                      <SolarSunBold size={22} color="#FBBF24" />
+                                    ) : (
+                                      <SolarMoonBold size={22} color="#6366F1" />
+                                    )}
+                                  </View>
+                                  <View
                                     style={{
-                                      fontSize: 8,
-                                      fontFamily: "Alexandria-Medium",
-                                      color: "#6B7280",
-                                      marginTop: 2,
+                                      flex: 1,
+                                      alignItems: isRTL
+                                        ? "flex-end"
+                                        : "flex-start",
                                     }}
                                   >
-                                    {formatShiftTime(shift.startTime)} -{" "}
-                                    {formatShiftTime(shift.endTime)}
-                                  </ThemedText>
+                                    <ThemedText
+                                      style={{
+                                        fontSize: 14,
+                                        fontFamily: "Alexandria-Medium",
+                                        color: "#1F2937",
+                                      }}
+                                    >
+                                      {isRTL
+                                        ? shift.name?.ar || shift.name
+                                        : shift.name?.en || shift.name}
+                                    </ThemedText>
+                                    <ThemedText
+                                      style={{
+                                        fontSize: 8,
+                                        fontFamily: "Alexandria-Medium",
+                                        color: "#6B7280",
+                                        marginTop: 2,
+                                      }}
+                                    >
+                                      {formatShiftTime(shift.startTime)} -{" "}
+                                      {formatShiftTime(shift.endTime)}
+                                    </ThemedText>
+                                  </View>
+                                  {minShiftPrice && (
+                                    <ThemedText
+                                      style={{
+                                        fontSize: 13,
+                                        fontFamily: "Alexandria-Medium",
+                                        color: Colors.primary,
+                                      }}
+                                    >
+                                      {minShiftPrice} {isRTL ? "د.ع" : "IQD"}
+                                    </ThemedText>
+                                  )}
                                 </View>
-                              </View>
-                            ),
+                              );
+                            },
                           )}
                         </View>
                       </Animated.View>
@@ -1171,7 +1203,7 @@ export default function ExploreScreen() {
                         />
                         <View
                           style={{
-                            alignItems: "flex-start",
+                            width: "100%",
                             marginBottom: 10,
                           }}
                         >
@@ -1180,7 +1212,9 @@ export default function ExploreScreen() {
                               fontSize: 14,
                               color: "#64748B",
                               lineHeight: 22,
+                              width: "100%",
                               textAlign: textStart,
+                              writingDirection: isRTL ? "rtl" : "ltr",
                             }}
                           >
                             {isRTL
