@@ -2,7 +2,7 @@
   "expo": {
     "name": "Sununo",
     "slug": "Sununo",
-    "version": "1.0.0",
+    "version": "2.1.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "sununo",
@@ -14,14 +14,13 @@
         "NSLocationWhenInUseUsageDescription": "نحتاج الوصول لموقعك لإظهار الشاليهات القريبة منك وتحديد موقع شاليك على الخارطة.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "نحتاج الوصول لموقعك لإظهار الشاليهات القريبة منك وتحديد موقع شاليك على الخارطة.",
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "appleTeamId": "UD89399RJ8"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#045CFB",
+        "foregroundImage": "./assets/images/android-icon-foreground.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
