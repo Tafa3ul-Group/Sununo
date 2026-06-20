@@ -15,6 +15,7 @@ import {
   SolarForbiddenCircleLineDuotone,
   SolarMoonBold,
   SolarSunBold,
+  SolarWidgetBold,
 } from "@/components/icons/solar-icons";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { useFormatTime } from "@/hooks/useFormatTime";
@@ -180,14 +181,15 @@ export function ChaletDetailsBody({
         ))}
       </View>
 
-      {/* Get directions (drawer only) */}
+      {/* Get directions (drawer only) — full width */}
       {showRouteButton && (
-        <View style={{ marginTop: 16 }}>
+        <View style={{ marginTop: 16, width: "100%" }}>
           <SecondaryButton
             label={isRTL ? "اذهب للمسار" : "Get Directions"}
             isActive
             activeColor="#22C55E"
             activeTextColor="#FFFFFF"
+            style={{ width: "100%" }}
             icon={
               <Svg width={18} height={18} viewBox="0 0 20 20" fill="none">
                 <Path
@@ -316,15 +318,17 @@ export function ChaletDetailsBody({
                   <Svg height={55} width={55} viewBox="0 0 60 60">
                     <Path d={f.shapePath} fill={f.shapeColor} />
                   </Svg>
-                  {f.iconUrl ? (
-                    <View style={styles.iconInShape}>
+                  <View style={styles.iconInShape}>
+                    {f.iconUrl ? (
                       <ExpoImage
                         source={f.iconUrl}
                         style={styles.facilityIcon}
                         contentFit="contain"
                       />
-                    </View>
-                  ) : null}
+                    ) : (
+                      <SolarWidgetBold size={22} color="white" />
+                    )}
+                  </View>
                 </View>
                 <ThemedText style={styles.facilityLabelText}>
                   {f.label}
@@ -335,21 +339,25 @@ export function ChaletDetailsBody({
         </>
       )}
 
-      {/* Overview */}
-      <SectionHeader
-        title={isRTL ? "نظرة عامة" : "Overview"}
-        isRTL={isRTL}
-      />
-      <View style={styles.descriptionContainer}>
-        <ThemedText
-          style={[
-            styles.descriptionText,
-            { textAlign, writingDirection: isRTL ? "rtl" : "ltr" },
-          ]}
-        >
-          {description}
-        </ThemedText>
-      </View>
+      {/* Overview — only when the owner actually wrote one */}
+      {description ? (
+        <>
+          <SectionHeader
+            title={isRTL ? "نظرة عامة" : "Overview"}
+            isRTL={isRTL}
+          />
+          <View style={styles.descriptionContainer}>
+            <ThemedText
+              style={[
+                styles.descriptionText,
+                { textAlign, writingDirection: isRTL ? "rtl" : "ltr" },
+              ]}
+            >
+              {description}
+            </ThemedText>
+          </View>
+        </>
+      ) : null}
 
       {/* Location */}
       <SectionHeader title={isRTL ? "الموقع" : "Location"} isRTL={isRTL} />
@@ -469,14 +477,13 @@ const styles = StyleSheet.create({
   facilitiesGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "flex-start",
+    justifyContent: "space-between",
     marginVertical: 10,
-    gap: 10,
   },
   facilityCell: {
-    width: (SCREEN_WIDTH - 64) / 4,
+    width: "23%",
     alignItems: "center",
-    marginBottom: 15,
+    marginBottom: 18,
     minWidth: 0,
   },
   shapeCont: {
