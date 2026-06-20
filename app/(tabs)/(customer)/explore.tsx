@@ -23,6 +23,7 @@ import {
 import { ThemedText } from "@/components/themed-text";
 import { AppMap } from "@/components/user/app-map";
 import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
+import { ChaletDetailsBody } from "@/components/chalet/chalet-details-body";
 import { LoginPromptModal } from "@/components/user/login-prompt-modal";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { SecondaryButton } from "@/components/user/secondary-button";
@@ -875,115 +876,9 @@ export default function ExploreScreen() {
                 </View>
               </View>
 
-              {/* Title + Rating Row */}
-              <View
-                style={[styles.mainInfoRow, { flexDirection: "row", direction: isRTL ? "rtl" : "ltr" }]}
-              >
-                {/* Title and Location - first child = END side in RTL */}
-                <View
-                  style={styles.titleSection}
-                >
-                  <ThemedText
-                    style={[styles.chaletTitleMain, { textAlign: isRTL ? "left" : "right" }]}
-                    numberOfLines={2}
-                  >
-                    {typeof selectedChalet?.title === "string"
-                      ? selectedChalet.title
-                      : (isRTL
-                          ? selectedChalet?.title?.ar
-                          : selectedChalet?.title?.en) || ""}
-                  </ThemedText>
-                  <ThemedText style={[styles.chaletLocationSub, { textAlign: isRTL ? "left" : "right" }]}>
-                    {typeof selectedChalet?.location === "string"
-                      ? selectedChalet.location
-                      : (isRTL
-                          ? selectedChalet?.location?.ar
-                          : selectedChalet?.location?.en) || ""}
-                  </ThemedText>
-                </View>
-
-                {/* Rating - second child = START side in RTL */}
-                <View style={[styles.ratingSection, { flexDirection: "row", direction: isRTL ? "rtl" : "ltr" }]}>
-                  <ThemedText style={styles.ratingValue}>
-                    {selectedChalet.rating ? Number(selectedChalet.rating).toFixed(1) : (isRTL ? "جديد" : "New")}
-                  </ThemedText>
-                  <SolarStarBold size={20} color={Colors.primary} />
-                </View>
-              </View>
-
-              {/* Specifications Section */}
-              <View style={styles.specsSection}>
-                <SectionHeader
-                  title={isRTL ? "المواصفات الاساسية" : "Basic Specifications"}
-                  isRTL={isRTL}
-                />
-                <View style={[styles.specsContainer, { flexDirection: "row", direction: isRTL ? "rtl" : "ltr", flexWrap: "wrap" }]}>
-                  {selectedChalet.category && (
-                    <View style={styles.specChip}>
-                      <ThemedText style={styles.specText}>
-                        {typeof selectedChalet.category === "string"
-                          ? selectedChalet.category
-                          : (isRTL ? selectedChalet.category?.ar : selectedChalet.category?.en) || (isRTL ? "بستان مع بيت" : "Garden with house")}
-                      </ThemedText>
-                    </View>
-                  )}
-                  {!selectedChalet.category && (
-                    <View style={styles.specChip}>
-                      <ThemedText style={styles.specText}>
-                        {isRTL ? "بستان مع بيت" : "Garden with house"}
-                      </ThemedText>
-                    </View>
-                  )}
-                  <View style={styles.specChip}>
-                    <ThemedText style={styles.specText}>
-                      {selectedChalet.area || 0} {isRTL ? "م" : "m"}
-                    </ThemedText>
-                  </View>
-                  <View style={styles.specChip}>
-                    <ThemedText style={styles.specText}>
-                      {selectedChalet.bathrooms || 0} {isRTL ? "حمام" : "Bath"}
-                    </ThemedText>
-                  </View>
-                  <View style={styles.specChip}>
-                    <ThemedText style={styles.specText}>
-                      {selectedChalet.bedrooms || 0} {isRTL ? "غرف" : "Rooms"}
-                    </ThemedText>
-                  </View>
-                </View>
-              </View>
-
-              {/* Go to Route Button */}
-              <View style={styles.routeButtonContainer}>
-                <SecondaryButton
-                  label={isRTL ? "اذهب للمسار" : "Get Directions"}
-                  isActive={true}
-                  activeColor="#22C55E"
-                  activeTextColor="#FFFFFF"
-                  icon={
-                    <Svg width={18} height={18} viewBox="0 0 20 20" fill="none">
-                      <Path d="M13.3023 8.21378C13.3526 8.18866 13.4075 8.174 13.4637 8.17068C13.5198 8.16735 13.5761 8.17543 13.629 8.19443C13.682 8.21343 13.7305 8.24296 13.7718 8.28123C13.813 8.3195 13.846 8.36572 13.8689 8.41712L17.3631 16.2521C17.9189 17.4979 16.6839 18.7913 15.5281 18.1738L10.6081 15.5471C10.2248 15.3429 9.77476 15.3429 9.39226 15.5471L4.47226 18.1738C3.31642 18.7913 2.08142 17.4988 2.63726 16.2521L3.94726 13.3146C4.10441 12.9623 4.37891 12.6755 4.72392 12.5029L13.3023 8.21378Z" fill="white"/>
-                      <Path opacity={0.5} d="M12.8251 7.0554C12.9213 7.00754 12.9953 6.9244 13.0316 6.82331C13.0679 6.72223 13.0638 6.61103 13.0201 6.5129L11.2276 2.49373C10.736 1.39123 9.26513 1.39123 8.77346 2.49373L5.4668 9.90873C5.43182 9.98715 5.42193 10.0745 5.43847 10.1587C5.45501 10.243 5.49717 10.32 5.55919 10.3794C5.62121 10.4388 5.70006 10.4776 5.78496 10.4904C5.86985 10.5033 5.95664 10.4896 6.03346 10.4512L12.8251 7.0554Z" fill="white"/>
-                    </Svg>
-                  }
-                  iconPosition={isRTL ? "left" : "right"}
-                  onPress={() => {
-                    if (selectedChalet?.coordinates) {
-                      const lat = selectedChalet.coordinates[1];
-                      const lng = selectedChalet.coordinates[0];
-                      const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
-                      Linking.openURL(url);
-                    }
-                  }}
-                  style={{ flex: 1 }}
-                  height={52}
-                />
-              </View>
-
-              {/* Full Details Content — always rendered so every section is
-                  present and correctly ordered from first appearance, matching
-                  the single chalet detail page. */}
+              {/* Unified chalet detail body — shared with the single chalet page */}
               <View style={{ marginTop: 20 }}>
-                  {isDetailsLoading ? (
+                  {isDetailsLoading || !chaletFullDetails ? (
                     <ActivityIndicator
                       size="small"
                       color={Colors.primary}
@@ -991,318 +886,30 @@ export default function ExploreScreen() {
                     />
                   ) : (
                     <>
-                      {/* Shifts Section */}
-                      <Animated.View
-                        entering={FadeInUp.delay(50).duration(300)}
-                      >
-                        <SectionHeader
-                          title={
-                            isRTL ? "الشفتات المتوفرة" : "Available Shifts"
+                      <ChaletDetailsBody
+                        chalet={chaletDetails}
+                        showRouteButton
+                        onRoutePress={() => {
+                          if (selectedChalet?.coordinates) {
+                            const lat = selectedChalet.coordinates[1];
+                            const lng = selectedChalet.coordinates[0];
+                            const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+                            Linking.openURL(url);
                           }
-                          isRTL={isRTL}
-                        />
-                        <View style={{ gap: 10, marginBottom: 10 }}>
-                          {(chaletDetails.shifts || []).map(
-                            (shift: any, index: number) => {
-                              const validShiftPrices =
-                                shift.pricing
-                                  ?.map((p: any) => Number(p.price))
-                                  .filter((p: number) => p > 1) || [];
-                              const minShiftPrice =
-                                validShiftPrices.length > 0
-                                  ? Math.min(...validShiftPrices).toLocaleString()
-                                  : null;
-                              const isMorning =
-                                shift.type === "MORNING" ||
-                                shift.name?.en
-                                  ?.toLowerCase()
-                                  .includes("morning") ||
-                                shift.name?.ar?.includes("صباح");
-                              return (
-                                <View
-                                  key={shift.id || index}
-                                  style={{
-                                    backgroundColor: "#F3F7FF",
-                                    borderRadius: 12,
-                                    padding: 12,
-                                    alignItems: "center",
-                                    gap: 12,
-                                    flexDirection: "row",
-                                    direction: isRTL ? "rtl" : "ltr",
-                                  }}
-                                >
-                                  <View
-                                    style={{
-                                      width: 40,
-                                      height: 40,
-                                      borderRadius: 20,
-                                      backgroundColor: "white",
-                                      justifyContent: "center",
-                                      alignItems: "center",
-                                    }}
-                                  >
-                                    {isMorning ? (
-                                      <SolarSunBold size={22} color="#FBBF24" />
-                                    ) : (
-                                      <SolarMoonBold size={22} color="#6366F1" />
-                                    )}
-                                  </View>
-                                  <View
-                                    style={{
-                                      flex: 1,
-                                      alignItems: isRTL
-                                        ? "flex-end"
-                                        : "flex-start",
-                                    }}
-                                  >
-                                    <ThemedText
-                                      style={{
-                                        fontSize: 14,
-                                        fontFamily: "Alexandria-Medium",
-                                        color: "#1F2937",
-                                      }}
-                                    >
-                                      {isRTL
-                                        ? shift.name?.ar || shift.name
-                                        : shift.name?.en || shift.name}
-                                    </ThemedText>
-                                    <ThemedText
-                                      style={{
-                                        fontSize: 8,
-                                        fontFamily: "Alexandria-Medium",
-                                        color: "#6B7280",
-                                        marginTop: 2,
-                                      }}
-                                    >
-                                      {formatShiftTime(shift.startTime)} -{" "}
-                                      {formatShiftTime(shift.endTime)}
-                                    </ThemedText>
-                                  </View>
-                                  {minShiftPrice && (
-                                    <ThemedText
-                                      style={{
-                                        fontSize: 13,
-                                        fontFamily: "Alexandria-Medium",
-                                        color: Colors.primary,
-                                      }}
-                                    >
-                                      {minShiftPrice} {isRTL ? "د.ع" : "IQD"}
-                                    </ThemedText>
-                                  )}
-                                </View>
-                              );
-                            },
-                          )}
-                        </View>
-                      </Animated.View>
-
-                      {/* Facilities Section */}
-                      <Animated.View
-                        entering={FadeInUp.delay(100).duration(300)}
-                      >
-                        <View
-                          style={{
-                            flexDirection: "row",
-                            direction: isRTL ? "rtl" : "ltr",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                          }}
-                        >
-                          <SectionHeader
-                            title={isRTL ? "المرافق" : "Facilities"}
-                            isRTL={isRTL}
+                        }}
+                        onSeeAllFacilities={() =>
+                          router.push(
+                            `/chalet-details/facilities/${selectedChalet.id}`,
+                          )
+                        }
+                        mapNode={
+                          <Image
+                            source={{ uri: mapImageUri }}
+                            style={{ width: "100%", height: "100%" }}
+                            resizeMode="cover"
                           />
-                          {(chaletDetails.chaletFeatures || []).length > 8 && (
-                            <TouchableOpacity
-                              onPress={() =>
-                                router.push(
-                                  `/chalet-details/facilities/${selectedChalet.id}`,
-                                )
-                              }
-                            >
-                              <ThemedText
-                                style={{
-                                  color: Colors.primary,
-                                  fontSize: 12,
-                                  fontFamily: "Alexandria-Medium",
-                                }}
-                              >
-                                {isRTL ? "عرض الكل" : "See all"}
-                              </ThemedText>
-                            </TouchableOpacity>
-                          )}
-                        </View>
-                        <View
-                          style={{
-                            flexDirection: "row",
-                            direction: isRTL ? "rtl" : "ltr",
-                            flexWrap: "wrap",
-                            justifyContent: "space-between",
-                            marginVertical: 15,
-                          }}
-                        >
-                          {(chaletDetails.chaletFeatures || []).slice(0, 8).map(
-                            (item: any, idx: number) => {
-                              const feature = item.feature || item;
-                              const Icon =
-                                FEATURE_ICON_MAP[feature.icon] ||
-                                SolarWidgetBold;
-                              return (
-                                <View
-                                  key={idx}
-                                  style={{
-                                    width: "23%",
-                                    alignItems: "center",
-                                    marginBottom: 20,
-                                  }}
-                                >
-                                  <View
-                                    style={{
-                                      width: 55,
-                                      height: 55,
-                                      justifyContent: "center",
-                                      alignItems: "center",
-                                    }}
-                                  >
-                                    <Svg
-                                      height={55}
-                                      width={55}
-                                      viewBox="0 0 60 60"
-                                    >
-                                      <Path
-                                        d={SHAPES.blue}
-                                        fill={
-                                          CARD_COLORS[idx % CARD_COLORS.length]
-                                        }
-                                      />
-                                    </Svg>
-                                    <View style={{ position: "absolute" }}>
-                                      <Icon size={22} color="white" />
-                                    </View>
-                                  </View>
-                                  <ThemedText
-                                    style={{
-                                      fontSize: 8,
-                                      fontFamily: "Alexandria-Medium",
-                                      marginTop: 6,
-                                      textAlign: "center",
-                                    }}
-                                  >
-                                    {isRTL
-                                      ? feature.name?.ar
-                                      : feature.name?.en}
-                                  </ThemedText>
-                                </View>
-                              );
-                            },
-                          )}
-                        </View>
-                      </Animated.View>
-
-                      {/* Overview Section */}
-                      <Animated.View
-                        entering={FadeInUp.delay(150).duration(300)}
-                      >
-                        <SectionHeader
-                          title={isRTL ? "نظرة عامة" : "Overview"}
-                          isRTL={isRTL}
-                        />
-                        <View
-                          style={{
-                            width: "100%",
-                            marginBottom: 10,
-                          }}
-                        >
-                          <ThemedText
-                            style={{
-                              fontSize: 14,
-                              color: "#64748B",
-                              lineHeight: 22,
-                              width: "100%",
-                              textAlign: textStart,
-                              writingDirection: isRTL ? "rtl" : "ltr",
-                            }}
-                          >
-                            {isRTL
-                              ? chaletDetails.description?.ar
-                              : chaletDetails.description?.en}
-                          </ThemedText>
-                        </View>
-                      </Animated.View>
-
-                      {/* Location Section — kept before Host to match the
-                          single chalet detail page order. */}
-                      <Animated.View
-                        entering={FadeInUp.delay(200).duration(300)}
-                      >
-                        <SectionHeader
-                          title={isRTL ? "الموقع" : "Location"}
-                          isRTL={isRTL}
-                        />
-                        <View style={styles.mapCardFlat}>
-                          <View style={styles.mapInner}>
-                            <Image
-                              source={{ uri: mapImageUri }}
-                              style={{ width: "100%", height: "100%" }}
-                              resizeMode="cover"
-                            />
-                          </View>
-                          <View
-                            style={{
-                              paddingVertical: 14,
-                              alignItems: "center",
-                              backgroundColor: "white",
-                              borderBottomLeftRadius: 20,
-                              borderBottomRightRadius: 20,
-                            }}
-                          >
-                            <ThemedText
-                              style={{
-                                fontSize: 14,
-                                fontFamily: "Alexandria-Medium",
-                                color: Colors.primary,
-                              }}
-                            >
-                              {isRTL
-                                ? chaletDetails.region?.name?.ar
-                                : chaletDetails.region?.name?.en ||
-                                  chaletDetails.address?.ar ||
-                                  chaletDetails.address?.en ||
-                                  ""}
-                            </ThemedText>
-                            <ThemedText
-                              style={{
-                                fontSize: 8,
-                                color: "#64748B",
-                                fontFamily: "Alexandria-Medium",
-                                marginTop: 2,
-                              }}
-                            >
-                              {isRTL
-                                ? "انقر لرؤية الموقع بدقة"
-                                : "Click to see precise location"}
-                            </ThemedText>
-                          </View>
-                        </View>
-                      </Animated.View>
-
-                      {/* Host Section */}
-                      <Animated.View
-                        entering={FadeInUp.delay(250).duration(300)}
-                      >
-                        <HostContactCard
-                          name={
-                            chaletDetails.owner?.name ||
-                            (isRTL ? "المضيف" : "Host")
-                          }
-                          avatar={
-                            chaletDetails.owner?.image
-                              ? getImageSrc(chaletDetails.owner.image)
-                              : null
-                          }
-                          isRTL={isRTL}
-                        />
-                      </Animated.View>
+                        }
+                      />
 
                       {/* Reviews Section */}
                       <Animated.View
