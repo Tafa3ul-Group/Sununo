@@ -25,6 +25,7 @@ import {
     ActivityIndicator,
     Alert,
     Dimensions,
+    I18nManager,
     Image,
     KeyboardAvoidingView,
     Modal,
@@ -45,6 +46,10 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 export default function ProfileEditScreen() {
   const router = useRouter();
   const { isRTL, textAlign } = useDirection();
+  // I18nManager-aware "start" alignment so labels sit right in Arabic on both
+  // native LTR and native RTL devices (matches the title pattern).
+  const alignStart: "flex-start" | "flex-end" =
+    isRTL === I18nManager.isRTL ? "flex-start" : "flex-end";
     const { user: authUser } = useSelector((state: RootState) => state.auth);
 
   const { data: meData, refetch } = useGetMeQuery(undefined);
@@ -234,7 +239,7 @@ export default function ProfileEditScreen() {
 
             {/* الاسم الكامل */}
             <View style={styles.fieldGroup}>
-              <ThemedText style={styles.label}>
+              <ThemedText style={[styles.label, { alignSelf: alignStart }]}>
                 {isRTL ? 'الاسم الكامل' : 'Full Name'}
               </ThemedText>
               <View style={styles.inputWrapper}>
@@ -250,7 +255,7 @@ export default function ProfileEditScreen() {
 
             {/* تاريخ الميلاد */}
             <View style={styles.fieldGroup}>
-              <ThemedText style={styles.label}>
+              <ThemedText style={[styles.label, { alignSelf: alignStart }]}>
                 {isRTL ? 'تاريخ الميلاد' : 'Date of Birth'}
               </ThemedText>
               <TouchableOpacity
@@ -292,7 +297,7 @@ export default function ProfileEditScreen() {
 
             {/* رقم الهاتف */}
             <View style={styles.fieldGroup}>
-              <ThemedText style={styles.label}>
+              <ThemedText style={[styles.label, { alignSelf: alignStart }]}>
                 {isRTL ? 'رقم الهاتف' : 'Phone Number'}
               </ThemedText>
               <View style={[styles.phoneRow, { flexDirection: 'row' }]}>
@@ -495,12 +500,10 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   label: {
-    width: '100%',
     fontSize: normalize.font(8),
     fontFamily: "Alexandria-Medium",
     color: '#374151',
     marginBottom: normalize.height(6),
-    textAlign: 'right',
   },
   inputWrapper: {
     backgroundColor: '#FFFFFF',
