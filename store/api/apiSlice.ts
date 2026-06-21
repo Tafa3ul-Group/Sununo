@@ -329,7 +329,14 @@ export const apiSlice = createApi({
       query: () => "/customer/amenities/filter",
       transformResponse: (res: any) => {
         const categories = Array.isArray(res) ? res : res?.data || [];
-        return categories.flatMap((cat: any) => cat?.features || []);
+        // Flatten to features; fall back to the category icon when a feature
+        // has none, so every filter chip shows a meaningful icon.
+        return categories.flatMap((cat: any) =>
+          (cat?.features || []).map((f: any) => ({
+            ...f,
+            icon: f?.icon || cat?.icon || null,
+          })),
+        );
       },
     }),
 
