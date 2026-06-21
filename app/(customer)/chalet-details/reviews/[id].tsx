@@ -152,7 +152,11 @@ export default function ReviewsScreen() {
         <View
           style={[
             styles.filterContainer,
-            { alignItems: isRTL ? "flex-end" : "flex-start" },
+            {
+              flexDirection: "row",
+              direction: isRTL ? "rtl" : "ltr",
+              justifyContent: "flex-start",
+            },
           ]}
         >
           <SecondarySelect
