@@ -1,19 +1,22 @@
-const { withDangerousMod } = require("@expo/config-plugins");
+const { withDangerousMod } = require("expo/config-plugins");
 const fs = require("fs");
 const path = require("path");
 
 /**
- * RNFirebase + `useFrameworks: "static"` makes the Firebase pods build as
- * framework modules that #import React Native's non-modular headers
- * (RCTBridgeModule.h, RCTEventEmitter.h). Xcode rejects this with
- * `-Werror,-Wnon-modular-include-in-framework-module` and the build fails.
+ * iOS Podfile tweaks required for @react-native-firebase to build alongside
+ * React Native's New Architecture WITHOUT `useFrameworks` (which conflicts with
+ * Mapbox/Hermes and makes RNFirebase build as a framework module that can't
+ * import React's headers — "RCTBridgeModule must be imported from module").
  *
- * This config plugin injects a post_install setting that allows those includes
- * for every pod target — the standard fix for RNFirebase-on-Expo iOS builds.
- * It runs on every `expo prebuild`, so the fix survives Continuous Native
- * Generation (the /ios folder is git-ignored and regenerated).
+ * Instead we build everything as static libraries and:
+ *  1) enable `use_modular_headers!` so Firebase's Swift pods
+ *     (FirebaseCoreInternal → GoogleUtilities) get module maps, and
+ *  2) keep CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES as a safety net.
+ *
+ * Runs on every `expo prebuild`, so it survives Continuous Native Generation
+ * (the /ios folder is git-ignored and regenerated).
  */
-const SNIPPET =
+const POST_INSTALL_SNIPPET =
   "    installer.pods_project.targets.each do |__rnfb_target|\n" +
   "      __rnfb_target.build_configurations.each do |__rnfb_config|\n" +
   "        __rnfb_config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'\n" +
@@ -29,6 +32,17 @@ module.exports = function withNonModularHeaders(config) {
         "Podfile",
       );
       let contents = fs.readFileSync(podfilePath, "utf-8");
+
+      // 1) Enable modular headers globally — required for Firebase's Swift pods
+      //    to build as static libraries.
+      if (!contents.includes("use_modular_headers!")) {
+        contents = contents.replace(
+          /(platform :ios[^\n]*\n)/,
+          "$1use_modular_headers!\n",
+        );
+      }
+
+      // 2) Safety net for any remaining non-modular includes.
       if (
         !contents.includes(
           "CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES",
@@ -36,10 +50,11 @@ module.exports = function withNonModularHeaders(config) {
       ) {
         contents = contents.replace(
           /(post_install do \|installer\|\n)/,
-          `$1${SNIPPET}`,
+          `$1${POST_INSTALL_SNIPPET}`,
         );
-        fs.writeFileSync(podfilePath, contents);
       }
+
+      fs.writeFileSync(podfilePath, contents);
       return cfg;
     },
   ]);

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Sununo",
     "slug": "Sununo",
-    "version": "2.1.1",
+    "version": "3.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "sununo",
@@ -77,8 +77,7 @@
           },
           "ios": {
             "newArchEnabled": true,
-            "deploymentTarget": "15.1",
-            "useFrameworks": "static"
+            "deploymentTarget": "15.1"
           }
         }
       ],
