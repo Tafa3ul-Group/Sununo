@@ -87,7 +87,8 @@
   "notifications": {
     "today": "Today",
     "yesterday": "Yesterday",
-    "empty": "No notifications yet"
+    "empty": "No notifications yet",
+    "emptyDesc": "We'll let you know here when there's something new."
   },
   "dashboard": {
     "addChalet": "Add New Chalet",

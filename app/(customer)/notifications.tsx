@@ -4,9 +4,10 @@ import { StyleSheet, View, ScrollView, TouchableOpacity, Dimensions, ActivityInd
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, normalize, Shadows } from '../../constants/theme';
 import { ThemedText } from '@/components/themed-text';
-import { SolarAltArrowRightBold } from "@/components/icons/solar-icons";
+import { SolarAltArrowRightBold, SolarBellBold } from "@/components/icons/solar-icons";
 import { useRouter } from 'expo-router';
 import { HeaderSection } from '@/components/header-section';
+import { EmptyState } from '@/components/ui/empty-state';
 import { useGetNotificationsQuery, useMarkNotificationAsReadMutation } from '@/store/api/customerApiSlice';
 import { useDirection } from '@/i18n';
 
@@ -166,11 +167,12 @@ export default function NotificationsScreen() {
 
                 {/* Empty state */}
                 {!isLoading && groupedNotifications.today.length === 0 && groupedNotifications.yesterday.length === 0 && groupedNotifications.older.length === 0 && (
-                    <View style={{ alignItems: 'center', paddingTop: 80 }}>
-                        <ThemedText style={{ fontSize: 12, color: '#9CA3AF', fontFamily: "Alexandria-Medium" }}>
-                            {isArabic ? 'لا توجد إشعارات' : 'No notifications'}
-                        </ThemedText>
-                    </View>
+                    <EmptyState
+                        icon={<SolarBellBold size={normalize.width(80)} color={Colors.text.muted} />}
+                        title={t('notifications.empty')}
+                        description={t('notifications.emptyDesc')}
+                        style={{ paddingTop: normalize.height(80) }}
+                    />
                 )}
             </ScrollView>
         </SafeAreaView>

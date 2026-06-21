@@ -87,7 +87,8 @@
   "notifications": {
     "today": "اليوم",
     "yesterday": "امس",
-    "empty": "لا توجد اشعارات حتى الآن"
+    "empty": "لا توجد اشعارات حتى الآن",
+    "emptyDesc": "سنخبرك هنا عند وجود أي جديد."
   },
   "dashboard": {
     "addChalet": "إضافة شاليه جديد",

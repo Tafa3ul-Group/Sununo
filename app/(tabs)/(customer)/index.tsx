@@ -1,4 +1,4 @@
-import { Redirect, useRouter } from "expo-router";
+import { Redirect, useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -350,6 +350,10 @@ export default function HomeScreen() {
     [latestBookings],
   );
 
+  // Bumping this key remounts the preview map so it re-centers on the nearby
+  // chalets / user location (e.g. after returning from a chalet, or on refresh).
+  const [mapKey, setMapKey] = useState(0);
+
   const [isRefreshing, setIsRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -359,8 +363,23 @@ export default function HomeScreen() {
       userType !== "guest" ? refetchFavorites() : Promise.resolve(),
       userType !== "guest" ? refetchLatestBookings() : Promise.resolve(),
     ]);
+    setMapKey((k) => k + 1);
     setIsRefreshing(false);
   }, [refetchBanners, refetchChalets, refetchFavorites, refetchLatestBookings, userType]);
+
+  // Keep the home screen fresh: whenever it regains focus (e.g. coming back from
+  // a chalet), refetch the lists and reset the preview map to nearby chalets.
+  useFocusEffect(
+    useCallback(() => {
+      refetchBanners();
+      refetchChalets();
+      if (userType !== "guest") {
+        refetchFavorites();
+        refetchLatestBookings();
+      }
+      setMapKey((k) => k + 1);
+    }, [refetchBanners, refetchChalets, refetchFavorites, refetchLatestBookings, userType]),
+  );
 
   const handleToggleFavorite = async (id: string) => {
     try {
@@ -557,6 +576,7 @@ export default function HomeScreen() {
           style={styles.mapContainer}
         >
           <AppMap
+            key={mapKey}
             style={styles.map}
             showMarker
             markers={mapMarkers}
