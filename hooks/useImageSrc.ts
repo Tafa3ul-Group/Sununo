@@ -15,10 +15,12 @@ export function processImageId(imageId: string | null | undefined): any {
     return null;
   }
 
-  // If it's a local upload from the API server, prepend API URL
-  if (imageId.startsWith('/uploads/')) {
+  // If it's a local upload from the API server, prepend API URL.
+  // Handles both "/uploads/..." and "uploads/..." (no leading slash).
+  if (imageId.startsWith('/uploads/') || imageId.startsWith('uploads/')) {
     const apiBaseUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
-    return { uri: `${apiBaseUrl}${imageId}` };
+    const path = imageId.startsWith('/') ? imageId : `/${imageId}`;
+    return { uri: `${apiBaseUrl}${path}` };
   }
 
   // Check if imageId is already a complete URL or a local file path

@@ -322,21 +322,36 @@ export const apiSlice = createApi({
       query: () => "/provider/chalets/amenities/all",
     }),
 
-    // Amenities the admin chose to show as quick filter chips on the home screen.
-    // The endpoint returns features (flagged showInFilter) grouped by category;
-    // the home chips filter by feature id, so flatten to a single feature list.
+    // Amenities the admin flagged (showInFilter) to show as quick filter chips.
+    // The home chips filter chalets by feature id, so we always return a flat
+    // feature list. A feature with no icon falls back to its category icon.
     getHomeFilterAmenities: builder.query<any[], void>({
       query: () => "/customer/amenities/filter",
       transformResponse: (res: any) => {
-        const categories = Array.isArray(res) ? res : res?.data || [];
-        // Flatten to features; fall back to the category icon when a feature
-        // has none, so every filter chip shows a meaningful icon.
-        return categories.flatMap((cat: any) =>
-          (cat?.features || []).map((f: any) => ({
+        const body = res?.data ?? res;
+
+        // Shape A — { categories: [...], features: [{ ..., categoryId }] }
+        if (body && Array.isArray(body.features)) {
+          const catIcon = new Map<string, any>(
+            (body.categories || []).map((c: any) => [c.id, c.icon]),
+          );
+          return body.features.map((f: any) => ({
             ...f,
-            icon: f?.icon || cat?.icon || null,
-          })),
-        );
+            icon: f?.icon || catIcon.get(f?.categoryId) || null,
+          }));
+        }
+
+        // Shape B — [ { ...category, features: [...] } ] (grouped by category)
+        if (Array.isArray(body)) {
+          return body.flatMap((cat: any) =>
+            (cat?.features || []).map((f: any) => ({
+              ...f,
+              icon: f?.icon || cat?.icon || null,
+            })),
+          );
+        }
+
+        return [];
       },
     }),
 
