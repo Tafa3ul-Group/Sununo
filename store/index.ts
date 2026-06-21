@@ -12,9 +12,12 @@ import {
     REGISTER,
     REHYDRATE,
 } from 'redux-persist';
+import type { Middleware } from '@reduxjs/toolkit';
+import { ANALYTICS_EVENTS, USER_PROPS } from '@/constants/analytics-events';
+import { logEvent, setAnalyticsUserId, setUserProps } from '@/services/analytics';
 import { apiSlice } from './api/apiSlice';
 import './api/customerApiSlice';
-import authReducer from './authSlice';
+import authReducer, { logout, setCredentials } from './authSlice';
 import filterReducer from './filterSlice';
 
 // Use AsyncStorage directly — no dynamic require needed
@@ -54,6 +57,32 @@ const rootReducer = combineReducers({
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
+// Analytics middleware: centralizes GA4 user identity. Setting user_id + user
+// properties here (on setCredentials) avoids duplicating identity code in the
+// login/register screens. The login/sign_up events themselves are fired in
+// those screens, since both dispatch setCredentials and can't be distinguished
+// here. All calls are fire-and-forget and wrapped so analytics never breaks the
+// store.
+const analyticsMiddleware: Middleware = (api) => (next) => (action) => {
+  const result = next(action);
+  try {
+    if (setCredentials.match(action)) {
+      const { user, userType } = action.payload;
+      if (user?.id != null) setAnalyticsUserId(String(user.id));
+      setUserProps({
+        [USER_PROPS.USER_TYPE]: userType ?? undefined,
+        [USER_PROPS.LANGUAGE]: (api.getState() as RootState).auth.language,
+      });
+    } else if (logout.match(action)) {
+      logEvent(ANALYTICS_EVENTS.LOGOUT);
+      setAnalyticsUserId(null);
+    }
+  } catch {
+    // Analytics must never break the store.
+  }
+  return result;
+};
+
 export const store = configureStore({
   reducer: persistedReducer,
   // Adding the api middleware enables caching, invalidation, polling,
@@ -63,7 +92,7 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }).concat(apiSlice.middleware),
+    }).concat(apiSlice.middleware, analyticsMiddleware),
 });
 
 export const persistor = persistStore(store);

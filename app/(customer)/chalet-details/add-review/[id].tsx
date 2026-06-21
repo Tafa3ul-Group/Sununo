@@ -5,6 +5,8 @@ import { PrimaryButton } from "@/components/user/primary-button";
 import { Shadows } from "@/constants/theme";
 
 import { useCreateReviewMutation } from "@/store/api/customerApiSlice";
+import { logEvent } from "@/services/analytics";
+import { ANALYTICS_EVENTS } from "@/constants/analytics-events";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -47,6 +49,12 @@ export default function AddReviewScreen() {
         rating,
         comment,
       }).unwrap();
+
+      logEvent(ANALYTICS_EVENTS.SUBMIT_REVIEW, {
+        item_id: String(chaletId),
+        rating,
+        review_length: comment?.length || 0,
+      });
 
       Alert.alert(t("common.success"), t("profile.review.success"), [
         { text: "OK", onPress: () => router.back() },

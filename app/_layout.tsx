@@ -2,6 +2,7 @@
 import { ConfirmationDialogProvider } from "@/components/ui/confirmation-dialog";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { persistor, RootState, store } from "@/store";
+import { logScreenView } from "@/services/analytics";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import {
   DarkTheme,
@@ -9,7 +10,7 @@ import {
   ThemeProvider
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Stack, useRouter, useSegments } from "expo-router";
+import { Stack, usePathname, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef, useState } from "react";
@@ -44,6 +45,7 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const { i18n } = useTranslation();
   const segments = useSegments();
+  const pathname = usePathname();
   const router = useRouter();
   const { language, isAuthenticated, userType, token: authToken } = useSelector(
     (state: RootState) => state.auth,
@@ -71,6 +73,15 @@ function RootLayoutNav() {
   useEffect(() => {
     if (loaded || error) SplashScreen.hideAsync();
   }, [loaded, error]);
+
+  // ── Analytics: auto screen_view ───────────────────────────────────────────
+  // screen_class is the route group (auth / customer / dashboard / tabs) so
+  // screens group sensibly in GA4; screen_name is the full pathname.
+  useEffect(() => {
+    if (!loaded || !pathname) return;
+    const group = segments[0]?.replace(/[()]/g, "") || "root";
+    logScreenView(pathname, group);
+  }, [pathname, loaded, segments]);
 
 
 

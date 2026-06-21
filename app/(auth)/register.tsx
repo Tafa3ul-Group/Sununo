@@ -12,6 +12,8 @@ import {
     useVerifyPhoneMutation
 } from "@/store/api/apiSlice";
 import { setCredentials } from "@/store/authSlice";
+import { logEvent } from "@/services/analytics";
+import { ANALYTICS_EVENTS } from "@/constants/analytics-events";
 import { useDirection } from "@/i18n";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -262,6 +264,11 @@ export default function RegisterScreen() {
           token: result.token,
           userType: resolvedUserType }),
       );
+
+      logEvent(ANALYTICS_EVENTS.SIGN_UP, {
+        method: "otp",
+        user_type: resolvedUserType,
+      });
 
       router.replace(
         resolvedUserType === "owner"

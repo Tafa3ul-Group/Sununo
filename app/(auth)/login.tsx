@@ -8,6 +8,8 @@ import { SecondaryButton } from "@/components/user/secondary-button";
 import { RootState } from "@/store";
 import { useLoginMutation, useVerifyPhoneMutation } from "@/store/api/apiSlice";
 import { setCredentials, setUserType } from "@/store/authSlice";
+import { logEvent } from "@/services/analytics";
+import { ANALYTICS_EVENTS } from "@/constants/analytics-events";
 import { useDirection } from "@/i18n";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -247,6 +249,10 @@ export function LoginScreen() {
             userType: resolvedUserType,
           }),
         );
+        logEvent(ANALYTICS_EVENTS.LOGIN, {
+          method: "otp",
+          user_type: resolvedUserType,
+        });
         router.replace(
           resolvedUserType === "owner"
             ? "/(tabs)/(dashboard)/home"

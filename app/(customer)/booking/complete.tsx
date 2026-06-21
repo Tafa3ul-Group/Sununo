@@ -17,6 +17,8 @@ import { RangeCalendar } from "@/components/user/range-calendar";
 import { Colors, normalize } from "@/constants/theme";
 
 import { RootState } from "@/store";
+import { logEvent } from "@/services/analytics";
+import { ANALYTICS_EVENTS, ANALYTICS_CURRENCY } from "@/constants/analytics-events";
 import {
   useCreateCustomerBookingMutation,
   useGetChaletAvailabilityQuery,
@@ -596,6 +598,33 @@ export default function CompleteBookingScreen() {
           .join(", ")
       : t("booking.noDate");
 
+  // ── Analytics helpers ───────────────────────────────────────────────────────
+  const analyticsChaletName = isArabic
+    ? chaletDetails?.nameAr || chaletDetails?.name?.ar || chaletDetails?.name || ""
+    : chaletDetails?.nameEn || chaletDetails?.name?.en || chaletDetails?.name || "";
+
+  const buildBookingItems = () => [
+    {
+      item_id: String(chaletId),
+      item_name: analyticsChaletName,
+      price: Number(totalPrice) || 0,
+      quantity: selectedDates.length || 1,
+    },
+  ];
+
+  // Fired only on a CONFIRMED, paid booking (wallet success, instant success, or
+  // payment-polling success) — never when the payment URL merely opens.
+  const trackPurchase = (transactionId: string) => {
+    logEvent(ANALYTICS_EVENTS.PURCHASE, {
+      transaction_id: String(transactionId),
+      currency: ANALYTICS_CURRENCY,
+      value: Number(totalPrice) || 0,
+      payment_type: `${selectedMethod}_${paymentType.toLowerCase()}`,
+      deposit_amount: Number(depositAmount) || 0,
+      items: buildBookingItems(),
+    });
+  };
+
   const handleNext = async () => {
     // Guard against double submission ONLY while the create request is in flight
     // (prevents the race where rapid taps fire multiple createBooking() calls).
@@ -615,6 +644,11 @@ export default function CompleteBookingScreen() {
         );
         return;
       }
+      logEvent(ANALYTICS_EVENTS.BEGIN_CHECKOUT, {
+        currency: ANALYTICS_CURRENCY,
+        value: Number(totalPrice) || 0,
+        items: buildBookingItems(),
+      });
       setActiveTab("WHERE");
     } else {
       // We are on DETAILS tab — create the booking via API
@@ -653,6 +687,17 @@ export default function CompleteBookingScreen() {
 
           const isDelayedBooking = chaletDetails?.bookingType === "delayed";
 
+          if (!isDelayedBooking) {
+            logEvent(ANALYTICS_EVENTS.ADD_PAYMENT_INFO, {
+              currency: ANALYTICS_CURRENCY,
+              value:
+                paymentType === "DEPOSIT"
+                  ? Number(depositAmount) || 0
+                  : Number(totalPrice) || 0,
+              payment_type: `${selectedMethod}_${paymentType.toLowerCase()}`,
+            });
+          }
+
           const result = await createBooking({
             chaletId,
             shiftId: bookings[0].shiftId,
@@ -670,6 +715,13 @@ export default function CompleteBookingScreen() {
 
           if (result.booking?.status === "pending_approval" || !result.payment) {
             setCreatedBookingId(result.booking.id);
+            // Not a paid purchase yet — track as a request/lead, not a purchase.
+            logEvent(ANALYTICS_EVENTS.BOOKING_REQUEST, {
+              currency: ANALYTICS_CURRENCY,
+              value: Number(totalPrice) || 0,
+              transaction_id: String(result.booking.id),
+              items: buildBookingItems(),
+            });
             Alert.alert(
               isArabic ? "تم إرسال طلب الحجز" : "Booking Request Sent",
               isArabic
@@ -711,10 +763,12 @@ export default function CompleteBookingScreen() {
             }
           } else if (selectedMethod === "wallet") {
             setCreatedBookingId(result.booking.id);
+            trackPurchase(result.booking.id);
             successSheetRef.current?.present();
           } else {
             // Handle cases where no URL is returned (e.g. error or test)
             setCreatedBookingId(result.booking.id);
+            trackPurchase(result.booking.id);
             successSheetRef.current?.present();
           }
         } else {
@@ -860,6 +914,7 @@ export default function CompleteBookingScreen() {
           setPollingStatus("success");
           setIsWaitingForPayment(false);
           dismissBrowser();
+          trackPurchase(transactionId);
           // Wait a bit then show success sheet
           setTimeout(() => {
             processingSheetRef.current?.dismiss();
