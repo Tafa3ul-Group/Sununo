@@ -10,6 +10,7 @@ import {
     SolarProfileEdit,
     SolarShieldBold,
     SolarUserBlockBoldDuotone,
+    SolarWalletBold,
 } from '@/components/icons/solar-icons';
 import { LanguageSheet } from '@/components/user/language-sheet';
 import { LogoutSheet } from '@/components/user/logout-sheet';
@@ -92,6 +93,16 @@ export default function CustomerProfileScreen() {
         Linking.openURL(PRIVACY_POLICY_URL).catch(() => {});
     }, []);
 
+    // Withdraw: open the app's WhatsApp with a prefilled request message.
+    const openWithdraw = useCallback(() => {
+        const msg = encodeURIComponent(
+            isArabic ? 'مرحباً، أرغب بسحب رصيدي.' : 'Hello, I would like to withdraw my balance.',
+        );
+        Linking.openURL(`https://wa.me/${supportPhone}?text=${msg}`).catch(() => {
+            Linking.openURL(`tel:+${supportPhone}`).catch(() => {});
+        });
+    }, [supportPhone, isArabic]);
+
     const menuItems = [
         {
             id: 'bookings',
@@ -106,6 +117,13 @@ export default function CustomerProfileScreen() {
             shape: 'pink' as const,
             icon: <SolarHeartBold size={20} color="white" />,
             route: '/favorites',
+        },
+        {
+            id: 'transactions',
+            title: t('profile.wallet.transactions'),
+            shape: 'green' as const,
+            icon: <SolarWalletBold size={20} color="white" />,
+            route: '/(customer)/wallet-transactions',
         },
         {
             id: 'reviews',
@@ -206,7 +224,7 @@ export default function CustomerProfileScreen() {
                 {/* Wallet Card */}
                 <WalletCard
                     balance={walletBalance}
-                    onWithdraw={() => router.push('/(customer)/wallet-transactions')}
+                    onWithdraw={openWithdraw}
                 />
 
                 {/* Menu Items */}

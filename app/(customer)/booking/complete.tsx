@@ -1476,10 +1476,18 @@ export default function CompleteBookingScreen() {
                     const shiftName = isArabic
                       ? shift.name?.ar || shift.name
                       : shift.name?.en || shift.name;
+                    const previewNameEn = shift.name?.en?.toLowerCase() || "";
+                    const previewNameAr = shift.name?.ar || "";
+                    const isOvernight =
+                      shift.type === "OVERNIGHT" ||
+                      previewNameEn.includes("overnight") ||
+                      previewNameEn.includes("night") ||
+                      previewNameAr.includes("مبيت");
                     const isMorning =
-                      shift.type === "MORNING" ||
-                      shift.name?.en?.toLowerCase().includes("morning") ||
-                      shift.name?.ar?.includes("صباح");
+                      !isOvernight &&
+                      (shift.type === "MORNING" ||
+                        previewNameEn.includes("morning") ||
+                        previewNameAr.includes("صباح"));
 
                     return (
                       <View
@@ -1492,6 +1500,12 @@ export default function CompleteBookingScreen() {
                         <View style={styles.shiftIconCircleFlat}>
                           {isMorning ? (
                             <SolarSunBold size={22} color="#FBBF24" />
+                          ) : isOvernight ? (
+                            <ExpoImage
+                              source={require("@/assets/shifts/sleep.svg")}
+                              style={{ width: 24, height: 24 }}
+                              contentFit="contain"
+                            />
                           ) : (
                             <SolarMoonBold size={22} color="#6366F1" />
                           )}

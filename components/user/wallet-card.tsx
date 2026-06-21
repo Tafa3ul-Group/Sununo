@@ -58,7 +58,7 @@ export const WalletCard = ({
           </View>
           <TouchableOpacity style={styles.withdrawButton} onPress={onWithdraw} activeOpacity={0.8}>
             <ThemedText style={styles.withdrawText}>
-              {t("profile.wallet.transactions")}
+              {t("profile.wallet.withdraw")}
             </ThemedText>
           </TouchableOpacity>
         </View>

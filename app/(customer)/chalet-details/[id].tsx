@@ -606,14 +606,28 @@ export default function ChaletDetailScreen() {
                     style={[styles.shiftCard, { flexDirection: 'row', direction: isRTL ? 'rtl' : 'ltr' }]}
                   >
                     {(() => {
+                      const nameEn = shift.name?.en?.toLowerCase() || "";
+                      const nameAr = shift.name?.ar || "";
+                      const isOvernight =
+                        shift.type === "OVERNIGHT" ||
+                        nameEn.includes("overnight") ||
+                        nameEn.includes("night") ||
+                        nameAr.includes("مبيت");
                       const isMorning =
-                        shift.type === "MORNING" ||
-                        shift.name?.en?.toLowerCase().includes("morning") ||
-                        shift.name?.ar?.includes("صباح");
+                        !isOvernight &&
+                        (shift.type === "MORNING" ||
+                          nameEn.includes("morning") ||
+                          nameAr.includes("صباح"));
                       return (
                         <View style={styles.shiftIconCircle}>
                           {isMorning ? (
                             <SolarSunBold size={22} color="#FBBF24" />
+                          ) : isOvernight ? (
+                            <ExpoImage
+                              source={require("@/assets/shifts/sleep.svg")}
+                              style={{ width: 24, height: 24 }}
+                              contentFit="contain"
+                            />
                           ) : (
                             <SolarMoonBold size={22} color="#6366F1" />
                           )}
