@@ -199,8 +199,20 @@ export default function HomeScreen() {
   const dispatch = useDispatch();
   const router = useRouter();
   const { t } = useTranslation();
-  const [activeFilter, setActiveFilter] = React.useState("all");
+  // Multi-select filter chips. Empty array === "All".
+  const [selectedFilters, setSelectedFilters] = React.useState<string[]>([]);
   const insets = useSafeAreaInsets();
+
+  // Toggle a chip; tapping "all" clears the selection.
+  const toggleFilter = React.useCallback((id: string) => {
+    if (id === "all") {
+      setSelectedFilters([]);
+      return;
+    }
+    setSelectedFilters((prev) =>
+      prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id],
+    );
+  }, []);
 
   const textStart: "left" | "right" = textAlign;
   const flexDir: "row" | "row-reverse" = rowDirection;
@@ -261,21 +273,24 @@ export default function HomeScreen() {
   const [page, setPage] = React.useState(1);
   const [rawChalets, setRawChalets] = React.useState<any[]>([]);
 
-  // Reset paging whenever the active filter changes.
+  // Stable key so the paging reset / query only re-run on real changes.
+  const filtersKey = selectedFilters.join(",");
+
+  // Reset paging whenever the selected filters change.
   React.useEffect(() => {
     setPage(1);
-  }, [activeFilter]);
+  }, [filtersKey]);
 
   const queryParams = React.useMemo(() => {
     const params: any = { page, limit: 10 };
 
-    // Use real amenity ID from API if available, otherwise send the slug as fallback
-    if (activeFilter !== "all") {
-      const realId = amenityIdMap[activeFilter];
-      params.amenityIds = [realId || activeFilter];
+    // Use real amenity IDs from the API when available, else fall back to slugs.
+    if (selectedFilters.length > 0) {
+      params.amenityIds = selectedFilters.map((f) => amenityIdMap[f] || f);
     }
     return params;
-  }, [activeFilter, amenityIdMap, page]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtersKey, amenityIdMap, page]);
 
   // Fetch data from the backend
   const { data: bannersResponse, isFetching: bannersFetching, refetch: refetchBanners } = useGetBannersQuery(undefined);
@@ -614,21 +629,30 @@ export default function HomeScreen() {
           contentContainerStyle={styles.tabsContainer}
         >
           <View style={{ flexDirection: flexDir, gap: 10 }}>
-            {FILTER_OPTIONS.map((filter) => (
-              <SecondaryButton
-                key={filter.id}
-                label={filter.label}
-                isActive={activeFilter === filter.id}
-                activeColor={filter.activeColor}
-                icon={filter.icon(activeFilter === filter.id)}
-                onPress={() => setActiveFilter(filter.id)}
-              />
-            ))}
+            {FILTER_OPTIONS.map((filter) => {
+              const isActive =
+                filter.id === "all"
+                  ? selectedFilters.length === 0
+                  : selectedFilters.includes(filter.id);
+              return (
+                <SecondaryButton
+                  key={filter.id}
+                  label={filter.label}
+                  isActive={isActive}
+                  activeColor={filter.activeColor}
+                  icon={filter.icon(isActive)}
+                  onPress={() => toggleFilter(filter.id)}
+                />
+              );
+            })}
           </View>
         </GHScrollView>
 
         <View style={styles.listPadding}>
-          {chaletsLoading ? (
+          {/* Show skeleton on first load AND while a filter change refetches
+              page 1 (so the user gets clear feedback a filter is applying),
+              but not during pull-to-refresh which has its own spinner. */}
+          {chaletsLoading || (chaletsFetching && page === 1 && !isRefreshing) ? (
             <View style={{ gap: 12 }}>
               <HorizontalCardSkeleton />
               <HorizontalCardSkeleton />
@@ -664,10 +688,10 @@ export default function HomeScreen() {
               <ThemedText style={styles.emptyDesc}>
                 {t("home.noChaletsDesc")}
               </ThemedText>
-              {activeFilter !== "all" && (
+              {selectedFilters.length > 0 && (
                 <TouchableOpacity
                   style={styles.clearButton}
-                  onPress={() => setActiveFilter("all")}
+                  onPress={() => setSelectedFilters([])}
                 >
                   <ThemedText style={styles.clearButtonText}>
                     {t("home.clearFilters")}

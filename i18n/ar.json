@@ -47,7 +47,8 @@
     "recommended": "مقترح لك",
     "noChalets": "لا توجد شاليهات متاحة حالياً",
     "noChaletsDesc": "جرب تغيير الفلاتر أو البحث عن شيء آخر",
-    "clearFilters": "مسح الفلاتر"
+    "clearFilters": "مسح الفلاتر",
+    "applyingFilter": "جاري تطبيق الفلتر…"
   },
   "profile": {
     "title": "الملف الشخصي",

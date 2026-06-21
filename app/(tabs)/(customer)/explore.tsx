@@ -259,7 +259,7 @@ export default function ExploreScreen() {
   );
 
   // API Data
-  const { data: chaletsResponse, isLoading: isChaletsLoading } =
+  const { data: chaletsResponse, isLoading: isChaletsLoading, isFetching: isChaletsFetching } =
     useGetChaletsMapQuery({
       limit: zoom >= 14 ? 300 : zoom >= 10 ? 150 : zoom >= 6 ? 80 : 40,
       search: search || activeFilters?.search || undefined,
@@ -727,6 +727,20 @@ export default function ExploreScreen() {
       {isChaletsLoading && !chaletsRaw.length && (
         <View style={styles.loaderOverlay}>
           <ActivityIndicator size="large" color={Colors.primary} />
+        </View>
+      )}
+
+      {/* Non-blocking pill: shows that a filter is being applied while the
+          map keeps existing markers (refetch, not first load). */}
+      {isChaletsFetching && chaletsRaw.length > 0 && (
+        <View
+          pointerEvents="none"
+          style={[styles.filterLoadingPill, { top: insets.top + normalize.height(70) }]}
+        >
+          <ActivityIndicator size="small" color={Colors.primary} />
+          <ThemedText style={styles.filterLoadingText}>
+            {t("home.applyingFilter")}
+          </ThemedText>
         </View>
       )}
 
@@ -1585,6 +1599,24 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     zIndex: 1000,
+  },
+  filterLoadingPill: {
+    position: "absolute",
+    alignSelf: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: Colors.white,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    ...Shadows.small,
+    zIndex: 1001,
+  },
+  filterLoadingText: {
+    fontSize: normalize.font(12),
+    fontFamily: "Alexandria-Medium",
+    color: Colors.primary,
   },
 
   // Advanced Filtering Styles

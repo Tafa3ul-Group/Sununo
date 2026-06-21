@@ -47,7 +47,8 @@
     "recommended": "Recommended for you",
     "noChalets": "No chalets available currently",
     "noChaletsDesc": "Try changing filters or searching for something else",
-    "clearFilters": "Clear Filters"
+    "clearFilters": "Clear Filters",
+    "applyingFilter": "Applying filter…"
   },
   "profile": {
     "title": "Profile",

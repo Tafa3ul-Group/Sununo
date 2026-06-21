@@ -378,7 +378,7 @@ export function LoginScreen() {
                   label={isArabic ? "تعديل الرقم" : "Edit Number"}
                   onPress={() => {
                     setStep("phone");
-                    setDevAutoFilled(false);
+                    setCode("");
                   }}
                   isActive={false}
                   style={{ flex: 1 }}
