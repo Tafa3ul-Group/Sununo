@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   Animated } from 'react-native';
 import { ThemedText } from '../themed-text';
-import { Colors, normalize, Shadows } from '@/constants/theme';
+import { Colors, normalize } from '@/constants/theme';
 
 interface OtpInputProps {
   code: string;
@@ -107,17 +107,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC',
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'relative',
-    ...Shadows.small,
-    shadowOpacity: 0.05 },
+    position: 'relative' },
   activeDigitBox: {
     borderColor: '#0061FE',
     backgroundColor: '#FFFFFF',
     borderWidth: 2,
-    transform: [{ scale: 1.05 }],
-    ...Shadows.medium,
-    shadowColor: '#0061FE',
-    shadowOpacity: 0.15 },
+    transform: [{ scale: 1.05 }] },
   filledDigitBox: {
     borderColor: '#0061FE',
     backgroundColor: '#FFFFFF' },

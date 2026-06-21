@@ -320,7 +320,7 @@ export function LoginScreen() {
                 <ThemedText
                   style={[
                     styles.label,
-                    { textAlign: isRTL ? "right" : "left", writingDirection: isRTL ? "rtl" : "ltr" },
+                    { width: "100%", textAlign: isRTL ? "right" : "left", writingDirection: isRTL ? "rtl" : "ltr" },
                   ]}
                 >
                   {t("auth.phone")}
@@ -355,7 +355,7 @@ export function LoginScreen() {
                 <ThemedText
                   style={[
                     styles.label,
-                    { textAlign: isRTL ? "right" : "left", writingDirection: isRTL ? "rtl" : "ltr" },
+                    { width: "100%", textAlign: isRTL ? "right" : "left", writingDirection: isRTL ? "rtl" : "ltr" },
                   ]}
                 >
                   {t("auth.verificationCode")}
