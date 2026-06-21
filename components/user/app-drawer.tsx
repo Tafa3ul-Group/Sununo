@@ -8,7 +8,7 @@ import {
   SolarUserBold,
 } from "@/components/icons/solar-icons";
 import { Colors, Shadows } from "@/constants/theme";
-import { getImageSrc } from "@/hooks/useImageSrc";
+import { getImageSrc, getAvatarSrc } from "@/hooks/useImageSrc";
 import { useDirection } from "@/i18n";
 import { RootState } from "@/store";
 import { useLogoutUserMutation } from "@/store/api/customerApiSlice";
@@ -180,7 +180,7 @@ export const AppDrawer = forwardRef<AppDrawerRef>((props, ref) => {
             router.push("/(tabs)/(customer)/profile");
           }}
         >
-          <Image source={getImageSrc(user?.imageUrl)} style={styles.avatar} />
+          <Image source={getAvatarSrc(user?.imageUrl)} style={styles.avatar} />
           <View style={[styles.userInfo, { alignItems: "flex-start" }]}>
             <ThemedText style={styles.userName}>
               {user?.name || t("common.user")}

@@ -5,7 +5,7 @@ import {
     SolarUserBold } from "@/components/icons/solar-icons";
 import { CustomTabBar } from "@/components/user/custom-tab-bar";
 import { SearchFilterSheet } from "@/components/user/search-filter-sheet";
-import { getImageSrc } from "@/hooks/useImageSrc";
+import { getImageSrc, getAvatarSrc } from "@/hooks/useImageSrc";
 import { RootState } from "@/store";
 import { setFilters } from "@/store/filterSlice";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
@@ -97,7 +97,7 @@ export default function CustomerLayout() {
                     backgroundColor: "#F3F4F6" }}
                 >
                   <Image
-                    source={getImageSrc(user?.imageUrl || avatarUrl)}
+                    source={getAvatarSrc(user?.imageUrl || avatarUrl)}
                     style={{ width: "100%", height: "100%" }}
                   />
                 </View>

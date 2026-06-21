@@ -7,7 +7,7 @@ import {
 import { ThemedText } from '@/components/themed-text';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { Colors, normalize } from '@/constants/theme';
-import { getImageSrc } from '@/hooks/useImageSrc';
+import { getImageSrc, getAvatarSrc } from '@/hooks/useImageSrc';
 import { useDirection } from "@/i18n";
 import { RootState } from '@/store';
 import { useGetMeQuery } from '@/store/api/apiSlice';
@@ -118,7 +118,10 @@ export default function ProfileEditScreen() {
       return;
     }
     try {
-      await updateProfile({ name: name.trim() }).unwrap();
+      const payload: { name: string; birthday?: string } = { name: name.trim() };
+      // Send the birth date only when set (YYYY-MM-DD).
+      if (birthDate) payload.birthday = birthDate;
+      await updateProfile(payload).unwrap();
       refetch();
       router.back();
     } catch (err: any) {
@@ -220,7 +223,7 @@ export default function ProfileEditScreen() {
               activeOpacity={0.85}
             >
               <Image
-                source={getImageSrc(userData?.image || userData?.imageUrl)}
+                source={getAvatarSrc(userData?.image || userData?.imageUrl)}
                 style={styles.avatarImg}
               />
               {/* Edit badge — bottom right */}
@@ -265,7 +268,7 @@ export default function ProfileEditScreen() {
               >
                 <ThemedText
                   style={[
-                    styles.input,
+                    styles.dateInputText,
                     { textAlign, color: birthDate ? Colors.text.primary : '#C4C4C4' },
                   ]}
                 >
@@ -518,6 +521,12 @@ const styles = StyleSheet.create({
     fontFamily: "Alexandria-Medium",
     color: '#1E293B',
     flex: 1 },
+  // Date display text: NO flex so the wrapper's justifyContent:'center'
+  // vertically centers it (flex:1 stretched it and pushed text to the top).
+  dateInputText: {
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
+    color: '#1E293B' },
   dateDoneBtn: {
     alignSelf: 'center',
     marginTop: 8,

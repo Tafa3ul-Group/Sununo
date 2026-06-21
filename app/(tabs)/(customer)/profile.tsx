@@ -18,7 +18,7 @@ import { DeleteAccountSheet } from '@/components/user/delete-account-sheet';
 import { WalletCard } from '@/components/user/wallet-card';
 import { PRIVACY_POLICY_URL, SUPPORT_WHATSAPP, toWhatsAppNumber } from '@/constants/links';
 import { Colors, normalize } from '@/constants/theme';
-import { getImageSrc } from '@/hooks/useImageSrc';
+import { getImageSrc, getAvatarSrc } from '@/hooks/useImageSrc';
 
 import { RootState } from '@/store';
 import { useGetMeQuery } from '@/store/api/apiSlice';
@@ -194,7 +194,7 @@ export default function CustomerProfileScreen() {
                     <View style={[styles.avatarAndInfo, { flexDirection: rowDirection }]}>
                         <View style={styles.avatarWrap}>
                             <Image
-                                source={getImageSrc(userData?.image || userData?.imageUrl)}
+                                source={getAvatarSrc(userData?.image || userData?.imageUrl)}
                                 style={styles.avatarImg}
                             />
                         </View>

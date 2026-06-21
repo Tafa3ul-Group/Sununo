@@ -18,7 +18,7 @@ import {
   SolarSunBold,
   SolarWidgetBold,
 } from "@/components/icons/solar-icons";
-import { getImageSrc } from "@/hooks/useImageSrc";
+import { getImageSrc, getAvatarSrc } from "@/hooks/useImageSrc";
 import { useFormatTime } from "@/hooks/useFormatTime";
 import { useDirection } from "@/i18n";
 import { Colors } from "@/constants/theme";
@@ -387,11 +387,7 @@ export function ChaletDetailsBody({
       <HostContactCard
         name={chalet?.owner?.name || (isRTL ? "المضيف" : "Host")}
         phone={chalet?.owner?.phone}
-        avatar={
-          chalet?.owner?.image
-            ? getImageSrc(chalet.owner.image)
-            : require("@/assets/profile.svg")
-        }
+        avatar={getAvatarSrc(chalet?.owner?.image)}
         isRTL={isRTL}
       />
     </View>

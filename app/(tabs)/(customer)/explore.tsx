@@ -50,7 +50,7 @@ import { HostContactCard } from "@/components/user/host-contact-card";
 import { useFormatTime } from "@/hooks/useFormatTime";
 import Svg, { Path } from "react-native-svg";
 
-import { getImageSrc } from "@/hooks/useImageSrc";
+import { getImageSrc, getAvatarSrc } from "@/hooks/useImageSrc";
 import { getStartingPrice } from "@/utils/format";
 import * as Location from "expo-location";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -545,9 +545,7 @@ export default function ExploreScreen() {
           reviewDate: reviewItem?.createdAt
             ? new Date(reviewItem.createdAt).toLocaleDateString()
             : "",
-          avatarSource: customer?.image
-            ? getImageSrc(customer.image)
-            : require("@/assets/profile.svg"),
+          avatarSource: getAvatarSrc(customer?.image),
         };
       }),
     [reviews, isRTL],

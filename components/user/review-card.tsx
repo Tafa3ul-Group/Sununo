@@ -1,6 +1,7 @@
 import { SolarStarBold, SolarTrashBinMinimalisticLinear } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { normalize } from "@/constants/theme";
+import { getAvatarSrc } from "@/hooks/useImageSrc";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -107,7 +108,7 @@ export function ReviewCard({ review, onDelete, onPressChalet }: ReviewCardProps)
       {/* Middle Section: User Info + Rating */}
       <View style={[styles.userSection, { flexDirection: 'row' }]}>
          <View style={[styles.userInfo, { flexDirection: 'row' }]}>
-            <Image source={{ uri: review.userAvatar }} style={styles.avatar} />
+            <Image source={getAvatarSrc(review.userAvatar)} style={styles.avatar} />
             <ThemedText style={styles.userName}>{review.userName}</ThemedText>
          </View>
          

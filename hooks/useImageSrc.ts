@@ -4,6 +4,9 @@ const IMAGE_ACCOUNT_HASH = process.env.EXPO_PUBLIC_IMAGE_ACCOUNT_HASH || 'token'
 
 // Placeholder image path
 const PLACEHOLDER_IMAGE = require('../assets/placeholder.png');
+// Person/avatar placeholder (used when a user has no profile image).
+// PNG (extracted from profile.svg) so it renders in both RN <Image> and expo-image.
+const PERSON_PLACEHOLDER = require('../assets/profile.png');
 
 // Function to get image source URL (internal helper)
 export function processImageId(imageId: string | null | undefined): any {
@@ -65,6 +68,17 @@ export function useImageSrc(imageId?: string | null): any {
 export function getImageSrc(imageId: string | null | undefined): any {
   const result = processImageId(imageId);
   return result || PLACEHOLDER_IMAGE;
+}
+
+/**
+ * Like getImageSrc but falls back to the person/avatar illustration
+ * (assets/profile.svg) instead of the chalet house placeholder.
+ * Use for user/host/reviewer avatars.
+ * @param imageId - The ID or path of the avatar image
+ */
+export function getAvatarSrc(imageId: string | null | undefined): any {
+  const result = processImageId(imageId);
+  return result || PERSON_PLACEHOLDER;
 }
 
 // Export default for easier importing (hook version)

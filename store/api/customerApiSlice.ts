@@ -367,11 +367,19 @@ export const customerApi = apiSlice.injectEndpoints({
 
     /** Update my profile information */
     updateUserProfile: builder.mutation({
-      query: (data: { name?: string; email?: string }) => ({
-        url: "/users/profile",
-        method: "PUT",
-        body: data,
-      }),
+      // The backend route is @FormDataRequest() (multipart), so send FormData.
+      query: (data: { name?: string; email?: string; birthday?: string }) => {
+        const formData = new FormData();
+        if (data.name != null) formData.append("name", data.name);
+        if (data.email != null) formData.append("email", data.email);
+        if (data.birthday != null) formData.append("birthday", data.birthday);
+        return {
+          url: "/users/profile",
+          method: "PUT",
+          body: formData,
+          headers: {},
+        };
+      },
       invalidatesTags: ["User"],
     }),
 

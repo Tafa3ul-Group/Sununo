@@ -20,7 +20,7 @@ import { PrimaryButton } from "@/components/user/primary-button";
 import { ReviewSubmissionSheet } from "@/components/user/review-submission-sheet";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize, Shadows } from "@/constants/theme";
-import { getImageSrc } from "@/hooks/useImageSrc";
+import { getImageSrc, getAvatarSrc } from "@/hooks/useImageSrc";
 import { RootState } from "@/store";
 import {
   useAddFavoriteMutation,
@@ -317,12 +317,10 @@ export default function ChaletDetailScreen() {
   const reviewCount =
     chalet.reviewsCount || reviewsResponse?.meta?.total || reviews.length || 0;
   const hostName = chalet.owner?.name || (isRTL ? "المضيف" : "Host");
-  const hostAvatar = useMemo(() => {
-    if (chalet.owner?.image) {
-      return getImageSrc(chalet.owner.image);
-    }
-    return require("@/assets/profile.svg");
-  }, [chalet.owner?.image]);
+  const hostAvatar = useMemo(
+    () => getAvatarSrc(chalet.owner?.image),
+    [chalet.owner?.image],
+  );
 
   // Auto Play Banner
   useEffect(() => {
@@ -895,11 +893,7 @@ export default function ChaletDetailScreen() {
                 >
                   <View style={styles.avatarCircleMerged}>
                     <ExpoImage
-                      source={
-                        customer?.image
-                          ? getImageSrc(customer.image)
-                          : require("@/assets/profile.svg")
-                      }
+                      source={getAvatarSrc(customer?.image)}
                       style={styles.userAvatarImgMerged}
                       contentFit="cover"
                     />
