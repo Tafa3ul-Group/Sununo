@@ -15,6 +15,7 @@ import {
   SolarBedBold,
   SolarForbiddenCircleLineDuotone,
   SolarMoonBold,
+  SolarStarBold,
   SolarSunBold,
   SolarWidgetBold,
 } from "@/components/icons/solar-icons";
@@ -153,9 +154,9 @@ export function ChaletDetailsBody({
             marginStart: 12,
           }}
         >
-          <SolarSunBold size={0} color="transparent" />
+          <SolarStarBold size={14} color="#035DF9" />
           <ThemedText style={styles.ratingVal}>
-            {rating ? Number(rating).toFixed(1) : isRTL ? "جديد" : "New"}
+            {Number(rating || 0).toFixed(1)}
           </ThemedText>
         </View>
       </View>
