@@ -40,7 +40,8 @@ import { getImageSrc } from "@/hooks/useImageSrc";
 import { getStartingPrice } from "@/utils/format";
 
 import { RootState } from "@/store";
-import { useGetAmenitiesQuery } from "@/store/api/apiSlice";
+import { Image as ExpoImage } from "expo-image";
+import { useGetAmenitiesQuery, useGetHomeFilterAmenitiesQuery } from "@/store/api/apiSlice";
 import {
   useBrowseCustomerChaletsQuery,
   useGetBannersQuery,
@@ -206,6 +207,9 @@ export default function HomeScreen() {
 
   // Fetch all amenities to resolve real IDs for pool/bbq/garden filters
   const { data: allAmenities = [] } = useGetAmenitiesQuery();
+
+  // Admin-selected amenities to show as home filter chips (empty → use defaults)
+  const { data: homeFilterAmenities = [] } = useGetHomeFilterAmenitiesQuery();
 
   // Build a lookup: slug/keyword → real amenity ID
   const amenityIdMap = useMemo(() => {
@@ -388,26 +392,23 @@ export default function HomeScreen() {
     }));
   }, [rawChalets, isRTL]);
 
-  const FILTER_OPTIONS = [
-    {
-      id: "all",
-      label: t("home.categories.all"),
-      icon: (isActive: boolean) => (
-        <SolarWidgetBold
-          size={18}
-          color={isActive ? "white" : Colors.primary}
-        />
-      ),
-      activeColor: Colors.primary,
-    },
+  const allTab = {
+    id: "all",
+    label: t("home.categories.all"),
+    icon: (isActive: boolean) => (
+      <SolarWidgetBold size={18} color={isActive ? "white" : Colors.primary} />
+    ),
+    activeColor: Colors.primary,
+  };
+
+  // Built-in default chips, used only when the admin hasn't chosen any.
+  const DEFAULT_FILTER_OPTIONS = [
+    allTab,
     {
       id: "pool",
       label: t("home.categories.pool"),
       icon: (isActive: boolean) => (
-        <SolarWaterBold
-          size={18}
-          color={isActive ? "white" : Colors.secondary}
-        />
+        <SolarWaterBold size={18} color={isActive ? "white" : Colors.secondary} />
       ),
       activeColor: Colors.secondary,
     },
@@ -423,14 +424,40 @@ export default function HomeScreen() {
       id: "garden",
       label: t("home.categories.garden"),
       icon: (isActive: boolean) => (
-        <SolarTreeBold
-          size={18}
-          color={isActive ? "white" : Colors.secondary}
-        />
+        <SolarTreeBold size={18} color={isActive ? "white" : Colors.secondary} />
       ),
       activeColor: Colors.secondary,
     },
   ];
+
+  // Prefer the admin-configured chips; fall back to the built-in defaults.
+  const FILTER_OPTIONS = useMemo(() => {
+    if (Array.isArray(homeFilterAmenities) && homeFilterAmenities.length > 0) {
+      const dynamic = homeFilterAmenities.map((a: any) => ({
+        id: a.id,
+        label: isRTL
+          ? a.name?.ar || a.name?.en || ""
+          : a.name?.en || a.name?.ar || "",
+        icon: (isActive: boolean) =>
+          a.icon ? (
+            <ExpoImage
+              source={getImageSrc(a.icon)}
+              style={{ width: 18, height: 18 }}
+              contentFit="contain"
+            />
+          ) : (
+            <SolarWidgetBold
+              size={18}
+              color={isActive ? "white" : Colors.secondary}
+            />
+          ),
+        activeColor: Colors.secondary,
+      }));
+      return [allTab, ...dynamic];
+    }
+    return DEFAULT_FILTER_OPTIONS;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [homeFilterAmenities, isRTL, t]);
 
   return (
     <View style={[styles.safeArea, { paddingTop: insets.top }]}>

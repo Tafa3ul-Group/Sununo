@@ -322,6 +322,11 @@ export const apiSlice = createApi({
       query: () => "/provider/chalets/amenities/all",
     }),
 
+    // Amenities the admin chose to show as quick filter chips on the home screen
+    getHomeFilterAmenities: builder.query<any[], void>({
+      query: () => "/customer/amenities/home-filter",
+    }),
+
     getChaletAmenities: builder.query<any[], string>({
       query: (chaletId) => `/provider/chalets/${chaletId}/amenities`,
       providesTags: ["Chalet"],
@@ -642,6 +647,7 @@ export const {
   useLazyGetChaletRegionsQuery,
 
   useGetAmenitiesQuery,
+  useGetHomeFilterAmenitiesQuery,
   useGetChaletAmenitiesQuery,
   useSetChaletAmenitiesMutation,
   useGetAmenityCategoriesQuery,
