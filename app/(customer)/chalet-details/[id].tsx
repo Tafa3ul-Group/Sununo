@@ -787,7 +787,7 @@ export default function ChaletDetailScreen() {
               {showMap &&
                 MapboxComponent?.MapView &&
                 MapboxComponent?.Camera &&
-                MapboxComponent?.PointAnnotation ? (
+                MapboxComponent?.MarkerView ? (
                 <MapboxComponent.MapView
                   style={styles.mapView}
                   scrollEnabled={false}
@@ -804,21 +804,26 @@ export default function ChaletDetailScreen() {
                       chalet.latitude || 33.3152,
                     ]}
                   />
-                  <MapboxComponent.PointAnnotation
+                  {/* MarkerView (not PointAnnotation) renders a live React view,
+                      so the async chalet image actually shows instead of an empty
+                      snapshot/white circle. */}
+                  <MapboxComponent.MarkerView
                     id="chaletLocation"
                     coordinate={[
                       chalet.longitude || 44.3661,
                       chalet.latitude || 33.3152,
                     ]}
+                    anchor={{ x: 0.5, y: 0.5 }}
                   >
                     <View style={styles.mapImageMarker}>
                       <ExpoImage
                         source={images[0]}
                         style={styles.mapImageMarkerImg}
                         contentFit="cover"
+                        transition={200}
                       />
                     </View>
-                  </MapboxComponent.PointAnnotation>
+                  </MapboxComponent.MarkerView>
                 </MapboxComponent.MapView>
               ) : (
                 <View
