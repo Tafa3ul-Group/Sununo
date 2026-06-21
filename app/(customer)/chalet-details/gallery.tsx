@@ -68,7 +68,7 @@ const WavyHeader = ({ title, color }: { title: string; color: string }) => (
     <SectionIcon
       color={color}
       title={title}
-      width={SCREEN_WIDTH - 32}
+      width={SCREEN_WIDTH - 64}
       height={50}
     />
   </View>

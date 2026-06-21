@@ -22,7 +22,7 @@ import { getImageSrc } from '@/hooks/useImageSrc';
 
 import { RootState } from '@/store';
 import { useGetMeQuery } from '@/store/api/apiSlice';
-import { useGetCustomerWalletQuery, useGetSettingsQuery } from '@/store/api/customerApiSlice';
+import { useGetCustomerWalletQuery } from '@/store/api/customerApiSlice';
 
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
@@ -61,7 +61,6 @@ export default function CustomerProfileScreen() {
 
     const { data: meData, refetch: refetchMe } = useGetMeQuery(undefined);
     const { data: walletData, refetch: refetchWallet } = useGetCustomerWalletQuery(undefined);
-    const { data: settingsData } = useGetSettingsQuery(undefined);
 
     const [isRefreshing, setIsRefreshing] = useState(false);
     const onRefresh = useCallback(async () => {
@@ -77,11 +76,7 @@ export default function CustomerProfileScreen() {
         ? Number(walletData.balance).toLocaleString()
         : '0';
 
-    const supportPhone = toWhatsAppNumber(
-        (settingsData as any)?.data?.adminPhone ||
-        (settingsData as any)?.adminPhone ||
-        SUPPORT_WHATSAPP,
-    );
+    const supportPhone = toWhatsAppNumber(SUPPORT_WHATSAPP);
 
     const openContactUs = useCallback(() => {
         Linking.openURL(`https://wa.me/${supportPhone}`).catch(() => {

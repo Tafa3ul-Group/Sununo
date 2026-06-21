@@ -565,6 +565,7 @@ const styles = StyleSheet.create({
     marginBottom: 20 },
   // Task 2.4: stepTitle fontSize changed from 22 to 20
   stepTitle: {
+    width: "100%",
     fontSize: 14,
     fontFamily: "Alexandria-Medium",
     color: "#1E293B",
@@ -611,11 +612,12 @@ const styles = StyleSheet.create({
   inputGroup: {
     marginBottom: 16 },
   label: {
+    width: "100%",
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: "#1E293B",
     marginBottom: normalize.height(8),
-    lineHeight: normalize.font(14),
+    lineHeight: normalize.font(22),
     paddingTop: 4 },
   input: {
     width: "100%",

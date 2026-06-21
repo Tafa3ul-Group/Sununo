@@ -22,7 +22,6 @@ import {
   useLogoutUserMutation,
   useDeleteProfileMutation
 } from '@/store/api/apiSlice';
-import { useGetSettingsQuery } from '@/store/api/customerApiSlice';
 import { PRIVACY_POLICY_URL, SUPPORT_WHATSAPP, toWhatsAppNumber } from '@/constants/links';
 import { logout } from '@/store/authSlice';
 import { useDirection } from '@/i18n';
@@ -61,12 +60,7 @@ export default function ProviderProfileScreen() {
   const [logoutApi] = useLogoutUserMutation();
   const [deleteProfile] = useDeleteProfileMutation();
 
-  const { data: settingsData } = useGetSettingsQuery(undefined);
-  const supportPhone = toWhatsAppNumber(
-    (settingsData as any)?.data?.adminPhone ||
-    (settingsData as any)?.adminPhone ||
-    SUPPORT_WHATSAPP,
-  );
+  const supportPhone = toWhatsAppNumber(SUPPORT_WHATSAPP);
   const openContactUs = () => {
     Linking.openURL(`https://wa.me/${supportPhone}`).catch(() => {
       Linking.openURL(`tel:+${supportPhone}`).catch(() => {});

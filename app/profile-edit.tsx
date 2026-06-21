@@ -18,6 +18,7 @@ import {
     useVerifyPhoneNumberChangeMutation
 } from '@/store/api/customerApiSlice';
 import * as ImagePicker from 'expo-image-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
@@ -58,6 +59,17 @@ export default function ProfileEditScreen() {
       ? new Date(userData.birthday).toISOString().split('T')[0]
       : '',
   );
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const onBirthDateChange = (_event: any, selected?: Date) => {
+    if (Platform.OS === 'android') setShowDatePicker(false);
+    if (selected) {
+      const y = selected.getFullYear();
+      const m = String(selected.getMonth() + 1).padStart(2, '0');
+      const d = String(selected.getDate()).padStart(2, '0');
+      setBirthDate(`${y}-${m}-${d}`);
+    }
+  };
 
   const phone = userData?.phone || '';
 
@@ -241,16 +253,41 @@ export default function ProfileEditScreen() {
               <ThemedText style={styles.label}>
                 {isRTL ? 'تاريخ الميلاد' : 'Date of Birth'}
               </ThemedText>
-              <View style={styles.inputWrapper}>
-                <TextInput
-                  style={[styles.input, { textAlign }]}
-                  value={birthDate}
-                  onChangeText={setBirthDate}
-                  placeholder="YYYY-MM-DD"
-                  placeholderTextColor="#C4C4C4"
-                  keyboardType="numbers-and-punctuation"
-                />
-              </View>
+              <TouchableOpacity
+                style={styles.inputWrapper}
+                activeOpacity={0.7}
+                onPress={() => setShowDatePicker(true)}
+              >
+                <ThemedText
+                  style={[
+                    styles.input,
+                    { textAlign, color: birthDate ? Colors.text.primary : '#C4C4C4' },
+                  ]}
+                >
+                  {birthDate || 'YYYY-MM-DD'}
+                </ThemedText>
+              </TouchableOpacity>
+              {showDatePicker && (
+                <View>
+                  <DateTimePicker
+                    value={birthDate ? new Date(birthDate) : new Date(2000, 0, 1)}
+                    mode="date"
+                    maximumDate={new Date()}
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    onChange={onBirthDateChange}
+                  />
+                  {Platform.OS === 'ios' && (
+                    <TouchableOpacity
+                      style={styles.dateDoneBtn}
+                      onPress={() => setShowDatePicker(false)}
+                    >
+                      <ThemedText style={styles.dateDoneText}>
+                        {isRTL ? 'تم' : 'Done'}
+                      </ThemedText>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              )}
             </View>
 
             {/* رقم الهاتف */}
@@ -478,6 +515,17 @@ const styles = StyleSheet.create({
     fontFamily: "Alexandria-Medium",
     color: '#1E293B',
     flex: 1 },
+  dateDoneBtn: {
+    alignSelf: 'center',
+    marginTop: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 8,
+    backgroundColor: Colors.primary,
+    borderRadius: 12 },
+  dateDoneText: {
+    color: '#FFFFFF',
+    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(14) },
 
   // ── Phone row ────────────────────────────────────────────────────────────
   phoneRow: {
