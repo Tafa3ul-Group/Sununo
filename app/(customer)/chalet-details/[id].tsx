@@ -754,7 +754,12 @@ export default function ChaletDetailScreen() {
           {chaletDescription ? (
             <>
               <SectionHeader title={t("chalet.details.overview")} />
-              <View style={styles.descriptionContainer}>
+              <View
+                style={[
+                  styles.descriptionContainer,
+                  { direction: isRTL ? "rtl" : "ltr" },
+                ]}
+              >
                 <ThemedText
                   style={[
                     styles.descriptionText,
@@ -1247,14 +1252,14 @@ const styles = StyleSheet.create({
   },
   sectionHeaderContainer: {
     justifyContent: "center",
-    marginBottom: 5,
-    marginTop: 20,
-    paddingVertical: 10,
+    marginBottom: 4,
+    marginTop: 14,
+    paddingVertical: 2,
   },
   sectionTitle: {
     fontSize: 18,
     fontFamily: "Alexandria-Medium",
-    marginVertical: 15,
+    marginVertical: 4,
     lineHeight: 28,
   },
   specsRow: { flexWrap: "wrap", gap: 8 },
