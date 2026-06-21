@@ -53,11 +53,11 @@ export function SecondarySelect({
   };
 
   const MENU_WIDTH = Math.max(anchor.width, 180);
-  // Align the menu under the trigger; in RTL pin its right edge to the
-  // trigger's right edge, in LTR pin the left edges.
-  const menuPosition: ViewStyle = isRTL
-    ? { right: Math.max(8, SCREEN_WIDTH - (anchor.x + anchor.width)) }
-    : { left: Math.max(8, anchor.x) };
+  // Position with an absolute LEFT (physical) so it never flips under native
+  // RTL. In RTL pin the menu's right edge to the trigger's right edge.
+  const menuLeft = isRTL
+    ? Math.max(8, anchor.x + anchor.width - MENU_WIDTH)
+    : Math.max(8, anchor.x);
 
   return (
     <>
@@ -79,12 +79,18 @@ export function SecondarySelect({
         animationType="fade"
         onRequestClose={() => setOpen(false)}
       >
-        <Pressable style={styles.backdrop} onPress={() => setOpen(false)}>
+        <Pressable
+          style={[styles.backdrop, { direction: "ltr" }]}
+          onPress={() => setOpen(false)}
+        >
           <View
             style={[
               styles.menu,
-              { width: MENU_WIDTH, top: anchor.y + anchor.height + 6 },
-              menuPosition,
+              {
+                width: MENU_WIDTH,
+                top: anchor.y + anchor.height + 6,
+                left: menuLeft,
+              },
             ]}
           >
             {options.map((opt, idx) => {
