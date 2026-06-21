@@ -12,7 +12,6 @@ import { ThemedText } from "@/components/themed-text";
 import { HostContactCard } from "@/components/user/host-contact-card";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import {
-  SolarBedBold,
   SolarForbiddenCircleLineDuotone,
   SolarMoonBold,
   SolarStarBold,
@@ -252,7 +251,11 @@ export function ChaletDetailsBody({
                   {isMorning ? (
                     <SolarSunBold size={22} color="#FBBF24" />
                   ) : isOvernight ? (
-                    <SolarBedBold size={22} color="#0EA5E9" />
+                    <ExpoImage
+                      source={require("@/assets/shifts/sleep.svg")}
+                      style={{ width: 24, height: 24 }}
+                      contentFit="contain"
+                    />
                   ) : (
                     <SolarMoonBold size={22} color="#6366F1" />
                   )}
