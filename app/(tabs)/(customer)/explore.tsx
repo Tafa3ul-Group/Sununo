@@ -1684,10 +1684,12 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   revComplexCardFlat: {
-    backgroundColor: "#F8FAFC",
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 24,
+    padding: 20,
+    marginVertical: 10,
+    borderWidth: 1,
+    borderColor: "#F3F4F6",
   },
   revHeaderMerged: {
     alignItems: "flex-start",
@@ -1696,10 +1698,13 @@ const styles = StyleSheet.create({
   revRatingCornerMerged: {
     alignItems: "center",
     gap: 4,
+    marginTop: 4,
   },
   revRateNumMerged: {
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: "Alexandria-Medium",
+    color: "#111827",
+    lineHeight: 24,
   },
   userInfoRowMerged: {
     flex: 1,
@@ -1709,29 +1714,31 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   reviewerNameMerged: {
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: "Alexandria-Medium",
-    color: "#1E293B",
+    color: "#111827",
+    lineHeight: 26,
   },
   revMessageMerged: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
-    color: "#64748B",
-    marginTop: 4,
+    color: "#6B7280",
+    marginTop: 8,
+    lineHeight: 22,
+    fontFamily: "LamaSans-Regular",
   },
   avatarCircleMerged: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     overflow: "hidden",
-    backgroundColor: "#E2E8F0",
+    backgroundColor: "#F3F4F6",
   },
   userAvatarImgMerged: {
     width: "100%",
     height: "100%",
   },
   dateWrapperMerged: {
-    marginTop: 8,
+    marginTop: 20,
   },
   revTimeTextMerged: {
     fontSize: 13,

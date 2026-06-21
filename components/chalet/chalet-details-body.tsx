@@ -383,11 +383,15 @@ export function ChaletDetailsBody({
         </View>
       </View>
 
-      {/* Host */}
+      {/* Host — owner photo takes priority, fall back to the default avatar */}
       <HostContactCard
         name={chalet?.owner?.name || (isRTL ? "المضيف" : "Host")}
         phone={chalet?.owner?.phone}
-        avatar={chalet?.owner?.image ? getImageSrc(chalet.owner.image) : null}
+        avatar={
+          chalet?.owner?.image
+            ? getImageSrc(chalet.owner.image)
+            : require("@/assets/profile.svg")
+        }
         isRTL={isRTL}
       />
     </View>

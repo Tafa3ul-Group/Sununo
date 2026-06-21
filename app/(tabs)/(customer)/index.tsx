@@ -697,7 +697,8 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary,
-    lineHeight: normalize.font(14),
+    lineHeight: normalize.font(24),
+    paddingVertical: 2,
     flexShrink: 1,
   },
   seeAll: {
