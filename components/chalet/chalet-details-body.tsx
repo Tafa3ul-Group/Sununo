@@ -184,13 +184,13 @@ export function ChaletDetailsBody({
 
       {/* Get directions (drawer only) — full width */}
       {showRouteButton && (
-        <View style={{ marginTop: 16, width: "100%" }}>
+        <View style={{ marginTop: 16, flexDirection: "row" }}>
           <SecondaryButton
             label={isRTL ? "اذهب للمسار" : "Get Directions"}
             isActive
             activeColor="#22C55E"
             activeTextColor="#FFFFFF"
-            style={{ width: "100%" }}
+            style={{ flex: 1 }}
             icon={
               <Svg width={18} height={18} viewBox="0 0 20 20" fill="none">
                 <Path

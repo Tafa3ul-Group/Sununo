@@ -401,7 +401,7 @@ export default function ExploreScreen() {
   );
 
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const snapPoints = useMemo(() => ["35%", "94%"], []);
+  const snapPoints = useMemo(() => ["55%", "94%"], []);
 
   // Handle auto-selection if ID is passed in params
   useEffect(() => {
