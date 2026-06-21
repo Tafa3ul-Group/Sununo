@@ -560,6 +560,19 @@ export default function ExploreScreen() {
     [chaletDetails.longitude, chaletDetails.latitude],
   );
 
+  // Lowest active shift price for the drawer footer (matches the cards / page).
+  const drawerStartingPrice = useMemo(() => {
+    const shifts = chaletDetails?.shifts || [];
+    const prices = shifts
+      .flatMap((s: any) => (s.pricing || []).map((p: any) => Number(p.price)))
+      .filter((p: number) => p > 1);
+    if (prices.length > 0) return Math.min(...prices).toLocaleString();
+    const fallback = Number(
+      String(selectedChalet?.price ?? "0").replace(/,/g, ""),
+    );
+    return fallback > 0 ? fallback.toLocaleString() : "0";
+  }, [chaletDetails, selectedChalet]);
+
   const renderFooter = useCallback(
     (props: any) => {
       if (!selectedChalet) return null;
@@ -572,12 +585,30 @@ export default function ExploreScreen() {
             ]}
           >
             <View
-              style={[styles.footerContent, { flexDirection: "row", direction: isRTL ? "rtl" : "ltr" }]}
+              style={[
+                styles.footerContent,
+                {
+                  flexDirection: "row",
+                  direction: isRTL ? "rtl" : "ltr",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                },
+              ]}
             >
-              <View style={[styles.priceContainer, { justifyContent: "center" }]}>
-                <ThemedText style={[styles.footerPrice, { textAlign: textStart }]}>
+              <View style={{ flex: 1, alignItems: isRTL ? "flex-end" : "flex-start" }}>
+                <ThemedText
+                  style={{
+                    fontSize: normalize.font(8),
+                    color: "#6B7280",
+                    fontFamily: "Alexandria-Medium",
+                    textAlign: textStart,
+                  }}
+                >
+                  {isRTL ? "يبدأ من" : "Starts from"}
+                </ThemedText>
+                <ThemedText style={[styles.footerPrice, { textAlign: textStart, marginTop: 2 }]}>
                   {isRTL ? "" : "IQD "}
-                  {selectedChalet.price}
+                  {drawerStartingPrice}
                   {isRTL ? " د.ع" : ""}
                 </ThemedText>
               </View>
@@ -594,14 +625,14 @@ export default function ExploreScreen() {
                     `/(customer)/booking/complete?id=${selectedChalet.id}`,
                   );
                 }}
-                style={{ width: normalize.width(140) }}
+                style={{ width: normalize.width(150) }}
               />
             </View>
           </View>
         </BottomSheetFooter>
       );
     },
-    [selectedChalet, isRTL, insets.bottom, flexDir, textStart, userType, router],
+    [selectedChalet, isRTL, insets.bottom, flexDir, textStart, userType, router, drawerStartingPrice],
   );
 
   const handleSelectChalet = (chalet: any) => {
