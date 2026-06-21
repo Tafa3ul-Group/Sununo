@@ -62,7 +62,14 @@ export default function BookingSuccessDetailsScreen() {
     },
   );
 
-  const depositPercentage = Number(booking?.chalet?.depositPercentage) || Number(booking?.chalet?.minDepositPercentage) || 0;
+  // Fall back to minDepositPercentage, then derive from the stored deposit
+  // amount when the booking response omits the chalet's deposit fields.
+  const depositPercentage =
+    Number(booking?.chalet?.depositPercentage) ||
+    Number(booking?.chalet?.minDepositPercentage) ||
+    (Number(booking?.depositAmount) > 0 && Number(booking?.totalPrice) > 0
+      ? Math.round((Number(booking.depositAmount) / Number(booking.totalPrice)) * 100)
+      : 0);
 
   const [selectedMethod, setSelectedMethod] = useState<"wayl" | "wallet">("wayl");
   const [paymentType, setPaymentType] = useState<"DEPOSIT" | "FULL">("FULL");
@@ -234,7 +241,12 @@ export default function BookingSuccessDetailsScreen() {
   const basePriceVal = Number(booking?.basePrice || 0);
   const extraGuestsPriceVal = Number(booking?.extraGuestsPrice || 0);
   const addonsPriceVal = Number(booking?.addonsPrice || 0);
-  const depositAmountVal = Math.round((Number(booking?.totalPrice || 0) * depositPercentage) / 100);
+  // Prefer the backend-computed deposit (it already falls back to
+  // minDepositPercentage); only recompute if it wasn't stored, so the amount
+  // never shows 0 when the booking response omits the chalet's deposit fields.
+  const depositAmountVal = Number(booking?.depositAmount) > 0
+    ? Number(booking.depositAmount)
+    : Math.round((Number(booking?.totalPrice || 0) * depositPercentage) / 100);
 
   // ── Derived state flags (single source of truth = booking.status) ──────────
   const status = booking?.status;

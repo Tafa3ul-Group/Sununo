@@ -322,9 +322,15 @@ export const apiSlice = createApi({
       query: () => "/provider/chalets/amenities/all",
     }),
 
-    // Amenities the admin chose to show as quick filter chips on the home screen
+    // Amenities the admin chose to show as quick filter chips on the home screen.
+    // The endpoint returns features (flagged showInFilter) grouped by category;
+    // the home chips filter by feature id, so flatten to a single feature list.
     getHomeFilterAmenities: builder.query<any[], void>({
-      query: () => "/customer/amenities/home-filter",
+      query: () => "/customer/amenities/filter",
+      transformResponse: (res: any) => {
+        const categories = Array.isArray(res) ? res : res?.data || [];
+        return categories.flatMap((cat: any) => cat?.features || []);
+      },
     }),
 
     getChaletAmenities: builder.query<any[], string>({
