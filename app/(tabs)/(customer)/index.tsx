@@ -392,6 +392,29 @@ export default function HomeScreen() {
     }));
   }, [rawChalets, isRTL]);
 
+  // Chalet pins for the home preview map (only those with valid coordinates).
+  const mapMarkers = useMemo(
+    () =>
+      (rawChalets || [])
+        .filter(
+          (c: any) =>
+            c?.latitude != null &&
+            c?.longitude != null &&
+            !isNaN(Number(c.latitude)) &&
+            !isNaN(Number(c.longitude)),
+        )
+        .map((c: any) => ({
+          id: c.id,
+          title: c.name,
+          image: getImageSrc(c.images?.[0]?.url),
+          coordinates: [Number(c.longitude), Number(c.latitude)] as [
+            number,
+            number,
+          ],
+        })),
+    [rawChalets],
+  );
+
   const allTab = {
     id: "all",
     label: t("home.categories.all"),
@@ -521,6 +544,7 @@ export default function HomeScreen() {
           <AppMap
             style={styles.map}
             showMarker
+            markers={mapMarkers}
             onPressCard={navigateToDetails}
           />
           {/* overlay to intercept taps and navigate */}
