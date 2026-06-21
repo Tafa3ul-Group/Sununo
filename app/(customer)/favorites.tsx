@@ -7,6 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { SolarHeartBold } from "@/components/icons/solar-icons";
 import { useRouter } from 'expo-router';
 import { HorizontalCard } from '@/components/user/horizontal-card';
+import { EmptyState } from '@/components/ui/empty-state';
 import { HeaderSection } from '@/components/header-section';
 import { useGetCustomerFavoritesQuery, useToggleFavoriteMutation } from '@/store/api/customerApiSlice';
 import { getImageSrc } from '@/hooks/useImageSrc';
@@ -79,13 +80,11 @@ export default function FavoritesScreen() {
             </View>
           ))
         ) : (
-          <View style={styles.emptyState}>
-            <SolarHeartBold size={80} color="#E2E8F0" />
-            <ThemedText style={styles.emptyTitle}>{t('profile.review.noFavorites')}</ThemedText>
-            <ThemedText style={styles.emptySubtitle}>
-              {t('profile.review.noFavoritesDesc')}
-            </ThemedText>
-          </View>
+          <EmptyState
+            icon={<SolarHeartBold size={64} color="#EA2129" />}
+            title={t('profile.review.noFavorites')}
+            description={t('profile.review.noFavoritesDesc')}
+          />
         )}
       </ScrollView>
     </SafeAreaView>

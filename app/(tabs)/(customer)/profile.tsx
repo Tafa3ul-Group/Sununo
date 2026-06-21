@@ -3,6 +3,7 @@ import {
     ProfileShape,
     SolarCalendarBold,
     SolarGlobalBold,
+    SolarHeartBold,
     SolarReviewsHeartBold,
     SolarLogoutBold,
     SolarPhoneBold,
@@ -98,6 +99,13 @@ export default function CustomerProfileScreen() {
             shape: 'red' as const,
             icon: <SolarCalendarBold size={20} color="white" />,
             route: '/(tabs)/(customer)/bookings',
+        },
+        {
+            id: 'favorites',
+            title: t('headers.favorites'),
+            shape: 'pink' as const,
+            icon: <SolarHeartBold size={20} color="white" />,
+            route: '/favorites',
         },
         {
             id: 'reviews',

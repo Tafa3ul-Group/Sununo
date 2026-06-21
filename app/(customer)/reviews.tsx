@@ -1,6 +1,11 @@
 import { HeaderSection } from "@/components/header-section";
 import { ReviewCard } from "@/components/user/review-card";
 import { SecondaryButton } from "@/components/user/secondary-button";
+import { EmptyState } from "@/components/ui/empty-state";
+import {
+  SolarReviewsHeartBold,
+  SolarCalendarAddBold,
+} from "@/components/icons/solar-icons";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { useGetCustomerBookingsQuery } from "@/store/api/customerApiSlice";
 import { useRouter } from "expo-router";
@@ -82,6 +87,7 @@ export default function ReviewsScreen() {
   }, [completedBookings, allBookings, isArabic]);
 
   const filteredReviews = activeTab === 'pending' ? reviews.pending : reviews.reviewed;
+  const loading = loadingCompleted || loadingAll;
 
   const renderReviewItem = ({ item }: { item: any }) => {
     return (
@@ -132,8 +138,35 @@ export default function ReviewsScreen() {
         data={filteredReviews}
         renderItem={renderReviewItem}
         keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={
+          filteredReviews.length === 0
+            ? styles.emptyListContent
+            : styles.listContent
+        }
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          loading ? null : activeTab === "pending" ? (
+            <EmptyState
+              icon={<SolarCalendarAddBold size={64} color="#035DF9" />}
+              title={isArabic ? "لا توجد حجوزات للتقييم" : "Nothing to review yet"}
+              description={
+                isArabic
+                  ? "بعد إتمام إقامتك، ستظهر هنا الحجوزات التي يمكنك تقييمها."
+                  : "Once you complete a stay, bookings you can review will appear here."
+              }
+            />
+          ) : (
+            <EmptyState
+              icon={<SolarReviewsHeartBold size={64} color="#035DF9" />}
+              title={isArabic ? "لا توجد مراجعات بعد" : "No reviews yet"}
+              description={
+                isArabic
+                  ? "لم تقم بكتابة أي مراجعة حتى الآن."
+                  : "You haven't written any reviews yet."
+              }
+            />
+          )
+        }
       />
     </View>
   );
@@ -151,4 +184,7 @@ const styles = StyleSheet.create({
     flex: 1 },
   listContent: {
     paddingHorizontal: 16,
-    paddingBottom: 40 } });
+    paddingBottom: 40 },
+  emptyListContent: {
+    flexGrow: 1,
+    justifyContent: "center" } });
