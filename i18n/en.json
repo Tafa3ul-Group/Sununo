@@ -61,7 +61,11 @@
     "wallet": {
       "balance": "Current Balance",
       "withdraw": "Withdraw",
-      "transactions": "Transactions"
+      "transactions": "Transactions",
+      "walletCredit": "Wallet Credit",
+      "walletDebit": "Wallet Debit",
+      "noTransactions": "No Transactions",
+      "noTransactionsDesc": "Your wallet activity will appear here."
     },
     "contactUs": "Contact Us",
     "privacyPolicy": "Privacy Policy",

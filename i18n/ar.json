@@ -63,7 +63,11 @@
     "wallet": {
       "balance": "رصيدك الحالي",
       "withdraw": "سحب",
-      "transactions": "سجل المعاملات"
+      "transactions": "سجل المعاملات",
+      "walletCredit": "إيداع في المحفظة",
+      "walletDebit": "خصم من المحفظة",
+      "noTransactions": "لا توجد معاملات",
+      "noTransactionsDesc": "ستظهر حركات محفظتك هنا عند حدوثها."
     },
     "edit": {
       "birthDate": "تاريخ الميلاد",
