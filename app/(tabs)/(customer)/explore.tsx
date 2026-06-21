@@ -595,7 +595,7 @@ export default function ExploreScreen() {
                 },
               ]}
             >
-              <View style={{ flex: 1, alignItems: isRTL ? "flex-end" : "flex-start" }}>
+              <View>
                 <ThemedText
                   style={{
                     fontSize: normalize.font(8),
