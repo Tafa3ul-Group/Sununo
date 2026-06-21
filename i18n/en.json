@@ -286,7 +286,11 @@
   "reviews": {
     "title": "Reviews",
     "pending": "Pending",
-    "reviewed": "Reviewed"
+    "reviewed": "Reviewed",
+    "noPending": "Nothing to review yet",
+    "noPendingDesc": "Once you complete a stay, bookings you can review will appear here.",
+    "noReviewed": "No reviews yet",
+    "noReviewedDesc": "You haven't written any reviews yet."
   },
   "gallery": {
     "title": "Gallery",

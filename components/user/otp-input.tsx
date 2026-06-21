@@ -84,6 +84,7 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     alignItems: 'center',
+    direction: 'ltr',
     marginVertical: 15 },
   otpContainer: {
     flexDirection: 'row',

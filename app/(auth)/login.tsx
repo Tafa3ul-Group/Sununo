@@ -317,13 +317,19 @@ export function LoginScreen() {
 
             {step === "phone" ? (
               <View style={styles.inputGroup}>
-                <ThemedText style={[styles.label, { textAlign: textStart }]}>
+                <ThemedText
+                  style={[
+                    styles.label,
+                    { textAlign: isRTL ? "right" : "left", writingDirection: isRTL ? "rtl" : "ltr" },
+                  ]}
+                >
                   {t("auth.phone")}
                 </ThemedText>
                 <TextInput
                   style={[
                     styles.input,
-                    { textAlign: textStart },
+                    // Phone is always LTR digits, but aligned to the start side.
+                    { textAlign: isRTL ? "right" : "left", writingDirection: "ltr" },
                     phoneError ? { borderColor: "#EF4444" } : null,
                   ]}
                   placeholder={t("auth.phonePlaceholder")}
@@ -346,7 +352,12 @@ export function LoginScreen() {
               </View>
             ) : (
               <View style={styles.inputGroup}>
-                <ThemedText style={[styles.label, { textAlign: textStart }]}>
+                <ThemedText
+                  style={[
+                    styles.label,
+                    { textAlign: isRTL ? "right" : "left", writingDirection: isRTL ? "rtl" : "ltr" },
+                  ]}
+                >
                   {t("auth.verificationCode")}
                 </ThemedText>
                 <OtpInput code={code} setCode={setCode} length={6} />

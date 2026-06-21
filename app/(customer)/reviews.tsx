@@ -3,9 +3,10 @@ import { ReviewCard } from "@/components/user/review-card";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
-  SolarReviewsHeartBold,
-  SolarCalendarAddBold,
+  SolarNotebookBold,
+  SolarStarBold,
 } from "@/components/icons/solar-icons";
+import { Colors } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { useGetCustomerBookingsQuery } from "@/store/api/customerApiSlice";
 import { useRouter } from "expo-router";
@@ -147,23 +148,15 @@ export default function ReviewsScreen() {
         ListEmptyComponent={
           loading ? null : activeTab === "pending" ? (
             <EmptyState
-              icon={<SolarCalendarAddBold size={64} color="#035DF9" />}
-              title={isArabic ? "لا توجد حجوزات للتقييم" : "Nothing to review yet"}
-              description={
-                isArabic
-                  ? "بعد إتمام إقامتك، ستظهر هنا الحجوزات التي يمكنك تقييمها."
-                  : "Once you complete a stay, bookings you can review will appear here."
-              }
+              icon={<SolarNotebookBold size={56} color={Colors.primary} />}
+              title={t("reviews.noPending")}
+              description={t("reviews.noPendingDesc")}
             />
           ) : (
             <EmptyState
-              icon={<SolarReviewsHeartBold size={64} color="#035DF9" />}
-              title={isArabic ? "لا توجد مراجعات بعد" : "No reviews yet"}
-              description={
-                isArabic
-                  ? "لم تقم بكتابة أي مراجعة حتى الآن."
-                  : "You haven't written any reviews yet."
-              }
+              icon={<SolarStarBold size={56} color={Colors.primary} />}
+              title={t("reviews.noReviewed")}
+              description={t("reviews.noReviewedDesc")}
             />
           )
         }

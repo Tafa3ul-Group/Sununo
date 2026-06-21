@@ -1,5 +1,5 @@
 import { HeaderSection } from '@/components/header-section';
-import { SolarCalendarAddBold, SolarStarBold } from "@/components/icons/solar-icons";
+import { SolarCalendarBold, SolarStarBold } from "@/components/icons/solar-icons";
 import { ThemedText } from '@/components/themed-text';
 import { BookingCardSkeleton } from '@/components/ui/skeleton-loader';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -287,7 +287,7 @@ export default function BookingsScreen() {
           bookings.map(renderBookingItem)
         ) : (
           <EmptyState
-            icon={<SolarCalendarAddBold size={normalize.width(64)} color={Colors.primary} />}
+            icon={<SolarCalendarBold size={normalize.width(56)} color={Colors.primary} />}
             title={t('booking.noBookings')}
             description={t('booking.noBookingsDesc')}
             actionLabel={t('booking.exploreNow')}
