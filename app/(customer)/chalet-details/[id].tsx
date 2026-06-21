@@ -20,13 +20,9 @@ import { PrimaryButton } from "@/components/user/primary-button";
 import { ReviewSubmissionSheet } from "@/components/user/review-submission-sheet";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize, Shadows } from "@/constants/theme";
-<<<<<<< HEAD
-import { getImageSrc, getAvatarSrc } from "@/hooks/useImageSrc";
-=======
 import { logEvent } from "@/services/analytics";
 import { ANALYTICS_EVENTS, ANALYTICS_CURRENCY } from "@/constants/analytics-events";
-import { getImageSrc } from "@/hooks/useImageSrc";
->>>>>>> 2219639a8b3a344f815ed020d9ec8c908f31e15d
+import { getImageSrc, getAvatarSrc } from "@/hooks/useImageSrc";
 import { RootState } from "@/store";
 import {
   useAddFavoriteMutation,
