@@ -2,7 +2,7 @@ import { HeaderSection } from "@/components/header-section";
 import { EmptyState } from "@/components/ui/empty-state";
 import { WalletCard } from "@/components/user/wallet-card";
 import { BookingCardSkeleton } from "@/components/ui/skeleton-loader";
-import { SolarBanknoteBold } from "@/components/icons/solar-icons";
+import { SolarBanknoteBold, SolarWalletBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { Colors, normalize } from "@/constants/theme";
 import { SUPPORT_WHATSAPP } from "@/constants/links";
@@ -130,6 +130,14 @@ export default function WalletTransactionsScreen() {
             <BookingCardSkeleton key={i} />
           ))}
         </View>
+      ) : (Array.isArray(transactions) ? transactions : []).length === 0 ? (
+        <View style={{ flex: 1 }}>
+          <EmptyState
+            icon={<SolarWalletBold size={56} color={Colors.primary} />}
+            title={t("profile.wallet.noTransactions")}
+            description={t("profile.wallet.noTransactionsDesc")}
+          />
+        </View>
       ) : (
         <FlashList
           data={Array.isArray(transactions) ? transactions : []}
@@ -145,13 +153,6 @@ export default function WalletTransactionsScreen() {
               onRefresh={refetch}
               tintColor={Colors.primary}
               colors={[Colors.primary]}
-            />
-          }
-          ListEmptyComponent={
-            <EmptyState
-              icon={<SolarBanknoteBold size={56} color={Colors.primary} />}
-              title={t("profile.wallet.noTransactions")}
-              description={t("profile.wallet.noTransactionsDesc")}
             />
           }
         />

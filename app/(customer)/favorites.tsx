@@ -96,6 +96,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white' },
   scrollContent: {
+    flexGrow: 1,
     padding: 16,
     paddingBottom: 100 },
   cardWrapper: {

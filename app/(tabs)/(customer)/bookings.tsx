@@ -301,7 +301,7 @@ export default function BookingsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
-  scrollContent: { paddingHorizontal: 20, paddingBottom: 40, paddingTop: 10 },
+  scrollContent: { flexGrow: 1, paddingHorizontal: 20, paddingBottom: 40, paddingTop: 10 },
 
   bookingCardContainer: {
     backgroundColor: '#FFF',

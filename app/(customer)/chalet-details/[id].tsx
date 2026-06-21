@@ -741,7 +741,11 @@ export default function ChaletDetailScreen() {
 
           {/* الموقع */}
           <SectionHeader title={t("chalet.details.location")} />
-          <View style={styles.mapCardFlat}>
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={() => router.push("/(tabs)/(customer)/explore")}
+            style={styles.mapCardFlat}
+          >
             <View style={styles.mapInner}>
               {showMap &&
                 MapboxComponent?.MapView &&
@@ -770,8 +774,12 @@ export default function ChaletDetailScreen() {
                       chalet.latitude || 33.3152,
                     ]}
                   >
-                    <View style={styles.customPin}>
-                      <SolarMapPointBold size={32} color="#035DF9" />
+                    <View style={styles.mapImageMarker}>
+                      <ExpoImage
+                        source={images[0]}
+                        style={styles.mapImageMarkerImg}
+                        contentFit="cover"
+                      />
                     </View>
                   </MapboxComponent.PointAnnotation>
                 </MapboxComponent.MapView>
@@ -792,25 +800,24 @@ export default function ChaletDetailScreen() {
                     }}
                     style={styles.mapImg}
                   />
-                  <View style={styles.pinCenterFallback}>
-                    <SolarMapPointBold size={32} color="#035DF9" />
-                  </View>
-                  <View style={styles.expoGoBanner}>
-                    <ThemedText style={styles.expoGoText}>
-                      {isRTL
-                        ? "الخريطة التفاعلية تتطلب Build خاص"
-                        : "Interactive map requires Dev Build"}
-                    </ThemedText>
+                  <View style={styles.mapImageMarker}>
+                    <ExpoImage
+                      source={images[0]}
+                      style={styles.mapImageMarkerImg}
+                      contentFit="cover"
+                    />
                   </View>
                 </View>
               )}
+              {/* Transparent overlay so tapping the map opens the explore map */}
+              <View style={StyleSheet.absoluteFill} />
             </View>
             <View style={styles.mapLocLabel}>
               <ThemedText style={styles.mapLocText}>
                 {chaletLocation}
               </ThemedText>
             </View>
-          </View>
+          </TouchableOpacity>
 
           {/* المضيف */}
           <HostContactCard
@@ -1350,6 +1357,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  mapImageMarker: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    borderWidth: 3,
+    borderColor: "#FFFFFF",
+    backgroundColor: "#FFFFFF",
+    overflow: "hidden",
+    alignItems: "center",
+    justifyContent: "center",
+    ...Shadows.medium,
+  },
+  mapImageMarkerImg: { width: "100%", height: "100%" },
   pinCenterFallback: { position: "absolute", top: "40%", left: "46%" },
   expoGoBanner: {
     position: "absolute",

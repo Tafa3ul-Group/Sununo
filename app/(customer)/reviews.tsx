@@ -2,10 +2,7 @@ import { HeaderSection } from "@/components/header-section";
 import { ReviewCard } from "@/components/user/review-card";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { EmptyState } from "@/components/ui/empty-state";
-import {
-  SolarNotebookBold,
-  SolarStarBold,
-} from "@/components/icons/solar-icons";
+import { SolarReviewsHeartBold } from "@/components/icons/solar-icons";
 import { Colors } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { useGetCustomerBookingsQuery } from "@/store/api/customerApiSlice";
@@ -148,13 +145,13 @@ export default function ReviewsScreen() {
         ListEmptyComponent={
           loading ? null : activeTab === "pending" ? (
             <EmptyState
-              icon={<SolarNotebookBold size={56} color={Colors.primary} />}
+              icon={<SolarReviewsHeartBold size={56} color={Colors.primary} />}
               title={t("reviews.noPending")}
               description={t("reviews.noPendingDesc")}
             />
           ) : (
             <EmptyState
-              icon={<SolarStarBold size={56} color={Colors.primary} />}
+              icon={<SolarReviewsHeartBold size={56} color={Colors.primary} />}
               title={t("reviews.noReviewed")}
               description={t("reviews.noReviewedDesc")}
             />
