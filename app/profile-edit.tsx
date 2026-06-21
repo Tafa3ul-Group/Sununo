@@ -2,7 +2,7 @@ import { HeaderSection } from '@/components/header-section';
 import {
     SolarAltArrowLeftBold,
     SolarAltArrowRightBold,
-    SolarPenBold
+    SolarPenNewRoundBoldDuotone
 } from '@/components/icons/solar-icons';
 import { ThemedText } from '@/components/themed-text';
 import { PrimaryButton } from '@/components/user/primary-button';
@@ -223,7 +223,7 @@ export default function ProfileEditScreen() {
                 {isUploadingImage ? (
                   <ActivityIndicator size="small" color="white" />
                 ) : (
-                  <SolarPenBold size={16} color="white" />
+                  <SolarPenNewRoundBoldDuotone size={20} color="white" />
                 )}
               </View>
             </TouchableOpacity>

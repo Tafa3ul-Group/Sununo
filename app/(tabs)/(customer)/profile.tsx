@@ -7,7 +7,7 @@ import {
     SolarReviewsHeartBold,
     SolarLogoutBold,
     SolarPhoneBold,
-    SolarProfileEdit,
+    SolarPenNewRoundBoldDuotone,
     SolarShieldBold,
     SolarUserBlockBoldDuotone,
     SolarWalletBold,
@@ -212,7 +212,7 @@ export default function CustomerProfileScreen() {
 
                     {/* Edit Icon on the opposite end */}
                     <View style={styles.editIconWrap}>
-                        <SolarProfileEdit size={32} color={Colors.primary} />
+                        <SolarPenNewRoundBoldDuotone size={32} color={Colors.primary} />
                     </View>
                 </TouchableOpacity>
 
