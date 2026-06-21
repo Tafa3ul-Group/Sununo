@@ -21,8 +21,10 @@ import {
     useToggleFavoriteMutation,
 } from "@/store/api/customerApiSlice";
 import { clearFilters, setFilters } from "@/store/filterSlice";
+import { logEvent } from "@/services/analytics";
+import { ANALYTICS_EVENTS, ANALYTICS_CURRENCY } from "@/constants/analytics-events";
 import { useRouter } from "expo-router";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
     ActivityIndicator,
@@ -116,10 +118,41 @@ export default function FilterResultsScreen() {
     });
   }, [chaletsResponse, favoriteIds, isArabic]);
 
-  const handleToggleFavorite = async (id: string) => {
+  // ── Analytics: search + view_search_results (fires when results arrive) ────
+  useEffect(() => {
+    if (isFetching || !chaletsResponse) return;
+    const term = activeFilters?.search || "";
+    logEvent(ANALYTICS_EVENTS.VIEW_SEARCH_RESULTS, {
+      search_term: term,
+      results_count: filteredChalets.length,
+      city: activeFilters?.cityName || undefined,
+      period: activeFilters?.period || undefined,
+    });
+    if (term) {
+      logEvent(ANALYTICS_EVENTS.SEARCH, { search_term: term });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chaletsResponse, isFetching]);
+
+  const handleToggleFavorite = async (chalet: any) => {
+    const wasFavorite = favoriteIds.includes(chalet.id);
     try {
-      await toggleFavorite(id).unwrap();
+      await toggleFavorite(chalet.id).unwrap();
       refetchFavorites();
+      if (!wasFavorite) {
+        const numericPrice = Number(String(chalet.price).replace(/[^\d.]/g, "")) || 0;
+        logEvent(ANALYTICS_EVENTS.ADD_TO_WISHLIST, {
+          currency: ANALYTICS_CURRENCY,
+          value: numericPrice,
+          items: [
+            {
+              item_id: String(chalet.id),
+              item_name: chalet.title,
+              price: numericPrice,
+            },
+          ],
+        });
+      }
     } catch (error) {
       console.error("Failed to toggle favorite:", error);
     }
@@ -202,7 +235,7 @@ export default function FilterResultsScreen() {
       onPress={() => router.push(`/chalet-details/${item.id}`)}
       shapeIndex={2}
       isFavorite={item.isFavorite}
-      onToggleFavorite={() => handleToggleFavorite(item.id)}
+      onToggleFavorite={() => handleToggleFavorite(item)}
     />
   );
 

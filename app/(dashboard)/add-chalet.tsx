@@ -24,6 +24,8 @@ import { PrimaryButton } from '@/components/user/primary-button';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { Colors, normalize, Spacing, Typography } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
+import { logEvent } from '@/services/analytics';
+import { ANALYTICS_EVENTS } from '@/constants/analytics-events';
 import { useDirection } from "@/i18n";
 import { RootState } from '@/store';
 import {
@@ -569,6 +571,16 @@ export default function AddChaletScreen() {
       });
 
       await createChalet(formData).unwrap();
+
+      logEvent(ANALYTICS_EVENTS.CREATE_CHALET, {
+        city_id: form.cityId,
+        shift_count: activeShifts.length,
+        feature_count: selectedFeatures.length,
+        image_count: Object.values(imagesByCategory).reduce(
+          (sum: number, arr: any) => sum + (arr?.length || 0),
+          0,
+        ),
+      });
 
       Toast.show({ type: 'success', text1: isRTL ? 'تم بنجاح' : 'Success', text2: isRTL ? 'تمت إضافة الشاليه بنجاح' : 'Chalet added successfully', position: 'bottom' });
       router.back();

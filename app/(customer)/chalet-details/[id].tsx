@@ -20,7 +20,13 @@ import { PrimaryButton } from "@/components/user/primary-button";
 import { ReviewSubmissionSheet } from "@/components/user/review-submission-sheet";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize, Shadows } from "@/constants/theme";
+<<<<<<< HEAD
 import { getImageSrc, getAvatarSrc } from "@/hooks/useImageSrc";
+=======
+import { logEvent } from "@/services/analytics";
+import { ANALYTICS_EVENTS, ANALYTICS_CURRENCY } from "@/constants/analytics-events";
+import { getImageSrc } from "@/hooks/useImageSrc";
+>>>>>>> 2219639a8b3a344f815ed020d9ec8c908f31e15d
 import { RootState } from "@/store";
 import {
   useAddFavoriteMutation,
@@ -203,8 +209,22 @@ export default function ChaletDetailScreen() {
       setShowLoginPrompt(true);
       return;
     }
+    const wasFavorite = isFavorite;
     try {
       await toggleFavorite(chaletId).unwrap();
+      if (!wasFavorite) {
+        logEvent(ANALYTICS_EVENTS.ADD_TO_WISHLIST, {
+          currency: ANALYTICS_CURRENCY,
+          value: Number(chalet.basePrice) || 0,
+          items: [
+            {
+              item_id: String(chaletId),
+              item_name: chaletName,
+              price: Number(chalet.basePrice) || 0,
+            },
+          ],
+        });
+      }
     } catch (error) {
       console.error("Failed to toggle favorite:", error);
     }
@@ -260,6 +280,24 @@ export default function ChaletDetailScreen() {
     chalet.descriptionEn ||
     chalet.description ||
     "";
+
+  // ── Analytics: view_item (fires once per chalet when its data loads) ───────
+  useEffect(() => {
+    if (!chalet?.id) return;
+    logEvent(ANALYTICS_EVENTS.VIEW_ITEM, {
+      currency: ANALYTICS_CURRENCY,
+      value: Number(chalet.basePrice) || 0,
+      items: [
+        {
+          item_id: String(chalet.id),
+          item_name: chaletName,
+          item_category: chaletCategory || chaletLocation || undefined,
+          price: Number(chalet.basePrice) || 0,
+        },
+      ],
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chalet?.id]);
 
   const availableShifts = useMemo(() => {
     if (!chalet?.shifts || chalet.shifts.length === 0) return [];
