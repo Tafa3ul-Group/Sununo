@@ -14,14 +14,17 @@ export const customerApi = apiSlice.injectEndpoints({
     /** Browse approved & active chalets (public) */
     browseCustomerChalets: builder.query({
       query: (params) => {
-        const { amenityIds, ...rest } = params || {};
+        const { amenityIds, categoryIds, ...rest } = params || {};
         return {
           url: "/customer/chalets",
           params: {
             ...rest,
-            // Send as comma-separated string so the backend receives amenityIds=id1,id2
+            // Send as comma-separated strings: amenityIds=id1,id2 & categoryIds=id1,id2
             ...(amenityIds && amenityIds.length > 0
               ? { amenityIds: amenityIds.join(",") }
+              : {}),
+            ...(categoryIds && categoryIds.length > 0
+              ? { categoryIds: categoryIds.join(",") }
               : {}),
           },
         };

@@ -322,31 +322,43 @@ export const apiSlice = createApi({
       query: () => "/provider/chalets/amenities/all",
     }),
 
-    // Amenities the admin flagged (showInFilter) to show as quick filter chips.
-    // The home chips filter chalets by feature id, so we always return a flat
-    // feature list. A feature with no icon falls back to its category icon.
+    // Admin-flagged (showInFilter) amenity filter options. The endpoint returns
+    // BOTH top-level categories and individual features; both are shown as chips.
+    // Each option carries `kind` so the screen filters categories via categoryIds
+    // and features via amenityIds. Categories come first.
     getHomeFilterAmenities: builder.query<any[], void>({
       query: () => "/customer/amenities/filter",
       transformResponse: (res: any) => {
         const body = res?.data ?? res;
 
         // Shape A — { categories: [...], features: [{ ..., categoryId }] }
-        if (body && Array.isArray(body.features)) {
+        if (body && (Array.isArray(body.features) || Array.isArray(body.categories))) {
+          const cats = (body.categories || []).map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            icon: c.icon || null,
+            kind: "category" as const,
+          }));
           const catIcon = new Map<string, any>(
             (body.categories || []).map((c: any) => [c.id, c.icon]),
           );
-          return body.features.map((f: any) => ({
-            ...f,
+          const feats = (body.features || []).map((f: any) => ({
+            id: f.id,
+            name: f.name,
             icon: f?.icon || catIcon.get(f?.categoryId) || null,
+            kind: "feature" as const,
           }));
+          return [...cats, ...feats];
         }
 
         // Shape B — [ { ...category, features: [...] } ] (grouped by category)
         if (Array.isArray(body)) {
           return body.flatMap((cat: any) =>
             (cat?.features || []).map((f: any) => ({
-              ...f,
+              id: f.id,
+              name: f.name,
               icon: f?.icon || cat?.icon || null,
+              kind: "feature" as const,
             })),
           );
         }

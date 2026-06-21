@@ -284,10 +284,18 @@ export default function HomeScreen() {
   const queryParams = React.useMemo(() => {
     const params: any = { page, limit: 10 };
 
-    // Use real amenity IDs from the API when available, else fall back to slugs.
-    if (selectedFilters.length > 0) {
-      params.amenityIds = selectedFilters.map((f) => amenityIdMap[f] || f);
-    }
+    // Chip keys are prefixed by kind: "cat:<id>" → categoryIds, "feat:<id>" →
+    // amenityIds. Unprefixed keys are built-in default slugs (pool/bbq/garden)
+    // resolved to real amenity IDs via amenityIdMap.
+    const amenityIds: string[] = [];
+    const categoryIds: string[] = [];
+    selectedFilters.forEach((key) => {
+      if (key.startsWith("cat:")) categoryIds.push(key.slice(4));
+      else if (key.startsWith("feat:")) amenityIds.push(key.slice(5));
+      else amenityIds.push(amenityIdMap[key] || key);
+    });
+    if (amenityIds.length > 0) params.amenityIds = amenityIds;
+    if (categoryIds.length > 0) params.categoryIds = categoryIds;
     return params;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtersKey, amenityIdMap, page]);
@@ -491,7 +499,9 @@ export default function HomeScreen() {
   const FILTER_OPTIONS = useMemo(() => {
     if (Array.isArray(homeFilterAmenities) && homeFilterAmenities.length > 0) {
       const dynamic = homeFilterAmenities.map((a: any) => ({
-        id: a.id,
+        // Prefix the chip key by kind so the query routes it to categoryIds
+        // (category) or amenityIds (feature). Defaults to feature.
+        id: `${a.kind === "category" ? "cat" : "feat"}:${a.id}`,
         label: isRTL
           ? a.name?.ar || a.name?.en || ""
           : a.name?.en || a.name?.ar || "",
