@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { getAppVersion, getDeviceId, getPlatform } from "@/utils/device";
 
 // API base URL — reads from environment variable with fallback
 const BASE_URL =
@@ -8,11 +9,20 @@ const BASE_URL =
 
 const baseQuery = fetchBaseQuery({
   baseUrl: BASE_URL,
-  prepareHeaders: (headers, { getState }) => {
+  prepareHeaders: async (headers, { getState }) => {
     // If we have a token in the state, use it for authenticated requests
     const token = (getState() as any).auth.token;
     if (token) {
       headers.set("authorization", `Bearer ${token}`);
+    }
+    // Client context for backend logging + the version gate. Sent on EVERY
+    // request so the server can attribute it to a device/version (guest or user).
+    headers.set("X-App-Version", getAppVersion());
+    headers.set("X-Platform", getPlatform());
+    try {
+      headers.set("X-Device-Id", await getDeviceId());
+    } catch {
+      // never block a request because the device id couldn't be read
     }
     return headers;
   },
@@ -35,6 +45,23 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
 
   return result;
 };
+
+// Shape of GET /config's version gate (per platform).
+export interface PlatformUpdateConfig {
+  latestVersion: string | null;
+  forceUpdate: boolean;
+  storeUrl: string | null;
+}
+export interface AppConfigResponse {
+  isWalletEnabled?: boolean;
+  isSindiPayEnabled?: boolean;
+  isWaylEnabled?: boolean;
+  adminPhone?: string | null;
+  update?: {
+    android: PlatformUpdateConfig;
+    ios: PlatformUpdateConfig;
+  };
+}
 
 export const unwrapListResponse = (response: any) => {
   if (Array.isArray(response)) return response;
@@ -99,6 +126,12 @@ export const apiSlice = createApi({
     getMe: builder.query({
       query: () => "/auth/me",
       providesTags: ["User"],
+    }),
+
+    // Public platform config — includes the per-platform version gate consumed
+    // by the in-app update sheet. No auth required.
+    getAppConfig: builder.query<AppConfigResponse, void>({
+      query: () => "/config",
     }),
 
     // Example mutation for login (requests OTP)
@@ -656,6 +689,7 @@ export const {
   useGetChaletsMapQuery,
   useGetMeQuery,
   useLazyGetMeQuery,
+  useGetAppConfigQuery,
   useLoginMutation,
   useVerifyPhoneMutation,
   useRegisterProviderMutation,

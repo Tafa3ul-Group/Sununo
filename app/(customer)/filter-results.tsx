@@ -232,7 +232,13 @@ export default function FilterResultsScreen() {
   const renderChaletCard = ({ item, index }: { item: any; index: number }) => (
     <HorizontalCard
       chalet={item}
-      onPress={() => router.push(`/chalet-details/${item.id}`)}
+      onPress={() => {
+        logEvent(ANALYTICS_EVENTS.SELECT_ITEM, {
+          item_list_id: "search_results",
+          items: [{ item_id: String(item.id), item_name: item.title }],
+        });
+        router.push(`/chalet-details/${item.id}`);
+      }}
       shapeIndex={2}
       isFavorite={item.isFavorite}
       onToggleFavorite={() => handleToggleFavorite(item)}

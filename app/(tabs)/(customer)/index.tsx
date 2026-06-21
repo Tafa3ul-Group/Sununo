@@ -38,6 +38,8 @@ import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize, Shadows } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { getStartingPrice } from "@/utils/format";
+import { logEvent } from "@/services/analytics";
+import { ANALYTICS_EVENTS } from "@/constants/analytics-events";
 
 import { RootState } from "@/store";
 import { Image as ExpoImage } from "expo-image";
@@ -398,6 +400,26 @@ export default function HomeScreen() {
     }
   };
 
+  // ── Analytics: view_item_list (fires once per filter set when the list loads)
+  const lastListKeyRef = React.useRef<string>("");
+  React.useEffect(() => {
+    if (!rawChalets.length) return;
+    if (lastListKeyRef.current === filtersKey) return;
+    lastListKeyRef.current = filtersKey;
+    logEvent(ANALYTICS_EVENTS.VIEW_ITEM_LIST, {
+      item_list_id: filtersKey ? "home_filtered" : "home_recommended",
+      item_list_name: "Home Recommended",
+      items: rawChalets.slice(0, 15).map((c: any, i: number) => ({
+        item_id: String(c.id),
+        item_name: isRTL
+          ? c.name?.ar || c.nameAr || c.name || ""
+          : c.name?.en || c.nameEn || c.name || "",
+        index: i,
+      })),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rawChalets, filtersKey]);
+
   // Transform banners
   const banners = (bannersResponse || []).map((b: any) => ({
     id: b.id,
@@ -407,8 +429,13 @@ export default function HomeScreen() {
 
   if (userType === "owner") return <Redirect href="/(tabs)/(dashboard)/home" />;
 
-  const navigateToDetails = (id: string) =>
+  const navigateToDetails = (id: string, name?: string) => {
+    logEvent(ANALYTICS_EVENTS.SELECT_ITEM, {
+      item_list_id: "home",
+      items: [{ item_id: String(id), item_name: name || "" }],
+    });
     router.push(`/chalet-details/${id}`);
+  };
 
   // Transform accumulated (paged) API data to card format
   const POPULAR_CHALETS = useMemo(() => {
@@ -694,7 +721,7 @@ export default function HomeScreen() {
                 <HorizontalCard
                   key={item.id || index}
                   chalet={item}
-                  onPress={() => navigateToDetails(item.id)}
+                  onPress={() => navigateToDetails(item.id, item.title)}
                   isFavorite={favoriteIds.includes(item.id)}
                   onToggleFavorite={() => handleToggleFavorite(item.id)}
                 />

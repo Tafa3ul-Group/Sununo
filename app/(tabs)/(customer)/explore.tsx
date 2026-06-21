@@ -28,6 +28,8 @@ import { LoginPromptModal } from "@/components/user/login-prompt-modal";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize, Shadows } from "@/constants/theme";
+import { logEvent } from "@/services/analytics";
+import { ANALYTICS_EVENTS } from "@/constants/analytics-events";
 import { RootState } from "@/store";
 import {
   useGetChaletReviewsQuery,
@@ -525,6 +527,10 @@ export default function ExploreScreen() {
 
   const handleSwiperCardPress = useCallback(
     (cardId: string) => {
+      logEvent(ANALYTICS_EVENTS.SELECT_ITEM, {
+        item_list_id: "explore",
+        items: [{ item_id: String(cardId) }],
+      });
       router.push(`/chalet-details/${cardId}`);
     },
     [router],

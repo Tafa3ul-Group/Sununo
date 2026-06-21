@@ -15,6 +15,8 @@ export const ANALYTICS_EVENTS = {
   SIGN_UP: "sign_up",
   LOGOUT: "logout",
   // ── Ecommerce funnel ──────────────────────────────────────────────────────
+  VIEW_ITEM_LIST: "view_item_list",
+  SELECT_ITEM: "select_item",
   VIEW_ITEM: "view_item",
   SEARCH: "search",
   VIEW_SEARCH_RESULTS: "view_search_results",

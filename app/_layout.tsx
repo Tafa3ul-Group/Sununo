@@ -1,4 +1,5 @@
 // @@iconify-code-gen
+import { AppUpdateGate } from "@/components/app-update-gate";
 import { ConfirmationDialogProvider } from "@/components/ui/confirmation-dialog";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { persistor, RootState, store } from "@/store";
@@ -195,6 +196,8 @@ function RootLayoutNav() {
         <Stack.Screen name="(dashboard)" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style="auto" />
+      {/* App-wide version gate: shows the update sheet when out of date. */}
+      <AppUpdateGate />
     </ThemeProvider>
   );
 }

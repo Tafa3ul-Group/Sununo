@@ -5,6 +5,15 @@
 export const PRIVACY_POLICY_URL =
   "https://privacy-policy.dudes.studio/privacy?app=sununo";
 
+// Store listing URLs used by the in-app update sheet. These are FALLBACKS only —
+// the live URLs come from the backend config (GET /config → update[platform].storeUrl),
+// so they can be changed without an app release. Update the iOS id once the app
+// is live on the App Store.
+export const STORE_URLS = {
+  android: "https://play.google.com/store/apps/details?id=com.sununo.app",
+  ios: "https://apps.apple.com/app/id000000000",
+} as const;
+
 // Support / admin WhatsApp number, used as a fallback for "Contact Us" when
 // the backend /settings response does not provide an adminPhone.
 // International format WITHOUT the leading "+" (used for wa.me links).
