@@ -962,7 +962,7 @@ export default function CompleteBookingScreen() {
       </View>
 
       <View style={styles.infoSectionCard}>
-        <ThemedText style={[styles.sectionTitle, { textAlign: textStart }]}>
+        <ThemedText style={[styles.sectionTitle, { alignSelf: alignStart, textAlign: textStart }]}>
           {t("booking.customerInfo")}
         </ThemedText>
         <View style={styles.divider} />
@@ -1081,7 +1081,7 @@ export default function CompleteBookingScreen() {
       </View>
 
       <View style={styles.infoSectionCard}>
-        <ThemedText style={[styles.sectionTitle, { textAlign: textStart }]}>
+        <ThemedText style={[styles.sectionTitle, { alignSelf: alignStart, textAlign: textStart }]}>
           {isArabic ? "ملاحظات إضافية" : "Special Requests"}
         </ThemedText>
         <View style={styles.divider} />
@@ -1125,7 +1125,7 @@ export default function CompleteBookingScreen() {
       ) : (
         /* ── Instant Booking: Show payment selection ── */
         <>
-          <ThemedText style={[styles.paymentMainTitle, { textAlign: textStart }]}>
+          <ThemedText style={[styles.paymentMainTitle, { alignSelf: alignStart, textAlign: textStart }]}>
             {t("booking.paymentTitle")}
           </ThemedText>
 
@@ -1736,11 +1736,10 @@ export default function CompleteBookingScreen() {
                 <View style={[styles.capacityIconWrapper, { backgroundColor: "#DBEAFE" }]}>
                   <SolarUsersGroupRoundedBold size={18} color="#035DF9" />
                 </View>
-                <View style={{ flex: 1 }}>
-                  <ThemedText style={[styles.capacityRowLabel, { textAlign: textStart }]}>
-                    {isArabic ? "السعة الأساسية" : "Base Capacity"}
-                  </ThemedText>
-                </View>
+                <ThemedText style={styles.capacityRowLabel}>
+                  {isArabic ? "السعة الأساسية" : "Base Capacity"}
+                </ThemedText>
+                <View style={{ flex: 1 }} />
                 <ThemedText style={[styles.capacityRowValue, { textAlign: textEnd }]}>
                   {capacityLimit} {isArabic ? "أشخاص" : "guests"}
                 </ThemedText>
@@ -1755,11 +1754,10 @@ export default function CompleteBookingScreen() {
                     <View style={[styles.capacityIconWrapper, { backgroundColor: "#FEE2E2" }]}>
                       <SolarInfoCircleBold size={18} color="#EF4444" />
                     </View>
-                    <View style={{ flex: 1 }}>
-                      <ThemedText style={[styles.capacityRowLabel, { textAlign: textStart }]}>
-                        {isArabic ? "الحد الأقصى" : "Maximum Capacity"}
-                      </ThemedText>
-                    </View>
+                    <ThemedText style={styles.capacityRowLabel}>
+                      {isArabic ? "الحد الأقصى" : "Maximum Capacity"}
+                    </ThemedText>
+                    <View style={{ flex: 1 }} />
                     <ThemedText style={[styles.capacityRowValue, { textAlign: textEnd }]}>
                       {chaletDetails.capacity} {isArabic ? "شخص" : "guests"}
                     </ThemedText>
@@ -1774,11 +1772,10 @@ export default function CompleteBookingScreen() {
                   <View style={[styles.capacityIconWrapper, { backgroundColor: "#FEF3C7" }]}>
                     <SolarCardBold size={18} color="#F59E0B" />
                   </View>
-                  <View style={{ flex: 1 }}>
-                    <ThemedText style={[styles.capacityRowLabel, { textAlign: textStart }]}>
-                      {isArabic ? "سعر الشخص الإضافي" : "Extra Person Price"}
-                    </ThemedText>
-                  </View>
+                  <ThemedText style={styles.capacityRowLabel}>
+                    {isArabic ? "سعر الشخص الإضافي" : "Extra Person Price"}
+                  </ThemedText>
+                  <View style={{ flex: 1 }} />
                   <ThemedText style={[styles.capacityRowValue, { color: "#F59E0B", textAlign: textEnd }]}>
                     {Number(extraPersonPrice).toLocaleString()} {t("common.iqd")}
                   </ThemedText>
@@ -1814,7 +1811,7 @@ export default function CompleteBookingScreen() {
               <ThemedText
                 style={[
                   styles.guestLabel,
-                  { textAlign: textStart, marginBottom: 12, fontSize: 16 },
+                  { alignSelf: alignStart, textAlign: textStart, marginBottom: 12, fontSize: 16 },
                 ]}
               >
                 {isArabic ? "نوع الحجز" : "Booking Type"}
@@ -1862,7 +1859,7 @@ export default function CompleteBookingScreen() {
                 <ThemedText
                   style={[
                     styles.guestLabel,
-                    { textAlign: textStart, marginBottom: 12, fontSize: 16 },
+                    { alignSelf: alignStart, textAlign: textStart, marginBottom: 12, fontSize: 16 },
                   ]}
                 >
                   {isArabic ? "رفع صور الهوية" : "Upload ID Photos"}
