@@ -5,7 +5,7 @@ import { getAppVersion, getDeviceId, getPlatform } from "@/utils/device";
 const BASE_URL =
   process.env.EXPO_PUBLIC_API_URL
     ? `${process.env.EXPO_PUBLIC_API_URL}/api/v1`
-    : "https://k4wwso0cwg480c480oo0owg4.rakiza.dev/api/v1";
+    : "https://api.sununo.app/api/v1";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: BASE_URL,

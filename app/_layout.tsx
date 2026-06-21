@@ -112,7 +112,7 @@ function RootLayoutNav() {
 
           // 3. تسجيل التوكن في الباكند
           const baseUrl =
-            process.env.EXPO_PUBLIC_API_URL ?? "http://192.168.0.167:3010";
+            process.env.EXPO_PUBLIC_API_URL ?? "https://api.sununo.app";
 
           if (authToken && !tokenRegistered.current) {
             const registered = await registerTokenWithBackend(token, authToken, baseUrl);
