@@ -285,7 +285,11 @@ export default function BookingSuccessDetailsScreen() {
       >
         {label}
       </ThemedText>
-      <View style={{ flex: 1, alignItems: isRTL ? "flex-start" : "flex-end" }}>
+      {/* flex-end pushes the value to the far end (opposite the label). Under
+          the app's forced RTL the OS mirrors flex-end to the correct side, so a
+          constant value works for both Arabic and English — using flex-start for
+          RTL wrongly parked the value right next to the label. */}
+      <View style={{ flex: 1, alignItems: "flex-end" }}>
         {typeof value === "string" ? (
           <ThemedText
             style={[styles.infoValue, { textAlign: textEnd }]}
