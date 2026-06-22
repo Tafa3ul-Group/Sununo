@@ -278,10 +278,11 @@ export default function BookingSuccessDetailsScreen() {
     return `${name} (${time})`;
   }, [booking, isRTL, t]);
 
+  const writingDir: "rtl" | "ltr" = isRTL ? "rtl" : "ltr";
   const renderInfoRow = (label: string, value: string | React.ReactNode) => (
     <View style={[styles.infoRow, { flexDirection: rowDirection }]}>
       <ThemedText
-        style={[styles.infoLabel, { textAlign: textStart }]}
+        style={[styles.infoLabel, { textAlign: textStart, writingDirection: writingDir }]}
       >
         {label}
       </ThemedText>
@@ -292,7 +293,7 @@ export default function BookingSuccessDetailsScreen() {
       <View style={{ flex: 1, alignItems: "flex-end" }}>
         {typeof value === "string" ? (
           <ThemedText
-            style={[styles.infoValue, { textAlign: textEnd }]}
+            style={[styles.infoValue, { textAlign: textEnd, writingDirection: writingDir }]}
           >
             {value}
           </ThemedText>
@@ -405,9 +406,7 @@ export default function BookingSuccessDetailsScreen() {
             <ThemedText style={styles.infoLabel}>
               {t("booking.bookingStatus")}
             </ThemedText>
-            <View
-              style={[isRTL ? { marginRight: "auto" } : { marginLeft: "auto" }]}
-            >
+            <View style={{ flex: 1, alignItems: "flex-end" }}>
               <View style={[styles.statusBadgeCustom, { backgroundColor: statusDetails.bg }]}>
                 <ThemedText style={[styles.statusBadgeTextCustom, { color: statusDetails.color }]}>
                   {statusDetails.text}
@@ -447,9 +446,7 @@ export default function BookingSuccessDetailsScreen() {
             <ThemedText style={styles.infoLabel}>
               {t("booking.paymentStatus")}
             </ThemedText>
-            <View
-              style={[isRTL ? { marginRight: "auto" } : { marginLeft: "auto" }]}
-            >
+            <View style={{ flex: 1, alignItems: "flex-end" }}>
               <View
                 style={isPaid ? styles.statusBadgeBlue : styles.statusBadgeGray}
               >
