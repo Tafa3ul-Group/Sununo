@@ -291,7 +291,9 @@ export function ChaletDetailsBody({
             ]}
           >
             <SolarForbiddenCircleLineDuotone size={24} color="#EF4444" />
-            <ThemedText style={styles.closedChaletText}>
+            <ThemedText
+              style={[styles.closedChaletText, { textAlign: isRTL ? "right" : "left" }]}
+            >
               {isRTL
                 ? "عذراً، لا تتوفر أي فترات حجز حالياً في هذا الشاليه."
                 : "Sorry, no booking periods are currently available."}

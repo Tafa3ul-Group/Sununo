@@ -698,9 +698,9 @@ export default function ChaletDetailScreen() {
                 );
               })
             ) : (
-              <View style={[styles.closedChaletBox, { direction: isRTL ? 'rtl' : 'ltr' }]}>
+              <View style={[styles.closedChaletBox, { flexDirection: flexDir }]}>
                 <SolarForbiddenCircleLineDuotone size={24} color="#EF4444" />
-                <ThemedText style={styles.closedChaletText}>
+                <ThemedText style={[styles.closedChaletText, { textAlign: textStartAware }]}>
                   {isRTL
                     ? "عذراً، لا تتوفر أي فترات حجز حالياً في هذا الشاليه."
                     : "Sorry, no booking periods are currently available for this chalet."}
