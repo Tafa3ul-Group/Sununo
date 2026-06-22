@@ -38,6 +38,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { useDirection } from '@/i18n';
@@ -185,6 +186,7 @@ export default function CustomerProfileScreen() {
                 }
             >
                 {/* User Card */}
+                <Animated.View entering={FadeInDown.duration(400)}>
                 <TouchableOpacity
                     style={[styles.userCard, { flexDirection: rowDirection }]}
                     onPress={() => router.push('/profile-edit')}
@@ -215,18 +217,24 @@ export default function CustomerProfileScreen() {
                         <SolarPenNewRoundBoldDuotone size={32} color={Colors.primary} />
                     </View>
                 </TouchableOpacity>
+                </Animated.View>
 
                 {/* Wallet Card */}
-                <WalletCard
-                    balance={walletBalance}
-                    onWithdraw={openWithdraw}
-                />
+                <Animated.View entering={FadeInDown.delay(90).duration(400)}>
+                    <WalletCard
+                        balance={walletBalance}
+                        onWithdraw={openWithdraw}
+                    />
+                </Animated.View>
 
                 {/* Menu Items */}
                 <View style={styles.menuGroup}>
-                    {menuItems.map((item) => (
-                        <TouchableOpacity
+                    {menuItems.map((item, index) => (
+                        <Animated.View
                             key={item.id}
+                            entering={FadeInDown.delay(160 + index * 60).duration(380)}
+                        >
+                        <TouchableOpacity
                             style={[styles.menuRow, { flexDirection: rowDirection }]}
                             onPress={() => {
                                 if (item.action) {
@@ -252,6 +260,7 @@ export default function CustomerProfileScreen() {
                                 </Text>
                             </View>
                         </TouchableOpacity>
+                        </Animated.View>
                     ))}
                 </View>
 

@@ -808,7 +808,12 @@ export default function ChaletDetailScreen() {
           <SectionHeader title={t("chalet.details.location")} />
           <TouchableOpacity
             activeOpacity={0.9}
-            onPress={() => router.push("/(tabs)/(customer)/explore")}
+            onPress={() =>
+              router.push({
+                pathname: "/(tabs)/(customer)/explore",
+                params: { id: chaletId },
+              })
+            }
             style={styles.mapCardFlat}
           >
             <View style={styles.mapInner}>
