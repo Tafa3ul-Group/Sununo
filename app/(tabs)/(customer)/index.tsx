@@ -14,6 +14,7 @@ import {
 import { useDirection } from "@/i18n";
 import { BannerSkeleton, HorizontalSwiperSkeleton, HorizontalCardSkeleton } from "@/components/ui/skeleton-loader";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -586,7 +587,9 @@ export default function HomeScreen() {
         {bannersFetching && !bannersResponse ? (
           <BannerSkeleton />
         ) : banners?.length > 0 ? (
-          <BannerSwiper data={banners} />
+          <Animated.View entering={FadeInDown.duration(400)}>
+            <BannerSwiper data={banners} />
+          </Animated.View>
         ) : null}
 
         {/* Nearby / Map */}
@@ -718,13 +721,17 @@ export default function HomeScreen() {
           ) : POPULAR_CHALETS.length > 0 ? (
             <>
               {POPULAR_CHALETS.map((item: any, index: number) => (
-                <HorizontalCard
+                <Animated.View
                   key={item.id || index}
-                  chalet={item}
-                  onPress={() => navigateToDetails(item.id, item.title)}
-                  isFavorite={favoriteIds.includes(item.id)}
-                  onToggleFavorite={() => handleToggleFavorite(item.id)}
-                />
+                  entering={FadeInDown.delay((index % 8) * 60).duration(380)}
+                >
+                  <HorizontalCard
+                    chalet={item}
+                    onPress={() => navigateToDetails(item.id, item.title)}
+                    isFavorite={favoriteIds.includes(item.id)}
+                    onToggleFavorite={() => handleToggleFavorite(item.id)}
+                  />
+                </Animated.View>
               ))}
               {chaletsFetching && page > 1 && (
                 <ActivityIndicator
