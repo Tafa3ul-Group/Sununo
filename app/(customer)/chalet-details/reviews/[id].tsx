@@ -16,6 +16,7 @@ import {
 } from "@/store/api/customerApiSlice";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { Image } from "expo-image";
+import { getAvatarSrc } from "@/hooks/useImageSrc";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -104,9 +105,7 @@ export default function ReviewsScreen() {
       rating: rev.rating || 0,
       body: rev.comment || "",
       date: rev.createdAt ? new Date(rev.createdAt).toLocaleDateString() : "",
-      avatar:
-        rev.customer?.imageUrl ||
-        "https://api.dicebear.com/7.x/avataaars/svg?seed=default",
+      avatar: rev.customer?.imageUrl || null,
       images: rev.images?.map((img: any) => img.url) || [],
     }));
   }, [reviewsResponse, isArabic, filterValue]);
@@ -227,7 +226,7 @@ export default function ReviewsScreen() {
                     </View>
                     <View style={styles.avatarCircle}>
                       <Image
-                        source={{ uri: rev.avatar }}
+                        source={getAvatarSrc(rev.avatar)}
                         style={styles.userAvatarImg}
                       />
                     </View>
@@ -240,7 +239,7 @@ export default function ReviewsScreen() {
                       showsHorizontalScrollIndicator={false}
                       style={[styles.imgGallery, { flexDirection: "row" }]}
                     >
-                      {rev.images.map((imgUri, imIdx) => (
+                      {rev.images.map((imgUri: string, imIdx: number) => (
                         <Image
                           key={imIdx}
                           source={{ uri: imgUri }}

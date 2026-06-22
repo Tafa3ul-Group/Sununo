@@ -82,9 +82,6 @@ export default function CustomerLayout() {
               if (userType === "guest") {
                 return <SolarUserBold size={size} color={color} />;
               }
-              const avatarUrl =
-                user?.imageUrl ||
-                "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
               return (
                 <View
                   style={{
@@ -97,7 +94,7 @@ export default function CustomerLayout() {
                     backgroundColor: "#F3F4F6" }}
                 >
                   <Image
-                    source={getAvatarSrc(user?.imageUrl || avatarUrl)}
+                    source={getAvatarSrc(user?.imageUrl)}
                     style={{ width: "100%", height: "100%" }}
                   />
                 </View>

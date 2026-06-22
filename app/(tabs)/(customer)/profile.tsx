@@ -331,6 +331,8 @@ const styles = StyleSheet.create({
     avatarImg: {
         width: '100%',
         height: '100%',
+        // Slight zoom so the figure fills the circle with no light ring around it.
+        transform: [{ scale: 1.18 }],
     },
     menuGroup: {
         gap: normalize.height(10),

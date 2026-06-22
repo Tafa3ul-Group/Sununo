@@ -222,10 +222,12 @@ export default function ProfileEditScreen() {
               onPress={handlePickImage}
               activeOpacity={0.85}
             >
-              <Image
-                source={getAvatarSrc(userData?.image || userData?.imageUrl)}
-                style={styles.avatarImg}
-              />
+              <View style={styles.avatarClip}>
+                <Image
+                  source={getAvatarSrc(userData?.image || userData?.imageUrl)}
+                  style={styles.avatarImg}
+                />
+              </View>
               {/* Edit badge — bottom right */}
               <View style={styles.editBadge}>
                 {isUploadingImage ? (
@@ -478,10 +480,16 @@ const styles = StyleSheet.create({
     borderRadius: normalize.width(55),
     backgroundColor: '#F3F4F6',
     position: 'relative' },
+  avatarClip: {
+    width: '100%',
+    height: '100%',
+    borderRadius: normalize.width(55),
+    overflow: 'hidden' },
   avatarImg: {
     width: '100%',
     height: '100%',
-    borderRadius: normalize.width(55) },
+    // Slight zoom so the figure fills the circle and no light ring shows around it.
+    transform: [{ scale: 1.18 }] },
   editBadge: {
     position: 'absolute',
     bottom: 2,

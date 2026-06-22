@@ -15,16 +15,20 @@ import { FlashList } from "@shopify/flash-list";
 import { useRouter } from "expo-router";
 import React, { useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { Linking, RefreshControl, StyleSheet, View } from "react-native";
+import { I18nManager, Linking, RefreshControl, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function WalletTransactionsScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { isRTL, textAlign } = useDirection();
+  const { isRTL, rowDirection } = useDirection();
   const insets = useSafeAreaInsets();
-  const startAlign = isRTL ? "flex-end" : "flex-start";
-  const endAlign = isRTL ? "flex-start" : "flex-end";
+  // Manager-aware: under forced RTL the OS mirrors flex (so "flex-start" lands on
+  // the visual right / start side) and swaps left/right text-align.
+  const sameDir = isRTL === I18nManager.isRTL;
+  const startAlign = sameDir ? "flex-start" : "flex-end";
+  const endAlign = sameDir ? "flex-end" : "flex-start";
+  const textStart: "left" | "right" = sameDir ? "left" : "right";
 
   const {
     data: txResponse,
@@ -84,7 +88,7 @@ export default function WalletTransactionsScreen() {
       <View
         style={[
           styles.txItem,
-          { flexDirection: "row", direction: isRTL ? "rtl" : "ltr" },
+          { flexDirection: rowDirection },
         ]}
       >
         <View style={[styles.txIcon, { backgroundColor: bg }]}>
@@ -92,10 +96,10 @@ export default function WalletTransactionsScreen() {
         </View>
 
         <View style={[styles.txInfo, { alignItems: startAlign }]}>
-          <ThemedText style={[styles.txTitle, { textAlign }]} numberOfLines={1}>
+          <ThemedText style={[styles.txTitle, { textAlign: textStart }]} numberOfLines={1}>
             {title}
           </ThemedText>
-          <ThemedText style={[styles.txDate, { textAlign }]}>
+          <ThemedText style={[styles.txDate, { textAlign: textStart }]}>
             {formatDate(item.createdAt || item.date)}
           </ThemedText>
         </View>
