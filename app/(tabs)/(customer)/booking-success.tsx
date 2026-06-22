@@ -403,7 +403,7 @@ export default function BookingSuccessDetailsScreen() {
           <View style={styles.divider} />
 
           <View style={[styles.infoRow, { flexDirection: rowDirection }]}>
-            <ThemedText style={styles.infoLabel}>
+            <ThemedText style={[styles.infoLabel, { textAlign: textStart, writingDirection: writingDir }]}>
               {t("booking.bookingStatus")}
             </ThemedText>
             <View style={{ flex: 1, alignItems: "flex-end" }}>
@@ -443,7 +443,7 @@ export default function BookingSuccessDetailsScreen() {
           <View style={styles.divider} />
 
           <View style={[styles.infoRow, { flexDirection: rowDirection }]}>
-            <ThemedText style={styles.infoLabel}>
+            <ThemedText style={[styles.infoLabel, { textAlign: textStart, writingDirection: writingDir }]}>
               {t("booking.paymentStatus")}
             </ThemedText>
             <View style={{ flex: 1, alignItems: "flex-end" }}>
@@ -503,7 +503,7 @@ export default function BookingSuccessDetailsScreen() {
         {isPendingApproval && (
           <View style={[styles.alertCard, { flexDirection: rowDirection }]}>
             <SolarInfoCircleBold size={24} color="#D97706" />
-            <ThemedText style={styles.alertText}>
+            <ThemedText style={[styles.alertText, { textAlign: textStart, writingDirection: writingDir }]}>
               {isRTL
                 ? "سيقوم صاحب الشاليه بمراجعة طلب حجزك وتأكيده قريباً. سيصلك إشعار بالدفع فور الموافقة."
                 : "The owner will review and confirm your booking request soon. You will receive a notification to pay once approved."}
@@ -515,7 +515,7 @@ export default function BookingSuccessDetailsScreen() {
         {isConfirmed && (
           <View style={[styles.alertCard, styles.alertCardSuccess, { flexDirection: rowDirection }]}>
             <SolarInfoCircleBold size={24} color="#16A34A" />
-            <ThemedText style={[styles.alertText, { color: "#15803D" }]}>
+            <ThemedText style={[styles.alertText, { color: "#15803D", textAlign: textStart, writingDirection: writingDir }]}>
               {isRTL
                 ? (isDepositPayment && remainingAmountVal > 0
                     ? "تم تأكيد حجزك بنجاح. يُدفع المبلغ المتبقي عند الوصول، وستظهر حالة الحجز \"مكتمل\" بعد انتهاء فترة الإقامة."
@@ -531,7 +531,7 @@ export default function BookingSuccessDetailsScreen() {
         {isCancelled && (
           <View style={[styles.alertCard, styles.alertCardDanger, { flexDirection: rowDirection }]}>
             <SolarInfoCircleBold size={24} color="#DC2626" />
-            <ThemedText style={[styles.alertText, { color: "#B91C1C" }]}>
+            <ThemedText style={[styles.alertText, { color: "#B91C1C", textAlign: textStart, writingDirection: writingDir }]}>
               {isRTL ? "تم إلغاء هذا الحجز." : "This booking has been cancelled."}
               {cancellationReason ? `\n${cancellationReason}` : ""}
             </ThemedText>
@@ -543,7 +543,7 @@ export default function BookingSuccessDetailsScreen() {
         {isPendingPayment && !isDelayedChalet && (
           <View style={[styles.alertCard, { flexDirection: rowDirection }]}>
             <SolarInfoCircleBold size={24} color="#D97706" />
-            <ThemedText style={styles.alertText}>
+            <ThemedText style={[styles.alertText, { textAlign: textStart, writingDirection: writingDir }]}>
               {isRTL
                 ? "لم يتم تأكيد دفع هذا الحجز بعد. إذا أكملت الدفع فستتحدث الحالة تلقائياً، وإلا سيُلغى الحجز تلقائياً بعد انتهاء المهلة."
                 : "Payment for this booking has not been confirmed yet. The status will update automatically once payment completes; otherwise the booking will be cancelled after the timeout."}
