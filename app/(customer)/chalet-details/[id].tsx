@@ -126,6 +126,11 @@ export default function ChaletDetailScreen() {
     rowDirection === "row" ? "flex-start" : "flex-end";
   const alignEnd: "flex-start" | "flex-end" =
     rowDirection === "row" ? "flex-end" : "flex-start";
+  // Manager-aware "start" text alignment: under forced RTL the OS mirrors the
+  // layout, so left/right must be chosen relative to I18nManager.isRTL (same
+  // pattern as review-card.tsx) — content-based isRTL?right:left mis-aligns.
+  const textStartAware: "left" | "right" =
+    isRTL === I18nManager.isRTL ? "left" : "right";
 
   const { id } = useLocalSearchParams();
   const chaletId = id as string;
@@ -947,18 +952,18 @@ export default function ChaletDetailScreen() {
                     style={[
                       styles.nameAndBodyMerged,
                       {
-                        alignItems: isRTL ? "flex-end" : "flex-start",
+                        alignItems: alignStart,
                         marginHorizontal: 12,
                       },
                     ]}
                   >
-                    <ThemedText style={[styles.reviewerNameMerged, { textAlign: isRTL ? "right" : "left" }]}>
+                    <ThemedText style={[styles.reviewerNameMerged, { textAlign: textStartAware }]}>
                       {reviewerName}
                     </ThemedText>
                     <ThemedText
                       style={[
                         styles.revMessageMerged,
-                        { textAlign: isRTL ? "right" : "left" },
+                        { textAlign: textStartAware },
                       ]}
                     >
                       {reviewComment}
@@ -979,7 +984,7 @@ export default function ChaletDetailScreen() {
                 </View>
 
                 <View
-                  style={[styles.dateWrapperMerged, { alignItems: "flex-end" }]}
+                  style={[styles.dateWrapperMerged, { alignItems: alignEnd }]}
                 >
                   <ThemedText style={styles.revTimeTextMerged}>
                     {reviewDate}
