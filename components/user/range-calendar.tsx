@@ -224,10 +224,11 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({
               const inRange = isInRange(item.date);
               
               const dateStr = toLocalKey(item.date);
-              // Reserved = actually booked. Past days are merely disabled/dimmed,
-              // NOT marked with the "blocked" scribble (that made the whole past
-              // half of the month look unavailable).
               const isReserved = reservedDates.includes(dateStr);
+              // "Blocked" = booked OR past (of the current month). These stay
+              // VISIBLE (greyed) with the scribble so the user can still read the
+              // date — only adjacent-month placeholder days are hidden.
+              const isBlocked = isReserved || (isPast && item.isCurrent);
 
               return (
                 <View key={`${item.day}-${index}`} style={styles.dayCellContainer}>
@@ -247,15 +248,15 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({
                     <ThemedText
                       style={[
                         styles.dayText,
-                        (!item.isCurrent || isPast) && styles.disabledDayText,
+                        !item.isCurrent && styles.disabledDayText,
                         (isStart || isEnd) && styles.selectedDayText,
                         inRange && styles.inRangeDayText,
-                        isReserved && styles.bookedDayText,
+                        isBlocked && styles.bookedDayText,
                       ]}
                     >
                       {item.day}
                     </ThemedText>
-                    {isReserved && <ScribbleIcon />}
+                    {isBlocked && <ScribbleIcon />}
                   </TouchableOpacity>
                 </View>
               );
