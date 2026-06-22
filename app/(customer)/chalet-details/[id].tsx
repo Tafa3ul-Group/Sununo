@@ -253,6 +253,18 @@ export default function ChaletDetailScreen() {
 
   // Extract chalet info from API response
   const chalet = chaletData?.data || chaletData || ({} as any);
+
+  // Map coordinates: parse as numbers (the API may send strings) and validate.
+  // Fall back to Basra (the app's region) — NEVER Baghdad — when a chalet has
+  // no/zero coordinates, so the location pin isn't placed in the wrong city.
+  const chaletLng = Number(chalet?.longitude);
+  const chaletLat = Number(chalet?.latitude);
+  const hasChaletCoords =
+    Number.isFinite(chaletLng) &&
+    Number.isFinite(chaletLat) &&
+    (chaletLng !== 0 || chaletLat !== 0);
+  const mapLng = hasChaletCoords ? chaletLng : 47.82;
+  const mapLat = hasChaletCoords ? chaletLat : 30.51;
   const chaletName = isRTL
     ? chalet.name?.ar || chalet.nameAr || chalet.name || ""
     : chalet.name?.en || chalet.nameEn || chalet.name || "";
@@ -804,20 +816,14 @@ export default function ChaletDetailScreen() {
                 >
                   <MapboxComponent.Camera
                     zoomLevel={15}
-                    centerCoordinate={[
-                      chalet.longitude || 44.3661,
-                      chalet.latitude || 33.3152,
-                    ]}
+                    centerCoordinate={[mapLng, mapLat]}
                   />
                   {/* MarkerView (not PointAnnotation) renders a live React view,
                       so the async chalet image actually shows instead of an empty
                       snapshot/white circle. */}
                   <MapboxComponent.MarkerView
                     id="chaletLocation"
-                    coordinate={[
-                      chalet.longitude || 44.3661,
-                      chalet.latitude || 33.3152,
-                    ]}
+                    coordinate={[mapLng, mapLat]}
                     anchor={{ x: 0.5, y: 0.5 }}
                   >
                     <View style={styles.mapImageMarker}>
@@ -843,7 +849,7 @@ export default function ChaletDetailScreen() {
                 >
                   <Image
                     source={{
-                      uri: `https://tiles.stadiamaps.com/static/alidade_smooth/${chalet.longitude || 44.3661},${chalet.latitude || 33.3152},15/600x300@2x.png?api_key=YOUR_KEY`,
+                      uri: `https://tiles.stadiamaps.com/static/alidade_smooth/${mapLng},${mapLat},15/600x300@2x.png?api_key=YOUR_KEY`,
                     }}
                     style={styles.mapImg}
                   />
