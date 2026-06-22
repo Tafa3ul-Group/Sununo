@@ -23,8 +23,17 @@ import Svg, {
   G,
   Path,
   Image as SvgImage } from "react-native-svg";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+  withSequence,
+} from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 // "D" outline in a 0 0 100 88 viewBox (inset by the stroke half-width so the
 // colored outline isn't clipped). The bowl faces the text side: in RTL the image
@@ -125,14 +134,41 @@ export const HorizontalCard = React.memo(function HorizontalCard({
 
   const config = SHAPES_CONFIG[shapeIndex % SHAPES_CONFIG.length];
 
+  // Subtle press-scale on the card + a pop on the favorite heart. Pure
+  // transforms — no layout/design change, just makes taps feel alive.
+  const cardScale = useSharedValue(1);
+  const cardAnim = useAnimatedStyle(() => ({
+    transform: [{ scale: cardScale.value }],
+  }));
+  const heartScale = useSharedValue(1);
+  const heartAnim = useAnimatedStyle(() => ({
+    transform: [{ scale: heartScale.value }],
+  }));
+
+  const handleToggleFavorite = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+    heartScale.value = withSequence(
+      withTiming(1.35, { duration: 130 }),
+      withSpring(1, { damping: 7, stiffness: 200 }),
+    );
+    onToggleFavorite?.();
+  };
+
   return (
-    <TouchableOpacity
+    <AnimatedTouchable
       activeOpacity={0.9}
       onPress={onPress}
+      onPressIn={() => {
+        cardScale.value = withTiming(0.97, { duration: 90 });
+      }}
+      onPressOut={() => {
+        cardScale.value = withSpring(1, { damping: 12, stiffness: 180 });
+      }}
       style={[
         styles.container,
         { flexDirection: rowReverseDir },
         style,
+        cardAnim,
       ]}
     >
       {/* info side */}
@@ -181,12 +217,14 @@ export const HorizontalCard = React.memo(function HorizontalCard({
             {!hideFavorite && (
               <TouchableOpacity
                 style={styles.heartCircle}
-                onPress={onToggleFavorite}
+                onPress={handleToggleFavorite}
               >
-                <SolarHeartBold
-                  size={normalize.width(20)}
-                  color={isFavorite ? "#EA2129" : "#9CA3AF"}
-                />
+                <Animated.View style={heartAnim}>
+                  <SolarHeartBold
+                    size={normalize.width(20)}
+                    color={isFavorite ? "#EA2129" : "#9CA3AF"}
+                  />
+                </Animated.View>
               </TouchableOpacity>
             )}
           </View>
@@ -255,7 +293,7 @@ export const HorizontalCard = React.memo(function HorizontalCard({
           <Path d={dPath} stroke={borderColor} strokeWidth={5} fill="none" />
         </Svg>
       </View>
-    </TouchableOpacity>
+    </AnimatedTouchable>
   );
 });
 

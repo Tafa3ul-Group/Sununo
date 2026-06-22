@@ -12,6 +12,7 @@ import { useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RefreshControl, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDirection } from '@/i18n';
 import Svg, { ClipPath, Defs, G, Path, Image as SvgImage } from 'react-native-svg';
@@ -163,7 +164,11 @@ export default function BookingsScreen() {
     const statusBadge = getPaymentStatusBadge(booking);
 
     return (
-      <View key={booking.id} style={styles.bookingCardContainer}>
+      <Animated.View
+        key={booking.id}
+        entering={FadeInDown.delay((index % 8) * 60).duration(380)}
+        style={styles.bookingCardContainer}
+      >
         {/* Top Block: Image + Chalet Info */}
         <View style={[styles.topBlock, { flexDirection: rowDirection }]}>
           <View style={styles.imageBlock}>
@@ -250,7 +255,7 @@ export default function BookingsScreen() {
             <ThemedText style={styles.viewDetailsText}>{t('booking.viewBookingDetails') || 'عرض تفاصيل الحجز'}</ThemedText>
           </TouchableOpacity>
         </View>
-      </View>
+      </Animated.View>
     );
   };
 

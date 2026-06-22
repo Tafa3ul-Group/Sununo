@@ -24,6 +24,7 @@ import {
 import {
     useSafeAreaInsets
 } from "react-native-safe-area-context";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { useDirection } from "@/i18n";
 
 export default function SearchScreen() {
@@ -65,14 +66,17 @@ export default function SearchScreen() {
     }));
   }, [chaletsResponse, isArabic]);
 
-  const renderItem = ({ item }: { item: any }) => (
-    <View style={styles.cardWrapper}>
+  const renderItem = ({ item, index }: { item: any; index: number }) => (
+    <Animated.View
+      style={styles.cardWrapper}
+      entering={FadeInDown.delay((index % 8) * 60).duration(380)}
+    >
       <HorizontalCard
         chalet={item}
         onPress={() => router.push(`/chalet-details/${item.id}`)}
         shapeIndex={1}
       />
-    </View>
+    </Animated.View>
   );
 
   return (

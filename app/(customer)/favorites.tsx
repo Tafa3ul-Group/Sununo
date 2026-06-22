@@ -8,6 +8,8 @@ import { SolarHeartBold } from "@/components/icons/solar-icons";
 import { useRouter } from 'expo-router';
 import { HorizontalCard } from '@/components/user/horizontal-card';
 import { EmptyState } from '@/components/ui/empty-state';
+import { HorizontalCardSkeleton } from '@/components/ui/skeleton-loader';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { HeaderSection } from '@/components/header-section';
 import { useGetCustomerFavoritesQuery, useToggleFavoriteMutation } from '@/store/api/customerApiSlice';
 import { getImageSrc } from '@/hooks/useImageSrc';
@@ -77,18 +79,28 @@ export default function FavoritesScreen() {
           />
         }
       >
-        {favorites.length > 0 ? (
+        {isLoading && favorites.length === 0 ? (
+          <View style={{ gap: 12, paddingTop: 4 }}>
+            <HorizontalCardSkeleton />
+            <HorizontalCardSkeleton />
+            <HorizontalCardSkeleton />
+          </View>
+        ) : favorites.length > 0 ? (
           favorites.map((chalet, index) => (
-            <View key={chalet.id} style={styles.cardWrapper}>
-                 <HorizontalCard 
-                    chalet={chalet} 
-                    shapeIndex={index + 1} 
+            <Animated.View
+              key={chalet.id}
+              entering={FadeInDown.delay((index % 8) * 60).duration(380)}
+              style={styles.cardWrapper}
+            >
+                 <HorizontalCard
+                    chalet={chalet}
+                    shapeIndex={index + 1}
                     onPress={() => router.push(`/chalet-details/${chalet.id}`)}
                     style={styles.customCard}
                     isFavorite={true}
                     onToggleFavorite={() => handleToggleFavorite(chalet.id)}
                  />
-            </View>
+            </Animated.View>
           ))
         ) : (
           <EmptyState
