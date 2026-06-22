@@ -9,6 +9,7 @@ import {
     ViewStyle,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
+import * as Haptics from "expo-haptics";
 import { useDirection } from "@/i18n";
 
 interface PrimaryButtonProps {
@@ -82,8 +83,11 @@ export function PrimaryButton({
 
   return (
     <TouchableOpacity
-      activeOpacity={0.8}
-      onPress={onPress}
+      activeOpacity={0.7}
+      onPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+        onPress();
+      }}
       disabled={disabled}
       style={[styles.hybridContainer, { height, direction: isRTL ? 'rtl' : 'ltr' }, style]}
     >

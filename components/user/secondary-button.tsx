@@ -9,6 +9,7 @@ import {
     View,
     ViewStyle
 } from "react-native";
+import * as Haptics from "expo-haptics";
 import { useDirection } from "@/i18n";
 
 interface SecondaryButtonProps {
@@ -65,8 +66,11 @@ export function SecondaryButton({
 
   return (
     <TouchableOpacity
-      activeOpacity={0.8}
-      onPress={onPress}
+      activeOpacity={0.7}
+      onPress={() => {
+        Haptics.selectionAsync().catch(() => {});
+        onPress();
+      }}
       style={[
         styles.container,
         {

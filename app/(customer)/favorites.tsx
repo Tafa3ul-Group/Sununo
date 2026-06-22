@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
-import { View, StyleSheet, ScrollView, Dimensions } from 'react-native';
+import { View, StyleSheet, ScrollView, Dimensions, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { normalize } from '@/constants/theme';
+import { Colors, normalize } from '@/constants/theme';
 import { ThemedText } from '@/components/themed-text';
 import { SolarHeartBold } from "@/components/icons/solar-icons";
 import { useRouter } from 'expo-router';
@@ -65,7 +65,18 @@ export default function FavoritesScreen() {
         showLogo={false} 
       />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isLoading}
+            onRefresh={refetch}
+            tintColor={Colors.primary}
+            colors={[Colors.primary]}
+          />
+        }
+      >
         {favorites.length > 0 ? (
           favorites.map((chalet, index) => (
             <View key={chalet.id} style={styles.cardWrapper}>
