@@ -13,6 +13,7 @@ import {
 import { ThemedText } from "@/components/themed-text";
 import { CircleBackButton } from "@/components/ui/circle-back-button";
 import { ErrorState } from "@/components/ui/error-state";
+import { SkeletonBox } from "@/components/ui/skeleton-loader";
 import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
 import { HostContactCard } from "@/components/user/host-contact-card";
 import { LoginPromptModal } from "@/components/user/login-prompt-modal";
@@ -438,15 +439,25 @@ export default function ChaletDetailScreen() {
     return [];
   }, [chalet.chaletFeatures, chalet.amenities, isRTL]);
 
-  if (isLoading || isFetching) {
+  // Only show the skeleton on the true first load (no cached data). During a
+  // background refetch (isFetching with data present) we keep the existing
+  // content on screen so it feels instant/alive instead of flashing a loader.
+  if (isLoading || !chaletData) {
     return (
-      <View
-        style={[
-          styles.container,
-          { justifyContent: "center", alignItems: "center" },
-        ]}
-      >
-        <ActivityIndicator size="large" color={Colors.primary} />
+      <View style={styles.container}>
+        <SkeletonBox width="100%" height={300} borderRadius={0} />
+        <View style={{ padding: 16, gap: 14 }}>
+          <SkeletonBox width="60%" height={24} />
+          <SkeletonBox width="40%" height={16} />
+          <View style={{ flexDirection: "row", gap: 10, marginTop: 6 }}>
+            <SkeletonBox width={90} height={36} borderRadius={18} />
+            <SkeletonBox width={90} height={36} borderRadius={18} />
+            <SkeletonBox width={70} height={36} borderRadius={18} />
+          </View>
+          <SkeletonBox width="100%" height={120} borderRadius={16} style={{ marginTop: 10 }} />
+          <SkeletonBox width="50%" height={18} style={{ marginTop: 8 }} />
+          <SkeletonBox width="100%" height={64} borderRadius={14} />
+        </View>
       </View>
     );
   }

@@ -1,5 +1,6 @@
 import { HeaderSection } from "@/components/header-section";
 import { EmptyState } from "@/components/ui/empty-state";
+import { HorizontalCardSkeleton } from "@/components/ui/skeleton-loader";
 import {
     SolarMagnifierBold,
     SolarTrashBinBold
@@ -111,11 +112,7 @@ export default function SearchScreen() {
       </View>
 
       {/* Results */}
-      {isLoading ? (
-        <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
-        </View>
-      ) : searchQuery.length === 0 ? (
+      {searchQuery.length === 0 ? (
         <EmptyState
           icon={<SolarMagnifierBold size={40} color={Colors.primary} />}
           title={
@@ -124,6 +121,13 @@ export default function SearchScreen() {
               : "Start searching for your favorite chalets"
           }
         />
+      ) : isLoading ? (
+        <View style={[styles.listContent, { gap: 12 }]}>
+          <HorizontalCardSkeleton />
+          <HorizontalCardSkeleton />
+          <HorizontalCardSkeleton />
+          <HorizontalCardSkeleton />
+        </View>
       ) : chalets.length === 0 ? (
         <EmptyState
           icon={<SolarMagnifierBold size={40} color={Colors.primary} />}
