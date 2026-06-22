@@ -176,10 +176,12 @@ export function HeaderSection({
           )}
         </View>
 
-        {/* Center Title */}
+        {/* Center Title — absolutely centered across the full header width so it
+            stays in the true screen center regardless of the side buttons'
+            widths. pointerEvents none keeps the back button tappable. */}
         {!isHome && (
-          <View style={styles.titleWrapper}>
-            <ThemedText style={styles.headerTitle}>
+          <View style={styles.titleWrapper} pointerEvents="none">
+            <ThemedText style={styles.headerTitle} numberOfLines={1}>
               {title}
             </ThemedText>
           </View>
@@ -281,10 +283,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center" },
   titleWrapper: {
-    flex: 1,
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: normalize.width(10) },
+    // Keep the title clear of the side buttons so long titles don't overlap.
+    paddingHorizontal: normalize.width(64) },
   headerTitle: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
