@@ -17,10 +17,10 @@ import {
   TouchableOpacity,
   Alert,
   Platform,
+  I18nManager,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
-  SolarMapPointBold,
   SolarCardBold,
   SolarWalletBold,
   SolarInfoCircleBold,
@@ -50,9 +50,12 @@ export default function BookingSuccessDetailsScreen() {
   const bookingId = id as string;
   const { formatShiftTime } = useFormatTime();
 
-  const { isRTL, rowDirection, textAlign } = useDirection();
-  const textStart = textAlign;
-  const textEnd: "left" | "right" = isRTL ? "left" : "right";
+  const { isRTL, rowDirection } = useDirection();
+  // Manager-aware: under forced RTL the OS swaps left/right (swapLeftAndRightInRTL),
+  // so for a standalone text block the visual "start" needs "left" when content RTL
+  // matches the layout manager's RTL. Flex-positioned labels treat these as a no-op.
+  const textStart: "left" | "right" = isRTL === I18nManager.isRTL ? "left" : "right";
+  const textEnd: "left" | "right" = isRTL === I18nManager.isRTL ? "right" : "left";
 
   // Fetch booking details from the backend
   const { data: booking, isLoading, refetch } = useGetCustomerBookingDetailsQuery(
@@ -229,6 +232,18 @@ export default function BookingSuccessDetailsScreen() {
       "";
   const detailedLocation = chaletLocation;
   const chaletImage = getImageSrc(chalet.images?.[0]?.url);
+
+  // Map coordinates: parse as numbers (the API may send strings) and validate.
+  // Fall back to Basra (the app's region) — NEVER Baghdad — when the chalet has
+  // no/zero coordinates, so the booking map shows the chalet's real location.
+  const chaletLng = Number(chalet?.longitude);
+  const chaletLat = Number(chalet?.latitude);
+  const hasChaletCoords =
+    Number.isFinite(chaletLng) &&
+    Number.isFinite(chaletLat) &&
+    (chaletLng !== 0 || chaletLat !== 0);
+  const mapLng = hasChaletCoords ? chaletLng : 47.82;
+  const mapLat = hasChaletCoords ? chaletLat : 30.51;
   const totalPrice = booking?.totalPrice
     ? Number(booking.totalPrice).toLocaleString()
     : "0";
@@ -354,13 +369,10 @@ export default function BookingSuccessDetailsScreen() {
           <View style={styles.mapSnippetWrapper}>
             <ExpoImage
               source={{
-                uri: `https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/${chalet.longitude || 44.3661},${chalet.latitude || 33.3152},13,0/600x300?access_token=${process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN}`,
+                uri: `https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-l+2563EB(${mapLng},${mapLat})/${mapLng},${mapLat},14,0/600x300@2x?access_token=${process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN}`,
               }}
               style={styles.mapSnippet}
             />
-            <View style={styles.mapMarker}>
-              <SolarMapPointBold size={32} color={Colors.primary} />
-            </View>
           </View>
           <ThemedText style={styles.mapAddressLabel}>
             {detailedLocation}
@@ -711,7 +723,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   mapSnippet: { width: "100%", height: "100%" },
-  mapMarker: { position: "absolute", zIndex: 3 },
   mapAddressLabel: {
     textAlign: "center",
     paddingVertical: 8,

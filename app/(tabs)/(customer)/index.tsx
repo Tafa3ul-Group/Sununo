@@ -12,7 +12,7 @@ import {
   View,
 } from "react-native";
 import { useDirection } from "@/i18n";
-import { BannerSkeleton, HorizontalSwiperSkeleton, HorizontalCardSkeleton } from "@/components/ui/skeleton-loader";
+import { BannerSkeleton, HorizontalSwiperSkeleton, HorizontalCardSkeleton, CustomerHomeSkeleton } from "@/components/ui/skeleton-loader";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -431,6 +431,10 @@ export default function HomeScreen() {
     title: isRTL ? b.title?.ar || b.title : b.title?.en || b.title,
   }));
 
+  // First cold load (no cached data yet) → show the full-page skeleton so the
+  // whole screen presents one cohesive loading state instead of building piecemeal.
+  const isInitialLoading = chaletsLoading && rawChalets.length === 0;
+
   if (userType === "owner") return <Redirect href="/(tabs)/(dashboard)/home" />;
 
   const navigateToDetails = (id: string, name?: string) => {
@@ -584,8 +588,10 @@ export default function HomeScreen() {
         {/* Header */}
         <HeaderSection isHome />
 
-
-
+        {isInitialLoading ? (
+          <CustomerHomeSkeleton />
+        ) : (
+          <>
         {/* Banners Swiper */}
         {bannersFetching && !bannersResponse ? (
           <BannerSkeleton />
@@ -768,6 +774,8 @@ export default function HomeScreen() {
             </View>
           )}
         </View>
+          </>
+        )}
       </ScrollView>
     </View>
   );

@@ -828,7 +828,7 @@ export default function ChaletDetailScreen() {
                     styles.descriptionText,
                     {
                       width: "100%",
-                      textAlign: textStart,
+                      textAlign: textStartAware,
                       writingDirection: isRTL ? "rtl" : "ltr",
                     },
                   ]}
