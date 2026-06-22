@@ -139,23 +139,25 @@ export default function WalletTransactionsScreen() {
           />
         </View>
       ) : (
-        <FlashList
-          data={Array.isArray(transactions) ? transactions : []}
-          renderItem={renderItem}
-          keyExtractor={(item: any, index) => String(item?.id ?? index)}
-          estimatedItemSize={80}
-          contentContainerStyle={styles.listContent}
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={isFetching && !isLoading}
-              onRefresh={refetch}
-              tintColor={Colors.primary}
-              colors={[Colors.primary]}
-            />
-          }
-        />
+        <View style={{ flex: 1 }}>
+          <FlashList
+            data={Array.isArray(transactions) ? transactions : []}
+            renderItem={renderItem}
+            keyExtractor={(item: any, index) => String(item?.id ?? index)}
+            estimatedItemSize={80}
+            contentContainerStyle={styles.listContent}
+            ItemSeparatorComponent={() => <View style={styles.separator} />}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={isFetching && !isLoading}
+                onRefresh={refetch}
+                tintColor={Colors.primary}
+                colors={[Colors.primary]}
+              />
+            }
+          />
+        </View>
       )}
     </View>
   );

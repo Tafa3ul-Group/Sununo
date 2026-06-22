@@ -1,4 +1,5 @@
 import { HeaderSection } from "@/components/header-section";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
     SolarMagnifierBold,
     SolarTrashBinBold
@@ -111,24 +112,21 @@ export default function SearchScreen() {
           <ActivityIndicator size="large" color={Colors.primary} />
         </View>
       ) : searchQuery.length === 0 ? (
-        <View style={styles.centerContainer}>
-          <View style={styles.emptyIconCircle}>
-            <SolarMagnifierBold size={40} color={Colors.primary} />
-          </View>
-          <ThemedText style={styles.emptyText}>
-            {isArabic
+        <EmptyState
+          icon={<SolarMagnifierBold size={40} color={Colors.primary} />}
+          title={
+            isArabic
               ? "ابدأ البحث عن الشاليهات المفضلة لديك"
-              : "Start searching for your favorite chalets"}
-          </ThemedText>
-        </View>
+              : "Start searching for your favorite chalets"
+          }
+        />
       ) : chalets.length === 0 ? (
-        <View style={styles.centerContainer}>
-          <ThemedText style={styles.emptyText}>
-            {isArabic
-              ? "لا توجد نتائج مطابقة لبحثك"
-              : "No results matching your search"}
-          </ThemedText>
-        </View>
+        <EmptyState
+          icon={<SolarMagnifierBold size={40} color={Colors.primary} />}
+          title={
+            isArabic ? "لا توجد نتائج مطابقة لبحثك" : "No results matching your search"
+          }
+        />
       ) : (
         <FlatList
           data={chalets}
