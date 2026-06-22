@@ -635,12 +635,13 @@ export default function CompleteBookingScreen() {
     if (activeTab === "WHEN") {
       setActiveTab("WHO");
     } else if (activeTab === "WHO") {
-      if (guestType === "FAMILY" && (!idImage1 || !idImage2)) {
+      // ID document is required for BOTH family and youth bookings.
+      if (!idImage1 || !idImage2) {
         Alert.alert(
           isArabic ? "تنبيه" : "Alert",
           isArabic
-            ? "يرجى رفع صورتي الهوية لإتمام الحجز للعائلات"
-            : "Please upload both ID photos for family bookings",
+            ? "يرجى رفع صورتي الهوية لإتمام الحجز"
+            : "Please upload both ID photos to complete the booking",
         );
         return;
       }
@@ -1909,7 +1910,8 @@ export default function CompleteBookingScreen() {
               </View>
             </View>
 
-            {guestType === "FAMILY" && (
+            {/* ID upload shown for both family and youth bookings. */}
+            {(guestType === "FAMILY" || guestType === "YOUTH") && (
               <View style={styles.idUploadContainer}>
                 <ThemedText
                   style={[

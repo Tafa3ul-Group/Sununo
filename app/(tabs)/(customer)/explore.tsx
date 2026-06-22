@@ -238,8 +238,10 @@ export default function ExploreScreen() {
 
   // Map State
   const [zoom, setZoom] = useState(6);
+  // Default to Basra (the app's primary region); GPS refines to the user's
+  // exact location once location permission resolves.
   const [cameraPosition, setCameraPosition] = useState<[number, number]>([
-    44.36, 33.31,
+    47.82, 30.51,
   ]);
 
   // Filtering State
@@ -278,11 +280,11 @@ export default function ExploreScreen() {
 
   const [selectedChalet, setSelectedChalet] = useState<any>(null);
   const browsingRegionRef = useRef<{ center: [number, number]; zoom: number }>({
-    center: [44.36, 33.31],
+    center: [47.82, 30.51],
     zoom: 6,
   });
   const [currentMapRegion, setCurrentMapRegion] = useState({
-    center: [44.36, 33.31] as [number, number],
+    center: [47.82, 30.51] as [number, number],
     zoom: 6,
   });
   // Moved FILTER_OPTIONS inside component to use translations
