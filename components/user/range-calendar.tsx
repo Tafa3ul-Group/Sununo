@@ -42,6 +42,14 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({
   const { i18n } = useTranslation();
   const { isRTL } = useDirection();
 
+  // Local YYYY-MM-DD key. NEVER use toISOString() here — it converts to UTC and
+  // shifts the date by a day in +offset timezones (e.g. Iraq UTC+3), which made
+  // reserved dates land on the wrong calendar cell.
+  const toLocalKey = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+      d.getDate(),
+    ).padStart(2, "0")}`;
+
   const [viewDate, setViewDate] = useState(initialStartDate || new Date()); // The month currently being viewed
   const [startDate, setStartDate] = useState<Date | null>(initialStartDate || null);
   const [endDate, setEndDate] = useState<Date | null>(initialEndDate || null);
@@ -100,7 +108,7 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({
     if (pressedDate < today) return;
 
     // Check if reserved
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = toLocalKey(date);
     if (reservedDates.includes(dateStr)) return;
 
     if (selectionMode === "single") {
@@ -215,8 +223,11 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({
               const isEnd = !!endDate && time === endDate.getTime();
               const inRange = isInRange(item.date);
               
-              const dateStr = item.date.toISOString().split('T')[0];
-              const isReserved = reservedDates.includes(dateStr) || isPast;
+              const dateStr = toLocalKey(item.date);
+              // Reserved = actually booked. Past days are merely disabled/dimmed,
+              // NOT marked with the "blocked" scribble (that made the whole past
+              // half of the month look unavailable).
+              const isReserved = reservedDates.includes(dateStr);
 
               return (
                 <View key={`${item.day}-${index}`} style={styles.dayCellContainer}>
@@ -231,12 +242,12 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({
                       styles.dayCell,
                       (isStart || isEnd) && (isStart ? styles.startDaySelected : styles.endDaySelected),
                     ]}
-                    disabled={!item.isCurrent || isReserved}
+                    disabled={!item.isCurrent || isPast || isReserved}
                   >
                     <ThemedText
                       style={[
                         styles.dayText,
-                        !item.isCurrent && styles.disabledDayText,
+                        (!item.isCurrent || isPast) && styles.disabledDayText,
                         (isStart || isEnd) && styles.selectedDayText,
                         inRange && styles.inRangeDayText,
                         isReserved && styles.bookedDayText,
