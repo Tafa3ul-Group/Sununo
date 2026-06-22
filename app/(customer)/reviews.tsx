@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next";
 import {
   Dimensions,
   FlatList,
+  RefreshControl,
   StyleSheet,
   View
 } from "react-native";
@@ -29,8 +30,8 @@ export default function ReviewsScreen() {
   const insets = useSafeAreaInsets();
 
   // Fetch completed bookings (pending review) and all bookings
-  const { data: completedBookings, isLoading: loadingCompleted } = useGetCustomerBookingsQuery({ status: 'completed', page: 1, limit: 50 });
-  const { data: allBookings, isLoading: loadingAll } = useGetCustomerBookingsQuery({ page: 1, limit: 50 });
+  const { data: completedBookings, isLoading: loadingCompleted, refetch: refetchCompleted } = useGetCustomerBookingsQuery({ status: 'completed', page: 1, limit: 50 });
+  const { data: allBookings, isLoading: loadingAll, refetch: refetchAll } = useGetCustomerBookingsQuery({ page: 1, limit: 50 });
 
   // Transform API data to review format
   const reviews = useMemo(() => {
@@ -142,6 +143,17 @@ export default function ReviewsScreen() {
             : styles.listContent
         }
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={loading}
+            onRefresh={() => {
+              refetchCompleted();
+              refetchAll();
+            }}
+            tintColor={Colors.primary}
+            colors={[Colors.primary]}
+          />
+        }
         ListEmptyComponent={
           loading ? null : activeTab === "pending" ? (
             <EmptyState

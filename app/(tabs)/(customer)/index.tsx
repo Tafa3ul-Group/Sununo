@@ -368,6 +368,9 @@ export default function HomeScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
     setIsRefreshing(true);
+    // Reset paging so the chalet list reloads fresh from the top (not just the
+    // current page), then refetch everything + the preview map.
+    setPage(1);
     await Promise.all([
       refetchBanners(),
       refetchChalets(),

@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 import {
     ActivityIndicator,
     FlatList,
+    RefreshControl,
     StyleSheet,
     TextInput,
     TouchableOpacity,
@@ -145,6 +146,14 @@ export default function SearchScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={refetch}
+              tintColor={Colors.primary}
+              colors={[Colors.primary]}
+            />
+          }
         />
       )}
     </View>
