@@ -60,6 +60,7 @@ import {
   Dimensions,
   I18nManager,
   Image,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -182,6 +183,33 @@ export default function ChaletDetailScreen() {
     });
   const [toggleFavorite] = useToggleFavoriteMutation();
   const [selectedShiftId, setSelectedShiftId] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Pull-to-refresh: re-fetch every piece of chalet data so the screen always
+  // shows the latest, correct information.
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        refetch(),
+        refetchReviews?.(),
+        refetchSimilar?.(),
+        refetchAddons?.(),
+        userType !== "guest" ? refetchCanReview?.() : Promise.resolve(),
+        userType !== "guest" ? refetchFavorites?.() : Promise.resolve(),
+      ]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [
+    refetch,
+    refetchReviews,
+    refetchSimilar,
+    refetchAddons,
+    refetchCanReview,
+    refetchFavorites,
+    userType,
+  ]);
 
   // Auto-refresh data when the screen comes into focus
   useFocusEffect(
@@ -480,9 +508,16 @@ export default function ChaletDetailScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       <ScrollView
-        bounces={false}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 150 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={Colors.primary}
+            colors={[Colors.primary]}
+          />
+        }
       >
         {/* صور الشاليه */}
         <View style={styles.imageHeader}>
