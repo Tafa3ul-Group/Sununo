@@ -8,6 +8,7 @@ import { SolarHeartBold } from "@/components/icons/solar-icons";
 import { useRouter } from 'expo-router';
 import { HorizontalCard } from '@/components/user/horizontal-card';
 import { EmptyState } from '@/components/ui/empty-state';
+import { ErrorState } from '@/components/ui/error-state';
 import { HorizontalCardSkeleton } from '@/components/ui/skeleton-loader';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { HeaderSection } from '@/components/header-section';
@@ -25,7 +26,7 @@ export default function FavoritesScreen() {
     const router = useRouter();
 
   // Fetch favorites from the backend
-  const { data: favoritesResponse, isLoading, refetch } = useGetCustomerFavoritesQuery({ page: 1, limit: 50 });
+  const { data: favoritesResponse, isLoading, isError, refetch } = useGetCustomerFavoritesQuery({ page: 1, limit: 50 });
   const [toggleFavorite] = useToggleFavoriteMutation();
 
   const handleToggleFavorite = async (id: string) => {
@@ -60,13 +61,16 @@ export default function FavoritesScreen() {
   return (
     <SafeAreaView style={[styles.container]}>
       {/* Header matching the design */}
-      <HeaderSection 
-        title={t('headers.favorites')} 
-        showBackButton 
+      <HeaderSection
+        title={t('headers.favorites')}
+        showBackButton
         onBackPress={() => router.back()}
-        showLogo={false} 
+        showLogo={false}
       />
 
+      {isError && favorites.length === 0 ? (
+        <ErrorState onRetry={refetch} onBack={() => router.back()} />
+      ) : (
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -110,6 +114,7 @@ export default function FavoritesScreen() {
           />
         )}
       </ScrollView>
+      )}
     </SafeAreaView>
   );
 }

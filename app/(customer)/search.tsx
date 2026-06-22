@@ -1,6 +1,7 @@
 import { HeaderSection } from "@/components/header-section";
 import { EmptyState } from "@/components/ui/empty-state";
 import { HorizontalCardSkeleton } from "@/components/ui/skeleton-loader";
+import { ErrorState } from "@/components/ui/error-state";
 import {
     SolarMagnifierBold,
     SolarTrashBinBold
@@ -37,7 +38,7 @@ export default function SearchScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const insets = useSafeAreaInsets();
 
-  const { data: chaletsResponse, isLoading } = useBrowseCustomerChaletsQuery({
+  const { data: chaletsResponse, isLoading, isError, refetch } = useBrowseCustomerChaletsQuery({
     page: 1,
     limit: 20,
     search: searchQuery || undefined,
@@ -128,6 +129,8 @@ export default function SearchScreen() {
           <HorizontalCardSkeleton />
           <HorizontalCardSkeleton />
         </View>
+      ) : isError ? (
+        <ErrorState onRetry={refetch} onBack={() => router.back()} />
       ) : chalets.length === 0 ? (
         <EmptyState
           icon={<SolarMagnifierBold size={40} color={Colors.primary} />}
