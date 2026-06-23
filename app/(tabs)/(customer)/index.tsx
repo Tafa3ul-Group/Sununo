@@ -3,12 +3,6 @@ import React, { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
-<<<<<<< Updated upstream
-  Dimensions,
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
-=======
->>>>>>> Stashed changes
   RefreshControl,
   StatusBar,
   StyleSheet,
@@ -56,146 +50,6 @@ import {
 // Fallback colors for chalet cards
 const CARD_COLORS = [Colors.primary, Colors.secondary, Colors.accent];
 
-<<<<<<< Updated upstream
-// ── Active Filter Banner ──────────────────────────────────────────────────────
-function ActiveFilterBanner({
-  filter,
-  isRTL,
-}: {
-  filter: any;
-  isRTL: boolean;
-}) {
-  const dispatch = useDispatch();
-  const { t } = useTranslation();
-
-  const onClearFilters = useCallback(() => dispatch(clearFilters()), [dispatch]);
-
-  const filterItems = useMemo(() => {
-    const items = [];
-    if (filter.cityName) {
-      items.push({
-        id: "city",
-        text: filter.cityName,
-        icon: <SolarMapPointBold size={14} color={Colors.primary} />,
-      });
-    }
-    if (filter.checkIn) {
-      const dateText = new Date(filter.checkIn).toLocaleDateString(
-        isRTL ? "ar" : "en",
-        { month: "short", day: "numeric" },
-      );
-      items.push({
-        id: "date",
-        text: dateText,
-        icon: (
-          <SolarCalendarMinimalisticBold size={14} color={Colors.primary} />
-        ),
-      });
-    }
-    if (filter.period) {
-      const periodMap: Record<string, string> = {
-        morning: isRTL ? "صباحي" : "Morning",
-        evening: isRTL ? "مسائي" : "Evening",
-        overnight: isRTL ? "مبيت" : "Overnight",
-      };
-      items.push({
-        id: "period",
-        text: periodMap[filter.period] || filter.period,
-        icon: <SolarClockCircleBold size={14} color={Colors.primary} />,
-      });
-    }
-    if (filter.maxGuests) {
-      items.push({
-        id: "guests",
-        text: `${filter.maxGuests} ${isRTL ? "ضيف" : "guests"}`,
-        icon: <SolarUsersGroupBold size={14} color={Colors.primary} />,
-      });
-    }
-    return items;
-  }, [filter, isRTL]);
-
-  if (filterItems.length === 0) return null;
-
-  return (
-    <View style={filterBannerStyles.container}>
-      <View style={[filterBannerStyles.content, { flexDirection: "row" }]}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={[
-            filterBannerStyles.scrollContent,
-            { flexDirection: "row" },
-          ]}
-        >
-          {filterItems.map((item) => (
-            <View
-              key={item.id}
-              style={[filterBannerStyles.pill, { flexDirection: "row" }]}
-            >
-              {item.icon}
-              <ThemedText style={filterBannerStyles.pillText}>
-                {item.text}
-              </ThemedText>
-            </View>
-          ))}
-        </ScrollView>
-
-        <TouchableOpacity
-          style={filterBannerStyles.clearBtn}
-          onPress={onClearFilters}
-        >
-          <SolarCloseBold size={16} color={Colors.primary} />
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-}
-
-const filterBannerStyles = StyleSheet.create({
-  container: {
-    marginHorizontal: 16,
-    marginTop: 0,
-    marginBottom: 16,
-    backgroundColor: Colors.white,
-    borderRadius: 20,
-    ...Shadows.small,
-    borderWidth: 1,
-    borderColor: "#F3F4F6",
-    overflow: "hidden",
-  },
-  content: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  scrollContent: {
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-  },
-  pill: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F3F7FF",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
-    gap: 6,
-  },
-  pillText: {
-    fontSize: 8,
-    fontFamily: "Alexandria-Medium",
-    color: Colors.primary,
-  },
-  clearBtn: {
-    padding: 4,
-    marginLeft: 4,
-  },
-});
-
-=======
->>>>>>> Stashed changes
 export default function HomeScreen() {
   const { userType } = useSelector((state: RootState) => state.auth);
   const { isRTL, rowDirection, textAlign } = useDirection();
@@ -326,20 +180,6 @@ export default function HomeScreen() {
       setPage((p) => p + 1);
     }
   }, [chaletsFetching, hasMoreChalets]);
-
-  // Memoized scroll handler — triggers paging when near the bottom. Kept stable
-  // so the ScrollView doesn't get a fresh closure on every parent render.
-  const handleScroll = useCallback(
-    ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
-      const distanceFromBottom =
-        contentSize.height - (contentOffset.y + layoutMeasurement.height);
-      if (distanceFromBottom < 500) {
-        loadMoreChalets();
-      }
-    },
-    [loadMoreChalets],
-  );
 
   const { data: favoriteIds = [], refetch: refetchFavorites } =
     useGetFavoriteIdsQuery(undefined, { skip: userType === "guest" });
@@ -490,36 +330,6 @@ export default function HomeScreen() {
   // whole screen presents one cohesive loading state instead of building piecemeal.
   const isInitialLoading = chaletsLoading && rawChalets.length === 0;
 
-<<<<<<< Updated upstream
-  // Stable handler passed to memoizable children (AppMap, swiper cards). Keeping
-  // its identity steady prevents the preview map from re-rendering / redrawing
-  // its markers on unrelated parent updates (e.g. camera changes).
-  const navigateToDetails = useCallback(
-    (id: string, name?: string) => {
-      logEvent(ANALYTICS_EVENTS.SELECT_ITEM, {
-        item_list_id: "home",
-        items: [{ item_id: String(id), item_name: name || "" }],
-      });
-      router.push(`/chalet-details/${id}`);
-    },
-    [router],
-  );
-
-  const navigateToExplore = useCallback(
-    () => router.push("/(tabs)/(customer)/explore"),
-    [router],
-  );
-  const navigateToExploreMyLocation = useCallback(
-    () => router.push("/(tabs)/(customer)/explore?showMyLocation=1"),
-    [router],
-  );
-  const navigateToBookings = useCallback(
-    () => router.push("/(tabs)/(customer)/bookings"),
-    [router],
-  );
-
-  if (userType === "owner") return <Redirect href="/(tabs)/(dashboard)/home" />;
-=======
   const navigateToDetails = (id: string, name?: string) => {
     logEvent(ANALYTICS_EVENTS.SELECT_ITEM, {
       item_list_id: "home",
@@ -527,7 +337,6 @@ export default function HomeScreen() {
     });
     router.push(`/chalet-details/${id}`);
   };
->>>>>>> Stashed changes
 
   // Transform accumulated (paged) API data to card format
   const POPULAR_CHALETS = useMemo(() => {
@@ -862,10 +671,6 @@ export default function HomeScreen() {
         keyExtractor={(item: any, index: number) => String(item?.id ?? index)}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
-<<<<<<< Updated upstream
-        onScroll={handleScroll}
-        scrollEventThrottle={400}
-=======
         ListHeaderComponent={listHeader}
         renderItem={({ item }: { item: any; index: number }) => (
           // No reanimated `entering` here: FlashList recycles cells, which leaves
@@ -891,7 +696,6 @@ export default function HomeScreen() {
         }
         onEndReached={loadMoreChalets}
         onEndReachedThreshold={0.5}
->>>>>>> Stashed changes
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
@@ -900,199 +704,7 @@ export default function HomeScreen() {
             colors={[Colors.primary]}
           />
         }
-<<<<<<< Updated upstream
-      >
-        {/* Header */}
-        <HeaderSection isHome />
-
-        {isInitialLoading ? (
-          <CustomerHomeSkeleton />
-        ) : (
-          <>
-        {/* Banners Swiper */}
-        {bannersFetching && !bannersResponse ? (
-          <BannerSkeleton />
-        ) : banners?.length > 0 ? (
-          <Animated.View entering={FadeInDown.duration(400)}>
-            <BannerSwiper data={banners} />
-          </Animated.View>
-        ) : null}
-
-        {/* Nearby / Map */}
-        <View style={[styles.sectionHeader, { flexDirection: flexDir }]}>
-          <ThemedText
-            style={[
-              styles.sectionTitle,
-              { textAlign: textStart },
-            ]}
-          >
-            {t("home.categories.nearby")}
-          </ThemedText>
-          <TouchableOpacity onPress={navigateToExplore}>
-            <ThemedText style={styles.seeAll}>{t("home.openMap")}</ThemedText>
-          </TouchableOpacity>
-        </View>
-        <TouchableOpacity
-          activeOpacity={0.9}
-          onPress={navigateToExploreMyLocation}
-          style={styles.mapContainer}
-        >
-          <AppMap
-            key={mapKey}
-            style={styles.map}
-            showMarker
-            markers={mapMarkers}
-            onPressCard={navigateToDetails}
-          />
-          {/* overlay to intercept taps and navigate */}
-          <View style={styles.mapOverlay} />
-        </TouchableOpacity>
-
-        {/* Recent bookings — hidden entirely when there's no data */}
-        {(latestBookingsLoading || recentBookingChalets.length > 0) && (
-          <>
-            <View style={[styles.sectionHeader, { flexDirection: flexDir }]}>
-              <ThemedText
-                style={[
-                  styles.sectionTitle,
-                  { textAlign: textStart },
-                ]}
-              >
-                {t("home.recentBookings")}
-              </ThemedText>
-              <TouchableOpacity onPress={navigateToBookings}>
-                <ThemedText style={styles.seeAll}>{t("home.seeAll")}</ThemedText>
-              </TouchableOpacity>
-            </View>
-
-            {latestBookingsLoading ? (
-              <HorizontalSwiperSkeleton count={2} />
-            ) : (
-              <View style={styles.swiperWrapper}>
-                <HorizontalSwiper
-                  data={recentBookingChalets}
-                  onPressCard={(chaletId: string) => {
-                    const b = (Array.isArray(latestBookings) ? latestBookings : []).find(
-                      (x: any) => x?.chalet?.id === chaletId,
-                    );
-                    if (b?.id) {
-                      router.push({ pathname: "/(tabs)/(customer)/booking-success", params: { id: b.id } });
-                    } else {
-                      navigateToDetails(chaletId);
-                    }
-                  }}
-                  favoriteIds={favoriteIds}
-                  onToggleFavorite={handleToggleFavorite}
-                />
-              </View>
-            )}
-          </>
-        )}
-
-        {/* Recommended */}
-        <View
-          style={[
-            styles.sectionHeader,
-            { flexDirection: flexDir, justifyContent: "flex-start" },
-          ]}
-        >
-          <ThemedText
-            style={[
-              styles.sectionTitle,
-              { textAlign: textStart },
-            ]}
-          >
-            {t("home.recommended")}
-          </ThemedText>
-        </View>
-        <GHScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.tabsContainer}
-        >
-          <View style={{ flexDirection: flexDir, gap: 10 }}>
-            {FILTER_OPTIONS.map((filter) => {
-              const isActive =
-                filter.id === "all"
-                  ? selectedFilters.length === 0
-                  : selectedFilters.includes(filter.id);
-              return (
-                <SecondaryButton
-                  key={filter.id}
-                  label={filter.label}
-                  isActive={isActive}
-                  activeColor={filter.activeColor}
-                  icon={filter.icon(isActive)}
-                  onPress={() => toggleFilter(filter.id)}
-                />
-              );
-            })}
-          </View>
-        </GHScrollView>
-
-        <View style={styles.listPadding}>
-          {/* Show skeleton on first load AND while a filter change refetches
-              page 1 (so the user gets clear feedback a filter is applying),
-              but not during pull-to-refresh which has its own spinner. */}
-          {chaletsLoading || (chaletsFetching && page === 1 && !isRefreshing) ? (
-            <View style={{ gap: 12 }}>
-              <HorizontalCardSkeleton />
-              <HorizontalCardSkeleton />
-              <HorizontalCardSkeleton />
-            </View>
-          ) : POPULAR_CHALETS.length > 0 ? (
-            <>
-              {POPULAR_CHALETS.map((item: any, index: number) => (
-                <Animated.View
-                  key={item.id || index}
-                  entering={FadeInDown.delay((index % 8) * 60).duration(380)}
-                >
-                  <HorizontalCard
-                    chalet={item}
-                    onPress={() => navigateToDetails(item.id, item.title)}
-                    isFavorite={favoriteIds.includes(item.id)}
-                    onToggleFavorite={() => handleToggleFavorite(item.id)}
-                  />
-                </Animated.View>
-              ))}
-              {chaletsFetching && page > 1 && (
-                <ActivityIndicator
-                  size="small"
-                  color={Colors.primary}
-                  style={{ marginVertical: 16 }}
-                />
-              )}
-            </>
-          ) : (
-            <View style={styles.emptyContainer}>
-              <View style={styles.emptyIconContainer}>
-                <SolarWidgetBold size={60} color={Colors.primary} />
-              </View>
-              <ThemedText style={styles.emptyTitle}>
-                {t("home.noChalets")}
-              </ThemedText>
-              <ThemedText style={styles.emptyDesc}>
-                {t("home.noChaletsDesc")}
-              </ThemedText>
-              {selectedFilters.length > 0 && (
-                <TouchableOpacity
-                  style={styles.clearButton}
-                  onPress={() => setSelectedFilters([])}
-                >
-                  <ThemedText style={styles.clearButtonText}>
-                    {t("home.clearFilters")}
-                  </ThemedText>
-                </TouchableOpacity>
-              )}
-            </View>
-          )}
-        </View>
-          </>
-        )}
-      </ScrollView>
-=======
       />
->>>>>>> Stashed changes
     </View>
   );
 }

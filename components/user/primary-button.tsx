@@ -16,12 +16,6 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSpring,
-} from "react-native-reanimated";
 import { useDirection } from "@/i18n";
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
@@ -68,12 +62,6 @@ export function PrimaryButton({
   const isWhite = variant === "white";
   const { isRTL } = useDirection();
 
-  // Press-scale feedback (subtle, professional — no design change).
-  const scale = useSharedValue(1);
-  const pressStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
   const defaultActiveColor = isWhite ? "white" : "#035DF9";
   const defaultActiveTextColor = isWhite ? "#6B7280" : "white";
 
@@ -113,15 +101,6 @@ export function PrimaryButton({
   return (
     <AnimatedTouchable
       activeOpacity={0.85}
-<<<<<<< Updated upstream
-      onPressIn={() => {
-        scale.value = withTiming(0.96, { duration: 110 });
-      }}
-      onPressOut={() => {
-        scale.value = withSpring(1, { damping: 12, stiffness: 220 });
-      }}
-=======
->>>>>>> Stashed changes
       onPress={() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
         onPress();
@@ -133,11 +112,7 @@ export function PrimaryButton({
         scale.value = withSpring(1, { damping: 12, stiffness: 180 });
       }}
       disabled={disabled}
-<<<<<<< Updated upstream
-      style={[styles.hybridContainer, { height, direction: isRTL ? 'rtl' : 'ltr' }, pressStyle, style]}
-=======
       style={[styles.hybridContainer, { height, direction: isRTL ? 'rtl' : 'ltr' }, style, pressAnim]}
->>>>>>> Stashed changes
     >
       {/* Logical Start Curve */}
       <View style={{ width: scaledPartWidth, height: scaledPartHeight }}>
