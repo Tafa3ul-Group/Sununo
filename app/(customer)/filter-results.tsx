@@ -34,6 +34,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import { useDirection } from "@/i18n";
@@ -230,19 +231,21 @@ export default function FilterResultsScreen() {
 
   // Render chalet item card
   const renderChaletCard = ({ item, index }: { item: any; index: number }) => (
-    <HorizontalCard
-      chalet={item}
-      onPress={() => {
-        logEvent(ANALYTICS_EVENTS.SELECT_ITEM, {
-          item_list_id: "search_results",
-          items: [{ item_id: String(item.id), item_name: item.title }],
-        });
-        router.push(`/chalet-details/${item.id}`);
-      }}
-      shapeIndex={2}
-      isFavorite={item.isFavorite}
-      onToggleFavorite={() => handleToggleFavorite(item)}
-    />
+    <Animated.View entering={FadeInDown.delay((index % 8) * 60).duration(380)}>
+      <HorizontalCard
+        chalet={item}
+        onPress={() => {
+          logEvent(ANALYTICS_EVENTS.SELECT_ITEM, {
+            item_list_id: "search_results",
+            items: [{ item_id: String(item.id), item_name: item.title }],
+          });
+          router.push(`/chalet-details/${item.id}`);
+        }}
+        shapeIndex={2}
+        isFavorite={item.isFavorite}
+        onToggleFavorite={() => handleToggleFavorite(item)}
+      />
+    </Animated.View>
   );
 
   return (

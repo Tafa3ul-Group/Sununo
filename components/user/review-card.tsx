@@ -47,7 +47,7 @@ interface ReviewCardProps {
   onPressChalet?: () => void;
 }
 
-export function ReviewCard({ review, onDelete, onPressChalet }: ReviewCardProps) {
+export const ReviewCard = React.memo(function ReviewCard({ review, onDelete, onPressChalet }: ReviewCardProps) {
   const { isRTL } = useDirection();
   // Physical text alignment that emulates "logical start" (left in steady state);
   // textAlign left/right are NOT auto-mirrored by RN, so keep the manager comparison.
@@ -139,7 +139,7 @@ export function ReviewCard({ review, onDelete, onPressChalet }: ReviewCardProps)
       </View>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {

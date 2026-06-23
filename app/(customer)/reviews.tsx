@@ -17,9 +17,12 @@ import {
   View
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { useDirection } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+const MemoizedReviewCard = React.memo(ReviewCard);
 
 export default function ReviewsScreen() {
   const router = useRouter();
@@ -88,15 +91,17 @@ export default function ReviewsScreen() {
   const filteredReviews = activeTab === 'pending' ? reviews.pending : reviews.reviewed;
   const loading = loadingCompleted || loadingAll;
 
-  const renderReviewItem = ({ item }: { item: any }) => {
+  const renderReviewItem = ({ item, index }: { item: any; index: number }) => {
     return (
-      <ReviewCard 
-        review={{
-          ...item,
-          chaletTitle: item.chaletTitle,
-          chaletLocation: item.chaletLocation,
-          comment: item.comment }} 
-      />
+      <Animated.View entering={FadeInDown.delay((index % 8) * 60).duration(380)}>
+        <MemoizedReviewCard
+          review={{
+            ...item,
+            chaletTitle: item.chaletTitle,
+            chaletLocation: item.chaletLocation,
+            comment: item.comment }}
+        />
+      </Animated.View>
     );
   };
 

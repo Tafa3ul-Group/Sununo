@@ -50,6 +50,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Animated, {
+  FadeInDown,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import { useFormatTime } from "../../../hooks/useFormatTime";
@@ -71,6 +78,54 @@ const BOOKING_TABS: TabType[] = ["WHEN", "WHO", "WHERE"];
 
 const getLocalDateKey = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
+
+// Reusable press-scale wrapper for buttons rendered inside `.map()` loops where a
+// hook-based shared value cannot be created at the parent's top level. Press
+// feedback is suppressed when `disabled` so non-clickable cards don't animate.
+const PressableScale = React.memo(function PressableScale({
+  disabled,
+  onPress,
+  style,
+  activeOpacity,
+  haptic = true,
+  children,
+}: {
+  disabled?: boolean;
+  onPress?: () => void;
+  style?: any;
+  activeOpacity?: number;
+  haptic?: boolean;
+  children: React.ReactNode;
+}) {
+  const scale = useSharedValue(1);
+  const animStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+  return (
+    <AnimatedTouchable
+      disabled={disabled}
+      activeOpacity={activeOpacity}
+      style={[style, animStyle]}
+      onPressIn={() => {
+        if (disabled) return;
+        scale.value = withTiming(0.96, { duration: 110 });
+      }}
+      onPressOut={() => {
+        if (disabled) return;
+        scale.value = withSpring(1, { damping: 12, stiffness: 220 });
+      }}
+      onPress={() => {
+        if (disabled) return;
+        if (haptic) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        onPress?.();
+      }}
+    >
+      {children}
+    </AnimatedTouchable>
+  );
+});
 
 export default function CompleteBookingScreen() {
   const { t } = useTranslation();
@@ -895,6 +950,27 @@ export default function CompleteBookingScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
+  // Stable handler references for GuestCounter so it isn't handed fresh closures
+  // on every parent render.
+  const handleIncrementAdults = useCallback(() => {
+    const totalNow = adultCount;
+    const maxCap = Number(chaletDetails?.capacity || 50);
+    if (totalNow < maxCap) {
+      setAdultCount(adultCount + 1);
+    } else {
+      Alert.alert(
+        isArabic ? "تنبيه" : "Alert",
+        isArabic
+          ? `السعة القصوى لهذا الشاليه هي ${maxCap} شخص. لديك حالياً ${totalNow} ضيف.`
+          : `Maximum capacity for this chalet is ${maxCap} guests. You currently have ${totalNow}.`,
+      );
+    }
+  }, [adultCount, chaletDetails?.capacity, isArabic]);
+
+  const handleDecrementAdults = useCallback(() => {
+    setAdultCount(Math.max(1, adultCount - 1));
+  }, [adultCount]);
+
   const startPaymentPolling = async (transactionId: string) => {
     let attempts = 0;
     const maxAttempts = 20; // 20 * 3s = 60s (1 minute)
@@ -956,7 +1032,10 @@ export default function CompleteBookingScreen() {
   };
 
   const renderDetailsTab = () => (
-    <View style={styles.detailsContainer}>
+    <Animated.View
+      style={styles.detailsContainer}
+      entering={FadeInDown.duration(380)}
+    >
       <HorizontalCard
         chalet={{
           id: chaletDetails?.id || "",
@@ -992,7 +1071,10 @@ export default function CompleteBookingScreen() {
         onPress={() => {}}
       />
 
-      <View style={styles.detailsMapCard}>
+      <Animated.View
+        style={styles.detailsMapCard}
+        entering={FadeInDown.delay(60).duration(380)}
+      >
         <View style={styles.mapSnippetWrapper}>
           <ExpoImage
             source={{
@@ -1015,9 +1097,12 @@ export default function CompleteBookingScreen() {
               chaletDetails?.region?.name ||
               ""}
         </ThemedText>
-      </View>
+      </Animated.View>
 
-      <View style={styles.infoSectionCard}>
+      <Animated.View
+        style={styles.infoSectionCard}
+        entering={FadeInDown.delay(120).duration(380)}
+      >
         <ThemedText style={[styles.sectionTitle, { alignSelf: alignStart, textAlign: textStart }]}>
           {t("booking.customerInfo")}
         </ThemedText>
@@ -1038,9 +1123,12 @@ export default function CompleteBookingScreen() {
             {user?.phone || t("booking.phoneValue")}
           </ThemedText>
         </View>
-      </View>
+      </Animated.View>
 
-      <View style={styles.infoSectionCard}>
+      <Animated.View
+        style={styles.infoSectionCard}
+        entering={FadeInDown.delay(180).duration(380)}
+      >
         <View style={[styles.sectionHeaderRow, styles.row, { flexDirection: rowDirection }]}>
           <ThemedText style={[styles.sectionTitle, { textAlign: textStart }]}>
             {t("booking.bookingInfo")}
@@ -1134,9 +1222,12 @@ export default function CompleteBookingScreen() {
             </View>
           </>
         )}
-      </View>
+      </Animated.View>
 
-      <View style={styles.infoSectionCard}>
+      <Animated.View
+        style={styles.infoSectionCard}
+        entering={FadeInDown.delay(240).duration(380)}
+      >
         <ThemedText style={[styles.sectionTitle, { alignSelf: alignStart, textAlign: textStart }]}>
           {isArabic ? "ملاحظات إضافية" : "Special Requests"}
         </ThemedText>
@@ -1161,7 +1252,7 @@ export default function CompleteBookingScreen() {
           value={notes}
           onChangeText={setNotes}
         />
-      </View>
+      </Animated.View>
 
       {chaletDetails?.bookingType === "delayed" ? (
         /* ── Delayed Booking: No payment selection ── */
@@ -1186,7 +1277,7 @@ export default function CompleteBookingScreen() {
           </ThemedText>
 
           {depositPercentage > 0 && (
-            <TouchableOpacity
+            <PressableScale
               style={[
                 styles.paymentOptionCard,
                 paymentType === "DEPOSIT" && styles.paymentOptionActive,
@@ -1213,10 +1304,10 @@ export default function CompleteBookingScreen() {
               >
                 {depositAmount.toLocaleString()} {t("common.iqd")}
               </ThemedText>
-            </TouchableOpacity>
+            </PressableScale>
           )}
 
-          <TouchableOpacity
+          <PressableScale
             style={[
               styles.paymentOptionCard,
               paymentType === "FULL" && styles.paymentOptionActive,
@@ -1243,7 +1334,7 @@ export default function CompleteBookingScreen() {
             >
               {totalPrice.toLocaleString()} {t("common.iqd")}
             </ThemedText>
-          </TouchableOpacity>
+          </PressableScale>
 
           <View style={styles.agreementWrapper}>
             <ThemedText style={styles.agreementText}>
@@ -1275,7 +1366,7 @@ export default function CompleteBookingScreen() {
           </View>
         </>
       )}
-    </View>
+    </Animated.View>
   );
 
   const renderCalendarSheet = () => (
@@ -1528,7 +1619,7 @@ export default function CompleteBookingScreen() {
                   </ThemedText>
                 </View>
                 <View style={styles.shiftsContainer}>
-                  {availableShifts?.map((shift: any) => {
+                  {availableShifts?.map((shift: any, index: number) => {
                     const shiftName = isArabic
                       ? shift.name?.ar || shift.name
                       : shift.name?.en || shift.name;
@@ -1546,8 +1637,11 @@ export default function CompleteBookingScreen() {
                         previewNameAr.includes("صباح"));
 
                     return (
-                      <View
+                      <Animated.View
                         key={`preview-${shift.id}`}
+                        entering={FadeInDown.delay((index % 8) * 60).duration(
+                          380,
+                        )}
                         style={[
                           styles.shiftCardFlat,
                           { flexDirection: rowDirection, opacity: 0.6 },
@@ -1596,7 +1690,7 @@ export default function CompleteBookingScreen() {
                             {t("common.iqd")}
                           </ThemedText>
                         </View>
-                      </View>
+                      </Animated.View>
                     );
                   })}
                 </View>
@@ -1673,9 +1767,10 @@ export default function CompleteBookingScreen() {
                       shift.name?.ar?.includes("صباح");
 
                     return (
-                      <TouchableOpacity
+                      <PressableScale
                         key={`${day}-${shift.id}`}
                         disabled={isDisabled}
+                        haptic={false}
                         activeOpacity={isDisabled ? 1 : 0.7}
                         style={[
                           styles.shiftCardFlat,
@@ -1766,7 +1861,7 @@ export default function CompleteBookingScreen() {
                             </ThemedText>
                           )}
                         </View>
-                      </TouchableOpacity>
+                      </PressableScale>
                     );
                   })}
                 </View>
@@ -1875,7 +1970,7 @@ export default function CompleteBookingScreen() {
               <View
                 style={[styles.guestTypeContainer, { flexDirection: rowDirection }]}
               >
-                <TouchableOpacity
+                <PressableScale
                   style={[
                     styles.guestTypeTab,
                     guestType === "FAMILY" && styles.guestTypeTabActive,
@@ -1890,8 +1985,8 @@ export default function CompleteBookingScreen() {
                   >
                     {isArabic ? "عائلات" : "Families"}
                   </ThemedText>
-                </TouchableOpacity>
-                <TouchableOpacity
+                </PressableScale>
+                <PressableScale
                   style={[
                     styles.guestTypeTab,
                     guestType === "YOUTH" && styles.guestTypeTabActive,
@@ -1906,7 +2001,7 @@ export default function CompleteBookingScreen() {
                   >
                     {isArabic ? "شباب" : "Youth"}
                   </ThemedText>
-                </TouchableOpacity>
+                </PressableScale>
               </View>
             </View>
 
@@ -2010,21 +2105,8 @@ export default function CompleteBookingScreen() {
               </View>
               <GuestCounter
                 value={adultCount}
-                onIncrement={() => {
-                  const totalNow = adultCount;
-                  const maxCap = Number(chaletDetails?.capacity || 50);
-                  if (totalNow < maxCap) {
-                    setAdultCount(adultCount + 1);
-                  } else {
-                    Alert.alert(
-                      isArabic ? "تنبيه" : "Alert",
-                      isArabic
-                        ? `السعة القصوى لهذا الشاليه هي ${maxCap} شخص. لديك حالياً ${totalNow} ضيف.`
-                        : `Maximum capacity for this chalet is ${maxCap} guests. You currently have ${totalNow}.`,
-                    );
-                  }
-                }}
-                onDecrement={() => setAdultCount(Math.max(1, adultCount - 1))}
+                onIncrement={handleIncrementAdults}
+                onDecrement={handleDecrementAdults}
               />
             </View>
 

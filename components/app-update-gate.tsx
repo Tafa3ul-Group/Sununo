@@ -1,6 +1,7 @@
 import { ThemedText } from "@/components/themed-text";
 import { useAppUpdate } from "@/hooks/use-app-update";
 import { useDirection } from "@/i18n";
+import { Image } from "expo-image";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
@@ -74,7 +75,11 @@ export function AppUpdateGate() {
     >
       <BottomSheetView style={styles.content}>
         <View style={styles.iconCircle}>
-          <ThemedText style={styles.iconGlyph}>↑</ThemedText>
+          <Image
+            source={require("@/assets/images/icon.png")}
+            style={styles.iconImg}
+            contentFit="cover"
+          />
         </View>
 
         <ThemedText style={styles.title}>
@@ -152,11 +157,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 4,
+    overflow: "hidden",
   },
-  iconGlyph: {
-    fontSize: 30,
-    color: "#045CFB",
-    fontFamily: "Alexandria-Medium",
+  iconImg: {
+    width: "100%",
+    height: "100%",
   },
   title: {
     fontSize: 18,

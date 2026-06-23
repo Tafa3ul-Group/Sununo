@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Dimensions, ViewStyle } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import Animated, { FadeIn, FadeInDown, ZoomIn } from 'react-native-reanimated';
 import { ThemedText } from '../themed-text';
 import { Colors, normalize, Spacing } from '@/constants/theme';
 import { PrimaryButton } from '../user/primary-button';
@@ -29,26 +30,35 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   return (
     <View style={[styles.container, style]}>
       <View style={styles.content}>
-        <View style={styles.iconContainer}>
+        <Animated.View
+          entering={ZoomIn.duration(360).springify().damping(14)}
+          style={styles.iconContainer}
+        >
           {icon || <SolarInboxLinear size={normalize.width(80)} color={Colors.text.muted} />}
-        </View>
-        
-        <ThemedText style={styles.title}>
-          {title || t('common.noData') || (isRTL ? 'لا توجد بيانات' : 'No Data Found')}
-        </ThemedText>
-        
-        {description && (
-          <ThemedText style={styles.description}>
-            {description}
+        </Animated.View>
+
+        <Animated.View entering={FadeInDown.delay(120).duration(360)}>
+          <ThemedText style={styles.title}>
+            {title || t('common.noData') || (isRTL ? 'لا توجد بيانات' : 'No Data Found')}
           </ThemedText>
+        </Animated.View>
+
+        {description && (
+          <Animated.View entering={FadeIn.delay(220).duration(360)}>
+            <ThemedText style={styles.description}>
+              {description}
+            </ThemedText>
+          </Animated.View>
         )}
 
         {actionLabel && onAction && (
-          <PrimaryButton 
-            label={actionLabel} 
-            onPress={onAction} 
-            style={styles.button}
-          />
+          <Animated.View entering={FadeInDown.delay(320).duration(360)} style={{ width: '100%', alignItems: 'center' }}>
+            <PrimaryButton
+              label={actionLabel}
+              onPress={onAction}
+              style={styles.button}
+            />
+          </Animated.View>
         )}
       </View>
     </View>

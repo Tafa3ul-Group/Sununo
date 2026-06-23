@@ -23,13 +23,25 @@ import { useTranslation } from "react-i18next";
 import {
   Alert,
   Dimensions,
-  Pressable,
   ScrollView,
   StyleSheet,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Animated, {
+  FadeIn,
+  FadeInDown,
+  FadeOut,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
 import { useDirection } from "@/i18n";
+
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -37,6 +49,48 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const DESIGN_BASE_WIDTH = 414; // Using iPhone Plus as base for more standard scaling
 const scale = SCREEN_WIDTH / DESIGN_BASE_WIDTH;
 const normalize = (size: number) => size * scale;
+
+function RatingStarButton({
+  filled,
+  onPress,
+}: {
+  filled: boolean;
+  onPress: () => void;
+}) {
+  const scaleValue = useSharedValue(1);
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scaleValue.value }],
+  }));
+
+  const handlePress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onPress();
+  };
+
+  return (
+    <AnimatedTouchable
+      activeOpacity={0.9}
+      onPressIn={() => {
+        scaleValue.value = withTiming(0.96, { duration: 110 });
+      }}
+      onPressOut={() => {
+        scaleValue.value = withSpring(1, { damping: 12, stiffness: 220 });
+      }}
+      onPress={handlePress}
+      style={animatedStyle}
+    >
+      {filled ? (
+        <Animated.View entering={FadeIn.duration(180)} exiting={FadeOut.duration(180)}>
+          <SolarStarBold size={normalize(32)} color="#15AB64" />
+        </Animated.View>
+      ) : (
+        <Animated.View entering={FadeIn.duration(180)} exiting={FadeOut.duration(180)}>
+          <SolarStarLinear size={normalize(32)} color="#15AB64" />
+        </Animated.View>
+      )}
+    </AnimatedTouchable>
+  );
+}
 
 export default function ReviewsScreen() {
   const router = useRouter();
@@ -182,7 +236,11 @@ export default function ReviewsScreen() {
             const reviewBody = rev.body;
 
             return (
-              <View key={idx} style={styles.revCardFlat}>
+              <Animated.View
+                key={idx}
+                entering={FadeInDown.delay((idx % 8) * 60).duration(380)}
+                style={styles.revCardFlat}
+              >
                 <View
                   style={[styles.revHeader, { flexDirection: rowDirection }]}
                 >
@@ -259,7 +317,7 @@ export default function ReviewsScreen() {
                     {rev.date}
                   </ThemedText>
                 </View>
-              </View>
+              </Animated.View>
             );
           })}
         </View>
@@ -281,13 +339,11 @@ export default function ReviewsScreen() {
               </ThemedText>
               <View style={styles.inputStarsRow}>
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <Pressable key={i} onPress={() => handleRatingPress(i)}>
-                    {i <= userRating ? (
-                      <SolarStarBold size={normalize(32)} color="#15AB64" />
-                    ) : (
-                      <SolarStarLinear size={normalize(32)} color="#15AB64" />
-                    )}
-                  </Pressable>
+                  <RatingStarButton
+                    key={i}
+                    filled={i <= userRating}
+                    onPress={() => handleRatingPress(i)}
+                  />
                 ))}
               </View>
             </View>

@@ -65,7 +65,7 @@ export default function WalletTransactionsScreen() {
     });
   };
 
-  const renderItem = ({ item }: { item: any }) => {
+  const renderItem = useCallback(({ item, index }: { item: any; index: number }) => {
     const amountNum = Number(item.amount) || 0;
     const typeStr = String(item.type || item.direction || "").toLowerCase();
     const explicitDebit = /(debit|payment|withdraw|deduct|out)/.test(typeStr);
@@ -115,7 +115,7 @@ export default function WalletTransactionsScreen() {
         </View>
       </View>
     );
-  };
+  }, [rowDirection, startAlign, endAlign, textStart, isRTL, t]);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>

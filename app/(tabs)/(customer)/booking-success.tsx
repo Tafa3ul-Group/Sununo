@@ -20,6 +20,16 @@ import {
   I18nManager,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Animated, {
+  ZoomIn,
+  FadeInDown,
+  LinearTransition,
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+} from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
 import {
   SolarCardBold,
   SolarWalletBold,
@@ -41,6 +51,41 @@ const dismissBrowser = () => {
       /* ignore */
     }
   }
+};
+
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
+
+// Press-scale wrapper that preserves the exact static appearance of the
+// underlying TouchableOpacity (no visual change at rest) and only adds a
+// subtle scale-down on press + spring-back on release. Layout-aware so it can
+// morph border/background changes via LinearTransition.
+const PressScaleTouchable: React.FC<
+  React.ComponentProps<typeof TouchableOpacity> & {
+    children: React.ReactNode;
+    layoutMorph?: boolean;
+  }
+> = ({ children, style, onPressIn, onPressOut, layoutMorph, ...rest }) => {
+  const scale = useSharedValue(1);
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+  return (
+    <AnimatedTouchable
+      {...rest}
+      style={[style, animatedStyle]}
+      layout={layoutMorph ? LinearTransition : undefined}
+      onPressIn={(e) => {
+        scale.value = withTiming(0.96, { duration: 110 });
+        onPressIn?.(e);
+      }}
+      onPressOut={(e) => {
+        scale.value = withSpring(1, { damping: 12, stiffness: 220 });
+        onPressOut?.(e);
+      }}
+    >
+      {children}
+    </AnimatedTouchable>
+  );
 };
 
 export default function BookingSuccessDetailsScreen() {
@@ -294,8 +339,15 @@ export default function BookingSuccessDetailsScreen() {
   }, [booking, isRTL, t]);
 
   const writingDir: "rtl" | "ltr" = isRTL ? "rtl" : "ltr";
-  const renderInfoRow = (label: string, value: string | React.ReactNode) => (
-    <View style={[styles.infoRow, { flexDirection: rowDirection }]}>
+  const renderInfoRow = (
+    label: string,
+    value: string | React.ReactNode,
+    index: number = 0,
+  ) => (
+    <Animated.View
+      entering={FadeInDown.delay((index % 8) * 60).duration(380)}
+      style={[styles.infoRow, { flexDirection: rowDirection }]}
+    >
       <ThemedText
         style={[styles.infoLabel, { textAlign: textStart, writingDirection: writingDir }]}
       >
@@ -316,7 +368,7 @@ export default function BookingSuccessDetailsScreen() {
           value
         )}
       </View>
-    </View>
+    </Animated.View>
   );
 
   if (isLoading) {
@@ -393,12 +445,14 @@ export default function BookingSuccessDetailsScreen() {
           {renderInfoRow(
             t("booking.name"),
             booking?.customer?.name || t("booking.nameValue"),
+            0,
           )}
           {renderInfoRow(
             t("booking.phone"),
             <ThemedText style={[styles.infoValue, { direction: "ltr" }]}>
               {booking?.customer?.phone || t("booking.phoneValue")}
             </ThemedText>,
+            1,
           )}
         </View>
 
@@ -419,26 +473,32 @@ export default function BookingSuccessDetailsScreen() {
               {t("booking.bookingStatus")}
             </ThemedText>
             <View style={{ flex: 1, alignItems: "flex-end" }}>
-              <View style={[styles.statusBadgeCustom, { backgroundColor: statusDetails.bg }]}>
+              <Animated.View
+                entering={ZoomIn.springify().delay(200)}
+                style={[styles.statusBadgeCustom, { backgroundColor: statusDetails.bg }]}
+              >
                 <ThemedText style={[styles.statusBadgeTextCustom, { color: statusDetails.color }]}>
                   {statusDetails.text}
                 </ThemedText>
-              </View>
+              </Animated.View>
             </View>
           </View>
 
           {renderInfoRow(
             t("booking.date"),
             booking?.bookingDate || t("booking.dateValue"),
+            1,
           )}
-          {renderInfoRow(t("booking.shift"), shiftInfo)}
+          {renderInfoRow(t("booking.shift"), shiftInfo, 2)}
           {renderInfoRow(
             t("booking.guests"),
             (booking?.guestsCount ?? booking?.guestCount ?? 0).toString(),
+            3,
           )}
           {renderInfoRow(
             t("booking.totalAmount"),
             `${totalPrice} ${t("common.iqd")}`,
+            4,
           )}
         </View>
 
@@ -482,20 +542,24 @@ export default function BookingSuccessDetailsScreen() {
           {basePriceVal > 0 && renderInfoRow(
             isRTL ? "السعر الأساسي للفترة" : "Shift Base Price",
             `${basePriceVal.toLocaleString()} ${t("common.iqd")}`,
+            1,
           )}
           {extraGuestsPriceVal > 0 && renderInfoRow(
             isRTL ? "رسوم الضيوف الإضافية" : "Extra Guests Fee",
             `${extraGuestsPriceVal.toLocaleString()} ${t("common.iqd")}`,
+            2,
           )}
           {addonsPriceVal > 0 && renderInfoRow(
             isRTL ? "سعر الخدمات الإضافية" : "Addons Price",
             `${addonsPriceVal.toLocaleString()} ${t("common.iqd")}`,
+            3,
           )}
           {(extraGuestsPriceVal > 0 || addonsPriceVal > 0) && <View style={styles.divider} />}
 
           {renderInfoRow(
             t("booking.totalAmount"),
             `${totalPrice} ${t("common.iqd")}`,
+            4,
           )}
           {isPaid && renderInfoRow(
             isDepositPayment
@@ -504,10 +568,12 @@ export default function BookingSuccessDetailsScreen() {
             <ThemedText style={[styles.infoValue, { color: "#16A34A", fontFamily: "Alexandria-SemiBold" }]}>
               {`${amountPaidVal.toLocaleString()} ${t("common.iqd")}`}
             </ThemedText>,
+            5,
           )}
           {isPaid && isDepositPayment && remainingAmountVal > 0 && renderInfoRow(
             isRTL ? "المبلغ المتبقي (يُدفع عند الوصول)" : "Remaining (Due on arrival)",
             `${remainingAmount} ${t("common.iqd")}`,
+            6,
           )}
         </View>
 
@@ -583,13 +649,17 @@ export default function BookingSuccessDetailsScreen() {
                   {isRTL ? "اختر طريقة الدفع (لم يتم الدفع بعد)" : "Choose how to pay (not paid yet)"}
                 </ThemedText>
 
-                <TouchableOpacity
+                <PressScaleTouchable
+                  layoutMorph
                   style={[
                     styles.paymentOptionCard,
                     paymentType === "DEPOSIT" && styles.paymentOptionActive,
                     { flexDirection: rowDirection }
                   ]}
-                  onPress={() => setPaymentType("DEPOSIT")}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setPaymentType("DEPOSIT");
+                  }}
                 >
                   <ThemedText
                     style={[
@@ -609,15 +679,19 @@ export default function BookingSuccessDetailsScreen() {
                   >
                     {depositAmountVal.toLocaleString()} {t("common.iqd")}
                   </ThemedText>
-                </TouchableOpacity>
+                </PressScaleTouchable>
 
-                <TouchableOpacity
+                <PressScaleTouchable
+                  layoutMorph
                   style={[
                     styles.paymentOptionCard,
                     paymentType === "FULL" && styles.paymentOptionActive,
                     { flexDirection: rowDirection }
                   ]}
-                  onPress={() => setPaymentType("FULL")}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setPaymentType("FULL");
+                  }}
                 >
                   <ThemedText
                     style={[
@@ -637,17 +711,21 @@ export default function BookingSuccessDetailsScreen() {
                   >
                     {Number(booking?.totalPrice || 0).toLocaleString()} {t("common.iqd")}
                   </ThemedText>
-                </TouchableOpacity>
+                </PressScaleTouchable>
               </View>
             )}
 
             <View style={[styles.paymentMethodsGrid, { flexDirection: rowDirection }]}>
-              <TouchableOpacity
+              <PressScaleTouchable
+                layoutMorph
                 style={[
                   styles.paymentMethodBtn,
                   selectedMethod === "wayl" && styles.paymentMethodActive,
                 ]}
-                onPress={() => setSelectedMethod("wayl")}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  setSelectedMethod("wayl");
+                }}
               >
                 <SolarCardBold size={22} color={selectedMethod === "wayl" ? "#FFF" : "#64748B"} />
                 <ThemedText
@@ -658,14 +736,18 @@ export default function BookingSuccessDetailsScreen() {
                 >
                   {isRTL ? "دفع بالبطاقة" : "Card Payment"}
                 </ThemedText>
-              </TouchableOpacity>
+              </PressScaleTouchable>
 
-              <TouchableOpacity
+              <PressScaleTouchable
+                layoutMorph
                 style={[
                   styles.paymentMethodBtn,
                   selectedMethod === "wallet" && styles.paymentMethodActive,
                 ]}
-                onPress={() => setSelectedMethod("wallet")}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  setSelectedMethod("wallet");
+                }}
               >
                 <SolarWalletBold size={22} color={selectedMethod === "wallet" ? "#FFF" : "#64748B"} />
                 <ThemedText
@@ -676,7 +758,7 @@ export default function BookingSuccessDetailsScreen() {
                 >
                   {isRTL ? "المحفظة" : "Wallet"}
                 </ThemedText>
-              </TouchableOpacity>
+              </PressScaleTouchable>
             </View>
 
             <TouchableOpacity

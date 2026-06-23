@@ -435,15 +435,21 @@ export default function HomeScreen() {
   // whole screen presents one cohesive loading state instead of building piecemeal.
   const isInitialLoading = chaletsLoading && rawChalets.length === 0;
 
-  if (userType === "owner") return <Redirect href="/(tabs)/(dashboard)/home" />;
+  // Stable handler passed to memoizable children (AppMap, swiper cards). Keeping
+  // its identity steady prevents the preview map from re-rendering / redrawing
+  // its markers on unrelated parent updates (e.g. camera changes).
+  const navigateToDetails = useCallback(
+    (id: string, name?: string) => {
+      logEvent(ANALYTICS_EVENTS.SELECT_ITEM, {
+        item_list_id: "home",
+        items: [{ item_id: String(id), item_name: name || "" }],
+      });
+      router.push(`/chalet-details/${id}`);
+    },
+    [router],
+  );
 
-  const navigateToDetails = (id: string, name?: string) => {
-    logEvent(ANALYTICS_EVENTS.SELECT_ITEM, {
-      item_list_id: "home",
-      items: [{ item_id: String(id), item_name: name || "" }],
-    });
-    router.push(`/chalet-details/${id}`);
-  };
+  if (userType === "owner") return <Redirect href="/(tabs)/(dashboard)/home" />;
 
   // Transform accumulated (paged) API data to card format
   const POPULAR_CHALETS = useMemo(() => {

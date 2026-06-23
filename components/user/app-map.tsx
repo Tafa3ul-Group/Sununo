@@ -63,7 +63,7 @@ interface AppMapProps {
   onPress?: () => void;
 }
 
-export const AppMap = ({
+const AppMapComponent = ({
   style,
   centerCoordinate,
   zoomLevel = 12,
@@ -471,6 +471,11 @@ export const AppMap = ({
     </View>
   );
 };
+
+// Memoized so the preview map only re-renders when its props actually change.
+// Combined with stable handlers/markers from callers, this prevents the map
+// from redrawing its markers on unrelated parent updates (e.g. camera changes).
+export const AppMap = React.memo(AppMapComponent);
 
 const styles = StyleSheet.create({
   container: {

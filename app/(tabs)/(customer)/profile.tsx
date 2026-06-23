@@ -38,10 +38,79 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated, {
+    FadeInDown,
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
+    withTiming,
+} from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { useDirection } from '@/i18n';
+
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
+
+type MenuItem = {
+    id: string;
+    title: string;
+    shape: 'red' | 'pink' | 'green' | 'blue';
+    icon: React.ReactNode;
+    route?: string;
+    action?: () => void;
+};
+
+const MenuRow = React.memo(function MenuRow({
+    item,
+    rowDirection,
+    onPress,
+}: {
+    item: MenuItem;
+    rowDirection: 'row' | 'row-reverse';
+    onPress: (item: MenuItem) => void;
+}) {
+    const scale = useSharedValue(1);
+    const animatedStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: scale.value }],
+    }));
+
+    const handlePressIn = useCallback(() => {
+        scale.value = withTiming(0.95, { duration: 110 });
+    }, [scale]);
+    const handlePressOut = useCallback(() => {
+        scale.value = withSpring(1, { damping: 12, stiffness: 220 });
+    }, [scale]);
+    const handlePress = useCallback(() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        onPress(item);
+    }, [item, onPress]);
+
+    return (
+        <AnimatedTouchable
+            style={[styles.menuRow, { flexDirection: rowDirection }, animatedStyle]}
+            onPress={handlePress}
+            onPressIn={handlePressIn}
+            onPressOut={handlePressOut}
+            activeOpacity={0.7}
+        >
+            {/* Icon first, then label right next to it */}
+            <View style={[styles.menuItemStart, { flexDirection: rowDirection }]}>
+                <ProfileShape size={normalize.width(42)} type={item.shape}>
+                    {item.icon}
+                </ProfileShape>
+                <Text
+                    style={[
+                        styles.menuLabelText,
+                        (item.id === 'logout' || item.id === 'deleteAccount') && styles.logoutText,
+                    ]}
+                >
+                    {item.title}
+                </Text>
+            </View>
+        </AnimatedTouchable>
+    );
+});
 
 export default function CustomerProfileScreen() {
     const { t } = useTranslation();
@@ -78,6 +147,30 @@ export default function CustomerProfileScreen() {
         : '0';
 
     const supportPhone = toWhatsAppNumber(SUPPORT_WHATSAPP);
+
+    // Press-scale feedback for the user (edit profile) card.
+    const userCardScale = useSharedValue(1);
+    const userCardAnimatedStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: userCardScale.value }],
+    }));
+    const onUserCardPressIn = useCallback(() => {
+        userCardScale.value = withTiming(0.96, { duration: 110 });
+    }, [userCardScale]);
+    const onUserCardPressOut = useCallback(() => {
+        userCardScale.value = withSpring(1, { damping: 12, stiffness: 220 });
+    }, [userCardScale]);
+    const onUserCardPress = useCallback(() => {
+        Haptics.selectionAsync();
+        router.push('/profile-edit');
+    }, [router]);
+
+    const onMenuRowPress = useCallback((item: MenuItem) => {
+        if (item.action) {
+            item.action();
+        } else if (item.route) {
+            router.push(item.route as any);
+        }
+    }, [router]);
 
     const openContactUs = useCallback(() => {
         Linking.openURL(`https://wa.me/${supportPhone}`).catch(() => {
@@ -187,9 +280,11 @@ export default function CustomerProfileScreen() {
             >
                 {/* User Card */}
                 <Animated.View entering={FadeInDown.duration(400)}>
-                <TouchableOpacity
-                    style={[styles.userCard, { flexDirection: rowDirection }]}
-                    onPress={() => router.push('/profile-edit')}
+                <AnimatedTouchable
+                    style={[styles.userCard, { flexDirection: rowDirection }, userCardAnimatedStyle]}
+                    onPress={onUserCardPress}
+                    onPressIn={onUserCardPressIn}
+                    onPressOut={onUserCardPressOut}
                     activeOpacity={0.9}
                 >
                     {/* Inner avatar and name/phone block */}
@@ -216,7 +311,7 @@ export default function CustomerProfileScreen() {
                     <View style={styles.editIconWrap}>
                         <SolarPenNewRoundBoldDuotone size={32} color={Colors.primary} />
                     </View>
-                </TouchableOpacity>
+                </AnimatedTouchable>
                 </Animated.View>
 
                 {/* Wallet Card */}
@@ -234,32 +329,11 @@ export default function CustomerProfileScreen() {
                             key={item.id}
                             entering={FadeInDown.delay(160 + index * 60).duration(380)}
                         >
-                        <TouchableOpacity
-                            style={[styles.menuRow, { flexDirection: rowDirection }]}
-                            onPress={() => {
-                                if (item.action) {
-                                    item.action();
-                                } else if (item.route) {
-                                    router.push(item.route as any);
-                                }
-                            }}
-                            activeOpacity={0.7}
-                        >
-                            {/* Icon first, then label right next to it */}
-                            <View style={[styles.menuItemStart, { flexDirection: rowDirection }]}>
-                                <ProfileShape size={normalize.width(42)} type={item.shape}>
-                                    {item.icon}
-                                </ProfileShape>
-                                <Text
-                                    style={[
-                                        styles.menuLabelText,
-                                        (item.id === 'logout' || item.id === 'deleteAccount') && styles.logoutText,
-                                    ]}
-                                >
-                                    {item.title}
-                                </Text>
-                            </View>
-                        </TouchableOpacity>
+                        <MenuRow
+                            item={item}
+                            rowDirection={rowDirection}
+                            onPress={onMenuRowPress}
+                        />
                         </Animated.View>
                     ))}
                 </View>

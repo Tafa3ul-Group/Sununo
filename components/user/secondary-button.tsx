@@ -10,7 +10,15 @@ import {
     ViewStyle
 } from "react-native";
 import * as Haptics from "expo-haptics";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+} from "react-native-reanimated";
 import { useDirection } from "@/i18n";
+
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 interface SecondaryButtonProps {
   label: string;
@@ -48,6 +56,12 @@ export function SecondaryButton({
   variant = "default" }: SecondaryButtonProps) {
   const { isRTL } = useDirection();
 
+  // Subtle press-scale feedback (no design change).
+  const scale = useSharedValue(1);
+  const pressStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
 
   // Use logical start/end concept to let React Native automatically handle RTL layout
   const isIconOnStart =
@@ -65,8 +79,14 @@ export function SecondaryButton({
   const isFlex = flattenedStyle?.flex === 1 || flattenedStyle?.flexGrow === 1;
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.7}
+    <AnimatedTouchable
+      activeOpacity={0.85}
+      onPressIn={() => {
+        scale.value = withTiming(0.96, { duration: 110 });
+      }}
+      onPressOut={() => {
+        scale.value = withSpring(1, { damping: 12, stiffness: 220 });
+      }}
       onPress={() => {
         Haptics.selectionAsync().catch(() => {});
         onPress();
@@ -76,6 +96,7 @@ export function SecondaryButton({
         {
           flexDirection: isIconOnStart ? "row" : "row-reverse",
           gap: -1.5 },
+        pressStyle,
         style,
         isLoading && { opacity: 0.7 },
       ]}
@@ -158,7 +179,7 @@ export function SecondaryButton({
           {label}
         </ThemedText>
       </View>
-    </TouchableOpacity>
+    </AnimatedTouchable>
   );
 }
 

@@ -7,6 +7,7 @@ import { getImageSrc } from "@/hooks/useImageSrc";
 import { RootState } from "@/store";
 import { useGetCustomerChaletDetailsQuery } from "@/store/api/customerApiSlice";
 import { Stack, useLocalSearchParams } from "expo-router";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -192,13 +193,17 @@ export default function FacilitiesScreen() {
                   CATEGORY_COLORS[cat.colorIndex % CATEGORY_COLORS.length];
 
                 return (
-                  <FacilityCard
+                  <Animated.View
                     key={feat.id}
-                    label={feat.name}
-                    subtext={feat.value}
-                    color={color}
-                    iconId={feat.iconId}
-                  />
+                    entering={FadeInDown.delay((featIdx % 8) * 60).duration(380)}
+                  >
+                    <FacilityCard
+                      label={feat.name}
+                      subtext={feat.value}
+                      color={color}
+                      iconId={feat.iconId}
+                    />
+                  </Animated.View>
                 );
               })}
             </View>

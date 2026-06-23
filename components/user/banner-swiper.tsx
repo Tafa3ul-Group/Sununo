@@ -11,6 +11,7 @@ import {
     StyleSheet,
     View
 } from 'react-native';
+import Animated, { LinearTransition } from 'react-native-reanimated';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SIDE_PADDING = normalize.width(16);
@@ -104,12 +105,13 @@ export function BannerSwiper({ data }: { data?: any[] }) {
       {/* Pagination Dots */}
       <View style={styles.pagination}>
         {displayData.map((_, index) => (
-          <View 
-            key={index} 
+          <Animated.View
+            key={index}
+            layout={LinearTransition.duration(240)}
             style={[
-              styles.dot, 
+              styles.dot,
               activeIndex === index ? styles.activeDot : styles.inactiveDot
-            ]} 
+            ]}
           />
         ))}
       </View>

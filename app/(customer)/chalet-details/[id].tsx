@@ -70,6 +70,18 @@ import Svg, { Path } from "react-native-svg";
 import { useSelector } from "react-redux";
 import { useFormatTime } from "../../../hooks/useFormatTime";
 import { useDirection } from "@/i18n";
+import * as Haptics from "expo-haptics";
+import Animated, {
+  FadeInDown,
+  LinearTransition,
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+} from "react-native-reanimated";
+
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
+const AnimatedImage = Animated.createAnimatedComponent(Image);
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -114,6 +126,118 @@ const CARD_COLORS = [
   "#FBBF24",
 ];
 
+// Pure presentational shift card — memoized so favorite toggles / other parent
+// re-renders don't re-render every shift row when its data hasn't changed.
+const ShiftCard = React.memo(function ShiftCard({
+  shift,
+  index,
+  isRTL,
+  minShiftPrice,
+  formatShiftTime,
+  t,
+}: {
+  shift: any;
+  index: number;
+  isRTL: boolean;
+  minShiftPrice: string | null;
+  formatShiftTime: (time: any) => string;
+  t: (key: string) => string;
+}) {
+  const nameEn = shift.name?.en?.toLowerCase() || "";
+  const nameAr = shift.name?.ar || "";
+  const isOvernight =
+    shift.type === "OVERNIGHT" ||
+    nameEn.includes("overnight") ||
+    nameEn.includes("night") ||
+    nameAr.includes("مبيت");
+  const isMorning =
+    !isOvernight &&
+    (shift.type === "MORNING" ||
+      nameEn.includes("morning") ||
+      nameAr.includes("صباح"));
+
+  return (
+    <Animated.View
+      entering={FadeInDown.delay((index % 8) * 60).duration(380)}
+      style={[styles.shiftCard, { flexDirection: 'row', direction: isRTL ? 'rtl' : 'ltr' }]}
+    >
+      <View style={styles.shiftIconCircle}>
+        {isMorning ? (
+          <SolarSunBold size={22} color="#FBBF24" />
+        ) : isOvernight ? (
+          <ExpoImage
+            source={require("@/assets/shifts/sleep.svg")}
+            style={{ width: 24, height: 24 }}
+            contentFit="contain"
+          />
+        ) : (
+          <SolarMoonBold size={22} color="#6366F1" />
+        )}
+      </View>
+      <View
+        style={[
+          styles.shiftInfo,
+          { alignItems: 'flex-start', marginHorizontal: 12 },
+        ]}
+      >
+        <ThemedText style={[styles.shiftName, { textAlign: isRTL ? 'right' : 'left' }]}>
+          {isRTL
+            ? shift.name?.ar || shift.name
+            : shift.name?.en || shift.name}
+        </ThemedText>
+        <ThemedText style={[styles.shiftTime, { textAlign: isRTL ? 'right' : 'left' }]}>
+          {formatShiftTime(shift.startTime)} -{" "}
+          {formatShiftTime(shift.endTime)}
+        </ThemedText>
+      </View>
+      {minShiftPrice && (
+        <View style={{ alignItems: 'flex-start' }}>
+          <ThemedText style={[styles.shiftPrice, { textAlign: isRTL ? 'right' : 'left' }]}>
+            {minShiftPrice} {t("common.iqd")}
+          </ThemedText>
+        </View>
+      )}
+    </Animated.View>
+  );
+});
+
+// Pure presentational facility cell — wrapped with a staggered entrance so the
+// grid fades in on first load instead of appearing instantly.
+const FacilityCell = React.memo(function FacilityCell({
+  facility,
+  index,
+}: {
+  facility: any;
+  index: number;
+}) {
+  return (
+    <Animated.View
+      entering={FadeInDown.delay((index % 8) * 60).duration(380)}
+      style={styles.facilityCell}
+    >
+      <View style={styles.shapeCont}>
+        <Svg height={55} width={55} viewBox="0 0 60 60">
+          <Path d={facility.shapePath} fill={facility.shapeColor} />
+        </Svg>
+        <View style={styles.iconInShape}>
+          {facility.iconUrl ? (
+            <ExpoImage
+              source={facility.iconUrl}
+              style={styles.facilityIcon}
+              contentFit="contain"
+            />
+          ) : (
+            <SolarWidgetBold size={22} color="white" />
+          )}
+        </View>
+      </View>
+      <ThemedText style={styles.facilityLabelText}>
+        {facility.label}
+      </ThemedText>
+    </Animated.View>
+  );
+});
+
 export default function ChaletDetailScreen() {
   const { t } = useTranslation();
   const { userType } = useSelector((state: RootState) => state.auth);
@@ -141,6 +265,16 @@ export default function ChaletDetailScreen() {
   const reviewSheetRef = React.useRef<BottomSheetModal>(null);
   const bannerScrollRef = useRef<ScrollView>(null);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+
+  // Press-scale feedback (invisible at rest — animation only).
+  const favoriteScale = useSharedValue(1);
+  const favoriteAnimStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: favoriteScale.value }],
+  }));
+  const imageScale = useSharedValue(1);
+  const imageAnimStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: imageScale.value }],
+  }));
 
   // Fetch chalet details from the backend
   const {
@@ -538,6 +672,12 @@ export default function ChaletDetailScreen() {
               <TouchableOpacity
                 key={i}
                 activeOpacity={0.9}
+                onPressIn={() => {
+                  imageScale.value = withTiming(0.97, { duration: 110 });
+                }}
+                onPressOut={() => {
+                  imageScale.value = withSpring(1, { damping: 12, stiffness: 220 });
+                }}
                 onPress={() =>
                   router.push({
                     pathname: "/(customer)/chalet-details/gallery",
@@ -546,9 +686,9 @@ export default function ChaletDetailScreen() {
                 }
                 style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }}
               >
-                <Image
+                <AnimatedImage
                   source={typeof img === "string" ? { uri: img } : img}
-                  style={styles.headerImage}
+                  style={[styles.headerImage, imageAnimStyle]}
                 />
               </TouchableOpacity>
             ))}
@@ -566,7 +706,7 @@ export default function ChaletDetailScreen() {
             ]}
           />
 
-          <TouchableOpacity
+          <AnimatedTouchable
             style={[
               styles.favoriteBtn,
               isRTL
@@ -576,14 +716,24 @@ export default function ChaletDetailScreen() {
                 : I18nManager.isRTL
                   ? { left: 20, right: "auto" }
                   : { right: 20, left: "auto" },
+              favoriteAnimStyle,
             ]}
-            onPress={handleToggleFavorite}
+            onPressIn={() => {
+              favoriteScale.value = withTiming(0.96, { duration: 110 });
+            }}
+            onPressOut={() => {
+              favoriteScale.value = withSpring(1, { damping: 12, stiffness: 220 });
+            }}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+              handleToggleFavorite();
+            }}
           >
             <SolarHeartBold
               size={24}
               color={isFavorite ? "#EA2129" : "#FFFFFF"}
             />
-          </TouchableOpacity>
+          </AnimatedTouchable>
           <View
             style={{
               position: "absolute",
@@ -619,8 +769,9 @@ export default function ChaletDetailScreen() {
               style={{ flexDirection: "row", gap: 6, alignItems: "center" }}
             >
               {images.map((_: string, i: number) => (
-                <View
+                <Animated.View
                   key={i}
+                  layout={LinearTransition.duration(240)}
                   style={[styles.dot, activeImage === i && styles.activeDot]}
                 />
               ))}
@@ -696,63 +847,15 @@ export default function ChaletDetailScreen() {
                     : null;
 
                 return (
-                  <View
+                  <ShiftCard
                     key={shift.id || index}
-                    style={[styles.shiftCard, { flexDirection: 'row', direction: isRTL ? 'rtl' : 'ltr' }]}
-                  >
-                    {(() => {
-                      const nameEn = shift.name?.en?.toLowerCase() || "";
-                      const nameAr = shift.name?.ar || "";
-                      const isOvernight =
-                        shift.type === "OVERNIGHT" ||
-                        nameEn.includes("overnight") ||
-                        nameEn.includes("night") ||
-                        nameAr.includes("مبيت");
-                      const isMorning =
-                        !isOvernight &&
-                        (shift.type === "MORNING" ||
-                          nameEn.includes("morning") ||
-                          nameAr.includes("صباح"));
-                      return (
-                        <View style={styles.shiftIconCircle}>
-                          {isMorning ? (
-                            <SolarSunBold size={22} color="#FBBF24" />
-                          ) : isOvernight ? (
-                            <ExpoImage
-                              source={require("@/assets/shifts/sleep.svg")}
-                              style={{ width: 24, height: 24 }}
-                              contentFit="contain"
-                            />
-                          ) : (
-                            <SolarMoonBold size={22} color="#6366F1" />
-                          )}
-                        </View>
-                      );
-                    })()}
-                    <View
-                      style={[
-                        styles.shiftInfo,
-                        { alignItems: 'flex-start', marginHorizontal: 12 },
-                      ]}
-                    >
-                      <ThemedText style={[styles.shiftName, { textAlign: isRTL ? 'right' : 'left' }]}>
-                        {isRTL
-                          ? shift.name?.ar || shift.name
-                          : shift.name?.en || shift.name}
-                      </ThemedText>
-                      <ThemedText style={[styles.shiftTime, { textAlign: isRTL ? 'right' : 'left' }]}>
-                        {formatShiftTime(shift.startTime)} -{" "}
-                        {formatShiftTime(shift.endTime)}
-                      </ThemedText>
-                    </View>
-                    {minShiftPrice && (
-                      <View style={{ alignItems: 'flex-start' }}>
-                        <ThemedText style={[styles.shiftPrice, { textAlign: isRTL ? 'right' : 'left' }]}>
-                          {minShiftPrice} {t("common.iqd")}
-                        </ThemedText>
-                      </View>
-                    )}
-                  </View>
+                    shift={shift}
+                    index={index}
+                    isRTL={isRTL}
+                    minShiftPrice={minShiftPrice}
+                    formatShiftTime={formatShiftTime}
+                    t={t}
+                  />
                 );
               })
             ) : (
@@ -787,27 +890,7 @@ export default function ChaletDetailScreen() {
               </View>
               <View style={[styles.facilitiesGrid, { flexDirection: flexDir }]}>
                 {facilities.slice(0, 8).map((f: any, i: number) => (
-                  <View key={i} style={styles.facilityCell}>
-                    <View style={styles.shapeCont}>
-                      <Svg height={55} width={55} viewBox="0 0 60 60">
-                        <Path d={f.shapePath} fill={f.shapeColor} />
-                      </Svg>
-                      <View style={styles.iconInShape}>
-                        {f.iconUrl ? (
-                          <ExpoImage
-                            source={f.iconUrl}
-                            style={styles.facilityIcon}
-                            contentFit="contain"
-                          />
-                        ) : (
-                          <SolarWidgetBold size={22} color="white" />
-                        )}
-                      </View>
-                    </View>
-                    <ThemedText style={styles.facilityLabelText}>
-                      {f.label}
-                    </ThemedText>
-                  </View>
+                  <FacilityCell key={i} facility={f} index={i} />
                 ))}
               </View>
             </>

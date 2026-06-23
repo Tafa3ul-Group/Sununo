@@ -16,14 +16,14 @@ interface MapCardProps {
   onClose?: () => void;
 }
 
-export const MapCard = ({
+export const MapCard = React.memo(function MapCard({
   title,
   location,
   rating,
   image,
   price,
   onPress,
-  onClose }: MapCardProps) => {
+  onClose }: MapCardProps) {
   const { isRTL, rowDirection, textAlign } = useDirection();
   const isArabic = isRTL;
   const rowDir = rowDirection;
@@ -102,7 +102,7 @@ export const MapCard = ({
       </View>
     </TouchableOpacity>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {

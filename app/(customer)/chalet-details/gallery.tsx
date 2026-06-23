@@ -29,6 +29,16 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import { Image as ExpoImage } from "expo-image";
 import { useDirection } from "@/i18n";
+import Animated, {
+  FadeInDown,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
+
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -62,6 +72,48 @@ const CATEGORY_COLORS: Record<string, string> = {
   bath: "#035DF9",
   default: Colors.primary,
 };
+
+type PressableImageProps = {
+  source: any;
+  onPress: () => void;
+  cardStyle: any;
+  imageStyle: any;
+};
+
+const PressableImage = React.memo(
+  ({ source, onPress, cardStyle, imageStyle }: PressableImageProps) => {
+    const scale = useSharedValue(1);
+    const animatedStyle = useAnimatedStyle(() => ({
+      transform: [{ scale: scale.value }],
+    }));
+
+    return (
+      <AnimatedTouchable
+        activeOpacity={0.9}
+        style={[cardStyle, animatedStyle]}
+        onPressIn={() => {
+          scale.value = withTiming(0.96, { duration: 110 });
+        }}
+        onPressOut={() => {
+          scale.value = withSpring(1, { damping: 12, stiffness: 220 });
+        }}
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          onPress();
+        }}
+      >
+        <ExpoImage
+          source={source}
+          style={imageStyle}
+          contentFit="cover"
+          cachePolicy="memory-disk"
+        />
+      </AnimatedTouchable>
+    );
+  }
+);
+
+PressableImage.displayName = "PressableImage";
 
 const WavyHeader = ({ title, color }: { title: string; color: string }) => (
   <View style={styles.wavyHeaderContainer}>
@@ -153,7 +205,7 @@ export default function GalleryScreen() {
     return cats;
   }, [gallerySections, t]);
 
-  const openViewer = (url: any) => {
+  const openViewer = React.useCallback((url: any) => {
     if (typeof url === "string") {
       setViewerImage(url);
     } else if (url && url.uri) {
@@ -162,7 +214,7 @@ export default function GalleryScreen() {
       setViewerImage(Image.resolveAssetSource(url).uri);
     }
     setViewerVisible(true);
-  };
+  }, []);
 
   const filteredData =
     activeFilter === "all"
@@ -229,40 +281,34 @@ export default function GalleryScreen() {
         contentContainerStyle={styles.scrollContent}
       >
         {filteredData.map((section, idx) => (
-          <View key={idx} style={styles.sectionWrap}>
+          <Animated.View
+            key={idx}
+            entering={FadeInDown.delay((idx % 8) * 60).duration(380)}
+            style={styles.sectionWrap}
+          >
             <WavyHeader title={section.category} color={section.color} />
 
             {/* Big Image */}
-            <TouchableOpacity
-              activeOpacity={0.9}
+            <PressableImage
+              source={section.images[0]}
+              cardStyle={styles.imageCard}
+              imageStyle={styles.bigImage}
               onPress={() => openViewer(section.images[0])}
-              style={styles.imageCard}
-            >
-              <ExpoImage
-                source={section.images[0]}
-                style={styles.bigImage}
-                contentFit="cover"
-              />
-            </TouchableOpacity>
+            />
 
             {/* Small Grid */}
             <View style={[styles.smallGrid, { flexDirection: rowDirection }]}>
               {section.images.slice(1, 4).map((img, i) => (
-                <TouchableOpacity
+                <PressableImage
                   key={i}
-                  style={styles.smallImageCard}
-                  activeOpacity={0.9}
+                  source={img}
+                  cardStyle={styles.smallImageCard}
+                  imageStyle={styles.smallImage}
                   onPress={() => openViewer(img)}
-                >
-                  <ExpoImage 
-                    source={img} 
-                    style={styles.smallImage}
-                    contentFit="cover"
-                  />
-                </TouchableOpacity>
+                />
               ))}
             </View>
-          </View>
+          </Animated.View>
         ))}
         {filteredData.length === 0 && (
           <View style={{ padding: 40, alignItems: "center" }}>

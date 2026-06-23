@@ -10,7 +10,15 @@ import {
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import * as Haptics from "expo-haptics";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+} from "react-native-reanimated";
 import { useDirection } from "@/i18n";
+
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 interface PrimaryButtonProps {
   label: string;
@@ -53,6 +61,13 @@ export function PrimaryButton({
 }: PrimaryButtonProps) {
   const isWhite = variant === "white";
   const { isRTL } = useDirection();
+
+  // Press-scale feedback (subtle, professional — no design change).
+  const scale = useSharedValue(1);
+  const pressStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
   const defaultActiveColor = isWhite ? "white" : "#035DF9";
   const defaultActiveTextColor = isWhite ? "#6B7280" : "white";
 
@@ -82,14 +97,20 @@ export function PrimaryButton({
   const isFlex = flattenedStyle?.flex === 1 || flattenedStyle?.flexGrow === 1;
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.7}
+    <AnimatedTouchable
+      activeOpacity={0.85}
+      onPressIn={() => {
+        scale.value = withTiming(0.96, { duration: 110 });
+      }}
+      onPressOut={() => {
+        scale.value = withSpring(1, { damping: 12, stiffness: 220 });
+      }}
       onPress={() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
         onPress();
       }}
       disabled={disabled}
-      style={[styles.hybridContainer, { height, direction: isRTL ? 'rtl' : 'ltr' }, style]}
+      style={[styles.hybridContainer, { height, direction: isRTL ? 'rtl' : 'ltr' }, pressStyle, style]}
     >
       {/* Logical Start Curve */}
       <View style={{ width: scaledPartWidth, height: scaledPartHeight }}>
@@ -147,7 +168,7 @@ export function PrimaryButton({
           />
         </Svg>
       </View>
-    </TouchableOpacity>
+    </AnimatedTouchable>
   );
 }
 

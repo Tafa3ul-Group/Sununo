@@ -1,5 +1,5 @@
 import { normalize } from "@/constants/theme";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Dimensions,
   FlatList,
@@ -34,15 +34,29 @@ export function HorizontalSwiper({ data, onPressCard, onIndexChange, favoriteIds
     }
   };
 
+  const handleCardPress = useCallback(
+    (id: string) => {
+      onPressCard?.(id);
+    },
+    [onPressCard]
+  );
+
+  const handleToggleFavorite = useCallback(
+    (id: string) => {
+      onToggleFavorite?.(id);
+    },
+    [onToggleFavorite]
+  );
+
   const renderItem = ({ item, index }: { item: any; index: number }) => (
     <View style={{ width: ITEM_WIDTH }}>
       <HorizontalCard
         chalet={item}
         shapeIndex={2}
-        onPress={() => onPressCard && onPressCard(item.id)}
+        onPress={() => handleCardPress(item.id)}
         style={styles.cardOverride}
         isFavorite={favoriteIds.includes(item.id)}
-        onToggleFavorite={() => onToggleFavorite && onToggleFavorite(item.id)}
+        onToggleFavorite={() => handleToggleFavorite(item.id)}
       />
     </View>
   );

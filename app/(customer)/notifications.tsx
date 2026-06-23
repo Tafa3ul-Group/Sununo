@@ -1,7 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { FadeInDown, useSharedValue, useAnimatedStyle, withTiming, withSpring } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { Colors, normalize, Shadows } from '../../constants/theme';
 import { ThemedText } from '@/components/themed-text';
 import { SolarAltArrowRightBold, SolarBellBold } from "@/components/icons/solar-icons";
@@ -10,6 +12,8 @@ import { HeaderSection } from '@/components/header-section';
 import { EmptyState } from '@/components/ui/empty-state';
 import { useGetNotificationsQuery, useMarkNotificationAsReadMutation } from '@/store/api/customerApiSlice';
 import { useDirection } from '@/i18n';
+
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -23,6 +27,54 @@ interface Notification {
   redirectType?: string;
   redirectId?: string;
 }
+
+interface NotificationItemProps {
+  item: Notification;
+  index: number;
+  isArabic: boolean;
+  textStart: "left" | "right";
+  dirStyle: 'rtl' | 'ltr';
+  onPress: (item: Notification) => void;
+}
+
+const NotificationItem = React.memo(({ item, index, isArabic, textStart, dirStyle, onPress }: NotificationItemProps) => {
+    const scale = useSharedValue(1);
+    const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+
+    return (
+        <Animated.View entering={FadeInDown.delay((index % 8) * 60).duration(380)} style={animatedStyle}>
+            <AnimatedTouchable
+                style={[styles.notificationCard, { flexDirection: 'row', direction: isArabic ? 'rtl' : 'ltr' }]}
+                onPressIn={() => { scale.value = withTiming(0.96, { duration: 110 }); }}
+                onPressOut={() => { scale.value = withSpring(1, { damping: 12, stiffness: 220 }); }}
+                onPress={() => { Haptics.selectionAsync(); onPress(item); }}
+                activeOpacity={0.7}
+            >
+                {/* Unread indicator dot */}
+                <View style={styles.dotContainer}>
+                    {!item.isRead && <View style={styles.orangeDot} />}
+                </View>
+
+                {/* Content */}
+                <View style={styles.cardContent}>
+                    {/* Title row: title + time */}
+                    <View style={[styles.titleRow, { flexDirection: 'row', direction: isArabic ? 'rtl' : 'ltr' }]}>
+                        <ThemedText style={[styles.titleText, { textAlign: textStart, writingDirection: dirStyle }]} numberOfLines={1}>
+                            {item.title}
+                        </ThemedText>
+                        <ThemedText style={styles.timeText}>{item.time}</ThemedText>
+                    </View>
+
+                    {/* Message */}
+                    <ThemedText style={[styles.messageText, { textAlign: textStart, writingDirection: dirStyle }]} numberOfLines={2}>
+                        {item.message}
+                    </ThemedText>
+                </View>
+            </AnimatedTouchable>
+        </Animated.View>
+    );
+});
+NotificationItem.displayName = 'NotificationItem';
 
 export default function NotificationsScreen() {
     const { t } = useTranslation();
@@ -86,35 +138,17 @@ export default function NotificationsScreen() {
 
     const dirStyle = isArabic ? 'rtl' : 'ltr';
 
-    const renderItem = (item: Notification) => (
-        <TouchableOpacity 
-            key={item.id} 
-            style={[styles.notificationCard, { flexDirection: 'row', direction: isArabic ? 'rtl' : 'ltr' }]}
-            onPress={() => handleNotificationPress(item)}
-            activeOpacity={0.7}
-        >
-            {/* Unread indicator dot */}
-            <View style={styles.dotContainer}>
-                {!item.isRead && <View style={styles.orangeDot} />}
-            </View>
-
-            {/* Content */}
-            <View style={styles.cardContent}>
-                {/* Title row: title + time */}
-                <View style={[styles.titleRow, { flexDirection: 'row', direction: isArabic ? 'rtl' : 'ltr' }]}>
-                    <ThemedText style={[styles.titleText, { textAlign: textStart, writingDirection: dirStyle }]} numberOfLines={1}>
-                        {item.title}
-                    </ThemedText>
-                    <ThemedText style={styles.timeText}>{item.time}</ThemedText>
-                </View>
-
-                {/* Message */}
-                <ThemedText style={[styles.messageText, { textAlign: textStart, writingDirection: dirStyle }]} numberOfLines={2}>
-                    {item.message}
-                </ThemedText>
-            </View>
-        </TouchableOpacity>
-    );
+    const renderItem = useCallback((item: Notification, index: number) => (
+        <NotificationItem
+            key={item.id}
+            item={item}
+            index={index}
+            isArabic={isArabic}
+            textStart={textStart}
+            dirStyle={dirStyle}
+            onPress={handleNotificationPress}
+        />
+    ), [isArabic, textStart, dirStyle]);
 
     return (
         <SafeAreaView style={styles.container}>

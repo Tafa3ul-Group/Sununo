@@ -8,7 +8,7 @@ import { useCreateReviewMutation } from "@/store/api/customerApiSlice";
 import { logEvent } from "@/services/analytics";
 import { ANALYTICS_EVENTS } from "@/constants/analytics-events";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Alert,
@@ -19,7 +19,63 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import * as Haptics from "expo-haptics";
+import Animated, {
+  FadeIn,
+  FadeOut,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
 import { useDirection } from "@/i18n";
+
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
+
+interface StarButtonProps {
+  index: number;
+  filled: boolean;
+  onSelect: (index: number) => void;
+}
+
+const StarButton = React.memo(function StarButton({
+  index,
+  filled,
+  onSelect,
+}: StarButtonProps) {
+  // Subtle press-scale feedback (no design change).
+  const scale = useSharedValue(1);
+  const pressStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <AnimatedTouchable
+      activeOpacity={0.85}
+      onPressIn={() => {
+        scale.value = withTiming(0.96, { duration: 110 });
+      }}
+      onPressOut={() => {
+        scale.value = withSpring(1, { damping: 12, stiffness: 220 });
+      }}
+      onPress={() => {
+        Haptics.selectionAsync().catch(() => {});
+        onSelect(index);
+      }}
+      style={[styles.starTouch, pressStyle]}
+    >
+      {filled ? (
+        <Animated.View key="filled" entering={FadeIn.duration(180)} exiting={FadeOut.duration(120)}>
+          <SolarStarBold size={40} color="#FFB800" />
+        </Animated.View>
+      ) : (
+        <Animated.View key="empty" entering={FadeIn.duration(180)} exiting={FadeOut.duration(120)}>
+          <SolarStarLinear size={40} color="#E5E7EB" />
+        </Animated.View>
+      )}
+    </AnimatedTouchable>
+  );
+});
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -33,6 +89,10 @@ export default function AddReviewScreen() {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [createReview, { isLoading }] = useCreateReviewMutation();
+
+  const handleSelectRating = useCallback((value: number) => {
+    setRating(value);
+  }, []);
 
   const handleSubmit = async () => {
     if (rating === 0) {
@@ -95,17 +155,12 @@ export default function AddReviewScreen() {
         <View style={styles.card}>
           <View style={styles.starsRow}>
             {[1, 2, 3, 4, 5].map((i) => (
-              <TouchableOpacity
+              <StarButton
                 key={i}
-                onPress={() => setRating(i)}
-                style={styles.starTouch}
-              >
-                {i <= rating ? (
-                  <SolarStarBold size={40} color="#FFB800" />
-                ) : (
-                  <SolarStarLinear size={40} color="#E5E7EB" />
-                )}
-              </TouchableOpacity>
+                index={i}
+                filled={i <= rating}
+                onSelect={handleSelectRating}
+              />
             ))}
           </View>
 
