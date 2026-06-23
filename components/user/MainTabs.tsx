@@ -161,7 +161,10 @@ export function MainTabs({
     };
   });
 
-  const tabStyles = [tab0Style, tab1Style, tab2Style];
+  const tabStyles = useMemo(
+    () => [tab0Style, tab1Style, tab2Style],
+    [tab0Style, tab1Style, tab2Style],
+  );
 
   return (
     <View style={styles.container}>

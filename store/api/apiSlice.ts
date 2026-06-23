@@ -366,15 +366,18 @@ export const apiSlice = createApi({
 
         // Shape A — { categories: [...], features: [{ ..., categoryId }] }
         if (body && (Array.isArray(body.features) || Array.isArray(body.categories))) {
-          const cats = (body.categories || []).map((c: any) => ({
-            id: c.id,
-            name: c.name,
-            icon: c.icon || null,
-            kind: "category" as const,
-          }));
-          const catIcon = new Map<string, any>(
-            (body.categories || []).map((c: any) => [c.id, c.icon]),
-          );
+          // Single pass over categories: build the chip list and the
+          // id->icon lookup at the same time (previously two map passes).
+          const catIcon = new Map<string, any>();
+          const cats = (body.categories || []).map((c: any) => {
+            catIcon.set(c.id, c.icon);
+            return {
+              id: c.id,
+              name: c.name,
+              icon: c.icon || null,
+              kind: "category" as const,
+            };
+          });
           const feats = (body.features || []).map((f: any) => ({
             id: f.id,
             name: f.name,

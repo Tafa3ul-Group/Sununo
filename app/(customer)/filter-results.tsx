@@ -24,7 +24,7 @@ import { clearFilters, setFilters } from "@/store/filterSlice";
 import { logEvent } from "@/services/analytics";
 import { ANALYTICS_EVENTS, ANALYTICS_CURRENCY } from "@/constants/analytics-events";
 import { useRouter } from "expo-router";
-import React, { useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
     ActivityIndicator,
@@ -91,24 +91,37 @@ export default function FilterResultsScreen() {
     refetch,
   } = useBrowseCustomerChaletsQuery(queryParams);
 
+  // Language-specific extraction helpers (stable identities)
+  const getChaletName = useCallback(
+    (chalet: any, arabic: boolean) =>
+      arabic
+        ? chalet.name?.ar || chalet.nameAr || chalet.name || ""
+        : chalet.name?.en || chalet.nameEn || chalet.name || "",
+    [],
+  );
+
+  const getChaletLocation = useCallback(
+    (chalet: any, arabic: boolean) =>
+      arabic
+        ? chalet.region?.name?.ar ||
+          chalet.region?.nameAr ||
+          chalet.region?.name ||
+          ""
+        : chalet.region?.name?.en ||
+          chalet.region?.nameEn ||
+          chalet.region?.name ||
+          "",
+    [],
+  );
+
   // Transform chalets payload using robust unwrapping and fallbacks
   const filteredChalets = useMemo(() => {
     const chalets = unwrapListResponse(chaletsResponse);
     return chalets.map((chalet: any) => {
       return {
         id: chalet.id,
-        title: isArabic
-          ? chalet.name?.ar || chalet.nameAr || chalet.name || ""
-          : chalet.name?.en || chalet.nameEn || chalet.name || "",
-        location: isArabic
-          ? chalet.region?.name?.ar ||
-            chalet.region?.nameAr ||
-            chalet.region?.name ||
-            ""
-          : chalet.region?.name?.en ||
-            chalet.region?.nameEn ||
-            chalet.region?.name ||
-            "",
+        title: getChaletName(chalet, isArabic),
+        location: getChaletLocation(chalet, isArabic),
         price: getStartingPrice(chalet),
         image: getImageSrc(chalet.images?.[0]?.url || chalet.image || ""),
         images: chalet.images || [],
@@ -117,7 +130,7 @@ export default function FilterResultsScreen() {
         isFavorite: favoriteIds.includes(chalet.id),
       };
     });
-  }, [chaletsResponse, favoriteIds, isArabic]);
+  }, [chaletsResponse, favoriteIds, isArabic, getChaletName, getChaletLocation]);
 
   // ── Analytics: search + view_search_results (fires when results arrive) ────
   useEffect(() => {

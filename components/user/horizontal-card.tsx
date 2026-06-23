@@ -109,15 +109,18 @@ export const HorizontalCard = React.memo(function HorizontalCard({
     (chalet?.startingPrice != null && Number(chalet.startingPrice) > 0) ||
     (chalet?.price != null &&
       Number(String(chalet.price).replace(/,/g, "")) > 0);
-  const { data: detailResp } = useGetCustomerChaletDetailsQuery(chalet?.id, {
+  const { fetchedPrice } = useGetCustomerChaletDetailsQuery(chalet?.id, {
     skip: !chalet?.id || hasPrice,
+    selectFromResult: ({ data }) => {
+      const detail = (data as any)?.data ?? data;
+      return {
+        fetchedPrice: detail ? getStartingPrice(detail) : undefined,
+      };
+    },
   });
-  const detail = (detailResp as any)?.data ?? detailResp;
   const resolvedPrice = hasPrice
     ? chalet?.price
-    : detail
-      ? getStartingPrice(detail)
-      : chalet?.price ?? "0";
+    : fetchedPrice ?? chalet?.price ?? "0";
 
   if (!chalet) return null;
 

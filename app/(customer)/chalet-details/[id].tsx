@@ -353,12 +353,14 @@ export default function ChaletDetailScreen() {
       if (refetchSimilar) refetchSimilar();
       if (refetchAddons) refetchAddons();
       if (refetchCanReview && userType !== "guest") refetchCanReview();
+      if (refetchFavorites && userType !== "guest") refetchFavorites();
     }, [
       refetch,
       refetchReviews,
       refetchSimilar,
       refetchAddons,
       refetchCanReview,
+      refetchFavorites,
       userType,
     ]),
   );
@@ -479,6 +481,22 @@ export default function ChaletDetailScreen() {
     if (!chalet?.shifts || chalet.shifts.length === 0) return [];
     return chalet.shifts;
   }, [chalet?.shifts]);
+
+  // Precompute each shift's minimum (non-closed) price once per shifts change so
+  // the render loop below does a cheap lookup instead of map+filter+min per row.
+  const shiftPriceMap = useMemo(() => {
+    const map: Record<string, string | null> = {};
+    availableShifts.forEach((shift: any, index: number) => {
+      const validShiftPrices =
+        shift.pricing?.map((p: any) => Number(p.price)).filter((p: number) => p > 1) || [];
+      const key = shift.id || index;
+      map[key] =
+        validShiftPrices.length > 0
+          ? Math.min(...validShiftPrices).toLocaleString()
+          : null;
+    });
+    return map;
+  }, [availableShifts]);
 
   useEffect(() => {
     if (availableShifts.length > 0) {
@@ -670,7 +688,7 @@ export default function ChaletDetailScreen() {
           >
             {images.map((img: string, i: number) => (
               <TouchableOpacity
-                key={i}
+                key={`${img || "img"}-${i}`}
                 activeOpacity={0.9}
                 onPressIn={() => {
                   imageScale.value = withTiming(0.97, { duration: 110 });
@@ -770,7 +788,7 @@ export default function ChaletDetailScreen() {
             >
               {images.map((_: string, i: number) => (
                 <Animated.View
-                  key={i}
+                  key={`dot-${i}`}
                   layout={LinearTransition.duration(240)}
                   style={[styles.dot, activeImage === i && styles.activeDot]}
                 />
@@ -839,12 +857,7 @@ export default function ChaletDetailScreen() {
           <View style={styles.shiftsGrid}>
             {availableShifts && availableShifts.length > 0 ? (
               availableShifts.map((shift: any, index: number) => {
-                const validShiftPrices =
-                  shift.pricing?.map((p: any) => Number(p.price)).filter((p: number) => p > 1) || [];
-                const minShiftPrice =
-                  validShiftPrices.length > 0
-                    ? Math.min(...validShiftPrices).toLocaleString()
-                    : null;
+                const minShiftPrice = shiftPriceMap[shift.id || index] ?? null;
 
                 return (
                   <ShiftCard

@@ -180,12 +180,24 @@ const AppMapComponent = ({
             animationDuration: 1000
           });
         } else {
-          const lats = markers.map((m) => m.coordinates[1]);
-          const lngs = markers.map((m) => m.coordinates[0]);
-          const minLat = Math.min(...lats);
-          const maxLat = Math.max(...lats);
-          const minLng = Math.min(...lngs);
-          const maxLng = Math.max(...lngs);
+          const { minLat, maxLat, minLng, maxLng } = markers.reduce(
+            (bounds, m) => {
+              const lng = m.coordinates[0];
+              const lat = m.coordinates[1];
+              return {
+                minLat: Math.min(bounds.minLat, lat),
+                maxLat: Math.max(bounds.maxLat, lat),
+                minLng: Math.min(bounds.minLng, lng),
+                maxLng: Math.max(bounds.maxLng, lng),
+              };
+            },
+            {
+              minLat: Infinity,
+              maxLat: -Infinity,
+              minLng: Infinity,
+              maxLng: -Infinity,
+            },
+          );
 
           cameraRef.current?.fitBounds(
             [maxLng, maxLat], // North East

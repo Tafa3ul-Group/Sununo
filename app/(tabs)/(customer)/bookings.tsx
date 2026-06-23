@@ -47,6 +47,200 @@ const SHAPES_CONFIG = [
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
+// Translation function type (matches react-i18next's `t` shape we use here).
+type TFunc = (key: string) => string;
+
+// Format a booking date string for display in the active language.
+// Pure module-level helper so it is not recreated on every render.
+const formatBookingDate = (dateStr: string, isArabic: boolean): string => {
+  if (!dateStr) return '';
+  try {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return dateStr;
+    return date.toLocaleDateString(isArabic ? 'ar' : 'en-US', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  } catch {
+    return dateStr;
+  }
+};
+
+// Compute the payment-status badge (text/colors) for a booking.
+// Pure module-level helper so it is not recreated on every render.
+const getPaymentStatusBadge = (item: any, t: TFunc, isArabic: boolean) => {
+  const status = item.paymentStatus;
+  const bookingStatus = item.status;
+  const deposit = Number(item.depositAmount || 0);
+  const remaining = Number(item.remainingAmount || 0);
+  const total = Number(item.totalPrice || 0);
+
+  // Only show "Paid" if payment was actually completed
+  if (status === 'paid' || (remaining === 0 && total > 0 && (bookingStatus === 'confirmed' || bookingStatus === 'completed'))) {
+    return {
+      text: t('booking.status.paid') || (isArabic ? 'مدفوع' : 'Paid'),
+      color: '#FFFFFF',
+      bg: '#0284C7'
+    };
+  }
+
+  // Only show "Deposit Paid" if booking is confirmed/completed (payment actually went through)
+  if (deposit > 0 && remaining > 0 && (bookingStatus === 'confirmed' || bookingStatus === 'completed')) {
+    return {
+      text: isArabic ? 'عربون مدفوع' : 'Deposit Paid',
+      color: '#FFFFFF',
+      bg: '#F97316'
+    };
+  }
+
+  // Pending approval — no payment yet
+  if (bookingStatus === 'pending_approval') {
+    return {
+      text: isArabic ? 'بانتظار الموافقة' : 'Pending Approval',
+      color: '#FFFFFF',
+      bg: '#D97706'
+    };
+  }
+
+  // Pending payment — approved but not yet paid
+  if (bookingStatus === 'pending_payment') {
+    return {
+      text: isArabic ? 'بانتظار الدفع' : 'Awaiting Payment',
+      color: '#FFFFFF',
+      bg: '#E11D48'
+    };
+  }
+
+  return {
+    text: isArabic ? 'غير مدفوع' : 'Unpaid',
+    color: '#FFFFFF',
+    bg: '#94A3B8'
+  };
+};
+
+interface BookingCardProps {
+  booking: any;
+  index: number;
+  isArabic: boolean;
+  rowDirection: "row" | "row-reverse";
+  textStart: "left" | "right";
+  textEnd: "left" | "right";
+  t: TFunc;
+  onViewDetails: (id: any) => void;
+}
+
+// Memoized booking card. Only re-renders when its own props change, so a stable
+// `bookings` array no longer forces every card to re-render on parent updates.
+const BookingCard = React.memo(function BookingCard({
+  booking,
+  index,
+  isArabic,
+  rowDirection,
+  textStart,
+  textEnd,
+  t,
+  onViewDetails
+}: BookingCardProps) {
+  const chaletName = (isArabic ? booking.chalet?.nameAr : booking.chalet?.nameEn) || '';
+  const location = (isArabic ? booking.chalet?.locationAr : booking.chalet?.locationEn) || '';
+  const shape = SHAPES_CONFIG[2];
+  const imageSource = getImageSrc(booking.chalet?.images?.[0]?.url || booking.chalet?.images?.[0]);
+  const statusBadge = getPaymentStatusBadge(booking, t, isArabic);
+
+  return (
+    <Animated.View
+      entering={FadeInDown.delay((index % 8) * 60).duration(380)}
+      style={styles.bookingCardContainer}
+    >
+      {/* Top Block: Image + Chalet Info */}
+      <View style={[styles.topBlock, { flexDirection: rowDirection }]}>
+        <View style={styles.imageBlock}>
+          <Svg width={115} height={100} viewBox={shape.viewBox}>
+            <Defs>
+              <ClipPath id={`clip-${booking.id}`}>
+                <Path d={shape.path} />
+              </ClipPath>
+            </Defs>
+            <G clipPath={`url(#clip-${booking.id})`}>
+              <SvgImage
+                href={imageSource}
+                width={shape.width}
+                height={shape.height}
+                preserveAspectRatio="xMidYMid slice"
+              />
+            </G>
+            <Path d={shape.path} stroke="#15AB64" strokeWidth="6" fill="none" />
+          </Svg>
+        </View>
+
+        <View style={styles.chaletInfoContent}>
+          <View style={{ alignItems: isArabic ? 'flex-end' : 'flex-start' }}>
+            <ThemedText style={[styles.chaletTitle, { textAlign: textStart }]}>{chaletName}</ThemedText>
+            <ThemedText style={[styles.locationText, { textAlign: textStart }]}>{location}</ThemedText>
+          </View>
+
+          <View style={[styles.priceRatingRow, { flexDirection: rowDirection }]}>
+            <ThemedText style={[styles.priceText, { textAlign: textStart }]}>
+              <ThemedText style={styles.priceLabel}>{isArabic ? "شفت / " : "Shift / "}</ThemedText>
+              {formatPrice(booking.chalet?.price)}
+            </ThemedText>
+            <View style={[styles.ratingBox, { flexDirection: rowDirection }]}>
+              <ThemedText style={styles.ratingText}>{booking.chalet?.rating}</ThemedText>
+              <SolarStarBold size={14} color="#EA2129" />
+            </View>
+          </View>
+        </View>
+      </View>
+
+      {/* Bottom Block: Booking Details */}
+      <View style={styles.bottomBlock}>
+        <View style={[styles.detailRow, { flexDirection: rowDirection }]}>
+          <ThemedText style={[styles.detailLabel, { textAlign: textStart }]}>{t('booking.bookingDate')}</ThemedText>
+          <ThemedText style={[styles.detailValue, { textAlign: textEnd }]}>{formatBookingDate(booking.startDate, isArabic)}</ThemedText>
+        </View>
+
+        <View style={[styles.detailRow, { flexDirection: rowDirection }]}>
+          <ThemedText style={[styles.detailLabel, { textAlign: textStart }]}>{t('booking.guests') || 'الأشخاص'}</ThemedText>
+          <ThemedText style={[styles.detailValue, { textAlign: textEnd }]}>{booking.guestCount} {isArabic ? 'أشخاص' : 'guests'}</ThemedText>
+        </View>
+
+        {booking.paymentModel === 'deposit' && Number(booking.depositAmount) > 0 && (booking.status === 'confirmed' || booking.status === 'completed') ? (
+          <>
+            <View style={[styles.detailRow, { flexDirection: rowDirection }]}>
+              <ThemedText style={[styles.detailLabel, { textAlign: textStart }]}>{t('booking.depositAmount') || 'مبلغ العربون'}</ThemedText>
+              <ThemedText style={[styles.detailValue, { textAlign: textEnd }]}>{formatPrice(booking.depositAmount)}</ThemedText>
+            </View>
+            <View style={[styles.detailRow, { flexDirection: rowDirection }]}>
+              <ThemedText style={[styles.detailLabel, { textAlign: textStart }]}>{t('booking.remainingAmount') || 'المبلغ المتبقي'}</ThemedText>
+              <ThemedText style={[styles.detailValue, { textAlign: textEnd }]}>{formatPrice(booking.remainingAmount)}</ThemedText>
+            </View>
+          </>
+        ) : null}
+
+        <View style={[styles.detailRow, { flexDirection: rowDirection }]}>
+          <ThemedText style={[styles.detailLabel, { textAlign: textStart }]}>{t('booking.finalAmount')}</ThemedText>
+          <ThemedText style={[styles.detailValue, { textAlign: textEnd }]}>{formatPrice(booking.totalPrice)}</ThemedText>
+        </View>
+
+        <View style={[styles.detailRow, { flexDirection: rowDirection }]}>
+          <ThemedText style={[styles.detailLabel, { textAlign: textStart }]}>{t('booking.paymentStatus')}</ThemedText>
+          <View style={[styles.paidBadge, { backgroundColor: statusBadge.bg }]}>
+            <ThemedText style={[styles.paidBadgeText, { color: statusBadge.color }]}>{statusBadge.text}</ThemedText>
+          </View>
+        </View>
+
+        <View style={styles.dividerFull} />
+
+        <ViewDetailsButton
+          label={t('booking.viewBookingDetails') || 'عرض تفاصيل الحجز'}
+          onPress={() => onViewDetails(booking.id)}
+        />
+      </View>
+    </Animated.View>
+  );
+});
+
 // Press-scale feedback for the "View details" action (motion only — no design change).
 const ViewDetailsButton = React.memo(function ViewDetailsButton({
   label,
@@ -98,7 +292,9 @@ export default function BookingsScreen() {
     setIsRefreshing(false);
   }, [refetchBookings]);
 
-  // Transform API data to match UI format
+  // Transform API data into a stable, language-independent structure.
+  // Depends only on the raw response, so a language switch (isArabic) does not
+  // re-run this transformation — localized labels are resolved per-card below.
   const bookings = useMemo(() => {
     const items = bookingsResponse?.data || [];
     return items.map((booking: any) => ({
@@ -114,184 +310,20 @@ export default function BookingsScreen() {
       remainingAmount: booking.remainingAmount || 0,
       paymentStatus: booking.paymentStatus,
       chalet: {
-        name: isArabic
-          ? (booking.chalet?.name?.ar || booking.chalet?.nameAr || booking.chalet?.name || '')
-          : (booking.chalet?.name?.en || booking.chalet?.nameEn || booking.chalet?.name || ''),
-        location: isArabic
-          ? (booking.chalet?.region?.name?.ar || booking.chalet?.region?.nameAr || booking.chalet?.region?.name || '')
-          : (booking.chalet?.region?.name?.en || booking.chalet?.region?.nameEn || booking.chalet?.region?.name || ''),
+        nameEn: booking.chalet?.name?.en || booking.chalet?.nameEn || booking.chalet?.name || '',
+        nameAr: booking.chalet?.name?.ar || booking.chalet?.nameAr || booking.chalet?.name || '',
+        locationEn: booking.chalet?.region?.name?.en || booking.chalet?.region?.nameEn || booking.chalet?.region?.name || '',
+        locationAr: booking.chalet?.region?.name?.ar || booking.chalet?.region?.nameAr || booking.chalet?.region?.name || '',
         rating: booking.chalet?.averageRating || 0,
         price: booking.chalet?.basePrice || booking.totalPrice || 0,
         images: booking.chalet?.images || []
       }
     }));
-  }, [bookingsResponse, isArabic]);
+  }, [bookingsResponse?.data]);
 
-  const formatBookingDate = (dateStr: string) => {
-    if (!dateStr) return '';
-    try {
-      const date = new Date(dateStr);
-      if (isNaN(date.getTime())) return dateStr;
-      return date.toLocaleDateString(isArabic ? 'ar' : 'en-US', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      });
-    } catch {
-      return dateStr;
-    }
-  };
-
-  const getPaymentStatusBadge = (item: any) => {
-    const status = item.paymentStatus;
-    const bookingStatus = item.status;
-    const deposit = Number(item.depositAmount || 0);
-    const remaining = Number(item.remainingAmount || 0);
-    const total = Number(item.totalPrice || 0);
-
-    // Only show "Paid" if payment was actually completed
-    if (status === 'paid' || (remaining === 0 && total > 0 && (bookingStatus === 'confirmed' || bookingStatus === 'completed'))) {
-      return {
-        text: t('booking.status.paid') || (isArabic ? 'مدفوع' : 'Paid'),
-        color: '#FFFFFF',
-        bg: '#0284C7'
-      };
-    }
-
-    // Only show "Deposit Paid" if booking is confirmed/completed (payment actually went through)
-    if (deposit > 0 && remaining > 0 && (bookingStatus === 'confirmed' || bookingStatus === 'completed')) {
-      return {
-        text: isArabic ? 'عربون مدفوع' : 'Deposit Paid',
-        color: '#FFFFFF',
-        bg: '#F97316'
-      };
-    }
-
-    // Pending approval — no payment yet
-    if (bookingStatus === 'pending_approval') {
-      return {
-        text: isArabic ? 'بانتظار الموافقة' : 'Pending Approval',
-        color: '#FFFFFF',
-        bg: '#D97706'
-      };
-    }
-
-    // Pending payment — approved but not yet paid
-    if (bookingStatus === 'pending_payment') {
-      return {
-        text: isArabic ? 'بانتظار الدفع' : 'Awaiting Payment',
-        color: '#FFFFFF',
-        bg: '#E11D48'
-      };
-    }
-
-    return {
-      text: isArabic ? 'غير مدفوع' : 'Unpaid',
-      color: '#FFFFFF',
-      bg: '#94A3B8'
-    };
-  };
-
-  const renderBookingItem = (booking: any, index: number) => {
-    const chaletName = booking.chalet?.name || '';
-    const location = booking.chalet?.location || '';
-    const shape = SHAPES_CONFIG[2];
-    const imageSource = getImageSrc(booking.chalet?.images?.[0]?.url || booking.chalet?.images?.[0]);
-    const statusBadge = getPaymentStatusBadge(booking);
-
-    return (
-      <Animated.View
-        key={booking.id}
-        entering={FadeInDown.delay((index % 8) * 60).duration(380)}
-        style={styles.bookingCardContainer}
-      >
-        {/* Top Block: Image + Chalet Info */}
-        <View style={[styles.topBlock, { flexDirection: rowDirection }]}>
-          <View style={styles.imageBlock}>
-            <Svg width={115} height={100} viewBox={shape.viewBox}>
-              <Defs>
-                <ClipPath id={`clip-${booking.id}`}>
-                  <Path d={shape.path} />
-                </ClipPath>
-              </Defs>
-              <G clipPath={`url(#clip-${booking.id})`}>
-                <SvgImage
-                  href={imageSource}
-                  width={shape.width}
-                  height={shape.height}
-                  preserveAspectRatio="xMidYMid slice"
-                />
-              </G>
-              <Path d={shape.path} stroke="#15AB64" strokeWidth="6" fill="none" />
-            </Svg>
-          </View>
-
-          <View style={styles.chaletInfoContent}>
-            <View style={{ alignItems: isArabic ? 'flex-end' : 'flex-start' }}>
-              <ThemedText style={[styles.chaletTitle, { textAlign: textStart }]}>{chaletName}</ThemedText>
-              <ThemedText style={[styles.locationText, { textAlign: textStart }]}>{location}</ThemedText>
-            </View>
-
-            <View style={[styles.priceRatingRow, { flexDirection: rowDirection }]}>
-              <ThemedText style={[styles.priceText, { textAlign: textStart }]}>
-                <ThemedText style={styles.priceLabel}>{isArabic ? "شفت / " : "Shift / "}</ThemedText>
-                {formatPrice(booking.chalet?.price)}
-              </ThemedText>
-              <View style={[styles.ratingBox, { flexDirection: rowDirection }]}>
-                <ThemedText style={styles.ratingText}>{booking.chalet?.rating}</ThemedText>
-                <SolarStarBold size={14} color="#EA2129" />
-              </View>
-            </View>
-          </View>
-        </View>
-
-        {/* Bottom Block: Booking Details */}
-        <View style={styles.bottomBlock}>
-          <View style={[styles.detailRow, { flexDirection: rowDirection }]}>
-            <ThemedText style={[styles.detailLabel, { textAlign: textStart }]}>{t('booking.bookingDate')}</ThemedText>
-            <ThemedText style={[styles.detailValue, { textAlign: textEnd }]}>{formatBookingDate(booking.startDate)}</ThemedText>
-          </View>
-
-          <View style={[styles.detailRow, { flexDirection: rowDirection }]}>
-            <ThemedText style={[styles.detailLabel, { textAlign: textStart }]}>{t('booking.guests') || 'الأشخاص'}</ThemedText>
-            <ThemedText style={[styles.detailValue, { textAlign: textEnd }]}>{booking.guestCount} {isArabic ? 'أشخاص' : 'guests'}</ThemedText>
-          </View>
-
-          {booking.paymentModel === 'deposit' && Number(booking.depositAmount) > 0 && (booking.status === 'confirmed' || booking.status === 'completed') ? (
-            <>
-              <View style={[styles.detailRow, { flexDirection: rowDirection }]}>
-                <ThemedText style={[styles.detailLabel, { textAlign: textStart }]}>{t('booking.depositAmount') || 'مبلغ العربون'}</ThemedText>
-                <ThemedText style={[styles.detailValue, { textAlign: textEnd }]}>{formatPrice(booking.depositAmount)}</ThemedText>
-              </View>
-              <View style={[styles.detailRow, { flexDirection: rowDirection }]}>
-                <ThemedText style={[styles.detailLabel, { textAlign: textStart }]}>{t('booking.remainingAmount') || 'المبلغ المتبقي'}</ThemedText>
-                <ThemedText style={[styles.detailValue, { textAlign: textEnd }]}>{formatPrice(booking.remainingAmount)}</ThemedText>
-              </View>
-            </>
-          ) : null}
-
-          <View style={[styles.detailRow, { flexDirection: rowDirection }]}>
-            <ThemedText style={[styles.detailLabel, { textAlign: textStart }]}>{t('booking.finalAmount')}</ThemedText>
-            <ThemedText style={[styles.detailValue, { textAlign: textEnd }]}>{formatPrice(booking.totalPrice)}</ThemedText>
-          </View>
-
-          <View style={[styles.detailRow, { flexDirection: rowDirection }]}>
-            <ThemedText style={[styles.detailLabel, { textAlign: textStart }]}>{t('booking.paymentStatus')}</ThemedText>
-            <View style={[styles.paidBadge, { backgroundColor: statusBadge.bg }]}>
-              <ThemedText style={[styles.paidBadgeText, { color: statusBadge.color }]}>{statusBadge.text}</ThemedText>
-            </View>
-          </View>
-
-          <View style={styles.dividerFull} />
-
-          <ViewDetailsButton
-            label={t('booking.viewBookingDetails') || 'عرض تفاصيل الحجز'}
-            onPress={() => router.push({ pathname: '/(tabs)/(customer)/booking-success', params: { id: booking.id } })}
-          />
-        </View>
-      </Animated.View>
-    );
-  };
+  const handleViewDetails = useCallback((id: any) => {
+    router.push({ pathname: '/(tabs)/(customer)/booking-success', params: { id } });
+  }, [router]);
 
   return (
     <SafeAreaView style={[styles.container]}>
@@ -323,7 +355,19 @@ export default function BookingsScreen() {
             <BookingCardSkeleton />
           </View>
         ) : bookings.length > 0 ? (
-          bookings.map(renderBookingItem)
+          bookings.map((booking: any, index: number) => (
+            <BookingCard
+              key={booking.id}
+              booking={booking}
+              index={index}
+              isArabic={isArabic}
+              rowDirection={rowDirection}
+              textStart={textStart}
+              textEnd={textEnd}
+              t={t}
+              onViewDetails={handleViewDetails}
+            />
+          ))
         ) : (
           <EmptyState
             icon={<SolarCalendarBold size={normalize.width(56)} color={Colors.primary} />}

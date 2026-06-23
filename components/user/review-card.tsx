@@ -2,6 +2,7 @@ import { SolarStarBold, SolarTrashBinMinimalisticLinear } from "@/components/ico
 import { ThemedText } from "@/components/themed-text";
 import { normalize } from "@/constants/theme";
 import { getAvatarSrc } from "@/hooks/useImageSrc";
+import { Image as ExpoImage } from "expo-image";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -131,7 +132,14 @@ export const ReviewCard = React.memo(function ReviewCard({ review, onDelete, onP
           contentContainerStyle={{ flexDirection: 'row', gap: 8 }}
         >
           {review.gallery.map((img, idx) => (
-            <Image key={idx} source={{ uri: img }} style={styles.galleryThumb} />
+            <ExpoImage
+              key={idx}
+              source={{ uri: img }}
+              style={styles.galleryThumb}
+              contentFit="cover"
+              cachePolicy="memory-disk"
+              recyclingKey={img}
+            />
           ))}
         </ScrollView>
 

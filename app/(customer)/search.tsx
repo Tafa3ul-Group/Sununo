@@ -8,12 +8,12 @@ import {
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { HorizontalCard } from "@/components/user/horizontal-card";
-import { Colors } from "@/constants/theme";
+import { Colors, normalize } from "@/constants/theme";
 
 import { useBrowseCustomerChaletsQuery } from "@/store/api/customerApiSlice";
 import { getStartingPrice } from "@/utils/format";
 import { useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
     ActivityIndicator,
@@ -30,6 +30,11 @@ import {
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useDirection } from "@/i18n";
 
+// Fixed per-row height for FlatList getItemLayout. The card has a fixed height
+// (normalize.height(115)) and its wrapper adds a 16px bottom margin, so each row
+// occupies a deterministic amount of vertical space.
+const CARD_HEIGHT = normalize.height(115) + 16;
+
 export default function SearchScreen() {
   const { t } = useTranslation();
   const { isRTL, rowDirection, textAlign } = useDirection();
@@ -37,12 +42,21 @@ export default function SearchScreen() {
   const textStart: "left" | "right" = textAlign;
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const insets = useSafeAreaInsets();
+
+  // Debounce the value used for the network request so rapid typing
+  // doesn't trigger a request on every keystroke. The input value
+  // (searchQuery) still updates immediately, preserving UX/visuals.
+  useEffect(() => {
+    const handle = setTimeout(() => setDebouncedQuery(searchQuery), 500);
+    return () => clearTimeout(handle);
+  }, [searchQuery]);
 
   const { data: chaletsResponse, isLoading, isError, refetch } = useBrowseCustomerChaletsQuery({
     page: 1,
     limit: 20,
-    search: searchQuery || undefined,
+    search: debouncedQuery || undefined,
   });
 
   const chalets = useMemo(() => {
@@ -69,17 +83,20 @@ export default function SearchScreen() {
     }));
   }, [chaletsResponse, isArabic]);
 
-  const renderItem = ({ item, index }: { item: any; index: number }) => (
-    <Animated.View
-      style={styles.cardWrapper}
-      entering={FadeInDown.delay((index % 8) * 60).duration(380)}
-    >
-      <HorizontalCard
-        chalet={item}
-        onPress={() => router.push(`/chalet-details/${item.id}`)}
-        shapeIndex={1}
-      />
-    </Animated.View>
+  const renderItem = useCallback(
+    ({ item, index }: { item: any; index: number }) => (
+      <Animated.View
+        style={styles.cardWrapper}
+        entering={FadeInDown.delay((index % 8) * 60).duration(380)}
+      >
+        <HorizontalCard
+          chalet={item}
+          onPress={() => router.push(`/chalet-details/${item.id}`)}
+          shapeIndex={1}
+        />
+      </Animated.View>
+    ),
+    [router]
   );
 
   return (
@@ -144,6 +161,13 @@ export default function SearchScreen() {
           data={chalets}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
+          getItemLayout={(_data, index) => ({
+            length: CARD_HEIGHT,
+            // +16 accounts for the list's 16px top contentContainer padding so
+            // row offsets line up with actual positions.
+            offset: CARD_HEIGHT * index + 16,
+            index,
+          })}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           refreshControl={

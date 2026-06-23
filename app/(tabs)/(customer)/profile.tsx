@@ -164,6 +164,9 @@ export default function CustomerProfileScreen() {
         router.push('/profile-edit');
     }, [router]);
 
+    // `router` from expo-router is a stable reference across renders, so the
+    // [router] dependency keeps this callback identity stable and preserves the
+    // MenuRow React.memo optimization.
     const onMenuRowPress = useCallback((item: MenuItem) => {
         if (item.action) {
             item.action();

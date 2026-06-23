@@ -276,7 +276,12 @@ export default function ExploreScreen() {
       zoom: Math.round(zoom),
     });
 
-  const chaletsRaw = chaletsResponse?.data || [];
+  // Stable reference for the raw list: the `|| []` fallback would otherwise
+  // create a new array literal every render, breaking the MOCK_CHALETS memo.
+  const chaletsRaw = useMemo(
+    () => chaletsResponse?.data || [],
+    [chaletsResponse?.data],
+  );
 
   const [selectedChalet, setSelectedChalet] = useState<any>(null);
   const browsingRegionRef = useRef<{ center: [number, number]; zoom: number }>({
@@ -407,19 +412,34 @@ export default function ExploreScreen() {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ["55%", "94%"], []);
 
+  // Stable id of the chalet matching the route param. The previous effect keyed
+  // off `MOCK_CHALETS.length`, which changes whenever the memo is rebuilt and so
+  // re-ran the auto-selection on every list update. Deriving a stable matched id
+  // lets the effect run only when the target chalet first becomes available.
+  const autoSelectChaletId = useMemo(
+    () =>
+      id
+        ? MOCK_CHALETS.find((c: (typeof MOCK_CHALETS)[number]) => c.id === id)
+            ?.id
+        : undefined,
+    [id, MOCK_CHALETS],
+  );
+
   // Handle auto-selection if ID is passed in params
   useEffect(() => {
-    if (id && MOCK_CHALETS.length > 0) {
-      const chalet = MOCK_CHALETS.find((c) => c.id === id);
-      if (chalet) {
-        // Use a small delay to ensure everything is ready
-        const timer = setTimeout(() => {
-          handleSelectChalet(chalet);
-        }, 500);
-        return () => clearTimeout(timer);
-      }
+    if (!autoSelectChaletId) return;
+    const chalet = MOCK_CHALETS.find(
+      (c: (typeof MOCK_CHALETS)[number]) => c.id === autoSelectChaletId,
+    );
+    if (chalet) {
+      // Use a small delay to ensure everything is ready
+      const timer = setTimeout(() => {
+        handleSelectChalet(chalet);
+      }, 500);
+      return () => clearTimeout(timer);
     }
-  }, [id, MOCK_CHALETS.length]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoSelectChaletId]);
 
   // Center map on user location when showMyLocation param is passed
   useEffect(() => {

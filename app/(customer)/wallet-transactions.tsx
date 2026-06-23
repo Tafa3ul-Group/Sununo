@@ -13,7 +13,7 @@ import {
 } from "@/store/api/customerApiSlice";
 import { FlashList } from "@shopify/flash-list";
 import { useRouter } from "expo-router";
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { I18nManager, Linking, RefreshControl, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -39,6 +39,21 @@ export default function WalletTransactionsScreen() {
   const { data: walletData } = useGetCustomerWalletQuery(undefined);
 
   const transactions = txResponse?.data || txResponse || [];
+  // Pre-classify each transaction once (outside renderItem) so the credit/debit
+  // regexes are not recompiled & re-run on every row render during scroll.
+  const classifiedTxs = useMemo(() => {
+    const list = Array.isArray(transactions) ? transactions : [];
+    return list.map((tx: any) => {
+      const amountNum = Number(tx.amount) || 0;
+      const typeStr = String(tx.type || tx.direction || "").toLowerCase();
+      const explicitDebit = /(debit|payment|withdraw|deduct|out)/.test(typeStr);
+      const explicitCredit = /(credit|refund|deposit|topup|cashback|in)/.test(
+        typeStr,
+      );
+      const isCredit = explicitCredit || (!explicitDebit && amountNum >= 0);
+      return { ...tx, __amountNum: amountNum, __isCredit: isCredit };
+    });
+  }, [transactions]);
   const balance = walletData?.balance
     ? Number(walletData.balance).toLocaleString()
     : "0";
@@ -65,14 +80,11 @@ export default function WalletTransactionsScreen() {
     });
   };
 
-  const renderItem = useCallback(({ item, index }: { item: any; index: number }) => {
-    const amountNum = Number(item.amount) || 0;
-    const typeStr = String(item.type || item.direction || "").toLowerCase();
-    const explicitDebit = /(debit|payment|withdraw|deduct|out)/.test(typeStr);
-    const explicitCredit = /(credit|refund|deposit|topup|cashback|in)/.test(
-      typeStr,
-    );
-    const isCredit = explicitCredit || (!explicitDebit && amountNum >= 0);
+  const renderItem = useCallback(({ item }: { item: any }) => {
+    // Classification (credit/debit) is precomputed in classifiedTxs so the
+    // regexes run once per transaction, not on every row render during scroll.
+    const amountNum: number = item.__amountNum ?? (Number(item.amount) || 0);
+    const isCredit: boolean = item.__isCredit;
     const color = isCredit ? "#10B981" : "#EF4444";
     const bg = isCredit ? "#ECFDF5" : "#FEF2F2";
 
@@ -145,7 +157,7 @@ export default function WalletTransactionsScreen() {
       ) : (
         <View style={{ flex: 1 }}>
           <FlashList
-            data={Array.isArray(transactions) ? transactions : []}
+            data={classifiedTxs}
             renderItem={renderItem}
             keyExtractor={(item: any, index) => String(item?.id ?? index)}
             estimatedItemSize={80}

@@ -37,18 +37,16 @@ export default function ReviewsScreen() {
   const { data: allBookings, isLoading: loadingAll, refetch: refetchAll } = useGetCustomerBookingsQuery({ page: 1, limit: 50 });
 
   // Transform API data to review format
-  const reviews = useMemo(() => {
+  // Pending: completed bookings without reviews
+  const pendingReviews = useMemo(() => {
     const completed = completedBookings?.data || [];
-    const all = allBookings?.data || [];
-
-    // Pending: completed bookings without reviews
-    const pending = completed
+    return completed
       .filter((b: any) => !b.review)
       .map((booking: any) => ({
         id: booking.id,
         chaletId: booking.chalet?.id || '',
-        chaletTitle: isArabic 
-          ? (booking.chalet?.name?.ar || booking.chalet?.nameAr || booking.chalet?.name || '') 
+        chaletTitle: isArabic
+          ? (booking.chalet?.name?.ar || booking.chalet?.nameAr || booking.chalet?.name || '')
           : (booking.chalet?.name?.en || booking.chalet?.nameEn || booking.chalet?.name || ''),
         chaletLocation: isArabic
           ? (booking.chalet?.region?.name?.ar || booking.chalet?.region?.nameAr || booking.chalet?.region?.name || '')
@@ -62,9 +60,12 @@ export default function ReviewsScreen() {
         gallery: [],
         date: booking.bookingDate || '',
         status: 'pending' as const }));
+  }, [completedBookings, isArabic]);
 
-    // Reviewed: bookings that have reviews
-    const reviewed = all
+  // Reviewed: bookings that have reviews
+  const reviewedReviews = useMemo(() => {
+    const all = allBookings?.data || [];
+    return all
       .filter((b: any) => b.review)
       .map((booking: any) => ({
         id: booking.review?.id || booking.id,
@@ -84,11 +85,9 @@ export default function ReviewsScreen() {
         gallery: [],
         date: booking.review?.createdAt ? new Date(booking.review.createdAt).toLocaleDateString() : '',
         status: 'reviewed' as const }));
+  }, [allBookings, isArabic]);
 
-    return { pending, reviewed };
-  }, [completedBookings, allBookings, isArabic]);
-
-  const filteredReviews = activeTab === 'pending' ? reviews.pending : reviews.reviewed;
+  const filteredReviews = activeTab === 'pending' ? pendingReviews : reviewedReviews;
   const loading = loadingCompleted || loadingAll;
 
   const renderReviewItem = ({ item, index }: { item: any; index: number }) => {

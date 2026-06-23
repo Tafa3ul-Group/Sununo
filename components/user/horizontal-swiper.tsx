@@ -48,17 +48,20 @@ export function HorizontalSwiper({ data, onPressCard, onIndexChange, favoriteIds
     [onToggleFavorite]
   );
 
-  const renderItem = ({ item, index }: { item: any; index: number }) => (
-    <View style={{ width: ITEM_WIDTH }}>
-      <HorizontalCard
-        chalet={item}
-        shapeIndex={2}
-        onPress={() => handleCardPress(item.id)}
-        style={styles.cardOverride}
-        isFavorite={favoriteIds.includes(item.id)}
-        onToggleFavorite={() => handleToggleFavorite(item.id)}
-      />
-    </View>
+  const renderItem = useCallback(
+    ({ item, index }: { item: any; index: number }) => (
+      <View style={{ width: ITEM_WIDTH }}>
+        <HorizontalCard
+          chalet={item}
+          shapeIndex={2}
+          onPress={() => handleCardPress(item.id)}
+          style={styles.cardOverride}
+          isFavorite={favoriteIds.includes(item.id)}
+          onToggleFavorite={() => handleToggleFavorite(item.id)}
+        />
+      </View>
+    ),
+    [handleCardPress, handleToggleFavorite, favoriteIds]
   );
 
   return (

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { View, StyleSheet, ScrollView, Dimensions, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -29,14 +29,19 @@ export default function FavoritesScreen() {
   const { data: favoritesResponse, isLoading, isError, refetch } = useGetCustomerFavoritesQuery({ page: 1, limit: 50 });
   const [toggleFavorite] = useToggleFavoriteMutation();
 
-  const handleToggleFavorite = async (id: string) => {
+  const handleToggleFavorite = useCallback(async (id: string) => {
     try {
       await toggleFavorite(id).unwrap();
       refetch();
     } catch (error) {
       console.error('Failed to toggle favorite:', error);
     }
-  };
+  }, [toggleFavorite, refetch]);
+
+  const handleToggleFavoriteMemoized = useCallback(
+    (id: string) => handleToggleFavorite(id),
+    [handleToggleFavorite]
+  );
 
   // Transform API data to match card format
   const favorites = useMemo(() => {
@@ -90,7 +95,7 @@ export default function FavoritesScreen() {
             <HorizontalCardSkeleton />
           </View>
         ) : favorites.length > 0 ? (
-          favorites.map((chalet, index) => (
+          favorites.map((chalet: typeof favorites[number], index: number) => (
             <Animated.View
               key={chalet.id}
               entering={FadeInDown.delay((index % 8) * 60).duration(380)}
@@ -102,7 +107,7 @@ export default function FavoritesScreen() {
                     onPress={() => router.push(`/chalet-details/${chalet.id}`)}
                     style={styles.customCard}
                     isFavorite={true}
-                    onToggleFavorite={() => handleToggleFavorite(chalet.id)}
+                    onToggleFavorite={() => handleToggleFavoriteMemoized(chalet.id)}
                  />
             </Animated.View>
           ))

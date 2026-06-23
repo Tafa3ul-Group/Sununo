@@ -145,31 +145,41 @@ export default function ReviewsScreen() {
     }
   };
 
-  // Transform API data + apply the selected sort (latest / highest / lowest)
-  const reviews = useMemo(() => {
-    const items = [...(reviewsResponse?.data || [])];
-    items.sort((a: any, b: any) => {
-      if (filterValue === "highest") return (b.rating || 0) - (a.rating || 0);
-      if (filterValue === "lowest") return (a.rating || 0) - (b.rating || 0);
-      // latest (default): newest first
-      return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
-    });
-    return items.map((rev: any) => ({
+  // Transform API data once when it arrives (independent of the selected sort).
+  const transformedReviews = useMemo(() => {
+    return (reviewsResponse?.data || []).map((rev: any) => ({
       name: rev.customer?.name || (isArabic ? "مستخدم" : "User"),
       rating: rev.rating || 0,
       body: rev.comment || "",
       date: rev.createdAt ? new Date(rev.createdAt).toLocaleDateString() : "",
       avatar: rev.customer?.imageUrl || null,
       images: rev.images?.map((img: any) => img.url) || [],
+      // Keep raw timestamp for the "latest" sort without re-parsing the date.
+      createdAt: rev.createdAt || 0,
     }));
-  }, [reviewsResponse, isArabic, filterValue]);
+  }, [reviewsResponse, isArabic]);
 
-  // Calculate average rating
+  // Apply the selected sort (latest / highest / lowest) — lightweight, runs on filter change only.
+  const reviews = useMemo(() => {
+    const items = [...transformedReviews];
+    items.sort((a: any, b: any) => {
+      if (filterValue === "highest") return (b.rating || 0) - (a.rating || 0);
+      if (filterValue === "lowest") return (a.rating || 0) - (b.rating || 0);
+      // latest (default): newest first
+      return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+    });
+    return items;
+  }, [transformedReviews, filterValue]);
+
+  // Calculate average rating from the transformed reviews (order-independent).
   const averageRating = useMemo(() => {
-    if (reviews.length === 0) return 0;
-    const sum = reviews.reduce((acc: number, r: any) => acc + r.rating, 0);
-    return (sum / reviews.length).toFixed(1);
-  }, [reviews]);
+    if (transformedReviews.length === 0) return 0;
+    const sum = transformedReviews.reduce(
+      (acc: number, r: any) => acc + r.rating,
+      0,
+    );
+    return (sum / transformedReviews.length).toFixed(1);
+  }, [transformedReviews]);
 
   return (
     <SafeAreaView style={styles.container}>

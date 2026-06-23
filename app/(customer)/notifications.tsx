@@ -88,9 +88,23 @@ export default function NotificationsScreen() {
     const { data: notificationsResponse, isLoading, refetch } = useGetNotificationsQuery({ page: 1, limit: 50 });
     const [markAsRead] = useMarkNotificationAsReadMutation();
 
-    // Transform API data and group by date
+    // Pre-process: transform API data + format times once per item
+    const formattedNotifs = useMemo<(Notification & { notifDate: string })[]>(() => {
+      const items: any[] = notificationsResponse?.data || [];
+      return items.map((item: any): Notification & { notifDate: string } => ({
+        id: item.id,
+        title: item.title || t('notifications.newNotification'),
+        message: item.text || item.body || item.message || '',
+        time: new Date(item.createdAt).toLocaleTimeString(isArabic ? 'ar' : 'en', { hour: '2-digit', minute: '2-digit' }),
+        isRead: !!item.readAt || !!item.isRead,
+        redirectType: item.redirectType,
+        redirectId: item.redirectId,
+        notifDate: new Date(item.createdAt).toDateString(),
+      }));
+    }, [notificationsResponse, isArabic, t]);
+
+    // Group pre-formatted notifications by date
     const groupedNotifications = useMemo(() => {
-      const items = notificationsResponse?.data || [];
       const today: Notification[] = [];
       const yesterday: Notification[] = [];
       const older: Notification[] = [];
@@ -100,18 +114,7 @@ export default function NotificationsScreen() {
       yesterdayDate.setDate(yesterdayDate.getDate() - 1);
       const yesterdayStr = yesterdayDate.toDateString();
 
-      items.forEach((item: any) => {
-        const notif: Notification = {
-          id: item.id,
-          title: item.title || t('notifications.newNotification'),
-          message: item.text || item.body || item.message || '',
-          time: new Date(item.createdAt).toLocaleTimeString(isArabic ? 'ar' : 'en', { hour: '2-digit', minute: '2-digit' }),
-          isRead: !!item.readAt || !!item.isRead,
-          redirectType: item.redirectType,
-          redirectId: item.redirectId,
-        };
-
-        const notifDate = new Date(item.createdAt).toDateString();
+      formattedNotifs.forEach(({ notifDate, ...notif }) => {
         if (notifDate === todayStr) {
           today.push(notif);
         } else if (notifDate === yesterdayStr) {
@@ -122,7 +125,7 @@ export default function NotificationsScreen() {
       });
 
       return { today, yesterday, older };
-    }, [notificationsResponse, isArabic, t]);
+    }, [formattedNotifs]);
     const handleNotificationPress = (item: Notification) => {
         if (!item.isRead) {
             markAsRead(item.id);
@@ -136,7 +139,7 @@ export default function NotificationsScreen() {
         }
     };
 
-    const dirStyle = isArabic ? 'rtl' : 'ltr';
+    const dirStyle = useMemo<'rtl' | 'ltr'>(() => (isArabic ? 'rtl' : 'ltr'), [isArabic]);
 
     const renderItem = useCallback((item: Notification, index: number) => (
         <NotificationItem

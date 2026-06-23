@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Dimensions,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
   RefreshControl,
   ScrollView,
   StatusBar,
@@ -68,6 +70,8 @@ function ActiveFilterBanner({
 }) {
   const dispatch = useDispatch();
   const { t } = useTranslation();
+
+  const onClearFilters = useCallback(() => dispatch(clearFilters()), [dispatch]);
 
   const filterItems = useMemo(() => {
     const items = [];
@@ -141,7 +145,7 @@ function ActiveFilterBanner({
 
         <TouchableOpacity
           style={filterBannerStyles.clearBtn}
-          onPress={() => dispatch(clearFilters())}
+          onPress={onClearFilters}
         >
           <SolarCloseBold size={16} color={Colors.primary} />
         </TouchableOpacity>
@@ -317,7 +321,7 @@ export default function HomeScreen() {
     if (!incoming.length && page > 1) return;
     setRawChalets((prev) => {
       if (page === 1) return incoming;
-      const seen = new Set(prev.map((c: any) => c.id));
+      const seen = new Map(prev.map((c: any) => [c.id, c]));
       return [...prev, ...incoming.filter((c: any) => !seen.has(c.id))];
     });
   }, [chaletsResponse, page]);
@@ -327,6 +331,20 @@ export default function HomeScreen() {
       setPage((p) => p + 1);
     }
   }, [chaletsFetching, hasMoreChalets]);
+
+  // Memoized scroll handler — triggers paging when near the bottom. Kept stable
+  // so the ScrollView doesn't get a fresh closure on every parent render.
+  const handleScroll = useCallback(
+    ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+      const distanceFromBottom =
+        contentSize.height - (contentOffset.y + layoutMeasurement.height);
+      if (distanceFromBottom < 500) {
+        loadMoreChalets();
+      }
+    },
+    [loadMoreChalets],
+  );
 
   const { data: favoriteIds = [], refetch: refetchFavorites } =
     useGetFavoriteIdsQuery(undefined, { skip: userType === "guest" });
@@ -405,6 +423,19 @@ export default function HomeScreen() {
   };
 
   // ── Analytics: view_item_list (fires once per filter set when the list loads)
+  // Precompute the first 15 chalets' analytics payload so the effect body doesn't
+  // slice/map on every run; only recompute when the source data or locale changes.
+  const firstFifteenChaletsForAnalytics = useMemo(
+    () =>
+      rawChalets.slice(0, 15).map((c: any, i: number) => ({
+        item_id: String(c.id),
+        item_name: isRTL
+          ? c.name?.ar || c.nameAr || c.name || ""
+          : c.name?.en || c.nameEn || c.name || "",
+        index: i,
+      })),
+    [rawChalets, isRTL],
+  );
   const lastListKeyRef = React.useRef<string>("");
   React.useEffect(() => {
     if (!rawChalets.length) return;
@@ -413,13 +444,7 @@ export default function HomeScreen() {
     logEvent(ANALYTICS_EVENTS.VIEW_ITEM_LIST, {
       item_list_id: filtersKey ? "home_filtered" : "home_recommended",
       item_list_name: "Home Recommended",
-      items: rawChalets.slice(0, 15).map((c: any, i: number) => ({
-        item_id: String(c.id),
-        item_name: isRTL
-          ? c.name?.ar || c.nameAr || c.name || ""
-          : c.name?.en || c.nameEn || c.name || "",
-        index: i,
-      })),
+      items: firstFifteenChaletsForAnalytics,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rawChalets, filtersKey]);
@@ -446,6 +471,19 @@ export default function HomeScreen() {
       });
       router.push(`/chalet-details/${id}`);
     },
+    [router],
+  );
+
+  const navigateToExplore = useCallback(
+    () => router.push("/(tabs)/(customer)/explore"),
+    [router],
+  );
+  const navigateToExploreMyLocation = useCallback(
+    () => router.push("/(tabs)/(customer)/explore?showMyLocation=1"),
+    [router],
+  );
+  const navigateToBookings = useCallback(
+    () => router.push("/(tabs)/(customer)/bookings"),
     [router],
   );
 
@@ -573,15 +611,8 @@ export default function HomeScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
-        onScroll={({ nativeEvent }) => {
-          const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
-          const distanceFromBottom =
-            contentSize.height - (contentOffset.y + layoutMeasurement.height);
-          if (distanceFromBottom < 500) {
-            loadMoreChalets();
-          }
-        }}
-        scrollEventThrottle={200}
+        onScroll={handleScroll}
+        scrollEventThrottle={400}
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
@@ -617,17 +648,13 @@ export default function HomeScreen() {
           >
             {t("home.categories.nearby")}
           </ThemedText>
-          <TouchableOpacity
-            onPress={() => router.push("/(tabs)/(customer)/explore")}
-          >
+          <TouchableOpacity onPress={navigateToExplore}>
             <ThemedText style={styles.seeAll}>{t("home.openMap")}</ThemedText>
           </TouchableOpacity>
         </View>
         <TouchableOpacity
           activeOpacity={0.9}
-          onPress={() =>
-            router.push("/(tabs)/(customer)/explore?showMyLocation=1")
-          }
+          onPress={navigateToExploreMyLocation}
           style={styles.mapContainer}
         >
           <AppMap
@@ -653,7 +680,7 @@ export default function HomeScreen() {
               >
                 {t("home.recentBookings")}
               </ThemedText>
-              <TouchableOpacity onPress={() => router.push("/(tabs)/(customer)/bookings")}>
+              <TouchableOpacity onPress={navigateToBookings}>
                 <ThemedText style={styles.seeAll}>{t("home.seeAll")}</ThemedText>
               </TouchableOpacity>
             </View>

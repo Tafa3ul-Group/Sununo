@@ -79,6 +79,19 @@ const BOOKING_TABS: TabType[] = ["WHEN", "WHO", "WHERE"];
 const getLocalDateKey = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
+// Caches the descending-by-guestCount sort per capacityPricings array reference,
+// so the spread + sort runs once instead of on every pricing recomputation.
+const sortedCapacityCache = new WeakMap<object, any[]>();
+const getSortedCapacityTiers = (capacityPricings: any[]) => {
+  const cached = sortedCapacityCache.get(capacityPricings);
+  if (cached) return cached;
+  const sorted = [...capacityPricings].sort(
+    (a: any, b: any) => b.guestCount - a.guestCount,
+  );
+  sortedCapacityCache.set(capacityPricings, sorted);
+  return sorted;
+};
+
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 // Reusable press-scale wrapper for buttons rendered inside `.map()` loops where a
@@ -323,6 +336,22 @@ export default function CompleteBookingScreen() {
     return chaletDetails.shifts;
   }, [chaletDetails?.shifts]);
 
+  // Precompute the "starts from" minimum price per shift once, instead of running
+  // a map + filter + Math.min spread inline on every render of the preview list.
+  const shiftMinPrices = useMemo(() => {
+    const fallback = chaletDetails?.basePrice || 0;
+    const map: Record<string, number> = {};
+    availableShifts.forEach((shift: any) => {
+      // Exclude closed days (price <= 1 sentinel) from the min price.
+      const valid = (shift.pricing || [])
+        .map((p: any) => Number(p.price))
+        .filter((p: number) => p > 1);
+      map[shift.id] =
+        valid.length > 0 ? Math.min(...valid) : Number(fallback);
+    });
+    return map;
+  }, [availableShifts, chaletDetails?.basePrice]);
+
   const filteredSelectedShift = useMemo(() => {
     if (!filterPeriod) return null;
     return (
@@ -417,7 +446,7 @@ export default function CompleteBookingScreen() {
       const dayPricing = shift?.pricing?.find((p: any) => p.dayOfWeek === dow);
       return !dayPricing || Number(dayPricing.price) <= 1;
     },
-    [currentMonth],
+    [getDateForDay],
   );
 
   // Pre-fill selected shifts from the saved filter when possible.
@@ -487,7 +516,9 @@ export default function CompleteBookingScreen() {
   const [cardName, setCardName] = useState("");
   const [notes, setNotes] = useState("");
 
-  const [adultCount, setAdultCount] = useState(savedFilter?.adults ?? 2);
+  const [adultCount, setAdultCount] = useState<number>(
+    Number(savedFilter?.adults ?? 2),
+  );
   const [childrenCount, setChildrenCount] = useState(0);
   const [guestType, setGuestType] = useState<"FAMILY" | "YOUTH">("FAMILY");
   const [idImage1, setIdImage1] = useState<string | null>(null);
@@ -559,9 +590,7 @@ export default function CompleteBookingScreen() {
           let selectedCapacityLimit = Number(chaletDetails?.priceCapacity || 2);
 
           if (pricing?.capacityPricings && pricing.capacityPricings.length > 0) {
-            const sortedTiers = [...pricing.capacityPricings].sort(
-              (a: any, b: any) => b.guestCount - a.guestCount
-            );
+            const sortedTiers = getSortedCapacityTiers(pricing.capacityPricings);
             const bestTier = sortedTiers.find((t: any) => t.guestCount <= totalGuestsNow);
             if (bestTier) {
               basePrice = Number(bestTier.price);
@@ -1676,17 +1705,11 @@ export default function CompleteBookingScreen() {
                         </View>
                         <View style={{ alignItems: "flex-end" }}>
                           <ThemedText style={styles.shiftPriceFlat}>
-                            {(() => {
-                              // Exclude closed days (price <= 1 sentinel) from the min price.
-                              const valid = (shift.pricing || [])
-                                .map((p: any) => Number(p.price))
-                                .filter((p: number) => p > 1);
-                              const minPrice =
-                                valid.length > 0
-                                  ? Math.min(...valid)
-                                  : chaletDetails?.basePrice || 0;
-                              return Number(minPrice).toLocaleString();
-                            })()}{" "}
+                            {Number(
+                              shiftMinPrices[shift.id] ??
+                                chaletDetails?.basePrice ??
+                                0,
+                            ).toLocaleString()}{" "}
                             {t("common.iqd")}
                           </ThemedText>
                         </View>
