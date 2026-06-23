@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
   bannerContainer: {
     width: BANNER_WIDTH,
     height: BANNER_HEIGHT,
-    borderRadius: normalize.radius(24),
+    borderRadius: normalize.radius(14),
     overflow: 'hidden' },
   bannerImage: {
     width: '100%',

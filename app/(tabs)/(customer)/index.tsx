@@ -4,10 +4,10 @@ import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   RefreshControl,
-  StatusBar,
   StyleSheet,
   View,
 } from "react-native";
+import { StatusBar } from "expo-status-bar";
 import { FlashList } from "@shopify/flash-list";
 import { useDirection } from "@/i18n";
 import { BannerSkeleton, HorizontalSwiperSkeleton, HorizontalCardSkeleton, CustomerHomeSkeleton } from "@/components/ui/skeleton-loader";
@@ -19,6 +19,8 @@ import { useSelector } from "react-redux";
 import { HeaderSection } from "@/components/header-section";
 import { PressableScale } from "@/components/ui/pressable-scale";
 import {
+  SolarAltArrowLeftBold,
+  SolarAltArrowRightBold,
   SolarFireBold,
   SolarTreeBold,
   SolarWaterBold,
@@ -30,8 +32,9 @@ import { BannerSwiper } from "@/components/user/banner-swiper";
 import { HorizontalCard } from "@/components/user/horizontal-card";
 import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
 import { FeaturedSwiper } from "@/components/user/featured-swiper";
+import { useTabBarVisibility } from "@/components/user/tab-bar-visibility";
 import { SecondaryButton } from "@/components/user/secondary-button";
-import { Colors, normalize } from "@/constants/theme";
+import { Colors, Fonts, normalize } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { getStartingPrice } from "@/utils/format";
 import { logEvent } from "@/services/analytics";
@@ -56,9 +59,36 @@ export default function HomeScreen() {
   const { isRTL, rowDirection, textAlign } = useDirection();
   const router = useRouter();
   const { t } = useTranslation();
+  const tabBarVis = useTabBarVisibility();
+  // Keep the tab bar visible whenever the home gains focus, and restore it on
+  // the way out so other tabs never inherit a hidden bar.
+  useFocusEffect(
+    useCallback(() => {
+      tabBarVis?.show();
+      return () => tabBarVis?.show();
+    }, [tabBarVis]),
+  );
   // Multi-select filter chips. Empty array === "All".
   const [selectedFilters, setSelectedFilters] = React.useState<string[]>([]);
   const insets = useSafeAreaInsets();
+
+  // Sticky filter chips: keep the chips in place in the list, and reveal a
+  // pinned copy under the header once the scroll passes their position.
+  const [showStickyFilters, setShowStickyFilters] = React.useState(false);
+  const chipsYRef = React.useRef(0);
+  const showStickyRef = React.useRef(false);
+  const handleListScroll = useCallback(
+    (e: any) => {
+      tabBarVis?.onScroll(e);
+      const y = e.nativeEvent.contentOffset.y;
+      const stick = chipsYRef.current > 0 && y >= chipsYRef.current;
+      if (stick !== showStickyRef.current) {
+        showStickyRef.current = stick;
+        setShowStickyFilters(stick);
+      }
+    },
+    [tabBarVis],
+  );
 
   // Toggle a chip; tapping "all" clears the selection.
   const toggleFilter = React.useCallback((id: string) => {
@@ -459,13 +489,39 @@ export default function HomeScreen() {
   // after all hooks so hook order stays stable across renders.
   if (userType === "owner") return <Redirect href="/(tabs)/(dashboard)/home" />;
 
+  // Recommended filter chips — reused both inline (in the list) and in the
+  // sticky pinned copy under the header.
+  const renderFilterChips = () => (
+    <GHScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.tabsContainer}
+    >
+      <View style={{ flexDirection: flexDir, gap: 10 }}>
+        {FILTER_OPTIONS.map((filter) => {
+          const isActive =
+            filter.id === "all"
+              ? selectedFilters.length === 0
+              : selectedFilters.includes(filter.id);
+          return (
+            <SecondaryButton
+              key={filter.id}
+              label={filter.label}
+              isActive={isActive}
+              activeColor={filter.activeColor}
+              icon={filter.icon(isActive)}
+              onPress={() => toggleFilter(filter.id)}
+            />
+          );
+        })}
+      </View>
+    </GHScrollView>
+  );
+
   // Everything above the recommended list, rendered as the FlashList header so
   // the chalet list itself stays virtualized (only on-screen cards mount).
   const listHeader = (
     <>
-      {/* Header */}
-      <HeaderSection isHome />
-
       {isInitialLoading ? (
         <CustomerHomeSkeleton />
       ) : (
@@ -484,16 +540,29 @@ export default function HomeScreen() {
           {(featuredLoading || featuredChalets.length > 0) && (
             <>
               <View
-                style={[
-                  styles.sectionHeader,
-                  { flexDirection: flexDir, justifyContent: "flex-start" },
-                ]}
+                style={[styles.sectionHeader, { flexDirection: flexDir }]}
               >
                 <ThemedText
                   style={[styles.sectionTitle, { textAlign: textStart }]}
                 >
                   {t("home.featured")}
                 </ThemedText>
+                <PressableScale
+                  style={styles.seeAllArrow}
+                  onPress={() => router.push("/featured")}
+                >
+                  {isRTL ? (
+                    <SolarAltArrowLeftBold
+                      size={normalize.width(20)}
+                      color={Colors.text.primary}
+                    />
+                  ) : (
+                    <SolarAltArrowRightBold
+                      size={normalize.width(20)}
+                      color={Colors.text.primary}
+                    />
+                  )}
+                </PressableScale>
               </View>
               {featuredLoading ? (
                 <HorizontalSwiperSkeleton count={2} />
@@ -600,30 +669,13 @@ export default function HomeScreen() {
               {t("home.recommended")}
             </ThemedText>
           </View>
-          <GHScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.tabsContainer}
+          <View
+            onLayout={(e) => {
+              chipsYRef.current = e.nativeEvent.layout.y;
+            }}
           >
-            <View style={{ flexDirection: flexDir, gap: 10 }}>
-              {FILTER_OPTIONS.map((filter) => {
-                const isActive =
-                  filter.id === "all"
-                    ? selectedFilters.length === 0
-                    : selectedFilters.includes(filter.id);
-                return (
-                  <SecondaryButton
-                    key={filter.id}
-                    label={filter.label}
-                    isActive={isActive}
-                    activeColor={filter.activeColor}
-                    icon={filter.icon(isActive)}
-                    onPress={() => toggleFilter(filter.id)}
-                  />
-                );
-              })}
-            </View>
-          </GHScrollView>
+            {renderFilterChips()}
+          </View>
         </>
       )}
     </>
@@ -667,12 +719,17 @@ export default function HomeScreen() {
 
   return (
     <View style={[styles.safeArea, { paddingTop: insets.top }]}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar style="dark" translucent backgroundColor="transparent" />
+      {/* Sticky header — stays pinned while the list scrolls underneath. */}
+      <HeaderSection isHome />
+      <View style={{ flex: 1 }}>
       <FlashList
         data={isInitialLoading ? [] : POPULAR_CHALETS}
         keyExtractor={(item: any, index: number) => String(item?.id ?? index)}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
+        onScroll={handleListScroll}
+        scrollEventThrottle={16}
         ListHeaderComponent={listHeader}
         renderItem={({ item }: { item: any; index: number }) => (
           // No reanimated `entering` here: FlashList recycles cells, which leaves
@@ -707,6 +764,10 @@ export default function HomeScreen() {
           />
         }
       />
+      {showStickyFilters && (
+        <View style={styles.stickyFilters}>{renderFilterChips()}</View>
+      )}
+      </View>
     </View>
   );
 }
@@ -719,23 +780,25 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
-    marginTop: 20,
-    marginBottom: 10,
+    marginTop: 28,
+    marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(15),
+    fontFamily: Fonts.bold,
     color: Colors.text.primary,
-    lineHeight: normalize.font(24),
+    lineHeight: normalize.font(22),
     paddingVertical: 2,
     flexShrink: 1,
   },
   seeAll: {
-    fontSize: normalize.font(14),
+    fontSize: normalize.font(13),
     color: Colors.primary,
-    fontFamily: "Alexandria-Medium",
-    textDecorationLine: "underline",
-    lineHeight: normalize.font(14),
+    fontFamily: Fonts.semiBold,
+    lineHeight: normalize.font(20),
+  },
+  seeAllArrow: {
+    padding: 4,
   },
   mapContainer: {
     height: 210,
@@ -752,6 +815,16 @@ const styles = StyleSheet.create({
   },
   listPadding: { paddingHorizontal: 16 },
   tabsContainer: { paddingHorizontal: 16, marginVertical: 10 },
+  stickyFilters: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: Colors.background,
+    zIndex: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F3F4F6",
+  },
   swiperWrapper: { marginVertical: 10 },
   loaderContainer: {
     height: 200,

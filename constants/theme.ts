@@ -183,9 +183,9 @@ export const Shadows = {
 };
 
 export const Fonts = {
-  bold: "Alexandria-Medium" as const,
-  regular: "Alexandria-Medium" as const,
+  regular: "Alexandria-Regular" as const,
   medium: "Alexandria-Medium" as const,
-  semiBold: "Alexandria-Medium" as const,
-  black: "Alexandria-Medium" as const,
+  semiBold: "Alexandria-SemiBold" as const,
+  bold: "Alexandria-Bold" as const,
+  black: "Alexandria-Bold" as const,
 };

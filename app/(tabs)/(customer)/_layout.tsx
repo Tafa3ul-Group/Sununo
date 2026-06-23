@@ -4,6 +4,7 @@ import {
     SolarMapBoldDuotone,
     SolarUserBold } from "@/components/icons/solar-icons";
 import { CustomTabBar } from "@/components/user/custom-tab-bar";
+import { TabBarVisibilityProvider } from "@/components/user/tab-bar-visibility";
 import { SearchFilterSheet } from "@/components/user/search-filter-sheet";
 import { getImageSrc, getAvatarSrc } from "@/hooks/useImageSrc";
 import { RootState } from "@/store";
@@ -42,7 +43,7 @@ export default function CustomerLayout() {
   };
 
   return (
-    <>
+    <TabBarVisibilityProvider>
       <Tabs
         tabBar={(props) => <CustomTabBar {...props} />}
         screenOptions={{
@@ -112,6 +113,6 @@ export default function CustomerLayout() {
         <Tabs.Screen name="booking-success" options={{ href: null }} />
       </Tabs>
       <SearchFilterSheet ref={filterSheetRef} onApply={handleFilterApply} />
-    </>
+    </TabBarVisibilityProvider>
   );
 }

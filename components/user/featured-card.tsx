@@ -1,6 +1,6 @@
 import { SolarHeartBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
-import { normalize } from "@/constants/theme";
+import { Fonts, normalize } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { useGetCustomerChaletDetailsQuery } from "@/store/api/customerApiSlice";
 import { getStartingPrice } from "@/utils/format";
@@ -9,6 +9,7 @@ import { Image as ExpoImage } from "expo-image";
 import * as Haptics from "expo-haptics";
 import React from "react";
 import {
+  I18nManager,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -53,6 +54,14 @@ export const FeaturedCard = React.memo(function FeaturedCard({
   const isArabic = isRTL;
   const textStart = textAlign;
   const rowDir = rowDirection;
+  // Cross-axis alignment must be expressed in the NATIVE layout coordinate
+  // system: when the manager's RTL already matches the content, flex-start is
+  // the start (right in RTL); only counteract when they differ. Mirrors the
+  // proven HorizontalCard logic.
+  const needsCounter = isRTL !== I18nManager.isRTL;
+  const alignStart: "flex-start" | "flex-end" = needsCounter
+    ? "flex-end"
+    : "flex-start";
 
   // The featured endpoint, like the list endpoints, doesn't include shift
   // pricing, so when a real price isn't already provided we fetch the chalet's
@@ -125,12 +134,7 @@ export const FeaturedCard = React.memo(function FeaturedCard({
           transition={200}
         />
 
-        <View
-          style={[
-            styles.overlayRow,
-            { flexDirection: rowDir },
-          ]}
-        >
+        <View style={[styles.overlayRow, { flexDirection: rowDir }]}>
           <View style={styles.badge}>
             <ThemedText style={styles.badgeText}>
               {isArabic ? "مميّز" : "Featured"}
@@ -154,23 +158,24 @@ export const FeaturedCard = React.memo(function FeaturedCard({
         </View>
       </View>
 
-      {/* Name */}
-      <ThemedText
-        style={[styles.title, { textAlign: textStart }]}
-        numberOfLines={1}
-      >
-        {title}
-      </ThemedText>
+      {/* Name + price — aligned to the start side (right in RTL) */}
+      <View style={[styles.textBlock, { alignItems: alignStart }]}>
+        <ThemedText
+          style={[styles.title, { textAlign: textStart }]}
+          numberOfLines={1}
+        >
+          {title}
+        </ThemedText>
 
-      {/* Price */}
-      <ThemedText
-        style={[styles.price, { textAlign: textStart }]}
-        numberOfLines={1}
-      >
-        {isArabic ? "" : "IQD "}
-        {resolvedPrice}
-        {isArabic ? " د.ع" : ""}
-      </ThemedText>
+        <ThemedText
+          style={[styles.price, { textAlign: textStart }]}
+          numberOfLines={1}
+        >
+          {isArabic ? "" : "IQD "}
+          {resolvedPrice}
+          {isArabic ? " د.ع" : ""}
+        </ThemedText>
+      </View>
     </AnimatedTouchable>
   );
 });
@@ -216,15 +221,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  title: {
-    fontSize: normalize.font(11),
-    fontFamily: "Alexandria-Medium",
-    color: "#111827",
+  textBlock: {
+    width: "100%",
     marginTop: normalize.height(6),
+  },
+  title: {
+    fontSize: normalize.font(12),
+    fontFamily: Fonts.semiBold,
+    color: "#111827",
   },
   price: {
     fontSize: normalize.font(10),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: Fonts.regular,
     color: "#6B7280",
     marginTop: normalize.height(2),
   },

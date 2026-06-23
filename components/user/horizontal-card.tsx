@@ -1,6 +1,6 @@
 import { SolarHeartBold, SolarStarBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
-import { Colors, normalize } from "@/constants/theme";
+import { Colors, Fonts, normalize } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { Image as ExpoImage } from "expo-image";
 import { getStartingPrice } from "@/utils/format";
@@ -348,30 +348,30 @@ const styles = StyleSheet.create({
     gap: 4 },
   ratingText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: Fonts.semiBold,
     color: "#111827" },
   upperText: {
     marginTop: 4 },
   title: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(15),
+    fontFamily: Fonts.bold,
     color: "#111827" },
   location: {
-    fontSize: normalize.font(8),
+    fontSize: normalize.font(9),
     color: "#6B7280",
     marginTop: 2,
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: Fonts.regular },
   priceRow: {
     alignItems: "center",
     gap: 4 },
   price: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: Fonts.bold,
     color: "#111827" },
   priceLabel: {
-    fontSize: normalize.font(8),
+    fontSize: normalize.font(9),
     color: "#6B7280",
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: Fonts.regular },
   imageWrapper: {
     width: normalize.width(82),
     height: normalize.height(72),
