@@ -29,6 +29,7 @@ import { AppMap } from "@/components/user/app-map";
 import { BannerSwiper } from "@/components/user/banner-swiper";
 import { HorizontalCard } from "@/components/user/horizontal-card";
 import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
+import { FeaturedSwiper } from "@/components/user/featured-swiper";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
@@ -498,11 +499,12 @@ export default function HomeScreen() {
                 <HorizontalSwiperSkeleton count={2} />
               ) : (
                 <View style={styles.swiperWrapper}>
-                  <HorizontalSwiper
+                  <FeaturedSwiper
                     data={featuredChalets}
                     onPressCard={(chaletId: string) =>
                       navigateToDetails(chaletId)
                     }
+                    onPressSeeAll={() => router.push("/featured")}
                     favoriteIds={favoriteIds}
                     onToggleFavorite={handleToggleFavorite}
                   />

@@ -17,7 +17,8 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SIDE_PADDING = normalize.width(16);
 const ITEM_GAP = normalize.width(10);
 const BANNER_WIDTH = SCREEN_WIDTH - SIDE_PADDING * 2;
-const BANNER_HEIGHT = normalize.height(160);
+// 16:5 aspect ratio (width:height).
+const BANNER_HEIGHT = (BANNER_WIDTH * 5) / 16;
 const SNAP_INTERVAL = BANNER_WIDTH + ITEM_GAP;
 const AUTO_PLAY_INTERVAL = 4000;
 
