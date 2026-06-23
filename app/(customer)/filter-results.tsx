@@ -324,12 +324,12 @@ export default function FilterResultsScreen() {
           </ThemedText>
           <ThemedText style={styles.emptyDesc}>
             {isArabic
-              ? "لم نجد شاليهات تطابق خيارات التصفية الحالية. جرب تغيير المحافظة أو التواريخ."
+              ? "لم نجد شاليهات تطابق خيارات الفلترة الحالية. جرب تغيير المحافظة أو التواريخ."
               : "We couldn't find any chalets matching your filters. Try resetting or tweaking them."}
           </ThemedText>
           <TouchableOpacity style={styles.resetButton} onPress={handleClearAll}>
             <ThemedText style={styles.resetButtonText}>
-              {isArabic ? "إعادة ضبط التصفية" : "Reset All Filters"}
+              {isArabic ? "إعادة ضبط الفلاتر" : "Reset All Filters"}
             </ThemedText>
           </TouchableOpacity>
         </View>

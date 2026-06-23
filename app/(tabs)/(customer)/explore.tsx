@@ -1121,7 +1121,7 @@ export default function ExploreScreen() {
           contentContainerStyle={styles.filterModalContent}
         >
           <Text style={styles.filterModalTitle}>
-            {isRTL ? "تصفية النتائج" : "Filter Results"}
+            {isRTL ? "فلترة النتائج" : "Filter Results"}
           </Text>
 
           {/* Categories Tab Section (Moved from Home page style) */}
