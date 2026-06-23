@@ -3,32 +3,30 @@ import React, { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
+<<<<<<< Updated upstream
   Dimensions,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
+=======
+>>>>>>> Stashed changes
   RefreshControl,
-  ScrollView,
   StatusBar,
   StyleSheet,
-  TouchableOpacity,
   View,
 } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import { useDirection } from "@/i18n";
 import { BannerSkeleton, HorizontalSwiperSkeleton, HorizontalCardSkeleton, CustomerHomeSkeleton } from "@/components/ui/skeleton-loader";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 import { HeaderSection } from "@/components/header-section";
+import { PressableScale } from "@/components/ui/pressable-scale";
 import {
-  SolarCalendarMinimalisticBold,
-  SolarClockCircleBold,
-  SolarCloseBold,
   SolarFireBold,
-  SolarMapPointBold,
   SolarTreeBold,
-  SolarUsersGroupBold,
   SolarWaterBold,
   SolarWidgetBold,
 } from "@/components/icons/solar-icons";
@@ -38,7 +36,7 @@ import { BannerSwiper } from "@/components/user/banner-swiper";
 import { HorizontalCard } from "@/components/user/horizontal-card";
 import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
 import { SecondaryButton } from "@/components/user/secondary-button";
-import { Colors, normalize, Shadows } from "@/constants/theme";
+import { Colors, normalize } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { getStartingPrice } from "@/utils/format";
 import { logEvent } from "@/services/analytics";
@@ -51,15 +49,14 @@ import {
   useBrowseCustomerChaletsQuery,
   useGetBannersQuery,
   useGetFavoriteIdsQuery,
+  useGetFeaturedChaletsQuery,
   useGetLatestBookingsQuery,
   useToggleFavoriteMutation,
 } from "@/store/api/customerApiSlice";
-import { clearFilters } from "@/store/filterSlice";
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-
 // Fallback colors for chalet cards
 const CARD_COLORS = [Colors.primary, Colors.secondary, Colors.accent];
 
+<<<<<<< Updated upstream
 // ── Active Filter Banner ──────────────────────────────────────────────────────
 function ActiveFilterBanner({
   filter,
@@ -197,13 +194,11 @@ const filterBannerStyles = StyleSheet.create({
   },
 });
 
+=======
+>>>>>>> Stashed changes
 export default function HomeScreen() {
   const { userType } = useSelector((state: RootState) => state.auth);
   const { isRTL, rowDirection, textAlign } = useDirection();
-  const activeFilters = useSelector(
-    (state: RootState) => (state as any).filter,
-  );
-  const dispatch = useDispatch();
   const router = useRouter();
   const { t } = useTranslation();
   // Multi-select filter chips. Empty array === "All".
@@ -379,6 +374,30 @@ export default function HomeScreen() {
     [latestBookings],
   );
 
+  // Featured strip ("مميّزة") shown directly below the banner — admin-curated
+  // and ordered in the portal.
+  const {
+    data: featuredRaw = [],
+    isLoading: featuredLoading,
+    refetch: refetchFeatured,
+  } = useGetFeaturedChaletsQuery(undefined);
+
+  const featuredChalets = useMemo(
+    () =>
+      (Array.isArray(featuredRaw) ? featuredRaw : [])
+        .filter(Boolean)
+        .map((c: any) => ({
+          id: c.id,
+          // HorizontalCard accepts the {ar,en} object for title/location.
+          title: c.name,
+          location: c.region?.name ?? c.city?.name ?? "",
+          image: c.images?.[0]?.url ?? c.images?.[0],
+          price: getStartingPrice(c),
+          rating: c.rating ?? c.averageRating ?? 0,
+        })),
+    [featuredRaw],
+  );
+
   // Bumping this key remounts the preview map so it re-centers on the nearby
   // chalets / user location (e.g. after returning from a chalet, or on refresh).
   const [mapKey, setMapKey] = useState(0);
@@ -392,25 +411,32 @@ export default function HomeScreen() {
     await Promise.all([
       refetchBanners(),
       refetchChalets(),
+      refetchFeatured(),
       userType !== "guest" ? refetchFavorites() : Promise.resolve(),
       userType !== "guest" ? refetchLatestBookings() : Promise.resolve(),
     ]);
     setMapKey((k) => k + 1);
     setIsRefreshing(false);
-  }, [refetchBanners, refetchChalets, refetchFavorites, refetchLatestBookings, userType]);
+  }, [refetchBanners, refetchChalets, refetchFeatured, refetchFavorites, refetchLatestBookings, userType]);
 
-  // Keep the home screen fresh: whenever it regains focus (e.g. coming back from
-  // a chalet), refetch the lists and reset the preview map to nearby chalets.
+  // Keep the home screen fresh, but only when it's been stale for a while.
+  // Refetching + remounting the (heavy) preview map on every focus made quick
+  // back-and-forth navigation flicker and fire redundant requests; throttle it.
+  const lastFocusRefetch = React.useRef(0);
   useFocusEffect(
     useCallback(() => {
+      const now = Date.now();
+      if (now - lastFocusRefetch.current < 30000) return;
+      lastFocusRefetch.current = now;
       refetchBanners();
       refetchChalets();
+      refetchFeatured();
       if (userType !== "guest") {
         refetchFavorites();
         refetchLatestBookings();
       }
       setMapKey((k) => k + 1);
-    }, [refetchBanners, refetchChalets, refetchFavorites, refetchLatestBookings, userType]),
+    }, [refetchBanners, refetchChalets, refetchFeatured, refetchFavorites, refetchLatestBookings, userType]),
   );
 
   const handleToggleFavorite = async (id: string) => {
@@ -450,16 +476,21 @@ export default function HomeScreen() {
   }, [rawChalets, filtersKey]);
 
   // Transform banners
-  const banners = (bannersResponse || []).map((b: any) => ({
-    id: b.id,
-    image: b.imageUrl,
-    title: isRTL ? b.title?.ar || b.title : b.title?.en || b.title,
-  }));
+  const banners = useMemo(
+    () =>
+      (bannersResponse || []).map((b: any) => ({
+        id: b.id,
+        image: b.imageUrl,
+        title: isRTL ? b.title?.ar || b.title : b.title?.en || b.title,
+      })),
+    [bannersResponse, isRTL],
+  );
 
   // First cold load (no cached data yet) → show the full-page skeleton so the
   // whole screen presents one cohesive loading state instead of building piecemeal.
   const isInitialLoading = chaletsLoading && rawChalets.length === 0;
 
+<<<<<<< Updated upstream
   // Stable handler passed to memoizable children (AppMap, swiper cards). Keeping
   // its identity steady prevents the preview map from re-rendering / redrawing
   // its markers on unrelated parent updates (e.g. camera changes).
@@ -488,6 +519,15 @@ export default function HomeScreen() {
   );
 
   if (userType === "owner") return <Redirect href="/(tabs)/(dashboard)/home" />;
+=======
+  const navigateToDetails = (id: string, name?: string) => {
+    logEvent(ANALYTICS_EVENTS.SELECT_ITEM, {
+      item_list_id: "home",
+      items: [{ item_id: String(id), item_name: name || "" }],
+    });
+    router.push(`/chalet-details/${id}`);
+  };
+>>>>>>> Stashed changes
 
   // Transform accumulated (paged) API data to card format
   const POPULAR_CHALETS = useMemo(() => {
@@ -605,14 +645,253 @@ export default function HomeScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [homeFilterAmenities, isRTL, t]);
 
+  // Owners don't have a customer home — redirect to their dashboard. Placed
+  // after all hooks so hook order stays stable across renders.
+  if (userType === "owner") return <Redirect href="/(tabs)/(dashboard)/home" />;
+
+  // Everything above the recommended list, rendered as the FlashList header so
+  // the chalet list itself stays virtualized (only on-screen cards mount).
+  const listHeader = (
+    <>
+      {/* Header */}
+      <HeaderSection isHome />
+
+      {isInitialLoading ? (
+        <CustomerHomeSkeleton />
+      ) : (
+        <>
+          {/* Banners Swiper */}
+          {bannersFetching && !bannersResponse ? (
+            <BannerSkeleton />
+          ) : banners?.length > 0 ? (
+            <Animated.View entering={FadeInDown.duration(400)}>
+              <BannerSwiper data={banners} />
+            </Animated.View>
+          ) : null}
+
+          {/* Featured ("مميّزة") — admin-curated strip directly below the banner.
+              Hidden entirely when there's nothing featured. */}
+          {(featuredLoading || featuredChalets.length > 0) && (
+            <>
+              <View
+                style={[
+                  styles.sectionHeader,
+                  { flexDirection: flexDir, justifyContent: "flex-start" },
+                ]}
+              >
+                <ThemedText
+                  style={[styles.sectionTitle, { textAlign: textStart }]}
+                >
+                  {t("home.featured")}
+                </ThemedText>
+              </View>
+              {featuredLoading ? (
+                <HorizontalSwiperSkeleton count={2} />
+              ) : (
+                <View style={styles.swiperWrapper}>
+                  <HorizontalSwiper
+                    data={featuredChalets}
+                    onPressCard={(chaletId: string) =>
+                      navigateToDetails(chaletId)
+                    }
+                    favoriteIds={favoriteIds}
+                    onToggleFavorite={handleToggleFavorite}
+                  />
+                </View>
+              )}
+            </>
+          )}
+
+          {/* Nearby / Map */}
+          <View style={[styles.sectionHeader, { flexDirection: flexDir }]}>
+            <ThemedText style={[styles.sectionTitle, { textAlign: textStart }]}>
+              {t("home.categories.nearby")}
+            </ThemedText>
+            <PressableScale
+              onPress={() => router.push("/(tabs)/(customer)/explore")}
+            >
+              <ThemedText style={styles.seeAll}>{t("home.openMap")}</ThemedText>
+            </PressableScale>
+          </View>
+          <PressableScale
+            scaleTo={0.98}
+            onPress={() =>
+              router.push("/(tabs)/(customer)/explore?showMyLocation=1")
+            }
+            style={styles.mapContainer}
+          >
+            <AppMap
+              key={mapKey}
+              style={styles.map}
+              showMarker
+              markers={mapMarkers}
+              onPressCard={navigateToDetails}
+            />
+            {/* overlay to intercept taps and navigate */}
+            <View style={styles.mapOverlay} />
+          </PressableScale>
+
+          {/* Recent bookings — hidden entirely when there's no data */}
+          {(latestBookingsLoading || recentBookingChalets.length > 0) && (
+            <>
+              <View style={[styles.sectionHeader, { flexDirection: flexDir }]}>
+                <ThemedText
+                  style={[styles.sectionTitle, { textAlign: textStart }]}
+                >
+                  {t("home.recentBookings")}
+                </ThemedText>
+                <PressableScale
+                  onPress={() => router.push("/(tabs)/(customer)/bookings")}
+                >
+                  <ThemedText style={styles.seeAll}>
+                    {t("home.seeAll")}
+                  </ThemedText>
+                </PressableScale>
+              </View>
+
+              {latestBookingsLoading ? (
+                <HorizontalSwiperSkeleton count={2} />
+              ) : (
+                <View style={styles.swiperWrapper}>
+                  <HorizontalSwiper
+                    data={recentBookingChalets}
+                    onPressCard={(chaletId: string) => {
+                      const b = (
+                        Array.isArray(latestBookings) ? latestBookings : []
+                      ).find((x: any) => x?.chalet?.id === chaletId);
+                      if (b?.id) {
+                        router.push({
+                          pathname: "/(tabs)/(customer)/booking-success",
+                          params: { id: b.id },
+                        });
+                      } else {
+                        navigateToDetails(chaletId);
+                      }
+                    }}
+                    favoriteIds={favoriteIds}
+                    onToggleFavorite={handleToggleFavorite}
+                  />
+                </View>
+              )}
+            </>
+          )}
+
+          {/* Recommended */}
+          <View
+            style={[
+              styles.sectionHeader,
+              { flexDirection: flexDir, justifyContent: "flex-start" },
+            ]}
+          >
+            <ThemedText
+              style={[styles.sectionTitle, { textAlign: textStart }]}
+            >
+              {t("home.recommended")}
+            </ThemedText>
+          </View>
+          <GHScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.tabsContainer}
+          >
+            <View style={{ flexDirection: flexDir, gap: 10 }}>
+              {FILTER_OPTIONS.map((filter) => {
+                const isActive =
+                  filter.id === "all"
+                    ? selectedFilters.length === 0
+                    : selectedFilters.includes(filter.id);
+                return (
+                  <SecondaryButton
+                    key={filter.id}
+                    label={filter.label}
+                    isActive={isActive}
+                    activeColor={filter.activeColor}
+                    icon={filter.icon(isActive)}
+                    onPress={() => toggleFilter(filter.id)}
+                  />
+                );
+              })}
+            </View>
+          </GHScrollView>
+        </>
+      )}
+    </>
+  );
+
+  // Show card skeletons on first load AND while a filter change refetches page 1
+  // (clear feedback that a filter is applying), but not during pull-to-refresh
+  // which has its own spinner.
+  const listLoading =
+    chaletsLoading || (chaletsFetching && page === 1 && !isRefreshing);
+
+  const listEmpty = isInitialLoading ? null : listLoading ? (
+    <View style={[styles.listPadding, { gap: 12 }]}>
+      <HorizontalCardSkeleton />
+      <HorizontalCardSkeleton />
+      <HorizontalCardSkeleton />
+    </View>
+  ) : (
+    <View style={styles.listPadding}>
+      <View style={styles.emptyContainer}>
+        <View style={styles.emptyIconContainer}>
+          <SolarWidgetBold size={60} color={Colors.primary} />
+        </View>
+        <ThemedText style={styles.emptyTitle}>{t("home.noChalets")}</ThemedText>
+        <ThemedText style={styles.emptyDesc}>
+          {t("home.noChaletsDesc")}
+        </ThemedText>
+        {selectedFilters.length > 0 && (
+          <PressableScale
+            style={styles.clearButton}
+            onPress={() => setSelectedFilters([])}
+          >
+            <ThemedText style={styles.clearButtonText}>
+              {t("home.clearFilters")}
+            </ThemedText>
+          </PressableScale>
+        )}
+      </View>
+    </View>
+  );
+
   return (
     <View style={[styles.safeArea, { paddingTop: insets.top }]}>
       <StatusBar barStyle="dark-content" />
-      <ScrollView
+      <FlashList
+        data={isInitialLoading ? [] : POPULAR_CHALETS}
+        keyExtractor={(item: any, index: number) => String(item?.id ?? index)}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
+<<<<<<< Updated upstream
         onScroll={handleScroll}
         scrollEventThrottle={400}
+=======
+        ListHeaderComponent={listHeader}
+        renderItem={({ item }: { item: any; index: number }) => (
+          // No reanimated `entering` here: FlashList recycles cells, which leaves
+          // entering animations stuck (items render invisible). Plain View only.
+          <View style={styles.listPadding}>
+            <HorizontalCard
+              chalet={item}
+              onPress={() => navigateToDetails(item.id, item.title)}
+              isFavorite={favoriteIds.includes(item.id)}
+              onToggleFavorite={() => handleToggleFavorite(item.id)}
+            />
+          </View>
+        )}
+        ListEmptyComponent={listEmpty}
+        ListFooterComponent={
+          chaletsFetching && page > 1 ? (
+            <ActivityIndicator
+              size="small"
+              color={Colors.primary}
+              style={{ marginVertical: 16 }}
+            />
+          ) : null
+        }
+        onEndReached={loadMoreChalets}
+        onEndReachedThreshold={0.5}
+>>>>>>> Stashed changes
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
@@ -621,6 +900,7 @@ export default function HomeScreen() {
             colors={[Colors.primary]}
           />
         }
+<<<<<<< Updated upstream
       >
         {/* Header */}
         <HeaderSection isHome />
@@ -810,6 +1090,9 @@ export default function HomeScreen() {
           </>
         )}
       </ScrollView>
+=======
+      />
+>>>>>>> Stashed changes
     </View>
   );
 }

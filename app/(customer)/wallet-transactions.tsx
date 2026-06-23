@@ -160,7 +160,6 @@ export default function WalletTransactionsScreen() {
             data={classifiedTxs}
             renderItem={renderItem}
             keyExtractor={(item: any, index) => String(item?.id ?? index)}
-            estimatedItemSize={80}
             contentContainerStyle={styles.listContent}
             ItemSeparatorComponent={() => <View style={styles.separator} />}
             showsVerticalScrollIndicator={false}

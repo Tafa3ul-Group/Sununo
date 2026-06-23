@@ -9,6 +9,14 @@ import {
     View,
     ViewStyle
 } from "react-native";
+import Animated, {
+    Easing,
+    useAnimatedStyle,
+    useSharedValue,
+    withSequence,
+    withSpring,
+    withTiming,
+} from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import Animated, {
   useSharedValue,
@@ -78,18 +86,56 @@ export function SecondaryButton({
   const flattenedStyle = StyleSheet.flatten(style);
   const isFlex = flattenedStyle?.flex === 1 || flattenedStyle?.flexGrow === 1;
 
+  // Press feedback: subtle shrink on press-in, spring back on release. Same
+  // recipe as the cards so every tappable surface feels consistent.
+  const scale = useSharedValue(1);
+
+  // State-indication pop: when this chip *becomes* active (user selected it),
+  // a quick spring pop confirms the change. Skipped on first mount so the
+  // default-active chip ("All") doesn't pop on every screen render.
+  const activePop = useSharedValue(1);
+  const didMount = React.useRef(false);
+  React.useEffect(() => {
+    if (!didMount.current) {
+      didMount.current = true;
+      return;
+    }
+    if (isActive) {
+      activePop.value = withSequence(
+        withTiming(1.06, {
+          duration: 120,
+          easing: Easing.bezier(0.23, 1, 0.32, 1),
+        }),
+        withSpring(1, { damping: 10, stiffness: 220 }),
+      );
+    }
+  }, [isActive, activePop]);
+
+  const pressAnim = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value * activePop.value }],
+  }));
+
   return (
     <AnimatedTouchable
       activeOpacity={0.85}
+<<<<<<< Updated upstream
       onPressIn={() => {
         scale.value = withTiming(0.96, { duration: 110 });
       }}
       onPressOut={() => {
         scale.value = withSpring(1, { damping: 12, stiffness: 220 });
       }}
+=======
+>>>>>>> Stashed changes
       onPress={() => {
         Haptics.selectionAsync().catch(() => {});
         onPress();
+      }}
+      onPressIn={() => {
+        scale.value = withTiming(0.96, { duration: 90 });
+      }}
+      onPressOut={() => {
+        scale.value = withSpring(1, { damping: 12, stiffness: 180 });
       }}
       style={[
         styles.container,
@@ -99,6 +145,7 @@ export function SecondaryButton({
         pressStyle,
         style,
         isLoading && { opacity: 0.7 },
+        pressAnim,
       ]}
       disabled={isLoading}
     >

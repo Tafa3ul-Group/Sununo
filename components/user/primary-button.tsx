@@ -9,6 +9,12 @@ import {
     ViewStyle,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import Animated, {
   useSharedValue,
@@ -78,6 +84,14 @@ export function PrimaryButton({
     ? activeTextColor || defaultActiveTextColor
     : determinedInactiveTextColor;
 
+  // Press feedback: subtle shrink on press-in, spring back on release — shared
+  // recipe across the app so every button responds with the same motion.
+  // Declared before the early `loading` return so hook order stays stable.
+  const scale = useSharedValue(1);
+  const pressAnim = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
   if (loading) {
     return (
       <View style={[styles.loadingContainer, style]}>
@@ -99,18 +113,31 @@ export function PrimaryButton({
   return (
     <AnimatedTouchable
       activeOpacity={0.85}
+<<<<<<< Updated upstream
       onPressIn={() => {
         scale.value = withTiming(0.96, { duration: 110 });
       }}
       onPressOut={() => {
         scale.value = withSpring(1, { damping: 12, stiffness: 220 });
       }}
+=======
+>>>>>>> Stashed changes
       onPress={() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
         onPress();
       }}
+      onPressIn={() => {
+        scale.value = withTiming(0.97, { duration: 90 });
+      }}
+      onPressOut={() => {
+        scale.value = withSpring(1, { damping: 12, stiffness: 180 });
+      }}
       disabled={disabled}
+<<<<<<< Updated upstream
       style={[styles.hybridContainer, { height, direction: isRTL ? 'rtl' : 'ltr' }, pressStyle, style]}
+=======
+      style={[styles.hybridContainer, { height, direction: isRTL ? 'rtl' : 'ltr' }, style, pressAnim]}
+>>>>>>> Stashed changes
     >
       {/* Logical Start Curve */}
       <View style={{ width: scaledPartWidth, height: scaledPartHeight }}>

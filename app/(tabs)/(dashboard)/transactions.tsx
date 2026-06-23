@@ -6,7 +6,7 @@ import { RootState } from '@/store';
 import { useGetPayoutsQuery } from '@/store/api/apiSlice';
 import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSelector } from 'react-redux';
@@ -27,6 +27,9 @@ export default function TransactionsScreen() {
   const startAlign = isRTL ? 'flex-end' : 'flex-start';
   const endAlign = isRTL ? 'flex-start' : 'flex-end';
   const [activeFilter, setActiveFilter] = useState<string | undefined>(undefined);
+  // FlashList v2 dropped `inverted`; reverse the data for RTL so the filter
+  // pills still read right-to-left (e.g. "الكل" stays on the right).
+  const filterData = useMemo(() => (isRTL ? [...FILTERS].reverse() : FILTERS), [isRTL]);
 
   const { data: payoutsResponse, isLoading, refetch } = useGetPayoutsQuery({
     status: activeFilter,
@@ -127,7 +130,7 @@ export default function TransactionsScreen() {
       {/* Filter Pills - Scrollable */}
       <View style={styles.filterContainer}>
         <FlashList
-          data={FILTERS}
+          data={filterData}
           renderItem={({ item: filter }) => (
             <TouchableOpacity
               style={[styles.filterPill, activeFilter === filter.id && styles.filterPillActive]}
@@ -139,12 +142,10 @@ export default function TransactionsScreen() {
               </Text>
             </TouchableOpacity>
           )}
-          estimatedItemSize={80}
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 14 }}
           ItemSeparatorComponent={() => <View style={{ width: 8 }} />}
-          inverted={isRTL}
         />
       </View>
 
@@ -156,7 +157,6 @@ export default function TransactionsScreen() {
           <FlashList
             data={Array.isArray(payouts) ? payouts : []}
             renderItem={renderTransactionItem}
-            estimatedItemSize={80}
             contentContainerStyle={styles.listContent}
             ItemSeparatorComponent={() => <View style={styles.separator} />}
             showsVerticalScrollIndicator={false}

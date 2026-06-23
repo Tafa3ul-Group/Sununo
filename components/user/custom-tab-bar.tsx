@@ -50,7 +50,7 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
       return options.tabBarIcon({
         focused: isActive,
         color: isIsolated ? 'white' : (isActive ? Colors.primary : 'white'),
-        size: normalize.width(24) });
+        size: normalize.width(20) });
     }
     return null;
   };
@@ -126,33 +126,33 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     justifyContent: 'space-between' },
-  roundButton: { 
-    width: normalize.height(52), 
-    height: normalize.height(52), 
-    borderRadius: normalize.height(26),
-    backgroundColor: Colors.primary, 
-    justifyContent: 'center', 
-    alignItems: 'center' 
+  roundButton: {
+    width: normalize.height(44),
+    height: normalize.height(44),
+    borderRadius: normalize.height(22),
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center'
   },
-  tabCapsule: { 
-    width: normalize.width(180), 
-    height: normalize.height(52), 
-    borderRadius: normalize.height(26),
-    backgroundColor: Colors.primary, 
-    alignItems: 'center', 
+  tabCapsule: {
+    width: normalize.width(165),
+    height: normalize.height(44),
+    borderRadius: normalize.height(22),
+    backgroundColor: Colors.primary,
+    alignItems: 'center',
     justifyContent: 'space-around',
     flexDirection: 'row',
     paddingHorizontal: 8
   },
-  tabItemContainer: { 
-    flex: 1, 
-    alignItems: 'center', 
-    justifyContent: 'center' 
+  tabItemContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   tabIconCircle: {
-    width: normalize.height(40),
-    height: normalize.height(40),
-    borderRadius: normalize.height(20),
+    width: normalize.height(34),
+    height: normalize.height(34),
+    borderRadius: normalize.height(17),
     justifyContent: 'center',
     alignItems: 'center' },
   activeTabIndicator: { 

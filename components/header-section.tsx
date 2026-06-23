@@ -143,7 +143,7 @@ export function HeaderSection({
                   style={styles.avatarContainerHome}
                 >
                   <SolarBellBingBoldDuotone
-                    size={normalize.width(28)}
+                    size={normalize.width(22)}
                     color={Colors.primary}
                   />
                 </TouchableOpacity>
@@ -153,7 +153,7 @@ export function HeaderSection({
                 style={styles.searchPillHome}
               >
                 <SolarMagnifierBold
-                  size={normalize.width(24)}
+                  size={normalize.width(20)}
                   color={Colors.primary}
                 />
               </TouchableOpacity>
@@ -322,8 +322,8 @@ const styles = StyleSheet.create({
     gap: 12,
     alignItems: "center" },
   avatarContainerHome: {
-    width: normalize.width(48),
-    height: normalize.width(48),
+    width: normalize.width(40),
+    height: normalize.width(40),
     borderRadius: 999,
     justifyContent: "center",
     alignItems: "center",
@@ -342,8 +342,8 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%" },
   searchPillHome: {
-    width: normalize.width(48),
-    height: normalize.width(48),
+    width: normalize.width(40),
+    height: normalize.width(40),
     borderRadius: 999,
     borderWidth: 1,
     borderColor: "#E5E7EB",
