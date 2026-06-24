@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
   homeLeftGroup: {
     flexDirection: "row",
     width: "auto",
-    gap: 12,
+    gap: 6,
     alignItems: "center" },
   avatarContainerHome: {
     width: normalize.width(40),
