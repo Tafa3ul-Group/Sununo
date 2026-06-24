@@ -1,5 +1,4 @@
 import { SolarHeartBold } from "@/components/icons/solar-icons";
-import { SununoMark } from "@/components/icons/sununo-mark";
 import { ThemedText } from "@/components/themed-text";
 import { Fonts, normalize } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
@@ -136,8 +135,12 @@ export const FeaturedCard = React.memo(function FeaturedCard({
         />
 
         <View style={[styles.overlayRow, { flexDirection: rowDir }]}>
-          {/* Brand mark instead of a "مميّز" text label */}
-          <SununoMark size={normalize.width(34)} />
+          {/* "Special" shape badge instead of a "مميّز" text label */}
+          <ExpoImage
+            source={require("@/assets/shapes/Special.png")}
+            style={{ width: normalize.width(44), height: normalize.width(44) }}
+            contentFit="contain"
+          />
 
           {!hideFavorite && (
             <TouchableOpacity
