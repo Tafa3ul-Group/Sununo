@@ -188,6 +188,9 @@ const styles = StyleSheet.create({
   specialBadge: {
     width: normalize.width(44),
     height: normalize.width(44),
+    // The PNG mark is centered with transparent padding, so a top-aligned 44px
+    // box sits visually lower than the heart. Lift it up to match the favorite.
+    marginTop: -normalize.width(9),
   },
   imageWrapper: {
     width: "100%",
