@@ -3,12 +3,14 @@ import { SectionIcon } from "@/components/icons/section-icon";
 import {
   SolarCloseCircleBold,
   SolarFireBold,
+  SolarGalleryBold,
   SolarHome2Bold,
   SolarWaterBold,
   SolarWidgetBold,
   SolarAltArrowLeftBold,
   SolarAltArrowRightBold
 } from "@/components/icons/solar-icons";
+import { EmptyState } from "@/components/ui/empty-state";
 import { ThemedText } from "@/components/themed-text";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize } from "@/constants/theme";
@@ -298,7 +300,7 @@ export default function GalleryScreen() {
 
             {/* Small Grid */}
             <View style={[styles.smallGrid, { flexDirection: rowDirection }]}>
-              {section.images.slice(1, 4).map((img, i) => (
+              {section.images.slice(1, 4).map((img: any, i: number) => (
                 <PressableImage
                   key={i}
                   source={img}
@@ -310,12 +312,12 @@ export default function GalleryScreen() {
             </View>
           </Animated.View>
         ))}
-        {filteredData.length === 0 && (
-          <View style={{ padding: 40, alignItems: "center" }}>
-            <ThemedText style={{ color: "#9CA3AF" }}>
-              {t("gallery.empty")}
-            </ThemedText>
-          </View>
+        {!isLoading && filteredData.length === 0 && (
+          <EmptyState
+            icon={<SolarGalleryBold size={normalize.width(56)} color={Colors.primary} />}
+            title={isArabic ? "لا توجد صور" : "No photos yet"}
+            description={t("gallery.empty")}
+          />
         )}
       </ScrollView>
     </SafeAreaView>
@@ -389,6 +391,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   scrollContent: {
+    flexGrow: 1,
     paddingBottom: 40,
   },
   sectionWrap: {
