@@ -49,7 +49,7 @@ interface ReviewCardProps {
 }
 
 export const ReviewCard = React.memo(function ReviewCard({ review, onDelete, onPressChalet }: ReviewCardProps) {
-  const { isRTL } = useDirection();
+  const { isRTL, rowDirection } = useDirection();
   // Physical text alignment that emulates "logical start" (left in steady state);
   // textAlign left/right are NOT auto-mirrored by RN, so keep the manager comparison.
   const textStart: "left" | "right" = isRTL === I18nManager.isRTL ? "left" : "right";
@@ -60,7 +60,7 @@ export const ReviewCard = React.memo(function ReviewCard({ review, onDelete, onP
   return (
     <View style={styles.card}>
       {/* Top Section: Photo (Leading) + Chalet Info + Delete icon */}
-      <View style={[styles.topSection, { flexDirection: 'row' }]}>
+      <View style={[styles.topSection, { flexDirection: rowDirection }]}>
         <TouchableOpacity onPress={onPressChalet}>
           <Svg
             width={normalize.width(100)}
@@ -107,8 +107,8 @@ export const ReviewCard = React.memo(function ReviewCard({ review, onDelete, onP
       <View style={styles.divider} />
 
       {/* Middle Section: User Info + Rating */}
-      <View style={[styles.userSection, { flexDirection: 'row' }]}>
-         <View style={[styles.userInfo, { flexDirection: 'row' }]}>
+      <View style={[styles.userSection, { flexDirection: rowDirection }]}>
+         <View style={[styles.userInfo, { flexDirection: rowDirection }]}>
             <Image source={getAvatarSrc(review.userAvatar)} style={styles.avatar} />
             <ThemedText style={styles.userName}>{review.userName}</ThemedText>
          </View>
