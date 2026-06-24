@@ -188,6 +188,9 @@ const styles = StyleSheet.create({
   specialBadge: {
     width: normalize.width(44),
     height: normalize.width(44),
+    // The PNG mark is centered with transparent padding, so a top-aligned 44px
+    // box sits visually lower than the heart. Lift it up to match the favorite.
+    marginTop: -normalize.width(9),
   },
   imageWrapper: {
     width: "100%",
@@ -206,7 +209,10 @@ const styles = StyleSheet.create({
     // (height/verticalScale inflates on tall devices, which created the big
     // top gap.)
     top: normalize.width(6),
-    left: normalize.width(6),
+    // RTL swaps left/right: in Arabic the Special badge sits on the physical
+    // right, which is bounded by `left`. Tighten that side; keep the favorite
+    // (the other side) at its normal inset.
+    left: normalize.width(2),
     right: normalize.width(6),
     alignItems: "flex-start",
     justifyContent: "space-between",
