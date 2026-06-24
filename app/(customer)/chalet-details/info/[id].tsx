@@ -3,7 +3,8 @@ import {
   SolarKeyBold
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
-import { Colors } from "@/constants/theme";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Colors, normalize } from "@/constants/theme";
 import {
   useGetChaletRulesQuery,
   useGetChaletTermsQuery } from "@/store/api/customerApiSlice";
@@ -239,32 +240,32 @@ export default function ChaletInfoScreen() {
         userType={userType} 
       />
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.headerIconContainer}>
-          <View style={styles.iconCircle}>
-            <Icon size={40} color="white" />
-          </View>
-          <ThemedText style={styles.pageTitle}>{title}</ThemedText>
-        </View>
-
-        {isLoading ? (
-          <ActivityIndicator
-            size="large"
-            color={Colors.primary}
-            style={{ marginTop: 50 }}
-          />
-        ) : (
-          <View style={styles.card}>
-            {typeof getContent() === "string" ? (
-              <ThemedText style={[styles.content, rtlBody]}>
-                {getContent() || t("common.noData")}
-              </ThemedText>
-            ) : (
-              getContent()
-            )}
-          </View>
-        )}
-      </ScrollView>
+      {isLoading ? (
+        <ActivityIndicator
+          size="large"
+          color={Colors.primary}
+          style={{ marginTop: 50 }}
+        />
+      ) : typeof getContent() === "string" ? (
+        // No data → shared EmptyState, consistent with bookings/wallet pages.
+        <EmptyState
+          icon={<Icon size={normalize.width(56)} color={Colors.primary} />}
+          title={
+            type === "terms"
+              ? (isArabic ? "لا توجد شروط لهذا الشاليه" : "No terms for this chalet")
+              : (isArabic ? "لا توجد سياسات" : "No policies available")
+          }
+          description={
+            isArabic
+              ? "لم يقم المالك بإضافة هذه المعلومات بعد."
+              : "The owner hasn't added this information yet."
+          }
+        />
+      ) : (
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <View style={styles.card}>{getContent()}</View>
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }

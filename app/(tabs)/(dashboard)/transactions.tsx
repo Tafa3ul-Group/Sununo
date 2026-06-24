@@ -163,7 +163,7 @@ export default function TransactionsScreen() {
             ListEmptyComponent={
               <View style={styles.emptyState}>
                 <View style={styles.emptyIconWrap}>
-                  <SolarBanknoteBold size={48} color="#D1D5DB" />
+                  <SolarBanknoteBold size={48} color={Colors.primary} />
                 </View>
                 <Text style={styles.emptyTitle}>{isRTL ? 'لا توجد معاملات' : 'No Transactions'}</Text>
                 <Text style={styles.emptySubtitle}>
