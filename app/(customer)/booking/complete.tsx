@@ -1,6 +1,7 @@
 import { HeaderSection } from "@/components/header-section";
 import {
   SolarCardBold,
+  SolarCheckCircleBoldDuotone,
   SolarInfoCircleBold,
   SolarMapPointBold,
   SolarMoonBold,
@@ -1493,13 +1494,12 @@ export default function CompleteBookingScreen() {
       handleIndicatorStyle={{ backgroundColor: "#CBD5E1", width: 40 }}
     >
       <BottomSheetView style={styles.successSheetContent}>
-        <LottieView
-          source={require("../../../components/icons/motions/success.json")}
-          autoPlay
-          loop={false}
-          style={[styles.lottieIcon, { height: normalize.height(120) }]}
-          resizeMode="contain"
-        />
+        <View style={styles.successIconCircle}>
+          <SolarCheckCircleBoldDuotone
+            size={normalize.width(72)}
+            color="#15AB64"
+          />
+        </View>
         <ThemedText style={styles.successTitle}>
           {t("booking.successTitle") || "تم الحجز بنجاح!"}
         </ThemedText>
@@ -2574,6 +2574,15 @@ const styles = StyleSheet.create({
     height: 140,
     alignSelf: "center",
     marginBottom: 15,
+  },
+  successIconCircle: {
+    width: normalize.width(110),
+    height: normalize.width(110),
+    borderRadius: normalize.width(55),
+    backgroundColor: "#E7F8EF",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
   },
   successTitle: {
     fontSize: normalize.font(14),
