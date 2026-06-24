@@ -411,16 +411,23 @@ export const customerApi = apiSlice.injectEndpoints({
     uploadIdCardImages: builder.mutation({
       query: ({ front, back }: { front: string; back: string }) => {
         const formData = new FormData();
-        formData.append("idCardFrontImage", {
-          uri: front,
-          name: "id_front.jpg",
-          type: "image/jpeg",
-        } as any);
-        formData.append("idCardBackImage", {
-          uri: back,
-          name: "id_back.jpg",
-          type: "image/jpeg",
-        } as any);
+        // Build the RN file part the same way the (working) chalet/amenity image
+        // uploads do: derive the filename + mime from the picked URI. Hardcoding
+        // name/type produced a part the multipart parser didn't read as a file
+        // ("Field ... does not contain file"). The backend only accepts jpeg/png.
+        const appendFile = (field: string, uri: string, fallback: string) => {
+          const clean = (uri || "").split("?")[0];
+          const rawName = clean.split("/").pop() || `${fallback}.jpg`;
+          const ext = (/\.(\w+)$/.exec(rawName)?.[1] || "jpg").toLowerCase();
+          const isPng = ext === "png";
+          const type = isPng ? "image/png" : "image/jpeg";
+          const name = /\.(jpe?g|png)$/i.test(rawName)
+            ? rawName
+            : `${fallback}.${isPng ? "png" : "jpg"}`;
+          formData.append(field, { uri, name, type } as any);
+        };
+        appendFile("idCardFrontImage", front, "id_front");
+        appendFile("idCardBackImage", back, "id_back");
         return {
           url: "/users/profile",
           method: "PUT",
