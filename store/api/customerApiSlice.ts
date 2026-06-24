@@ -409,32 +409,17 @@ export const customerApi = apiSlice.injectEndpoints({
      * set, so the booking form must persist them here before creating a booking.
      */
     uploadIdCardImages: builder.mutation({
-      query: ({ front, back }: { front: string; back: string }) => {
-        const formData = new FormData();
-        // Build the RN file part the same way the (working) chalet/amenity image
-        // uploads do: derive the filename + mime from the picked URI. Hardcoding
-        // name/type produced a part the multipart parser didn't read as a file
-        // ("Field ... does not contain file"). The backend only accepts jpeg/png.
-        const appendFile = (field: string, uri: string, fallback: string) => {
-          const clean = (uri || "").split("?")[0];
-          const rawName = clean.split("/").pop() || `${fallback}.jpg`;
-          const ext = (/\.(\w+)$/.exec(rawName)?.[1] || "jpg").toLowerCase();
-          const isPng = ext === "png";
-          const type = isPng ? "image/png" : "image/jpeg";
-          const name = /\.(jpe?g|png)$/i.test(rawName)
-            ? rawName
-            : `${fallback}.${isPng ? "png" : "jpg"}`;
-          formData.append(field, { uri, name, type } as any);
-        };
-        appendFile("idCardFrontImage", front, "id_front");
-        appendFile("idCardBackImage", back, "id_back");
-        return {
-          url: "/users/profile",
-          method: "PUT",
-          body: formData,
-          headers: {},
-        };
-      },
+      // Receives a PRE-BUILT FormData. Web FormData only accepts a real
+      // Blob/File (an RN {uri,name,type} object gets stringified to
+      // "[object Object]" → the backend sees no file). The blob conversion is
+      // async, so the caller builds the FormData (web→blob, native→object) and
+      // passes it here ready to send.
+      query: (formData: FormData) => ({
+        url: "/users/profile",
+        method: "PUT",
+        body: formData,
+        headers: {},
+      }),
       invalidatesTags: ["User"],
     }),
 

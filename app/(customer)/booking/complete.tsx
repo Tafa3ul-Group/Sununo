@@ -141,6 +141,34 @@ const PressableScale = React.memo(function PressableScale({
   );
 });
 
+// Append a picked image to FormData as a real file part. Web FormData needs a
+// Blob (an RN {uri,name,type} object would serialize to "[object Object]" and
+// the backend would reject it as "does not contain file"); native uses the
+// {uri,name,type} object. Filename/mime are derived from the URI and forced to
+// the jpeg/png the backend accepts.
+async function appendImagePart(
+  formData: FormData,
+  field: string,
+  uri: string,
+  fallback: string,
+) {
+  const rawName = uri.split("?")[0].split("/").pop() || `${fallback}.jpg`;
+  const ext = (/\.(\w+)$/.exec(rawName)?.[1] || "jpg").toLowerCase();
+  const isPng = ext === "png";
+  const type = isPng ? "image/png" : "image/jpeg";
+  const name = /\.(jpe?g|png)$/i.test(rawName)
+    ? rawName
+    : `${fallback}.${isPng ? "png" : "jpg"}`;
+
+  if (Platform.OS === "web") {
+    const res = await fetch(uri);
+    const blob = await res.blob();
+    formData.append(field, blob, name);
+  } else {
+    formData.append(field, { uri, name, type } as any);
+  }
+}
+
 export default function CompleteBookingScreen() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -727,7 +755,10 @@ export default function CompleteBookingScreen() {
       // (customer.idCardFrontImage/BackImage) — local form state isn't enough.
       // Persist them now so the create-booking call passes the backend check.
       try {
-        await uploadIdCardImages({ front: idImage1, back: idImage2 }).unwrap();
+        const idFormData = new FormData();
+        await appendImagePart(idFormData, "idCardFrontImage", idImage1, "id_front");
+        await appendImagePart(idFormData, "idCardBackImage", idImage2, "id_back");
+        await uploadIdCardImages(idFormData).unwrap();
       } catch (e: any) {
         Alert.alert(
           isArabic ? "تنبيه" : "Alert",
