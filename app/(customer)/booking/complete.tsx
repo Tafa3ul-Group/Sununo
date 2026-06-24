@@ -25,6 +25,7 @@ import {
   useGetCustomerChaletDetailsQuery,
   useGetPlatformConfigQuery,
   useLazyGetPaymentStatusQuery,
+  useUploadIdCardImagesMutation,
 } from "@/store/api/customerApiSlice";
 import {
   BottomSheetBackdrop,
@@ -264,6 +265,8 @@ export default function CompleteBookingScreen() {
   // API hooks
   const [createBooking, { isLoading: isCreatingBooking }] =
     useCreateCustomerBookingMutation();
+  const [uploadIdCardImages, { isLoading: isUploadingId }] =
+    useUploadIdCardImagesMutation();
   const { data: response } = useGetCustomerChaletDetailsQuery(chaletId, {
     skip: !chaletId,
   });
@@ -714,7 +717,7 @@ export default function CompleteBookingScreen() {
     // (prevents the race where rapid taps fire multiple createBooking() calls).
     // Do NOT also block on isWaitingForPayment — that would dead-lock the button
     // if a payment session was opened and the user returned without completing.
-    if (isCreatingBooking) return;
+    if (isCreatingBooking || isUploadingId) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     if (activeTab === "WHEN") {
       setActiveTab("WHO");
@@ -726,6 +729,21 @@ export default function CompleteBookingScreen() {
           isArabic
             ? "يرجى رفع صورتي الهوية لإتمام الحجز"
             : "Please upload both ID photos to complete the booking",
+        );
+        return;
+      }
+      // The booking API requires the ID photos on the customer's PROFILE
+      // (customer.idCardFrontImage/BackImage) — local form state isn't enough.
+      // Persist them now so the create-booking call passes the backend check.
+      try {
+        await uploadIdCardImages({ front: idImage1, back: idImage2 }).unwrap();
+      } catch (e: any) {
+        Alert.alert(
+          isArabic ? "تنبيه" : "Alert",
+          e?.data?.message ||
+            (isArabic
+              ? "تعذّر رفع صور الهوية، يرجى المحاولة مرة أخرى"
+              : "Failed to upload ID photos, please try again"),
         );
         return;
       }
@@ -2149,6 +2167,8 @@ export default function CompleteBookingScreen() {
               : t("booking.next")
           }
           onPress={handleNext}
+          loading={isUploadingId || isCreatingBooking}
+          disabled={isUploadingId || isCreatingBooking}
           activeColor={
             activeTab === "WHO"
               ? "#F64200"
