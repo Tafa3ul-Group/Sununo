@@ -181,26 +181,13 @@ export default function CompleteBookingScreen() {
     }
   };
 
-  const getFilterDateRange = (): Date[] => {
-    if (!savedFilter?.checkIn) return [];
-    const start = new Date(savedFilter.checkIn);
-    const end = savedFilter.checkOut ? new Date(savedFilter.checkOut) : start;
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return [];
-
-    const timestamps: number[] = [];
-    const cur = new Date(start);
-    while (cur <= end) {
-      timestamps.push(new Date(cur).getTime());
-      cur.setDate(cur.getDate() + 1);
-    }
-    return timestamps.map((time) => new Date(time));
-  };
-
-
-  const filterDateRange = useMemo(getFilterDateRange, [
-    savedFilter?.checkIn,
-    savedFilter?.checkOut,
-  ]);
+  // The search filter's dates are discovery criteria only — they must NEVER
+  // pre-fill the booking calendar. The global filter is persisted and applies
+  // app-wide, so inheriting its dates leaked the filter's days into every
+  // chalet's booking (even after the user moved on). The user always picks the
+  // booking date explicitly. Kept as an empty range so all the downstream
+  // calendar defaults (selected days, start/end, current month) start clean.
+  const filterDateRange = useMemo<Date[]>(() => [], []);
 
   const filterDateKeys = useMemo(() => {
     return new Set(filterDateRange.map(getLocalDateKey));
@@ -272,7 +259,11 @@ export default function CompleteBookingScreen() {
   });
   const chaletDetails = response?.data || response;
 
-  const filterPeriod = useSelector((state: RootState) => state.filter.period);
+  // Same rule as the dates: only honor the filter's period while the filter is
+  // actively applied, so a cleared filter doesn't pre-select a shift.
+  const filterPeriod = useSelector((state: RootState) =>
+    state.filter.isActive ? state.filter.period : null,
+  );
 
   const shiftMatchesFilterPeriod = useCallback(
     (shift: any, period: string | null) => {
