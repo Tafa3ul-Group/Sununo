@@ -1,5 +1,6 @@
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { SolarBanknoteBold } from "@/components/icons/solar-icons";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Colors, normalize } from '@/constants/theme';
 import { useDirection } from "@/i18n";
 import { RootState } from '@/store';
@@ -193,6 +194,18 @@ export default function TransactionsScreen() {
       <View style={styles.listContainer}>
         {isLoading ? (
           <ActivityIndicator color={Colors.primary} style={{ marginTop: 60 }} size="large" />
+        ) : (Array.isArray(payouts) ? payouts : []).length === 0 ? (
+          // Shared EmptyState (reliable icon + centering) instead of FlashList's
+          // ListEmptyComponent, which didn't render the icon consistently.
+          <EmptyState
+            icon={<SolarBanknoteBold size={56} color={Colors.primary} />}
+            title={isRTL ? 'لا توجد معاملات' : 'No Transactions'}
+            description={
+              isRTL
+                ? 'ستظهر طلبات السحب هنا بعد تقديمها'
+                : 'Payout requests will appear here after submission'
+            }
+          />
         ) : (
           <FlashList
             data={Array.isArray(payouts) ? payouts : []}
@@ -200,17 +213,6 @@ export default function TransactionsScreen() {
             contentContainerStyle={styles.listContent}
             ItemSeparatorComponent={() => <View style={styles.separator} />}
             showsVerticalScrollIndicator={false}
-            ListEmptyComponent={
-              <View style={styles.emptyState}>
-                <View style={styles.emptyIconWrap}>
-                  <SolarBanknoteBold size={48} color={Colors.primary} />
-                </View>
-                <Text style={styles.emptyTitle}>{isRTL ? 'لا توجد معاملات' : 'No Transactions'}</Text>
-                <Text style={styles.emptySubtitle}>
-                  {isRTL ? 'ستظهر طلبات السحب هنا بعد تقديمها' : 'Payout requests will appear here after submission'}
-                </Text>
-              </View>
-            }
           />
         )}
       </View>
