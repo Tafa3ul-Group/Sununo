@@ -52,6 +52,9 @@ import {
 // Fallback colors for chalet cards
 const CARD_COLORS = [Colors.primary, Colors.secondary, Colors.accent];
 
+// Temporarily hide the home "Nearby / Map" section. Set to `true` to restore it.
+const SHOW_HOME_MAP = false;
+
 export default function HomeScreen() {
   const { userType } = useSelector((state: RootState) => state.auth);
   const { isRTL, rowDirection, textAlign } = useDirection();
@@ -569,34 +572,42 @@ export default function HomeScreen() {
             </>
           )}
 
-          {/* Nearby / Map */}
-          <View style={[styles.sectionHeader, { flexDirection: flexDir }]}>
-            <ThemedText style={[styles.sectionTitle, { textAlign: textStart }]}>
-              {t("home.categories.nearby")}
-            </ThemedText>
-            <PressableScale
-              onPress={() => router.push("/(tabs)/(customer)/explore")}
-            >
-              <ThemedText style={styles.seeAll}>{t("home.openMap")}</ThemedText>
-            </PressableScale>
-          </View>
-          <PressableScale
-            scaleTo={0.98}
-            onPress={() =>
-              router.push("/(tabs)/(customer)/explore?showMyLocation=1")
-            }
-            style={styles.mapContainer}
-          >
-            <AppMap
-              key={mapKey}
-              style={styles.map}
-              showMarker
-              markers={mapMarkers}
-              onPressCard={navigateToDetails}
-            />
-            {/* overlay to intercept taps and navigate */}
-            <View style={styles.mapOverlay} />
-          </PressableScale>
+          {/* Nearby / Map — temporarily hidden (toggle SHOW_HOME_MAP to restore) */}
+          {SHOW_HOME_MAP && (
+            <>
+              <View style={[styles.sectionHeader, { flexDirection: flexDir }]}>
+                <ThemedText
+                  style={[styles.sectionTitle, { textAlign: textStart }]}
+                >
+                  {t("home.categories.nearby")}
+                </ThemedText>
+                <PressableScale
+                  onPress={() => router.push("/(tabs)/(customer)/explore")}
+                >
+                  <ThemedText style={styles.seeAll}>
+                    {t("home.openMap")}
+                  </ThemedText>
+                </PressableScale>
+              </View>
+              <PressableScale
+                scaleTo={0.98}
+                onPress={() =>
+                  router.push("/(tabs)/(customer)/explore?showMyLocation=1")
+                }
+                style={styles.mapContainer}
+              >
+                <AppMap
+                  key={mapKey}
+                  style={styles.map}
+                  showMarker
+                  markers={mapMarkers}
+                  onPressCard={navigateToDetails}
+                />
+                {/* overlay to intercept taps and navigate */}
+                <View style={styles.mapOverlay} />
+              </PressableScale>
+            </>
+          )}
 
           {/* Recent bookings — hidden entirely when there's no data */}
           {(latestBookingsLoading || recentBookingChalets.length > 0) && (
