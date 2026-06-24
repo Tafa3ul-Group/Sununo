@@ -90,30 +90,70 @@ export default function TransactionsScreen() {
     const statusColor = getStatusColor(item.status);
     const statusBg = getStatusBg(item.status);
 
+    // Destination account the payout is sent to (ZainCash or Qi).
+    const dest = item.zainCash
+      ? { label: isRTL ? 'زين كاش' : 'ZainCash', value: item.zainCash }
+      : item.qi
+        ? { label: isRTL ? 'Qi كارت' : 'Qi Card', value: item.qi }
+        : null;
+
     return (
-      <TouchableOpacity
-        style={[styles.transactionItem, { flexDirection: 'row' }]}
-        activeOpacity={0.7}
-      >
-        <View style={[styles.transactionIcon, { backgroundColor: statusBg }]}>
-          <SolarBanknoteBold size={22} color={statusColor} />
-        </View>
-
-        <View style={[styles.transactionInfo, { alignItems: startAlign }]}>
-          <Text style={[styles.transactionTitle, { textAlign }]}>{isRTL ? 'طلب سحب' : 'Payout Request'}</Text>
-          <Text style={[styles.transactionDate, { textAlign }]}>{formatDate(item.createdAt)}</Text>
-        </View>
-
-        <View style={{ alignItems: endAlign }}>
-          <Text style={[styles.transactionAmount, { textAlign: isRTL ? 'left' : 'right' }]}>
-            {item.amount?.toLocaleString()} <Text style={styles.currencySmall}>{isRTL ? 'د.ع' : 'IQD'}</Text>
-          </Text>
-          <View style={[styles.statusBadge, { backgroundColor: statusBg, flexDirection: 'row' }]}>
-            <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
-            <Text style={[styles.statusBadgeText, { color: statusColor }]}>
-              {getStatusLabel(item.status)}
-            </Text>
+      <TouchableOpacity style={styles.transactionItem} activeOpacity={0.7}>
+        {/* Top row: icon + title/code + amount/status */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <View style={[styles.transactionIcon, { backgroundColor: statusBg }]}>
+            <SolarBanknoteBold size={22} color={statusColor} />
           </View>
+
+          <View style={[styles.transactionInfo, { alignItems: startAlign }]}>
+            <Text style={[styles.transactionTitle, { textAlign }]}>{isRTL ? 'طلب سحب' : 'Payout Request'}</Text>
+            {item.requestCode ? (
+              <Text style={[styles.refCode, { textAlign }]}>{item.requestCode}</Text>
+            ) : null}
+          </View>
+
+          <View style={{ alignItems: endAlign }}>
+            <Text style={[styles.transactionAmount, { textAlign: isRTL ? 'left' : 'right' }]}>
+              {Number(item.amount)?.toLocaleString()} <Text style={styles.currencySmall}>{isRTL ? 'د.ع' : 'IQD'}</Text>
+            </Text>
+            <View style={[styles.statusBadge, { backgroundColor: statusBg }]}>
+              <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
+              <Text style={[styles.statusBadgeText, { color: statusColor }]}>
+                {getStatusLabel(item.status)}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Detail block: destination, dates, and state-specific notes */}
+        <View style={[styles.detailBlock, { alignItems: startAlign }]}>
+          {dest ? (
+            <Text style={[styles.detailText, { textAlign }]}>
+              {(isRTL ? 'إلى: ' : 'To: ') + dest.label + ' • ' + dest.value}
+            </Text>
+          ) : null}
+
+          <Text style={[styles.detailMuted, { textAlign }]}>
+            {(isRTL ? 'تاريخ الطلب: ' : 'Requested: ') + formatDate(item.createdAt)}
+          </Text>
+
+          {item.status === 'paid' && item.paidAt ? (
+            <Text style={[styles.detailPaid, { textAlign }]}>
+              {(isRTL ? '✓ تم الدفع في: ' : '✓ Paid on: ') + formatDate(item.paidAt)}
+            </Text>
+          ) : null}
+
+          {item.status === 'rejected' && item.rejectionReason ? (
+            <Text style={[styles.detailRejected, { textAlign }]}>
+              {(isRTL ? 'سبب الرفض: ' : 'Reason: ') + item.rejectionReason}
+            </Text>
+          ) : null}
+
+          {item.status === 'approved' ? (
+            <Text style={[styles.detailMuted, { textAlign }]}>
+              {isRTL ? 'تمت الموافقة — قيد التحويل' : 'Approved — transfer in progress'}
+            </Text>
+          ) : null}
         </View>
       </TouchableOpacity>
     );
@@ -220,8 +260,7 @@ const styles = StyleSheet.create({
   },
   transactionItem: {
     paddingVertical: 16,
-    alignItems: 'center',
-    gap: 12
+    gap: 10
   },
   transactionIcon: {
     width: 48,
@@ -242,6 +281,38 @@ const styles = StyleSheet.create({
   transactionDate: {
     fontSize: normalize.font(8),
     color: Colors.text.muted,
+    fontFamily: "Alexandria-Medium"
+  },
+  refCode: {
+    fontSize: normalize.font(10),
+    color: Colors.primary,
+    fontFamily: "Alexandria-Medium"
+  },
+  detailBlock: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 4
+  },
+  detailText: {
+    fontSize: normalize.font(11),
+    color: Colors.text.secondary,
+    fontFamily: "Alexandria-Medium"
+  },
+  detailMuted: {
+    fontSize: normalize.font(10),
+    color: Colors.text.muted,
+    fontFamily: "Alexandria-Medium"
+  },
+  detailPaid: {
+    fontSize: normalize.font(11),
+    color: '#10B981',
+    fontFamily: "Alexandria-Medium"
+  },
+  detailRejected: {
+    fontSize: normalize.font(11),
+    color: '#EF4444',
     fontFamily: "Alexandria-Medium"
   },
   transactionAmount: {
