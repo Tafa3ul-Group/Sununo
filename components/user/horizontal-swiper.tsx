@@ -13,22 +13,52 @@ import { HorizontalCard } from "./horizontal-card";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const ITEM_WIDTH = SCREEN_WIDTH - 32;
 const SEPARATOR_WIDTH = 12;
+const SNAP = ITEM_WIDTH + SEPARATOR_WIDTH;
+const AUTO_PLAY_INTERVAL = 4000;
 interface HorizontalSwiperProps {
   data: any[];
   onPressCard?: (id: string) => void;
   onIndexChange?: (index: number) => void;
   favoriteIds?: string[];
   onToggleFavorite?: (id: string) => void;
+  /** Auto-scroll through the cards (like the banner). Off by default. */
+  autoPlay?: boolean;
 }
 
-export function HorizontalSwiper({ data, onPressCard, onIndexChange, favoriteIds = [], onToggleFavorite }: HorizontalSwiperProps) {
+export function HorizontalSwiper({ data, onPressCard, onIndexChange, favoriteIds = [], onToggleFavorite, autoPlay = false }: HorizontalSwiperProps) {
     const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
+  const activeIndexRef = useRef(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const stopTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
+
+  const startTimer = useCallback(() => {
+    if (!autoPlay || data.length <= 1) return;
+    stopTimer();
+    timerRef.current = setInterval(() => {
+      const next = (activeIndexRef.current + 1) % data.length;
+      flatListRef.current?.scrollToIndex({ index: next, animated: true });
+      activeIndexRef.current = next;
+      setActiveIndex(next);
+    }, AUTO_PLAY_INTERVAL);
+  }, [autoPlay, data.length, stopTimer]);
+
+  useEffect(() => {
+    startTimer();
+    return stopTimer;
+  }, [startTimer, stopTimer]);
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const scrollOffset = event.nativeEvent.contentOffset.x;
-    const index = Math.round(scrollOffset / (ITEM_WIDTH + SEPARATOR_WIDTH));
+    const index = Math.round(scrollOffset / SNAP);
     if (index !== activeIndex && index >= 0 && index < data.length) {
+      activeIndexRef.current = index;
       setActiveIndex(index);
       if (onIndexChange) onIndexChange(index);
     }
@@ -77,7 +107,7 @@ export function HorizontalSwiper({ data, onPressCard, onIndexChange, favoriteIds
         }
         horizontal
         showsHorizontalScrollIndicator={false}
-        snapToInterval={ITEM_WIDTH + SEPARATOR_WIDTH}
+        snapToInterval={SNAP}
         snapToAlignment="center"
         decelerationRate="fast"
         contentContainerStyle={styles.listContent}
@@ -87,6 +117,13 @@ export function HorizontalSwiper({ data, onPressCard, onIndexChange, favoriteIds
         )}
         onScroll={handleScroll}
         scrollEventThrottle={16}
+        onScrollBeginDrag={stopTimer}
+        onScrollEndDrag={startTimer}
+        getItemLayout={(_, index) => ({
+          length: SNAP,
+          offset: SNAP * index,
+          index,
+        })}
       />
     </View>
   );

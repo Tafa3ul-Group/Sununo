@@ -1236,6 +1236,7 @@ export default function ChaletDetailScreen() {
             onPressCard={(id) => router.push(`/chalet-details/${id}`)}
             favoriteIds={favoriteIds}
             onToggleFavorite={handleToggleFavorite}
+            autoPlay
           />
         </View>
       </ScrollView>
