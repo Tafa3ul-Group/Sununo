@@ -9,6 +9,7 @@ import {
   SolarMagnifierBold,
   SolarMapBoldDuotone,
   SolarMapPointBold,
+  SolarMapPointWaveBoldDuotone,
   SolarMoonBold,
   SolarSettingsBold,
   SolarStarBold,
@@ -394,6 +395,23 @@ export default function ExploreScreen() {
     [selectedChalet],
   );
 
+  // Recenter the map on the user's exact current location on demand.
+  const handleLocateMe = useCallback(async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") return;
+      const loc = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
+      setLocation(loc);
+      setSelectedChalet(null);
+      setCameraPosition([loc.coords.longitude, loc.coords.latitude]);
+      setZoom(15);
+    } catch {
+      // Keep the current camera if the location can't be resolved.
+    }
+  }, []);
+
   // Navigation & Routing State
   const [route, setRoute] = useState<any>(null);
   const [routeInfo, setRouteInfo] = useState<any>(null);
@@ -776,7 +794,6 @@ export default function ExploreScreen() {
         onPress={() => Keyboard.dismiss()}
         selectedChalet={selectedChalet}
         route={route}
-        location={location}
         isNavigating={isNavigating}
         zoomLevel={zoom}
         centerCoordinate={cameraPosition}
@@ -867,6 +884,19 @@ export default function ExploreScreen() {
             <SolarCloseBold size={24} color="#EF4444" />
           </TouchableOpacity>
         </View>
+      )}
+
+      {/* Always-available: recenter the map on the user's exact location */}
+      {!isNavigating && (
+        <TouchableOpacity
+          style={styles.locateFab}
+          onPress={handleLocateMe}
+          activeOpacity={0.85}
+          accessibilityRole="button"
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <SolarMapPointWaveBoldDuotone size={26} color={Colors.primary} />
+        </TouchableOpacity>
       )}
 
       <BottomSheetModal
@@ -1384,6 +1414,21 @@ const styles = StyleSheet.create({
     ...Shadows.medium,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.2)",
+  },
+  locateFab: {
+    position: "absolute",
+    right: 20,
+    bottom: SCREEN_HEIGHT * 0.42,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: "white",
+    justifyContent: "center",
+    alignItems: "center",
+    ...Shadows.medium,
+    borderWidth: 1,
+    borderColor: "#F1F5F9",
+    zIndex: 25,
   },
   navSeparator: {
     width: 1,

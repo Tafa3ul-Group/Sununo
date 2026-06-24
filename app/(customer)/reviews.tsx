@@ -6,6 +6,8 @@ import { SolarReviewsHeartBold } from "@/components/icons/solar-icons";
 import { Colors } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { useGetCustomerBookingsQuery } from "@/store/api/customerApiSlice";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
 import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -32,6 +34,13 @@ export default function ReviewsScreen() {
   const [activeTab, setActiveTab] = useState<"pending" | "reviewed">("pending");
   const insets = useSafeAreaInsets();
 
+  // The reviewer on this "my reviews" screen is always the logged-in customer,
+  // so fall back to the auth user for name/avatar when the booking payload
+  // doesn't embed the customer object.
+  const authUser = useSelector((s: RootState) => s.auth.user);
+  const meName = authUser?.name || authUser?.fullName || "";
+  const meAvatar = authUser?.image || authUser?.imageUrl || authUser?.avatar || "";
+
   // Fetch completed bookings (pending review) and all bookings
   const { data: completedBookings, isLoading: loadingCompleted, refetch: refetchCompleted } = useGetCustomerBookingsQuery({ status: 'completed', page: 1, limit: 50 });
   const { data: allBookings, isLoading: loadingAll, refetch: refetchAll } = useGetCustomerBookingsQuery({ page: 1, limit: 50 });
@@ -53,14 +62,14 @@ export default function ReviewsScreen() {
           : (booking.chalet?.region?.name?.en || booking.chalet?.region?.nameEn || booking.chalet?.region?.name || ''),
         price: booking.chalet?.basePrice ? Number(booking.chalet.basePrice).toLocaleString() : '0',
         chaletImage: getImageSrc(booking.chalet?.images?.[0]?.url)?.uri || '',
-        userName: booking.customer?.name || '',
-        userAvatar: booking.customer?.imageUrl || '',
+        userName: booking.customer?.name || meName,
+        userAvatar: booking.customer?.imageUrl || meAvatar,
         rating: 0,
         comment: '',
         gallery: [],
         date: booking.bookingDate || '',
         status: 'pending' as const }));
-  }, [completedBookings, isArabic]);
+  }, [completedBookings, isArabic, meName, meAvatar]);
 
   // Reviewed: bookings that have reviews
   const reviewedReviews = useMemo(() => {
@@ -78,14 +87,17 @@ export default function ReviewsScreen() {
           : (booking.chalet?.region?.nameEn || booking.chalet?.region?.name || ''),
         price: booking.chalet?.basePrice ? Number(booking.chalet.basePrice).toLocaleString() : '0',
         chaletImage: getImageSrc(booking.chalet?.images?.[0]?.url)?.uri || '',
-        userName: booking.customer?.name || '',
-        userAvatar: booking.customer?.imageUrl || '',
+        userName: booking.review?.customer?.name || booking.customer?.name || meName,
+        userAvatar: booking.review?.customer?.imageUrl || booking.customer?.imageUrl || meAvatar,
         rating: booking.review?.rating || 0,
         comment: booking.review?.comment || '',
-        gallery: [],
+        // Review photos: API returns review.images as [{ url }]; resolve each to a URI.
+        gallery: (booking.review?.images || [])
+          .map((img: any) => getImageSrc(img?.url || img)?.uri)
+          .filter(Boolean),
         date: booking.review?.createdAt ? new Date(booking.review.createdAt).toLocaleDateString() : '',
         status: 'reviewed' as const }));
-  }, [allBookings, isArabic]);
+  }, [allBookings, isArabic, meName, meAvatar]);
 
   const filteredReviews = activeTab === 'pending' ? pendingReviews : reviewedReviews;
   const loading = loadingCompleted || loadingAll;

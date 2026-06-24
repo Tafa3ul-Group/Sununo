@@ -169,6 +169,16 @@ const AppMapComponent = ({
 
   // Automatically fit map to markers when they load
   useEffect(() => {
+    // When the parent drives the camera via centerCoordinate (e.g. the explore
+    // screen following the user's live GPS position), do NOT auto-fit to the
+    // markers — doing so yanks the camera onto the chalets and locks it on a
+    // fixed spot away from the user. Let the parent own the camera in that case.
+    const centerProvided =
+      !!centerCoordinate &&
+      !isNaN(centerCoordinate[0]) &&
+      !isNaN(centerCoordinate[1]);
+    if (centerProvided) return;
+
     // Only auto-fit if we don't have a specific chalet selected
     if (markers && markers.length > 0 && cameraRef.current && !selectedChalet) {
       // Small delay to ensure map is ready
@@ -209,7 +219,7 @@ const AppMapComponent = ({
       }, 800); // Increased delay for better stability
       return () => clearTimeout(timer);
     }
-  }, [markers?.length, !!selectedChalet]);
+  }, [markers?.length, !!selectedChalet, centerCoordinate]);
 
   const pulseStyle = useAnimatedStyle(() => ({
     transform: [{ scale: pulseScale.value }],

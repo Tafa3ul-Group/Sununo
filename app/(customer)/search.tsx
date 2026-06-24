@@ -146,7 +146,13 @@ export default function SearchScreen() {
             autoFocus
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery("")}>
+            <TouchableOpacity
+              onPress={() => setSearchQuery("")}
+              accessibilityRole="button"
+              accessibilityLabel={isArabic ? "مسح البحث" : "Clear search"}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              style={styles.clearBtn}
+            >
               <SolarTrashBinBold size={18} color={Colors.text.muted} />
             </TouchableOpacity>
           )}
@@ -279,6 +285,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.text.primary,
     fontFamily: "Alexandria-Medium",
+  },
+  clearBtn: {
+    padding: 6,
+    justifyContent: "center",
+    alignItems: "center",
   },
   listContent: {
     padding: 16,
