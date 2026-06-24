@@ -3,7 +3,7 @@ import { SectionIcon } from "@/components/icons/section-icon";
 import {
   SolarCloseCircleBold,
   SolarFireBold,
-  SolarGalleryBold,
+  SolarGalleryWideLinear,
   SolarHome2Bold,
   SolarWaterBold,
   SolarWidgetBold,
@@ -314,7 +314,7 @@ export default function GalleryScreen() {
         ))}
         {!isLoading && filteredData.length === 0 && (
           <EmptyState
-            icon={<SolarGalleryBold size={normalize.width(56)} color={Colors.primary} />}
+            icon={<SolarGalleryWideLinear size={normalize.width(56)} color={Colors.primary} />}
             title={isArabic ? "لا توجد صور" : "No photos yet"}
             description={t("gallery.empty")}
           />

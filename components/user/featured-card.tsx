@@ -205,9 +205,9 @@ const styles = StyleSheet.create({
     // Use the SAME scale as the sides so the corner inset is symmetric.
     // (height/verticalScale inflates on tall devices, which created the big
     // top gap.)
-    top: normalize.width(10),
-    left: normalize.width(10),
-    right: normalize.width(10),
+    top: normalize.width(6),
+    left: normalize.width(6),
+    right: normalize.width(6),
     alignItems: "flex-start",
     justifyContent: "space-between",
   },
@@ -223,13 +223,12 @@ const styles = StyleSheet.create({
     color: "#111827",
   },
   heartCircle: {
-    width: normalize.width(32),
-    height: normalize.width(32),
-    borderRadius: normalize.radius(16),
+    width: normalize.width(26),
+    height: normalize.width(26),
+    borderRadius: normalize.radius(13),
     alignItems: "center",
     justifyContent: "center",
-    // Soft backdrop so the white heart reads on bright photos and balances the
-    // colored Special mark on the opposite corner.
+    // Small soft backdrop so the white heart reads on bright photos.
     backgroundColor: "rgba(17,24,39,0.28)",
   },
   textBlock: {
