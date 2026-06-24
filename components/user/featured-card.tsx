@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     // top gap.)
     top: normalize.width(6),
     left: normalize.width(6),
-    right: normalize.width(6),
+    right: normalize.width(2),
     alignItems: "flex-start",
     justifyContent: "space-between",
   },
