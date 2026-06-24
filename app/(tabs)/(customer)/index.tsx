@@ -19,8 +19,6 @@ import { useSelector } from "react-redux";
 import { HeaderSection } from "@/components/header-section";
 import { PressableScale } from "@/components/ui/pressable-scale";
 import {
-  SolarAltArrowLeftBold,
-  SolarAltArrowRightBold,
   SolarFireBold,
   SolarTreeBold,
   SolarWaterBold,
@@ -547,21 +545,10 @@ export default function HomeScreen() {
                 >
                   {t("home.featured")}
                 </ThemedText>
-                <PressableScale
-                  style={styles.seeAllArrow}
-                  onPress={() => router.push("/featured")}
-                >
-                  {isRTL ? (
-                    <SolarAltArrowLeftBold
-                      size={normalize.width(20)}
-                      color={Colors.text.primary}
-                    />
-                  ) : (
-                    <SolarAltArrowRightBold
-                      size={normalize.width(20)}
-                      color={Colors.text.primary}
-                    />
-                  )}
+                <PressableScale onPress={() => router.push("/featured")}>
+                  <ThemedText style={styles.seeAll}>
+                    {t("home.seeAll")}
+                  </ThemedText>
                 </PressableScale>
               </View>
               {featuredLoading ? (
