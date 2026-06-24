@@ -507,6 +507,12 @@ export const customerApi = apiSlice.injectEndpoints({
       query: (transactionId: string) => `/transactions/payment-status/${transactionId}`,
       providesTags: (result: any, error: any, id: string) => [{ type: "Booking" as const, id }],
     }),
+
+    /** Active platform terms & conditions shown to customers (public, no auth) */
+    getPlatformTerms: builder.query({
+      query: () => "/customer/terms",
+      transformResponse: unwrapListResponse,
+    }),
   }),
 });
 
@@ -522,6 +528,7 @@ export const {
   useGetSimilarChaletsQuery,
   useGetChaletAddonsQuery,
   useGetChaletTermsQuery,
+  useGetPlatformTermsQuery,
   useGetChaletPoliciesQuery,
   useGetChaletRulesQuery,
   useLazyGetChaletRulesQuery,

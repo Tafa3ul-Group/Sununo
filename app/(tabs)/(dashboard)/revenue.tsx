@@ -10,7 +10,7 @@ import { PrimaryButton } from '@/components/user/primary-button';
 import { Colors, normalize } from '@/constants/theme';
 import { useDirection } from "@/i18n";
 import { RootState } from '@/store';
-import { useGetPayoutsQuery, useGetProviderProfileQuery, useGetProviderStatsQuery, useRequestPayoutMutation } from '@/store/api/apiSlice';
+import { useGetPayoutsQuery, useGetProviderBookingsQuery, useGetProviderProfileQuery, useGetProviderStatsQuery, useRequestPayoutMutation } from '@/store/api/apiSlice';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
@@ -90,12 +90,16 @@ export default function RevenueScreen() {
   });
   const { data: profileResponse, isLoading: isLoadingProfile, refetch: refetchProfile } = useGetProviderProfileQuery(undefined);
   const { data: statsData, isLoading: isLoadingStats, refetch: refetchStats } = useGetProviderStatsQuery(statsQueryParams);
+  // Confirmed (paid) bookings not yet completed — used to show "pending / غير مسوّى"
+  // earnings the provider will receive once each booking is completed.
+  const { data: confirmedBookingsResponse, refetch: refetchConfirmed } = useGetProviderBookingsQuery({ status: 'confirmed', limit: 100, page: 1 });
   const [requestPayout, { isLoading: isRequesting }] = useRequestPayoutMutation();
 
   const handleRefresh = async () => {
     refetchPayouts();
     refetchProfile();
     refetchStats();
+    refetchConfirmed();
   };
 
   const payouts = payoutsResponse?.data || payoutsResponse || [];
@@ -106,6 +110,17 @@ export default function RevenueScreen() {
     periodRevenue: statsResponse.periodRevenue ?? statsResponse.monthRevenue ?? statsResponse.summary?.totalProviderEarnings ?? 0,
     occupancyRate: statsResponse.occupancyRate ?? 0,
   };
+
+  // Withdrawable wallet balance (realized) vs unsettled earnings from confirmed bookings.
+  const walletBalance = Number(profile?.wallet?.balance || 0);
+  const pendingEarnings = useMemo(() => {
+    const list = confirmedBookingsResponse?.data || confirmedBookingsResponse || [];
+    if (!Array.isArray(list)) return 0;
+    return list.reduce((sum: number, b: any) => {
+      const owed = Math.max(0, (Number(b.totalPrice || 0) - Number(b.remainingAmount || 0)) - Number(b.commissionAmount || 0));
+      return sum + owed;
+    }, 0);
+  }, [confirmedBookingsResponse]);
 
   // Bottom sheet
   const withdrawSheetRef = useRef<BottomSheetModal>(null);
@@ -185,8 +200,8 @@ export default function RevenueScreen() {
             <View style={[styles.decorCircle, styles.decorCircle1, { [isRTL ? 'left' : 'right']: -40 }]} />
             <View style={[styles.decorCircle, styles.decorCircle2, { [isRTL ? 'right' : 'left']: -20 }]} />
 
-            <Text style={styles.balanceLabel}>{isRTL ? 'إجمالي الرصيد' : 'Total Balance'}</Text>
-            <Text style={styles.balanceValue}>{profile?.wallet?.balance?.toLocaleString() || '0'}</Text>
+            <Text style={styles.balanceLabel}>{isRTL ? 'الرصيد المتاح للسحب' : 'Available to Withdraw'}</Text>
+            <Text style={styles.balanceValue}>{walletBalance.toLocaleString()}</Text>
             <Text style={styles.balanceCurrency}>{isRTL ? 'دينار عراقي' : 'IQD'}</Text>
 
             <TouchableOpacity
@@ -197,6 +212,22 @@ export default function RevenueScreen() {
               <SolarWalletBold size={18} color={Colors.primary} />
               <Text style={styles.withdrawButtonText}>{isRTL ? 'سحب الأرباح' : 'Withdraw'}</Text>
             </TouchableOpacity>
+
+            {/* Pending (unsettled) earnings from confirmed bookings — inside the card */}
+            {pendingEarnings > 0 && (
+              <View style={styles.pendingStrip}>
+                <View style={[styles.pendingStripHeader, { flexDirection: 'row' }]}>
+                  <View style={styles.pendingStripIcon}>
+                    <SolarBanknoteBold size={14} color={Colors.white} />
+                  </View>
+                  <Text style={styles.pendingStripLabel} numberOfLines={1}>{isRTL ? 'قيد التحصيل' : 'Pending'}</Text>
+                </View>
+                <Text style={styles.pendingStripValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>
+                  {pendingEarnings.toLocaleString()} <Text style={styles.pendingStripCurrency}>{isRTL ? 'د.ع' : 'IQD'}</Text>
+                </Text>
+                <Text style={styles.pendingStripHint} numberOfLines={2}>{isRTL ? 'تُتاح للسحب بعد إكمال الحجز' : 'Available after completion'}</Text>
+              </View>
+            )}
           </View>
         </View>
 
@@ -422,6 +453,55 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontFamily: "Alexandria-Bold",
     fontSize: normalize.font(14)
+  },
+  // Pending earnings strip (inside the balance card) — centered
+  pendingStrip: {
+    width: '100%',
+    marginTop: 22,
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
+    paddingVertical: 14,
+    paddingHorizontal: 12
+  },
+  pendingStripHeader: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8
+  },
+  pendingStripIcon: {
+    width: 26,
+    height: 26,
+    borderRadius: 9,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.18)'
+  },
+  pendingStripLabel: {
+    fontSize: normalize.font(12),
+    fontFamily: "Alexandria-SemiBold",
+    color: 'rgba(255,255,255,0.85)',
+    textAlign: 'center'
+  },
+  pendingStripValue: {
+    fontSize: normalize.font(20),
+    fontFamily: "Alexandria-Black",
+    color: Colors.white,
+    textAlign: 'center'
+  },
+  pendingStripCurrency: {
+    fontSize: normalize.font(11),
+    fontFamily: "Alexandria-SemiBold",
+    color: 'rgba(255,255,255,0.7)'
+  },
+  pendingStripHint: {
+    fontSize: normalize.font(10),
+    fontFamily: "Alexandria-Medium",
+    color: 'rgba(255,255,255,0.7)',
+    textAlign: 'center'
   },
   // Period Filter
   periodRow: {
