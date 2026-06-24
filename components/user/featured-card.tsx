@@ -191,6 +191,9 @@ const styles = StyleSheet.create({
     // The PNG mark is centered with transparent padding, so a top-aligned 44px
     // box sits visually lower than the heart. Lift it up to match the favorite.
     marginTop: -normalize.width(9),
+    // Gentle zoom to shrink the image's transparent padding so the mark hugs the
+    // corner (RTL-safe, unlike left/right insets).
+    transform: [{ scale: 1.2 }],
   },
   imageWrapper: {
     width: "100%",
