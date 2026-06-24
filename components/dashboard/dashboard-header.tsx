@@ -55,7 +55,7 @@ export function DashboardHeader({
         ) : showLogo ? (
           <TouchableOpacity onPress={toggleLogo} style={styles.logoCircle} activeOpacity={0.7}>
             <Image
-              source={logoLang === 'ar' ? require("@/assets/arlogo.svg") : require("@/assets/logo.svg")}
+              source={logoLang === 'ar' ? require("@/assets/arlogo.svg") : require("@/assets/enlogo.svg")}
               style={styles.logoImg}
               contentFit="contain"
             />

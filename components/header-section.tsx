@@ -218,7 +218,7 @@ export function HeaderSection({
               activeOpacity={0.8}
             >
               <Image
-                source={currentLogoAr ? require("@/assets/arlogo.svg") : require("@/assets/logo.svg")}
+                source={currentLogoAr ? require("@/assets/arlogo.svg") : require("@/assets/enlogo.svg")}
                 style={{ width: 75, height: 25, tintColor: currentLogoColor }}
                 contentFit="contain"
               />

@@ -164,7 +164,7 @@ export const AppDrawer = forwardRef<AppDrawerRef>((props, ref) => {
               source={
                 isRTL
                   ? require("@/assets/arlogo.svg")
-                  : require("@/assets/logo.svg")
+                  : require("@/assets/enlogo.svg")
               }
               style={styles.logo}
               resizeMode="contain"
