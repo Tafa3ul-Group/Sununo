@@ -134,14 +134,12 @@ export const FeaturedCard = React.memo(function FeaturedCard({
           transition={200}
         />
 
-        <View style={[styles.overlayRow, { flexDirection: rowDir }]}>
-          {/* "Special" shape badge instead of a "مميّز" text label */}
-          <ExpoImage
-            source={require("@/assets/shapes/Special.png")}
-            style={{ width: normalize.width(44), height: normalize.width(44) }}
-            contentFit="contain"
-          />
-
+        <View
+          style={[
+            styles.overlayRow,
+            { flexDirection: rowDir, justifyContent: "flex-end" },
+          ]}
+        >
           {!hideFavorite && (
             <TouchableOpacity
               style={styles.heartCircle}
@@ -158,6 +156,16 @@ export const FeaturedCard = React.memo(function FeaturedCard({
           )}
         </View>
       </View>
+
+      {/* "Special" badge pinned to the top edge of the image (start corner) */}
+      <ExpoImage
+        source={require("@/assets/shapes/Special.png")}
+        style={[
+          styles.topBadge,
+          { [isRTL ? "right" : "left"]: normalize.width(8) },
+        ]}
+        contentFit="contain"
+      />
 
       {/* Name + price — aligned to the start side (right in RTL) */}
       <View style={[styles.textBlock, { alignItems: alignStart }]}>
@@ -184,6 +192,13 @@ export const FeaturedCard = React.memo(function FeaturedCard({
 const styles = StyleSheet.create({
   container: {
     width: FEATURED_CARD_WIDTH,
+  },
+  topBadge: {
+    position: "absolute",
+    top: -normalize.height(6),
+    width: normalize.width(46),
+    height: normalize.width(46),
+    zIndex: 10,
   },
   imageWrapper: {
     width: "100%",
