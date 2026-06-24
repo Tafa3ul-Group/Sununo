@@ -1,13 +1,12 @@
 'use no memo';
 import { normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
+import { useDirection } from '@/i18n';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
     Dimensions,
     FlatList,
     Image,
-    NativeScrollEvent,
-    NativeSyntheticEvent,
     StyleSheet,
     View
 } from 'react-native';
@@ -24,6 +23,7 @@ const AUTO_PLAY_INTERVAL = 4000;
 
 export function BannerSwiper({ data }: { data?: any[] }) {
   const displayData = data ?? [];
+  const { rowDirection } = useDirection();
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -53,14 +53,19 @@ export function BannerSwiper({ data }: { data?: any[] }) {
     return () => stopTimer();
   }, [startTimer, stopTimer]);
 
-  const handleScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const offset = event.nativeEvent.contentOffset.x;
-    const index = Math.round(offset / SNAP_INTERVAL);
-    if (index >= 0 && index < displayData.length && index !== activeIndexRef.current) {
-      activeIndexRef.current = index;
-      setActiveIndex(index);
-    }
-  }, [displayData.length]);
+  // Track the actually-visible banner instead of doing scroll-offset math.
+  // Offset math broke with the list's leading padding and inverted in RTL
+  // (contentOffset.x flips), so the active dot didn't match the shown banner.
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 55 }).current;
+  const onViewableItemsChanged = useRef(
+    (info: { viewableItems: Array<{ index: number | null }> }) => {
+      const first = info.viewableItems[0];
+      if (first && typeof first.index === 'number') {
+        activeIndexRef.current = first.index;
+        setActiveIndex(first.index);
+      }
+    },
+  ).current;
 
   const renderItem = useCallback(({ item }: { item: any }) => (
     <View style={styles.bannerContainer}>
@@ -91,8 +96,8 @@ export function BannerSwiper({ data }: { data?: any[] }) {
         snapToInterval={SNAP_INTERVAL}
         snapToAlignment="start"
         decelerationRate="fast"
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
         contentContainerStyle={styles.listContent}
         ItemSeparatorComponent={ItemSeparator}
         onScrollBeginDrag={stopTimer}
@@ -104,7 +109,7 @@ export function BannerSwiper({ data }: { data?: any[] }) {
       />
 
       {/* Pagination Dots */}
-      <View style={styles.pagination}>
+      <View style={[styles.pagination, { flexDirection: rowDirection }]}>
         {displayData.map((_, index) => (
           <Animated.View
             key={index}
