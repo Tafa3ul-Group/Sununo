@@ -32,6 +32,12 @@ export const customerApi = apiSlice.injectEndpoints({
       providesTags: ["Chalet"],
     }),
 
+    /** Featured chalets shown below the home banner (admin-curated, ordered) */
+    getFeaturedChalets: builder.query({
+      query: () => "/customer/chalets/featured",
+      providesTags: ["Chalet"],
+    }),
+
     /** Elasticsearch-powered search with fallback */
     searchChalets: builder.query({
       query: (params) => ({
@@ -537,6 +543,7 @@ export const {
   // Chalets
   useBrowseCustomerChaletsQuery,
   useLazyBrowseCustomerChaletsQuery,
+  useGetFeaturedChaletsQuery,
   useSearchChaletsQuery,
   useLazySearchChaletsQuery,
   useGetCustomerChaletDetailsQuery,

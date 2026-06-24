@@ -1,5 +1,5 @@
-import { HeaderSection } from "@/components/header-section";
 import { EmptyState } from "@/components/ui/empty-state";
+import { CircleBackButton } from "@/components/ui/circle-back-button";
 import { HorizontalCardSkeleton } from "@/components/ui/skeleton-loader";
 import { ErrorState } from "@/components/ui/error-state";
 import {
@@ -8,9 +8,12 @@ import {
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { HorizontalCard } from "@/components/user/horizontal-card";
-import { Colors, normalize } from "@/constants/theme";
+import { Colors, Fonts, normalize } from "@/constants/theme";
 
-import { useBrowseCustomerChaletsQuery } from "@/store/api/customerApiSlice";
+import {
+    useBrowseCustomerChaletsQuery,
+    useGetFeaturedChaletsQuery,
+} from "@/store/api/customerApiSlice";
 import { getStartingPrice } from "@/utils/format";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -59,6 +62,29 @@ export default function SearchScreen() {
     search: debouncedQuery || undefined,
   });
 
+  // Featured chalets shown before the user types anything.
+  const { data: featuredRaw = [], isLoading: featuredLoading } =
+    useGetFeaturedChaletsQuery(undefined);
+
+  const featuredChalets = useMemo(
+    () =>
+      (Array.isArray(featuredRaw) ? featuredRaw : [])
+        .filter(Boolean)
+        .map((chalet: any) => ({
+          id: chalet.id,
+          title: isArabic
+            ? chalet.name?.ar || chalet.nameAr || chalet.name || ""
+            : chalet.name?.en || chalet.nameEn || chalet.name || "",
+          location: isArabic
+            ? chalet.region?.name?.ar || chalet.region?.nameAr || chalet.region?.name || ""
+            : chalet.region?.name?.en || chalet.region?.nameEn || chalet.region?.name || "",
+          price: getStartingPrice(chalet),
+          rating: chalet.rating ?? chalet.averageRating ?? 0,
+          image: chalet.images?.[0]?.url ?? chalet.images?.[0],
+        })),
+    [featuredRaw, isArabic],
+  );
+
   const chalets = useMemo(() => {
     const data = chaletsResponse?.data || [];
     return data.map((chalet: any) => ({
@@ -101,23 +127,20 @@ export default function SearchScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <HeaderSection
-        title={t("home.search")}
-        isHome={false}
-        showBackButton={true}
-        onBackPress={() => router.back()}
-        showLogo={false}
-      />
-
-      <View style={styles.searchContainer}>
-        <View style={[styles.searchBar, { flexDirection: rowDirection }]}>
+      {/* Back button + search field on a single row (no title). */}
+      <View style={[styles.topBar, { flexDirection: rowDirection }]}>
+        <CircleBackButton onPress={() => router.back()} />
+        <View
+          style={[
+            styles.searchBar,
+            { flexDirection: rowDirection, flex: 1 },
+          ]}
+        >
           <SolarMagnifierBold size={20} color={Colors.primary} />
           <TextInput
             placeholder={t("home.searchPlaceholder")}
-            style={[
-              styles.searchInput,
-              { textAlign: textStart },
-            ]}
+            placeholderTextColor={Colors.text.muted}
+            style={[styles.searchInput, { textAlign: textStart }]}
             value={searchQuery}
             onChangeText={setSearchQuery}
             autoFocus
@@ -138,14 +161,46 @@ export default function SearchScreen() {
 
       {/* Results */}
       {searchQuery.length === 0 ? (
-        <EmptyState
-          icon={<SolarMagnifierBold size={40} color={Colors.primary} />}
-          title={
-            isArabic
-              ? "ابدأ البحث عن الشاليهات المفضلة لديك"
-              : "Start searching for your favorite chalets"
-          }
-        />
+        featuredLoading ? (
+          <View style={[styles.listContent, { gap: 12 }]}>
+            <HorizontalCardSkeleton />
+            <HorizontalCardSkeleton />
+            <HorizontalCardSkeleton />
+          </View>
+        ) : featuredChalets.length === 0 ? (
+          <EmptyState
+            icon={<SolarMagnifierBold size={40} color={Colors.primary} />}
+            title={
+              isArabic
+                ? "ابدأ البحث عن الشاليهات المفضلة لديك"
+                : "Start searching for your favorite chalets"
+            }
+          />
+        ) : (
+          <FlatList
+            data={featuredChalets}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            ListHeaderComponent={
+              <View
+                style={{
+                  flexDirection: rowDirection,
+                  justifyContent: "flex-start",
+                  marginBottom: 12,
+                }}
+              >
+                <ThemedText
+                  style={[styles.featuredTitle, { textAlign: textStart }]}
+                >
+                  {t("home.featured")}
+                </ThemedText>
+              </View>
+            }
+          />
+        )
       ) : isLoading ? (
         <View style={[styles.listContent, { gap: 12 }]}>
           <HorizontalCardSkeleton />
@@ -206,19 +261,24 @@ const styles = StyleSheet.create({
   backButton: {
     padding: 4,
   },
-  searchContainer: {
+  topBar: {
     paddingHorizontal: 16,
     paddingVertical: 12,
+    alignItems: "center",
+    gap: 10,
   },
   searchBar: {
-    height: 52,
-    backgroundColor: "#F8FAFC",
-    borderRadius: 16,
+    height: 48,
+    backgroundColor: "#F3F4F6",
+    borderRadius: 999,
     paddingHorizontal: 16,
     alignItems: "center",
-    gap: 12,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
+    gap: 10,
+  },
+  featuredTitle: {
+    fontSize: normalize.font(15),
+    fontFamily: Fonts.bold,
+    color: Colors.text.primary,
   },
   searchInput: {
     flex: 1,

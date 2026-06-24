@@ -9,13 +9,13 @@ import {
     ViewStyle,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
-import * as Haptics from "expo-haptics";
 import Animated, {
-  useSharedValue,
   useAnimatedStyle,
-  withTiming,
+  useSharedValue,
   withSpring,
+  withTiming,
 } from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
 import { useDirection } from "@/i18n";
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
@@ -62,12 +62,6 @@ export function PrimaryButton({
   const isWhite = variant === "white";
   const { isRTL } = useDirection();
 
-  // Press-scale feedback (subtle, professional — no design change).
-  const scale = useSharedValue(1);
-  const pressStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
   const defaultActiveColor = isWhite ? "white" : "#035DF9";
   const defaultActiveTextColor = isWhite ? "#6B7280" : "white";
 
@@ -77,6 +71,14 @@ export function PrimaryButton({
   const textColor = isActive
     ? activeTextColor || defaultActiveTextColor
     : determinedInactiveTextColor;
+
+  // Press feedback: subtle shrink on press-in, spring back on release — shared
+  // recipe across the app so every button responds with the same motion.
+  // Declared before the early `loading` return so hook order stays stable.
+  const scale = useSharedValue(1);
+  const pressAnim = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
 
   if (loading) {
     return (
@@ -99,18 +101,18 @@ export function PrimaryButton({
   return (
     <AnimatedTouchable
       activeOpacity={0.85}
-      onPressIn={() => {
-        scale.value = withTiming(0.96, { duration: 110 });
-      }}
-      onPressOut={() => {
-        scale.value = withSpring(1, { damping: 12, stiffness: 220 });
-      }}
       onPress={() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
         onPress();
       }}
+      onPressIn={() => {
+        scale.value = withTiming(0.97, { duration: 90 });
+      }}
+      onPressOut={() => {
+        scale.value = withSpring(1, { damping: 12, stiffness: 180 });
+      }}
       disabled={disabled}
-      style={[styles.hybridContainer, { height, direction: isRTL ? 'rtl' : 'ltr' }, pressStyle, style]}
+      style={[styles.hybridContainer, { height, direction: isRTL ? 'rtl' : 'ltr' }, style, pressAnim]}
     >
       {/* Logical Start Curve */}
       <View style={{ width: scaledPartWidth, height: scaledPartHeight }}>

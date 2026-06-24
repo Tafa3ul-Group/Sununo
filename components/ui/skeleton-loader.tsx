@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { StyleSheet, View, ViewStyle } from "react-native";
+import { Dimensions, StyleSheet, View, ViewStyle } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -104,9 +104,12 @@ export const SkeletonShape: React.FC<SkeletonShapeProps> = ({
 
 // ─── Banner / Carousel Skeleton ─────────────────────────────────────────────────
 
+// 16:5 banner — match BannerSwiper's aspect ratio (width = screen - 16*2).
+const BANNER_SKELETON_HEIGHT = ((Dimensions.get("window").width - 32) * 5) / 16;
+
 export const BannerSkeleton: React.FC = () => (
   <View style={skeletonStyles.bannerContainer}>
-    <SkeletonBox width="100%" height={160} borderRadius={20} />
+    <SkeletonBox width="100%" height={BANNER_SKELETON_HEIGHT} borderRadius={20} />
     <View style={skeletonStyles.bannerDots}>
       {[0, 1, 2].map((i) => (
         <SkeletonBox key={i} width={8} height={8} borderRadius={4} style={{ marginHorizontal: 3 }} />

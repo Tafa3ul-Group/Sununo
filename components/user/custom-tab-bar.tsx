@@ -5,6 +5,8 @@ import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { useDirection } from '@/i18n';
+import Animated, { useAnimatedStyle, useSharedValue, interpolate } from 'react-native-reanimated';
+import { useTabBarVisibility } from './tab-bar-visibility';
 
 
 /**
@@ -15,6 +17,21 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
   const { isRTL } = useDirection();
 
   const insets = useSafeAreaInsets();
+
+  // Slide the whole bar down out of view when scrolling down (driven by the
+  // shared value the scrolling screen updates). Falls back to always-visible
+  // when there's no provider above (e.g. screens outside the customer stack).
+  const visibilityCtx = useTabBarVisibility();
+  const fallbackHidden = useSharedValue(0);
+  const hidden = visibilityCtx?.hidden ?? fallbackHidden;
+  const hideDistance =
+    normalize.height(44) + Math.max(insets.bottom, 24) + normalize.height(34);
+  const barAnimStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateY: interpolate(hidden.value, [0, 1], [0, hideDistance]) },
+    ],
+    opacity: interpolate(hidden.value, [0, 1], [1, 0]),
+  }));
 
   const currentRouteIndex = state.index;
   const currentRouteName = state.routes[currentRouteIndex].name;
@@ -50,15 +67,15 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
       return options.tabBarIcon({
         focused: isActive,
         color: isIsolated ? 'white' : (isActive ? Colors.primary : 'white'),
-        size: normalize.width(24) });
+        size: normalize.width(20) });
     }
     return null;
   };
 
   return (
-    <View style={styles.container}>
+    <Animated.View style={[styles.container, barAnimStyle]}>
       <View style={[
-        styles.navWrapper, 
+        styles.navWrapper,
         { 
           bottom: Math.max(insets.bottom, 24),
           paddingHorizontal: SIDE_PADDING,
@@ -116,7 +133,7 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
           })}
         </View>
       </View>
-    </View>
+    </Animated.View>
   );
 };
 
@@ -126,33 +143,33 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     justifyContent: 'space-between' },
-  roundButton: { 
-    width: normalize.height(52), 
-    height: normalize.height(52), 
-    borderRadius: normalize.height(26),
-    backgroundColor: Colors.primary, 
-    justifyContent: 'center', 
-    alignItems: 'center' 
+  roundButton: {
+    width: normalize.height(44),
+    height: normalize.height(44),
+    borderRadius: normalize.height(22),
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center'
   },
-  tabCapsule: { 
-    width: normalize.width(180), 
-    height: normalize.height(52), 
-    borderRadius: normalize.height(26),
-    backgroundColor: Colors.primary, 
-    alignItems: 'center', 
+  tabCapsule: {
+    width: normalize.width(165),
+    height: normalize.height(44),
+    borderRadius: normalize.height(22),
+    backgroundColor: Colors.primary,
+    alignItems: 'center',
     justifyContent: 'space-around',
     flexDirection: 'row',
     paddingHorizontal: 8
   },
-  tabItemContainer: { 
-    flex: 1, 
-    alignItems: 'center', 
-    justifyContent: 'center' 
+  tabItemContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   tabIconCircle: {
-    width: normalize.height(40),
-    height: normalize.height(40),
-    borderRadius: normalize.height(20),
+    width: normalize.height(34),
+    height: normalize.height(34),
+    borderRadius: normalize.height(17),
     justifyContent: 'center',
     alignItems: 'center' },
   activeTabIndicator: { 

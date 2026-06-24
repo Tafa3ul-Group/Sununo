@@ -5,7 +5,7 @@ import {
   SolarMapPointBold,
   SolarStarBold,
   SolarBellBingBoldDuotone } from "@/components/icons/solar-icons";
-import { Colors, normalize, Spacing } from "@/constants/theme";
+import { Colors, Fonts, normalize, Spacing } from "@/constants/theme";
 import { RootState } from "@/store";
 import { UserType } from "@/store/authSlice";
 import { Image } from "expo-image";
@@ -22,6 +22,7 @@ import {
   I18nManager } from "react-native";
 import { useSelector } from "react-redux";
 import { ThemedText } from "./themed-text";
+import { RotatingSearchPlaceholder } from "./user/rotating-search-placeholder";
 import { CircleBackButton } from "./ui/circle-back-button";
 import { useDirection, resolveRowDirection } from "@/i18n";
 
@@ -143,18 +144,37 @@ export function HeaderSection({
                   style={styles.avatarContainerHome}
                 >
                   <SolarBellBingBoldDuotone
-                    size={normalize.width(28)}
+                    size={normalize.width(22)}
                     color={Colors.primary}
                   />
                 </TouchableOpacity>
               )}
               <TouchableOpacity
                 onPress={() => router.push("/(customer)/search")}
-                style={styles.searchPillHome}
+                style={[styles.searchTextPill, { flexDirection: rowDir }]}
+                activeOpacity={0.85}
               >
                 <SolarMagnifierBold
-                  size={normalize.width(24)}
+                  size={normalize.width(18)}
                   color={Colors.primary}
+                />
+                <RotatingSearchPlaceholder
+                  phrases={
+                    isArabic
+                      ? [
+                          "ابحث عن شاليه...",
+                          "ابحث عن مسبح خاص...",
+                          "ابحث عن إطلالة بحرية...",
+                          "ابحث عن مزرعة للعائلة...",
+                        ]
+                      : [
+                          "Search for a chalet...",
+                          "Search for a private pool...",
+                          "Search for a sea view...",
+                          "Search for a family farm...",
+                        ]
+                  }
+                  textAlign={textAlign}
                 />
               </TouchableOpacity>
             </View>
@@ -275,8 +295,8 @@ const styles = StyleSheet.create({
   topRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: normalize.width(20),
-    minHeight: normalize.height(60),
+    paddingHorizontal: normalize.width(10),
+    minHeight: normalize.height(24),
     paddingVertical: normalize.height(10),
     justifyContent: "space-between" },
   headerSide: {
@@ -322,8 +342,8 @@ const styles = StyleSheet.create({
     gap: 12,
     alignItems: "center" },
   avatarContainerHome: {
-    width: normalize.width(48),
-    height: normalize.width(48),
+    width: normalize.width(40),
+    height: normalize.width(40),
     borderRadius: 999,
     justifyContent: "center",
     alignItems: "center",
@@ -342,14 +362,20 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%" },
   searchPillHome: {
-    width: normalize.width(48),
-    height: normalize.width(48),
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
+    width: normalize.width(40),
+    height: normalize.width(40),
+    borderRadius: normalize.radius(14),
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FFFFFF" },
+    backgroundColor: Colors.primary + "14" },
+  searchTextPill: {
+    height: normalize.width(34),
+    minWidth: normalize.width(150),
+    borderRadius: 999,
+    paddingHorizontal: normalize.width(14),
+    alignItems: "center",
+    gap: normalize.width(8),
+    backgroundColor: "#F3F4F6" },
   searchContainer: {
     paddingHorizontal: Spacing.md,
     marginBottom: Spacing.md },
