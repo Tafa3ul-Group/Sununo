@@ -208,7 +208,6 @@ export default function NotificationsScreen() {
                         icon={<SolarBellBold size={normalize.width(80)} color={Colors.text.muted} />}
                         title={t('notifications.empty')}
                         description={t('notifications.emptyDesc')}
-                        style={{ paddingTop: normalize.height(80) }}
                     />
                 )}
             </ScrollView>
@@ -222,6 +221,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
     },
     scrollContent: {
+        flexGrow: 1,
         paddingHorizontal: 20,
         paddingBottom: 40,
     },
