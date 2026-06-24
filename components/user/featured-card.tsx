@@ -134,12 +134,14 @@ export const FeaturedCard = React.memo(function FeaturedCard({
           transition={200}
         />
 
-        <View
-          style={[
-            styles.overlayRow,
-            { flexDirection: rowDir, justifyContent: "flex-end" },
-          ]}
-        >
+        <View style={[styles.overlayRow, { flexDirection: rowDir }]}>
+          {/* "Special" badge on the start corner (right in RTL), top-aligned */}
+          <ExpoImage
+            source={require("@/assets/shapes/Special.png")}
+            style={styles.specialBadge}
+            contentFit="contain"
+          />
+
           {!hideFavorite && (
             <TouchableOpacity
               style={styles.heartCircle}
@@ -156,16 +158,6 @@ export const FeaturedCard = React.memo(function FeaturedCard({
           )}
         </View>
       </View>
-
-      {/* "Special" badge pinned to the top edge of the image (start corner) */}
-      <ExpoImage
-        source={require("@/assets/shapes/Special.png")}
-        style={[
-          styles.topBadge,
-          { [isRTL ? "right" : "left"]: normalize.width(8) },
-        ]}
-        contentFit="contain"
-      />
 
       {/* Name + price — aligned to the start side (right in RTL) */}
       <View style={[styles.textBlock, { alignItems: alignStart }]}>
@@ -193,12 +185,9 @@ const styles = StyleSheet.create({
   container: {
     width: FEATURED_CARD_WIDTH,
   },
-  topBadge: {
-    position: "absolute",
-    top: -normalize.height(6),
-    width: normalize.width(46),
-    height: normalize.width(46),
-    zIndex: 10,
+  specialBadge: {
+    width: normalize.width(44),
+    height: normalize.width(44),
   },
   imageWrapper: {
     width: "100%",
@@ -213,10 +202,10 @@ const styles = StyleSheet.create({
   },
   overlayRow: {
     position: "absolute",
-    top: normalize.height(10),
+    top: normalize.height(8),
     left: normalize.width(10),
     right: normalize.width(10),
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "space-between",
   },
   badge: {
