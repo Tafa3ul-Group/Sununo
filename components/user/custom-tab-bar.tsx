@@ -5,6 +5,8 @@ import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { useDirection } from '@/i18n';
+import Animated, { useAnimatedStyle, useSharedValue, interpolate } from 'react-native-reanimated';
+import { useTabBarVisibility } from './tab-bar-visibility';
 
 
 /**
@@ -15,6 +17,21 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
   const { isRTL } = useDirection();
 
   const insets = useSafeAreaInsets();
+
+  // Slide the whole bar down out of view when scrolling down (driven by the
+  // shared value the scrolling screen updates). Falls back to always-visible
+  // when there's no provider above (e.g. screens outside the customer stack).
+  const visibilityCtx = useTabBarVisibility();
+  const fallbackHidden = useSharedValue(0);
+  const hidden = visibilityCtx?.hidden ?? fallbackHidden;
+  const hideDistance =
+    normalize.height(44) + Math.max(insets.bottom, 24) + normalize.height(34);
+  const barAnimStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateY: interpolate(hidden.value, [0, 1], [0, hideDistance]) },
+    ],
+    opacity: interpolate(hidden.value, [0, 1], [1, 0]),
+  }));
 
   const currentRouteIndex = state.index;
   const currentRouteName = state.routes[currentRouteIndex].name;
@@ -56,9 +73,9 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
   };
 
   return (
-    <View style={styles.container}>
+    <Animated.View style={[styles.container, barAnimStyle]}>
       <View style={[
-        styles.navWrapper, 
+        styles.navWrapper,
         { 
           bottom: Math.max(insets.bottom, 24),
           paddingHorizontal: SIDE_PADDING,
@@ -116,7 +133,7 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
           })}
         </View>
       </View>
-    </View>
+    </Animated.View>
   );
 };
 

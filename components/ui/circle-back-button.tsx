@@ -5,6 +5,7 @@ import React from 'react';
 import { StyleProp, StyleSheet, TouchableOpacity, View, ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { useSelector } from 'react-redux';
+import * as Haptics from 'expo-haptics';
 
 import { useTranslation } from 'react-i18next';
 
@@ -24,6 +25,7 @@ export function CircleBackButton({ style, onPress }: CircleBackButtonProps) {
   const backPath = isArabic ? AR_BACK_PATH : EN_BACK_PATH;
 
   const handleBack = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     if (onPress) {
       onPress();
     } else if (router.canGoBack()) {
@@ -46,10 +48,10 @@ export function CircleBackButton({ style, onPress }: CircleBackButtonProps) {
       activeOpacity={0.7}
     >
       <View style={styles.iconWrapper}>
-        <Svg 
-          width={normalize.width(16)} 
-          height={normalize.height(16)} 
-          viewBox="0 0 17 24" 
+        <Svg
+          width={normalize.width(14)}
+          height={normalize.height(14)}
+          viewBox="0 0 17 24"
           fill="none"
         >
           <Path d={backPath} fill={Colors.primary} />
@@ -61,9 +63,9 @@ export function CircleBackButton({ style, onPress }: CircleBackButtonProps) {
 
 const styles = StyleSheet.create({
   container: {
-    width: normalize.width(44),
-    height: normalize.width(44),
-    borderRadius: normalize.width(22),
+    width: normalize.width(38),
+    height: normalize.width(38),
+    borderRadius: normalize.width(19),
     backgroundColor: 'white',
     justifyContent: 'center',
     alignItems: 'center',

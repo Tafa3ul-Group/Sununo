@@ -1,11 +1,11 @@
 import { SolarAltArrowLeftBold, SolarAltArrowRightBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
-import { normalize } from "@/constants/theme";
+import { Fonts, normalize } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { useDirection } from "@/i18n";
 import { Image as ExpoImage } from "expo-image";
 import React, { useCallback, useMemo } from "react";
-import { FlatList, I18nManager, StyleSheet, TouchableOpacity, View } from "react-native";
+import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
 import { FEATURED_CARD_WIDTH, FeaturedCard } from "./featured-card";
 
 const SEPARATOR_WIDTH = normalize.width(12);
@@ -88,13 +88,6 @@ export function FeaturedSwiper({
   favoriteIds = [],
   onToggleFavorite,
 }: FeaturedSwiperProps) {
-  const { isRTL } = useDirection();
-  // When the content is RTL but the native layout manager hasn't flipped (web,
-  // or before the native RTL reload), a horizontal FlatList still starts from
-  // the left. Mirror the whole list so it starts from the right, then un-mirror
-  // each item so the cards themselves render normally.
-  const mirror = isRTL && !I18nManager.isRTL;
-
   const visible = useMemo(() => data.slice(0, MAX_VISIBLE), [data]);
 
   // Build a small set of preview thumbnails for the "See all" card — prefer the
@@ -111,8 +104,8 @@ export function FeaturedSwiper({
   );
 
   const renderItem = useCallback(
-    ({ item }: { item: any }) => {
-      const content = item.__seeAll ? (
+    ({ item }: { item: any }) =>
+      item.__seeAll ? (
         <SeeAllCard previews={previews} onPress={onPressSeeAll} />
       ) : (
         <FeaturedCard
@@ -121,19 +114,12 @@ export function FeaturedSwiper({
           isFavorite={favoriteIds.includes(item.id)}
           onToggleFavorite={() => onToggleFavorite?.(item.id)}
         />
-      );
-      return mirror ? (
-        <View style={styles.mirror}>{content}</View>
-      ) : (
-        content
-      );
-    },
-    [mirror, previews, onPressSeeAll, onPressCard, favoriteIds, onToggleFavorite],
+      ),
+    [previews, onPressSeeAll, onPressCard, favoriteIds, onToggleFavorite],
   );
 
   return (
     <FlatList
-      style={mirror ? styles.mirror : undefined}
       data={listData}
       renderItem={renderItem}
       keyExtractor={(item, index) => `${item?.id ?? "item"}-${index}`}
@@ -151,9 +137,6 @@ export function FeaturedSwiper({
 const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: 16,
-  },
-  mirror: {
-    transform: [{ scaleX: -1 }],
   },
   cardBase: {
     width: FEATURED_CARD_WIDTH,
@@ -190,7 +173,7 @@ const styles = StyleSheet.create({
   },
   seeAllText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: Fonts.semiBold,
     color: "#111827",
   },
 });
