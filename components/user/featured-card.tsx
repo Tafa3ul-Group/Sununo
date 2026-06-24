@@ -209,8 +209,11 @@ const styles = StyleSheet.create({
     // (height/verticalScale inflates on tall devices, which created the big
     // top gap.)
     top: normalize.width(6),
-    left: normalize.width(6),
-    right: normalize.width(2),
+    // RTL swaps left/right: in Arabic the Special badge sits on the physical
+    // right, which is bounded by `left`. Tighten that side; keep the favorite
+    // (the other side) at its normal inset.
+    left: normalize.width(2),
+    right: normalize.width(6),
     alignItems: "flex-start",
     justifyContent: "space-between",
   },
