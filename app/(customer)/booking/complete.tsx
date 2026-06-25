@@ -1,6 +1,7 @@
 import { HeaderSection } from "@/components/header-section";
 import {
   SolarCardBold,
+  SolarCheckCircleBoldDuotone,
   SolarInfoCircleBold,
   SolarMapPointBold,
   SolarMoonBold,
@@ -141,6 +142,34 @@ const PressableScale = React.memo(function PressableScale({
   );
 });
 
+// Append a picked image to FormData as a real file part. Web FormData needs a
+// Blob (an RN {uri,name,type} object would serialize to "[object Object]" and
+// the backend would reject it as "does not contain file"); native uses the
+// {uri,name,type} object. Filename/mime are derived from the URI and forced to
+// the jpeg/png the backend accepts.
+async function appendImagePart(
+  formData: FormData,
+  field: string,
+  uri: string,
+  fallback: string,
+) {
+  const rawName = uri.split("?")[0].split("/").pop() || `${fallback}.jpg`;
+  const ext = (/\.(\w+)$/.exec(rawName)?.[1] || "jpg").toLowerCase();
+  const isPng = ext === "png";
+  const type = isPng ? "image/png" : "image/jpeg";
+  const name = /\.(jpe?g|png)$/i.test(rawName)
+    ? rawName
+    : `${fallback}.${isPng ? "png" : "jpg"}`;
+
+  if (Platform.OS === "web") {
+    const res = await fetch(uri);
+    const blob = await res.blob();
+    formData.append(field, blob, name);
+  } else {
+    formData.append(field, { uri, name, type } as any);
+  }
+}
+
 export default function CompleteBookingScreen() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -181,26 +210,13 @@ export default function CompleteBookingScreen() {
     }
   };
 
-  const getFilterDateRange = (): Date[] => {
-    if (!savedFilter?.checkIn) return [];
-    const start = new Date(savedFilter.checkIn);
-    const end = savedFilter.checkOut ? new Date(savedFilter.checkOut) : start;
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return [];
-
-    const timestamps: number[] = [];
-    const cur = new Date(start);
-    while (cur <= end) {
-      timestamps.push(new Date(cur).getTime());
-      cur.setDate(cur.getDate() + 1);
-    }
-    return timestamps.map((time) => new Date(time));
-  };
-
-
-  const filterDateRange = useMemo(getFilterDateRange, [
-    savedFilter?.checkIn,
-    savedFilter?.checkOut,
-  ]);
+  // The search filter's dates are discovery criteria only — they must NEVER
+  // pre-fill the booking calendar. The global filter is persisted and applies
+  // app-wide, so inheriting its dates leaked the filter's days into every
+  // chalet's booking (even after the user moved on). The user always picks the
+  // booking date explicitly. Kept as an empty range so all the downstream
+  // calendar defaults (selected days, start/end, current month) start clean.
+  const filterDateRange = useMemo<Date[]>(() => [], []);
 
   const filterDateKeys = useMemo(() => {
     return new Set(filterDateRange.map(getLocalDateKey));
@@ -272,7 +288,11 @@ export default function CompleteBookingScreen() {
   });
   const chaletDetails = response?.data || response;
 
-  const filterPeriod = useSelector((state: RootState) => state.filter.period);
+  // Same rule as the dates: only honor the filter's period while the filter is
+  // actively applied, so a cleared filter doesn't pre-select a shift.
+  const filterPeriod = useSelector((state: RootState) =>
+    state.filter.isActive ? state.filter.period : null,
+  );
 
   const shiftMatchesFilterPeriod = useCallback(
     (shift: any, period: string | null) => {
@@ -736,7 +756,10 @@ export default function CompleteBookingScreen() {
       // (customer.idCardFrontImage/BackImage) — local form state isn't enough.
       // Persist them now so the create-booking call passes the backend check.
       try {
-        await uploadIdCardImages({ front: idImage1, back: idImage2 }).unwrap();
+        const idFormData = new FormData();
+        await appendImagePart(idFormData, "idCardFrontImage", idImage1, "id_front");
+        await appendImagePart(idFormData, "idCardBackImage", idImage2, "id_back");
+        await uploadIdCardImages(idFormData).unwrap();
       } catch (e: any) {
         Alert.alert(
           isArabic ? "تنبيه" : "Alert",
@@ -1471,13 +1494,12 @@ export default function CompleteBookingScreen() {
       handleIndicatorStyle={{ backgroundColor: "#CBD5E1", width: 40 }}
     >
       <BottomSheetView style={styles.successSheetContent}>
-        <LottieView
-          source={require("../../../components/icons/motions/success.json")}
-          autoPlay
-          loop={false}
-          style={[styles.lottieIcon, { height: normalize.height(120) }]}
-          resizeMode="contain"
-        />
+        <View style={styles.successIconCircle}>
+          <SolarCheckCircleBoldDuotone
+            size={normalize.width(72)}
+            color="#15AB64"
+          />
+        </View>
         <ThemedText style={styles.successTitle}>
           {t("booking.successTitle") || "تم الحجز بنجاح!"}
         </ThemedText>
@@ -2552,6 +2574,15 @@ const styles = StyleSheet.create({
     height: 140,
     alignSelf: "center",
     marginBottom: 15,
+  },
+  successIconCircle: {
+    width: normalize.width(110),
+    height: normalize.width(110),
+    borderRadius: normalize.width(55),
+    backgroundColor: "#E7F8EF",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
   },
   successTitle: {
     fontSize: normalize.font(14),

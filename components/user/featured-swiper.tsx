@@ -98,10 +98,8 @@ export function FeaturedSwiper({
     return source.slice(0, 3).map(resolveImage);
   }, [data]);
 
-  const listData = useMemo(
-    () => [...visible, { id: SEE_ALL_ID, __seeAll: true }],
-    [visible],
-  );
+  // Show only the real chalet cards (the trailing "عرض الكل" card was removed).
+  const listData = visible;
 
   const renderItem = useCallback(
     ({ item }: { item: any }) =>

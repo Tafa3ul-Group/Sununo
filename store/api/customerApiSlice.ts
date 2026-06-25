@@ -464,25 +464,17 @@ export const customerApi = apiSlice.injectEndpoints({
      * set, so the booking form must persist them here before creating a booking.
      */
     uploadIdCardImages: builder.mutation({
-      query: ({ front, back }: { front: string; back: string }) => {
-        const formData = new FormData();
-        formData.append("idCardFrontImage", {
-          uri: front,
-          name: "id_front.jpg",
-          type: "image/jpeg",
-        } as any);
-        formData.append("idCardBackImage", {
-          uri: back,
-          name: "id_back.jpg",
-          type: "image/jpeg",
-        } as any);
-        return {
-          url: "/users/profile",
-          method: "PUT",
-          body: formData,
-          headers: {},
-        };
-      },
+      // Receives a PRE-BUILT FormData. Web FormData only accepts a real
+      // Blob/File (an RN {uri,name,type} object gets stringified to
+      // "[object Object]" → the backend sees no file). The blob conversion is
+      // async, so the caller builds the FormData (web→blob, native→object) and
+      // passes it here ready to send.
+      query: (formData: FormData) => ({
+        url: "/users/profile",
+        method: "PUT",
+        body: formData,
+        headers: {},
+      }),
       invalidatesTags: ["User"],
     }),
 

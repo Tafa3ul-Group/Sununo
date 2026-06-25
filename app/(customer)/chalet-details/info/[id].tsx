@@ -1,6 +1,5 @@
 import {
-  SolarForbiddenBold,
-  SolarKeyBold
+  SolarClipboardListLineDuotone
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -55,7 +54,6 @@ export default function ChaletInfoScreen() {
   const title = type === "terms" 
     ? (isArabic ? "شروط وقوانين الشاليه" : "Chalet Terms & Conditions") 
     : (isArabic ? "شروط وقوانين الشاليه" : "Chalet Rules");
-  const Icon = type === "terms" ? SolarKeyBold : SolarForbiddenBold;
 
   const getContent = () => {
     if (type === "terms") {
@@ -249,7 +247,7 @@ export default function ChaletInfoScreen() {
       ) : typeof getContent() === "string" ? (
         // No data → shared EmptyState, consistent with bookings/wallet pages.
         <EmptyState
-          icon={<Icon size={normalize.width(56)} color={Colors.primary} />}
+          icon={<SolarClipboardListLineDuotone size={normalize.width(56)} color={Colors.primary} />}
           title={
             type === "terms"
               ? (isArabic ? "لا توجد شروط لهذا الشاليه" : "No terms for this chalet")

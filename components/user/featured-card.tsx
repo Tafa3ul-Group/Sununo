@@ -135,11 +135,12 @@ export const FeaturedCard = React.memo(function FeaturedCard({
         />
 
         <View style={[styles.overlayRow, { flexDirection: rowDir }]}>
-          <View style={styles.badge}>
-            <ThemedText style={styles.badgeText}>
-              {isArabic ? "مميّز" : "Featured"}
-            </ThemedText>
-          </View>
+          {/* "Special" badge on the start corner (right in RTL), top-aligned */}
+          <ExpoImage
+            source={require("@/assets/shapes/Special.png")}
+            style={styles.specialBadge}
+            contentFit="contain"
+          />
 
           {!hideFavorite && (
             <TouchableOpacity
@@ -184,6 +185,10 @@ const styles = StyleSheet.create({
   container: {
     width: FEATURED_CARD_WIDTH,
   },
+  specialBadge: {
+    width: normalize.width(32),
+    height: normalize.width(32),
+  },
   imageWrapper: {
     width: "100%",
     height: normalize.width(130),
@@ -197,10 +202,16 @@ const styles = StyleSheet.create({
   },
   overlayRow: {
     position: "absolute",
-    top: normalize.height(10),
-    left: normalize.width(10),
-    right: normalize.width(10),
-    alignItems: "center",
+    // Use the SAME scale as the sides so the corner inset is symmetric.
+    // (height/verticalScale inflates on tall devices, which created the big
+    // top gap.)
+    top: normalize.width(6),
+    // RTL swaps left/right: in Arabic the Special badge sits on the physical
+    // right, which is bounded by `left`. Tighten that side; keep the favorite
+    // (the other side) at its normal inset.
+    left: normalize.width(2),
+    right: normalize.width(6),
+    alignItems: "flex-start",
     justifyContent: "space-between",
   },
   badge: {
@@ -215,11 +226,13 @@ const styles = StyleSheet.create({
     color: "#111827",
   },
   heartCircle: {
-    width: normalize.width(30),
-    height: normalize.width(30),
-    borderRadius: normalize.radius(15),
+    width: normalize.width(26),
+    height: normalize.width(26),
+    borderRadius: normalize.radius(13),
     alignItems: "center",
     justifyContent: "center",
+    // Small soft backdrop so the white heart reads on bright photos.
+    backgroundColor: "rgba(17,24,39,0.28)",
   },
   textBlock: {
     width: "100%",

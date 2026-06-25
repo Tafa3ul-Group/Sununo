@@ -19,8 +19,6 @@ import { useSelector } from "react-redux";
 import { HeaderSection } from "@/components/header-section";
 import { PressableScale } from "@/components/ui/pressable-scale";
 import {
-  SolarAltArrowLeftBold,
-  SolarAltArrowRightBold,
   SolarFireBold,
   SolarTreeBold,
   SolarWaterBold,
@@ -53,6 +51,9 @@ import {
 } from "@/store/api/customerApiSlice";
 // Fallback colors for chalet cards
 const CARD_COLORS = [Colors.primary, Colors.secondary, Colors.accent];
+
+// Temporarily hide the home "Nearby / Map" section. Set to `true` to restore it.
+const SHOW_HOME_MAP = false;
 
 export default function HomeScreen() {
   const { userType } = useSelector((state: RootState) => state.auth);
@@ -547,21 +548,10 @@ export default function HomeScreen() {
                 >
                   {t("home.featured")}
                 </ThemedText>
-                <PressableScale
-                  style={styles.seeAllArrow}
-                  onPress={() => router.push("/featured")}
-                >
-                  {isRTL ? (
-                    <SolarAltArrowLeftBold
-                      size={normalize.width(20)}
-                      color={Colors.text.primary}
-                    />
-                  ) : (
-                    <SolarAltArrowRightBold
-                      size={normalize.width(20)}
-                      color={Colors.text.primary}
-                    />
-                  )}
+                <PressableScale onPress={() => router.push("/featured")}>
+                  <ThemedText style={styles.seeAll}>
+                    {t("home.seeAll")}
+                  </ThemedText>
                 </PressableScale>
               </View>
               {featuredLoading ? (
@@ -582,34 +572,42 @@ export default function HomeScreen() {
             </>
           )}
 
-          {/* Nearby / Map */}
-          <View style={[styles.sectionHeader, { flexDirection: flexDir }]}>
-            <ThemedText style={[styles.sectionTitle, { textAlign: textStart }]}>
-              {t("home.categories.nearby")}
-            </ThemedText>
-            <PressableScale
-              onPress={() => router.push("/(tabs)/(customer)/explore")}
-            >
-              <ThemedText style={styles.seeAll}>{t("home.openMap")}</ThemedText>
-            </PressableScale>
-          </View>
-          <PressableScale
-            scaleTo={0.98}
-            onPress={() =>
-              router.push("/(tabs)/(customer)/explore?showMyLocation=1")
-            }
-            style={styles.mapContainer}
-          >
-            <AppMap
-              key={mapKey}
-              style={styles.map}
-              showMarker
-              markers={mapMarkers}
-              onPressCard={navigateToDetails}
-            />
-            {/* overlay to intercept taps and navigate */}
-            <View style={styles.mapOverlay} />
-          </PressableScale>
+          {/* Nearby / Map — temporarily hidden (toggle SHOW_HOME_MAP to restore) */}
+          {SHOW_HOME_MAP && (
+            <>
+              <View style={[styles.sectionHeader, { flexDirection: flexDir }]}>
+                <ThemedText
+                  style={[styles.sectionTitle, { textAlign: textStart }]}
+                >
+                  {t("home.categories.nearby")}
+                </ThemedText>
+                <PressableScale
+                  onPress={() => router.push("/(tabs)/(customer)/explore")}
+                >
+                  <ThemedText style={styles.seeAll}>
+                    {t("home.openMap")}
+                  </ThemedText>
+                </PressableScale>
+              </View>
+              <PressableScale
+                scaleTo={0.98}
+                onPress={() =>
+                  router.push("/(tabs)/(customer)/explore?showMyLocation=1")
+                }
+                style={styles.mapContainer}
+              >
+                <AppMap
+                  key={mapKey}
+                  style={styles.map}
+                  showMarker
+                  markers={mapMarkers}
+                  onPressCard={navigateToDetails}
+                />
+                {/* overlay to intercept taps and navigate */}
+                <View style={styles.mapOverlay} />
+              </PressableScale>
+            </>
+          )}
 
           {/* Recent bookings — hidden entirely when there's no data */}
           {(latestBookingsLoading || recentBookingChalets.length > 0) && (

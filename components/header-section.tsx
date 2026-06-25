@@ -138,17 +138,8 @@ export function HeaderSection({
         <View style={[styles.headerSide, { alignItems: isHome ? endAlign : startAlign }]}>
           {isHome ? (
             <View style={[styles.homeLeftGroup, { flexDirection: rowDir }]}>
-              {stateUserType !== "guest" && (
-                <TouchableOpacity
-                  onPress={() => router.push("/(customer)/notifications")}
-                  style={styles.avatarContainerHome}
-                >
-                  <SolarBellBingBoldDuotone
-                    size={normalize.width(22)}
-                    color={Colors.primary}
-                  />
-                </TouchableOpacity>
-              )}
+              {/* Search and notification swapped: search now takes the bell's
+                  former slot and the bell takes the search's. */}
               <TouchableOpacity
                 onPress={() => router.push("/(customer)/search")}
                 style={[styles.searchTextPill, { flexDirection: rowDir }]}
@@ -177,6 +168,17 @@ export function HeaderSection({
                   textAlign={textAlign}
                 />
               </TouchableOpacity>
+              {stateUserType !== "guest" && (
+                <TouchableOpacity
+                  onPress={() => router.push("/(customer)/notifications")}
+                  style={styles.avatarContainerHome}
+                >
+                  <SolarBellBingBoldDuotone
+                    size={normalize.width(22)}
+                    color={Colors.primary}
+                  />
+                </TouchableOpacity>
+              )}
             </View>
           ) : (
             <View style={[styles.homeLeftGroup, { flexDirection: rowDir }]}>
@@ -216,7 +218,7 @@ export function HeaderSection({
               activeOpacity={0.8}
             >
               <Image
-                source={currentLogoAr ? require("@/assets/arlogo.svg") : require("@/assets/logo.svg")}
+                source={currentLogoAr ? require("@/assets/arlogo.svg") : require("@/assets/enlogo.svg")}
                 style={{ width: 75, height: 25, tintColor: currentLogoColor }}
                 contentFit="contain"
               />
@@ -339,7 +341,7 @@ const styles = StyleSheet.create({
   homeLeftGroup: {
     flexDirection: "row",
     width: "auto",
-    gap: 12,
+    gap: 6,
     alignItems: "center" },
   avatarContainerHome: {
     width: normalize.width(40),
