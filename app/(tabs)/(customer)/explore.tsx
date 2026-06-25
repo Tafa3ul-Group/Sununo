@@ -109,6 +109,20 @@ const FEATURE_ICON_MAP: Record<string, any> = {
 
 const CARD_COLORS = ["#035DF9", "#15AB64", "#F64300"];
 
+// Service area (Iraq) bounds + a default center. The device GPS on a simulator
+// reports San Francisco, and a real user may be outside the country; in those
+// cases we must NOT center the map there. Only follow the user's location when
+// it falls inside Iraq, otherwise fall back to this center.
+const IRAQ_BOUNDS = { minLng: 38.7, maxLng: 48.8, minLat: 29.0, maxLat: 37.4 };
+const DEFAULT_CENTER: [number, number] = [44.3661, 33.3152]; // [lng, lat] Baghdad
+const isInServiceArea = (lng?: number, lat?: number) =>
+  typeof lng === "number" &&
+  typeof lat === "number" &&
+  lng >= IRAQ_BOUNDS.minLng &&
+  lng <= IRAQ_BOUNDS.maxLng &&
+  lat >= IRAQ_BOUNDS.minLat &&
+  lat <= IRAQ_BOUNDS.maxLat;
+
 function SectionHeader({ title, isRTL }: { title: string; isRTL: boolean }) {
   return (
     <View
@@ -405,8 +419,14 @@ export default function ExploreScreen() {
       });
       setLocation(loc);
       setSelectedChalet(null);
-      setCameraPosition([loc.coords.longitude, loc.coords.latitude]);
-      setZoom(15);
+      if (isInServiceArea(loc.coords.longitude, loc.coords.latitude)) {
+        setCameraPosition([loc.coords.longitude, loc.coords.latitude]);
+        setZoom(15);
+      } else {
+        // Outside the service area (e.g. simulator → San Francisco): show Iraq.
+        setCameraPosition(DEFAULT_CENTER);
+        setZoom(11);
+      }
     } catch {
       // Keep the current camera if the location can't be resolved.
     }
@@ -467,8 +487,10 @@ export default function ExploreScreen() {
       if (status !== "granted") return;
       const loc = await Location.getCurrentPositionAsync({});
       setLocation(loc);
-      setCameraPosition([loc.coords.longitude, loc.coords.latitude]);
-      setZoom(14);
+      if (isInServiceArea(loc.coords.longitude, loc.coords.latitude)) {
+        setCameraPosition([loc.coords.longitude, loc.coords.latitude]);
+        setZoom(14);
+      }
     })();
   }, [showMyLocation]);
 
@@ -481,9 +503,12 @@ export default function ExploreScreen() {
       let loc = await Location.getCurrentPositionAsync({});
       setLocation(loc);
 
-      // Center map on user location initially
-      setCameraPosition([loc.coords.longitude, loc.coords.latitude]);
-      setZoom(14);
+      // Center on the user only if they're inside the service area; otherwise
+      // keep the default Iraq center (avoids the simulator's San Francisco).
+      if (isInServiceArea(loc.coords.longitude, loc.coords.latitude)) {
+        setCameraPosition([loc.coords.longitude, loc.coords.latitude]);
+        setZoom(14);
+      }
 
       subscription = await Location.watchPositionAsync(
         {
