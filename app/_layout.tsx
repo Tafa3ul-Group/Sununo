@@ -156,7 +156,12 @@ function RootLayoutNav() {
             } else if (data.type === "chalet" && data.id) {
               router.push(`/chalet-details/${data.id}`);
             } else if (data.type === "payout") {
-              router.push("/(tabs)/(dashboard)/home");
+              // Payout confirmation (نعم/لا) — same screen for customers and owners.
+              if (data.id) {
+                router.push(`/payout-confirm/${data.id}`);
+              } else {
+                router.push(userType === "owner" ? "/(tabs)/(dashboard)/home" : "/(tabs)/(customer)/profile");
+              }
             }
           },
         );
@@ -197,6 +202,7 @@ function RootLayoutNav() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="(customer)" options={{ headerShown: false }} />
         <Stack.Screen name="(dashboard)" options={{ headerShown: false }} />
+        <Stack.Screen name="payout-confirm/[id]" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style="auto" />
       {/* App-wide version gate: shows the update sheet when out of date. */}

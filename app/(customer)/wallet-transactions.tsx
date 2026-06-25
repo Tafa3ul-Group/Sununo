@@ -1,21 +1,22 @@
 import { HeaderSection } from "@/components/header-section";
 import { EmptyState } from "@/components/ui/empty-state";
 import { WalletCard } from "@/components/user/wallet-card";
+import { WithdrawSheet, WithdrawSheetRef } from "@/components/user/withdraw-sheet";
 import { BookingCardSkeleton } from "@/components/ui/skeleton-loader";
 import { SolarBanknoteBold, SolarWalletBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { Colors, normalize } from "@/constants/theme";
-import { SUPPORT_WHATSAPP } from "@/constants/links";
 import { useDirection } from "@/i18n";
 import {
+  useCreateCustomerPayoutMutation,
   useGetCustomerTransactionsQuery,
   useGetCustomerWalletQuery,
 } from "@/store/api/customerApiSlice";
 import { FlashList } from "@shopify/flash-list";
 import { useRouter } from "expo-router";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { I18nManager, Linking, RefreshControl, StyleSheet, View } from "react-native";
+import { I18nManager, RefreshControl, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function WalletTransactionsScreen() {
@@ -37,6 +38,9 @@ export default function WalletTransactionsScreen() {
     refetch,
   } = useGetCustomerTransactionsQuery({ page: 1, limit: 50 });
   const { data: walletData } = useGetCustomerWalletQuery(undefined);
+  const withdrawSheetRef = useRef<WithdrawSheetRef>(null);
+  const [createPayout, { isLoading: isSubmittingPayout }] =
+    useCreateCustomerPayoutMutation();
 
   const transactions = txResponse?.data || txResponse || [];
   // Pre-classify each transaction once (outside renderItem) so the credit/debit
@@ -59,15 +63,28 @@ export default function WalletTransactionsScreen() {
     : "0";
 
   const openWithdraw = useCallback(() => {
-    const msg = encodeURIComponent(
-      isRTL
-        ? "مرحباً، أرغب بسحب رصيدي."
-        : "Hello, I would like to withdraw my balance.",
-    );
-    Linking.openURL(`https://wa.me/${SUPPORT_WHATSAPP}?text=${msg}`).catch(() => {
-      Linking.openURL(`tel:+${SUPPORT_WHATSAPP}`).catch(() => {});
-    });
-  }, [isRTL]);
+    withdrawSheetRef.current?.present(Number(walletData?.balance || 0));
+  }, [walletData?.balance]);
+
+  const handleWithdraw = useCallback(
+    async (data: {
+      amount: number;
+      method: "zaincash" | "qi" | "other";
+      account: string;
+    }) => {
+      try {
+        await createPayout(data).unwrap();
+        withdrawSheetRef.current?.showSuccess(
+          t("profile.wallet.withdrawSheet.successMessage"),
+        );
+      } catch (e: any) {
+        withdrawSheetRef.current?.showError(
+          e?.data?.message || t("profile.wallet.withdrawSheet.errorMessage"),
+        );
+      }
+    },
+    [createPayout, t],
+  );
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return "";
@@ -174,6 +191,12 @@ export default function WalletTransactionsScreen() {
           />
         </View>
       )}
+
+      <WithdrawSheet
+        ref={withdrawSheetRef}
+        onConfirm={handleWithdraw}
+        isLoading={isSubmittingPayout}
+      />
     </View>
   );
 }

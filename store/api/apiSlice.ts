@@ -641,6 +641,38 @@ export const apiSlice = createApi({
       invalidatesTags: ["User"],
     }),
 
+    // Get a single payout request (for the in-app confirmation screen)
+    getPayout: builder.query({
+      query: (id: string) => `/provider/payouts/${id}`,
+      providesTags: (result: any, error: any, id: string) => [
+        { type: "User" as const, id: `payout-${id}` },
+      ],
+    }),
+
+    // Confirm payout details are correct (نعم)
+    confirmPayout: builder.mutation({
+      query: (id: string) => ({
+        url: `/provider/payouts/${id}/confirm`,
+        method: "PATCH",
+      }),
+      invalidatesTags: (result: any, error: any, id: string) => [
+        "User",
+        { type: "User" as const, id: `payout-${id}` },
+      ],
+    }),
+
+    // Decline / deny the payout request (لا)
+    declinePayout: builder.mutation({
+      query: (id: string) => ({
+        url: `/provider/payouts/${id}/decline`,
+        method: "PATCH",
+      }),
+      invalidatesTags: (result: any, error: any, id: string) => [
+        "User",
+        { type: "User" as const, id: `payout-${id}` },
+      ],
+    }),
+
     // Get notifications
     getNotifications: builder.query({
       query: (params) => ({
@@ -749,6 +781,9 @@ export const {
   useDeleteChaletMutation,
   useGetPayoutsQuery,
   useRequestPayoutMutation,
+  useGetPayoutQuery,
+  useConfirmPayoutMutation,
+  useDeclinePayoutMutation,
   useGetNotificationsQuery,
   useLogoutUserMutation,
 } = apiSlice;

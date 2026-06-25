@@ -48,7 +48,9 @@ export default function NotificationsScreen() {
                 router.push({ pathname: '/(tabs)/(customer)/booking-success', params: { id: item.redirectId } });
             }
         } else if (item.redirectType === 'payout') {
-            router.push('/(tabs)/(dashboard)/home');
+            // Opens the in-app withdrawal confirmation (نعم/لا) screen.
+            if (item.redirectId) router.push(`/payout-confirm/${item.redirectId}`);
+            else router.push('/(tabs)/(dashboard)/home');
         }
     }, [userType, router, markAsRead]);
 

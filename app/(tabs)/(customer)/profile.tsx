@@ -16,13 +16,14 @@ import { LanguageSheet } from '@/components/user/language-sheet';
 import { LogoutSheet } from '@/components/user/logout-sheet';
 import { DeleteAccountSheet } from '@/components/user/delete-account-sheet';
 import { WalletCard } from '@/components/user/wallet-card';
+import { WithdrawSheet, WithdrawSheetRef } from '@/components/user/withdraw-sheet';
 import { PRIVACY_POLICY_URL, SUPPORT_WHATSAPP, toWhatsAppNumber } from '@/constants/links';
 import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc, getAvatarSrc } from '@/hooks/useImageSrc';
 
 import { RootState } from '@/store';
 import { useGetMeQuery } from '@/store/api/apiSlice';
-import { useGetCustomerWalletQuery } from '@/store/api/customerApiSlice';
+import { useCreateCustomerPayoutMutation, useGetCustomerWalletQuery } from '@/store/api/customerApiSlice';
 
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
@@ -128,9 +129,11 @@ export default function CustomerProfileScreen() {
     const languageSheetRef = useRef<BottomSheetModal>(null);
     const logoutSheetRef = useRef<BottomSheetModal>(null);
     const deleteSheetRef = useRef<BottomSheetModal>(null);
+    const withdrawSheetRef = useRef<WithdrawSheetRef>(null);
 
     const { data: meData, refetch: refetchMe } = useGetMeQuery(undefined);
     const { data: walletData, refetch: refetchWallet } = useGetCustomerWalletQuery(undefined);
+    const [createPayout, { isLoading: isSubmittingPayout }] = useCreateCustomerPayoutMutation();
 
     const [isRefreshing, setIsRefreshing] = useState(false);
     const onRefresh = useCallback(async () => {
@@ -185,15 +188,27 @@ export default function CustomerProfileScreen() {
         Linking.openURL(PRIVACY_POLICY_URL).catch(() => {});
     }, []);
 
-    // Withdraw: open the app's WhatsApp with a prefilled request message.
+    // Withdraw: open the in-app sheet to collect amount + payout destination.
     const openWithdraw = useCallback(() => {
-        const msg = encodeURIComponent(
-            isArabic ? 'مرحباً، أرغب بسحب رصيدي.' : 'Hello, I would like to withdraw my balance.',
-        );
-        Linking.openURL(`https://wa.me/${supportPhone}?text=${msg}`).catch(() => {
-            Linking.openURL(`tel:+${supportPhone}`).catch(() => {});
-        });
-    }, [supportPhone, isArabic]);
+        withdrawSheetRef.current?.present(Number(walletData?.balance || 0));
+    }, [walletData?.balance]);
+
+    const handleWithdraw = useCallback(
+        async (data: { amount: number; method: 'zaincash' | 'qi' | 'other'; account: string }) => {
+            try {
+                await createPayout(data).unwrap();
+                withdrawSheetRef.current?.showSuccess(
+                    t('profile.wallet.withdrawSheet.successMessage'),
+                );
+                refetchWallet();
+            } catch (e: any) {
+                withdrawSheetRef.current?.showError(
+                    e?.data?.message || t('profile.wallet.withdrawSheet.errorMessage'),
+                );
+            }
+        },
+        [createPayout, t, refetchWallet],
+    );
 
     const menuItems = [
         {
@@ -347,6 +362,11 @@ export default function CustomerProfileScreen() {
             <LanguageSheet ref={languageSheetRef} />
             <LogoutSheet ref={logoutSheetRef} />
             <DeleteAccountSheet ref={deleteSheetRef} />
+            <WithdrawSheet
+                ref={withdrawSheetRef}
+                onConfirm={handleWithdraw}
+                isLoading={isSubmittingPayout}
+            />
         </View>
     );
 }

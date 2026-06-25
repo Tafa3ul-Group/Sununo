@@ -67,7 +67,34 @@
       "walletCredit": "Wallet Credit",
       "walletDebit": "Wallet Debit",
       "noTransactions": "No Transactions",
-      "noTransactionsDesc": "Your wallet activity will appear here."
+      "noTransactionsDesc": "Your wallet activity will appear here.",
+      "withdrawSheet": {
+        "title": "Withdraw Balance",
+        "available": "Available balance",
+        "method": "Payout method",
+        "zaincash": "Zain Cash",
+        "qi": "Qi Card",
+        "other": "Other",
+        "amount": "Amount",
+        "amountHint": "Enter the amount to withdraw",
+        "max": "Max",
+        "account": "Payout details",
+        "zaincashLabel": "Zain Cash number",
+        "qiLabel": "Qi card number",
+        "zaincashHint": "Enter your Zain Cash number",
+        "qiHint": "10-digit card number",
+        "otherHint": "Enter payout details (e.g. bank account)",
+        "warningTitle": "Important & Sensitive Note",
+        "warningText": "Make sure your payout details are 100% accurate. Any mistake may cause the transfer to fail or send funds to the wrong account.",
+        "submit": "Send Request",
+        "cancel": "Cancel",
+        "retry": "Try Again",
+        "errAmount": "Please enter a valid amount",
+        "errBalance": "Amount exceeds your available balance",
+        "errAccount": "Please enter payout details",
+        "successMessage": "Your withdrawal request was sent and will be reviewed soon.",
+        "errorMessage": "Could not send the withdrawal request, please try again."
+      }
     },
     "contactUs": "Contact Us",
     "privacyPolicy": "Privacy Policy",
@@ -175,7 +202,15 @@
     "morningTime": "9:00 AM - 3:00 PM",
     "eveningTime": "4:00 PM - 8:00 PM",
     "overnightTime": "9:00 PM - 8:00 AM",
-    "days": ["SAT", "SUN", "MON", "TUE", "WED", "THU", "FRI"],
+    "days": [
+      "SAT",
+      "SUN",
+      "MON",
+      "TUE",
+      "WED",
+      "THU",
+      "FRI"
+    ],
     "months": {
       "march": "MARCH 2024"
     },
@@ -248,8 +283,7 @@
     "bookingComplete": "Booking Completion",
     "bookingDetails": "Booking Details",
     "profile": "Profile",
-    "home": "Home",
-    "reviews": "Reviews"
+    "home": "Home"
   },
   "facilities": {
     "general": "General Services",
@@ -288,7 +322,12 @@
       "bookNow": "Book Now",
       "readMore": "Read More",
       "morningShift": "Morning Shift",
-      "specsList": ["Garden with House", "300m", "1 Bathroom", "3 Rooms"]
+      "specsList": [
+        "Garden with House",
+        "300m",
+        "1 Bathroom",
+        "3 Rooms"
+      ]
     }
   },
   "reviews": {
@@ -327,5 +366,33 @@
     "startTime": "Start Time",
     "editDays": "Edit Days",
     "skipToGuests": "Next"
+  },
+  "payoutConfirm": {
+    "title": "Confirm Withdrawal",
+    "amountLabel": "Amount to withdraw",
+    "detailsTitle": "Transfer details",
+    "methodLabel": "Payment method",
+    "accountLabel": "Account / wallet number",
+    "zaincash": "Zain Cash",
+    "qi": "Qi Card",
+    "other": "Other",
+    "securityNote": "For your security, the withdrawal will not be processed until you confirm. If you did not request this, tap \"No\" immediately.",
+    "prompt": "Are the transfer details above correct?",
+    "confirmYes": "Yes, the details are correct",
+    "declineNo": "No, I did not request this",
+    "declineConfirmTitle": "Cancel withdrawal",
+    "declineConfirmBody": "Are you sure? The withdrawal request will be cancelled and no transfer will be made.",
+    "declineYes": "Yes, cancel it",
+    "back": "Back",
+    "confirmedTitle": "Details confirmed ✅",
+    "confirmedBody": "Thank you. Your transfer will be processed and reviewed by the team shortly.",
+    "paidTitle": "Transfer completed",
+    "paidBody": "The amount has been sent to your account successfully.",
+    "declinedTitle": "Request cancelled",
+    "declinedBody": "The withdrawal request was cancelled. If this was not you, please contact us immediately.",
+    "pendingTitle": "Under review",
+    "pendingBody": "Your withdrawal is being reviewed. You will receive a message to confirm the details once approved.",
+    "errorTitle": "Error",
+    "errorBody": "Could not complete the action, please try again."
   }
 }

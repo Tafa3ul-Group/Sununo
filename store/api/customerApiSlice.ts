@@ -351,6 +351,61 @@ export const customerApi = apiSlice.injectEndpoints({
       providesTags: ["User"],
     }),
 
+    /** Request a wallet payout (withdraw balance to a payment destination) */
+    createCustomerPayout: builder.mutation({
+      query: (data: {
+        amount: number;
+        method: "zaincash" | "qi" | "other";
+        account: string;
+      }) => ({
+        url: "/customer/payouts",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["User"],
+    }),
+
+    /** List my wallet payout requests */
+    getCustomerPayouts: builder.query({
+      query: (params?: { page?: number; limit?: number; status?: string }) => ({
+        url: "/customer/payouts",
+        params,
+      }),
+      providesTags: ["User"],
+    }),
+
+    /** Get a single payout request (for the in-app confirmation screen) */
+    getCustomerPayout: builder.query({
+      query: (id: string) => `/customer/payouts/${id}`,
+      providesTags: (result: any, error: any, id: string) => [
+        { type: "User" as const, id: `payout-${id}` },
+      ],
+    }),
+
+    /** Confirm payout details are correct (نعم) */
+    confirmCustomerPayout: builder.mutation({
+      query: (id: string) => ({
+        url: `/customer/payouts/${id}/confirm`,
+        method: "PATCH",
+      }),
+      invalidatesTags: (result: any, error: any, id: string) => [
+        "User",
+        { type: "User" as const, id: `payout-${id}` },
+      ],
+    }),
+
+    /** Decline / deny the payout request (لا) */
+    declineCustomerPayout: builder.mutation({
+      query: (id: string) => ({
+        url: `/customer/payouts/${id}/decline`,
+        method: "PATCH",
+      }),
+      invalidatesTags: (result: any, error: any, id: string) => [
+        "User",
+        { type: "User" as const, id: `payout-${id}` },
+      ],
+    }),
+
     /** Get my wallet (shared endpoint) */
     getMyWallet: builder.query({
       query: () => "/wallet/my-wallet",
@@ -591,6 +646,11 @@ export const {
   // Wallet
   useGetCustomerWalletQuery,
   useGetCustomerTransactionsQuery,
+  useCreateCustomerPayoutMutation,
+  useGetCustomerPayoutsQuery,
+  useGetCustomerPayoutQuery,
+  useConfirmCustomerPayoutMutation,
+  useDeclineCustomerPayoutMutation,
   useGetMyWalletQuery,
   useGetSettingsQuery,
 
