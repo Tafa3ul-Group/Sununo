@@ -132,6 +132,9 @@ export default function BookingDetailsPage() {
   const depositAmount = Number(data.depositAmount || 0);
   const remainingAmount = Number(data.remainingAmount || 0);
   const totalPrice = Number(data.totalPrice || 0);
+  // Owner's net profit after the platform commission is deducted.
+  const providerEarnings = Number(data.providerEarnings || 0);
+  const commissionAmount = Number(data.commissionAmount || 0);
 
   // Payment flags driven by the REAL payment status (not just "not pending_approval").
   const bIsDeposit = data.paymentModel === 'deposit';
@@ -413,17 +416,33 @@ export default function BookingDetailsPage() {
             )}
             {Number(data.extraGuestsPrice) > 0 && renderInfoRow(
               isRTL ? "مبلغ الزيادة" : "Extra Charge",
-              <Text style={[styles.infoValue, { color: '#F59E0B', fontFamily: 'Alexandria-SemiBold' }]}>
+              <Text style={[styles.infoValue, { color: '#F97316', fontFamily: 'Alexandria-SemiBold' }]}>
                 {`+${Number(data.extraGuestsPrice).toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`}
               </Text>,
               false,
-              isRTL 
-                ? `(سعة إضافية - ${Number(data.chalet?.extraPersonPrice || 0).toLocaleString()} د.ع للفرد)` 
+              isRTL
+                ? `(سعة إضافية - ${Number(data.chalet?.extraPersonPrice || 0).toLocaleString()} د.ع للفرد)`
                 : `(Capacity - ${Number(data.chalet?.extraPersonPrice || 0).toLocaleString()} IQD/person)`
             )}
             {renderInfoRow(
               isRTL ? "المبلغ النهائي" : "Final Price",
-              `${totalPrice.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
+              <Text style={[styles.infoValue, { color: '#0F172A', fontFamily: 'Alexandria-SemiBold' }]}>
+                {`${totalPrice.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`}
+              </Text>,
+            )}
+
+            {/* Owner's net profit after the platform commission is deducted */}
+            {providerEarnings > 0 && renderInfoRow(
+              isRTL ? "صافي ربحك" : "Your Net Profit",
+              <Text style={[styles.infoValue, { color: '#16A34A', fontFamily: 'Alexandria-SemiBold', fontSize: normalize.font(15) }]}>
+                {`${providerEarnings.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`}
+              </Text>,
+              false,
+              commissionAmount > 0
+                ? (isRTL
+                    ? `بعد خصم عمولة المنصة (${commissionAmount.toLocaleString()} د.ع)`
+                    : `After platform commission (${commissionAmount.toLocaleString()} IQD)`)
+                : (isRTL ? 'بعد خصم عمولة المنصة' : 'After platform commission')
             )}
 
             {/* Payment status — accurate, based on real payment (confirmed/completed) */}
@@ -441,16 +460,19 @@ export default function BookingDetailsPage() {
             {/* Paid amount — only shown once payment actually went through */}
             {bIsPaid && renderInfoRow(
               bIsDeposit ? (isRTL ? "المبلغ المدفوع (العربون)" : "Paid (Deposit)") : (isRTL ? "المبلغ المدفوع" : "Amount Paid"),
-              <Text style={[styles.infoValue, { color: '#16A34A', fontFamily: 'Alexandria-SemiBold' }]}>
+              <Text style={[styles.infoValue, { color: '#0EA5E9', fontFamily: 'Alexandria-SemiBold' }]}>
                 {`${bAmountPaid.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`}
               </Text>,
             )}
 
             {/* Remaining cash to collect — only for a paid deposit booking */}
             {bIsPaid && bIsDeposit && Number(data.depositAmount || 0) > 0 && remainingAmount > 0 && renderInfoRow(
-              isRTL ? "المتبقي (يُستلم نقداً عند الوصول)" : "Remaining (Collect in cash)",
-              `${remainingAmount.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`,
-              true,
+              isRTL ? "المتبقي" : "Remaining",
+              <Text style={[styles.infoValue, { color: '#F97316', fontFamily: 'Alexandria-SemiBold' }]}>
+                {`${remainingAmount.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`}
+              </Text>,
+              false,
+              isRTL ? "يُستلم نقداً عند الوصول" : "Collect in cash on arrival",
             )}
           </View>
         )}

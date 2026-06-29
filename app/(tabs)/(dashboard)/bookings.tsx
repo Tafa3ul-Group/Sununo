@@ -1,6 +1,7 @@
 import { BookingCancellationSheet, BookingCancellationSheetRef } from '@/components/booking-cancellation-modal';
 import { DashboardCalendar } from "@/components/dashboard/dashboard-calendar";
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
+import { CountdownBadge } from '@/components/dashboard/countdown-badge';
 import { PendingApprovalScreen } from '@/components/dashboard/pending-approval';
 import {
   SolarCalendarBold,
@@ -327,6 +328,17 @@ export default function BookingsScreen() {
                 </Text>
               )}
             </View>
+
+            {/* صافي ربح صاحب الشاليه بعد خصم عمولة المنصة */}
+            {!bIsExternal && Number(item.providerEarnings) > 0 && (
+              <View style={{ flexDirection: isRTL ? 'row' : 'row-reverse', alignItems: 'center', marginBottom: normalize.height(4) }}>
+                <Text style={{ fontSize: normalize.font(11), color: '#16A34A', fontFamily: 'Alexandria-SemiBold' }}>
+                  {isRTL
+                    ? `صافي ربحك: ${(Number(item.providerEarnings) || 0).toLocaleString()} د.ع`
+                    : `Your profit: ${(Number(item.providerEarnings) || 0).toLocaleString()} IQD`}
+                </Text>
+              </View>
+            )}
 
             {/* صف 3: الوردية + التاريخ */}
             <View style={{ flexDirection: isRTL ? 'row' : 'row-reverse', alignItems: 'center', gap: 4, marginBottom: normalize.height(4) }}>
