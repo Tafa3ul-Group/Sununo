@@ -1802,13 +1802,13 @@ export function SolarInboxLinear({ size = 24, color, ...props }: SolarIconProps)
   );
 }export function SolarNotebookBold({ size = 24, color, ...props }: SolarIconProps) {
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+    <Svg width={size} height={size} viewBox="-2 0 24 24" fill="none" {...props}>
       <Path
         fill={color || "currentColor"}
         d="M20 12c0-4.714 0-7.071-1.464-8.536C17.07 2 14.714 2 10 2s-7.071 0-8.536 1.464C0 4.93 0 7.286 0 12s0 7.071 1.464 8.536C2.93 22 5.286 22 10 22s7.071 0 8.536-1.465C20 19.072 20 16.714 20 12Z"
         opacity="0.5"
       />
-      <Path fill={color || "currentColor"} d="M5 8h10M5 12h10M5 16h6" />
+      <Path stroke={color || "currentColor"} strokeWidth={2} strokeLinecap="round" d="M5 8h10M5 12h10M5 16h6" />
     </Svg>
   );
 }

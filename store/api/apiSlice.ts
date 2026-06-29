@@ -355,6 +355,13 @@ export const apiSlice = createApi({
       query: () => "/provider/chalets/amenities/all",
     }),
 
+    // Predefined (ready-made) terms the owner can pick from when building a
+    // chalet's rules. Admin-managed master list; only active terms are returned.
+    getProviderTerms: builder.query<any[], void>({
+      query: () => "/provider/terms",
+      transformResponse: unwrapListResponse,
+    }),
+
     // Admin-flagged (showInFilter) amenity filter options. The endpoint returns
     // BOTH top-level categories and individual features; both are shown as chips.
     // Each option carries `kind` so the screen filters categories via categoryIds
@@ -756,6 +763,7 @@ export const {
   useLazyGetChaletRegionsQuery,
 
   useGetAmenitiesQuery,
+  useGetProviderTermsQuery,
   useGetHomeFilterAmenitiesQuery,
   useGetChaletAmenitiesQuery,
   useSetChaletAmenitiesMutation,

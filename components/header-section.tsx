@@ -25,6 +25,7 @@ import { ThemedText } from "./themed-text";
 import { RotatingSearchPlaceholder } from "./user/rotating-search-placeholder";
 import { CircleBackButton } from "./ui/circle-back-button";
 import { useDirection, resolveRowDirection } from "@/i18n";
+import { useGetNotificationsQuery } from "@/store/api/customerApiSlice";
 
 
 interface HeaderSectionProps {
@@ -74,6 +75,24 @@ export function HeaderSection({
     (state: RootState) => state.auth,
   );
   const [selectedCategory, setSelectedCategory] = React.useState("all");
+
+  // Unread notifications count for the bell badge. Only fetch for signed-in
+  // users (guests have no notifications). Shares the cache key with the
+  // notifications screen, so marking-as-read updates the badge automatically;
+  // polling keeps it fresh while the user sits on the home screen.
+  const showBell = isHome && stateUserType !== "guest";
+  const { data: notificationsResponse } = useGetNotificationsQuery(
+    { page: 1, limit: 50 },
+    { skip: !showBell, pollingInterval: 60000 },
+  );
+  const unreadCount = React.useMemo(() => {
+    const items: any[] = notificationsResponse?.data ?? [];
+    return items.reduce(
+      (count, item) => (item?.readAt || item?.isRead ? count : count + 1),
+      0,
+    );
+  }, [notificationsResponse]);
+  const badgeLabel = unreadCount > 9 ? "9+" : String(unreadCount);
 
   const isArabic = isRTL;
 
@@ -177,6 +196,19 @@ export function HeaderSection({
                     size={normalize.width(22)}
                     color={Colors.primary}
                   />
+                  {unreadCount > 0 && (
+                    <View
+                      style={[
+                        styles.notificationBadge,
+                        needsCounter ? { left: -4 } : { right: -4 },
+                      ]}
+                      pointerEvents="none"
+                    >
+                      <ThemedText style={styles.notificationBadgeText}>
+                        {badgeLabel}
+                      </ThemedText>
+                    </View>
+                  )}
                 </TouchableOpacity>
               )}
             </View>
@@ -354,6 +386,24 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
     // Transition and cursor are handled by TouchableOpacity/React Native
   },
+  notificationBadge: {
+    position: "absolute",
+    top: -3,
+    minWidth: normalize.width(17),
+    height: normalize.width(17),
+    paddingHorizontal: 3,
+    borderRadius: 999,
+    backgroundColor: "#FF4500",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1.5,
+    borderColor: "#FFFFFF" },
+  notificationBadgeText: {
+    color: "#FFFFFF",
+    fontSize: normalize.font(9),
+    lineHeight: normalize.font(12),
+    fontFamily: "Alexandria-Bold",
+    textAlign: "center" },
   avatarCircleHome: {
     width: "82%",
     height: "82%",

@@ -3,11 +3,12 @@ import {
   SolarAltArrowRightLinear,
   SolarBanknoteBold,
   SolarCalendarBold,
+  SolarShieldWarningBold,
   SolarUsersGroupBold,
   SolarWalletBold
 } from "@/components/icons/solar-icons";
 import { PrimaryButton } from '@/components/user/primary-button';
-import { Colors, normalize } from '@/constants/theme';
+import { Colors, normalize, Shadows } from '@/constants/theme';
 import { useDirection } from "@/i18n";
 import { RootState } from '@/store';
 import { useGetPayoutsQuery, useGetProviderBookingsQuery, useGetProviderProfileQuery, useGetProviderStatsQuery, useRequestPayoutMutation } from '@/store/api/apiSlice';
@@ -93,6 +94,8 @@ export default function RevenueScreen() {
   // Confirmed (paid) bookings not yet completed — used to show "pending / غير مسوّى"
   // earnings the provider will receive once each booking is completed.
   const { data: confirmedBookingsResponse, refetch: refetchConfirmed } = useGetProviderBookingsQuery({ status: 'confirmed', limit: 100, page: 1 });
+  // Payouts awaiting THIS owner's in-app confirmation (admin approved → needs نعم/لا).
+  const { data: awaitingResponse, refetch: refetchAwaiting } = useGetPayoutsQuery({ status: 'approved', limit: 5 });
   const [requestPayout, { isLoading: isRequesting }] = useRequestPayoutMutation();
 
   const handleRefresh = async () => {
@@ -100,7 +103,13 @@ export default function RevenueScreen() {
     refetchProfile();
     refetchStats();
     refetchConfirmed();
+    refetchAwaiting();
   };
+
+  const awaitingConfirm: any[] = useMemo(() => {
+    const list = awaitingResponse?.data || awaitingResponse || [];
+    return Array.isArray(list) ? list.filter((p: any) => p.status === 'approved') : [];
+  }, [awaitingResponse]);
 
   const payouts = payoutsResponse?.data || payoutsResponse || [];
   const profile = profileResponse?.data || profileResponse;
@@ -157,9 +166,10 @@ export default function RevenueScreen() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'approved': case 'paid': return '#10B981';
-      case 'pending': return '#F59E0B';
-      case 'rejected': return '#EF4444';
+      case 'paid': case 'confirmed': return Colors.secondary;   // green
+      case 'approved': return Colors.primary;                    // needs your confirmation
+      case 'pending': return '#F59E0B';                          // under review
+      case 'declined': case 'rejected': return Colors.accent;    // orange
       default: return Colors.text.muted;
     }
   };
@@ -167,8 +177,10 @@ export default function RevenueScreen() {
   const getStatusLabel = (status: string) => {
     const labels: any = {
       pending: { ar: 'قيد المراجعة', en: 'Pending' },
-      approved: { ar: 'مقبول', en: 'Approved' },
+      approved: { ar: 'بانتظار تأكيدك', en: 'Confirm needed' },
+      confirmed: { ar: 'مؤكّد', en: 'Confirmed' },
       paid: { ar: 'تم الدفع', en: 'Paid' },
+      declined: { ar: 'ملغى', en: 'Declined' },
       rejected: { ar: 'مرفوض', en: 'Rejected' }
     };
     return isRTL ? labels[status]?.ar || status : labels[status]?.en || status;
@@ -231,6 +243,35 @@ export default function RevenueScreen() {
           </View>
         </View>
 
+        {/* Payout confirmation prompt — appears when the admin approved a request
+            and it now needs THIS owner's in-app نعم/لا confirmation. */}
+        {awaitingConfirm.length > 0 && (
+          <TouchableOpacity
+            style={[styles.confirmBanner, { flexDirection: 'row' }]}
+            activeOpacity={0.9}
+            onPress={() => router.push(`/payout-confirm/${awaitingConfirm[0].id}`)}
+          >
+            <View style={styles.confirmBannerIcon}>
+              <SolarShieldWarningBold size={22} color={Colors.white} />
+            </View>
+            <View style={[styles.confirmBannerBody, { alignItems: startAlign }]}>
+              <Text style={[styles.confirmBannerTitle, { textAlign }]}>
+                {isRTL ? 'طلب سحب بانتظار تأكيدك' : 'Withdrawal needs your confirmation'}
+                {awaitingConfirm.length > 1 ? ` (${awaitingConfirm.length})` : ''}
+              </Text>
+              <Text style={[styles.confirmBannerSub, { textAlign }]} numberOfLines={2}>
+                {isRTL
+                  ? `أكّد معلومات سحب ${Number(awaitingConfirm[0].amount || 0).toLocaleString()} د.ع قبل تنفيذ التحويل`
+                  : `Confirm the details of your ${Number(awaitingConfirm[0].amount || 0).toLocaleString()} IQD withdrawal`}
+              </Text>
+            </View>
+            <View style={[styles.confirmBannerCta, { flexDirection: 'row' }]}>
+              <Text style={styles.confirmBannerCtaText}>{isRTL ? 'تأكيد' : 'Confirm'}</Text>
+              <SolarAltArrowRightLinear size={14} color={Colors.white} style={{ transform: [{ rotate: isRTL ? '180deg' : '0deg' }] }} />
+            </View>
+          </TouchableOpacity>
+        )}
+
         {/* Period Filter */}
         <View style={[styles.periodRow, { flexDirection: 'row' }]}>
           {PERIODS.map((period) => (
@@ -291,10 +332,14 @@ export default function RevenueScreen() {
           ) : Array.isArray(payouts) && payouts.length > 0 ? (
             payouts.map((item: any, index: number) => (
               <View key={item.id}>
-                <View style={[styles.transactionItem, { flexDirection: 'row' }]}>
+                <TouchableOpacity
+                  style={[styles.transactionItem, { flexDirection: 'row' }]}
+                  activeOpacity={0.7}
+                  onPress={() => router.push(`/payout-confirm/${item.id}`)}
+                >
                   <View style={[
                     styles.transactionIcon,
-                    { backgroundColor: item.status === 'paid' ? '#ECFDF5' : item.status === 'rejected' ? '#FEF2F2' : '#FFF7ED' }
+                    { backgroundColor: getStatusColor(item.status) + '15' }
                   ]}>
                     <SolarBanknoteBold
                       size={20}
@@ -319,7 +364,9 @@ export default function RevenueScreen() {
                       </Text>
                     </View>
                   </View>
-                </View>
+
+                  <SolarAltArrowRightLinear size={16} color={Colors.text.muted} style={{ transform: [{ rotate: isRTL ? '180deg' : '0deg' }] }} />
+                </TouchableOpacity>
                 {index < payouts.length - 1 && <View style={styles.separator} />}
               </View>
             ))
@@ -502,6 +549,52 @@ const styles = StyleSheet.create({
     fontFamily: "Alexandria-Medium",
     color: 'rgba(255,255,255,0.7)',
     textAlign: 'center'
+  },
+  // Payout confirmation banner
+  confirmBanner: {
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: Colors.primary,
+    borderRadius: 18,
+    padding: 14,
+    marginBottom: 20,
+    ...Shadows.medium,
+  },
+  confirmBannerIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 13,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  confirmBannerBody: {
+    flex: 1,
+    gap: 3,
+  },
+  confirmBannerTitle: {
+    fontSize: normalize.font(13),
+    fontFamily: 'Alexandria-Bold',
+    color: Colors.white,
+  },
+  confirmBannerSub: {
+    fontSize: normalize.font(11),
+    fontFamily: 'Alexandria-Medium',
+    color: 'rgba(255,255,255,0.85)',
+    lineHeight: 17,
+  },
+  confirmBannerCta: {
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+  },
+  confirmBannerCtaText: {
+    fontSize: normalize.font(12),
+    fontFamily: 'Alexandria-Bold',
+    color: Colors.white,
   },
   // Period Filter
   periodRow: {

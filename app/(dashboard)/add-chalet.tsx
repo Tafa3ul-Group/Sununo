@@ -1,5 +1,7 @@
 import { ChaletProgressTabs } from '@/components/chalet-progress-tabs';
+import { PredefinedTermsPicker, type PredefinedTerm } from '@/components/dashboard/predefined-terms-picker';
 import { ThemedText } from '@/components/themed-text';
+import { AiTranslateButton } from '@/components/ui/ai-translate-button';
 
 import {
   SolarCameraBold,
@@ -11,10 +13,12 @@ import {
   SolarMagnifierBold,
   SolarMapPointBold,
   SolarMapPointWaveBoldDuotone,
+  SolarNotebookBold,
   SolarPenBold,
   SolarPostsCarouselBoldDuotone,
   SolarSortByTimeBold,
   SolarStarBold,
+  SolarTrashBinBold,
   SolarWifiBold
 } from "@/components/icons/solar-icons";
 import { AppMap } from '@/components/user/app-map';
@@ -32,6 +36,7 @@ import {
   useCreateChaletMutation,
   useGetAmenityCategoriesQuery,
   useGetCitiesQuery,
+  useGetProviderTermsQuery,
   useGetShiftDefaultsQuery
 } from '@/store/api/apiSlice';
 import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal, BottomSheetTextInput, BottomSheetView } from '@gorhom/bottom-sheet';
@@ -140,6 +145,14 @@ interface ShiftData {
   pricing: ShiftPricing[];
 }
 
+interface RuleItem {
+  id: string;
+  titleAr: string;
+  titleEn?: string;
+  descriptionAr: string;
+  descriptionEn?: string;
+}
+
 const DAY_NAMES_AR = ['أحد', 'إثن', 'ثلا', 'أرب', 'خمي', 'جمع', 'سبت'];
 const DAY_NAMES_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -188,6 +201,7 @@ export default function AddChaletScreen() {
   const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
 
   const { data: amenityCategories } = useGetAmenityCategoriesQuery();
+  const { data: predefinedTerms, isLoading: isLoadingTerms } = useGetProviderTermsQuery();
 
   const steps = useMemo(() => [
     { id: 'name', title: isRTL ? 'الاسماء' : 'Names', icon: <SolarDocumentAddBoldDuotone size={18} color="#FFF" /> },
@@ -195,6 +209,7 @@ export default function AddChaletScreen() {
     { id: 'shifts', title: isRTL ? 'الفترات' : 'Shifts', icon: <SolarSortByTimeBold size={18} color="#FFF" /> },
     { id: 'capacity', title: isRTL ? 'السعة' : 'Capacity', icon: <SolarPostsCarouselBoldDuotone size={18} color="#FFF" /> },
     { id: 'amenities', title: isRTL ? 'المرافق' : 'Amenities', icon: <SolarHomeBoldDuotone size={18} color="#FFF" /> },
+    { id: 'rules', title: isRTL ? 'الشروط' : 'Rules', icon: <SolarNotebookBold size={18} color="#FFF" /> },
   ], [isRTL]);
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -274,6 +289,53 @@ export default function AddChaletScreen() {
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const [uploadingCategoryId, setUploadingCategoryId] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState<string | null>(null);
+
+  // ── Rules / Terms ──
+  // A single source of truth: ready-made terms toggle in/out (matched by Arabic
+  // title), custom rules are appended and edited inline. Serialized on submit.
+  const [rules, setRules] = useState<RuleItem[]>([]);
+
+  const predefinedTitleSet = useMemo(
+    () => new Set((predefinedTerms || []).map((t: any) => t.title?.ar)),
+    [predefinedTerms]
+  );
+  const selectedRuleTitles = useMemo(() => new Set(rules.map(r => r.titleAr)), [rules]);
+  const customRules = useMemo(
+    () => rules.filter(r => !predefinedTitleSet.has(r.titleAr)),
+    [rules, predefinedTitleSet]
+  );
+
+  const toggleTerm = (term: PredefinedTerm) => {
+    setRules(prev => {
+      const exists = prev.some(r => r.titleAr === term.title?.ar);
+      if (exists) return prev.filter(r => r.titleAr !== term.title?.ar);
+      return [...prev, {
+        id: term.id || Date.now().toString(),
+        titleAr: term.title?.ar || '',
+        titleEn: term.title?.en || '',
+        descriptionAr: term.content?.ar || '',
+        descriptionEn: term.content?.en || '',
+      }];
+    });
+  };
+
+  const addEmptyCustomRule = () => {
+    setRules(prev => [...prev, {
+      id: `custom-${Date.now()}`,
+      titleAr: '',
+      titleEn: '',
+      descriptionAr: '',
+      descriptionEn: '',
+    }]);
+  };
+
+  const updateRule = (id: string, patch: Partial<RuleItem>) => {
+    setRules(prev => prev.map(r => (r.id === id ? { ...r, ...patch } : r)));
+  };
+
+  const removeRule = (id: string) => {
+    setRules(prev => prev.filter(r => r.id !== id));
+  };
 
   // Bottom Sheet Refs
   const citySheetRef = useRef<BottomSheetModal>(null);
@@ -546,6 +608,17 @@ export default function AddChaletScreen() {
       if (form.policiesAr) {
         formData.append('terms', JSON.stringify({ ar: form.policiesAr, en: form.policiesEn || form.policiesAr }));
       }
+
+      // ── Rules (ready-made + custom) ──
+      const rulesPayload = rules
+        .filter(r => r.titleAr.trim() || r.descriptionAr.trim())
+        .map(r => ({
+          title: { ar: r.titleAr.trim(), en: (r.titleEn || r.titleAr).trim() },
+          description: { ar: r.descriptionAr.trim(), en: (r.descriptionEn || r.descriptionAr).trim() },
+        }));
+      if (rulesPayload.length > 0) {
+        formData.append('rules', JSON.stringify(rulesPayload));
+      }
       if (form.phone) formData.append('phone', form.phone);
       if (form.whatsapp) formData.append('whatsapp', form.whatsapp);
       if (form.area) formData.append('area', form.area);
@@ -785,7 +858,10 @@ export default function AddChaletScreen() {
                     />
                   </View>
                   <View style={styles.inputGroup}>
-                    <Text style={[styles.label, { textAlign }]}>{isRTL ? 'اسم الشاليه (إنجليزي)' : 'Chalet Name (EN)'} <Text style={styles.optionalLabel}>{isRTL ? 'اختياري' : 'Optional'}</Text></Text>
+                    <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Text style={[styles.label, { textAlign }]}>{isRTL ? 'اسم الشاليه (إنجليزي)' : 'Chalet Name (EN)'} <Text style={styles.optionalLabel}>{isRTL ? 'اختياري' : 'Optional'}</Text></Text>
+                      <AiTranslateButton source={form.nameAr} onTranslated={(en) => setForm((prev) => ({ ...prev, nameEn: en }))} />
+                    </View>
                     <TextInput
                       style={[styles.input, { textAlign: 'left' }]}
                       placeholder="e.g. Rose Chalet"
@@ -810,7 +886,10 @@ export default function AddChaletScreen() {
                     />
                   </View>
                   <View style={styles.inputGroup}>
-                    <Text style={[styles.label, { textAlign }]}>{isRTL ? 'وصف الشاليه (إنجليزي)' : 'Description (EN)'} <Text style={styles.optionalLabel}>{isRTL ? 'اختياري' : 'Optional'}</Text></Text>
+                    <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Text style={[styles.label, { textAlign }]}>{isRTL ? 'وصف الشاليه (إنجليزي)' : 'Description (EN)'} <Text style={styles.optionalLabel}>{isRTL ? 'اختياري' : 'Optional'}</Text></Text>
+                      <AiTranslateButton source={form.descriptionAr} onTranslated={(en) => setForm((prev) => ({ ...prev, descriptionEn: en }))} />
+                    </View>
                     <TextInput
                       style={[styles.input, styles.textArea, { textAlign: 'left' }]}
                       placeholder="Enter description in English..."
@@ -1144,6 +1223,81 @@ export default function AddChaletScreen() {
                   </View>
                 </View>
               </View>
+            )}
+
+            {/* ═══════════ Step 5: الشروط والقوانين ═══════════ */}
+            {currentStep === 5 && (
+              <>
+                {/* Ready-made terms */}
+                <View style={styles.sectionCard}>
+                  <PredefinedTermsPicker
+                    terms={predefinedTerms as PredefinedTerm[] | undefined}
+                    selectedTitles={selectedRuleTitles}
+                    onToggle={toggleTerm}
+                    isRTL={isRTL}
+                    loading={isLoadingTerms}
+                  />
+                </View>
+
+                {/* Divider */}
+                <View style={{ height: 1, backgroundColor: '#EEF2F6', marginBottom: Spacing.md }} />
+
+                {/* Custom rules */}
+                <View style={styles.sectionCard}>
+                  <View style={{ flexDirection, alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+                    <View style={{ flex: 1, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
+                      <Text style={{ fontSize: 15, fontFamily: 'Alexandria-Bold', color: '#0F172A', textAlign }}>{isRTL ? 'شروط مخصّصة' : 'Custom Rules'}</Text>
+                      <Text style={{ fontSize: 12, fontFamily: 'Alexandria-Regular', color: '#94A3B8', marginTop: 3, textAlign }}>{isRTL ? 'شروط خاصة بهذا الشاليه فقط' : 'Rules specific to this chalet'}</Text>
+                    </View>
+                    <TouchableOpacity onPress={addEmptyCustomRule} activeOpacity={0.8} style={{ flexDirection, alignItems: 'center', gap: 4, borderRadius: 10, borderWidth: 1.5, borderColor: Colors.primary + '40', paddingHorizontal: 12, paddingVertical: 8 }}>
+                      <Text style={{ fontSize: 16, color: Colors.primary, fontFamily: 'Alexandria-Bold', marginTop: -2 }}>+</Text>
+                      <Text style={{ fontSize: 12, color: Colors.primary, fontFamily: 'Alexandria-Bold' }}>{isRTL ? 'إضافة شرط' : 'Add Rule'}</Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {customRules.length === 0 ? (
+                    <View style={{ borderRadius: 12, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#EEF2F6', paddingVertical: 18, paddingHorizontal: 16 }}>
+                      <Text style={{ fontSize: 12, fontFamily: 'Alexandria-Medium', color: '#94A3B8', textAlign: 'center', lineHeight: 19 }}>
+                        {isRTL ? 'لا توجد شروط مخصّصة. اضغط «إضافة شرط» لإضافة شرط خاص بهذا الشاليه.' : 'No custom rules. Tap "Add Rule" to add one specific to this chalet.'}
+                      </Text>
+                    </View>
+                  ) : (
+                    <View style={{ gap: 12 }}>
+                      {customRules.map((rule, index) => (
+                        <View key={rule.id} style={{ borderRadius: 14, borderWidth: 1, borderColor: '#E8EBF0', backgroundColor: '#FFF', padding: 14, gap: 10 }}>
+                          <View style={{ flexDirection, alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Text style={{ fontSize: 12, fontFamily: 'Alexandria-Bold', color: '#64748B' }}>{isRTL ? `شرط ${index + 1}` : `Rule ${index + 1}`}</Text>
+                            <TouchableOpacity onPress={() => removeRule(rule.id)} style={{ width: 30, height: 30, borderRadius: 8, backgroundColor: '#FEF2F2', justifyContent: 'center', alignItems: 'center' }}>
+                              <SolarTrashBinBold size={15} color="#EF4444" />
+                            </TouchableOpacity>
+                          </View>
+
+                          {/* Arabic */}
+                          <TextInput style={[styles.ruleInput, { textAlign: isRTL ? 'right' : 'left' }]} placeholder={isRTL ? 'عنوان الشرط (عربي)' : 'Rule title (Arabic)'} placeholderTextColor="#CBD5E1" value={rule.titleAr} onChangeText={(v) => updateRule(rule.id, { titleAr: v })} />
+                          <TextInput style={[styles.ruleInput, styles.ruleArea, { textAlign: isRTL ? 'right' : 'left' }]} placeholder={isRTL ? 'شرح الشرط (عربي)' : 'Rule description (Arabic)'} placeholderTextColor="#CBD5E1" multiline value={rule.descriptionAr} onChangeText={(v) => updateRule(rule.id, { descriptionAr: v })} />
+
+                          {/* English title */}
+                          <View style={{ gap: 4 }}>
+                            <View style={{ flexDirection, alignItems: 'center', justifyContent: 'space-between' }}>
+                              <Text style={{ fontSize: 10, fontFamily: 'Alexandria-Medium', color: '#94A3B8' }}>{isRTL ? 'العنوان (إنجليزي)' : 'Title (EN)'}</Text>
+                              <AiTranslateButton source={rule.titleAr} onTranslated={(en) => updateRule(rule.id, { titleEn: en })} />
+                            </View>
+                            <TextInput style={[styles.ruleInput, { textAlign: 'left' }]} placeholder="Rule title (English)" placeholderTextColor="#CBD5E1" value={rule.titleEn} onChangeText={(v) => updateRule(rule.id, { titleEn: v })} />
+                          </View>
+                          {/* English description */}
+                          <View style={{ gap: 4 }}>
+                            <View style={{ flexDirection, alignItems: 'center', justifyContent: 'space-between' }}>
+                              <Text style={{ fontSize: 10, fontFamily: 'Alexandria-Medium', color: '#94A3B8' }}>{isRTL ? 'الشرح (إنجليزي)' : 'Description (EN)'}</Text>
+                              <AiTranslateButton source={rule.descriptionAr} onTranslated={(en) => updateRule(rule.id, { descriptionEn: en })} />
+                            </View>
+                            <TextInput style={[styles.ruleInput, styles.ruleArea, { textAlign: 'left' }]} placeholder="Rule description (English)" placeholderTextColor="#CBD5E1" multiline value={rule.descriptionEn} onChangeText={(v) => updateRule(rule.id, { descriptionEn: v })} />
+                          </View>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                </View>
+              </>
             )}
           </Animated.View>
         </ScrollView>
@@ -1575,6 +1729,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Alexandria-Bold',
   },
   textArea: { height: normalize.height(100), paddingTop: 18, textAlignVertical: 'top' },
+  // Compact inputs used inside custom-rule cards (matches the portal's density)
+  ruleInput: {
+    backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10,
+    fontSize: normalize.font(13), fontFamily: 'Alexandria-Regular', color: '#1E293B',
+    borderWidth: 1, borderColor: '#E2E8F0',
+  },
+  ruleArea: { minHeight: 64, paddingTop: 10, textAlignVertical: 'top' },
   // Map
   mapPreviewContainer: {
     height: normalize.height(160), width: '100%', borderRadius: normalize.radius(12),

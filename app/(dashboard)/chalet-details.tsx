@@ -1,7 +1,7 @@
 import { AmenitiesModal } from '@/components/dashboard/amenities-modal';
+import { PredefinedTermsPicker, type PredefinedTerm } from '@/components/dashboard/predefined-terms-picker';
 import {
   ProfileShape,
-  SolarAddSquareBold,
   SolarBanknoteBold,
   SolarCameraAddBold,
   SolarCheckCircleBold,
@@ -23,6 +23,7 @@ import { AppMap } from '@/components/user/app-map';
 import { GuestCounter } from '@/components/user/guest-counter';
 import { LocationPickerModal } from '@/components/user/location-picker-modal';
 import { PrimaryButton } from '@/components/user/primary-button';
+import { AiTranslateButton } from '@/components/ui/ai-translate-button';
 import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
 import { useDirection } from '@/i18n';
@@ -33,6 +34,7 @@ import {
   useGetChaletAmenitiesQuery,
   useGetChaletShiftsQuery,
   useGetCitiesQuery,
+  useGetProviderTermsQuery,
   useGetOwnerChaletDetailsQuery,
   useGetProviderChaletStatsQuery,
   useSetChaletAmenitiesMutation,
@@ -45,7 +47,7 @@ import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal, BottomSheet
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, Dimensions, I18nManager, Image, ScrollView, StatusBar, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import Toast from 'react-native-toast-message';
@@ -82,6 +84,7 @@ export default function ChaletDetailsScreen() {
   const [deleteImage] = useDeleteChaletImageMutation();
   const [setAmenitiesMutation, { isLoading: isLinking }] = useSetChaletAmenitiesMutation();
   const { data: cities } = useGetCitiesQuery();
+  const { data: predefinedTerms, isLoading: isLoadingTerms } = useGetProviderTermsQuery();
   const { data: amenityCategories } = useGetAmenityCategoriesQuery();
   const { data: currentAmenities } = useGetChaletAmenitiesQuery(chaletId as string, { skip: !chaletId });
   const { data: shiftsResponse } = useGetChaletShiftsQuery(chaletId as string, { skip: !chaletId });
@@ -151,16 +154,24 @@ export default function ChaletDetailsScreen() {
     rules: [] as RuleItem[]
   });
 
-  const [newRule, setNewRule] = useState({
-    titleAr: '',
-    titleEn: '',
-    descriptionAr: '',
-    descriptionEn: '',
-  });
-
-  const [editingRuleId, setEditingRuleId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<RuleItem | null>(null);
   const [isUpdatingRules, setIsUpdatingRules] = useState(false);
+
+  // Map the chalet's stored rules into the editable local shape (used both on
+  // load and to discard unsaved edits when the sheet is dismissed).
+  const mapChaletRules = useCallback((c: any): RuleItem[] => (
+    c?.rules
+      ? c.rules.map((r: any, idx: number) => {
+          const item = Array.isArray(r) ? (r[0] || {}) : r;
+          return {
+            id: item.id || String(idx),
+            titleAr: item.title?.ar || item.title || '',
+            titleEn: item.title?.en || '',
+            descriptionAr: item.description?.ar || item.description || '',
+            descriptionEn: item.description?.en || '',
+          };
+        })
+      : []
+  ), []);
 
   useEffect(() => {
     if (chalet) {
@@ -187,18 +198,7 @@ export default function ChaletDetailsScreen() {
         bedrooms: chalet.bedrooms?.toString() || '',
         bathrooms: chalet.bathrooms?.toString() || ''
       });
-      setRulesForm({
-        rules: chalet.rules ? chalet.rules.map((r: any, idx: number) => {
-          const item = Array.isArray(r) ? (r[0] || {}) : r;
-          return {
-            id: item.id || String(idx),
-            titleAr: item.title?.ar || item.title || '',
-            titleEn: item.title?.en || '',
-            descriptionAr: item.description?.ar || item.description || '',
-            descriptionEn: item.description?.en || '',
-          };
-        }) : []
-      });
+      setRulesForm({ rules: mapChaletRules(chalet) });
     }
   }, [chalet]);
 
@@ -355,148 +355,65 @@ export default function ChaletDetailsScreen() {
     }
   };
 
-  const handleUpdateRules = async () => {
-    try {
-      const payload = {
-        rules: rulesForm.rules.map(r => ({
-          title: { ar: r.titleAr, en: r.titleEn || r.titleAr },
-          description: { ar: r.descriptionAr, en: r.descriptionEn || r.descriptionAr }
-        }))
-      };
-      await updateChalet({ id: chaletId as string, data: payload }).unwrap();
-      Toast.show({ type: 'success', text1: isRTL ? 'تم تحديث الشروط والسياسات' : 'Rules and policies updated' });
-      rulesModalRef.current?.dismiss();
-      refetch();
-    } catch {
-      Toast.show({ type: 'error', text1: isRTL ? 'خطأ في التحديث' : 'Update failed' });
-    }
-  };
+  // ── Rules: edited locally in the sheet, saved as one batch on "Save"
+  // (same model as add-chalet — keeps the two screens consistent). ──
+  const predefinedTitleSet = useMemo(
+    () => new Set((predefinedTerms || []).map((t: any) => t.title?.ar)),
+    [predefinedTerms],
+  );
+  const selectedRuleTitles = useMemo(() => new Set(rulesForm.rules.map(r => r.titleAr)), [rulesForm.rules]);
+  const customRules = useMemo(
+    () => rulesForm.rules.filter(r => !predefinedTitleSet.has(r.titleAr)),
+    [rulesForm.rules, predefinedTitleSet],
+  );
 
-  const handleAddRule = async () => {
-    if (!newRule.titleAr.trim() || !newRule.descriptionAr.trim()) {
-      Toast.show({ type: 'error', text1: isRTL ? 'تنبيه' : 'Alert', text2: isRTL ? 'يرجى كتابة العنوان والشرح للشرط بالعربية' : 'Please enter the title and description in Arabic', position: 'bottom' });
-      return;
-    }
-
-    setIsUpdatingRules(true);
-    try {
-      const newItem: RuleItem = {
-        id: Date.now().toString(),
-        titleAr: newRule.titleAr.trim(),
-        titleEn: newRule.titleEn.trim() || newRule.titleAr.trim(),
-        descriptionAr: newRule.descriptionAr.trim(),
-        descriptionEn: newRule.descriptionEn.trim() || newRule.descriptionAr.trim(),
-      };
-
-      const updatedRules = [...rulesForm.rules, newItem];
-
-      const payload = {
-        rules: updatedRules.map(r => ({
-          title: { ar: r.titleAr, en: r.titleEn || r.titleAr },
-          description: { ar: r.descriptionAr, en: r.descriptionEn || r.descriptionAr }
-        }))
-      };
-
-      await updateChalet({ id: chaletId as string, data: payload }).unwrap();
-
-      setRulesForm({ rules: updatedRules });
-      setNewRule({
-        titleAr: '',
-        titleEn: '',
-        descriptionAr: '',
-        descriptionEn: '',
-      });
-      Toast.show({ type: 'success', text1: isRTL ? 'تم إضافة الشرط بنجاح' : 'Rule added successfully' });
-      refetch();
-    } catch (err) {
-      console.error(err);
-      Toast.show({ type: 'error', text1: isRTL ? 'فشل إضافة الشرط' : 'Failed to add rule' });
-    } finally {
-      setIsUpdatingRules(false);
-    }
-  };
-
-  const handleRemoveRule = (id: string) => {
-    showConfirm({
-      title: isRTL ? 'تأكيد الحذف' : 'Confirm Delete',
-      message: isRTL ? 'هل أنت متأكد من رغبتك في حذف هذا الشرط؟' : 'Are you sure you want to delete this rule?',
-      type: 'danger',
-      confirmLabel: isRTL ? 'حذف' : 'Delete',
-      cancelLabel: isRTL ? 'إلغاء' : 'Cancel',
-      onConfirm: async () => {
-        setIsUpdatingRules(true);
-        try {
-          const updatedRules = rulesForm.rules.filter(r => r.id !== id);
-
-          const payload = {
-            rules: updatedRules.map(r => ({
-              title: { ar: r.titleAr, en: r.titleEn || r.titleAr },
-              description: { ar: r.descriptionAr, en: r.descriptionEn || r.descriptionAr }
-            }))
-          };
-
-          await updateChalet({ id: chaletId as string, data: payload }).unwrap();
-
-          setRulesForm({ rules: updatedRules });
-          Toast.show({ type: 'success', text1: isRTL ? 'تم حذف الشرط بنجاح' : 'Rule deleted successfully' });
-          refetch();
-        } catch (err) {
-          console.error(err);
-          Toast.show({ type: 'error', text1: isRTL ? 'فشل حذف الشرط' : 'Failed to delete rule' });
-        } finally {
-          setIsUpdatingRules(false);
-        }
-      }
+  const toggleTerm = (term: PredefinedTerm) => {
+    setRulesForm(prev => {
+      const exists = prev.rules.some(r => r.titleAr === term.title?.ar);
+      const rules = exists
+        ? prev.rules.filter(r => r.titleAr !== term.title?.ar)
+        : [...prev.rules, {
+            id: term.id || `term-${Date.now()}`,
+            titleAr: term.title?.ar || '',
+            titleEn: term.title?.en || '',
+            descriptionAr: term.content?.ar || '',
+            descriptionEn: term.content?.en || '',
+          } as RuleItem];
+      return { rules };
     });
   };
 
-  const startEditRule = (rule: RuleItem) => {
-    setEditingRuleId(rule.id);
-    setEditForm({ ...rule });
+  const addEmptyRule = () => {
+    setRulesForm(prev => ({
+      rules: [...prev.rules, { id: `custom-${Date.now()}`, titleAr: '', titleEn: '', descriptionAr: '', descriptionEn: '' } as RuleItem],
+    }));
   };
 
-  const cancelEditRule = () => {
-    setEditingRuleId(null);
-    setEditForm(null);
+  const updateRuleField = (id: string, patch: Partial<RuleItem>) => {
+    setRulesForm(prev => ({ rules: prev.rules.map(r => (r.id === id ? { ...r, ...patch } : r)) }));
   };
 
-  const handleSaveEditRule = async () => {
-    if (!editForm || !editForm.titleAr.trim() || !editForm.descriptionAr.trim()) {
-      Toast.show({ type: 'error', text1: isRTL ? 'تنبيه' : 'Alert', text2: isRTL ? 'يرجى كتابة العنوان والشرح للشرط بالعربية' : 'Please enter the title and description in Arabic', position: 'bottom' });
-      return;
-    }
+  const removeRuleLocal = (id: string) => {
+    setRulesForm(prev => ({ rules: prev.rules.filter(r => r.id !== id) }));
+  };
 
+  const handleSaveRules = async () => {
     setIsUpdatingRules(true);
     try {
-      const updatedRules = rulesForm.rules.map(r =>
-        r.id === editForm.id
-          ? {
-            ...editForm,
-            titleAr: editForm.titleAr.trim(),
-            titleEn: editForm.titleEn?.trim() || editForm.titleAr.trim(),
-            descriptionAr: editForm.descriptionAr.trim(),
-            descriptionEn: editForm.descriptionEn?.trim() || editForm.descriptionAr.trim(),
-          }
-          : r
-      );
-
       const payload = {
-        rules: updatedRules.map(r => ({
-          title: { ar: r.titleAr, en: r.titleEn || r.titleAr },
-          description: { ar: r.descriptionAr, en: r.descriptionEn || r.descriptionAr }
-        }))
+        rules: rulesForm.rules
+          .filter(r => r.titleAr.trim() || r.descriptionAr.trim())
+          .map(r => ({
+            title: { ar: r.titleAr.trim(), en: (r.titleEn || r.titleAr).trim() },
+            description: { ar: r.descriptionAr.trim(), en: (r.descriptionEn || r.descriptionAr).trim() },
+          })),
       };
-
       await updateChalet({ id: chaletId as string, data: payload }).unwrap();
-
-      setRulesForm({ rules: updatedRules });
-      setEditingRuleId(null);
-      setEditForm(null);
-      Toast.show({ type: 'success', text1: isRTL ? 'تم تعديل الشرط بنجاح' : 'Rule updated successfully' });
+      Toast.show({ type: 'success', text1: isRTL ? 'تم حفظ الشروط والقوانين' : 'Rules saved' });
+      rulesModalRef.current?.dismiss();
       refetch();
-    } catch (err) {
-      console.error(err);
-      Toast.show({ type: 'error', text1: isRTL ? 'فشل تعديل الشرط' : 'Failed to update rule' });
+    } catch {
+      Toast.show({ type: 'error', text1: isRTL ? 'فشل حفظ الشروط' : 'Failed to save rules' });
     } finally {
       setIsUpdatingRules(false);
     }
@@ -626,6 +543,16 @@ export default function ChaletDetailsScreen() {
   const totalBookings = chaletSummary.totalBookings ?? chalet?.bookingCount ?? 0;
   const totalEarnings = chaletSummary.totalProviderEarnings ?? chaletSummary.totalRevenue ?? chalet?.revenue ?? 0;
   const ratingValue = typeof chalet?.rating === 'string' ? parseFloat(chalet.rating) : (chalet?.rating || 0);
+
+  // Sununo commission applied to this chalet (read-only, set by admin). Prefer the
+  // backend-resolved "effective" value (falls back to the platform default), then
+  // the raw chalet fields so it still renders if the API is older.
+  const commissionFixedRaw = chalet?.effectiveCommissionFixedAmount ?? chalet?.commissionFixedAmount;
+  const commissionPctRaw = chalet?.effectiveCommissionPercentage ?? chalet?.commissionPercentage;
+  const hasFixedCommission = commissionFixedRaw != null && Number(commissionFixedRaw) > 0;
+  const commissionDisplay = hasFixedCommission
+    ? `${Number(commissionFixedRaw).toLocaleString()} ${isRTL ? 'د.ع' : 'IQD'}`
+    : (commissionPctRaw != null && Number(commissionPctRaw) > 0 ? `${Number(commissionPctRaw)}%` : null);
   const completionItems = [
     {
       key: 'photos',
@@ -806,6 +733,19 @@ export default function ChaletDetailsScreen() {
               </View>
             </View>
           </TouchableOpacity>
+
+          {/* Sununo Commission — read-only, shown clearly at the top */}
+          {commissionDisplay && renderSettingsRow({
+            icon: SolarBanknoteBold,
+            shape: 'green',
+            label: isRTL ? 'عمولة سنونو' : 'Sununo Commission',
+            value: isRTL ? 'نسبة سنونو من كل حجز مؤكد لهذا الشاليه' : "Sununo's cut from each confirmed booking",
+            rightElement: (
+              <View style={styles.readinessScoreNew}>
+                <Text style={styles.readinessScoreTextNew}>{commissionDisplay}</Text>
+              </View>
+            ),
+          })}
 
           {/* Pending approval warning */}
           {!chalet?.isApproved && (
@@ -1185,7 +1125,10 @@ export default function ChaletDetailsScreen() {
           </View>
 
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'العنوان بالإنجليزية' : 'Address (English)'}</Text>
+            <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left', marginBottom: 0 }]}>{isRTL ? 'العنوان بالإنجليزية' : 'Address (English)'}</Text>
+              <AiTranslateButton source={basicForm.addressAr} onTranslated={(en) => setBasicForm((prev) => ({ ...prev, addressEn: en }))} />
+            </View>
             <BottomSheetTextInput
               style={[styles.modalInput, { textAlign: isRTL ? 'right' : 'left' }]}
               placeholder={isRTL ? 'Erbil - Ainkawa' : 'e.g. Erbil - Ainkawa'}
@@ -1264,7 +1207,10 @@ export default function ChaletDetailsScreen() {
           </View>
 
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'left' : 'right' }]}>{isRTL ? 'اسم الشاليه (English)' : 'Name (EN)'}</Text>
+            <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <Text style={[styles.modalLabel, { textAlign: isRTL ? 'left' : 'right', marginBottom: 0 }]}>{isRTL ? 'اسم الشاليه (English)' : 'Name (EN)'}</Text>
+              <AiTranslateButton source={basicForm.nameAr} onTranslated={(en) => setBasicForm((prev) => ({ ...prev, nameEn: en }))} />
+            </View>
             <BottomSheetTextInput
               style={[styles.modalInput, { textAlign: isRTL ? 'right' : 'left' }]}
               placeholder={isRTL ? 'Enter chalet name in English' : 'Enter chalet name in English'}
@@ -1288,7 +1234,10 @@ export default function ChaletDetailsScreen() {
           </View>
 
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'left' : 'right' }]}>{isRTL ? 'وصف الشاليه (English)' : 'Description (EN)'}</Text>
+            <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <Text style={[styles.modalLabel, { textAlign: isRTL ? 'left' : 'right', marginBottom: 0 }]}>{isRTL ? 'وصف الشاليه (English)' : 'Description (EN)'}</Text>
+              <AiTranslateButton source={basicForm.descriptionAr} onTranslated={(en) => setBasicForm((prev) => ({ ...prev, descriptionEn: en }))} />
+            </View>
             <BottomSheetTextInput
               style={[styles.modalInput, styles.modalTextArea, { textAlign: isRTL ? 'right' : 'left' }]}
               multiline
@@ -1518,147 +1467,112 @@ export default function ChaletDetailsScreen() {
       <BottomSheetModal
         ref={rulesModalRef}
         index={0}
-        snapPoints={['90%']}
+        snapPoints={['92%']}
         backdropComponent={renderBackdrop}
-        backgroundStyle={{ borderRadius: 28, backgroundColor: '#FAFBFC' }}
+        backgroundStyle={{ borderRadius: 28, backgroundColor: '#FFFFFF' }}
         handleIndicatorStyle={{ backgroundColor: '#CBD5E1', width: 36 }}
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustResize"
+        onDismiss={() => setRulesForm({ rules: mapChaletRules(chalet) })}
       >
-        <BottomSheetScrollView contentContainerStyle={{ direction: isRTL ? 'rtl' : 'ltr', paddingHorizontal: 20, paddingTop: 8, paddingBottom: 80 }} keyboardShouldPersistTaps="handled">
+        <BottomSheetView style={{ flex: 1 }}>
           {/* Header */}
-          <View style={{ flexDirection: flexRow, alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-            <View style={{ flexDirection: flexRow, alignItems: 'center', gap: 10 }}>
-              <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: Colors.primary + '12', justifyContent: 'center', alignItems: 'center' }}>
-                <SolarNotebookBold size={20} color={Colors.primary} />
-              </View>
-              <View>
-                <Text style={{ fontSize: 18, fontFamily: 'Alexandria-Bold', color: '#0F172A' }}>
-                  {isRTL ? 'الشروط والقوانين' : 'Rules & Policies'}
-                </Text>
-                <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Regular', color: '#94A3B8', marginTop: 1 }}>
-                  {isRTL ? `${rulesForm.rules.length} شرط مضاف` : `${rulesForm.rules.length} rules added`}
-                </Text>
-              </View>
+          <View style={{ flexDirection: flexRow, alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingTop: 6, paddingBottom: 16 }}>
+            <View style={{ width: 46, height: 46, borderRadius: 14, backgroundColor: Colors.primary, justifyContent: 'center', alignItems: 'center' }}>
+              <SolarNotebookBold size={24} color={Colors.white} />
             </View>
-            {isUpdatingRules && <ActivityIndicator size="small" color={Colors.primary} />}
+            <View style={{ flex: 1, alignItems: flexStart }}>
+              <Text style={{ fontSize: 18, fontFamily: 'Alexandria-Bold', color: '#0F172A', textAlign: isRTL ? 'right' : 'left' }}>
+                {isRTL ? 'الشروط والقوانين' : 'Rules & Policies'}
+              </Text>
+              <Text style={{ fontSize: 12, fontFamily: 'Alexandria-Regular', color: '#94A3B8', marginTop: 2, textAlign: isRTL ? 'right' : 'left' }}>
+                {isRTL ? 'حدّد شروط الإقامة التي تظهر للعملاء' : 'Set the stay rules shown to customers'}
+              </Text>
+            </View>
           </View>
+          <View style={{ height: 1, backgroundColor: '#F1F5F9' }} />
 
-          {/* Current Rules List */}
-          {rulesForm.rules.length > 0 ? (
-            <View style={{ gap: 10, marginBottom: 20 }}>
-              {rulesForm.rules.map((rule, index) => {
-                if (editingRuleId === rule.id && editForm) {
-                  return (
-                    <View key={rule.id} style={{ backgroundColor: '#FFF', borderRadius: 16, padding: 16, borderWidth: 1.5, borderColor: Colors.primary + '30', gap: 10 }}>
-                      <View style={{ flexDirection: flexRow, alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                        <View style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: Colors.primary + '12', justifyContent: 'center', alignItems: 'center' }}>
-                          <SolarPenBold size={14} color={Colors.primary} />
-                        </View>
-                        <Text style={{ fontSize: 14, fontFamily: 'Alexandria-Bold', color: Colors.primary }}>{isRTL ? 'تعديل الشرط' : 'Edit Rule'}</Text>
-                      </View>
-                      <View style={{ gap: 4 }}>
-                        <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Medium', color: '#64748B' }}>{isRTL ? 'العنوان بالعربية *' : 'Title (AR) *'}</Text>
-                        <BottomSheetTextInput style={{ backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, fontFamily: 'Alexandria-Regular', color: '#1E293B', borderWidth: 1, borderColor: '#E2E8F0', textAlign: isRTL ? 'right' : 'left' }} value={editForm.titleAr} onChangeText={(val) => setEditForm({ ...editForm, titleAr: val })} />
-                      </View>
-                      <View style={{ gap: 4 }}>
-                        <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Medium', color: '#64748B' }}>{isRTL ? 'الشرح بالعربية *' : 'Description (AR) *'}</Text>
-                        <BottomSheetTextInput style={{ backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, fontFamily: 'Alexandria-Regular', color: '#1E293B', borderWidth: 1, borderColor: '#E2E8F0', minHeight: 55, textAlignVertical: 'top', textAlign: isRTL ? 'right' : 'left' }} multiline value={editForm.descriptionAr} onChangeText={(val) => setEditForm({ ...editForm, descriptionAr: val })} />
-                      </View>
-                      <View style={{ gap: 4 }}>
-                        <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Medium', color: '#94A3B8' }}>{isRTL ? 'العنوان بالإنجليزية' : 'Title (EN)'}</Text>
-                        <BottomSheetTextInput style={{ backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, fontFamily: 'Alexandria-Regular', color: '#1E293B', borderWidth: 1, borderColor: '#E2E8F0', textAlign: 'left' /* English input only */ }} value={editForm.titleEn} onChangeText={(val) => setEditForm({ ...editForm, titleEn: val })} />
-                      </View>
-                      <View style={{ gap: 4 }}>
-                        <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Medium', color: '#94A3B8' }}>{isRTL ? 'الشرح بالإنجليزية' : 'Description (EN)'}</Text>
-                        <BottomSheetTextInput style={{ backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, fontFamily: 'Alexandria-Regular', color: '#1E293B', borderWidth: 1, borderColor: '#E2E8F0', minHeight: 55, textAlignVertical: 'top', textAlign: 'left' /* English input only */ }} multiline value={editForm.descriptionEn} onChangeText={(val) => setEditForm({ ...editForm, descriptionEn: val })} />
-                      </View>
-                      <View style={{ flexDirection: flexRow, gap: 10, marginTop: 6 }}>
-                        <TouchableOpacity onPress={handleSaveEditRule} disabled={isUpdatingRules} style={{ flex: 1, flexDirection: flexRow, backgroundColor: Colors.primary, borderRadius: 10, paddingVertical: 10, justifyContent: 'center', alignItems: 'center', gap: 6 }}>
-                          <SolarCheckCircleBold size={16} color="#FFF" />
-                          <Text style={{ fontSize: 13, fontFamily: 'Alexandria-Bold', color: '#FFF' }}>{isRTL ? 'حفظ' : 'Save'}</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={cancelEditRule} disabled={isUpdatingRules} style={{ flex: 1, flexDirection: flexRow, backgroundColor: '#F1F5F9', borderRadius: 10, paddingVertical: 10, justifyContent: 'center', alignItems: 'center', gap: 6 }}>
-                          <SolarCloseCircleBold size={16} color="#64748B" />
-                          <Text style={{ fontSize: 13, fontFamily: 'Alexandria-Bold', color: '#64748B' }}>{isRTL ? 'إلغاء' : 'Cancel'}</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  );
-                }
-                return (
-                  <View key={rule.id} style={{ backgroundColor: '#FFF', borderRadius: 14, padding: 14, flexDirection: flexRow, alignItems: 'flex-start', gap: 12, borderWidth: 1, borderColor: '#F1F5F9' }}>
-                    <View style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: Colors.primary + '12', justifyContent: 'center', alignItems: 'center', marginTop: 2 }}>
-                      <Text style={{ fontSize: 12, fontFamily: 'Alexandria-Bold', color: Colors.primary }}>{index + 1}</Text>
-                    </View>
-                    <View style={{ flex: 1, alignItems: flexStart }}>
-                      <Text style={{ fontSize: 13, fontFamily: 'Alexandria-Bold', color: '#1E293B', textAlign: isRTL ? 'right' : 'left' }}>{isRTL ? rule.titleAr : (rule.titleEn || rule.titleAr)}</Text>
-                      <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Regular', color: '#64748B', marginTop: 3, textAlign: isRTL ? 'right' : 'left', lineHeight: 18 }}>{isRTL ? rule.descriptionAr : (rule.descriptionEn || rule.descriptionAr)}</Text>
-                    </View>
-                    <View style={{ flexDirection: flexRow, gap: 6 }}>
-                      <TouchableOpacity onPress={() => startEditRule(rule)} style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: Colors.primary + '10', justifyContent: 'center', alignItems: 'center' }}>
-                        <SolarPenBold size={14} color={Colors.primary} />
+          {/* Scroll content */}
+          <BottomSheetScrollView
+            contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 18, paddingBottom: 28 }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Ready-made terms */}
+            <PredefinedTermsPicker
+              terms={predefinedTerms as PredefinedTerm[] | undefined}
+              selectedTitles={selectedRuleTitles}
+              onToggle={toggleTerm}
+              isRTL={isRTL}
+              loading={isLoadingTerms}
+            />
+
+            {/* Divider */}
+            <View style={{ height: 1, backgroundColor: '#EEF2F6', marginVertical: 18 }} />
+
+            {/* Custom rules header */}
+            <View style={{ flexDirection: flexRow, alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+              <View style={{ flex: 1, alignItems: flexStart }}>
+                <Text style={{ fontSize: 15, fontFamily: 'Alexandria-Bold', color: '#0F172A', textAlign: isRTL ? 'right' : 'left' }}>{isRTL ? 'شروط مخصّصة' : 'Custom Rules'}</Text>
+                <Text style={{ fontSize: 12, fontFamily: 'Alexandria-Regular', color: '#94A3B8', marginTop: 3, textAlign: isRTL ? 'right' : 'left' }}>{isRTL ? 'شروط خاصة بهذا الشاليه فقط' : 'Rules specific to this chalet'}</Text>
+              </View>
+              <TouchableOpacity onPress={addEmptyRule} activeOpacity={0.8} style={{ flexDirection: flexRow, alignItems: 'center', gap: 4, borderRadius: 12, borderWidth: 1.5, borderColor: Colors.primary + '40', paddingHorizontal: 12, paddingVertical: 8 }}>
+                <Text style={{ fontSize: 16, color: Colors.primary, fontFamily: 'Alexandria-Bold', marginTop: -2 }}>+</Text>
+                <Text style={{ fontSize: 12, color: Colors.primary, fontFamily: 'Alexandria-Bold' }}>{isRTL ? 'إضافة شرط' : 'Add Rule'}</Text>
+              </TouchableOpacity>
+            </View>
+
+            {customRules.length === 0 ? (
+              <View style={{ borderRadius: 12, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#EEF2F6', paddingVertical: 18, paddingHorizontal: 16 }}>
+                <Text style={{ fontSize: 12, fontFamily: 'Alexandria-Medium', color: '#94A3B8', textAlign: 'center', lineHeight: 19 }}>
+                  {isRTL ? 'لا توجد شروط مخصّصة. اضغط «إضافة شرط» لإضافة شرط خاص بهذا الشاليه.' : 'No custom rules. Tap "Add Rule" to add one specific to this chalet.'}
+                </Text>
+              </View>
+            ) : (
+              <View style={{ gap: 12 }}>
+                {customRules.map((rule, index) => (
+                  <View key={rule.id} style={{ borderRadius: 14, borderWidth: 1, borderColor: '#E8EBF0', backgroundColor: '#FFF', padding: 14, gap: 10 }}>
+                    <View style={{ flexDirection: flexRow, alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Text style={{ fontSize: 12, fontFamily: 'Alexandria-Bold', color: '#64748B' }}>{isRTL ? `شرط ${index + 1}` : `Rule ${index + 1}`}</Text>
+                      <TouchableOpacity onPress={() => removeRuleLocal(rule.id)} style={{ width: 30, height: 30, borderRadius: 8, backgroundColor: '#FEF2F2', justifyContent: 'center', alignItems: 'center' }}>
+                        <SolarTrashBinBold size={15} color={Colors.error} />
                       </TouchableOpacity>
-                      <TouchableOpacity onPress={() => handleRemoveRule(rule.id)} style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: '#FEE2E2', justifyContent: 'center', alignItems: 'center' }}>
-                        <SolarTrashBinBold size={14} color="#EF4444" />
-                      </TouchableOpacity>
+                    </View>
+
+                    {/* Arabic */}
+                    <BottomSheetTextInput style={[styles.ruleInput, { textAlign: isRTL ? 'right' : 'left' }]} placeholder={isRTL ? 'عنوان الشرط (عربي)' : 'Rule title (Arabic)'} placeholderTextColor="#CBD5E1" value={rule.titleAr} onChangeText={(v) => updateRuleField(rule.id, { titleAr: v })} />
+                    <BottomSheetTextInput style={[styles.ruleInput, styles.ruleArea, { textAlign: isRTL ? 'right' : 'left' }]} placeholder={isRTL ? 'شرح الشرط (عربي)' : 'Rule description (Arabic)'} placeholderTextColor="#CBD5E1" multiline value={rule.descriptionAr} onChangeText={(v) => updateRuleField(rule.id, { descriptionAr: v })} />
+
+                    {/* English title */}
+                    <View style={{ gap: 4 }}>
+                      <View style={{ flexDirection: flexRow, alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Text style={{ fontSize: 10, fontFamily: 'Alexandria-Medium', color: '#94A3B8' }}>{isRTL ? 'العنوان (إنجليزي)' : 'Title (EN)'}</Text>
+                        <AiTranslateButton source={rule.titleAr} onTranslated={(en) => updateRuleField(rule.id, { titleEn: en })} />
+                      </View>
+                      <BottomSheetTextInput style={[styles.ruleInput, { textAlign: 'left' }]} placeholder="Rule title (English)" placeholderTextColor="#CBD5E1" value={rule.titleEn} onChangeText={(v) => updateRuleField(rule.id, { titleEn: v })} />
+                    </View>
+                    {/* English description */}
+                    <View style={{ gap: 4 }}>
+                      <View style={{ flexDirection: flexRow, alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Text style={{ fontSize: 10, fontFamily: 'Alexandria-Medium', color: '#94A3B8' }}>{isRTL ? 'الشرح (إنجليزي)' : 'Description (EN)'}</Text>
+                        <AiTranslateButton source={rule.descriptionAr} onTranslated={(en) => updateRuleField(rule.id, { descriptionEn: en })} />
+                      </View>
+                      <BottomSheetTextInput style={[styles.ruleInput, styles.ruleArea, { textAlign: 'left' }]} placeholder="Rule description (English)" placeholderTextColor="#CBD5E1" multiline value={rule.descriptionEn} onChangeText={(v) => updateRuleField(rule.id, { descriptionEn: v })} />
                     </View>
                   </View>
-                );
-              })}
-            </View>
-          ) : (
-            <View style={{ backgroundColor: '#FFF', borderRadius: 16, padding: 24, alignItems: 'center', marginBottom: 20, borderWidth: 1, borderColor: '#F1F5F9' }}>
-              <SolarNotebookBold size={32} color="#CBD5E1" />
-              <Text style={{ fontSize: 13, fontFamily: 'Alexandria-Medium', color: '#94A3B8', marginTop: 10, textAlign: 'center' }}>{isRTL ? 'لا توجد شروط مضافة حالياً\nأضف شرطاً بالأسفل' : 'No rules added yet\nAdd a rule below'}</Text>
-            </View>
-          )}
-
-          {/* Add New Rule Section */}
-          <View style={{ backgroundColor: '#FFF', borderRadius: 16, padding: 16, marginTop: 12, borderWidth: 1, borderColor: '#F1F5F9' }}>
-            <View style={{ flexDirection: flexRow, alignItems: 'center', gap: 8, marginBottom: 16 }}>
-              <SolarAddSquareBold size={18} color={Colors.primary} />
-              <Text style={{ fontSize: 14, fontFamily: 'Alexandria-Bold', color: '#0F172A' }}>{isRTL ? 'إضافة شرط جديد' : 'Add New Rule'}</Text>
-            </View>
-
-            {/* Arabic */}
-            <View style={{ marginBottom: 14 }}>
-              <View style={{ flexDirection: flexRow, alignItems: 'center', gap: 6, marginBottom: 10 }}>
-                <View style={{ backgroundColor: Colors.primary + '15', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
-                  <Text style={{ fontSize: 10, fontFamily: 'Alexandria-Bold', color: Colors.primary }}>العربية *</Text>
-                </View>
+                ))}
               </View>
-              <View style={{ gap: 8 }}>
-                <BottomSheetTextInput style={{ backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, fontFamily: 'Alexandria-Regular', color: '#1E293B', borderWidth: 1, borderColor: '#E2E8F0', textAlign: isRTL ? 'right' : 'left' }} placeholder={isRTL ? "عنوان الشرط..." : "Rule title..."} placeholderTextColor="#CBD5E1" value={newRule.titleAr} onChangeText={(val) => setNewRule({ ...newRule, titleAr: val })} />
-                <BottomSheetTextInput style={{ backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, fontFamily: 'Alexandria-Regular', color: '#1E293B', borderWidth: 1, borderColor: '#E2E8F0', minHeight: 60, textAlignVertical: 'top', textAlign: isRTL ? 'right' : 'left' }} multiline placeholder={isRTL ? "شرح الشرط..." : "Rule description..."} placeholderTextColor="#CBD5E1" value={newRule.descriptionAr} onChangeText={(val) => setNewRule({ ...newRule, descriptionAr: val })} />
-              </View>
-            </View>
+            )}
+          </BottomSheetScrollView>
 
-            {/* English */}
-            <View>
-              <View style={{ flexDirection: flexRow, alignItems: 'center', gap: 6, marginBottom: 10 }}>
-                <View style={{ backgroundColor: '#F1F5F9', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
-                  <Text style={{ fontSize: 10, fontFamily: 'Alexandria-Bold', color: '#64748B' }}>English</Text>
-                </View>
-                <Text style={{ fontSize: 10, fontFamily: 'Alexandria-Regular', color: '#94A3B8' }}>{isRTL ? '(اختياري)' : '(optional)'}</Text>
-              </View>
-              <View style={{ gap: 8 }}>
-                <BottomSheetTextInput style={{ backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, fontFamily: 'Alexandria-Regular', color: '#1E293B', borderWidth: 1, borderColor: '#E2E8F0', textAlign: 'left' /* English input only */ }} placeholder="Rule title..." placeholderTextColor="#CBD5E1" value={newRule.titleEn} onChangeText={(val) => setNewRule({ ...newRule, titleEn: val })} />
-                <BottomSheetTextInput style={{ backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, fontFamily: 'Alexandria-Regular', color: '#1E293B', borderWidth: 1, borderColor: '#E2E8F0', minHeight: 60, textAlignVertical: 'top', textAlign: 'left' /* English input only */ }} multiline placeholder="Rule description..." placeholderTextColor="#CBD5E1" value={newRule.descriptionEn} onChangeText={(val) => setNewRule({ ...newRule, descriptionEn: val })} />
-              </View>
-            </View>
-
-            {/* Add Button */}
-            <PrimaryButton
-              label={isUpdatingRules ? (isRTL ? 'جاري الإضافة...' : 'Adding...') : (isRTL ? 'إضافة الشرط' : 'Add Rule')}
-              onPress={handleAddRule}
-              loading={isUpdatingRules}
-              style={{ marginTop: 16 }}
-            />
+          {/* Sticky footer */}
+          <View style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 28, backgroundColor: '#FFFFFF', borderTopWidth: 1, borderTopColor: '#F1F5F9' }}>
+            <TouchableOpacity onPress={handleSaveRules} activeOpacity={0.85} disabled={isUpdatingRules} style={{ height: 52, borderRadius: 26, backgroundColor: Colors.primary, justifyContent: 'center', alignItems: 'center', opacity: isUpdatingRules ? 0.7 : 1 }}>
+              {isUpdatingRules ? <ActivityIndicator color="#FFF" /> : <Text style={{ color: '#FFF', fontSize: 15, fontFamily: 'Alexandria-Bold' }}>{isRTL ? 'حفظ الشروط' : 'Save Rules'}</Text>}
+            </TouchableOpacity>
           </View>
-
-        </BottomSheetScrollView>
+        </BottomSheetView>
       </BottomSheetModal>
 
       {/* City Picker Modal */}
@@ -1733,6 +1647,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF'
   },
+  // Compact inputs inside custom-rule cards (rules bottom sheet)
+  ruleInput: {
+    backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10,
+    fontSize: 13, fontFamily: 'Alexandria-Regular', color: '#1E293B',
+    borderWidth: 1, borderColor: '#E2E8F0',
+  },
+  ruleArea: { minHeight: 64, paddingTop: 10, textAlignVertical: 'top' },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
