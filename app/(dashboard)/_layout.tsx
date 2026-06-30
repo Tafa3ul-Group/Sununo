@@ -1,4 +1,5 @@
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+import { useDirection } from "@/i18n";
 import { RootState } from "@/store";
 import { Stack } from "expo-router";
 import React from "react";
@@ -8,12 +9,13 @@ import { useTranslation } from "react-i18next";
 export default function DashboardNonTabLayout() {
   const { t, i18n } = useTranslation();
   const isArabic = i18n.language === "ar";
-  
+  const { direction } = useDirection();
+
   return (
     <Stack
       screenOptions={{
         headerShown: true,
-        contentStyle: { direction: isArabic ? "rtl" : "ltr", backgroundColor: "#FFFFFF" },
+        contentStyle: { direction, backgroundColor: "#FFFFFF" },
         header: (props) => (
           <DashboardHeader 
             title={props.options.title}

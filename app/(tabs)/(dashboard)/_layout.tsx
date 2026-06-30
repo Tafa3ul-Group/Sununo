@@ -1,13 +1,15 @@
 import { DashboardTabBar } from "@/components/dashboard/dashboard-tab-bar";
 import { SolarHomeSmileBoldDuotone, SolarNotesBoldDuotone, SolarUserBold } from "@/components/icons/solar-icons";
+import { useDirection } from "@/i18n";
 import { RootState } from "@/store";
 import { Redirect, Tabs } from "expo-router";
 import React from "react";
 import { useSelector } from "react-redux";
 
 export default function DashboardLayout() {
+  const { direction } = useDirection();
   const { userType, isAuthenticated, language } = useSelector((state: RootState) => state.auth);
-  
+
   if (!isAuthenticated) {
     return <Redirect href="/(auth)/login" />;
   }
@@ -22,7 +24,7 @@ export default function DashboardLayout() {
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
-        sceneStyle: { } }}
+        sceneStyle: { direction } }}
     >
       <Tabs.Screen
         name="home"

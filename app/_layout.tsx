@@ -2,6 +2,7 @@
 import { AppUpdateGate } from "@/components/app-update-gate";
 import { ConfirmationDialogProvider } from "@/components/ui/confirmation-dialog";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useDirection } from "@/i18n";
 import { persistor, RootState, store } from "@/store";
 import { logScreenView } from "@/services/analytics";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
@@ -45,6 +46,7 @@ TextInput.defaultProps.style = {
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const { i18n } = useTranslation();
+  const { direction } = useDirection();
   const segments = useSegments();
   const pathname = usePathname();
   const router = useRouter();
@@ -196,7 +198,7 @@ function RootLayoutNav() {
 
   return (
     <ThemeProvider value={navigationTheme}>
-      <Stack>
+      <Stack screenOptions={{ contentStyle: { direction } }}>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -211,18 +213,30 @@ function RootLayoutNav() {
   );
 }
 
+// Single high-level direction root. Native RTL is permanently OFF (see
+// i18n/index.ts), so layout direction is driven entirely by this `direction`
+// style, which Yoga inherits down the whole tree — including the bottom-sheet
+// host and Toast that render within these providers. Reads from useDirection so
+// it re-renders (and flips) instantly when the language changes, with no reload.
+function AppProviders() {
+  const { direction } = useDirection();
+  return (
+    <GestureHandlerRootView style={{ flex: 1, direction }}>
+      <BottomSheetModalProvider>
+        <ConfirmationDialogProvider>
+          <RootLayoutNav />
+          <Toast config={toastConfig} topOffset={60} />
+        </ConfirmationDialogProvider>
+      </BottomSheetModalProvider>
+    </GestureHandlerRootView>
+  );
+}
+
 export default function RootLayout() {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <BottomSheetModalProvider>
-            <ConfirmationDialogProvider>
-              <RootLayoutNav />
-              <Toast config={toastConfig} topOffset={60} />
-            </ConfirmationDialogProvider>
-          </BottomSheetModalProvider>
-        </GestureHandlerRootView>
+        <AppProviders />
       </PersistGate>
     </Provider>
   );
