@@ -17,7 +17,6 @@ import {
   TouchableOpacity,
   Alert,
   Platform,
-  I18nManager,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, {
@@ -99,8 +98,8 @@ export default function BookingSuccessDetailsScreen() {
   // Manager-aware: under forced RTL the OS swaps left/right (swapLeftAndRightInRTL),
   // so for a standalone text block the visual "start" needs "left" when content RTL
   // matches the layout manager's RTL. Flex-positioned labels treat these as a no-op.
-  const textStart: "left" | "right" = isRTL === I18nManager.isRTL ? "left" : "right";
-  const textEnd: "left" | "right" = isRTL === I18nManager.isRTL ? "right" : "left";
+  const textStart: "left" | "right" = isRTL ? "right" : "left";
+  const textEnd: "left" | "right" = isRTL ? "left" : "right";
 
   // Fetch booking details from the backend
   const { data: booking, isLoading, refetch } = useGetCustomerBookingDetailsQuery(

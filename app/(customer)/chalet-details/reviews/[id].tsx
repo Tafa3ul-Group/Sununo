@@ -217,7 +217,6 @@ export default function ReviewsScreen() {
             styles.filterContainer,
             {
               flexDirection: "row",
-              direction: isRTL ? "rtl" : "ltr",
               justifyContent: "flex-start",
             },
           ]}
@@ -275,7 +274,7 @@ export default function ReviewsScreen() {
                       style={[
                         styles.nameAndBody,
                         {
-                          alignItems: isRTL ? "flex-end" : "flex-start",
+                          alignItems: "flex-start",
                           marginStart: 15,
                         },
                       ]}

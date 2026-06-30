@@ -58,7 +58,6 @@ import {
   ActivityIndicator,
   Alert,
   Dimensions,
-  I18nManager,
   Image,
   RefreshControl,
   ScrollView,
@@ -106,9 +105,9 @@ const SHAPE_COLORS: Record<ShapeKey, string> = {
 };
 
 function SectionHeader({ title }: { title: string }) {
-  const { isRTL, textAlign } = useDirection();
+  const { textAlign } = useDirection();
   return (
-    <View style={[styles.sectionHeaderContainer, { alignItems: "flex-start", direction: isRTL ? "rtl" : "ltr" }]}>
+    <View style={[styles.sectionHeaderContainer, { alignItems: "flex-start" }]}>
       <ThemedText style={[styles.sectionTitle, { textAlign }]}>
         {title}
       </ThemedText>
@@ -159,7 +158,7 @@ const ShiftCard = React.memo(function ShiftCard({
   return (
     <Animated.View
       entering={FadeInDown.delay((index % 8) * 60).duration(380)}
-      style={[styles.shiftCard, { flexDirection: 'row', direction: isRTL ? 'rtl' : 'ltr' }]}
+      style={[styles.shiftCard, { flexDirection: 'row' }]}
     >
       <View style={styles.shiftIconCircle}>
         {isMorning ? (
@@ -241,22 +240,15 @@ const FacilityCell = React.memo(function FacilityCell({
 export default function ChaletDetailScreen() {
   const { t } = useTranslation();
   const { userType } = useSelector((state: RootState) => state.auth);
-  const { isRTL, rowDirection, textAlign } = useDirection();
+  const { isRTL, textAlign } = useDirection();
 
-  // textStart: dynamic alignment accounting for React Native native mirroring
-  const textStart: "left" | "right" = textAlign;
+  // textStart: leading text alignment (container mirrors the layout).
+  const textStart: "left" | "right" = isRTL ? "right" : "left";
   const textEnd: "left" | "right" = isRTL ? "left" : "right";
-  // flexDir: dynamic flexDirection accounting for native mirroring
-  const flexDir: "row" | "row-reverse" = rowDirection;
-  const alignStart: "flex-start" | "flex-end" =
-    rowDirection === "row" ? "flex-start" : "flex-end";
-  const alignEnd: "flex-start" | "flex-end" =
-    rowDirection === "row" ? "flex-end" : "flex-start";
-  // Manager-aware "start" text alignment: under forced RTL the OS mirrors the
-  // layout, so left/right must be chosen relative to I18nManager.isRTL (same
-  // pattern as review-card.tsx) — content-based isRTL?right:left mis-aligns.
-  const textStartAware: "left" | "right" =
-    isRTL === I18nManager.isRTL ? "left" : "right";
+  // flexDir: row direction (container mirrors the layout).
+  const flexDir: "row" | "row-reverse" = "row";
+  const alignStart: "flex-start" | "flex-end" = "flex-start";
+  const alignEnd: "flex-start" | "flex-end" = "flex-end";
 
   const { id } = useLocalSearchParams();
   const chaletId = id as string;
@@ -677,7 +669,6 @@ export default function ChaletDetailScreen() {
             ref={bannerScrollRef}
             horizontal
             pagingEnabled
-            style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }}
             contentContainerStyle={{ flexDirection: "row" }}
             onScroll={(e) =>
               setActiveImage(
@@ -702,7 +693,6 @@ export default function ChaletDetailScreen() {
                     params: { startIndex: i },
                   })
                 }
-                style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }}
               >
                 <AnimatedImage
                   source={typeof img === "string" ? { uri: img } : img}
@@ -712,30 +702,11 @@ export default function ChaletDetailScreen() {
             ))}
           </ScrollView>
           <CircleBackButton
-            style={[
-              styles.backBtnOriginal,
-              isRTL
-                ? I18nManager.isRTL
-                  ? { left: 20, right: "auto" }
-                  : { right: 20, left: "auto" }
-                : I18nManager.isRTL
-                  ? { right: 20, left: "auto" }
-                  : { left: 20, right: "auto" },
-            ]}
+            style={[styles.backBtnOriginal, { start: 20 }]}
           />
 
           <AnimatedTouchable
-            style={[
-              styles.favoriteBtn,
-              isRTL
-                ? I18nManager.isRTL
-                  ? { right: 20, left: "auto" }
-                  : { left: 20, right: "auto" }
-                : I18nManager.isRTL
-                  ? { left: 20, right: "auto" }
-                  : { right: 20, left: "auto" },
-              favoriteAnimStyle,
-            ]}
+            style={[styles.favoriteBtn, { end: 20 }, favoriteAnimStyle]}
             onPressIn={() => {
               favoriteScale.value = withTiming(0.96, { duration: 110 });
             }}
@@ -759,7 +730,6 @@ export default function ChaletDetailScreen() {
               left: 20,
               right: 20,
               flexDirection: "row",
-              direction: isRTL ? "rtl" : "ltr",
               alignItems: "center",
               justifyContent: "space-between",
               zIndex: 10,
@@ -802,7 +772,6 @@ export default function ChaletDetailScreen() {
           <View
             style={{
               flexDirection: "row",
-              direction: isRTL ? "rtl" : "ltr",
               justifyContent: 'space-between',
               alignItems: 'flex-start',
               width: '100%',
@@ -811,13 +780,13 @@ export default function ChaletDetailScreen() {
           >
             <View style={{ flex: 1 }}>
               <ThemedText
-                style={[styles.mainTitle, { textAlign: isRTL ? "left" : "right" }]}
+                style={[styles.mainTitle, { textAlign }]}
                 numberOfLines={2}
               >
                 {chaletName}
               </ThemedText>
               <ThemedText
-                style={[styles.locationSub, { textAlign: isRTL ? "left" : "right", marginTop: 4 }]}
+                style={[styles.locationSub, { textAlign, marginTop: 4 }]}
               >
                 {chaletCategory ? `${chaletCategory} • ` : ""}
                 {chaletLocation}
@@ -835,7 +804,7 @@ export default function ChaletDetailScreen() {
 
           {/* المواصفات الأساسية */}
           <SectionHeader title={t("chalet.details.specs")} />
-          <View style={[styles.specsRow, { flexDirection: 'row', direction: isRTL ? 'rtl' : 'ltr' }]}>
+          <View style={[styles.specsRow, { flexDirection: 'row' }]}>
             {[
               { label: `${chalet.area || 0} م`, id: "area" },
               {
@@ -874,7 +843,7 @@ export default function ChaletDetailScreen() {
             ) : (
               <View style={[styles.closedChaletBox, { flexDirection: flexDir }]}>
                 <SolarForbiddenCircleLineDuotone size={24} color="#EF4444" />
-                <ThemedText style={[styles.closedChaletText, { textAlign: textStartAware }]}>
+                <ThemedText style={[styles.closedChaletText, { textAlign: textStart }]}>
                   {isRTL
                     ? "عذراً، لا تتوفر أي فترات حجز حالياً في هذا الشاليه."
                     : "Sorry, no booking periods are currently available for this chalet."}
@@ -913,18 +882,13 @@ export default function ChaletDetailScreen() {
           {chaletDescription ? (
             <>
               <SectionHeader title={t("chalet.details.overview")} />
-              <View
-                style={[
-                  styles.descriptionContainer,
-                  { direction: isRTL ? "rtl" : "ltr" },
-                ]}
-              >
+              <View style={styles.descriptionContainer}>
                 <ThemedText
                   style={[
                     styles.descriptionText,
                     {
                       width: "100%",
-                      textAlign: textStartAware,
+                      textAlign: textStart,
                       writingDirection: isRTL ? "rtl" : "ltr",
                     },
                   ]}
@@ -1110,13 +1074,13 @@ export default function ChaletDetailScreen() {
                       },
                     ]}
                   >
-                    <ThemedText style={[styles.reviewerNameMerged, { textAlign: textStartAware }]}>
+                    <ThemedText style={[styles.reviewerNameMerged, { textAlign: textStart }]}>
                       {reviewerName}
                     </ThemedText>
                     <ThemedText
                       style={[
                         styles.revMessageMerged,
-                        { textAlign: textStartAware },
+                        { textAlign: textStart },
                       ]}
                     >
                       {reviewComment}
@@ -1243,15 +1207,15 @@ export default function ChaletDetailScreen() {
 
       {/* الفوتر */}
       {availableShifts && availableShifts.length > 0 && (
-        <View style={[styles.flatUltimateFooter, { flexDirection: "row", direction: isRTL ? "rtl" : "ltr" }]}>
+        <View style={[styles.flatUltimateFooter, { flexDirection: "row" }]}>
           <View style={[styles.footerTextSide, { alignItems: "flex-start" }]}>
-            <ThemedText style={[styles.footerPriceBig, { textAlign: isRTL ? "right" : "left" }]}>
+            <ThemedText style={[styles.footerPriceBig, { textAlign }]}>
               {displayPrice} {t("common.iqd")}
             </ThemedText>
-            <View style={[styles.footerMetaRow, { flexDirection: "row", direction: isRTL ? "rtl" : "ltr" }]}>
+            <View style={[styles.footerMetaRow, { flexDirection: "row" }]}>
               <SolarClockCircleBold size={12} color="#9CA3AF" />
               <ThemedText
-                style={[styles.footerMetaSmall, { textAlign: isRTL ? "right" : "left" }]}
+                style={[styles.footerMetaSmall, { textAlign }]}
               >
                 {selectedShift
                   ? isRTL

@@ -132,7 +132,6 @@ function SectionHeader({ title, isRTL }: { title: string; isRTL: boolean }) {
         marginBottom: 10,
         marginTop: 15,
         alignItems: "flex-start",
-        direction: isRTL ? "rtl" : "ltr",
       }}
     >
       <ThemedText
@@ -205,7 +204,7 @@ function ActiveFilterBanner({
 
   if (filterItems.length === 0) return null;
 
-  const flexDir: "row" | "row-reverse" = isRTL ? "row-reverse" : "row";
+  const flexDir: "row" | "row-reverse" = "row";
 
   return (
     <View style={filterBannerStyles.container}>
@@ -658,7 +657,6 @@ export default function ExploreScreen() {
                 styles.footerContent,
                 {
                   flexDirection: "row",
-                  direction: isRTL ? "rtl" : "ltr",
                   justifyContent: "space-between",
                   alignItems: "center",
                 },
@@ -958,17 +956,13 @@ export default function ExploreScreen() {
                     setActiveImageIndex(index);
                   }}
                   scrollEventThrottle={16}
-                  style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }}
                 >
                   {(selectedChalet.allImages || [selectedChalet.image]).map(
                     (img: any, index: number) => (
                       <Image
                         key={index}
                         source={img}
-                        style={[
-                          styles.carouselImage,
-                          { transform: [{ scaleX: isRTL ? -1 : 1 }] },
-                        ]}
+                        style={styles.carouselImage}
                       />
                     ),
                   )}
@@ -1061,7 +1055,7 @@ export default function ExploreScreen() {
                                   <View
                                     style={[
                                       styles.revHeaderMerged,
-                                      { flexDirection: "row", direction: isRTL ? "rtl" : "ltr" },
+                                      { flexDirection: "row" },
                                     ]}
                                   >
                                     {/* Avatar */}
@@ -1077,7 +1071,7 @@ export default function ExploreScreen() {
                                       style={[
                                         styles.nameAndBodyMerged,
                                         {
-                                          alignItems: isRTL ? "flex-end" : "flex-start",
+                                          alignItems: "flex-start",
                                           marginHorizontal: 12,
                                         },
                                       ]}
@@ -1101,7 +1095,7 @@ export default function ExploreScreen() {
                                     <View
                                       style={[
                                         styles.revRatingCornerMerged,
-                                        { flexDirection: "row", direction: isRTL ? "rtl" : "ltr" },
+                                        { flexDirection: "row" },
                                       ]}
                                     >
                                       <SolarStarBold size={14} color={Colors.primary} />
@@ -1347,7 +1341,7 @@ const styles = StyleSheet.create({
   imageCountBadge: {
     position: "absolute",
     bottom: 12,
-    right: 12,
+    end: 12,
     backgroundColor: "rgba(0,0,0,0.6)",
     paddingHorizontal: 12,
     paddingVertical: 4,
@@ -1754,7 +1748,7 @@ const styles = StyleSheet.create({
   filterActiveDot: {
     position: "absolute",
     top: 12,
-    right: 12,
+    end: 12,
     width: 10,
     height: 10,
     borderRadius: 5,

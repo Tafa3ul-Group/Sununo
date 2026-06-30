@@ -123,8 +123,7 @@ export default function CustomerProfileScreen() {
     const isArabic = isRTL;
 
     const textStart: "left" | "right" = textAlign;
-    const needsCounter = rowDirection === 'row-reverse';
-    const alignStart: "flex-start" | "flex-end" = needsCounter ? "flex-end" : "flex-start";
+    const alignStart: "flex-start" | "flex-end" = "flex-start";
 
     const languageSheetRef = useRef<BottomSheetModal>(null);
     const logoutSheetRef = useRef<BottomSheetModal>(null);

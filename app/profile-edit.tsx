@@ -25,7 +25,6 @@ import {
     ActivityIndicator,
     Alert,
     Dimensions,
-    I18nManager,
     Image,
     KeyboardAvoidingView,
     Modal,
@@ -46,10 +45,9 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 export default function ProfileEditScreen() {
   const router = useRouter();
   const { isRTL, textAlign } = useDirection();
-  // I18nManager-aware "start" alignment so labels sit right in Arabic on both
-  // native LTR and native RTL devices (matches the title pattern).
-  const alignStart: "flex-start" | "flex-end" =
-    isRTL === I18nManager.isRTL ? "flex-start" : "flex-end";
+  // Logical "start" alignment so labels sit at the leading edge; the root
+  // container's direction mirrors it for Arabic.
+  const alignStart: "flex-start" | "flex-end" = "flex-start";
     const { user: authUser } = useSelector((state: RootState) => state.auth);
 
   const { data: meData, refetch } = useGetMeQuery(undefined);
@@ -310,7 +308,7 @@ export default function ProfileEditScreen() {
                   <>
                     <View style={styles.phoneValueWrapper}>
                       <Text
-                        style={[styles.phoneValue, { textAlign: 'right' }]}
+                        style={[styles.phoneValue, { textAlign }]}
                         numberOfLines={1}
                       >
                         {phone || 'غير محدد'}
@@ -333,7 +331,7 @@ export default function ProfileEditScreen() {
                     </TouchableOpacity>
                     <View style={styles.phoneValueWrapper}>
                       <Text
-                        style={[styles.phoneValue, { textAlign: 'left' }]}
+                        style={[styles.phoneValue, { textAlign }]}
                         numberOfLines={1}
                       >
                         {phone || 'Not set'}

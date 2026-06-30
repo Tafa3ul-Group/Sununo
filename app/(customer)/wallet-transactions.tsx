@@ -16,7 +16,7 @@ import { FlashList } from "@shopify/flash-list";
 import { useRouter } from "expo-router";
 import React, { useCallback, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { I18nManager, RefreshControl, StyleSheet, View } from "react-native";
+import { RefreshControl, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function WalletTransactionsScreen() {
@@ -24,12 +24,9 @@ export default function WalletTransactionsScreen() {
   const { t } = useTranslation();
   const { isRTL, rowDirection } = useDirection();
   const insets = useSafeAreaInsets();
-  // Manager-aware: under forced RTL the OS mirrors flex (so "flex-start" lands on
-  // the visual right / start side) and swaps left/right text-align.
-  const sameDir = isRTL === I18nManager.isRTL;
-  const startAlign = sameDir ? "flex-start" : "flex-end";
-  const endAlign = sameDir ? "flex-end" : "flex-start";
-  const textStart: "left" | "right" = sameDir ? "left" : "right";
+  const startAlign = "flex-start";
+  const endAlign = "flex-end";
+  const textStart: "left" | "right" = isRTL ? "right" : "left";
 
   const {
     data: txResponse,

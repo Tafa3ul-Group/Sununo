@@ -44,7 +44,7 @@ const NotificationItem = React.memo(({ item, index, isArabic, textStart, dirStyl
     return (
         <Animated.View entering={FadeInDown.delay((index % 8) * 60).duration(380)} style={animatedStyle}>
             <AnimatedTouchable
-                style={[styles.notificationCard, { flexDirection: 'row', direction: isArabic ? 'rtl' : 'ltr' }]}
+                style={[styles.notificationCard, { flexDirection: 'row' }]}
                 onPressIn={() => { scale.value = withTiming(0.96, { duration: 110 }); }}
                 onPressOut={() => { scale.value = withSpring(1, { damping: 12, stiffness: 220 }); }}
                 onPress={() => { Haptics.selectionAsync(); onPress(item); }}
@@ -58,7 +58,7 @@ const NotificationItem = React.memo(({ item, index, isArabic, textStart, dirStyl
                 {/* Content */}
                 <View style={styles.cardContent}>
                     {/* Title row: title + time */}
-                    <View style={[styles.titleRow, { flexDirection: 'row', direction: isArabic ? 'rtl' : 'ltr' }]}>
+                    <View style={[styles.titleRow, { flexDirection: 'row' }]}>
                         <ThemedText style={[styles.titleText, { textAlign: textStart, writingDirection: dirStyle }]} numberOfLines={1}>
                             {item.title}
                         </ThemedText>
