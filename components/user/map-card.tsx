@@ -1,7 +1,7 @@
 import { ThemedText } from "@/components/themed-text";
 import { Colors, Shadows } from "@/constants/theme";
 import React from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View, I18nManager } from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SolarCloseCircleBold, SolarStarBold } from "@/components/icons/solar-icons";
 import { useDirection } from "@/i18n";
 
@@ -27,11 +27,8 @@ export const MapCard = React.memo(function MapCard({
   const { isRTL, rowDirection, textAlign } = useDirection();
   const isArabic = isRTL;
   const rowDir = rowDirection;
-  const rowReverseDir: "row" | "row-reverse" =
-    rowDirection === "row" ? "row-reverse" : "row";
-  // alignItems is NOT auto-mirrored by RN, so keep the explicit content-vs-manager comparison.
-  const alignStart: "flex-start" | "flex-end" =
-    isArabic === I18nManager.isRTL ? "flex-start" : "flex-end";
+  const rowReverseDir: "row" = "row";
+  const alignStart: "flex-start" = "flex-start";
   const ratingBoxDir = rowDir;
   return (
     <TouchableOpacity

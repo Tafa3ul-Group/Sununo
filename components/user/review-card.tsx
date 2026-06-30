@@ -11,8 +11,7 @@ import {
     ScrollView,
     StyleSheet,
     TouchableOpacity,
-    View,
-    I18nManager } from "react-native";
+    View } from "react-native";
 import Svg, { ClipPath, Defs, G, Path, Image as SvgImage } from "react-native-svg";
 import { useDirection } from "@/i18n";
 
@@ -49,10 +48,7 @@ interface ReviewCardProps {
 }
 
 export const ReviewCard = React.memo(function ReviewCard({ review, onDelete, onPressChalet }: ReviewCardProps) {
-  const { isRTL, rowDirection } = useDirection();
-  // Physical text alignment that emulates "logical start" (left in steady state);
-  // textAlign left/right are NOT auto-mirrored by RN, so keep the manager comparison.
-  const textStart: "left" | "right" = isRTL === I18nManager.isRTL ? "left" : "right";
+  const { isRTL, rowDirection, textAlign } = useDirection();
   const { t } = useTranslation();
 
   const config = SHAPES_CONFIG[0]; // Using first shape for simplicity or random
@@ -85,10 +81,10 @@ export const ReviewCard = React.memo(function ReviewCard({ review, onDelete, onP
           </Svg>
         </TouchableOpacity>
 
-        <View style={[styles.chaletInfo, { [textStart === 'left' ? 'marginLeft' : 'marginRight']: 15, alignItems: 'flex-start' }]}>
-          <ThemedText style={[styles.chaletTitle, { textAlign: textStart }]} numberOfLines={1}>{review.chaletTitle}</ThemedText>
-          <ThemedText style={[styles.chaletLocation, { textAlign: textStart }]}>{review.chaletLocation}</ThemedText>
-          <ThemedText style={[styles.priceText, { textAlign: textStart }]}>
+        <View style={[styles.chaletInfo, { marginStart: 15, alignItems: 'flex-start' }]}>
+          <ThemedText style={[styles.chaletTitle, { textAlign }]} numberOfLines={1}>{review.chaletTitle}</ThemedText>
+          <ThemedText style={[styles.chaletLocation, { textAlign }]}>{review.chaletLocation}</ThemedText>
+          <ThemedText style={[styles.priceText, { textAlign }]}>
             {isRTL ? (
                 `${t('common.iqd')} ${review.price} / ${t('common.shift')}`
             ) : (
@@ -121,7 +117,7 @@ export const ReviewCard = React.memo(function ReviewCard({ review, onDelete, onP
 
       {/* Bottom Section: Comment + Gallery + Date */}
       <View style={[styles.bottomSection, { alignItems: 'flex-start' }]}>
-        <ThemedText style={[styles.commentText, { textAlign: textStart }]}>
+        <ThemedText style={[styles.commentText, { textAlign }]}>
           {review.comment}
         </ThemedText>
 

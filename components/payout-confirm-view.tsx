@@ -11,7 +11,7 @@ import { Colors, normalize } from "@/constants/theme";
 import { useDirection } from "@/i18n";
 import React, { useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Alert, I18nManager, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -41,8 +41,8 @@ export function PayoutConfirmView({
 }: Props) {
   const { t } = useTranslation();
   const { isRTL, rowDirection } = useDirection();
-  const textStart: "left" | "right" = isRTL === I18nManager.isRTL ? "left" : "right";
-  const textEnd: "left" | "right" = isRTL === I18nManager.isRTL ? "right" : "left";
+  const textStart: "left" | "right" = isRTL ? "right" : "left";
+  const textEnd: "left" | "right" = isRTL ? "left" : "right";
   const writingDir: "rtl" | "ltr" = isRTL ? "rtl" : "ltr";
 
   const status: string = payout?.status;

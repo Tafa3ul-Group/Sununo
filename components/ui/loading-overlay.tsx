@@ -3,6 +3,7 @@ import { StyleSheet, View, Modal, ActivityIndicator } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Colors } from '@/constants/theme';
 import { MotionIcon } from '@/components/icons/motion-icons';
+import { useDirection } from '@/i18n';
 
 interface LoadingOverlayProps {
   visible: boolean;
@@ -10,11 +11,13 @@ interface LoadingOverlayProps {
 }
 
 export const LoadingOverlay = ({ visible, message }: LoadingOverlayProps) => {
+  const { direction } = useDirection();
+
   if (!visible) return null;
 
   return (
     <Modal transparent visible={visible} animationType="fade">
-      <View style={styles.container}>
+      <View style={[styles.container, { direction }]}>
         <View style={styles.card}>
           <MotionIcon 
             name="loading" 

@@ -11,7 +11,7 @@ import { useGetOwnerChaletsQuery } from '@/store/api/apiSlice';
 import * as Haptics from 'expo-haptics';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View, I18nManager } from 'react-native';
+import { Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -31,8 +31,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
   const dispatch = useDispatch();
   const { userType, language, selectedChalet } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
-  const { isRTL, textAlign } = useDirection();
-  const isDeviceRTL = I18nManager.isRTL;
+  const { isRTL, textAlign, direction } = useDirection();
   const insets = useSafeAreaInsets();
 
   const [showPopover, setShowPopover] = useState(false);
@@ -141,8 +140,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
         {
           bottom: Math.max(insets.bottom, 24),
           paddingHorizontal: normalize.width(23),
-          flexDirection: 'row',
-          direction: isRTL ? 'rtl' : 'ltr'
+          flexDirection: 'row'
         }
       ]}>
         <TouchableOpacity
@@ -173,7 +171,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
 
         <View style={[
           styles.tabCapsule,
-          { flexDirection: 'row', direction: isRTL ? 'rtl' : 'ltr' }
+          { flexDirection: 'row' }
         ]}>
           {pillTabs.map((route: any) => {
             const isActive = currentRouteName === route.name;
@@ -202,21 +200,19 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
         onRequestClose={closePopover}
       >
         <TouchableWithoutFeedback onPress={closePopover}>
-          <View style={styles.popoverOverlay}>
+          <View style={[styles.popoverOverlay, { direction }]}>
             <Animated.View
               style={[
                 styles.popoverContainer,
                 animatedStyle,
                 {
                   bottom: Math.max(insets.bottom, 24) + normalize.height(58),
-                  ...(isDeviceRTL 
-                    ? (isRTL ? { left: normalize.width(16) } : { right: normalize.width(16) })
-                    : (isRTL ? { right: normalize.width(16) } : { left: normalize.width(16) }))
+                  start: normalize.width(16)
                 }
               ]}
             >
               <View style={styles.popoverContent}>
-                <View style={[styles.popoverHeader, { flexDirection: 'row', direction: isRTL ? 'rtl' : 'ltr' }]}>
+                <View style={[styles.popoverHeader, { flexDirection: 'row' }]}>
                   <SolarHomeSmileBoldDuotone size={20} color={Colors.primary} />
                   <Text style={[styles.popoverTitle, { textAlign }]}>{t('tabs.myChalets', 'شاليهاتي')}</Text>
                 </View>
@@ -229,7 +225,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
                       key={item.id}
                       style={[
                         styles.chaletItem,
-                        { flexDirection: 'row', direction: isRTL ? 'rtl' : 'ltr' },
+                        { flexDirection: 'row' },
                         selectedChalet?.id === item.id && { backgroundColor: '#F0F7FF' }
                       ]}
                       onPress={() => {
@@ -242,7 +238,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
                       }}
                     >
                       <Image source={getImageSrc(item.images?.[0]?.url)} style={styles.chaletThumb} />
-                      <View style={[styles.chaletItemInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                      <View style={[styles.chaletItemInfo, { alignItems: 'flex-start' }]}>
                         <Text style={[styles.chaletItemName, { textAlign }]} numberOfLines={1}>
                           {isRTL ? (item.name?.ar || item.name) : (item.name?.en || item.name)}
                         </Text>

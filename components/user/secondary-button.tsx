@@ -18,7 +18,6 @@ import Animated, {
     withTiming,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-import { useDirection } from "@/i18n";
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -56,12 +55,12 @@ export function SecondaryButton({
   isLoading = false,
   height = 46,
   variant = "default" }: SecondaryButtonProps) {
-  const { isRTL } = useDirection();
 
-  // Use logical start/end concept to let React Native automatically handle RTL layout
+  // Logical start/end: author left-to-right; the container mirrors for RTL.
+  // iconPosition "left" = leading (start), "right" = trailing (end).
   const isIconOnStart =
     iconPosition
-      ? (isRTL ? iconPosition === "right" : iconPosition === "left")
+      ? iconPosition === "left"
       : (variant === "default");
 
   const bgColor = isActive ? activeColor : "white";
@@ -120,6 +119,8 @@ export function SecondaryButton({
         {
           flexDirection: isIconOnStart ? "row" : "row-reverse",
           gap: -1.5 },
+          // NOTE: isIconOnStart is a logical (start/end) layout choice driven by
+          // iconPosition/variant — NOT an isRTL flip. The container mirrors it.
         style,
         isLoading && { opacity: 0.7 },
         pressAnim,

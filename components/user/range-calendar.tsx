@@ -169,7 +169,11 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({
       {/* Month Navigation Header */}
       <View style={[styles.header, { flexDirection: 'row' }]}>
         <TouchableOpacity onPress={() => changeMonth(-1)} style={styles.navBtn}>
-          <SolarAltArrowLeftBold size={20} color={Colors.text.primary} />
+          {isRTL ? (
+            <SolarAltArrowRightBold size={20} color={Colors.text.primary} />
+          ) : (
+            <SolarAltArrowLeftBold size={20} color={Colors.text.primary} />
+          )}
         </TouchableOpacity>
         
         <TouchableOpacity onPress={() => setShowYearPicker(!showYearPicker)} style={styles.titleWrapper}>
@@ -179,7 +183,11 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => changeMonth(1)} style={styles.navBtn}>
-          <SolarAltArrowRightBold size={20} color={Colors.text.primary} />
+          {isRTL ? (
+            <SolarAltArrowLeftBold size={20} color={Colors.text.primary} />
+          ) : (
+            <SolarAltArrowRightBold size={20} color={Colors.text.primary} />
+          )}
         </TouchableOpacity>
       </View>
 
@@ -275,7 +283,6 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: 'center' },
   header: {
-    direction: 'ltr',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: normalize.height(20),

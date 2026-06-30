@@ -33,7 +33,7 @@ interface LocationPickerModalProps {
 }
 
 export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocation }: LocationPickerModalProps) => {
-  const { isRTL, textAlign } = useDirection();
+  const { isRTL, textAlign, direction } = useDirection();
   const [region, setRegion] = useState({ latitude: 33.3152, longitude: 44.3661 });
   const [hasNativeMap] = useState(!!Mapbox);
   const cameraRef = useRef<any>(null);
@@ -157,7 +157,7 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
 
   return (
     <Modal visible={visible} animationType="slide" transparent={false}>
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { direction }]}>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
@@ -458,5 +458,6 @@ const styles = StyleSheet.create({
     color: Colors.text.primary,
     flex: 1,
     textAlign: 'right',
+    writingDirection: 'ltr',
   },
 });

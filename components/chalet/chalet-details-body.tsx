@@ -42,17 +42,13 @@ const SHAPE_COLORS: Record<ShapeKey, string> = {
   red: "#F64200",
 };
 
-function SectionHeader({ title, isRTL }: { title: string; isRTL: boolean }) {
+function SectionHeader({ title }: { title: string }) {
+  const { textAlign } = useDirection();
   return (
     <View
-      style={[
-        styles.sectionHeaderContainer,
-        { alignItems: "flex-start", direction: isRTL ? "rtl" : "ltr" },
-      ]}
+      style={[styles.sectionHeaderContainer, { alignItems: "flex-start" }]}
     >
-      <ThemedText
-        style={[styles.sectionTitle, { textAlign: isRTL ? "right" : "left" }]}
-      >
+      <ThemedText style={[styles.sectionTitle, { textAlign }]}>
         {title}
       </ThemedText>
     </View>
@@ -122,7 +118,6 @@ export function ChaletDetailsBody({
       <View
         style={{
           flexDirection: "row",
-          direction: isRTL ? "rtl" : "ltr",
           justifyContent: "space-between",
           alignItems: "flex-start",
           width: "100%",
@@ -131,7 +126,10 @@ export function ChaletDetailsBody({
       >
         <View style={{ flex: 1 }}>
           <ThemedText
-            style={[styles.mainTitle, { textAlign: isRTL ? "left" : "right" }]}
+            style={[
+              styles.mainTitle,
+              { textAlign: textAlign === "right" ? "left" : "right" },
+            ]}
             numberOfLines={2}
           >
             {name}
@@ -139,7 +137,10 @@ export function ChaletDetailsBody({
           <ThemedText
             style={[
               styles.locationSub,
-              { textAlign: isRTL ? "left" : "right", marginTop: 4 },
+              {
+                textAlign: textAlign === "right" ? "left" : "right",
+                marginTop: 4,
+              },
             ]}
           >
             {location}
@@ -163,14 +164,8 @@ export function ChaletDetailsBody({
       {/* Basic specifications */}
       <SectionHeader
         title={isRTL ? "المواصفات الأساسية" : "Basic Specifications"}
-        isRTL={isRTL}
       />
-      <View
-        style={[
-          styles.specsRow,
-          { flexDirection: "row", direction: isRTL ? "rtl" : "ltr" },
-        ]}
-      >
+      <View style={[styles.specsRow, { flexDirection: "row" }]}>
         {[
           `${chalet?.area || 0} ${isRTL ? "م" : "m"}`,
           `${isRTL ? "حمام" : "Bathroom"} ${chalet?.bathrooms || 0}`,
@@ -212,10 +207,7 @@ export function ChaletDetailsBody({
       )}
 
       {/* Available shifts */}
-      <SectionHeader
-        title={isRTL ? "الفترات المتوفرة" : "Available Periods"}
-        isRTL={isRTL}
-      />
+      <SectionHeader title={isRTL ? "الفترات المتوفرة" : "Available Periods"} />
       <View style={styles.shiftsGrid}>
         {shifts.length > 0 ? (
           shifts.map((shift: any, index: number) => {
@@ -242,10 +234,7 @@ export function ChaletDetailsBody({
             return (
               <View
                 key={shift.id || index}
-                style={[
-                  styles.shiftCard,
-                  { flexDirection: "row", direction: isRTL ? "rtl" : "ltr" },
-                ]}
+                style={[styles.shiftCard, { flexDirection: "row" }]}
               >
                 <View style={styles.shiftIconCircle}>
                   {isMorning ? (
@@ -261,22 +250,16 @@ export function ChaletDetailsBody({
                   )}
                 </View>
                 <View style={[styles.shiftInfo, { alignItems: "flex-start" }]}>
-                  <ThemedText
-                    style={[styles.shiftName, { textAlign: isRTL ? "right" : "left" }]}
-                  >
+                  <ThemedText style={[styles.shiftName, { textAlign }]}>
                     {pickLang(shift.name, isRTL)}
                   </ThemedText>
-                  <ThemedText
-                    style={[styles.shiftTime, { textAlign: isRTL ? "right" : "left" }]}
-                  >
+                  <ThemedText style={[styles.shiftTime, { textAlign }]}>
                     {formatShiftTime(shift.startTime)} -{" "}
                     {formatShiftTime(shift.endTime)}
                   </ThemedText>
                 </View>
                 {minPrice && (
-                  <ThemedText
-                    style={[styles.shiftPrice, { textAlign: isRTL ? "right" : "left" }]}
-                  >
+                  <ThemedText style={[styles.shiftPrice, { textAlign }]}>
                     {minPrice} {isRTL ? "د.ع" : "IQD"}
                   </ThemedText>
                 )}
@@ -284,16 +267,9 @@ export function ChaletDetailsBody({
             );
           })
         ) : (
-          <View
-            style={[
-              styles.closedChaletBox,
-              { direction: isRTL ? "rtl" : "ltr" },
-            ]}
-          >
+          <View style={styles.closedChaletBox}>
             <SolarForbiddenCircleLineDuotone size={24} color="#EF4444" />
-            <ThemedText
-              style={[styles.closedChaletText, { textAlign: isRTL ? "right" : "left" }]}
-            >
+            <ThemedText style={[styles.closedChaletText, { textAlign }]}>
               {isRTL
                 ? "عذراً، لا تتوفر أي فترات حجز حالياً في هذا الشاليه."
                 : "Sorry, no booking periods are currently available."}
@@ -305,16 +281,8 @@ export function ChaletDetailsBody({
       {/* Facilities */}
       {facilities.length > 0 && (
         <>
-          <View
-            style={[
-              styles.facilitiesHeader,
-              { flexDirection: "row", direction: isRTL ? "rtl" : "ltr" },
-            ]}
-          >
-            <SectionHeader
-              title={isRTL ? "المرافق" : "Facilities"}
-              isRTL={isRTL}
-            />
+          <View style={[styles.facilitiesHeader, { flexDirection: "row" }]}>
+            <SectionHeader title={isRTL ? "المرافق" : "Facilities"} />
             {facilities.length > 8 && (
               <TouchableOpacity onPress={onSeeAllFacilities}>
                 <ThemedText style={styles.viewAllText}>
@@ -323,12 +291,7 @@ export function ChaletDetailsBody({
               </TouchableOpacity>
             )}
           </View>
-          <View
-            style={[
-              styles.facilitiesGrid,
-              { direction: isRTL ? "rtl" : "ltr" },
-            ]}
-          >
+          <View style={styles.facilitiesGrid}>
             {facilities.slice(0, 8).map((f: any, i: number) => (
               <View key={i} style={styles.facilityCell}>
                 <View style={styles.shapeCont}>
@@ -359,10 +322,7 @@ export function ChaletDetailsBody({
       {/* Overview — only when the owner actually wrote one */}
       {description ? (
         <>
-          <SectionHeader
-            title={isRTL ? "نظرة عامة" : "Overview"}
-            isRTL={isRTL}
-          />
+          <SectionHeader title={isRTL ? "نظرة عامة" : "Overview"} />
           <View style={styles.descriptionContainer}>
             <ThemedText
               style={[
@@ -377,7 +337,7 @@ export function ChaletDetailsBody({
       ) : null}
 
       {/* Location */}
-      <SectionHeader title={isRTL ? "الموقع" : "Location"} isRTL={isRTL} />
+      <SectionHeader title={isRTL ? "الموقع" : "Location"} />
       <View style={styles.mapCardFlat}>
         <View style={styles.mapInner}>{mapNode}</View>
         <View style={styles.mapLocLabel}>

@@ -58,7 +58,7 @@ export function AiTranslateButton({ source, onTranslated, style }: AiTranslateBu
       activeOpacity={0.7}
       style={[
         {
-          flexDirection: isRTL ? 'row-reverse' : 'row',
+          flexDirection: 'row',
           alignItems: 'center',
           gap: 5,
           backgroundColor: Colors.primary + '12',

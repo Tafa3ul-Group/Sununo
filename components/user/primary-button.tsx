@@ -112,7 +112,7 @@ export function PrimaryButton({
         scale.value = withSpring(1, { damping: 12, stiffness: 180 });
       }}
       disabled={disabled}
-      style={[styles.hybridContainer, { height, direction: isRTL ? 'rtl' : 'ltr' }, style, pressAnim]}
+      style={[styles.hybridContainer, { height }, style, pressAnim]}
     >
       {/* Logical Start Curve */}
       <View style={{ width: scaledPartWidth, height: scaledPartHeight }}>

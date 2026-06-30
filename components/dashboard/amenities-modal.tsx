@@ -14,7 +14,6 @@ import * as ImagePicker from 'expo-image-picker';
 import React, { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 import {
   Dimensions,
-  I18nManager,
   Image,
   ScrollView,
   StyleSheet,
@@ -57,7 +56,8 @@ interface AmenitiesModalProps {
 
 export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
   ({ chaletId, chalet, refetchChalet }, ref) => {
-    const { isRTL } = useDirection();
+    const { isRTL, textAlign } = useDirection();
+    const textEnd = textAlign === 'right' ? 'left' : 'right';
     const { showConfirm } = useConfirmationDialog();
 
     const { data: amenityCategories } = useGetAmenityCategoriesQuery();
@@ -272,7 +272,7 @@ export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
                             style={[
                               styles.swiperFeatureCard,
                               isSelected && styles.swiperFeatureCardActive,
-                              { flexDirection: I18nManager.isRTL ? 'row-reverse' : 'row' }
+                              { flexDirection: 'row' }
                             ]}
                             onPress={() =>
                               setSelectedFeatures((prev) =>
@@ -298,10 +298,10 @@ export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
                             <View
                               style={[
                                 styles.swiperFeatureInfo,
-                                { flexDirection: I18nManager.isRTL ? 'row-reverse' : 'row' },
+                                { flexDirection: 'row' },
                               ]}
                             >
-                              <Text style={[styles.swiperFeatureName, { textAlign: isRTL ? 'left' : 'right' }]}>
+                              <Text style={[styles.swiperFeatureName, { textAlign: textEnd }]}>
                                 {isRTL ? feature.name?.ar : feature.name?.en}
                               </Text>
 
@@ -366,7 +366,7 @@ export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
           {/* Sticky Bottom Section */}
           <View style={styles.swiperBottomContainer}>
             {/* Pagination Dots */}
-            <View style={[styles.swiperPaginationDots, { flexDirection: I18nManager.isRTL ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.swiperPaginationDots, { flexDirection: 'row' }]}>
               {amenityCategories?.map((_, idx) => {
                 const isActive = idx === activeCategoryIndex;
                 return (
