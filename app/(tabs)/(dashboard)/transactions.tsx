@@ -25,8 +25,9 @@ export default function TransactionsScreen() {
   const { user, userType, language } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
   const { isRTL, textAlign } = useDirection();
-  const startAlign = isRTL ? 'flex-end' : 'flex-start';
-  const endAlign = isRTL ? 'flex-start' : 'flex-end';
+  const startAlign = 'flex-start';
+  const endAlign = 'flex-end';
+  const textEnd = textAlign === 'right' ? 'left' : 'right';
   const [activeFilter, setActiveFilter] = useState<string | undefined>(undefined);
   // FlashList v2 dropped `inverted`; reverse the data for RTL so the filter
   // pills still read right-to-left (e.g. "الكل" stays on the right).
@@ -114,7 +115,7 @@ export default function TransactionsScreen() {
           </View>
 
           <View style={{ alignItems: endAlign }}>
-            <Text style={[styles.transactionAmount, { textAlign: isRTL ? 'left' : 'right' }]}>
+            <Text style={[styles.transactionAmount, { textAlign: textEnd }]}>
               {Number(item.amount)?.toLocaleString()} <Text style={styles.currencySmall}>{isRTL ? 'د.ع' : 'IQD'}</Text>
             </Text>
             <View style={[styles.statusBadge, { backgroundColor: statusBg }]}>

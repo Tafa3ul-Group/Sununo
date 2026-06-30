@@ -9,7 +9,6 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
-    I18nManager,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
@@ -79,7 +78,7 @@ export default function ProviderProfileScreen() {
   const dispatch = useDispatch();
   const router = useRouter();
 
-  const textStart: 'left' | 'right' = isArabic === I18nManager.isRTL ? 'left' : 'right';
+  const textStart: 'left' | 'right' = isArabic ? 'right' : 'left';
   const flexDir: 'row' | 'row-reverse' = rowDirection;
 
   const { data: profile, isLoading, isError, refetch } = useGetProviderProfileQuery(undefined);

@@ -74,7 +74,7 @@ export default function NotificationsScreen() {
         return (
             <TouchableOpacity
                 key={item.id}
-                style={[styles.notificationCard, { flexDirection: 'row', direction: isRTL ? 'rtl' : 'ltr' }]}
+                style={[styles.notificationCard, { flexDirection: 'row' }]}
                 activeOpacity={0.7}
                 onPress={() => handleNotificationPress(item)}
             >
@@ -85,7 +85,7 @@ export default function NotificationsScreen() {
                 </View>
 
                 {/* Header section with orange dot and time */}
-                <View style={[styles.cardLeft, { flexDirection: 'row', direction: isRTL ? 'rtl' : 'ltr' }]}>
+                <View style={[styles.cardLeft, { flexDirection: 'row' }]}>
                     <ThemedText style={styles.timeText}>{timeStr}</ThemedText>
                     {!item.readAt && <View style={styles.orangeDot} />}
                 </View>
@@ -97,7 +97,7 @@ export default function NotificationsScreen() {
         <SafeAreaView style={[styles.container]}>
             {/* Header */}
             <View style={styles.header}>
-                <View style={[styles.headerInner, { flexDirection: 'row', direction: isRTL ? 'rtl' : 'ltr' }]}>
+                <View style={[styles.headerInner, { flexDirection: 'row' }]}>
                     <ThemedText style={styles.headerTitle}>{t('headers.notifications')}</ThemedText>
                     <CircleBackButton
                         style={[styles.backButton, { end: 0 }]}

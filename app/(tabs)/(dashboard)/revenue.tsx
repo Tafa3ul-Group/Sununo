@@ -72,8 +72,9 @@ export default function RevenueScreen() {
   const router = useRouter();
   const { user, userType, selectedChalet } = useSelector((state: RootState) => state.auth);
   const { isRTL, textAlign } = useDirection();
-  const startAlign = isRTL ? 'flex-end' : 'flex-start';
-  const endAlign = isRTL ? 'flex-start' : 'flex-end';
+  const textEnd = textAlign === 'right' ? 'left' : 'right';
+  const startAlign = 'flex-start';
+  const endAlign = 'flex-end';
   const [selectedPeriod, setSelectedPeriod] = useState('month');
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const periodRange = useMemo(() => getPeriodRange(selectedPeriod), [selectedPeriod]);
@@ -209,8 +210,8 @@ export default function RevenueScreen() {
         {/* Balance Card */}
         <View style={styles.balanceCard}>
           <View style={styles.balanceCardInner}>
-            <View style={[styles.decorCircle, styles.decorCircle1, { [isRTL ? 'left' : 'right']: -40 }]} />
-            <View style={[styles.decorCircle, styles.decorCircle2, { [isRTL ? 'right' : 'left']: -20 }]} />
+            <View style={[styles.decorCircle, styles.decorCircle1, { end: -40 }]} />
+            <View style={[styles.decorCircle, styles.decorCircle2, { start: -20 }]} />
 
             <Text style={styles.balanceLabel}>{isRTL ? 'الرصيد المتاح للسحب' : 'Available to Withdraw'}</Text>
             <Text style={styles.balanceValue}>{walletBalance.toLocaleString()}</Text>
@@ -355,7 +356,7 @@ export default function RevenueScreen() {
                   </View>
 
                   <View style={{ alignItems: endAlign }}>
-                    <Text style={[styles.transactionAmount, { textAlign: isRTL ? 'left' : 'right' }]}>
+                    <Text style={[styles.transactionAmount, { textAlign: textEnd }]}>
                       {item.amount?.toLocaleString()} <Text style={styles.currencySmall}>{isRTL ? 'د.ع' : 'IQD'}</Text>
                     </Text>
                     <View style={[styles.typeBadge, { backgroundColor: getStatusColor(item.status) + '15' }]}>

@@ -13,7 +13,7 @@ import { Image as ExpoImage } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Dimensions, I18nManager, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSelector } from 'react-redux';
 import { useConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import Toast from 'react-native-toast-message';
@@ -35,7 +35,7 @@ export default function BookingDetailsPage() {
 
   // Robust layout bridge (same pattern as chalet-details)
   const flexRow = rowDirection;
-  const flexStart = isRTL ? (I18nManager.isRTL ? 'flex-start' : 'flex-end') : (I18nManager.isRTL ? 'flex-end' : 'flex-start') as 'flex-start' | 'flex-end';
+  const flexStart = 'flex-start' as 'flex-start' | 'flex-end';
   const textStart = textAlign;
   const textEnd = isRTL ? 'left' : 'right' as 'left' | 'right';
   const cancelSheetRef = React.useRef<BookingCancellationSheetRef>(null);
@@ -192,7 +192,7 @@ export default function BookingDetailsPage() {
           </Text>
         )}
       </View>
-      <View style={{ flex: 0, alignItems: isRTL ? 'flex-start' : 'flex-end' }}>
+      <View style={{ flex: 0, alignItems: 'flex-end' }}>
         {typeof value === 'string' ? (
           <Text style={[styles.infoValue, isBlue && styles.blueValue, { textAlign: textEnd }]}>{value}</Text>
         ) : (
