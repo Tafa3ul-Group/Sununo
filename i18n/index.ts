@@ -1,5 +1,4 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as Updates from "expo-updates";
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import { I18nManager, Platform } from "react-native";
@@ -33,43 +32,20 @@ const LANGUAGE_KEY = "user-language";
 // removes the language-switch reload AND the entire `i18n.language` ↔
 // `I18nManager.isRTL` drift class that caused the reversed/incorrect layouts.
 //
-// `ensureNativeLTR` runs once at module load:
-//   • Fresh installs: native is already LTR → nothing happens.
-//   • Older installs that had `forceRTL(true)` persisted: flip it OFF and reload
-//     exactly once so the native layout engine returns to LTR. After that,
-//     I18nManager is never touched again and `I18nManager.isRTL` stays false.
-
-const reloadApp = async () => {
-  if (Platform.OS === "web") {
-    if (typeof window !== "undefined") window.location.reload();
-    return;
-  }
-  try {
-    await Updates.reloadAsync();
-    return;
-  } catch {
-    // dev clients / Expo Go may not support reloadAsync
-  }
-  try {
-    const { DevSettings } = require("react-native");
-    DevSettings.reload();
-  } catch {
-    // Last resort: next cold start will already have native LTR persisted.
-  }
-};
+// `ensureNativeLTR` sets the native preference to LTR. We deliberately DO NOT
+// reload here: a JS-only reload (Expo dev client / Expo Go) does not actually
+// flip the native `I18nManager.isRTL` flag, so reloading-when-still-RTL would
+// loop forever. Instead we just set the preference (it takes effect on the next
+// native cold start), and rely on the per-subtree `direction` style applied at
+// the container roots to drive layout correctly THIS session regardless of the
+// native flag. This is idempotent and safe to run on every launch.
 
 const ensureNativeLTR = () => {
   try {
     I18nManager.allowRTL(false);
+    I18nManager.forceRTL(false);
     if (I18nManager.swapLeftAndRightInRTL) {
       I18nManager.swapLeftAndRightInRTL(false);
-    }
-    if (I18nManager.isRTL) {
-      // One-time migration off the old native-RTL world.
-      I18nManager.forceRTL(false);
-      if (Platform.OS !== "web") {
-        setTimeout(reloadApp, 50);
-      }
     }
   } catch {
     // I18nManager may be unavailable in some test environments.
