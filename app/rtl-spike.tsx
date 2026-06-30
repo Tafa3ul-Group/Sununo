@@ -30,7 +30,7 @@ function Panel({ dir }: { dir: 'rtl' | 'ltr' }) {
     <View style={[styles.panel, { direction: dir }]}>
       <Text style={styles.panelTitle}>container direction = {dir}</Text>
 
-      <Text style={styles.caption}>1) flexDirection:'row' → [1][2][3]</Text>
+      <Text style={styles.caption}>{"1) flexDirection:'row' → [1][2][3]"}</Text>
       <View style={styles.row}>
         <Box label="1" color="#2B66FF" />
         <Box label="2" color="#15AB64" />

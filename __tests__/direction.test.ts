@@ -24,19 +24,16 @@ describe("isContentRTL", () => {
   });
 });
 
-describe("resolveRowDirection — guards against double-flip", () => {
-  // When content direction matches the native manager, RN's auto-flip already
-  // does the right thing, so we must use plain "row" (NOT row-reverse).
-  it('returns "row" when content matches the manager', () => {
-    expect(resolveRowDirection(true, true)).toBe("row"); // RTL content, RTL device
-    expect(resolveRowDirection(false, false)).toBe("row"); // LTR content, LTR device
-  });
-
-  // When they differ (transient state right after a language switch, before
-  // the native reload), we compensate with "row-reverse".
-  it('returns "row-reverse" when content differs from the manager', () => {
-    expect(resolveRowDirection(true, false)).toBe("row-reverse");
-    expect(resolveRowDirection(false, true)).toBe("row-reverse");
+describe("resolveRowDirection — deprecated, always 'row'", () => {
+  // Direction is now driven by the container `direction` style (native RTL is
+  // permanently off), so rows are never reversed manually. resolveRowDirection
+  // ignores its arguments and always returns plain "row".
+  it("always returns 'row' regardless of arguments", () => {
+    expect(resolveRowDirection(true, true)).toBe("row");
+    expect(resolveRowDirection(true, false)).toBe("row");
+    expect(resolveRowDirection(false, true)).toBe("row");
+    expect(resolveRowDirection(false, false)).toBe("row");
+    expect(resolveRowDirection()).toBe("row");
   });
 });
 
