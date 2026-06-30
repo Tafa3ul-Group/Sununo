@@ -91,7 +91,12 @@ export const HorizontalCard = React.memo(function HorizontalCard({
     return {
       textStart: (isArabic ? "right" : "left") as "left" | "right",
       rowDirection: "row" as const,
-      rowReverseDir: "row" as const,
+      // CONSTANT reverse (not isRTL-conditional): the JSX order is [info, image]
+      // but the design wants the IMAGE on the LEADING edge (right in Arabic, left
+      // in English). row-reverse flips it equally in both languages — the
+      // container then mirrors normally. This is a fixed layout choice, not a
+      // direction counter, so it does not double-flip.
+      rowReverseDir: "row-reverse" as const,
       ratingBoxDir: "row" as const,
       alignStart: "flex-start" as "flex-start" | "flex-end",
     };
@@ -128,10 +133,9 @@ export const HorizontalCard = React.memo(function HorizontalCard({
       : chalet.image ||
         getImageSrc(chalet.images?.[0]?.url || chalet.images?.[0]);
   const borderColor = chalet.color || Colors.secondary;
-  // Bowl faces the text. With the container row mirrored by the app direction,
-  // the image sits at the trailing edge: LTR → image on the right (curve bulges
-  // left toward the text); RTL → mirrored, image on the left (curve bulges right).
-  const dPath = isArabic ? D_PATH_BOWL_RIGHT : D_PATH_BOWL_LEFT;
+  // Image leads (row-reverse above): RTL → image on the right, curve bulges left
+  // toward the text; LTR → image on the left, curve bulges right toward the text.
+  const dPath = isArabic ? D_PATH_BOWL_LEFT : D_PATH_BOWL_RIGHT;
 
   const config = SHAPES_CONFIG[shapeIndex % SHAPES_CONFIG.length];
 
