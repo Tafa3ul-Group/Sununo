@@ -68,7 +68,8 @@ function RootLayoutNav() {
     if (!loaded) return;
     const inAuthGroup = segments[0] === "(auth)";
     const isIndex = (segments as string[]).length === 0;
-    if (!isAuthenticated && userType !== "guest" && !inAuthGroup && !isIndex) {
+    const inSpike = (segments[0] as string) === "rtl-spike"; // TEMP: allow RTL spike without auth
+    if (!isAuthenticated && userType !== "guest" && !inAuthGroup && !isIndex && !inSpike) {
       router.replace("/(auth)/login");
     }
   }, [isAuthenticated, userType, segments, loaded, router]);
