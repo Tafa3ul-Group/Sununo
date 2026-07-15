@@ -23,7 +23,7 @@ export const WalletCard = ({
   return (
     <View style={styles.container}>
       {/* SVG Background */}
-      <View style={[styles.svgWrapper, { transform: [{ scaleX: isRTL ? 1 : -1 }] }]}>
+      <View style={[styles.svgWrapper, { transform: [{ scaleX: isRTL ? -1 : 1 }] }]}>
         <Svg width="100%" height={normalize.height(130)} viewBox="0 24 370 123" preserveAspectRatio="none" fill="none">
           <G clipPath="url(#clip0_64103_857)">
             <Path
@@ -45,14 +45,14 @@ export const WalletCard = ({
 
       {/* Content Overlay */}
       <View style={styles.contentOverlay}>
-        <View style={[styles.topRow, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+        <View style={[styles.topRow, { alignItems: 'flex-start' }]}>
           <ThemedText style={styles.balanceLabel}>
             {t("profile.wallet.balance")}
           </ThemedText>
         </View>
 
-        <View style={[styles.bottomRow, { flexDirection: isRTL ? 'row' : 'row-reverse' }]}>
-          <View style={[styles.balanceContainer, { flexDirection: isRTL ? 'row' : 'row-reverse', paddingHorizontal: normalize.width(25) }]}>
+        <View style={[styles.bottomRow, { flexDirection: 'row' }]}>
+          <View style={[styles.balanceContainer, { flexDirection: 'row', paddingHorizontal: normalize.width(25) }]}>
             <ThemedText style={styles.balanceValue}>{balance}</ThemedText>
             <ThemedText style={styles.currencyText}>{t("common.iqd")}</ThemedText>
           </View>
@@ -74,18 +74,15 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginVertical: normalize.height(4),
     overflow: "hidden",
-    direction: "ltr",
   },
   svgWrapper: {
     ...StyleSheet.absoluteFillObject,
-    direction: "ltr",
   },
   contentOverlay: {
     flex: 1,
     paddingTop: normalize.height(18),
     paddingBottom: normalize.height(30),
     justifyContent: "space-between",
-    direction: "ltr",
   },
   topRow: {
     paddingHorizontal: normalize.width(25),

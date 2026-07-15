@@ -37,7 +37,6 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
-  I18nManager,
   Keyboard,
   Platform,
   StyleSheet,
@@ -212,6 +211,26 @@ const shiftTime = (timeStr: string, minutesToShift: number): string => {
   return `${newH.toString().padStart(2, '0')}:${newM.toString().padStart(2, '0')}`;
 };
 
+// Derive the shift type from its time window so we send the same `type` the
+// portal sends (MORNING/EVENING/OVERNIGHT). The owner app has no type selector,
+// so the window is the source of truth — matching the portal's presets
+// (morning 08:00, evening 14:00, overnight 20:00) and the getShiftIcon logic.
+const deriveShiftType = (startTime: string, endTime: string): 'MORNING' | 'EVENING' | 'OVERNIGHT' => {
+  const toMinutes = (t: string) => {
+    const [h, m] = (t || '').split(':').map(Number);
+    if (isNaN(h)) return NaN;
+    return h * 60 + (isNaN(m) ? 0 : m);
+  };
+  const startMin = toMinutes(startTime);
+  const endMin = toMinutes(endTime);
+  // Wraps past midnight (end on/before start) → overnight, like the portal preset.
+  if (!isNaN(startMin) && !isNaN(endMin) && endMin <= startMin) return 'OVERNIGHT';
+  const startHour = isNaN(startMin) ? 0 : Math.floor(startMin / 60);
+  if (startHour >= 5 && startHour < 14) return 'MORNING';
+  if (startHour >= 14 && startHour < 20) return 'EVENING';
+  return 'OVERNIGHT';
+};
+
 const getShiftIntervals = (startTime: string, endTime: string): { start: number; end: number }[] => {
   if (!startTime || !endTime) return [];
   const [sh, sm] = startTime.split(':').map(Number);
@@ -334,7 +353,7 @@ export default function ShiftsAndPricesScreen() {
   const [selectedChaletId, setSelectedChaletId] = useState<string | null>(initialId as string || null);
   const { t } = useTranslation();
   const { selectedChalet } = useSelector((state: RootState) => state.auth);
-  const { isRTL, textAlign } = useDirection();
+  const { isRTL, textAlign, rowDirection } = useDirection();
   const { showConfirm } = useConfirmationDialog();
 
   const formatTime12h = (timeStr: string) => {
@@ -379,6 +398,11 @@ export default function ShiftsAndPricesScreen() {
 
   const [selectedShift, setSelectedShift] = useState<any>(null);
   const [shiftForm, setShiftForm] = useState({ name: '', startTime: '08:00', endTime: '23:00', price: '', isActive: true });
+  // Per-day pricing for the Add-shift form — mirrors the portal's process
+  // (set every day's price while creating the shift, not in a separate step).
+  const emptyFormDays = () => Array.from({ length: 7 }, (_, i) => ({ dayOfWeek: i, enabled: false, price: '' as string | number }));
+  const [formDays, setFormDays] = useState<{ dayOfWeek: number; enabled: boolean; price: string | number }[]>(emptyFormDays());
+  const [formBulkPrice, setFormBulkPrice] = useState('');
   const [pricingForm, setPricingForm] = useState<any[]>([]);
   const [modalActiveStatus, setModalActiveStatus] = useState(true);
   const [bulkPrice, setBulkPrice] = useState('');
@@ -667,6 +691,7 @@ export default function ShiftsAndPricesScreen() {
               name: s.name,
               startTime: s.startTime,
               endTime: s.endTime,
+              type: deriveShiftType(s.startTime, s.endTime),
               isActive: s.isActive
             };
             return updateShift({ chaletId: selectedChaletId, shiftId: s.id, data }).unwrap();
@@ -770,7 +795,9 @@ export default function ShiftsAndPricesScreen() {
     return false;
   };
 
-  const flexDirection = 'row';
+  // rowDirection is 'row'; the container `direction` (set globally from the
+  // language) mirrors every row, so we never reverse manually.
+  const flexDirection = rowDirection;
 
   const calculateDuration = (start: string, end: string) => {
     if (!start || !end) return 0;
@@ -806,6 +833,8 @@ export default function ShiftsAndPricesScreen() {
       }
     }
     setShiftForm({ name: '', startTime: defaultStart, endTime: defaultEnd, price: '', isActive: true });
+    setFormDays(emptyFormDays());
+    setFormBulkPrice('');
     shiftSheetRef.current?.present();
   };
 
@@ -826,12 +855,41 @@ export default function ShiftsAndPricesScreen() {
 
 
 
+  // ── Add-form per-day pricing helpers (mirror the portal: all / weekdays / weekend) ──
+  const applyFormPrice = (scope: 'all' | 'weekday' | 'weekend') => {
+    const p = cleanPriceNumber(formBulkPrice);
+    if (!p || p <= 0) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setFormDays(prev => prev.map(d => {
+      const inScope = scope === 'all' || (scope === 'weekday' ? d.dayOfWeek < 5 : d.dayOfWeek >= 5);
+      return inScope ? { ...d, enabled: true, price: p } : d;
+    }));
+    Keyboard.dismiss();
+  };
+
+  const toggleFormDay = (index: number) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setFormDays(prev => prev.map((d, i) => i === index ? { ...d, enabled: !d.enabled } : d));
+  };
+
+  const setFormDayPrice = (index: number, val: string) => {
+    setFormDays(prev => prev.map((d, i) => i === index ? { ...d, price: val === '' ? '' : cleanPriceNumber(val) } : d));
+  };
+
   const saveShift = async () => {
     const isNew = !selectedShift;
-    const isMissingRequired = !shiftForm.name || !shiftForm.startTime || !shiftForm.endTime || (isNew && !shiftForm.price);
+    const isMissingRequired = !shiftForm.name || !shiftForm.startTime || !shiftForm.endTime;
     if (isMissingRequired) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: isRTL ? 'يرجى ملء كافة الحقول' : 'Please fill all fields' });
+      return;
+    }
+
+    // Match the portal's validation: a new active shift must price at least one day (> 0).
+    const pricedDays = formDays.filter(d => d.enabled && Number(d.price) > 0);
+    if (isNew && pricedDays.length === 0) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: isRTL ? 'يرجى تسعير يوم واحد على الأقل' : 'Please price at least one day' });
       return;
     }
 
@@ -854,26 +912,22 @@ export default function ShiftsAndPricesScreen() {
         name: { ar: shiftForm.name, en: shiftForm.name },
         startTime,
         endTime,
+        type: deriveShiftType(startTime, endTime),
         isActive: true
       };
       if (selectedShift) {
+        // Editing only adjusts name/time/type here; per-day prices stay in the daily-pricing sheet.
         await updateShift({ chaletId: selectedChaletId, shiftId: selectedShift.id, data }).unwrap();
-        if (shiftForm.price) {
-          const p = parseInt(shiftForm.price);
-          if (!isNaN(p)) {
-            const initialPricing = Array.from({ length: 7 }, (_, i) => ({ dayOfWeek: i, price: p }));
-            await setShiftPricing({ shiftId: selectedShift.id, data: { pricing: initialPricing } }).unwrap();
-          }
-        }
       } else {
         const result = await createShift({ chaletId: selectedChaletId, data }).unwrap();
         const newShiftId = result?.data?.id || result?.id;
-        if (newShiftId && shiftForm.price) {
-          const p = parseInt(shiftForm.price);
-          if (!isNaN(p)) {
-            const initialPricing = Array.from({ length: 7 }, (_, i) => ({ dayOfWeek: i, price: p }));
-            await setShiftPricing({ shiftId: newShiftId, data: { pricing: initialPricing } }).unwrap();
-          }
+        if (newShiftId) {
+          // Send the full 7-day matrix; a disabled/unpriced day becomes 1 (the "closed" sentinel).
+          const initialPricing = formDays.map(d => ({
+            dayOfWeek: d.dayOfWeek,
+            price: d.enabled && Number(d.price) > 0 ? Number(d.price) : 1,
+          }));
+          await setShiftPricing({ shiftId: newShiftId, data: { pricing: initialPricing } }).unwrap();
         }
       }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -1046,10 +1100,13 @@ export default function ShiftsAndPricesScreen() {
     setModalActiveStatus(val);
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      const startTime = selectedShift.startTime?.substring(0, 5);
+      const endTime = selectedShift.endTime?.substring(0, 5);
       const data = {
         name: selectedShift.name,
-        startTime: selectedShift.startTime?.substring(0, 5),
-        endTime: selectedShift.endTime?.substring(0, 5),
+        startTime,
+        endTime,
+        type: deriveShiftType(startTime, endTime),
         isActive: val
       };
       await updateShift({ chaletId: selectedChaletId, shiftId: selectedShift.id, data }).unwrap();
@@ -1092,6 +1149,7 @@ export default function ShiftsAndPricesScreen() {
             name: selectedShift.name,
             startTime: selectedShift.startTime?.substring(0, 5),
             endTime: selectedShift.endTime?.substring(0, 5),
+            type: deriveShiftType(selectedShift.startTime?.substring(0, 5), selectedShift.endTime?.substring(0, 5)),
             isActive: modalActiveStatus
           }
         }).unwrap();
@@ -1115,10 +1173,13 @@ export default function ShiftsAndPricesScreen() {
   const toggleShiftStatus = async (shift: any) => {
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      const startTime = shift.startTime?.substring(0, 5);
+      const endTime = shift.endTime?.substring(0, 5);
       const data = {
         name: shift.name,
-        startTime: shift.startTime?.substring(0, 5),
-        endTime: shift.endTime?.substring(0, 5),
+        startTime,
+        endTime,
+        type: deriveShiftType(startTime, endTime),
         isActive: !shift.isActive
       };
       await updateShift({ chaletId: selectedChaletId, shiftId: shift.id, data }).unwrap();
@@ -1478,18 +1539,82 @@ export default function ShiftsAndPricesScreen() {
           />
 
           {!selectedShift && (
-            <>
+            <View style={{ marginBottom: 8 }}>
               <Text style={[styles.label, { textAlign }]}>
-                {isRTL ? 'السعر الأساسي اليومي' : 'Base Daily Price'}
+                {isRTL ? 'أسعار الأيام' : 'Daily Prices'}
               </Text>
-              <BottomSheetTextInput 
-                style={[styles.input, { fontFamily: 'Alexandria-Medium' }]} 
-                keyboardType="numeric"
-                placeholder={isRTL ? 'مثال: 50000' : 'e.g. 50000'}
-                value={shiftForm.price} 
-                onChangeText={t => setShiftForm({ ...shiftForm, price: t })} 
-              />
-            </>
+
+              <View style={styles.formPricingCard}>
+                {/* Quick pricing: bulk price + all / weekdays / weekend (mirrors the portal) */}
+                <Text style={[styles.formQuickHint, { textAlign }]}>{isRTL ? 'سعّر بسرعة' : 'Quick pricing'}</Text>
+
+                <View style={[styles.formBulkRow, { flexDirection: rowDirection }]}>
+                  <BottomSheetTextInput
+                    style={[styles.formBulkInput, { textAlign }]}
+                    keyboardType="numeric"
+                    placeholder={isRTL ? 'أدخل السعر' : 'Enter price'}
+                    placeholderTextColor="#94A3B8"
+                    value={formBulkPrice ? formatWithCommas(formBulkPrice) : ''}
+                    onChangeText={t => setFormBulkPrice(String(cleanPriceNumber(t)))}
+                  />
+                  <Text style={styles.formBulkCurrency}>{isRTL ? 'د.ع' : 'IQD'}</Text>
+                </View>
+
+                <View style={[styles.formQuickBtnRow, { flexDirection: rowDirection }]}>
+                  <TouchableOpacity style={[styles.formQuickBtn, styles.formQuickBtnPrimary]} onPress={() => applyFormPrice('all')} activeOpacity={0.85}>
+                    <Text style={[styles.formQuickBtnText, styles.formQuickBtnTextOn]}>{isRTL ? 'كل الأيام' : 'All days'}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.formQuickBtn} onPress={() => applyFormPrice('weekday')} activeOpacity={0.85}>
+                    <Text style={styles.formQuickBtnText}>{isRTL ? 'أيام العمل' : 'Weekdays'}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.formQuickBtn} onPress={() => applyFormPrice('weekend')} activeOpacity={0.85}>
+                    <Text style={styles.formQuickBtnText}>{isRTL ? 'العطلة' : 'Weekend'}</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.formGridDivider} />
+                <Text style={[styles.formGridHint, { textAlign }]}>{isRTL ? 'اضغط على اليوم لتفعيله، ثم حدّد سعره' : 'Tap a day to enable it, then set its price'}</Text>
+
+                {/* 7-day grid — rowDirection keeps الأحد on the right in both RTL sync states */}
+                <View style={[styles.formDayGrid, { flexDirection: rowDirection }]}>
+                  {formDays.map((d, i) => {
+                    const dayShort = (isRTL
+                      ? ['أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت']
+                      : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'])[d.dayOfWeek];
+                    const isWeekend = d.dayOfWeek === 5 || d.dayOfWeek === 6;
+                    return (
+                      <View key={`form-day-${d.dayOfWeek}`} style={styles.formDayCell}>
+                        <TouchableOpacity
+                          onPress={() => toggleFormDay(i)}
+                          activeOpacity={0.8}
+                          style={[styles.formDayChip, d.enabled ? styles.formDayChipOn : (isWeekend ? styles.formDayChipWeekend : null)]}
+                        >
+                          <Text
+                            style={[
+                              styles.formDayChipText,
+                              d.enabled && styles.formDayChipTextOn,
+                              !d.enabled && isWeekend && { color: '#F97316' },
+                            ]}
+                            numberOfLines={1}
+                          >
+                            {dayShort}
+                          </Text>
+                        </TouchableOpacity>
+                        <BottomSheetTextInput
+                          style={[styles.formDayPriceInput, !d.enabled && styles.formDayPriceInputOff]}
+                          keyboardType="numeric"
+                          editable={d.enabled}
+                          placeholder="—"
+                          placeholderTextColor="#CBD5E1"
+                          value={d.enabled && d.price !== '' ? String(d.price) : ''}
+                          onChangeText={t => setFormDayPrice(i, t)}
+                        />
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+            </View>
           )}
 
           <TouchableOpacity 
@@ -1514,7 +1639,7 @@ export default function ShiftsAndPricesScreen() {
         <View style={{ flex: 1 }}>
           {/* Header */}
           <View style={{
-            flexDirection: isRTL ? 'row-reverse' : 'row',
+            flexDirection: 'row',
             alignItems: 'center',
             paddingHorizontal: 20,
             paddingTop: 4,
@@ -1551,7 +1676,7 @@ export default function ShiftsAndPricesScreen() {
           >
             {/* Shift active toggle */}
             <View style={{
-              flexDirection: isRTL ? 'row-reverse' : 'row',
+              flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'space-between',
               backgroundColor: '#fff',
@@ -1583,7 +1708,7 @@ export default function ShiftsAndPricesScreen() {
               marginBottom: 20,
             }}>
               <View style={{
-                flexDirection: isRTL ? 'row-reverse' : 'row',
+                flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 marginBottom: 12,
@@ -1591,7 +1716,7 @@ export default function ShiftsAndPricesScreen() {
                 <Text style={{ fontSize: 13, fontFamily: 'Alexandria-SemiBold', color: '#0F172A' }}>
                   {isRTL ? 'سعر موحّد لكل الأيام' : 'One price for all days'}
                 </Text>
-                <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 14 }}>
+                <View style={{ flexDirection: 'row', gap: 14 }}>
                   <TouchableOpacity onPress={handleEnableAllDays} activeOpacity={0.7}>
                     <Text style={{ fontSize: 12, fontFamily: 'Alexandria-SemiBold', color: Colors.primary }}>
                       {isRTL ? 'تفعيل الكل' : 'Enable all'}
@@ -1605,7 +1730,7 @@ export default function ShiftsAndPricesScreen() {
                 </View>
               </View>
 
-              <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 10 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                 <BottomSheetTextInput
                   style={{
                     flex: 1,
@@ -1618,7 +1743,7 @@ export default function ShiftsAndPricesScreen() {
                     fontSize: 15,
                     fontFamily: 'Alexandria-SemiBold',
                     color: '#0F172A',
-                    textAlign: isRTL ? 'right' : 'left',
+                    textAlign,
                   }}
                   keyboardType="numeric"
                   placeholder={isRTL ? 'السعر بالدينار' : 'Price (IQD)'}
@@ -1658,7 +1783,7 @@ export default function ShiftsAndPricesScreen() {
                 <View
                   key={`day-${item.dayOfWeek}`}
                   style={{
-                    flexDirection: isRTL ? 'row' : 'row-reverse',
+                    flexDirection: 'row',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     backgroundColor: '#fff',
@@ -1672,8 +1797,8 @@ export default function ShiftsAndPricesScreen() {
                   }}
                 >
                   {/* Day name + save button beside it */}
-                  <View style={{ flexDirection: isRTL ? 'row' : 'row-reverse', alignItems: 'center', gap: 10 }}>
-                    <View style={{ alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                    <View style={{ alignItems: 'flex-start' }}>
                       <Text style={{ fontSize: 16, fontFamily: 'Alexandria-Bold', color: isStopped ? '#94A3B8' : '#0F172A' }}>
                         {dayName}
                       </Text>
@@ -1713,14 +1838,14 @@ export default function ShiftsAndPricesScreen() {
                   </View>
 
                   {/* Price + on/off switch */}
-                  <View style={{ flexDirection: isRTL ? 'row' : 'row-reverse', alignItems: 'center', gap: 10 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                     {isStopped ? (
                       <Text style={{ fontSize: 13, fontFamily: 'Alexandria-SemiBold', color: '#94A3B8' }}>
                         {isRTL ? 'مغلق' : 'Closed'}
                       </Text>
                     ) : (
                       <View style={{
-                        flexDirection: isRTL ? 'row' : 'row-reverse',
+                        flexDirection: 'row',
                         alignItems: 'center',
                         gap: 6,
                         backgroundColor: '#F8FAFC',
@@ -1737,7 +1862,7 @@ export default function ShiftsAndPricesScreen() {
                             fontSize: 15,
                             fontFamily: 'Alexandria-Bold',
                             color: '#0F172A',
-                            textAlign: isRTL ? 'right' : 'left',
+                            textAlign,
                             paddingVertical: 0,
                           }}
                           keyboardType="numeric"
@@ -1785,7 +1910,7 @@ export default function ShiftsAndPricesScreen() {
               disabled={isSettingPricing}
               activeOpacity={0.85}
               style={{
-                flexDirection: isRTL ? 'row-reverse' : 'row',
+                flexDirection: 'row',
                 gap: 8,
                 height: 54,
                 borderRadius: 16,
@@ -2021,9 +2146,140 @@ const styles = StyleSheet.create({
   modalTitle: { fontSize: 18, fontFamily: "Alexandria-Bold", color: '#0F172A', marginBottom: 20 },
   modalTitleCompact: { fontSize: 16, fontFamily: "Alexandria-Bold", color: '#0F172A' },
   label: { fontSize: 14, fontFamily: "Alexandria-Bold", marginBottom: 8, width: '100%' },
-  input: { backgroundColor: '#F3F4F6', height: 50, borderRadius: 12, paddingHorizontal: 16, marginBottom: 16, textAlign: I18nManager.isRTL ? 'right' : 'left' },
+  input: { backgroundColor: '#F3F4F6', height: 50, borderRadius: 12, paddingHorizontal: 16, marginBottom: 16, textAlign: 'auto' },
   saveBtn: { backgroundColor: Colors.primary, padding: 16, borderRadius: 12, alignItems: 'center' },
   saveBtnText: { color: '#fff', fontFamily: "Alexandria-Bold" },
+  formPricingCard: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#EEF1F5',
+    padding: 16,
+    marginBottom: 8,
+  },
+  formQuickHint: {
+    fontSize: 12,
+    fontFamily: 'Alexandria-SemiBold',
+    color: '#475569',
+    marginBottom: 10,
+  },
+  formBulkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    height: 50,
+    marginBottom: 10,
+  },
+  formBulkInput: {
+    flex: 1,
+    height: '100%',
+    fontSize: 15,
+    fontFamily: 'Alexandria-SemiBold',
+    color: '#0F172A',
+    textAlign: 'auto',
+  },
+  formBulkCurrency: {
+    fontSize: 12,
+    fontFamily: 'Alexandria-Medium',
+    color: '#94A3B8',
+    marginStart: 8,
+  },
+  formQuickBtnRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  formQuickBtn: {
+    flex: 1,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  formQuickBtnPrimary: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  formQuickBtnText: {
+    fontSize: 12,
+    fontFamily: 'Alexandria-SemiBold',
+    color: '#334155',
+  },
+  formQuickBtnTextOn: {
+    color: '#fff',
+    fontFamily: 'Alexandria-Bold',
+  },
+  formGridDivider: {
+    height: 1,
+    backgroundColor: '#EAEEF3',
+    marginTop: 16,
+    marginBottom: 12,
+  },
+  formGridHint: {
+    fontSize: 11,
+    fontFamily: 'Alexandria-Medium',
+    color: '#94A3B8',
+    marginBottom: 10,
+  },
+  formDayGrid: {
+    flexDirection: 'row',
+  },
+  formDayCell: {
+    flex: 1,
+    marginHorizontal: 2,
+    alignItems: 'center',
+    gap: 5,
+  },
+  formDayChip: {
+    width: '100%',
+    height: 30,
+    borderRadius: 9,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  formDayChipOn: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  formDayChipWeekend: {
+    backgroundColor: '#FFF7ED',
+    borderColor: '#FED7AA',
+  },
+  formDayChipText: {
+    fontSize: 10,
+    fontFamily: 'Alexandria-SemiBold',
+    color: '#64748B',
+  },
+  formDayChipTextOn: {
+    color: '#fff',
+  },
+  formDayPriceInput: {
+    width: '100%',
+    height: 34,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 9,
+    paddingHorizontal: 2,
+    fontSize: 11,
+    fontFamily: 'Alexandria-SemiBold',
+    color: '#0F172A',
+    textAlign: 'center',
+  },
+  formDayPriceInputOff: {
+    backgroundColor: '#F1F5F9',
+    borderColor: 'transparent',
+    opacity: 0.55,
+  },
   quickActionCardNew: {
     backgroundColor: Colors.primary,
     padding: 16,
@@ -2036,7 +2292,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   quickLabelNew: { color: '#fff', fontSize: 12, marginBottom: 4 },
-  quickInputNew: { color: '#fff', fontSize: 16, fontFamily: "Alexandria-Bold", textAlign: I18nManager.isRTL ? 'right' : 'left' },
+  quickInputNew: { color: '#fff', fontSize: 16, fontFamily: "Alexandria-Bold", textAlign: 'auto' },
   pricingRowModern: {
     padding: 16,
     backgroundColor: '#fff',
@@ -2053,7 +2309,7 @@ const styles = StyleSheet.create({
   pricingRowStopped: { backgroundColor: '#F9FAFB', opacity: 0.7 },
   dayFullName: { fontSize: 14, fontFamily: "Alexandria-Bold" },
   priceControlWrapper: { marginTop: 12, backgroundColor: '#F3F4F6', borderRadius: 10, padding: 8 },
-  pricingInputModern: { fontSize: 16, fontFamily: "Alexandria-Bold", textAlign: I18nManager.isRTL ? 'right' : 'left' },
+  pricingInputModern: { fontSize: 16, fontFamily: "Alexandria-Bold", textAlign: 'auto' },
   singleSaveBtn: {
     backgroundColor: '#10B981',
     padding: 8,
@@ -2150,7 +2406,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Alexandria-Bold',
     color: '#0F172A',
-    textAlign: I18nManager.isRTL ? 'right' : 'left',
+    textAlign: 'auto',
   },
   premiumBulkApplyBtn: {
     backgroundColor: Colors.primary,
@@ -2281,7 +2537,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Alexandria-Bold',
     color: '#0F172A',
     paddingVertical: 8,
-    textAlign: I18nManager.isRTL ? 'right' : 'left',
+    textAlign: 'auto',
   },
   currencyBadge: {
     backgroundColor: '#E2E8F0',

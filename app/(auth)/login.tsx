@@ -18,7 +18,6 @@ import {
   Alert,
   BackHandler,
   Dimensions,
-  I18nManager,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -147,13 +146,9 @@ export function LoginScreen() {
   const { isRTL, rowDirection, textAlign } = useDirection();
   const isArabic = isRTL;
   const textStart = textAlign;
-  const alignStart: "flex-start" | "flex-end" =
-    isArabic === I18nManager.isRTL ? "flex-start" : "flex-end";
+  const alignStart: "flex-start" | "flex-end" = "flex-start";
 
-  const linkMargin =
-    isArabic === I18nManager.isRTL
-      ? { marginLeft: normalize.width(6) }
-      : { marginRight: normalize.width(6) };
+  const linkMargin = { marginStart: normalize.width(6) };
 
   const dispatch = useDispatch();
   const router = useRouter();
@@ -326,7 +321,7 @@ export function LoginScreen() {
                 <ThemedText
                   style={[
                     styles.label,
-                    { alignSelf: alignStart, textAlign: isRTL ? "right" : "left" },
+                    { alignSelf: alignStart, textAlign: textStart },
                   ]}
                 >
                   {t("auth.phone")}
@@ -335,7 +330,7 @@ export function LoginScreen() {
                   style={[
                     styles.input,
                     // Phone is always LTR digits, but aligned to the start side.
-                    { textAlign: isRTL ? "right" : "left", writingDirection: "ltr" },
+                    { textAlign: textStart, writingDirection: "ltr" },
                     phoneError ? { borderColor: "#EF4444" } : null,
                   ]}
                   placeholder={t("auth.phonePlaceholder")}
@@ -361,7 +356,7 @@ export function LoginScreen() {
                 <ThemedText
                   style={[
                     styles.label,
-                    { alignSelf: alignStart, textAlign: isRTL ? "right" : "left" },
+                    { alignSelf: alignStart, textAlign: textStart },
                   ]}
                 >
                   {t("auth.verificationCode")}

@@ -16,30 +16,32 @@ describe("useDirection", () => {
     (I18nManager as any).isRTL = originalRTL;
   });
 
-  it("reports RTL for Arabic with matching native manager", () => {
+  it("reports RTL + direction 'rtl' for Arabic", () => {
     mockLang = "ar";
-    (I18nManager as any).isRTL = true;
     const { result } = renderHook(() => useDirection());
     expect(result.current.isRTL).toBe(true);
+    expect(result.current.direction).toBe("rtl");
     expect(result.current.rowDirection).toBe("row");
     expect(result.current.textAlign).toBe("right");
   });
 
-  it("reports LTR for English with matching native manager", () => {
+  it("reports LTR + direction 'ltr' for English", () => {
     mockLang = "en";
-    (I18nManager as any).isRTL = false;
     const { result } = renderHook(() => useDirection());
     expect(result.current.isRTL).toBe(false);
+    expect(result.current.direction).toBe("ltr");
     expect(result.current.rowDirection).toBe("row");
     expect(result.current.textAlign).toBe("left");
   });
 
-  it("compensates with row-reverse during a language/manager mismatch", () => {
-    // Arabic content selected but native manager not yet flipped (pre-reload)
+  it("derives direction from the language ONLY — never from native I18nManager (no drift)", () => {
+    // Arabic content while native manager claims LTR: direction must still be 'rtl'
+    // and rowDirection must stay 'row' (the container mirrors; we never reverse).
     mockLang = "ar";
     (I18nManager as any).isRTL = false;
     const { result } = renderHook(() => useDirection());
     expect(result.current.isRTL).toBe(true);
-    expect(result.current.rowDirection).toBe("row-reverse");
+    expect(result.current.direction).toBe("rtl");
+    expect(result.current.rowDirection).toBe("row");
   });
 });

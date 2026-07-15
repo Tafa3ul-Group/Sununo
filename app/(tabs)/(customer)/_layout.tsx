@@ -15,9 +15,11 @@ import React, { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Image, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
+import { useDirection } from "@/i18n";
 
 export default function CustomerLayout() {
   const { t } = useTranslation();
+  const { direction } = useDirection();
   const { userType, user } = useSelector((state: RootState) => state.auth);
   const router = useRouter();
   const dispatch = useDispatch();
@@ -48,6 +50,7 @@ export default function CustomerLayout() {
         tabBar={(props) => <CustomTabBar {...props} />}
         screenOptions={{
           headerShown: false,
+          sceneStyle: { direction },
           tabBarShowLabel: false }}
       >
         <Tabs.Screen

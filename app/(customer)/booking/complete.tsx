@@ -187,10 +187,8 @@ export default function CompleteBookingScreen() {
   // textAlign is absolute, so direct mapping is correct regardless of native RTL state
   const textStart: "left" | "right" = textAlign;
   const textEnd: "left" | "right" = isArabic ? "left" : "right";
-  const alignStart: "flex-start" | "flex-end" =
-    rowDirection === "row" ? "flex-start" : "flex-end";
-  const alignEnd: "flex-start" | "flex-end" =
-    rowDirection === "row" ? "flex-end" : "flex-start";
+  const alignStart: "flex-start" | "flex-end" = "flex-start";
+  const alignEnd: "flex-start" | "flex-end" = "flex-end";
 
   const pickImage = async (imageNumber: 1 | 2) => {
     // No permissions request is needed for launching the image library

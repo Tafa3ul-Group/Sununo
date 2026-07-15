@@ -3,6 +3,7 @@ import { StyleSheet, View, Modal } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { MotionIcon, MotionName } from '@/components/icons/motion-icons';
 import { PrimaryButton } from '@/components/user/primary-button';
+import { useDirection } from '@/i18n';
 
 interface StatusModalProps {
   visible: boolean;
@@ -21,11 +22,12 @@ export const StatusModal = ({
   onClose,
   buttonLabel = "حسناً"
 }: StatusModalProps) => {
+  const { direction } = useDirection();
   const motionName: MotionName = type === 'loading' ? 'loading' : type === 'success' ? 'success' : type === 'error404' ? 'error404' : 'failed';
 
   return (
     <Modal transparent visible={visible} animationType="fade">
-      <View style={styles.container}>
+      <View style={[styles.container, { direction }]}>
         <View style={styles.card}>
           <MotionIcon 
             name={motionName} 

@@ -1,33 +1,48 @@
-import { I18nManager } from "react-native";
 import { useTranslation } from "react-i18next";
 
 // ──────────────────────────────────────────────────────────
-// Pure, testable helpers (no React / no native dependency)
+// Direction model (single source of truth)
 // ──────────────────────────────────────────────────────────
+// Native RTL (React Native's I18nManager) is permanently DISABLED — see
+// i18n/index.ts `ensureNativeLTR`. Layout direction is instead driven by a
+// single `direction: 'rtl' | 'ltr'` style applied on container roots (the
+// navigators' contentStyle/sceneStyle and every portal root — bottom sheets,
+// toasts, dialogs), derived from the active i18n language.
+//
+// Inside an RTL container, Yoga auto-mirrors `flexDirection: 'row'` and every
+// LOGICAL edge (start/end, marginStart/End, paddingStart/End, borderStart*).
+// So components write NATURAL left-to-right layout and never reverse manually.
+//
+// Consequences for this file:
+//   • `rowDirection` is ALWAYS 'row' (kept only so the many existing
+//     `flexDirection: rowDirection` call sites keep compiling — they now mirror
+//     via the container, not here).
+//   • Never reintroduce a `row-reverse` / counter derived from `isRTL` or
+//     `I18nManager.isRTL`. That was the old double-flip bug.
+//   • `textAlign` is set explicitly because textAlign is NOT part of RN's
+//     logical-edge swap.
+// ──────────────────────────────────────────────────────────
+
+export type Direction = "rtl" | "ltr";
 
 /** Whether the given language code represents RTL content (Arabic). */
 export const isContentRTL = (lang?: string | null): boolean =>
   !!lang && lang.startsWith("ar");
 
-/**
- * Resolve the flexDirection for a row whose CONTENT should read in
- * `contentRTL` direction, given the device's current `managerRTL`
- * (I18nManager.isRTL) state.
- *
- * React Native auto-flips `flexDirection: "row"` when I18nManager.isRTL is
- * true. So when the content's desired direction already matches the manager,
- * a plain "row" lays out correctly; when they differ (e.g. right after a
- * language switch but before the native reload), we counteract with
- * "row-reverse". This preserves the exact behavior the codebase relied on.
- */
-export const resolveRowDirection = (
-  contentRTL: boolean,
-  managerRTL: boolean = I18nManager.isRTL,
-): "row" | "row-reverse" => (contentRTL === managerRTL ? "row" : "row-reverse");
-
 /** Resolve textAlign for content reading in `rtl` direction. */
 export const resolveTextAlign = (rtl: boolean): "right" | "left" =>
   rtl ? "right" : "left";
+
+/**
+ * @deprecated Rows mirror via the container `direction` style now; just write
+ * `flexDirection: 'row'`. Kept (always returns 'row') for backward-compat of
+ * existing `flexDirection: rowDirection` / `resolveRowDirection(...)` call sites.
+ * The previous signature accepted (contentRTL, managerRTL) — both are ignored.
+ */
+export const resolveRowDirection = (
+  _contentRTL?: boolean,
+  _managerRTL?: boolean,
+): "row" | "row-reverse" => "row";
 
 /**
  * Pick the localized string from a backend object, honoring the active
@@ -66,23 +81,25 @@ export const pickTranslation = (obj: any, rtl: boolean): string => {
 export interface DirectionInfo {
   /** True when the active language is RTL (Arabic). */
   isRTL: boolean;
-  /** flexDirection to use for a content-direction row. */
+  /** The `direction` value to apply on a container root subtree. */
+  direction: Direction;
+  /** @deprecated always 'row' — rows mirror via the container direction. */
   rowDirection: "row" | "row-reverse";
-  /** textAlign matching the active language. */
+  /** textAlign matching the active language (textAlign is not auto-swapped). */
   textAlign: "right" | "left";
 }
 
 /**
- * Single source of truth for direction in components.
- * Derives everything from `i18n.language` (canonical) and the native
- * I18nManager.isRTL, so components never read those directly.
+ * Single source of truth for direction in components. Derives everything from
+ * `i18n.language` (canonical). Native I18nManager state is never read.
  */
 export function useDirection(): DirectionInfo {
   const { i18n } = useTranslation();
   const isRTL = isContentRTL(i18n.language);
   return {
     isRTL,
-    rowDirection: resolveRowDirection(isRTL, I18nManager.isRTL),
+    direction: isRTL ? "rtl" : "ltr",
+    rowDirection: "row",
     textAlign: resolveTextAlign(isRTL),
   };
 }

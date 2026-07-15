@@ -146,8 +146,6 @@ export default function HomeScreen() {
   const { t } = useTranslation();
   const { isRTL, textAlign } = useDirection();
   const [activeTab, setActiveTab] = React.useState("new");
-  const startAlign = isRTL ? 'flex-end' : 'flex-start';
-  const endAlign = isRTL ? 'flex-start' : 'flex-end';
 
   const { data: profileResponse, refetch: refetchProfile } = useGetProviderProfileQuery(undefined);
   const profile = profileResponse?.data || profileResponse;
@@ -456,10 +454,10 @@ export default function HomeScreen() {
                 styles.shiftTile,
                 shift.isClosed ? styles.shiftTileClosed : (!isAvailable && styles.shiftTileBooked),
                 {
-                  borderLeftWidth: isRTL ? 1 : 4,
-                  borderRightWidth: isRTL ? 4 : 1,
-                  borderLeftColor: isRTL ? "#F1F5F9" : accentColor,
-                  borderRightColor: isRTL ? accentColor : "#F1F5F9"
+                  borderStartWidth: 4,
+                  borderEndWidth: 1,
+                  borderStartColor: accentColor,
+                  borderEndColor: "#F1F5F9"
                 },
               ]}
               onPress={() => openShiftActions(shift)}
@@ -487,7 +485,7 @@ export default function HomeScreen() {
                   <View
                     style={[
                       styles.shiftNameGroup,
-                      { alignItems: isRTL ? 'flex-start' : 'flex-end', marginLeft: isRTL ? 0 : 12, marginRight: isRTL ? 12 : 0 },
+                      { alignItems: 'flex-end', marginStart: 12 },
                     ]}
                   >
                     <Text
@@ -551,9 +549,8 @@ export default function HomeScreen() {
                   style={[
                     styles.shiftStatusColumn,
                     {
-                      alignItems: endAlign,
-                      paddingLeft: isRTL ? 0 : 12,
-                      paddingRight: isRTL ? 12 : 0
+                      alignItems: 'flex-end',
+                      paddingStart: 12
                     },
                   ]}
                 >
@@ -576,7 +573,7 @@ export default function HomeScreen() {
                           : (shift.isClosed ? "rgba(239, 68, 68, 0.15)" : "rgba(100, 116, 139, 0.15)"),
                         justifyContent: 'center',
                         alignItems: 'center',
-                        [isRTL ? "marginLeft" : "marginRight"]: 6,
+                        marginEnd: 6,
                       }}
                     >
                       <View
@@ -624,7 +621,7 @@ export default function HomeScreen() {
         })}
       </View>
     );
-  }, [availabilityData, isAvailabilityFetching, isRTL, startAlign, endAlign, textAlign, openShiftActions]);
+  }, [availabilityData, isAvailabilityFetching, isRTL, textAlign, openShiftActions]);
 
   const renderBookingItem = React.useCallback(({ item, index }: { item: any; index: number }) => {
     const customer = item.customer;
@@ -667,7 +664,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <View style={[styles.safeArea, { direction: isRTL ? 'rtl' : 'ltr' }]}>
+    <View style={styles.safeArea}>
       <DashboardHeader
         showLogo={true}
         showSearch={false}
@@ -948,11 +945,9 @@ export default function HomeScreen() {
               <View
                 style={{
                   flex: 1,
-                  borderLeftWidth: isRTL ? 0 : 1,
-                  borderRightWidth: isRTL ? 1 : 0,
+                  borderStartWidth: 1,
                   borderColor: "#F1F5F9",
-                  paddingLeft: isRTL ? 0 : 16,
-                  paddingRight: isRTL ? 16 : 0
+                  paddingStart: 16
                 }}
               >
                 <Text
@@ -1190,7 +1185,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     borderColor: "#F1F5F9",
-    borderLeftWidth: 4, // Accent border
+    borderStartWidth: 4, // Accent border
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -1231,7 +1226,7 @@ const styles = StyleSheet.create({
     color: "#94A3B8",
     fontFamily: "Alexandria-SemiBold"
   },
-  shiftStatusColumn: { paddingLeft: 12 },
+  shiftStatusColumn: { paddingStart: 12 },
   statusGlassBadge: {
     flexDirection: "row",
     alignItems: "center",
@@ -1393,7 +1388,7 @@ const styles = StyleSheet.create({
     flex: 1
   },
   detailSubRow: {
-    paddingLeft: 40,
+    paddingStart: 40,
     alignItems: "center",
     gap: 6,
     marginBottom: 12

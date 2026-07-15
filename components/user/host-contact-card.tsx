@@ -1,7 +1,7 @@
 import { toWhatsAppNumber } from "@/constants/links";
 import { Image as ExpoImage } from "expo-image";
 import React from "react";
-import { Dimensions, I18nManager, Linking, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Dimensions, Linking, StyleSheet, TouchableOpacity, View } from "react-native";
 import Svg, { Path, Rect } from "react-native-svg";
 import { ThemedText } from "../themed-text";
 import { useDirection } from "@/i18n";
@@ -26,24 +26,21 @@ export const HostContactCard: React.FC<HostContactCardProps> = ({
   const { isRTL, textAlign } = useDirection();
   const isArabic = isRTL;
 
-  // alignItems / absolute left-right are NOT auto-mirrored by RN, and the avatar
-  // position is tied to the directional SVG badge below, so keep the explicit
-  // content-vs-manager comparison to pick the physical placement.
+  // The avatar's absolute placement is tied to the directional SVG badge below,
+  // which is drawn with explicit (non-mirrored) coordinates chosen by isArabic,
+  // so it must be positioned physically to match the badge side.
   const textStart = textAlign;
-  const alignStart: "flex-start" | "flex-end" =
-    isArabic === I18nManager.isRTL ? "flex-start" : "flex-end";
+  const alignStart: "flex-start" | "flex-end" = "flex-start";
 
-  // Absolute avatar positioning: swap left/right if not natively mirrored
-  const avatarPosition =
-    isArabic === I18nManager.isRTL
-      ? { left: 12.3 * SCALE, right: "auto" }
-      : { right: 12.3 * SCALE, left: "auto" };
+  // Absolute avatar positioning: match the physical side the SVG badge is drawn on.
+  const avatarPosition = isArabic
+    ? { right: 12.3 * SCALE, left: "auto" }
+    : { left: 12.3 * SCALE, right: "auto" };
 
   // Margin spacing to prevent text overlapping avatar
-  const infoMargins =
-    isArabic === I18nManager.isRTL
-      ? { marginLeft: 85 * SCALE, marginRight: 15 * SCALE }
-      : { marginRight: 85 * SCALE, marginLeft: 15 * SCALE };
+  const infoMargins = isArabic
+    ? { marginRight: 85 * SCALE, marginLeft: 15 * SCALE }
+    : { marginLeft: 85 * SCALE, marginRight: 15 * SCALE };
 
   const handleContact = () => {
     if (!phone) return;

@@ -4,7 +4,6 @@ import { normalize } from "@/constants/theme";
 import { RootState } from "@/store";
 import React from "react";
 import {
-  I18nManager,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -95,19 +94,6 @@ export function ColoredCard({
   const { language } = useSelector((state: RootState) => state.auth);
   const isArabic = language === "ar";
   const textStart: "left" | "right" = isArabic ? "right" : "left";
-  const needsCounter = isArabic !== I18nManager.isRTL;
-  const alignSelfStart: "flex-start" | "flex-end" = needsCounter
-    ? "flex-end"
-    : "flex-start";
-  const footerDirection: "row" | "row-reverse" = needsCounter
-    ? "row-reverse"
-    : "row";
-  const footerJustify: "flex-start" | "flex-end" = needsCounter
-    ? "flex-end"
-    : "flex-start";
-  const ratingDirection: "row" | "row-reverse" = needsCounter
-    ? "row-reverse"
-    : "row";
 
   const currentIndex = shapeIndex % SHAPES_CONFIG.length;
   const config = SHAPES_CONFIG[currentIndex];
@@ -167,7 +153,7 @@ export function ColoredCard({
 
       {/* Content Section - Figma Typography Implementation */}
       <View style={styles.content}>
-        <View style={[styles.titleWrapper, { alignSelf: alignSelfStart }]}>
+        <View style={[styles.titleWrapper, { alignSelf: "flex-start" }]}>
           <ThemedText
             style={[styles.title, { textAlign: textStart }]}
             numberOfLines={1}
@@ -176,7 +162,7 @@ export function ColoredCard({
           </ThemedText>
         </View>
 
-        <View style={[styles.locationWrapper, { alignSelf: alignSelfStart }]}>
+        <View style={[styles.locationWrapper, { alignSelf: "flex-start" }]}>
           <ThemedText
             style={[styles.location, { textAlign: textStart }]}
             numberOfLines={1}
@@ -189,8 +175,8 @@ export function ColoredCard({
           style={[
             styles.footer,
             {
-              flexDirection: footerDirection,
-              justifyContent: footerJustify,
+              flexDirection: "row",
+              justifyContent: "flex-start",
             },
           ]}
         >
@@ -198,7 +184,7 @@ export function ColoredCard({
           <View
             style={[
               styles.ratingContainer,
-              { flexDirection: ratingDirection, gap: 4 },
+              { flexDirection: "row", gap: 4 },
             ]}
           >
             <SolarStarBold size={12} color="#FFFFFF" />

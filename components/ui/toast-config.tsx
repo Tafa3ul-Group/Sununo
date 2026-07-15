@@ -4,12 +4,12 @@ import {
   SolarInfoCircleBold,
   SolarShieldWarningBold,
 } from '@/components/icons/solar-icons';
+import { useDirection } from '@/i18n';
 import * as Haptics from 'expo-haptics';
 import React, { useEffect, useRef } from 'react';
 import {
   Animated,
   Dimensions,
-  I18nManager,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -19,8 +19,6 @@ import { BaseToastProps } from 'react-native-toast-message';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const TOAST_WIDTH = Math.min(SCREEN_WIDTH - 32, 450);
-
-const isRTL = I18nManager.isRTL;
 
 interface CustomToastProps extends BaseToastProps {
   type: 'success' | 'error' | 'info' | 'warning';
@@ -71,6 +69,8 @@ const ICONS = {
 
 // ── Component ───────────────────────────────────────────────────────────────
 const CustomToast = ({ type, text1, text2, onPress, hide }: CustomToastProps) => {
+  const { textAlign } = useDirection();
+  const textEnd: 'left' | 'right' = textAlign === 'right' ? 'left' : 'right';
   const theme = TOAST_THEMES[type];
   const shimmerAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(0.85)).current;
@@ -149,24 +149,18 @@ const CustomToast = ({ type, text1, text2, onPress, hide }: CustomToastProps) =>
           },
         ]}
       >
-        {/* Accent strip on the side */}
+        {/* Accent strip on the leading edge (start) — mirrors via the container */}
         <Animated.View
           style={[
             styles.accentStrip,
             {
               backgroundColor: theme.accent,
               opacity: shimmerOpacity,
-              [isRTL ? 'right' : 'left']: 0,
             },
           ]}
         />
 
-        <View
-          style={[
-            styles.contentRow,
-            { flexDirection: isRTL ? 'row' : 'row-reverse' },
-          ]}
-        >
+        <View style={styles.contentRow}>
           {/* Icon with rounded badge */}
           <Animated.View
             style={[
@@ -181,21 +175,13 @@ const CustomToast = ({ type, text1, text2, onPress, hide }: CustomToastProps) =>
           </Animated.View>
 
           {/* Text content */}
-          <View
-            style={[
-              styles.textContainer,
-              {
-                alignItems: isRTL ? 'flex-start' : 'flex-end',
-                [isRTL ? 'marginLeft' : 'marginRight']: 14,
-              },
-            ]}
-          >
+          <View style={styles.textContainer}>
             {text1 ? (
               <Text
                 style={[
                   styles.title,
                   {
-                    textAlign: isRTL ? 'right' : 'left',
+                    textAlign,
                     color: theme.titleColor,
                   },
                 ]}
@@ -209,7 +195,7 @@ const CustomToast = ({ type, text1, text2, onPress, hide }: CustomToastProps) =>
                 style={[
                   styles.message,
                   {
-                    textAlign: isRTL ? 'left' : 'right',
+                    textAlign: textEnd,
                     color: theme.messageColor,
                   },
                 ]}
@@ -269,10 +255,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     bottom: 8,
+    start: 0,
     width: 4,
     borderRadius: 4,
   },
   contentRow: {
+    flexDirection: 'row',
     paddingHorizontal: 22,
     paddingVertical: 16,
     alignItems: 'center',
@@ -287,6 +275,8 @@ const styles = StyleSheet.create({
   textContainer: {
     flex: 1,
     justifyContent: 'center',
+    alignItems: 'flex-start',
+    marginStart: 14,
     gap: 3,
   },
   title: {

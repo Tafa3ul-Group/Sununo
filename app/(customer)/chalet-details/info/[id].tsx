@@ -10,7 +10,7 @@ import {
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, I18nManager, ScrollView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
 import { HeaderSection } from "@/components/header-section";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
@@ -31,7 +31,7 @@ export default function ChaletInfoScreen() {
   // "start" needs "left" when content-RTL matches the layout manager. Always set
   // writingDirection so Arabic paragraphs flow correctly.
   const writingDir: "rtl" | "ltr" = isRTL ? "rtl" : "ltr";
-  const startAlign: "left" | "right" = isRTL === I18nManager.isRTL ? "left" : "right";
+  const startAlign: "left" | "right" = isRTL ? "right" : "left";
   const rtlTitle: { textAlign: "left" | "right"; writingDirection: "rtl" | "ltr" } = {
     textAlign: startAlign,
     writingDirection: writingDir,

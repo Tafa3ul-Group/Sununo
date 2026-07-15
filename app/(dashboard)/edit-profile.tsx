@@ -26,7 +26,6 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  I18nManager,
   Image,
   KeyboardAvoidingView,
   Modal,
@@ -59,10 +58,10 @@ const getCityName = (city: any, isArabic: boolean) => {
 export default function EditProfileScreen() {
   const { isRTL: isArabic, rowDirection } = useDirection();
 
-  const textStart: 'left' | 'right' = isArabic === I18nManager.isRTL ? 'left' : 'right';
-  const textEnd: 'left' | 'right' = isArabic === I18nManager.isRTL ? 'right' : 'left';
-  const alignStart: 'flex-start' | 'flex-end' = isArabic === I18nManager.isRTL ? 'flex-start' : 'flex-end';
-  const alignEnd: 'flex-start' | 'flex-end' = isArabic === I18nManager.isRTL ? 'flex-end' : 'flex-start';
+  const textStart: 'left' | 'right' = isArabic ? 'right' : 'left';
+  const textEnd: 'left' | 'right' = isArabic ? 'left' : 'right';
+  const alignStart: 'flex-start' | 'flex-end' = 'flex-start';
+  const alignEnd: 'flex-start' | 'flex-end' = 'flex-end';
   const flexDir: 'row' | 'row-reverse' = rowDirection;
   const { user: authUser } = useSelector((state: RootState) => state.auth);
 

@@ -84,7 +84,7 @@ const DIALOG_THEMES: Record<DialogType, {
 };
 
 export const ConfirmationDialogProvider = ({ children }: ConfirmationDialogProviderProps) => {
-  const { isRTL } = useDirection();
+  const { isRTL, direction } = useDirection();
   const [visible, setVisible] = useState(false);
   const [options, setOptions] = useState<ConfirmDialogOptions | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -340,6 +340,7 @@ export const ConfirmationDialogProvider = ({ children }: ConfirmationDialogProvi
         onRequestClose={handleCancel}
         statusBarTranslucent
       >
+        <View style={{ flex: 1, direction }}>
         <TouchableWithoutFeedback onPress={handleCancel}>
           <Animated.View style={[styles.overlay, { opacity: overlayOpacity }]}>
             <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
@@ -367,7 +368,7 @@ export const ConfirmationDialogProvider = ({ children }: ConfirmationDialogProvi
                     <Animated.View
                       style={[
                         styles.buttonRow,
-                        { flexDirection: isRTL ? 'row-reverse' : 'row' },
+                        { flexDirection: 'row' },
                         {
                           transform: [{ translateY: buttonSlide }],
                           opacity: buttonOpacity,
@@ -410,6 +411,7 @@ export const ConfirmationDialogProvider = ({ children }: ConfirmationDialogProvi
             </TouchableWithoutFeedback>
           </Animated.View>
         </TouchableWithoutFeedback>
+        </View>
       </Modal>
     </ConfirmationDialogContext.Provider>
   );

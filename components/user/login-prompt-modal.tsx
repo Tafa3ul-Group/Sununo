@@ -13,7 +13,7 @@ interface LoginPromptModalProps {
 }
 
 export const LoginPromptModal: React.FC<LoginPromptModalProps> = ({ isVisible, onClose, onLogin }) => {
-  const { isRTL } = useDirection();
+  const { isRTL, direction } = useDirection();
 
   return (
     <Modal
@@ -22,7 +22,7 @@ export const LoginPromptModal: React.FC<LoginPromptModalProps> = ({ isVisible, o
       animationType="fade"
       onRequestClose={onClose}
     >
-      <View style={styles.overlay}>
+      <View style={[styles.overlay, { direction }]}>
         <View style={styles.container}>
           <View style={styles.header}>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>

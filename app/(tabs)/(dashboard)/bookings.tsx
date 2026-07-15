@@ -283,12 +283,12 @@ export default function BookingsScreen() {
             router.push({ pathname: '/(dashboard)/booking-details', params: { id: item.id } });
           }}
         >
-          {/* شريط لوني جانبي حسب حالة الحجز — I18nManager يضعه تلقائياً على الجانب الصحيح */}
-          <View style={[styles.cardAccentStrip, { backgroundColor: statusInfo.color, left: 0 }]} />
+          {/* شريط لوني جانبي حسب حالة الحجز */}
+          <View style={[styles.cardAccentStrip, { backgroundColor: statusInfo.color, start: 0 }]} />
 
           <View style={{ paddingHorizontal: normalize.width(14), paddingVertical: normalize.height(12) }}>
             {/* صف 1: الاسم + باج الحالة */}
-            <View style={{ flexDirection: isRTL ? 'row' : 'row-reverse', alignItems: 'center', justifyContent: 'space-between', marginBottom: normalize.height(5) }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: normalize.height(5) }}>
               <Text style={[styles.modernBookingName, { flex: 0 }]} numberOfLines={1}>
                 {customerName}
               </Text>
@@ -317,7 +317,7 @@ export default function BookingsScreen() {
             </View>
 
             {/* صف 2: اسم الشاليه + السعر */}
-            <View style={{ flexDirection: isRTL ? 'row' : 'row-reverse', alignItems: 'center', justifyContent: 'space-between', marginBottom: normalize.height(4) }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: normalize.height(4) }}>
               {chaletName
                 ? <Text style={[styles.modernBookingChalet, { flex: 0 }]} numberOfLines={1}>{chaletName}</Text>
                 : <View style={{ flex: 0 }} />
@@ -331,7 +331,7 @@ export default function BookingsScreen() {
 
             {/* صافي ربح صاحب الشاليه بعد خصم عمولة المنصة */}
             {!bIsExternal && Number(item.providerEarnings) > 0 && (
-              <View style={{ flexDirection: isRTL ? 'row' : 'row-reverse', alignItems: 'center', marginBottom: normalize.height(4) }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: normalize.height(4) }}>
                 <Text style={{ fontSize: normalize.font(11), color: '#16A34A', fontFamily: 'Alexandria-SemiBold' }}>
                   {isRTL
                     ? `صافي ربحك: ${(Number(item.providerEarnings) || 0).toLocaleString()} د.ع`
@@ -341,14 +341,14 @@ export default function BookingsScreen() {
             )}
 
             {/* صف 3: الوردية + التاريخ */}
-            <View style={{ flexDirection: isRTL ? 'row' : 'row-reverse', alignItems: 'center', gap: 4, marginBottom: normalize.height(4) }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: normalize.height(4) }}>
               <Text style={styles.modernBookingShift}>{t('common.shift')} {shiftName}</Text>
               <Text style={styles.modernBookingDot}>•</Text>
               <Text style={styles.modernBookingDate}>{formatBookingDate(item.bookingDate || item.date || item.createdAt?.split('T')[0])}</Text>
             </View>
 
             {/* صف 4: عدد الأشخاص + تفاصيل العربون */}
-            <View style={{ flexDirection: isRTL ? 'row' : 'row-reverse', flexWrap: 'wrap', alignItems: 'center', gap: 5 }}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 5 }}>
               <Text style={{ fontSize: normalize.font(11), color: '#64748B', fontFamily: 'Alexandria-Medium' }}>
                 {isRTL ? `${item.guestsCount || item.guestCount || 0} أشخاص` : `${item.guestsCount || item.guestCount || 0} guests`}
               </Text>

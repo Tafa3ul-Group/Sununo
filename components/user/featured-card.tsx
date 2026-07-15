@@ -9,7 +9,6 @@ import { Image as ExpoImage } from "expo-image";
 import * as Haptics from "expo-haptics";
 import React from "react";
 import {
-  I18nManager,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -54,14 +53,9 @@ export const FeaturedCard = React.memo(function FeaturedCard({
   const isArabic = isRTL;
   const textStart = textAlign;
   const rowDir = rowDirection;
-  // Cross-axis alignment must be expressed in the NATIVE layout coordinate
-  // system: when the manager's RTL already matches the content, flex-start is
-  // the start (right in RTL); only counteract when they differ. Mirrors the
-  // proven HorizontalCard logic.
-  const needsCounter = isRTL !== I18nManager.isRTL;
-  const alignStart: "flex-start" | "flex-end" = needsCounter
-    ? "flex-end"
-    : "flex-start";
+  // Cross-axis alignment is expressed logically; the container resolves the
+  // start side (right in RTL).
+  const alignStart: "flex-start" | "flex-end" = "flex-start";
 
   // The featured endpoint, like the list endpoints, doesn't include shift
   // pricing, so when a real price isn't already provided we fetch the chalet's
@@ -206,11 +200,11 @@ const styles = StyleSheet.create({
     // (height/verticalScale inflates on tall devices, which created the big
     // top gap.)
     top: normalize.width(6),
-    // RTL swaps left/right: in Arabic the Special badge sits on the physical
-    // right, which is bounded by `left`. Tighten that side; keep the favorite
-    // (the other side) at its normal inset.
-    left: normalize.width(2),
-    right: normalize.width(6),
+    // The Special badge sits on the start corner; tighten that side and keep
+    // the favorite (the other side) at its normal inset. Logical edges so the
+    // container mirrors them in RTL.
+    start: normalize.width(2),
+    end: normalize.width(6),
     alignItems: "flex-start",
     justifyContent: "space-between",
   },

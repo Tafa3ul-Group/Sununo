@@ -171,6 +171,7 @@ export default function AddChaletScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { isRTL, rowDirection, textAlign } = useDirection();
+  const textEnd = textAlign === 'right' ? 'left' : 'right';
   const { language } = useSelector((state: RootState) => state.auth);
 
 
@@ -773,9 +774,9 @@ export default function AddChaletScreen() {
         onPress={() => toggleShiftActive(index)}
         style={[styles.shiftCardRow, isActive && styles.shiftCardRowActive, isOverlapping && { borderColor: '#FCA5A5', backgroundColor: '#FFF5F5' }]}
       >
-        <View style={[styles.shiftRowInner, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <View style={[styles.shiftRowInner, { flexDirection: 'row' }]}>
           {/* Edit & Checkbox */}
-          <View style={[styles.shiftActions, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.shiftActions, { flexDirection: 'row' }]}>
             <TouchableOpacity
               onPress={(e) => {
                 e.stopPropagation();
@@ -792,9 +793,9 @@ export default function AddChaletScreen() {
           </View>
 
           {/* Name & Price & Time */}
-          <View style={[styles.shiftInfo, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.shiftInfo, { flexDirection: 'row' }]}>
             <View style={{ flex: 0 }}>
-              <View style={{ flexDirection: isRTL ? 'row' : 'row-reverse', alignItems: 'center', gap: 6 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <Text style={[styles.shiftValueName, isOverlapping && { color: '#D92D20' }]}>
                   {isRTL ? shift.name.ar : shift.name.en}
                   {isActive && weekdayPrice > 0 && (
@@ -809,7 +810,7 @@ export default function AddChaletScreen() {
                   </View>
                 )}
               </View>
-              <View style={{ flexDirection: isRTL ? 'row' : 'row-reverse', alignItems: 'center', gap: 4, marginTop: 2 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
                 <SolarClockCircleBold size={11} color={isOverlapping ? '#D92D20' : '#94A3B8'} />
                 <Text style={{ fontSize: 10, color: isOverlapping ? '#D92D20' : '#94A3B8', fontFamily: 'Alexandria-Medium' }}>
                   {formatTime12h(shift.startTime)} - {formatTime12h(shift.endTime)}
@@ -850,7 +851,7 @@ export default function AddChaletScreen() {
                   <View style={styles.inputGroup}>
                     <Text style={[styles.label, { textAlign }]}>{isRTL ? 'اسم الشاليه (عربي)' : 'Chalet Name (AR)'} <Text style={styles.requiredStar}>{isRTL ? '* مطلوب' : '* Required'}</Text></Text>
                     <TextInput
-                      style={[styles.input, { textAlign: isRTL ? 'left' : 'right' }]}
+                      style={[styles.input, { textAlign: textEnd }]}
                       placeholder={isRTL ? "اسم الشاليه بالعربي" : "e.g. شاليه الورد"}
                       placeholderTextColor="#BCBCBC"
                       value={form.nameAr}
@@ -858,7 +859,7 @@ export default function AddChaletScreen() {
                     />
                   </View>
                   <View style={styles.inputGroup}>
-                    <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                       <Text style={[styles.label, { textAlign }]}>{isRTL ? 'اسم الشاليه (إنجليزي)' : 'Chalet Name (EN)'} <Text style={styles.optionalLabel}>{isRTL ? 'اختياري' : 'Optional'}</Text></Text>
                       <AiTranslateButton source={form.nameAr} onTranslated={(en) => setForm((prev) => ({ ...prev, nameEn: en }))} />
                     </View>
@@ -886,7 +887,7 @@ export default function AddChaletScreen() {
                     />
                   </View>
                   <View style={styles.inputGroup}>
-                    <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                       <Text style={[styles.label, { textAlign }]}>{isRTL ? 'وصف الشاليه (إنجليزي)' : 'Description (EN)'} <Text style={styles.optionalLabel}>{isRTL ? 'اختياري' : 'Optional'}</Text></Text>
                       <AiTranslateButton source={form.descriptionAr} onTranslated={(en) => setForm((prev) => ({ ...prev, descriptionEn: en }))} />
                     </View>
@@ -959,7 +960,7 @@ export default function AddChaletScreen() {
                       }}
                     />
                     {phoneError && (
-                      <Text style={{ color: '#EF4444', fontSize: 12, fontFamily: 'Alexandria-Medium', marginTop: 6, textAlign: isRTL ? 'right' : 'left' }}>
+                      <Text style={{ color: '#EF4444', fontSize: 12, fontFamily: 'Alexandria-Medium', marginTop: 6, textAlign }}>
                         {phoneError}
                       </Text>
                     )}
@@ -1010,20 +1011,20 @@ export default function AddChaletScreen() {
 
                   <View style={styles.capacityList}>
                     {/* Max Capacity Card */}
-                    <View style={[styles.capacityCard, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <View style={[styles.capacityCard, { flexDirection: 'row' }]}>
                       <GuestCounter
                         value={parseInt(form.capacity) || 1}
                         onIncrement={() => setForm({ ...form, capacity: (parseInt(form.capacity || '1') + 1).toString() })}
                         onDecrement={() => setForm({ ...form, capacity: Math.max(1, parseInt(form.capacity || '1') - 1).toString() })}
                       />
-                      <View style={[styles.capacityInfo, { alignItems: isRTL ? 'flex-start' : 'flex-end' }]}>
+                      <View style={[styles.capacityInfo, { alignItems: 'flex-start' }]}>
                         <Text style={styles.capacityLabel}>{isRTL ? 'سعة الشاليه (الحد الأقصى للزيادة)' : 'Chalet Capacity'}</Text>
                         <Text style={styles.capacitySubLabel}>{isRTL ? 'الحد الكلي المسموح به بعد الزيادة' : 'Maximum total guests allowed'}</Text>
                       </View>
                     </View>
 
                     {/* Price Capacity Card */}
-                    <View style={[styles.capacityCard, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                    <View style={[styles.capacityCard, { flexDirection: 'row' }]}>
                       <GuestCounter
                         value={parseInt(form.priceCapacity) || 1}
                         onIncrement={() => setForm({ ...form, priceCapacity: (parseInt(form.priceCapacity || '1') + 1).toString() })}
@@ -1044,10 +1045,10 @@ export default function AddChaletScreen() {
                       padding: 16,
                       marginTop: 4,
                     }}>
-                      <Text style={{ fontSize: 14, fontFamily: 'Alexandria-Bold', color: '#1E293B', textAlign: isRTL ? 'left' : 'right', marginBottom: 4 }}>
+                      <Text style={{ fontSize: 14, fontFamily: 'Alexandria-Bold', color: '#1E293B', textAlign: textEnd, marginBottom: 4 }}>
                         {isRTL ? 'سعر الشخص الإضافي' : 'Extra Person Price'}
                       </Text>
-                      <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Regular', color: '#94A3B8', textAlign: isRTL ? 'left' : 'right', marginBottom: 12 }}>
+                      <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Regular', color: '#94A3B8', textAlign: textEnd, marginBottom: 12 }}>
                         {isRTL ? 'لكل شخص إضافي فوق سعة المبلغ' : 'Per extra guest above price capacity'}
                       </Text>
                       <View style={{
@@ -1056,7 +1057,7 @@ export default function AddChaletScreen() {
                         paddingHorizontal: 16,
                         borderWidth: 1,
                         borderColor: '#E2E8F0',
-                        flexDirection: isRTL ? 'row-reverse' : 'row',
+                        flexDirection: 'row',
                         alignItems: 'center',
                       }}>
                         <Text style={{ fontSize: 14, fontFamily: 'Alexandria-Medium', color: '#94A3B8', marginEnd: 12 }}>
@@ -1068,7 +1069,7 @@ export default function AddChaletScreen() {
                             fontSize: 18,
                             fontFamily: 'Alexandria-Bold',
                             color: '#1E293B',
-                            textAlign: isRTL ? 'right' : 'left',
+                            textAlign,
                             paddingVertical: 14,
                           }}
                           keyboardType="numeric"
@@ -1102,7 +1103,7 @@ export default function AddChaletScreen() {
                           style={[
                             styles.swiperFeatureCard,
                             isSelected && styles.swiperFeatureCardActive,
-                            { flexDirection: isRTL ? 'row-reverse' : 'row' }
+                            { flexDirection: 'row' }
                           ]}
                           onPress={() => toggleFeature(feature.id)}
                           activeOpacity={0.7}
@@ -1119,8 +1120,8 @@ export default function AddChaletScreen() {
                           </View>
 
                           {/* Info */}
-                          <View style={[styles.swiperFeatureInfo, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-                            <Text style={[styles.swiperFeatureName, { textAlign: isRTL ? 'left' : 'right' }]}>
+                          <View style={[styles.swiperFeatureInfo, { flexDirection: 'row' }]}>
+                            <Text style={[styles.swiperFeatureName, { textAlign: textEnd }]}>
                               {isRTL ? feature.name?.ar : feature.name?.en}
                             </Text>
                             {/* Orange Badge */}
@@ -1147,8 +1148,8 @@ export default function AddChaletScreen() {
                     borderColor: '#F1F5F9',
                     padding: 14,
                   }}>
-                    <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                      <Text style={{ fontSize: 13, fontFamily: 'Alexandria-Bold', color: '#1E293B', textAlign: isRTL ? 'left' : 'right' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                      <Text style={{ fontSize: 13, fontFamily: 'Alexandria-Bold', color: '#1E293B', textAlign: textEnd }}>
                         {isRTL ? 'صور المرفق' : 'Amenity Photos'}
                       </Text>
                       {(imagesByCategory[amenityCategories[currentAmenitySubStep].id] || []).length > 0 && (
@@ -1190,7 +1191,7 @@ export default function AddChaletScreen() {
                             style={{
                               position: 'absolute',
                               top: 5,
-                              right: 5,
+                              end: 5,
                               backgroundColor: 'rgba(0,0,0,0.55)',
                               width: 24,
                               height: 24,
@@ -1245,7 +1246,7 @@ export default function AddChaletScreen() {
                 {/* Custom rules */}
                 <View style={styles.sectionCard}>
                   <View style={{ flexDirection, alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
-                    <View style={{ flex: 1, alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
+                    <View style={{ flex: 1, alignItems: 'flex-start' }}>
                       <Text style={{ fontSize: 15, fontFamily: 'Alexandria-Bold', color: '#0F172A', textAlign }}>{isRTL ? 'شروط مخصّصة' : 'Custom Rules'}</Text>
                       <Text style={{ fontSize: 12, fontFamily: 'Alexandria-Regular', color: '#94A3B8', marginTop: 3, textAlign }}>{isRTL ? 'شروط خاصة بهذا الشاليه فقط' : 'Rules specific to this chalet'}</Text>
                     </View>
@@ -1273,8 +1274,8 @@ export default function AddChaletScreen() {
                           </View>
 
                           {/* Arabic */}
-                          <TextInput style={[styles.ruleInput, { textAlign: isRTL ? 'right' : 'left' }]} placeholder={isRTL ? 'عنوان الشرط (عربي)' : 'Rule title (Arabic)'} placeholderTextColor="#CBD5E1" value={rule.titleAr} onChangeText={(v) => updateRule(rule.id, { titleAr: v })} />
-                          <TextInput style={[styles.ruleInput, styles.ruleArea, { textAlign: isRTL ? 'right' : 'left' }]} placeholder={isRTL ? 'شرح الشرط (عربي)' : 'Rule description (Arabic)'} placeholderTextColor="#CBD5E1" multiline value={rule.descriptionAr} onChangeText={(v) => updateRule(rule.id, { descriptionAr: v })} />
+                          <TextInput style={[styles.ruleInput, { textAlign }]} placeholder={isRTL ? 'عنوان الشرط (عربي)' : 'Rule title (Arabic)'} placeholderTextColor="#CBD5E1" value={rule.titleAr} onChangeText={(v) => updateRule(rule.id, { titleAr: v })} />
+                          <TextInput style={[styles.ruleInput, styles.ruleArea, { textAlign }]} placeholder={isRTL ? 'شرح الشرط (عربي)' : 'Rule description (Arabic)'} placeholderTextColor="#CBD5E1" multiline value={rule.descriptionAr} onChangeText={(v) => updateRule(rule.id, { descriptionAr: v })} />
 
                           {/* English title */}
                           <View style={{ gap: 4 }}>
@@ -1495,7 +1496,7 @@ export default function AddChaletScreen() {
                 }}>
 
                   <BottomSheetTextInput
-                    style={{ flex: 1, fontSize: 16, fontFamily: 'Alexandria-Bold', color: '#1E293B', textAlign: isRTL ? 'right' : 'left' }}
+                    style={{ flex: 1, fontSize: 16, fontFamily: 'Alexandria-Bold', color: '#1E293B', textAlign }}
                     value={isRTL ? shift.name.ar : shift.name.en}
                     onChangeText={(val) => updateShiftField(editingShiftIndex, isRTL ? 'nameAr' : 'nameEn', val)}
                     placeholder={isRTL ? 'اسم الفترة' : 'Shift name'}
@@ -1576,7 +1577,7 @@ export default function AddChaletScreen() {
                   {/* Overlap Warning */}
                   {isCurrentOverlapping && shiftOverlapInfo.conflictMsg && (
                     <View style={{
-                      flexDirection: isRTL ? 'row-reverse' : 'row',
+                      flexDirection: 'row',
                       alignItems: 'center',
                       backgroundColor: '#FEF2F2',
                       borderRadius: 10,
@@ -1587,7 +1588,7 @@ export default function AddChaletScreen() {
                       borderColor: '#FECACA',
                     }}>
                       <SolarInfoCircleBold size={16} color="#DC2626" />
-                      <Text style={{ color: '#DC2626', fontSize: 11, fontFamily: 'Alexandria-Medium', flex: 1, textAlign: isRTL ? 'right' : 'left' }}>
+                      <Text style={{ color: '#DC2626', fontSize: 11, fontFamily: 'Alexandria-Medium', flex: 1, textAlign }}>
                         {isRTL
                           ? `${shiftOverlapInfo.conflictMsg.ar}. يجب تغيير بقية الأوقات`
                           : `${shiftOverlapInfo.conflictMsg.en}. Change the other shift times`}
@@ -1621,7 +1622,7 @@ export default function AddChaletScreen() {
                       fontSize: 18,
                       fontFamily: 'Alexandria-Bold',
                       color: '#1E293B',
-                      textAlign: 'right',
+                      textAlign,
                       paddingVertical: 14,
                     }}
                     value={uniformPrice > 0 ? uniformPrice.toLocaleString() : ''}
@@ -2166,7 +2167,7 @@ const styles = StyleSheet.create({
   swiperImageDeleteBtn: {
     position: 'absolute',
     top: -6,
-    right: -6,
+    end: -6,
     backgroundColor: '#EF4444',
     width: 20,
     height: 20,

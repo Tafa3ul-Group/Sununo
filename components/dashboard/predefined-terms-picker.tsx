@@ -2,7 +2,7 @@ import { SolarNotebookBold } from '@/components/icons/solar-icons';
 import { Colors } from '@/constants/theme';
 import { useDirection } from '@/i18n';
 import React, { useMemo } from 'react';
-import { ActivityIndicator, I18nManager, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
 export interface PredefinedTerm {
   id: string;
@@ -35,15 +35,10 @@ export function PredefinedTermsPicker({
   loading,
   busy,
 }: PredefinedTermsPickerProps) {
-  // Use the app's manager-aware helpers (the codebase flips rows manually via
-  // rowDirection / flexStart — relying on raw isRTL ternaries breaks when the
-  // native I18nManager direction differs).
-  const { rowDirection } = useDirection();
+  // The container mirrors logical layout, so use plain 'row' + leading aligns.
+  const { rowDirection, textAlign } = useDirection();
   const flexRow = rowDirection;
-  const flexStart = isRTL
-    ? (I18nManager.isRTL ? 'flex-start' : 'flex-end')
-    : (I18nManager.isRTL ? 'flex-end' : 'flex-start');
-  const textAlign = isRTL ? 'right' : 'left';
+  const flexStart = 'flex-start';
 
   const selectedCount = useMemo(
     () => (terms || []).filter((t) => selectedTitles.has(t.title?.ar)).length,

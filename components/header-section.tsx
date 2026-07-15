@@ -18,13 +18,12 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  View,
-  I18nManager } from "react-native";
+  View } from "react-native";
 import { useSelector } from "react-redux";
 import { ThemedText } from "./themed-text";
 import { RotatingSearchPlaceholder } from "./user/rotating-search-placeholder";
 import { CircleBackButton } from "./ui/circle-back-button";
-import { useDirection, resolveRowDirection } from "@/i18n";
+import { useDirection } from "@/i18n";
 import { useGetNotificationsQuery } from "@/store/api/customerApiSlice";
 
 
@@ -131,13 +130,13 @@ export function HeaderSection({
       icon: <SolarStarBold size={normalize.width(18)} /> },
   ];
 
-  // RN auto-mirrors flex-start/flex-end when I18nManager.isRTL=true
-  // So when language matches native RTL, use natural values
-  const needsCounter = isRTL !== I18nManager.isRTL;
-  const startAlign: "flex-start" | "flex-end" = needsCounter ? "flex-end" : "flex-start";
-  const endAlign: "flex-start" | "flex-end" = needsCounter ? "flex-start" : "flex-end";
+  // Container mirrors the subtree, so use plain logical alignment values.
+  const startAlign: "flex-start" | "flex-end" = "flex-start";
+  const endAlign: "flex-start" | "flex-end" = "flex-end";
   const rowDir: "row" | "row-reverse" = rowDirection;
-  const homeRowDir: "row" | "row-reverse" = resolveRowDirection(!isRTL, I18nManager.isRTL);
+  // FLAG: homeRowDir was the OPPOSITE of the normal row order; with normal rows
+  // now container-mirrored, the opposite is a constant "row-reverse". Verify visually.
+  const homeRowDir: "row" | "row-reverse" = "row-reverse";
 
   return (
     <View style={[styles.container]}>
@@ -200,7 +199,7 @@ export function HeaderSection({
                     <View
                       style={[
                         styles.notificationBadge,
-                        needsCounter ? { left: -4 } : { right: -4 },
+                        { end: -4 },
                       ]}
                       pointerEvents="none"
                     >

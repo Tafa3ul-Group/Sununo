@@ -35,7 +35,7 @@ export function SecondarySelect({
   placeholder = "اختر...",
   style,
 }: SecondarySelectProps) {
-  const { isRTL, textAlign } = useDirection();
+  const { isRTL, textAlign, direction } = useDirection();
   const triggerRef = useRef<View>(null);
   const [open, setOpen] = useState(false);
   // Anchor rect of the trigger in window coordinates.
@@ -80,7 +80,7 @@ export function SecondarySelect({
         onRequestClose={() => setOpen(false)}
       >
         <Pressable
-          style={[styles.backdrop, { direction: "ltr" }]}
+          style={[styles.backdrop, { direction }]}
           onPress={() => setOpen(false)}
         >
           <View
@@ -103,7 +103,6 @@ export function SecondarySelect({
                     styles.optionRow,
                     {
                       flexDirection: "row",
-                      direction: isRTL ? "rtl" : "ltr",
                     },
                     idx < options.length - 1 && styles.optionDivider,
                     isSelected && styles.optionRowSelected,

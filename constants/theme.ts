@@ -1,7 +1,5 @@
-import { I18nManager, Platform } from "react-native";
+import { Platform } from "react-native";
 import { moderateScale, scale, verticalScale } from "react-native-size-matters";
-
-export const isRTL = I18nManager.isRTL;
 
 /**
  * Normalization utilities to ensure consistent UI across different screen sizes and platforms.

@@ -46,7 +46,7 @@ export default function ProviderProfileScreen() {
   const { t } = useTranslation();
   const { isRTL: isArabic, rowDirection: flexDir, textAlign: textStart } = useDirection();
 
-  const alignStart: 'flex-start' | 'flex-end' = flexDir === 'row' ? 'flex-start' : 'flex-end';
+  const alignStart: 'flex-start' | 'flex-end' = 'flex-start';
 
   const { user: authUser } = useSelector((state: RootState) => state.auth);
   const { showConfirm } = useConfirmationDialog();

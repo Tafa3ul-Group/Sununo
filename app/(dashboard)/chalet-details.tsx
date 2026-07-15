@@ -48,7 +48,7 @@ import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, Dimensions, I18nManager, Image, ScrollView, StatusBar, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Animated, Dimensions, Image, ScrollView, StatusBar, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import Toast from 'react-native-toast-message';
 import { useDispatch } from 'react-redux';
@@ -61,15 +61,16 @@ const EN_BACK_PATH = "M16.9467 0L16.984 0.0319551C16.9918 0.563434 17.0077 1.119
 const AR_BACK_PATH = "M0.0532856 0L0.0160198 0.0319551C0.00823021 0.563434 -0.00767517 1.11929 0.00434875 1.64861C0.305 2.1116 1.3663 3.01428 1.79865 3.39902C3.34419 4.77432 5.72956 6.6148 6.83738 8.37453C7.33712 9.15572 7.66209 10.0399 7.78914 10.9642C8.03564 12.8514 7.61991 14.7291 6.44174 16.2312C5.99476 16.801 5.28592 17.4728 4.75508 17.9938L2.04678 20.6073C1.61862 21.0236 0.851501 21.753 0.514236 22.2046C0.472057 22.8117 0.483946 23.3931 0.508917 24C1.05319 23.8061 2.03285 23.3157 2.60061 23.0547L6.748 21.1529C8.49312 20.321 10.9371 19.4531 12.3409 18.0823C13.3788 17.0688 14.0951 15.0354 14.0828 13.5511C14.4941 13.4266 15.5427 12.5735 15.9571 12.2832C16.3427 12.013 16.5669 11.8682 17 11.6452C16.3398 11.1658 15.6399 10.727 14.9598 10.2775C14.6831 10.0946 14.1493 9.80927 13.9231 9.61241C13.9031 8.79841 13.8296 8.21858 13.5334 7.45396C13.1414 6.44889 12.4771 5.57892 11.6184 4.94608C10.4105 4.04845 8.79041 3.58706 7.43149 3.00721C6.16934 2.46863 4.96171 1.92053 3.68105 1.40781C2.94184 1.1135 2.201 0.823459 1.45856 0.537748C0.998611 0.363519 0.499662 0.198389 0.0532856 0Z";
 
 export default function ChaletDetailsScreen() {
-  const { isRTL, rowDirection } = useDirection();
+  const { isRTL, rowDirection, textAlign } = useDirection();
+  const textEnd = textAlign === 'right' ? 'left' : 'right';
   const { showConfirm } = useConfirmationDialog();
   const dispatch = useDispatch();
 
   // Robust layout bridge:
   // - flexRow follows the active language via the central direction API (handles forceRTL double-flip).
   const flexRow = rowDirection;
-  const flexStart = isRTL ? (I18nManager.isRTL ? 'flex-start' : 'flex-end') : (I18nManager.isRTL ? 'flex-end' : 'flex-start');
-  const flexEnd = isRTL ? (I18nManager.isRTL ? 'flex-end' : 'flex-start') : (I18nManager.isRTL ? 'flex-start' : 'flex-end');
+  const flexStart = 'flex-start';
+  const flexEnd = 'flex-end';
 
   const router = useRouter();
   const { id } = useLocalSearchParams();
@@ -641,9 +642,9 @@ export default function ChaletDetailsScreen() {
           <IconComponent size={18} color="white" />
         </ProfileShape>
         <View style={[styles.menuLabelContainer, { alignItems: flexStart }]}>
-          <Text style={[styles.menuLabelText, { textAlign: isRTL ? 'right' : 'left' }]}>{label}</Text>
+          <Text style={[styles.menuLabelText, { textAlign }]}>{label}</Text>
           {value !== undefined && (
-            <Text style={[styles.menuValueText, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>{value}</Text>
+            <Text style={[styles.menuValueText, { textAlign }]} numberOfLines={1}>{value}</Text>
           )}
         </View>
         {rightElement ? (
@@ -697,7 +698,7 @@ export default function ChaletDetailsScreen() {
 
             <View style={[styles.profileInfo, { alignItems: flexStart }]}>
               <View style={{ flexDirection: flexRow, alignItems: 'center', gap: 6, width: '100%' }}>
-                <Text style={[styles.profileChaletName, { textAlign: isRTL ? 'right' : 'left', flexShrink: 1 }]} numberOfLines={1}>
+                <Text style={[styles.profileChaletName, { textAlign, flexShrink: 1 }]} numberOfLines={1}>
                   {chaletName || ''}
                 </Text>
                 {!isActive && (
@@ -752,10 +753,10 @@ export default function ChaletDetailsScreen() {
             <View style={[styles.warningNoticeCard, { flexDirection: flexRow }]}>
               <SolarShieldWarningBold size={20} color="#D97706" style={{ marginTop: 2 }} />
               <View style={{ flex: 1, gap: 2, alignItems: flexStart }}>
-                <Text style={[styles.warningNoticeTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
+                <Text style={[styles.warningNoticeTitle, { textAlign }]}>
                   {isRTL ? 'بانتظار موافقة الإدارة' : 'Pending Admin Approval'}
                 </Text>
-                <Text style={[styles.warningNoticeText, { textAlign: isRTL ? 'right' : 'left' }]}>
+                <Text style={[styles.warningNoticeText, { textAlign }]}>
                   {isRTL
                     ? 'الشاليه الخاص بك قيد المراجعة حالياً من قبل الإدارة. يرجى إكمال كافة التفاصيل والصور المتبقية لضمان قبول أسرع للظهور.'
                     : 'Your chalet is currently being reviewed by admin. Please complete all details and photos to ensure faster approval.'
@@ -788,10 +789,10 @@ export default function ChaletDetailsScreen() {
             <View style={styles.readinessCardNew}>
               <View style={[styles.readinessHeaderNew, { flexDirection: flexRow }]}>
                 <View style={{ flex: 1, alignItems: flexStart }}>
-                  <Text style={[styles.readinessTitleNew, { textAlign: isRTL ? 'right' : 'left' }]}>
+                  <Text style={[styles.readinessTitleNew, { textAlign }]}>
                     {isRTL ? 'متطلبات الجاهزية' : 'Setup Requirements'}
                   </Text>
-                  <Text style={[styles.readinessSubtitleNew, { textAlign: isRTL ? 'right' : 'left' }]}>
+                  <Text style={[styles.readinessSubtitleNew, { textAlign }]}>
                     {isRTL
                       ? `أكمل ${incompleteItems.length} متطلبات لتفعيل الشاليه`
                       : `Complete ${incompleteItems.length} items to activate your chalet`}
@@ -830,7 +831,7 @@ export default function ChaletDetailsScreen() {
           )}
 
           {/* ──── Settings Group 1 ──── */}
-          <Text style={[styles.settingsGroupTitle, { textAlign: isRTL ? 'right' : 'left', alignSelf: flexStart }]}>
+          <Text style={[styles.settingsGroupTitle, { textAlign, alignSelf: flexStart }]}>
             {isRTL ? 'معلومات وتفاصيل المكان' : 'Space Details & Info'}
           </Text>
           <View style={styles.menuGroup}>
@@ -875,7 +876,7 @@ export default function ChaletDetailsScreen() {
           </View>
 
           {/* ──── Location Map Card ──── */}
-          <Text style={[styles.settingsGroupTitle, { textAlign: isRTL ? 'right' : 'left', alignSelf: flexStart }]}>
+          <Text style={[styles.settingsGroupTitle, { textAlign, alignSelf: flexStart }]}>
             {isRTL ? 'موقع الشاليه' : 'Chalet Location'}
           </Text>
           <TouchableOpacity
@@ -907,7 +908,7 @@ export default function ChaletDetailsScreen() {
                   <View style={[styles.locationInfoLeft, { flexDirection: flexRow, alignItems: 'center' }]}>
                     <SolarMapPointBold size={16} color={Colors.primary} />
                     <View style={{ marginHorizontal: 8, flex: 1 }}>
-                      <Text style={[styles.locationCoordsText, { textAlign: isRTL ? 'right' : 'left' }]}>
+                      <Text style={[styles.locationCoordsText, { textAlign }]}>
                         {Number(basicForm.latitude).toFixed(5)}, {Number(basicForm.longitude).toFixed(5)}
                       </Text>
                     </View>
@@ -942,7 +943,7 @@ export default function ChaletDetailsScreen() {
           })}
 
           {/* ──── Settings Group 2 ──── */}
-          <Text style={[styles.settingsGroupTitle, { textAlign: isRTL ? 'right' : 'left', alignSelf: flexStart }]}>
+          <Text style={[styles.settingsGroupTitle, { textAlign, alignSelf: flexStart }]}>
             {isRTL ? 'معرض الصور والمرافق' : 'Media & Content'}
           </Text>
           <View style={styles.menuGroup}>
@@ -970,7 +971,7 @@ export default function ChaletDetailsScreen() {
           </View>
 
           {/* ──── Visibility Status ──── */}
-          <Text style={[styles.settingsGroupTitle, { textAlign: isRTL ? 'right' : 'left', alignSelf: flexStart }]}>
+          <Text style={[styles.settingsGroupTitle, { textAlign, alignSelf: flexStart }]}>
             {isRTL ? 'حالة ظهور الشاليه' : 'Chalet Visibility'}
           </Text>
           <View style={styles.menuGroup}>
@@ -994,7 +995,7 @@ export default function ChaletDetailsScreen() {
           </View>
 
           {/* ──── Booking Type ──── */}
-          <Text style={[styles.settingsGroupTitle, { textAlign: isRTL ? 'right' : 'left', alignSelf: flexStart }]}>
+          <Text style={[styles.settingsGroupTitle, { textAlign, alignSelf: flexStart }]}>
             {isRTL ? 'نوع الحجز' : 'Booking Type'}
           </Text>
           <View style={styles.menuGroup}>
@@ -1020,7 +1021,7 @@ export default function ChaletDetailsScreen() {
           {/* ──── Daily Hours (Booking Duration) ──── */}
           {bookingType === 'delayed' && (
             <>
-              <Text style={[styles.settingsGroupTitle, { textAlign: isRTL ? 'right' : 'left', alignSelf: flexStart }]}>
+              <Text style={[styles.settingsGroupTitle, { textAlign, alignSelf: flexStart }]}>
                 {isRTL ? 'مدة الحجز' : 'Booking Duration'}
               </Text>
               <View style={styles.menuGroup}>
@@ -1029,7 +1030,7 @@ export default function ChaletDetailsScreen() {
                     <SolarClockCircleBold size={18} color="white" />
                   </ProfileShape>
                   <View style={[styles.menuLabelContainer, { alignItems: flexStart, flex: 1 }]}>
-                    <Text style={[styles.menuLabelText, { textAlign: isRTL ? 'right' : 'left' }]}>
+                    <Text style={[styles.menuLabelText, { textAlign }]}>
                       {isRTL ? 'مدة الحجز بالساعات' : 'Duration in Hours'}
                     </Text>
                   </View>
@@ -1066,10 +1067,10 @@ export default function ChaletDetailsScreen() {
                 <View style={[styles.bookingDurationNoteCard, { flexDirection: flexRow, marginTop: 12, alignItems: 'flex-start' }]}>
                   <SolarShieldWarningBold size={16} color="#0284C7" style={{ marginTop: 2 }} />
                   <View style={{ flex: 1, gap: 2, alignItems: flexStart }}>
-                    <Text style={[styles.bookingDurationNoteTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
+                    <Text style={[styles.bookingDurationNoteTitle, { textAlign }]}>
                       {isRTL ? 'ما هي فائدة مدة الحجز؟' : 'What is the purpose of booking duration?'}
                     </Text>
-                    <Text style={[styles.bookingDurationNoteText, { textAlign: isRTL ? 'right' : 'left' }]}>
+                    <Text style={[styles.bookingDurationNoteText, { textAlign }]}>
                       {isRTL
                         ? 'هذا هو الوقت الأقصى المتاح لك للموافقة على طلب الحجز قبل إلغائه تلقائياً.'
                         : 'This is the maximum time allowed to approve the booking request before it is automatically cancelled.'
@@ -1082,7 +1083,7 @@ export default function ChaletDetailsScreen() {
           )}
 
           {/* Danger Zone Group */}
-          <Text style={[styles.settingsGroupTitle, { color: '#EF4444', textAlign: isRTL ? 'right' : 'left', alignSelf: flexStart }]}>
+          <Text style={[styles.settingsGroupTitle, { color: '#EF4444', textAlign, alignSelf: flexStart }]}>
             {isRTL ? 'إجراءات خطرة' : 'Danger Zone'}
           </Text>
           <View style={styles.menuGroup}>
@@ -1110,13 +1111,13 @@ export default function ChaletDetailsScreen() {
         handleIndicatorStyle={{ backgroundColor: '#D1D5DB', width: 36 }}
         backgroundStyle={{ borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
       >
-        <BottomSheetScrollView contentContainerStyle={[styles.modalScrollContent, { direction: isRTL ? 'rtl' : 'ltr' }]}>
+        <BottomSheetScrollView contentContainerStyle={styles.modalScrollContent}>
           <Text style={styles.modalTitle}>{isRTL ? 'العنوان والمدينة' : 'Address & City'}</Text>
 
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'العنوان بالعربية' : 'Address (Arabic)'}</Text>
+            <Text style={[styles.modalLabel, { textAlign }]}>{isRTL ? 'العنوان بالعربية' : 'Address (Arabic)'}</Text>
             <BottomSheetTextInput
-              style={[styles.modalInput, { textAlign: isRTL ? 'right' : 'left' }]}
+              style={[styles.modalInput, { textAlign }]}
               placeholder={isRTL ? 'مثال: أربيل - عينكاوا' : 'e.g. Erbil - Ainkawa'}
               placeholderTextColor="#C0C7D0"
               value={basicForm.addressAr}
@@ -1125,12 +1126,12 @@ export default function ChaletDetailsScreen() {
           </View>
 
           <View style={styles.modalInputGroup}>
-            <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left', marginBottom: 0 }]}>{isRTL ? 'العنوان بالإنجليزية' : 'Address (English)'}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <Text style={[styles.modalLabel, { textAlign, marginBottom: 0 }]}>{isRTL ? 'العنوان بالإنجليزية' : 'Address (English)'}</Text>
               <AiTranslateButton source={basicForm.addressAr} onTranslated={(en) => setBasicForm((prev) => ({ ...prev, addressEn: en }))} />
             </View>
             <BottomSheetTextInput
-              style={[styles.modalInput, { textAlign: isRTL ? 'right' : 'left' }]}
+              style={[styles.modalInput, { textAlign }]}
               placeholder={isRTL ? 'Erbil - Ainkawa' : 'e.g. Erbil - Ainkawa'}
               placeholderTextColor="#C0C7D0"
               value={basicForm.addressEn}
@@ -1139,13 +1140,13 @@ export default function ChaletDetailsScreen() {
           </View>
 
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'المدينة' : 'City'}</Text>
+            <Text style={[styles.modalLabel, { textAlign }]}>{isRTL ? 'المدينة' : 'City'}</Text>
             <TouchableOpacity
-              style={[styles.modalInput, { flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', justifyContent: 'space-between' }]}
+              style={[styles.modalInput, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}
               activeOpacity={0.7}
               onPress={() => citySheetRef.current?.present()}
             >
-              <Text style={{ fontSize: normalize.font(13), fontFamily: 'Alexandria-Medium', color: basicForm.cityName ? Colors.text.primary : '#C0C7D0', flex: 1, textAlign: isRTL ? 'right' : 'left' }}>
+              <Text style={{ fontSize: normalize.font(13), fontFamily: 'Alexandria-Medium', color: basicForm.cityName ? Colors.text.primary : '#C0C7D0', flex: 1, textAlign }}>
                 {basicForm.cityName || (isRTL ? 'اختر المدينة' : 'Select City')}
               </Text>
               <SolarMapPointBold size={16} color={basicForm.cityName ? Colors.primary : '#94A3B8'} />
@@ -1192,13 +1193,13 @@ export default function ChaletDetailsScreen() {
         backdropComponent={renderBackdrop}
         backgroundStyle={{ borderRadius: 24 }}
       >
-        <BottomSheetScrollView contentContainerStyle={[styles.modalScrollContent, { direction: isRTL ? 'rtl' : 'ltr' }]}>
+        <BottomSheetScrollView contentContainerStyle={styles.modalScrollContent}>
           <Text style={styles.modalTitle}>{isRTL ? 'المعلومات الأساسية' : 'Basic Information'}</Text>
 
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'left' : 'right' }]}>{isRTL ? 'اسم الشاليه (عربي)' : 'Name (AR)'}</Text>
+            <Text style={[styles.modalLabel, { textAlign: textEnd }]}>{isRTL ? 'اسم الشاليه (عربي)' : 'Name (AR)'}</Text>
             <BottomSheetTextInput
-              style={[styles.modalInput, { textAlign: isRTL ? 'right' : 'left' }]}
+              style={[styles.modalInput, { textAlign }]}
               placeholder={isRTL ? 'أدخل اسم الشاليه بالعربية' : 'Enter chalet name in Arabic'}
               placeholderTextColor="#C0C7D0"
               value={basicForm.nameAr}
@@ -1207,12 +1208,12 @@ export default function ChaletDetailsScreen() {
           </View>
 
           <View style={styles.modalInputGroup}>
-            <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <Text style={[styles.modalLabel, { textAlign: isRTL ? 'left' : 'right', marginBottom: 0 }]}>{isRTL ? 'اسم الشاليه (English)' : 'Name (EN)'}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <Text style={[styles.modalLabel, { textAlign: textEnd, marginBottom: 0 }]}>{isRTL ? 'اسم الشاليه (English)' : 'Name (EN)'}</Text>
               <AiTranslateButton source={basicForm.nameAr} onTranslated={(en) => setBasicForm((prev) => ({ ...prev, nameEn: en }))} />
             </View>
             <BottomSheetTextInput
-              style={[styles.modalInput, { textAlign: isRTL ? 'right' : 'left' }]}
+              style={[styles.modalInput, { textAlign }]}
               placeholder={isRTL ? 'Enter chalet name in English' : 'Enter chalet name in English'}
               placeholderTextColor="#C0C7D0"
               value={basicForm.nameEn}
@@ -1221,9 +1222,9 @@ export default function ChaletDetailsScreen() {
           </View>
 
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'left' : 'right' }]}>{isRTL ? 'وصف الشاليه (عربي)' : 'Description (AR)'}</Text>
+            <Text style={[styles.modalLabel, { textAlign: textEnd }]}>{isRTL ? 'وصف الشاليه (عربي)' : 'Description (AR)'}</Text>
             <BottomSheetTextInput
-              style={[styles.modalInput, styles.modalTextArea, { textAlign: isRTL ? 'right' : 'left' }]}
+              style={[styles.modalInput, styles.modalTextArea, { textAlign }]}
               multiline
               numberOfLines={4}
               placeholder={isRTL ? 'أدخل وصف الشاليه بالعربية...' : 'Enter chalet description in Arabic...'}
@@ -1234,12 +1235,12 @@ export default function ChaletDetailsScreen() {
           </View>
 
           <View style={styles.modalInputGroup}>
-            <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <Text style={[styles.modalLabel, { textAlign: isRTL ? 'left' : 'right', marginBottom: 0 }]}>{isRTL ? 'وصف الشاليه (English)' : 'Description (EN)'}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <Text style={[styles.modalLabel, { textAlign: textEnd, marginBottom: 0 }]}>{isRTL ? 'وصف الشاليه (English)' : 'Description (EN)'}</Text>
               <AiTranslateButton source={basicForm.descriptionAr} onTranslated={(en) => setBasicForm((prev) => ({ ...prev, descriptionEn: en }))} />
             </View>
             <BottomSheetTextInput
-              style={[styles.modalInput, styles.modalTextArea, { textAlign: isRTL ? 'right' : 'left' }]}
+              style={[styles.modalInput, styles.modalTextArea, { textAlign }]}
               multiline
               numberOfLines={4}
               placeholder={isRTL ? 'Enter chalet description in English...' : 'Enter chalet description in English...'}
@@ -1250,9 +1251,9 @@ export default function ChaletDetailsScreen() {
           </View>
 
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'left' : 'right' }]}>{isRTL ? 'رقم الهاتف' : 'Phone'}</Text>
+            <Text style={[styles.modalLabel, { textAlign: textEnd }]}>{isRTL ? 'رقم الهاتف' : 'Phone'}</Text>
             <BottomSheetTextInput
-              style={[styles.modalInput, { textAlign: isRTL ? 'right' : 'left' }]}
+              style={[styles.modalInput, { textAlign }]}
               keyboardType="phone-pad"
               placeholder={isRTL ? 'مثال: 07xxxxxxxxx' : 'e.g. 07xxxxxxxxx'}
               placeholderTextColor="#C0C7D0"
@@ -1277,7 +1278,7 @@ export default function ChaletDetailsScreen() {
         <BottomSheetView style={styles.modalScrollContent}>
           <Text style={styles.modalTitle}>{isRTL ? 'نسبة العربون' : 'Deposit Percentage'}</Text>
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'نسبة العربون %' : 'Deposit %'}</Text>
+            <Text style={[styles.modalLabel, { textAlign }]}>{isRTL ? 'نسبة العربون %' : 'Deposit %'}</Text>
             <BottomSheetTextInput
               style={[
                 styles.modalInput, 
@@ -1295,7 +1296,7 @@ export default function ChaletDetailsScreen() {
           </View>
           {chalet?.minDepositPercentage !== undefined && Number(chalet.minDepositPercentage) > 0 && (
             <View style={{
-              flexDirection: isRTL ? 'row-reverse' : 'row',
+              flexDirection: 'row',
               alignItems: 'center',
               backgroundColor: isDepositInvalid ? '#FEF2F2' : '#F8FAFC',
               borderColor: isDepositInvalid ? '#FEE2E2' : '#E2E8F0',
@@ -1312,7 +1313,7 @@ export default function ChaletDetailsScreen() {
                   fontSize: normalize.font(11.5),
                   fontFamily: 'Alexandria-Medium',
                   color: isDepositInvalid ? '#991B1B' : '#475569',
-                  textAlign: isRTL ? 'right' : 'left',
+                  textAlign,
                   lineHeight: 17
                 }}>
                   {isRTL 
@@ -1341,11 +1342,11 @@ export default function ChaletDetailsScreen() {
         backdropComponent={renderBackdrop}
         backgroundStyle={{ borderRadius: 24 }}
       >
-        <BottomSheetScrollView contentContainerStyle={[styles.modalScrollContent, { direction: isRTL ? 'rtl' : 'ltr' }]}>
+        <BottomSheetScrollView contentContainerStyle={styles.modalScrollContent}>
           <Text style={styles.modalTitle}>{isRTL ? 'السعة والتسعير الإضافي' : 'Capacity & Extra Pricing'}</Text>
 
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'السعة وإعدادات الزيادة' : 'Capacity & Pricing'}</Text>
+            <Text style={[styles.modalLabel, { textAlign }]}>{isRTL ? 'السعة وإعدادات الزيادة' : 'Capacity & Pricing'}</Text>
             <View style={styles.capacityListInline}>
               <View style={[styles.capacityCardInline, { flexDirection: 'row' }]}>
                 <GuestCounter value={parseInt(basicForm.capacity) || 0} onIncrement={() => setBasicForm({ ...basicForm, capacity: (parseInt(basicForm.capacity) + 1).toString() })} onDecrement={() => setBasicForm({ ...basicForm, capacity: Math.max(0, parseInt(basicForm.capacity) - 1).toString() })} />
@@ -1359,9 +1360,9 @@ export default function ChaletDetailsScreen() {
           </View>
 
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'سعر الشخص الإضافي' : 'Extra Person Price'}</Text>
+            <Text style={[styles.modalLabel, { textAlign }]}>{isRTL ? 'سعر الشخص الإضافي' : 'Extra Person Price'}</Text>
             <BottomSheetTextInput
-              style={[styles.modalInput, { textAlign: isRTL ? 'right' : 'left' }]}
+              style={[styles.modalInput, { textAlign }]}
               keyboardType="numeric"
               value={basicForm.extraPersonPrice}
               onChangeText={(val) => setBasicForm({ ...basicForm, extraPersonPrice: val })}
@@ -1389,11 +1390,11 @@ export default function ChaletDetailsScreen() {
         backdropComponent={renderBackdrop}
         backgroundStyle={{ borderRadius: 24 }}
       >
-        <BottomSheetScrollView contentContainerStyle={[styles.modalScrollContent, { direction: isRTL ? 'rtl' : 'ltr' }]}>
+        <BottomSheetScrollView contentContainerStyle={styles.modalScrollContent}>
           <Text style={styles.modalTitle}>{isRTL ? 'إدارة الصور' : 'Manage Images'}</Text>
 
           {/* Existing Images Section */}
-          <Text style={[styles.modalSubTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
+          <Text style={[styles.modalSubTitle, { textAlign }]}>
             {isRTL ? 'الصور الحالية' : 'Current Images'}
           </Text>
           <View style={styles.imagesUploadGrid}>
@@ -1430,7 +1431,7 @@ export default function ChaletDetailsScreen() {
           <View style={[styles.rowDivider, { marginVertical: 24 }]} />
 
           {/* New Images Section */}
-          <Text style={[styles.modalSubTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
+          <Text style={[styles.modalSubTitle, { textAlign }]}>
             {isRTL ? 'إضافة صور جديدة' : 'Add New Photos'}
           </Text>
           <View style={styles.imagesUploadGrid}>
@@ -1483,10 +1484,10 @@ export default function ChaletDetailsScreen() {
               <SolarNotebookBold size={24} color={Colors.white} />
             </View>
             <View style={{ flex: 1, alignItems: flexStart }}>
-              <Text style={{ fontSize: 18, fontFamily: 'Alexandria-Bold', color: '#0F172A', textAlign: isRTL ? 'right' : 'left' }}>
+              <Text style={{ fontSize: 18, fontFamily: 'Alexandria-Bold', color: '#0F172A', textAlign }}>
                 {isRTL ? 'الشروط والقوانين' : 'Rules & Policies'}
               </Text>
-              <Text style={{ fontSize: 12, fontFamily: 'Alexandria-Regular', color: '#94A3B8', marginTop: 2, textAlign: isRTL ? 'right' : 'left' }}>
+              <Text style={{ fontSize: 12, fontFamily: 'Alexandria-Regular', color: '#94A3B8', marginTop: 2, textAlign }}>
                 {isRTL ? 'حدّد شروط الإقامة التي تظهر للعملاء' : 'Set the stay rules shown to customers'}
               </Text>
             </View>
@@ -1514,8 +1515,8 @@ export default function ChaletDetailsScreen() {
             {/* Custom rules header */}
             <View style={{ flexDirection: flexRow, alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
               <View style={{ flex: 1, alignItems: flexStart }}>
-                <Text style={{ fontSize: 15, fontFamily: 'Alexandria-Bold', color: '#0F172A', textAlign: isRTL ? 'right' : 'left' }}>{isRTL ? 'شروط مخصّصة' : 'Custom Rules'}</Text>
-                <Text style={{ fontSize: 12, fontFamily: 'Alexandria-Regular', color: '#94A3B8', marginTop: 3, textAlign: isRTL ? 'right' : 'left' }}>{isRTL ? 'شروط خاصة بهذا الشاليه فقط' : 'Rules specific to this chalet'}</Text>
+                <Text style={{ fontSize: 15, fontFamily: 'Alexandria-Bold', color: '#0F172A', textAlign }}>{isRTL ? 'شروط مخصّصة' : 'Custom Rules'}</Text>
+                <Text style={{ fontSize: 12, fontFamily: 'Alexandria-Regular', color: '#94A3B8', marginTop: 3, textAlign }}>{isRTL ? 'شروط خاصة بهذا الشاليه فقط' : 'Rules specific to this chalet'}</Text>
               </View>
               <TouchableOpacity onPress={addEmptyRule} activeOpacity={0.8} style={{ flexDirection: flexRow, alignItems: 'center', gap: 4, borderRadius: 12, borderWidth: 1.5, borderColor: Colors.primary + '40', paddingHorizontal: 12, paddingVertical: 8 }}>
                 <Text style={{ fontSize: 16, color: Colors.primary, fontFamily: 'Alexandria-Bold', marginTop: -2 }}>+</Text>
@@ -1541,8 +1542,8 @@ export default function ChaletDetailsScreen() {
                     </View>
 
                     {/* Arabic */}
-                    <BottomSheetTextInput style={[styles.ruleInput, { textAlign: isRTL ? 'right' : 'left' }]} placeholder={isRTL ? 'عنوان الشرط (عربي)' : 'Rule title (Arabic)'} placeholderTextColor="#CBD5E1" value={rule.titleAr} onChangeText={(v) => updateRuleField(rule.id, { titleAr: v })} />
-                    <BottomSheetTextInput style={[styles.ruleInput, styles.ruleArea, { textAlign: isRTL ? 'right' : 'left' }]} placeholder={isRTL ? 'شرح الشرط (عربي)' : 'Rule description (Arabic)'} placeholderTextColor="#CBD5E1" multiline value={rule.descriptionAr} onChangeText={(v) => updateRuleField(rule.id, { descriptionAr: v })} />
+                    <BottomSheetTextInput style={[styles.ruleInput, { textAlign }]} placeholder={isRTL ? 'عنوان الشرط (عربي)' : 'Rule title (Arabic)'} placeholderTextColor="#CBD5E1" value={rule.titleAr} onChangeText={(v) => updateRuleField(rule.id, { titleAr: v })} />
+                    <BottomSheetTextInput style={[styles.ruleInput, styles.ruleArea, { textAlign }]} placeholder={isRTL ? 'شرح الشرط (عربي)' : 'Rule description (Arabic)'} placeholderTextColor="#CBD5E1" multiline value={rule.descriptionAr} onChangeText={(v) => updateRuleField(rule.id, { descriptionAr: v })} />
 
                     {/* English title */}
                     <View style={{ gap: 4 }}>
@@ -1596,7 +1597,7 @@ export default function ChaletDetailsScreen() {
                   citySheetRef.current?.dismiss();
                 }}
               >
-                <Text style={[styles.cityPickerText, { textAlign: isRTL ? 'right' : 'left' }]}>{item.name?.ar || item.name}</Text>
+                <Text style={[styles.cityPickerText, { textAlign }]}>{item.name?.ar || item.name}</Text>
               </TouchableOpacity>
             )}
           />
@@ -1726,7 +1727,7 @@ const styles = StyleSheet.create({
   cameraBadge: {
     position: 'absolute',
     bottom: 0,
-    right: 0,
+    end: 0,
     backgroundColor: Colors.primary,
     width: 22,
     height: 22,
@@ -2478,7 +2479,7 @@ const styles = StyleSheet.create({
   locationMapOverlay: {
     position: 'absolute',
     top: 10,
-    right: 10,
+    end: 10,
     zIndex: 10,
   },
   locationEditBadge: {
