@@ -3,12 +3,16 @@ import {
   SolarAddCircleBold,
   SolarAltArrowDownBold,
   SolarAltArrowUpBold,
+  SolarBanknoteBold,
   SolarBookmarkSquareMinimalisticBoldDuotone,
   SolarCalendarBold,
+  SolarCheckCircleBold,
   SolarClockCircleBold,
   SolarCloseBold,
   SolarInfoCircleBold,
+  SolarMoonBold,
   SolarPenBold,
+  SolarSunBold,
   SolarTrashBinBold
 } from '@/components/icons/solar-icons';
 import { useConfirmationDialog } from '@/components/ui/confirmation-dialog';
@@ -362,6 +366,21 @@ export default function ShiftsAndPricesScreen() {
     const period = h >= 12 ? (isRTL ? 'مساءً' : 'PM') : (isRTL ? 'صباحاً' : 'AM');
     const hours12 = h % 12 || 12;
     return `${hours12}:${m.toString().padStart(2, '0')} ${period}`;
+  };
+
+  // Compact human-readable shift length ("5 ساعات", "4h 30m") for the header/summary.
+  const formatDuration = (hoursFloat: number) => {
+    const totalMin = Math.round((hoursFloat || 0) * 60);
+    const h = Math.floor(totalMin / 60);
+    const m = totalMin % 60;
+    if (isRTL) {
+      if (m === 0) return h === 1 ? 'ساعة' : h === 2 ? 'ساعتان' : `${h} ساعات`;
+      if (h === 0) return `${m} دقيقة`;
+      return `${h} س ${m} د`;
+    }
+    if (m === 0) return `${h}h`;
+    if (h === 0) return `${m}m`;
+    return `${h}h ${m}m`;
   };
 
   const adjustShiftFormTime = (field: 'startTime' | 'endTime', amount: number) => {
@@ -1414,214 +1433,266 @@ export default function ShiftsAndPricesScreen() {
       </View>
 
       {/* Add Shift Modal */}
-      <BottomSheetModal ref={shiftSheetRef} index={0} snapPoints={['75%', '90%']} backdropComponent={renderBackdrop}>
-        <BottomSheetScrollView contentContainerStyle={{ padding: 20 }}>
-          <View style={[styles.row, { justifyContent: 'space-between', marginBottom: 20, flexDirection }]}>
-            <View>
-              <Text style={styles.modalTitle}>{isRTL ? 'إعداد الفترة' : 'Shift Setup'}</Text>
+      <BottomSheetModal ref={shiftSheetRef} index={0} snapPoints={['92%']} backdropComponent={renderBackdrop} backgroundStyle={{ borderRadius: 28 }}>
+        <BottomSheetScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+          <View style={[styles.row, { justifyContent: 'space-between', marginBottom: 22, flexDirection }]}>
+            <View style={[styles.row, { gap: 12, flexDirection, flex: 1 }]}>
+              <View style={styles.sheetHeaderIcon}>
+                <SolarClockCircleBold size={22} color={Colors.primary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.modalTitle, { marginBottom: 2 }]}>
+                  {selectedShift ? (isRTL ? 'تعديل الفترة' : 'Edit Shift') : (isRTL ? 'فترة جديدة' : 'New Shift')}
+                </Text>
+                <Text style={[styles.sheetHeaderSub, { textAlign }]}>
+                  {isRTL ? 'حدّد الوقت والاسم وسعر كل يوم' : 'Set the time, name and daily price'}
+                </Text>
+              </View>
             </View>
-            <TouchableOpacity onPress={() => shiftSheetRef.current?.dismiss()} style={{ backgroundColor: '#F3F4F6', padding: 8, borderRadius: 12 }}>
-              <SolarCloseBold size={20} color="#000" />
+            <TouchableOpacity onPress={() => shiftSheetRef.current?.dismiss()} style={styles.sheetCloseBtn} activeOpacity={0.7}>
+              <SolarCloseBold size={18} color="#64748B" />
             </TouchableOpacity>
           </View>
-          <View style={[
-            styles.editTimeRowCard, 
-            { marginBottom: 20, marginTop: 10 },
-            isCurrentShiftOverlapping && { borderColor: '#FCA5A5', backgroundColor: '#FFF5F5' }
-          ]}>
-            <View style={[styles.row, { justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexDirection }]}>
-              <Text style={[styles.timeLabelText, { fontSize: 13, fontFamily: 'Alexandria-Bold', color: '#475569' }, isCurrentShiftOverlapping && { color: '#991B1B' }]}>
-                {isRTL ? 'أوقات الفترة' : 'Shift Times'}
+          <View style={[styles.timeCard, isCurrentShiftOverlapping && styles.timeCardError]}>
+            <View style={[styles.row, { justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexDirection }]}>
+              <Text style={[styles.timeCardTitle, isCurrentShiftOverlapping && { color: '#991B1B' }]}>
+                {isRTL ? 'وقت الفترة' : 'Shift Time'}
               </Text>
-              {isCurrentShiftOverlapping && (
-                <View style={{ backgroundColor: '#FEE4E2', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 }}>
-                  <Text style={{ fontSize: 10, color: '#D92D20', fontFamily: 'Alexandria-Bold' }}>
-                    {isRTL ? 'تداخل' : 'Overlap'}
-                  </Text>
+              {isCurrentShiftOverlapping ? (
+                <View style={styles.overlapPill}>
+                  <SolarInfoCircleBold size={12} color="#D92D20" />
+                  <Text style={styles.overlapPillText}>{isRTL ? 'تداخل' : 'Overlap'}</Text>
+                </View>
+              ) : (
+                <View style={styles.durationPill}>
+                  <SolarClockCircleBold size={13} color={Colors.primary} />
+                  <Text style={styles.durationPillText}>{formatDuration(duration)}</Text>
                 </View>
               )}
             </View>
 
-            <View style={[styles.row, { justifyContent: 'space-between', flexDirection }]}>
-              <View style={{ flex: 1, alignItems: 'center' }}>
-                <Text style={styles.timeLabelText}>{isRTL ? 'وقت البدء' : 'Start Time'}</Text>
-                <View style={{ alignItems: 'center', marginTop: 6 }}>
-                  <View style={[styles.row, { gap: 8 }]}>
-                    <TouchableOpacity onPress={() => adjustShiftFormTime('startTime', -30)} style={styles.adjustTimeBtnSmall}>
-                      <Text style={styles.adjustTimeBtnTextSmall}>-</Text>
-                    </TouchableOpacity>
-                    <Text style={[styles.timeValueText, isCurrentShiftOverlapping && { color: '#D92D20' }]}>{formatTime12h(shiftForm.startTime)}</Text>
-                    <TouchableOpacity onPress={() => adjustShiftFormTime('startTime', 30)} style={styles.adjustTimeBtnSmall}>
-                      <Text style={styles.adjustTimeBtnTextSmall}>+</Text>
-                    </TouchableOpacity>
-                  </View>
+            <View style={[styles.row, { alignItems: 'stretch', gap: 10, flexDirection }]}>
+              {/* Start */}
+              <View style={[styles.timeColumn, isCurrentShiftOverlapping && styles.timeColumnError]}>
+                <View style={[styles.row, { gap: 6, flexDirection, marginBottom: 8 }]}>
+                  <SolarSunBold size={15} color="#F59E0B" />
+                  <Text style={styles.timeColLabel}>{isRTL ? 'البداية' : 'Start'}</Text>
+                </View>
+                <Text style={[styles.timeColValue, isCurrentShiftOverlapping && { color: '#D92D20' }]}>
+                  {formatTime12h(shiftForm.startTime).split(' ')[0]}
+                  <Text style={styles.timeColPeriod}> {formatTime12h(shiftForm.startTime).split(' ')[1]}</Text>
+                </Text>
+                <View style={[styles.row, { gap: 10, marginTop: 10, justifyContent: 'center' }]}>
+                  <TouchableOpacity onPress={() => adjustShiftFormTime('startTime', -30)} style={styles.stepBtn} activeOpacity={0.7}>
+                    <Text style={styles.stepBtnText}>−</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => adjustShiftFormTime('startTime', 30)} style={styles.stepBtn} activeOpacity={0.7}>
+                    <Text style={styles.stepBtnText}>+</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
 
-              <View style={{ width: 1, height: '80%', backgroundColor: '#E2E8F0', alignSelf: 'center' }} />
-
-              <View style={{ flex: 1, alignItems: 'center' }}>
-                <Text style={styles.timeLabelText}>{isRTL ? 'وقت الانتهاء' : 'End Time'}</Text>
-                <View style={{ alignItems: 'center', marginTop: 6 }}>
-                  <View style={[styles.row, { gap: 8 }]}>
-                    <TouchableOpacity onPress={() => adjustShiftFormTime('endTime', -30)} style={styles.adjustTimeBtnSmall}>
-                      <Text style={styles.adjustTimeBtnTextSmall}>-</Text>
-                    </TouchableOpacity>
-                    <Text style={[styles.timeValueText, isCurrentShiftOverlapping && { color: '#D92D20' }]}>{formatTime12h(shiftForm.endTime)}</Text>
-                    <TouchableOpacity onPress={() => adjustShiftFormTime('endTime', 30)} style={styles.adjustTimeBtnSmall}>
-                      <Text style={styles.adjustTimeBtnTextSmall}>+</Text>
-                    </TouchableOpacity>
-                  </View>
+              {/* End */}
+              <View style={[styles.timeColumn, isCurrentShiftOverlapping && styles.timeColumnError]}>
+                <View style={[styles.row, { gap: 6, flexDirection, marginBottom: 8 }]}>
+                  <SolarMoonBold size={15} color="#6366F1" />
+                  <Text style={styles.timeColLabel}>{isRTL ? 'النهاية' : 'End'}</Text>
+                </View>
+                <Text style={[styles.timeColValue, isCurrentShiftOverlapping && { color: '#D92D20' }]}>
+                  {formatTime12h(shiftForm.endTime).split(' ')[0]}
+                  <Text style={styles.timeColPeriod}> {formatTime12h(shiftForm.endTime).split(' ')[1]}</Text>
+                </Text>
+                <View style={[styles.row, { gap: 10, marginTop: 10, justifyContent: 'center' }]}>
+                  <TouchableOpacity onPress={() => adjustShiftFormTime('endTime', -30)} style={styles.stepBtn} activeOpacity={0.7}>
+                    <Text style={styles.stepBtnText}>−</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => adjustShiftFormTime('endTime', 30)} style={styles.stepBtn} activeOpacity={0.7}>
+                    <Text style={styles.stepBtnText}>+</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
             </View>
 
-            {/* Available free times */}
-            <View style={{
-              borderTopWidth: 1,
-              borderTopColor: isCurrentShiftOverlapping ? '#FCA5A5' : '#E2E8F0',
-              paddingTop: 10,
-              marginTop: 12
-            }}>
-              <Text style={{
-                fontSize: 10,
-                color: isCurrentShiftOverlapping ? '#991B1B' : '#64748B',
-                fontFamily: 'Alexandria-Medium',
-                textAlign,
-                marginBottom: 4
-              }}>
-                {isRTL ? 'الأوقات الشاغرة المتاحة للاختيار:' : 'Available free times for selection:'}
-              </Text>
-              <Text style={{
-                fontSize: 11,
-                color: isCurrentShiftOverlapping ? '#B91C1C' : '#0284C7',
-                fontFamily: 'Alexandria-Bold',
-                textAlign
-              }}>
-                {availableTimesText}
-              </Text>
-            </View>
+            {/* Available free times (subtle helper) */}
+            {!isCurrentShiftOverlapping && (
+              <View style={[styles.row, { gap: 6, marginTop: 14, flexDirection, alignItems: 'flex-start' }]}>
+                <SolarInfoCircleBold size={13} color="#94A3B8" style={{ marginTop: 1 }} />
+                <Text style={[styles.availHint, { textAlign, flex: 1 }]}>
+                  <Text style={{ color: '#94A3B8' }}>{isRTL ? 'المتاح للاختيار: ' : 'Available: '}</Text>
+                  <Text style={{ color: '#0284C7', fontFamily: 'Alexandria-SemiBold' }}>{availableTimesText}</Text>
+                </Text>
+              </View>
+            )}
 
-            {/* Overlap Warning message */}
+            {/* Overlap warning */}
             {isCurrentShiftOverlapping && (
-              <View style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: '#FEE4E2',
-                borderRadius: 8,
-                padding: 10,
-                marginTop: 10,
-                gap: 6
-              }}>
-                <SolarInfoCircleBold size={16} color="#D92D20" />
-                <Text style={{
-                  color: '#D92D20',
-                  fontSize: 11,
-                  fontFamily: 'Alexandria-Medium',
-                  flex: 1,
-                  textAlign
-                }}>
+              <View style={[styles.overlapWarn, { flexDirection }]}>
+                <SolarInfoCircleBold size={15} color="#D92D20" />
+                <Text style={[styles.overlapWarnText, { textAlign, flex: 1 }]}>
                   {isRTL
-                    ? `تنبيه: ${singleShiftOverlapInfo.conflictMsg?.ar}. يجب تغيير الوقت.`
-                    : `Warning: ${singleShiftOverlapInfo.conflictMsg?.en}. Please change the time.`}
+                    ? `${singleShiftOverlapInfo.conflictMsg?.ar}. يرجى تغيير الوقت.`
+                    : `${singleShiftOverlapInfo.conflictMsg?.en}. Please change the time.`}
                 </Text>
               </View>
             )}
           </View>
 
-          {/* Name Label */}
-          <Text style={[styles.label, { textAlign }]}>{isRTL ? 'الاسم' : 'Name'}</Text>
-          <BottomSheetTextInput 
-            style={[styles.input, { fontFamily: 'Alexandria-Medium' }]} 
-            placeholder={isRTL ? 'مثال: الفترة الصباحية' : 'e.g. Morning Shift'}
-            value={shiftForm.name} 
-            onChangeText={t => setShiftForm({ ...shiftForm, name: t })} 
-          />
+          {/* Name */}
+          <View style={[styles.row, { gap: 8, marginTop: 22, marginBottom: 10, flexDirection }]}>
+            <SolarPenBold size={16} color={Colors.primary} />
+            <Text style={[styles.sectionTitle, { textAlign }]}>{isRTL ? 'اسم الفترة' : 'Shift Name'}</Text>
+          </View>
+          <View style={styles.nameInputWrap}>
+            <BottomSheetTextInput
+              style={[styles.nameInput, { textAlign }]}
+              placeholder={isRTL ? 'مثال: الفترة الصباحية' : 'e.g. Morning Shift'}
+              placeholderTextColor="#94A3B8"
+              value={shiftForm.name}
+              onChangeText={t => setShiftForm({ ...shiftForm, name: t })}
+            />
+          </View>
+          <View style={[styles.row, { gap: 8, marginTop: 10, flexWrap: 'wrap', flexDirection }]}>
+            {(isRTL
+              ? ['صباحية', 'مسائية', 'ليلية', 'يوم كامل']
+              : ['Morning', 'Evening', 'Night', 'Full day']
+            ).map((s) => {
+              const active = shiftForm.name.trim() === s;
+              return (
+                <TouchableOpacity
+                  key={s}
+                  onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setShiftForm(prev => ({ ...prev, name: s })); }}
+                  style={[styles.nameChip, active && styles.nameChipOn]}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.nameChipText, active && styles.nameChipTextOn]}>{s}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
 
           {!selectedShift && (
-            <View style={{ marginBottom: 8 }}>
-              <Text style={[styles.label, { textAlign }]}>
-                {isRTL ? 'أسعار الأيام' : 'Daily Prices'}
+            <View style={{ marginTop: 24 }}>
+              <View style={[styles.row, { gap: 8, marginBottom: 3, flexDirection }]}>
+                <SolarBanknoteBold size={18} color={Colors.primary} />
+                <Text style={[styles.sectionTitle, { textAlign }]}>{isRTL ? 'أسعار الأيام' : 'Daily Prices'}</Text>
+              </View>
+              <Text style={[styles.sectionSub, { textAlign, marginBottom: 14 }]}>
+                {isRTL ? 'فعّل الأيام التي تقبل الحجز فيها وحدّد سعر كل منها' : 'Enable the days you accept bookings and set each price'}
               </Text>
 
-              <View style={styles.formPricingCard}>
-                {/* Quick pricing: bulk price + all / weekdays / weekend (mirrors the portal) */}
-                <Text style={[styles.formQuickHint, { textAlign }]}>{isRTL ? 'سعّر بسرعة' : 'Quick pricing'}</Text>
-
-                <View style={[styles.formBulkRow, { flexDirection: rowDirection }]}>
+              {/* Quick pricing — enter one price, apply it to a group of days */}
+              <View style={styles.quickCard}>
+                <Text style={[styles.quickCardTitle, { textAlign }]}>{isRTL ? 'سعّر دفعة واحدة' : 'Price in one tap'}</Text>
+                <View style={[styles.bulkRow, { flexDirection }]}>
                   <BottomSheetTextInput
-                    style={[styles.formBulkInput, { textAlign }]}
+                    style={[styles.bulkInput, { textAlign }]}
                     keyboardType="numeric"
                     placeholder={isRTL ? 'أدخل السعر' : 'Enter price'}
                     placeholderTextColor="#94A3B8"
                     value={formBulkPrice ? formatWithCommas(formBulkPrice) : ''}
                     onChangeText={t => setFormBulkPrice(String(cleanPriceNumber(t)))}
                   />
-                  <Text style={styles.formBulkCurrency}>{isRTL ? 'د.ع' : 'IQD'}</Text>
+                  <View style={styles.bulkCurrencyPill}>
+                    <Text style={styles.bulkCurrencyText}>{isRTL ? 'د.ع' : 'IQD'}</Text>
+                  </View>
                 </View>
-
-                <View style={[styles.formQuickBtnRow, { flexDirection: rowDirection }]}>
-                  <TouchableOpacity style={[styles.formQuickBtn, styles.formQuickBtnPrimary]} onPress={() => applyFormPrice('all')} activeOpacity={0.85}>
-                    <Text style={[styles.formQuickBtnText, styles.formQuickBtnTextOn]}>{isRTL ? 'كل الأيام' : 'All days'}</Text>
+                <View style={[styles.quickBtnRow, { flexDirection }]}>
+                  <TouchableOpacity style={styles.applyChip} onPress={() => applyFormPrice('all')} activeOpacity={0.85}>
+                    <Text style={styles.applyChipText}>{isRTL ? 'كل الأيام' : 'All days'}</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.formQuickBtn} onPress={() => applyFormPrice('weekday')} activeOpacity={0.85}>
-                    <Text style={styles.formQuickBtnText}>{isRTL ? 'أيام العمل' : 'Weekdays'}</Text>
+                  <TouchableOpacity style={styles.applyChip} onPress={() => applyFormPrice('weekday')} activeOpacity={0.85}>
+                    <Text style={styles.applyChipText}>{isRTL ? 'أيام العمل' : 'Weekdays'}</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.formQuickBtn} onPress={() => applyFormPrice('weekend')} activeOpacity={0.85}>
-                    <Text style={styles.formQuickBtnText}>{isRTL ? 'العطلة' : 'Weekend'}</Text>
+                  <TouchableOpacity style={styles.applyChip} onPress={() => applyFormPrice('weekend')} activeOpacity={0.85}>
+                    <Text style={styles.applyChipText}>{isRTL ? 'العطلة' : 'Weekend'}</Text>
                   </TouchableOpacity>
                 </View>
+              </View>
 
-                <View style={styles.formGridDivider} />
-                <Text style={[styles.formGridHint, { textAlign }]}>{isRTL ? 'اضغط على اليوم لتفعيله، ثم حدّد سعره' : 'Tap a day to enable it, then set its price'}</Text>
+              {/* Per-day rows — full-width, easy to tap and type */}
+              <View style={{ marginTop: 14, gap: 8 }}>
+                {formDays.map((d, i) => {
+                  const dayName = (isRTL
+                    ? ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
+                    : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])[d.dayOfWeek];
+                  const isWeekend = d.dayOfWeek === 5 || d.dayOfWeek === 6;
+                  return (
+                    <View key={`form-day-${d.dayOfWeek}`} style={[styles.dayRow, d.enabled && styles.dayRowOn, { flexDirection }]}>
+                      <TouchableOpacity
+                        onPress={() => toggleFormDay(i)}
+                        activeOpacity={0.7}
+                        style={[styles.row, { gap: 10, flexDirection, flex: 1 }]}
+                      >
+                        <View style={[styles.dayCheck, d.enabled && styles.dayCheckOn]}>
+                          {d.enabled && <SolarCheckCircleBold size={24} color={Colors.primary} />}
+                        </View>
+                        <View>
+                          <Text style={[styles.dayRowName, d.enabled && styles.dayRowNameOn, { textAlign }]}>{dayName}</Text>
+                          {isWeekend && (
+                            <Text style={[styles.dayWeekendTag, { textAlign }]} numberOfLines={1}>{isRTL ? 'عطلة' : 'Weekend'}</Text>
+                          )}
+                        </View>
+                      </TouchableOpacity>
 
-                {/* 7-day grid — rowDirection keeps الأحد on the right in both RTL sync states */}
-                <View style={[styles.formDayGrid, { flexDirection: rowDirection }]}>
-                  {formDays.map((d, i) => {
-                    const dayShort = (isRTL
-                      ? ['أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت']
-                      : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'])[d.dayOfWeek];
-                    const isWeekend = d.dayOfWeek === 5 || d.dayOfWeek === 6;
-                    return (
-                      <View key={`form-day-${d.dayOfWeek}`} style={styles.formDayCell}>
-                        <TouchableOpacity
-                          onPress={() => toggleFormDay(i)}
-                          activeOpacity={0.8}
-                          style={[styles.formDayChip, d.enabled ? styles.formDayChipOn : (isWeekend ? styles.formDayChipWeekend : null)]}
-                        >
-                          <Text
-                            style={[
-                              styles.formDayChipText,
-                              d.enabled && styles.formDayChipTextOn,
-                              !d.enabled && isWeekend && { color: '#F97316' },
-                            ]}
-                            numberOfLines={1}
-                          >
-                            {dayShort}
-                          </Text>
-                        </TouchableOpacity>
+                      <View style={[styles.dayPriceWrap, d.enabled && styles.dayPriceWrapOn, { flexDirection }]}>
                         <BottomSheetTextInput
-                          style={[styles.formDayPriceInput, !d.enabled && styles.formDayPriceInputOff]}
+                          style={[styles.dayPriceInput, { textAlign }]}
                           keyboardType="numeric"
                           editable={d.enabled}
-                          placeholder="—"
+                          placeholder={d.enabled ? (isRTL ? 'السعر' : 'Price') : (isRTL ? 'مغلق' : 'Closed')}
                           placeholderTextColor="#CBD5E1"
-                          value={d.enabled && d.price !== '' ? String(d.price) : ''}
+                          value={d.enabled && d.price !== '' ? formatWithCommas(d.price) : ''}
                           onChangeText={t => setFormDayPrice(i, t)}
                         />
+                        <Text style={[styles.dayPriceCurrency, !d.enabled && { opacity: 0.35 }]}>{isRTL ? 'د.ع' : 'IQD'}</Text>
                       </View>
-                    );
-                  })}
-                </View>
+                    </View>
+                  );
+                })}
               </View>
             </View>
           )}
 
-          <TouchableOpacity 
-            style={[styles.saveBtn, singleShiftOverlapInfo.hasOverlap && { opacity: 0.5 }]} 
+          {/* Live summary */}
+          {!selectedShift && (() => {
+            const priced = formDays.filter(d => d.enabled && Number(d.price) > 0);
+            const prices = priced.map(d => Number(d.price));
+            const minP = prices.length ? Math.min(...prices) : 0;
+            const maxP = prices.length ? Math.max(...prices) : 0;
+            const priceLabel = prices.length === 0
+              ? '—'
+              : minP === maxP ? formatWithCommas(minP) : `${formatWithCommas(minP)}–${formatWithCommas(maxP)}`;
+            return (
+              <View style={[styles.summaryBar, { flexDirection }]}>
+                <View style={styles.summaryItem}>
+                  <Text style={styles.summaryVal} numberOfLines={1}>{formatDuration(duration)}</Text>
+                  <Text style={styles.summaryKey}>{isRTL ? 'المدة' : 'Duration'}</Text>
+                </View>
+                <View style={styles.summaryDivider} />
+                <View style={styles.summaryItem}>
+                  <Text style={styles.summaryVal} numberOfLines={1}>
+                    {priced.length}<Text style={styles.summaryValSmall}>{isRTL ? ' يوم' : ' d'}</Text>
+                  </Text>
+                  <Text style={styles.summaryKey}>{isRTL ? 'مُسعّرة' : 'Priced'}</Text>
+                </View>
+                <View style={styles.summaryDivider} />
+                <View style={[styles.summaryItem, { flex: 1.5 }]}>
+                  <Text style={styles.summaryVal} numberOfLines={1}>
+                    {priceLabel}<Text style={styles.summaryValSmall}>{prices.length ? (isRTL ? ' د.ع' : ' IQD') : ''}</Text>
+                  </Text>
+                  <Text style={styles.summaryKey}>{isRTL ? 'السعر' : 'Price'}</Text>
+                </View>
+              </View>
+            );
+          })()}
+
+          <TouchableOpacity
+            style={[styles.saveBtn, { flexDirection }, singleShiftOverlapInfo.hasOverlap && styles.saveBtnDisabled]}
             onPress={saveShift}
             disabled={singleShiftOverlapInfo.hasOverlap}
+            activeOpacity={0.85}
           >
+            <SolarCheckCircleBold size={20} color="#fff" />
             <Text style={styles.saveBtnText}>{isRTL ? 'حفظ الفترة' : 'Save Shift'}</Text>
           </TouchableOpacity>
         </BottomSheetScrollView>
@@ -2147,139 +2218,239 @@ const styles = StyleSheet.create({
   modalTitleCompact: { fontSize: 16, fontFamily: "Alexandria-Bold", color: '#0F172A' },
   label: { fontSize: 14, fontFamily: "Alexandria-Bold", marginBottom: 8, width: '100%' },
   input: { backgroundColor: '#F3F4F6', height: 50, borderRadius: 12, paddingHorizontal: 16, marginBottom: 16, textAlign: 'auto' },
-  saveBtn: { backgroundColor: Colors.primary, padding: 16, borderRadius: 12, alignItems: 'center' },
-  saveBtnText: { color: '#fff', fontFamily: "Alexandria-Bold" },
-  formPricingCard: {
+  saveBtn: {
+    backgroundColor: Colors.primary,
+    height: 56,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    marginTop: 18,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.22,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  saveBtnDisabled: { backgroundColor: '#CBD5E1', shadowOpacity: 0, elevation: 0 },
+  saveBtnText: { color: '#fff', fontFamily: "Alexandria-Bold", fontSize: 15 },
+
+  // ── Add-shift sheet — header ──
+  sheetHeaderIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: '#EFF4FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sheetHeaderSub: { fontSize: 12, fontFamily: 'Alexandria-Regular', color: '#94A3B8' },
+  sheetCloseBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  // ── Add-shift sheet — time card ──
+  timeCard: {
+    backgroundColor: '#fff',
+    borderRadius: 22,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#EEF1F6',
+    marginTop: 4,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    elevation: 1,
+  },
+  timeCardError: { borderColor: '#FCA5A5', backgroundColor: '#FFF7F7' },
+  timeCardTitle: { fontSize: 14, fontFamily: 'Alexandria-Bold', color: '#334155' },
+  durationPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#EFF4FF',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+  },
+  durationPillText: { fontSize: 11, fontFamily: 'Alexandria-Bold', color: Colors.primary },
+  overlapPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#FEE4E2',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+  },
+  overlapPillText: { fontSize: 11, fontFamily: 'Alexandria-Bold', color: '#D92D20' },
+  timeColumn: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#EEF1F6',
+    paddingVertical: 14,
+    paddingHorizontal: 10,
+    alignItems: 'center',
+  },
+  timeColumnError: { backgroundColor: '#FFF1F1', borderColor: '#FECACA' },
+  timeColLabel: { fontSize: 11, fontFamily: 'Alexandria-SemiBold', color: '#94A3B8' },
+  timeColValue: { fontSize: 19, fontFamily: 'Alexandria-Bold', color: '#0F172A', textAlign: 'center' },
+  timeColPeriod: { fontSize: 12, fontFamily: 'Alexandria-SemiBold', color: '#64748B' },
+  stepBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 13,
+    backgroundColor: '#EFF4FF',
+    borderWidth: 1,
+    borderColor: '#DCE6FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  stepBtnText: { fontSize: 22, fontFamily: 'Alexandria-Bold', color: Colors.primary, lineHeight: 26 },
+  availHint: { fontSize: 11, fontFamily: 'Alexandria-Medium', lineHeight: 17 },
+  overlapWarn: {
+    alignItems: 'center',
+    backgroundColor: '#FEE4E2',
+    borderRadius: 12,
+    padding: 10,
+    marginTop: 12,
+    gap: 8,
+  },
+  overlapWarnText: { color: '#D92D20', fontSize: 11, fontFamily: 'Alexandria-Medium', lineHeight: 17 },
+
+  // ── Add-shift sheet — section headers (sectionTitle defined above) ──
+  sectionSub: { fontSize: 12, fontFamily: 'Alexandria-Regular', color: '#94A3B8', lineHeight: 18 },
+
+  // ── Add-shift sheet — name ──
+  nameInputWrap: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#EEF1F6',
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    height: 52,
+    justifyContent: 'center',
+  },
+  nameInput: { fontSize: 14, fontFamily: 'Alexandria-Medium', color: '#0F172A', padding: 0 },
+  nameChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  nameChipOn: { backgroundColor: '#EFF4FF', borderColor: '#BFD3FF' },
+  nameChipText: { fontSize: 12, fontFamily: 'Alexandria-SemiBold', color: '#64748B' },
+  nameChipTextOn: { color: Colors.primary, fontFamily: 'Alexandria-Bold' },
+
+  // ── Add-shift sheet — quick pricing ──
+  quickCard: {
     backgroundColor: '#F8FAFC',
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#EEF1F5',
-    padding: 16,
-    marginBottom: 8,
+    borderColor: '#EEF1F6',
+    padding: 14,
   },
-  formQuickHint: {
-    fontSize: 12,
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#475569',
-    marginBottom: 10,
-  },
-  formBulkRow: {
-    flexDirection: 'row',
+  quickCardTitle: { fontSize: 12, fontFamily: 'Alexandria-Bold', color: '#475569', marginBottom: 10 },
+  bulkRow: {
     alignItems: 'center',
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    borderRadius: 14,
-    paddingHorizontal: 14,
+    borderRadius: 13,
+    paddingStart: 14,
+    paddingEnd: 6,
     height: 50,
     marginBottom: 10,
   },
-  formBulkInput: {
-    flex: 1,
-    height: '100%',
-    fontSize: 15,
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#0F172A',
-    textAlign: 'auto',
-  },
-  formBulkCurrency: {
-    fontSize: 12,
-    fontFamily: 'Alexandria-Medium',
-    color: '#94A3B8',
+  bulkInput: { flex: 1, height: '100%', fontSize: 15, fontFamily: 'Alexandria-Bold', color: '#0F172A', padding: 0 },
+  bulkCurrencyPill: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 12,
+    height: 36,
+    borderRadius: 10,
+    justifyContent: 'center',
     marginStart: 8,
   },
-  formQuickBtnRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  formQuickBtn: {
+  bulkCurrencyText: { fontSize: 12, fontFamily: 'Alexandria-Bold', color: '#64748B' },
+  quickBtnRow: { gap: 8 },
+  applyChip: {
     flex: 1,
-    height: 42,
-    borderRadius: 12,
-    backgroundColor: '#fff',
+    height: 40,
+    borderRadius: 11,
+    backgroundColor: '#EFF4FF',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#DCE6FF',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  formQuickBtnPrimary: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  formQuickBtnText: {
-    fontSize: 12,
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#334155',
-  },
-  formQuickBtnTextOn: {
-    color: '#fff',
-    fontFamily: 'Alexandria-Bold',
-  },
-  formGridDivider: {
-    height: 1,
-    backgroundColor: '#EAEEF3',
-    marginTop: 16,
-    marginBottom: 12,
-  },
-  formGridHint: {
-    fontSize: 11,
-    fontFamily: 'Alexandria-Medium',
-    color: '#94A3B8',
-    marginBottom: 10,
-  },
-  formDayGrid: {
-    flexDirection: 'row',
-  },
-  formDayCell: {
-    flex: 1,
-    marginHorizontal: 2,
+  applyChipText: { fontSize: 12, fontFamily: 'Alexandria-Bold', color: Colors.primary },
+
+  // ── Add-shift sheet — per-day rows ──
+  dayRow: {
     alignItems: 'center',
-    gap: 5,
-  },
-  formDayChip: {
-    width: '100%',
-    height: 30,
-    borderRadius: 9,
-    backgroundColor: '#fff',
+    backgroundColor: '#F8FAFC',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#EEF1F6',
+    borderRadius: 14,
+    paddingStart: 12,
+    paddingEnd: 10,
+    height: 56,
+    gap: 10,
+  },
+  dayRowOn: { backgroundColor: '#fff', borderColor: '#BFD3FF' },
+  dayCheck: {
+    width: 24,
+    height: 24,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#CBD5E1',
+    backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  formDayChipOn: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  formDayChipWeekend: {
-    backgroundColor: '#FFF7ED',
-    borderColor: '#FED7AA',
-  },
-  formDayChipText: {
-    fontSize: 10,
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#64748B',
-  },
-  formDayChipTextOn: {
-    color: '#fff',
-  },
-  formDayPriceInput: {
-    width: '100%',
-    height: 34,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 9,
-    paddingHorizontal: 2,
-    fontSize: 11,
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#0F172A',
-    textAlign: 'center',
-  },
-  formDayPriceInputOff: {
+  dayCheckOn: { borderWidth: 0, backgroundColor: 'transparent' },
+  dayRowName: { fontSize: 14, fontFamily: 'Alexandria-SemiBold', color: '#64748B' },
+  dayRowNameOn: { color: '#0F172A', fontFamily: 'Alexandria-Bold' },
+  dayWeekendTag: { fontSize: 9, fontFamily: 'Alexandria-Medium', color: '#F97316', marginTop: 1 },
+  dayPriceWrap: {
+    alignItems: 'center',
     backgroundColor: '#F1F5F9',
-    borderColor: 'transparent',
-    opacity: 0.55,
+    borderRadius: 11,
+    height: 40,
+    paddingStart: 12,
+    paddingEnd: 10,
+    minWidth: 118,
   },
+  dayPriceWrapOn: { backgroundColor: '#EFF4FF' },
+  dayPriceInput: { flex: 1, height: '100%', fontSize: 13, fontFamily: 'Alexandria-Bold', color: '#0F172A', padding: 0 },
+  dayPriceCurrency: { fontSize: 10, fontFamily: 'Alexandria-SemiBold', color: '#94A3B8', marginStart: 4 },
+
+  // ── Add-shift sheet — summary bar ──
+  summaryBar: {
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#EEF1F6',
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    marginTop: 20,
+  },
+  summaryItem: { flex: 1, alignItems: 'center', gap: 2 },
+  summaryVal: { fontSize: 14, fontFamily: 'Alexandria-Bold', color: '#0F172A' },
+  summaryValSmall: { fontSize: 10, fontFamily: 'Alexandria-Medium', color: '#94A3B8' },
+  summaryKey: { fontSize: 10, fontFamily: 'Alexandria-Medium', color: '#94A3B8' },
+  summaryDivider: { width: 1, height: 26, backgroundColor: '#E2E8F0' },
   quickActionCardNew: {
     backgroundColor: Colors.primary,
     padding: 16,

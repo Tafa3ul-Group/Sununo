@@ -3,7 +3,7 @@ import {
   BookingCancellationSheetRef
 } from "@/components/booking-cancellation-modal";
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { PendingApprovalScreen } from "@/components/dashboard/pending-approval";
+import { OnboardingBanner } from "@/components/dashboard/onboarding-banner";
 import { ShiftActionSheet } from "@/components/dashboard/shift-action-sheet";
 import {
   SolarCalendarBold,
@@ -646,9 +646,9 @@ export default function HomeScreen() {
     );
   }, [isRTL, t]);
 
-  if (user && (profile ? !profile.isApproved : !user?.isApproved)) {
-    return <PendingApprovalScreen onRefresh={refetchProfile} />;
-  }
+  // Account is activated on registration; review now happens at the chalet
+  // level. The onboarding/review status surfaces via <OnboardingBanner /> below
+  // instead of a full-screen block.
 
   if (bookingsError) {
     const is404 = (bookingsError as any)?.status === 404;
@@ -689,6 +689,7 @@ export default function HomeScreen() {
         }
       />
 
+      <OnboardingBanner />
 
       <View style={styles.calendarContainer}>
         <View

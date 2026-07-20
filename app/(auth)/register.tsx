@@ -1,5 +1,6 @@
 import { LoginHeaderLogo } from "@/components/icons/login-header-logo";
 import { ThemedText } from "@/components/themed-text";
+import { AiTranslateButton } from "@/components/ui/ai-translate-button";
 import { CircleBackButton } from "@/components/ui/circle-back-button";
 import { AuthToggle } from "@/components/user/auth-toggle";
 import { OtpInput } from "@/components/user/otp-input";
@@ -15,6 +16,8 @@ import { setCredentials } from "@/store/authSlice";
 import { logEvent } from "@/services/analytics";
 import { ANALYTICS_EVENTS } from "@/constants/analytics-events";
 import { useDirection } from "@/i18n";
+import { validateQiCard, validateZainCash } from "@/utils/payment-validation";
+import { Image as ExpoImage } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -33,8 +36,11 @@ import { useDispatch } from "react-redux";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
+const zainCashLogo = require("@/assets/zaincash.png");
+const qiLogo = require("@/assets/qi.svg");
+
 // Task 2.1: Removed "TYPE" from Step type
-type Step = "INFO" | "BUSINESS" | "OTP";
+type Step = "INFO" | "BUSINESS" | "PAYMENT" | "OTP";
 
 // Task 2.2: StepProgress component (inline)
 function StepProgress({ current, total }: { current: number; total: number }) {
@@ -92,17 +98,24 @@ export default function RegisterScreen() {
     phone: "",
     businessNameAr: "",
     businessNameEn: "",
-    commercialRegNo: "" });
+    zainCash: "",
+    qi: "" });
+
+  const [payErrors, setPayErrors] = useState<{
+    zainCash?: string | null;
+    qi?: string | null;
+    general?: string | null;
+  }>({});
 
   const [otpCode, setOtpCode] = useState("");
 
   // Task 2.2: getStepInfo function
   const getStepInfo = () => {
     if (accountType === "owner") {
-      const map: Record<Step, number> = { INFO: 1, BUSINESS: 2, OTP: 3 };
-      return { current: map[step] || 1, total: 3 };
+      const map: Record<Step, number> = { INFO: 1, BUSINESS: 2, PAYMENT: 3, OTP: 4 };
+      return { current: map[step] || 1, total: 4 };
     } else {
-      const map: Record<Step, number> = { INFO: 1, BUSINESS: 1, OTP: 2 };
+      const map: Record<Step, number> = { INFO: 1, BUSINESS: 1, PAYMENT: 1, OTP: 2 };
       return { current: map[step] || 1, total: 2 };
     }
   };
@@ -151,6 +164,24 @@ export default function RegisterScreen() {
         );
         return;
       }
+      setStep("PAYMENT");
+    } else if (step === "PAYMENT") {
+      const hasAny = !!formData.zainCash.trim() || !!formData.qi.trim();
+      if (!hasAny) {
+        setPayErrors({
+          general: isArabic
+            ? "أدخل وسيلة دفع واحدة على الأقل (زين كاش أو بطاقة كي)"
+            : "Enter at least one payout method (Zain Cash or Qi Card)",
+        });
+        return;
+      }
+      const zErr = validateZainCash(formData.zainCash);
+      const qErr = validateQiCard(formData.qi);
+      if (zErr || qErr) {
+        setPayErrors({ zainCash: zErr, qi: qErr, general: null });
+        return;
+      }
+      setPayErrors({});
       handleOwnerRegister();
     }
   };
@@ -159,8 +190,9 @@ export default function RegisterScreen() {
   const prevStep = () => {
     if (step === "INFO") router.back();
     else if (step === "BUSINESS") setStep("INFO");
+    else if (step === "PAYMENT") setStep("BUSINESS");
     else if (step === "OTP") {
-      if (accountType === "owner") setStep("BUSINESS");
+      if (accountType === "owner") setStep("PAYMENT");
       else setStep("INFO");
     }
   };
@@ -187,15 +219,17 @@ export default function RegisterScreen() {
   const handleOwnerRegister = async (overridePhone?: string) => {
     try {
       const phoneToUse = overridePhone || formData.phone;
-      // Task 2.3: Build payload without commercialRegNo if empty
       const payload: any = {
         phone: phoneToUse,
         name: formData.name,
         businessName: {
           ar: formData.businessNameAr,
           en: formData.businessNameEn || formData.businessNameAr } };
-      if (formData.commercialRegNo.trim()) {
-        payload.commercialRegNo = formData.commercialRegNo.trim();
+      if (formData.zainCash.trim()) {
+        payload.zainCash = formData.zainCash.trim().replace(/[\s\-\(\)]/g, "");
+      }
+      if (formData.qi.trim()) {
+        payload.qi = formData.qi.trim().replace(/[\s\-\(\)]/g, "");
       }
       const res = await registerProvider(payload).unwrap();
       // Auto-fill OTP code if returned in response (dev/staging env)
@@ -272,13 +306,20 @@ export default function RegisterScreen() {
 
       router.replace(
         resolvedUserType === "owner"
-          ? "/(tabs)/(dashboard)/home"
+          ? "/(dashboard)/onboarding"
           : "/(tabs)/(customer)",
       );
     } catch (err: any) {
       Alert.alert(t("common.error"), err?.data?.message || "Invalid code");
     }
   };
+
+  // The payment step can only advance once at least one payout method is filled
+  // in AND passes validation.
+  const isPaymentStepValid =
+    (!!formData.zainCash.trim() || !!formData.qi.trim()) &&
+    !validateZainCash(formData.zainCash) &&
+    !validateQiCard(formData.qi);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -436,16 +477,24 @@ export default function RegisterScreen() {
               </View>
 
               <View style={styles.inputGroup}>
-                <ThemedText
-                  style={[
-                    styles.label,
-                    { textAlign: textStart },
-                  ]}
-                >
-                  {isArabic
-                    ? "اسم الشاليه (بالانجليزية)"
-                    : "Chalet Name (English)"}
-                </ThemedText>
+                <View style={styles.labelRow}>
+                  <ThemedText
+                    style={[
+                      styles.label,
+                      { textAlign: textStart, marginBottom: 0, flex: 1 },
+                    ]}
+                  >
+                    {isArabic
+                      ? "اسم الشاليه (بالانجليزية)"
+                      : "Chalet Name (English)"}
+                  </ThemedText>
+                  <AiTranslateButton
+                    source={formData.businessNameAr}
+                    onTranslated={(en) =>
+                      setFormData((prev) => ({ ...prev, businessNameEn: en }))
+                    }
+                  />
+                </View>
                 <TextInput
                   style={[
                     styles.input,
@@ -464,37 +513,116 @@ export default function RegisterScreen() {
                 />
               </View>
 
+              <PrimaryButton
+                label={isArabic ? "التالي" : "Next"}
+                onPress={nextStep}
+                style={styles.mainBtn}
+                activeColor="#0061FE"
+              />
+            </View>
+          )}
+
+          {step === "PAYMENT" && (
+            <View style={styles.stepContainer}>
+              <StepProgress {...getStepInfo()} />
+
+              <ThemedText style={[styles.stepTitle, { textAlign: textStart }]}>
+                {isArabic ? "معلومات الدفع" : "Payout Details"}
+              </ThemedText>
+
+              <ThemedText
+                style={[styles.paymentHint, { textAlign: textStart }]}
+              >
+                {isArabic
+                  ? "أدخل وسيلة استلام مستحقاتك. مطلوب واحدة على الأقل (زين كاش أو بطاقة كي)."
+                  : "Enter where you'll receive your payouts. At least one is required (Zain Cash or Qi Card)."}
+              </ThemedText>
+
               <View style={styles.inputGroup}>
-                <ThemedText
+                <ThemedText style={[styles.label, { textAlign: textStart }]}>
+                  {isArabic ? "رقم زين كاش" : "Zain Cash Number"}
+                </ThemedText>
+                <View
                   style={[
-                    styles.label,
-                    { textAlign: textStart },
+                    styles.payWrapper,
+                    { flexDirection: rowDirection },
+                    payErrors.zainCash ? styles.inputError : null,
                   ]}
                 >
-                  {isArabic
-                    ? "رقم السجل التجاري (إن وجد)"
-                    : "Commercial Registration (Optional)"}
-                </ThemedText>
-                <TextInput
-                  style={[
-                    styles.input,
-                    { textAlign: textStart },
-                  ]}
-                  placeholder="CR-XXXXXX"
-                  value={formData.commercialRegNo}
-                  onChangeText={(val) =>
-                    setFormData({ ...formData, commercialRegNo: val })
-                  }
-                  placeholderTextColor="#94A3B8"
-                />
+                  <ExpoImage source={zainCashLogo} style={styles.payLogo} contentFit="contain" />
+                  <TextInput
+                    style={[styles.payInput, { textAlign: textStart }]}
+                    placeholder="07xxxxxxxxx"
+                    keyboardType="phone-pad"
+                    value={formData.zainCash}
+                    onChangeText={(val) => {
+                      setFormData({ ...formData, zainCash: val });
+                      setPayErrors((prev) => ({
+                        ...prev,
+                        zainCash: validateZainCash(val),
+                        general: null,
+                      }));
+                    }}
+                    placeholderTextColor="#94A3B8"
+                  />
+                </View>
+                {!!payErrors.zainCash && (
+                  <ThemedText style={[styles.errorText, { textAlign: textStart }]}>
+                    {payErrors.zainCash}
+                  </ThemedText>
+                )}
               </View>
+
+              <View style={styles.inputGroup}>
+                <ThemedText style={[styles.label, { textAlign: textStart }]}>
+                  {isArabic ? "رقم بطاقة كي" : "Qi Card Number"}
+                </ThemedText>
+                <View
+                  style={[
+                    styles.payWrapper,
+                    { flexDirection: rowDirection },
+                    payErrors.qi ? styles.inputError : null,
+                  ]}
+                >
+                  <ExpoImage source={qiLogo} style={styles.payLogo} contentFit="contain" />
+                  <TextInput
+                    style={[styles.payInput, { textAlign: textStart }]}
+                    placeholder={
+                      isArabic ? "رقم البطاقة المكوّن من 10 أرقام" : "10-digit card number"
+                    }
+                    keyboardType="numeric"
+                    value={formData.qi}
+                    onChangeText={(val) => {
+                      setFormData({ ...formData, qi: val });
+                      setPayErrors((prev) => ({
+                        ...prev,
+                        qi: validateQiCard(val),
+                        general: null,
+                      }));
+                    }}
+                    placeholderTextColor="#94A3B8"
+                  />
+                </View>
+                {!!payErrors.qi && (
+                  <ThemedText style={[styles.errorText, { textAlign: textStart }]}>
+                    {payErrors.qi}
+                  </ThemedText>
+                )}
+              </View>
+
+              {!!payErrors.general && (
+                <ThemedText style={[styles.errorText, { textAlign: textStart, marginBottom: 8 }]}>
+                  {payErrors.general}
+                </ThemedText>
+              )}
 
               <PrimaryButton
                 label={isArabic ? "إرسال الطلب" : "Submit & Send Code"}
                 onPress={nextStep}
                 style={styles.mainBtn}
                 loading={isRegisteringProvider}
-                activeColor="#0061FE"
+                disabled={!isPaymentStepValid || isRegisteringProvider}
+                activeColor={isPaymentStepValid ? "#0061FE" : "#CBD5E1"}
               />
             </View>
           )}
@@ -618,6 +746,12 @@ const styles = StyleSheet.create({
   // Task 2.4: inputGroup marginBottom changed from normalize.height(20) to 16
   inputGroup: {
     marginBottom: 16 },
+  labelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+    marginBottom: normalize.height(8) },
   label: {
     width: "100%",
     fontSize: normalize.font(14),
@@ -638,6 +772,42 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Alexandria-Medium",
     color: "#1E293B" },
+  inputError: {
+    borderColor: "#EF4444" },
+  payWrapper: {
+    width: "100%",
+    alignItems: "center",
+    backgroundColor: "#F8FAFC",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    paddingHorizontal: 12,
+    minHeight: normalize.height(52) },
+  payLogo: {
+    width: 30,
+    height: 30,
+    borderRadius: 6,
+    marginEnd: 8 },
+  payInput: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: "Alexandria-Medium",
+    color: "#1E293B",
+    minHeight: normalize.height(52),
+    paddingVertical: normalize.height(10) },
+  errorText: {
+    width: "100%",
+    color: "#EF4444",
+    fontSize: normalize.font(12),
+    fontFamily: "Alexandria-Medium",
+    marginTop: 6 },
+  paymentHint: {
+    width: "100%",
+    fontSize: normalize.font(12),
+    fontFamily: "Alexandria-Medium",
+    color: "#64748B",
+    lineHeight: normalize.font(20),
+    marginBottom: 16 },
   // Task 2.4: mainBtn marginTop changed from normalize.height(20) to 16
   mainBtn: {
     marginTop: 16,

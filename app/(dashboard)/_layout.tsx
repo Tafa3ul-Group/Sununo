@@ -25,6 +25,10 @@ export default function DashboardNonTabLayout() {
         ) }}
     >
       <Stack.Screen
+        name="onboarding"
+        options={{ title: isArabic ? "إعداد الحساب" : "Account Setup" }}
+      />
+      <Stack.Screen
         name="edit-business"
         options={{ title: isArabic ? "معلومات المصرف" : "Bank Details" }}
       />

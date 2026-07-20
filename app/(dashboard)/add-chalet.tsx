@@ -171,7 +171,6 @@ export default function AddChaletScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { isRTL, rowDirection, textAlign } = useDirection();
-  const textEnd = textAlign === 'right' ? 'left' : 'right';
   const { language } = useSelector((state: RootState) => state.auth);
 
 
@@ -656,7 +655,10 @@ export default function AddChaletScreen() {
         ),
       });
 
-      Toast.show({ type: 'success', text1: isRTL ? 'تم بنجاح' : 'Success', text2: isRTL ? 'تمت إضافة الشاليه بنجاح' : 'Chalet added successfully', position: 'bottom' });
+      Toast.show({ type: 'success', text1: isRTL ? 'تم الإرسال' : 'Submitted', text2: isRTL ? 'تم إرسال الشاليه للمراجعة، وسيظهر للزبائن بعد الموافقة عليه' : 'Chalet submitted for review; it will appear to customers once approved', position: 'bottom' });
+      // Returns to the onboarding hub when launched from it (it refetches on
+      // focus and reflects the new pending chalet), or to the previous screen
+      // for a standard "add another chalet" flow.
       router.back();
     } catch (error: any) {
       console.error('Error creating chalet:', error);
@@ -851,7 +853,7 @@ export default function AddChaletScreen() {
                   <View style={styles.inputGroup}>
                     <Text style={[styles.label, { textAlign }]}>{isRTL ? 'اسم الشاليه (عربي)' : 'Chalet Name (AR)'} <Text style={styles.requiredStar}>{isRTL ? '* مطلوب' : '* Required'}</Text></Text>
                     <TextInput
-                      style={[styles.input, { textAlign: textEnd }]}
+                      style={[styles.input, { textAlign }]}
                       placeholder={isRTL ? "اسم الشاليه بالعربي" : "e.g. شاليه الورد"}
                       placeholderTextColor="#BCBCBC"
                       value={form.nameAr}
@@ -864,7 +866,7 @@ export default function AddChaletScreen() {
                       <AiTranslateButton source={form.nameAr} onTranslated={(en) => setForm((prev) => ({ ...prev, nameEn: en }))} />
                     </View>
                     <TextInput
-                      style={[styles.input, { textAlign: 'left' }]}
+                      style={[styles.input, { textAlign }]}
                       placeholder="e.g. Rose Chalet"
                       placeholderTextColor="#BCBCBC"
                       value={form.nameEn}
@@ -892,7 +894,7 @@ export default function AddChaletScreen() {
                       <AiTranslateButton source={form.descriptionAr} onTranslated={(en) => setForm((prev) => ({ ...prev, descriptionEn: en }))} />
                     </View>
                     <TextInput
-                      style={[styles.input, styles.textArea, { textAlign: 'left' }]}
+                      style={[styles.input, styles.textArea, { textAlign }]}
                       placeholder="Enter description in English..."
                       placeholderTextColor="#BCBCBC"
                       multiline
@@ -949,7 +951,7 @@ export default function AddChaletScreen() {
                   <View style={styles.inputGroup}>
                     <Text style={[styles.label, { textAlign }]}>{isRTL ? 'رقم الهاتف' : 'Phone'} <Text style={styles.requiredStar}>{isRTL ? '* مطلوب' : '* Required'}</Text></Text>
                     <TextInput
-                      style={[styles.input, { textAlign: 'left' }, phoneError ? { borderColor: '#EF4444' } : null]}
+                      style={[styles.input, { textAlign }, phoneError ? { borderColor: '#EF4444' } : null]}
                       placeholder="0777...."
                       placeholderTextColor="#BCBCBC"
                       keyboardType="phone-pad"
@@ -1045,10 +1047,10 @@ export default function AddChaletScreen() {
                       padding: 16,
                       marginTop: 4,
                     }}>
-                      <Text style={{ fontSize: 14, fontFamily: 'Alexandria-Bold', color: '#1E293B', textAlign: textEnd, marginBottom: 4 }}>
+                      <Text style={{ fontSize: 14, fontFamily: 'Alexandria-Bold', color: '#1E293B', textAlign, marginBottom: 4 }}>
                         {isRTL ? 'سعر الشخص الإضافي' : 'Extra Person Price'}
                       </Text>
-                      <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Regular', color: '#94A3B8', textAlign: textEnd, marginBottom: 12 }}>
+                      <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Regular', color: '#94A3B8', textAlign, marginBottom: 12 }}>
                         {isRTL ? 'لكل شخص إضافي فوق سعة المبلغ' : 'Per extra guest above price capacity'}
                       </Text>
                       <View style={{
@@ -1121,7 +1123,7 @@ export default function AddChaletScreen() {
 
                           {/* Info */}
                           <View style={[styles.swiperFeatureInfo, { flexDirection: 'row' }]}>
-                            <Text style={[styles.swiperFeatureName, { textAlign: textEnd }]}>
+                            <Text style={[styles.swiperFeatureName, { textAlign }]}>
                               {isRTL ? feature.name?.ar : feature.name?.en}
                             </Text>
                             {/* Orange Badge */}
@@ -1149,7 +1151,7 @@ export default function AddChaletScreen() {
                     padding: 14,
                   }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                      <Text style={{ fontSize: 13, fontFamily: 'Alexandria-Bold', color: '#1E293B', textAlign: textEnd }}>
+                      <Text style={{ fontSize: 13, fontFamily: 'Alexandria-Bold', color: '#1E293B', textAlign }}>
                         {isRTL ? 'صور المرفق' : 'Amenity Photos'}
                       </Text>
                       {(imagesByCategory[amenityCategories[currentAmenitySubStep].id] || []).length > 0 && (
@@ -1283,7 +1285,7 @@ export default function AddChaletScreen() {
                               <Text style={{ fontSize: 10, fontFamily: 'Alexandria-Medium', color: '#94A3B8' }}>{isRTL ? 'العنوان (إنجليزي)' : 'Title (EN)'}</Text>
                               <AiTranslateButton source={rule.titleAr} onTranslated={(en) => updateRule(rule.id, { titleEn: en })} />
                             </View>
-                            <TextInput style={[styles.ruleInput, { textAlign: 'left' }]} placeholder="Rule title (English)" placeholderTextColor="#CBD5E1" value={rule.titleEn} onChangeText={(v) => updateRule(rule.id, { titleEn: v })} />
+                            <TextInput style={[styles.ruleInput, { textAlign }]} placeholder="Rule title (English)" placeholderTextColor="#CBD5E1" value={rule.titleEn} onChangeText={(v) => updateRule(rule.id, { titleEn: v })} />
                           </View>
                           {/* English description */}
                           <View style={{ gap: 4 }}>
@@ -1291,7 +1293,7 @@ export default function AddChaletScreen() {
                               <Text style={{ fontSize: 10, fontFamily: 'Alexandria-Medium', color: '#94A3B8' }}>{isRTL ? 'الشرح (إنجليزي)' : 'Description (EN)'}</Text>
                               <AiTranslateButton source={rule.descriptionAr} onTranslated={(en) => updateRule(rule.id, { descriptionEn: en })} />
                             </View>
-                            <TextInput style={[styles.ruleInput, styles.ruleArea, { textAlign: 'left' }]} placeholder="Rule description (English)" placeholderTextColor="#CBD5E1" multiline value={rule.descriptionEn} onChangeText={(v) => updateRule(rule.id, { descriptionEn: v })} />
+                            <TextInput style={[styles.ruleInput, styles.ruleArea, { textAlign }]} placeholder="Rule description (English)" placeholderTextColor="#CBD5E1" multiline value={rule.descriptionEn} onChangeText={(v) => updateRule(rule.id, { descriptionEn: v })} />
                           </View>
                         </View>
                       ))}
@@ -1327,7 +1329,7 @@ export default function AddChaletScreen() {
             } else {
               return (
                 <PrimaryButton
-                  label={isRTL ? 'حفظ ونشر الشاليه' : 'Save & Publish'}
+                  label={isRTL ? 'إرسال للموافقة' : 'Submit for Approval'}
                   onPress={handleSave}
                   loading={isLoading}
                   activeColor={isStepValid ? Colors.primary : '#CBD5E1'}
@@ -1598,7 +1600,7 @@ export default function AddChaletScreen() {
                 </View>
 
                 {/* Price Section */}
-                <Text style={{ fontSize: 15, fontFamily: 'Alexandria-Bold', color: '#1E293B', textAlign: 'left', marginBottom: 12 }}>
+                <Text style={{ fontSize: 15, fontFamily: 'Alexandria-Bold', color: '#1E293B', textAlign, marginBottom: 12 }}>
                   {isRTL ? 'تحديد السعر' : 'Set Price'}
                 </Text>
 

@@ -61,7 +61,7 @@ const EN_BACK_PATH = "M16.9467 0L16.984 0.0319551C16.9918 0.563434 17.0077 1.119
 const AR_BACK_PATH = "M0.0532856 0L0.0160198 0.0319551C0.00823021 0.563434 -0.00767517 1.11929 0.00434875 1.64861C0.305 2.1116 1.3663 3.01428 1.79865 3.39902C3.34419 4.77432 5.72956 6.6148 6.83738 8.37453C7.33712 9.15572 7.66209 10.0399 7.78914 10.9642C8.03564 12.8514 7.61991 14.7291 6.44174 16.2312C5.99476 16.801 5.28592 17.4728 4.75508 17.9938L2.04678 20.6073C1.61862 21.0236 0.851501 21.753 0.514236 22.2046C0.472057 22.8117 0.483946 23.3931 0.508917 24C1.05319 23.8061 2.03285 23.3157 2.60061 23.0547L6.748 21.1529C8.49312 20.321 10.9371 19.4531 12.3409 18.0823C13.3788 17.0688 14.0951 15.0354 14.0828 13.5511C14.4941 13.4266 15.5427 12.5735 15.9571 12.2832C16.3427 12.013 16.5669 11.8682 17 11.6452C16.3398 11.1658 15.6399 10.727 14.9598 10.2775C14.6831 10.0946 14.1493 9.80927 13.9231 9.61241C13.9031 8.79841 13.8296 8.21858 13.5334 7.45396C13.1414 6.44889 12.4771 5.57892 11.6184 4.94608C10.4105 4.04845 8.79041 3.58706 7.43149 3.00721C6.16934 2.46863 4.96171 1.92053 3.68105 1.40781C2.94184 1.1135 2.201 0.823459 1.45856 0.537748C0.998611 0.363519 0.499662 0.198389 0.0532856 0Z";
 
 export default function ChaletDetailsScreen() {
-  const { isRTL, rowDirection, textAlign } = useDirection();
+  const { isRTL, rowDirection, textAlign, direction } = useDirection();
   const textEnd = textAlign === 'right' ? 'left' : 'right';
   const { showConfirm } = useConfirmationDialog();
   const dispatch = useDispatch();
@@ -669,7 +669,7 @@ export default function ChaletDetailsScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { direction }]}>
       <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
 
       <ScrollView
@@ -748,8 +748,27 @@ export default function ChaletDetailsScreen() {
             ),
           })}
 
+          {/* Rejected notice — shown with the admin's reason */}
+          {chalet?.isRejected && (
+            <View style={[styles.warningNoticeCard, { flexDirection: flexRow, backgroundColor: '#FEF2F2', borderColor: '#FECACA' }]}>
+              <SolarShieldWarningBold size={20} color="#DC2626" style={{ marginTop: 2 }} />
+              <View style={{ flex: 1, gap: 2, alignItems: flexStart }}>
+                <Text style={[styles.warningNoticeTitle, { textAlign, color: '#DC2626' }]}>
+                  {isRTL ? 'تم رفض الشاليه' : 'Chalet Rejected'}
+                </Text>
+                <Text style={[styles.warningNoticeText, { textAlign, color: '#B91C1C' }]}>
+                  {chalet?.rejectionReason
+                    ? (isRTL ? `السبب: ${chalet.rejectionReason}` : `Reason: ${chalet.rejectionReason}`)
+                    : (isRTL
+                      ? 'يرجى مراجعة التفاصيل وتحديثها ثم التواصل مع الدعم لإعادة المراجعة.'
+                      : 'Please review and update the details, then contact support for re-review.')}
+                </Text>
+              </View>
+            </View>
+          )}
+
           {/* Pending approval warning */}
-          {!chalet?.isApproved && (
+          {!chalet?.isApproved && !chalet?.isRejected && (
             <View style={[styles.warningNoticeCard, { flexDirection: flexRow }]}>
               <SolarShieldWarningBold size={20} color="#D97706" style={{ marginTop: 2 }} />
               <View style={{ flex: 1, gap: 2, alignItems: flexStart }}>
