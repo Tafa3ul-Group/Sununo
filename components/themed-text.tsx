@@ -74,8 +74,10 @@ export function ThemedText({
     }
   };
 
-  // Compute direction dynamically at render time
-  // writingDirection controls text rendering (bidi), textAlign is only a fallback
+  // writingDirection fixes bidi run ordering (iOS); textAlign is the LOGICAL
+  // start value from useDirection() — RN swaps left/right per the container
+  // `direction`, so this start-aligns in both languages. Callers override via
+  // `style` (applied last), e.g. textAlignEnd or 'center'.
   const baseDir: TextStyle = {
     writingDirection: isRTL ? "rtl" : "ltr",
     textAlign,

@@ -46,7 +46,7 @@ TextInput.defaultProps.style = {
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const { i18n } = useTranslation();
-  const { direction } = useDirection();
+  const { direction, isRTL } = useDirection();
   const segments = useSegments();
   const pathname = usePathname();
   const router = useRouter();
@@ -199,13 +199,28 @@ function RootLayoutNav() {
 
   return (
     <ThemeProvider value={navigationTheme}>
-      <Stack screenOptions={{ contentStyle: { direction } }}>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="(customer)" options={{ headerShown: false }} />
-        <Stack.Screen name="(dashboard)" options={{ headerShown: false }} />
-        <Stack.Screen name="payout-confirm/[id]" options={{ headerShown: false }} />
+      <Stack
+        screenOptions={{
+          // Native headers render OUTSIDE the direction container — never show
+          // them; screens draw their own headers.
+          headerShown: false,
+          contentStyle: { direction },
+          // Native RTL is off, so the default push always slides from the
+          // right. Mirror it per language (Android honors slide_from_left;
+          // iOS falls back to its default transition).
+          animation: isRTL ? "slide_from_left" : "slide_from_right",
+          // Let the back-swipe work from anywhere — Arabic users naturally
+          // swipe from the right edge, which the native left-edge gesture
+          // ignores.
+          fullScreenGestureEnabled: true,
+        }}
+      >
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="(customer)" />
+        <Stack.Screen name="(dashboard)" />
+        <Stack.Screen name="payout-confirm/[id]" />
       </Stack>
       <StatusBar style="auto" />
       {/* App-wide version gate: shows the update sheet when out of date. */}

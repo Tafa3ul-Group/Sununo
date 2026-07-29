@@ -1,10 +1,9 @@
 import { ThemedText } from "@/components/themed-text";
 import * as Theme from "@/constants/theme";
-import { RootState } from "@/store";
+import { useDirection } from "@/i18n";
 import { Image } from "expo-image";
 import * as Location from "expo-location";
 import React, { useCallback, useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Platform,
@@ -12,7 +11,6 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import { useSelector } from "react-redux";
 
 const { Colors, normalize, Shadows } = Theme;
 const SafeShadows = Shadows || { small: {}, medium: {}, large: {} };
@@ -77,9 +75,7 @@ const AppMapComponent = ({
   onPressCard,
   onCameraChanged,
   onPress }: AppMapProps) => {
-  const { i18n } = useTranslation();
-  const { language } = useSelector((state: RootState) => state.auth);
-  const isRTL = language === "ar" || i18n.language === "ar";
+  const { isRTL } = useDirection();
   const [activeFilter, setActiveFilter] = useState("all");
   const [selectedChaletState, setSelectedChaletState] =
     useState<any>(selectedChalet);

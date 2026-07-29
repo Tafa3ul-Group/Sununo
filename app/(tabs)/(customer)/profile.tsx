@@ -65,13 +65,12 @@ type MenuItem = {
 
 const MenuRow = React.memo(function MenuRow({
     item,
-    rowDirection,
     onPress,
 }: {
     item: MenuItem;
-    rowDirection: 'row' | 'row-reverse';
     onPress: (item: MenuItem) => void;
 }) {
+    const { textAlign } = useDirection();
     const scale = useSharedValue(1);
     const animatedStyle = useAnimatedStyle(() => ({
         transform: [{ scale: scale.value }],
@@ -90,20 +89,21 @@ const MenuRow = React.memo(function MenuRow({
 
     return (
         <AnimatedTouchable
-            style={[styles.menuRow, { flexDirection: rowDirection }, animatedStyle]}
+            style={[styles.menuRow, { flexDirection: 'row' }, animatedStyle]}
             onPress={handlePress}
             onPressIn={handlePressIn}
             onPressOut={handlePressOut}
             activeOpacity={0.7}
         >
             {/* Icon first, then label right next to it */}
-            <View style={[styles.menuItemStart, { flexDirection: rowDirection }]}>
+            <View style={styles.menuItemStart}>
                 <ProfileShape size={normalize.width(42)} type={item.shape}>
                     {item.icon}
                 </ProfileShape>
                 <Text
                     style={[
                         styles.menuLabelText,
+                        { textAlign },
                         (item.id === 'logout' || item.id === 'deleteAccount') && styles.logoutText,
                     ]}
                 >
@@ -122,9 +122,6 @@ export default function CustomerProfileScreen() {
 
     const { isRTL, rowDirection, textAlign } = useDirection();
     const isArabic = isRTL;
-
-    const textStart: "left" | "right" = textAlign;
-    const alignStart: "flex-start" | "flex-end" = "flex-start";
 
     const languageSheetRef = useRef<BottomSheetModal>(null);
     const logoutSheetRef = useRef<BottomSheetModal>(null);
@@ -308,12 +305,12 @@ export default function CustomerProfileScreen() {
                                 style={styles.avatarImg}
                             />
                         </View>
-                        <View style={[styles.userInfo, { alignItems: alignStart }]}>
-                            <Text style={[styles.userName, { textAlign: textStart }]}>
+                        <View style={[styles.userInfo, { alignItems: 'flex-start' }]}>
+                            <Text style={[styles.userName, { textAlign }]}>
                                 {userData?.name || (isArabic ? 'المستخدم' : 'User')}
                             </Text>
                             {!!userData?.phone && (
-                                <Text style={[styles.userPhone, { textAlign: textStart }]}>
+                                <Text style={[styles.userPhone, { textAlign }]}>
                                     {userData.phone}
                                 </Text>
                             )}
@@ -344,7 +341,6 @@ export default function CustomerProfileScreen() {
                         >
                         <MenuRow
                             item={item}
-                            rowDirection={rowDirection}
                             onPress={onMenuRowPress}
                         />
                         </Animated.View>

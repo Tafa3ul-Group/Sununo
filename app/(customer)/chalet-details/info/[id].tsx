@@ -27,20 +27,7 @@ export default function ChaletInfoScreen() {
   const { isRTL, rowDirection } = useDirection();
   const isArabic = isRTL;
 
-  // Manager-aware RTL: under forced RTL the OS swaps left/right, so the visual
-  // "start" needs "left" when content-RTL matches the layout manager. Always set
-  // writingDirection so Arabic paragraphs flow correctly.
-  const writingDir: "rtl" | "ltr" = isRTL ? "rtl" : "ltr";
-  const startAlign: "left" | "right" = isRTL ? "right" : "left";
-  const rtlTitle: { textAlign: "left" | "right"; writingDirection: "rtl" | "ltr" } = {
-    textAlign: startAlign,
-    writingDirection: writingDir,
-  };
-  const rtlBody: { textAlign: "justify"; writingDirection: "rtl" | "ltr" } = {
-    textAlign: "justify",
-    writingDirection: writingDir,
-  };
-    const router = useRouter();
+  const router = useRouter();
   const { userType } = useSelector((state: RootState) => state.auth);
 
   const { data: terms, isLoading: isTermsLoading } = useGetChaletTermsQuery(
@@ -95,10 +82,10 @@ export default function ChaletInfoScreen() {
         <View>
           {tStr ? (
             <View>
-              <ThemedText style={[styles.sectionTitle, rtlTitle]}>
+              <ThemedText style={styles.sectionTitle}>
                 {isArabic ? "الشروط والأحكام" : "Terms & Conditions"}
               </ThemedText>
-              <ThemedText style={[styles.content, rtlBody]}>
+              <ThemedText style={styles.content}>
                 {tStr}
               </ThemedText>
               {(pStr || cStr || rulesList.length > 0) && <View style={styles.divider} />}
@@ -107,7 +94,7 @@ export default function ChaletInfoScreen() {
 
           {rulesList.length > 0 ? (
             <View>
-              <ThemedText style={[styles.sectionTitle, rtlTitle]}>
+              <ThemedText style={styles.sectionTitle}>
                 {isArabic ? "قوانين الشاليه" : "Chalet Rules"}
               </ThemedText>
               {rulesList.map((rule: any, idx: number) => {
@@ -117,12 +104,12 @@ export default function ChaletInfoScreen() {
                   <View key={rule.id || idx} style={styles.ruleItem}>
                     <View style={[styles.ruleHeader, { flexDirection: rowDirection }]}>
                       <View style={styles.ruleBullet} />
-                      <ThemedText style={[styles.ruleTitleText, rtlTitle]}>
+                      <ThemedText style={styles.ruleTitleText}>
                         {ruleTitle}
                       </ThemedText>
                     </View>
                     {ruleDesc ? (
-                      <ThemedText style={[styles.ruleDescText, rtlBody]}>{ruleDesc}</ThemedText>
+                      <ThemedText style={styles.ruleDescText}>{ruleDesc}</ThemedText>
                     ) : null}
                   </View>
                 );
@@ -133,10 +120,10 @@ export default function ChaletInfoScreen() {
 
           {pStr ? (
             <View>
-              <ThemedText style={[styles.sectionTitle, rtlTitle]}>
+              <ThemedText style={styles.sectionTitle}>
                 {isArabic ? "السياسات العامة" : "General Policies"}
               </ThemedText>
-              <ThemedText style={[styles.content, rtlBody]}>
+              <ThemedText style={styles.content}>
                 {pStr}
               </ThemedText>
               {cStr && <View style={styles.divider} />}
@@ -145,10 +132,10 @@ export default function ChaletInfoScreen() {
 
           {cStr ? (
             <View>
-              <ThemedText style={[styles.sectionTitle, rtlTitle]}>
+              <ThemedText style={styles.sectionTitle}>
                 {isArabic ? "سياسة الإلغاء" : "Cancellation Policy"}
               </ThemedText>
-              <ThemedText style={[styles.content, rtlBody]}>
+              <ThemedText style={styles.content}>
                 {cStr}
               </ThemedText>
             </View>
@@ -159,7 +146,7 @@ export default function ChaletInfoScreen() {
       if (Array.isArray(policiesData)) {
         if (policiesData.length === 0) {
           return (
-            <ThemedText style={[styles.content, rtlBody]}>
+            <ThemedText style={styles.content}>
               {t("common.noData")}
             </ThemedText>
           );
@@ -174,11 +161,11 @@ export default function ChaletInfoScreen() {
                 <View key={rule.id || idx} style={styles.ruleItem}>
                   <View style={[styles.ruleHeader, { flexDirection: rowDirection }]}>
                     <View style={styles.ruleBullet} />
-                    <ThemedText style={[styles.ruleTitleText, rtlTitle]}>
+                    <ThemedText style={styles.ruleTitleText}>
                       {ruleTitle}
                     </ThemedText>
                   </View>
-                  <ThemedText style={[styles.ruleDescText, rtlBody]}>
+                  <ThemedText style={styles.ruleDescText}>
                     {ruleDesc}
                   </ThemedText>
                   {idx < policiesData.length - 1 && <View style={styles.ruleDivider} />}
@@ -206,19 +193,19 @@ export default function ChaletInfoScreen() {
 
       return (
         <View>
-          <ThemedText style={[styles.sectionTitle, rtlTitle]}>
+          <ThemedText style={styles.sectionTitle}>
             {isArabic ? "سياسات عامة" : "General Policies"}
           </ThemedText>
-          <ThemedText style={[styles.content, rtlBody]}>
+          <ThemedText style={styles.content}>
             {pStr || t("common.noData")}
           </ThemedText>
 
           <View style={styles.divider} />
 
-          <ThemedText style={[styles.sectionTitle, rtlTitle]}>
+          <ThemedText style={styles.sectionTitle}>
             {isArabic ? "سياسة الإلغاء" : "Cancellation Policy"}
           </ThemedText>
-          <ThemedText style={[styles.content, rtlBody]}>
+          <ThemedText style={styles.content}>
             {cStr || t("common.noData")}
           </ThemedText>
         </View>
@@ -305,8 +292,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 24,
     color: "#4B5563",
-    fontFamily: "Alexandria-Medium",
-    textAlign: "justify" },
+    fontFamily: "Alexandria-Medium" },
   divider: {
     height: 1,
     backgroundColor: "#F3F4F6",
@@ -338,7 +324,6 @@ const styles = StyleSheet.create({
     color: "#4B5563",
     fontFamily: "Alexandria-Medium",
     paddingHorizontal: 24,
-    textAlign: "justify",
   },
   ruleDivider: {
     height: 1,

@@ -23,7 +23,7 @@ import { useSelector } from "react-redux";
 import { ThemedText } from "./themed-text";
 import { RotatingSearchPlaceholder } from "./user/rotating-search-placeholder";
 import { CircleBackButton } from "./ui/circle-back-button";
-import { useDirection } from "@/i18n";
+import { ltrScrollContent, useDirection, useRtlListOrder } from "@/i18n";
 import { useGetNotificationsQuery } from "@/store/api/customerApiSlice";
 
 
@@ -69,7 +69,7 @@ export function HeaderSection({
   isHome = false }: HeaderSectionProps) {
   const router = useRouter();
   const { t } = useTranslation();
-  const { isRTL, textAlign, rowDirection } = useDirection();
+  const { isRTL, direction, textAlign, inputTextAlign } = useDirection();
   const { userType: stateUserType, language } = useSelector(
     (state: RootState) => state.auth,
   );
@@ -129,14 +129,9 @@ export function HeaderSection({
       label: t("home.categories.luxury"),
       icon: <SolarStarBold size={normalize.width(18)} /> },
   ];
-
-  // Container mirrors the subtree, so use plain logical alignment values.
-  const startAlign: "flex-start" | "flex-end" = "flex-start";
-  const endAlign: "flex-start" | "flex-end" = "flex-end";
-  const rowDir: "row" | "row-reverse" = rowDirection;
-  // FLAG: homeRowDir was the OPPOSITE of the normal row order; with normal rows
-  // now container-mirrored, the opposite is a constant "row-reverse". Verify visually.
-  const homeRowDir: "row" | "row-reverse" = "row-reverse";
+  // Chip strip content is forced physical-LTR; reverse the chips in Arabic so
+  // "All" keeps the leading (right) edge and stays visible at mount.
+  const orderedCategories = useRtlListOrder(CATEGORIES);
 
   return (
     <View style={[styles.container]}>
@@ -148,19 +143,66 @@ export function HeaderSection({
           styles.topRow,
           {
             marginBottom,
-            flexDirection: isHome ? homeRowDir : rowDir
+            flexDirection: "row"
           },
         ]}
       >
-        {/* LEFT SIDE (Start side) */}
-        <View style={[styles.headerSide, { alignItems: isHome ? endAlign : startAlign }]}>
+        {/* START SIDE — logo on home; back/search actions elsewhere.
+            (Children are in natural logical order: with plain 'row' the
+            container direction mirrors them, so the logo keeps the physical
+            right edge in Arabic and the left edge in English — identical to
+            the old row-reverse layout.) */}
+        <View style={[styles.headerSide, { alignItems: "flex-start" }]}>
           {isHome ? (
-            <View style={[styles.homeLeftGroup, { flexDirection: rowDir }]}>
+            <TouchableOpacity
+              onPress={handleLogoPress}
+              style={{ justifyContent: "center", alignItems: "center", paddingVertical: 4 }}
+              activeOpacity={0.8}
+            >
+              <Image
+                source={currentLogoAr ? require("@/assets/arlogo.svg") : require("@/assets/enlogo.svg")}
+                style={{ width: 75, height: 25, tintColor: currentLogoColor }}
+                contentFit="contain"
+              />
+            </TouchableOpacity>
+          ) : (
+            <View style={[styles.homeLeftGroup, { flexDirection: "row" }]}>
+              {showBackButton && <CircleBackButton onPress={onBackPress} />}
+              {extraIcon === "search" && (
+                <TouchableOpacity
+                  onPress={() => router.push("/(customer)/search")}
+                  style={styles.searchPillHome}
+                >
+                  <SolarMagnifierBold
+                    size={normalize.width(24)}
+                    color={Colors.primary}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+        </View>
+
+        {/* Center Title — absolutely centered across the full header width so it
+            stays in the true screen center regardless of the side buttons'
+            widths. pointerEvents none keeps the back button tappable. */}
+        {!isHome && (
+          <View style={styles.titleWrapper} pointerEvents="none">
+            <ThemedText style={styles.headerTitle} numberOfLines={1}>
+              {title}
+            </ThemedText>
+          </View>
+        )}
+
+        {/* END SIDE — search pill + bell on home; empty elsewhere */}
+        <View style={[styles.headerSide, { alignItems: "flex-start" }]}>
+          {isHome && (
+            <View style={[styles.homeLeftGroup, { flexDirection: "row" }]}>
               {/* Search and notification swapped: search now takes the bell's
                   former slot and the bell takes the search's. */}
               <TouchableOpacity
                 onPress={() => router.push("/(customer)/search")}
-                style={[styles.searchTextPill, { flexDirection: rowDir }]}
+                style={[styles.searchTextPill, { flexDirection: "row" }]}
                 activeOpacity={0.85}
               >
                 <SolarMagnifierBold
@@ -211,49 +253,6 @@ export function HeaderSection({
                 </TouchableOpacity>
               )}
             </View>
-          ) : (
-            <View style={[styles.homeLeftGroup, { flexDirection: rowDir }]}>
-              {showBackButton && <CircleBackButton onPress={onBackPress} />}
-              {extraIcon === "search" && (
-                <TouchableOpacity
-                  onPress={() => router.push("/(customer)/search")}
-                  style={styles.searchPillHome}
-                >
-                  <SolarMagnifierBold
-                    size={normalize.width(24)}
-                    color={Colors.primary}
-                  />
-                </TouchableOpacity>
-              )}
-            </View>
-          )}
-        </View>
-
-        {/* Center Title — absolutely centered across the full header width so it
-            stays in the true screen center regardless of the side buttons'
-            widths. pointerEvents none keeps the back button tappable. */}
-        {!isHome && (
-          <View style={styles.titleWrapper} pointerEvents="none">
-            <ThemedText style={styles.headerTitle} numberOfLines={1}>
-              {title}
-            </ThemedText>
-          </View>
-        )}
-
-        {/* RIGHT SIDE (End side) */}
-        <View style={[styles.headerSide, { alignItems: isHome ? startAlign : endAlign }]}>
-          {isHome && (
-            <TouchableOpacity
-              onPress={handleLogoPress}
-              style={{ justifyContent: "center", alignItems: "center", paddingVertical: 4 }}
-              activeOpacity={0.8}
-            >
-              <Image
-                source={currentLogoAr ? require("@/assets/arlogo.svg") : require("@/assets/enlogo.svg")}
-                style={{ width: 75, height: 25, tintColor: currentLogoColor }}
-                contentFit="contain"
-              />
-            </TouchableOpacity>
           )}
         </View>
       </View>
@@ -264,7 +263,7 @@ export function HeaderSection({
           <View
             style={[
               styles.searchBar,
-              { flexDirection: rowDir },
+              { flexDirection: "row" },
             ]}
           >
             <SolarMagnifierBold
@@ -274,7 +273,7 @@ export function HeaderSection({
             <TextInput
               placeholder={t("home.searchPlaceholder")}
               placeholderTextColor={Colors.text.muted}
-              style={[styles.searchInput, { textAlign }]}
+              style={[styles.searchInput, { textAlign: inputTextAlign }]}
             />
           </View>
         </View>
@@ -287,17 +286,18 @@ export function HeaderSection({
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={[
             styles.categoriesContent,
-            { flexDirection: rowDir },
+            { flexDirection: "row" },
+            ltrScrollContent,
           ]}
           style={styles.categoriesScroll}
         >
-          {CATEGORIES.map((cat) => (
+          {orderedCategories.map((cat) => (
             <TouchableOpacity
               key={cat.id}
               onPress={() => setSelectedCategory(cat.id)}
               style={[
                 styles.categoryItem,
-                { flexDirection: rowDir },
+                { flexDirection: "row", direction },
                 selectedCategory === cat.id && styles.categoryItemActive,
               ]}
             >

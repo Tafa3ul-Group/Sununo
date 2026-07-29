@@ -40,9 +40,8 @@ const CARD_HEIGHT = normalize.height(115) + 16;
 
 export default function SearchScreen() {
   const { t } = useTranslation();
-  const { isRTL, rowDirection, textAlign } = useDirection();
+  const { isRTL, textAlign, inputTextAlign } = useDirection();
   const isArabic = isRTL;
-  const textStart: "left" | "right" = textAlign;
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -128,19 +127,19 @@ export default function SearchScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Back button + search field on a single row (no title). */}
-      <View style={[styles.topBar, { flexDirection: rowDirection }]}>
+      <View style={[styles.topBar, { flexDirection: 'row' }]}>
         <CircleBackButton onPress={() => router.back()} />
         <View
           style={[
             styles.searchBar,
-            { flexDirection: rowDirection, flex: 1 },
+            { flexDirection: 'row', flex: 1 },
           ]}
         >
           <SolarMagnifierBold size={20} color={Colors.primary} />
           <TextInput
             placeholder={t("home.searchPlaceholder")}
             placeholderTextColor={Colors.text.muted}
-            style={[styles.searchInput, { textAlign: textStart }]}
+            style={[styles.searchInput, { textAlign: inputTextAlign }]}
             value={searchQuery}
             onChangeText={setSearchQuery}
             autoFocus
@@ -187,13 +186,13 @@ export default function SearchScreen() {
             ListHeaderComponent={
               <View
                 style={{
-                  flexDirection: rowDirection,
+                  flexDirection: 'row',
                   justifyContent: "flex-start",
                   marginBottom: 12,
                 }}
               >
                 <ThemedText
-                  style={[styles.featuredTitle, { textAlign: textStart }]}
+                  style={[styles.featuredTitle, { textAlign }]}
                 >
                   {t("home.featured")}
                 </ThemedText>

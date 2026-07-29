@@ -7,8 +7,7 @@ import { getStartingPrice } from "@/utils/format";
 import { useGetCustomerChaletDetailsQuery } from "@/store/api/customerApiSlice";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store";
+import { useDirection } from "@/i18n";
 
 import {
   Dimensions,
@@ -84,23 +83,8 @@ export const HorizontalCard = React.memo(function HorizontalCard({
   onToggleFavorite }: HorizontalCardProps) {
   const { t, i18n } = useTranslation();
 
-  const { language } = useSelector((state: RootState) => state.auth);
-  const isArabic = language === "ar";
-
-  const rtlStyles = React.useMemo(() => {
-    return {
-      textStart: (isArabic ? "right" : "left") as "left" | "right",
-      rowDirection: "row" as const,
-      // CONSTANT reverse (not isRTL-conditional): the JSX order is [info, image]
-      // but the design wants the IMAGE on the LEADING edge (right in Arabic, left
-      // in English). row-reverse flips it equally in both languages — the
-      // container then mirrors normally. This is a fixed layout choice, not a
-      // direction counter, so it does not double-flip.
-      rowReverseDir: "row-reverse" as const,
-      ratingBoxDir: "row" as const,
-      alignStart: "flex-start" as "flex-start" | "flex-end",
-    };
-  }, [isArabic]);
+  const { isRTL, textAlign } = useDirection();
+  const isArabic = isRTL;
 
   // The list endpoints don't include shift pricing, so when a real price isn't
   // already provided we fetch the chalet's shifts via the details route and show
@@ -125,16 +109,15 @@ export const HorizontalCard = React.memo(function HorizontalCard({
 
   if (!chalet) return null;
 
-  const { textStart, rowDirection, rowReverseDir, ratingBoxDir, alignStart } = rtlStyles;
-
   const imageSource =
     typeof chalet.image === "string" && !chalet.image.startsWith("http")
       ? getImageSrc(chalet.image)
       : chalet.image ||
         getImageSrc(chalet.images?.[0]?.url || chalet.images?.[0]);
   const borderColor = chalet.color || Colors.secondary;
-  // Image leads (row-reverse above): RTL → image on the right, curve bulges left
-  // toward the text; LTR → image on the left, curve bulges right toward the text.
+  // Image leads (first child of the mirrored row): RTL → image on the right,
+  // curve bulges left toward the text; LTR → image on the left, curve bulges
+  // right toward the text. SVG paths are physical, so keep the isArabic swap.
   const dPath = isArabic ? D_PATH_BOWL_LEFT : D_PATH_BOWL_RIGHT;
 
   const config = SHAPES_CONFIG[shapeIndex % SHAPES_CONFIG.length];
@@ -171,29 +154,56 @@ export const HorizontalCard = React.memo(function HorizontalCard({
       }}
       style={[
         styles.container,
-        { flexDirection: rowReverseDir },
+        { flexDirection: "row" },
         style,
         cardAnim,
       ]}
     >
+      {/* Image side FIRST (logical start = leading edge: right in Arabic,
+          left in English — same visual the old constant row-reverse produced).
+          Clean "D": straight edge toward the text, full semicircle outward,
+          with the chalet's colored outline. */}
+      <View style={styles.imageWrapper}>
+        <Svg
+          width={normalize.width(82)}
+          height={normalize.height(72)}
+          viewBox="0 0 100 88"
+        >
+          <Defs>
+            <ClipPath id={`d-clip-${shapeIndex}`}>
+              <Path d={dPath} />
+            </ClipPath>
+          </Defs>
+          <G clipPath={`url(#d-clip-${shapeIndex})`}>
+            <SvgImage
+              href={imageSource}
+              width={100}
+              height={88}
+              preserveAspectRatio="xMidYMid slice"
+            />
+          </G>
+          <Path d={dPath} stroke={borderColor} strokeWidth={5} fill="none" />
+        </Svg>
+      </View>
+
       {/* info side */}
       <View style={styles.contentAndLeft}>
         {/* Top Row: Heart + Title/Location */}
         <View
           style={[
             styles.topRow,
-            { flexDirection: rowDirection },
+            { flexDirection: "row" },
           ]}
         >
           <View style={styles.mainContent}>
             <View
               style={[
                 styles.upperText,
-                { alignItems: alignStart },
+                { alignItems: "flex-start" },
               ]}
             >
               <ThemedText
-                style={[styles.title, { textAlign: textStart }]}
+                style={[styles.title, { textAlign }]}
                 numberOfLines={1}
               >
                 {typeof chalet.title === "object"
@@ -205,7 +215,7 @@ export const HorizontalCard = React.memo(function HorizontalCard({
               <ThemedText
                 style={[
                   styles.location,
-                  { textAlign: textStart },
+                  { textAlign },
                 ]}
                 numberOfLines={1}
               >
@@ -235,27 +245,14 @@ export const HorizontalCard = React.memo(function HorizontalCard({
           </View>
         </View>
 
+        {/* Price leads (logical start), rating trails under the heart — same
+            visual the old constant row-reverse produced. */}
         <View
           style={[
             styles.bottomRow,
-            { flexDirection: rowReverseDir },
+            { flexDirection: "row" },
           ]}
         >
-          <View
-            style={[
-              styles.ratingBox,
-              { flexDirection: ratingBoxDir, gap: 4 },
-            ]}
-          >
-            <SolarStarBold
-              size={normalize.width(16)}
-              color={Colors.secondary}
-            />
-            <ThemedText style={styles.ratingText}>
-              {chalet.rating ? Number(chalet.rating).toFixed(1) : (isArabic ? "جديد" : "New")}
-            </ThemedText>
-          </View>
-
           <View
             style={[
               styles.priceRow,
@@ -271,32 +268,22 @@ export const HorizontalCard = React.memo(function HorizontalCard({
               {isArabic ? " د.ع" : ""}
             </ThemedText>
           </View>
-        </View>
-      </View>
 
-      {/* Image side — clean "D": straight left edge (toward the text), full
-          semicircle on the right, with the chalet's colored outline. */}
-      <View style={styles.imageWrapper}>
-        <Svg
-          width={normalize.width(82)}
-          height={normalize.height(72)}
-          viewBox="0 0 100 88"
-        >
-          <Defs>
-            <ClipPath id={`d-clip-${shapeIndex}`}>
-              <Path d={dPath} />
-            </ClipPath>
-          </Defs>
-          <G clipPath={`url(#d-clip-${shapeIndex})`}>
-            <SvgImage
-              href={imageSource}
-              width={100}
-              height={88}
-              preserveAspectRatio="xMidYMid slice"
+          <View
+            style={[
+              styles.ratingBox,
+              { flexDirection: "row", gap: 4 },
+            ]}
+          >
+            <SolarStarBold
+              size={normalize.width(16)}
+              color={Colors.secondary}
             />
-          </G>
-          <Path d={dPath} stroke={borderColor} strokeWidth={5} fill="none" />
-        </Svg>
+            <ThemedText style={styles.ratingText}>
+              {chalet.rating ? Number(chalet.rating).toFixed(1) : (isArabic ? "جديد" : "New")}
+            </ThemedText>
+          </View>
+        </View>
       </View>
     </AnimatedTouchable>
   );

@@ -6,7 +6,6 @@ import { FeaturedCard } from "@/components/user/featured-card";
 import { SolarFireBold } from "@/components/icons/solar-icons";
 import { Colors, normalize } from "@/constants/theme";
 import { getStartingPrice } from "@/utils/format";
-import { useDirection } from "@/i18n";
 import {
   useGetFavoriteIdsQuery,
   useGetFeaturedChaletsQuery,
@@ -29,7 +28,6 @@ import { useSelector } from "react-redux";
 export default function FeaturedScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { rowDirection } = useDirection();
   const { userType } = useSelector((state: RootState) => state.auth);
 
   const {
@@ -95,7 +93,7 @@ export default function FeaturedScreen() {
           }
         >
           {featured.length > 0 ? (
-            <View style={[styles.grid, { flexDirection: rowDirection }]}>
+            <View style={styles.grid}>
               {featured.map((chalet, index) => (
                 <Animated.View
                   key={chalet.id}

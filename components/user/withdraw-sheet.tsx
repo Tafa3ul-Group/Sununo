@@ -114,7 +114,7 @@ export type WithdrawSheetRef = {
 export const WithdrawSheet = forwardRef<WithdrawSheetRef, WithdrawSheetProps>(
   ({ onConfirm, isLoading = false }, ref) => {
     const { t } = useTranslation();
-    const { isRTL } = useDirection();
+    const { isRTL, textAlign, inputTextAlign } = useDirection();
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
     const lottieRef = useRef<LottieView>(null);
 
@@ -129,7 +129,6 @@ export const WithdrawSheet = forwardRef<WithdrawSheetRef, WithdrawSheetProps>(
     >("idle");
     const [feedbackMessage, setFeedbackMessage] = useState("");
 
-    const textAlign = isRTL ? "right" : "left";
     const amountNum = Number(amount) || 0;
 
     const reset = () => {
@@ -366,7 +365,11 @@ export const WithdrawSheet = forwardRef<WithdrawSheetRef, WithdrawSheetProps>(
             />
           )}
           <BottomSheetTextInput
-            style={[styles.accountInput, { textAlign }]}
+            style={[
+              styles.accountInput,
+              { textAlign: inputTextAlign },
+              method === "other" && { textAlignVertical: "top" as const },
+            ]}
             multiline={method === "other"}
             keyboardType={
               method === "zaincash"

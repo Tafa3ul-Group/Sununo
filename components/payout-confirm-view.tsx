@@ -40,9 +40,7 @@ export function PayoutConfirmView({
   onBack,
 }: Props) {
   const { t } = useTranslation();
-  const { isRTL, rowDirection } = useDirection();
-  const textStart: "left" | "right" = isRTL ? "right" : "left";
-  const textEnd: "left" | "right" = isRTL ? "left" : "right";
+  const { isRTL, textAlign } = useDirection();
   const writingDir: "rtl" | "ltr" = isRTL ? "rtl" : "ltr";
 
   const status: string = payout?.status;
@@ -68,14 +66,14 @@ export function PayoutConfirmView({
   const renderInfoRow = (label: string, value: React.ReactNode, index = 0) => (
     <Animated.View
       entering={FadeInDown.delay((index % 8) * 60).duration(380)}
-      style={[styles.infoRow, { flexDirection: rowDirection }]}
+      style={[styles.infoRow, { flexDirection: "row" }]}
     >
-      <ThemedText style={[styles.infoLabel, { textAlign: textStart, writingDirection: writingDir }]}>
+      <ThemedText style={[styles.infoLabel, { textAlign, writingDirection: writingDir }]}>
         {label}
       </ThemedText>
       <View style={{ flex: 1, alignItems: "flex-end" }}>
         {typeof value === "string" ? (
-          <ThemedText style={[styles.infoValue, { textAlign: textEnd, writingDirection: writingDir }]}>{value}</ThemedText>
+          <ThemedText style={[styles.infoValue, { writingDirection: writingDir }]}>{value}</ThemedText>
         ) : (
           value
         )}
@@ -112,7 +110,7 @@ export function PayoutConfirmView({
         {/* Amount */}
         <Animated.View entering={FadeInDown.duration(380)} style={styles.amountCard}>
           <ThemedText style={styles.amountLabel}>{t("payoutConfirm.amountLabel")}</ThemedText>
-          <View style={[styles.amountRow, { flexDirection: rowDirection }]}>
+          <View style={[styles.amountRow, { flexDirection: "row" }]}>
             <ThemedText style={styles.amountValue}>{amount}</ThemedText>
             <ThemedText style={styles.amountCurrency}>{t("common.iqd")}</ThemedText>
           </View>
@@ -121,12 +119,12 @@ export function PayoutConfirmView({
 
         {/* Transfer details */}
         <View style={styles.infoSectionCard}>
-          <ThemedText style={[styles.sectionTitle, { textAlign: textStart }]}>{t("payoutConfirm.detailsTitle")}</ThemedText>
+          <ThemedText style={[styles.sectionTitle, { textAlign }]}>{t("payoutConfirm.detailsTitle")}</ThemedText>
           <View style={styles.divider} />
           {renderInfoRow(t("payoutConfirm.methodLabel"), destination.label, 0)}
           {renderInfoRow(
             t("payoutConfirm.accountLabel"),
-            <ThemedText style={[styles.infoValue, { direction: "ltr", textAlign: textEnd }]}>{destination.value}</ThemedText>,
+            <ThemedText style={[styles.infoValue, { direction: "ltr" }]}>{destination.value}</ThemedText>,
             1,
           )}
         </View>
@@ -134,9 +132,9 @@ export function PayoutConfirmView({
         {status === "approved" ? (
           <>
             {/* Security note */}
-            <View style={[styles.alertCard, { flexDirection: rowDirection }]}>
+            <View style={[styles.alertCard, { flexDirection: "row" }]}>
               <SolarShieldWarningBold size={22} color="#D97706" />
-              <ThemedText style={[styles.alertText, { textAlign: textStart, writingDirection: writingDir }]}>
+              <ThemedText style={[styles.alertText, { textAlign, writingDirection: writingDir }]}>
                 {t("payoutConfirm.securityNote")}
               </ThemedText>
             </View>
@@ -151,7 +149,7 @@ export function PayoutConfirmView({
               style={styles.confirmBtn}
             />
             <TouchableOpacity
-              style={[styles.declineBtn, { flexDirection: rowDirection }]}
+              style={[styles.declineBtn, { flexDirection: "row" }]}
               activeOpacity={0.7}
               onPress={confirmDecline}
               disabled={isDeclining}
@@ -172,7 +170,7 @@ export function PayoutConfirmView({
               styles.alertCard,
               result.variant === "success" && styles.alertCardSuccess,
               result.variant === "danger" && styles.alertCardDanger,
-              { flexDirection: rowDirection },
+              { flexDirection: "row" },
             ]}
           >
             {result.variant === "danger" ? (
@@ -183,10 +181,10 @@ export function PayoutConfirmView({
               <SolarInfoCircleBold size={24} color={result.icon} />
             )}
             <View style={{ flex: 1 }}>
-              <ThemedText style={[styles.resultTitle, { color: result.color, textAlign: textStart, writingDirection: writingDir }]}>
+              <ThemedText style={[styles.resultTitle, { color: result.color, textAlign, writingDirection: writingDir }]}>
                 {result.title}
               </ThemedText>
-              <ThemedText style={[styles.alertText, { color: result.color, textAlign: textStart, writingDirection: writingDir }]}>
+              <ThemedText style={[styles.alertText, { color: result.color, textAlign, writingDirection: writingDir }]}>
                 {result.body}
               </ThemedText>
             </View>

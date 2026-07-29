@@ -22,11 +22,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function WalletTransactionsScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { isRTL, rowDirection } = useDirection();
+  const { isRTL, textAlign } = useDirection();
   const insets = useSafeAreaInsets();
-  const startAlign = "flex-start";
-  const endAlign = "flex-end";
-  const textStart: "left" | "right" = isRTL ? "right" : "left";
 
   const {
     data: txResponse,
@@ -114,23 +111,23 @@ export default function WalletTransactionsScreen() {
       <View
         style={[
           styles.txItem,
-          { flexDirection: rowDirection },
+          { flexDirection: 'row' },
         ]}
       >
         <View style={[styles.txIcon, { backgroundColor: bg }]}>
           <SolarBanknoteBold size={22} color={color} />
         </View>
 
-        <View style={[styles.txInfo, { alignItems: startAlign }]}>
-          <ThemedText style={[styles.txTitle, { textAlign: textStart }]} numberOfLines={1}>
+        <View style={[styles.txInfo, { alignItems: 'flex-start' }]}>
+          <ThemedText style={[styles.txTitle, { textAlign }]} numberOfLines={1}>
             {title}
           </ThemedText>
-          <ThemedText style={[styles.txDate, { textAlign: textStart }]}>
+          <ThemedText style={[styles.txDate, { textAlign }]}>
             {formatDate(item.createdAt || item.date)}
           </ThemedText>
         </View>
 
-        <View style={{ alignItems: endAlign }}>
+        <View style={{ alignItems: 'flex-end' }}>
           <ThemedText style={[styles.txAmount, { color }]}>
             {isCredit ? "+" : "-"}
             {Math.abs(amountNum).toLocaleString()}{" "}
@@ -141,7 +138,7 @@ export default function WalletTransactionsScreen() {
         </View>
       </View>
     );
-  }, [rowDirection, startAlign, endAlign, textStart, isRTL, t]);
+  }, [textAlign, isRTL, t]);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>

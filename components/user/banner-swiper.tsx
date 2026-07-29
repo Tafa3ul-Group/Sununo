@@ -1,7 +1,7 @@
 'use no memo';
 import { normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
-import { useDirection } from '@/i18n';
+import { ltrScrollContent } from '@/i18n';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
     Dimensions,
@@ -23,7 +23,6 @@ const AUTO_PLAY_INTERVAL = 4000;
 
 export function BannerSwiper({ data }: { data?: any[] }) {
   const displayData = data ?? [];
-  const { rowDirection } = useDirection();
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -98,18 +97,21 @@ export function BannerSwiper({ data }: { data?: any[] }) {
         decelerationRate="fast"
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, ltrScrollContent]}
         ItemSeparatorComponent={ItemSeparator}
         onScrollBeginDrag={stopTimer}
         onScrollEndDrag={startTimer}
         getItemLayout={(_, index) => ({
           length: SNAP_INTERVAL,
-          offset: SNAP_INTERVAL * index,
+          // Include the leading side padding so scrollToIndex/snap offsets
+          // address the true physical position of each banner.
+          offset: SIDE_PADDING + SNAP_INTERVAL * index,
           index })}
       />
 
-      {/* Pagination Dots */}
-      <View style={[styles.pagination, { flexDirection: rowDirection }]}>
+      {/* Pagination Dots — physical LTR so dot motion matches the physical
+          page motion of the LTR-forced scroller. */}
+      <View style={[styles.pagination, { flexDirection: 'row', direction: 'ltr' }]}>
         {displayData.map((_, index) => (
           <Animated.View
             key={index}

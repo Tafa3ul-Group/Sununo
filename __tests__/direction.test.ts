@@ -37,8 +37,10 @@ describe("resolveRowDirection — deprecated, always 'row'", () => {
   });
 });
 
-describe("resolveTextAlign", () => {
-  it("aligns RTL content right and LTR content left", () => {
+describe("resolveTextAlign — PHYSICAL, for <TextInput> only", () => {
+  // Inputs don't get RN's logical left/right swap, so they need the physical
+  // start side: right for Arabic, left for English.
+  it("aligns RTL input right and LTR input left", () => {
     expect(resolveTextAlign(true)).toBe("right");
     expect(resolveTextAlign(false)).toBe("left");
   });

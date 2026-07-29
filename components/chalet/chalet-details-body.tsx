@@ -128,7 +128,7 @@ export function ChaletDetailsBody({
           <ThemedText
             style={[
               styles.mainTitle,
-              { textAlign: textAlign === "right" ? "left" : "right" },
+              { textAlign },
             ]}
             numberOfLines={2}
           >
@@ -138,7 +138,7 @@ export function ChaletDetailsBody({
             style={[
               styles.locationSub,
               {
-                textAlign: textAlign === "right" ? "left" : "right",
+                textAlign,
                 marginTop: 4,
               },
             ]}
@@ -199,7 +199,7 @@ export function ChaletDetailsBody({
                 />
               </Svg>
             }
-            iconPosition={isRTL ? "left" : "right"}
+            iconPosition="left"
             onPress={onRoutePress}
             height={52}
           />

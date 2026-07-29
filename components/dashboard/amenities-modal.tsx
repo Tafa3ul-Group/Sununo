@@ -21,7 +21,7 @@ import {
   View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
-import { useDirection } from '@/i18n';
+import { ltrScrollContent, useDirection } from '@/i18n';
 
 const AmenityIcon = ({ icon, size = 18 }: { icon: string; size?: number }) => {
   if (!icon) return <SolarStarBold size={size} color="#FFF" />;
@@ -53,8 +53,7 @@ interface AmenitiesModalProps {
 
 export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
   ({ chaletId, chalet, refetchChalet }, ref) => {
-    const { isRTL, textAlign } = useDirection();
-    const textEnd = textAlign === 'right' ? 'left' : 'right';
+    const { isRTL, direction, textAlign } = useDirection();
     const { showConfirm } = useConfirmationDialog();
 
     const { data: amenityCategories } = useGetAmenityCategoriesQuery();
@@ -293,7 +292,7 @@ export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
                                 { flexDirection: 'row' },
                               ]}
                             >
-                              <Text style={[styles.swiperFeatureName, { textAlign: textEnd }]}>
+                              <Text style={[styles.swiperFeatureName, { textAlign }]}>
                                 {isRTL ? feature.name?.ar : feature.name?.en}
                               </Text>
 
@@ -321,32 +320,41 @@ export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
                       <ScrollView
                         horizontal
                         showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={styles.swiperImagesScroll}
+                        contentContainerStyle={[styles.swiperImagesScroll, ltrScrollContent]}
                       >
-                        {/* Camera Button */}
-                        <TouchableOpacity
-                          style={styles.swiperUploadBtn}
-                          onPress={() => handlePickCategoryPhoto(category.id)}
-                          activeOpacity={0.7}
-                        >
-                          <SolarCameraBold size={24} color="#94A3B8" />
-                        </TouchableOpacity>
-
-                        {/* Existing Images */}
-                        {categoryImages.map((img: any) => (
-                          <View key={img.id} style={styles.swiperImageContainer}>
-                            <Image
-                              source={{ uri: getImageSrc(img.url).uri }}
-                              style={styles.swiperImage}
-                            />
+                        {(() => {
+                          // Physical-LTR content: reverse in RTL so the upload
+                          // CTA keeps the leading (right) edge and stays
+                          // visible at the initial scroll offset in Arabic.
+                          const photoItems = [
+                            /* Camera Button */
                             <TouchableOpacity
-                              style={styles.swiperImageDeleteBtn}
-                              onPress={() => handleDeleteCategoryPhoto(img.id)}
+                              key="upload-cta"
+                              style={styles.swiperUploadBtn}
+                              onPress={() => handlePickCategoryPhoto(category.id)}
+                              activeOpacity={0.7}
                             >
-                              <Text style={styles.swiperImageDeleteText}>×</Text>
-                            </TouchableOpacity>
-                          </View>
-                        ))}
+                              <SolarCameraBold size={24} color="#94A3B8" />
+                            </TouchableOpacity>,
+
+                            /* Existing Images */
+                            ...categoryImages.map((img: any) => (
+                              <View key={img.id} style={[styles.swiperImageContainer, { direction }]}>
+                                <Image
+                                  source={{ uri: getImageSrc(img.url).uri }}
+                                  style={styles.swiperImage}
+                                />
+                                <TouchableOpacity
+                                  style={styles.swiperImageDeleteBtn}
+                                  onPress={() => handleDeleteCategoryPhoto(img.id)}
+                                >
+                                  <Text style={styles.swiperImageDeleteText}>×</Text>
+                                </TouchableOpacity>
+                              </View>
+                            )),
+                          ];
+                          return isRTL ? photoItems.reverse() : photoItems;
+                        })()}
                       </ScrollView>
                     </View>
                   </ScrollView>
@@ -370,7 +378,7 @@ export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
               })}
             </View>
 
-            <View style={[styles.swiperActionsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.swiperActionsRow, { flexDirection: 'row' }]}>
               {/* Back Button */}
               {activeCategoryIndex > 0 && (
                 <TouchableOpacity
@@ -538,7 +546,7 @@ const styles = StyleSheet.create({
   swiperImageDeleteBtn: {
     position: 'absolute',
     top: -6,
-    right: -6,
+    end: -6,
     backgroundColor: '#EF4444',
     width: 20,
     height: 20,

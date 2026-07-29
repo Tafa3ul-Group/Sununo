@@ -1,4 +1,5 @@
 import { Shadows } from "@/constants/theme";
+import { ltrScrollContent, useDirection, useRtlListOrder } from "@/i18n";
 import React from "react";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { ThemedText } from "../themed-text";
@@ -20,6 +21,10 @@ export function CategoryTabs({
   categories,
   activeId,
   onSelect }: CategoryTabsProps) {
+  const { direction } = useDirection();
+  // The strip content is forced physical-LTR; reverse the chips in Arabic so
+  // the first chip keeps the leading (right) edge and is visible at mount.
+  const orderedCategories = useRtlListOrder(categories);
   return (
     <View style={styles.container}>
       <ScrollView
@@ -28,6 +33,7 @@ export function CategoryTabs({
         contentContainerStyle={[
           styles.scrollContent,
           { flexDirection: 'row' },
+          ltrScrollContent,
         ]}
       >
         <View
@@ -36,7 +42,7 @@ export function CategoryTabs({
             { flexDirection: 'row' },
           ]}
         >
-          {categories.map((cat) => {
+          {orderedCategories.map((cat) => {
             const isActive = activeId === cat.id;
             return (
               <TouchableOpacity
@@ -45,6 +51,7 @@ export function CategoryTabs({
                 activeOpacity={0.8}
                 style={[
                   styles.tabItem,
+                  { direction },
                   isActive && { backgroundColor: cat.activeColor },
                 ]}
               >
@@ -78,7 +85,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     paddingHorizontal: 16 },
   scrollContent: {
-    paddingRight: 20 },
+    paddingEnd: 20 },
   tabsWrapper: {
     backgroundColor: "#FFFFFF",
     borderRadius: 30,

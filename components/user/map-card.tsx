@@ -24,19 +24,15 @@ export const MapCard = React.memo(function MapCard({
   price,
   onPress,
   onClose }: MapCardProps) {
-  const { isRTL, rowDirection, textAlign } = useDirection();
+  const { isRTL, textAlign } = useDirection();
   const isArabic = isRTL;
-  const rowDir = rowDirection;
-  const rowReverseDir: "row" = "row";
-  const alignStart: "flex-start" = "flex-start";
-  const ratingBoxDir = rowDir;
   return (
     <TouchableOpacity
       activeOpacity={0.9}
       onPress={onPress}
       style={[
         styles.container,
-        { flexDirection: rowDir },
+        { flexDirection: "row" },
       ]}
     >
       <Image source={{ uri: image }} style={styles.image} />
@@ -45,7 +41,7 @@ export const MapCard = React.memo(function MapCard({
         <View
           style={[
             styles.header,
-            { flexDirection: rowReverseDir },
+            { flexDirection: "row" },
           ]}
         >
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
@@ -54,7 +50,7 @@ export const MapCard = React.memo(function MapCard({
           <View
             style={[
               styles.titleSection,
-              { alignItems: alignStart },
+              { alignItems: "flex-start" },
             ]}
           >
             <ThemedText
@@ -78,13 +74,13 @@ export const MapCard = React.memo(function MapCard({
         <View
           style={[
             styles.footer,
-            { flexDirection: rowReverseDir },
+            { flexDirection: "row" },
           ]}
         >
           <View
             style={[
               styles.ratingContainer,
-              { flexDirection: ratingBoxDir },
+              { flexDirection: "row" },
             ]}
           >
             <SolarStarBold size={14} color="#035DF9" />

@@ -45,9 +45,7 @@ import { useDispatch, useSelector } from 'react-redux';
 export default function ProviderProfileScreen() {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const { isRTL: isArabic, rowDirection: flexDir, textAlign: textStart } = useDirection();
-
-  const alignStart: 'flex-start' | 'flex-end' = 'flex-start';
+  const { isRTL, textAlign } = useDirection();
 
   const { user: authUser } = useSelector((state: RootState) => state.auth);
   const { showConfirm } = useConfirmationDialog();
@@ -77,11 +75,11 @@ export default function ProviderProfileScreen() {
 
   const handleLogout = () => {
     showConfirm({
-      title: isArabic ? 'تسجيل الخروج' : 'Logout',
-      message: isArabic ? 'هل أنت متأكد من تسجيل الخروج؟' : 'Are you sure you want to logout?',
+      title: isRTL ? 'تسجيل الخروج' : 'Logout',
+      message: isRTL ? 'هل أنت متأكد من تسجيل الخروج؟' : 'Are you sure you want to logout?',
       type: 'danger',
-      confirmLabel: isArabic ? 'خروج' : 'Logout',
-      cancelLabel: isArabic ? 'إلغاء' : 'Cancel',
+      confirmLabel: isRTL ? 'خروج' : 'Logout',
+      cancelLabel: isRTL ? 'إلغاء' : 'Cancel',
       onConfirm: async () => {
         try {
           await logoutApi(undefined).unwrap();
@@ -95,13 +93,13 @@ export default function ProviderProfileScreen() {
 
   const handleDeleteAccount = () => {
     showConfirm({
-      title: isArabic ? 'حذف الحساب' : 'Delete Account',
-      message: isArabic
+      title: isRTL ? 'حذف الحساب' : 'Delete Account',
+      message: isRTL
         ? 'هل أنت متأكد من رغبتك في حذف حسابك نهائياً؟ هذا الإجراء لا يمكن التراجع عنه وسيتم حذف جميع البيانات المتعلقة بحسابك.'
         : 'Are you sure you want to delete your account permanently? This action cannot be undone and all data associated with your account will be removed.',
       type: 'danger',
-      confirmLabel: isArabic ? 'حذف الحساب' : 'Delete Account',
-      cancelLabel: isArabic ? 'إلغاء' : 'Cancel',
+      confirmLabel: isRTL ? 'حذف الحساب' : 'Delete Account',
+      cancelLabel: isRTL ? 'إلغاء' : 'Cancel',
       onConfirm: async () => {
         try {
           await deleteProfile(undefined).unwrap();
@@ -114,20 +112,20 @@ export default function ProviderProfileScreen() {
   };
 
   const menuItems = [
-    { id: 'profile', title: isArabic ? 'المعلومات الشخصية' : 'Personal Information', shape: 'blue' as const, icon: <SolarUserBold size={20} color="white" />, route: '/(dashboard)/edit-profile' },
-    { id: 'business', title: isArabic ? 'معلومات المصرف' : 'Bank Information', shape: 'blue' as const, icon: <SolarWalletBold size={20} color="white" />, route: '/(dashboard)/edit-business' },
-    { id: 'revenue', title: isArabic ? 'الأرباح' : 'Earnings', shape: 'green' as const, icon: <SolarBanknoteBold size={20} color="white" />, route: '/(tabs)/(dashboard)/revenue' },
-    { id: 'language', title: isArabic ? 'اللغة' : 'Language', shape: 'blue' as const, icon: <SolarGlobalBold size={20} color="white" />, action: openLanguageSheet },
-    { id: 'contact', title: isArabic ? 'تواصل معنا' : 'Contact Us', shape: 'green' as const, icon: <SolarPhoneBold size={20} color="white" />, action: openContactUs },
-    { id: 'privacy', title: isArabic ? 'سياسة الخصوصية' : 'Privacy Policy', shape: 'blue' as const, icon: <SolarShieldBold size={20} color="white" />, action: openPrivacyPolicy },
-    { id: 'logout', title: isArabic ? 'تسجيل الخروج' : 'Logout', shape: 'red' as const, icon: <SolarLogoutBold size={20} color="white" />, action: handleLogout },
+    { id: 'profile', title: isRTL ? 'المعلومات الشخصية' : 'Personal Information', shape: 'blue' as const, icon: <SolarUserBold size={20} color="white" />, route: '/(dashboard)/edit-profile' },
+    { id: 'business', title: isRTL ? 'معلومات المصرف' : 'Bank Information', shape: 'blue' as const, icon: <SolarWalletBold size={20} color="white" />, route: '/(dashboard)/edit-business' },
+    { id: 'revenue', title: isRTL ? 'الأرباح' : 'Earnings', shape: 'green' as const, icon: <SolarBanknoteBold size={20} color="white" />, route: '/(tabs)/(dashboard)/revenue' },
+    { id: 'language', title: isRTL ? 'اللغة' : 'Language', shape: 'blue' as const, icon: <SolarGlobalBold size={20} color="white" />, action: openLanguageSheet },
+    { id: 'contact', title: isRTL ? 'تواصل معنا' : 'Contact Us', shape: 'green' as const, icon: <SolarPhoneBold size={20} color="white" />, action: openContactUs },
+    { id: 'privacy', title: isRTL ? 'سياسة الخصوصية' : 'Privacy Policy', shape: 'blue' as const, icon: <SolarShieldBold size={20} color="white" />, action: openPrivacyPolicy },
+    { id: 'logout', title: isRTL ? 'تسجيل الخروج' : 'Logout', shape: 'red' as const, icon: <SolarLogoutBold size={20} color="white" />, action: handleLogout },
   ];
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={styles.container}>
         <DashboardHeader
-          title={isArabic ? 'الملف الشخصي' : 'Profile'}
+          title={isRTL ? 'الملف الشخصي' : 'Profile'}
           showSearch={false}
           showBackButton={true}
         />
@@ -135,7 +133,7 @@ export default function ProviderProfileScreen() {
         {/* Profile Header & User Card */}
         <View style={styles.topSection}>
           <TouchableOpacity
-            style={[styles.userCard, { flexDirection: flexDir }]}
+            style={[styles.userCard, { flexDirection: 'row' }]}
             onPress={() => router.push('/(dashboard)/edit-profile')}
             activeOpacity={0.9}
           >
@@ -154,8 +152,8 @@ export default function ProviderProfileScreen() {
               )}
             </View>
 
-            <View style={[styles.userInfo, { alignItems: alignStart }]}>
-              <Text style={[styles.userName, { textAlign: textStart }]}>
+            <View style={[styles.userInfo, { alignItems: 'flex-start' }]}>
+              <Text style={[styles.userName, { textAlign }]}>
                 {user?.name || profile?.business_name || t('tabs.home')}
               </Text>
             </View>
@@ -172,7 +170,7 @@ export default function ProviderProfileScreen() {
             {menuItems.map((item) => (
               <TouchableOpacity
                 key={item.id}
-                style={[styles.menuRow, { flexDirection: flexDir }]}
+                style={[styles.menuRow, { flexDirection: 'row' }]}
                 onPress={() => {
                   if (item.action) {
                     item.action();
@@ -185,26 +183,26 @@ export default function ProviderProfileScreen() {
                 <ProfileShape size={normalize.width(42)} type={item.shape}>
                   {item.icon}
                 </ProfileShape>
-                <Text style={[styles.menuLabelText, { textAlign: textStart }]}>{item.title}</Text>
+                <Text style={[styles.menuLabelText, { textAlign }]}>{item.title}</Text>
               </TouchableOpacity>
             ))}
           </View>
 
           {/* Danger Zone */}
           <View style={styles.dangerZone}>
-            <Text style={[styles.dangerZoneTitle, { textAlign: textStart }]}>
-              {isArabic ? 'منطقة الخطر' : 'Danger Zone'}
+            <Text style={[styles.dangerZoneTitle, { textAlign }]}>
+              {isRTL ? 'منطقة الخطر' : 'Danger Zone'}
             </Text>
             <TouchableOpacity
-              style={[styles.menuRow, styles.dangerRowOverride, { flexDirection: flexDir }]}
+              style={[styles.menuRow, styles.dangerRowOverride, { flexDirection: 'row' }]}
               onPress={handleDeleteAccount}
               activeOpacity={0.7}
             >
               <ProfileShape size={normalize.width(42)} type="red">
                 <SolarTrashBinBold size={20} color="white" />
               </ProfileShape>
-              <Text style={[styles.menuLabelText, { textAlign: textStart, color: '#DC2626' }]}>
-                {isArabic ? 'حذف الحساب نهائياً' : 'Permanently Delete Account'}
+              <Text style={[styles.menuLabelText, { textAlign, color: '#DC2626' }]}>
+                {isRTL ? 'حذف الحساب نهائياً' : 'Permanently Delete Account'}
               </Text>
             </TouchableOpacity>
           </View>

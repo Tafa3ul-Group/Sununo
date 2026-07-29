@@ -47,6 +47,7 @@ interface ChaletProgressTabsProps {
   steps: ChaletStep[];
   currentStep: number;
   onStepPress?: (index: number) => void;
+  /** @deprecated ignored — direction is inherited from the container. */
   isRTL?: boolean;
 }
 
@@ -57,8 +58,7 @@ const StepNode: React.FC<{
   currentStep: number;
   totalSteps: number;
   onPress: () => void;
-  isRTL: boolean;
-}> = ({ step, index, currentStep, totalSteps, onPress, isRTL }) => {
+}> = ({ step, index, currentStep, totalSteps, onPress }) => {
   const shapeType = STEP_SHAPES[index % STEP_SHAPES.length];
   const shapeColor = SHAPE_COLORS[shapeType];
 
@@ -148,8 +148,7 @@ const StepNode: React.FC<{
 const ConnectorLine: React.FC<{
   index: number;
   currentStep: number;
-  isRTL: boolean;
-}> = ({ index, currentStep, isRTL }) => {
+}> = ({ index, currentStep }) => {
   const fillProgress = useSharedValue(0);
 
   useEffect(() => {
@@ -173,8 +172,7 @@ const ConnectorLine: React.FC<{
 export const ChaletProgressTabs: React.FC<ChaletProgressTabsProps> = ({
   steps,
   currentStep,
-  onStepPress,
-  isRTL = false }) => {
+  onStepPress }) => {
 
   return (
     <View style={styles.container}>
@@ -186,7 +184,6 @@ export const ChaletProgressTabs: React.FC<ChaletProgressTabsProps> = ({
               <ConnectorLine
                 index={index - 1}
                 currentStep={currentStep}
-                isRTL={isRTL}
               />
             )}
             <StepNode
@@ -195,7 +192,6 @@ export const ChaletProgressTabs: React.FC<ChaletProgressTabsProps> = ({
               currentStep={currentStep}
               totalSteps={steps.length}
               onPress={() => onStepPress?.(index)}
-              isRTL={isRTL}
             />
           </React.Fragment>
         ))}
@@ -265,7 +261,7 @@ const styles = StyleSheet.create({
   },
   connectorFill: {
     position: 'absolute',
-    left: 0,
+    start: 0,
     top: 0,
     bottom: 0,
     backgroundColor: Colors.primary,

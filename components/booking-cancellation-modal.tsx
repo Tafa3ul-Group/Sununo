@@ -15,6 +15,7 @@ import {
   View
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+import { useDirection } from '@/i18n';
 import { SecondaryButton } from './user/secondary-button';
 
 // Static imports for Lottie files
@@ -39,15 +40,16 @@ export type BookingCancellationSheetRef = {
 };
 
 export const BookingCancellationSheet = forwardRef<BookingCancellationSheetRef, BookingCancellationSheetProps>(
-  ({ 
-    onConfirm, 
-    isLoading = false, 
-    isRTL = true, 
-    depositAmount = 0, 
+  ({
+    onConfirm,
+    isLoading = false,
+    isRTL: _isRTLProp,
+    depositAmount = 0,
     totalPrice = 0,
     paymentModel = 'deposit',
-    isExternal = false 
+    isExternal = false
   }, ref) => {
+    const { isRTL, textAlign, inputTextAlign } = useDirection();
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
     const lottieRef = useRef<LottieView>(null);
     const [reason, setReason] = useState('');
@@ -164,11 +166,11 @@ export const BookingCancellationSheet = forwardRef<BookingCancellationSheetRef, 
           <View style={styles.inputWrapper}>
             {!isExternal && (
               <>
-                <Text style={[styles.inputLabel, { textAlign: isRTL ? 'right' : 'left' }]}>
+                <Text style={[styles.inputLabel, { textAlign }]}>
                   {isRTL ? 'اذكر سبب الالغاء' : 'Mention Cancellation Reason'}
                 </Text>
                 <BottomSheetTextInput
-                  style={[styles.textInput, { textAlign: isRTL ? 'right' : 'left' }]}
+                  style={[styles.textInput, { textAlign: inputTextAlign }]}
                   multiline
                   placeholder={isRTL ? 'اكتب السبب هنا...' : 'Write the reason here...'}
                   value={reason}
@@ -177,7 +179,7 @@ export const BookingCancellationSheet = forwardRef<BookingCancellationSheetRef, 
               </>
             )}
             {!isExternal && (
-              <Text style={[styles.noteText, { textAlign: isRTL ? 'right' : 'left' }]}>
+              <Text style={[styles.noteText, { textAlign }]}>
                 {isRTL
                   ? `عند الإلغاء سيتم استرداد ${isFullPayment ? 'كامل المبلغ' : 'مبلغ العربون'} (${formattedAmount} د.ع) تلقائياً لمحفظة الزبون`
                   : `Upon cancellation, the ${isFullPayment ? 'full amount' : 'deposit amount'} (${formattedAmount} IQD) will be automatically refunded to the customer's wallet.`
@@ -185,7 +187,7 @@ export const BookingCancellationSheet = forwardRef<BookingCancellationSheetRef, 
               </Text>
             )}
             {isExternal && (
-              <Text style={[styles.noteText, { textAlign: isRTL ? 'right' : 'left' }]}>
+              <Text style={[styles.noteText, { textAlign }]}>
                 {isRTL
                   ? 'عند الإلغاء سيتم فتح هذا الموعد مرة أخرى في التطبيق للحجوزات العامة.'
                   : 'Upon cancellation, this slot will be opened again in the app for public bookings.'

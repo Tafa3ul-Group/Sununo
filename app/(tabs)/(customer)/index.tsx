@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { FlashList } from "@shopify/flash-list";
-import { useDirection } from "@/i18n";
+import { ltrScrollContent, useDirection, useRtlListOrder } from "@/i18n";
 import { BannerSkeleton, HorizontalSwiperSkeleton, HorizontalCardSkeleton, CustomerHomeSkeleton } from "@/components/ui/skeleton-loader";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import Animated, { FadeInDown } from "react-native-reanimated";
@@ -57,7 +57,7 @@ const SHOW_HOME_MAP = false;
 
 export default function HomeScreen() {
   const { userType } = useSelector((state: RootState) => state.auth);
-  const { isRTL, rowDirection, textAlign } = useDirection();
+  const { isRTL, direction, textAlign } = useDirection();
   const router = useRouter();
   const { t } = useTranslation();
   const tabBarVis = useTabBarVisibility();
@@ -101,9 +101,6 @@ export default function HomeScreen() {
       prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id],
     );
   }, []);
-
-  const textStart: "left" | "right" = textAlign;
-  const flexDir: "row" | "row-reverse" = rowDirection;
 
   // Fetch all amenities to resolve real IDs for pool/bbq/garden filters
   const { data: allAmenities = [] } = useGetAmenitiesQuery();
@@ -486,6 +483,10 @@ export default function HomeScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [homeFilterAmenities, isRTL, t]);
 
+  // Chip strip is LTR-forced; reverse so it still reads right-to-left in
+  // Arabic with the "all" chip visible at the right edge.
+  const orderedFilterOptions = useRtlListOrder(FILTER_OPTIONS);
+
   // Owners don't have a customer home — redirect to their dashboard. Placed
   // after all hooks so hook order stays stable across renders.
   if (userType === "owner") return <Redirect href="/(tabs)/(dashboard)/home" />;
@@ -496,10 +497,10 @@ export default function HomeScreen() {
     <GHScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.tabsContainer}
+      contentContainerStyle={[styles.tabsContainer, ltrScrollContent]}
     >
-      <View style={{ flexDirection: flexDir, gap: 10 }}>
-        {FILTER_OPTIONS.map((filter) => {
+      <View style={{ flexDirection: 'row', gap: 10 }}>
+        {orderedFilterOptions.map((filter) => {
           const isActive =
             filter.id === "all"
               ? selectedFilters.length === 0
@@ -512,6 +513,7 @@ export default function HomeScreen() {
               activeColor={filter.activeColor}
               icon={filter.icon(isActive)}
               onPress={() => toggleFilter(filter.id)}
+              style={{ direction }}
             />
           );
         })}
@@ -541,10 +543,10 @@ export default function HomeScreen() {
           {(featuredLoading || featuredChalets.length > 0) && (
             <>
               <View
-                style={[styles.sectionHeader, { flexDirection: flexDir }]}
+                style={[styles.sectionHeader, { flexDirection: 'row' }]}
               >
                 <ThemedText
-                  style={[styles.sectionTitle, { textAlign: textStart }]}
+                  style={[styles.sectionTitle, { textAlign }]}
                 >
                   {t("home.featured")}
                 </ThemedText>
@@ -575,9 +577,9 @@ export default function HomeScreen() {
           {/* Nearby / Map — temporarily hidden (toggle SHOW_HOME_MAP to restore) */}
           {SHOW_HOME_MAP && (
             <>
-              <View style={[styles.sectionHeader, { flexDirection: flexDir }]}>
+              <View style={[styles.sectionHeader, { flexDirection: 'row' }]}>
                 <ThemedText
-                  style={[styles.sectionTitle, { textAlign: textStart }]}
+                  style={[styles.sectionTitle, { textAlign }]}
                 >
                   {t("home.categories.nearby")}
                 </ThemedText>
@@ -612,9 +614,9 @@ export default function HomeScreen() {
           {/* Recent bookings — hidden entirely when there's no data */}
           {(latestBookingsLoading || recentBookingChalets.length > 0) && (
             <>
-              <View style={[styles.sectionHeader, { flexDirection: flexDir }]}>
+              <View style={[styles.sectionHeader, { flexDirection: 'row' }]}>
                 <ThemedText
-                  style={[styles.sectionTitle, { textAlign: textStart }]}
+                  style={[styles.sectionTitle, { textAlign }]}
                 >
                   {t("home.recentBookings")}
                 </ThemedText>
@@ -658,11 +660,11 @@ export default function HomeScreen() {
           <View
             style={[
               styles.sectionHeader,
-              { flexDirection: flexDir, justifyContent: "flex-start" },
+              { flexDirection: 'row', justifyContent: "flex-start" },
             ]}
           >
             <ThemedText
-              style={[styles.sectionTitle, { textAlign: textStart }]}
+              style={[styles.sectionTitle, { textAlign }]}
             >
               {t("home.recommended")}
             </ThemedText>
@@ -816,8 +818,8 @@ const styles = StyleSheet.create({
   stickyFilters: {
     position: "absolute",
     top: 0,
-    left: 0,
-    right: 0,
+    start: 0,
+    end: 0,
     backgroundColor: Colors.background,
     zIndex: 5,
     borderBottomWidth: 1,

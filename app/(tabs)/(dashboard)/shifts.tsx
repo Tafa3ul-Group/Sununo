@@ -357,7 +357,7 @@ export default function ShiftsAndPricesScreen() {
   const [selectedChaletId, setSelectedChaletId] = useState<string | null>(initialId as string || null);
   const { t } = useTranslation();
   const { selectedChalet } = useSelector((state: RootState) => state.auth);
-  const { isRTL, textAlign, rowDirection } = useDirection();
+  const { isRTL, textAlign, inputTextAlign } = useDirection();
   const { showConfirm } = useConfirmationDialog();
 
   const formatTime12h = (timeStr: string) => {
@@ -813,10 +813,6 @@ export default function ShiftsAndPricesScreen() {
 
     return false;
   };
-
-  // rowDirection is 'row'; the container `direction` (set globally from the
-  // language) mirrors every row, so we never reverse manually.
-  const flexDirection = rowDirection;
 
   const calculateDuration = (start: string, end: string) => {
     if (!start || !end) return 0;
@@ -1274,15 +1270,15 @@ export default function ShiftsAndPricesScreen() {
       <View style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <View style={styles.section}>
-            <View style={[styles.sectionHeader, { flexDirection }]}>
+            <View style={[styles.sectionHeader, { flexDirection: 'row' }]}>
               <SolarCalendarBold size={24} color={Colors.primary} />
-              <Text style={[styles.sectionTitle, { textAlign, marginLeft: 8, marginRight: 8 }]}>{isRTL ? 'الفترات والأسعار' : 'Shifts & Pricing'}</Text>
+              <Text style={[styles.sectionTitle, { textAlign, marginHorizontal: 8 }]}>{isRTL ? 'الفترات والأسعار' : 'Shifts & Pricing'}</Text>
             </View>
 
             {shifts && shifts.length > 0 && (
               <View style={styles.bulkTimeAdjustCard}>
-                <View style={[styles.row, { justifyContent: 'space-between', alignItems: 'center', flexDirection }]}>
-                  <View style={[styles.row, { gap: 8, flexDirection }]}>
+                <View style={[styles.row, { justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row' }]}>
+                  <View style={[styles.row, { gap: 8, flexDirection: 'row' }]}>
                     <SolarClockCircleBold size={20} color={Colors.primary} />
                     <Text style={styles.bulkTimeAdjustTitle}>
                       {isRTL ? 'تعديل كل الأوقات' : 'Adjust All Times'}
@@ -1326,6 +1322,7 @@ export default function ShiftsAndPricesScreen() {
                 <Swipeable
                   key={shift.id}
                   ref={index === 0 ? firstShiftRef : undefined}
+                  // Physical exception: Swipeable panes/gesture are not mirrored by the container direction.
                   renderRightActions={!isRTL ? () => renderShiftActions(shift, shiftName) : undefined}
                   renderLeftActions={isRTL ? () => renderShiftActions(shift, shiftName) : undefined}
                   containerStyle={styles.swipeableContainer}
@@ -1342,7 +1339,7 @@ export default function ShiftsAndPricesScreen() {
                       }
                     ]}
                   >
-                    <View style={[styles.row, { padding: 12, borderBottomWidth: isExpanded ? 1 : 0, borderBottomColor: '#F0F2F7', justifyContent: 'space-between', flexDirection }]}>
+                    <View style={[styles.row, { padding: 12, borderBottomWidth: isExpanded ? 1 : 0, borderBottomColor: '#F0F2F7', justifyContent: 'space-between', flexDirection: 'row' }]}>
                       <TouchableOpacity
                         style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12 }}
                         onPress={() => setExpandedShift(isExpanded ? null : shift.id)}
@@ -1435,8 +1432,8 @@ export default function ShiftsAndPricesScreen() {
       {/* Add Shift Modal */}
       <BottomSheetModal ref={shiftSheetRef} index={0} snapPoints={['92%']} backdropComponent={renderBackdrop} backgroundStyle={{ borderRadius: 28 }}>
         <BottomSheetScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
-          <View style={[styles.row, { justifyContent: 'space-between', marginBottom: 22, flexDirection }]}>
-            <View style={[styles.row, { gap: 12, flexDirection, flex: 1 }]}>
+          <View style={[styles.row, { justifyContent: 'space-between', marginBottom: 22, flexDirection: 'row' }]}>
+            <View style={[styles.row, { gap: 12, flexDirection: 'row', flex: 1 }]}>
               <View style={styles.sheetHeaderIcon}>
                 <SolarClockCircleBold size={22} color={Colors.primary} />
               </View>
@@ -1454,7 +1451,7 @@ export default function ShiftsAndPricesScreen() {
             </TouchableOpacity>
           </View>
           <View style={[styles.timeCard, isCurrentShiftOverlapping && styles.timeCardError]}>
-            <View style={[styles.row, { justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexDirection }]}>
+            <View style={[styles.row, { justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexDirection: 'row' }]}>
               <Text style={[styles.timeCardTitle, isCurrentShiftOverlapping && { color: '#991B1B' }]}>
                 {isRTL ? 'وقت الفترة' : 'Shift Time'}
               </Text>
@@ -1471,10 +1468,10 @@ export default function ShiftsAndPricesScreen() {
               )}
             </View>
 
-            <View style={[styles.row, { alignItems: 'stretch', gap: 10, flexDirection }]}>
+            <View style={[styles.row, { alignItems: 'stretch', gap: 10, flexDirection: 'row' }]}>
               {/* Start */}
               <View style={[styles.timeColumn, isCurrentShiftOverlapping && styles.timeColumnError]}>
-                <View style={[styles.row, { gap: 6, flexDirection, marginBottom: 8 }]}>
+                <View style={[styles.row, { gap: 6, flexDirection: 'row', marginBottom: 8 }]}>
                   <SolarSunBold size={15} color="#F59E0B" />
                   <Text style={styles.timeColLabel}>{isRTL ? 'البداية' : 'Start'}</Text>
                 </View>
@@ -1494,7 +1491,7 @@ export default function ShiftsAndPricesScreen() {
 
               {/* End */}
               <View style={[styles.timeColumn, isCurrentShiftOverlapping && styles.timeColumnError]}>
-                <View style={[styles.row, { gap: 6, flexDirection, marginBottom: 8 }]}>
+                <View style={[styles.row, { gap: 6, flexDirection: 'row', marginBottom: 8 }]}>
                   <SolarMoonBold size={15} color="#6366F1" />
                   <Text style={styles.timeColLabel}>{isRTL ? 'النهاية' : 'End'}</Text>
                 </View>
@@ -1515,7 +1512,7 @@ export default function ShiftsAndPricesScreen() {
 
             {/* Available free times (subtle helper) */}
             {!isCurrentShiftOverlapping && (
-              <View style={[styles.row, { gap: 6, marginTop: 14, flexDirection, alignItems: 'flex-start' }]}>
+              <View style={[styles.row, { gap: 6, marginTop: 14, flexDirection: 'row', alignItems: 'flex-start' }]}>
                 <SolarInfoCircleBold size={13} color="#94A3B8" style={{ marginTop: 1 }} />
                 <Text style={[styles.availHint, { textAlign, flex: 1 }]}>
                   <Text style={{ color: '#94A3B8' }}>{isRTL ? 'المتاح للاختيار: ' : 'Available: '}</Text>
@@ -1526,7 +1523,7 @@ export default function ShiftsAndPricesScreen() {
 
             {/* Overlap warning */}
             {isCurrentShiftOverlapping && (
-              <View style={[styles.overlapWarn, { flexDirection }]}>
+              <View style={[styles.overlapWarn, { flexDirection: 'row' }]}>
                 <SolarInfoCircleBold size={15} color="#D92D20" />
                 <Text style={[styles.overlapWarnText, { textAlign, flex: 1 }]}>
                   {isRTL
@@ -1538,20 +1535,20 @@ export default function ShiftsAndPricesScreen() {
           </View>
 
           {/* Name */}
-          <View style={[styles.row, { gap: 8, marginTop: 22, marginBottom: 10, flexDirection }]}>
+          <View style={[styles.row, { gap: 8, marginTop: 22, marginBottom: 10, flexDirection: 'row' }]}>
             <SolarPenBold size={16} color={Colors.primary} />
             <Text style={[styles.sectionTitle, { textAlign }]}>{isRTL ? 'اسم الفترة' : 'Shift Name'}</Text>
           </View>
           <View style={styles.nameInputWrap}>
             <BottomSheetTextInput
-              style={[styles.nameInput, { textAlign }]}
+              style={[styles.nameInput, { textAlign: inputTextAlign }]}
               placeholder={isRTL ? 'مثال: الفترة الصباحية' : 'e.g. Morning Shift'}
               placeholderTextColor="#94A3B8"
               value={shiftForm.name}
               onChangeText={t => setShiftForm({ ...shiftForm, name: t })}
             />
           </View>
-          <View style={[styles.row, { gap: 8, marginTop: 10, flexWrap: 'wrap', flexDirection }]}>
+          <View style={[styles.row, { gap: 8, marginTop: 10, flexWrap: 'wrap', flexDirection: 'row' }]}>
             {(isRTL
               ? ['صباحية', 'مسائية', 'ليلية', 'يوم كامل']
               : ['Morning', 'Evening', 'Night', 'Full day']
@@ -1572,7 +1569,7 @@ export default function ShiftsAndPricesScreen() {
 
           {!selectedShift && (
             <View style={{ marginTop: 24 }}>
-              <View style={[styles.row, { gap: 8, marginBottom: 3, flexDirection }]}>
+              <View style={[styles.row, { gap: 8, marginBottom: 3, flexDirection: 'row' }]}>
                 <SolarBanknoteBold size={18} color={Colors.primary} />
                 <Text style={[styles.sectionTitle, { textAlign }]}>{isRTL ? 'أسعار الأيام' : 'Daily Prices'}</Text>
               </View>
@@ -1583,9 +1580,9 @@ export default function ShiftsAndPricesScreen() {
               {/* Quick pricing — enter one price, apply it to a group of days */}
               <View style={styles.quickCard}>
                 <Text style={[styles.quickCardTitle, { textAlign }]}>{isRTL ? 'سعّر دفعة واحدة' : 'Price in one tap'}</Text>
-                <View style={[styles.bulkRow, { flexDirection }]}>
+                <View style={[styles.bulkRow, { flexDirection: 'row' }]}>
                   <BottomSheetTextInput
-                    style={[styles.bulkInput, { textAlign }]}
+                    style={[styles.bulkInput, { textAlign: inputTextAlign }]}
                     keyboardType="numeric"
                     placeholder={isRTL ? 'أدخل السعر' : 'Enter price'}
                     placeholderTextColor="#94A3B8"
@@ -1596,7 +1593,7 @@ export default function ShiftsAndPricesScreen() {
                     <Text style={styles.bulkCurrencyText}>{isRTL ? 'د.ع' : 'IQD'}</Text>
                   </View>
                 </View>
-                <View style={[styles.quickBtnRow, { flexDirection }]}>
+                <View style={[styles.quickBtnRow, { flexDirection: 'row' }]}>
                   <TouchableOpacity style={styles.applyChip} onPress={() => applyFormPrice('all')} activeOpacity={0.85}>
                     <Text style={styles.applyChipText}>{isRTL ? 'كل الأيام' : 'All days'}</Text>
                   </TouchableOpacity>
@@ -1617,11 +1614,11 @@ export default function ShiftsAndPricesScreen() {
                     : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])[d.dayOfWeek];
                   const isWeekend = d.dayOfWeek === 5 || d.dayOfWeek === 6;
                   return (
-                    <View key={`form-day-${d.dayOfWeek}`} style={[styles.dayRow, d.enabled && styles.dayRowOn, { flexDirection }]}>
+                    <View key={`form-day-${d.dayOfWeek}`} style={[styles.dayRow, d.enabled && styles.dayRowOn, { flexDirection: 'row' }]}>
                       <TouchableOpacity
                         onPress={() => toggleFormDay(i)}
                         activeOpacity={0.7}
-                        style={[styles.row, { gap: 10, flexDirection, flex: 1 }]}
+                        style={[styles.row, { gap: 10, flexDirection: 'row', flex: 1 }]}
                       >
                         <View style={[styles.dayCheck, d.enabled && styles.dayCheckOn]}>
                           {d.enabled && <SolarCheckCircleBold size={24} color={Colors.primary} />}
@@ -1634,9 +1631,9 @@ export default function ShiftsAndPricesScreen() {
                         </View>
                       </TouchableOpacity>
 
-                      <View style={[styles.dayPriceWrap, d.enabled && styles.dayPriceWrapOn, { flexDirection }]}>
+                      <View style={[styles.dayPriceWrap, d.enabled && styles.dayPriceWrapOn, { flexDirection: 'row' }]}>
                         <BottomSheetTextInput
-                          style={[styles.dayPriceInput, { textAlign }]}
+                          style={[styles.dayPriceInput, { textAlign: inputTextAlign }]}
                           keyboardType="numeric"
                           editable={d.enabled}
                           placeholder={d.enabled ? (isRTL ? 'السعر' : 'Price') : (isRTL ? 'مغلق' : 'Closed')}
@@ -1663,7 +1660,7 @@ export default function ShiftsAndPricesScreen() {
               ? '—'
               : minP === maxP ? formatWithCommas(minP) : `${formatWithCommas(minP)}–${formatWithCommas(maxP)}`;
             return (
-              <View style={[styles.summaryBar, { flexDirection }]}>
+              <View style={[styles.summaryBar, { flexDirection: 'row' }]}>
                 <View style={styles.summaryItem}>
                   <Text style={styles.summaryVal} numberOfLines={1}>{formatDuration(duration)}</Text>
                   <Text style={styles.summaryKey}>{isRTL ? 'المدة' : 'Duration'}</Text>
@@ -1687,7 +1684,7 @@ export default function ShiftsAndPricesScreen() {
           })()}
 
           <TouchableOpacity
-            style={[styles.saveBtn, { flexDirection }, singleShiftOverlapInfo.hasOverlap && styles.saveBtnDisabled]}
+            style={[styles.saveBtn, { flexDirection: 'row' }, singleShiftOverlapInfo.hasOverlap && styles.saveBtnDisabled]}
             onPress={saveShift}
             disabled={singleShiftOverlapInfo.hasOverlap}
             activeOpacity={0.85}
@@ -1814,7 +1811,7 @@ export default function ShiftsAndPricesScreen() {
                     fontSize: 15,
                     fontFamily: 'Alexandria-SemiBold',
                     color: '#0F172A',
-                    textAlign,
+                    textAlign: inputTextAlign,
                   }}
                   keyboardType="numeric"
                   placeholder={isRTL ? 'السعر بالدينار' : 'Price (IQD)'}
@@ -1933,7 +1930,7 @@ export default function ShiftsAndPricesScreen() {
                             fontSize: 15,
                             fontFamily: 'Alexandria-Bold',
                             color: '#0F172A',
-                            textAlign,
+                            textAlign: inputTextAlign,
                             paddingVertical: 0,
                           }}
                           keyboardType="numeric"
@@ -2034,7 +2031,7 @@ export default function ShiftsAndPricesScreen() {
             {overlapInfo.hasOverlap && (
               <View style={styles.overlapWarningCard}>
                 <SolarInfoCircleBold size={18} color="#D92D20" />
-                <Text style={styles.overlapWarningText}>
+                <Text style={[styles.overlapWarningText, { textAlign }]}>
                   {isRTL ? 'تنبيه: يوجد تداخل في الأوقات!' : 'Warning: Shift times overlap!'}{' '}
                   {isRTL ? overlapInfo.conflictMsg?.ar : overlapInfo.conflictMsg?.en}
                 </Text>
@@ -2055,7 +2052,7 @@ export default function ShiftsAndPricesScreen() {
                     ]}
                   >
                     <View style={[styles.row, { justifyContent: 'space-between', alignItems: 'center' }]}>
-                      <Text style={[styles.editTimeCardTitle, isOverlapping && { color: '#991B1B' }]}>{shiftName}</Text>
+                      <Text style={[styles.editTimeCardTitle, { textAlign }, isOverlapping && { color: '#991B1B' }]}>{shiftName}</Text>
                       {isOverlapping && (
                         <View style={{ backgroundColor: '#FEE4E2', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 }}>
                           <Text style={{ fontSize: 10, color: '#D92D20', fontFamily: 'Alexandria-Bold' }}>
@@ -2065,7 +2062,7 @@ export default function ShiftsAndPricesScreen() {
                       )}
                     </View>
 
-                    <View style={[styles.row, { justifyContent: 'space-between', marginTop: 12, flexDirection }]}>
+                    <View style={[styles.row, { justifyContent: 'space-between', marginTop: 12, flexDirection: 'row' }]}>
                       {/* Start Time Section */}
                       <View style={{ flex: 1, alignItems: 'center' }}>
                         <Text style={styles.timeLabelText}>{isRTL ? 'وقت البدء' : 'Start Time'}</Text>
@@ -2217,7 +2214,7 @@ const styles = StyleSheet.create({
   modalTitle: { fontSize: 18, fontFamily: "Alexandria-Bold", color: '#0F172A', marginBottom: 20 },
   modalTitleCompact: { fontSize: 16, fontFamily: "Alexandria-Bold", color: '#0F172A' },
   label: { fontSize: 14, fontFamily: "Alexandria-Bold", marginBottom: 8, width: '100%' },
-  input: { backgroundColor: '#F3F4F6', height: 50, borderRadius: 12, paddingHorizontal: 16, marginBottom: 16, textAlign: 'auto' },
+  input: { backgroundColor: '#F3F4F6', height: 50, borderRadius: 12, paddingHorizontal: 16, marginBottom: 16 },
   saveBtn: {
     backgroundColor: Colors.primary,
     height: 56,
@@ -2463,7 +2460,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   quickLabelNew: { color: '#fff', fontSize: 12, marginBottom: 4 },
-  quickInputNew: { color: '#fff', fontSize: 16, fontFamily: "Alexandria-Bold", textAlign: 'auto' },
+  quickInputNew: { color: '#fff', fontSize: 16, fontFamily: "Alexandria-Bold" },
   pricingRowModern: {
     padding: 16,
     backgroundColor: '#fff',
@@ -2480,7 +2477,7 @@ const styles = StyleSheet.create({
   pricingRowStopped: { backgroundColor: '#F9FAFB', opacity: 0.7 },
   dayFullName: { fontSize: 14, fontFamily: "Alexandria-Bold" },
   priceControlWrapper: { marginTop: 12, backgroundColor: '#F3F4F6', borderRadius: 10, padding: 8 },
-  pricingInputModern: { fontSize: 16, fontFamily: "Alexandria-Bold", textAlign: 'auto' },
+  pricingInputModern: { fontSize: 16, fontFamily: "Alexandria-Bold" },
   singleSaveBtn: {
     backgroundColor: '#10B981',
     padding: 8,
@@ -2577,7 +2574,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Alexandria-Bold',
     color: '#0F172A',
-    textAlign: 'auto',
   },
   premiumBulkApplyBtn: {
     backgroundColor: Colors.primary,
@@ -2708,7 +2704,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Alexandria-Bold',
     color: '#0F172A',
     paddingVertical: 8,
-    textAlign: 'auto',
   },
   currencyBadge: {
     backgroundColor: '#E2E8F0',
@@ -2778,7 +2773,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Alexandria-Bold',
     color: '#1E293B',
-    textAlign: 'auto',
   },
   timeLabelText: {
     fontSize: 11,
@@ -2837,7 +2831,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Alexandria-Medium',
     color: '#92400E',
     flex: 1,
-    textAlign: 'auto',
   },
   fullyBookedCard: {
     backgroundColor: '#F0F9FF',

@@ -26,21 +26,13 @@ export const HostContactCard: React.FC<HostContactCardProps> = ({
   const { isRTL, textAlign } = useDirection();
   const isArabic = isRTL;
 
-  // The avatar's absolute placement is tied to the directional SVG badge below,
-  // which is drawn with explicit (non-mirrored) coordinates chosen by isArabic,
-  // so it must be positioned physically to match the badge side.
-  const textStart = textAlign;
-  const alignStart: "flex-start" | "flex-end" = "flex-start";
-
-  // Absolute avatar positioning: match the physical side the SVG badge is drawn on.
-  const avatarPosition = isArabic
-    ? { right: 12.3 * SCALE, left: "auto" }
-    : { left: 12.3 * SCALE, right: "auto" };
+  // The SVG badge below is drawn with explicit coordinates on the side chosen
+  // by isArabic; logical start resolves to that same physical side, so the
+  // avatar position and text margins use plain logical values.
+  const avatarPosition = { start: 12.3 * SCALE };
 
   // Margin spacing to prevent text overlapping avatar
-  const infoMargins = isArabic
-    ? { marginRight: 85 * SCALE, marginLeft: 15 * SCALE }
-    : { marginLeft: 85 * SCALE, marginRight: 15 * SCALE };
+  const infoMargins = { marginStart: 85 * SCALE, marginEnd: 15 * SCALE };
 
   const handleContact = () => {
     if (!phone) return;
@@ -95,16 +87,16 @@ export const HostContactCard: React.FC<HostContactCardProps> = ({
           style={[
             styles.infoColumn,
             {
-              alignItems: alignStart,
+              alignItems: "flex-start",
             },
             infoMargins,
           ]}
         >
-          <ThemedText style={[styles.hostLabel, { textAlign: textStart }]}>
+          <ThemedText style={[styles.hostLabel, { textAlign }]}>
             {isArabic ? "المضيف" : "Host"}
           </ThemedText>
           <ThemedText
-            style={[styles.hostName, { textAlign: textStart }]}
+            style={[styles.hostName, { textAlign }]}
             numberOfLines={1}
           >
             {name}

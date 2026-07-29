@@ -10,10 +10,12 @@ import en from "./en.json";
 // Re-export the central direction API so existing `@/i18n` consumers keep working
 export {
   isContentRTL,
+  ltrScrollContent,
   pickTranslation,
   resolveRowDirection,
   resolveTextAlign,
   useDirection,
+  useRtlListOrder,
 } from "./direction";
 export type { Direction, DirectionInfo } from "./direction";
 

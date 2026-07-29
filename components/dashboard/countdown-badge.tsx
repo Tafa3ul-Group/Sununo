@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useCountdown } from '@/hooks/useCountdown';
 import { normalize } from '@/constants/theme';
 import { SolarClockCircleBold } from '@/components/icons/solar-icons';
+import { useDirection } from '@/i18n';
 
 interface CountdownBadgeProps {
   createdAt: string;
@@ -12,7 +13,8 @@ interface CountdownBadgeProps {
   variant?: 'compact' | 'card';
 }
 
-export function CountdownBadge({ createdAt, durationHours = 1, isRTL = false, variant = 'compact' }: CountdownBadgeProps) {
+export function CountdownBadge({ createdAt, durationHours = 1, isRTL: _isRTLProp, variant = 'compact' }: CountdownBadgeProps) {
+  const { isRTL, textAlign } = useDirection();
   const { formatted, isExpired, hours, minutes } = useCountdown(createdAt, durationHours);
 
   if (variant === 'card') {
@@ -23,12 +25,12 @@ export function CountdownBadge({ createdAt, durationHours = 1, isRTL = false, va
             <SolarClockCircleBold size={20} color={isExpired ? '#EF4444' : '#F97316'} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.cardTitle, { textAlign: isRTL ? 'right' : 'left', color: isExpired ? '#EF4444' : '#9A3412' }]}>
+            <Text style={[styles.cardTitle, { textAlign, color: isExpired ? '#EF4444' : '#9A3412' }]}>
               {isExpired
                 ? (isRTL ? 'انتهى وقت القبول' : 'Approval time expired')
                 : (isRTL ? 'الوقت المتبقي للقبول' : 'Time remaining to accept')}
             </Text>
-            <Text style={[styles.cardTimer, { textAlign: isRTL ? 'right' : 'left', color: isExpired ? '#EF4444' : '#EA580C' }]}>
+            <Text style={[styles.cardTimer, { textAlign, color: isExpired ? '#EF4444' : '#EA580C' }]}>
               {isExpired ? '00:00:00' : formatted}
             </Text>
           </View>

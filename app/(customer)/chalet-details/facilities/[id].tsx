@@ -41,9 +41,8 @@ const CATEGORY_COLORS = [
 ];
 
 const SectionHeader = ({ title }: { title: string }) => {
-  const alignStart = "flex-start";
   return (
-    <View style={[styles.sectionHeader, { alignItems: alignStart }]}>
+    <View style={[styles.sectionHeader, { alignItems: 'flex-start' }]}>
       <ThemedText style={styles.sectionTitle}>{title}</ThemedText>
     </View>
   );
@@ -62,27 +61,20 @@ const FacilityCard = ({
 }) => {
   // iconId from API is a UUID → load as image from server
   const imageSource = iconId ? getImageSrc(iconId) : null;
-  const { rowDirection, textAlign } = useDirection();
-  const alignStart = "flex-start";
 
   return (
-    <View style={[styles.cardContainer, { flexDirection: rowDirection, gap: 15 }]}>
+    <View style={[styles.cardContainer, { flexDirection: 'row', gap: 15 }]}>
       <View
         style={[
           styles.textSide,
           {
-            alignItems: alignStart,
+            alignItems: 'flex-start',
           },
         ]}
       >
         <ThemedText style={styles.cardLabel}>{label}</ThemedText>
         {subtext && (
-          <ThemedText
-            style={[
-              styles.cardSubtext,
-              { textAlign },
-            ]}
-          >
+          <ThemedText style={styles.cardSubtext}>
             {subtext}
           </ThemedText>
         )}

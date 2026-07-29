@@ -69,8 +69,7 @@ const ICONS = {
 
 // ── Component ───────────────────────────────────────────────────────────────
 const CustomToast = ({ type, text1, text2, onPress, hide }: CustomToastProps) => {
-  const { textAlign } = useDirection();
-  const textEnd: 'left' | 'right' = textAlign === 'right' ? 'left' : 'right';
+  const { textAlign, direction } = useDirection();
   const theme = TOAST_THEMES[type];
   const shimmerAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(0.85)).current;
@@ -136,7 +135,7 @@ const CustomToast = ({ type, text1, text2, onPress, hide }: CustomToastProps) =>
   });
 
   return (
-    <View style={styles.outerWrapper}>
+    <View style={[styles.outerWrapper, { direction }]}>
       <TouchableOpacity
         activeOpacity={0.92}
         onPress={onPress || hide}
@@ -195,7 +194,7 @@ const CustomToast = ({ type, text1, text2, onPress, hide }: CustomToastProps) =>
                 style={[
                   styles.message,
                   {
-                    textAlign: textEnd,
+                    textAlign,
                     color: theme.messageColor,
                   },
                 ]}

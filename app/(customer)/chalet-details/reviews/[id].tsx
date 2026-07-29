@@ -39,7 +39,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-import { useDirection } from "@/i18n";
+import { ltrScrollContent, useDirection } from "@/i18n";
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -99,7 +99,6 @@ export default function ReviewsScreen() {
   const chaletId = id as string;
   const { isRTL, rowDirection, textAlign } = useDirection();
   const isArabic = isRTL;
-  const textStart: "left" | "right" = textAlign;
   const [userRating, setUserRating] = useState(0);
   const [filterValue, setFilterValue] = useState("latest");
   const reviewSheetRef = useRef<BottomSheetModal>(null);
@@ -285,7 +284,7 @@ export default function ReviewsScreen() {
                       <ThemedText
                         style={[
                            styles.revBodyText,
-                           { textAlign: textStart },
+                           { textAlign },
                         ]}
                       >
                         {reviewBody}
@@ -304,7 +303,8 @@ export default function ReviewsScreen() {
                     <ScrollView
                       horizontal
                       showsHorizontalScrollIndicator={false}
-                      style={[styles.imgGallery, { flexDirection: "row" }]}
+                      style={styles.imgGallery}
+                      contentContainerStyle={ltrScrollContent}
                     >
                       {rev.images.map((imgUri: string, imIdx: number) => (
                         <Image
@@ -458,15 +458,15 @@ const styles = StyleSheet.create({
   footerSticky: {
     position: "absolute",
     bottom: 0,
-    left: 0,
-    right: 0,
+    start: 0,
+    end: 0,
     height: normalize(150),
   },
   footerBgImage: {
     position: "absolute",
     bottom: normalize(-25),
-    left: -normalize(0),
-    right: -normalize(40),
+    start: 0,
+    end: -normalize(40),
     height: "100%",
   },
   footerOverlayContent: {

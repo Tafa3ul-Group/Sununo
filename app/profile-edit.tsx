@@ -1,9 +1,5 @@
 import { HeaderSection } from '@/components/header-section';
-import {
-    SolarAltArrowLeftBold,
-    SolarAltArrowRightBold,
-    SolarPenNewRoundBoldDuotone
-} from '@/components/icons/solar-icons';
+import { SolarPenNewRoundBoldDuotone } from '@/components/icons/solar-icons';
 import { ThemedText } from '@/components/themed-text';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { Colors, normalize } from '@/constants/theme';
@@ -44,10 +40,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function ProfileEditScreen() {
   const router = useRouter();
-  const { isRTL, textAlign } = useDirection();
-  // Logical "start" alignment so labels sit at the leading edge; the root
-  // container's direction mirrors it for Arabic.
-  const alignStart: "flex-start" | "flex-end" = "flex-start";
+  const { isRTL, textAlign, inputTextAlign, direction } = useDirection();
     const { user: authUser } = useSelector((state: RootState) => state.auth);
 
   const { data: meData, refetch } = useGetMeQuery(undefined);
@@ -191,7 +184,6 @@ export default function ProfileEditScreen() {
     }
   };
 
-  const BackIcon = isRTL ? SolarAltArrowRightBold : SolarAltArrowLeftBold;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -242,7 +234,7 @@ export default function ProfileEditScreen() {
 
             {/* الاسم الكامل */}
             <View style={styles.fieldGroup}>
-              <ThemedText style={[styles.label, { alignSelf: alignStart }]}>
+              <ThemedText style={[styles.label, { alignSelf: 'flex-start' }]}>
                 {isRTL ? 'الاسم الكامل' : 'Full Name'}
               </ThemedText>
               <View style={styles.inputWrapper}>
@@ -258,7 +250,7 @@ export default function ProfileEditScreen() {
 
             {/* تاريخ الميلاد */}
             <View style={styles.fieldGroup}>
-              <ThemedText style={[styles.label, { alignSelf: alignStart }]}>
+              <ThemedText style={[styles.label, { alignSelf: 'flex-start' }]}>
                 {isRTL ? 'تاريخ الميلاد' : 'Date of Birth'}
               </ThemedText>
               <TouchableOpacity
@@ -300,45 +292,28 @@ export default function ProfileEditScreen() {
 
             {/* رقم الهاتف */}
             <View style={styles.fieldGroup}>
-              <ThemedText style={[styles.label, { alignSelf: alignStart }]}>
+              <ThemedText style={[styles.label, { alignSelf: 'flex-start' }]}>
                 {isRTL ? 'رقم الهاتف' : 'Phone Number'}
               </ThemedText>
+              {/* Natural order [value, action] — the container direction
+                  mirrors it; no manual per-language reversal. */}
               <View style={[styles.phoneRow, { flexDirection: 'row' }]}>
-                {isRTL ? (
-                  <>
-                    <View style={styles.phoneValueWrapper}>
-                      <Text
-                        style={[styles.phoneValue, { textAlign }]}
-                        numberOfLines={1}
-                      >
-                        {phone || 'غير محدد'}
-                      </Text>
-                    </View>
-                    <TouchableOpacity
-                      style={styles.changePhoneBtn}
-                      onPress={openPhoneChange}
-                    >
-                      <Text style={styles.changePhoneText}>تغيير رقم الهاتف</Text>
-                    </TouchableOpacity>
-                  </>
-                ) : (
-                  <>
-                    <TouchableOpacity
-                      style={styles.changePhoneBtn}
-                      onPress={openPhoneChange}
-                    >
-                      <Text style={styles.changePhoneText}>Change Phone</Text>
-                    </TouchableOpacity>
-                    <View style={styles.phoneValueWrapper}>
-                      <Text
-                        style={[styles.phoneValue, { textAlign }]}
-                        numberOfLines={1}
-                      >
-                        {phone || 'Not set'}
-                      </Text>
-                    </View>
-                  </>
-                )}
+                <View style={styles.phoneValueWrapper}>
+                  <Text
+                    style={[styles.phoneValue, { textAlign }]}
+                    numberOfLines={1}
+                  >
+                    {phone || (isRTL ? 'غير محدد' : 'Not set')}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.changePhoneBtn}
+                  onPress={openPhoneChange}
+                >
+                  <Text style={styles.changePhoneText}>
+                    {isRTL ? 'تغيير رقم الهاتف' : 'Change Phone'}
+                  </Text>
+                </TouchableOpacity>
               </View>
             </View>
 
@@ -365,7 +340,8 @@ export default function ProfileEditScreen() {
         animationType="fade"
         onRequestClose={() => setPhoneModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
+        {/* RN Modal = new native root; re-apply direction. */}
+        <View style={[styles.modalOverlay, { direction }]}>
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>
               {isRTL ? 'تغيير رقم الهاتف' : 'Change Phone Number'}
@@ -377,7 +353,7 @@ export default function ProfileEditScreen() {
                   {isRTL ? 'رقم الهاتف الجديد' : 'New phone number'}
                 </Text>
                 <TextInput
-                  style={[styles.modalInput, { textAlign }]}
+                  style={[styles.modalInput, { textAlign: inputTextAlign }]}
                   value={newPhone}
                   onChangeText={setNewPhone}
                   placeholder="07XXXXXXXXX"
@@ -491,7 +467,7 @@ const styles = StyleSheet.create({
   editBadge: {
     position: 'absolute',
     bottom: 2,
-    right: 2,
+    end: 2,
     width: 32,
     height: 32,
     borderRadius: 16,

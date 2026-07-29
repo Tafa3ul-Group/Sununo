@@ -56,13 +56,7 @@ const getCityName = (city: any, isArabic: boolean) => {
 };
 
 export default function EditProfileScreen() {
-  const { isRTL: isArabic, rowDirection } = useDirection();
-
-  const textStart: 'left' | 'right' = isArabic ? 'right' : 'left';
-  const textEnd: 'left' | 'right' = isArabic ? 'left' : 'right';
-  const alignStart: 'flex-start' | 'flex-end' = 'flex-start';
-  const alignEnd: 'flex-start' | 'flex-end' = 'flex-end';
-  const flexDir: 'row' | 'row-reverse' = rowDirection;
+  const { isRTL: isArabic, direction, textAlign, inputTextAlign } = useDirection();
   const { user: authUser } = useSelector((state: RootState) => state.auth);
 
   const { data: userData } = useGetMeQuery(undefined);
@@ -196,7 +190,7 @@ export default function EditProfileScreen() {
               </View>
             </TouchableOpacity>
             <TouchableOpacity onPress={pickImage} activeOpacity={0.7}>
-              <ThemedText style={[styles.changePhotoText, { textAlign: textStart }]}>
+              <ThemedText style={[styles.changePhotoText, { textAlign }]}>
                 {isArabic ? 'تغيير الصورة الشخصية' : 'Change Profile Picture'}
               </ThemedText>
             </TouchableOpacity>
@@ -204,19 +198,19 @@ export default function EditProfileScreen() {
 
           {/* Personal Information Form */}
           <View style={styles.card}>
-            <ThemedText style={[styles.cardHeaderTitle, { textAlign: textStart }]}>
+            <ThemedText style={[styles.cardHeaderTitle, { textAlign }]}>
               {isArabic ? 'المعلومات الشخصية' : 'Personal Information'}
             </ThemedText>
 
             {/* Full Name */}
             <View style={styles.fieldContainer}>
-              <ThemedText style={[styles.label, { textAlign: textStart }]}>
+              <ThemedText style={[styles.label, { textAlign }]}>
                 {isArabic ? 'الاسم الكامل' : 'Full Name'}
               </ThemedText>
-              <View style={[styles.inputWrapper, { flexDirection: flexDir }]}>
+              <View style={[styles.inputWrapper, { flexDirection: 'row' }]}>
                 <SolarUserBold size={20} color={Colors.text.muted} />
                 <TextInput
-                  style={[styles.input, { textAlign: textStart }]}
+                  style={[styles.input, { textAlign: inputTextAlign }]}
                   value={formData.name}
                   onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
                   placeholder={isArabic ? 'أدخل اسمك الكامل' : 'Enter your full name'}
@@ -227,10 +221,10 @@ export default function EditProfileScreen() {
 
             {/* Gender Control */}
             <View style={styles.fieldContainer}>
-              <ThemedText style={[styles.label, { textAlign: textStart }]}>
+              <ThemedText style={[styles.label, { textAlign }]}>
                 {isArabic ? 'الجنس' : 'Gender'}
               </ThemedText>
-              <View style={[styles.genderWrapper, { flexDirection: flexDir }]}>
+              <View style={[styles.genderWrapper, { flexDirection: 'row' }]}>
                 <TouchableOpacity
                   style={[styles.genderOption, formData.gender === 'male' && styles.genderOptionActive]}
                   onPress={() => setFormData(prev => ({ ...prev, gender: 'male' }))}
@@ -254,11 +248,11 @@ export default function EditProfileScreen() {
 
             {/* Birthday Field */}
             <View style={styles.fieldContainer}>
-              <ThemedText style={[styles.label, { textAlign: textStart }]}>
+              <ThemedText style={[styles.label, { textAlign }]}>
                 {isArabic ? 'تاريخ الميلاد' : 'Birthday'}
               </ThemedText>
               <TouchableOpacity
-                style={[styles.inputWrapper, { flexDirection: flexDir }]}
+                style={[styles.inputWrapper, { flexDirection: 'row' }]}
                 onPress={() => setShowDatePicker(true)}
                 activeOpacity={0.7}
               >
@@ -274,9 +268,10 @@ export default function EditProfileScreen() {
                   visible={showDatePicker}
                   onRequestClose={() => setShowDatePicker(false)}
                 >
-                  <View style={styles.modalOverlay}>
+                  {/* RN Modal = new native root; re-apply direction. */}
+                  <View style={[styles.modalOverlay, { direction }]}>
                     <View style={styles.modalContainer}>
-                      <View style={[styles.modalHeader, { flexDirection: flexDir }]}>
+                      <View style={[styles.modalHeader, { flexDirection: 'row' }]}>
                         <TouchableOpacity onPress={() => setShowDatePicker(false)}>
                           <ThemedText style={styles.modalCloseText}>
                             {isArabic ? 'إلغاء' : 'Cancel'}
@@ -321,15 +316,15 @@ export default function EditProfileScreen() {
 
             {/* City Field */}
             <View style={styles.fieldContainer}>
-              <ThemedText style={[styles.label, { textAlign: textStart }]}>
+              <ThemedText style={[styles.label, { textAlign }]}>
                 {isArabic ? 'المدينة' : 'City'}
               </ThemedText>
               <TouchableOpacity
-                style={[styles.inputWrapper, { flexDirection: flexDir, justifyContent: 'space-between' }]}
+                style={[styles.inputWrapper, { flexDirection: 'row', justifyContent: 'space-between' }]}
                 onPress={() => citySheetRef.current?.present()}
                 activeOpacity={0.7}
               >
-                <View style={{ flexDirection: flexDir, alignItems: 'center', gap: 12, flex: 1 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
                   <SolarMapPointBold size={20} color={Colors.text.muted} />
                   <ThemedText style={[styles.inputTextValue, !selectedCityName && { color: Colors.text.muted }]}>
                     {selectedCityName || (isArabic ? 'اختر المدينة' : 'Select City')}
@@ -342,21 +337,21 @@ export default function EditProfileScreen() {
 
           {/* Account Details Card */}
           <View style={styles.card}>
-            <ThemedText style={[styles.cardHeaderTitle, { textAlign: textStart }]}>
+            <ThemedText style={[styles.cardHeaderTitle, { textAlign }]}>
               {isArabic ? 'معلومات الحساب' : 'Account Details'}
             </ThemedText>
 
             {/* Phone Number (Read Only) */}
             <View style={styles.fieldContainer}>
-              <View style={{ flexDirection: flexDir, justifyContent: 'space-between', alignItems: 'center' }}>
-                <ThemedText style={[styles.label, { textAlign: textStart }]}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <ThemedText style={[styles.label, { textAlign }]}>
                   {isArabic ? 'رقم الهاتف (غير قابل للتعديل)' : 'Phone Number (Read-only)'}
                 </ThemedText>
                 <SolarLockBold size={14} color={Colors.text.muted} />
               </View>
-              <View style={[styles.inputWrapper, styles.disabledInputWrapper, { flexDirection: flexDir }]}>
+              <View style={[styles.inputWrapper, styles.disabledInputWrapper, { flexDirection: 'row' }]}>
                 <SolarPhoneBold size={20} color={Colors.text.muted} />
-                <ThemedText style={[styles.inputTextValue, styles.disabledInputText, { direction: 'ltr' }]}>
+                <ThemedText style={[styles.inputTextValue, styles.disabledInputText, { writingDirection: 'ltr' }]}>
                   {user?.phone || ''}
                 </ThemedText>
               </View>
@@ -408,7 +403,7 @@ export default function EditProfileScreen() {
                   style={[
                     styles.cityItem,
                     formData.cityId === item.id && styles.cityItemActive,
-                    { flexDirection: flexDir }
+                    { flexDirection: 'row' }
                   ]}
                   onPress={() => {
                     setFormData(prev => ({ ...prev, cityId: item.id }));

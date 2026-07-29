@@ -71,10 +71,7 @@ const PERIOD_LABELS: Record<string, { bookings: { ar: string; en: string }; inco
 export default function RevenueScreen() {
   const router = useRouter();
   const { user, userType, selectedChalet } = useSelector((state: RootState) => state.auth);
-  const { isRTL, textAlign } = useDirection();
-  const textEnd = textAlign === 'right' ? 'left' : 'right';
-  const startAlign = 'flex-start';
-  const endAlign = 'flex-end';
+  const { isRTL, textAlign, textAlignEnd } = useDirection();
   const [selectedPeriod, setSelectedPeriod] = useState('month');
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const periodRange = useMemo(() => getPeriodRange(selectedPeriod), [selectedPeriod]);
@@ -255,7 +252,7 @@ export default function RevenueScreen() {
             <View style={styles.confirmBannerIcon}>
               <SolarShieldWarningBold size={22} color={Colors.white} />
             </View>
-            <View style={[styles.confirmBannerBody, { alignItems: startAlign }]}>
+            <View style={[styles.confirmBannerBody, { alignItems: 'flex-start' }]}>
               <Text style={[styles.confirmBannerTitle, { textAlign }]}>
                 {isRTL ? 'طلب سحب بانتظار تأكيدك' : 'Withdrawal needs your confirmation'}
                 {awaitingConfirm.length > 1 ? ` (${awaitingConfirm.length})` : ''}
@@ -268,7 +265,7 @@ export default function RevenueScreen() {
             </View>
             <View style={[styles.confirmBannerCta, { flexDirection: 'row' }]}>
               <Text style={styles.confirmBannerCtaText}>{isRTL ? 'تأكيد' : 'Confirm'}</Text>
-              <SolarAltArrowRightLinear size={14} color={Colors.white} style={{ transform: [{ rotate: isRTL ? '180deg' : '0deg' }] }} />
+              <SolarAltArrowRightLinear size={14} color={Colors.white} style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }} />
             </View>
           </TouchableOpacity>
         )}
@@ -323,7 +320,7 @@ export default function RevenueScreen() {
             activeOpacity={0.7}
           >
             <Text style={styles.viewAllText}>{isRTL ? 'عرض الكل' : 'View All'}</Text>
-            <SolarAltArrowRightLinear size={14} color={Colors.primary} style={{ transform: [{ rotate: isRTL ? '180deg' : '0deg' }] }} />
+            <SolarAltArrowRightLinear size={14} color={Colors.primary} style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }} />
           </TouchableOpacity>
         </View>
 
@@ -348,15 +345,15 @@ export default function RevenueScreen() {
                     />
                   </View>
 
-                  <View style={[styles.transactionInfo, { alignItems: startAlign }]}>
+                  <View style={[styles.transactionInfo, { alignItems: 'flex-start' }]}>
                     <Text style={[styles.transactionTitle, { textAlign }]}>{isRTL ? 'طلب سحب' : 'Payout Request'}</Text>
                     <Text style={[styles.transactionDate, { textAlign }]}>
                       {new Date(item.createdAt).toLocaleDateString(isRTL ? 'ar-IQ' : 'en-US', { month: 'short', day: 'numeric' })}
                     </Text>
                   </View>
 
-                  <View style={{ alignItems: endAlign }}>
-                    <Text style={[styles.transactionAmount, { textAlign: textEnd }]}>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <Text style={[styles.transactionAmount, { textAlign: textAlignEnd }]}>
                       {item.amount?.toLocaleString()} <Text style={styles.currencySmall}>{isRTL ? 'د.ع' : 'IQD'}</Text>
                     </Text>
                     <View style={[styles.typeBadge, { backgroundColor: getStatusColor(item.status) + '15' }]}>
@@ -366,7 +363,7 @@ export default function RevenueScreen() {
                     </View>
                   </View>
 
-                  <SolarAltArrowRightLinear size={16} color={Colors.text.muted} style={{ transform: [{ rotate: isRTL ? '180deg' : '0deg' }] }} />
+                  <SolarAltArrowRightLinear size={16} color={Colors.text.muted} style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }} />
                 </TouchableOpacity>
                 {index < payouts.length - 1 && <View style={styles.separator} />}
               </View>

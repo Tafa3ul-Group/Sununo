@@ -2,12 +2,12 @@ import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { SolarBanknoteBold } from "@/components/icons/solar-icons";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Colors, normalize } from '@/constants/theme';
-import { useDirection } from "@/i18n";
+import { ltrScrollContent, useDirection, useRtlListOrder } from "@/i18n";
 import { RootState } from '@/store';
 import { useGetPayoutsQuery } from '@/store/api/apiSlice';
 import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSelector } from 'react-redux';
@@ -24,14 +24,11 @@ export default function TransactionsScreen() {
   const router = useRouter();
   const { user, userType, language } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
-  const { isRTL, textAlign } = useDirection();
-  const startAlign = 'flex-start';
-  const endAlign = 'flex-end';
-  const textEnd = textAlign === 'right' ? 'left' : 'right';
+  const { isRTL, textAlign, textAlignEnd } = useDirection();
   const [activeFilter, setActiveFilter] = useState<string | undefined>(undefined);
-  // FlashList v2 dropped `inverted`; reverse the data for RTL so the filter
-  // pills still read right-to-left (e.g. "الكل" stays on the right).
-  const filterData = useMemo(() => (isRTL ? [...FILTERS].reverse() : FILTERS), [isRTL]);
+  // Pill strip content is forced physical-LTR (ltrScrollContent); reverse the
+  // data in Arabic so the pills read right-to-left ("الكل" stays on the right).
+  const filterData = useRtlListOrder(FILTERS);
 
   const { data: payoutsResponse, isLoading, refetch } = useGetPayoutsQuery({
     status: activeFilter,
@@ -107,15 +104,15 @@ export default function TransactionsScreen() {
             <SolarBanknoteBold size={22} color={statusColor} />
           </View>
 
-          <View style={[styles.transactionInfo, { alignItems: startAlign }]}>
+          <View style={[styles.transactionInfo, { alignItems: 'flex-start' }]}>
             <Text style={[styles.transactionTitle, { textAlign }]}>{isRTL ? 'طلب سحب' : 'Payout Request'}</Text>
             {item.requestCode ? (
               <Text style={[styles.refCode, { textAlign }]}>{item.requestCode}</Text>
             ) : null}
           </View>
 
-          <View style={{ alignItems: endAlign }}>
-            <Text style={[styles.transactionAmount, { textAlign: textEnd }]}>
+          <View style={{ alignItems: 'flex-end' }}>
+            <Text style={[styles.transactionAmount, { textAlign: textAlignEnd }]}>
               {Number(item.amount)?.toLocaleString()} <Text style={styles.currencySmall}>{isRTL ? 'د.ع' : 'IQD'}</Text>
             </Text>
             <View style={[styles.statusBadge, { backgroundColor: statusBg }]}>
@@ -128,7 +125,7 @@ export default function TransactionsScreen() {
         </View>
 
         {/* Detail block: destination, dates, and state-specific notes */}
-        <View style={[styles.detailBlock, { alignItems: startAlign }]}>
+        <View style={[styles.detailBlock, { alignItems: 'flex-start' }]}>
           {dest ? (
             <Text style={[styles.detailText, { textAlign }]}>
               {(isRTL ? 'إلى: ' : 'To: ') + dest.label + ' • ' + dest.value}
@@ -186,7 +183,7 @@ export default function TransactionsScreen() {
           )}
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 14 }}
+          contentContainerStyle={{ paddingHorizontal: 14, ...ltrScrollContent }}
           ItemSeparatorComponent={() => <View style={{ width: 8 }} />}
         />
       </View>

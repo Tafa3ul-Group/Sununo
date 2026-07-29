@@ -13,7 +13,7 @@ import {
 import { PrimaryButton } from '@/components/user/primary-button';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { Colors, normalize } from '@/constants/theme';
-import { useDirection } from "@/i18n";
+import { ltrScrollContent, useDirection, useRtlListOrder } from "@/i18n";
 import { RootState } from '@/store';
 import { useDeleteExternalBookingMutation, useGetProviderBookingsQuery, useGetProviderProfileQuery, useRejectBookingMutation } from '@/store/api/apiSlice';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
@@ -39,7 +39,7 @@ export default function BookingsScreen() {
   const router = useRouter();
   const { user, userType, selectedChalet } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
-  const { isRTL } = useDirection();
+  const { isRTL, direction, textAlign } = useDirection();
 
   // API hooks
   const { data: profileResponse, refetch: refetchProfile } = useGetProviderProfileQuery(undefined);
@@ -100,6 +100,32 @@ export default function BookingsScreen() {
       filterScrollRef.current?.scrollTo({ x: itemLayouts[filterId] - 20, animated: true });
     }
   };
+
+  // Chip strip is forced physical-LTR (ltrScrollContent); reverse the data in
+  // Arabic so "الكل" stays first at the right edge and visible on mount.
+  const orderedFilters = useRtlListOrder([
+    { id: 'all', label: t('home.categories.all') || (isRTL ? 'الكل' : 'All') },
+    {
+      id: 'pending_approval',
+      label: isRTL ? 'بانتظار الموافقة' : 'Awaiting Approval',
+      icon: <SolarHourglassBold size={18} color={activeFilter === 'pending_approval' ? 'white' : Colors.primary} />
+    },
+    {
+      id: 'confirmed',
+      label: isRTL ? 'مؤكد' : 'Confirmed',
+      icon: <SolarCheckCircleBold size={18} color={activeFilter === 'confirmed' ? 'white' : Colors.primary} />
+    },
+    {
+      id: 'completed',
+      label: isRTL ? 'مكتمل' : 'Completed',
+      icon: <SolarClockCircleBold size={18} color={activeFilter === 'completed' ? 'white' : Colors.primary} />
+    },
+    {
+      id: 'cancelled',
+      label: isRTL ? 'ملغي' : 'Cancelled',
+      icon: <SolarCloseCircleBold size={18} color={activeFilter === 'cancelled' ? 'white' : Colors.primary} />
+    },
+  ]);
 
   const formatSelectedDate = (date: Date) => {
     return `${date.getMonth() + 1}/${date.getDate()}`;
@@ -289,7 +315,7 @@ export default function BookingsScreen() {
           <View style={{ paddingHorizontal: normalize.width(14), paddingVertical: normalize.height(12) }}>
             {/* صف 1: الاسم + باج الحالة */}
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: normalize.height(5) }}>
-              <Text style={[styles.modernBookingName, { flex: 0 }]} numberOfLines={1}>
+              <Text style={[styles.modernBookingName, { flex: 0, textAlign }]} numberOfLines={1}>
                 {customerName}
               </Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -319,7 +345,7 @@ export default function BookingsScreen() {
             {/* صف 2: اسم الشاليه + السعر */}
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: normalize.height(4) }}>
               {chaletName
-                ? <Text style={[styles.modernBookingChalet, { flex: 0 }]} numberOfLines={1}>{chaletName}</Text>
+                ? <Text style={[styles.modernBookingChalet, { flex: 0, textAlign }]} numberOfLines={1}>{chaletName}</Text>
                 : <View style={{ flex: 0 }} />
               }
               {!bIsExternal && (
@@ -355,13 +381,13 @@ export default function BookingsScreen() {
               {!bIsExternal && item.paymentModel === 'deposit' && (
                 <>
                   <Text style={styles.modernBookingDot}>•</Text>
-                  <Text style={{ fontSize: normalize.font(11), color: '#F97316', fontFamily: 'Alexandria-Medium' }}>
+                  <Text style={{ fontSize: normalize.font(11), color: '#F97316', fontFamily: 'Alexandria-Medium', textAlign }}>
                     {isRTL ? `عربون: ${(Number(item.depositAmount) || 0).toLocaleString()} د.ع` : `Deposit: ${(Number(item.depositAmount) || 0).toLocaleString()} IQD`}
                   </Text>
                   {Number(item.remainingAmount) > 0 && (
                     <>
                       <Text style={styles.modernBookingDot}>•</Text>
-                      <Text style={{ fontSize: normalize.font(11), color: '#035DF9', fontFamily: 'Alexandria-Medium' }}>
+                      <Text style={{ fontSize: normalize.font(11), color: '#035DF9', fontFamily: 'Alexandria-Medium', textAlign }}>
                         {isRTL ? `متبقي: ${(Number(item.remainingAmount) || 0).toLocaleString()} د.ع` : `Rem: ${(Number(item.remainingAmount) || 0).toLocaleString()} IQD`}
                       </Text>
                     </>
@@ -419,38 +445,17 @@ export default function BookingsScreen() {
                   horizontal
                   showsHorizontalScrollIndicator={false}
                   style={styles.filterScroll}
-                  contentContainerStyle={[styles.filterContainer, { flexDirection: 'row' }]}
+                  contentContainerStyle={[styles.filterContainer, { flexDirection: 'row' }, ltrScrollContent]}
                 >
-                  {[
-                    { id: 'all', label: t('home.categories.all') || (isRTL ? 'الكل' : 'All') },
-                    {
-                      id: 'pending_approval',
-                      label: isRTL ? 'بانتظار الموافقة' : 'Awaiting Approval',
-                      icon: <SolarHourglassBold size={18} color={activeFilter === 'pending_approval' ? 'white' : Colors.primary} />
-                    },
-                    {
-                      id: 'confirmed',
-                      label: isRTL ? 'مؤكد' : 'Confirmed',
-                      icon: <SolarCheckCircleBold size={18} color={activeFilter === 'confirmed' ? 'white' : Colors.primary} />
-                    },
-                    {
-                      id: 'completed',
-                      label: isRTL ? 'مكتمل' : 'Completed',
-                      icon: <SolarClockCircleBold size={18} color={activeFilter === 'completed' ? 'white' : Colors.primary} />
-                    },
-                    {
-                      id: 'cancelled',
-                      label: isRTL ? 'ملغي' : 'Cancelled',
-                      icon: <SolarCloseCircleBold size={18} color={activeFilter === 'cancelled' ? 'white' : Colors.primary} />
-                    },
-                  ].map((filter) => {
+                  {orderedFilters.map((filter) => {
                     const isActive = activeFilter === filter.id;
                     const isAll = filter.id === 'all';
 
                     return (
                       <View
                         key={filter.id}
-                        style={{ transform: [{ scale: 0.92 }] }}
+                        // Chip sits in an LTR-forced scroller; restore direction for its icon+label row.
+                        style={{ transform: [{ scale: 0.92 }], direction }}
                         onLayout={(event) => {
                           const layout = event.nativeEvent.layout;
                           setItemLayouts(prev => ({ ...prev, [filter.id]: layout.x }));
@@ -608,13 +613,13 @@ const styles = StyleSheet.create({
     width: normalize.width(180),
     height: normalize.width(180),
     top: normalize.height(-60),
-    right: normalize.width(-40)
+    end: normalize.width(-40)
   },
   decorCircle2: {
     width: normalize.width(120),
     height: normalize.width(120),
     bottom: normalize.height(-30),
-    left: normalize.width(-20)
+    start: normalize.width(-20)
   },
   walletTop: {
     justifyContent: 'space-between',

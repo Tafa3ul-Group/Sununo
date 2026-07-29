@@ -45,7 +45,7 @@ export interface AppDrawerRef {
 
 export const AppDrawer = forwardRef<AppDrawerRef>((props, ref) => {
   const { t } = useTranslation();
-  const { isRTL, rowDirection } = useDirection();
+  const { isRTL, direction, rowDirection } = useDirection();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const dispatch = useDispatch();
@@ -150,7 +150,7 @@ export const AppDrawer = forwardRef<AppDrawerRef>((props, ref) => {
         style={[
           styles.drawer,
           drawerStyle,
-          isRTL ? { end: 0 } : { start: 0 },
+          { start: 0, direction },
           { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 },
         ]}
       >

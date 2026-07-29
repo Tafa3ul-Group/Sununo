@@ -485,7 +485,7 @@ export default function HomeScreen() {
                   <View
                     style={[
                       styles.shiftNameGroup,
-                      { alignItems: 'flex-end', marginStart: 12 },
+                      { alignItems: 'flex-start', marginStart: 12 },
                     ]}
                   >
                     <Text
@@ -698,13 +698,13 @@ export default function HomeScreen() {
             { flexDirection: 'row' },
           ]}
         >
-          <TouchableOpacity onPress={() => changeWeek(isRTL ? "prev" : "next")} style={{ padding: 10 }}>
+          <TouchableOpacity onPress={() => changeWeek("prev")} style={{ padding: 10 }}>
             <ExpoImage
               source={require("@/assets/button/back.svg")}
               style={{
                 width: 18,
                 height: 25,
-                transform: [{ rotate: isRTL ? '180deg' : '0deg' }]
+                transform: [{ scaleX: isRTL ? -1 : 1 }]
               }}
             />
           </TouchableOpacity>
@@ -716,13 +716,13 @@ export default function HomeScreen() {
             })}
           </Text>
 
-          <TouchableOpacity onPress={() => changeWeek(isRTL ? "next" : "prev")} style={{ padding: 10 }}>
+          <TouchableOpacity onPress={() => changeWeek("next")} style={{ padding: 10 }}>
             <ExpoImage
               source={require("@/assets/button/back.svg")}
               style={{
                 width: 18,
                 height: 25,
-                transform: [{ rotate: isRTL ? '0deg' : '180deg' }]
+                transform: [{ scaleX: isRTL ? 1 : -1 }]
               }}
             />
           </TouchableOpacity>
@@ -734,6 +734,9 @@ export default function HomeScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={[
             styles.daysScroll,
+            // Inherited rtl is CORRECT here: days must read right-to-left in
+            // Arabic, the 7 tiles fit without overflow, and the scroll-into-view
+            // math uses measured onLayout x (direction-agnostic).
             { flexDirection: 'row' },
           ]}
         >

@@ -94,12 +94,7 @@ export default function BookingSuccessDetailsScreen() {
   const bookingId = id as string;
   const { formatShiftTime } = useFormatTime();
 
-  const { isRTL, rowDirection } = useDirection();
-  // Manager-aware: under forced RTL the OS swaps left/right (swapLeftAndRightInRTL),
-  // so for a standalone text block the visual "start" needs "left" when content RTL
-  // matches the layout manager's RTL. Flex-positioned labels treat these as a no-op.
-  const textStart: "left" | "right" = isRTL ? "right" : "left";
-  const textEnd: "left" | "right" = isRTL ? "left" : "right";
+  const { isRTL, rowDirection, textAlign, textAlignEnd } = useDirection();
 
   // Fetch booking details from the backend
   const { data: booking, isLoading, refetch } = useGetCustomerBookingDetailsQuery(
@@ -348,18 +343,17 @@ export default function BookingSuccessDetailsScreen() {
       style={[styles.infoRow, { flexDirection: rowDirection }]}
     >
       <ThemedText
-        style={[styles.infoLabel, { textAlign: textStart, writingDirection: writingDir }]}
+        style={[styles.infoLabel, { textAlign, writingDirection: writingDir }]}
       >
         {label}
       </ThemedText>
-      {/* flex-end pushes the value to the far end (opposite the label). Under
-          the app's forced RTL the OS mirrors flex-end to the correct side, so a
-          constant value works for both Arabic and English — using flex-start for
-          RTL wrongly parked the value right next to the label. */}
+      {/* flex-end pushes the value to the far end (opposite the label).
+          flex-end is LOGICAL under the container `direction` style, so this
+          constant lands on the correct side in both Arabic and English. */}
       <View style={{ flex: 1, alignItems: "flex-end" }}>
         {typeof value === "string" ? (
           <ThemedText
-            style={[styles.infoValue, { textAlign: textEnd, writingDirection: writingDir }]}
+            style={[styles.infoValue, { textAlign: textAlignEnd, writingDirection: writingDir }]}
           >
             {value}
           </ThemedText>
@@ -435,7 +429,7 @@ export default function BookingSuccessDetailsScreen() {
           <ThemedText
             style={[
               styles.sectionTitle,
-              { textAlign: textStart },
+              { textAlign },
             ]}
           >
             {t("booking.customerInfo")}
@@ -460,7 +454,7 @@ export default function BookingSuccessDetailsScreen() {
           <ThemedText
             style={[
               styles.sectionTitle,
-              { textAlign: textStart },
+              { textAlign },
             ]}
           >
             {t("booking.bookingInfo")}
@@ -468,7 +462,7 @@ export default function BookingSuccessDetailsScreen() {
           <View style={styles.divider} />
 
           <View style={[styles.infoRow, { flexDirection: rowDirection }]}>
-            <ThemedText style={[styles.infoLabel, { textAlign: textStart, writingDirection: writingDir }]}>
+            <ThemedText style={[styles.infoLabel, { textAlign, writingDirection: writingDir }]}>
               {t("booking.bookingStatus")}
             </ThemedText>
             <View style={{ flex: 1, alignItems: "flex-end" }}>
@@ -506,7 +500,7 @@ export default function BookingSuccessDetailsScreen() {
           <ThemedText
             style={[
               styles.sectionTitle,
-              { textAlign: textStart },
+              { textAlign },
             ]}
           >
             {t("booking.paymentDetails")}
@@ -514,7 +508,7 @@ export default function BookingSuccessDetailsScreen() {
           <View style={styles.divider} />
 
           <View style={[styles.infoRow, { flexDirection: rowDirection }]}>
-            <ThemedText style={[styles.infoLabel, { textAlign: textStart, writingDirection: writingDir }]}>
+            <ThemedText style={[styles.infoLabel, { textAlign, writingDirection: writingDir }]}>
               {t("booking.paymentStatus")}
             </ThemedText>
             <View style={{ flex: 1, alignItems: "flex-end" }}>
@@ -580,7 +574,7 @@ export default function BookingSuccessDetailsScreen() {
         {isPendingApproval && (
           <View style={[styles.alertCard, { flexDirection: rowDirection }]}>
             <SolarInfoCircleBold size={24} color="#D97706" />
-            <ThemedText style={[styles.alertText, { textAlign: textStart, writingDirection: writingDir }]}>
+            <ThemedText style={[styles.alertText, { textAlign, writingDirection: writingDir }]}>
               {isRTL
                 ? "سيقوم صاحب الشاليه بمراجعة طلب حجزك وتأكيده قريباً. سيصلك إشعار بالدفع فور الموافقة."
                 : "The owner will review and confirm your booking request soon. You will receive a notification to pay once approved."}
@@ -592,7 +586,7 @@ export default function BookingSuccessDetailsScreen() {
         {isConfirmed && (
           <View style={[styles.alertCard, styles.alertCardSuccess, { flexDirection: rowDirection }]}>
             <SolarInfoCircleBold size={24} color="#16A34A" />
-            <ThemedText style={[styles.alertText, { color: "#15803D", textAlign: textStart, writingDirection: writingDir }]}>
+            <ThemedText style={[styles.alertText, { color: "#15803D", textAlign, writingDirection: writingDir }]}>
               {isRTL
                 ? (isDepositPayment && remainingAmountVal > 0
                     ? "تم تأكيد حجزك بنجاح. يُدفع المبلغ المتبقي عند الوصول، وستظهر حالة الحجز \"مكتمل\" بعد انتهاء فترة الإقامة."
@@ -608,7 +602,7 @@ export default function BookingSuccessDetailsScreen() {
         {isCancelled && (
           <View style={[styles.alertCard, styles.alertCardDanger, { flexDirection: rowDirection }]}>
             <SolarInfoCircleBold size={24} color="#DC2626" />
-            <ThemedText style={[styles.alertText, { color: "#B91C1C", textAlign: textStart, writingDirection: writingDir }]}>
+            <ThemedText style={[styles.alertText, { color: "#B91C1C", textAlign, writingDirection: writingDir }]}>
               {isRTL ? "تم إلغاء هذا الحجز." : "This booking has been cancelled."}
               {cancellationReason ? `\n${cancellationReason}` : ""}
             </ThemedText>
@@ -620,7 +614,7 @@ export default function BookingSuccessDetailsScreen() {
         {isPendingPayment && !isDelayedChalet && (
           <View style={[styles.alertCard, { flexDirection: rowDirection }]}>
             <SolarInfoCircleBold size={24} color="#D97706" />
-            <ThemedText style={[styles.alertText, { textAlign: textStart, writingDirection: writingDir }]}>
+            <ThemedText style={[styles.alertText, { textAlign, writingDirection: writingDir }]}>
               {isRTL
                 ? "لم يتم تأكيد دفع هذا الحجز بعد. إذا أكملت الدفع فستتحدث الحالة تلقائياً، وإلا سيُلغى الحجز تلقائياً بعد انتهاء المهلة."
                 : "Payment for this booking has not been confirmed yet. The status will update automatically once payment completes; otherwise the booking will be cancelled after the timeout."}
@@ -631,11 +625,11 @@ export default function BookingSuccessDetailsScreen() {
         {/* Delayed chalet: complete payment after owner approval */}
         {isPendingPayment && isDelayedChalet && (
           <View style={styles.paymentSectionCard}>
-            <ThemedText style={[styles.sectionTitle, { textAlign: textStart }]}>
+            <ThemedText style={[styles.sectionTitle, { textAlign }]}>
               {isRTL ? "إتمام عملية الدفع وتأكيد الحجز" : "Complete Payment"}
             </ThemedText>
             <View style={styles.divider} />
-            <ThemedText style={[styles.paymentHelpText, { textAlign: textStart }]}>
+            <ThemedText style={[styles.paymentHelpText, { textAlign }]}>
               {isRTL
                 ? "وافق صاحب الشاليه على طلب حجزك! يرجى اختيار طريقة الدفع المناسبة لتأكيد حجزك:"
                 : "The chalet owner approved your request! Please select your payment method to confirm your booking:"}
@@ -644,7 +638,7 @@ export default function BookingSuccessDetailsScreen() {
             {/* Payment Options Selection (Deposit vs Full) */}
             {depositPercentage > 0 && (
               <View style={{ marginBottom: 16 }}>
-                <ThemedText style={[styles.paymentModelTitle, { textAlign: textStart }]}>
+                <ThemedText style={[styles.paymentModelTitle, { textAlign }]}>
                   {isRTL ? "اختر طريقة الدفع (لم يتم الدفع بعد)" : "Choose how to pay (not paid yet)"}
                 </ThemedText>
 
@@ -664,7 +658,7 @@ export default function BookingSuccessDetailsScreen() {
                     style={[
                       styles.paymentLabel,
                       paymentType === "DEPOSIT" && styles.paymentLabelActive,
-                      { textAlign: textStart },
+                      { textAlign },
                     ]}
                   >
                     {t("booking.depositPay")} ({depositPercentage}%)
@@ -673,7 +667,7 @@ export default function BookingSuccessDetailsScreen() {
                     style={[
                       styles.paymentVal,
                       paymentType === "DEPOSIT" && styles.paymentValActive,
-                      { textAlign: textEnd },
+                      { textAlign: textAlignEnd },
                     ]}
                   >
                     {depositAmountVal.toLocaleString()} {t("common.iqd")}
@@ -696,7 +690,7 @@ export default function BookingSuccessDetailsScreen() {
                     style={[
                       styles.paymentLabel,
                       paymentType === "FULL" && styles.paymentLabelActive,
-                      { textAlign: textStart },
+                      { textAlign },
                     ]}
                   >
                     {t("booking.fullPay")}
@@ -705,7 +699,7 @@ export default function BookingSuccessDetailsScreen() {
                     style={[
                       styles.paymentVal,
                       paymentType === "FULL" && styles.paymentValActive,
-                      { textAlign: textEnd },
+                      { textAlign: textAlignEnd },
                     ]}
                   >
                     {Number(booking?.totalPrice || 0).toLocaleString()} {t("common.iqd")}
@@ -785,7 +779,7 @@ export default function BookingSuccessDetailsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFFFFF" },
   scrollContent: { paddingBottom: 40, paddingHorizontal: 20 },
-  chaletCardInstance: { width: "100%", marginRight: 0, marginBottom: 16 },
+  chaletCardInstance: { width: "100%", marginBottom: 16 },
   detailsMapCard: {
     backgroundColor: "#FFFFFF",
     borderRadius: 24,

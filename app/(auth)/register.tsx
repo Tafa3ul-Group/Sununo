@@ -74,9 +74,8 @@ function StepProgress({ current, total }: { current: number; total: number }) {
 
 export default function RegisterScreen() {
   const { t } = useTranslation();
-  const { isRTL, rowDirection, textAlign } = useDirection();
+  const { isRTL, textAlign, inputTextAlign } = useDirection();
   const isArabic = isRTL;
-  const textStart = textAlign;
 
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -427,10 +426,7 @@ export default function RegisterScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View
-        style={[
-          styles.header,
-          { flexDirection: rowDirection }
-        ]}
+        style={styles.header}
       >
         <CircleBackButton onPress={prevStep} />
         <ThemedText style={styles.headerTitle}>
@@ -467,13 +463,13 @@ export default function RegisterScreen() {
                   before the owner registration form is reachable at all. */}
               {accountType === "owner" && !ownerPolicyAccepted ? (
                 <View style={styles.gateCard}>
-                  <ThemedText style={[styles.gateTitle, { textAlign: textStart }]}>
+                  <ThemedText style={[styles.gateTitle, { textAlign }]}>
                     {policyTitle(OWNER_POLICY) ||
                       (isArabic
                         ? "سياسة الشاليهات مع المنصة"
                         : "Chalet Owner Agreement")}
                   </ThemedText>
-                  <ThemedText style={[styles.gateBody, { textAlign: textStart }]}>
+                  <ThemedText style={[styles.gateBody, { textAlign }]}>
                     {isArabic
                       ? "قبل إنشاء حساب مالك، يجب قراءة سياسة الشاليهات مع المنصة والموافقة عليها. تشرح السياسة العمولة وآلية استلام المستحقات والتزاماتك تجاه الضيوف."
                       : "Before creating an owner account you must read and accept the chalet owner agreement. It covers the commission, how payouts reach you, and your obligations to guests."}
@@ -482,7 +478,7 @@ export default function RegisterScreen() {
                   {policiesError ? (
                     <>
                       <ThemedText
-                        style={[styles.errorText, { textAlign: textStart }]}
+                        style={[styles.errorText, { textAlign }]}
                       >
                         {isArabic
                           ? "تعذّر تحميل السياسة. تحقق من الاتصال."
@@ -518,7 +514,7 @@ export default function RegisterScreen() {
                 <>
                   {accountType === "owner" && (
                     <View style={styles.acceptedBanner}>
-                      <ThemedText style={[styles.acceptedText, { textAlign: textStart }]}>
+                      <ThemedText style={[styles.acceptedText, { textAlign }]}>
                         {isArabic
                           ? "✓ تمت الموافقة على سياسة الشاليهات مع المنصة"
                           : "✓ Chalet owner agreement accepted"}
@@ -538,7 +534,7 @@ export default function RegisterScreen() {
                   <ThemedText
                     style={[
                       styles.stepTitle,
-                      { textAlign: textStart },
+                      { textAlign },
                     ]}
                   >
                     {isArabic ? "المعلومات الأساسية" : "Basic Information"}
@@ -548,7 +544,7 @@ export default function RegisterScreen() {
                     <ThemedText
                       style={[
                         styles.label,
-                        { textAlign: textStart },
+                        { textAlign },
                       ]}
                     >
                       {t("auth.fullName")} *
@@ -556,7 +552,7 @@ export default function RegisterScreen() {
                     <TextInput
                       style={[
                         styles.input,
-                        { textAlign: textStart },
+                        { textAlign: inputTextAlign },
                       ]}
                       placeholder={
                         isArabic ? "ادخل اسمك الكامل" : "Enter your full name"
@@ -573,7 +569,7 @@ export default function RegisterScreen() {
                     <ThemedText
                       style={[
                         styles.label,
-                        { textAlign: textStart },
+                        { textAlign },
                       ]}
                     >
                       {t("auth.phone")} *
@@ -581,7 +577,7 @@ export default function RegisterScreen() {
                     <TextInput
                       style={[
                         styles.input,
-                        { textAlign: textStart },
+                        { textAlign: inputTextAlign },
                       ]}
                       placeholder="077XXXXXXXX"
                       value={formData.phone}
@@ -611,7 +607,7 @@ export default function RegisterScreen() {
                         <ThemedText style={styles.checkboxTick}>✓</ThemedText>
                       )}
                     </View>
-                    <ThemedText style={[styles.consentText, { textAlign: textStart }]}>
+                    <ThemedText style={[styles.consentText, { textAlign }]}>
                       {isArabic ? "أوافق على " : "I agree to the "}
                       <ThemedText
                         style={styles.linkText}
@@ -637,7 +633,7 @@ export default function RegisterScreen() {
 
                   {policiesError && (
                     <TouchableOpacity onPress={() => refetchPolicies()}>
-                      <ThemedText style={[styles.errorText, { textAlign: textStart }]}>
+                      <ThemedText style={[styles.errorText, { textAlign }]}>
                         {isArabic
                           ? "تعذّر تحميل السياسات. اضغط لإعادة المحاولة."
                           : "Could not load the policies. Tap to retry."}
@@ -673,7 +669,7 @@ export default function RegisterScreen() {
               <ThemedText
                 style={[
                   styles.stepTitle,
-                  { textAlign: textStart },
+                  { textAlign },
                 ]}
               >
                 {isArabic ? "معلومات الشاليه" : "Chalet Information"}
@@ -683,7 +679,7 @@ export default function RegisterScreen() {
                 <ThemedText
                   style={[
                     styles.label,
-                    { textAlign: textStart },
+                    { textAlign },
                   ]}
                 >
                   {isArabic
@@ -693,7 +689,7 @@ export default function RegisterScreen() {
                 <TextInput
                   style={[
                     styles.input,
-                    { textAlign: textStart },
+                    { textAlign: inputTextAlign },
                   ]}
                   placeholder={
                     isArabic ? "مثلاً: شاليه النخيل" : "e.g. Al Nakheel Chalet"
@@ -711,7 +707,7 @@ export default function RegisterScreen() {
                   <ThemedText
                     style={[
                       styles.label,
-                      { textAlign: textStart, marginBottom: 0, flex: 1 },
+                      { textAlign, marginBottom: 0, flex: 1 },
                     ]}
                   >
                     {isArabic
@@ -728,7 +724,7 @@ export default function RegisterScreen() {
                 <TextInput
                   style={[
                     styles.input,
-                    { textAlign: textStart },
+                    { textAlign: inputTextAlign },
                   ]}
                   placeholder={
                     isArabic
@@ -756,12 +752,12 @@ export default function RegisterScreen() {
             <View style={styles.stepContainer}>
               <StepProgress {...getStepInfo()} />
 
-              <ThemedText style={[styles.stepTitle, { textAlign: textStart }]}>
+              <ThemedText style={[styles.stepTitle, { textAlign }]}>
                 {isArabic ? "معلومات الدفع" : "Payout Details"}
               </ThemedText>
 
               <ThemedText
-                style={[styles.paymentHint, { textAlign: textStart }]}
+                style={[styles.paymentHint, { textAlign }]}
               >
                 {isArabic
                   ? "أدخل وسيلة استلام مستحقاتك. مطلوب واحدة على الأقل (زين كاش أو بطاقة كي)."
@@ -769,19 +765,19 @@ export default function RegisterScreen() {
               </ThemedText>
 
               <View style={styles.inputGroup}>
-                <ThemedText style={[styles.label, { textAlign: textStart }]}>
+                <ThemedText style={[styles.label, { textAlign }]}>
                   {isArabic ? "رقم زين كاش" : "Zain Cash Number"}
                 </ThemedText>
                 <View
                   style={[
                     styles.payWrapper,
-                    { flexDirection: rowDirection },
+                    { flexDirection: 'row' },
                     payErrors.zainCash ? styles.inputError : null,
                   ]}
                 >
                   <ExpoImage source={zainCashLogo} style={styles.payLogo} contentFit="contain" />
                   <TextInput
-                    style={[styles.payInput, { textAlign: textStart }]}
+                    style={[styles.payInput, { textAlign: inputTextAlign }]}
                     placeholder="07xxxxxxxxx"
                     keyboardType="phone-pad"
                     value={formData.zainCash}
@@ -797,26 +793,26 @@ export default function RegisterScreen() {
                   />
                 </View>
                 {!!payErrors.zainCash && (
-                  <ThemedText style={[styles.errorText, { textAlign: textStart }]}>
+                  <ThemedText style={[styles.errorText, { textAlign }]}>
                     {payErrors.zainCash}
                   </ThemedText>
                 )}
               </View>
 
               <View style={styles.inputGroup}>
-                <ThemedText style={[styles.label, { textAlign: textStart }]}>
+                <ThemedText style={[styles.label, { textAlign }]}>
                   {isArabic ? "رقم بطاقة كي" : "Qi Card Number"}
                 </ThemedText>
                 <View
                   style={[
                     styles.payWrapper,
-                    { flexDirection: rowDirection },
+                    { flexDirection: 'row' },
                     payErrors.qi ? styles.inputError : null,
                   ]}
                 >
                   <ExpoImage source={qiLogo} style={styles.payLogo} contentFit="contain" />
                   <TextInput
-                    style={[styles.payInput, { textAlign: textStart }]}
+                    style={[styles.payInput, { textAlign: inputTextAlign }]}
                     placeholder={
                       isArabic ? "رقم البطاقة المكوّن من 10 أرقام" : "10-digit card number"
                     }
@@ -834,14 +830,14 @@ export default function RegisterScreen() {
                   />
                 </View>
                 {!!payErrors.qi && (
-                  <ThemedText style={[styles.errorText, { textAlign: textStart }]}>
+                  <ThemedText style={[styles.errorText, { textAlign }]}>
                     {payErrors.qi}
                   </ThemedText>
                 )}
               </View>
 
               {!!payErrors.general && (
-                <ThemedText style={[styles.errorText, { textAlign: textStart, marginBottom: 8 }]}>
+                <ThemedText style={[styles.errorText, { textAlign, marginBottom: 8 }]}>
                   {payErrors.general}
                 </ThemedText>
               )}
@@ -865,7 +861,7 @@ export default function RegisterScreen() {
               <ThemedText
                 style={[
                   styles.stepTitle,
-                  { textAlign: textStart },
+                  { textAlign },
                 ]}
               >
                 {isArabic ? "التحقق من الهاتف" : "Verify Phone"}
@@ -873,7 +869,7 @@ export default function RegisterScreen() {
               <ThemedText
                 style={[
                    styles.stepSubtitle,
-                   { textAlign: textStart },
+                   { textAlign },
                 ]}
               >
                 {isArabic

@@ -181,14 +181,8 @@ export default function CompleteBookingScreen() {
   const [activeTab, setActiveTab] = useState<TabType>("WHEN");
   const [paymentType, setPaymentType] = useState<"DEPOSIT" | "FULL">("DEPOSIT");
   const { formatShiftTime } = useFormatTime();
-  const { isRTL, rowDirection, textAlign } = useDirection();
+  const { isRTL, rowDirection, textAlign, textAlignEnd, inputTextAlign } = useDirection();
   const isArabic = isRTL;
-
-  // textAlign is absolute, so direct mapping is correct regardless of native RTL state
-  const textStart: "left" | "right" = textAlign;
-  const textEnd: "left" | "right" = isArabic ? "left" : "right";
-  const alignStart: "flex-start" | "flex-end" = "flex-start";
-  const alignEnd: "flex-start" | "flex-end" = "flex-end";
 
   const pickImage = async (imageNumber: 1 | 2) => {
     // No permissions request is needed for launching the image library
@@ -1171,23 +1165,23 @@ export default function CompleteBookingScreen() {
         style={styles.infoSectionCard}
         entering={FadeInDown.delay(120).duration(380)}
       >
-        <ThemedText style={[styles.sectionTitle, { alignSelf: alignStart, textAlign: textStart }]}>
+        <ThemedText style={[styles.sectionTitle, { alignSelf: 'flex-start', textAlign }]}>
           {t("booking.customerInfo")}
         </ThemedText>
         <View style={styles.divider} />
         <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
-          <ThemedText style={[styles.infoLabel, { textAlign: textStart }]}>
+          <ThemedText style={[styles.infoLabel, { textAlign }]}>
             {t("booking.name")}
           </ThemedText>
-          <ThemedText style={[styles.infoValue, { textAlign: textEnd }]}>
+          <ThemedText style={[styles.infoValue, { textAlign: textAlignEnd }]}>
             {user?.name || t("booking.nameValue")}
           </ThemedText>
         </View>
         <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
-          <ThemedText style={[styles.infoLabel, { textAlign: textStart }]}>
+          <ThemedText style={[styles.infoLabel, { textAlign }]}>
             {t("booking.phone")}
           </ThemedText>
-          <ThemedText style={[styles.infoValue, { textAlign: textEnd, direction: "ltr" }]}>
+          <ThemedText style={[styles.infoValue, { textAlign: textAlignEnd, direction: "ltr" }]}>
             {user?.phone || t("booking.phoneValue")}
           </ThemedText>
         </View>
@@ -1198,7 +1192,7 @@ export default function CompleteBookingScreen() {
         entering={FadeInDown.delay(180).duration(380)}
       >
         <View style={[styles.sectionHeaderRow, styles.row, { flexDirection: rowDirection }]}>
-          <ThemedText style={[styles.sectionTitle, { textAlign: textStart }]}>
+          <ThemedText style={[styles.sectionTitle, { textAlign }]}>
             {t("booking.bookingInfo")}
           </ThemedText>
           <TouchableOpacity
@@ -1212,18 +1206,18 @@ export default function CompleteBookingScreen() {
         </View>
         <View style={styles.divider} />
         <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
-          <ThemedText style={[styles.infoLabel, { textAlign: textStart }]}>
+          <ThemedText style={[styles.infoLabel, { textAlign }]}>
             {t("booking.date")}
           </ThemedText>
-          <ThemedText style={[styles.infoValue, { textAlign: textEnd }]}>
+          <ThemedText style={[styles.infoValue, { textAlign: textAlignEnd }]}>
             {bookingDateString}
           </ThemedText>
         </View>
         <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
-          <ThemedText style={[styles.infoLabel, { textAlign: textStart }]}>
+          <ThemedText style={[styles.infoLabel, { textAlign }]}>
             {t("booking.shift")}
           </ThemedText>
-          <ThemedText style={[styles.infoValue, { textAlign: textEnd }]}>
+          <ThemedText style={[styles.infoValue, { textAlign: textAlignEnd }]}>
             {selectedDates.length > 1
               ? isArabic
                 ? "فترات متعددة"
@@ -1245,10 +1239,10 @@ export default function CompleteBookingScreen() {
           </ThemedText>
         </View>
         <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
-          <ThemedText style={[styles.infoLabel, { textAlign: textStart }]}>
+          <ThemedText style={[styles.infoLabel, { textAlign }]}>
             {t("booking.guests")}
           </ThemedText>
-          <ThemedText style={[styles.infoValue, { textAlign: textEnd }]}>
+          <ThemedText style={[styles.infoValue, { textAlign: textAlignEnd }]}>
             {adultCount}
           </ThemedText>
         </View>
@@ -1258,31 +1252,31 @@ export default function CompleteBookingScreen() {
           <>
             <View style={styles.divider} />
             <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
-              <ThemedText style={[styles.infoLabel, { textAlign: textStart }]}>
+              <ThemedText style={[styles.infoLabel, { textAlign }]}>
                 {t("booking.shiftPrice") || (isArabic ? "سعر الفترة" : "Shift Price")}
               </ThemedText>
-              <ThemedText style={[styles.infoValue, { textAlign: textEnd }]}>
+              <ThemedText style={[styles.infoValue, { textAlign: textAlignEnd }]}>
                 {selectedShiftPrice.toLocaleString()} {t("common.iqd")}
               </ThemedText>
             </View>
             {extraGuestsPrice > 0 && (
               <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
-                <ThemedText style={[styles.infoLabel, { textAlign: textStart }]}>
+                <ThemedText style={[styles.infoLabel, { textAlign }]}>
                   {isArabic ? "رسوم الأشخاص الإضافيين" : "Extra Guest Fees"}
                 </ThemedText>
-                <ThemedText style={[styles.infoValue, { textAlign: textEnd }]}>
+                <ThemedText style={[styles.infoValue, { textAlign: textAlignEnd }]}>
                   {extraGuestsPrice.toLocaleString()} {t("common.iqd")}
                 </ThemedText>
               </View>
             )}
             <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
-              <ThemedText style={[styles.infoLabel, { fontWeight: "700", textAlign: textStart }]}>
+              <ThemedText style={[styles.infoLabel, { fontWeight: "700", textAlign }]}>
                 {t("booking.totalAmount")}
               </ThemedText>
               <ThemedText
                 style={[
                   styles.infoValue,
-                  { fontFamily: "Alexandria-Medium", color: Colors.primary, textAlign: textEnd },
+                  { fontFamily: "Alexandria-Medium", color: Colors.primary, textAlign: textAlignEnd },
                 ]}
               >
                 {totalPrice.toLocaleString()} {t("common.iqd")}
@@ -1296,7 +1290,7 @@ export default function CompleteBookingScreen() {
         style={styles.infoSectionCard}
         entering={FadeInDown.delay(240).duration(380)}
       >
-        <ThemedText style={[styles.sectionTitle, { alignSelf: alignStart, textAlign: textStart }]}>
+        <ThemedText style={[styles.sectionTitle, { alignSelf: 'flex-start', textAlign }]}>
           {isArabic ? "ملاحظات إضافية" : "Special Requests"}
         </ThemedText>
         <View style={styles.divider} />
@@ -1307,7 +1301,7 @@ export default function CompleteBookingScreen() {
               height: 100,
               textAlignVertical: "top",
               paddingTop: 12,
-              textAlign: textStart,
+              textAlign: inputTextAlign,
             },
           ]}
           placeholder={
@@ -1327,11 +1321,11 @@ export default function CompleteBookingScreen() {
         <View style={[styles.infoSectionCard, { marginTop: 16 }]}>
           <View style={{ flexDirection: rowDirection, alignItems: "center", gap: 10, marginBottom: 10 }}>
             <SolarInfoCircleBold size={22} color="#F59E0B" />
-            <ThemedText style={[styles.sectionTitle, { textAlign: textStart, flex: 1 }]}>
+            <ThemedText style={[styles.sectionTitle, { textAlign, flex: 1 }]}>
               {isArabic ? "ملاحظة حول الحجز" : "Booking Note"}
             </ThemedText>
           </View>
-          <ThemedText style={{ color: "#64748B", fontSize: 13, fontFamily: "Alexandria-Medium", lineHeight: 22, textAlign: textStart }}>
+          <ThemedText style={{ color: "#64748B", fontSize: 13, fontFamily: "Alexandria-Medium", lineHeight: 22, textAlign }}>
             {isArabic
               ? "سيتم إرسال طلب الحجز إلى صاحب الشاليه للموافقة عليه. بعد الموافقة ستصلك رسالة عبر واتساب تحتوي على رابط لإتمام عملية الدفع."
               : "Your booking request will be sent to the chalet owner for approval. Once approved, you will receive a WhatsApp message with a link to complete the payment."}
@@ -1340,7 +1334,7 @@ export default function CompleteBookingScreen() {
       ) : (
         /* ── Instant Booking: Show payment selection ── */
         <>
-          <ThemedText style={[styles.paymentMainTitle, { alignSelf: alignStart, textAlign: textStart }]}>
+          <ThemedText style={[styles.paymentMainTitle, { alignSelf: 'flex-start', textAlign }]}>
             {t("booking.paymentTitle")}
           </ThemedText>
 
@@ -1358,7 +1352,7 @@ export default function CompleteBookingScreen() {
                 style={[
                   styles.paymentLabel,
                   paymentType === "DEPOSIT" && styles.paymentLabelActive,
-                  { textAlign: textStart },
+                  { textAlign },
                 ]}
               >
                 {t("booking.depositPay")} ({depositPercentage}%)
@@ -1367,7 +1361,7 @@ export default function CompleteBookingScreen() {
                 style={[
                   styles.paymentVal,
                   paymentType === "DEPOSIT" && styles.paymentValActive,
-                  { textAlign: textEnd },
+                  { textAlign: textAlignEnd },
                 ]}
               >
                 {depositAmount.toLocaleString()} {t("common.iqd")}
@@ -1388,7 +1382,7 @@ export default function CompleteBookingScreen() {
               style={[
                 styles.paymentLabel,
                 paymentType === "FULL" && styles.paymentLabelActive,
-                { textAlign: textStart },
+                { textAlign },
               ]}
             >
               {t("booking.fullPay")}
@@ -1397,7 +1391,7 @@ export default function CompleteBookingScreen() {
               style={[
                 styles.paymentVal,
                 paymentType === "FULL" && styles.paymentValActive,
-                { textAlign: textEnd },
+                { textAlign: textAlignEnd },
               ]}
             >
               {totalPrice.toLocaleString()} {t("common.iqd")}
@@ -1419,14 +1413,14 @@ export default function CompleteBookingScreen() {
 
           <View style={[styles.infoSectionCard, { marginTop: 8 }]}>
             <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection, marginBottom: 0, alignItems: "center" }]}>
-              <ThemedText style={[styles.infoLabel, { fontWeight: "700", textAlign: textStart }]}>
+              <ThemedText style={[styles.infoLabel, { fontWeight: "700", textAlign }]}>
                 {t("booking.paymentMethod") || "طريقة الدفع"}
               </ThemedText>
               <View style={{ flexDirection: rowDirection, alignItems: "center", gap: 8 }}>
                 <View style={{ backgroundColor: "#ECFDF5", padding: 6, borderRadius: 8 }}>
                   <SolarCardBold size={18} color="#10B981" />
                 </View>
-                <ThemedText style={[styles.infoValue, { color: "#10B981", fontFamily: "Alexandria-SemiBold", textAlign: textEnd }]}>
+                <ThemedText style={[styles.infoValue, { color: "#10B981", fontFamily: "Alexandria-SemiBold", textAlign: textAlignEnd }]}>
                   {t("booking.wayl")}
                 </ThemedText>
               </View>
@@ -1730,7 +1724,7 @@ export default function CompleteBookingScreen() {
                         <View
                           style={[
                             styles.shiftInfoFlat,
-                            { alignItems: alignStart, marginHorizontal: 12 },
+                            { alignItems: 'flex-start', marginHorizontal: 12 },
                           ]}
                         >
                           <ThemedText style={styles.shiftNameFlat}>
@@ -1869,7 +1863,7 @@ export default function CompleteBookingScreen() {
                         <View
                           style={[
                             styles.shiftInfoFlat,
-                            { alignItems: alignStart, marginHorizontal: 12 },
+                            { alignItems: 'flex-start', marginHorizontal: 12 },
                             { flex: 1 },
                           ]}
                         >
@@ -1952,7 +1946,7 @@ export default function CompleteBookingScreen() {
                   {isArabic ? "السعة الأساسية" : "Base Capacity"}
                 </ThemedText>
                 <View style={{ flex: 1 }} />
-                <ThemedText style={[styles.capacityRowValue, { textAlign: textEnd }]}>
+                <ThemedText style={[styles.capacityRowValue, { textAlign: textAlignEnd }]}>
                   {capacityLimit} {isArabic ? "أشخاص" : "guests"}
                 </ThemedText>
               </View>
@@ -1970,7 +1964,7 @@ export default function CompleteBookingScreen() {
                       {isArabic ? "الحد الأقصى" : "Maximum Capacity"}
                     </ThemedText>
                     <View style={{ flex: 1 }} />
-                    <ThemedText style={[styles.capacityRowValue, { textAlign: textEnd }]}>
+                    <ThemedText style={[styles.capacityRowValue, { textAlign: textAlignEnd }]}>
                       {chaletDetails.capacity} {isArabic ? "شخص" : "guests"}
                     </ThemedText>
                   </View>
@@ -1988,7 +1982,7 @@ export default function CompleteBookingScreen() {
                     {isArabic ? "سعر الشخص الإضافي" : "Extra Person Price"}
                   </ThemedText>
                   <View style={{ flex: 1 }} />
-                  <ThemedText style={[styles.capacityRowValue, { color: "#F59E0B", textAlign: textEnd }]}>
+                  <ThemedText style={[styles.capacityRowValue, { color: "#F59E0B", textAlign: textAlignEnd }]}>
                     {Number(extraPersonPrice).toLocaleString()} {t("common.iqd")}
                   </ThemedText>
                 </View>
@@ -1998,7 +1992,7 @@ export default function CompleteBookingScreen() {
               {extraGuestsCount > 0 && extraPersonPrice > 0 && (
                 <View style={[styles.extraGuestNotice, { flexDirection: rowDirection }]}>
                   <SolarInfoCircleBold size={14} color="#F59E0B" />
-                  <ThemedText style={[styles.extraGuestNoticeText, { textAlign: textStart }]}>
+                  <ThemedText style={[styles.extraGuestNoticeText, { textAlign }]}>
                     {isArabic
                       ? `لديك ${extraGuestsCount} ${extraGuestsCount === 1 ? "شخص إضافي" : "أشخاص إضافيين"} × ${Number(extraPersonPrice).toLocaleString()} ${t("common.iqd")} × ${selectedDates.length} ${selectedDates.length === 1 ? "يوم" : "أيام"} = ${extraGuestsPrice.toLocaleString()} ${t("common.iqd")}`
                       : `${extraGuestsCount} extra ${extraGuestsCount === 1 ? "guest" : "guests"} × ${Number(extraPersonPrice).toLocaleString()} ${t("common.iqd")} × ${selectedDates.length} ${selectedDates.length === 1 ? "day" : "days"} = ${extraGuestsPrice.toLocaleString()} ${t("common.iqd")}`}
@@ -2010,7 +2004,7 @@ export default function CompleteBookingScreen() {
               {chaletDetails?.capacity && totalGuestsNow >= chaletDetails.capacity && (
                 <View style={[styles.capacityWarning, { flexDirection: rowDirection }]}>
                   <SolarInfoCircleBold size={14} color="#EF4444" />
-                  <ThemedText style={[styles.capacityWarningText, { textAlign: textStart }]}>
+                  <ThemedText style={[styles.capacityWarningText, { textAlign }]}>
                     {isArabic
                       ? "لقد وصلت للحد الأقصى من الضيوف"
                       : "You've reached the maximum guest limit"}
@@ -2023,7 +2017,7 @@ export default function CompleteBookingScreen() {
               <ThemedText
                 style={[
                   styles.guestLabel,
-                  { alignSelf: alignStart, textAlign: textStart, marginBottom: 12, fontSize: 16 },
+                  { alignSelf: 'flex-start', textAlign, marginBottom: 12, fontSize: 16 },
                 ]}
               >
                 {isArabic ? "نوع الحجز" : "Booking Type"}
@@ -2072,7 +2066,7 @@ export default function CompleteBookingScreen() {
                 <ThemedText
                   style={[
                     styles.guestLabel,
-                    { alignSelf: alignStart, textAlign: textStart, marginBottom: 12, fontSize: 16 },
+                    { alignSelf: 'flex-start', textAlign, marginBottom: 12, fontSize: 16 },
                   ]}
                 >
                   {isArabic ? "رفع صور الهوية" : "Upload ID Photos"}
@@ -2144,13 +2138,13 @@ export default function CompleteBookingScreen() {
               <View
                 style={[
                   styles.guestInfo,
-                  { alignItems: alignStart }
+                  { alignItems: 'flex-start' }
                 ]}
               >
                 <ThemedText
                   style={[
                     styles.guestLabel,
-                    { textAlign: textStart }
+                    { textAlign }
                   ]}
                 >
                   {t("booking.adults")}
@@ -2158,7 +2152,7 @@ export default function CompleteBookingScreen() {
                 <ThemedText
                   style={[
                     styles.guestSubLabel,
-                    { textAlign: textStart }
+                    { textAlign }
                   ]}
                 >
                   {t("booking.adultsDesc")}
@@ -2312,16 +2306,6 @@ const styles = StyleSheet.create({
     fontFamily: "Alexandria-Medium",
     opacity: 0.4,
   },
-  scribbleOverlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 2,
-    justifyContent: "center",
-    alignItems: "center",
-  },
   shiftLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
   shiftIconBox: {
     width: 40,
@@ -2433,7 +2417,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#1E293B",
     flexShrink: 0,
-    textAlign: "right",
     lineHeight: 22,
   },
   guestTypeContainer: {
@@ -2601,7 +2584,7 @@ const styles = StyleSheet.create({
 
   // Details Styles
   detailsContainer: { marginTop: 15 },
-  chaletCardInstance: { width: "100%", marginRight: 0, marginBottom: 12 },
+  chaletCardInstance: { width: "100%", marginBottom: 12 },
   detailsMapCard: {
     backgroundColor: "#FFFFFF",
     borderRadius: 20,
@@ -2743,15 +2726,6 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(8),
     fontFamily: "Alexandria-Medium",
     color: "#1E293B",
-  },
-  selectedDot: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.primary,
   },
   capacityBanner: {
     backgroundColor: "#F8FAFC",

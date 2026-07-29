@@ -68,7 +68,7 @@ import {
 import Svg, { Path } from "react-native-svg";
 import { useSelector } from "react-redux";
 import { useFormatTime } from "../../../hooks/useFormatTime";
-import { useDirection } from "@/i18n";
+import { ltrScrollContent, useDirection } from "@/i18n";
 import * as Haptics from "expo-haptics";
 import Animated, {
   FadeInDown,
@@ -142,6 +142,7 @@ const ShiftCard = React.memo(function ShiftCard({
   formatShiftTime: (time: any) => string;
   t: (key: string) => string;
 }) {
+  const { textAlign } = useDirection();
   const nameEn = shift.name?.en?.toLowerCase() || "";
   const nameAr = shift.name?.ar || "";
   const isOvernight =
@@ -179,19 +180,19 @@ const ShiftCard = React.memo(function ShiftCard({
           { alignItems: 'flex-start', marginHorizontal: 12 },
         ]}
       >
-        <ThemedText style={[styles.shiftName, { textAlign: isRTL ? 'right' : 'left' }]}>
+        <ThemedText style={[styles.shiftName, { textAlign }]}>
           {isRTL
             ? shift.name?.ar || shift.name
             : shift.name?.en || shift.name}
         </ThemedText>
-        <ThemedText style={[styles.shiftTime, { textAlign: isRTL ? 'right' : 'left' }]}>
+        <ThemedText style={[styles.shiftTime, { textAlign }]}>
           {formatShiftTime(shift.startTime)} -{" "}
           {formatShiftTime(shift.endTime)}
         </ThemedText>
       </View>
       {minShiftPrice && (
         <View style={{ alignItems: 'flex-start' }}>
-          <ThemedText style={[styles.shiftPrice, { textAlign: isRTL ? 'right' : 'left' }]}>
+          <ThemedText style={[styles.shiftPrice, { textAlign }]}>
             {minShiftPrice} {t("common.iqd")}
           </ThemedText>
         </View>
@@ -241,14 +242,6 @@ export default function ChaletDetailScreen() {
   const { t } = useTranslation();
   const { userType } = useSelector((state: RootState) => state.auth);
   const { isRTL, textAlign } = useDirection();
-
-  // textStart: leading text alignment (container mirrors the layout).
-  const textStart: "left" | "right" = isRTL ? "right" : "left";
-  const textEnd: "left" | "right" = isRTL ? "left" : "right";
-  // flexDir: row direction (container mirrors the layout).
-  const flexDir: "row" | "row-reverse" = "row";
-  const alignStart: "flex-start" | "flex-end" = "flex-start";
-  const alignEnd: "flex-start" | "flex-end" = "flex-end";
 
   const { id } = useLocalSearchParams();
   const chaletId = id as string;
@@ -669,7 +662,7 @@ export default function ChaletDetailScreen() {
             ref={bannerScrollRef}
             horizontal
             pagingEnabled
-            contentContainerStyle={{ flexDirection: "row" }}
+            contentContainerStyle={{ flexDirection: "row", ...ltrScrollContent }}
             onScroll={(e) =>
               setActiveImage(
                 Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH),
@@ -727,8 +720,8 @@ export default function ChaletDetailScreen() {
             style={{
               position: "absolute",
               bottom: 20,
-              left: 20,
-              right: 20,
+              start: 20,
+              end: 20,
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "space-between",
@@ -754,7 +747,7 @@ export default function ChaletDetailScreen() {
             />
 
             <View
-              style={{ flexDirection: "row", gap: 6, alignItems: "center" }}
+              style={{ flexDirection: "row", gap: 6, alignItems: "center", direction: "ltr" }}
             >
               {images.map((_: string, i: number) => (
                 <Animated.View
@@ -841,9 +834,9 @@ export default function ChaletDetailScreen() {
                 );
               })
             ) : (
-              <View style={[styles.closedChaletBox, { flexDirection: flexDir }]}>
+              <View style={[styles.closedChaletBox, { flexDirection: 'row' }]}>
                 <SolarForbiddenCircleLineDuotone size={24} color="#EF4444" />
-                <ThemedText style={[styles.closedChaletText, { textAlign: textStart }]}>
+                <ThemedText style={[styles.closedChaletText, { textAlign }]}>
                   {isRTL
                     ? "عذراً، لا تتوفر أي فترات حجز حالياً في هذا الشاليه."
                     : "Sorry, no booking periods are currently available for this chalet."}
@@ -855,7 +848,7 @@ export default function ChaletDetailScreen() {
           {facilities.length > 0 && (
             <>
               <View
-                style={[styles.facilitiesHeader, { flexDirection: flexDir }]}
+                style={[styles.facilitiesHeader, { flexDirection: 'row' }]}
               >
                 <SectionHeader
                   title={t("chalet.details.facilities")}
@@ -870,7 +863,7 @@ export default function ChaletDetailScreen() {
                   </ThemedText>
                 </TouchableOpacity>
               </View>
-              <View style={[styles.facilitiesGrid, { flexDirection: flexDir }]}>
+              <View style={[styles.facilitiesGrid, { flexDirection: 'row' }]}>
                 {facilities.slice(0, 8).map((f: any, i: number) => (
                   <FacilityCell key={i} facility={f} index={i} />
                 ))}
@@ -888,7 +881,7 @@ export default function ChaletDetailScreen() {
                     styles.descriptionText,
                     {
                       width: "100%",
-                      textAlign: textStart,
+                      textAlign,
                       writingDirection: isRTL ? "rtl" : "ltr",
                     },
                   ]}
@@ -992,7 +985,7 @@ export default function ChaletDetailScreen() {
           />
 
           {/* التقييم والمراجعات */}
-          <View style={[styles.ctaRowReviewMerged, { flexDirection: flexDir }]}>
+          <View style={[styles.ctaRowReviewMerged, { flexDirection: 'row' }]}>
             <SecondaryButton
               label={t("chalet.details.reviews")}
               iconLabel={String(reviewCount)}
@@ -1001,7 +994,6 @@ export default function ChaletDetailScreen() {
               onPress={() => router.push(`/chalet-details/reviews/${chaletId}`)}
               style={{ width: isRTL ? 160 : 140, marginHorizontal: 8 }}
               height={46}
-              variant={isRTL ? undefined : "inverse"}
             />
 
             <TouchableOpacity
@@ -1011,19 +1003,18 @@ export default function ChaletDetailScreen() {
               <Svg
                 width={86}
                 height={46}
-                viewBox={isRTL ? "0 0 54 29" : "0 0 63 29"}
-                style={StyleSheet.absoluteFill}
+                viewBox="0 0 63 29"
+                style={[
+                  StyleSheet.absoluteFill,
+                  { transform: [{ scaleX: isRTL ? -1 : 1 }] },
+                ]}
               >
                 <Path
-                  d={
-                    isRTL
-                      ? "M0 14.5C0 6.49187 6.49187 0 14.5 0H46C49.3137 0 52 2.68629 52 6V23C52 26.3137 49.3137 29 46 29H14.5C6.49187 29 0 22.5081 0 14.5Z"
-                      : "M0 14.5C0 6.49187 6.49187 0 14.5 0H57C60.3137 0 63 2.68629 63 6V23C63 26.3137 60.3137 29 57 29H14.5C6.49187 29 0 22.5081 0 14.5Z"
-                  }
+                  d="M0 14.5C0 6.49187 6.49187 0 14.5 0H57C60.3137 0 63 2.68629 63 6V23C63 26.3137 60.3137 29 57 29H14.5C6.49187 29 0 22.5081 0 14.5Z"
                   fill="#035DF9"
                 />
               </Svg>
-              <View style={[styles.pillContent, { flexDirection: flexDir }]}>
+              <View style={[styles.pillContent, { flexDirection: 'row' }]}>
                 <SolarStarBold size={18} color="white" />
                 <ThemedText style={styles.customRatingText}>
                   {chaletRating.toFixed(1)}
@@ -1055,7 +1046,7 @@ export default function ChaletDetailScreen() {
             return (
               <View key={reviewItem?.id || i} style={styles.revComplexCardFlat}>
                 <View
-                  style={[styles.revHeaderMerged, { flexDirection: flexDir }]}
+                  style={[styles.revHeaderMerged, { flexDirection: 'row' }]}
                 >
                   <View style={styles.avatarCircleMerged}>
                     <ExpoImage
@@ -1069,18 +1060,18 @@ export default function ChaletDetailScreen() {
                     style={[
                       styles.nameAndBodyMerged,
                       {
-                        alignItems: alignStart,
+                        alignItems: 'flex-start',
                         marginHorizontal: 12,
                       },
                     ]}
                   >
-                    <ThemedText style={[styles.reviewerNameMerged, { textAlign: textStart }]}>
+                    <ThemedText style={[styles.reviewerNameMerged, { textAlign }]}>
                       {reviewerName}
                     </ThemedText>
                     <ThemedText
                       style={[
                         styles.revMessageMerged,
-                        { textAlign: textStart },
+                        { textAlign },
                       ]}
                     >
                       {reviewComment}
@@ -1090,7 +1081,7 @@ export default function ChaletDetailScreen() {
                   <View
                     style={[
                       styles.revRatingCornerMerged,
-                      { flexDirection: flexDir },
+                      { flexDirection: 'row' },
                     ]}
                   >
                     <SolarStarBold size={14} color="#035DF9" />
@@ -1101,7 +1092,7 @@ export default function ChaletDetailScreen() {
                 </View>
 
                 <View
-                  style={[styles.dateWrapperMerged, { alignItems: alignEnd }]}
+                  style={[styles.dateWrapperMerged, { alignItems: 'flex-end' }]}
                 >
                   <ThemedText style={styles.revTimeTextMerged}>
                     {reviewDate}
@@ -1139,7 +1130,7 @@ export default function ChaletDetailScreen() {
           <View
             style={[
               styles.infoIconsGrid,
-              { flexDirection: flexDir, justifyContent: "flex-start" },
+              { flexDirection: 'row', justifyContent: "flex-start" },
             ]}
           >
             {[
@@ -1158,7 +1149,7 @@ export default function ChaletDetailScreen() {
             ].map((item, i) => (
               <TouchableOpacity
                 key={i}
-                style={[styles.infoIconCell, { flexDirection: flexDir }]}
+                style={[styles.infoIconCell, { flexDirection: 'row' }]}
                 onPress={item.onPress}
                 activeOpacity={0.7}
               >
@@ -1354,7 +1345,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#1E293B",
     flexShrink: 0,
-    textAlign: "right",
     lineHeight: 22,
   },
   shiftPriceActive: {
@@ -1531,7 +1521,6 @@ const styles = StyleSheet.create({
     ...Shadows.medium,
   },
   mapImageMarkerImg: { width: "100%", height: "100%" },
-  pinCenterFallback: { position: "absolute", top: "40%", left: "46%" },
   expoGoBanner: {
     position: "absolute",
     bottom: 15,
@@ -1567,14 +1556,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     position: "relative",
   },
-  contactBanner: {
-    width: "100%",
-    height: "100%",
-    position: "absolute",
-    top: 0,
-    left: 0,
-  },
-
   ctaRowReviewMerged: {
     marginTop: 20,
     alignItems: "center",
@@ -1702,10 +1683,6 @@ const styles = StyleSheet.create({
     height: 76,
     borderRadius: normalize.radius(38),
     alignSelf: "stretch",
-  },
-  addonsList: {
-    paddingRight: 20,
-    gap: 12,
   },
   addonCard: {
     width: 140,

@@ -86,9 +86,7 @@ export function PredefinedTermsPicker({
   busy,
 }: PredefinedTermsPickerProps) {
   // The container mirrors logical layout, so use plain 'row' + leading aligns.
-  const { rowDirection, textAlign } = useDirection();
-  const flexRow = rowDirection;
-  const flexStart = 'flex-start';
+  const { textAlign } = useDirection();
 
   const selectedCount = useMemo(
     () => (terms || []).filter((t) => selectedIds.has(t.id)).length,
@@ -98,8 +96,8 @@ export function PredefinedTermsPicker({
   return (
     <View>
       {/* Section header */}
-      <View style={{ alignItems: flexStart, marginBottom: 12 }}>
-        <View style={{ flexDirection: flexRow, alignItems: 'center', gap: 8 }}>
+      <View style={{ alignItems: 'flex-start', marginBottom: 12 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <Text style={{ fontSize: 15, fontFamily: 'Alexandria-Bold', color: '#0F172A', textAlign }}>
             {isRTL ? 'الشروط الجاهزة' : 'Ready-made Rules'}
           </Text>
@@ -156,7 +154,7 @@ export function PredefinedTermsPicker({
                 disabled={busy}
                 onPress={() => onToggle(term)}
                 style={{
-                  flexDirection: flexRow,
+                  flexDirection: 'row',
                   alignItems: 'flex-start',
                   gap: 12,
                   borderRadius: 12,
@@ -186,7 +184,7 @@ export function PredefinedTermsPicker({
                   )}
                 </View>
                 {/* Texts */}
-                <View style={{ flex: 1, alignItems: flexStart }}>
+                <View style={{ flex: 1, alignItems: 'flex-start' }}>
                   <Text
                     style={{
                       fontSize: 13,

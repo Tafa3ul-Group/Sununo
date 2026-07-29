@@ -30,12 +30,9 @@ const zainCashLogo = require('@/assets/zaincash.png');
 const qiLogo = require('@/assets/qi.svg');
 
 export default function ProviderProfileScreen() {
-  const { isRTL: isArabic, rowDirection } = useDirection();
+  const { isRTL: isArabic, textAlign, inputTextAlign } = useDirection();
   const dispatch = useDispatch();
   const router = useRouter();
-
-  const textStart: 'left' | 'right' = isArabic ? 'right' : 'left';
-  const flexDir: 'row' | 'row-reverse' = rowDirection;
 
   const { data: profile, isLoading, isError, refetch } = useGetProviderProfileQuery(undefined);
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProviderProfileMutation();
@@ -114,11 +111,11 @@ export default function ProviderProfileScreen() {
     keyboardType: 'default' | 'phone-pad' | 'numeric' = 'phone-pad'
   ) => (
     <View style={styles.fieldContainer}>
-      <ThemedText style={[styles.label, { textAlign: textStart }]}>{label}</ThemedText>
+      <ThemedText style={[styles.label, { textAlign }]}>{label}</ThemedText>
       <View style={[
         styles.inputWrapper, 
         error ? { borderColor: '#EF4444' } : null,
-        { flexDirection: flexDir }
+        { flexDirection: 'row' }
       ]}>
         {imageSource && (
           <Image 
@@ -127,7 +124,7 @@ export default function ProviderProfileScreen() {
           />
         )}
         <TextInput
-          style={[styles.input, { textAlign: textStart }]}
+          style={[styles.input, { textAlign: inputTextAlign }]}
           value={value}
           onChangeText={(text) => {
             setFormData(prev => ({ ...prev, [key]: text }));
@@ -143,7 +140,7 @@ export default function ProviderProfileScreen() {
         />
       </View>
       {error && (
-        <ThemedText style={[styles.errorText, { textAlign: textStart }]}>
+        <ThemedText style={[styles.errorText, { textAlign }]}>
           {error}
         </ThemedText>
       )}
@@ -167,13 +164,13 @@ export default function ProviderProfileScreen() {
           }
         >
           <View style={styles.warningCard}>
-            <View style={[styles.warningHeader, { flexDirection: flexDir }]}>
+            <View style={[styles.warningHeader, { flexDirection: 'row' }]}>
               <SolarShieldWarningBold size={20} color="#B45309" />
               <ThemedText style={styles.warningTitle}>
                 {isArabic ? 'ملاحظة هامة وحساسة' : 'Important & Sensitive Note'}
               </ThemedText>
             </View>
-            <ThemedText style={[styles.warningText, { textAlign: textStart }]}>
+            <ThemedText style={[styles.warningText, { textAlign }]}>
               {isArabic 
                 ? 'يرجى التأكد من صحة رقم زين كاش ورقم بطاقة كي بدقة. أي خطأ في هذه البيانات قد يؤدي إلى فشل تحويل مستحقاتك المالية أو إرسالها إلى حساب آخر.'
                 : 'Please verify your Zain Cash and Qi Card numbers carefully. Any incorrect details may lead to payout failures or sending funds to the wrong account.'}

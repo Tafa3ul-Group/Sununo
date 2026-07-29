@@ -33,7 +33,7 @@ interface LocationPickerModalProps {
 }
 
 export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocation }: LocationPickerModalProps) => {
-  const { isRTL, textAlign, direction } = useDirection();
+  const { isRTL, textAlign, textAlignEnd, inputTextAlign, direction } = useDirection();
   const [region, setRegion] = useState({ latitude: 33.3152, longitude: 44.3661 });
   const [hasNativeMap] = useState(!!Mapbox);
   const cameraRef = useRef<any>(null);
@@ -175,7 +175,7 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
             <SolarMagnifierBold size={18} color="#94A3B8" />
             <TextInput
               ref={searchInputRef}
-              style={[styles.searchInput, { textAlign }]}
+              style={[styles.searchInput, { textAlign: inputTextAlign }]}
               placeholder={isRTL ? 'ابحث عن موقع أو مكان...' : 'Search for a place...'}
               placeholderTextColor="#94A3B8"
               value={searchQuery}
@@ -265,11 +265,11 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
           <View style={styles.locationInfo}>
             <View style={styles.coordBadge}>
               <Text style={styles.coordBadgeLabel}>Lat</Text>
-              <Text style={styles.coordBadgeValue}>{region.latitude.toFixed(6)}</Text>
+              <Text style={[styles.coordBadgeValue, { textAlign: textAlignEnd }]}>{region.latitude.toFixed(6)}</Text>
             </View>
             <View style={styles.coordBadge}>
               <Text style={styles.coordBadgeLabel}>Long</Text>
-              <Text style={styles.coordBadgeValue}>{region.longitude.toFixed(6)}</Text>
+              <Text style={[styles.coordBadgeValue, { textAlign: textAlignEnd }]}>{region.longitude.toFixed(6)}</Text>
             </View>
           </View>
           <PrimaryButton
@@ -457,7 +457,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Alexandria-SemiBold',
     color: Colors.text.primary,
     flex: 1,
-    textAlign: 'right',
     writingDirection: 'ltr',
   },
 });

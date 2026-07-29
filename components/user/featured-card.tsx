@@ -49,13 +49,8 @@ export const FeaturedCard = React.memo(function FeaturedCard({
   isFavorite = false,
   onToggleFavorite,
 }: FeaturedCardProps) {
-  const { isRTL, rowDirection, textAlign } = useDirection();
+  const { isRTL, direction, textAlign } = useDirection();
   const isArabic = isRTL;
-  const textStart = textAlign;
-  const rowDir = rowDirection;
-  // Cross-axis alignment is expressed logically; the container resolves the
-  // start side (right in RTL).
-  const alignStart: "flex-start" | "flex-end" = "flex-start";
 
   // The featured endpoint, like the list endpoints, doesn't include shift
   // pricing, so when a real price isn't already provided we fetch the chalet's
@@ -117,7 +112,7 @@ export const FeaturedCard = React.memo(function FeaturedCard({
       onPressOut={() => {
         cardScale.value = withSpring(1, { damping: 12, stiffness: 180 });
       }}
-      style={[styles.container, style, cardAnim]}
+      style={[styles.container, { direction }, style, cardAnim]}
     >
       {/* Image with overlaid badge + heart */}
       <View style={styles.imageWrapper}>
@@ -128,7 +123,7 @@ export const FeaturedCard = React.memo(function FeaturedCard({
           transition={200}
         />
 
-        <View style={[styles.overlayRow, { flexDirection: rowDir }]}>
+        <View style={[styles.overlayRow, { flexDirection: "row" }]}>
           {/* "Special" badge on the start corner (right in RTL), top-aligned */}
           <ExpoImage
             source={require("@/assets/shapes/Special.png")}
@@ -154,16 +149,16 @@ export const FeaturedCard = React.memo(function FeaturedCard({
       </View>
 
       {/* Name + price — aligned to the start side (right in RTL) */}
-      <View style={[styles.textBlock, { alignItems: alignStart }]}>
+      <View style={[styles.textBlock, { alignItems: "flex-start" }]}>
         <ThemedText
-          style={[styles.title, { textAlign: textStart }]}
+          style={[styles.title, { textAlign }]}
           numberOfLines={1}
         >
           {title}
         </ThemedText>
 
         <ThemedText
-          style={[styles.price, { textAlign: textStart }]}
+          style={[styles.price, { textAlign }]}
           numberOfLines={1}
         >
           {isArabic ? "" : "IQD "}

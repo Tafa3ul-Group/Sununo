@@ -82,7 +82,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 export default function AddReviewScreen() {
   const { id: chaletId } = useLocalSearchParams<{ id: string }>();
   const { t } = useTranslation();
-  const { isRTL, textAlign } = useDirection();
+  const { isRTL, inputTextAlign } = useDirection();
   const isArabic = isRTL;
   const router = useRouter();
 
@@ -171,7 +171,7 @@ export default function AddReviewScreen() {
             <TextInput
               style={[
                 styles.textInput,
-                { textAlign },
+                { textAlign: inputTextAlign },
               ]}
               placeholder={t("profile.review.placeholder")}
               multiline

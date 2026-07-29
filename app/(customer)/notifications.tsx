@@ -6,7 +6,7 @@ import Animated, { FadeInDown, useSharedValue, useAnimatedStyle, withTiming, wit
 import * as Haptics from 'expo-haptics';
 import { Colors, normalize, Shadows } from '../../constants/theme';
 import { ThemedText } from '@/components/themed-text';
-import { SolarAltArrowRightBold, SolarBellBold } from "@/components/icons/solar-icons";
+import { SolarBellBold } from "@/components/icons/solar-icons";
 import { useRouter } from 'expo-router';
 import { HeaderSection } from '@/components/header-section';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -32,12 +32,10 @@ interface NotificationItemProps {
   item: Notification;
   index: number;
   isArabic: boolean;
-  textStart: "left" | "right";
-  dirStyle: 'rtl' | 'ltr';
   onPress: (item: Notification) => void;
 }
 
-const NotificationItem = React.memo(({ item, index, isArabic, textStart, dirStyle, onPress }: NotificationItemProps) => {
+const NotificationItem = React.memo(({ item, index, isArabic, onPress }: NotificationItemProps) => {
     const scale = useSharedValue(1);
     const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 
@@ -59,14 +57,14 @@ const NotificationItem = React.memo(({ item, index, isArabic, textStart, dirStyl
                 <View style={styles.cardContent}>
                     {/* Title row: title + time */}
                     <View style={[styles.titleRow, { flexDirection: 'row' }]}>
-                        <ThemedText style={[styles.titleText, { textAlign: textStart, writingDirection: dirStyle }]} numberOfLines={1}>
+                        <ThemedText style={styles.titleText} numberOfLines={1}>
                             {item.title}
                         </ThemedText>
                         <ThemedText style={styles.timeText}>{item.time}</ThemedText>
                     </View>
 
                     {/* Message */}
-                    <ThemedText style={[styles.messageText, { textAlign: textStart, writingDirection: dirStyle }]} numberOfLines={2}>
+                    <ThemedText style={styles.messageText} numberOfLines={2}>
                         {item.message}
                     </ThemedText>
                 </View>
@@ -80,9 +78,8 @@ export default function NotificationsScreen() {
     const { t } = useTranslation();
     const router = useRouter();
 
-    const { isRTL, textAlign } = useDirection();
+    const { isRTL } = useDirection();
     const isArabic = isRTL;
-    const textStart: "left" | "right" = textAlign;
 
     // Fetch notifications from the backend
     const { data: notificationsResponse, isLoading, refetch } = useGetNotificationsQuery({ page: 1, limit: 50 });
@@ -144,19 +141,15 @@ export default function NotificationsScreen() {
         }
     };
 
-    const dirStyle = useMemo<'rtl' | 'ltr'>(() => (isArabic ? 'rtl' : 'ltr'), [isArabic]);
-
     const renderItem = useCallback((item: Notification, index: number) => (
         <NotificationItem
             key={item.id}
             item={item}
             index={index}
             isArabic={isArabic}
-            textStart={textStart}
-            dirStyle={dirStyle}
             onPress={handleNotificationPress}
         />
-    ), [isArabic, textStart, dirStyle]);
+    ), [isArabic]);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -175,7 +168,7 @@ export default function NotificationsScreen() {
                 {groupedNotifications.today.length > 0 && (
                     <>
                         <View style={styles.sectionHeader}>
-                            <ThemedText style={[styles.sectionTitle, { textAlign: textStart, writingDirection: dirStyle }]}>
+                            <ThemedText style={styles.sectionTitle}>
                                 {t('notifications.today')}
                             </ThemedText>
                         </View>
@@ -187,7 +180,7 @@ export default function NotificationsScreen() {
                 {groupedNotifications.yesterday.length > 0 && (
                     <>
                         <View style={styles.sectionHeader}>
-                            <ThemedText style={[styles.sectionTitle, { textAlign: textStart, writingDirection: dirStyle }]}>
+                            <ThemedText style={styles.sectionTitle}>
                                 {t('notifications.yesterday')}
                             </ThemedText>
                         </View>
@@ -199,7 +192,7 @@ export default function NotificationsScreen() {
                 {groupedNotifications.older.length > 0 && (
                     <>
                         <View style={styles.sectionHeader}>
-                            <ThemedText style={[styles.sectionTitle, { textAlign: textStart, writingDirection: dirStyle }]}>
+                            <ThemedText style={styles.sectionTitle}>
                                 {t('notifications.older') || (isArabic ? 'أقدم' : 'Older')}
                             </ThemedText>
                         </View>

@@ -7,8 +7,6 @@ import {
   SolarHome2Bold,
   SolarWaterBold,
   SolarWidgetBold,
-  SolarAltArrowLeftBold,
-  SolarAltArrowRightBold
 } from "@/components/icons/solar-icons";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ThemedText } from "@/components/themed-text";
@@ -30,7 +28,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import { Image as ExpoImage } from "expo-image";
-import { useDirection } from "@/i18n";
+import { ltrScrollContent, useDirection, useRtlListOrder } from "@/i18n";
 import Animated, {
   FadeInDown,
   useAnimatedStyle,
@@ -134,7 +132,7 @@ export default function GalleryScreen() {
   const chaletId = id as string;
   const { t } = useTranslation();
   const { userType } = useSelector((state: RootState) => state.auth);
-  const { isRTL, rowDirection } = useDirection();
+  const { isRTL, direction } = useDirection();
   const isArabic = isRTL;
 
   const [activeFilter, setActiveFilter] = useState("all");
@@ -223,6 +221,10 @@ export default function GalleryScreen() {
       ? gallerySections
       : gallerySections.filter((section) => section.id === activeFilter);
 
+  // Chip strip is LTR-forced; reverse so it reads right-to-left in Arabic
+  // with the "all" chip visible at the right edge.
+  const orderedCategories = useRtlListOrder(CATEGORIES);
+
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -234,7 +236,9 @@ export default function GalleryScreen() {
         animationType="fade"
         onRequestClose={() => setViewerVisible(false)}
       >
-        <View style={styles.modalBg}>
+        {/* RN Modal is a new native root — the app's direction does not
+            inherit; re-apply it here. */}
+        <View style={[styles.modalBg, { direction }]}>
           <TouchableOpacity
             style={styles.modalClose}
             onPress={() => setViewerVisible(false)}
@@ -260,10 +264,10 @@ export default function GalleryScreen() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.catList}
+          contentContainerStyle={[styles.catList, ltrScrollContent]}
         >
-          <View style={{ flexDirection: rowDirection, gap: 10 }}>
-            {CATEGORIES.map((filter) => (
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            {orderedCategories.map((filter) => (
               <SecondaryButton
                 key={filter.id}
                 label={filter.label}
@@ -271,6 +275,7 @@ export default function GalleryScreen() {
                 activeColor={filter.activeColor}
                 icon={filter.icon(activeFilter === filter.id)}
                 onPress={() => setActiveFilter(filter.id)}
+                style={{ direction }}
               />
             ))}
           </View>
@@ -299,7 +304,7 @@ export default function GalleryScreen() {
             />
 
             {/* Small Grid */}
-            <View style={[styles.smallGrid, { flexDirection: rowDirection }]}>
+            <View style={[styles.smallGrid, { flexDirection: 'row' }]}>
               {section.images.slice(1, 4).map((img: any, i: number) => (
                 <PressableImage
                   key={i}
@@ -366,17 +371,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     gap: 12,
   },
-  categoryTab: {
-    paddingLeft: 16,
-    paddingRight: 6,
-    paddingVertical: 6,
-    borderRadius: 12,
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#F1F5F9",
-    alignItems: "center",
-    gap: 10,
-  },
   categoryTabText: {
     fontSize: 14,
     fontFamily: "Alexandria-Medium",
@@ -437,7 +431,7 @@ const styles = StyleSheet.create({
   modalClose: {
     position: "absolute",
     top: 50,
-    right: 20,
+    end: 20,
     zIndex: 10,
   },
   modalImg: {

@@ -18,7 +18,7 @@ import {
 } from '@/components/icons/solar-icons';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { ThemedText } from '@/components/themed-text';
-import { resolveRowDirection } from '@/i18n/direction';
+import { useDirection } from '@/i18n';
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
 import React from 'react';
@@ -36,7 +36,8 @@ interface BookingDetailsContentProps {
   isCancelLoading?: boolean;
 }
 
-export const BookingDetailsModalContent = ({ id, isRTL, t, onClose, onOpenCancelSheet, isCancelLoading }: BookingDetailsContentProps) => {
+export const BookingDetailsModalContent = ({ id, isRTL: _isRTLProp, t, onClose, onOpenCancelSheet, isCancelLoading }: BookingDetailsContentProps) => {
+  const { isRTL, textAlign, textAlignEnd } = useDirection();
   const { data: bookingDetailsData, isLoading, error } = useGetProviderBookingDetailsQuery(id);
 
   if (isLoading) return <View style={styles.sheetLoading}><ActivityIndicator size="large" color={IDENTITY_BLUE} /></View>;
@@ -63,7 +64,7 @@ export const BookingDetailsModalContent = ({ id, isRTL, t, onClose, onOpenCancel
   return (
     <View style={styles.mainContainer}>
       {/* Custom Header */}
-      <View style={[styles.header, { flexDirection: resolveRowDirection(isRTL) }]}>
+      <View style={[styles.header, { flexDirection: 'row' }]}>
         <TouchableOpacity style={styles.headerBtn} onPress={onClose}>
           {isRTL ? <SolarAltArrowRightLinear size={24} color={Colors.text.primary} /> : <SolarAltArrowLeftLinear size={24} color={Colors.text.primary} />}
         </TouchableOpacity>
@@ -76,19 +77,19 @@ export const BookingDetailsModalContent = ({ id, isRTL, t, onClose, onOpenCancel
       <BottomSheetScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Chalet Card */}
         <View style={styles.sectionCard}>
-          <View style={[styles.chaletRow, { flexDirection: resolveRowDirection(isRTL) }]}>
+          <View style={[styles.chaletRow, { flexDirection: 'row' }]}>
             <View style={[styles.chaletInfo, { alignItems: 'flex-start' }]}>
-              <Text style={[styles.chaletName, { textAlign: isRTL ? 'right' : 'left' }]}>{bChaletName}</Text>
-              <Text style={[styles.chaletLocation, { textAlign: isRTL ? 'right' : 'left' }]}>{bChaletAddress || ''}</Text>
+              <Text style={[styles.chaletName, { textAlign }]}>{bChaletName}</Text>
+              <Text style={[styles.chaletLocation, { textAlign }]}>{bChaletAddress || ''}</Text>
 
               {data.chalet?.rating ? (
-                <View style={[styles.ratingRow, { flexDirection: resolveRowDirection(isRTL) }]}>
+                <View style={[styles.ratingRow, { flexDirection: 'row' }]}>
                   <SolarStarBold size={14} color="#EF4444" />
                   <Text style={styles.ratingText}>{Number(data.chalet.rating).toFixed(1)}</Text>
                 </View>
               ) : null}
 
-              <Text style={[styles.priceTag, { textAlign: isRTL ? 'right' : 'left' }]}>
+              <Text style={[styles.priceTag, { textAlign }]}>
                 {isRTL ? `IQD ${Number(data.totalPrice).toLocaleString()} / شفت` : `IQD ${Number(data.totalPrice).toLocaleString()} / Shift`}
               </Text>
             </View>
@@ -104,44 +105,44 @@ export const BookingDetailsModalContent = ({ id, isRTL, t, onClose, onOpenCancel
 
         {/* Customer Information */}
         <View style={styles.sectionCard}>
-          <Text style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
+          <Text style={[styles.sectionTitle, { textAlign }]}>
             {isRTL ? 'معلومات الزبون' : 'Customer Information'}
           </Text>
           <View style={styles.divider} />
           
           <View style={[styles.detailRow, { flexDirection: 'row' }]}>
-            <Text style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'الاسم' : 'Name'}</Text>
-            <Text style={[styles.value, { textAlign: isRTL ? 'left' : 'right' }]}>{bCustomerName}</Text>
+            <Text style={[styles.label, { textAlign }]}>{isRTL ? 'الاسم' : 'Name'}</Text>
+            <Text style={[styles.value, { textAlign: textAlignEnd }]}>{bCustomerName}</Text>
           </View>
 
           {!bIsExternal && (
             <View style={[styles.detailRow, { flexDirection: 'row' }]}>
-              <Text style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'رقم الهاتف' : 'Phone'}</Text>
-              <Text style={[styles.value, { textAlign: isRTL ? 'left' : 'right' }]}>{data.customer?.phone || '--'}</Text>
+              <Text style={[styles.label, { textAlign }]}>{isRTL ? 'رقم الهاتف' : 'Phone'}</Text>
+              <Text style={[styles.value, { textAlign: textAlignEnd }]}>{data.customer?.phone || '--'}</Text>
             </View>
           )}
         </View>
 
         {/* Booking Information */}
         <View style={styles.sectionCard}>
-          <Text style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
+          <Text style={[styles.sectionTitle, { textAlign }]}>
             {isRTL ? 'معلومات الحجز' : 'Booking Information'}
           </Text>
           <View style={styles.divider} />
           
           <View style={[styles.detailRow, { flexDirection: 'row' }]}>
-            <Text style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'التاريخ' : 'Date'}</Text>
-            <Text style={[styles.value, { textAlign: isRTL ? 'left' : 'right' }]}>{data.bookingDate}</Text>
+            <Text style={[styles.label, { textAlign }]}>{isRTL ? 'التاريخ' : 'Date'}</Text>
+            <Text style={[styles.value, { textAlign: textAlignEnd }]}>{data.bookingDate}</Text>
           </View>
 
           <View style={[styles.detailRow, { flexDirection: 'row' }]}>
-            <Text style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'الفترة' : 'Period'}</Text>
-            <Text style={[styles.value, { textAlign: isRTL ? 'left' : 'right' }]}>{bShiftName}</Text>
+            <Text style={[styles.label, { textAlign }]}>{isRTL ? 'الفترة' : 'Period'}</Text>
+            <Text style={[styles.value, { textAlign: textAlignEnd }]}>{bShiftName}</Text>
           </View>
 
           <View style={[styles.detailRow, { flexDirection: 'row' }]}>
-            <Text style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'الاشخاص' : 'Persons'}</Text>
-            <Text style={[styles.value, { textAlign: isRTL ? 'left' : 'right' }]}>
+            <Text style={[styles.label, { textAlign }]}>{isRTL ? 'الاشخاص' : 'Persons'}</Text>
+            <Text style={[styles.value, { textAlign: textAlignEnd }]}>
               {data.children && data.children > 0
                 ? (isRTL ? `${data.adults || 2} بالغين، ${data.children} اطفال` : `${data.adults || 2} Adults, ${data.children} Children`)
                 : (isRTL ? `${data.adults || 2} بالغين` : `${data.adults || 2} Adults`)}
@@ -151,13 +152,13 @@ export const BookingDetailsModalContent = ({ id, isRTL, t, onClose, onOpenCancel
 
         {/* Payment Information */}
         <View style={styles.sectionCard}>
-          <Text style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
+          <Text style={[styles.sectionTitle, { textAlign }]}>
             {isRTL ? 'معلومات الدفع' : 'Payment Information'}
           </Text>
           <View style={styles.divider} />
           
           <View style={[styles.detailRow, { flexDirection: 'row' }]}>
-            <Text style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'المبلغ المدفوع' : 'Amount Paid'}</Text>
+            <Text style={[styles.label, { textAlign }]}>{isRTL ? 'المبلغ المدفوع' : 'Amount Paid'}</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <Text style={[styles.value, { color: Colors.text.muted }]}>{Number(data.paidAmount || 0).toLocaleString()}</Text>
               <Text style={[styles.currency, { color: Colors.text.muted }]}>{isRTL ? 'د.ع' : 'IQD'}</Text>
@@ -165,7 +166,7 @@ export const BookingDetailsModalContent = ({ id, isRTL, t, onClose, onOpenCancel
           </View>
 
           <View style={[styles.detailRow, { flexDirection: 'row' }]}>
-            <Text style={[styles.label, { textAlign: isRTL ? 'right' : 'left' }]}>{isRTL ? 'المبلغ المتبقي' : 'Remaining Amount'}</Text>
+            <Text style={[styles.label, { textAlign }]}>{isRTL ? 'المبلغ المتبقي' : 'Remaining Amount'}</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <Text style={[styles.value, { color: IDENTITY_BLUE }]}>{Number(remainingAmount).toLocaleString()}</Text>
               <Text style={[styles.currency, { color: IDENTITY_BLUE }]}>{isRTL ? 'د.ع' : 'IQD'}</Text>
@@ -175,11 +176,11 @@ export const BookingDetailsModalContent = ({ id, isRTL, t, onClose, onOpenCancel
 
         {data.notes && (
           <View style={styles.sectionCard}>
-            <Text style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
+            <Text style={[styles.sectionTitle, { textAlign }]}>
               {isRTL ? 'ملاحظات' : 'Notes'}
             </Text>
             <View style={styles.divider} />
-            <Text style={[styles.notesText, { textAlign: isRTL ? 'right' : 'left' }]}>{data.notes}</Text>
+            <Text style={[styles.notesText, { textAlign }]}>{data.notes}</Text>
           </View>
         )}
 
@@ -285,13 +286,13 @@ const styles = StyleSheet.create({
     height: normalize.width(100),
     borderRadius: normalize.radius(30),
     overflow: 'hidden',
-    marginLeft: normalize.width(12) },
+    marginStart: normalize.width(12) },
   organicImage: {
     width: '100%',
     height: '100%',
     borderRadius: normalize.radius(30), // Can be made more organic with complex radii
-    borderTopLeftRadius: 50,
-    borderBottomRightRadius: 50 },
+    borderTopStartRadius: 50,
+    borderBottomEndRadius: 50 },
   sectionTitle: {
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",

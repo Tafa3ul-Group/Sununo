@@ -37,7 +37,7 @@ const STATUS_COLORS: Record<StepStatus, { fg: string; bg: string }> = {
 };
 
 export default function OwnerOnboardingScreen() {
-  const { isRTL, rowDirection, textAlign } = useDirection();
+  const { isRTL, textAlign } = useDirection();
   const router = useRouter();
 
   const {
@@ -123,7 +123,7 @@ export default function OwnerOnboardingScreen() {
       <TouchableOpacity
         activeOpacity={0.85}
         onPress={opts.onPress}
-        style={[styles.card, { flexDirection: rowDirection }]}
+        style={[styles.card, { flexDirection: 'row' }]}
       >
         <View style={[styles.stepIcon, { backgroundColor: bg }]}>
           {opts.status === 'done' ? (
@@ -141,7 +141,7 @@ export default function OwnerOnboardingScreen() {
             {opts.subtitle}
           </ThemedText>
 
-          <View style={[styles.statusRow, { flexDirection: rowDirection, alignSelf: isRTL ? 'flex-end' : 'flex-start' }]}>
+          <View style={[styles.statusRow, { flexDirection: 'row', alignSelf: 'flex-start' }]}>
             <View style={[styles.statusPill, { backgroundColor: bg }]}>
               <ThemedText style={[styles.statusText, { color: fg }]}>
                 {statusLabel(opts.status)}
@@ -160,7 +160,7 @@ export default function OwnerOnboardingScreen() {
           </View>
 
           {!!opts.note && (
-            <View style={[styles.noteRow, { flexDirection: rowDirection }]}>
+            <View style={[styles.noteRow, { flexDirection: 'row' }]}>
               <SolarDangerTriangleBold size={14} color="#DC2626" />
               <ThemedText style={[styles.noteText, { textAlign }]}>
                 {opts.note}
@@ -199,7 +199,7 @@ export default function OwnerOnboardingScreen() {
               : 'Payout details are required to activate your account. Setting up and submitting your chalet can be done now or later.'}
           </ThemedText>
 
-          <View style={[styles.progressRow, { flexDirection: rowDirection }]}>
+          <View style={[styles.progressRow, { flexDirection: 'row' }]}>
             <ThemedText style={styles.progressText}>
               {isRTL
                 ? `${completedCount} من 2 مكتملة`
@@ -242,7 +242,7 @@ export default function OwnerOnboardingScreen() {
 
         {/* Under-review reassurance */}
         {submitted && chaletStatus === 'pending' && (
-          <View style={[styles.infoBanner, { flexDirection: rowDirection }]}>
+          <View style={[styles.infoBanner, { flexDirection: 'row' }]}>
             <SolarClockCircleBold size={20} color="#D97706" />
             <ThemedText style={[styles.infoText, { textAlign }]}>
               {isRTL

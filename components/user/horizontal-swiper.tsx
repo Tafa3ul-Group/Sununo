@@ -1,4 +1,5 @@
 import { normalize } from "@/constants/theme";
+import { ltrScrollContent, useDirection } from "@/i18n";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Dimensions,
@@ -26,6 +27,7 @@ interface HorizontalSwiperProps {
 }
 
 export function HorizontalSwiper({ data, onPressCard, onIndexChange, favoriteIds = [], onToggleFavorite, autoPlay = false }: HorizontalSwiperProps) {
+  const { direction } = useDirection();
     const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const activeIndexRef = useRef(0);
@@ -80,7 +82,9 @@ export function HorizontalSwiper({ data, onPressCard, onIndexChange, favoriteIds
 
   const renderItem = useCallback(
     ({ item, index }: { item: any; index: number }) => (
-      <View style={{ width: ITEM_WIDTH }}>
+      // Re-apply the app direction: the content container is forced LTR, so
+      // each card root must restore rtl for its internal layout to mirror.
+      <View style={{ width: ITEM_WIDTH, direction }}>
         <HorizontalCard
           chalet={item}
           shapeIndex={2}
@@ -91,7 +95,7 @@ export function HorizontalSwiper({ data, onPressCard, onIndexChange, favoriteIds
         />
       </View>
     ),
-    [handleCardPress, handleToggleFavorite, favoriteIds]
+    [handleCardPress, handleToggleFavorite, favoriteIds, direction]
   );
 
   return (
@@ -110,7 +114,7 @@ export function HorizontalSwiper({ data, onPressCard, onIndexChange, favoriteIds
         snapToInterval={SNAP}
         snapToAlignment="center"
         decelerationRate="fast"
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, ltrScrollContent]}
         pagingEnabled={false}
         ItemSeparatorComponent={() => (
           <View style={{ width: SEPARATOR_WIDTH }} />

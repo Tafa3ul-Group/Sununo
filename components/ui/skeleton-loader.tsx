@@ -307,7 +307,7 @@ const skeletonStyles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 20,
     overflow: "hidden",
-    marginRight: 12,
+    marginEnd: 12,
   },
   chaletCardBody: {
     padding: 10,

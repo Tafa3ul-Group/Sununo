@@ -2,7 +2,7 @@ import { SolarAltArrowLeftBold, SolarAltArrowRightBold } from "@/components/icon
 import { ThemedText } from "@/components/themed-text";
 import { Fonts, normalize } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
-import { useDirection } from "@/i18n";
+import { ltrScrollContent, useDirection, useRtlListOrder } from "@/i18n";
 import { Image as ExpoImage } from "expo-image";
 import React, { useCallback, useMemo } from "react";
 import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
@@ -39,7 +39,7 @@ function SeeAllCard({
   previews: any[];
   onPress?: () => void;
 }) {
-  const { isRTL } = useDirection();
+  const { isRTL, direction } = useDirection();
   const Arrow = isRTL ? SolarAltArrowLeftBold : SolarAltArrowRightBold;
 
   const rotations = [-8, 4, -3];
@@ -49,7 +49,7 @@ function SeeAllCard({
     <TouchableOpacity
       activeOpacity={0.85}
       onPress={onPress}
-      style={[styles.cardBase, styles.seeAllCard]}
+      style={[styles.cardBase, styles.seeAllCard, { direction }]}
     >
       <View style={styles.stack}>
         {previews.slice(0, 3).map((src, i) => (
@@ -99,7 +99,9 @@ export function FeaturedSwiper({
   }, [data]);
 
   // Show only the real chalet cards (the trailing "عرض الكل" card was removed).
-  const listData = visible;
+  // The strip content is forced physical-LTR, so reverse in Arabic to keep
+  // featured #1 on the right edge and visible at the initial scroll offset.
+  const listData = useRtlListOrder(visible);
 
   const renderItem = useCallback(
     ({ item }: { item: any }) =>
@@ -123,7 +125,7 @@ export function FeaturedSwiper({
       keyExtractor={(item, index) => `${item?.id ?? "item"}-${index}`}
       horizontal
       showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.listContent}
+      contentContainerStyle={[styles.listContent, ltrScrollContent]}
       ItemSeparatorComponent={() => <View style={{ width: SEPARATOR_WIDTH }} />}
       decelerationRate="fast"
       snapToInterval={FEATURED_CARD_WIDTH + SEPARATOR_WIDTH}

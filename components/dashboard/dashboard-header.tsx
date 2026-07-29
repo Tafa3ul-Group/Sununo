@@ -35,7 +35,7 @@ export function DashboardHeader({
   marginBottom = 0
 }: DashboardHeaderProps) {
   const router = useRouter();
-  const { isRTL, rowDirection, direction } = useDirection();
+  const { isRTL } = useDirection();
   const [logoLang, setLogoLang] = useState<'ar' | 'en'>(isRTL ? 'ar' : 'en');
 
   const toggleLogo = () => {
@@ -43,9 +43,9 @@ export function DashboardHeader({
   };
 
   return (
-    <SafeAreaView edges={['top']} style={[styles.flatHeader, { marginBottom, direction }]}>
+    <SafeAreaView edges={['top']} style={[styles.flatHeader, { marginBottom }]}>
       <StatusBar style="dark" />
-      <View style={[styles.flatHeaderContent, { flexDirection: rowDirection, direction }]}>
+      <View style={[styles.flatHeaderContent, { flexDirection: 'row' }]}>
         {/* Left Side: Back button, Logo, or placeholder */}
         {showBackButton ? (
           <CircleBackButton
@@ -90,7 +90,7 @@ export function DashboardHeader({
           <View style={{ width: 40 }} />
         ) : (
           /* Home Group (Search & Profile) */
-          <View style={[styles.homeRightGroup, { flexDirection: rowDirection }]}>
+          <View style={[styles.homeRightGroup, { flexDirection: 'row' }]}>
             {showSearch && (
               <TouchableOpacity
                 onPress={onSearchPress}

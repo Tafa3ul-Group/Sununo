@@ -10,7 +10,7 @@ jest.mock("react-i18next", () => ({
 
 import { useDirection } from "@/i18n/direction";
 
-describe("useDirection", () => {
+describe("useDirection (contract v2)", () => {
   const originalRTL = I18nManager.isRTL;
   afterEach(() => {
     (I18nManager as any).isRTL = originalRTL;
@@ -22,7 +22,6 @@ describe("useDirection", () => {
     expect(result.current.isRTL).toBe(true);
     expect(result.current.direction).toBe("rtl");
     expect(result.current.rowDirection).toBe("row");
-    expect(result.current.textAlign).toBe("right");
   });
 
   it("reports LTR + direction 'ltr' for English", () => {
@@ -31,12 +30,36 @@ describe("useDirection", () => {
     expect(result.current.isRTL).toBe(false);
     expect(result.current.direction).toBe("ltr");
     expect(result.current.rowDirection).toBe("row");
+  });
+
+  it("textAlign/textAlignEnd are LOGICAL constants for <Text> (RN swaps left/right per container direction)", () => {
+    // 'left' means START and 'right' means END inside a direction-driven
+    // subtree — the same literal is correct in BOTH languages.
+    mockLang = "ar";
+    let { result } = renderHook(() => useDirection());
     expect(result.current.textAlign).toBe("left");
+    expect(result.current.textAlignEnd).toBe("right");
+
+    mockLang = "en";
+    ({ result } = renderHook(() => useDirection()));
+    expect(result.current.textAlign).toBe("left");
+    expect(result.current.textAlignEnd).toBe("right");
+  });
+
+  it("inputTextAlign is PHYSICAL for <TextInput> (inputs skip the logical swap)", () => {
+    mockLang = "ar";
+    let { result } = renderHook(() => useDirection());
+    expect(result.current.inputTextAlign).toBe("right");
+
+    mockLang = "en";
+    ({ result } = renderHook(() => useDirection()));
+    expect(result.current.inputTextAlign).toBe("left");
   });
 
   it("derives direction from the language ONLY — never from native I18nManager (no drift)", () => {
-    // Arabic content while native manager claims LTR: direction must still be 'rtl'
-    // and rowDirection must stay 'row' (the container mirrors; we never reverse).
+    // Arabic content while native manager claims LTR: direction must still be
+    // 'rtl' and rowDirection must stay 'row' (the container mirrors; we never
+    // reverse manually).
     mockLang = "ar";
     (I18nManager as any).isRTL = false;
     const { result } = renderHook(() => useDirection());

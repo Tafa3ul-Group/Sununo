@@ -37,7 +37,7 @@ import {
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
-import { useDirection } from "@/i18n";
+import { ltrScrollContent, useDirection, useRtlListOrder } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -45,7 +45,7 @@ export default function FilterResultsScreen() {
   const router = useRouter();
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const { isRTL, rowDirection } = useDirection();
+  const { isRTL, direction } = useDirection();
   const isArabic = isRTL;
   const insets = useSafeAreaInsets();
 
@@ -236,6 +236,9 @@ export default function FilterResultsScreen() {
     return pills;
   }, [activeFilters]);
 
+  // Pill strip is LTR-forced; reverse so it still reads right-to-left in Arabic.
+  const orderedPills = useRtlListOrder(activePills);
+
   // Reset filters and go back
   const handleClearAll = () => {
     dispatch(clearFilters());
@@ -276,11 +279,11 @@ export default function FilterResultsScreen() {
           <FlatList
             horizontal
             showsHorizontalScrollIndicator={false}
-            data={activePills}
+            data={orderedPills}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={[styles.pillsList, { flexDirection: rowDirection }]}
+            contentContainerStyle={[styles.pillsList, ltrScrollContent]}
             renderItem={({ item }) => (
-              <View style={[styles.pill, { flexDirection: rowDirection }]}>
+              <View style={[styles.pill, { direction }]}>
                 {item.icon}
                 <ThemedText style={styles.pillText}>{item.text}</ThemedText>
                 <TouchableOpacity

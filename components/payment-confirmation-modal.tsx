@@ -11,6 +11,7 @@ import {
   Text,
   View
 } from 'react-native';
+import { useDirection } from '@/i18n';
 import { SecondaryButton } from './user/secondary-button';
 
 // Static imports for Lottie files
@@ -34,7 +35,8 @@ export type PaymentConfirmationSheetRef = {
 const IDENTITY_BLUE = '#035DF9';
 
 export const PaymentConfirmationSheet = forwardRef<PaymentConfirmationSheetRef, PaymentConfirmationSheetProps>(
-  ({ onConfirm, isLoading = false, isRTL = true, amount }, ref) => {
+  ({ onConfirm, isLoading = false, isRTL: _isRTLProp, amount }, ref) => {
+    const { isRTL } = useDirection();
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
     const lottieRef = useRef<LottieView>(null);
     const [internalStatus, setInternalStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -116,7 +118,7 @@ export const PaymentConfirmationSheet = forwardRef<PaymentConfirmationSheetRef, 
                 isActive={false}
                 inactiveTextColor="#1E293B"
                 style={{ flex: 1 }}
-                variant={!isRTL ? "inverse" : "default"}
+                variant="default"
               />
             </View>
           </View>

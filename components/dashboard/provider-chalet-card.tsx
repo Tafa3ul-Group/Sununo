@@ -8,6 +8,7 @@ import {
   View,
   ViewStyle } from "react-native";
 import { SolarMapPointBold, SolarPenBold, SolarBanknoteBold } from "@/components/icons/solar-icons";
+import { useDirection } from "@/i18n";
 
 interface ProviderChaletCardProps {
   title: string;
@@ -16,6 +17,7 @@ interface ProviderChaletCardProps {
   onPress?: () => void;
   onEdit?: () => void;
   onRevenue?: () => void;
+  /** @deprecated kept for compat — direction comes from useDirection(). */
   isRTL?: boolean;
   style?: ViewStyle;
 }
@@ -27,8 +29,9 @@ export function ProviderChaletCard({
   onPress,
   onEdit,
   onRevenue,
-  isRTL = false,
+  isRTL: _isRTLProp,
   style }: ProviderChaletCardProps) {
+  const { isRTL, textAlign } = useDirection();
   return (
     <TouchableOpacity
       activeOpacity={0.9}
@@ -49,7 +52,7 @@ export function ProviderChaletCard({
           style={[
             styles.statusBadge,
             { flexDirection: 'row' },
-            isRTL ? { right: 12 } : { left: 12 },
+            { start: 12 },
           ]}
         >
           <View style={styles.statusDot} />
@@ -58,12 +61,12 @@ export function ProviderChaletCard({
       </View>
 
       <View style={styles.content}>
-        <Text style={[styles.title, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
+        <Text style={[styles.title, { textAlign }]} numberOfLines={1}>
           {title}
         </Text>
         <View style={[styles.locationRow, { flexDirection: 'row' }]}>
           <SolarMapPointBold size={14} color={Colors.primary} />
-          <Text style={styles.location} numberOfLines={1}>
+          <Text style={[styles.location, { textAlign }]} numberOfLines={1}>
             {location}
           </Text>
         </View>

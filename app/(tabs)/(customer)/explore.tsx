@@ -78,7 +78,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useDirection } from "@/i18n";
+import { ltrScrollContent, useDirection, useRtlListOrder } from "@/i18n";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -124,6 +124,7 @@ const isInServiceArea = (lng?: number, lat?: number) =>
   lat <= IRAQ_BOUNDS.maxLat;
 
 function SectionHeader({ title, isRTL }: { title: string; isRTL: boolean }) {
+  const { textAlign } = useDirection();
   return (
     <View
       style={{
@@ -139,7 +140,7 @@ function SectionHeader({ title, isRTL }: { title: string; isRTL: boolean }) {
           fontSize: 14,
           fontFamily: "Alexandria-Medium",
           color: "#111827",
-          textAlign: isRTL ? "right" : "left",
+          textAlign,
         }}
       >
         {title}
@@ -202,25 +203,29 @@ function ActiveFilterBanner({
     return items;
   }, [filter, isRTL]);
 
-  if (filterItems.length === 0) return null;
+  const orderedFilterItems = useRtlListOrder(filterItems);
 
-  const flexDir: "row" | "row-reverse" = "row";
+  if (filterItems.length === 0) return null;
 
   return (
     <View style={filterBannerStyles.container}>
-      <View style={[filterBannerStyles.content, { flexDirection: flexDir }]}>
+      <View style={[filterBannerStyles.content, { flexDirection: 'row' }]}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={[
             filterBannerStyles.scrollContent,
-            { flexDirection: flexDir },
+            { flexDirection: 'row' },
+            ltrScrollContent,
           ]}
         >
-          {filterItems.map((item) => (
+          {orderedFilterItems.map((item) => (
             <View
               key={item.id}
-              style={[filterBannerStyles.pill, { flexDirection: flexDir }]}
+              style={[
+                filterBannerStyles.pill,
+                { flexDirection: 'row', direction: isRTL ? "rtl" : "ltr" },
+              ]}
             >
               {item.icon}
               <ThemedText style={filterBannerStyles.pillText}>
@@ -242,9 +247,7 @@ export default function ExploreScreen() {
   const { isAuthenticated, user, userType } = useSelector(
     (state: RootState) => state.auth,
   );
-  const { isRTL, rowDirection, textAlign } = useDirection();
-  const textStart: "left" | "right" = textAlign;
-  const flexDir: "row" | "row-reverse" = rowDirection;
+  const { isRTL, direction, textAlign, inputTextAlign } = useDirection();
   const router = useRouter();
   const { id, showMyLocation } = useLocalSearchParams();
   const { t } = useTranslation();
@@ -353,6 +356,8 @@ export default function ExploreScreen() {
     ],
     [t],
   );
+  // Chip strip is LTR-forced; reverse so it still reads right-to-left in Arabic.
+  const orderedFilterOptions = useRtlListOrder(FILTER_OPTIONS);
 
   const [preSelectionRegion, setPreSelectionRegion] = useState<{
     center: [number, number];
@@ -668,12 +673,12 @@ export default function ExploreScreen() {
                     fontSize: normalize.font(8),
                     color: "#6B7280",
                     fontFamily: "Alexandria-Medium",
-                    textAlign: textStart,
+                    textAlign,
                   }}
                 >
                   {isRTL ? "يبدأ من" : "Starts from"}
                 </ThemedText>
-                <ThemedText style={[styles.footerPrice, { textAlign: textStart, marginTop: 2 }]}>
+                <ThemedText style={[styles.footerPrice, { textAlign, marginTop: 2 }]}>
                   {isRTL ? "" : "IQD "}
                   {drawerStartingPrice}
                   {isRTL ? " د.ع" : ""}
@@ -699,7 +704,7 @@ export default function ExploreScreen() {
         </BottomSheetFooter>
       );
     },
-    [selectedChalet, isRTL, insets.bottom, flexDir, textStart, userType, router, drawerStartingPrice],
+    [selectedChalet, isRTL, insets.bottom, textAlign, userType, router, drawerStartingPrice],
   );
 
   const handleSelectChalet = (chalet: any) => {
@@ -836,7 +841,7 @@ export default function ExploreScreen() {
             <TextInput
               style={[
                 styles.searchInput,
-                { textAlign: textStart },
+                { textAlign: inputTextAlign },
               ]}
               placeholder={
                 isRTL
@@ -949,6 +954,7 @@ export default function ExploreScreen() {
                   horizontal
                   pagingEnabled
                   showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={ltrScrollContent}
                   onMomentumScrollEnd={(e) => {
                     const index = Math.round(
                       e.nativeEvent.contentOffset.x / (SCREEN_WIDTH - 40),
@@ -1077,14 +1083,14 @@ export default function ExploreScreen() {
                                       ]}
                                     >
                                       <ThemedText
-                                        style={[styles.reviewerNameMerged, { textAlign: textStart }]}
+                                        style={[styles.reviewerNameMerged, { textAlign }]}
                                       >
                                         {reviewerName}
                                       </ThemedText>
                                       <ThemedText
                                         style={[
                                           styles.revMessageMerged,
-                                          { textAlign: textStart },
+                                          { textAlign },
                                         ]}
                                       >
                                         {reviewComment}
@@ -1169,13 +1175,13 @@ export default function ExploreScreen() {
         <BottomSheetScrollView
           contentContainerStyle={styles.filterModalContent}
         >
-          <Text style={styles.filterModalTitle}>
+          <Text style={[styles.filterModalTitle, { textAlign }]}>
             {isRTL ? "فلترة النتائج" : "Filter Results"}
           </Text>
 
           {/* Categories Tab Section (Moved from Home page style) */}
           <View style={styles.filterSection}>
-            <Text style={styles.filterSectionLabel}>
+            <Text style={[styles.filterSectionLabel, { textAlign }]}>
               {isRTL ? "الأقسام" : "Categories"}
             </Text>
             <ScrollView
@@ -1184,10 +1190,10 @@ export default function ExploreScreen() {
               contentContainerStyle={{
                 paddingVertical: 10,
                 gap: 10,
-                flexDirection: flexDir,
+                ...ltrScrollContent,
               }}
             >
-              {FILTER_OPTIONS.map((filter) => (
+              {orderedFilterOptions.map((filter) => (
                 <SecondaryButton
                   key={filter.id}
                   label={filter.label}
@@ -1195,19 +1201,20 @@ export default function ExploreScreen() {
                   activeColor={filter.activeColor}
                   icon={filter.icon(activeFilter === filter.id)}
                   onPress={() => setActiveFilter(filter.id)}
+                  style={{ direction }}
                 />
               ))}
             </ScrollView>
           </View>
 
           <View style={styles.filterSection}>
-            <Text style={styles.filterSectionLabel}>
+            <Text style={[styles.filterSectionLabel, { textAlign }]}>
               {isRTL ? "عدد البالغين" : "Max Adults"}
             </Text>
             <BottomSheetTextInput
               style={[
                 styles.modalInput,
-                { textAlign: textStart },
+                { textAlign: inputTextAlign },
               ]}
               placeholder={isRTL ? "مثلاً: 5" : "e.g. 5"}
               keyboardType="numeric"
@@ -1217,14 +1224,14 @@ export default function ExploreScreen() {
           </View>
 
           <View style={styles.filterSection}>
-            <Text style={styles.filterSectionLabel}>
+            <Text style={[styles.filterSectionLabel, { textAlign }]}>
               {isRTL ? "نطاق السعر (د.ع)" : "Price Range (IQD)"}
             </Text>
-            <View style={[styles.priceRow, { flexDirection: flexDir }]}>
+            <View style={[styles.priceRow, { flexDirection: 'row' }]}>
               <BottomSheetTextInput
                 style={[
                   styles.modalInput,
-                  { flex: 1, textAlign: textStart },
+                  { flex: 1, textAlign: inputTextAlign },
                 ]}
                 placeholder={isRTL ? "من" : "Min"}
                 keyboardType="numeric"
@@ -1235,7 +1242,7 @@ export default function ExploreScreen() {
               <BottomSheetTextInput
                 style={[
                   styles.modalInput,
-                  { flex: 1, textAlign: textStart },
+                  { flex: 1, textAlign: inputTextAlign },
                 ]}
                 placeholder={isRTL ? "إلى" : "Max"}
                 keyboardType="numeric"
@@ -1305,8 +1312,8 @@ const styles = StyleSheet.create({
     color: "#1F2937",
   },
   bottomSheet: {
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
+    borderTopStartRadius: 30,
+    borderTopEndRadius: 30,
     ...Shadows.large,
   },
   sheetScrollContent: {
@@ -1386,15 +1393,9 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: "#D1D5DB",
   },
-  ratingText: {
-    fontSize: 14,
-    fontFamily: "Alexandria-Medium",
-    color: "#1F2937",
-    marginLeft: 4,
-  },
   rightNavActions: {
     position: "absolute",
-    right: 20,
+    end: 20,
     top: SCREEN_HEIGHT * 0.35,
     gap: 12,
     zIndex: 30,
@@ -1436,7 +1437,7 @@ const styles = StyleSheet.create({
   },
   locateFab: {
     position: "absolute",
-    right: 20,
+    end: 20,
     bottom: SCREEN_HEIGHT * 0.42,
     width: 52,
     height: 52,
@@ -1610,6 +1611,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     gap: 6,
+    // Dot motion must match physical page motion (the carousel is LTR-forced).
+    direction: "ltr",
   },
   footerSpacer: {
     height: 0,
@@ -1908,6 +1911,6 @@ const filterBannerStyles = StyleSheet.create({
   },
   clearBtn: {
     padding: 4,
-    marginLeft: 4,
+    marginStart: 4,
   },
 });

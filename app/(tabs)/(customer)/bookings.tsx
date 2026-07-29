@@ -123,9 +123,6 @@ interface BookingCardProps {
   booking: any;
   index: number;
   isArabic: boolean;
-  rowDirection: "row" | "row-reverse";
-  textStart: "left" | "right";
-  textEnd: "left" | "right";
   t: TFunc;
   onViewDetails: (id: any) => void;
 }
@@ -136,12 +133,10 @@ const BookingCard = React.memo(function BookingCard({
   booking,
   index,
   isArabic,
-  rowDirection,
-  textStart,
-  textEnd,
   t,
   onViewDetails
 }: BookingCardProps) {
+  const { textAlign, textAlignEnd } = useDirection();
   const chaletName = (isArabic ? booking.chalet?.nameAr : booking.chalet?.nameEn) || '';
   const location = (isArabic ? booking.chalet?.locationAr : booking.chalet?.locationEn) || '';
   const shape = SHAPES_CONFIG[2];
@@ -154,7 +149,7 @@ const BookingCard = React.memo(function BookingCard({
       style={styles.bookingCardContainer}
     >
       {/* Top Block: Image + Chalet Info */}
-      <View style={[styles.topBlock, { flexDirection: rowDirection }]}>
+      <View style={[styles.topBlock, { flexDirection: 'row' }]}>
         <View style={styles.imageBlock}>
           <Svg width={115} height={100} viewBox={shape.viewBox}>
             <Defs>
@@ -175,17 +170,17 @@ const BookingCard = React.memo(function BookingCard({
         </View>
 
         <View style={styles.chaletInfoContent}>
-          <View style={{ alignItems: isArabic ? 'flex-end' : 'flex-start' }}>
-            <ThemedText style={[styles.chaletTitle, { textAlign: textStart }]}>{chaletName}</ThemedText>
-            <ThemedText style={[styles.locationText, { textAlign: textStart }]}>{location}</ThemedText>
+          <View style={{ alignItems: 'flex-start' }}>
+            <ThemedText style={[styles.chaletTitle, { textAlign }]}>{chaletName}</ThemedText>
+            <ThemedText style={[styles.locationText, { textAlign }]}>{location}</ThemedText>
           </View>
 
-          <View style={[styles.priceRatingRow, { flexDirection: rowDirection }]}>
-            <ThemedText style={[styles.priceText, { textAlign: textStart }]}>
+          <View style={[styles.priceRatingRow, { flexDirection: 'row' }]}>
+            <ThemedText style={[styles.priceText, { textAlign }]}>
               <ThemedText style={styles.priceLabel}>{isArabic ? "شفت / " : "Shift / "}</ThemedText>
               {formatPrice(booking.chalet?.price)}
             </ThemedText>
-            <View style={[styles.ratingBox, { flexDirection: rowDirection }]}>
+            <View style={[styles.ratingBox, { flexDirection: 'row' }]}>
               <ThemedText style={styles.ratingText}>{booking.chalet?.rating}</ThemedText>
               <SolarStarBold size={14} color="#EA2129" />
             </View>
@@ -195,36 +190,36 @@ const BookingCard = React.memo(function BookingCard({
 
       {/* Bottom Block: Booking Details */}
       <View style={styles.bottomBlock}>
-        <View style={[styles.detailRow, { flexDirection: rowDirection }]}>
-          <ThemedText style={[styles.detailLabel, { textAlign: textStart }]}>{t('booking.bookingDate')}</ThemedText>
-          <ThemedText style={[styles.detailValue, { textAlign: textEnd }]}>{formatBookingDate(booking.startDate, isArabic)}</ThemedText>
+        <View style={[styles.detailRow, { flexDirection: 'row' }]}>
+          <ThemedText style={[styles.detailLabel, { textAlign }]}>{t('booking.bookingDate')}</ThemedText>
+          <ThemedText style={[styles.detailValue, { textAlign: textAlignEnd }]}>{formatBookingDate(booking.startDate, isArabic)}</ThemedText>
         </View>
 
-        <View style={[styles.detailRow, { flexDirection: rowDirection }]}>
-          <ThemedText style={[styles.detailLabel, { textAlign: textStart }]}>{t('booking.guests') || 'الأشخاص'}</ThemedText>
-          <ThemedText style={[styles.detailValue, { textAlign: textEnd }]}>{booking.guestCount} {isArabic ? 'أشخاص' : 'guests'}</ThemedText>
+        <View style={[styles.detailRow, { flexDirection: 'row' }]}>
+          <ThemedText style={[styles.detailLabel, { textAlign }]}>{t('booking.guests') || 'الأشخاص'}</ThemedText>
+          <ThemedText style={[styles.detailValue, { textAlign: textAlignEnd }]}>{booking.guestCount} {isArabic ? 'أشخاص' : 'guests'}</ThemedText>
         </View>
 
         {booking.paymentModel === 'deposit' && Number(booking.depositAmount) > 0 && (booking.status === 'confirmed' || booking.status === 'completed') ? (
           <>
-            <View style={[styles.detailRow, { flexDirection: rowDirection }]}>
-              <ThemedText style={[styles.detailLabel, { textAlign: textStart }]}>{t('booking.depositAmount') || 'مبلغ العربون'}</ThemedText>
-              <ThemedText style={[styles.detailValue, { textAlign: textEnd }]}>{formatPrice(booking.depositAmount)}</ThemedText>
+            <View style={[styles.detailRow, { flexDirection: 'row' }]}>
+              <ThemedText style={[styles.detailLabel, { textAlign }]}>{t('booking.depositAmount') || 'مبلغ العربون'}</ThemedText>
+              <ThemedText style={[styles.detailValue, { textAlign: textAlignEnd }]}>{formatPrice(booking.depositAmount)}</ThemedText>
             </View>
-            <View style={[styles.detailRow, { flexDirection: rowDirection }]}>
-              <ThemedText style={[styles.detailLabel, { textAlign: textStart }]}>{t('booking.remainingAmount') || 'المبلغ المتبقي'}</ThemedText>
-              <ThemedText style={[styles.detailValue, { textAlign: textEnd }]}>{formatPrice(booking.remainingAmount)}</ThemedText>
+            <View style={[styles.detailRow, { flexDirection: 'row' }]}>
+              <ThemedText style={[styles.detailLabel, { textAlign }]}>{t('booking.remainingAmount') || 'المبلغ المتبقي'}</ThemedText>
+              <ThemedText style={[styles.detailValue, { textAlign: textAlignEnd }]}>{formatPrice(booking.remainingAmount)}</ThemedText>
             </View>
           </>
         ) : null}
 
-        <View style={[styles.detailRow, { flexDirection: rowDirection }]}>
-          <ThemedText style={[styles.detailLabel, { textAlign: textStart }]}>{t('booking.finalAmount')}</ThemedText>
-          <ThemedText style={[styles.detailValue, { textAlign: textEnd }]}>{formatPrice(booking.totalPrice)}</ThemedText>
+        <View style={[styles.detailRow, { flexDirection: 'row' }]}>
+          <ThemedText style={[styles.detailLabel, { textAlign }]}>{t('booking.finalAmount')}</ThemedText>
+          <ThemedText style={[styles.detailValue, { textAlign: textAlignEnd }]}>{formatPrice(booking.totalPrice)}</ThemedText>
         </View>
 
-        <View style={[styles.detailRow, { flexDirection: rowDirection }]}>
-          <ThemedText style={[styles.detailLabel, { textAlign: textStart }]}>{t('booking.paymentStatus')}</ThemedText>
+        <View style={[styles.detailRow, { flexDirection: 'row' }]}>
+          <ThemedText style={[styles.detailLabel, { textAlign }]}>{t('booking.paymentStatus')}</ThemedText>
           <View style={[styles.paidBadge, { backgroundColor: statusBadge.bg }]}>
             <ThemedText style={[styles.paidBadgeText, { color: statusBadge.color }]}>{statusBadge.text}</ThemedText>
           </View>
@@ -277,10 +272,8 @@ const ViewDetailsButton = React.memo(function ViewDetailsButton({
 export default function BookingsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { isRTL, rowDirection, textAlign } = useDirection();
+  const { isRTL } = useDirection();
   const isArabic = isRTL;
-  const textStart: "left" | "right" = textAlign;
-  const textEnd: "left" | "right" = isArabic ? "left" : "right";
 
   // Fetch bookings from the backend
   const { data: bookingsResponse, isLoading: bookingsLoading, isFetching: bookingsFetching, refetch: refetchBookings } = useGetCustomerBookingsQuery({ page: 1, limit: 20 });
@@ -361,9 +354,6 @@ export default function BookingsScreen() {
               booking={booking}
               index={index}
               isArabic={isArabic}
-              rowDirection={rowDirection}
-              textStart={textStart}
-              textEnd={textEnd}
               t={t}
               onViewDetails={handleViewDetails}
             />
@@ -415,8 +405,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FAFCFF',
     borderTopWidth: 1,
     borderTopColor: '#F1F5F9',
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    borderBottomStartRadius: 24,
+    borderBottomEndRadius: 24,
     paddingHorizontal: 20,
     paddingVertical: 16
   },

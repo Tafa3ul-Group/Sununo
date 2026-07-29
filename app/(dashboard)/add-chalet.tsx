@@ -30,7 +30,7 @@ import { Colors, normalize, Spacing, Typography } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
 import { logEvent } from '@/services/analytics';
 import { ANALYTICS_EVENTS } from '@/constants/analytics-events';
-import { useDirection } from "@/i18n";
+import { ltrScrollContent, useDirection } from "@/i18n";
 import { RootState } from '@/store';
 import {
   useCreateChaletMutation,
@@ -176,7 +176,7 @@ const createDefaultPricing = () => Array.from({ length: 7 }, (_, i) => ({
 export default function AddChaletScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { isRTL, rowDirection, textAlign } = useDirection();
+  const { isRTL, direction, textAlign, inputTextAlign } = useDirection();
   const { language } = useSelector((state: RootState) => state.auth);
 
 
@@ -777,7 +777,6 @@ export default function AddChaletScreen() {
     }
   };
 
-  const flexDirection = rowDirection;
   // ── Shift Row ──
   const renderShiftRow = (shift: ShiftData, index: number) => {
     const isActive = shift.isActive;
@@ -848,7 +847,7 @@ export default function AddChaletScreen() {
   };
 
   return (
-    <View style={[styles.container, { direction: isRTL ? 'rtl' : 'ltr' }]}>
+    <View style={styles.container}>
       <StatusBar style="dark" />
 
       <KeyboardAvoidingView
@@ -874,7 +873,7 @@ export default function AddChaletScreen() {
                   <View style={styles.inputGroup}>
                     <Text style={[styles.label, { textAlign }]}>{isRTL ? 'اسم الشاليه (عربي)' : 'Chalet Name (AR)'} <Text style={styles.requiredStar}>{isRTL ? '* مطلوب' : '* Required'}</Text></Text>
                     <TextInput
-                      style={[styles.input, { textAlign }]}
+                      style={[styles.input, { textAlign: inputTextAlign }]}
                       placeholder={isRTL ? "اسم الشاليه بالعربي" : "e.g. شاليه الورد"}
                       placeholderTextColor="#BCBCBC"
                       value={form.nameAr}
@@ -887,7 +886,7 @@ export default function AddChaletScreen() {
                       <AiTranslateButton source={form.nameAr} onTranslated={(en) => setForm((prev) => ({ ...prev, nameEn: en }))} />
                     </View>
                     <TextInput
-                      style={[styles.input, { textAlign }]}
+                      style={[styles.input, { textAlign: inputTextAlign }]}
                       placeholder="e.g. Rose Chalet"
                       placeholderTextColor="#BCBCBC"
                       value={form.nameEn}
@@ -900,7 +899,7 @@ export default function AddChaletScreen() {
                   <View style={styles.inputGroup}>
                     <Text style={[styles.label, { textAlign }]}>{isRTL ? 'وصف الشاليه (عربي)' : 'Description (AR)'} <Text style={styles.requiredStar}>{isRTL ? '* مطلوب' : '* Required'}</Text></Text>
                     <TextInput
-                      style={[styles.input, styles.textArea, { textAlign }]}
+                      style={[styles.input, styles.textArea, { textAlign: inputTextAlign }]}
                       placeholder={isRTL ? "ادخل وصفاً للشاليه بالعربي" : "Enter description in Arabic..."}
                       placeholderTextColor="#BCBCBC"
                       multiline
@@ -915,7 +914,7 @@ export default function AddChaletScreen() {
                       <AiTranslateButton source={form.descriptionAr} onTranslated={(en) => setForm((prev) => ({ ...prev, descriptionEn: en }))} />
                     </View>
                     <TextInput
-                      style={[styles.input, styles.textArea, { textAlign }]}
+                      style={[styles.input, styles.textArea, { textAlign: inputTextAlign }]}
                       placeholder="Enter description in English..."
                       placeholderTextColor="#BCBCBC"
                       multiline
@@ -935,7 +934,7 @@ export default function AddChaletScreen() {
                   <View style={styles.inputGroup}>
                     <Text style={[styles.label, { textAlign }]}>{isRTL ? 'المدينة' : 'City'} <Text style={styles.requiredStar}>{isRTL ? '* مطلوب' : '* Required'}</Text></Text>
                     <TouchableOpacity
-                      style={[styles.input, { flexDirection, alignItems: 'center', justifyContent: 'space-between' }]}
+                      style={[styles.input, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}
                       onPress={() => citySheetRef.current?.present()}
                       activeOpacity={0.7}
                     >
@@ -972,7 +971,7 @@ export default function AddChaletScreen() {
                   <View style={styles.inputGroup}>
                     <Text style={[styles.label, { textAlign }]}>{isRTL ? 'رقم الهاتف' : 'Phone'} <Text style={styles.requiredStar}>{isRTL ? '* مطلوب' : '* Required'}</Text></Text>
                     <TextInput
-                      style={[styles.input, { textAlign }, phoneError ? { borderColor: '#EF4444' } : null]}
+                      style={[styles.input, { textAlign: inputTextAlign }, phoneError ? { borderColor: '#EF4444' } : null]}
                       placeholder="0777...."
                       placeholderTextColor="#BCBCBC"
                       keyboardType="phone-pad"
@@ -992,7 +991,7 @@ export default function AddChaletScreen() {
 
                 <View style={styles.sectionCard}>
                   <ThemedText type="h2" style={[styles.sectionHeader, { textAlign }]}>{isRTL ? 'المواصفات' : 'Specifications'}</ThemedText>
-                  <View style={[styles.rowInputs, { flexDirection }]}>
+                  <View style={[styles.rowInputs, { flexDirection: 'row' }]}>
                     <View style={[styles.inputGroup, { flex: 1 }]}>
                       <Text style={[styles.label, { textAlign }]}>{isRTL ? 'المساحة (م²)' : 'Area (m²)'}</Text>
                       <TextInput style={[styles.input, { textAlign: 'center' }]} placeholder="300" placeholderTextColor="#BCBCBC" keyboardType="numeric" value={form.area} onChangeText={(val) => setForm({ ...form, area: val })} />
@@ -1014,7 +1013,7 @@ export default function AddChaletScreen() {
             {currentStep === 2 && (
               <>
                 <View style={styles.sectionCard}>
-                  <View style={[styles.shiftsHeaderRow, { flexDirection }]}>
+                  <View style={[styles.shiftsHeaderRow, { flexDirection: 'row' }]}>
                     <ThemedText type="h2" style={styles.sectionHeader}>
                       {isRTL ? 'الفترات المتاحة' : 'Available Shifts'}
                     </ThemedText>
@@ -1092,7 +1091,7 @@ export default function AddChaletScreen() {
                             fontSize: 18,
                             fontFamily: 'Alexandria-Bold',
                             color: '#1E293B',
-                            textAlign,
+                            textAlign: inputTextAlign,
                             paddingVertical: 14,
                           }}
                           keyboardType="numeric"
@@ -1192,56 +1191,65 @@ export default function AddChaletScreen() {
                         </View>
                       )}
                     </View>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingVertical: 4, paddingHorizontal: 2 }} style={{ overflow: 'visible' }}>
-                      <TouchableOpacity
-                        style={{
-                          width: 110,
-                          height: 110,
-                          borderRadius: 14,
-                          backgroundColor: '#F8FAFC',
-                          borderWidth: 1.5,
-                          borderColor: '#CBD5E1',
-                          borderStyle: 'dashed',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          gap: 6,
-                        }}
-                        onPress={() => {
-                          setUploadingCategoryId(amenityCategories[currentAmenitySubStep].id);
-                          imageSourceSheetRef.current?.present();
-                        }}
-                      >
-                        <SolarCameraBold size={26} color="#94A3B8" />
-                        <Text style={{ fontSize: 10, fontFamily: 'Alexandria-Medium', color: '#94A3B8' }}>
-                          {isRTL ? 'إضافة صورة' : 'Add Photo'}
-                        </Text>
-                      </TouchableOpacity>
-                      {(imagesByCategory[amenityCategories[currentAmenitySubStep].id] || []).map((uri, index) => (
-                        <View key={index} style={{ width: 110, height: 110, borderRadius: 14 }}>
-                          <Image source={{ uri }} style={{ width: 110, height: 110, borderRadius: 14 }} />
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingVertical: 4, paddingHorizontal: 2, ...ltrScrollContent }} style={{ overflow: 'visible' }}>
+                      {(() => {
+                        // Content is forced physical-LTR; render in reverse for Arabic
+                        // so the add-photo tile stays first (at the right edge) in reading order.
+                        const addTile = (
                           <TouchableOpacity
+                            key="add-photo"
                             style={{
-                              position: 'absolute',
-                              top: 5,
-                              end: 5,
-                              backgroundColor: 'rgba(0,0,0,0.55)',
-                              width: 24,
-                              height: 24,
-                              borderRadius: 12,
+                              width: 110,
+                              height: 110,
+                              borderRadius: 14,
+                              backgroundColor: '#F8FAFC',
+                              borderWidth: 1.5,
+                              borderColor: '#CBD5E1',
+                              borderStyle: 'dashed',
                               justifyContent: 'center',
                               alignItems: 'center',
+                              gap: 6,
                             }}
-                            onPress={() => removeImage(index, amenityCategories[currentAmenitySubStep].id)}
+                            onPress={() => {
+                              setUploadingCategoryId(amenityCategories[currentAmenitySubStep].id);
+                              imageSourceSheetRef.current?.present();
+                            }}
                           >
-                            <Text style={{ color: '#FFF', fontSize: 16, fontFamily: 'Alexandria-Bold', marginTop: -2 }}>×</Text>
+                            <SolarCameraBold size={26} color="#94A3B8" />
+                            <Text style={{ fontSize: 10, fontFamily: 'Alexandria-Medium', color: '#94A3B8' }}>
+                              {isRTL ? 'إضافة صورة' : 'Add Photo'}
+                            </Text>
                           </TouchableOpacity>
-                        </View>
-                      ))}
+                        );
+                        const thumbs = (imagesByCategory[amenityCategories[currentAmenitySubStep].id] || []).map((uri, index) => (
+                          // Thumb sits in an LTR subtree; restore direction so the delete button's `end` follows the language.
+                          <View key={index} style={{ width: 110, height: 110, borderRadius: 14, direction }}>
+                            <Image source={{ uri }} style={{ width: 110, height: 110, borderRadius: 14 }} />
+                            <TouchableOpacity
+                              style={{
+                                position: 'absolute',
+                                top: 5,
+                                end: 5,
+                                backgroundColor: 'rgba(0,0,0,0.55)',
+                                width: 24,
+                                height: 24,
+                                borderRadius: 12,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                              }}
+                              onPress={() => removeImage(index, amenityCategories[currentAmenitySubStep].id)}
+                            >
+                              <Text style={{ color: '#FFF', fontSize: 16, fontFamily: 'Alexandria-Bold', marginTop: -2 }}>×</Text>
+                            </TouchableOpacity>
+                          </View>
+                        ));
+                        return isRTL ? [...thumbs.reverse(), addTile] : [addTile, ...thumbs];
+                      })()}
                     </ScrollView>
                   </View>
 
                   {/* Progress Dots */}
-                  <View style={[styles.swiperPaginationDots, { flexDirection, marginTop: 20 }]}>
+                  <View style={[styles.swiperPaginationDots, { flexDirection: 'row', marginTop: 20 }]}>
                     {amenityCategories.map((_: any, idx: number) => (
                       <TouchableOpacity
                         key={idx}
@@ -1292,7 +1300,7 @@ export default function AddChaletScreen() {
         </ScrollView>
 
         {/* Footer */}
-        <View style={[styles.footer, { flexDirection }]}>
+        <View style={[styles.footer, { flexDirection: 'row' }]}>
           {currentStep > 0 && (
             <SecondaryButton label={isRTL ? 'السابق' : 'Back'} onPress={prevStep} style={{ flex: 1, minWidth: 80 }} />
           )}
@@ -1351,7 +1359,7 @@ export default function AddChaletScreen() {
                   <SolarMagnifierBold size={18} color="#94A3B8" />
                 </View>
                 <TextInput
-                  style={[styles.citySearchInput, { textAlign }]}
+                  style={[styles.citySearchInput, { textAlign: inputTextAlign }]}
                   placeholder={isRTL ? 'ابحث عن مدينة...' : 'Search for a city...'}
                   placeholderTextColor="#94A3B8"
                   value={citySearch}
@@ -1378,7 +1386,7 @@ export default function AddChaletScreen() {
                       onPress={() => handleCitySelect(item)}
                       activeOpacity={0.7}
                     >
-                      <View style={[styles.cityListInner, { flexDirection }]}>
+                      <View style={[styles.cityListInner, { flexDirection: 'row' }]}>
                         <View style={[styles.cityListIcon, isSelected && styles.cityListIconSelected]}>
                           <SolarMapPointBold size={18} color={isSelected ? Colors.white : '#94A3B8'} />
                         </View>
@@ -1412,7 +1420,7 @@ export default function AddChaletScreen() {
       <BottomSheetModal ref={imageSourceSheetRef} index={0} snapPoints={imageSnapPoints} backdropComponent={renderBackdrop} backgroundStyle={{ borderRadius: normalize.radius(24) }}>
         <BottomSheetView style={styles.sheetContent}>
           <Text style={styles.modalTitle}>{isRTL ? 'اختر مصدر الصورة' : 'Select Image Source'}</Text>
-          <View style={[styles.modalOptions, { flexDirection }]}>
+          <View style={[styles.modalOptions, { flexDirection: 'row' }]}>
             <TouchableOpacity style={styles.modalOption} onPress={() => { takePhoto(); imageSourceSheetRef.current?.dismiss(); }}>
               <View style={[styles.modalIcon, { backgroundColor: '#E3F2FD' }]}>
                 <SolarCameraBold size={30} color={Colors.primary} />
@@ -1484,7 +1492,7 @@ export default function AddChaletScreen() {
                 }}>
 
                   <BottomSheetTextInput
-                    style={{ flex: 1, fontSize: 16, fontFamily: 'Alexandria-Bold', color: '#1E293B', textAlign }}
+                    style={{ flex: 1, fontSize: 16, fontFamily: 'Alexandria-Bold', color: '#1E293B', textAlign: inputTextAlign }}
                     value={isRTL ? shift.name.ar : shift.name.en}
                     onChangeText={(val) => updateShiftField(editingShiftIndex, isRTL ? 'nameAr' : 'nameEn', val)}
                     placeholder={isRTL ? 'اسم الفترة' : 'Shift name'}
@@ -1610,7 +1618,7 @@ export default function AddChaletScreen() {
                       fontSize: 18,
                       fontFamily: 'Alexandria-Bold',
                       color: '#1E293B',
-                      textAlign,
+                      textAlign: inputTextAlign,
                       paddingVertical: 14,
                     }}
                     value={uniformPrice > 0 ? uniformPrice.toLocaleString() : ''}
@@ -1816,7 +1824,6 @@ const styles = StyleSheet.create({
   imageContainer: { gap: Spacing.sm },
   imageItem: { width: normalize.width(100), height: normalize.width(100), borderRadius: normalize.radius(16), overflow: 'hidden', position: 'relative' },
   uploadedImage: { width: '100%', height: '100%' },
-  removeImageButton: { position: 'absolute', top: normalize.height(6), backgroundColor: Colors.white, borderRadius: normalize.radius(12) },
   imageUpload: {
     width: normalize.width(100), height: normalize.width(100), backgroundColor: Colors.surface,
     borderRadius: normalize.radius(16), borderWidth: 2, borderColor: Colors.border, borderStyle: 'dashed',

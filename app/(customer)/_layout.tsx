@@ -6,10 +6,17 @@ import { useDirection } from "@/i18n";
 export default function CustomerNonTabLayout() {
   const { t, i18n } = useTranslation();
   const isArabic = i18n.language === "ar";
-  const { direction } = useDirection();
+  const { direction, isRTL } = useDirection();
 
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { direction } }}>
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { direction },
+        animation: isRTL ? "slide_from_left" : "slide_from_right",
+        fullScreenGestureEnabled: true,
+      }}
+    >
       <Stack.Screen 
         name="booking/complete" 
         options={{ title: isArabic ? 'اكتمال الحجز' : 'Booking Completion' }} 

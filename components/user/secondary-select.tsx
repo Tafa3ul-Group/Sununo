@@ -53,8 +53,9 @@ export function SecondarySelect({
   };
 
   const MENU_WIDTH = Math.max(anchor.width, 180);
-  // Position with an absolute LEFT (physical) so it never flips under native
-  // RTL. In RTL pin the menu's right edge to the trigger's right edge.
+  // measureInWindow returns PHYSICAL window coordinates, so the menu is
+  // positioned with a physical `left`. In RTL pin the menu's right edge to the
+  // trigger's right edge — this isRTL branch is legitimate (physical math).
   const menuLeft = isRTL
     ? Math.max(8, anchor.x + anchor.width - MENU_WIDTH)
     : Math.max(8, anchor.x);
@@ -69,7 +70,7 @@ export function SecondarySelect({
           isActive={false}
           onPress={handlePress}
           style={style}
-          variant={!isRTL ? "inverse" : "default"}
+          variant="default"
         />
       </View>
 

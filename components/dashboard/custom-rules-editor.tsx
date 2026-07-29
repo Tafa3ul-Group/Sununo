@@ -55,8 +55,7 @@ export function CustomRulesEditor({
   onRemove,
   isRTL,
 }: CustomRulesEditorProps) {
-  const { rowDirection, textAlign } = useDirection();
-  const flexRow = rowDirection;
+  const { textAlign, inputTextAlign } = useDirection();
 
   const sheetRef = useRef<BottomSheetModal>(null);
   // `null` = not editing, '' = creating a new rule, otherwise the rule's id.
@@ -111,18 +110,16 @@ export function CustomRulesEditor({
     onTranslated?: (en: string) => void;
   }) => (
     <View style={{ gap: 5 }}>
-      <View style={[styles.fieldLabelRow, { flexDirection: flexRow }]}>
-        {/* Placed by the RTL container's own mirroring — no textAlign here, an
-            explicit one gets flipped on Text inside an rtl subtree. */}
+      <View style={[styles.fieldLabelRow, { flexDirection: 'row' }]}>
         <View style={styles.fieldLabelWrap}>
-          <Text style={styles.fieldLabel}>{opts.label}</Text>
+          <Text style={[styles.fieldLabel, { textAlign }]}>{opts.label}</Text>
         </View>
         {opts.onTranslated && (
           <AiTranslateButton source={opts.translateSource || ''} onTranslated={opts.onTranslated} />
         )}
       </View>
       <BottomSheetTextInput
-        style={[styles.ruleInput, opts.multiline && styles.ruleArea, { textAlign }]}
+        style={[styles.ruleInput, opts.multiline && styles.ruleArea, { textAlign: inputTextAlign }]}
         placeholder={opts.placeholder}
         placeholderTextColor="#CBD5E1"
         multiline={opts.multiline}
@@ -135,9 +132,9 @@ export function CustomRulesEditor({
   return (
     <View>
       {/* Header + add button — mirrors the ready-made terms header */}
-      <View style={[styles.header, { flexDirection: flexRow }]}>
+      <View style={[styles.header, { flexDirection: 'row' }]}>
         <View style={{ flex: 1, alignItems: 'flex-start' }}>
-          <View style={[styles.headerTitleRow, { flexDirection: flexRow }]}>
+          <View style={[styles.headerTitleRow, { flexDirection: 'row' }]}>
             <Text style={styles.headerTitle}>{isRTL ? 'شروط مخصّصة' : 'Custom Rules'}</Text>
             {selectedCount > 0 && (
               <View style={styles.countBadge}>
@@ -151,7 +148,7 @@ export function CustomRulesEditor({
             {isRTL ? 'شروط خاصة بهذا الشاليه فقط' : 'Rules specific to this chalet'}
           </Text>
         </View>
-        <TouchableOpacity onPress={openCreate} activeOpacity={0.8} style={[styles.addBtn, { flexDirection: flexRow }]}>
+        <TouchableOpacity onPress={openCreate} activeOpacity={0.8} style={[styles.addBtn, { flexDirection: 'row' }]}>
           <Text style={styles.addBtnPlus}>+</Text>
           <Text style={styles.addBtnText}>{isRTL ? 'إضافة شرط' : 'Add Rule'}</Text>
         </TouchableOpacity>
@@ -179,7 +176,7 @@ export function CustomRulesEditor({
                 onPress={() => onToggle(rule.id)}
                 style={[
                   styles.ruleCard,
-                  { flexDirection: flexRow },
+                  { flexDirection: 'row' },
                   isSelected && styles.ruleCardSelected,
                 ]}
               >
@@ -189,18 +186,18 @@ export function CustomRulesEditor({
                 </View>
 
                 <View style={{ flex: 1, alignItems: 'flex-start' }}>
-                  <Text style={styles.ruleTitle}>
+                  <Text style={[styles.ruleTitle, { textAlign }]}>
                     {title || (isRTL ? `شرط ${index + 1} (بدون عنوان)` : `Rule ${index + 1} (untitled)`)}
                   </Text>
                   {!!content && (
-                    <Text numberOfLines={2} style={styles.ruleContent}>
+                    <Text numberOfLines={2} style={[styles.ruleContent, { textAlign }]}>
                       {content}
                     </Text>
                   )}
                 </View>
 
                 {/* Edit / delete */}
-                <View style={[styles.cardActions, { flexDirection: flexRow }]}>
+                <View style={[styles.cardActions, { flexDirection: 'row' }]}>
                   <TouchableOpacity
                     onPress={() => openEdit(rule)}
                     hitSlop={6}
@@ -282,7 +279,7 @@ export function CustomRulesEditor({
             })}
           </BottomSheetScrollView>
 
-          <View style={[styles.modalActions, { flexDirection: flexRow }]}>
+          <View style={[styles.modalActions, { flexDirection: 'row' }]}>
             <TouchableOpacity onPress={closeSheet} activeOpacity={0.8} style={styles.cancelBtn}>
               <Text style={styles.cancelBtnText}>{isRTL ? 'إلغاء' : 'Cancel'}</Text>
             </TouchableOpacity>

@@ -10,6 +10,7 @@ import { SolarCalendarBold, SolarClockCircleLinear, SolarLockBold, SolarPhoneBol
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { normalize } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
+import { useDirection } from "@/i18n";
 import {
   useCreateExternalBookingMutation,
   useUpdateShiftPricingDayMutation
@@ -31,7 +32,7 @@ export const ShiftActionSheet = forwardRef<BottomSheetModal, ShiftActionSheetPro
   selectedShiftForAction,
   selectedChaletId,
   dateString,
-  isRTL,
+  isRTL: _isRTLProp,
   onDismiss,
   refreshAvailability,
   openBookingDetails,
@@ -46,7 +47,7 @@ export const ShiftActionSheet = forwardRef<BottomSheetModal, ShiftActionSheetPro
   const [externalCustomerPhone, setExternalCustomerPhone] = useState("");
   const [showExternalSuccess, setShowExternalSuccess] = useState(false);
 
-  const textAlign = isRTL ? 'left' : 'right';
+  const { isRTL, textAlign, inputTextAlign } = useDirection();
   const IDENTITY_BLUE = "#035DF9";
 
   const renderBackdrop = React.useCallback(
@@ -146,7 +147,7 @@ export const ShiftActionSheet = forwardRef<BottomSheetModal, ShiftActionSheetPro
                           height: 6,
                           borderRadius: 3,
                           backgroundColor: "#10B981",
-                          [isRTL ? "marginLeft" : "marginRight"]: 6,
+                          marginEnd: 6,
                         }}
                       />
                       <Text
@@ -231,7 +232,7 @@ export const ShiftActionSheet = forwardRef<BottomSheetModal, ShiftActionSheetPro
                         fontFamily: "Alexandria-Regular",
                         fontSize: normalize.font(14),
                         color: "#1E293B",
-                        textAlign,
+                        textAlign: inputTextAlign,
                       }}
                       placeholder={isRTL ? "أدخل اسم الزبون..." : "Enter customer name..."}
                       placeholderTextColor="#94A3B8"
@@ -270,7 +271,7 @@ export const ShiftActionSheet = forwardRef<BottomSheetModal, ShiftActionSheetPro
                         fontFamily: "Alexandria-Regular",
                         fontSize: normalize.font(14),
                         color: "#1E293B",
-                        textAlign: isRTL ? 'right' : 'left',
+                        textAlign: inputTextAlign,
                       }}
                       placeholder={isRTL ? "07xxxxxxxx" : "07xxxxxxxx"}
                       placeholderTextColor="#94A3B8"
@@ -307,7 +308,7 @@ export const ShiftActionSheet = forwardRef<BottomSheetModal, ShiftActionSheetPro
                         fontFamily: "Alexandria-Regular",
                         fontSize: normalize.font(14),
                         color: "#1E293B",
-                        textAlign,
+                        textAlign: inputTextAlign,
                         textAlignVertical: "top",
                       }}
                       placeholder={

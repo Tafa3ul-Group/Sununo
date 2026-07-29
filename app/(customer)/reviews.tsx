@@ -29,7 +29,7 @@ const MemoizedReviewCard = React.memo(ReviewCard);
 export default function ReviewsScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { isRTL, rowDirection } = useDirection();
+  const { isRTL } = useDirection();
   const isArabic = isRTL;
   const [activeTab, setActiveTab] = useState<"pending" | "reviewed">("pending");
   const insets = useSafeAreaInsets();
@@ -126,14 +126,14 @@ export default function ReviewsScreen() {
       />
 
       {/* Tabs with fixed components to prevent shape shifting */}
-      <View style={[styles.tabsWrapper, { flexDirection: rowDirection }]}>
+      <View style={styles.tabsWrapper}>
         <View style={styles.tabItem}>
           <SecondaryButton
             label={t('reviews.reviewed')}
             onPress={() => setActiveTab('reviewed')}
             isActive={activeTab === 'reviewed'}
             style={{ width: '100%' }}
-            iconPosition={isArabic ? "left" : "right"}
+            iconPosition="left"
             variant="default"
           />
         </View>
@@ -143,7 +143,7 @@ export default function ReviewsScreen() {
             onPress={() => setActiveTab('pending')}
             isActive={activeTab === 'pending'}
             style={{ width: '100%' }}
-            iconPosition={isArabic ? "right" : "left"}
+            iconPosition="right"
             variant="inverse"
           />
         </View>
@@ -195,6 +195,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "white" },
   tabsWrapper: {
+    flexDirection: 'row',
     paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 12 },

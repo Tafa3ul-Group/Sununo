@@ -9,13 +9,15 @@ import { useTranslation } from "react-i18next";
 export default function DashboardNonTabLayout() {
   const { t, i18n } = useTranslation();
   const isArabic = i18n.language === "ar";
-  const { direction } = useDirection();
+  const { direction, isRTL } = useDirection();
 
   return (
     <Stack
       screenOptions={{
         headerShown: true,
         contentStyle: { direction, backgroundColor: "#FFFFFF" },
+        animation: isRTL ? "slide_from_left" : "slide_from_right",
+        fullScreenGestureEnabled: true,
         header: (props) => (
           <DashboardHeader 
             title={props.options.title}

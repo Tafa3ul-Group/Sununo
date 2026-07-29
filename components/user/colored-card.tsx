@@ -1,7 +1,7 @@
 import { SolarHeartBold, SolarStarBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { normalize } from "@/constants/theme";
-import { RootState } from "@/store";
+import { useDirection } from "@/i18n";
 import React from "react";
 import {
   StyleSheet,
@@ -16,7 +16,6 @@ import Svg, {
   Path,
   Image as SvgImage,
 } from "react-native-svg";
-import { useSelector } from "react-redux";
 
 // Fixed dimensions requested by user
 const CARD_WIDTH = normalize.width(175);
@@ -91,9 +90,8 @@ export function ColoredCard({
   isFavorite = false,
   onToggleFavorite,
 }: ColoredCardProps) {
-  const { language } = useSelector((state: RootState) => state.auth);
-  const isArabic = language === "ar";
-  const textStart: "left" | "right" = isArabic ? "right" : "left";
+  const { isRTL, textAlign } = useDirection();
+  const isArabic = isRTL;
 
   const currentIndex = shapeIndex % SHAPES_CONFIG.length;
   const config = SHAPES_CONFIG[currentIndex];
@@ -155,7 +153,7 @@ export function ColoredCard({
       <View style={styles.content}>
         <View style={[styles.titleWrapper, { alignSelf: "flex-start" }]}>
           <ThemedText
-            style={[styles.title, { textAlign: textStart }]}
+            style={[styles.title, { textAlign }]}
             numberOfLines={1}
           >
             {title}
@@ -164,7 +162,7 @@ export function ColoredCard({
 
         <View style={[styles.locationWrapper, { alignSelf: "flex-start" }]}>
           <ThemedText
-            style={[styles.location, { textAlign: textStart }]}
+            style={[styles.location, { textAlign }]}
             numberOfLines={1}
           >
             {location}
@@ -194,7 +192,7 @@ export function ColoredCard({
           {/* Price */}
           <View style={[styles.priceContainer, { alignItems: "flex-start" }]}>
             <ThemedText
-              style={[styles.price, { textAlign: textStart }]}
+              style={[styles.price, { textAlign }]}
               numberOfLines={1}
             >
               {isArabic ? "" : "IQD "}

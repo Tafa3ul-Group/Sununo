@@ -31,13 +31,9 @@ export default function BookingDetailsPage() {
   const router = useRouter();
   const { language } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
-  const { isRTL, rowDirection, textAlign } = useDirection();
+  const { isRTL, textAlign, textAlignEnd } = useDirection();
 
-  // Robust layout bridge (same pattern as chalet-details)
-  const flexRow = rowDirection;
   const flexStart = 'flex-start' as 'flex-start' | 'flex-end';
-  const textStart = textAlign;
-  const textEnd = isRTL ? 'left' : 'right' as 'left' | 'right';
   const cancelSheetRef = React.useRef<BookingCancellationSheetRef>(null);
   const confirmPaymentSheetRef = React.useRef<PaymentConfirmationSheetRef>(null);
 
@@ -183,18 +179,18 @@ export default function BookingDetailsPage() {
   };
 
   const renderInfoRow = (label: string, value: string | React.ReactNode, isBlue: boolean = false, subLabel?: string) => (
-    <View style={[styles.infoRow, { flexDirection: flexRow, alignItems: 'center' }]}>
+    <View style={[styles.infoRow, { flexDirection: 'row', alignItems: 'center' }]}>
       <View style={{ flex: 1, alignItems: flexStart, paddingEnd: 16 }}>
-        <Text style={[styles.infoLabel, { textAlign: textStart }]}>{label}</Text>
+        <Text style={[styles.infoLabel, { textAlign }]}>{label}</Text>
         {subLabel && (
-          <Text style={{ fontSize: 11, color: '#94A3B8', fontFamily: 'Alexandria-Regular', marginTop: 2, textAlign: textStart, writingDirection: isRTL ? 'rtl' : 'ltr' }}>
+          <Text style={{ fontSize: 11, color: '#94A3B8', fontFamily: 'Alexandria-Regular', marginTop: 2, textAlign }}>
             {subLabel}
           </Text>
         )}
       </View>
       <View style={{ flex: 0, alignItems: 'flex-end' }}>
         {typeof value === 'string' ? (
-          <Text style={[styles.infoValue, isBlue && styles.blueValue, { textAlign: textEnd }]}>{value}</Text>
+          <Text style={[styles.infoValue, isBlue && styles.blueValue, { textAlign: textAlignEnd }]}>{value}</Text>
         ) : (
           value
         )}
@@ -246,20 +242,20 @@ export default function BookingDetailsPage() {
         {/* Cancelled Status Card */}
         {bIsCancelled && (
           <View style={styles.cancelledCard}>
-            <View style={[styles.cancelledHeader, { flexDirection: flexRow }]}>
+            <View style={[styles.cancelledHeader, { flexDirection: 'row' }]}>
               <View style={styles.warningIconWrapper}>
                 <SolarDangerCircleBold size={24} color="#EA2129" />
               </View>
-              <Text style={[styles.cancelledTitle, { textAlign: textStart }]}>
+              <Text style={[styles.cancelledTitle, { textAlign }]}>
                 {isRTL ? 'تم إلغاء هذا الحجز بواسطتك' : 'This booking was cancelled by you'}
               </Text>
             </View>
             <View style={styles.cancelledDivider} />
-            <Text style={[styles.cancelledReason, { textAlign: textStart }]}>
+            <Text style={[styles.cancelledReason, { textAlign }]}>
               {bCancelReason}
             </Text>
             {bIsDeposit && Number(data.refundAmount || 0) > 0 && (
-              <Text style={[styles.cancelledReason, { textAlign: textStart, marginTop: 8 }]}>
+              <Text style={[styles.cancelledReason, { textAlign, marginTop: 8 }]}>
                 {isRTL
                   ? `مبلغ الاسترداد: ${Number(data.refundAmount).toLocaleString()} د.ع`
                   : `Refund Amount: ${Number(data.refundAmount).toLocaleString()} IQD`}
@@ -290,11 +286,11 @@ export default function BookingDetailsPage() {
         {/* Chalet Information Section */}
         <View style={styles.infoSectionCard}>
           <View style={[styles.sectionTitleRow, { alignItems: flexStart }]}>
-            <Text style={[styles.sectionTitle, { textAlign: textStart }]}>{isRTL ? 'معلومات الشاليه' : 'Chalet Information'}</Text>
+            <Text style={[styles.sectionTitle, { textAlign }]}>{isRTL ? 'معلومات الشاليه' : 'Chalet Information'}</Text>
           </View>
           <View style={styles.divider} />
 
-          <View style={[styles.chaletSimpleRow, { flexDirection: flexRow }]}>
+          <View style={[styles.chaletSimpleRow, { flexDirection: 'row' }]}>
             <View style={styles.simpleImageWrapper}>
               <ExpoImage
                 source={chaletImageSource}
@@ -302,8 +298,8 @@ export default function BookingDetailsPage() {
               />
             </View>
             <View style={[styles.simpleChaletText, { alignItems: flexStart }]}>
-              <Text style={[styles.simpleChaletName, { textAlign: textStart }]}>{bChaletName}</Text>
-              <Text style={[styles.simpleChaletLocation, { textAlign: textStart }]}>{bChaletAddress}</Text>
+              <Text style={[styles.simpleChaletName, { textAlign }]}>{bChaletName}</Text>
+              <Text style={[styles.simpleChaletLocation, { textAlign }]}>{bChaletAddress}</Text>
             </View>
           </View>
         </View>
@@ -311,11 +307,11 @@ export default function BookingDetailsPage() {
         {/* Customer Information */}
         <View style={styles.infoSectionCard}>
           <View style={[styles.sectionTitleRow, { alignItems: flexStart }]}>
-            <Text style={[styles.sectionTitle, { textAlign: textStart }]}>{isRTL ? 'معلومات الزبون' : 'Customer Information'}</Text>
+            <Text style={[styles.sectionTitle, { textAlign }]}>{isRTL ? 'معلومات الزبون' : 'Customer Information'}</Text>
           </View>
           <View style={styles.divider} />
           {renderInfoRow(isRTL ? 'الاسم' : 'Name', bCustomerName)}
-          {renderInfoRow(isRTL ? 'رقم الهاتف' : 'Phone', <Text style={[styles.infoValue, { direction: 'ltr' }]}>{data.customer?.phone || data.externalCustomerPhone || '--'}</Text>)}
+          {renderInfoRow(isRTL ? 'رقم الهاتف' : 'Phone', <Text style={[styles.infoValue, { writingDirection: 'ltr' }]}>{data.customer?.phone || data.externalCustomerPhone || '--'}</Text>)}
           {!bIsExternal && data.customer?.tenantCategory && renderInfoRow(
             isRTL ? 'الفئة' : 'Category',
             <View style={[
@@ -339,7 +335,7 @@ export default function BookingDetailsPage() {
         {hasIdCards && (
           <View style={styles.infoSectionCard}>
             <View style={[styles.sectionTitleRow, { alignItems: flexStart }]}>
-              <Text style={[styles.sectionTitle, { textAlign: textStart }]}>{isRTL ? 'صور الهوية' : 'ID Card Images'}</Text>
+              <Text style={[styles.sectionTitle, { textAlign }]}>{isRTL ? 'صور الهوية' : 'ID Card Images'}</Text>
             </View>
             <View style={styles.divider} />
             <View style={styles.idCardsRow}>
@@ -386,7 +382,7 @@ export default function BookingDetailsPage() {
         {/* Booking Information */}
         <View style={styles.infoSectionCard}>
           <View style={[styles.sectionTitleRow, { alignItems: flexStart }]}>
-            <Text style={[styles.sectionTitle, { textAlign: textStart }]}>{isRTL ? 'معلومات الحجز' : 'Booking Information'}</Text>
+            <Text style={[styles.sectionTitle, { textAlign }]}>{isRTL ? 'معلومات الحجز' : 'Booking Information'}</Text>
           </View>
           <View style={styles.divider} />
           {renderInfoRow(isRTL ? "التاريخ" : "Date", data.bookingDate)}
@@ -407,7 +403,7 @@ export default function BookingDetailsPage() {
         {!bIsExternal && (
           <View style={styles.infoSectionCard}>
             <View style={[styles.sectionTitleRow, { alignItems: flexStart }]}>
-              <Text style={[styles.sectionTitle, { textAlign: textStart }]}>{isRTL ? 'معلومات الدفع' : 'Payment Information'}</Text>
+              <Text style={[styles.sectionTitle, { textAlign }]}>{isRTL ? 'معلومات الدفع' : 'Payment Information'}</Text>
             </View>
             <View style={styles.divider} />
             {renderInfoRow(
@@ -720,7 +716,7 @@ const styles = StyleSheet.create({
   closeButton: {
     position: 'absolute',
     top: normalize.height(60),
-    right: 20,
+    end: 20,
     width: 40,
     height: 40,
     borderRadius: 20,

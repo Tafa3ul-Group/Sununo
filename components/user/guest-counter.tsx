@@ -129,9 +129,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  mirror: {
-    transform: [{ scaleX: -1 }],
-  },
   iconOverlay: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: "center",

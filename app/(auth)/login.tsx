@@ -154,10 +154,8 @@ function validatePhoneNumber(text: string): string | null {
 
 export function LoginScreen() {
   const { t } = useTranslation();
-  const { isRTL, rowDirection, textAlign } = useDirection();
+  const { isRTL, textAlign, inputTextAlign } = useDirection();
   const isArabic = isRTL;
-  const textStart = textAlign;
-  const alignStart: "flex-start" | "flex-end" = "flex-start";
 
   const linkMargin = { marginStart: normalize.width(6) };
 
@@ -328,11 +326,11 @@ export function LoginScreen() {
 
           {/* Login Form */}
           <View style={styles.formContainer}>
-            <View style={[styles.headerRow, { alignItems: alignStart }]}>
-              <ThemedText style={[styles.title, { textAlign: textStart }]}>
+            <View style={[styles.headerRow, { alignItems: 'flex-start' }]}>
+              <ThemedText style={[styles.title, { textAlign }]}>
                 {t("auth.login")}
               </ThemedText>
-              <View style={[styles.subtextRow, { flexDirection: rowDirection }]}>
+              <View style={[styles.subtextRow, { flexDirection: 'row' }]}>
                 <ThemedText style={styles.subtitle}>
                   {isOwner
                     ? isArabic
@@ -359,7 +357,7 @@ export function LoginScreen() {
                 <ThemedText
                   style={[
                     styles.label,
-                    { alignSelf: alignStart, textAlign: textStart },
+                    { alignSelf: 'flex-start', textAlign },
                   ]}
                 >
                   {t("auth.phone")}
@@ -368,7 +366,7 @@ export function LoginScreen() {
                   style={[
                     styles.input,
                     // Phone is always LTR digits, but aligned to the start side.
-                    { textAlign: textStart, writingDirection: "ltr" },
+                    { textAlign: inputTextAlign, writingDirection: "ltr" },
                     phoneError ? { borderColor: "#EF4444" } : null,
                   ]}
                   placeholder={t("auth.phonePlaceholder")}
@@ -383,7 +381,7 @@ export function LoginScreen() {
                 />
                 {phoneError && (
                   <ThemedText
-                    style={[styles.errorText, { textAlign: textStart }]}
+                    style={[styles.errorText, { textAlign }]}
                   >
                     {phoneError}
                   </ThemedText>
@@ -394,7 +392,7 @@ export function LoginScreen() {
                 <ThemedText
                   style={[
                     styles.label,
-                    { alignSelf: alignStart, textAlign: textStart },
+                    { alignSelf: 'flex-start', textAlign },
                   ]}
                 >
                   {t("auth.verificationCode")}
@@ -435,7 +433,7 @@ export function LoginScreen() {
 
             {/* Signing in on a new number creates the account, so the policies
                 that account is bound by are surfaced right here. */}
-            <ThemedText style={[styles.consentNotice, { textAlign: textStart }]}>
+            <ThemedText style={[styles.consentNotice, { textAlign }]}>
               {isArabic
                 ? "بالمتابعة، أنت توافق على "
                 : "By continuing, you agree to the "}
@@ -604,7 +602,6 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(12),
     fontFamily: "Alexandria-Medium",
     marginTop: 6,
-    textAlign: "right",
   },
   bottomWaveContainer: {
     position: "absolute",
