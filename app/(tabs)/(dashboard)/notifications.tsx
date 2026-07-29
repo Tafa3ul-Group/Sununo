@@ -47,6 +47,10 @@ export default function NotificationsScreen() {
             } else {
                 router.push({ pathname: '/(tabs)/(customer)/booking-success', params: { id: item.redirectId } });
             }
+        } else if (item.redirectType === 'chalet' && item.redirectId) {
+            // Public chalet page for both roles — matches the push-tap handler
+            // in app/_layout.tsx so the tap lands in the same place either way.
+            router.push(`/chalet-details/${item.redirectId}`);
         } else if (item.redirectType === 'payout') {
             // Opens the in-app withdrawal confirmation (نعم/لا) screen.
             if (item.redirectId) router.push(`/payout-confirm/${item.redirectId}`);

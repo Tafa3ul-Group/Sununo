@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, StyleSheet, Text, Linking, ScrollView, RefreshControl } from 'react-native';
+import { View, StyleSheet, Text, ScrollView, RefreshControl } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { Colors, normalize } from '@/constants/theme';
+import { useSupportContact } from '@/hooks/use-support-contact';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { SolarClockCircleBold, SolarLogoutBold } from '@/components/icons/solar-icons';
@@ -12,6 +13,7 @@ import { useDirection } from "@/i18n";
 export function PendingApprovalScreen({ onRefresh }: { onRefresh?: () => void }) {
   const { isRTL } = useDirection();
   const dispatch = useDispatch();
+  const { openSupport } = useSupportContact();
     const [refreshing, setRefreshing] = React.useState(false);
 
   const handleLogout = () => {
@@ -58,7 +60,7 @@ export function PendingApprovalScreen({ onRefresh }: { onRefresh?: () => void })
 
         <PrimaryButton
           label={isRTL ? 'تواصل مع الدعم' : 'Contact Support'}
-          onPress={() => Linking.openURL('https://wa.me/9647712684012')}
+          onPress={openSupport}
           style={styles.button}
         />
 

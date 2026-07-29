@@ -134,6 +134,8 @@ export default function NotificationsScreen() {
         // Navigate based on notification redirect type
         if (item.redirectType === 'booking' && item.redirectId) {
             router.push({ pathname: '/(tabs)/(customer)/booking-success', params: { id: item.redirectId } });
+        } else if (item.redirectType === 'chalet' && item.redirectId) {
+            router.push(`/chalet-details/${item.redirectId}`);
         } else if (item.redirectType === 'payout' && item.redirectId) {
             // Opens the in-app withdrawal confirmation (نعم/لا) screen.
             router.push(`/payout-confirm/${item.redirectId}`);

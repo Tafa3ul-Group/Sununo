@@ -17,7 +17,8 @@ import { LogoutSheet } from '@/components/user/logout-sheet';
 import { DeleteAccountSheet } from '@/components/user/delete-account-sheet';
 import { WalletCard } from '@/components/user/wallet-card';
 import { WithdrawSheet, WithdrawSheetRef } from '@/components/user/withdraw-sheet';
-import { PRIVACY_POLICY_URL, SUPPORT_WHATSAPP, toWhatsAppNumber } from '@/constants/links';
+import { PRIVACY_POLICY_URL } from '@/constants/links';
+import { useSupportContact } from '@/hooks/use-support-contact';
 import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc, getAvatarSrc } from '@/hooks/useImageSrc';
 
@@ -148,7 +149,8 @@ export default function CustomerProfileScreen() {
         ? Number(walletData.balance).toLocaleString()
         : '0';
 
-    const supportPhone = toWhatsAppNumber(SUPPORT_WHATSAPP);
+    // Support number comes from the portal (GET /config → adminPhone).
+    const { openSupport: openContactUs } = useSupportContact();
 
     // Press-scale feedback for the user (edit profile) card.
     const userCardScale = useSharedValue(1);
@@ -176,12 +178,6 @@ export default function CustomerProfileScreen() {
             router.push(item.route as any);
         }
     }, [router]);
-
-    const openContactUs = useCallback(() => {
-        Linking.openURL(`https://wa.me/${supportPhone}`).catch(() => {
-            Linking.openURL(`tel:+${supportPhone}`).catch(() => {});
-        });
-    }, [supportPhone]);
 
     const openPrivacyPolicy = useCallback(() => {
         Linking.openURL(PRIVACY_POLICY_URL).catch(() => {});

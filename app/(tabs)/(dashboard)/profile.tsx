@@ -22,7 +22,8 @@ import {
   useLogoutUserMutation,
   useDeleteProfileMutation
 } from '@/store/api/apiSlice';
-import { PRIVACY_POLICY_URL, SUPPORT_WHATSAPP, toWhatsAppNumber } from '@/constants/links';
+import { PRIVACY_POLICY_URL } from '@/constants/links';
+import { useSupportContact } from '@/hooks/use-support-contact';
 import { logout } from '@/store/authSlice';
 import { useDirection } from '@/i18n';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
@@ -60,12 +61,8 @@ export default function ProviderProfileScreen() {
   const [logoutApi] = useLogoutUserMutation();
   const [deleteProfile] = useDeleteProfileMutation();
 
-  const supportPhone = toWhatsAppNumber(SUPPORT_WHATSAPP);
-  const openContactUs = () => {
-    Linking.openURL(`https://wa.me/${supportPhone}`).catch(() => {
-      Linking.openURL(`tel:+${supportPhone}`).catch(() => {});
-    });
-  };
+  // Support number comes from the portal (GET /config → adminPhone).
+  const { openSupport: openContactUs } = useSupportContact();
   const openPrivacyPolicy = () => {
     Linking.openURL(PRIVACY_POLICY_URL).catch(() => {});
   };

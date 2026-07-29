@@ -11,9 +11,8 @@ import {
 } from '@/store/api/apiSlice';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import * as ImagePicker from 'expo-image-picker';
-import React, { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Dimensions,
   Image,
   ScrollView,
   StyleSheet,
@@ -23,8 +22,6 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { useDirection } from '@/i18n';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const AmenityIcon = ({ icon, size = 18 }: { icon: string; size?: number }) => {
   if (!icon) return <SolarStarBold size={size} color="#FFF" />;
@@ -68,7 +65,20 @@ export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
 
     const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
     const [activeCategoryIndex, setActiveCategoryIndex] = useState(0);
-    const categoryScrollViewRef = useRef<ScrollView>(null);
+
+    const categoriesCount = amenityCategories?.length || 0;
+    const isLastCategory = categoriesCount > 0 && activeCategoryIndex >= categoriesCount - 1;
+    const activeCategory = useMemo(
+      () => amenityCategories?.[activeCategoryIndex],
+      [amenityCategories, activeCategoryIndex]
+    );
+
+    // Keep the step in range if categories load/change after mount
+    useEffect(() => {
+      if (categoriesCount > 0 && activeCategoryIndex > categoriesCount - 1) {
+        setActiveCategoryIndex(0);
+      }
+    }, [categoriesCount, activeCategoryIndex]);
 
     useEffect(() => {
       // 1. Try to load from chalet.chaletFeatures first if present
@@ -104,28 +114,17 @@ export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
       []
     );
 
-    const handleCategoryScrollEnd = (event: any) => {
-      const contentOffset = event.nativeEvent.contentOffset.x;
-      const pageIndex = Math.round(contentOffset / SCREEN_WIDTH);
-      setActiveCategoryIndex(pageIndex);
-    };
-
     const handleGoToPage = (index: number) => {
       setActiveCategoryIndex(index);
-      categoryScrollViewRef.current?.scrollTo({
-        x: index * SCREEN_WIDTH,
-        animated: true,
-      });
+    };
+
+    const handlePrevPage = () => {
+      if (activeCategoryIndex > 0) setActiveCategoryIndex(activeCategoryIndex - 1);
     };
 
     const handleNextPage = () => {
-      if (activeCategoryIndex < (amenityCategories?.length || 0) - 1) {
-        const nextIndex = activeCategoryIndex + 1;
-        setActiveCategoryIndex(nextIndex);
-        categoryScrollViewRef.current?.scrollTo({
-          x: nextIndex * SCREEN_WIDTH,
-          animated: true,
-        });
+      if (!isLastCategory) {
+        setActiveCategoryIndex(activeCategoryIndex + 1);
       } else {
         handleUpdateAmenities();
       }
@@ -233,25 +232,18 @@ export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
         backgroundStyle={{ borderRadius: 24, backgroundColor: '#FFFFFF' }}
       >
         <BottomSheetView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
-          {/* Swiper Content */}
-          <ScrollView
-            ref={categoryScrollViewRef}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onMomentumScrollEnd={handleCategoryScrollEnd}
-            style={{ flex: 1 }}
-            contentContainerStyle={{}}
-          >
-            {amenityCategories?.map((category: any, pageIdx: number) => {
-              const categoryImages =
-                chalet?.images?.filter(
-                  (img: any) =>
-                    img.amenityCategoryId === category.id ||
-                    img.amenityCategory?.id === category.id
-                ) || [];
-              return (
-                <View key={category.id} style={{ width: SCREEN_WIDTH, paddingHorizontal: 16 }}>
+          {/* Step Content (one category at a time — navigated with the Next button) */}
+          {(() => {
+            const category = activeCategory;
+            if (!category) return <View style={{ flex: 1 }} />;
+            const categoryImages =
+              chalet?.images?.filter(
+                (img: any) =>
+                  img.amenityCategoryId === category.id ||
+                  img.amenityCategory?.id === category.id
+              ) || [];
+            return (
+                <View key={category.id} style={{ flex: 1, paddingHorizontal: 16 }}>
                   {/* Category Title */}
                   <Text style={styles.swiperCategoryTitle}>
                     {isRTL ? category.name?.ar : category.name?.en}
@@ -359,13 +351,12 @@ export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
                     </View>
                   </ScrollView>
                 </View>
-              );
-            })}
-          </ScrollView>
+            );
+          })()}
 
           {/* Sticky Bottom Section */}
           <View style={styles.swiperBottomContainer}>
-            {/* Pagination Dots */}
+            {/* Step indicator */}
             <View style={[styles.swiperPaginationDots, { flexDirection: 'row' }]}>
               {amenityCategories?.map((_, idx) => {
                 const isActive = idx === activeCategoryIndex;
@@ -379,23 +370,39 @@ export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
               })}
             </View>
 
-            {/* Action Button */}
-            <TouchableOpacity
-              style={styles.swiperActionButton}
-              onPress={handleNextPage}
-              activeOpacity={0.8}
-              disabled={isLinking}
-            >
-              <Text style={styles.swiperActionButtonText}>
-                {activeCategoryIndex === (amenityCategories?.length || 0) - 1
-                  ? isRTL
-                    ? 'حفظ المرافق والخدمات'
-                    : 'Save Amenities'
-                  : isRTL
-                    ? 'التالي'
-                    : 'Next'}
-              </Text>
-            </TouchableOpacity>
+            <View style={[styles.swiperActionsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+              {/* Back Button */}
+              {activeCategoryIndex > 0 && (
+                <TouchableOpacity
+                  style={styles.swiperBackButton}
+                  onPress={handlePrevPage}
+                  activeOpacity={0.8}
+                  disabled={isLinking}
+                >
+                  <Text style={styles.swiperBackButtonText}>
+                    {isRTL ? 'السابق' : 'Back'}
+                  </Text>
+                </TouchableOpacity>
+              )}
+
+              {/* Next / Save Button */}
+              <TouchableOpacity
+                style={[styles.swiperActionButton, { flex: 1 }]}
+                onPress={handleNextPage}
+                activeOpacity={0.8}
+                disabled={isLinking}
+              >
+                <Text style={styles.swiperActionButtonText}>
+                  {isLastCategory
+                    ? isRTL
+                      ? 'حفظ المرافق والخدمات'
+                      : 'Save Amenities'
+                    : isRTL
+                      ? 'التالي'
+                      : 'Next'}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </BottomSheetView >
       </BottomSheetModal >
@@ -574,12 +581,31 @@ const styles = StyleSheet.create({
     backgroundColor: '#0066FF',
     width: 18,
   },
+  swiperActionsRow: {
+    alignItems: 'center',
+    gap: 12,
+  },
   swiperActionButton: {
     height: 52,
     borderRadius: 26,
     backgroundColor: '#0066FF',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  swiperBackButton: {
+    height: 52,
+    paddingHorizontal: 24,
+    borderRadius: 26,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  swiperBackButtonText: {
+    color: Colors.text.primary,
+    fontSize: 14,
+    fontFamily: 'Alexandria-Bold',
   },
   swiperActionButtonText: {
     color: '#FFFFFF',

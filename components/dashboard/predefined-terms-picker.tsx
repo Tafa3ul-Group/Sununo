@@ -12,8 +12,8 @@ export interface PredefinedTerm {
 
 interface PredefinedTermsPickerProps {
   terms: PredefinedTerm[] | undefined;
-  /** Set of titleAr values that are already added to the chalet's rules. */
-  selectedTitles: Set<string>;
+  /** Set of term ids that are already added to the chalet's rules. */
+  selectedIds: Set<string>;
   onToggle: (term: PredefinedTerm) => void;
   isRTL: boolean;
   loading?: boolean;
@@ -21,15 +21,65 @@ interface PredefinedTermsPickerProps {
   busy?: boolean;
 }
 
+/** A chalet rule that may have originated from a ready-made term. */
+export interface TermLinkedRule {
+  titleAr: string;
+  /** Set when the rule was added by tapping a ready-made term in this session. */
+  termId?: string;
+  /** Set when the owner wrote the rule themselves — never matched onto a term. */
+  isCustom?: boolean;
+}
+
+/**
+ * Resolves, for each rule, which ready-made term it came from — returned in the
+ * same order as `rules` (`undefined` = a custom rule).
+ *
+ * Rules are persisted with their text only, so a rule loaded from the server has
+ * to be matched back to a term by Arabic title. Terms are *claimed*: when the
+ * admin has two terms sharing a title, each one can only back a single rule, so
+ * selecting one no longer lights up the other. An explicit `termId` always wins.
+ */
+export function resolveRuleTermIds(
+  rules: TermLinkedRule[],
+  terms: PredefinedTerm[] | undefined,
+): (string | undefined)[] {
+  const allTermIds = new Set((terms || []).map((t) => t.id));
+  const idsByTitle = new Map<string, string[]>();
+  (terms || []).forEach((t) => {
+    const key = (t.title?.ar || '').trim();
+    const list = idsByTitle.get(key);
+    if (list) list.push(t.id);
+    else idsByTitle.set(key, [t.id]);
+  });
+
+  // Explicitly linked rules claim their term first, so title matching can't steal it.
+  const claimed = new Set<string>();
+  rules.forEach((r) => {
+    if (r.termId && allTermIds.has(r.termId)) claimed.add(r.termId);
+  });
+
+  return rules.map((r) => {
+    if (r.termId && allTermIds.has(r.termId)) return r.termId;
+    // A rule the owner wrote stays custom even if it happens to share a title.
+    if (r.isCustom) return undefined;
+    const candidates = idsByTitle.get((r.titleAr || '').trim()) || [];
+    const free = candidates.find((id) => !claimed.has(id));
+    if (!free) return undefined;
+    claimed.add(free);
+    return free;
+  });
+}
+
 /**
  * Lets the owner pick from the admin-managed list of ready-made rules — mirrors
  * the portal's "الشروط الجاهزة" multi-select: a flat list of selectable rows
  * with a small square checkmark. Pure presentational; the parent owns the rules
- * array and persistence. Selection is matched by Arabic title.
+ * array and persistence. Selection is keyed by term id — see
+ * {@link resolveRuleTermIds} for how saved rules map back onto terms.
  */
 export function PredefinedTermsPicker({
   terms,
-  selectedTitles,
+  selectedIds,
   onToggle,
   isRTL,
   loading,
@@ -41,8 +91,8 @@ export function PredefinedTermsPicker({
   const flexStart = 'flex-start';
 
   const selectedCount = useMemo(
-    () => (terms || []).filter((t) => selectedTitles.has(t.title?.ar)).length,
-    [terms, selectedTitles],
+    () => (terms || []).filter((t) => selectedIds.has(t.id)).length,
+    [terms, selectedIds],
   );
 
   return (
@@ -96,7 +146,7 @@ export function PredefinedTermsPicker({
       ) : (
         <View style={{ gap: 8, opacity: busy ? 0.6 : 1 }}>
           {terms.map((term) => {
-            const isSelected = selectedTitles.has(term.title?.ar);
+            const isSelected = selectedIds.has(term.id);
             const title = isRTL ? term.title?.ar : term.title?.en || term.title?.ar;
             const content = isRTL ? term.content?.ar : term.content?.en || term.content?.ar;
             return (

@@ -14,8 +14,10 @@ export const STORE_URLS = {
   ios: "https://apps.apple.com/app/id000000000",
 } as const;
 
-// Support / admin WhatsApp number, used as a fallback for "Contact Us" when
-// the backend /settings response does not provide an adminPhone.
+// Support / admin WhatsApp number. FALLBACK only — the live number is set by
+// the admin in the portal (الإعدادات العامة → رقم الدعم) and served by
+// GET /config → adminPhone. Read it through `useSupportContact()`, never
+// directly, so changing it in the portal doesn't need an app release.
 // International format WITHOUT the leading "+" (used for wa.me links).
 export const SUPPORT_WHATSAPP = "9647712684012";
 

@@ -4,10 +4,14 @@ import { AiTranslateButton } from "@/components/ui/ai-translate-button";
 import { CircleBackButton } from "@/components/ui/circle-back-button";
 import { AuthToggle } from "@/components/user/auth-toggle";
 import { OtpInput } from "@/components/user/otp-input";
+import { PolicyModal } from "@/components/user/policy-modal";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { normalize } from "@/constants/theme";
 
 import {
+    AcceptedPolicy,
+    PolicyType,
+    useGetPoliciesQuery,
     useLoginMutation,
     useRegisterProviderMutation,
     useVerifyPhoneMutation
@@ -19,7 +23,7 @@ import { useDirection } from "@/i18n";
 import { validateQiCard, validateZainCash } from "@/utils/payment-validation";
 import { Image as ExpoImage } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
     Alert,
@@ -29,6 +33,7 @@ import {
     ScrollView,
     StyleSheet,
     TextInput,
+    TouchableOpacity,
     View
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -41,6 +46,13 @@ const qiLogo = require("@/assets/qi.svg");
 
 // Task 2.1: Removed "TYPE" from Step type
 type Step = "INFO" | "BUSINESS" | "PAYMENT" | "OTP";
+
+// Everyone agrees to these two before an account is created. They are shown as
+// a checkbox with tappable titles — the full text opens in a reader.
+const APP_POLICIES: PolicyType[] = ["terms_of_use", "privacy"];
+// Owners additionally must READ (scroll to the end of) the chalet agreement
+// before the owner registration form is even reachable.
+const OWNER_POLICY: PolicyType = "provider_agreement";
 
 // Task 2.2: StepProgress component (inline)
 function StepProgress({ current, total }: { current: number; total: number }) {
@@ -109,6 +121,71 @@ export default function RegisterScreen() {
 
   const [otpCode, setOtpCode] = useState("");
 
+  // ── Legal consent ────────────────────────────────────────────────────────
+  // Policies (and their versions) come from the backend. The accepted version is
+  // echoed back on registration, and the server rejects consent to wording that
+  // is no longer live — so an accepted entry is only valid while it matches.
+  const {
+    data: policies = [],
+    isLoading: policiesLoading,
+    isError: policiesError,
+    refetch: refetchPolicies,
+  } = useGetPoliciesQuery();
+
+  const policyByType = useMemo(
+    () => new Map(policies.map((p) => [p.type, p])),
+    [policies],
+  );
+
+  // type → the version the user agreed to.
+  const [accepted, setAccepted] = useState<Partial<Record<PolicyType, number>>>({});
+  const [policyModal, setPolicyModal] = useState<{
+    type: PolicyType;
+    mode: "read" | "accept";
+  } | null>(null);
+
+  const isAccepted = (type: PolicyType) => {
+    const policy = policyByType.get(type);
+    return !!policy && accepted[type] === policy.version;
+  };
+
+  const policyTitle = (type: PolicyType) => {
+    const policy = policyByType.get(type);
+    if (!policy) return "";
+    return isArabic ? policy.title?.ar : policy.title?.en || policy.title?.ar;
+  };
+
+  const appPoliciesReady = APP_POLICIES.every((type) => policyByType.has(type));
+  const appPoliciesAccepted = APP_POLICIES.every(isAccepted);
+  const ownerPolicyAccepted = isAccepted(OWNER_POLICY);
+
+  const toggleAppPolicies = () => {
+    if (appPoliciesAccepted) {
+      setAccepted((prev) => {
+        const next = { ...prev };
+        APP_POLICIES.forEach((type) => delete next[type]);
+        return next;
+      });
+      return;
+    }
+    // Never let the box be ticked for documents we could not load — the consent
+    // would be unverifiable and the server would reject it anyway.
+    if (!appPoliciesReady) return;
+    setAccepted((prev) => {
+      const next = { ...prev };
+      APP_POLICIES.forEach((type) => {
+        next[type] = policyByType.get(type)!.version;
+      });
+      return next;
+    });
+  };
+
+  // Payload for the registration request — only the types this account needs.
+  const acceptedPayload = (types: PolicyType[]): AcceptedPolicy[] =>
+    types
+      .filter((type) => accepted[type] !== undefined)
+      .map((type) => ({ type, version: accepted[type]! }));
+
   // Task 2.2: getStepInfo function
   const getStepInfo = () => {
     if (accountType === "owner") {
@@ -126,6 +203,16 @@ export default function RegisterScreen() {
         Alert.alert(
           t("common.error"),
           isArabic ? "يرجى ملء الاسم ورقم الهاتف" : "Please enter name and phone",
+        );
+        return;
+      }
+
+      if (!appPoliciesAccepted) {
+        Alert.alert(
+          t("common.error"),
+          isArabic
+            ? "يجب الموافقة على سياسة استخدام التطبيق وسياسة الخصوصية قبل إنشاء الحساب"
+            : "You must agree to the Terms of Use and the Privacy Policy before creating an account",
         );
         return;
       }
@@ -224,7 +311,10 @@ export default function RegisterScreen() {
         name: formData.name,
         businessName: {
           ar: formData.businessNameAr,
-          en: formData.businessNameEn || formData.businessNameAr } };
+          en: formData.businessNameEn || formData.businessNameAr },
+        // Owners consent to all three documents; the server rejects the
+        // registration outright if any of them is missing or out of date.
+        acceptedPolicies: acceptedPayload([...APP_POLICIES, OWNER_POLICY]) };
       if (formData.zainCash.trim()) {
         payload.zainCash = formData.zainCash.trim().replace(/[\s\-\(\)]/g, "");
       }
@@ -238,8 +328,15 @@ export default function RegisterScreen() {
       }
       setStep("OTP");
     } catch (err: any) {
-      // Task 2.5: Translated duplicate account error
-      const rawMsg = err?.data?.message || "";
+      // Task 2.5: Translated duplicate account error.
+      // NestJS validation errors return `message` as a string[], so normalize
+      // to a string before calling string methods (guards against a crash).
+      const rawData = err?.data?.message;
+      const rawMsg = Array.isArray(rawData)
+        ? rawData.join("\n")
+        : typeof rawData === "string"
+          ? rawData
+          : "";
       const isDuplicate =
         rawMsg.toLowerCase().includes("already exists") ||
         err?.status === 409;
@@ -278,6 +375,12 @@ export default function RegisterScreen() {
         phone: formData.phone,
         code: otpCodeNumber,
         name: formData.name, // Pass name to update it in DB
+        // A customer account only comes into being here, so this is where its
+        // consent is recorded. Owners already sent theirs with register-provider
+        // — resending would just duplicate the audit rows.
+        ...(accountType === "customer"
+          ? { acceptedPolicies: acceptedPayload(APP_POLICIES) }
+          : {}),
       }).unwrap();
       const resolvedUserType =
         result.user?.type === "provider" ? "owner" : "customer";
@@ -360,78 +463,205 @@ export default function RegisterScreen() {
                 <AuthToggle activeType={accountType} onChange={setAccountType} />
               </View>
 
-              <ThemedText
-                style={[
-                  styles.stepTitle,
-                  { textAlign: textStart },
-                ]}
-              >
-                {isArabic ? "المعلومات الأساسية" : "Basic Information"}
-              </ThemedText>
+              {/* Owner gate: the chalet agreement has to be read and accepted
+                  before the owner registration form is reachable at all. */}
+              {accountType === "owner" && !ownerPolicyAccepted ? (
+                <View style={styles.gateCard}>
+                  <ThemedText style={[styles.gateTitle, { textAlign: textStart }]}>
+                    {policyTitle(OWNER_POLICY) ||
+                      (isArabic
+                        ? "سياسة الشاليهات مع المنصة"
+                        : "Chalet Owner Agreement")}
+                  </ThemedText>
+                  <ThemedText style={[styles.gateBody, { textAlign: textStart }]}>
+                    {isArabic
+                      ? "قبل إنشاء حساب مالك، يجب قراءة سياسة الشاليهات مع المنصة والموافقة عليها. تشرح السياسة العمولة وآلية استلام المستحقات والتزاماتك تجاه الضيوف."
+                      : "Before creating an owner account you must read and accept the chalet owner agreement. It covers the commission, how payouts reach you, and your obligations to guests."}
+                  </ThemedText>
 
-              <View style={styles.inputGroup}>
-                <ThemedText
-                  style={[
-                    styles.label,
-                    { textAlign: textStart },
-                  ]}
-                >
-                  {t("auth.fullName")} *
-                </ThemedText>
-                <TextInput
-                  style={[
-                    styles.input,
-                    { textAlign: textStart },
-                  ]}
-                  placeholder={
-                    isArabic ? "ادخل اسمك الكامل" : "Enter your full name"
-                  }
-                  value={formData.name}
-                  onChangeText={(val) =>
-                    setFormData({ ...formData, name: val })
-                  }
-                  placeholderTextColor="#94A3B8"
-                />
-              </View>
+                  {policiesError ? (
+                    <>
+                      <ThemedText
+                        style={[styles.errorText, { textAlign: textStart }]}
+                      >
+                        {isArabic
+                          ? "تعذّر تحميل السياسة. تحقق من الاتصال."
+                          : "Could not load the policy. Check your connection."}
+                      </ThemedText>
+                      <PrimaryButton
+                        label={isArabic ? "إعادة المحاولة" : "Retry"}
+                        onPress={() => refetchPolicies()}
+                        style={styles.mainBtn}
+                        activeColor="#0061FE"
+                      />
+                    </>
+                  ) : (
+                    <PrimaryButton
+                      label={
+                        isArabic
+                          ? "قراءة السياسة والموافقة"
+                          : "Read the agreement & accept"
+                      }
+                      onPress={() =>
+                        setPolicyModal({ type: OWNER_POLICY, mode: "accept" })
+                      }
+                      style={styles.mainBtn}
+                      loading={policiesLoading}
+                      disabled={!policyByType.has(OWNER_POLICY)}
+                      activeColor={
+                        policyByType.has(OWNER_POLICY) ? "#0061FE" : "#CBD5E1"
+                      }
+                    />
+                  )}
+                </View>
+              ) : (
+                <>
+                  {accountType === "owner" && (
+                    <View style={styles.acceptedBanner}>
+                      <ThemedText style={[styles.acceptedText, { textAlign: textStart }]}>
+                        {isArabic
+                          ? "✓ تمت الموافقة على سياسة الشاليهات مع المنصة"
+                          : "✓ Chalet owner agreement accepted"}
+                      </ThemedText>
+                      <TouchableOpacity
+                        onPress={() =>
+                          setPolicyModal({ type: OWNER_POLICY, mode: "read" })
+                        }
+                      >
+                        <ThemedText style={styles.linkText}>
+                          {isArabic ? "عرض" : "View"}
+                        </ThemedText>
+                      </TouchableOpacity>
+                    </View>
+                  )}
 
-              <View style={styles.inputGroup}>
-                <ThemedText
-                  style={[
-                    styles.label,
-                    { textAlign: textStart },
-                  ]}
-                >
-                  {t("auth.phone")} *
-                </ThemedText>
-                <TextInput
-                  style={[
-                    styles.input,
-                    { textAlign: textStart },
-                  ]}
-                  placeholder="077XXXXXXXX"
-                  value={formData.phone}
-                  onChangeText={(val) =>
-                    setFormData({ ...formData, phone: val })
-                  }
-                  keyboardType="phone-pad"
-                  placeholderTextColor="#94A3B8"
-                />
-              </View>
+                  <ThemedText
+                    style={[
+                      styles.stepTitle,
+                      { textAlign: textStart },
+                    ]}
+                  >
+                    {isArabic ? "المعلومات الأساسية" : "Basic Information"}
+                  </ThemedText>
 
-              <PrimaryButton
-                label={
-                  accountType === "owner"
-                    ? isArabic
-                      ? "التالي"
-                      : "Next"
-                    : isArabic
-                      ? "إرسال الرمز"
-                      : "Send Code"
-                }
-                onPress={nextStep}
-                style={styles.mainBtn}
-                activeColor="#0061FE"
-              />
+                  <View style={styles.inputGroup}>
+                    <ThemedText
+                      style={[
+                        styles.label,
+                        { textAlign: textStart },
+                      ]}
+                    >
+                      {t("auth.fullName")} *
+                    </ThemedText>
+                    <TextInput
+                      style={[
+                        styles.input,
+                        { textAlign: textStart },
+                      ]}
+                      placeholder={
+                        isArabic ? "ادخل اسمك الكامل" : "Enter your full name"
+                      }
+                      value={formData.name}
+                      onChangeText={(val) =>
+                        setFormData({ ...formData, name: val })
+                      }
+                      placeholderTextColor="#94A3B8"
+                    />
+                  </View>
+
+                  <View style={styles.inputGroup}>
+                    <ThemedText
+                      style={[
+                        styles.label,
+                        { textAlign: textStart },
+                      ]}
+                    >
+                      {t("auth.phone")} *
+                    </ThemedText>
+                    <TextInput
+                      style={[
+                        styles.input,
+                        { textAlign: textStart },
+                      ]}
+                      placeholder="077XXXXXXXX"
+                      value={formData.phone}
+                      onChangeText={(val) =>
+                        setFormData({ ...formData, phone: val })
+                      }
+                      keyboardType="phone-pad"
+                      placeholderTextColor="#94A3B8"
+                    />
+                  </View>
+
+                  {/* Consent to the app-wide policies — required before the account
+                      is created. Titles open the full text in a reader. */}
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={toggleAppPolicies}
+                    disabled={!appPoliciesReady}
+                    style={styles.consentRow}
+                  >
+                    <View
+                      style={[
+                        styles.checkbox,
+                        appPoliciesAccepted && styles.checkboxChecked,
+                      ]}
+                    >
+                      {appPoliciesAccepted && (
+                        <ThemedText style={styles.checkboxTick}>✓</ThemedText>
+                      )}
+                    </View>
+                    <ThemedText style={[styles.consentText, { textAlign: textStart }]}>
+                      {isArabic ? "أوافق على " : "I agree to the "}
+                      <ThemedText
+                        style={styles.linkText}
+                        onPress={() =>
+                          setPolicyModal({ type: "terms_of_use", mode: "read" })
+                        }
+                      >
+                        {policyTitle("terms_of_use") ||
+                          (isArabic ? "سياسة استخدام التطبيق" : "Terms of Use")}
+                      </ThemedText>
+                      {isArabic ? " و" : " and the "}
+                      <ThemedText
+                        style={styles.linkText}
+                        onPress={() =>
+                          setPolicyModal({ type: "privacy", mode: "read" })
+                        }
+                      >
+                        {policyTitle("privacy") ||
+                          (isArabic ? "سياسة الخصوصية" : "Privacy Policy")}
+                      </ThemedText>
+                    </ThemedText>
+                  </TouchableOpacity>
+
+                  {policiesError && (
+                    <TouchableOpacity onPress={() => refetchPolicies()}>
+                      <ThemedText style={[styles.errorText, { textAlign: textStart }]}>
+                        {isArabic
+                          ? "تعذّر تحميل السياسات. اضغط لإعادة المحاولة."
+                          : "Could not load the policies. Tap to retry."}
+                      </ThemedText>
+                    </TouchableOpacity>
+                  )}
+
+                  <PrimaryButton
+                    label={
+                      accountType === "owner"
+                        ? isArabic
+                          ? "التالي"
+                          : "Next"
+                        : isArabic
+                          ? "إرسال الرمز"
+                          : "Send Code"
+                    }
+                    onPress={nextStep}
+                    style={styles.mainBtn}
+                    disabled={!appPoliciesAccepted}
+                    activeColor={appPoliciesAccepted ? "#0061FE" : "#CBD5E1"}
+                  />
+                </>
+              )}
             </View>
           )}
 
@@ -666,6 +896,16 @@ export default function RegisterScreen() {
           )}
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <PolicyModal
+        visible={!!policyModal}
+        type={policyModal?.type ?? null}
+        mode={policyModal?.mode}
+        onClose={() => setPolicyModal(null)}
+        onAccept={({ type, version }) =>
+          setAccepted((prev) => ({ ...prev, [type]: version }))
+        }
+      />
     </View>
   );
 }
@@ -808,6 +1048,78 @@ const styles = StyleSheet.create({
     color: "#64748B",
     lineHeight: normalize.font(20),
     marginBottom: 16 },
+  // ── Legal consent ───────────────────────────────────────────────────────
+  gateCard: {
+    width: "100%",
+    backgroundColor: "#F8FAFC",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    padding: 16 },
+  gateTitle: {
+    width: "100%",
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-SemiBold",
+    color: "#1E293B",
+    lineHeight: normalize.font(24),
+    marginBottom: 6 },
+  gateBody: {
+    width: "100%",
+    fontSize: normalize.font(12),
+    fontFamily: "Alexandria-Regular",
+    color: "#64748B",
+    lineHeight: normalize.font(22) },
+  acceptedBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+    backgroundColor: "#ECFDF5",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 16 },
+  acceptedText: {
+    flex: 1,
+    fontSize: normalize.font(11.5),
+    fontFamily: "Alexandria-Medium",
+    color: "#15803D",
+    lineHeight: normalize.font(20) },
+  consentRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+    marginTop: 4,
+    marginBottom: 4 },
+  checkbox: {
+    marginTop: 2,
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderWidth: 2,
+    borderColor: "#CBD5E1" },
+  checkboxChecked: {
+    backgroundColor: "#0061FE",
+    borderColor: "#0061FE" },
+  checkboxTick: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontFamily: "Alexandria-Bold",
+    lineHeight: 18 },
+  consentText: {
+    flex: 1,
+    fontSize: normalize.font(12),
+    fontFamily: "Alexandria-Regular",
+    color: "#475569",
+    lineHeight: normalize.font(22) },
+  linkText: {
+    fontSize: normalize.font(12),
+    fontFamily: "Alexandria-SemiBold",
+    color: "#0061FE",
+    textDecorationLine: "underline" },
   // Task 2.4: mainBtn marginTop changed from normalize.height(20) to 16
   mainBtn: {
     marginTop: 16,

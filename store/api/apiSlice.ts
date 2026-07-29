@@ -63,6 +63,28 @@ export interface AppConfigResponse {
   };
 }
 
+// ── Legal policies ──────────────────────────────────────────────────────────
+// The three documents a user agrees to. `provider_agreement` is owner-only and
+// must be read + accepted BEFORE the owner registration form is reachable.
+export type PolicyType = "terms_of_use" | "privacy" | "provider_agreement";
+
+export interface Policy {
+  id: string;
+  type: PolicyType;
+  title: { ar: string; en: string };
+  content: { ar: string; en: string };
+  version: number;
+  isActive: boolean;
+  publishedAt?: string | null;
+}
+
+// What the client echoes back when the user agrees. The version is what makes
+// the consent verifiable — the server rejects it if the wording has moved on.
+export interface AcceptedPolicy {
+  type: PolicyType;
+  version: number;
+}
+
 export const unwrapListResponse = (response: any) => {
   if (Array.isArray(response)) return response;
   if (Array.isArray(response?.data)) return response.data;
@@ -360,6 +382,29 @@ export const apiSlice = createApi({
     getProviderTerms: builder.query<any[], void>({
       query: () => "/provider/terms",
       transformResponse: unwrapListResponse,
+    }),
+
+    // ── Legal policies ──────────────────────────────────────────────────────
+    // Public (no auth) — the register screen must show these BEFORE an account
+    // exists. `version` is echoed back on consent so the server can reject
+    // agreement to wording that is no longer live.
+    getPolicies: builder.query<Policy[], void>({
+      query: () => "/policies",
+      transformResponse: unwrapListResponse,
+    }),
+
+    getPolicy: builder.query<Policy, PolicyType>({
+      query: (type) => `/policies/${type}`,
+      transformResponse: (res: any) => res?.data ?? res,
+    }),
+
+    // Re-consent for an already-signed-in user (used when a version is bumped).
+    acceptPolicies: builder.mutation<{ message: string }, AcceptedPolicy[]>({
+      query: (policies) => ({
+        url: "/policies/accept",
+        method: "POST",
+        body: { policies },
+      }),
     }),
 
     // Admin-flagged (showInFilter) amenity filter options. The endpoint returns
@@ -735,6 +780,9 @@ export const {
   useLoginMutation,
   useVerifyPhoneMutation,
   useRegisterProviderMutation,
+  useGetPoliciesQuery,
+  useGetPolicyQuery,
+  useAcceptPoliciesMutation,
   useCreateChaletMutation,
   useUpdateChaletMutation,
   useUploadChaletImageMutation,

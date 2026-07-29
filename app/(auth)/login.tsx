@@ -3,16 +3,23 @@ import { LoginHeaderLogo } from "@/components/icons/login-header-logo";
 import { ThemedText } from "@/components/themed-text";
 import { AuthToggle } from "@/components/user/auth-toggle";
 import { OtpInput } from "@/components/user/otp-input";
+import { PolicyModal } from "@/components/user/policy-modal";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { RootState } from "@/store";
-import { useLoginMutation, useVerifyPhoneMutation } from "@/store/api/apiSlice";
+import {
+  AcceptedPolicy,
+  PolicyType,
+  useGetPoliciesQuery,
+  useLoginMutation,
+  useVerifyPhoneMutation,
+} from "@/store/api/apiSlice";
 import { setCredentials, setUserType } from "@/store/authSlice";
 import { logEvent } from "@/services/analytics";
 import { ANALYTICS_EVENTS } from "@/constants/analytics-events";
 import { useDirection } from "@/i18n";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Alert,
@@ -37,6 +44,10 @@ const normalize = {
   font: (size: number) => size * scale,
   radius: (size: number) => size * scale,
 };
+
+// Signing in on an unknown number creates the account, so this screen carries
+// the same app-wide consent as the register screen.
+const APP_POLICIES: PolicyType[] = ["terms_of_use", "privacy"];
 
 function translateAuthError(errorMsg: string): string {
   const msg = String(errorMsg).toLowerCase();
@@ -168,6 +179,29 @@ export function LoginScreen() {
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [code, setCode] = useState("");
 
+  // ── Legal consent ────────────────────────────────────────────────────────
+  // This screen doubles as signup: `POST /auth/login` creates the account when
+  // the phone is new. So the app-wide policies are surfaced here as a
+  // "by continuing you agree" notice and sent with the verify call — the server
+  // requires them for a customer's first verification, and ignores a repeat
+  // acceptance of a version already on file, so returning users cost nothing.
+  const { data: policies = [] } = useGetPoliciesQuery();
+  const policyByType = useMemo(
+    () => new Map(policies.map((p) => [p.type, p])),
+    [policies],
+  );
+  const [policyModal, setPolicyModal] = useState<PolicyType | null>(null);
+
+  const policyTitle = (type: PolicyType, fallback: string) => {
+    const policy = policyByType.get(type);
+    if (!policy) return fallback;
+    return (isArabic ? policy.title?.ar : policy.title?.en) || fallback;
+  };
+
+  const acceptedPolicies: AcceptedPolicy[] = APP_POLICIES.filter((type) =>
+    policyByType.has(type),
+  ).map((type) => ({ type, version: policyByType.get(type)!.version }));
+
   function handleTypeChange(type: "owner" | "customer") {
     if (step === "otp") return;
     setLocalUserType(type);
@@ -225,7 +259,11 @@ export function LoginScreen() {
           return;
         }
 
-        const result = await verifyPhone({ phone, code: otpCode }).unwrap();
+        const result = await verifyPhone({
+          phone,
+          code: otpCode,
+          acceptedPolicies,
+        }).unwrap();
         const resolvedUserType =
           result.user?.type === "provider" ? "owner" : "customer";
 
@@ -395,6 +433,33 @@ export function LoginScreen() {
               </View>
             )}
 
+            {/* Signing in on a new number creates the account, so the policies
+                that account is bound by are surfaced right here. */}
+            <ThemedText style={[styles.consentNotice, { textAlign: textStart }]}>
+              {isArabic
+                ? "بالمتابعة، أنت توافق على "
+                : "By continuing, you agree to the "}
+              <ThemedText
+                style={styles.consentLink}
+                onPress={() => setPolicyModal("terms_of_use")}
+              >
+                {policyTitle(
+                  "terms_of_use",
+                  isArabic ? "سياسة استخدام التطبيق" : "Terms of Use",
+                )}
+              </ThemedText>
+              {isArabic ? " و" : " and the "}
+              <ThemedText
+                style={styles.consentLink}
+                onPress={() => setPolicyModal("privacy")}
+              >
+                {policyTitle(
+                  "privacy",
+                  isArabic ? "سياسة الخصوصية" : "Privacy Policy",
+                )}
+              </ThemedText>
+            </ThemedText>
+
             {!isOwner && (
               <TouchableOpacity
                 style={styles.guestLink}
@@ -416,6 +481,13 @@ export function LoginScreen() {
       <View style={styles.bottomWaveContainer}>
         <LoginBottomBackground width={SCREEN_WIDTH} />
       </View>
+
+      <PolicyModal
+        visible={!!policyModal}
+        type={policyModal}
+        mode="read"
+        onClose={() => setPolicyModal(null)}
+      />
     </View>
   );
 }
@@ -502,6 +574,20 @@ const styles = StyleSheet.create({
     gap: 12,
     marginTop: 16,
     width: "100%",
+  },
+  consentNotice: {
+    marginTop: 18,
+    width: "100%",
+    fontSize: normalize.font(11.5),
+    fontFamily: "Alexandria-Regular",
+    color: "#94A3B8",
+    lineHeight: normalize.font(20),
+  },
+  consentLink: {
+    fontSize: normalize.font(11.5),
+    fontFamily: "Alexandria-SemiBold",
+    color: "#0061FE",
+    textDecorationLine: "underline",
   },
   guestLink: {
     marginTop: 24,

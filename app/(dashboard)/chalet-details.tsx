@@ -1,5 +1,6 @@
 import { AmenitiesModal } from '@/components/dashboard/amenities-modal';
-import { PredefinedTermsPicker, type PredefinedTerm } from '@/components/dashboard/predefined-terms-picker';
+import { CustomRulesEditor, type CustomRuleDraft } from '@/components/dashboard/custom-rules-editor';
+import { PredefinedTermsPicker, resolveRuleTermIds, type PredefinedTerm } from '@/components/dashboard/predefined-terms-picker';
 import {
   ProfileShape,
   SolarBanknoteBold,
@@ -149,6 +150,12 @@ export default function ChaletDetailsScreen() {
     titleEn?: string;
     descriptionAr: string;
     descriptionEn?: string;
+    /** Id of the ready-made term this rule came from (absent for custom rules). */
+    termId?: string;
+    /** Written by the owner — never matched onto a ready-made term. */
+    isCustom?: boolean;
+    /** Custom rules only: unchecked rules stay in the list but aren't saved. */
+    enabled?: boolean;
   }
 
   const [rulesForm, setRulesForm] = useState({
@@ -358,23 +365,32 @@ export default function ChaletDetailsScreen() {
 
   // ── Rules: edited locally in the sheet, saved as one batch on "Save"
   // (same model as add-chalet — keeps the two screens consistent). ──
-  const predefinedTitleSet = useMemo(
-    () => new Set((predefinedTerms || []).map((t: any) => t.title?.ar)),
-    [predefinedTerms],
+  // Term id backing each rule, positionally (undefined = custom rule). Saved
+  // rules carry only their text, so they're matched back onto terms by title —
+  // one term per rule, which keeps same-titled terms independent.
+  const ruleTermIds = useMemo(
+    () => resolveRuleTermIds(rulesForm.rules, predefinedTerms as PredefinedTerm[] | undefined),
+    [rulesForm.rules, predefinedTerms],
   );
-  const selectedRuleTitles = useMemo(() => new Set(rulesForm.rules.map(r => r.titleAr)), [rulesForm.rules]);
+  const selectedTermIds = useMemo(
+    () => new Set(ruleTermIds.filter(Boolean) as string[]),
+    [ruleTermIds],
+  );
   const customRules = useMemo(
-    () => rulesForm.rules.filter(r => !predefinedTitleSet.has(r.titleAr)),
-    [rulesForm.rules, predefinedTitleSet],
+    () => rulesForm.rules.filter((_, idx) => !ruleTermIds[idx]),
+    [rulesForm.rules, ruleTermIds],
   );
 
   const toggleTerm = (term: PredefinedTerm) => {
     setRulesForm(prev => {
-      const exists = prev.rules.some(r => r.titleAr === term.title?.ar);
-      const rules = exists
-        ? prev.rules.filter(r => r.titleAr !== term.title?.ar)
+      // Resolve against `prev` so back-to-back taps can't act on a stale mapping.
+      const termIds = resolveRuleTermIds(prev.rules, predefinedTerms as PredefinedTerm[] | undefined);
+      const idx = termIds.indexOf(term.id);
+      const rules = idx >= 0
+        ? prev.rules.filter((_, i) => i !== idx)
         : [...prev.rules, {
             id: term.id || `term-${Date.now()}`,
+            termId: term.id,
             titleAr: term.title?.ar || '',
             titleEn: term.title?.en || '',
             descriptionAr: term.content?.ar || '',
@@ -384,14 +400,28 @@ export default function ChaletDetailsScreen() {
     });
   };
 
-  const addEmptyRule = () => {
+  const createCustomRule = (draft: CustomRuleDraft) => {
     setRulesForm(prev => ({
-      rules: [...prev.rules, { id: `custom-${Date.now()}`, titleAr: '', titleEn: '', descriptionAr: '', descriptionEn: '' } as RuleItem],
+      rules: [...prev.rules, {
+        id: `custom-${Date.now()}`,
+        isCustom: true,
+        enabled: true,
+        titleAr: draft.titleAr,
+        titleEn: draft.titleEn,
+        descriptionAr: draft.descriptionAr,
+        descriptionEn: draft.descriptionEn,
+      } as RuleItem],
     }));
   };
 
   const updateRuleField = (id: string, patch: Partial<RuleItem>) => {
     setRulesForm(prev => ({ rules: prev.rules.map(r => (r.id === id ? { ...r, ...patch } : r)) }));
+  };
+
+  const toggleRule = (id: string) => {
+    setRulesForm(prev => ({
+      rules: prev.rules.map(r => (r.id === id ? { ...r, enabled: r.enabled === false } : r)),
+    }));
   };
 
   const removeRuleLocal = (id: string) => {
@@ -403,6 +433,7 @@ export default function ChaletDetailsScreen() {
     try {
       const payload = {
         rules: rulesForm.rules
+          .filter(r => r.enabled !== false)
           .filter(r => r.titleAr.trim() || r.descriptionAr.trim())
           .map(r => ({
             title: { ar: r.titleAr.trim(), en: (r.titleEn || r.titleAr).trim() },
@@ -1488,6 +1519,7 @@ export default function ChaletDetailsScreen() {
         ref={rulesModalRef}
         index={0}
         snapPoints={['92%']}
+        enableDynamicSizing={false}
         backdropComponent={renderBackdrop}
         backgroundStyle={{ borderRadius: 28, backgroundColor: '#FFFFFF' }}
         handleIndicatorStyle={{ backgroundColor: '#CBD5E1', width: 36 }}
@@ -1496,7 +1528,7 @@ export default function ChaletDetailsScreen() {
         android_keyboardInputMode="adjustResize"
         onDismiss={() => setRulesForm({ rules: mapChaletRules(chalet) })}
       >
-        <BottomSheetView style={{ flex: 1 }}>
+        <View style={{ flex: 1 }}>
           {/* Header */}
           <View style={{ flexDirection: flexRow, alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingTop: 6, paddingBottom: 16 }}>
             <View style={{ width: 46, height: 46, borderRadius: 14, backgroundColor: Colors.primary, justifyContent: 'center', alignItems: 'center' }}>
@@ -1515,14 +1547,15 @@ export default function ChaletDetailsScreen() {
 
           {/* Scroll content */}
           <BottomSheetScrollView
-            contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 18, paddingBottom: 28 }}
+            style={{ flex: 1 }}
+            contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 18, paddingBottom: 28, flexGrow: 1 }}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
             {/* Ready-made terms */}
             <PredefinedTermsPicker
               terms={predefinedTerms as PredefinedTerm[] | undefined}
-              selectedTitles={selectedRuleTitles}
+              selectedIds={selectedTermIds}
               onToggle={toggleTerm}
               isRTL={isRTL}
               loading={isLoadingTerms}
@@ -1531,59 +1564,15 @@ export default function ChaletDetailsScreen() {
             {/* Divider */}
             <View style={{ height: 1, backgroundColor: '#EEF2F6', marginVertical: 18 }} />
 
-            {/* Custom rules header */}
-            <View style={{ flexDirection: flexRow, alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
-              <View style={{ flex: 1, alignItems: flexStart }}>
-                <Text style={{ fontSize: 15, fontFamily: 'Alexandria-Bold', color: '#0F172A', textAlign }}>{isRTL ? 'شروط مخصّصة' : 'Custom Rules'}</Text>
-                <Text style={{ fontSize: 12, fontFamily: 'Alexandria-Regular', color: '#94A3B8', marginTop: 3, textAlign }}>{isRTL ? 'شروط خاصة بهذا الشاليه فقط' : 'Rules specific to this chalet'}</Text>
-              </View>
-              <TouchableOpacity onPress={addEmptyRule} activeOpacity={0.8} style={{ flexDirection: flexRow, alignItems: 'center', gap: 4, borderRadius: 12, borderWidth: 1.5, borderColor: Colors.primary + '40', paddingHorizontal: 12, paddingVertical: 8 }}>
-                <Text style={{ fontSize: 16, color: Colors.primary, fontFamily: 'Alexandria-Bold', marginTop: -2 }}>+</Text>
-                <Text style={{ fontSize: 12, color: Colors.primary, fontFamily: 'Alexandria-Bold' }}>{isRTL ? 'إضافة شرط' : 'Add Rule'}</Text>
-              </TouchableOpacity>
-            </View>
-
-            {customRules.length === 0 ? (
-              <View style={{ borderRadius: 12, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#EEF2F6', paddingVertical: 18, paddingHorizontal: 16 }}>
-                <Text style={{ fontSize: 12, fontFamily: 'Alexandria-Medium', color: '#94A3B8', textAlign: 'center', lineHeight: 19 }}>
-                  {isRTL ? 'لا توجد شروط مخصّصة. اضغط «إضافة شرط» لإضافة شرط خاص بهذا الشاليه.' : 'No custom rules. Tap "Add Rule" to add one specific to this chalet.'}
-                </Text>
-              </View>
-            ) : (
-              <View style={{ gap: 12 }}>
-                {customRules.map((rule, index) => (
-                  <View key={rule.id} style={{ borderRadius: 14, borderWidth: 1, borderColor: '#E8EBF0', backgroundColor: '#FFF', padding: 14, gap: 10 }}>
-                    <View style={{ flexDirection: flexRow, alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Text style={{ fontSize: 12, fontFamily: 'Alexandria-Bold', color: '#64748B' }}>{isRTL ? `شرط ${index + 1}` : `Rule ${index + 1}`}</Text>
-                      <TouchableOpacity onPress={() => removeRuleLocal(rule.id)} style={{ width: 30, height: 30, borderRadius: 8, backgroundColor: '#FEF2F2', justifyContent: 'center', alignItems: 'center' }}>
-                        <SolarTrashBinBold size={15} color={Colors.error} />
-                      </TouchableOpacity>
-                    </View>
-
-                    {/* Arabic */}
-                    <BottomSheetTextInput style={[styles.ruleInput, { textAlign }]} placeholder={isRTL ? 'عنوان الشرط (عربي)' : 'Rule title (Arabic)'} placeholderTextColor="#CBD5E1" value={rule.titleAr} onChangeText={(v) => updateRuleField(rule.id, { titleAr: v })} />
-                    <BottomSheetTextInput style={[styles.ruleInput, styles.ruleArea, { textAlign }]} placeholder={isRTL ? 'شرح الشرط (عربي)' : 'Rule description (Arabic)'} placeholderTextColor="#CBD5E1" multiline value={rule.descriptionAr} onChangeText={(v) => updateRuleField(rule.id, { descriptionAr: v })} />
-
-                    {/* English title */}
-                    <View style={{ gap: 4 }}>
-                      <View style={{ flexDirection: flexRow, alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Text style={{ fontSize: 10, fontFamily: 'Alexandria-Medium', color: '#94A3B8' }}>{isRTL ? 'العنوان (إنجليزي)' : 'Title (EN)'}</Text>
-                        <AiTranslateButton source={rule.titleAr} onTranslated={(en) => updateRuleField(rule.id, { titleEn: en })} />
-                      </View>
-                      <BottomSheetTextInput style={[styles.ruleInput, { textAlign: 'left' }]} placeholder="Rule title (English)" placeholderTextColor="#CBD5E1" value={rule.titleEn} onChangeText={(v) => updateRuleField(rule.id, { titleEn: v })} />
-                    </View>
-                    {/* English description */}
-                    <View style={{ gap: 4 }}>
-                      <View style={{ flexDirection: flexRow, alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Text style={{ fontSize: 10, fontFamily: 'Alexandria-Medium', color: '#94A3B8' }}>{isRTL ? 'الشرح (إنجليزي)' : 'Description (EN)'}</Text>
-                        <AiTranslateButton source={rule.descriptionAr} onTranslated={(en) => updateRuleField(rule.id, { descriptionEn: en })} />
-                      </View>
-                      <BottomSheetTextInput style={[styles.ruleInput, styles.ruleArea, { textAlign: 'left' }]} placeholder="Rule description (English)" placeholderTextColor="#CBD5E1" multiline value={rule.descriptionEn} onChangeText={(v) => updateRuleField(rule.id, { descriptionEn: v })} />
-                    </View>
-                  </View>
-                ))}
-              </View>
-            )}
+            {/* Custom rules */}
+            <CustomRulesEditor
+              rules={customRules}
+              onCreate={createCustomRule}
+              onChange={updateRuleField}
+              onToggle={toggleRule}
+              onRemove={removeRuleLocal}
+              isRTL={isRTL}
+            />
           </BottomSheetScrollView>
 
           {/* Sticky footer */}
@@ -1592,7 +1581,7 @@ export default function ChaletDetailsScreen() {
               {isUpdatingRules ? <ActivityIndicator color="#FFF" /> : <Text style={{ color: '#FFF', fontSize: 15, fontFamily: 'Alexandria-Bold' }}>{isRTL ? 'حفظ الشروط' : 'Save Rules'}</Text>}
             </TouchableOpacity>
           </View>
-        </BottomSheetView>
+        </View>
       </BottomSheetModal>
 
       {/* City Picker Modal */}
@@ -1667,13 +1656,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF'
   },
-  // Compact inputs inside custom-rule cards (rules bottom sheet)
-  ruleInput: {
-    backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10,
-    fontSize: 13, fontFamily: 'Alexandria-Regular', color: '#1E293B',
-    borderWidth: 1, borderColor: '#E2E8F0',
-  },
-  ruleArea: { minHeight: 64, paddingTop: 10, textAlignVertical: 'top' },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
