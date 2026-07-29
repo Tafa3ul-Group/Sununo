@@ -1,6 +1,7 @@
 // @@iconify-code-gen
 import { AppUpdateGate } from "@/components/app-update-gate";
 import { ConfirmationDialogProvider } from "@/components/ui/confirmation-dialog";
+import { PolicyConsentGate } from "@/components/user/policy-consent-gate";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useDirection } from "@/i18n";
 import { persistor, RootState, store } from "@/store";
@@ -225,6 +226,9 @@ function RootLayoutNav() {
       <StatusBar style="auto" />
       {/* App-wide version gate: shows the update sheet when out of date. */}
       <AppUpdateGate />
+      {/* App-wide consent gate: blocks the app when a policy the user agreed to
+          has been updated (or was never accepted) until they accept it. */}
+      <PolicyConsentGate />
     </ThemeProvider>
   );
 }

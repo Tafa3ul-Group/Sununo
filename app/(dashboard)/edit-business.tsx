@@ -75,7 +75,14 @@ export default function ProviderProfileScreen() {
 
     setErrors({});
     try {
-      await updateProfile(formData).unwrap();
+      // The validators above accept separators ("0772 666 4362"); the server
+      // matches on digits only — normalise before sending, same as register.tsx.
+      // An empty field is sent as-is: the server reads it as "no account here".
+      const clean = (value: string) => value.trim().replace(/[\s\-\(\)]/g, '');
+      await updateProfile({
+        zainCash: clean(formData.zainCash),
+        qi: clean(formData.qi),
+      }).unwrap();
       Toast.show({
         type: 'success',
         text1: isArabic ? 'نجاح' : 'Success',
@@ -83,11 +90,15 @@ export default function ProviderProfileScreen() {
         position: 'bottom',
       });
       router.back();
-    } catch (error) {
+    } catch (error: any) {
+      // Surface what the server actually rejected — a bare "failed" toast is
+      // what made this screen impossible to debug from the outside.
+      const raw = error?.data?.message;
+      const detail = Array.isArray(raw) ? raw.join('\n') : raw;
       Toast.show({
         type: 'error',
         text1: isArabic ? 'خطأ' : 'Error',
-        text2: isArabic ? 'فشل تحديث البيانات' : 'Failed to update profile',
+        text2: detail || (isArabic ? 'فشل تحديث البيانات' : 'Failed to update profile'),
         position: 'bottom',
       });
     }

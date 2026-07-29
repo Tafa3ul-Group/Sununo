@@ -180,7 +180,8 @@ const styles = StyleSheet.create({
     },
     scrollContent: {
         paddingHorizontal: 20,
-        paddingBottom: 40,
+        // Clears the floating dashboard tab bar, which overlays the list.
+        paddingBottom: 120,
         paddingTop: 10
     },
     centerContainer: {

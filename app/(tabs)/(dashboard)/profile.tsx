@@ -2,6 +2,7 @@ import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import {
   ProfileShape,
   SolarBanknoteBold,
+  SolarBellBold,
   SolarGlobalBold,
   SolarLogoutBold,
   SolarPhoneBold,
@@ -22,6 +23,7 @@ import {
   useLogoutUserMutation,
   useDeleteProfileMutation
 } from '@/store/api/apiSlice';
+import { useGetNotificationsQuery } from '@/store/api/customerApiSlice';
 import { PRIVACY_POLICY_URL } from '@/constants/links';
 import { useSupportContact } from '@/hooks/use-support-contact';
 import { logout } from '@/store/authSlice';
@@ -42,6 +44,17 @@ import {
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useDispatch, useSelector } from 'react-redux';
 
+type MenuItem = {
+  id: string;
+  title: string;
+  shape: 'red' | 'pink' | 'green' | 'blue';
+  icon: React.ReactNode;
+  route?: string;
+  action?: () => void;
+  /** Optional end-aligned counter (unread notifications). */
+  badge?: string;
+};
+
 export default function ProviderProfileScreen() {
   const dispatch = useDispatch();
   const { t } = useTranslation();
@@ -58,6 +71,20 @@ export default function ProviderProfileScreen() {
 
   const [logoutApi] = useLogoutUserMutation();
   const [deleteProfile] = useDeleteProfileMutation();
+
+  // Unread count for the notifications row. Shares the cache key with the
+  // notifications screen, so opening a notification updates the badge here too.
+  const { data: notificationsResponse } = useGetNotificationsQuery(
+    { page: 1, limit: 50 },
+    { pollingInterval: 60000 }
+  );
+  const unreadCount = React.useMemo(() => {
+    const items: any[] = notificationsResponse?.data ?? [];
+    return items.reduce(
+      (count, item) => (item?.readAt || item?.isRead ? count : count + 1),
+      0
+    );
+  }, [notificationsResponse]);
 
   // Support number comes from the portal (GET /config → adminPhone).
   const { openSupport: openContactUs } = useSupportContact();
@@ -111,10 +138,11 @@ export default function ProviderProfileScreen() {
     });
   };
 
-  const menuItems = [
+  const menuItems: MenuItem[] = [
     { id: 'profile', title: isRTL ? 'المعلومات الشخصية' : 'Personal Information', shape: 'blue' as const, icon: <SolarUserBold size={20} color="white" />, route: '/(dashboard)/edit-profile' },
     { id: 'business', title: isRTL ? 'معلومات المصرف' : 'Bank Information', shape: 'blue' as const, icon: <SolarWalletBold size={20} color="white" />, route: '/(dashboard)/edit-business' },
     { id: 'revenue', title: isRTL ? 'الأرباح' : 'Earnings', shape: 'green' as const, icon: <SolarBanknoteBold size={20} color="white" />, route: '/(tabs)/(dashboard)/revenue' },
+    { id: 'notifications', title: isRTL ? 'الإشعارات' : 'Notifications', shape: 'pink' as const, icon: <SolarBellBold size={20} color="white" />, route: '/(tabs)/(dashboard)/notifications', badge: unreadCount > 9 ? '9+' : unreadCount > 0 ? String(unreadCount) : undefined },
     { id: 'language', title: isRTL ? 'اللغة' : 'Language', shape: 'blue' as const, icon: <SolarGlobalBold size={20} color="white" />, action: openLanguageSheet },
     { id: 'contact', title: isRTL ? 'تواصل معنا' : 'Contact Us', shape: 'green' as const, icon: <SolarPhoneBold size={20} color="white" />, action: openContactUs },
     { id: 'privacy', title: isRTL ? 'سياسة الخصوصية' : 'Privacy Policy', shape: 'blue' as const, icon: <SolarShieldBold size={20} color="white" />, action: openPrivacyPolicy },
@@ -184,6 +212,11 @@ export default function ProviderProfileScreen() {
                   {item.icon}
                 </ProfileShape>
                 <Text style={[styles.menuLabelText, { textAlign }]}>{item.title}</Text>
+                {!!item.badge && (
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>{item.badge}</Text>
+                  </View>
+                )}
               </TouchableOpacity>
             ))}
           </View>
@@ -290,10 +323,25 @@ const styles = StyleSheet.create({
     borderColor: '#F3F4F6'
   },
   menuLabelText: {
+    flex: 1,
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: '#374151',
     marginHorizontal: normalize.width(15)
+  },
+  badge: {
+    minWidth: normalize.width(22),
+    height: normalize.width(22),
+    borderRadius: normalize.width(11),
+    paddingHorizontal: normalize.width(6),
+    backgroundColor: '#EF4444',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  badgeText: {
+    fontSize: normalize.font(10),
+    fontFamily: "Alexandria-Medium",
+    color: '#FFFFFF'
   },
   dangerZone: {
     marginTop: normalize.height(24),

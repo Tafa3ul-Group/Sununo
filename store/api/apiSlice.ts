@@ -85,6 +85,13 @@ export interface AcceptedPolicy {
   version: number;
 }
 
+// What the consent gate polls: the policies whose current version this user has
+// not agreed to yet. `requiresConsent` is the single flag the gate reacts to.
+export interface PendingPolicies {
+  requiresConsent: boolean;
+  policies: Policy[];
+}
+
 export const unwrapListResponse = (response: any) => {
   if (Array.isArray(response)) return response;
   if (Array.isArray(response?.data)) return response.data;
@@ -119,6 +126,7 @@ export const apiSlice = createApi({
     "Review",
     "Notification",
     "Wallet",
+    "Policy",
   ],
   endpoints: (builder) => ({
     // Example endpoint for getting chalets
@@ -398,6 +406,22 @@ export const apiSlice = createApi({
       transformResponse: (res: any) => res?.data ?? res,
     }),
 
+    // Auth-only. The documents this user still owes consent for — a version the
+    // admin bumped, or one the account never accepted. Drives the app-wide
+    // consent gate, so it carries the full text and is tagged to refetch the
+    // moment consent is recorded.
+    getPendingPolicies: builder.query<PendingPolicies, void>({
+      query: () => "/policies/me/pending",
+      transformResponse: (res: any): PendingPolicies => {
+        const payload = res?.data ?? res;
+        const policies: Policy[] = Array.isArray(payload?.policies)
+          ? payload.policies
+          : [];
+        return { requiresConsent: policies.length > 0, policies };
+      },
+      providesTags: ["Policy"],
+    }),
+
     // Re-consent for an already-signed-in user (used when a version is bumped).
     acceptPolicies: builder.mutation<{ message: string }, AcceptedPolicy[]>({
       query: (policies) => ({
@@ -405,6 +429,7 @@ export const apiSlice = createApi({
         method: "POST",
         body: { policies },
       }),
+      invalidatesTags: ["Policy"],
     }),
 
     // Admin-flagged (showInFilter) amenity filter options. The endpoint returns
@@ -782,6 +807,7 @@ export const {
   useRegisterProviderMutation,
   useGetPoliciesQuery,
   useGetPolicyQuery,
+  useGetPendingPoliciesQuery,
   useAcceptPoliciesMutation,
   useCreateChaletMutation,
   useUpdateChaletMutation,
