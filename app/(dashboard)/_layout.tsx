@@ -54,6 +54,10 @@ export default function DashboardNonTabLayout() {
         name="booking-details"
         options={{ title: isArabic ? 'تفاصيل الحجز' : 'Booking Details' }}
       />
+      <Stack.Screen
+        name="notification-settings"
+        options={{ title: isArabic ? 'إعدادات الإشعارات' : 'Notification Settings' }}
+      />
     </Stack>
   );
 }
