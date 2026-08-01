@@ -1,5 +1,6 @@
-import React, { useRef, useState } from 'react';
+import React, { useImperativeHandle, useRef, useState } from 'react';
 import {
+  Keyboard,
   StyleSheet,
   View,
   TextInput,
@@ -12,11 +13,34 @@ interface OtpInputProps {
   code: string;
   setCode: (code: string) => void;
   length?: number;
+  /**
+   * Fired the moment the last digit lands — typed, pasted, or filled in from the
+   * SMS autofill suggestion — so the screen can submit without a button tap.
+   * Only user input triggers it; programmatic `setCode` (e.g. the dev-mode OTP
+   * echoed back by the API) deliberately does not.
+   */
+  onComplete?: (code: string) => void;
+  autoFocus?: boolean;
 }
 
-export const OtpInput: React.FC<OtpInputProps> = ({ code, setCode, length = 6 }) => {
+/** Lets a screen put the caret back after a rejected code. */
+export interface OtpInputHandle {
+  focus: () => void;
+}
+
+export const OtpInput = React.forwardRef<OtpInputHandle, OtpInputProps>(({
+  code,
+  setCode,
+  length = 6,
+  onComplete,
+  autoFocus = false,
+}, ref) => {
   const inputRef = useRef<TextInput>(null);
   const [isFocused, setIsFocused] = useState(false);
+
+  useImperativeHandle(ref, () => ({
+    focus: () => inputRef.current?.focus(),
+  }), []);
 
   const handlePress = () => {
     inputRef.current?.focus();
@@ -65,20 +89,27 @@ export const OtpInput: React.FC<OtpInputProps> = ({ code, setCode, length = 6 })
         ref={inputRef}
         value={code}
         onChangeText={(text) => {
-          if (text.length <= length) {
-            setCode(text.replace(/[^0-9]/g, ''));
+          const digits = text.replace(/[^0-9]/g, '').slice(0, length);
+          setCode(digits);
+          if (digits.length === length) {
+            Keyboard.dismiss();
+            onComplete?.(digits);
           }
         }}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         keyboardType="number-pad"
         textContentType="oneTimeCode"
+        autoComplete="sms-otp"
+        autoFocus={autoFocus}
         style={styles.hiddenInput}
         maxLength={length}
       />
     </View>
   );
-};
+});
+
+OtpInput.displayName = 'OtpInput';
 
 const styles = StyleSheet.create({
   container: {

@@ -2,7 +2,6 @@ import { BookingCancellationSheet, BookingCancellationSheetRef } from '@/compone
 import { DashboardCalendar } from "@/components/dashboard/dashboard-calendar";
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { CountdownBadge } from '@/components/dashboard/countdown-badge';
-import { PendingApprovalScreen } from '@/components/dashboard/pending-approval';
 import {
   SolarCalendarBold,
   SolarCheckCircleBold,
@@ -15,7 +14,7 @@ import { SecondaryButton } from '@/components/user/secondary-button';
 import { Colors, normalize } from '@/constants/theme';
 import { ltrScrollContent, useDirection, useRtlListOrder } from "@/i18n";
 import { RootState } from '@/store';
-import { useDeleteExternalBookingMutation, useGetProviderBookingsQuery, useGetProviderProfileQuery, useRejectBookingMutation } from '@/store/api/apiSlice';
+import { useDeleteExternalBookingMutation, useGetProviderBookingsQuery, useRejectBookingMutation } from '@/store/api/apiSlice';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
@@ -37,14 +36,11 @@ import { useSelector } from 'react-redux';
 
 export default function BookingsScreen() {
   const router = useRouter();
-  const { user, userType, selectedChalet } = useSelector((state: RootState) => state.auth);
+  const { userType, selectedChalet } = useSelector((state: RootState) => state.auth);
   const { t } = useTranslation();
   const { isRTL, direction, textAlign } = useDirection();
 
   // API hooks
-  const { data: profileResponse, refetch: refetchProfile } = useGetProviderProfileQuery(undefined);
-  const profile = profileResponse?.data || profileResponse;
-
   const [activeFilter, setActiveFilter] = useState('all');
   const cancelSheetRef = React.useRef<BookingCancellationSheetRef>(null);
   const calendarSheetRef = React.useRef<BottomSheetModal>(null);
@@ -404,10 +400,6 @@ export default function BookingsScreen() {
   const renderBackdrop = React.useCallback((props: any) => (
     <BottomSheetBackdrop {...props} appearsOnIndex={0} disappearsOnIndex={-1} pressBehavior="close" />
   ), []);
-
-  if (userType === 'owner' && (profile ? !profile.isApproved : !user?.isApproved)) {
-    return <PendingApprovalScreen onRefresh={refetchProfile} />;
-  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

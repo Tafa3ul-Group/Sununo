@@ -2,7 +2,7 @@ import { LoginBottomBackground } from "@/components/icons/login-design-elements"
 import { LoginHeaderLogo } from "@/components/icons/login-header-logo";
 import { ThemedText } from "@/components/themed-text";
 import { AuthToggle } from "@/components/user/auth-toggle";
-import { OtpInput } from "@/components/user/otp-input";
+import { OtpInput, OtpInputHandle } from "@/components/user/otp-input";
 import { PolicyModal } from "@/components/user/policy-modal";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { SecondaryButton } from "@/components/user/secondary-button";
@@ -19,7 +19,7 @@ import { logEvent } from "@/services/analytics";
 import { ANALYTICS_EVENTS } from "@/constants/analytics-events";
 import { useDirection } from "@/i18n";
 import { useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Alert,
@@ -48,6 +48,17 @@ const normalize = {
 // Signing in on an unknown number creates the account, so this screen carries
 // the same app-wide consent as the register screen.
 const APP_POLICIES: PolicyType[] = ["terms_of_use", "privacy"];
+
+// How long the user has to wait before another code can be requested. The auth
+// controller throttles at 10 requests/minute, so this keeps a user well clear of
+// hitting it by mashing the button.
+const RESEND_COOLDOWN_SECONDS = 60;
+
+function formatCountdown(totalSeconds: number): string {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
 
 function translateAuthError(errorMsg: string): string {
   const msg = String(errorMsg).toLowerCase();
@@ -176,6 +187,17 @@ export function LoginScreen() {
   const [phone, setPhone] = useState("");
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [code, setCode] = useState("");
+  const [resendIn, setResendIn] = useState(0);
+  const [justResent, setJustResent] = useState(false);
+  const otpRef = useRef<OtpInputHandle>(null);
+
+  // Countdown for the resend link — one timeout per tick, cleared on unmount and
+  // whenever the step resets it to 0.
+  useEffect(() => {
+    if (resendIn <= 0) return;
+    const timer = setTimeout(() => setResendIn((s) => s - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendIn]);
 
   // ── Legal consent ────────────────────────────────────────────────────────
   // This screen doubles as signup: `POST /auth/login` creates the account when
@@ -206,10 +228,17 @@ export function LoginScreen() {
     dispatch(setUserType(type));
   }
 
+  function backToPhoneStep() {
+    setStep("phone");
+    setCode("");
+    setResendIn(0);
+    setJustResent(false);
+  }
+
   useEffect(() => {
     const onBackPress = () => {
       if (step === "otp") {
-        setStep("phone");
+        backToPhoneStep();
         return true;
       }
       return false;
@@ -218,7 +247,9 @@ export function LoginScreen() {
     return () => sub.remove();
   }, [step]);
 
-  async function handleAction() {
+  // `submittedCode` lets the OTP input hand us the freshly-completed code
+  // directly — reading `code` here would still see the pre-update state.
+  async function handleAction(submittedCode?: string) {
     if (step === "phone") {
       const trimmedPhone = phone.trim();
       if (!trimmedPhone) {
@@ -242,6 +273,8 @@ export function LoginScreen() {
           setCode(String(res.code));
         }
         setStep("otp");
+        setJustResent(false);
+        setResendIn(RESEND_COOLDOWN_SECONDS);
       } catch (err: any) {
         const msg = err?.data?.message;
         const displayMsg = Array.isArray(msg)
@@ -250,9 +283,11 @@ export function LoginScreen() {
         Alert.alert(t("common.error"), translateAuthError(displayMsg));
       }
     } else {
+      if (isVerifyLoading) return;
       try {
-        const otpCode = Number(code);
-        if (!/^\d{6}$/.test(code) || !Number.isInteger(otpCode)) {
+        const value = submittedCode ?? code;
+        const otpCode = Number(value);
+        if (!/^\d{6}$/.test(value) || !Number.isInteger(otpCode)) {
           Alert.alert(t("common.error"), "رمز التحقق غير صالح");
           return;
         }
@@ -294,8 +329,31 @@ export function LoginScreen() {
         const displayMsg = Array.isArray(msg)
           ? msg.join(", ")
           : msg || "Invalid OTP";
+        // A rejected code — auto-submitted or not — leaves six filled boxes the
+        // user would have to backspace through, so wipe it and reopen the
+        // keyboard for a straight retype.
+        setCode("");
+        otpRef.current?.focus();
         Alert.alert(t("common.error"), String(displayMsg));
       }
+    }
+  }
+
+  // Re-requesting the code is the same `POST /auth/login` call that sent the
+  // first one — the server just issues a new OTP for the number.
+  async function handleResend() {
+    if (resendIn > 0 || isLoginLoading) return;
+    try {
+      const res = await login({ phone }).unwrap();
+      setCode(res?.code ? String(res.code) : "");
+      setJustResent(true);
+      setResendIn(RESEND_COOLDOWN_SECONDS);
+    } catch (err: any) {
+      const msg = err?.data?.message;
+      const displayMsg = Array.isArray(msg)
+        ? msg.join(", ")
+        : msg || "Failed to send OTP";
+      Alert.alert(t("common.error"), translateAuthError(displayMsg));
     }
   }
 
@@ -397,14 +455,72 @@ export function LoginScreen() {
                 >
                   {t("auth.verificationCode")}
                 </ThemedText>
-                <OtpInput code={code} setCode={setCode} length={6} />
+                <ThemedText style={[styles.otpHint, { textAlign }]}>
+                  {t("auth.otpSent")}
+                  {"  "}
+                  <ThemedText style={styles.otpHintPhone}>{phone}</ThemedText>
+                </ThemedText>
+
+                {/* The last digit submits on its own — the buttons below stay
+                    for anyone who pastes or edits the code by hand. */}
+                <OtpInput
+                  ref={otpRef}
+                  code={code}
+                  setCode={setCode}
+                  length={6}
+                  autoFocus
+                  onComplete={(value) => handleAction(value)}
+                />
+
+                <View style={styles.resendRow}>
+                  {justResent && resendIn > 0 ? (
+                    <ThemedText style={styles.resendSuccess}>
+                      {isArabic
+                        ? "تم إرسال رمز جديد"
+                        : "A new code has been sent"}
+                    </ThemedText>
+                  ) : (
+                    <ThemedText style={styles.resendPrompt}>
+                      {isArabic
+                        ? "لم يصلك الرمز؟"
+                        : "Didn't receive the code?"}
+                    </ThemedText>
+                  )}
+                  {resendIn > 0 ? (
+                    <ThemedText style={styles.resendTimer}>
+                      {isArabic
+                        ? `إعادة الإرسال خلال ${formatCountdown(resendIn)}`
+                        : `Resend in ${formatCountdown(resendIn)}`}
+                    </ThemedText>
+                  ) : (
+                    <TouchableOpacity
+                      onPress={handleResend}
+                      disabled={isLoginLoading}
+                    >
+                      <ThemedText
+                        style={[
+                          styles.resendLink,
+                          isLoginLoading && styles.resendLinkDisabled,
+                        ]}
+                      >
+                        {isLoginLoading
+                          ? isArabic
+                            ? "جارٍ الإرسال..."
+                            : "Sending..."
+                          : isArabic
+                            ? "إعادة إرسال الرمز"
+                            : "Resend code"}
+                      </ThemedText>
+                    </TouchableOpacity>
+                  )}
+                </View>
               </View>
             )}
 
             {step === "phone" ? (
               <PrimaryButton
                 label={t("auth.login")}
-                onPress={handleAction}
+                onPress={() => handleAction()}
                 style={styles.loginBtn}
                 activeColor="#0061FE"
                 loading={isLoginLoading}
@@ -413,16 +529,13 @@ export function LoginScreen() {
               <View style={styles.actionsRow}>
                 <SecondaryButton
                   label={isArabic ? "تعديل الرقم" : "Edit Number"}
-                  onPress={() => {
-                    setStep("phone");
-                    setCode("");
-                  }}
+                  onPress={backToPhoneStep}
                   isActive={false}
                   style={{ flex: 1 }}
                 />
                 <SecondaryButton
                   label={t("auth.verify")}
-                  onPress={handleAction}
+                  onPress={() => handleAction()}
                   isActive={true}
                   isLoading={isVerifyLoading}
                   style={{ flex: 1 }}
@@ -558,6 +671,49 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: "#1E293B",
+  },
+  otpHint: {
+    fontSize: normalize.font(12.5),
+    fontFamily: "Alexandria-Regular",
+    color: "#64748B",
+    marginBottom: normalize.height(4),
+  },
+  otpHintPhone: {
+    fontSize: normalize.font(12.5),
+    fontFamily: "Alexandria-SemiBold",
+    color: "#1E293B",
+    writingDirection: "ltr",
+  },
+  resendRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    marginTop: normalize.height(4),
+  },
+  resendPrompt: {
+    fontSize: normalize.font(12.5),
+    fontFamily: "Alexandria-Regular",
+    color: "#94A3B8",
+  },
+  resendSuccess: {
+    fontSize: normalize.font(12.5),
+    fontFamily: "Alexandria-Medium",
+    color: "#16A34A",
+  },
+  resendTimer: {
+    fontSize: normalize.font(12.5),
+    fontFamily: "Alexandria-Medium",
+    color: "#64748B",
+  },
+  resendLink: {
+    fontSize: normalize.font(12.5),
+    fontFamily: "Alexandria-SemiBold",
+    color: "#0061FE",
+  },
+  resendLinkDisabled: {
+    color: "#94A3B8",
   },
   loginBtn: {
     marginTop: 16,
