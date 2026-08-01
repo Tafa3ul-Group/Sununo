@@ -28,6 +28,35 @@ export const formatPrice = (amount: number | string | undefined | null, includeC
 export const currencySymbol = 'د.ع';
 
 /**
+ * Formats a duration in minutes as human text: "ساعتان و30 دقيقة" / "2h 30m".
+ * Used for the post-approval payment deadline, which the owner edits in
+ * 15-minute steps, so sub-hour values must read naturally.
+ *
+ * @param minutes - Duration in minutes. Values <= 0 mean "no limit".
+ * @param isRTL - Arabic when true, English otherwise.
+ */
+export const formatDuration = (minutes: number, isRTL: boolean): string => {
+  if (!Number.isFinite(minutes) || minutes <= 0) return isRTL ? 'بدون مهلة' : 'No limit';
+
+  const hours = Math.floor(minutes / 60);
+  const mins = Math.round(minutes % 60);
+  const parts: string[] = [];
+
+  if (isRTL) {
+    if (hours === 1) parts.push('ساعة');
+    else if (hours === 2) parts.push('ساعتان');
+    else if (hours > 2) parts.push(`${hours} ساعة`);
+    if (mins === 30 && hours === 0) parts.push('نصف ساعة');
+    else if (mins > 0) parts.push(`${mins} دقيقة`);
+    return parts.join(' و');
+  }
+
+  if (hours > 0) parts.push(`${hours}h`);
+  if (mins > 0) parts.push(`${mins}m`);
+  return parts.join(' ');
+};
+
+/**
  * Resolves the lowest ("starts from") price for a chalet, for use on home/search
  * cards. Prefers the `startingPrice` computed by the API, and falls back to
  * deriving the minimum from the chalet's shift pricing when the full nested

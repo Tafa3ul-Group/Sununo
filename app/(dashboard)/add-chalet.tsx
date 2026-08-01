@@ -1032,30 +1032,30 @@ export default function AddChaletScreen() {
                   <ThemedText type="h2" style={[styles.sectionHeader, { textAlign }]}>{isRTL ? 'السعة والتسعير الإضافي' : 'Capacity & Extra Pricing'}</ThemedText>
 
                   <View style={styles.capacityList}>
-                    {/* Max Capacity Card */}
+                    {/* Max Capacity Card — label leads (start), counter trails (end) */}
                     <View style={[styles.capacityCard, { flexDirection: 'row' }]}>
+                      <View style={[styles.capacityInfo, { alignItems: 'flex-start' }]}>
+                        <Text style={[styles.capacityLabel, { textAlign }]}>{isRTL ? 'سعة الشاليه (الحد الأقصى للزيادة)' : 'Chalet Capacity'}</Text>
+                        <Text style={[styles.capacitySubLabel, { textAlign }]}>{isRTL ? 'الحد الكلي المسموح به بعد الزيادة' : 'Maximum total guests allowed'}</Text>
+                      </View>
                       <GuestCounter
                         value={parseInt(form.capacity) || 1}
                         onIncrement={() => setForm({ ...form, capacity: (parseInt(form.capacity || '1') + 1).toString() })}
                         onDecrement={() => setForm({ ...form, capacity: Math.max(1, parseInt(form.capacity || '1') - 1).toString() })}
                       />
-                      <View style={[styles.capacityInfo, { alignItems: 'flex-start' }]}>
-                        <Text style={styles.capacityLabel}>{isRTL ? 'سعة الشاليه (الحد الأقصى للزيادة)' : 'Chalet Capacity'}</Text>
-                        <Text style={styles.capacitySubLabel}>{isRTL ? 'الحد الكلي المسموح به بعد الزيادة' : 'Maximum total guests allowed'}</Text>
-                      </View>
                     </View>
 
-                    {/* Price Capacity Card */}
+                    {/* Price Capacity Card — label leads (start), counter trails (end) */}
                     <View style={[styles.capacityCard, { flexDirection: 'row' }]}>
+                      <View style={[styles.capacityInfo, { alignItems: 'flex-start' }]}>
+                        <Text style={[styles.capacityLabel, { textAlign }]}>{isRTL ? 'سعة المبلغ (العدد المشمول بالسعر)' : 'Price Capacity'}</Text>
+                        <Text style={[styles.capacitySubLabel, { textAlign }]}>{isRTL ? 'العدد المشمول بسعر الفترة الأساسي' : 'Base guests covered under standard shift price'}</Text>
+                      </View>
                       <GuestCounter
                         value={parseInt(form.priceCapacity) || 1}
                         onIncrement={() => setForm({ ...form, priceCapacity: (parseInt(form.priceCapacity || '1') + 1).toString() })}
                         onDecrement={() => setForm({ ...form, priceCapacity: Math.max(1, parseInt(form.priceCapacity || '1') - 1).toString() })}
                       />
-                      <View style={[styles.capacityInfo, { alignItems: 'flex-start' }]}>
-                        <Text style={styles.capacityLabel}>{isRTL ? 'سعة المبلغ (العدد المشمول بالسعر)' : 'Price Capacity'}</Text>
-                        <Text style={styles.capacitySubLabel}>{isRTL ? 'العدد المشمول بسعر الفترة الأساسي' : 'Base guests covered under standard shift price'}</Text>
-                      </View>
                     </View>
 
                     {/* Extra Person Price Card */}

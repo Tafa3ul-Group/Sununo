@@ -4,6 +4,7 @@ import {
 } from '@/components/icons/solar-icons';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { Colors, normalize } from '@/constants/theme';
+import { formatDuration } from '@/utils/format';
 import { getImageSrc } from '@/hooks/useImageSrc';
 import { useDirection } from '@/i18n';
 import { RootState } from '@/store';
@@ -50,9 +51,18 @@ export default function BookingDetailsPage() {
   const data = bookingDetailsData?.data || bookingDetailsData;
 
   const handleApproveBooking = () => {
+    // Approving starts the customer's payment clock, so surface the window the
+    // owner configured on the chalet instead of a bare yes/no.
+    const deadlineMinutes = Number(data.chalet?.paymentDeadlineMinutes ?? 0);
+    const deadlineNote = deadlineMinutes > 0
+      ? (isRTL
+        ? ` سيكون أمام الزبون ${formatDuration(deadlineMinutes, true)} للدفع، وبعدها يُلغى الحجز تلقائياً ويعود الوقت متاحاً.`
+        : ` The customer will have ${formatDuration(deadlineMinutes, false)} to pay, after which the booking is cancelled automatically and the slot is freed.`)
+      : '';
+
     showConfirm({
       title: isRTL ? 'تأكيد الحجز' : 'Confirm Booking',
-      message: isRTL ? 'هل أنت متأكد من الموافقة وتأكيد هذا الطلب؟' : 'Are you sure you want to approve and confirm this booking?',
+      message: (isRTL ? 'هل أنت متأكد من الموافقة وتأكيد هذا الطلب؟' : 'Are you sure you want to approve and confirm this booking?') + deadlineNote,
       type: 'info',
       confirmLabel: isRTL ? 'تأكيد' : 'Confirm',
       cancelLabel: isRTL ? 'إلغاء' : 'Cancel',
@@ -136,6 +146,19 @@ export default function BookingDetailsPage() {
   const bIsDeposit = data.paymentModel === 'deposit';
   const bIsPaid = Number(data.amountPaid || 0) >= (bIsDeposit ? depositAmount : totalPrice);
   const bAmountPaid = Number(data.amountPaid || (bIsDeposit ? depositAmount : totalPrice));
+
+  // Owner-configured payment window, stamped by the API when the owner approved.
+  // Absent when the chalet has no deadline, or for bookings approved before the
+  // feature existed — the label then stays generic.
+  const paymentDueAt = data.paymentDueAt ? new Date(data.paymentDueAt) : null;
+  const paymentDueLabel = (() => {
+    if (!paymentDueAt || isNaN(paymentDueAt.getTime())) return null;
+    const minutesLeft = Math.floor((paymentDueAt.getTime() - Date.now()) / 60000);
+    if (minutesLeft <= 0) return isRTL ? 'انتهت مهلة الدفع' : 'Payment window over';
+    return isRTL
+      ? `يتبقى ${formatDuration(minutesLeft, true)} للدفع`
+      : `${formatDuration(minutesLeft, false)} left to pay`;
+  })();
 
   const handleConfirmCancellation = async (reason: string) => {
     try {
@@ -510,7 +533,11 @@ export default function BookingDetailsPage() {
             /* Approved, waiting for the customer to pay → owner cannot complete yet.
                If the customer never pays, the booking is auto-cancelled by the cron. */
             <PrimaryButton
-              label={isRTL ? 'بانتظار دفع العميل' : 'Awaiting customer payment'}
+              label={
+                paymentDueLabel
+                  ? (isRTL ? `بانتظار دفع العميل — ${paymentDueLabel}` : `Awaiting customer payment — ${paymentDueLabel}`)
+                  : (isRTL ? 'بانتظار دفع العميل' : 'Awaiting customer payment')
+              }
               onPress={() => { }}
               height={60}
               style={styles.payButton}

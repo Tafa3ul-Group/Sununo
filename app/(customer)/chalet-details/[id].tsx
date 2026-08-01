@@ -1036,8 +1036,11 @@ export default function ChaletDetailScreen() {
           )}
           {reviews.slice(0, 2).map((reviewItem: any, i: number) => {
             const customer = reviewItem?.customer;
+            // `guestName` covers dashboard-authored reviews (no customer account).
             const reviewerName =
-              customer?.name || (isRTL ? "مستخدم سُنونو" : "Sununo User");
+              customer?.name ||
+              reviewItem?.guestName ||
+              (isRTL ? "مستخدم سُنونو" : "Sununo User");
             const reviewComment = reviewItem?.comment || "";
             const reviewRating = reviewItem?.rating || 0;
             const reviewDate = reviewItem?.createdAt

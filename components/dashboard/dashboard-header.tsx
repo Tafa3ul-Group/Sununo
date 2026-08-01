@@ -64,7 +64,9 @@ export function DashboardHeader({
           <View style={{ width: 40 }} />
         )}
 
-        {/* Center: Title */}
+        {/* Center: Title — flexes into whatever the side slots leave, so a wide
+            right component (e.g. the bookings date-range chip) pushes it instead
+            of being overlapped by it. */}
         {title ? (
           <View style={styles.titleContainer}>
             <Text style={styles.flatHeaderTitle} numberOfLines={1}>
@@ -134,16 +136,13 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(16),
     fontFamily: "Alexandria-Bold",
     color: Colors.text.primary,
+    textAlign: 'center',
   },
   titleContainer: {
-    position: 'absolute',
-    left: 80,
-    right: 80,
-    top: 0,
-    bottom: 0,
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: -1,
+    paddingHorizontal: 8,
   },
   flatDeleteButton: {
     width: 40,

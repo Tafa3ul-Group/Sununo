@@ -26,6 +26,7 @@ import { LocationPickerModal } from '@/components/user/location-picker-modal';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { AiTranslateButton } from '@/components/ui/ai-translate-button';
 import { Colors, normalize } from '@/constants/theme';
+import { formatDuration } from '@/utils/format';
 import { getImageSrc } from '@/hooks/useImageSrc';
 import { useDirection } from '@/i18n';
 import {
@@ -56,6 +57,12 @@ import { useDispatch } from 'react-redux';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const HERO_HEIGHT = 420;
+
+// Minutes the customer gets to pay after the owner approves a delayed booking.
+// 0 = no deadline (the booking is never auto-cancelled). Edited in quarter-hour
+// steps; the range mirrors the API's 0-2880 (see CreateChaletDto).
+const PAYMENT_DEADLINE_STEP = 15;
+const PAYMENT_DEADLINE_MAX = 2880;
 
 // SVG path definitions for the back.svg arrow
 const EN_BACK_PATH = "M16.9467 0L16.984 0.0319551C16.9918 0.563434 17.0077 1.11929 16.9957 1.64861C16.695 2.1116 15.6337 3.01428 15.2014 3.39902C13.6558 4.77432 11.2704 6.6148 10.1626 8.37453C9.66288 9.15572 9.33791 10.0399 9.21086 10.9642C8.96436 12.8514 9.38009 14.7291 10.5583 16.2312C11.0052 16.801 11.7141 17.4728 12.2449 17.9938L14.9532 20.6073C15.3814 21.0236 16.1485 21.753 16.4858 22.2046C16.5279 22.8117 16.5161 23.3931 16.4911 24C15.9468 23.8061 14.9671 23.3157 14.3994 23.0547L10.252 21.1529C8.50688 20.321 6.06286 19.4531 4.65913 18.0823C3.62117 17.0688 2.90487 15.0354 2.91724 13.5511C2.50593 13.4266 1.45728 12.5735 1.04287 12.2832C0.657269 12.013 0.433131 11.8682 0 11.6452C0.660173 11.1658 1.36011 10.727 2.0402 10.2775C2.31689 10.0946 2.85074 9.80927 3.07692 9.61241C3.09687 8.79841 3.17037 8.21858 3.46665 7.45396C3.85861 6.44889 4.52293 5.57892 5.38162 4.94608C6.58946 4.04845 8.20959 3.58706 9.56851 3.00721C10.8307 2.46863 12.0383 1.92053 13.319 1.40781C14.0582 1.1135 14.799 0.823459 15.5414 0.537748C16.0014 0.363519 16.5003 0.198389 16.9467 0Z";
@@ -94,6 +101,7 @@ export default function ChaletDetailsScreen() {
   const [isActive, setIsActive] = useState(false);
   const [bookingType, setBookingType] = useState<'instant' | 'delayed'>('instant');
   const [dailyHours, setDailyHours] = useState(1);
+  const [paymentDeadlineMinutes, setPaymentDeadlineMinutes] = useState(0);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [locationPickerVisible, setLocationPickerVisible] = useState(false);
 
@@ -484,6 +492,8 @@ export default function ChaletDetailsScreen() {
       setIsActive(chalet.isActive);
       setBookingType(chalet.bookingType || 'instant');
       setDailyHours(chalet.dailyHours || 1);
+      // 0 is a real value ("no deadline") and also the default, so `??` — not `||`.
+      setPaymentDeadlineMinutes(chalet.paymentDeadlineMinutes ?? 0);
     }
   }, [chalet]);
 
@@ -540,6 +550,89 @@ export default function ChaletDetailsScreen() {
       Toast.show({ type: 'error', text1: isRTL ? 'تعذر تحديث المدة' : 'Duration update failed' });
     }
   };
+
+  // The deadline is edited by tapping (or holding) ±15 minutes, so the value can
+  // change dozens of times per second. Local state moves instantly and the save
+  // is debounced — one PATCH per gesture, not one per step.
+  const deadlineValueRef = useRef(paymentDeadlineMinutes);
+  const deadlineSavedRef = useRef(paymentDeadlineMinutes);
+  const deadlineSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const holdDelayTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const holdRepeatTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    // Read the server value directly: the effect that pushes it into state runs
+    // in the same pass, so `paymentDeadlineMinutes` is still the previous one here.
+    const serverValue = chalet?.paymentDeadlineMinutes ?? 0;
+    deadlineValueRef.current = serverValue;
+    deadlineSavedRef.current = serverValue;
+  }, [chalet?.paymentDeadlineMinutes]);
+
+  const commitPaymentDeadline = useCallback(() => {
+    const value = deadlineValueRef.current;
+    const previous = deadlineSavedRef.current;
+    if (value === previous) return;
+    deadlineSavedRef.current = value;
+
+    updateChalet({ id: chaletId as string, data: { paymentDeadlineMinutes: value } })
+      .unwrap()
+      .then(() => {
+        if (!isMountedRef.current) return;
+        Toast.show({
+          type: 'success',
+          text1: value === 0
+            ? (isRTL ? 'تم إلغاء مهلة الدفع' : 'Payment deadline removed')
+            : (isRTL ? `مهلة الدفع: ${formatDuration(value, true)}` : `Payment deadline: ${formatDuration(value, false)}`),
+        });
+        refetch();
+      })
+      .catch(() => {
+        deadlineSavedRef.current = previous;
+        deadlineValueRef.current = previous;
+        if (!isMountedRef.current) return;
+        setPaymentDeadlineMinutes(previous);
+        Toast.show({ type: 'error', text1: isRTL ? 'تعذر تحديث مهلة الدفع' : 'Payment deadline update failed' });
+      });
+  }, [chaletId, isRTL, refetch, updateChalet]);
+
+  const stepPaymentDeadline = useCallback((delta: number) => {
+    const next = Math.min(PAYMENT_DEADLINE_MAX, Math.max(0, deadlineValueRef.current + delta));
+    if (next === deadlineValueRef.current) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    deadlineValueRef.current = next;
+    setPaymentDeadlineMinutes(next);
+
+    if (deadlineSaveTimer.current) clearTimeout(deadlineSaveTimer.current);
+    deadlineSaveTimer.current = setTimeout(commitPaymentDeadline, 700);
+  }, [commitPaymentDeadline]);
+
+  // Press = one step; hold = repeat, so reaching 24h doesn't take 96 taps.
+  const startDeadlineHold = useCallback((delta: number) => {
+    stepPaymentDeadline(delta);
+    holdDelayTimer.current = setTimeout(() => {
+      holdRepeatTimer.current = setInterval(() => stepPaymentDeadline(delta), 90);
+    }, 450);
+  }, [stepPaymentDeadline]);
+
+  const stopDeadlineHold = useCallback(() => {
+    if (holdDelayTimer.current) { clearTimeout(holdDelayTimer.current); holdDelayTimer.current = null; }
+    if (holdRepeatTimer.current) { clearInterval(holdRepeatTimer.current); holdRepeatTimer.current = null; }
+  }, []);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      stopDeadlineHold();
+      // Leaving the screen mid-debounce must not silently drop the edit.
+      if (deadlineSaveTimer.current) {
+        clearTimeout(deadlineSaveTimer.current);
+        deadlineSaveTimer.current = null;
+        commitPaymentDeadline();
+      }
+    };
+  }, [commitPaymentDeadline, stopDeadlineHold]);
 
   if (isLoading) {
     return (
@@ -1124,6 +1217,87 @@ export default function ChaletDetailsScreen() {
                   </View>
                 </View>
               </View>
+
+              {/* ──── Payment Deadline (after owner approval) ──── */}
+              <Text style={[styles.settingsGroupTitle, { textAlign, alignSelf: flexStart }]}>
+                {isRTL ? 'مهلة الدفع بعد الموافقة' : 'Payment Deadline After Approval'}
+              </Text>
+              <View style={styles.menuGroup}>
+                <View style={[styles.menuRow, { flexDirection: 'column', alignItems: flexStart, gap: 12 }]}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, alignSelf: 'stretch' }}>
+                    <ProfileShape size={normalize.width(36)} type="pink">
+                      <SolarClockCircleBold size={18} color="white" />
+                    </ProfileShape>
+                    <View style={{ flex: 1, alignItems: flexStart }}>
+                      <Text style={[styles.menuLabelText, { textAlign }]}>
+                        {isRTL ? 'المهلة المتاحة للزبون للدفع' : 'Time the customer has to pay'}
+                      </Text>
+                      <Text style={[styles.bookingDurationNoteText, { textAlign, color: Colors.text.muted }]}>
+                        {paymentDeadlineMinutes === 0
+                          ? (isRTL ? 'بدون مهلة — لن يُلغى الحجز تلقائياً' : 'No deadline — never auto-cancelled')
+                          : (isRTL ? 'تُحتسب من لحظة موافقتك على الطلب' : 'Counted from the moment you approve')}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* ±15 minutes; press and hold to run through the range fast */}
+                  <View style={[styles.deadlineStepper, { alignSelf: 'stretch' }]}>
+                    <TouchableOpacity
+                      onPressIn={() => startDeadlineHold(-PAYMENT_DEADLINE_STEP)}
+                      onPressOut={stopDeadlineHold}
+                      disabled={paymentDeadlineMinutes <= 0}
+                      style={[
+                        styles.deadlineStepButton,
+                        paymentDeadlineMinutes <= 0 && styles.deadlineStepButtonDisabled,
+                      ]}
+                    >
+                      <Text style={[
+                        styles.deadlineStepSign,
+                        paymentDeadlineMinutes <= 0 && styles.deadlineStepSignDisabled,
+                      ]}>−</Text>
+                    </TouchableOpacity>
+
+                    <View style={{ flex: 1, alignItems: 'center' }}>
+                      <Text style={styles.deadlineValueText}>
+                        {formatDuration(paymentDeadlineMinutes, isRTL)}
+                      </Text>
+                      <Text style={styles.deadlineStepHint}>
+                        {isRTL ? 'بخطوات ربع ساعة' : 'in 15-minute steps'}
+                      </Text>
+                    </View>
+
+                    <TouchableOpacity
+                      onPressIn={() => startDeadlineHold(PAYMENT_DEADLINE_STEP)}
+                      onPressOut={stopDeadlineHold}
+                      disabled={paymentDeadlineMinutes >= PAYMENT_DEADLINE_MAX}
+                      style={[
+                        styles.deadlineStepButton,
+                        paymentDeadlineMinutes >= PAYMENT_DEADLINE_MAX && styles.deadlineStepButtonDisabled,
+                      ]}
+                    >
+                      <Text style={[
+                        styles.deadlineStepSign,
+                        paymentDeadlineMinutes >= PAYMENT_DEADLINE_MAX && styles.deadlineStepSignDisabled,
+                      ]}>+</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <View style={[styles.bookingDurationNoteCard, { flexDirection: 'row', alignItems: 'flex-start' }]}>
+                  <SolarShieldWarningBold size={16} color="#0284C7" style={{ marginTop: 2 }} />
+                  <View style={{ flex: 1, gap: 2, alignItems: flexStart }}>
+                    <Text style={[styles.bookingDurationNoteTitle, { textAlign }]}>
+                      {isRTL ? 'لماذا مهلة الدفع مهمة؟' : 'Why does the payment deadline matter?'}
+                    </Text>
+                    <Text style={[styles.bookingDurationNoteText, { textAlign }]}>
+                      {isRTL
+                        ? 'بعد موافقتك يبقى الوقت محجوزاً حتى يدفع الزبون. إذا لم يدفع خلال المهلة يُلغى الحجز تلقائياً ويعود الوقت متاحاً لغيره.'
+                        : 'After you approve, the slot stays blocked until the customer pays. If they miss the deadline the booking is cancelled automatically and the slot is freed.'
+                      }
+                    </Text>
+                  </View>
+                </View>
+              </View>
             </>
           )}
 
@@ -1393,13 +1567,14 @@ export default function ChaletDetailsScreen() {
           <View style={styles.modalInputGroup}>
             <Text style={[styles.modalLabel, { textAlign }]}>{isRTL ? 'السعة وإعدادات الزيادة' : 'Capacity & Pricing'}</Text>
             <View style={styles.capacityListInline}>
+              {/* Label leads (start), counter trails (end) */}
               <View style={[styles.capacityCardInline, { flexDirection: 'row' }]}>
+                <Text style={[styles.capacityLabelInline, { textAlign }]}>{isRTL ? 'سعة الشاليه (الحد الأقصى للزيادة)' : 'Chalet Capacity'}</Text>
                 <GuestCounter value={parseInt(basicForm.capacity) || 0} onIncrement={() => setBasicForm({ ...basicForm, capacity: (parseInt(basicForm.capacity) + 1).toString() })} onDecrement={() => setBasicForm({ ...basicForm, capacity: Math.max(0, parseInt(basicForm.capacity) - 1).toString() })} />
-                <Text style={styles.capacityLabelInline}>{isRTL ? 'سعة الشاليه (الحد الأقصى للزيادة)' : 'Chalet Capacity'}</Text>
               </View>
               <View style={[styles.capacityCardInline, { flexDirection: 'row' }]}>
+                <Text style={[styles.capacityLabelInline, { textAlign }]}>{isRTL ? 'سعة المبلغ (العدد المشمول بالسعر)' : 'Price Capacity'}</Text>
                 <GuestCounter value={parseInt(basicForm.priceCapacity) || 0} onIncrement={() => setBasicForm({ ...basicForm, priceCapacity: (parseInt(basicForm.priceCapacity) + 1).toString() })} onDecrement={() => setBasicForm({ ...basicForm, priceCapacity: Math.max(0, parseInt(basicForm.priceCapacity) - 1).toString() })} />
-                <Text style={styles.capacityLabelInline}>{isRTL ? 'سعة المبلغ (العدد المشمول بالسعر)' : 'Price Capacity'}</Text>
               </View>
             </View>
           </View>
@@ -2621,6 +2796,49 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(13),
     fontFamily: 'Alexandria-Medium',
     color: Colors.text.primary,
+  },
+  deadlineStepper: {
+    // Physical row: the stepper is a numeric control, symmetric in both
+    // languages, so it must not mirror with the app direction.
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: normalize.width(10),
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: normalize.radius(14),
+    padding: normalize.width(8),
+  },
+  deadlineStepButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#DBEAFE',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  deadlineStepButtonDisabled: {
+    backgroundColor: '#F1F5F9',
+  },
+  deadlineStepSign: {
+    fontSize: normalize.font(20),
+    fontWeight: '700',
+    color: Colors.primary,
+    lineHeight: normalize.font(24),
+  },
+  deadlineStepSignDisabled: {
+    color: '#CBD5E1',
+  },
+  deadlineValueText: {
+    fontSize: normalize.font(14),
+    fontFamily: 'Alexandria-Bold',
+    color: '#1E293B',
+  },
+  deadlineStepHint: {
+    fontSize: normalize.font(9),
+    fontFamily: 'Alexandria-Medium',
+    color: '#94A3B8',
+    marginTop: 2,
   },
   bookingDurationNoteCard: {
     backgroundColor: '#F0F9FF',

@@ -3,6 +3,7 @@ import { ThemedText } from "@/components/themed-text";
 import { HorizontalCard } from "@/components/user/horizontal-card";
 import { Colors, normalize } from "@/constants/theme";
 import { useFormatTime } from "@/hooks/useFormatTime";
+import { formatDuration } from "@/utils/format";
 import { getImageSrc } from "@/hooks/useImageSrc";
 
 import { Image as ExpoImage } from "expo-image";
@@ -323,6 +324,37 @@ export default function BookingSuccessDetailsScreen() {
   const isInstantChalet = booking?.chalet?.bookingType === "instant";
   const isDelayedChalet = !isInstantChalet;
 
+  // ── Payment deadline (delayed chalets, stamped by the API on approval) ─────
+  // Null when the owner opted out of a deadline — then nothing is shown.
+  const paymentDueAt = useMemo(() => {
+    if (!booking?.paymentDueAt) return null;
+    const due = new Date(booking.paymentDueAt);
+    return isNaN(due.getTime()) ? null : due;
+  }, [booking?.paymentDueAt]);
+
+  // Re-render once a minute so the countdown stays honest while the screen is open.
+  const [nowTick, setNowTick] = useState(() => Date.now());
+  React.useEffect(() => {
+    if (!paymentDueAt || !isPendingPayment) return;
+    const interval = setInterval(() => setNowTick(Date.now()), 30_000);
+    return () => clearInterval(interval);
+  }, [paymentDueAt, isPendingPayment]);
+
+  const deadlineText = useMemo(() => {
+    if (!paymentDueAt) return null;
+    const msLeft = paymentDueAt.getTime() - nowTick;
+    if (msLeft <= 0) {
+      return isRTL
+        ? "انتهت مهلة الدفع — قد يُلغى الحجز في أي لحظة"
+        : "The payment window has passed — this booking may be cancelled at any moment";
+    }
+    // Round up so a 40-second remainder reads "1 دقيقة", never "0 دقيقة".
+    const left = formatDuration(Math.ceil(msLeft / 60000), isRTL);
+    return isRTL
+      ? `يتبقى ${left} لإتمام الدفع، وبعدها يُلغى الحجز تلقائياً.`
+      : `${left} left to complete payment, after which the booking is cancelled automatically.`;
+  }, [paymentDueAt, nowTick, isRTL]);
+
   const shiftInfo = useMemo(() => {
     if (!booking?.shift) return t("booking.morningShift");
     const name = isRTL
@@ -635,6 +667,18 @@ export default function BookingSuccessDetailsScreen() {
                 : "The chalet owner approved your request! Please select your payment method to confirm your booking:"}
             </ThemedText>
 
+            {/* Owner-configured payment deadline — hidden when there is none */}
+            {deadlineText && (
+              <View style={[styles.deadlineBanner, { flexDirection: rowDirection }]}>
+                <SolarInfoCircleBold size={18} color="#B45309" />
+                <ThemedText
+                  style={[styles.deadlineBannerText, { textAlign, writingDirection: writingDir }]}
+                >
+                  {deadlineText}
+                </ThemedText>
+              </View>
+            )}
+
             {/* Payment Options Selection (Deposit vs Full) */}
             {depositPercentage > 0 && (
               <View style={{ marginBottom: 16 }}>
@@ -906,6 +950,23 @@ const styles = StyleSheet.create({
     fontFamily: "Alexandria-Medium",
     color: "#64748B",
     marginBottom: 16,
+  },
+  deadlineBanner: {
+    alignItems: "flex-start",
+    gap: 8,
+    backgroundColor: "#FFFBEB",
+    borderColor: "#FDE68A",
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+  },
+  deadlineBannerText: {
+    flex: 1,
+    fontSize: normalize.font(11),
+    fontFamily: "Alexandria-Medium",
+    color: "#B45309",
+    lineHeight: 18,
   },
   paymentMethodsGrid: {
     gap: 12,

@@ -147,7 +147,8 @@ export default function ReviewsScreen() {
   // Transform API data once when it arrives (independent of the selected sort).
   const transformedReviews = useMemo(() => {
     return (reviewsResponse?.data || []).map((rev: any) => ({
-      name: rev.customer?.name || (isArabic ? "مستخدم" : "User"),
+      // `guestName` covers dashboard-authored reviews (no customer account).
+      name: rev.customer?.name || rev.guestName || (isArabic ? "مستخدم" : "User"),
       rating: rev.rating || 0,
       body: rev.comment || "",
       date: rev.createdAt ? new Date(rev.createdAt).toLocaleDateString() : "",
