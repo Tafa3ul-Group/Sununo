@@ -25,6 +25,7 @@ import { RotatingSearchPlaceholder } from "./user/rotating-search-placeholder";
 import { CircleBackButton } from "./ui/circle-back-button";
 import { ltrScrollContent, useDirection, useRtlListOrder } from "@/i18n";
 import { useGetNotificationsQuery } from "@/store/api/customerApiSlice";
+import { activeSection } from "@/utils/notification-section";
 
 
 interface HeaderSectionProps {
@@ -81,7 +82,7 @@ export function HeaderSection({
   // polling keeps it fresh while the user sits on the home screen.
   const showBell = isHome && stateUserType !== "guest";
   const { data: notificationsResponse } = useGetNotificationsQuery(
-    { page: 1, limit: 50 },
+    { page: 1, limit: 50, role: activeSection(stateUserType) },
     { skip: !showBell, pollingInterval: 60000 },
   );
   const unreadCount = React.useMemo(() => {

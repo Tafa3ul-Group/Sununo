@@ -116,6 +116,7 @@
   "notifications": {
     "today": "Today",
     "yesterday": "Yesterday",
+    "older": "Older",
     "empty": "No notifications yet",
     "emptyDesc": "We'll let you know here when there's something new."
   },

@@ -397,38 +397,60 @@ export default function CompleteBookingScreen() {
     { skip: !chaletId },
   );
 
-  // Map availability to fully booked dates
-  const bookedDates = useMemo(() => {
-    if (
-      !availabilityData ||
-      !Array.isArray(availabilityData) ||
-      availableShifts.length === 0
-    )
-      return [];
+  // Which shift ids are taken on each "YYYY-MM-DD", as resolved by the backend.
+  //
+  // Every entry now carries `blocks`: the exact (date, shift) cells it occupies.
+  // Counting entries per day and matching `entry.shift.id` (what this did before)
+  // showed occupied slots as free whenever a booking no longer pointed at the
+  // shift being drawn — a deleted shift row, a duplicate row covering the same
+  // hours, or an overnight booking running into the next morning.
+  const blockedShiftsByDate = useMemo(() => {
+    const map: Record<string, Set<string>> = {};
+    if (!Array.isArray(availabilityData)) return map;
 
-    const dateCounts: Record<number, number> = {};
-    const viewedMonth = currentMonth.getMonth();
-    const viewedYear = currentMonth.getFullYear();
+    availabilityData.forEach((entry: any) => {
+      const blocks: { date: string; shiftId: string }[] = Array.isArray(entry.blocks)
+        ? entry.blocks
+        : // Older API responses have no `blocks`; fall back to the entry's own
+          // date + shift so the calendar degrades instead of showing everything free.
+          entry.shift?.id
+          ? [{ date: entry.bookingDate?.split("T")[0], shiftId: entry.shift.id }]
+          : [];
 
-    availabilityData.forEach((b: any) => {
-      // Expecting YYYY-MM-DD format from backend
-      const parts = b.bookingDate.split("T")[0].split("-");
-      const bYear = parseInt(parts[0], 10);
-      const bMonth = parseInt(parts[1], 10) - 1;
-      const bDay = parseInt(parts[2], 10);
-
-      if (bMonth === viewedMonth && bYear === viewedYear) {
-        dateCounts[bDay] = (dateCounts[bDay] || 0) + 1;
-      }
+      blocks.forEach(({ date, shiftId }) => {
+        if (!date || !shiftId) return;
+        (map[date] ??= new Set()).add(shiftId);
+      });
     });
 
-    const totalShifts = availableShifts.length;
-    if (totalShifts === 0) return [];
+    return map;
+  }, [availabilityData]);
 
-    return Object.keys(dateCounts)
-      .filter((d) => dateCounts[Number(d)] >= totalShifts)
-      .map(Number);
-  }, [availabilityData, availableShifts, currentMonth]);
+  const dateKeyForDay = useCallback(
+    (day: number) =>
+      `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
+    [currentMonth],
+  );
+
+  // A day is fully booked when every shift the chalet offers is taken on it.
+  const bookedDates = useMemo(() => {
+    if (availableShifts.length === 0) return [];
+
+    const daysInMonth = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth() + 1,
+      0,
+    ).getDate();
+
+    const days: number[] = [];
+    for (let day = 1; day <= daysInMonth; day++) {
+      const blocked = blockedShiftsByDate[dateKeyForDay(day)];
+      if (blocked && availableShifts.every((s: any) => blocked.has(s.id))) {
+        days.push(day);
+      }
+    }
+    return days;
+  }, [blockedShiftsByDate, availableShifts, currentMonth, dateKeyForDay]);
 
   const bookedDateStrings = useMemo(
     () =>
@@ -441,14 +463,9 @@ export default function CompleteBookingScreen() {
   );
 
   const isShiftBookedForDay = useCallback(
-    (day: number, shiftId: string) => {
-      const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-      return availabilityData.some((b: any) => {
-        const bDate = b.bookingDate.split("T")[0];
-        return bDate === dateStr && b.shift?.id === shiftId;
-      });
-    },
-    [availabilityData, currentMonth],
+    (day: number, shiftId: string) =>
+      blockedShiftsByDate[dateKeyForDay(day)]?.has(shiftId) ?? false,
+    [blockedShiftsByDate, dateKeyForDay],
   );
 
   // A shift is "closed" on a given day when it has no valid pricing for that

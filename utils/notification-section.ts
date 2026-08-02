@@ -20,10 +20,19 @@ export function resolveNotificationSection(
   activeMode: UserType,
   accountType: AccountType,
 ): NotificationSection {
-  const current: NotificationSection = activeMode === 'owner' ? 'owner' : 'customer';
+  const current = activeSection(activeMode);
   const requested = role === 'owner' || role === 'customer' ? role : null;
 
   if (requested === 'owner' && accountType !== 'provider') return current;
 
   return requested ?? current;
+}
+
+/**
+ * The section the user is in right now — also the `role` filter for
+ * `GET /notifications`, so each side lists its own notifications. Guests read as
+ * the tenant side.
+ */
+export function activeSection(activeMode: UserType): NotificationSection {
+  return activeMode === 'owner' ? 'owner' : 'customer';
 }

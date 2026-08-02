@@ -13,7 +13,7 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectAccountType, switchMode } from '@/store/authSlice';
-import { resolveNotificationSection } from '@/utils/notification-section';
+import { activeSection, resolveNotificationSection } from '@/utils/notification-section';
 
 interface Notification {
     id: string;
@@ -72,7 +72,8 @@ export default function NotificationsScreen() {
 
     const { data: response, isLoading, isFetching, refetch } = useGetNotificationsQuery({
         page,
-        limit: 15
+        limit: 15,
+        role: activeSection(userType),
     });
 
     const notifications = response?.data || [];

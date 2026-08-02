@@ -96,27 +96,41 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
     )
       return [];
 
-    const dateCounts: Record<number, number> = {};
     const viewedMonth = currentMonth.getMonth();
     const viewedYear = currentMonth.getFullYear();
 
-    availabilityData.forEach((b: any) => {
-      const parts = b.bookingDate.split("T")[0].split("-");
-      const bYear = parseInt(parts[0], 10);
-      const bMonth = parseInt(parts[1], 10) - 1;
-      const bDay = parseInt(parts[2], 10);
+    // Each entry carries `blocks`: the exact (date, shift) cells it occupies, as
+    // resolved by the backend. Counting entries per day instead (what this did
+    // before) both over- and under-counted — one overnight booking blocks two
+    // days, and two entries can block the same shift — so days showed as free
+    // when they were full, and as full when they were free.
+    const blockedByDate: Record<string, Set<string>> = {};
+    availabilityData.forEach((entry: any) => {
+      const blocks: { date: string; shiftId: string }[] = Array.isArray(entry.blocks)
+        ? entry.blocks
+        : entry.shift?.id
+          ? [{ date: entry.bookingDate?.split("T")[0], shiftId: entry.shift.id }]
+          : [];
 
-      if (bMonth === viewedMonth && bYear === viewedYear) {
-        dateCounts[bDay] = (dateCounts[bDay] || 0) + 1;
-      }
+      blocks.forEach(({ date, shiftId }) => {
+        if (!date || !shiftId) return;
+        (blockedByDate[date] ??= new Set()).add(shiftId);
+      });
     });
 
-    const totalShifts = chaletDetails.shifts.length;
-    if (totalShifts === 0) return [];
+    const shifts = chaletDetails.shifts;
+    if (shifts.length === 0) return [];
 
-    return Object.keys(dateCounts)
-      .filter((d) => dateCounts[Number(d)] >= totalShifts)
-      .map((d) => `${viewedYear}-${String(viewedMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`);
+    const daysInMonth = new Date(viewedYear, viewedMonth + 1, 0).getDate();
+    const fullyBooked: string[] = [];
+    for (let day = 1; day <= daysInMonth; day++) {
+      const key = `${viewedYear}-${String(viewedMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      const blocked = blockedByDate[key];
+      if (blocked && shifts.every((s: any) => blocked.has(s.id))) {
+        fullyBooked.push(key);
+      }
+    }
+    return fullyBooked;
   }, [availabilityData, chaletDetails, currentMonth, chaletId]);
 
   // Fetch cities from backend

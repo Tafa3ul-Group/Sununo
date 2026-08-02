@@ -1,4 +1,4 @@
-import { resolveNotificationSection } from "@/utils/notification-section";
+import { activeSection, resolveNotificationSection } from "@/utils/notification-section";
 
 describe("resolveNotificationSection", () => {
   it("follows the sender over the section the owner is currently in", () => {
@@ -28,5 +28,17 @@ describe("resolveNotificationSection", () => {
   it("resolves to the tenant side for a guest", () => {
     expect(resolveNotificationSection("owner", "guest", null)).toBe("customer");
     expect(resolveNotificationSection(undefined, "guest", null)).toBe("customer");
+  });
+});
+
+describe("activeSection", () => {
+  it("is the `role` filter each notification list sends", () => {
+    expect(activeSection("owner")).toBe("owner");
+    expect(activeSection("customer")).toBe("customer");
+  });
+
+  it("reads a guest and a signed-out user as the tenant side", () => {
+    expect(activeSection("guest")).toBe("customer");
+    expect(activeSection(null)).toBe("customer");
   });
 });

@@ -14,7 +14,7 @@ import { useGetNotificationsQuery, useMarkNotificationAsReadMutation } from '@/s
 import { useDirection } from '@/i18n';
 import { RootState } from '@/store';
 import { selectAccountType, switchMode } from '@/store/authSlice';
-import { resolveNotificationSection } from '@/utils/notification-section';
+import { activeSection, resolveNotificationSection } from '@/utils/notification-section';
 import { useDispatch, useSelector } from 'react-redux';
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
@@ -90,7 +90,11 @@ export default function NotificationsScreen() {
     const isArabic = isRTL;
 
     // Fetch notifications from the backend
-    const { data: notificationsResponse, isLoading, refetch } = useGetNotificationsQuery({ page: 1, limit: 50 });
+    const { data: notificationsResponse, isLoading, refetch } = useGetNotificationsQuery({
+      page: 1,
+      limit: 50,
+      role: activeSection(userType),
+    });
     const [markAsRead] = useMarkNotificationAsReadMutation();
 
     // Pre-process: transform API data + format times once per item

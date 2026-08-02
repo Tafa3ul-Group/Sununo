@@ -28,6 +28,7 @@ import {
 import { useGetNotificationsQuery } from '@/store/api/customerApiSlice';
 import { PRIVACY_POLICY_URL } from '@/constants/links';
 import { useModeSwitch } from '@/hooks/use-mode-switch';
+import { activeSection } from '@/utils/notification-section';
 import { useSupportContact } from '@/hooks/use-support-contact';
 import { logout } from '@/store/authSlice';
 import { useDirection } from '@/i18n';
@@ -63,7 +64,7 @@ export default function ProviderProfileScreen() {
   const { t } = useTranslation();
   const { isRTL, textAlign } = useDirection();
 
-  const { user: authUser } = useSelector((state: RootState) => state.auth);
+  const { user: authUser, userType } = useSelector((state: RootState) => state.auth);
   const { showConfirm } = useConfirmationDialog();
 
   const { data: userData } = useGetMeQuery(undefined);
@@ -78,7 +79,7 @@ export default function ProviderProfileScreen() {
   // Unread count for the notifications row. Shares the cache key with the
   // notifications screen, so opening a notification updates the badge here too.
   const { data: notificationsResponse } = useGetNotificationsQuery(
-    { page: 1, limit: 50 },
+    { page: 1, limit: 50, role: activeSection(userType) },
     { pollingInterval: 60000 }
   );
   const unreadCount = React.useMemo(() => {

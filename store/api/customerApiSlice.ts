@@ -499,9 +499,15 @@ export const customerApi = apiSlice.injectEndpoints({
 
     // ── Notifications ──────────────────────────────────────────────────────
 
-    /** Get all notifications (paginated) */
+    /**
+     * Get all notifications (paginated).
+     *
+     * `role` scopes the list to one side of the app — an owner using the app as
+     * a tenant gets the tenant list, not their chalet's bookings. Notifications
+     * that read the same either way come back regardless.
+     */
     getNotifications: builder.query({
-      query: (params?: { page?: number; limit?: number }) => ({
+      query: (params?: { page?: number; limit?: number; role?: "owner" | "customer" }) => ({
         url: "/notifications",
         params,
       }),
