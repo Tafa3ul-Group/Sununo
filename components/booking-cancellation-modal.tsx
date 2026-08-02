@@ -30,6 +30,13 @@ interface BookingCancellationSheetProps {
   totalPrice?: string | number;
   paymentModel?: 'full' | 'deposit';
   isExternal?: boolean;
+  /**
+   * What the customer actually gets back, when the caller knows it. Only a paid
+   * (confirmed) booking has money with the platform — a request still awaiting
+   * approval or payment has none, and promising a refund there is a lie. Omit to
+   * fall back to deriving it from the payment model.
+   */
+  refundAmount?: number;
 }
 
 export type BookingCancellationSheetRef = {
@@ -47,7 +54,8 @@ export const BookingCancellationSheet = forwardRef<BookingCancellationSheetRef, 
     depositAmount = 0,
     totalPrice = 0,
     paymentModel = 'deposit',
-    isExternal = false
+    isExternal = false,
+    refundAmount: refundAmountProp
   }, ref) => {
     const { isRTL, textAlign, inputTextAlign } = useDirection();
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
@@ -158,7 +166,8 @@ export const BookingCancellationSheet = forwardRef<BookingCancellationSheetRef, 
       }
 
       const isFullPayment = paymentModel === 'full';
-      const refundAmount = isFullPayment ? totalPrice : depositAmount;
+      const refundAmount = refundAmountProp ?? (isFullPayment ? totalPrice : depositAmount);
+      const willRefund = Number(refundAmount || 0) > 0;
       const formattedAmount = Number(refundAmount || 0).toLocaleString();
 
       return (
@@ -178,11 +187,21 @@ export const BookingCancellationSheet = forwardRef<BookingCancellationSheetRef, 
                 />
               </>
             )}
-            {!isExternal && (
+            {!isExternal && willRefund && (
               <Text style={[styles.noteText, { textAlign }]}>
                 {isRTL
                   ? `عند الإلغاء سيتم استرداد ${isFullPayment ? 'كامل المبلغ' : 'مبلغ العربون'} (${formattedAmount} د.ع) تلقائياً لمحفظة الزبون`
                   : `Upon cancellation, the ${isFullPayment ? 'full amount' : 'deposit amount'} (${formattedAmount} IQD) will be automatically refunded to the customer's wallet.`
+                }
+              </Text>
+            )}
+            {!isExternal && !willRefund && (
+              /* Nothing was collected yet (request awaiting approval or payment) —
+                 don't promise a refund that will never happen. */
+              <Text style={[styles.noteText, { textAlign }]}>
+                {isRTL
+                  ? 'لم يتم استلام أي مبلغ من الزبون بعد، لذلك لا يوجد استرداد. سيتم إشعار الزبون وفتح الموعد للحجز مرة أخرى.'
+                  : 'No amount has been collected from the customer yet, so there is nothing to refund. The customer will be notified and the slot reopened for booking.'
                 }
               </Text>
             )}

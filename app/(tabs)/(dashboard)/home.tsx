@@ -15,7 +15,9 @@ import { ErrorState } from "@/components/ui/error-state";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize } from "@/constants/theme";
 import { RootState } from "@/store";
+import { formatPrice } from "@/utils/format";
 import {
+  useCancelBookingMutation,
   useDeleteExternalBookingMutation,
   useGetFullyBookedStatusQuery,
   useGetOwnerChaletsQuery,
@@ -183,6 +185,8 @@ export default function HomeScreen() {
 
   const [rejectBooking, { isLoading: isRejectLoading }] =
     useRejectBookingMutation();
+  const [cancelBooking, { isLoading: isCancelLoading }] =
+    useCancelBookingMutation();
   const [cancellingBookingData, setCancellingBookingData] =
     React.useState<any>(null);
 
@@ -210,14 +214,29 @@ export default function HomeScreen() {
         cancellingBookingData.status === "external" ||
         cancellingBookingData.bIsExternal;
 
+      const fallbackReason = isRTL ? "إلغاء من قبل المشغل" : "Cancelled by provider";
+      // Same split as the booking-details screen: an owner-created block is
+      // deleted, a request still awaiting the owner's decision is rejected, and an
+      // already-secured booking is cancelled (refunding the customer when paid).
+      let successText = isRTL ? "تم الإلغاء بنجاح." : "Cancelled successfully.";
       if (isExternal) {
         await deleteExternalBooking(cancellingBookingData.id).unwrap();
-      } else {
+      } else if (cancellingBookingData.status === "pending_approval") {
         await rejectBooking({
           id: cancellingBookingData.id,
-          reason:
-            reason || (isRTL ? "إلغاء من قبل المشغل" : "Cancelled by provider")
+          reason: reason || fallbackReason,
         }).unwrap();
+      } else {
+        const res = await cancelBooking({
+          id: cancellingBookingData.id,
+          reason: reason || fallbackReason,
+        }).unwrap();
+        const refunded = Number(res?.refundAmount || 0);
+        if (refunded > 0) {
+          successText = isRTL
+            ? `تم إلغاء الحجز وإرجاع ${formatPrice(refunded, true)} إلى محفظة الزبون.`
+            : `Booking cancelled — ${formatPrice(refunded, true)} refunded to the customer's wallet.`;
+        }
       }
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -227,9 +246,7 @@ export default function HomeScreen() {
       shiftSheetRef.current?.dismiss();
 
       // Show success in cancellation sheet
-      cancelSheetRef.current?.showSuccess(
-        isRTL ? "تم الإلغاء بنجاح." : "Cancelled successfully.",
-      );
+      cancelSheetRef.current?.showSuccess(successText);
     } catch (e: any) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       cancelSheetRef.current?.showError(
@@ -895,12 +912,23 @@ export default function HomeScreen() {
       <BookingCancellationSheet
         ref={cancelSheetRef}
         onConfirm={handleConfirmCancellation}
-        isLoading={isRejectLoading || isDeletingExternal}
+        isLoading={isRejectLoading || isCancelLoading || isDeletingExternal}
         isRTL={isRTL}
         isExternal={cancellingBookingData?.status === "external" || cancellingBookingData?.bIsExternal}
         depositAmount={cancellingBookingData?.depositAmount || 0}
         totalPrice={cancellingBookingData?.totalPrice || 0}
         paymentModel={cancellingBookingData?.paymentModel || 'deposit'}
+        refundAmount={
+          // Mirrors the server rule: only a paid (confirmed) booking has money with
+          // the platform, minus the balance the customer settles in cash on site.
+          cancellingBookingData?.status === "confirmed"
+            ? Math.max(
+              0,
+              Number(cancellingBookingData?.totalPrice || 0) -
+              Number(cancellingBookingData?.remainingAmount || 0),
+            )
+            : 0
+        }
       />
 
       <BottomSheetModal

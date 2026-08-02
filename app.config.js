@@ -9,19 +9,69 @@
 //
 // Locally (no env vars set) it falls back to the files in the repo root, so
 // `expo prebuild` / `expo run:ios` keep working unchanged.
+//
+// If those files are absent locally (fresh clone — they're git-ignored), we drop
+// the Firebase plugins and config-file paths instead of failing prebuild. The app
+// still builds and runs; analytics degrades to a no-op (services/analytics.ts is
+// written for exactly this case). Restore them by putting the real files in the
+// repo root — see docs/analytics-ga4-setup.md.
+const fs = require("fs");
+const path = require("path");
 const appJson = require("./app.json");
+
+const FIREBASE_PLUGINS = [
+  "@react-native-firebase/app",
+  "@react-native-firebase/analytics",
+];
 
 module.exports = () => {
   const expo = { ...appJson.expo };
 
-  const iosPlist = process.env.GOOGLE_SERVICES_INFO_PLIST;
-  const androidJson = process.env.GOOGLE_SERVICES_JSON;
+  // EAS file env vars win; otherwise use the repo-root file only if it exists.
+  const resolveLocal = (relPath) => {
+    const abs = path.resolve(__dirname, relPath);
+    return fs.existsSync(abs) ? relPath : null;
+  };
 
-  if (iosPlist) {
-    expo.ios = { ...expo.ios, googleServicesFile: iosPlist };
+  const iosPlist =
+    process.env.GOOGLE_SERVICES_INFO_PLIST ??
+    resolveLocal(expo.ios?.googleServicesFile ?? "./GoogleService-Info.plist");
+  const androidJson =
+    process.env.GOOGLE_SERVICES_JSON ??
+    resolveLocal(expo.android?.googleServicesFile ?? "./google-services.json");
+
+  // Per-platform: a missing plist must not disable Firebase for Android (and
+  // vice versa). Point googleServicesFile only at files that actually exist —
+  // pointing at a missing one is what makes prebuild throw ENOENT.
+  expo.ios = { ...expo.ios };
+  expo.android = { ...expo.android };
+
+  if (iosPlist) expo.ios.googleServicesFile = iosPlist;
+  else delete expo.ios.googleServicesFile;
+
+  if (androidJson) expo.android.googleServicesFile = androidJson;
+  else delete expo.android.googleServicesFile;
+
+  const missing = [
+    !androidJson && "google-services.json",
+    !iosPlist && "GoogleService-Info.plist",
+  ].filter(Boolean);
+
+  if (missing.length) {
+    console.warn(
+      `[app.config] Missing Firebase config (${missing.join(", ")}) — that ` +
+        `platform builds WITHOUT Firebase Analytics. Add the file(s) to the ` +
+        `project root to enable it.`,
+    );
   }
-  if (androidJson) {
-    expo.android = { ...expo.android, googleServicesFile: androidJson };
+
+  // Only drop the plugins when NEITHER platform is configured; keeping them with
+  // one file present is what lets Android use Firebase while iOS waits for its plist.
+  if (!iosPlist && !androidJson) {
+    expo.plugins = (expo.plugins ?? []).filter((plugin) => {
+      const name = Array.isArray(plugin) ? plugin[0] : plugin;
+      return !FIREBASE_PLUGINS.includes(name);
+    });
   }
 
   return expo;

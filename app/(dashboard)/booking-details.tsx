@@ -4,11 +4,11 @@ import {
 } from '@/components/icons/solar-icons';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { Colors, normalize } from '@/constants/theme';
-import { formatDuration } from '@/utils/format';
+import { formatDuration, formatPrice } from '@/utils/format';
 import { getImageSrc } from '@/hooks/useImageSrc';
 import { useDirection } from '@/i18n';
 import { RootState } from '@/store';
-import { useDeleteExternalBookingMutation, useGetProviderBookingDetailsQuery, useMarkBookingCompletedMutation, useRejectBookingMutation, useApproveBookingMutation } from '@/store/api/apiSlice';
+import { useCancelBookingMutation, useDeleteExternalBookingMutation, useGetProviderBookingDetailsQuery, useMarkBookingCompletedMutation, useRejectBookingMutation, useApproveBookingMutation } from '@/store/api/apiSlice';
 import * as Haptics from 'expo-haptics';
 import { Image as ExpoImage } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -39,6 +39,7 @@ export default function BookingDetailsPage() {
   const confirmPaymentSheetRef = React.useRef<PaymentConfirmationSheetRef>(null);
 
   const [rejectBooking, { isLoading: isRejectLoading }] = useRejectBookingMutation();
+  const [cancelBooking, { isLoading: isCancelLoading }] = useCancelBookingMutation();
   const [deleteExternalBooking, { isLoading: isDeletingExternal }] = useDeleteExternalBookingMutation();
   const [markAsPaid, { isLoading: isPaying }] = useMarkBookingCompletedMutation();
   const [approveBooking, { isLoading: isApproving }] = useApproveBookingMutation();
@@ -142,6 +143,14 @@ export default function BookingDetailsPage() {
   const providerEarnings = Number(data.providerEarnings || 0);
   const commissionAmount = Number(data.commissionAmount || 0);
 
+  // What cancelling would actually refund. Mirrors the server rule: only a paid
+  // (confirmed) booking has money with the platform, and what it holds is the
+  // total minus the remaining balance the customer pays in cash on site. Anything
+  // still awaiting approval or payment refunds nothing.
+  const refundableAmount = data.status === 'confirmed'
+    ? Math.max(0, Number(data.totalPrice || 0) - Number(data.remainingAmount || 0))
+    : 0;
+
   // Payment flags driven by the REAL payment status (not just "not pending_approval").
   const bIsDeposit = data.paymentModel === 'deposit';
   const bIsPaid = Number(data.amountPaid || 0) >= (bIsDeposit ? depositAmount : totalPrice);
@@ -164,16 +173,27 @@ export default function BookingDetailsPage() {
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       setIsSuccessNavigating(true);
+      const fallbackReason = isRTL ? 'إلغاء من قبل المشغل' : 'Cancelled by provider';
+      // Three different server actions behind one sheet, picked by status:
+      // an owner-created block is deleted, a request awaiting the owner's decision
+      // is rejected, and an already-secured booking is cancelled (which refunds
+      // the customer when they had paid).
+      let successText = isRTL ? 'تم الإلغاء بنجاح.' : 'Cancelled successfully.';
       if (bIsExternal) {
         await deleteExternalBooking(data.id).unwrap();
+      } else if (data.status === 'pending_approval') {
+        await rejectBooking({ id: data.id, reason: reason || fallbackReason }).unwrap();
       } else {
-        await rejectBooking({
-          id: data.id,
-          reason: reason || (isRTL ? 'إلغاء من قبل المشغل' : 'Cancelled by provider')
-        }).unwrap();
+        const res = await cancelBooking({ id: data.id, reason: reason || fallbackReason }).unwrap();
+        const refunded = Number(res?.refundAmount || 0);
+        if (refunded > 0) {
+          successText = isRTL
+            ? `تم إلغاء الحجز وإرجاع ${formatPrice(refunded, true)} إلى محفظة الزبون.`
+            : `Booking cancelled — ${formatPrice(refunded, true)} refunded to the customer's wallet.`;
+        }
       }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      cancelSheetRef.current?.showSuccess(isRTL ? 'تم الإلغاء بنجاح.' : 'Cancelled successfully.');
+      cancelSheetRef.current?.showSuccess(successText);
       setTimeout(() => router.back(), 1500);
     } catch (e: any) {
       setIsSuccessNavigating(false);
@@ -531,38 +551,62 @@ export default function BookingDetailsPage() {
             </>
           ) : data.status === 'pending_payment' ? (
             /* Approved, waiting for the customer to pay → owner cannot complete yet.
-               If the customer never pays, the booking is auto-cancelled by the cron. */
-            <PrimaryButton
-              label={
-                paymentDueLabel
-                  ? (isRTL ? `بانتظار دفع العميل — ${paymentDueLabel}` : `Awaiting customer payment — ${paymentDueLabel}`)
-                  : (isRTL ? 'بانتظار دفع العميل' : 'Awaiting customer payment')
-              }
-              onPress={() => { }}
-              height={60}
-              style={styles.payButton}
-              disabled={true}
-            />
-          ) : remainingAmount > 0 ? (
-            /* Confirmed deposit booking → owner collects the remaining cash & completes */
-            <PrimaryButton
-              label={isRTL ? 'تسديد المبلغ المتبقي وإنهاء الحجز' : 'Collect Remaining & Complete'}
-              onPress={() => {
-                confirmPaymentSheetRef.current?.present();
-              }}
-              height={60}
-              style={styles.payButton}
-            />
+               If the customer never pays, the booking is auto-cancelled by the cron,
+               but the owner can also drop it now and free the slot immediately. */
+            <>
+              <PrimaryButton
+                label={
+                  paymentDueLabel
+                    ? (isRTL ? `بانتظار دفع العميل — ${paymentDueLabel}` : `Awaiting customer payment — ${paymentDueLabel}`)
+                    : (isRTL ? 'بانتظار دفع العميل' : 'Awaiting customer payment')
+                }
+                onPress={() => { }}
+                height={60}
+                style={styles.payButton}
+                disabled={true}
+              />
+              <PrimaryButton
+                label={isRTL ? 'إلغاء الحجز' : 'Cancel Booking'}
+                onPress={() => cancelSheetRef.current?.present(bCustomerName, bCustomerPhone)}
+                activeColor="#EA2129"
+                isActive={true}
+                height={50}
+                style={styles.cancelButton}
+              />
+            </>
           ) : (
-            /* Confirmed & fully paid → completion happens automatically after the stay */
-            <PrimaryButton
-              label={isRTL ? 'تم سداد المبلغ بالكامل' : 'Full amount paid'}
-              onPress={() => { }}
-              activeColor="#22C55E"
-              height={60}
-              style={styles.payButton}
-              disabled={true}
-            />
+            /* Confirmed. A deposit booking still needs the remaining cash collected
+               on site; a fully paid one just completes automatically after the stay.
+               Either way the owner can cancel — which refunds the customer in full. */
+            <>
+              {remainingAmount > 0 ? (
+                <PrimaryButton
+                  label={isRTL ? 'تسديد المبلغ المتبقي وإنهاء الحجز' : 'Collect Remaining & Complete'}
+                  onPress={() => {
+                    confirmPaymentSheetRef.current?.present();
+                  }}
+                  height={60}
+                  style={styles.payButton}
+                />
+              ) : (
+                <PrimaryButton
+                  label={isRTL ? 'تم سداد المبلغ بالكامل' : 'Full amount paid'}
+                  onPress={() => { }}
+                  activeColor="#22C55E"
+                  height={60}
+                  style={styles.payButton}
+                  disabled={true}
+                />
+              )}
+              <PrimaryButton
+                label={isRTL ? 'إلغاء الحجز' : 'Cancel Booking'}
+                onPress={() => cancelSheetRef.current?.present(bCustomerName, bCustomerPhone)}
+                activeColor="#EA2129"
+                isActive={true}
+                height={50}
+                style={styles.cancelButton}
+              />
+            </>
           )}
         </View>
       )}
@@ -578,12 +622,13 @@ export default function BookingDetailsPage() {
       <BookingCancellationSheet
         ref={cancelSheetRef}
         onConfirm={handleConfirmCancellation}
-        isLoading={isRejectLoading || isDeletingExternal}
+        isLoading={isRejectLoading || isCancelLoading || isDeletingExternal}
         isRTL={isRTL}
         isExternal={bIsExternal}
         depositAmount={data.depositAmount || 0}
         totalPrice={data.totalPrice || 0}
         paymentModel={data.paymentModel || 'deposit'}
+        refundAmount={refundableAmount}
       />
 
       {/* Expanded Image Modal */}

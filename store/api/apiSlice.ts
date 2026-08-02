@@ -674,22 +674,29 @@ export const apiSlice = createApi({
       invalidatesTags: ["Booking", "Chalet"],
     }),
 
-    // Cancel booking
-    cancelBooking: builder.mutation({
-      query: (id) => ({
+    // Cancel an already-secured booking (pending_payment / confirmed). A confirmed
+    // booking refunds the customer in full — the owner cancelled, so no policy
+    // penalty applies. Requests still awaiting approval use `rejectBooking`.
+    cancelBooking: builder.mutation<
+      { message: string; refundAmount: number },
+      { id: string; reason?: string }
+    >({
+      query: ({ id, reason }) => ({
         url: `/provider/bookings/${id}/cancel`,
         method: "POST",
+        body: { reason },
       }),
-      invalidatesTags: (result, error, id) => [
+      invalidatesTags: (result, error, { id }) => [
         "Booking",
+        "Chalet",
         { type: "Booking" as const, id },
       ],
     }),
 
-    // Reject booking (usually for providers) - maps to cancel endpoint with reason
+    // Reject a request still awaiting the owner's decision (pending_approval).
     rejectBooking: builder.mutation({
       query: ({ id, reason }) => ({
-        url: `/provider/bookings/${id}/cancel`,
+        url: `/provider/bookings/${id}/reject`,
         method: "POST",
         body: { reason },
       }),
