@@ -23,8 +23,10 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import Toast from "react-native-toast-message";
 import { toastConfig } from "@/components/ui/toast-config";
-import { Provider, useSelector } from "react-redux";
+import { Provider, useDispatch, useSelector } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
+import { selectAccountType, switchMode } from "@/store/authSlice";
+import { resolveNotificationSection } from "@/utils/notification-section";
 
 // @ts-ignore
 if (Text.defaultProps == null) Text.defaultProps = {};
@@ -51,9 +53,11 @@ function RootLayoutNav() {
   const segments = useSegments();
   const pathname = usePathname();
   const router = useRouter();
+  const dispatch = useDispatch();
   const { language, isAuthenticated, userType, token: authToken } = useSelector(
     (state: RootState) => state.auth,
   );
+  const accountType = useSelector(selectAccountType);
 
   // Track whether we've already registered the token for this session
   const tokenRegistered = useRef(false);
@@ -150,9 +154,17 @@ function RootLayoutNav() {
 
             if (!data) return;
 
-            // Deep linking بناءً على نوع الإشعار + نوع المستخدم
+            const target = resolveNotificationSection(data.role, userType, accountType);
+
+            // Land them in the right section first, or the destination screen's
+            // own guard would bounce them straight back out.
+            if (target !== userType && userType !== "guest") {
+              dispatch(switchMode(target));
+            }
+
+            // Deep linking بناءً على نوع الإشعار + القسم المقصود
             if (data.type === "booking" && data.id) {
-              if (userType === "owner") {
+              if (target === "owner") {
                 router.push({ pathname: "/(dashboard)/booking-details", params: { id: data.id } });
               } else {
                 router.push({ pathname: "/(tabs)/(customer)/booking-success", params: { id: data.id } });
@@ -164,7 +176,7 @@ function RootLayoutNav() {
               if (data.id) {
                 router.push(`/payout-confirm/${data.id}`);
               } else {
-                router.push(userType === "owner" ? "/(tabs)/(dashboard)/home" : "/(tabs)/(customer)/profile");
+                router.push(target === "owner" ? "/(tabs)/(dashboard)/home" : "/(tabs)/(customer)/profile");
               }
             }
           },
@@ -178,7 +190,7 @@ function RootLayoutNav() {
       cleanup?.();
       if (retryTimeout) clearTimeout(retryTimeout);
     };
-  }, [loaded, isAuthenticated, userType, authToken, notificationRetryNonce, router]);
+  }, [loaded, isAuthenticated, userType, accountType, authToken, notificationRetryNonce, router, dispatch]);
 
   // ── إعادة تسجيل التوكن عند تسجيل الدخول ─────────────────────────────────
   useEffect(() => {

@@ -12,6 +12,10 @@ import { HeaderSection } from '@/components/header-section';
 import { EmptyState } from '@/components/ui/empty-state';
 import { useGetNotificationsQuery, useMarkNotificationAsReadMutation } from '@/store/api/customerApiSlice';
 import { useDirection } from '@/i18n';
+import { RootState } from '@/store';
+import { selectAccountType, switchMode } from '@/store/authSlice';
+import { resolveNotificationSection } from '@/utils/notification-section';
+import { useDispatch, useSelector } from 'react-redux';
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -26,6 +30,7 @@ interface Notification {
   isRead: boolean;
   redirectType?: string;
   redirectId?: string;
+  redirectRole?: string;
 }
 
 interface NotificationItemProps {
@@ -77,6 +82,9 @@ NotificationItem.displayName = 'NotificationItem';
 export default function NotificationsScreen() {
     const { t } = useTranslation();
     const router = useRouter();
+    const dispatch = useDispatch();
+    const userType = useSelector((state: RootState) => state.auth.userType);
+    const accountType = useSelector(selectAccountType);
 
     const { isRTL } = useDirection();
     const isArabic = isRTL;
@@ -96,6 +104,7 @@ export default function NotificationsScreen() {
         isRead: !!item.readAt || !!item.isRead,
         redirectType: item.redirectType,
         redirectId: item.redirectId,
+        redirectRole: item.redirectRole,
         notifDate: new Date(item.createdAt).toDateString(),
       }));
     }, [notificationsResponse, isArabic, t]);
@@ -128,9 +137,20 @@ export default function NotificationsScreen() {
             markAsRead(item.id);
         }
 
+        // An owner browsing as a tenant can still be reading a notification about
+        // their own chalet — the sender says so, and that opens the dashboard.
+        const target = resolveNotificationSection(item.redirectRole, userType, accountType);
+        if (target !== userType && userType !== 'guest') {
+            dispatch(switchMode(target));
+        }
+
         // Navigate based on notification redirect type
         if (item.redirectType === 'booking' && item.redirectId) {
-            router.push({ pathname: '/(tabs)/(customer)/booking-success', params: { id: item.redirectId } });
+            if (target === 'owner') {
+                router.push({ pathname: '/(dashboard)/booking-details', params: { id: item.redirectId } });
+            } else {
+                router.push({ pathname: '/(tabs)/(customer)/booking-success', params: { id: item.redirectId } });
+            }
         } else if (item.redirectType === 'chalet' && item.redirectId) {
             router.push(`/chalet-details/${item.redirectId}`);
         } else if (item.redirectType === 'payout' && item.redirectId) {

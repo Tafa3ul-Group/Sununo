@@ -3,6 +3,7 @@ import {
   BookingCancellationSheetRef
 } from "@/components/booking-cancellation-modal";
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
+import { NoChaletState } from "@/components/dashboard/no-chalet-state";
 import { OnboardingBanner } from "@/components/dashboard/onboarding-banner";
 import { ShiftActionSheet } from "@/components/dashboard/shift-action-sheet";
 import {
@@ -17,6 +18,7 @@ import { RootState } from "@/store";
 import {
   useDeleteExternalBookingMutation,
   useGetFullyBookedStatusQuery,
+  useGetOwnerChaletsQuery,
   useGetProviderBookingsQuery,
   useGetProviderProfileQuery,
   useGetShiftAvailabilityQuery,
@@ -149,6 +151,14 @@ export default function HomeScreen() {
 
   const { data: profileResponse, refetch: refetchProfile } = useGetProviderProfileQuery(undefined);
   const profile = profileResponse?.data || profileResponse;
+
+  // The whole dashboard (calendar, shifts, bookings) only makes sense once the
+  // owner has a chalet. Until then we swap it for <NoChaletState /> below.
+  const { data: ownerChaletsResponse, isLoading: isChaletsLoading } =
+    useGetOwnerChaletsQuery({});
+  const ownerChalets: any[] =
+    ownerChaletsResponse?.data || ownerChaletsResponse || [];
+  const hasNoChalets = !isChaletsLoading && ownerChalets.length === 0;
 
   const [markAsCompleted, { isLoading: isStatusLoading }] =
     useMarkBookingCompletedMutation();
@@ -303,7 +313,7 @@ export default function HomeScreen() {
         page: currentPage,
         limit: 8
       },
-      { refetchOnMountOrArgChange: true },
+      { skip: hasNoChalets, refetchOnMountOrArgChange: true },
     );
 
   const loadMore = () => {
@@ -649,6 +659,32 @@ export default function HomeScreen() {
   // Account is activated on registration; review now happens at the chalet
   // level. The onboarding/review status surfaces via <OnboardingBanner /> below
   // instead of a full-screen block.
+
+  // First load of the chalet list — avoid flashing the "no chalet" screen at an
+  // owner who does have one.
+  if (isChaletsLoading && !ownerChaletsResponse) {
+    return (
+      <View style={styles.safeArea}>
+        <DashboardHeader showLogo={true} showSearch={false} />
+        <ActivityIndicator
+          color={IDENTITY_BLUE}
+          size="large"
+          style={{ marginTop: 60 }}
+        />
+      </View>
+    );
+  }
+
+  // No chalet yet → the calendar/bookings UI has nothing to show, so we ask the
+  // owner to add one instead.
+  if (hasNoChalets) {
+    return (
+      <View style={styles.safeArea}>
+        <DashboardHeader showLogo={true} showSearch={false} />
+        <NoChaletState />
+      </View>
+    );
+  }
 
   if (bookingsError) {
     const is404 = (bookingsError as any)?.status === 404;

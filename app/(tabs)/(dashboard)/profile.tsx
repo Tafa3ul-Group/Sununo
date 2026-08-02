@@ -6,6 +6,7 @@ import {
   SolarGlobalBold,
   SolarLogoutBold,
   SolarPhoneBold,
+  SolarRefreshBold,
   SolarSettingsBold,
   SolarShieldBold,
   SolarTrashBinBold,
@@ -26,6 +27,7 @@ import {
 } from '@/store/api/apiSlice';
 import { useGetNotificationsQuery } from '@/store/api/customerApiSlice';
 import { PRIVACY_POLICY_URL } from '@/constants/links';
+import { useModeSwitch } from '@/hooks/use-mode-switch';
 import { useSupportContact } from '@/hooks/use-support-contact';
 import { logout } from '@/store/authSlice';
 import { useDirection } from '@/i18n';
@@ -89,6 +91,9 @@ export default function ProviderProfileScreen() {
 
   // Support number comes from the portal (GET /config → adminPhone).
   const { openSupport: openContactUs } = useSupportContact();
+
+  // The owner can leave the dashboard and use the app as a tenant.
+  const { switchTo } = useModeSwitch();
   const openPrivacyPolicy = () => {
     Linking.openURL(PRIVACY_POLICY_URL).catch(() => {});
   };
@@ -140,6 +145,7 @@ export default function ProviderProfileScreen() {
   };
 
   const menuItems: MenuItem[] = [
+    { id: 'switchToCustomer', title: isRTL ? 'التبديل إلى وضع المستأجر' : 'Switch to tenant mode', shape: 'blue' as const, icon: <SolarRefreshBold size={20} color="white" />, action: () => switchTo('customer') },
     { id: 'profile', title: isRTL ? 'المعلومات الشخصية' : 'Personal Information', shape: 'blue' as const, icon: <SolarUserBold size={20} color="white" />, route: '/(dashboard)/edit-profile' },
     { id: 'business', title: isRTL ? 'معلومات المصرف' : 'Bank Information', shape: 'blue' as const, icon: <SolarWalletBold size={20} color="white" />, route: '/(dashboard)/edit-business' },
     { id: 'revenue', title: isRTL ? 'الأرباح' : 'Earnings', shape: 'green' as const, icon: <SolarBanknoteBold size={20} color="white" />, route: '/(tabs)/(dashboard)/revenue' },

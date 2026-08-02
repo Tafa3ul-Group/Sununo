@@ -35,6 +35,7 @@ import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, Fonts, normalize } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { getStartingPrice } from "@/utils/format";
+import { openBannerLink } from "@/utils/banner-link";
 import { logEvent } from "@/services/analytics";
 import { ANALYTICS_EVENTS } from "@/constants/analytics-events";
 
@@ -351,9 +352,20 @@ export default function HomeScreen() {
         id: b.id,
         image: b.imageUrl,
         title: isRTL ? b.title?.ar || b.title : b.title?.en || b.title,
+        // Admin-set destination: a chalet id, an internal path, or a URL.
+        link: b.link,
       })),
     [bannersResponse, isRTL],
   );
+
+  const handleBannerPress = useCallback((banner: any) => {
+    if (!openBannerLink(banner?.link)) return;
+    logEvent(ANALYTICS_EVENTS.SELECT_PROMOTION, {
+      promotion_id: String(banner?.id ?? ""),
+      promotion_name: banner?.title || "",
+      creative_slot: "home_banner",
+    });
+  }, []);
 
   // First cold load (no cached data yet) → show the full-page skeleton so the
   // whole screen presents one cohesive loading state instead of building piecemeal.
@@ -534,7 +546,7 @@ export default function HomeScreen() {
             <BannerSkeleton />
           ) : banners?.length > 0 ? (
             <Animated.View entering={FadeInDown.duration(400)}>
-              <BannerSwiper data={banners} />
+              <BannerSwiper data={banners} onBannerPress={handleBannerPress} />
             </Animated.View>
           ) : null}
 

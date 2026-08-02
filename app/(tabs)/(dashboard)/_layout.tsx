@@ -14,8 +14,11 @@ export default function DashboardLayout() {
     return <Redirect href="/(auth)/login" />;
   }
 
+  // Straight to the tenant section rather than through "/" — that route is the
+  // splash screen, and bouncing an owner who just switched modes through it
+  // replays the whole animation before landing in the same place.
   if (userType === 'customer') {
-    return <Redirect href="/" />;
+    return <Redirect href="/(tabs)/(customer)" />;
   }
 
   return (

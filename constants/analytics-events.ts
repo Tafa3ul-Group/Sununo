@@ -19,6 +19,8 @@ export const ANALYTICS_EVENTS = {
   SELECT_ITEM: "select_item",
   VIEW_ITEM: "view_item",
   SEARCH: "search",
+  /** Tap on a home-screen promotional banner. */
+  SELECT_PROMOTION: "select_promotion",
   VIEW_SEARCH_RESULTS: "view_search_results",
   ADD_TO_WISHLIST: "add_to_wishlist",
   BEGIN_CHECKOUT: "begin_checkout",

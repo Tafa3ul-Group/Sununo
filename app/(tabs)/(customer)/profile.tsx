@@ -8,6 +8,7 @@ import {
     SolarLogoutBold,
     SolarPhoneBold,
     SolarPenNewRoundBoldDuotone,
+    SolarRefreshBold,
     SolarShieldBold,
     SolarUserBlockBoldDuotone,
     SolarWalletBold,
@@ -18,6 +19,7 @@ import { DeleteAccountSheet } from '@/components/user/delete-account-sheet';
 import { WalletCard } from '@/components/user/wallet-card';
 import { WithdrawSheet, WithdrawSheetRef } from '@/components/user/withdraw-sheet';
 import { PRIVACY_POLICY_URL } from '@/constants/links';
+import { useModeSwitch } from '@/hooks/use-mode-switch';
 import { useSupportContact } from '@/hooks/use-support-contact';
 import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc, getAvatarSrc } from '@/hooks/useImageSrc';
@@ -149,6 +151,9 @@ export default function CustomerProfileScreen() {
     // Support number comes from the portal (GET /config → adminPhone).
     const { openSupport: openContactUs } = useSupportContact();
 
+    // Only a chalet owner browsing as a tenant sees this — see useModeSwitch.
+    const { canSwitch, switchTo } = useModeSwitch();
+
     // Press-scale feedback for the user (edit profile) card.
     const userCardScale = useSharedValue(1);
     const userCardAnimatedStyle = useAnimatedStyle(() => ({
@@ -202,7 +207,16 @@ export default function CustomerProfileScreen() {
         [createPayout, t, refetchWallet],
     );
 
-    const menuItems = [
+    const menuItems: MenuItem[] = [
+        ...(canSwitch
+            ? [{
+                id: 'switchToOwner',
+                title: isArabic ? 'التبديل إلى وضع المالك' : 'Switch to owner mode',
+                shape: 'blue' as const,
+                icon: <SolarRefreshBold size={20} color="white" />,
+                action: () => switchTo('owner'),
+            }]
+            : []),
         {
             id: 'bookings',
             title: t('headers.bookings'),

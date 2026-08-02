@@ -297,10 +297,11 @@ export function LoginScreen() {
           code: otpCode,
           acceptedPolicies,
         }).unwrap();
-        const resolvedUserType =
-          result.user?.type === "provider" ? "owner" : "customer";
+        const accountType =
+          result.user?.type === "provider" ? "provider" : "customer";
 
-        if (isOwner && resolvedUserType !== "owner") {
+        // Owner mode needs an actual provider account behind it.
+        if (isOwner && accountType !== "provider") {
           Alert.alert(
             t("common.error"),
             "هذا الرقم غير مرتبط بحساب مالك. يرجى التسجيل كمالك أولاً.",
@@ -308,19 +309,28 @@ export function LoginScreen() {
           return;
         }
 
+        // The toggle decides where they land, not the account type — a chalet
+        // owner who picked "مستأجر" wants to browse and book, so send them to the
+        // tenant side. The customer API accepts a provider's token (every
+        // `customer/*` controller guards on JWT alone), and the switcher in
+        // either profile screen moves them back.
+        const mode = isOwner ? "owner" : "customer";
+
         dispatch(
           setCredentials({
             user: result.user,
             token: result.token,
-            userType: resolvedUserType,
+            userType: mode,
+            accountType,
           }),
         );
         logEvent(ANALYTICS_EVENTS.LOGIN, {
           method: "otp",
-          user_type: resolvedUserType,
+          user_type: mode,
+          account_type: accountType,
         });
         router.replace(
-          resolvedUserType === "owner"
+          mode === "owner"
             ? "/(tabs)/(dashboard)/home"
             : "/(tabs)/(customer)",
         );

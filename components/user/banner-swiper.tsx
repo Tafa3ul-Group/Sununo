@@ -8,9 +8,11 @@ import {
     FlatList,
     Image,
     StyleSheet,
+    TouchableOpacity,
     View
 } from 'react-native';
 import Animated, { LinearTransition } from 'react-native-reanimated';
+import { hasBannerLink } from '@/utils/banner-link';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SIDE_PADDING = normalize.width(16);
@@ -21,7 +23,14 @@ const BANNER_HEIGHT = (BANNER_WIDTH * 5) / 16;
 const SNAP_INTERVAL = BANNER_WIDTH + ITEM_GAP;
 const AUTO_PLAY_INTERVAL = 4000;
 
-export function BannerSwiper({ data }: { data?: any[] }) {
+export function BannerSwiper({
+  data,
+  onBannerPress,
+}: {
+  data?: any[];
+  /** Called when a banner with a link is tapped. */
+  onBannerPress?: (item: any) => void;
+}) {
   const displayData = data ?? [];
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
@@ -66,15 +75,27 @@ export function BannerSwiper({ data }: { data?: any[] }) {
     },
   ).current;
 
-  const renderItem = useCallback(({ item }: { item: any }) => (
-    <View style={styles.bannerContainer}>
-      <Image 
-        source={item.image ? getImageSrc(item.image) : item} 
-        style={styles.bannerImage} 
-        resizeMode="cover"
-      />
-    </View>
-  ), []);
+  const renderItem = useCallback(({ item }: { item: any }) => {
+    // Banners without a link stay inert rather than flashing press feedback
+    // that leads nowhere.
+    const tappable = !!onBannerPress && hasBannerLink(item?.link);
+    return (
+      <TouchableOpacity
+        style={styles.bannerContainer}
+        activeOpacity={tappable ? 0.85 : 1}
+        disabled={!tappable}
+        accessibilityRole={tappable ? 'link' : 'image'}
+        accessibilityLabel={item?.title}
+        onPress={() => onBannerPress?.(item)}
+      >
+        <Image
+          source={item.image ? getImageSrc(item.image) : item}
+          style={styles.bannerImage}
+          resizeMode="cover"
+        />
+      </TouchableOpacity>
+    );
+  }, [onBannerPress]);
 
   const ItemSeparator = useCallback(() => (
     <View style={{ width: ITEM_GAP }} />

@@ -11,7 +11,9 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectAccountType, switchMode } from '@/store/authSlice';
+import { resolveNotificationSection } from '@/utils/notification-section';
 
 interface Notification {
     id: string;
@@ -22,12 +24,15 @@ interface Notification {
     type: string;
     redirectType?: string;
     redirectId?: string;
+    redirectRole?: string;
 }
 
 export default function NotificationsScreen() {
     const { t } = useTranslation();
     const { isRTL, textAlign } = useDirection();
+    const dispatch = useDispatch();
     const { userType } = useSelector((state: RootState) => state.auth);
+    const accountType = useSelector(selectAccountType);
     const router = useRouter();
     const [page, setPage] = useState(1);
     const [markAsRead] = useMarkNotificationAsReadMutation();
@@ -40,9 +45,16 @@ export default function NotificationsScreen() {
             markAsRead(item.id).catch(() => {});
         }
 
-        // Navigate based on redirectType and userType
+        // The sender says which side this belongs to; switch there first or the
+        // destination's own guard bounces the tap straight back.
+        const target = resolveNotificationSection(item.redirectRole, userType, accountType);
+        if (target !== userType && userType !== 'guest') {
+            dispatch(switchMode(target));
+        }
+
+        // Navigate based on redirectType and the target section
         if (item.redirectType === 'booking' && item.redirectId) {
-            if (userType === 'owner') {
+            if (target === 'owner') {
                 router.push({ pathname: '/(dashboard)/booking-details', params: { id: item.redirectId } });
             } else {
                 router.push({ pathname: '/(tabs)/(customer)/booking-success', params: { id: item.redirectId } });
@@ -54,9 +66,9 @@ export default function NotificationsScreen() {
         } else if (item.redirectType === 'payout') {
             // Opens the in-app withdrawal confirmation (نعم/لا) screen.
             if (item.redirectId) router.push(`/payout-confirm/${item.redirectId}`);
-            else router.push('/(tabs)/(dashboard)/home');
+            else router.push(target === 'owner' ? '/(tabs)/(dashboard)/home' : '/(tabs)/(customer)/profile');
         }
-    }, [userType, router, markAsRead]);
+    }, [userType, accountType, dispatch, router, markAsRead]);
 
     const { data: response, isLoading, isFetching, refetch } = useGetNotificationsQuery({
         page,
