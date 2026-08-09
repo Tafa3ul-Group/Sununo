@@ -48,6 +48,13 @@ export function PayoutConfirmView({
   const destination = (() => {
     if (payout?.zainCash) return { label: t("payoutConfirm.zaincash"), value: payout.zainCash };
     if (payout?.qi) return { label: t("payoutConfirm.qi"), value: payout.qi };
+    if (payout?.bankAccount)
+      return {
+        label: payout.bankName
+          ? `${t("payoutConfirm.bank")} — ${payout.bankName}`
+          : t("payoutConfirm.bank"),
+        value: payout.bankAccount,
+      };
     if (payout?.otherMethod) return { label: t("payoutConfirm.other"), value: payout.otherMethod };
     return { label: "—", value: "—" };
   })();

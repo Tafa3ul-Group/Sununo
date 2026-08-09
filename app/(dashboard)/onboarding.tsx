@@ -63,7 +63,7 @@ export default function OwnerOnboardingScreen() {
   const chalets: any[] = chaletsResponse?.data || [];
   const latestChalet = chalets[0];
 
-  const paymentDone = !!(profileData?.zainCash || profileData?.qi);
+  const paymentDone = !!(profileData?.zainCash || profileData?.qi || profileData?.bankAccount);
   const paymentStatus: StepStatus = paymentDone ? 'done' : 'todo';
 
   let chaletStatus: StepStatus = 'todo';

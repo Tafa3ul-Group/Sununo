@@ -1,6 +1,5 @@
 import { LoginHeaderLogo } from "@/components/icons/login-header-logo";
 import { ThemedText } from "@/components/themed-text";
-import { AiTranslateButton } from "@/components/ui/ai-translate-button";
 import { CircleBackButton } from "@/components/ui/circle-back-button";
 import { AuthToggle } from "@/components/user/auth-toggle";
 import { OtpInput } from "@/components/user/otp-input";
@@ -20,7 +19,12 @@ import { setCredentials } from "@/store/authSlice";
 import { logEvent } from "@/services/analytics";
 import { ANALYTICS_EVENTS } from "@/constants/analytics-events";
 import { useDirection } from "@/i18n";
-import { validateQiCard, validateZainCash } from "@/utils/payment-validation";
+import {
+  validateBankAccount,
+  validateBankName,
+  validateQiCard,
+  validateZainCash,
+} from "@/utils/payment-validation";
 import { Image as ExpoImage } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
@@ -44,8 +48,10 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const zainCashLogo = require("@/assets/zaincash.png");
 const qiLogo = require("@/assets/qi.svg");
 
-// Task 2.1: Removed "TYPE" from Step type
-type Step = "INFO" | "BUSINESS" | "PAYMENT" | "OTP";
+// Registration never asks for chalet details: the account is created first and
+// the owner adds their chalet afterwards from the onboarding hub (add-chalet),
+// which is also where the chalet is submitted for approval.
+type Step = "INFO" | "PAYMENT" | "OTP";
 
 // Everyone agrees to these two before an account is created. They are shown as
 // a checkbox with tappable titles — the full text opens in a reader.
@@ -107,14 +113,16 @@ export default function RegisterScreen() {
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
-    businessNameAr: "",
-    businessNameEn: "",
     zainCash: "",
-    qi: "" });
+    qi: "",
+    bankName: "",
+    bankAccount: "" });
 
   const [payErrors, setPayErrors] = useState<{
     zainCash?: string | null;
     qi?: string | null;
+    bankName?: string | null;
+    bankAccount?: string | null;
     general?: string | null;
   }>({});
 
@@ -188,10 +196,10 @@ export default function RegisterScreen() {
   // Task 2.2: getStepInfo function
   const getStepInfo = () => {
     if (accountType === "owner") {
-      const map: Record<Step, number> = { INFO: 1, BUSINESS: 2, PAYMENT: 3, OTP: 4 };
-      return { current: map[step] || 1, total: 4 };
+      const map: Record<Step, number> = { INFO: 1, PAYMENT: 2, OTP: 3 };
+      return { current: map[step] || 1, total: 3 };
     } else {
-      const map: Record<Step, number> = { INFO: 1, BUSINESS: 1, PAYMENT: 1, OTP: 2 };
+      const map: Record<Step, number> = { INFO: 1, PAYMENT: 1, OTP: 2 };
       return { current: map[step] || 1, total: 2 };
     }
   };
@@ -236,35 +244,31 @@ export default function RegisterScreen() {
       setFormData(prev => {
         const updated = { ...prev, phone: cleanPhone };
         if (accountType === "owner") {
-          setStep("BUSINESS");
+          setStep("PAYMENT");
         } else {
           handleCustomerRegister(cleanPhone);
         }
         return updated;
       });
-    } else if (step === "BUSINESS") {
-      if (!formData.businessNameAr) {
-        Alert.alert(
-          t("common.error"),
-          isArabic ? "يرجى ملء اسم الشاليه" : "Please enter chalet name",
-        );
-        return;
-      }
-      setStep("PAYMENT");
     } else if (step === "PAYMENT") {
-      const hasAny = !!formData.zainCash.trim() || !!formData.qi.trim();
+      const hasAny =
+        !!formData.zainCash.trim() ||
+        !!formData.qi.trim() ||
+        !!formData.bankAccount.trim();
       if (!hasAny) {
         setPayErrors({
           general: isArabic
-            ? "أدخل وسيلة دفع واحدة على الأقل (زين كاش أو بطاقة كي)"
-            : "Enter at least one payout method (Zain Cash or Qi Card)",
+            ? "أدخل وسيلة دفع واحدة على الأقل (زين كاش أو بطاقة كي أو حساب بنكي)"
+            : "Enter at least one payout method (Zain Cash, Qi Card or a bank account)",
         });
         return;
       }
       const zErr = validateZainCash(formData.zainCash);
       const qErr = validateQiCard(formData.qi);
-      if (zErr || qErr) {
-        setPayErrors({ zainCash: zErr, qi: qErr, general: null });
+      const bnErr = validateBankName(formData.bankName, formData.bankAccount);
+      const baErr = validateBankAccount(formData.bankAccount, formData.bankName);
+      if (zErr || qErr || bnErr || baErr) {
+        setPayErrors({ zainCash: zErr, qi: qErr, bankName: bnErr, bankAccount: baErr, general: null });
         return;
       }
       setPayErrors({});
@@ -275,8 +279,7 @@ export default function RegisterScreen() {
   // Task 2.1: Updated prevStep — INFO is now the first step
   const prevStep = () => {
     if (step === "INFO") router.back();
-    else if (step === "BUSINESS") setStep("INFO");
-    else if (step === "PAYMENT") setStep("BUSINESS");
+    else if (step === "PAYMENT") setStep("INFO");
     else if (step === "OTP") {
       if (accountType === "owner") setStep("PAYMENT");
       else setStep("INFO");
@@ -308,9 +311,6 @@ export default function RegisterScreen() {
       const payload: any = {
         phone: phoneToUse,
         name: formData.name,
-        businessName: {
-          ar: formData.businessNameAr,
-          en: formData.businessNameEn || formData.businessNameAr },
         // Owners consent to all three documents; the server rejects the
         // registration outright if any of them is missing or out of date.
         acceptedPolicies: acceptedPayload([...APP_POLICIES, OWNER_POLICY]) };
@@ -319,6 +319,10 @@ export default function RegisterScreen() {
       }
       if (formData.qi.trim()) {
         payload.qi = formData.qi.trim().replace(/[\s\-\(\)]/g, "");
+      }
+      if (formData.bankAccount.trim()) {
+        payload.bankName = formData.bankName.trim();
+        payload.bankAccount = formData.bankAccount.trim().replace(/[\s\-]/g, "");
       }
       const res = await registerProvider(payload).unwrap();
       // Auto-fill OTP code if returned in response (dev/staging env)
@@ -419,9 +423,13 @@ export default function RegisterScreen() {
   // The payment step can only advance once at least one payout method is filled
   // in AND passes validation.
   const isPaymentStepValid =
-    (!!formData.zainCash.trim() || !!formData.qi.trim()) &&
+    (!!formData.zainCash.trim() ||
+      !!formData.qi.trim() ||
+      !!formData.bankAccount.trim()) &&
     !validateZainCash(formData.zainCash) &&
-    !validateQiCard(formData.qi);
+    !validateQiCard(formData.qi) &&
+    !validateBankName(formData.bankName, formData.bankAccount) &&
+    !validateBankAccount(formData.bankAccount, formData.bankName);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -661,93 +669,6 @@ export default function RegisterScreen() {
             </View>
           )}
 
-          {step === "BUSINESS" && (
-            <View style={styles.stepContainer}>
-              {/* Task 2.2: StepProgress at the top */}
-              <StepProgress {...getStepInfo()} />
-
-              <ThemedText
-                style={[
-                  styles.stepTitle,
-                  { textAlign },
-                ]}
-              >
-                {isArabic ? "معلومات الشاليه" : "Chalet Information"}
-              </ThemedText>
-
-              <View style={styles.inputGroup}>
-                <ThemedText
-                  style={[
-                    styles.label,
-                    { textAlign },
-                  ]}
-                >
-                  {isArabic
-                    ? "اسم الشاليه (بالعربية) *"
-                    : "Chalet Name (Arabic) *"}
-                </ThemedText>
-                <TextInput
-                  style={[
-                    styles.input,
-                    { textAlign: inputTextAlign },
-                  ]}
-                  placeholder={
-                    isArabic ? "مثلاً: شاليه النخيل" : "e.g. Al Nakheel Chalet"
-                  }
-                  value={formData.businessNameAr}
-                  onChangeText={(val) =>
-                    setFormData({ ...formData, businessNameAr: val })
-                  }
-                  placeholderTextColor="#94A3B8"
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <View style={styles.labelRow}>
-                  <ThemedText
-                    style={[
-                      styles.label,
-                      { textAlign, marginBottom: 0, flex: 1 },
-                    ]}
-                  >
-                    {isArabic
-                      ? "اسم الشاليه (بالانجليزية)"
-                      : "Chalet Name (English)"}
-                  </ThemedText>
-                  <AiTranslateButton
-                    source={formData.businessNameAr}
-                    onTranslated={(en) =>
-                      setFormData((prev) => ({ ...prev, businessNameEn: en }))
-                    }
-                  />
-                </View>
-                <TextInput
-                  style={[
-                    styles.input,
-                    { textAlign: inputTextAlign },
-                  ]}
-                  placeholder={
-                    isArabic
-                      ? "مثلاً: Al Nakheel Chalet"
-                      : "e.g. Al Nakheel Chalet"
-                  }
-                  value={formData.businessNameEn}
-                  onChangeText={(val) =>
-                    setFormData({ ...formData, businessNameEn: val })
-                  }
-                  placeholderTextColor="#94A3B8"
-                />
-              </View>
-
-              <PrimaryButton
-                label={isArabic ? "التالي" : "Next"}
-                onPress={nextStep}
-                style={styles.mainBtn}
-                activeColor="#0061FE"
-              />
-            </View>
-          )}
-
           {step === "PAYMENT" && (
             <View style={styles.stepContainer}>
               <StepProgress {...getStepInfo()} />
@@ -760,8 +681,8 @@ export default function RegisterScreen() {
                 style={[styles.paymentHint, { textAlign }]}
               >
                 {isArabic
-                  ? "أدخل وسيلة استلام مستحقاتك. مطلوب واحدة على الأقل (زين كاش أو بطاقة كي)."
-                  : "Enter where you'll receive your payouts. At least one is required (Zain Cash or Qi Card)."}
+                  ? "أدخل وسيلة استلام مستحقاتك. مطلوب واحدة على الأقل (زين كاش أو بطاقة كي أو حساب بنكي)."
+                  : "Enter where you'll receive your payouts. At least one is required (Zain Cash, Qi Card or a bank account)."}
               </ThemedText>
 
               <View style={styles.inputGroup}>
@@ -832,6 +753,74 @@ export default function RegisterScreen() {
                 {!!payErrors.qi && (
                   <ThemedText style={[styles.errorText, { textAlign }]}>
                     {payErrors.qi}
+                  </ThemedText>
+                )}
+              </View>
+
+              {/* Bank transfer — the two fields are filled together, since the
+                  admin cannot send money to an account number without knowing
+                  the bank. */}
+              <View style={styles.inputGroup}>
+                <ThemedText style={[styles.label, { textAlign }]}>
+                  {isArabic ? "اسم المصرف" : "Bank Name"}
+                </ThemedText>
+                <TextInput
+                  style={[
+                    styles.input,
+                    { textAlign: inputTextAlign },
+                    payErrors.bankName ? styles.inputError : null,
+                  ]}
+                  placeholder={
+                    isArabic ? "مثلاً: مصرف الرافدين" : "e.g. Al-Rafidain Bank"
+                  }
+                  value={formData.bankName}
+                  onChangeText={(val) => {
+                    setFormData({ ...formData, bankName: val });
+                    setPayErrors((prev) => ({
+                      ...prev,
+                      bankName: validateBankName(val, formData.bankAccount),
+                      bankAccount: validateBankAccount(formData.bankAccount, val),
+                      general: null,
+                    }));
+                  }}
+                  placeholderTextColor="#94A3B8"
+                />
+                {!!payErrors.bankName && (
+                  <ThemedText style={[styles.errorText, { textAlign }]}>
+                    {payErrors.bankName}
+                  </ThemedText>
+                )}
+              </View>
+
+              <View style={styles.inputGroup}>
+                <ThemedText style={[styles.label, { textAlign }]}>
+                  {isArabic ? "رقم الحساب / الآيبان" : "Account Number / IBAN"}
+                </ThemedText>
+                <TextInput
+                  style={[
+                    styles.input,
+                    // Account numbers are always LTR, aligned to the start side.
+                    { textAlign: inputTextAlign, writingDirection: "ltr" },
+                    payErrors.bankAccount ? styles.inputError : null,
+                  ]}
+                  placeholder="IQ98NBIQ850123456789012"
+                  autoCapitalize="characters"
+                  autoCorrect={false}
+                  value={formData.bankAccount}
+                  onChangeText={(val) => {
+                    setFormData({ ...formData, bankAccount: val });
+                    setPayErrors((prev) => ({
+                      ...prev,
+                      bankAccount: validateBankAccount(val, formData.bankName),
+                      bankName: validateBankName(formData.bankName, val),
+                      general: null,
+                    }));
+                  }}
+                  placeholderTextColor="#94A3B8"
+                />
+                {!!payErrors.bankAccount && (
+                  <ThemedText style={[styles.errorText, { textAlign }]}>
+                    {payErrors.bankAccount}
                   </ThemedText>
                 )}
               </View>
@@ -982,12 +971,6 @@ const styles = StyleSheet.create({
   // Task 2.4: inputGroup marginBottom changed from normalize.height(20) to 16
   inputGroup: {
     marginBottom: 16 },
-  labelRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 8,
-    marginBottom: normalize.height(8) },
   label: {
     width: "100%",
     fontSize: normalize.font(14),

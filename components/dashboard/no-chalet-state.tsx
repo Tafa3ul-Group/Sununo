@@ -30,7 +30,7 @@ export function NoChaletState() {
 
   const { data: profile } = useGetProviderProfileQuery(undefined);
   const profileData: any = profile?.data || profile;
-  const paymentDone = !!(profileData?.zainCash || profileData?.qi);
+  const paymentDone = !!(profileData?.zainCash || profileData?.qi || profileData?.bankAccount);
 
   const Chevron = isRTL ? SolarAltArrowLeftBold : SolarAltArrowRightBold;
 

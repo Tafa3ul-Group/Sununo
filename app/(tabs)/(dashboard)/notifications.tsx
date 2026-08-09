@@ -117,7 +117,10 @@ export default function NotificationsScreen() {
                 <View style={[styles.headerInner, { flexDirection: 'row' }]}>
                     <ThemedText style={styles.headerTitle}>{t('headers.notifications')}</ThemedText>
                     <CircleBackButton
-                        style={[styles.backButton, { end: 0 }]}
+                        // The back button belongs on the start side (right in
+                        // Arabic) — matching every other header and the
+                        // direction its arrow points.
+                        style={[styles.backButton, { start: 0 }]}
                         onPress={() => router.back()}
                     />
                 </View>

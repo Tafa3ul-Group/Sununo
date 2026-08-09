@@ -42,7 +42,7 @@ export function OnboardingBanner() {
   const chalets: any[] = chaletsResponse?.data || [];
   const latest = chalets[0];
 
-  const paymentDone = !!(profileData?.zainCash || profileData?.qi);
+  const paymentDone = !!(profileData?.zainCash || profileData?.qi || profileData?.bankAccount);
   const setupIncomplete = !paymentDone || chalets.length === 0;
 
   let variant: Variant | null = null;

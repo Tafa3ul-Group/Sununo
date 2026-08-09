@@ -1,7 +1,8 @@
 /**
- * Shared client-side validation for owner payout accounts (Zain Cash / Qi Card).
- * Used by both the registration flow and the payout-details screen so the two
- * stay in lockstep. Returns an Arabic error message, or null when valid/empty.
+ * Shared client-side validation for owner payout accounts (Zain Cash / Qi Card /
+ * bank account). Used by both the registration flow and the payout-details
+ * screen so the two stay in lockstep. Returns an Arabic error message, or null
+ * when valid/empty.
  */
 
 export function validateZainCash(text: string): string | null {
@@ -47,6 +48,37 @@ export function validateQiCard(text: string): string | null {
   const clean = text.replace(/[\s\-\(\)]/g, "");
   if (!/^\d{10}$/.test(clean)) {
     return "يجب أن يتكون رقم بطاقة كي من 10 أرقام";
+  }
+  return null;
+}
+
+// The two bank fields validate as a pair: an account number is useless to the
+// admin without the bank it belongs to, and vice versa. Mirrors the API, which
+// accepts 6-34 letters/digits (an IBAN or a plain account number).
+export function validateBankName(text: string, account?: string): string | null {
+  const clean = text.trim();
+  if (!clean) {
+    return account && account.trim() ? "يرجى إدخال اسم المصرف" : null;
+  }
+  if (clean.length < 2) {
+    return "اسم المصرف قصير جداً";
+  }
+  if (clean.length > 100) {
+    return "اسم المصرف طويل جداً";
+  }
+  return null;
+}
+
+export function validateBankAccount(text: string, bankName?: string): string | null {
+  const clean = text.replace(/[\s\-]/g, "");
+  if (!clean) {
+    return bankName && bankName.trim() ? "يرجى إدخال رقم الحساب أو الآيبان" : null;
+  }
+  if (!/^[A-Za-z0-9]+$/.test(clean)) {
+    return "يجب أن يحتوي رقم الحساب على أرقام وحروف إنجليزية فقط";
+  }
+  if (clean.length < 6 || clean.length > 34) {
+    return "رقم الحساب يجب أن يكون بين 6 و 34 خانة";
   }
   return null;
 }

@@ -24,7 +24,12 @@ import Toast from 'react-native-toast-message';
 import { Image } from 'expo-image';
 import { PrimaryButton } from '@/components/user/primary-button';
 
-import { validateQiCard, validateZainCash } from '@/utils/payment-validation';
+import {
+    validateBankAccount,
+    validateBankName,
+    validateQiCard,
+    validateZainCash,
+} from '@/utils/payment-validation';
 
 const zainCashLogo = require('@/assets/zaincash.png');
 const qiLogo = require('@/assets/qi.svg');
@@ -39,10 +44,17 @@ export default function ProviderProfileScreen() {
 
   const [formData, setFormData] = useState({
     zainCash: '',
-    qi: ''
+    qi: '',
+    bankName: '',
+    bankAccount: ''
   });
 
-  const [errors, setErrors] = useState<{ zainCash?: string | null; qi?: string | null }>({});
+  const [errors, setErrors] = useState<{
+    zainCash?: string | null;
+    qi?: string | null;
+    bankName?: string | null;
+    bankAccount?: string | null;
+  }>({});
 
   const profileData = profile?.data || profile;
 
@@ -50,7 +62,9 @@ export default function ProviderProfileScreen() {
     if (profileData) {
       setFormData({
         zainCash: profileData.zainCash || '',
-        qi: profileData.qi || ''
+        qi: profileData.qi || '',
+        bankName: profileData.bankName || '',
+        bankAccount: profileData.bankAccount || ''
       });
     }
   }, [profileData]);
@@ -58,11 +72,15 @@ export default function ProviderProfileScreen() {
   const handleSave = async () => {
     const zainCashErr = validateZainCash(formData.zainCash);
     const qiErr = validateQiCard(formData.qi);
+    const bankNameErr = validateBankName(formData.bankName, formData.bankAccount);
+    const bankAccountErr = validateBankAccount(formData.bankAccount, formData.bankName);
 
-    if (zainCashErr || qiErr) {
+    if (zainCashErr || qiErr || bankNameErr || bankAccountErr) {
       setErrors({
         zainCash: zainCashErr,
-        qi: qiErr
+        qi: qiErr,
+        bankName: bankNameErr,
+        bankAccount: bankAccountErr
       });
       Toast.show({
         type: 'error',
@@ -82,6 +100,9 @@ export default function ProviderProfileScreen() {
       await updateProfile({
         zainCash: clean(formData.zainCash),
         qi: clean(formData.qi),
+        // The bank name is a real name, not a number — only trim it.
+        bankName: formData.bankName.trim(),
+        bankAccount: clean(formData.bankAccount),
       }).unwrap();
       Toast.show({
         type: 'success',
@@ -143,6 +164,20 @@ export default function ProviderProfileScreen() {
               setErrors(prev => ({ ...prev, zainCash: validateZainCash(text) }));
             } else if (key === 'qi') {
               setErrors(prev => ({ ...prev, qi: validateQiCard(text) }));
+            } else if (key === 'bankName') {
+              // The bank pair validates together: filling one field makes the
+              // other required, so re-check both on every keystroke.
+              setErrors(prev => ({
+                ...prev,
+                bankName: validateBankName(text, formData.bankAccount),
+                bankAccount: validateBankAccount(formData.bankAccount, text),
+              }));
+            } else if (key === 'bankAccount') {
+              setErrors(prev => ({
+                ...prev,
+                bankAccount: validateBankAccount(text, formData.bankName),
+                bankName: validateBankName(formData.bankName, text),
+              }));
             }
           }}
           placeholder={placeholder}
@@ -183,8 +218,8 @@ export default function ProviderProfileScreen() {
             </View>
             <ThemedText style={[styles.warningText, { textAlign }]}>
               {isArabic 
-                ? 'يرجى التأكد من صحة رقم زين كاش ورقم بطاقة كي بدقة. أي خطأ في هذه البيانات قد يؤدي إلى فشل تحويل مستحقاتك المالية أو إرسالها إلى حساب آخر.'
-                : 'Please verify your Zain Cash and Qi Card numbers carefully. Any incorrect details may lead to payout failures or sending funds to the wrong account.'}
+                ? 'يرجى التأكد من صحة رقم زين كاش ورقم بطاقة كي وحسابك البنكي بدقة. أي خطأ في هذه البيانات قد يؤدي إلى فشل تحويل مستحقاتك المالية أو إرسالها إلى حساب آخر.'
+                : 'Please verify your Zain Cash, Qi Card and bank account details carefully. Any incorrect details may lead to payout failures or sending funds to the wrong account.'}
             </ThemedText>
           </View>
 
@@ -206,6 +241,24 @@ export default function ProviderProfileScreen() {
               isArabic ? 'رقم البطاقة المكون من 10 أرقام' : '10-digit card number',
               errors.qi,
               'numeric'
+            )}
+            {renderField(
+              isArabic ? 'اسم المصرف' : 'Bank Name',
+              formData.bankName,
+              'bankName',
+              null,
+              isArabic ? 'مثلاً: مصرف الرافدين' : 'e.g. Al-Rafidain Bank',
+              errors.bankName,
+              'default'
+            )}
+            {renderField(
+              isArabic ? 'رقم الحساب / الآيبان' : 'Account Number / IBAN',
+              formData.bankAccount,
+              'bankAccount',
+              null,
+              'IQ98NBIQ850123456789012',
+              errors.bankAccount,
+              'default'
             )}
           </View>
 

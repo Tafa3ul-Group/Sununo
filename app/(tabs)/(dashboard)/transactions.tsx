@@ -89,12 +89,17 @@ export default function TransactionsScreen() {
     const statusColor = getStatusColor(item.status);
     const statusBg = getStatusBg(item.status);
 
-    // Destination account the payout is sent to (ZainCash or Qi).
+    // Destination account the payout is sent to (ZainCash, Qi or a bank).
     const dest = item.zainCash
       ? { label: isRTL ? 'زين كاش' : 'ZainCash', value: item.zainCash }
       : item.qi
         ? { label: isRTL ? 'Qi كارت' : 'Qi Card', value: item.qi }
-        : null;
+        : item.bankAccount
+          ? {
+              label: item.bankName || (isRTL ? 'حساب بنكي' : 'Bank account'),
+              value: item.bankAccount,
+            }
+          : null;
 
     return (
       <TouchableOpacity style={styles.transactionItem} activeOpacity={0.7}>

@@ -376,6 +376,7 @@
     "accountLabel": "Account / wallet number",
     "zaincash": "Zain Cash",
     "qi": "Qi Card",
+    "bank": "Bank account",
     "other": "Other",
     "securityNote": "For your security, the withdrawal will not be processed until you confirm. If you did not request this, tap \"No\" immediately.",
     "prompt": "Are the transfer details above correct?",

@@ -398,26 +398,6 @@ export function LoginScreen() {
               <ThemedText style={[styles.title, { textAlign }]}>
                 {t("auth.login")}
               </ThemedText>
-              <View style={[styles.subtextRow, { flexDirection: 'row' }]}>
-                <ThemedText style={styles.subtitle}>
-                  {isOwner
-                    ? isArabic
-                      ? "مالك جديد؟"
-                      : "New owner?"
-                    : t("auth.dontHaveAccount")}
-                </ThemedText>
-                <TouchableOpacity
-                  onPress={() => router.push(`/register?type=${localUserType}`)}
-                >
-                  <ThemedText style={[styles.linkText, linkMargin]}>
-                    {isOwner
-                      ? isArabic
-                        ? "سجّل شاليهك"
-                        : "Register your chalet"
-                      : t("auth.registerNow")}
-                  </ThemedText>
-                </TouchableOpacity>
-              </View>
             </View>
 
             {step === "phone" ? (
@@ -526,6 +506,29 @@ export function LoginScreen() {
                 </View>
               </View>
             )}
+
+            {/* Sign-up prompt sits under the form fields, right above the
+                primary action — not competing with the screen title. */}
+            <View style={[styles.subtextRow, { flexDirection: 'row' }]}>
+              <ThemedText style={styles.subtitle}>
+                {isOwner
+                  ? isArabic
+                    ? "مالك جديد؟"
+                    : "New owner?"
+                  : t("auth.dontHaveAccount")}
+              </ThemedText>
+              <TouchableOpacity
+                onPress={() => router.push(`/register?type=${localUserType}`)}
+              >
+                <ThemedText style={[styles.linkText, linkMargin]}>
+                  {isOwner
+                    ? isArabic
+                      ? "سجّل شاليهك"
+                      : "Register your chalet"
+                    : t("auth.registerNow")}
+                </ThemedText>
+              </TouchableOpacity>
+            </View>
 
             {step === "phone" ? (
               <PrimaryButton
@@ -649,6 +652,9 @@ const styles = StyleSheet.create({
   },
   subtextRow: {
     alignItems: "center",
+    justifyContent: "center",
+    // The group above already carries its own bottom margin.
+    marginTop: 0,
   },
   subtitle: {
     fontSize: normalize.font(14),
