@@ -26,6 +26,7 @@ import { PaymentConfirmationSheet, PaymentConfirmationSheetRef } from '@/compone
 
 import { ErrorState } from '@/components/ui/error-state';
 import { CountdownBadge } from '@/components/dashboard/countdown-badge';
+import { useCountdown } from '@/hooks/useCountdown';
 
 export default function BookingDetailsPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -50,6 +51,15 @@ export default function BookingDetailsPage() {
   const { data: bookingDetailsData, isLoading, error, refetch } = useGetProviderBookingDetailsQuery(id as string, { skip: !id });
 
   const data = bookingDetailsData?.data || bookingDetailsData;
+
+  // The owner's window to accept a request, from the same inputs the countdown
+  // card renders. Computed here — above the loading/error returns, since hooks
+  // cannot run conditionally — so the footer and the card can never disagree
+  // about whether the window has closed.
+  const { isExpired: isApprovalExpired } = useCountdown(
+    data?.createdAt,
+    data?.chalet?.dailyHours || 1,
+  );
 
   const handleApproveBooking = () => {
     // Approving starts the customer's payment clock, so surface the window the
@@ -529,6 +539,16 @@ export default function BookingDetailsPage() {
               isActive={true}
               height={50}
               style={styles.cancelButton}
+            />
+          ) : data.status === 'pending_approval' && isApprovalExpired ? (
+            /* The acceptance window closed → no decision is on offer any more,
+               so neither action is shown; the footer only states that. */
+            <PrimaryButton
+              label={isRTL ? 'انتهى وقت القبول' : 'Approval time expired'}
+              onPress={() => { }}
+              height={60}
+              style={styles.payButton}
+              disabled={true}
             />
           ) : data.status === 'pending_approval' ? (
             /* Request awaiting owner decision → approve or reject */

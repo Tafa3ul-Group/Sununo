@@ -3,7 +3,7 @@ import * as Theme from "@/constants/theme";
 import { useDirection } from "@/i18n";
 import { Image } from "expo-image";
 import * as Location from "expo-location";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -43,6 +43,46 @@ interface MarkerData {
   image: string;
   coordinates: [number, number];
   [key: string]: any;
+}
+
+// ── Marker clustering ──────────────────────────────────────────────────────
+// Chalets in the same compound/street land on top of each other, so a tap used
+// to be a coin-flip over which listing opened. Instead we merge them into one
+// bubble and let the tap OPEN the group: zoom in far enough to separate them,
+// or — when they sit on the exact same point and no zoom can ever split them —
+// fan them out around the anchor so each one is still pickable.
+const TILE_SIZE = 512; // Mapbox GL world tile size
+const CLUSTER_RADIUS_PX = 64; // markers closer than this merge
+const SPIDER_RADIUS_PX = 84; // fan-out radius for un-separable groups
+const MAX_SEPARATION_ZOOM = 19; // past this, zooming stops helping
+
+/** Geographic coordinate → Web-Mercator pixel at a given zoom. */
+const projectPx = (lng: number, lat: number, zoom: number) => {
+  const scale = TILE_SIZE * Math.pow(2, zoom);
+  const s = Math.max(-0.9999, Math.min(0.9999, Math.sin((lat * Math.PI) / 180)));
+  return {
+    x: ((lng + 180) / 360) * scale,
+    y: (0.5 - Math.log((1 + s) / (1 - s)) / (4 * Math.PI)) * scale,
+  };
+};
+
+/** Web-Mercator pixel → geographic coordinate at a given zoom. */
+const unprojectPx = (x: number, y: number, zoom: number): [number, number] => {
+  const scale = TILE_SIZE * Math.pow(2, zoom);
+  const n = Math.PI - (2 * Math.PI * y) / scale;
+  return [
+    (x / scale) * 360 - 180,
+    (180 / Math.PI) * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n))),
+  ];
+};
+
+interface Cluster {
+  id: string;
+  members: MarkerData[];
+  center: [number, number];
+  centerPx: { x: number; y: number };
+  /** Widest pixel gap inside the group — 0 means identical coordinates. */
+  spreadPx: number;
 }
 
 interface AppMapProps {
@@ -85,6 +125,34 @@ const AppMapComponent = ({
   const [loading, setLoading] = useState(true);
   const [hasNativeMap, setHasNativeMap] = useState(false);
   const cameraRef = React.useRef<any>(null);
+
+  // Zoom the clustering math is computed against. It MUST come from the map
+  // itself: the `zoomLevel` prop is only a request (the parent sets 15 while the
+  // camera actually sits at 19), and onMapIdle doesn't reliably carry the zoom.
+  // Reading the wrong zoom made every group look glued together and made the
+  // "zoom in to separate" target land on the zoom we were already at.
+  const [clusterZoom, setClusterZoom] = useState(zoomLevel);
+  const liveZoomRef = React.useRef(zoomLevel);
+  const clusterZoomRef = React.useRef(zoomLevel);
+  const [expandedClusterId, setExpandedClusterId] = useState<string | null>(
+    null,
+  );
+
+  // Fires continuously while the camera moves. The ref is always exact; the
+  // state re-renders only every 0.2 zoom levels so gestures stay smooth.
+  const handleNativeCameraChanged = useCallback((state: any) => {
+    const z = state?.properties?.zoom;
+    if (typeof z !== "number" || isNaN(z)) return;
+    liveZoomRef.current = z;
+    if (Math.abs(clusterZoomRef.current - z) < 0.2) return;
+    clusterZoomRef.current = z;
+    setClusterZoom(z);
+    // A fanned-out group is laid out in pixels at a fixed zoom, so only a ZOOM
+    // change invalidates it. Panning keeps it correct (the pins are anchored to
+    // real coordinates), and collapsing on every onMapIdle was wrong — Mapbox
+    // fires idle after a plain tap too, which killed the fan-out instantly.
+    setExpandedClusterId(null);
+  }, []);
 
   const pulseScale = useSharedValue(1);
   const pulseOpacity = useSharedValue(0.4);
@@ -144,6 +212,7 @@ const AppMapComponent = ({
   }, []);
 
   const handlePress = useCallback(() => {
+    setExpandedClusterId(null);
     onPress?.();
   }, [onPress]);
 
@@ -161,6 +230,110 @@ const AppMapComponent = ({
       }
     },
     [onCameraChanged],
+  );
+
+  // Group markers that would land within CLUSTER_RADIUS_PX of each other at the
+  // current zoom. Greedy single-pass — plenty for the ~100 markers MarkerView
+  // can carry, and it re-runs only when the marker set or the zoom changes.
+  const clusters = useMemo<Cluster[]>(() => {
+    const list = (markers || []).filter(
+      (m) =>
+        Array.isArray(m.coordinates) &&
+        !isNaN(m.coordinates[0]) &&
+        !isNaN(m.coordinates[1]),
+    );
+    if (!list.length) return [];
+
+    const pts = list.map((m) => ({
+      m,
+      p: projectPx(m.coordinates[0], m.coordinates[1], clusterZoom),
+    }));
+    const taken = new Array(pts.length).fill(false);
+    const result: Cluster[] = [];
+
+    for (let i = 0; i < pts.length; i++) {
+      if (taken[i]) continue;
+      taken[i] = true;
+      const group = [pts[i]];
+
+      for (let j = i + 1; j < pts.length; j++) {
+        if (taken[j]) continue;
+        const d = Math.hypot(pts[j].p.x - pts[i].p.x, pts[j].p.y - pts[i].p.y);
+        if (d <= CLUSTER_RADIUS_PX) {
+          taken[j] = true;
+          group.push(pts[j]);
+        }
+      }
+
+      const cx = group.reduce((s, g) => s + g.p.x, 0) / group.length;
+      const cy = group.reduce((s, g) => s + g.p.y, 0) / group.length;
+
+      let spreadPx = 0;
+      for (let a = 0; a < group.length; a++) {
+        for (let b = a + 1; b < group.length; b++) {
+          spreadPx = Math.max(
+            spreadPx,
+            Math.hypot(
+              group[a].p.x - group[b].p.x,
+              group[a].p.y - group[b].p.y,
+            ),
+          );
+        }
+      }
+
+      result.push({
+        id: group.map((g) => g.m.id).join("+"),
+        members: group.map((g) => g.m),
+        center: unprojectPx(cx, cy, clusterZoom),
+        centerPx: { x: cx, y: cy },
+        spreadPx,
+      });
+    }
+
+    return result;
+  }, [markers, clusterZoom]);
+
+  const handleClusterPress = useCallback(
+    (cluster: Cluster) => {
+      if (cluster.members.length === 1) {
+        onSelectMarker?.(cluster.members[0]);
+        return;
+      }
+
+      // spreadPx was measured at clusterZoom; rescale it to where the camera
+      // actually is right now before deciding anything.
+      const zoomNow = liveZoomRef.current;
+      const spreadNow =
+        cluster.spreadPx * Math.pow(2, zoomNow - clusterZoom);
+
+      // Zoom exactly far enough to pull the group apart, when that's reachable.
+      if (spreadNow > 0.5) {
+        const needed =
+          zoomNow + Math.log2((CLUSTER_RADIUS_PX * 1.8) / spreadNow);
+        if (needed <= MAX_SEPARATION_ZOOM) {
+          cameraRef.current?.setCamera({
+            centerCoordinate: cluster.center,
+            zoomLevel: Math.max(needed, zoomNow + 1),
+            animationDuration: 600,
+          });
+          return;
+        }
+      }
+
+      // Same point (or too tight for any zoom) — fan them out instead.
+      setExpandedClusterId(cluster.id);
+    },
+    [clusterZoom, onSelectMarker],
+  );
+
+  const markerTitleOf = useCallback(
+    (marker: MarkerData) =>
+      typeof marker.title === "object"
+        ? isRTL
+          ? marker.title.ar
+          : marker.title.en
+        : marker.title,
+    [isRTL],
   );
 
   // Automatically fit map to markers when they load
@@ -334,6 +507,7 @@ const AppMapComponent = ({
         onPress={handlePress}
         onMapLoadingError={handleMapLoadingError}
         onMapIdle={handleMapIdle}
+        onCameraChanged={handleNativeCameraChanged}
       >
         {/* Immersive 3D Buildings - Temporarily disabled for debugging route */}
         {/*
@@ -432,39 +606,96 @@ const AppMapComponent = ({
           </Mapbox.MarkerView>
         )}
 
-        {/* Render all active markers */}
-        {markers.map((marker) => (
-          <Mapbox.MarkerView
-            key={marker.id}
-            id={marker.id}
-            coordinate={marker.coordinates}
-            anchor={{ x: 0.5, y: 0.5 }}
-          >
-            <TouchableOpacity
-              activeOpacity={0.9}
-              onPress={() => {
-                onSelectMarker?.(marker);
-              }}
-              style={styles.customMarkerUI}
+        {/* Render all active markers, grouped by proximity */}
+        {clusters.map((cluster) => {
+          // Expanded group: each member fanned out around the shared anchor so
+          // co-located chalets become individually tappable.
+          if (expandedClusterId === cluster.id && cluster.members.length > 1) {
+            return cluster.members.map((member, index) => {
+              const angle =
+                (2 * Math.PI * index) / cluster.members.length - Math.PI / 2;
+              const coordinate = unprojectPx(
+                cluster.centerPx.x + Math.cos(angle) * SPIDER_RADIUS_PX,
+                cluster.centerPx.y + Math.sin(angle) * SPIDER_RADIUS_PX,
+                clusterZoom,
+              );
+              return (
+                <Mapbox.MarkerView
+                  key={`${cluster.id}:${member.id}`}
+                  id={`${cluster.id}:${member.id}`}
+                  coordinate={coordinate}
+                  anchor={{ x: 0.5, y: 0.5 }}
+                  allowOverlap
+                >
+                  <TouchableOpacity
+                    activeOpacity={0.9}
+                    onPress={() => onSelectMarker?.(member)}
+                    style={styles.customMarkerUI}
+                  >
+                    <View style={styles.markerCircle}>
+                      <Image
+                        source={member.image}
+                        style={styles.markerImage}
+                        contentFit="cover"
+                        transition={300}
+                      />
+                    </View>
+                    <ThemedText style={styles.markerTitle}>
+                      {markerTitleOf(member)}
+                    </ThemedText>
+                  </TouchableOpacity>
+                </Mapbox.MarkerView>
+              );
+            });
+          }
+
+          const head = cluster.members[0];
+          const count = cluster.members.length;
+
+          return (
+            <Mapbox.MarkerView
+              key={cluster.id}
+              id={cluster.id}
+              coordinate={cluster.center}
+              anchor={{ x: 0.5, y: 0.5 }}
+              // Without this, Mapbox silently DROPS any marker that overlaps one
+              // already drawn — chalets one street apart just vanish from the
+              // map. Clutter is recoverable (zoom in), a missing listing is not.
+              allowOverlap
             >
-              <View style={styles.markerCircle}>
-                <Image
-                  source={marker.image}
-                  style={styles.markerImage}
-                  contentFit="cover"
-                  transition={300}
-                />
-              </View>
-              <ThemedText style={styles.markerTitle}>
-                {typeof marker.title === "object"
-                  ? isRTL
-                    ? marker.title.ar
-                    : marker.title.en
-                  : marker.title}
-              </ThemedText>
-            </TouchableOpacity>
-          </Mapbox.MarkerView>
-        ))}
+              <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={() => handleClusterPress(cluster)}
+                style={styles.customMarkerUI}
+              >
+                <View>
+                  <View style={styles.markerCircle}>
+                    <Image
+                      source={head.image}
+                      style={styles.markerImage}
+                      contentFit="cover"
+                      transition={300}
+                    />
+                  </View>
+                  {count > 1 && (
+                    <View style={styles.clusterBadge}>
+                      <ThemedText style={styles.clusterBadgeText}>
+                        {count}
+                      </ThemedText>
+                    </View>
+                  )}
+                </View>
+                <ThemedText style={styles.markerTitle}>
+                  {count > 1
+                    ? isRTL
+                      ? `${count} شاليهات`
+                      : `${count} chalets`
+                    : markerTitleOf(head)}
+                </ThemedText>
+              </TouchableOpacity>
+            </Mapbox.MarkerView>
+          );
+        })}
 
         {/* Route Source - Moved to bottom for max z-index */}
         {routeShape && (
@@ -502,7 +733,21 @@ const styles = StyleSheet.create({
     overflow: "hidden"
   },
   map: {
-    flex: 1
+    flex: 1,
+    // MUST stay 'ltr' — the one deliberate exception to the app-wide `direction`
+    // contract (docs/RTL.md). In Arabic the root sets `direction: 'rtl'`, and on
+    // Android Fabric pushes that down as a native
+    // `View.setLayoutDirection(LAYOUT_DIRECTION_RTL)` onto RNMBXMapView, which
+    // Mapbox's internal MapView + its view-annotation FrameLayout inherit.
+    // MarkerViews are positioned with `setTranslationX/Y` ON TOP OF that
+    // FrameLayout's own layout pass, whose default child gravity (TOP|START)
+    // resolves to TOP|RIGHT under RTL — so every marker is laid out from the
+    // right edge first and ends up displaced horizontally by ~(mapWidth -
+    // markerWidth). Latitude/Y stays correct, longitude/X does not: chalets
+    // render hundreds of km east of where they are. iOS positions annotation
+    // subviews by frame, so it was never affected. Pinning the map subtree to
+    // LTR makes the FrameLayout resolve START as LEFT again.
+    direction: "ltr"
   },
   loading: {
     justifyContent: "center",
@@ -547,6 +792,28 @@ const styles = StyleSheet.create({
   markerImage: {
     width: "100%",
     height: "100%"
+  },
+  // Sits OUTSIDE markerCircle (which clips with overflow:'hidden').
+  clusterBadge: {
+    position: "absolute",
+    top: -4,
+    end: -4,
+    minWidth: 22,
+    height: 22,
+    borderRadius: 11,
+    paddingHorizontal: 5,
+    backgroundColor: Colors.primary,
+    borderWidth: 2,
+    borderColor: "white",
+    alignItems: "center",
+    justifyContent: "center",
+    ...SafeShadows.small
+  },
+  clusterBadgeText: {
+    color: "white",
+    fontSize: 10,
+    lineHeight: 14,
+    fontFamily: "Alexandria-Bold"
   },
   markerTitle: {
     fontSize: 8,

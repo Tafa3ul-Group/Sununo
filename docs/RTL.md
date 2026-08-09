@@ -99,6 +99,18 @@ Some mechanisms are inherently physical and legitimately branch on `isRTL`:
 Add a one-line comment (`// Physical exception: …`) so a future sweep doesn't
 "fix" them.
 
+### 5b. Native map views must be pinned to LTR
+`components/user/app-map.tsx` sets `direction: 'ltr'` on the Mapbox `MapView`
+style. This is not cosmetic: on Android, Fabric pushes the inherited `rtl` down
+as a real `View.setLayoutDirection(LAYOUT_DIRECTION_RTL)` onto `RNMBXMapView`,
+and Mapbox's internal view-annotation `FrameLayout` inherits it. `MarkerView`s
+are placed with `setTranslationX/Y` **on top of** that FrameLayout's own layout
+pass, whose default child gravity (`TOP|START`) resolves to `TOP|RIGHT` under
+RTL — so every marker is displaced horizontally by ~(mapWidth − markerWidth).
+Y/latitude stays right, X/longitude does not. Any new native view that
+positions its own children (maps, charts, camera overlays) needs the same
+treatment.
+
 ## Navigation
 
 - Native headers render OUTSIDE the direction container → `headerShown: false`

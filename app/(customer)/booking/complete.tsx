@@ -426,6 +426,25 @@ export default function CompleteBookingScreen() {
     return map;
   }, [availabilityData]);
 
+  // Of those blocked cells, the ones blocked because their start time has passed
+  // rather than because somebody booked them. They are already unselectable via
+  // `blockedShiftsByDate`; this only decides whether the row reads "انتهى الوقت"
+  // or the misleading "محجوز".
+  const pastShiftsByDate = useMemo(() => {
+    const map: Record<string, Set<string>> = {};
+    if (!Array.isArray(availabilityData)) return map;
+
+    availabilityData.forEach((entry: any) => {
+      if (!entry?.isPast || !Array.isArray(entry.blocks)) return;
+      entry.blocks.forEach(({ date, shiftId }: { date: string; shiftId: string }) => {
+        if (!date || !shiftId) return;
+        (map[date] ??= new Set()).add(shiftId);
+      });
+    });
+
+    return map;
+  }, [availabilityData]);
+
   const dateKeyForDay = useCallback(
     (day: number) =>
       `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
@@ -466,6 +485,12 @@ export default function CompleteBookingScreen() {
     (day: number, shiftId: string) =>
       blockedShiftsByDate[dateKeyForDay(day)]?.has(shiftId) ?? false,
     [blockedShiftsByDate, dateKeyForDay],
+  );
+
+  const isShiftPastForDay = useCallback(
+    (day: number, shiftId: string) =>
+      pastShiftsByDate[dateKeyForDay(day)]?.has(shiftId) ?? false,
+    [pastShiftsByDate, dateKeyForDay],
   );
 
   // A shift is "closed" on a given day when it has no valid pricing for that
@@ -1820,6 +1845,7 @@ export default function CompleteBookingScreen() {
                   {availableShifts?.map((shift: any) => {
                     const isSelected = selectedShifts[day] === shift.id;
                     const isBooked = isShiftBookedForDay(day, shift.id);
+                    const isPast = isShiftPastForDay(day, shift.id);
                     const isClosed = isShiftClosedForDay(day, shift);
                     const isDisabled = isBooked || isClosed;
                     const shiftName = isArabic
@@ -1910,6 +1936,14 @@ export default function CompleteBookingScreen() {
                             <View style={styles.shiftClosedBadge}>
                               <ThemedText style={styles.shiftClosedText}>
                                 {isArabic ? "مغلق" : "Closed"}
+                              </ThemedText>
+                            </View>
+                          ) : isPast ? (
+                            /* Its start time has passed — nobody booked it, so
+                               "محجوز" would be wrong. */
+                            <View style={styles.shiftClosedBadge}>
+                              <ThemedText style={styles.shiftClosedText}>
+                                {isArabic ? "انتهى الوقت" : "Time passed"}
                               </ThemedText>
                             </View>
                           ) : isBooked ? (

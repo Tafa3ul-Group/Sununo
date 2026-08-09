@@ -47,7 +47,11 @@ import {
   BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
 import { useTranslation } from "react-i18next";
-import Animated, { FadeInUp } from "react-native-reanimated";
+import Animated, {
+  FadeInUp,
+  useAnimatedStyle,
+  useSharedValue,
+} from "react-native-reanimated";
 
 import { HostContactCard } from "@/components/user/host-contact-card";
 import { useFormatTime } from "@/hooks/useFormatTime";
@@ -453,6 +457,23 @@ export default function ExploreScreen() {
 
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ["55%", "94%"], []);
+
+  // Live top edge of the details sheet. The locate button docks just above the
+  // tab bar at rest and rides the sheet up as it opens, so it never ends up
+  // buried under it.
+  const sheetTop = useSharedValue(SCREEN_HEIGHT);
+  // Resolve every `normalize.*` call HERE, on the JS thread. The worklet below
+  // runs on the UI thread and can only close over plain values — calling
+  // normalize inside it throws "normalize.height is not a function".
+  const locateFabGap = normalize.height(12);
+  const locateFabRestingBottom =
+    Math.max(insets.bottom, 24) + normalize.height(44) + locateFabGap;
+  const locateFabStyle = useAnimatedStyle(() => ({
+    bottom: Math.max(
+      locateFabRestingBottom,
+      SCREEN_HEIGHT - sheetTop.value + locateFabGap,
+    ),
+  }));
 
   // Stable id of the chalet matching the route param. The previous effect keyed
   // off `MOCK_CHALETS.length`, which changes whenever the memo is rebuilt and so
@@ -916,21 +937,27 @@ export default function ExploreScreen() {
 
       {/* Always-available: recenter the map on the user's exact location */}
       {!isNavigating && (
-        <TouchableOpacity
-          style={styles.locateFab}
-          onPress={handleLocateMe}
-          activeOpacity={0.85}
-          accessibilityRole="button"
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        <Animated.View
+          style={[styles.locateFabWrap, locateFabStyle]}
+          pointerEvents="box-none"
         >
-          <SolarMapPointWaveBoldDuotone size={26} color={Colors.primary} />
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.locateFab}
+            onPress={handleLocateMe}
+            activeOpacity={0.85}
+            accessibilityRole="button"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <SolarMapPointWaveBoldDuotone size={26} color={Colors.primary} />
+          </TouchableOpacity>
+        </Animated.View>
       )}
 
       <BottomSheetModal
         ref={bottomSheetRef}
         index={0}
         snapPoints={snapPoints}
+        animatedPosition={sheetTop}
         // Must stay false: when true, the sheet measures its (variable) content
         // height and fights the explicit snapPoints, so on first open the content
         // renders mis-sized/out of order. Fixed snapPoints give a stable layout.
@@ -1435,10 +1462,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.2)",
   },
-  locateFab: {
+  // `start` puts it on the same side as the tab bar's isolated round button,
+  // directly above it. `bottom` is animated (see locateFabStyle).
+  locateFabWrap: {
     position: "absolute",
-    end: 20,
-    bottom: SCREEN_HEIGHT * 0.42,
+    start: 20,
+    zIndex: 25,
+  },
+  locateFab: {
     width: 52,
     height: 52,
     borderRadius: 26,
@@ -1448,7 +1479,6 @@ const styles = StyleSheet.create({
     ...Shadows.medium,
     borderWidth: 1,
     borderColor: "#F1F5F9",
-    zIndex: 25,
   },
   navSeparator: {
     width: 1,
