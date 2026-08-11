@@ -1,7 +1,7 @@
 'use no memo';
 import { normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
-import { ltrScrollContent } from '@/i18n';
+import { ltrScrollContent, ltrScroller } from '@/i18n';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
     Dimensions,
@@ -79,13 +79,18 @@ export function BannerSwiper({
     // Banners without a link stay inert rather than flashing press feedback
     // that leads nowhere.
     const tappable = !!onBannerPress && hasBannerLink(item?.link);
+    // `accessibilityLabel` is a native string prop: anything else throws a
+    // ClassCastException inside Fabric's Android prop setter, which takes down
+    // the whole surface (blank screen, no JS error). Never forward the raw
+    // value — a bilingual {ar,en} title used to slip through here.
+    const label = typeof item?.title === 'string' ? item.title : undefined;
     return (
       <TouchableOpacity
         style={styles.bannerContainer}
         activeOpacity={tappable ? 0.85 : 1}
         disabled={!tappable}
         accessibilityRole={tappable ? 'link' : 'image'}
-        accessibilityLabel={item?.title}
+        accessibilityLabel={label}
         onPress={() => onBannerPress?.(item)}
       >
         <Image
@@ -118,6 +123,7 @@ export function BannerSwiper({
         decelerationRate="fast"
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
+        style={ltrScroller}
         contentContainerStyle={[styles.listContent, ltrScrollContent]}
         ItemSeparatorComponent={ItemSeparator}
         onScrollBeginDrag={stopTimer}

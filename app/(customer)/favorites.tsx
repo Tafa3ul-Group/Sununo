@@ -15,7 +15,7 @@ import { HeaderSection } from '@/components/header-section';
 import { useGetCustomerFavoritesQuery, useToggleFavoriteMutation } from '@/store/api/customerApiSlice';
 import { getImageSrc } from '@/hooks/useImageSrc';
 import { getStartingPrice } from '@/utils/format';
-import { useDirection } from '@/i18n';
+import { pickTranslation, useDirection } from '@/i18n';
 
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -50,12 +50,8 @@ export default function FavoritesScreen() {
       const chalet = fav.chalet || fav;
       return {
         id: chalet.id,
-        title: isRTL 
-          ? (chalet.name?.ar || chalet.nameAr || chalet.name || '') 
-          : (chalet.name?.en || chalet.nameEn || chalet.name || ''),
-        location: isRTL
-          ? (chalet.region?.name?.ar || chalet.region?.nameAr || chalet.region?.name || '')
-          : (chalet.region?.name?.en || chalet.region?.nameEn || chalet.region?.name || ''),
+        title: pickTranslation(chalet, isRTL),
+        location: pickTranslation(chalet.region, isRTL),
         price: getStartingPrice(chalet),
         rating: chalet.averageRating?.toFixed(1) || '0',
         image: getImageSrc(chalet.images?.[0]?.url),

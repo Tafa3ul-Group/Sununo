@@ -1,5 +1,5 @@
 import { Shadows } from "@/constants/theme";
-import { ltrScrollContent, useDirection, useRtlListOrder } from "@/i18n";
+import { ltrScrollContent, ltrScroller, useDirection, useRtlListOrder } from "@/i18n";
 import React from "react";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { ThemedText } from "../themed-text";
@@ -30,6 +30,7 @@ export function CategoryTabs({
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        style={ltrScroller}
         contentContainerStyle={[
           styles.scrollContent,
           { flexDirection: 'row' },

@@ -26,7 +26,7 @@ import { SecondaryButton } from "./secondary-button";
 import { GuestCounter } from "./guest-counter";
 import { MainTabs, TabType } from "./MainTabs";
 import { RangeCalendar } from "./range-calendar";
-import { useDirection } from "@/i18n";
+import { pickTranslation, useDirection } from "@/i18n";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -265,9 +265,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
           <View style={styles.periodsContainer}>
             <View style={styles.periodList}>
               {chaletDetails.shifts.map((shift: any) => {
-                const shiftName = isRTL
-                  ? shift.name?.ar || shift.name
-                  : shift.name?.en || shift.name;
+                const shiftName = pickTranslation(shift.name, isRTL);
                 const isSelected = selectedPeriod === shift.id;
 
                 const isMorning = shift.name?.en?.toLowerCase().includes("morning") || shift.name?.ar?.includes("صباح");

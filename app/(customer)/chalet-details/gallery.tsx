@@ -28,7 +28,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import { Image as ExpoImage } from "expo-image";
-import { ltrScrollContent, useDirection, useRtlListOrder } from "@/i18n";
+import { ltrScrollContent, ltrScroller, pickTranslation, useDirection, useRtlListOrder } from "@/i18n";
 import Animated, {
   FadeInDown,
   useAnimatedStyle,
@@ -151,13 +151,9 @@ export default function GalleryScreen() {
     // Group images by category
     chalet.images.forEach((img: any) => {
       const categoryId = img.amenityCategory?.id || "general";
-      const categoryName = isArabic
-        ? img.amenityCategory?.name?.ar ||
-          img.amenityCategory?.name ||
-          t("gallery.categories.general")
-        : img.amenityCategory?.name?.en ||
-          img.amenityCategory?.name ||
-          t("gallery.categories.general");
+      const categoryName =
+        pickTranslation(img.amenityCategory?.name, isArabic) ||
+        t("gallery.categories.general");
 
       if (!grouped[categoryId]) {
         grouped[categoryId] = {
@@ -264,6 +260,7 @@ export default function GalleryScreen() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
+          style={ltrScroller}
           contentContainerStyle={[styles.catList, ltrScrollContent]}
         >
           <View style={{ flexDirection: 'row', gap: 10 }}>

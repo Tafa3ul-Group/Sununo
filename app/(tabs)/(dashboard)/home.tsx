@@ -45,7 +45,7 @@ import {
 import Animated, { FadeInDown } from "react-native-reanimated";
 import Svg, { Path } from "react-native-svg";
 
-import { useDirection } from "@/i18n";
+import { pickTranslation, useDirection } from "@/i18n";
 import { useSelector } from "react-redux";
 
 // Status mapping from UI to API
@@ -462,9 +462,7 @@ export default function HomeScreen() {
     return (
       <View style={styles.shiftsGridContainer}>
         {shifts.map((shift: any, idx: number) => {
-          const name = isRTL
-            ? shift.shiftName?.ar || shift.shiftName
-            : shift.shiftName?.en || shift.shiftName;
+          const name = pickTranslation(shift.shiftName, isRTL);
           const isNight = shift.isOvernight;
           const isAvailable = shift.isAvailable;
           
@@ -657,9 +655,7 @@ export default function HomeScreen() {
         ? customer.image
         : customer?.image?.url || customer?.image?.id || customer?.imageUrl;
 
-    const chaletName = isRTL
-      ? item.chalet?.name?.ar || item.chalet?.name
-      : item.chalet?.name?.en || item.chalet?.name;
+    const chaletName = pickTranslation(item.chalet, isRTL);
     const customerName = item.status === 'external'
       ? item.externalCustomerName || (isRTL ? "حجز خارجي" : "External Booking")
       : item.customer?.name || t("common.user");

@@ -21,7 +21,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from 'react-redux';
-import { useDirection } from '@/i18n';
+import { pickTranslation, useDirection } from '@/i18n';
 
 /**
  * DashboardTabBar - Standardized with CustomTabBar design
@@ -56,7 +56,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
       if ((!selectedChalet || selectedChalet.id === 'all')) {
         dispatch(setSelectedChalet({
           id: chalets[0].id,
-          name: isRTL ? (chalets[0].name?.ar || chalets[0].name) : (chalets[0].name?.en || chalets[0].name),
+          name: pickTranslation(chalets[0], isRTL),
           image: chalets[0].images?.[0]?.url || null
         }));
       } 
@@ -231,7 +231,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
                       onPress={() => {
                         dispatch(setSelectedChalet({
                             id: item.id,
-                            name: isRTL ? (item.name?.ar || item.name) : (item.name?.en || item.name),
+                            name: pickTranslation(item, isRTL),
                             image: item.images?.[0]?.url || null
                         }));
                         closePopover();
@@ -240,7 +240,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
                       <Image source={getImageSrc(item.images?.[0]?.url)} style={styles.chaletThumb} />
                       <View style={[styles.chaletItemInfo, { alignItems: 'flex-start' }]}>
                         <Text style={[styles.chaletItemName, { textAlign }]} numberOfLines={1}>
-                          {isRTL ? (item.name?.ar || item.name) : (item.name?.en || item.name)}
+                          {pickTranslation(item, isRTL)}
                         </Text>
                       </View>
                       

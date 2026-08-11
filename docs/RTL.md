@@ -77,15 +77,27 @@ Scroll offsets are physical-LTR even inside an RTL container, so an inherited
 and `round(x / width)` math. Fix per site:
 
 ```ts
-import { ltrScrollContent, useRtlListOrder } from "@/i18n";
+import { ltrScroller, ltrScrollContent, useRtlListOrder } from "@/i18n";
 ```
-- **Every** horizontal ScrollView/FlatList/FlashList: spread
-  `ltrScrollContent` into `contentContainerStyle` (offset math becomes true).
+- **Every** horizontal ScrollView/FlatList/FlashList needs **BOTH**:
+  `ltrScroller` in `style` **and** `ltrScrollContent` in `contentContainerStyle`.
+- 🚨 **`ltrScrollContent` alone leaves the list completely frozen in Arabic.**
+  It fixes how the content container lays out its children, but not where that
+  container is *placed* inside a still-`rtl` scroll host: Yoga aligns an
+  overflowing child's RIGHT edge to its rtl parent's right edge, so the content
+  sits at NEGATIVE x, and the native Android scroller (native RTL is
+  force-disabled — see `i18n/index.ts`) only scrolls `x >= 0`. Scrollable range
+  becomes zero. The symptom is "dragging does nothing", **not** "scrolls
+  backwards" — so it reads like a dead touch handler, not an RTL bug.
 - Chip/filter strips where item[0] ("الكل") must stay visible and read
   right-to-left in Arabic: feed the list `useRtlListOrder(data)`.
-- Carousels with offset math (paging, autoplay, dots): keep data order —
-  `ltrScrollContent` only. Force `direction:'ltr'` on the dots row too, so dot
-  motion matches page motion.
+- Carousels with offset math (paging, autoplay, dots): keep data order — the two
+  LTR styles only. Force `direction:'ltr'` on the dots row too, so dot motion
+  matches page motion.
+- Both constants are no-ops in English, so adding them can never regress LTR.
+- The one legitimate exception is a strip that **cannot overflow** (e.g. the 7
+  day-tiles in the owner dashboard): with nothing to scroll, inherited `rtl` is
+  correct and desirable. Mark such sites with a comment saying why.
 - ⚠️ Items with internal rows/aligned text/`end`-positioned badges now sit in
   an LTR subtree — re-apply `{ direction }` on the **item root**.
 

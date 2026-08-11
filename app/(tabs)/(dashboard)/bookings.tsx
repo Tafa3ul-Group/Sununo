@@ -12,7 +12,7 @@ import {
 import { PrimaryButton } from '@/components/user/primary-button';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { Colors, normalize } from '@/constants/theme';
-import { ltrScrollContent, useDirection, useRtlListOrder } from "@/i18n";
+import { ltrScrollContent, ltrScroller, pickTranslation, useDirection, useRtlListOrder } from "@/i18n";
 import { RootState } from '@/store';
 import { useDeleteExternalBookingMutation, useGetProviderBookingsQuery, useRejectBookingMutation } from '@/store/api/apiSlice';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
@@ -218,8 +218,8 @@ export default function BookingsScreen() {
     const customerName = bIsExternal
       ? item.externalCustomerName || (isRTL ? 'حجز خارجي' : 'External Booking')
       : (customer?.name || t('common.user'));
-    const shiftName = isRTL ? (item.shift?.name?.ar || item.shift?.name) : (item.shift?.name?.en || item.shift?.name);
-    const chaletName = isRTL ? (item.chalet?.name?.ar || item.chalet?.name) : (item.chalet?.name?.en || item.chalet?.name);
+    const shiftName = pickTranslation(item.shift?.name, isRTL);
+    const chaletName = pickTranslation(item.chalet, isRTL);
 
     const getStatusInfo = (status: string) => {
       const s = status?.toLowerCase();
@@ -436,7 +436,7 @@ export default function BookingsScreen() {
                   ref={filterScrollRef}
                   horizontal
                   showsHorizontalScrollIndicator={false}
-                  style={styles.filterScroll}
+                  style={[styles.filterScroll, ltrScroller]}
                   contentContainerStyle={[styles.filterContainer, { flexDirection: 'row' }, ltrScrollContent]}
                 >
                   {orderedFilters.map((filter) => {

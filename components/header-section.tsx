@@ -23,7 +23,7 @@ import { useSelector } from "react-redux";
 import { ThemedText } from "./themed-text";
 import { RotatingSearchPlaceholder } from "./user/rotating-search-placeholder";
 import { CircleBackButton } from "./ui/circle-back-button";
-import { ltrScrollContent, useDirection, useRtlListOrder } from "@/i18n";
+import { ltrScrollContent, ltrScroller, useDirection, useRtlListOrder } from "@/i18n";
 import { useGetNotificationsQuery } from "@/store/api/customerApiSlice";
 import { activeSection } from "@/utils/notification-section";
 
@@ -290,7 +290,7 @@ export function HeaderSection({
             { flexDirection: "row" },
             ltrScrollContent,
           ]}
-          style={styles.categoriesScroll}
+          style={[styles.categoriesScroll, ltrScroller]}
         >
           {orderedCategories.map((cat) => (
             <TouchableOpacity

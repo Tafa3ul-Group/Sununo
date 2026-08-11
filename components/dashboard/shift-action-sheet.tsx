@@ -10,7 +10,7 @@ import { SolarCalendarBold, SolarClockCircleLinear, SolarLockBold, SolarPhoneBol
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { normalize } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
-import { useDirection } from "@/i18n";
+import { pickTranslation, useDirection } from "@/i18n";
 import {
   useCreateExternalBookingMutation,
   useUpdateShiftPricingDayMutation
@@ -125,9 +125,7 @@ export const ShiftActionSheet = forwardRef<BottomSheetModal, ShiftActionSheetPro
                         textAlign,
                       }}
                     >
-                      {isRTL
-                        ? selectedShiftForAction.shiftName?.ar || selectedShiftForAction.shiftName
-                        : selectedShiftForAction.shiftName?.en || selectedShiftForAction.shiftName}
+                      {pickTranslation(selectedShiftForAction.shiftName, isRTL)}
                     </Text>
                     <View
                       style={{

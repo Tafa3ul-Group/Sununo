@@ -41,7 +41,7 @@ import {
   useLazyGetPaymentStatusQuery,
 } from "@/store/api/customerApiSlice";
 import * as WebBrowser from "expo-web-browser";
-import { useDirection } from "@/i18n/direction";
+import { pickTranslation, useDirection } from "@/i18n/direction";
 
 const dismissBrowser = () => {
   if (Platform.OS === "ios") {
@@ -258,18 +258,8 @@ export default function BookingSuccessDetailsScreen() {
 
   // Extract data from API response with fallbacks
   const chalet = booking?.chalet || ({} as any);
-  const chaletTitle = isRTL
-    ? chalet.name?.ar || chalet.nameAr || chalet.name || ""
-    : chalet.name?.en || chalet.nameEn || chalet.name || "";
-  const chaletLocation = isRTL
-    ? chalet.region?.name?.ar ||
-      chalet.region?.nameAr ||
-      chalet.region?.name ||
-      ""
-    : chalet.region?.name?.en ||
-      chalet.region?.nameEn ||
-      chalet.region?.name ||
-      "";
+  const chaletTitle = pickTranslation(chalet, isRTL);
+  const chaletLocation = pickTranslation(chalet.region, isRTL);
   const detailedLocation = chaletLocation;
   const chaletImage = getImageSrc(chalet.images?.[0]?.url);
 
@@ -357,9 +347,7 @@ export default function BookingSuccessDetailsScreen() {
 
   const shiftInfo = useMemo(() => {
     if (!booking?.shift) return t("booking.morningShift");
-    const name = isRTL
-      ? booking.shift.name?.ar || booking.shift.name
-      : booking.shift.name?.en || booking.shift.name;
+    const name = pickTranslation(booking.shift.name, isRTL);
     const time = `\u200E${formatShiftTime(booking.shift.startTime)} - ${formatShiftTime(booking.shift.endTime)}\u200E`;
     return `${name} (${time})`;
   }, [booking, isRTL, t]);

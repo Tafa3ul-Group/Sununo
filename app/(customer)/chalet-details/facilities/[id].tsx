@@ -21,7 +21,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
 import { useSelector } from "react-redux";
-import { useDirection } from "@/i18n";
+import { pickTranslation, useDirection } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -127,9 +127,7 @@ export default function FacilitiesScreen() {
 
       if (!grouped[categoryId]) {
         grouped[categoryId] = {
-          name: isArabic
-            ? category?.name?.ar || category?.name
-            : category?.name?.en || category?.name,
+          name: pickTranslation(category, isArabic),
           colorIndex: colorIdx++,
           features: [],
         };
@@ -137,9 +135,7 @@ export default function FacilitiesScreen() {
 
       grouped[categoryId].features.push({
         id: feature.id,
-        name: isArabic
-          ? feature.name?.ar || feature.name
-          : feature.name?.en || feature.name,
+        name: pickTranslation(feature, isArabic),
         // icon field from API is a UUID pointing to an image on the server
         iconId: feature.icon || null,
         value: item.value,

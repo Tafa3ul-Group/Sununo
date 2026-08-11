@@ -62,7 +62,7 @@ import Animated, {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import { useFormatTime } from "../../../hooks/useFormatTime";
-import { useDirection } from "@/i18n";
+import { pickTranslation, useDirection } from "@/i18n";
 
 // dismissAuthSession is iOS-only — Android closes the browser automatically
 const dismissBrowser = () => {
@@ -1143,24 +1143,8 @@ export default function CompleteBookingScreen() {
       <HorizontalCard
         chalet={{
           id: chaletDetails?.id || "",
-          title: isArabic
-            ? chaletDetails?.nameAr ||
-              chaletDetails?.name?.ar ||
-              chaletDetails?.name ||
-              ""
-            : chaletDetails?.nameEn ||
-              chaletDetails?.name?.en ||
-              chaletDetails?.name ||
-              "",
-          location: isArabic
-            ? chaletDetails?.region?.name?.ar ||
-              chaletDetails?.region?.nameAr ||
-              chaletDetails?.region?.name ||
-              ""
-            : chaletDetails?.region?.name?.en ||
-              chaletDetails?.region?.nameEn ||
-              chaletDetails?.region?.name ||
-              "",
+          title: pickTranslation(chaletDetails, isArabic),
+          location: pickTranslation(chaletDetails?.region, isArabic),
           rating: chaletDetails?.averageRating || 0,
           price: chaletDetails?.basePrice
             ? Number(chaletDetails.basePrice).toLocaleString()
@@ -1191,15 +1175,7 @@ export default function CompleteBookingScreen() {
           </View>
         </View>
         <ThemedText style={styles.mapAddressLabel}>
-          {isArabic
-            ? chaletDetails?.region?.name?.ar ||
-              chaletDetails?.region?.nameAr ||
-              chaletDetails?.region?.name ||
-              ""
-            : chaletDetails?.region?.name?.en ||
-              chaletDetails?.region?.nameEn ||
-              chaletDetails?.region?.name ||
-              ""}
+          {pickTranslation(chaletDetails?.region, isArabic)}
         </ThemedText>
       </Animated.View>
 
@@ -1273,9 +1249,7 @@ export default function CompleteBookingScreen() {
                       (s: any) => s.id === shiftId,
                     );
                     return shift
-                      ? isArabic
-                        ? shift.name?.ar || shift.name
-                        : shift.name?.en || shift.name
+                      ? pickTranslation(shift.name, isArabic)
                       : t("booking.noShift");
                   })()}
           </ThemedText>
@@ -1723,9 +1697,7 @@ export default function CompleteBookingScreen() {
                 </View>
                 <View style={styles.shiftsContainer}>
                   {availableShifts?.map((shift: any, index: number) => {
-                    const shiftName = isArabic
-                      ? shift.name?.ar || shift.name
-                      : shift.name?.en || shift.name;
+                    const shiftName = pickTranslation(shift.name, isArabic);
                     const previewNameEn = shift.name?.en?.toLowerCase() || "";
                     const previewNameAr = shift.name?.ar || "";
                     const isOvernight =
@@ -1848,9 +1820,7 @@ export default function CompleteBookingScreen() {
                     const isPast = isShiftPastForDay(day, shift.id);
                     const isClosed = isShiftClosedForDay(day, shift);
                     const isDisabled = isBooked || isClosed;
-                    const shiftName = isArabic
-                      ? shift.name?.ar || shift.name
-                      : shift.name?.en || shift.name;
+                    const shiftName = pickTranslation(shift.name, isArabic);
 
                     const dayOfWeek = getDayOfWeek(day);
                     const shiftPrice =

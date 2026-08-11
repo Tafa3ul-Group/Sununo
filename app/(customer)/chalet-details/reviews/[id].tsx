@@ -39,7 +39,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-import { ltrScrollContent, useDirection } from "@/i18n";
+import { ltrScrollContent, ltrScroller, useDirection } from "@/i18n";
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -304,7 +304,7 @@ export default function ReviewsScreen() {
                     <ScrollView
                       horizontal
                       showsHorizontalScrollIndicator={false}
-                      style={styles.imgGallery}
+                      style={[styles.imgGallery, ltrScroller]}
                       contentContainerStyle={ltrScrollContent}
                     >
                       {rev.images.map((imgUri: string, imIdx: number) => (

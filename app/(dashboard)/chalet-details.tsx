@@ -28,7 +28,7 @@ import { AiTranslateButton } from '@/components/ui/ai-translate-button';
 import { Colors, normalize } from '@/constants/theme';
 import { formatDuration } from '@/utils/format';
 import { getImageSrc } from '@/hooks/useImageSrc';
-import { useDirection } from '@/i18n';
+import { pickTranslation, useDirection } from '@/i18n';
 import {
   useDeleteChaletImageMutation,
   useDeleteChaletMutation,
@@ -56,6 +56,18 @@ import Toast from 'react-native-toast-message';
 import { useDispatch } from 'react-redux';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+/**
+ * The Arabic side of a bilingual field, for EDIT FORMS — deliberately no
+ * cross-language fallback, so a blank Arabic name stays blank instead of being
+ * silently backfilled with the English one and saved over it.
+ *
+ * Always a string: a `{ar,en}` object reaching a TextInput's `value` throws in
+ * Fabric's Android prop setter and takes the whole surface down. Legacy records
+ * store a bare string, which counts as the Arabic side.
+ */
+const arSide = (field: any): string =>
+  typeof field === 'string' ? field : (field?.ar ?? '');
 const HERO_HEIGHT = 420;
 
 // Minutes the customer gets to pay after the owner approves a delayed booking.
@@ -175,9 +187,9 @@ export default function ChaletDetailsScreen() {
           const item = Array.isArray(r) ? (r[0] || {}) : r;
           return {
             id: item.id || String(idx),
-            titleAr: item.title?.ar || item.title || '',
+            titleAr: arSide(item.title),
             titleEn: item.title?.en || '',
-            descriptionAr: item.description?.ar || item.description || '',
+            descriptionAr: arSide(item.description),
             descriptionEn: item.description?.en || '',
           };
         })
@@ -189,9 +201,9 @@ export default function ChaletDetailsScreen() {
       setIsActive(chalet.isActive);
       setBookingType(chalet.bookingType || 'instant');
       setBasicForm({
-        nameAr: chalet.name?.ar || chalet.name || '',
+        nameAr: arSide(chalet.name),
         nameEn: chalet.name?.en || '',
-        descriptionAr: chalet.description?.ar || chalet.description || '',
+        descriptionAr: arSide(chalet.description),
         descriptionEn: chalet.description?.en || '',
         capacity: chalet.capacity?.toString() || '0',
         priceCapacity: chalet.priceCapacity?.toString() || '0',
@@ -652,9 +664,10 @@ export default function ChaletDetailsScreen() {
     );
   }
 
-  const chaletName = isRTL ? (chalet.name?.ar || chalet.name) : (chalet.name?.en || chalet.name);
-  const chaletLocation = isRTL ? (chalet.address?.ar || chalet.region?.name) : (chalet.address?.en || chalet.region?.enName);
-  const chaletDescription = isRTL ? (chalet.description?.ar || chalet.description) : (chalet.description?.en || chalet.description);
+  const chaletName = pickTranslation(chalet, isRTL);
+  const chaletLocation =
+    pickTranslation(chalet.address, isRTL) || pickTranslation(chalet.region, isRTL);
+  const chaletDescription = pickTranslation(chalet.description, isRTL);
   const activeAmenities = chalet?.chaletFeatures || chalet?.chaletAmenities || [];
   const coverImage = chalet?.images?.find((img: any) => img.isMain || img.isCover);
   const heroImages = chalet.images && chalet.images.length > 0
@@ -1771,11 +1784,11 @@ export default function ChaletDetailsScreen() {
               <TouchableOpacity
                 style={styles.cityPickerItem}
                 onPress={() => {
-                  setBasicForm({ ...basicForm, cityId: item.id, cityName: item.name?.ar || item.name });
+                  setBasicForm({ ...basicForm, cityId: item.id, cityName: pickTranslation(item, isRTL) });
                   citySheetRef.current?.dismiss();
                 }}
               >
-                <Text style={[styles.cityPickerText, { textAlign }]}>{item.name?.ar || item.name}</Text>
+                <Text style={[styles.cityPickerText, { textAlign }]}>{pickTranslation(item, isRTL)}</Text>
               </TouchableOpacity>
             )}
           />

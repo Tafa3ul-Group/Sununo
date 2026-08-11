@@ -2,7 +2,7 @@ import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { SolarBanknoteBold } from "@/components/icons/solar-icons";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Colors, normalize } from '@/constants/theme';
-import { ltrScrollContent, useDirection, useRtlListOrder } from "@/i18n";
+import { ltrScrollContent, ltrScroller, useDirection, useRtlListOrder } from "@/i18n";
 import { RootState } from '@/store';
 import { useGetPayoutsQuery } from '@/store/api/apiSlice';
 import { FlashList } from '@shopify/flash-list';
@@ -188,6 +188,7 @@ export default function TransactionsScreen() {
           )}
           horizontal
           showsHorizontalScrollIndicator={false}
+          style={ltrScroller}
           contentContainerStyle={{ paddingHorizontal: 14, ...ltrScrollContent }}
           ItemSeparatorComponent={() => <View style={{ width: 8 }} />}
         />

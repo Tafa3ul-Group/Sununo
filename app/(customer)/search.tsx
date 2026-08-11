@@ -31,7 +31,7 @@ import {
     useSafeAreaInsets
 } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import { useDirection } from "@/i18n";
+import { pickTranslation, useDirection } from "@/i18n";
 
 // Fixed per-row height for FlatList getItemLayout. The card has a fixed height
 // (normalize.height(115)) and its wrapper adds a 16px bottom margin, so each row
@@ -88,18 +88,8 @@ export default function SearchScreen() {
     const data = chaletsResponse?.data || [];
     return data.map((chalet: any) => ({
       id: chalet.id,
-      title: isArabic
-        ? chalet.name?.ar || chalet.nameAr || chalet.name || ""
-        : chalet.name?.en || chalet.nameEn || chalet.name || "",
-      location: isArabic
-        ? chalet.region?.name?.ar ||
-          chalet.region?.nameAr ||
-          chalet.region?.name ||
-          ""
-        : chalet.region?.name?.en ||
-          chalet.region?.nameEn ||
-          chalet.region?.name ||
-          "",
+      title: pickTranslation(chalet, isArabic),
+      location: pickTranslation(chalet.region, isArabic),
       price: getStartingPrice(chalet),
       rating: chalet.averageRating || 0,
       image:

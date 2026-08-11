@@ -21,7 +21,7 @@ import {
   View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
-import { ltrScrollContent, useDirection } from '@/i18n';
+import { ltrScrollContent, ltrScroller, useDirection } from '@/i18n';
 
 const AmenityIcon = ({ icon, size = 18 }: { icon: string; size?: number }) => {
   if (!icon) return <SolarStarBold size={size} color="#FFF" />;
@@ -320,6 +320,7 @@ export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
                       <ScrollView
                         horizontal
                         showsHorizontalScrollIndicator={false}
+                        style={ltrScroller}
                         contentContainerStyle={[styles.swiperImagesScroll, ltrScrollContent]}
                       >
                         {(() => {

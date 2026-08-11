@@ -82,7 +82,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { ltrScrollContent, useDirection, useRtlListOrder } from "@/i18n";
+import { ltrScrollContent, ltrScroller, pickTranslation, useDirection, useRtlListOrder } from "@/i18n";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -601,12 +601,8 @@ export default function ExploreScreen() {
     () =>
       (similarResponse || []).map((item: any, index: number) => ({
         id: item.id,
-        title: isRTL
-          ? item.name?.ar || item.name
-          : item.name?.en || item.name,
-        location: isRTL
-          ? item.city?.name || ""
-          : item.city?.enName || item.city?.name || "",
+        title: pickTranslation(item, isRTL),
+        location: pickTranslation(item.city, isRTL),
         price: getStartingPrice(item),
         rating: item.rating || 0,
         image: getImageSrc(item.images?.[0]?.url),
@@ -981,6 +977,7 @@ export default function ExploreScreen() {
                   horizontal
                   pagingEnabled
                   showsHorizontalScrollIndicator={false}
+                  style={ltrScroller}
                   contentContainerStyle={ltrScrollContent}
                   onMomentumScrollEnd={(e) => {
                     const index = Math.round(
@@ -1214,6 +1211,7 @@ export default function ExploreScreen() {
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
+              style={ltrScroller}
               contentContainerStyle={{
                 paddingVertical: 10,
                 gap: 10,

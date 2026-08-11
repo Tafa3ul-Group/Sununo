@@ -2,11 +2,12 @@
   "expo": {
     "name": "Sununo",
     "slug": "Sununo",
-    "version": "3.0.0",
+    "version": "7.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "sununo",
     "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.sununo.app",
@@ -72,11 +73,7 @@
       [
         "expo-build-properties",
         {
-          "android": {
-            "newArchEnabled": true
-          },
           "ios": {
-            "newArchEnabled": true,
             "deploymentTarget": "15.1"
           }
         }

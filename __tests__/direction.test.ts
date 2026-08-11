@@ -75,4 +75,47 @@ describe("pickTranslation", () => {
     expect(pickTranslation({ name: "Fallback" }, true)).toBe("Fallback");
     expect(pickTranslation({ name: "Fallback" }, false)).toBe("Fallback");
   });
+
+  it("reads the API's own { ar, en } shape", () => {
+    expect(pickTranslation({ ar: "شاليه", en: "Chalet" }, true)).toBe("شاليه");
+    expect(pickTranslation({ ar: "شاليه", en: "Chalet" }, false)).toBe("Chalet");
+  });
+
+  it("descends into a nested `name` object rather than returning it", () => {
+    expect(pickTranslation({ name: { ar: "بغداد", en: "Baghdad" } }, true)).toBe("بغداد");
+    expect(pickTranslation({ name: { ar: "بغداد", en: "Baghdad" } }, false)).toBe("Baghdad");
+  });
+
+  it("falls back to the other language when the preferred one is blank", () => {
+    expect(pickTranslation({ ar: "", en: "Chalet" }, true)).toBe("Chalet");
+    expect(pickTranslation({ ar: "شاليه", en: "" }, false)).toBe("شاليه");
+  });
+
+  // The regression that blanked the Android app: `/banners` returns
+  // `{ ar: "", en: "" }`, the old `obj?.ar || obj` handed the object to
+  // `accessibilityLabel`, and Fabric's Android prop setter threw a
+  // ClassCastException that killed the whole surface.
+  it("NEVER returns a non-string, whatever the input", () => {
+    const inputs: any[] = [
+      { ar: "", en: "" },
+      { name: { ar: "", en: "" } },
+      { name: {} },
+      { name: 42 },
+      { title: { ar: "x" } },
+      {},
+      [],
+      123,
+      true,
+    ];
+    for (const input of inputs) {
+      expect(typeof pickTranslation(input, true)).toBe("string");
+      expect(typeof pickTranslation(input, false)).toBe("string");
+    }
+  });
+
+  it("terminates on a self-referential object", () => {
+    const loop: any = {};
+    loop.name = loop;
+    expect(typeof pickTranslation(loop, true)).toBe("string");
+  });
 });

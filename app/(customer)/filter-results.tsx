@@ -37,7 +37,7 @@ import {
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
-import { ltrScrollContent, useDirection, useRtlListOrder } from "@/i18n";
+import { ltrScrollContent, ltrScroller, pickTranslation, useDirection, useRtlListOrder } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -101,16 +101,7 @@ export default function FilterResultsScreen() {
   );
 
   const getChaletLocation = useCallback(
-    (chalet: any, arabic: boolean) =>
-      arabic
-        ? chalet.region?.name?.ar ||
-          chalet.region?.nameAr ||
-          chalet.region?.name ||
-          ""
-        : chalet.region?.name?.en ||
-          chalet.region?.nameEn ||
-          chalet.region?.name ||
-          "",
+    (chalet: any, arabic: boolean) => pickTranslation(chalet.region, arabic),
     [],
   );
 
@@ -281,6 +272,7 @@ export default function FilterResultsScreen() {
             showsHorizontalScrollIndicator={false}
             data={orderedPills}
             keyExtractor={(item) => item.id}
+            style={ltrScroller}
             contentContainerStyle={[styles.pillsList, ltrScrollContent]}
             renderItem={({ item }) => (
               <View style={[styles.pill, { direction }]}>

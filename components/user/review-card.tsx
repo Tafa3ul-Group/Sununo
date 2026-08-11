@@ -13,7 +13,7 @@ import {
     TouchableOpacity,
     View } from "react-native";
 import Svg, { ClipPath, Defs, G, Path, Image as SvgImage } from "react-native-svg";
-import { ltrScrollContent, useDirection } from "@/i18n";
+import { ltrScrollContent, ltrScroller, useDirection } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -124,7 +124,7 @@ export const ReviewCard = React.memo(function ReviewCard({ review, onDelete, onP
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false} 
-          style={styles.galleryScroll}
+          style={[styles.galleryScroll, ltrScroller]}
           contentContainerStyle={[{ flexDirection: 'row', gap: 8 }, ltrScrollContent]}
         >
           {review.gallery.map((img, idx) => (

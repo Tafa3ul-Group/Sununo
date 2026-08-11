@@ -2,7 +2,7 @@ import { SolarAltArrowLeftBold, SolarAltArrowRightBold } from "@/components/icon
 import { ThemedText } from "@/components/themed-text";
 import { Fonts, normalize } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
-import { ltrScrollContent, useDirection, useRtlListOrder } from "@/i18n";
+import { ltrScrollContent, ltrScroller, useDirection, useRtlListOrder } from "@/i18n";
 import { Image as ExpoImage } from "expo-image";
 import React, { useCallback, useMemo } from "react";
 import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
@@ -125,6 +125,7 @@ export function FeaturedSwiper({
       keyExtractor={(item, index) => `${item?.id ?? "item"}-${index}`}
       horizontal
       showsHorizontalScrollIndicator={false}
+      style={ltrScroller}
       contentContainerStyle={[styles.listContent, ltrScrollContent]}
       ItemSeparatorComponent={() => <View style={{ width: SEPARATOR_WIDTH }} />}
       decelerationRate="fast"

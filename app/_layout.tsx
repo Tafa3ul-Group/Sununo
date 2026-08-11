@@ -46,6 +46,11 @@ TextInput.defaultProps.style = {
   textAlignVertical: "center",
 };
 
+// Expo Router renders this instead of the tree when a render throws. Without it
+// a release build shows the bare window background — a blank, frozen screen
+// with no error to trace.
+export { RootErrorBoundary as ErrorBoundary } from "@/components/root-error-boundary";
+
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const { i18n } = useTranslation();

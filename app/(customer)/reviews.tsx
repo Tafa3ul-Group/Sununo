@@ -20,7 +20,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import { useDirection } from "@/i18n";
+import { pickTranslation, useDirection } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -54,12 +54,8 @@ export default function ReviewsScreen() {
       .map((booking: any) => ({
         id: booking.id,
         chaletId: booking.chalet?.id || '',
-        chaletTitle: isArabic
-          ? (booking.chalet?.name?.ar || booking.chalet?.nameAr || booking.chalet?.name || '')
-          : (booking.chalet?.name?.en || booking.chalet?.nameEn || booking.chalet?.name || ''),
-        chaletLocation: isArabic
-          ? (booking.chalet?.region?.name?.ar || booking.chalet?.region?.nameAr || booking.chalet?.region?.name || '')
-          : (booking.chalet?.region?.name?.en || booking.chalet?.region?.nameEn || booking.chalet?.region?.name || ''),
+        chaletTitle: pickTranslation(booking.chalet, isArabic),
+        chaletLocation: pickTranslation(booking.chalet?.region, isArabic),
         price: booking.chalet?.basePrice ? Number(booking.chalet.basePrice).toLocaleString() : '0',
         chaletImage: getImageSrc(booking.chalet?.images?.[0]?.url)?.uri || '',
         userName: booking.customer?.name || meName,

@@ -1,5 +1,5 @@
 import { normalize } from "@/constants/theme";
-import { ltrScrollContent, useDirection } from "@/i18n";
+import { ltrScrollContent, ltrScroller, useDirection } from "@/i18n";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Dimensions,
@@ -114,6 +114,7 @@ export function HorizontalSwiper({ data, onPressCard, onIndexChange, favoriteIds
         snapToInterval={SNAP}
         snapToAlignment="center"
         decelerationRate="fast"
+        style={ltrScroller}
         contentContainerStyle={[styles.listContent, ltrScrollContent]}
         pagingEnabled={false}
         ItemSeparatorComponent={() => (

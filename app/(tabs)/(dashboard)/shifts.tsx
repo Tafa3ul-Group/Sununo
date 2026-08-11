@@ -19,7 +19,7 @@ import { useConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { toastConfig } from '@/components/ui/toast-config';
 import { SecondaryButton } from '@/components/user/secondary-button';
 import { Colors, Shadows } from '@/constants/theme';
-import { useDirection } from '@/i18n';
+import { pickTranslation, useDirection } from '@/i18n';
 import { RootState } from '@/store';
 import {
   useCreateShiftMutation,
@@ -281,10 +281,10 @@ const checkShiftOverlaps = (shiftsList: any[]): { hasOverlap: boolean; overlappi
         if (!overlappingIds.includes(s1.id)) overlappingIds.push(s1.id);
         if (!overlappingIds.includes(s2.id)) overlappingIds.push(s2.id);
 
-        const name1Ar = s1.name?.ar || s1.name;
-        const name1En = s1.name?.en || s1.name;
-        const name2Ar = s2.name?.ar || s2.name;
-        const name2En = s2.name?.en || s2.name;
+        const name1Ar = pickTranslation(s1.name, true);
+        const name1En = pickTranslation(s1.name, false);
+        const name2Ar = pickTranslation(s2.name, true);
+        const name2En = pickTranslation(s2.name, false);
 
         conflictMsg = {
           ar: `تداخل بين (${name1Ar}) و (${name2Ar})`,
@@ -598,7 +598,7 @@ export default function ShiftsAndPricesScreen() {
   const { data: chaletResponse } = useGetOwnerChaletDetailsQuery(selectedChaletId, { skip: !selectedChaletId });
   const chalet = chaletResponse?.data || chaletResponse;
 
-  const chaletName = isRTL ? (chalet?.name?.ar || chalet?.name) : (chalet?.name?.en || chalet?.name);
+  const chaletName = pickTranslation(chalet, isRTL);
 
   React.useEffect(() => {
     if (isInsideStack && chaletName) {
@@ -859,7 +859,7 @@ export default function ShiftsAndPricesScreen() {
     setSelectedShift(shift);
     const normalizeTime = (t: string) => t ? t.substring(0, 5) : '';
     setShiftForm({
-      name: isRTL ? (shift.name?.ar || shift.name) : (shift.name?.en || shift.name),
+      name: pickTranslation(shift.name, isRTL),
       startTime: normalizeTime(shift.startTime) || '08:00',
       endTime: normalizeTime(shift.endTime) || '23:00',
       price: '',
@@ -1299,7 +1299,7 @@ export default function ShiftsAndPricesScreen() {
 
             {shifts?.map((shift: any, index: number) => {
               const isExpanded = expandedShift === shift.id;
-              const shiftName = isRTL ? (shift.name?.ar || shift.name) : (shift.name?.en || shift.name);
+              const shiftName = pickTranslation(shift.name, isRTL);
               const sT = parseInt(shift.startTime?.split(':')[0] || '0');
               const sE = parseInt(shift.endTime?.split(':')[0] || '0');
               const type = (shift?.type || "").toUpperCase();
@@ -1728,7 +1728,7 @@ export default function ShiftsAndPricesScreen() {
               </Text>
               {selectedShift && (
                 <Text style={{ fontSize: 12, color: '#64748B', fontFamily: 'Alexandria-Medium', marginTop: 2 }}>
-                  {isRTL ? (selectedShift.name?.ar || selectedShift.name) : (selectedShift.name?.en || selectedShift.name)}
+                  {pickTranslation(selectedShift.name, isRTL)}
                 </Text>
               )}
             </View>
@@ -2040,7 +2040,7 @@ export default function ShiftsAndPricesScreen() {
 
             <View style={{ paddingHorizontal: 20, gap: 16 }}>
               {tempShifts.map((item) => {
-                const shiftName = isRTL ? (item.name?.ar || item.name) : (item.name?.en || item.name);
+                const shiftName = pickTranslation(item.name, isRTL);
                 const isOverlapping = overlapInfo.overlappingIds.includes(item.id);
 
                 return (

@@ -30,7 +30,7 @@ import { Colors, normalize, Spacing, Typography } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
 import { logEvent } from '@/services/analytics';
 import { ANALYTICS_EVENTS } from '@/constants/analytics-events';
-import { ltrScrollContent, useDirection } from "@/i18n";
+import { ltrScrollContent, ltrScroller, useDirection } from "@/i18n";
 import { RootState } from '@/store';
 import {
   useCreateChaletMutation,
@@ -1191,7 +1191,7 @@ export default function AddChaletScreen() {
                         </View>
                       )}
                     </View>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingVertical: 4, paddingHorizontal: 2, ...ltrScrollContent }} style={{ overflow: 'visible' }}>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingVertical: 4, paddingHorizontal: 2, ...ltrScrollContent }} style={[{ overflow: 'visible' }, ltrScroller]}>
                       {(() => {
                         // Content is forced physical-LTR; render in reverse for Arabic
                         // so the add-photo tile stays first (at the right edge) in reading order.

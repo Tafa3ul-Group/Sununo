@@ -68,7 +68,7 @@ import {
 import Svg, { Path } from "react-native-svg";
 import { useSelector } from "react-redux";
 import { useFormatTime } from "../../../hooks/useFormatTime";
-import { ltrScrollContent, useDirection } from "@/i18n";
+import { ltrScrollContent, ltrScroller, pickTranslation, useDirection } from "@/i18n";
 import * as Haptics from "expo-haptics";
 import Animated, {
   FadeInDown,
@@ -181,9 +181,7 @@ const ShiftCard = React.memo(function ShiftCard({
         ]}
       >
         <ThemedText style={[styles.shiftName, { textAlign }]}>
-          {isRTL
-            ? shift.name?.ar || shift.name
-            : shift.name?.en || shift.name}
+          {pickTranslation(shift.name, isRTL)}
         </ThemedText>
         <ThemedText style={[styles.shiftTime, { textAlign }]}>
           {formatShiftTime(shift.startTime)} -{" "}
@@ -415,34 +413,17 @@ export default function ChaletDetailScreen() {
     (chaletLng !== 0 || chaletLat !== 0);
   const mapLng = hasChaletCoords ? chaletLng : 47.82;
   const mapLat = hasChaletCoords ? chaletLat : 30.51;
-  const chaletName = isRTL
-    ? chalet.name?.ar || chalet.nameAr || chalet.name || ""
-    : chalet.name?.en || chalet.nameEn || chalet.name || "";
-  const chaletLocation = isRTL
-    ? chalet.region?.name?.ar ||
-    chalet.region?.nameAr ||
-    chalet.region?.name ||
-    chalet.city?.name ||
-    ""
-    : chalet.region?.name?.en ||
-    chalet.region?.nameEn ||
-    chalet.region?.name ||
-    chalet.city?.enName ||
-    chalet.city?.name ||
-    "";
-  const chaletCategory = isRTL
-    ? chalet.category?.ar || ""
-    : chalet.category?.en || "";
+  const chaletName = pickTranslation(chalet, isRTL);
+  const chaletLocation =
+    pickTranslation(chalet.region, isRTL) || pickTranslation(chalet.city, isRTL);
+  const chaletCategory = pickTranslation(chalet.category, isRTL);
   const chaletRating = chalet.averageRating || chalet.rating || 0;
   const chaletPrice = chalet.basePrice
     ? Number(chalet.basePrice).toLocaleString()
     : "0";
-  const chaletDescription = isRTL
-    ? chalet.description?.ar || chalet.descriptionAr || chalet.description || ""
-    : chalet.description?.en ||
-    chalet.descriptionEn ||
-    chalet.description ||
-    "";
+  const chaletDescription =
+    pickTranslation(chalet.description, isRTL) ||
+    pickTranslation(isRTL ? chalet.descriptionAr : chalet.descriptionEn, isRTL);
 
   // ── Analytics: view_item (fires once per chalet when its data loads) ───────
   useEffect(() => {
@@ -590,9 +571,7 @@ export default function ChaletDetailScreen() {
         const shapeKey = SHAPE_KEYS[idx % SHAPE_KEYS.length];
 
         return {
-          label: isRTL
-            ? feature.name?.ar || feature.nameAr || feature.name || ""
-            : feature.name?.en || feature.nameEn || feature.name || "",
+          label: pickTranslation(feature, isRTL),
           iconUrl,
           shapeKey,
           shapeColor: SHAPE_COLORS[shapeKey],
@@ -662,6 +641,7 @@ export default function ChaletDetailScreen() {
             ref={bannerScrollRef}
             horizontal
             pagingEnabled
+            style={ltrScroller}
             contentContainerStyle={{ flexDirection: "row", ...ltrScrollContent }}
             onScroll={(e) =>
               setActiveImage(
@@ -1178,12 +1158,8 @@ export default function ChaletDetailScreen() {
           <HorizontalSwiper
             data={(similarResponse || []).map((item: any, index: number) => ({
               id: item.id,
-              title: isRTL
-                ? item.name?.ar || item.nameAr || item.name || ""
-                : item.name?.en || item.nameEn || item.name || "",
-              location: isRTL
-                ? item.city?.name || ""
-                : item.city?.enName || item.city?.name || "",
+              title: pickTranslation(item, isRTL),
+              location: pickTranslation(item.city, isRTL),
               price: item.basePrice
                 ? Number(item.basePrice).toLocaleString()
                 : "0",

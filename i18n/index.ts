@@ -11,6 +11,7 @@ import en from "./en.json";
 export {
   isContentRTL,
   ltrScrollContent,
+  ltrScroller,
   pickTranslation,
   resolveRowDirection,
   resolveTextAlign,

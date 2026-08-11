@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { FlashList } from "@shopify/flash-list";
-import { ltrScrollContent, useDirection, useRtlListOrder } from "@/i18n";
+import { ltrScrollContent, ltrScroller, pickTranslation, useDirection, useRtlListOrder } from "@/i18n";
 import { BannerSkeleton, HorizontalSwiperSkeleton, HorizontalCardSkeleton, CustomerHomeSkeleton } from "@/components/ui/skeleton-loader";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import Animated, { FadeInDown } from "react-native-reanimated";
@@ -113,13 +113,10 @@ export default function HomeScreen() {
   const amenityIdMap = useMemo(() => {
     const map: Record<string, string> = {};
     allAmenities.forEach((amenity: any) => {
-      const nameEn = (
-        amenity.name?.en ||
-        amenity.nameEn ||
-        amenity.name ||
-        ""
-      ).toLowerCase();
-      const nameAr = (amenity.name?.ar || amenity.nameAr || "").toLowerCase();
+      // pickTranslation, not `|| amenity.name`: that fallback handed back the
+      // whole {ar,en} object and `.toLowerCase()` threw on it.
+      const nameEn = pickTranslation(amenity, false).toLowerCase();
+      const nameAr = pickTranslation(amenity, true).toLowerCase();
       const slug = (amenity.slug || amenity.key || "").toLowerCase();
 
       // Match pool
@@ -351,7 +348,14 @@ export default function HomeScreen() {
       (bannersResponse || []).map((b: any) => ({
         id: b.id,
         image: b.imageUrl,
-        title: isRTL ? b.title?.ar || b.title : b.title?.en || b.title,
+        // Always a string. An admin can save a banner with an empty title, and
+        // `"" || b.title` would fall through to the whole {ar,en} OBJECT — which
+        // then reached `accessibilityLabel` and killed Fabric's mount dispatch
+        // on Android with a ClassCastException (blank screen, no JS error).
+        title:
+          typeof b.title === "string"
+            ? b.title
+            : (isRTL ? b.title?.ar : b.title?.en) ?? "",
         // Admin-set destination: a chalet id, an internal path, or a URL.
         link: b.link,
       })),
@@ -384,18 +388,8 @@ export default function HomeScreen() {
     const chalets = rawChalets;
     return chalets.map((chalet: any, index: number) => ({
       id: chalet.id,
-      title: isRTL
-        ? chalet.name?.ar || chalet.nameAr || chalet.name || ""
-        : chalet.name?.en || chalet.nameEn || chalet.name || "",
-      location: isRTL
-        ? chalet.region?.name?.ar ||
-          chalet.region?.nameAr ||
-          chalet.region?.name ||
-          ""
-        : chalet.region?.name?.en ||
-          chalet.region?.nameEn ||
-          chalet.region?.name ||
-          "",
+      title: pickTranslation(chalet, isRTL),
+      location: pickTranslation(chalet.region, isRTL),
       price: getStartingPrice(chalet),
       rating: chalet.averageRating || 0,
       color: CARD_COLORS[index % CARD_COLORS.length],
@@ -509,6 +503,7 @@ export default function HomeScreen() {
     <GHScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
+      style={ltrScroller}
       contentContainerStyle={[styles.tabsContainer, ltrScrollContent]}
     >
       <View style={{ flexDirection: 'row', gap: 10 }}>

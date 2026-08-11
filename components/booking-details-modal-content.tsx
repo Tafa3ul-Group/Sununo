@@ -18,7 +18,7 @@ import {
 } from '@/components/icons/solar-icons';
 import { PrimaryButton } from '@/components/user/primary-button';
 import { ThemedText } from '@/components/themed-text';
-import { useDirection } from '@/i18n';
+import { pickTranslation, useDirection } from '@/i18n';
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
 import React from 'react';
@@ -54,10 +54,10 @@ export const BookingDetailsModalContent = ({ id, isRTL: _isRTLProp, t, onClose, 
   }
 
   const bIsExternal = data.bookingStatus === 'EXTERNAL' || data.status === 'external';
-  const bChaletName = isRTL ? (data.chalet?.name?.ar || data.chalet?.name) : (data.chalet?.name?.en || data.chalet?.name);
-  const bChaletAddress = isRTL ? (data.chalet?.address?.ar || data.chalet?.address) : (data.chalet?.address?.en || data.chalet?.address);
+  const bChaletName = pickTranslation(data.chalet, isRTL);
+  const bChaletAddress = pickTranslation(data.chalet?.address, isRTL);
   const bCustomerName = bIsExternal ? (isRTL ? 'حجز خارجي' : 'External Booking') : (data.customer?.name || t('common.user'));
-  const bShiftName = isRTL ? (data.shift?.name?.ar || data.shift?.name) : (data.shift?.name?.en || data.shift?.name);
+  const bShiftName = pickTranslation(data.shift?.name, isRTL);
 
   const remainingAmount = data.totalPrice - (data.paidAmount || 0);
 

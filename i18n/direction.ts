@@ -70,30 +70,39 @@ export const resolveRowDirection = (
  * Pick the localized string from a backend object, honoring the active
  * direction. Tries a series of common key shapes returned by the API.
  * Pure so it can be unit-tested without the i18n init module.
+ *
+ * ── The `string` return type is a hard guarantee, not a hint ────────────────
+ * The API's own shape is `{ ar, en }`, and an admin is free to save either side
+ * empty. Every hand-rolled `obj?.ar || obj` at a call site therefore fell
+ * through the falsy `""` and handed back the WHOLE OBJECT. Reaching a native
+ * string prop (`accessibilityLabel`) with that value throws a ClassCastException
+ * inside Fabric's Android prop setter and takes down the entire surface — a
+ * blank, frozen screen with no JS error to trace. So: never return `obj.name`
+ * without proving it's a string first, and recurse when it isn't.
  */
-export const pickTranslation = (obj: any, rtl: boolean): string => {
-  if (!obj) return "";
-  if (typeof obj === "string") return obj;
+const MAX_NEST = 3;
 
-  if (rtl) {
-    return (
-      obj.nameAr ||
-      obj.name_ar ||
-      obj.translation?.ar ||
-      obj.name_translation?.ar ||
-      obj.name ||
-      ""
-    );
+export const pickTranslation = (obj: any, rtl: boolean, depth = 0): string => {
+  if (obj == null) return "";
+  if (typeof obj === "string") return obj;
+  if (typeof obj !== "object") return "";
+
+  // Preferred language first, then the other one — a half-translated record
+  // should still render a label rather than an empty string.
+  const arabic = [obj.ar, obj.nameAr, obj.arName, obj.name_ar, obj.translation?.ar, obj.name_translation?.ar];
+  const english = [obj.en, obj.nameEn, obj.enName, obj.name_en, obj.displayName, obj.display_name, obj.translation?.en];
+
+  for (const value of rtl ? [...arabic, ...english] : [...english, ...arabic]) {
+    if (typeof value === "string" && value) return value;
   }
 
-  return (
-    obj.nameEn ||
-    obj.name_en ||
-    obj.displayName ||
-    obj.display_name ||
-    obj.name ||
-    ""
-  );
+  // `name` is the last resort, and on this API it is itself frequently an
+  // `{ ar, en }` object (region.name, city.name, shift.name…) — so descend
+  // into it instead of returning it.
+  if (depth < MAX_NEST && obj.name != null && typeof obj.name === "object") {
+    return pickTranslation(obj.name, rtl, depth + 1);
+  }
+  return typeof obj.name === "string" ? obj.name : "";
 };
 
 // ──────────────────────────────────────────────────────────
@@ -145,11 +154,28 @@ export function useDirection(): DirectionInfo {
 // the list mounts showing its LAST item and every `index * width` /
 // `scrollTo({x})` computation addresses the mirrored item.
 //
-// Recipe: force the CONTENT container back to physical LTR with
-// `ltrScrollContent`, and, when the item order should read right-to-left in
-// Arabic (chip strips, "All"-first filters), feed it `useRtlListOrder(data)`.
+// Recipe: force BOTH the scroller and its CONTENT container back to physical
+// LTR — `ltrScroller` on `style`, `ltrScrollContent` on `contentContainerStyle`
+// — and, when the item order should read right-to-left in Arabic (chip strips,
+// "All"-first filters), feed it `useRtlListOrder(data)`.
 // IMPORTANT: items with internal directional layout (rows, aligned text) must
 // re-apply `direction` on their own root, since they now sit in an ltr subtree.
+//
+// ⚠️ `ltrScrollContent` ALONE IS NOT ENOUGH, and the failure is silent-looking:
+// it fixes how the content container lays out its children, but not where that
+// container is PLACED inside a still-rtl scroll host. Yoga aligns an
+// overflowing child's RIGHT edge to its rtl parent's right edge, so the content
+// extends into NEGATIVE x — and the native Android scroller (native RTL is
+// force-disabled here, see i18n/index.ts) only scrolls x >= 0. Net effect: zero
+// scrollable range, and the list looks completely frozen in Arabic rather than
+// merely mirrored. `ltrScroller` on the scroller's own `style` is what puts the
+// content back at x = 0.
+//
+// Both constants are no-ops in English, so applying them is never a regression
+// risk for LTR.
+
+/** Spread into `style` of every horizontal scroller. */
+export const ltrScroller = { direction: "ltr" } as const;
 
 /** Spread into `contentContainerStyle` of every horizontal scroller. */
 export const ltrScrollContent = { direction: "ltr" } as const;

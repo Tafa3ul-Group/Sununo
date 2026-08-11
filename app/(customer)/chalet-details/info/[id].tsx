@@ -15,7 +15,7 @@ import { HeaderSection } from "@/components/header-section";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
-import { useDirection } from "@/i18n";
+import { pickTranslation, useDirection } from "@/i18n";
 
 
 export default function ChaletInfoScreen() {
@@ -98,8 +98,8 @@ export default function ChaletInfoScreen() {
                 {isArabic ? "قوانين الشاليه" : "Chalet Rules"}
               </ThemedText>
               {rulesList.map((rule: any, idx: number) => {
-                const ruleTitle = isArabic ? rule.title?.ar || rule.title : rule.title?.en || rule.title;
-                const ruleDesc = isArabic ? rule.description?.ar || rule.description : rule.description?.en || rule.description;
+                const ruleTitle = pickTranslation(rule.title, isArabic);
+                const ruleDesc = pickTranslation(rule.description, isArabic);
                 return (
                   <View key={rule.id || idx} style={styles.ruleItem}>
                     <View style={[styles.ruleHeader, { flexDirection: rowDirection }]}>
@@ -154,8 +154,8 @@ export default function ChaletInfoScreen() {
         return (
           <View>
             {policiesData.map((rule: any, idx: number) => {
-              const ruleTitle = isArabic ? rule.title?.ar || rule.title : rule.title?.en || rule.title;
-              const ruleDesc = isArabic ? rule.description?.ar || rule.description : rule.description?.en || rule.description;
+              const ruleTitle = pickTranslation(rule.title, isArabic);
+              const ruleDesc = pickTranslation(rule.description, isArabic);
               
               return (
                 <View key={rule.id || idx} style={styles.ruleItem}>
@@ -179,17 +179,10 @@ export default function ChaletInfoScreen() {
       // Fallback if policiesData is not an array (e.g. old structure)
       const p = (policiesData as any)?.policies;
       const cp = (policiesData as any)?.cancellationPolicy;
-      const policiesText = isArabic ? p?.ar || p : p?.en || p;
-      const cancelText = isArabic ? cp?.ar || cp : cp?.en || cp;
-
-      const pStr =
-        typeof policiesText === "string"
-          ? policiesText
-          : policiesText?.ar || policiesText?.en || "";
-      const cStr =
-        typeof cancelText === "string"
-          ? cancelText
-          : cancelText?.ar || cancelText?.en || "";
+      // pickTranslation already unwraps {ar,en} and guarantees a string, so the
+      // old typeof/`?.ar || ?.en` re-check below it is gone.
+      const pStr = pickTranslation(p, isArabic);
+      const cStr = pickTranslation(cp, isArabic);
 
       return (
         <View>
