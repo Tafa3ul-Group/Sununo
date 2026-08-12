@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
-import { I18nManager, Platform } from "react-native";
+import { Alert, I18nManager, Platform } from "react-native";
 
 import ar from "./ar.json";
 import { isContentRTL, pickTranslation } from "./direction";
@@ -13,6 +13,7 @@ export {
   ltrScrollContent,
   ltrScroller,
   pickTranslation,
+  pinLTR,
   resolveRowDirection,
   resolveTextAlign,
   useDirection,
@@ -26,36 +27,59 @@ const resources = {
 };
 
 const LANGUAGE_KEY = "user-language";
+/** Guards the self-healing reload so a build that cannot flip the native flag never loops. */
+const RTL_RELOAD_KEY = "rtl-reload-attempted-for";
 
-// ──────────────────────────────────────────────────────────
-// Native RTL is permanently DISABLED.
-// ──────────────────────────────────────────────────────────
-// Direction is driven by a `direction: 'rtl' | 'ltr'` style on container roots
-// (see the _layout files + portal wrappers), derived from `i18n.language`. This
-// removes the language-switch reload AND the entire `i18n.language` ↔
-// `I18nManager.isRTL` drift class that caused the reversed/incorrect layouts.
-//
-// `ensureNativeLTR` sets the native preference to LTR. We deliberately DO NOT
-// reload here: a JS-only reload (Expo dev client / Expo Go) does not actually
-// flip the native `I18nManager.isRTL` flag, so reloading-when-still-RTL would
-// loop forever. Instead we just set the preference (it takes effect on the next
-// native cold start), and rely on the per-subtree `direction` style applied at
-// the container roots to drive layout correctly THIS session regardless of the
-// native flag. This is idempotent and safe to run on every launch.
-
-const ensureNativeLTR = () => {
+/**
+ * Restart the JS+native runtime so a new I18nManager direction takes effect.
+ * `expo-updates` is the production path; `DevSettings` covers a dev client.
+ */
+const reloadApp = async () => {
   try {
-    I18nManager.allowRTL(false);
-    I18nManager.forceRTL(false);
-    if (I18nManager.swapLeftAndRightInRTL) {
-      I18nManager.swapLeftAndRightInRTL(false);
+    const Updates = await import("expo-updates");
+    if (typeof Updates?.reloadAsync === "function") {
+      await Updates.reloadAsync();
+      return;
     }
   } catch {
-    // I18nManager may be unavailable in some test environments.
+    // expo-updates unavailable (bare dev client / test env) — fall through.
+  }
+  try {
+    const { DevSettings } = require("react-native");
+    DevSettings?.reload?.();
+  } catch {
+    // Nothing we can do; the direction applies on the next cold start.
   }
 };
 
-ensureNativeLTR();
+// ──────────────────────────────────────────────────────────
+// Native RTL is ON for Arabic (direction model v3 — see i18n/direction.ts).
+// ──────────────────────────────────────────────────────────
+// The OS mirrors the whole app: the iOS back-swipe, horizontal scroll offsets,
+// native headers, Alert, the date picker. The previous model drove layout from
+// a `direction` style on container roots, which only reached what Yoga lays out
+// in JS and left every platform-owned surface stubbornly LTR.
+//
+// The trade-off is that `I18nManager` only takes effect on a fresh NATIVE
+// start, so a direction change requires a restart. `applyDirectionForLanguage`
+// writes the preference; `changeLanguage` below owns the restart.
+//
+// `swapLeftAndRightInRTL` is deliberately left at its default (ON) — that is
+// what makes `textAlign: 'left'` mean "start side" for both <Text> and
+// <TextInput>, which is the contract the ~400 call sites are written against.
+
+const applyDirectionForLanguage = (lng: string): boolean => {
+  const shouldBeRTL = isContentRTL(lng);
+  try {
+    if (I18nManager.isRTL === shouldBeRTL) return false;
+    I18nManager.allowRTL(shouldBeRTL);
+    I18nManager.forceRTL(shouldBeRTL);
+    return true; // caller must restart for this to take effect
+  } catch {
+    // I18nManager may be unavailable in some test environments.
+    return false;
+  }
+};
 
 // ──────────────────────────────────────────────────────────
 // Initial language
@@ -104,6 +128,24 @@ const refineLanguageFromStorage = async () => {
     if (saved !== i18n.language) {
       await i18n.changeLanguage(saved);
     }
+
+    // Self-heal the one drift that actually matters: the native flag and the
+    // saved language disagree. This happens on the FIRST launch after this
+    // migration (every existing install has isRTL=false from the old model),
+    // after a fresh install, and if a restart was ever interrupted.
+    //
+    // Reload exactly once per launch, guarded by a persisted marker, so a build
+    // where forceRTL cannot stick (a JS-only reload in a dev client does not
+    // flip the native flag) degrades to "wrong direction until the next cold
+    // start" instead of an infinite reload loop.
+    if (applyDirectionForLanguage(saved)) {
+      const alreadyTried = await AsyncStorage.getItem(RTL_RELOAD_KEY);
+      if (alreadyTried === saved) return;
+      await AsyncStorage.setItem(RTL_RELOAD_KEY, saved);
+      await reloadApp();
+    } else {
+      await AsyncStorage.removeItem(RTL_RELOAD_KEY);
+    }
   } catch (e) {
     console.error("Failed to load language from storage", e);
   }
@@ -115,17 +157,62 @@ refineLanguageFromStorage();
 // Public API to change language — instant, no reload.
 // ──────────────────────────────────────────────────────────
 export const changeLanguage = async (lng: "en" | "ar") => {
-  await i18n.changeLanguage(lng);
-
-  if (Platform.OS === "web" && typeof window !== "undefined") {
-    window.localStorage.setItem(LANGUAGE_KEY, lng);
-    if (document.documentElement) {
-      document.documentElement.dir = lng === "ar" ? "rtl" : "ltr";
-      document.documentElement.lang = lng;
+  if (Platform.OS === "web") {
+    await i18n.changeLanguage(lng);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(LANGUAGE_KEY, lng);
+      if (document.documentElement) {
+        document.documentElement.dir = lng === "ar" ? "rtl" : "ltr";
+        document.documentElement.lang = lng;
+      }
     }
-  } else {
-    await AsyncStorage.setItem(LANGUAGE_KEY, lng);
+    return;
   }
+
+  // Persist FIRST. If the restart below lands before the write completes, the
+  // app would come back up in the old language and silently undo the choice.
+  await AsyncStorage.setItem(LANGUAGE_KEY, lng);
+
+  const needsRestart = isContentRTL(lng) !== I18nManager.isRTL;
+  if (!needsRestart) {
+    // ar → ar-IQ, or en → en-US: strings change, direction does not.
+    await i18n.changeLanguage(lng);
+    return;
+  }
+
+  // Direction is changing. I18nManager only takes effect on a fresh native
+  // start, so ask before restarting rather than yanking the app away — and do
+  // NOT call i18n.changeLanguage() first: re-rendering the whole tree in the
+  // new language while the native direction is still the old one is exactly
+  // the mid-flip state that renders reversed.
+  applyDirectionForLanguage(lng);
+  await AsyncStorage.setItem(RTL_RELOAD_KEY, lng);
+
+  const isArabic = lng === "ar";
+  Alert.alert(
+    isArabic ? "تغيير اللغة" : "Change language",
+    isArabic
+      ? "لتطبيق اتجاه الواجهة بشكل صحيح، سيُعاد تشغيل التطبيق الآن."
+      : "The app needs to restart to apply the new layout direction.",
+    [
+      {
+        text: isArabic ? "إلغاء" : "Cancel",
+        style: "cancel",
+        // Undo everything, or the next launch silently switches language.
+        onPress: () => {
+          applyDirectionForLanguage(i18n.language);
+          AsyncStorage.setItem(LANGUAGE_KEY, i18n.language).catch(() => {});
+          AsyncStorage.removeItem(RTL_RELOAD_KEY).catch(() => {});
+        },
+      },
+      {
+        text: isArabic ? "إعادة التشغيل" : "Restart",
+        onPress: () => {
+          reloadApp().catch(() => {});
+        },
+      },
+    ],
+  );
 };
 
 export const tr = (obj: any): string =>

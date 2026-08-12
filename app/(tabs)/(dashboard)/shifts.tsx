@@ -1322,9 +1322,13 @@ export default function ShiftsAndPricesScreen() {
                 <Swipeable
                   key={shift.id}
                   ref={index === 0 ? firstShiftRef : undefined}
-                  // Physical exception: Swipeable panes/gesture are not mirrored by the container direction.
-                  renderRightActions={!isRTL ? () => renderShiftActions(shift, shiftName) : undefined}
-                  renderLeftActions={isRTL ? () => renderShiftActions(shift, shiftName) : undefined}
+                  // Always the "right" pane: RNGH's Swipeable reads
+                  // I18nManager.isRTL itself (Swipeable.js:357) and mirrors its
+                  // panes, so under native RTL this already opens from the left
+                  // in Arabic. The old isRTL swap was needed when the container
+                  // `direction` style could not reach Swipeable's internals —
+                  // keeping it now double-flips the actions to the wrong side.
+                  renderRightActions={() => renderShiftActions(shift, shiftName)}
                   containerStyle={styles.swipeableContainer}
                 >
                   <View

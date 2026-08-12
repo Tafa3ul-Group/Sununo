@@ -563,23 +563,19 @@ describe("CategoryTabs", () => {
     expect(tabs.filter((t) => styleOf(t).backgroundColor !== undefined)).toHaveLength(0);
   });
 
-  it("reverses the chip order in Arabic and keeps source order in English", () => {
-    // The strip is force-LTR (scroll offsets stay physical), so the list itself
-    // is reversed to keep the first chip on the leading edge in Arabic.
+  it("keeps SOURCE order in both languages (direction model v3)", () => {
+    // Under native RTL the OS mirrors the strip and its scroll offsets, so the
+    // first chip already lands on the leading (right) edge in Arabic. The v2
+    // `useRtlListOrder` reversal is now a no-op — reversing on top of a natively
+    // mirrored list flipped it back, which is what put "الكل" on the wrong end.
+    const expected = ["الكل", "شاليه", "مزرعة"];
+
     renderUI(<CategoryTabs categories={cats} activeId="all" onSelect={jest.fn()} />, "ar");
-    expect(screen.getAllByText(/./).map((n) => n.props.children)).toEqual([
-      "مزرعة",
-      "شاليه",
-      "الكل",
-    ]);
+    expect(screen.getAllByText(/./).map((n) => n.props.children)).toEqual(expected);
 
     screen.unmount();
     renderUI(<CategoryTabs categories={cats} activeId="all" onSelect={jest.fn()} />, "en");
-    expect(screen.getAllByText(/./).map((n) => n.props.children)).toEqual([
-      "الكل",
-      "شاليه",
-      "مزرعة",
-    ]);
+    expect(screen.getAllByText(/./).map((n) => n.props.children)).toEqual(expected);
   });
 });
 

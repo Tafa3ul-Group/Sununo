@@ -1265,7 +1265,12 @@ export default function AddChaletScreen() {
                             </TouchableOpacity>
                           </View>
                         ));
-                        return isRTL ? [...thumbs.reverse(), addTile] : [addTile, ...thumbs];
+                        // Source order in both languages: native RTL mirrors
+                        // the strip, so the add tile already lands on the
+                        // leading (right) edge in Arabic. Reversing here would
+                        // flip it back — and `thumbs.reverse()` mutated the
+                        // array in place while doing it.
+                        return [addTile, ...thumbs];
                       })()}
                     </ScrollView>
                   </View>

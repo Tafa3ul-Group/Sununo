@@ -15,9 +15,7 @@ export default function DashboardNonTabLayout() {
     <Stack
       screenOptions={{
         headerShown: true,
-        contentStyle: { direction, backgroundColor: "#FFFFFF" },
-        animation: isRTL ? "slide_from_left" : "slide_from_right",
-        fullScreenGestureEnabled: true,
+        contentStyle: { backgroundColor: "#FFFFFF" },
         header: (props) => (
           <DashboardHeader 
             title={props.options.title}

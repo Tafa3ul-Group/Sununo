@@ -298,15 +298,9 @@ function RootLayoutNav() {
           // Native headers render OUTSIDE the direction container — never show
           // them; screens draw their own headers.
           headerShown: false,
-          contentStyle: { direction },
-          // Native RTL is off, so the default push always slides from the
-          // right. Mirror it per language (Android honors slide_from_left;
-          // iOS falls back to its default transition).
-          animation: isRTL ? "slide_from_left" : "slide_from_right",
-          // Let the back-swipe work from anywhere — Arabic users naturally
-          // swipe from the right edge, which the native left-edge gesture
-          // ignores.
-          fullScreenGestureEnabled: true,
+          // No `direction` and no animation/gesture mirroring: under native RTL
+          // (i18n/index.ts) the OS mirrors the push transition AND the
+          // back-swipe edge itself. Re-adding either here double-flips them.
         }}
       >
         <Stack.Screen name="index" />
@@ -326,15 +320,13 @@ function RootLayoutNav() {
   );
 }
 
-// Single high-level direction root. Native RTL is permanently OFF (see
-// i18n/index.ts), so layout direction is driven entirely by this `direction`
-// style, which Yoga inherits down the whole tree — including the bottom-sheet
-// host and Toast that render within these providers. Reads from useDirection so
-// it re-renders (and flips) instantly when the language changes, with no reload.
+// No `direction` style here any more. Under native RTL (i18n/index.ts) the OS
+// mirrors the entire tree — including the bottom-sheet host, Toast, native
+// headers and Alert, none of which the old container-`direction` model could
+// reach. Setting it here would mirror an already-mirrored tree back to LTR.
 function AppProviders() {
-  const { direction } = useDirection();
   return (
-    <GestureHandlerRootView style={{ flex: 1, direction }}>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <BottomSheetModalProvider>
         <ConfirmationDialogProvider>
           <RootLayoutNav />

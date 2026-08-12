@@ -2,7 +2,7 @@ import { SolarAltArrowLeftBold, SolarAltArrowRightBold } from "@/components/icon
 import { ThemedText } from "@/components/themed-text";
 import { Fonts, normalize } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
-import { ltrScrollContent, ltrScroller, useDirection, useRtlListOrder } from "@/i18n";
+import { ltrScrollContent, ltrScroller, useDirection } from "@/i18n";
 import { Image as ExpoImage } from "expo-image";
 import React, { useCallback, useMemo } from "react";
 import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
@@ -99,9 +99,16 @@ export function FeaturedSwiper({
   }, [data]);
 
   // Show only the real chalet cards (the trailing "عرض الكل" card was removed).
-  // The strip content is forced physical-LTR, so reverse in Arabic to keep
-  // featured #1 on the right edge and visible at the initial scroll offset.
-  const listData = useRtlListOrder(visible);
+  //
+  // Deliberately NOT `useRtlListOrder` here. That helper is for short chip
+  // strips whose whole content fits on screen (see i18n/direction.ts), where the
+  // initial scroll offset is irrelevant. This strip OVERFLOWS: the content is
+  // forced physical-LTR, so it mounts at x = 0 — the LEFT edge. Reversing put
+  // featured #1 at the right edge, i.e. off-screen, and opened the carousel on
+  // the LAST chalet. Keeping source order puts featured #1 where the initial
+  // offset actually lands, and matches banner-swiper and horizontal-swiper,
+  // neither of which reverses.
+  const listData = visible;
 
   const renderItem = useCallback(
     ({ item }: { item: any }) =>

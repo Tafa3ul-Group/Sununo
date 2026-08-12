@@ -50,7 +50,6 @@ export default function CustomerLayout() {
         tabBar={(props) => <CustomTabBar {...props} />}
         screenOptions={{
           headerShown: false,
-          sceneStyle: { direction },
           tabBarShowLabel: false }}
       >
         <Tabs.Screen

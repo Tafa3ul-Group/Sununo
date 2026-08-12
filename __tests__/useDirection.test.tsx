@@ -46,14 +46,18 @@ describe("useDirection (contract v2)", () => {
     expect(result.current.textAlignEnd).toBe("right");
   });
 
-  it("inputTextAlign is PHYSICAL for <TextInput> (inputs skip the logical swap)", () => {
+  it("inputTextAlign is the LOGICAL start side, identical to textAlign (v3)", () => {
+    // Native RTL swaps left↔right for <TextInput> too, so inputs no longer need
+    // their own physical value — 'left' is the start side in both languages.
     mockLang = "ar";
     let { result } = renderHook(() => useDirection());
-    expect(result.current.inputTextAlign).toBe("right");
+    expect(result.current.inputTextAlign).toBe("left");
+    expect(result.current.inputTextAlign).toBe(result.current.textAlign);
 
     mockLang = "en";
     ({ result } = renderHook(() => useDirection()));
     expect(result.current.inputTextAlign).toBe("left");
+    expect(result.current.inputTextAlign).toBe(result.current.textAlign);
   });
 
   it("derives direction from the language ONLY — never from native I18nManager (no drift)", () => {

@@ -68,7 +68,7 @@ import {
 import Svg, { Path } from "react-native-svg";
 import { useSelector } from "react-redux";
 import { useFormatTime } from "../../../hooks/useFormatTime";
-import { ltrScrollContent, ltrScroller, pickTranslation, useDirection } from "@/i18n";
+import { ltrScrollContent, ltrScroller, pickTranslation, useDirection, pinLTR } from "@/i18n";
 import * as Haptics from "expo-haptics";
 import Animated, {
   FadeInDown,
@@ -641,8 +641,10 @@ export default function ChaletDetailScreen() {
             ref={bannerScrollRef}
             horizontal
             pagingEnabled
-            style={ltrScroller}
-            contentContainerStyle={{ flexDirection: "row", ...ltrScrollContent }}
+            // Pinned LTR on purpose: activeImage below is derived from
+            // contentOffset.x, whose semantics native RTL flips.
+            style={pinLTR}
+            contentContainerStyle={{ flexDirection: "row", ...pinLTR }}
             onScroll={(e) =>
               setActiveImage(
                 Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH),

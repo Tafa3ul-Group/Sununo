@@ -381,7 +381,10 @@ export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
                               </View>
                             )),
                           ];
-                          return isRTL ? photoItems.reverse() : photoItems;
+                          // Source order in both languages — native RTL already
+                          // mirrors the strip, and `.reverse()` mutated the
+                          // array in place on top of that.
+                          return photoItems;
                         })()}
                       </ScrollView>
                     </View>

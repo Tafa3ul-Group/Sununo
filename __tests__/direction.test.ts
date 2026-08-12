@@ -37,12 +37,15 @@ describe("resolveRowDirection — deprecated, always 'row'", () => {
   });
 });
 
-describe("resolveTextAlign — PHYSICAL, for <TextInput> only", () => {
-  // Inputs don't get RN's logical left/right swap, so they need the physical
-  // start side: right for Arabic, left for English.
-  it("aligns RTL input right and LTR input left", () => {
-    expect(resolveTextAlign(true)).toBe("right");
+describe("resolveTextAlign — LOGICAL start side (direction model v3)", () => {
+  // Under native RTL with swapLeftAndRightInRTL at its default ON, RN swaps
+  // left↔right for <Text> AND <TextInput>, so 'left' IS the start side in both
+  // languages. The old v2 value (`rtl ? 'right' : 'left'`) double-flipped and
+  // landed input text on the wrong side.
+  it("is always the logical start side, whatever the argument", () => {
+    expect(resolveTextAlign(true)).toBe("left");
     expect(resolveTextAlign(false)).toBe("left");
+    expect(resolveTextAlign()).toBe("left");
   });
 });
 
