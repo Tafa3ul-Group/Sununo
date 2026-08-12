@@ -37,15 +37,15 @@ describe("resolveRowDirection — deprecated, always 'row'", () => {
   });
 });
 
-describe("resolveTextAlign — LOGICAL start side (direction model v3)", () => {
-  // Under native RTL with swapLeftAndRightInRTL at its default ON, RN swaps
-  // left↔right for <Text> AND <TextInput>, so 'left' IS the start side in both
-  // languages. The old v2 value (`rtl ? 'right' : 'left'`) double-flipped and
-  // landed input text on the wrong side.
-  it("is always the logical start side, whatever the argument", () => {
-    expect(resolveTextAlign(true)).toBe("left");
+describe("resolveTextAlign — PHYSICAL, for <TextInput> only", () => {
+  // Inputs do NOT get the paragraph pipeline's logical left↔right swap — that
+  // lives in ParagraphShadowNode/RCTAttributedTextUtils, which <TextInput> never
+  // goes through. So an input needs the physical start side, in BOTH the
+  // container-direction and the native-RTL model. Making this a constant 'left'
+  // left every Arabic input (the map search placeholder included) on the left.
+  it("aligns RTL input right and LTR input left", () => {
+    expect(resolveTextAlign(true)).toBe("right");
     expect(resolveTextAlign(false)).toBe("left");
-    expect(resolveTextAlign()).toBe("left");
   });
 });
 

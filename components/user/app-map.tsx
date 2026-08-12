@@ -5,7 +5,6 @@ import { Image } from "expo-image";
 import * as Location from "expo-location";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  ActivityIndicator,
   Platform,
   StyleSheet,
   TouchableOpacity,
@@ -122,7 +121,6 @@ const AppMapComponent = ({
   const [location, setLocation] = useState<Location.LocationObject | null>(
     null,
   );
-  const [loading, setLoading] = useState(true);
   const [hasNativeMap, setHasNativeMap] = useState(false);
   const cameraRef = React.useRef<any>(null);
 
@@ -186,12 +184,24 @@ const AppMapComponent = ({
         let { status } = await Location.requestForegroundPermissionsAsync();
         if (cancelled) return;
         if (status === "granted") {
-          // Get initial position
-          let currentLocation = await Location.getCurrentPositionAsync({
-            accuracy: Location.Accuracy.Balanced
-          });
+          // Cached fix first — returns immediately when the OS has one, so the
+          // blue dot usually appears without waiting on the GPS at all.
+          const lastKnown = await Location.getLastKnownPositionAsync();
           if (cancelled) return;
-          setLocation(currentLocation);
+          if (lastKnown) setLocation(lastKnown);
+
+          // `getCurrentPositionAsync` has NO built-in timeout: with Location
+          // Services off at the OS level, indoors, or on a simulator with no
+          // simulated location, it never settles. Race it so a dead GPS cannot
+          // wedge this effect (it used to hold the whole map on a spinner).
+          const currentLocation = await Promise.race([
+            Location.getCurrentPositionAsync({
+              accuracy: Location.Accuracy.Balanced,
+            }),
+            new Promise<null>((resolve) => setTimeout(() => resolve(null), 8000)),
+          ]);
+          if (cancelled) return;
+          if (currentLocation) setLocation(currentLocation);
 
           // Watch for changes
           const sub = await Location.watchPositionAsync(
@@ -216,8 +226,6 @@ const AppMapComponent = ({
         }
       } catch (err) {
         console.warn("Location error:", err);
-      } finally {
-        if (!cancelled) setLoading(false);
       }
     })();
 
@@ -463,13 +471,12 @@ const AppMapComponent = ({
     };
   }, [route]);
 
-  if (loading) {
-    return (
-      <View style={[styles.container, style, styles.loading]}>
-        <ActivityIndicator color={Colors.primary} size="large" />
-      </View>
-    );
-  }
+  // NO loading gate. The map never needed the user's position to draw —
+  // `finalCenter` below already falls back to the caller's centerCoordinate and
+  // then to Basra. Gating the whole map on the location fetch meant one hung
+  // `getCurrentPositionAsync` (Location Services off, indoors, simulator with
+  // no simulated location) left a permanent spinner where the map should be.
+  // The blue dot renders when — and only if — a fix actually arrives.
 
   // Fallback for Expo Go / Web / Error
 

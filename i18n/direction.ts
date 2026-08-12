@@ -52,18 +52,23 @@ export const isContentRTL = (lang?: string | null): boolean =>
   !!lang && lang.startsWith("ar");
 
 /**
- * Start-side text alignment. Constant logical "left".
+ * PHYSICAL start-side alignment — for <TextInput> ONLY. Right in Arabic, left
+ * in English. For <Text>, use `textAlign` from `useDirection()`.
  *
- * Under native RTL (`I18nManager.isRTL`, with `swapLeftAndRightInRTL` left at
- * its default ON) React Native swaps left↔right for BOTH <Text> and
- * <TextInput>, so "left" is the start side in Arabic and the left side in
- * English. The `rtl` argument is ignored and kept only so existing call sites
- * keep compiling.
+ * <Text> and <TextInput> genuinely differ, and it is not a v2-vs-v3 thing:
+ * the left↔right swap lives in the PARAGRAPH pipeline (ParagraphShadowNode →
+ * RCTAttributedTextUtils / TextLayoutManager), which reads the node's resolved
+ * layout direction. <TextInput> renders through RCTTextInputComponentView /
+ * ReactTextInputManager instead, and that path never populates a layout
+ * direction — it maps left/right straight to a physical alignment/gravity. So
+ * an input's `textAlign` is physical whether the direction comes from a
+ * container style or from I18nManager.
  *
- * Writing `rtl ? "right" : "left"` — what this used to do — double-flips under
- * native RTL and lands the text on the WRONG side.
+ * Setting this to a constant "left" left every Arabic input — including the map
+ * search placeholder — aligned on the LEFT.
  */
-export const resolveTextAlign = (_rtl?: boolean): "right" | "left" => "left";
+export const resolveTextAlign = (rtl: boolean): "right" | "left" =>
+  rtl ? "right" : "left";
 
 /**
  * @deprecated Rows mirror via the container `direction` style now; just write
@@ -134,9 +139,9 @@ export interface DirectionInfo {
   /** END alignment. Constant 'right' — RN swaps it to the left in Arabic. */
   textAlignEnd: "right" | "left";
   /**
-   * START alignment for <TextInput>. Identical to `textAlign` under native RTL,
-   * which swaps left/right for inputs too. Kept as its own field so the ~30
-   * existing input call sites keep compiling.
+   * PHYSICAL start alignment for <TextInput> — 'right' in Arabic. Inputs do NOT
+   * get the paragraph pipeline's left↔right swap (see `resolveTextAlign`), so
+   * this is deliberately NOT the same value as `textAlign`.
    */
   inputTextAlign: "right" | "left";
 }
@@ -155,7 +160,7 @@ export function useDirection(): DirectionInfo {
     // Web CSS has no logical swap for left/right — use real logical keywords.
     textAlign: (IS_WEB ? "start" : "left") as "left",
     textAlignEnd: (IS_WEB ? "end" : "right") as "right",
-    inputTextAlign: (IS_WEB ? "start" : "left") as "left",
+    inputTextAlign: (IS_WEB ? "start" : resolveTextAlign(isRTL)) as "left",
   };
 }
 
