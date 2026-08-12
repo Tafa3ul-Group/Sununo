@@ -8,6 +8,20 @@ const PLACEHOLDER_IMAGE = require('../assets/placeholder.png');
 // PNG (extracted from profile.svg) so it renders in both RN <Image> and expo-image.
 const PERSON_PLACEHOLDER = require('../assets/profile.png');
 
+// Characters that must not reach the CDN URL raw: ASCII controls and space break
+// the URI outright, and '?'/'#' would terminate the path so the ?type=png we append
+// below is swallowed (or dropped as a fragment). Deliberately narrower than
+// encodeURIComponent/encodeURI — ids legitimately contain '/' (nested paths) and
+// non-ASCII (Arabic filenames), both of which the network layer already handles,
+// and '%' is left alone so an already-encoded id is not double-encoded.
+const UNSAFE_IN_IMAGE_ID = /[\x00-\x20\x7f"#<>?[\\\]^`{|}]/g;
+
+function encodeImageId(id: string): string {
+  return id.replace(UNSAFE_IN_IMAGE_ID, (char) =>
+    `%${char.charCodeAt(0).toString(16).toUpperCase().padStart(2, '0')}`
+  );
+}
+
 // Function to get image source URL (internal helper)
 export function processImageId(imageId: string | null | undefined): any {
   // Validate inputs
@@ -41,8 +55,9 @@ export function processImageId(imageId: string | null | undefined): any {
     return null;
   }
 
-  // Construct the full URL
-  const fullUrl = `${IMAGE_BASE_URL}/images/${IMAGE_ACCOUNT_HASH}/${cleanImageId}?type=png`;
+  // Construct the full URL (only this branch builds a URL, so only this branch encodes;
+  // the /uploads/ and pass-through branches above already hold valid URLs)
+  const fullUrl = `${IMAGE_BASE_URL}/images/${IMAGE_ACCOUNT_HASH}/${encodeImageId(cleanImageId)}?type=png`;
 
   return { uri: fullUrl };
 }

@@ -19,12 +19,7 @@ import { setCredentials } from "@/store/authSlice";
 import { logEvent } from "@/services/analytics";
 import { ANALYTICS_EVENTS } from "@/constants/analytics-events";
 import { useDirection } from "@/i18n";
-import {
-  validateBankAccount,
-  validateBankName,
-  validateQiCard,
-  validateZainCash,
-} from "@/utils/payment-validation";
+import { validateQiCard, validateZainCash } from "@/utils/payment-validation";
 import { Image as ExpoImage } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
@@ -110,19 +105,22 @@ export default function RegisterScreen() {
   const [registerProvider, { isLoading: isRegisteringProvider }] =
     useRegisterProviderMutation();
 
+  // Only the payout methods the server can actually store: `POST
+  // /auth/register-provider` accepts `zainCash` and `qi` and nothing else (see
+  // RegisterProviderDto — the API runs a whitelisting ValidationPipe, so any
+  // extra field is stripped before the controller sees it), and
+  // `POST /provider/payouts` refuses a withdrawal unless one of those two is on
+  // the account. Collecting bank details here would create owners who cannot be
+  // paid, so the form does not ask for them.
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
     zainCash: "",
-    qi: "",
-    bankName: "",
-    bankAccount: "" });
+    qi: "" });
 
   const [payErrors, setPayErrors] = useState<{
     zainCash?: string | null;
     qi?: string | null;
-    bankName?: string | null;
-    bankAccount?: string | null;
     general?: string | null;
   }>({});
 
@@ -251,24 +249,19 @@ export default function RegisterScreen() {
         return updated;
       });
     } else if (step === "PAYMENT") {
-      const hasAny =
-        !!formData.zainCash.trim() ||
-        !!formData.qi.trim() ||
-        !!formData.bankAccount.trim();
+      const hasAny = !!formData.zainCash.trim() || !!formData.qi.trim();
       if (!hasAny) {
         setPayErrors({
           general: isArabic
-            ? "أدخل وسيلة دفع واحدة على الأقل (زين كاش أو بطاقة كي أو حساب بنكي)"
-            : "Enter at least one payout method (Zain Cash, Qi Card or a bank account)",
+            ? "أدخل وسيلة دفع واحدة على الأقل (زين كاش أو بطاقة كي)"
+            : "Enter at least one payout method (Zain Cash or Qi Card)",
         });
         return;
       }
       const zErr = validateZainCash(formData.zainCash);
       const qErr = validateQiCard(formData.qi);
-      const bnErr = validateBankName(formData.bankName, formData.bankAccount);
-      const baErr = validateBankAccount(formData.bankAccount, formData.bankName);
-      if (zErr || qErr || bnErr || baErr) {
-        setPayErrors({ zainCash: zErr, qi: qErr, bankName: bnErr, bankAccount: baErr, general: null });
+      if (zErr || qErr) {
+        setPayErrors({ zainCash: zErr, qi: qErr, general: null });
         return;
       }
       setPayErrors({});
@@ -299,7 +292,7 @@ export default function RegisterScreen() {
     } catch (err: any) {
       Alert.alert(
         t("common.error"),
-        err?.data?.message || "Failed to send code",
+        err?.data?.message || t("auth.errors.sendFailed"),
       );
     }
   };
@@ -319,10 +312,6 @@ export default function RegisterScreen() {
       }
       if (formData.qi.trim()) {
         payload.qi = formData.qi.trim().replace(/[\s\-\(\)]/g, "");
-      }
-      if (formData.bankAccount.trim()) {
-        payload.bankName = formData.bankName.trim();
-        payload.bankAccount = formData.bankAccount.trim().replace(/[\s\-]/g, "");
       }
       const res = await registerProvider(payload).unwrap();
       // Auto-fill OTP code if returned in response (dev/staging env)
@@ -360,7 +349,7 @@ export default function RegisterScreen() {
       } else {
         Alert.alert(
           t("common.error"),
-          rawMsg || "Failed to register",
+          rawMsg || t("auth.errors.registerFailed"),
         );
       }
     }
@@ -370,7 +359,7 @@ export default function RegisterScreen() {
     try {
       const otpCodeNumber = Number(otpCode);
       if (!/^\d{6}$/.test(otpCode) || !Number.isInteger(otpCodeNumber)) {
-        Alert.alert(t("common.error"), "Invalid code");
+        Alert.alert(t("common.error"), t("auth.errors.invalidOtpFormat"));
         return;
       }
 
@@ -398,38 +387,44 @@ export default function RegisterScreen() {
         return;
       }
 
+      // The toggle decides where they land, not the account type — same rule as
+      // the login screen. Someone who signed up with "مستأجر" selected wants to
+      // browse and book, even when the phone already belongs to a provider
+      // account, so they get the tenant side; `accountType` still records what
+      // the account really is, which is what gates the mode switcher later.
+      const mode = accountType === "owner" ? "owner" : "customer";
+
       dispatch(
         setCredentials({
           user: result.user,
           token: result.token,
-          userType: resolvedUserType }),
+          userType: mode,
+          accountType:
+            result.user?.type === "provider" ? "provider" : "customer" }),
       );
 
       logEvent(ANALYTICS_EVENTS.SIGN_UP, {
         method: "otp",
-        user_type: resolvedUserType,
+        user_type: mode,
       });
 
       router.replace(
-        resolvedUserType === "owner"
-          ? "/(dashboard)/onboarding"
-          : "/(tabs)/(customer)",
+        mode === "owner" ? "/(dashboard)/onboarding" : "/(tabs)/(customer)",
       );
     } catch (err: any) {
-      Alert.alert(t("common.error"), err?.data?.message || "Invalid code");
+      Alert.alert(
+        t("common.error"),
+        err?.data?.message || t("auth.errors.invalidOtp"),
+      );
     }
   };
 
   // The payment step can only advance once at least one payout method is filled
   // in AND passes validation.
   const isPaymentStepValid =
-    (!!formData.zainCash.trim() ||
-      !!formData.qi.trim() ||
-      !!formData.bankAccount.trim()) &&
+    (!!formData.zainCash.trim() || !!formData.qi.trim()) &&
     !validateZainCash(formData.zainCash) &&
-    !validateQiCard(formData.qi) &&
-    !validateBankName(formData.bankName, formData.bankAccount) &&
-    !validateBankAccount(formData.bankAccount, formData.bankName);
+    !validateQiCard(formData.qi);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -681,8 +676,8 @@ export default function RegisterScreen() {
                 style={[styles.paymentHint, { textAlign }]}
               >
                 {isArabic
-                  ? "أدخل وسيلة استلام مستحقاتك. مطلوب واحدة على الأقل (زين كاش أو بطاقة كي أو حساب بنكي)."
-                  : "Enter where you'll receive your payouts. At least one is required (Zain Cash, Qi Card or a bank account)."}
+                  ? "أدخل وسيلة استلام مستحقاتك. مطلوب واحدة على الأقل (زين كاش أو بطاقة كي)."
+                  : "Enter where you'll receive your payouts. At least one is required (Zain Cash or Qi Card)."}
               </ThemedText>
 
               <View style={styles.inputGroup}>
@@ -757,73 +752,13 @@ export default function RegisterScreen() {
                 )}
               </View>
 
-              {/* Bank transfer — the two fields are filled together, since the
-                  admin cannot send money to an account number without knowing
-                  the bank. */}
-              <View style={styles.inputGroup}>
-                <ThemedText style={[styles.label, { textAlign }]}>
-                  {isArabic ? "اسم المصرف" : "Bank Name"}
-                </ThemedText>
-                <TextInput
-                  style={[
-                    styles.input,
-                    { textAlign: inputTextAlign },
-                    payErrors.bankName ? styles.inputError : null,
-                  ]}
-                  placeholder={
-                    isArabic ? "مثلاً: مصرف الرافدين" : "e.g. Al-Rafidain Bank"
-                  }
-                  value={formData.bankName}
-                  onChangeText={(val) => {
-                    setFormData({ ...formData, bankName: val });
-                    setPayErrors((prev) => ({
-                      ...prev,
-                      bankName: validateBankName(val, formData.bankAccount),
-                      bankAccount: validateBankAccount(formData.bankAccount, val),
-                      general: null,
-                    }));
-                  }}
-                  placeholderTextColor="#94A3B8"
-                />
-                {!!payErrors.bankName && (
-                  <ThemedText style={[styles.errorText, { textAlign }]}>
-                    {payErrors.bankName}
-                  </ThemedText>
-                )}
-              </View>
-
-              <View style={styles.inputGroup}>
-                <ThemedText style={[styles.label, { textAlign }]}>
-                  {isArabic ? "رقم الحساب / الآيبان" : "Account Number / IBAN"}
-                </ThemedText>
-                <TextInput
-                  style={[
-                    styles.input,
-                    // Account numbers are always LTR, aligned to the start side.
-                    { textAlign: inputTextAlign, writingDirection: "ltr" },
-                    payErrors.bankAccount ? styles.inputError : null,
-                  ]}
-                  placeholder="IQ98NBIQ850123456789012"
-                  autoCapitalize="characters"
-                  autoCorrect={false}
-                  value={formData.bankAccount}
-                  onChangeText={(val) => {
-                    setFormData({ ...formData, bankAccount: val });
-                    setPayErrors((prev) => ({
-                      ...prev,
-                      bankAccount: validateBankAccount(val, formData.bankName),
-                      bankName: validateBankName(formData.bankName, val),
-                      general: null,
-                    }));
-                  }}
-                  placeholderTextColor="#94A3B8"
-                />
-                {!!payErrors.bankAccount && (
-                  <ThemedText style={[styles.errorText, { textAlign }]}>
-                    {payErrors.bankAccount}
-                  </ThemedText>
-                )}
-              </View>
+              {/* Bank transfer used to be offered here, but the API has nowhere
+                  to put it: RegisterProviderDto accepts only zainCash/qi and the
+                  whitelisting ValidationPipe drops everything else, so an owner
+                  who filled in a bank account only ended up with no payout
+                  method at all and was blocked at withdrawal time. Restore these
+                  fields once the backend stores bank details AND
+                  POST /provider/payouts accepts them. */}
 
               {!!payErrors.general && (
                 <ThemedText style={[styles.errorText, { textAlign, marginBottom: 8 }]}>

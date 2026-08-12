@@ -28,11 +28,41 @@ const baseQuery = fetchBaseQuery({
   },
 });
 
+// Endpoints where a 401 is the *answer to the attempt*, not a dead session:
+// `/auth/verify` returns 401 INVALID_CODE for a mistyped OTP digit, and
+// `/auth/login` + `/auth/register-provider` return 401 ACCOUNT_INACTIVE. Signing
+// the user out there wipes `userType` — including the `'guest'` value — so a
+// single typo used to kick a browsing guest back to onboarding mid-flow.
+const AUTH_CHALLENGE_PATHS = [
+  "auth/login",
+  "auth/verify",
+  "auth/register-provider",
+];
+
+/** The request path as written by the endpoint, without its leading slash. */
+const getRequestPath = (args: any): string => {
+  const url = typeof args === "string" ? args : args?.url;
+  return typeof url === "string" ? url.replace(/^\/+/, "") : "";
+};
+
+/**
+ * Is this 401 really "your session is gone"? Only if we actually sent a token
+ * AND the endpoint isn't one that answers 401 to reject a credential. A public
+ * endpoint replying 401 has no session to end, so it must not clear guest mode.
+ */
+const isExpiredSession = (args: any, api: any): boolean => {
+  const path = getRequestPath(args);
+  if (AUTH_CHALLENGE_PATHS.some((p) => path.startsWith(p))) return false;
+  return !!(api.getState() as any)?.auth?.token;
+};
+
 const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
   let result = await baseQuery(args, api, extraOptions);
 
-  if (result.error && result.error.status === 401) {
-    // Force logout if 401 Unauthorized
+  if (result.error && result.error.status === 401 && isExpiredSession(args, api)) {
+    // Force logout if 401 Unauthorized — the token we sent is no longer valid.
+    // The root reducer (store/index.ts) also drops the whole RTK Query cache on
+    // this action, so nothing of the dead session is left to read.
     const { logout } = require("../authSlice");
     api.dispatch(logout());
   }
@@ -149,6 +179,12 @@ export const apiSlice = createApi({
         url: "/customer/chalets/map",
         params,
       }),
+      // The Explore screen keys this on the raw search box text, so every
+      // keystroke mints a new cache key (and, at high zoom, a response of up to
+      // 300 chalets). Hold abandoned prefixes for a fraction of the global 60s
+      // so "بغداد" doesn't leave five dead entries — "ب", "بغ", "بغد", … — in
+      // memory. The real fix is debouncing the arg on the screen itself.
+      keepUnusedDataFor: 30,
       providesTags: ["Chalet"],
     }),
 
@@ -235,9 +271,17 @@ export const apiSlice = createApi({
       query: () => "/provider/chalets/amenity-categories",
     }),
 
-    // Query for getting owner's chalets
+    // Query for getting owner's chalets.
+    // The server paginates this (PaginationDto defaults to limit=10) but every
+    // consumer here — the chalet picker, the dashboard tab bar, onboarding —
+    // treats the first page as the owner's COMPLETE list and never pages. Ask
+    // for the DTO's maximum instead, so an owner with more than ten chalets
+    // doesn't silently lose the rest from the picker.
     getOwnerChalets: builder.query({
-      query: () => "/provider/chalets",
+      query: (params) => ({
+        url: "/provider/chalets",
+        params: { ...(params || {}), limit: params?.limit ?? 100 },
+      }),
       providesTags: ["Chalet"],
     }),
 
@@ -260,13 +304,27 @@ export const apiSlice = createApi({
       ],
     }),
 
+    // ── Chalet tag scoping ────────────────────────────────────────────────────
+    // Anything fetched FOR one chalet provides `{ type: 'Chalet', id: chaletId }`,
+    // never the bare tag. RTK Query files a bare-tag provider under an
+    // `__internal_without_id` bucket that an `{ type, id }` invalidation never
+    // reads (selectInvalidatedBy only looks at `provided[tag.id]`), so a bare
+    // provider is invisible to the shift/policy mutations below — which is why
+    // a deleted shift used to stay on screen. The reverse direction is safe: a
+    // bare invalidation (setShiftPricing, setChaletAmenities, deleteChalet…)
+    // flattens every id bucket, so it still reaches these id-scoped entries.
+
     // Get shifts for a specific chalet
     getChaletShifts: builder.query({
       query: (chaletId) => `/provider/chalets/${chaletId}/shifts`,
-      providesTags: ["Chalet"],
+      providesTags: (result, error, chaletId) => [
+        { type: "Chalet" as const, id: chaletId },
+      ],
     }),
 
-    // Get pricing matrix for a specific shift
+    // Get pricing matrix for a specific shift. Keyed by SHIFT id, not chalet id,
+    // so it keeps the bare tag — its two writers (setShiftPricing,
+    // updateShiftPricingDay) invalidate the bare tag and reach it.
     getShiftPricing: builder.query({
       query: (shiftId) => `/provider/shifts/${shiftId}/pricing`,
       providesTags: ["Chalet"],
@@ -276,7 +334,9 @@ export const apiSlice = createApi({
     getChaletCancellationPolicies: builder.query({
       query: (chaletId) =>
         `/provider/chalets/${chaletId}/cancellation-policies`,
-      providesTags: ["Chalet"],
+      providesTags: (result, error, chaletId) => [
+        { type: "Chalet" as const, id: chaletId },
+      ],
     }),
 
     // Get all cities
@@ -380,9 +440,25 @@ export const apiSlice = createApi({
       invalidatesTags: ["Chalet"],
     }),
 
-    // Amenities
+    // Amenities — the flat "every amenity" list used to resolve the built-in
+    // pool/bbq/garden chip slugs to real feature UUIDs.
+    //
+    // There is NO public route for this. The old URL
+    // (`/provider/chalets/amenities/all`) matches nothing on the server: under
+    // the `provider/chalets` prefix only `amenity-categories` and
+    // `:chaletId/amenities` exist, so every home-tab mount fired a request that
+    // 404'd — and the guest calling it has no provider token either. The only
+    // public amenity route is `/customer/amenities/filter`, which returns just
+    // the admin-flagged chips (already fetched by `getHomeFilterAmenities`, and
+    // empty in exactly the case where the default chips are shown).
+    //
+    // So: answer locally with an empty list — identical to what the failed
+    // request produced, minus the doomed round-trip and the 404 noise — until
+    // the backend exposes `GET /customer/amenities` (all active features).
+    // Until it does, the built-in chips resolve to no UUID; see
+    // app/(tabs)/(customer)/index.tsx.
     getAmenities: builder.query<any[], void>({
-      query: () => "/provider/chalets/amenities/all",
+      queryFn: () => ({ data: [] as any[] }),
     }),
 
     // Predefined (ready-made) terms the owner can pick from when building a
@@ -447,7 +523,11 @@ export const apiSlice = createApi({
           // id->icon lookup at the same time (previously two map passes).
           const catIcon = new Map<string, any>();
           const cats = (body.categories || []).map((c: any) => {
-            catIcon.set(c.id, c.icon);
+            // Only categories with a real id may seed the lookup: an id-less
+            // category would register the key `undefined`, which every feature
+            // missing `categoryId` would then "match" and inherit a stranger's
+            // icon from.
+            if (c?.id != null) catIcon.set(c.id, c.icon);
             return {
               id: c.id,
               name: c.name,
@@ -482,7 +562,9 @@ export const apiSlice = createApi({
 
     getChaletAmenities: builder.query<any[], string>({
       query: (chaletId) => `/provider/chalets/${chaletId}/amenities`,
-      providesTags: ["Chalet"],
+      providesTags: (result, error, chaletId) => [
+        { type: "Chalet" as const, id: chaletId },
+      ],
     }),
 
     // Get specific chalet details for customer
@@ -535,9 +617,15 @@ export const apiSlice = createApi({
       providesTags: ["User"],
     }),
 
-    // Get provider stats
+    // Get provider stats. The revenue screen passes { from, to, period, chaletId }
+    // and the controller binds all four (@Query on provider/profile/stats) — they
+    // have to reach the URL, not just the cache key, or every period ends up
+    // showing the same current-month numbers under a different label.
     getProviderStats: builder.query({
-      query: () => "/provider/profile/stats",
+      query: (params) => ({
+        url: "/provider/profile/stats",
+        params,
+      }),
       providesTags: ["Booking", "Chalet"],
     }),
 
@@ -607,7 +695,9 @@ export const apiSlice = createApi({
         url: `/provider/chalets/${chaletId}/shifts/availability`,
         params,
       }),
-      providesTags: ["Chalet"],
+      providesTags: (result, error, { chaletId }) => [
+        { type: "Chalet" as const, id: chaletId },
+      ],
     }),
 
     // Get fully booked status for days
@@ -619,7 +709,9 @@ export const apiSlice = createApi({
         url: `/provider/chalets/${chaletId}/shifts/days-status`,
         params,
       }),
-      providesTags: ["Chalet"],
+      providesTags: (result, error, { chaletId }) => [
+        { type: "Chalet" as const, id: chaletId },
+      ],
     }),
 
     // Mark booking as completed
@@ -677,6 +769,16 @@ export const apiSlice = createApi({
     // Cancel an already-secured booking (pending_payment / confirmed). A confirmed
     // booking refunds the customer in full — the owner cancelled, so no policy
     // penalty applies. Requests still awaiting approval use `rejectBooking`.
+    //
+    // ⚠ THE SERVER HAS NO SUCH ROUTE YET. BookingsProviderController declares
+    // only bookings/:id/{complete,approve,reject,external} — the sole cancel
+    // routes in the API are customer/bookings/:id/cancel (customer-scoped) and
+    // admin/bookings/:id/force-cancel. So this POST 404s today. It is left
+    // pointing at the route the server SHOULD expose (adding it server-side is
+    // the fix; nothing else can refund the customer) and the 404 is translated
+    // below into an honest message, because the raw Fastify body would show the
+    // owner a "Route POST:/api/v1/... not found" string that reads like the
+    // booking itself is gone.
     cancelBooking: builder.mutation<
       { message: string; refundAmount: number },
       { id: string; reason?: string }
@@ -686,6 +788,26 @@ export const apiSlice = createApi({
         method: "POST",
         body: { reason },
       }),
+      // Callers read `error.data.message`; keep the server's own text under
+      // `serverMessage` so a real "booking not found" is still debuggable.
+      transformErrorResponse: (error: any) => {
+        if (error?.status !== 404) return error;
+        const original =
+          typeof error?.data === "object" && error.data ? error.data : {};
+        const message =
+          "تعذّر إلغاء الحجز: إلغاء الحجوزات من حساب المالك غير متاح على الخادم بعد، ولم يُسترجع أي مبلغ. يرجى التواصل مع الدعم. — Owner-side cancellation is not available on the server yet; nothing was cancelled or refunded. Please contact support.";
+        return {
+          ...error,
+          // baseQueryWithReauth already copied the server's text up here.
+          message,
+          data: {
+            ...original,
+            code: "PROVIDER_CANCEL_UNSUPPORTED",
+            serverMessage: (original as any)?.message,
+            message,
+          },
+        };
+      },
       invalidatesTags: (result, error, { id }) => [
         "Booking",
         "Chalet",

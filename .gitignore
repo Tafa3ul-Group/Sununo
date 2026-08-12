@@ -46,3 +46,16 @@ app-example
 # Firebase config (contains project identifiers — provide via EAS file env vars for cloud builds)
 google-services.json
 GoogleService-Info.plist
+
+# Build artefacts (local `eas build --local` / `gradlew` output).
+# These are ~100 MB binaries: one `git add -A` embeds them in history forever,
+# and anything not ignored is also uploaded on every EAS build.
+*.aab
+*.apk
+*.ipa
+*.app.zip
+*.aab.*
+*.apk.*
+
+# test coverage output
+coverage/

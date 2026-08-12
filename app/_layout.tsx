@@ -80,8 +80,7 @@ function RootLayoutNav() {
     if (!loaded) return;
     const inAuthGroup = segments[0] === "(auth)";
     const isIndex = (segments as string[]).length === 0;
-    const inSpike = (segments[0] as string) === "rtl-spike"; // TEMP: allow RTL spike without auth
-    if (!isAuthenticated && userType !== "guest" && !inAuthGroup && !isIndex && !inSpike) {
+    if (!isAuthenticated && userType !== "guest" && !inAuthGroup && !isIndex) {
       router.replace("/(auth)/login");
     }
   }, [isAuthenticated, userType, segments, loaded, router]);
@@ -103,105 +102,182 @@ function RootLayoutNav() {
 
 
   // ── Push Notifications ────────────────────────────────────────────────────
-  // يعمل عند تحميل الخطوط + عند تغيّر حالة المصادقة
+  // مقسومة إلى تأثيرين متعمّدين:
+  //   (أ) تسجيل المستمعين — مرة واحدة فقط طوال عمر التطبيق.
+  //   (ب) الحصول على التوكن وإرساله للباكند — يعتمد على حالة المصادقة.
+  // دمجهما سابقاً كان يعيد تركيب المستمعين مع كل تغيّر في المصادقة، وبما أن
+  // دالة الـ cleanup تُسند بعد await فإن التنظيف كان يعمل قبل إسنادها ويُترك
+  // اشتراك قديم حيّاً — فيُنفَّذ معالج الضغط على الإشعار N مرة ويُدفع نفس
+  // الشاشة N مرة على الـ stack.
+
+  // معالج الضغط يحتاج الوضع/الحساب الحاليين، لكن المستمع يُركَّب مرة واحدة —
+  // لذا نحتفظ بأحدث نسخة منه في ref ويستدعيها المستمع الوحيد.
+  const handleNotificationTap = useRef<(response: any) => void>(() => { });
+  useEffect(() => {
+    handleNotificationTap.current = (response: any) => {
+      const data = response?.notification?.request?.content
+        ?.data as Record<string, string> | undefined;
+
+      if (!data) return;
+
+      const target = resolveNotificationSection(data.role, userType, accountType);
+
+      // Land them in the right section first, or the destination screen's
+      // own guard would bounce them straight back out.
+      if (target !== userType && userType !== "guest") {
+        dispatch(switchMode(target));
+      }
+
+      // Deep linking بناءً على نوع الإشعار + القسم المقصود
+      if (data.type === "booking" && data.id) {
+        if (target === "owner") {
+          router.push({ pathname: "/(dashboard)/booking-details", params: { id: data.id } });
+        } else {
+          router.push({ pathname: "/(tabs)/(customer)/booking-success", params: { id: data.id } });
+        }
+      } else if (data.type === "chalet" && data.id) {
+        router.push(`/chalet-details/${data.id}`);
+      } else if (data.type === "payout") {
+        // Payout confirmation (نعم/لا) — same screen for customers and owners.
+        if (data.id) {
+          router.push(`/payout-confirm/${data.id}`);
+        } else {
+          router.push(target === "owner" ? "/(tabs)/(dashboard)/home" : "/(tabs)/(customer)/profile");
+        }
+      }
+    };
+  }); // بلا مصفوفة اعتماديات — يجب أن يبقى المعالج محدّثاً بعد كل رندر.
+
+  // (أ) المستمعون — يُركَّبون مرة واحدة عند اكتمال التحميل ويُزالون عند التفكيك.
   useEffect(() => {
     if (!loaded) return;
 
-    let cleanup: (() => void) | undefined;
+    let disposed = false;
+    let removeListeners: (() => void) | undefined;
+
+    (async () => {
+      try {
+        const { addNotificationListeners } = await import("@/services/notifications");
+
+        const remove = addNotificationListeners(
+          // إشعار وصل والتطبيق مفتوح
+          (notification) => {
+            if (__DEV__) {
+              console.log(
+                "[Notifications] وصل إشعار:",
+                notification?.request?.content?.title,
+              );
+            }
+          },
+          // المستخدم ضغط على الإشعار
+          (response) => handleNotificationTap.current?.(response),
+        );
+
+        // قد يكون التأثير فُكِّك أثناء انتظار الـ import — نزيل فوراً بدل ترك
+        // اشتراك يتيم لا يملك أحد إزالته.
+        if (disposed) {
+          remove();
+          return;
+        }
+        removeListeners = remove;
+      } catch (error) {
+        console.warn("[Notifications] فشل تركيب مستمعي الإشعارات:", error);
+      }
+    })();
+
+    return () => {
+      disposed = true;
+      removeListeners?.();
+    };
+  }, [loaded]);
+
+  // (ب) الحصول على التوكن وتسجيله في الباكند عند تغيّر جلسة المستخدم.
+  useEffect(() => {
+    if (!loaded) return;
+
+    let cancelled = false;
     let retryTimeout: ReturnType<typeof setTimeout> | undefined;
 
     (async () => {
       try {
         const {
           registerForPushNotificationsAsync,
-          registerTokenWithBackend,
-          addNotificationListeners } = await import("@/services/notifications");
+          registerTokenWithBackend } = await import("@/services/notifications");
 
         // 1. الحصول على التوكن
         const token = await registerForPushNotificationsAsync();
+        if (cancelled || !token) return;
 
-        if (token) {
-          // 2. إظهار التوكن للمطوّر في التيرمنل فقط (وضع التطوير فقط)
-          if (__DEV__) {
-            console.log("[Layout] Expo Push Token:", token);
-          }
-
-          // 3. تسجيل التوكن في الباكند
-          const baseUrl =
-            process.env.EXPO_PUBLIC_API_URL ?? "https://api.sununo.app";
-
-          if (authToken && !tokenRegistered.current) {
-            const registered = await registerTokenWithBackend(token, authToken, baseUrl);
-            tokenRegistered.current = registered;
-            if (!registered) {
-              retryTimeout = setTimeout(() => {
-                setNotificationRetryNonce((value) => value + 1);
-              }, 15000);
-            }
-          } else if (!authToken) {
-            console.warn("[Layout] لا يوجد authToken — المستخدم غير مسجّل دخول بعد");
-          }
+        // 2. إظهار التوكن للمطوّر في التيرمنل فقط (وضع التطوير فقط)
+        if (__DEV__) {
+          console.log("[Layout] Expo Push Token:", token);
         }
 
-        // 4. الاستماع للإشعارات الواردة
-        cleanup = addNotificationListeners(
-          // إشعار وصل والتطبيق مفتوح
-          (notification) => {
-            console.log(
-              "[Notifications] وصل إشعار:",
-              notification?.request?.content?.title,
-            );
-          },
-          // المستخدم ضغط على الإشعار
-          (response) => {
-            const data = response?.notification?.request?.content
-              ?.data as Record<string, string> | undefined;
+        // 3. تسجيل التوكن في الباكند
+        const baseUrl =
+          process.env.EXPO_PUBLIC_API_URL ?? "https://api.sununo.app";
 
-            if (!data) return;
-
-            const target = resolveNotificationSection(data.role, userType, accountType);
-
-            // Land them in the right section first, or the destination screen's
-            // own guard would bounce them straight back out.
-            if (target !== userType && userType !== "guest") {
-              dispatch(switchMode(target));
-            }
-
-            // Deep linking بناءً على نوع الإشعار + القسم المقصود
-            if (data.type === "booking" && data.id) {
-              if (target === "owner") {
-                router.push({ pathname: "/(dashboard)/booking-details", params: { id: data.id } });
-              } else {
-                router.push({ pathname: "/(tabs)/(customer)/booking-success", params: { id: data.id } });
-              }
-            } else if (data.type === "chalet" && data.id) {
-              router.push(`/chalet-details/${data.id}`);
-            } else if (data.type === "payout") {
-              // Payout confirmation (نعم/لا) — same screen for customers and owners.
-              if (data.id) {
-                router.push(`/payout-confirm/${data.id}`);
-              } else {
-                router.push(target === "owner" ? "/(tabs)/(dashboard)/home" : "/(tabs)/(customer)/profile");
-              }
-            }
-          },
-        );
+        if (authToken && !tokenRegistered.current) {
+          const registered = await registerTokenWithBackend(token, authToken, baseUrl);
+          if (cancelled) return;
+          tokenRegistered.current = registered;
+          if (!registered) {
+            retryTimeout = setTimeout(() => {
+              setNotificationRetryNonce((value) => value + 1);
+            }, 15000);
+          }
+        } else if (!authToken && __DEV__) {
+          console.warn("[Layout] لا يوجد authToken — المستخدم غير مسجّل دخول بعد");
+        }
       } catch (error) {
         console.warn("[Notifications] فشل إعداد الإشعارات:", error);
       }
     })();
 
     return () => {
-      cleanup?.();
+      cancelled = true;
       if (retryTimeout) clearTimeout(retryTimeout);
     };
-  }, [loaded, isAuthenticated, userType, accountType, authToken, notificationRetryNonce, router, dispatch]);
+  }, [loaded, authToken, notificationRetryNonce]);
 
-  // ── إعادة تسجيل التوكن عند تسجيل الدخول ─────────────────────────────────
+  // ── إلغاء تسجيل التوكن عند تسجيل الخروج ─────────────────────────────────
+  // الجهاز يحتفظ بنفس Expo push token عبر الحسابات، والباكند يضيف التوكن ولا
+  // يحذفه — فلو لم نطلب حذفه لبقيت إشعارات المستخدم السابق (باسم النزيل
+  // وتفاصيل الحجز) تصل لمن يسجّل الدخول بعده على نفس الهاتف.
+  // نحتفظ بآخر authToken معروف لأن الخروج يمسحه من الـ store قبل أن يعمل هذا
+  // التأثير، والطلب يحتاج جلسة صاحبه لا الجلسة الجديدة.
+  const lastAuthTokenRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!isAuthenticated) {
-      tokenRegistered.current = false;
-    }
+    if (authToken) lastAuthTokenRef.current = authToken;
+  }, [authToken]);
+
+  useEffect(() => {
+    if (isAuthenticated) return;
+
+    tokenRegistered.current = false;
+
+    const previousAuthToken = lastAuthTokenRef.current;
+    if (!previousAuthToken) return; // لم تكن هناك جلسة أصلاً (ضيف/أول تشغيل)
+    lastAuthTokenRef.current = null;
+
+    (async () => {
+      try {
+        const {
+          getLastIssuedPushToken,
+          unregisterTokenWithBackend } = await import("@/services/notifications");
+
+        const pushToken = getLastIssuedPushToken();
+        if (!pushToken) return;
+
+        const baseUrl =
+          process.env.EXPO_PUBLIC_API_URL ?? "https://api.sununo.app";
+        await unregisterTokenWithBackend(pushToken, previousAuthToken, baseUrl);
+      } catch (error) {
+        if (__DEV__) {
+          console.warn("[Notifications] فشل إلغاء تسجيل التوكن:", error);
+        }
+      }
+    })();
   }, [isAuthenticated]);
 
   if (!loaded && !error) return null;

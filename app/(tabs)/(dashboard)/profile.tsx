@@ -37,6 +37,7 @@ import { useRouter } from 'expo-router';
 import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  Alert,
   Image,
   Linking,
   ScrollView,
@@ -138,8 +139,21 @@ export default function ProviderProfileScreen() {
         try {
           await deleteProfile(undefined).unwrap();
           dispatch(logout());
-        } catch (error) {
+        } catch (error: any) {
           console.error('Failed to delete account:', error);
+          // A silent failure reads as "the button did nothing" while the account
+          // is still fully intact — surface the server's reason (the customer
+          // sheet does the same) and re-throw so the confirmation dialog stays
+          // open for a retry instead of dismissing as if the delete succeeded.
+          const serverMessage = error?.data?.message;
+          Alert.alert(
+            isRTL ? 'خطأ' : 'Error',
+            (typeof serverMessage === 'string' ? serverMessage : Array.isArray(serverMessage) ? serverMessage[0] : undefined)
+            || (isRTL
+              ? 'فشل في حذف الحساب. يرجى المحاولة لاحقاً.'
+              : 'Failed to delete account. Please try again later.')
+          );
+          throw error;
         }
       }
     });

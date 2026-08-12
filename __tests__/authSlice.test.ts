@@ -4,6 +4,7 @@ import authReducer, {
   setCredentials,
   setLanguage,
   switchMode,
+  updateUser,
 } from "@/store/authSlice";
 
 const signIn = (type: string, userType: "owner" | "customer") =>
@@ -98,5 +99,118 @@ describe("authSlice — account identity vs active mode", () => {
   it("selectAccountType is null when nobody is signed in", () => {
     const state = authReducer(undefined, { type: "@@INIT" });
     expect(selectAccountType({ auth: state })).toBeNull();
+  });
+});
+
+describe("authSlice — updateUser (profile edits reach the persisted user)", () => {
+  const signedIn = (extra: Record<string, unknown> = {}) =>
+    authReducer(
+      undefined,
+      setCredentials({
+        user: { id: "u1", type: "user", name: "قديم", image: null, ...extra },
+        token: "t",
+        userType: "customer",
+        accountType: "customer",
+      }),
+    );
+
+  it("writes the edited name and photo over the sign-in snapshot", () => {
+    const next = authReducer(
+      signedIn(),
+      updateUser({ id: "u1", type: "user", name: "جديد", image: "https://cdn/a.jpg" }),
+    );
+    expect(next.user.name).toBe("جديد");
+    expect(next.user.image).toBe("https://cdn/a.jpg");
+  });
+
+  it("merges — a key the endpoint omits keeps its known value", () => {
+    // PUT /users/profile/image answers with the user entity; other calls carry
+    // fields it doesn't, and none of them should be erased by the refresh.
+    const next = authReducer(
+      signedIn({ phone: "07700000000" }),
+      updateUser({ id: "u1", image: "https://cdn/a.jpg" }),
+    );
+    expect(next.user.phone).toBe("07700000000");
+    expect(next.user.name).toBe("قديم");
+  });
+
+  it("applies an explicit null — that is the server clearing the field", () => {
+    const next = authReducer(
+      signedIn({ email: "a@b.c" }),
+      updateUser({ id: "u1", email: null }),
+    );
+    expect(next.user.email).toBeNull();
+  });
+
+  it("leaves the session itself alone", () => {
+    const next = authReducer(signedIn(), updateUser({ id: "u1", name: "جديد" }));
+    expect(next.token).toBe("t");
+    expect(next.isAuthenticated).toBe(true);
+    expect(next.userType).toBe("customer");
+  });
+
+  it("ignores a response that arrives after logout", () => {
+    const out = authReducer(signedIn(), logout());
+    const next = authReducer(out, updateUser({ id: "u1", name: "جديد" }));
+    expect(next.user).toBeNull();
+    expect(next.isAuthenticated).toBe(false);
+  });
+
+  it("ignores a response belonging to a different account", () => {
+    // A getMe still in flight when someone else signs in must not overwrite the
+    // new session's user.
+    const next = authReducer(signedIn(), updateUser({ id: "u2", name: "شخص آخر" }));
+    expect(next.user.id).toBe("u1");
+    expect(next.user.name).toBe("قديم");
+  });
+
+  it("accepts an id-less payload — it can only have come from this token", () => {
+    const next = authReducer(signedIn(), updateUser({ name: "جديد" }));
+    expect(next.user.name).toBe("جديد");
+    expect(next.user.id).toBe("u1");
+  });
+
+  it("ignores an empty payload", () => {
+    const before = signedIn();
+    expect(authReducer(before, updateUser(null))).toEqual(before);
+    expect(authReducer(before, updateUser(undefined))).toEqual(before);
+  });
+
+  it("promotes a tenant whose account became a provider, unlocking the switcher", () => {
+    const next = authReducer(signedIn(), updateUser({ id: "u1", type: "provider" }));
+    expect(next.accountType).toBe("provider");
+    expect(authReducer(next, switchMode("owner")).userType).toBe("owner");
+  });
+
+  it("drops an owner out of the dashboard when the server says they are no longer a provider", () => {
+    const owner = authReducer(
+      undefined,
+      setCredentials({
+        user: { id: "u1", type: "provider" },
+        token: "t",
+        userType: "owner",
+        accountType: "provider",
+      }),
+    );
+    const next = authReducer(owner, updateUser({ id: "u1", type: "user" }));
+    expect(next.accountType).toBe("customer");
+    expect(next.userType).toBe("customer");
+  });
+
+  it("keeps a provider in owner mode across an ordinary profile refresh", () => {
+    const owner = authReducer(
+      undefined,
+      setCredentials({
+        user: { id: "u1", type: "provider", name: "قديم" },
+        token: "t",
+        userType: "owner",
+        accountType: "provider",
+      }),
+    );
+    // The image endpoint's payload has no `type`; the merge keeps the old one,
+    // so the refresh must not read as a downgrade.
+    const next = authReducer(owner, updateUser({ id: "u1", image: "https://cdn/a.jpg" }));
+    expect(next.accountType).toBe("provider");
+    expect(next.userType).toBe("owner");
   });
 });

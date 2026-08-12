@@ -1,5 +1,6 @@
 import { BookingCancellationSheet, BookingCancellationSheetRef } from '@/components/booking-cancellation-modal';
 import {
+  SolarClockCircleBold,
   SolarDangerCircleBold
 } from '@/components/icons/solar-icons';
 import { PrimaryButton } from '@/components/user/primary-button';
@@ -25,8 +26,6 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 import { PaymentConfirmationSheet, PaymentConfirmationSheetRef } from '@/components/payment-confirmation-modal';
 
 import { ErrorState } from '@/components/ui/error-state';
-import { CountdownBadge } from '@/components/dashboard/countdown-badge';
-import { useCountdown } from '@/hooks/useCountdown';
 
 export default function BookingDetailsPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -52,14 +51,26 @@ export default function BookingDetailsPage() {
 
   const data = bookingDetailsData?.data || bookingDetailsData;
 
-  // The owner's window to accept a request, from the same inputs the countdown
-  // card renders. Computed here — above the loading/error returns, since hooks
-  // cannot run conditionally — so the footer and the card can never disagree
-  // about whether the window has closed.
-  const { isExpired: isApprovalExpired } = useCountdown(
-    data?.createdAt,
-    data?.chalet?.dailyHours || 1,
-  );
+  // How long the request has been waiting for the owner's decision.
+  //
+  // This used to be a COUNTDOWN built from `chalet.dailyHours`, which is the
+  // booking's own duration (1–5 hours, default 1) and has nothing to do with
+  // approvals. There is no approval deadline anywhere in the API: nothing
+  // stamps one on the booking, and `expirePendingBookings` only ever cancels
+  // PENDING_PAYMENT bookings — a PENDING_APPROVAL request stays approvable
+  // forever. So the screen used to declare "انتهى وقت القبول" and disable both
+  // actions about an hour after the request arrived, leaving the owner with no
+  // way at all to accept it and the customer with no payment link.
+  //
+  // Until the API actually supplies a deadline, show the elapsed time and keep
+  // Approve/Reject enabled for as long as the server reports pending_approval.
+  // The minute tick keeps the label honest while the screen stays open; hooks
+  // cannot run conditionally, so it lives above the loading/error returns.
+  const [nowMs, setNowMs] = React.useState(() => Date.now());
+  React.useEffect(() => {
+    const interval = setInterval(() => setNowMs(Date.now()), 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleApproveBooking = () => {
     // Approving starts the customer's payment clock, so surface the window the
@@ -177,6 +188,19 @@ export default function BookingDetailsPage() {
     return isRTL
       ? `يتبقى ${formatDuration(minutesLeft, true)} للدفع`
       : `${formatDuration(minutesLeft, false)} left to pay`;
+  })();
+
+  // How long this request has been sitting unanswered. Purely informational —
+  // nothing on the server expires it, so it must never gate the actions.
+  const waitingLabel = (() => {
+    if (data.status !== 'pending_approval' || !data.createdAt) return null;
+    const createdMs = new Date(data.createdAt).getTime();
+    if (!Number.isFinite(createdMs)) return null;
+    const minutesWaiting = Math.max(0, Math.floor((nowMs - createdMs) / 60000));
+    if (minutesWaiting < 1) return isRTL ? 'وصل الطلب للتو' : 'Just arrived';
+    return isRTL
+      ? `بانتظار ردّك منذ ${formatDuration(minutesWaiting, true)}`
+      : `Waiting for your reply for ${formatDuration(minutesWaiting, false)}`;
   })();
 
   const handleConfirmCancellation = async (reason: string) => {
@@ -326,14 +350,24 @@ export default function BookingDetailsPage() {
           </View>
         )}
 
-        {/* Countdown Timer for Pending Approval */}
-        {data.status === 'pending_approval' && (
-          <CountdownBadge
-            createdAt={data.createdAt}
-            durationHours={data.chalet?.dailyHours || 1}
-            isRTL={isRTL}
-            variant="card"
-          />
+        {/* How long the request has been waiting. Deliberately NOT a countdown:
+            the API has no approval deadline, so a timer here would only invent
+            one and scare the owner off a request that is still perfectly
+            acceptable. */}
+        {waitingLabel && (
+          <View style={styles.waitingCard}>
+            <View style={[styles.waitingInner, { flexDirection: 'row' }]}>
+              <View style={styles.waitingIconWrap}>
+                <SolarClockCircleBold size={20} color="#F97316" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.waitingTitle, { textAlign }]}>
+                  {isRTL ? 'طلب بانتظار قرارك' : 'Request awaiting your decision'}
+                </Text>
+                <Text style={[styles.waitingSub, { textAlign }]}>{waitingLabel}</Text>
+              </View>
+            </View>
+          </View>
         )}
 
         {/* Chalet Information Section */}
@@ -540,18 +574,11 @@ export default function BookingDetailsPage() {
               height={50}
               style={styles.cancelButton}
             />
-          ) : data.status === 'pending_approval' && isApprovalExpired ? (
-            /* The acceptance window closed → no decision is on offer any more,
-               so neither action is shown; the footer only states that. */
-            <PrimaryButton
-              label={isRTL ? 'انتهى وقت القبول' : 'Approval time expired'}
-              onPress={() => { }}
-              height={60}
-              style={styles.payButton}
-              disabled={true}
-            />
           ) : data.status === 'pending_approval' ? (
-            /* Request awaiting owner decision → approve or reject */
+            /* Request awaiting owner decision → approve or reject.
+               No expiry branch: the server keeps a PENDING_APPROVAL request
+               approvable indefinitely, so the only path to accepting a booking
+               must never be disabled by a client-side clock. */
             <>
               <PrimaryButton
                 label={isRTL ? 'تأكيد الطلب' : 'Confirm Request'}
@@ -748,6 +775,39 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(14),
     fontFamily: 'Alexandria-SemiBold',
     lineHeight: normalize.font(20),
+  },
+  // "Waiting for your decision" card — the amber of an open task, not the red
+  // of an expiry, because nothing here is running out.
+  waitingCard: {
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    marginBottom: 12,
+    backgroundColor: '#FFF7ED',
+    borderColor: '#FFEDD5',
+  },
+  waitingInner: {
+    alignItems: 'center',
+    gap: 12,
+  },
+  waitingIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFEDD5',
+  },
+  waitingTitle: {
+    fontSize: normalize.font(13),
+    fontFamily: 'Alexandria-SemiBold',
+    color: '#9A3412',
+    marginBottom: 2,
+  },
+  waitingSub: {
+    fontSize: normalize.font(12),
+    fontFamily: 'Alexandria-Medium',
+    color: '#B45309',
   },
   // Tenant Category Badge
   tenantCategoryBadge: {

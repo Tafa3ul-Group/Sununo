@@ -214,9 +214,13 @@ function ActiveFilterBanner({
   return (
     <View style={filterBannerStyles.container}>
       <View style={[filterBannerStyles.content, { flexDirection: 'row' }]}>
+        {/* ltrScroller AND ltrScrollContent — see the recipe in i18n/direction.ts:
+            contentContainerStyle alone leaves the content at negative x inside a
+            still-rtl host, which makes the chip strip unscrollable in Arabic. */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
+          style={ltrScroller}
           contentContainerStyle={[
             filterBannerStyles.scrollContent,
             { flexDirection: 'row' },

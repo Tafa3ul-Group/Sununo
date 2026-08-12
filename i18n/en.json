@@ -16,7 +16,23 @@
     "dontHaveAccount": "Don't have an account?",
     "registerNow": "Register now",
     "phonePlaceholder": "077XXXXXXXX",
-    "verificationCode": "Verification Code"
+    "verificationCode": "Verification Code",
+    "errors": {
+      "notOwner": "This number is not linked to an owner account. Please register as an owner first.",
+      "invalidOtp": "The verification code is incorrect. Please check it and try again.",
+      "invalidOtpFormat": "Invalid verification code",
+      "sendFailed": "Failed to send the verification code. Please try again.",
+      "registerFailed": "Could not create the account. Please try again.",
+      "alreadyRegistered": "This phone number is already registered.",
+      "network": "Network connection failed. Please check your internet connection.",
+      "unauthorized": "The details you entered are incorrect.",
+      "generic": "Something went wrong, please try again.",
+      "phoneRequired": "Please enter your phone number",
+      "phoneDigitsOnly": "The phone number must contain digits only",
+      "phonePrefix": "The phone number must start with 07, 7 or +9647",
+      "phoneTooShort": "Phone number is too short ({{digits}} digits required)",
+      "phoneTooLong": "Phone number is too long ({{digits}} digits required)"
+    }
   },
   "tabs": {
     "home": "Home",
@@ -181,9 +197,20 @@
     "depositPayment": "Deposit",
     "shift": "Shift",
     "and": "and",
+    "success": "Success",
     "error": "Error",
+    "errorMessage": "Please try again.",
+    "retry": "Retry",
+    "goBack": "Go Back",
+    "goBackHome": "Back to Home",
     "delete": "Delete",
     "noData": "No data available"
+  },
+  "error": {
+    "404": {
+      "title": "Page Not Found",
+      "shortMessage": "Sorry, we couldn't find what you are looking for."
+    }
   },
   "booking": {
     "complete": "Booking Completion",

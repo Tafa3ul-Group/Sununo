@@ -5,9 +5,18 @@
 //   EXPO_PUBLIC_GEMINI_API_KEY=...        (required)
 //   EXPO_PUBLIC_GEMINI_MODEL=gemini-2.5-flash  (optional override)
 //
-// Note: EXPO_PUBLIC_* values are inlined into the JS bundle at build time, so the
-// key is shipped with the app. Restrict the key (app/referrer limits + quotas) in
-// the Google AI Studio / Cloud console.
+// SECURITY (known, tracked): EXPO_PUBLIC_* values are inlined into the JS bundle
+// at build time, so the key ships inside every APK/IPA and can be recovered with
+// `strings` in under a minute. The Generative Language API has no app-attestation
+// restriction, so possession of the key is full use of the key.
+//   • The key is sent as an `x-goog-api-key` HEADER (never `?key=` in the URL) so
+//     it does not land in proxy / CDN / server access logs, which are commonly
+//     retained far longer and shared far wider than request bodies.
+//   • The real fix is a server-side proxy (POST /translate on the NestJS API)
+//     holding the key; this module should then call that authenticated endpoint
+//     and EXPO_PUBLIC_GEMINI_API_KEY should be dropped from the build entirely.
+// Until that lands, restrict the key (quotas + API restriction to the Generative
+// Language API only) in the Google AI Studio / Cloud console.
 
 const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
 const GEMINI_MODEL = process.env.EXPO_PUBLIC_GEMINI_MODEL || 'gemini-2.5-flash';
@@ -52,9 +61,15 @@ export async function translateArToEn(text: string): Promise<string> {
 
   let res: Response;
   try {
-    res = await fetch(`${GEMINI_ENDPOINT}?key=${GEMINI_API_KEY}`, {
+    res = await fetch(GEMINI_ENDPOINT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      // `x-goog-api-key` is the documented header form of `?key=` for the
+      // Generative Language API — same auth, but the secret stays out of the
+      // request line that proxies and access logs record.
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': GEMINI_API_KEY,
+      },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: { temperature: 0.2 },

@@ -12,6 +12,7 @@ import { Colors, normalize, Shadows } from '@/constants/theme';
 import { useDirection } from "@/i18n";
 import { RootState } from '@/store';
 import { useGetPayoutsQuery, useGetProviderBookingsQuery, useGetProviderProfileQuery, useGetProviderStatsQuery, useRequestPayoutMutation } from '@/store/api/apiSlice';
+import { formatPrice } from '@/utils/format';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
@@ -93,7 +94,12 @@ export default function RevenueScreen() {
   // earnings the provider will receive once each booking is completed.
   const { data: confirmedBookingsResponse, refetch: refetchConfirmed } = useGetProviderBookingsQuery({ status: 'confirmed', limit: 100, page: 1 });
   // Payouts awaiting THIS owner's in-app confirmation (admin approved → needs نعم/لا).
-  const { data: awaitingResponse, refetch: refetchAwaiting } = useGetPayoutsQuery({ status: 'approved', limit: 5 });
+  // Unpaged (no date range) because the same list also feeds the locked-funds
+  // total below — a 5-row page would under-count it and re-open the bug.
+  const { data: awaitingResponse, refetch: refetchAwaiting } = useGetPayoutsQuery({ status: 'approved', limit: 100 });
+  // Requests still under review. Together with the approved ones these are the
+  // amounts the API treats as LOCKED when it validates a new payout request.
+  const { data: pendingPayoutsResponse, refetch: refetchPendingPayouts } = useGetPayoutsQuery({ status: 'pending', limit: 100 });
   const [requestPayout, { isLoading: isRequesting }] = useRequestPayoutMutation();
 
   const handleRefresh = async () => {
@@ -102,6 +108,7 @@ export default function RevenueScreen() {
     refetchStats();
     refetchConfirmed();
     refetchAwaiting();
+    refetchPendingPayouts();
   };
 
   const awaitingConfirm: any[] = useMemo(() => {
@@ -120,6 +127,25 @@ export default function RevenueScreen() {
 
   // Withdrawable wallet balance (realized) vs unsettled earnings from confirmed bookings.
   const walletBalance = Number(profile?.wallet?.balance || 0);
+
+  // Money already committed to payout requests that have not been paid out yet.
+  // The API refuses a new request for more than `wallet.balance - locked`, and
+  // defines locked as PENDING + APPROVED (payouts-provider.controller.ts
+  // createPayout) — mirrored exactly here so the card never advertises money the
+  // server will reject, and never hides money the server would still allow.
+  const lockedInPayouts = useMemo(() => {
+    const sumAmounts = (res: any) => {
+      const list = res?.data || res || [];
+      if (!Array.isArray(list)) return 0;
+      return list.reduce((sum: number, p: any) => sum + Number(p?.amount || 0), 0);
+    };
+    return sumAmounts(awaitingResponse) + sumAmounts(pendingPayoutsResponse);
+  }, [awaitingResponse, pendingPayoutsResponse]);
+
+  // Never negative: a locked total larger than the balance (possible while a
+  // mark-paid is in flight) must read as "nothing available", not as a debt.
+  const availableBalance = Math.max(0, walletBalance - lockedInPayouts);
+
   const pendingEarnings = useMemo(() => {
     const list = confirmedBookingsResponse?.data || confirmedBookingsResponse || [];
     if (!Array.isArray(list)) return 0;
@@ -143,6 +169,20 @@ export default function RevenueScreen() {
     const amount = parseFloat(withdrawAmount);
     if (!amount || amount <= 0) {
       Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: isRTL ? 'الرجاء إدخال مبلغ صحيح' : 'Please enter a valid amount', position: 'bottom' });
+      return;
+    }
+
+    // Same ceiling the API enforces. Catching it here turns a confusing English
+    // server error into a clear message that names the amount actually available.
+    if (amount > availableBalance) {
+      Toast.show({
+        type: 'error',
+        text1: isRTL ? 'المبلغ أكبر من الرصيد المتاح' : 'Amount exceeds available balance',
+        text2: isRTL
+          ? `المتاح للسحب حالياً ${formatPrice(availableBalance)} د.ع`
+          : `You can withdraw up to ${formatPrice(availableBalance)} IQD`,
+        position: 'bottom'
+      });
       return;
     }
 
@@ -211,8 +251,22 @@ export default function RevenueScreen() {
             <View style={[styles.decorCircle, styles.decorCircle2, { start: -20 }]} />
 
             <Text style={styles.balanceLabel}>{isRTL ? 'الرصيد المتاح للسحب' : 'Available to Withdraw'}</Text>
-            <Text style={styles.balanceValue}>{walletBalance.toLocaleString()}</Text>
+            {/* formatPrice, not toLocaleString: the bare call formats with the
+                DEVICE locale, so the balance showed Arabic-Indic digits next to
+                an English "IQD" on an Arabic phone running the app in English. */}
+            <Text style={styles.balanceValue}>{formatPrice(availableBalance)}</Text>
             <Text style={styles.balanceCurrency}>{isRTL ? 'دينار عراقي' : 'IQD'}</Text>
+
+            {/* What the wallet holds but cannot be withdrawn again — otherwise the
+                owner re-requests money already committed and only finds out from
+                the server's rejection. */}
+            {lockedInPayouts > 0 && (
+              <Text style={styles.balanceLockedNote}>
+                {isRTL
+                  ? `${formatPrice(lockedInPayouts)} د.ع محجوزة في طلبات سحب قيد التنفيذ`
+                  : `${formatPrice(lockedInPayouts)} IQD locked in payout requests in progress`}
+              </Text>
+            )}
 
             <TouchableOpacity
               style={[styles.withdrawButton, { flexDirection: 'row' }]}
@@ -233,7 +287,7 @@ export default function RevenueScreen() {
                   <Text style={styles.pendingStripLabel} numberOfLines={1}>{isRTL ? 'قيد التحصيل' : 'Pending'}</Text>
                 </View>
                 <Text style={styles.pendingStripValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>
-                  {pendingEarnings.toLocaleString()} <Text style={styles.pendingStripCurrency}>{isRTL ? 'د.ع' : 'IQD'}</Text>
+                  {formatPrice(pendingEarnings)} <Text style={styles.pendingStripCurrency}>{isRTL ? 'د.ع' : 'IQD'}</Text>
                 </Text>
                 <Text style={styles.pendingStripHint} numberOfLines={2}>{isRTL ? 'تُتاح للسحب بعد إكمال الحجز' : 'Available after completion'}</Text>
               </View>
@@ -259,8 +313,8 @@ export default function RevenueScreen() {
               </Text>
               <Text style={[styles.confirmBannerSub, { textAlign }]} numberOfLines={2}>
                 {isRTL
-                  ? `أكّد معلومات سحب ${Number(awaitingConfirm[0].amount || 0).toLocaleString()} د.ع قبل تنفيذ التحويل`
-                  : `Confirm the details of your ${Number(awaitingConfirm[0].amount || 0).toLocaleString()} IQD withdrawal`}
+                  ? `أكّد معلومات سحب ${formatPrice(awaitingConfirm[0].amount)} د.ع قبل تنفيذ التحويل`
+                  : `Confirm the details of your ${formatPrice(awaitingConfirm[0].amount)} IQD withdrawal`}
               </Text>
             </View>
             <View style={[styles.confirmBannerCta, { flexDirection: 'row' }]}>
@@ -299,7 +353,7 @@ export default function RevenueScreen() {
             <View style={[styles.statIconWrap, { backgroundColor: '#ECFDF5' }]}>
               <SolarBanknoteBold size={20} color="#10B981" />
             </View>
-            <Text style={styles.statValue}>{isLoadingStats ? '...' : stats.periodRevenue.toLocaleString()}</Text>
+            <Text style={styles.statValue}>{isLoadingStats ? '...' : formatPrice(stats.periodRevenue)}</Text>
             <Text style={styles.statLabel}>{isRTL ? statLabels.income.ar : statLabels.income.en}</Text>
           </View>
           <View style={styles.statCard}>
@@ -354,7 +408,7 @@ export default function RevenueScreen() {
 
                   <View style={{ alignItems: 'flex-end' }}>
                     <Text style={[styles.transactionAmount, { textAlign: textAlignEnd }]}>
-                      {item.amount?.toLocaleString()} <Text style={styles.currencySmall}>{isRTL ? 'د.ع' : 'IQD'}</Text>
+                      {formatPrice(item.amount)} <Text style={styles.currencySmall}>{isRTL ? 'د.ع' : 'IQD'}</Text>
                     </Text>
                     <View style={[styles.typeBadge, { backgroundColor: getStatusColor(item.status) + '15' }]}>
                       <Text style={[styles.typeBadgeText, { color: getStatusColor(item.status) }]}>
@@ -396,6 +450,14 @@ export default function RevenueScreen() {
           <Text style={styles.sheetTitle}>{isRTL ? 'طلب سحب أرباح' : 'Request Payout'}</Text>
           <Text style={styles.sheetSubtitle}>
             {isRTL ? 'أدخل المبلغ المراد سحبه' : 'Enter the amount to withdraw'}
+          </Text>
+          {/* States the real ceiling (balance minus money already committed to
+              pending/approved requests) before the owner types, instead of after
+              the server rejects them. */}
+          <Text style={styles.sheetAvailable}>
+            {isRTL
+              ? `المتاح للسحب: ${formatPrice(availableBalance)} د.ع`
+              : `Available: ${formatPrice(availableBalance)} IQD`}
           </Text>
 
           <View style={[styles.amountInputWrap, { flexDirection: 'row' }]}>
@@ -484,6 +546,15 @@ const styles = StyleSheet.create({
     fontFamily: "Alexandria-SemiBold",
     marginBottom: 20,
     marginTop: 2
+  },
+  balanceLockedNote: {
+    color: 'rgba(255,255,255,0.75)',
+    fontSize: normalize.font(11),
+    fontFamily: "Alexandria-Medium",
+    textAlign: 'center',
+    marginTop: -12,
+    marginBottom: 16,
+    paddingHorizontal: 12
   },
   withdrawButton: {
     backgroundColor: Colors.white,
@@ -763,7 +834,14 @@ const styles = StyleSheet.create({
     color: Colors.text.muted,
     fontFamily: "Alexandria-Medium",
     textAlign: 'center',
-    marginBottom: 24
+    marginBottom: 8
+  },
+  sheetAvailable: {
+    fontSize: normalize.font(12),
+    color: Colors.primary,
+    fontFamily: "Alexandria-SemiBold",
+    textAlign: 'center',
+    marginBottom: 20
   },
   amountInputWrap: {
     flexDirection: 'row',

@@ -174,37 +174,55 @@ const AppMapComponent = ({
     }
 
     let locationSubscription: any = null;
+    // The permission prompt and the first GPS fix take seconds, and the map is
+    // mounted/unmounted on every explore + home visit. Without this flag an
+    // unmount mid-await left cleanup with `null` while the watcher created a
+    // moment later kept running for the rest of the process — a 1 Hz GPS drain
+    // plus setState on a dead component, accumulating one watcher per visit.
+    let cancelled = false;
 
     (async () => {
       try {
         let { status } = await Location.requestForegroundPermissionsAsync();
+        if (cancelled) return;
         if (status === "granted") {
           // Get initial position
           let currentLocation = await Location.getCurrentPositionAsync({
             accuracy: Location.Accuracy.Balanced
           });
+          if (cancelled) return;
           setLocation(currentLocation);
 
           // Watch for changes
-          locationSubscription = await Location.watchPositionAsync(
+          const sub = await Location.watchPositionAsync(
             {
               accuracy: Location.Accuracy.High,
               distanceInterval: 5, // update every 5 meters
               timeInterval: 1000, // or every second
             },
             (newLocation) => {
+              if (cancelled) return;
               setLocation(newLocation);
             },
           );
+          // Unmounted while watchPositionAsync was still resolving — cleanup
+          // has already run and will never see this subscription, so drop it
+          // here instead of letting it leak.
+          if (cancelled) {
+            sub.remove();
+            return;
+          }
+          locationSubscription = sub;
         }
       } catch (err) {
         console.warn("Location error:", err);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     })();
 
     return () => {
+      cancelled = true;
       if (locationSubscription) {
         locationSubscription.remove();
       }
@@ -220,14 +238,50 @@ const AppMapComponent = ({
     console.warn("Mapbox Load Error:", err);
   }, []);
 
+  // Last camera we handed to the parent — used to swallow no-op repeats.
+  const lastReportedRef = React.useRef<[number, number, number] | null>(null);
+
+  // @rnmapbox/maps v10 hands `onMapIdle` a MapState, NOT the old v8
+  // PointFeature: `{ properties: { center, bounds, zoom, heading, pitch }, ... }`
+  // (see node_modules/@rnmapbox/maps/.../MapView.d.ts, `export type MapState`).
+  // Reading `feature.geometry.coordinates` / `properties.zoomLevel` meant the
+  // guard was always false, so the parent NEVER learned the camera moved — the
+  // explore screen kept querying chalets for its initial region no matter where
+  // the user panned. `handleNativeCameraChanged` above already reads the v10
+  // shape, which is why clustering worked and hid this.
   const handleMapIdle = useCallback(
-    (feature: any) => {
-      if (onCameraChanged && feature.geometry && feature.geometry.coordinates) {
-        onCameraChanged(
-          feature.geometry.coordinates as [number, number],
-          feature.properties.zoomLevel,
-        );
+    (state: any) => {
+      if (!onCameraChanged) return;
+      const center = state?.properties?.center;
+      const zoom = state?.properties?.zoom;
+      if (
+        !Array.isArray(center) ||
+        typeof center[0] !== "number" ||
+        typeof center[1] !== "number" ||
+        isNaN(center[0]) ||
+        isNaN(center[1]) ||
+        typeof zoom !== "number" ||
+        isNaN(zoom)
+      ) {
+        return;
       }
+
+      // Parents typically feed the reported center straight back in as
+      // `centerCoordinate`, and Mapbox's Camera re-issues a stop whenever that
+      // array's IDENTITY changes — a same-place fly-to that fires idle again.
+      // Reporting only real movement keeps that from becoming a loop.
+      const prev = lastReportedRef.current;
+      if (
+        prev &&
+        Math.abs(prev[0] - center[0]) < 1e-6 &&
+        Math.abs(prev[1] - center[1]) < 1e-6 &&
+        Math.abs(prev[2] - zoom) < 0.01
+      ) {
+        return;
+      }
+      lastReportedRef.current = [center[0], center[1], zoom];
+
+      onCameraChanged([center[0], center[1]], zoom);
     },
     [onCameraChanged],
   );

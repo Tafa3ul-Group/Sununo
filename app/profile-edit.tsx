@@ -38,6 +38,68 @@ import { useSelector } from 'react-redux';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
+// ── Backend error copy ──────────────────────────────────────────────────────
+// The API has no i18n layer, but every thrown exception carries a stable `key`
+// alongside its English `message` (sununo-api utils/exceptions/custom.exception).
+// Rendering `message` verbatim put English sentences inside the Arabic RTL
+// dialogs, so the keys this screen can actually hit are mapped to localized copy
+// and anything unrecognized falls back to the caller's localized default.
+const API_ERROR_MESSAGES: Record<string, { ar: string; en: string }> = {
+  PHONE_NUMBER_EXISTS: {
+    ar: 'رقم الهاتف مستخدم في حساب آخر.',
+    en: 'This phone number is already used by another account.',
+  },
+  SAME_PHONE_NUMBER: {
+    ar: 'رقم الهاتف الجديد هو نفسه رقمك الحالي.',
+    en: 'The new phone number is the same as your current one.',
+  },
+  INVALID_CODE: {
+    ar: 'رمز التحقق غير صحيح أو انتهت صلاحيته.',
+    en: 'Invalid or expired verification code.',
+  },
+  CODE_NOT_FOUND: {
+    ar: 'رمز التحقق غير صحيح أو انتهت صلاحيته.',
+    en: 'Invalid or expired verification code.',
+  },
+  USER_NOT_FOUND: {
+    ar: 'تعذر العثور على الحساب.',
+    en: 'Account not found.',
+  },
+  USER_IDS_REQUIRED: {
+    ar: 'يجب رفع صورتي الهوية لحسابات فئة العوائل.',
+    en: 'Both ID card photos are required for family accounts.',
+  },
+  IMAGE_REQUIRED: {
+    ar: 'يرجى اختيار صورة.',
+    en: 'Please choose an image.',
+  },
+  IMAGE_UPLOAD_FAILED: {
+    ar: 'فشل رفع الصورة، حاول مرة أخرى.',
+    en: 'Image upload failed, please try again.',
+  },
+};
+
+const ARABIC_SCRIPT = /[؀-ۿ]/;
+
+/**
+ * Localized text for an RTK Query error. Falls through to the server's own
+ * message only when it is already Arabic (a few validation messages are) or the
+ * UI is English — never English text inside the Arabic dialog. ValidationPipe
+ * 400s arrive as an English array naming DTO fields and carry no key, so they
+ * land on `fallback`.
+ */
+const getApiErrorMessage = (err: any, fallback: string, isRTL: boolean): string => {
+  const mapped = API_ERROR_MESSAGES[err?.data?.key];
+  if (mapped) return isRTL ? mapped.ar : mapped.en;
+
+  const raw = err?.data?.message;
+  const message = Array.isArray(raw) ? raw[0] : raw;
+  if (typeof message === 'string' && message.trim()) {
+    if (!isRTL || ARABIC_SCRIPT.test(message)) return message;
+  }
+  return fallback;
+};
+
 export default function ProfileEditScreen() {
   const router = useRouter();
   const { isRTL, textAlign, inputTextAlign, direction } = useDirection();
@@ -94,8 +156,12 @@ export default function ProfileEditScreen() {
         await updateProfileImage(formData).unwrap();
         refetch();
       } catch (err: any) {
-        const msg = err?.data?.message || (isRTL ? 'فشل تحديث الصورة' : 'Failed to update image');
-        Alert.alert(isRTL ? 'خطأ' : 'Error', Array.isArray(msg) ? msg[0] : msg);
+        const msg = getApiErrorMessage(
+          err,
+          isRTL ? 'فشل تحديث الصورة' : 'Failed to update image',
+          isRTL,
+        );
+        Alert.alert(isRTL ? 'خطأ' : 'Error', msg);
       }
     }
   };
@@ -116,8 +182,12 @@ export default function ProfileEditScreen() {
       refetch();
       router.back();
     } catch (err: any) {
-      const msg = err?.data?.message || (isRTL ? 'فشل التحديث' : 'Update failed');
-      Alert.alert(isRTL ? 'خطأ' : 'Error', Array.isArray(msg) ? msg[0] : msg);
+      const msg = getApiErrorMessage(
+        err,
+        isRTL ? 'فشل التحديث' : 'Update failed',
+        isRTL,
+      );
+      Alert.alert(isRTL ? 'خطأ' : 'Error', msg);
     }
   };
 
@@ -129,10 +199,15 @@ export default function ProfileEditScreen() {
   const [phoneModalVisible, setPhoneModalVisible] = useState(false);
   const [changeStep, setChangeStep] = useState<'phone' | 'otp'>('phone');
   const [newPhone, setNewPhone] = useState('');
+  // The exact number step 1 asked the OTP for. `verify-phone` requires it again
+  // — the server reads it to write the new number — so it is kept verbatim
+  // instead of re-deriving it from the input on submit.
+  const [pendingPhone, setPendingPhone] = useState('');
   const [otpCode, setOtpCode] = useState('');
 
   const openPhoneChange = () => {
     setNewPhone('');
+    setPendingPhone('');
     setOtpCode('');
     setChangeStep('phone');
     setPhoneModalVisible(true);
@@ -148,20 +223,25 @@ export default function ProfileEditScreen() {
       return;
     }
     try {
-      const res: any = await changePhoneNumber({ phone: cleanPhone }).unwrap();
+      const res: any = await changePhoneNumber({ newPhone: cleanPhone }).unwrap();
+      setPendingPhone(cleanPhone);
       // Auto-fill OTP if the backend returns it (demo/staging environments)
       if (res?.code) setOtpCode(String(res.code));
       setChangeStep('otp');
     } catch (err: any) {
-      const msg =
-        err?.data?.message ||
-        (isRTL ? 'فشل إرسال رمز التحقق' : 'Failed to send verification code');
-      Alert.alert(isRTL ? 'خطأ' : 'Error', Array.isArray(msg) ? msg[0] : msg);
+      const msg = getApiErrorMessage(
+        err,
+        isRTL ? 'فشل إرسال رمز التحقق' : 'Failed to send verification code',
+        isRTL,
+      );
+      Alert.alert(isRTL ? 'خطأ' : 'Error', msg);
     }
   };
 
   const handleVerifyPhoneChange = async () => {
-    if (!otpCode.trim()) {
+    // Digits only — the API types `code` as a number, so a stray character would
+    // be sent as null and come back as an opaque validation error.
+    if (!/^\d+$/.test(otpCode.trim())) {
       Alert.alert(
         isRTL ? 'خطأ' : 'Error',
         isRTL ? 'يرجى إدخال رمز التحقق' : 'Please enter the verification code',
@@ -169,7 +249,10 @@ export default function ProfileEditScreen() {
       return;
     }
     try {
-      await verifyPhoneNumberChange({ code: otpCode.trim() }).unwrap();
+      await verifyPhoneNumberChange({
+        newPhone: pendingPhone,
+        code: otpCode.trim(),
+      }).unwrap();
       setPhoneModalVisible(false);
       refetch();
       Alert.alert(
@@ -177,10 +260,12 @@ export default function ProfileEditScreen() {
         isRTL ? 'تم تغيير رقم الهاتف بنجاح' : 'Phone number changed successfully',
       );
     } catch (err: any) {
-      const msg =
-        err?.data?.message ||
-        (isRTL ? 'رمز التحقق غير صحيح' : 'Invalid verification code');
-      Alert.alert(isRTL ? 'خطأ' : 'Error', Array.isArray(msg) ? msg[0] : msg);
+      const msg = getApiErrorMessage(
+        err,
+        isRTL ? 'رمز التحقق غير صحيح' : 'Invalid verification code',
+        isRTL,
+      );
+      Alert.alert(isRTL ? 'خطأ' : 'Error', msg);
     }
   };
 
@@ -372,8 +457,8 @@ export default function ProfileEditScreen() {
               <>
                 <Text style={[styles.modalLabel, { textAlign }]}>
                   {isRTL
-                    ? `أدخل رمز التحقق المُرسل إلى ${newPhone}`
-                    : `Enter the verification code sent to ${newPhone}`}
+                    ? `أدخل رمز التحقق المُرسل إلى ${pendingPhone || newPhone}`
+                    : `Enter the verification code sent to ${pendingPhone || newPhone}`}
                 </Text>
                 <TextInput
                   style={[styles.modalInput, { textAlign: 'center', letterSpacing: 6 }]}

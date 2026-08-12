@@ -1,4 +1,6 @@
-// TEMPORARY RTL verification screen (Phase 0 spike). Delete after migration.
+// RTL verification screen (Phase 0 spike). DEV-ONLY — the export below is
+// swapped for a redirect in release builds, so the route stays unreachable in
+// production while remaining available as the on-device RTL oracle.
 // Open via deep link: /rtl-spike  (e.g. exp://.../rtl-spike or the dev menu).
 //
 // It proves the Option-C assumptions on a REAL device, both iOS & Android:
@@ -17,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 import React, { useCallback, useRef } from 'react';
 import { I18nManager, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Redirect } from 'expo-router';
 import { changeLanguage, useDirection } from '@/i18n';
 
 const Box = ({ label, color }: { label: string; color: string }) => (
@@ -69,7 +72,7 @@ function Panel({ dir }: { dir: 'rtl' | 'ltr' }) {
   );
 }
 
-export default function RtlSpike() {
+function RtlSpikeScreen() {
   const { i18n } = useTranslation();
   const { isRTL, direction } = useDirection();
   const sheetRef = useRef<BottomSheetModal>(null);
@@ -131,6 +134,13 @@ export default function RtlSpike() {
     </SafeAreaView>
   );
 }
+
+// The route file must always export a component, so gate at the export rather
+// than deleting the screen: in release builds this bounces to home, which keeps
+// the debug surface out of production without losing the diagnostic in dev.
+export default __DEV__ ? RtlSpikeScreen : function RtlSpikeDisabled() {
+  return <Redirect href="/" />;
+};
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#0F172A' },

@@ -11,7 +11,7 @@ import { useRouter } from 'expo-router';
 import { HeaderSection } from '@/components/header-section';
 import { EmptyState } from '@/components/ui/empty-state';
 import { useGetNotificationsQuery, useMarkNotificationAsReadMutation } from '@/store/api/customerApiSlice';
-import { useDirection } from '@/i18n';
+import { pickTranslation, useDirection } from '@/i18n';
 import { RootState } from '@/store';
 import { selectAccountType, switchMode } from '@/store/authSlice';
 import { activeSection, resolveNotificationSection } from '@/utils/notification-section';
@@ -98,12 +98,21 @@ export default function NotificationsScreen() {
     const [markAsRead] = useMarkNotificationAsReadMutation();
 
     // Pre-process: transform API data + format times once per item
+    //
+    // NOTE ON LANGUAGE: notification title/text are plain, non-localized columns
+    // on the API (Notification.title / .text are `varchar`) and every producer
+    // writes them in Arabic, so an English user currently sees an Arabic feed.
+    // That can only be fixed server-side (store/serve both languages, or a
+    // message key + params); until then we render exactly what the API sent
+    // rather than guessing a translation. `pickTranslation` is a pass-through
+    // for plain strings, so this already handles an `{ ar, en }` payload the day
+    // the API starts sending one — no client release needed.
     const formattedNotifs = useMemo<(Notification & { notifDate: string })[]>(() => {
       const items: any[] = notificationsResponse?.data || [];
       return items.map((item: any): Notification & { notifDate: string } => ({
         id: item.id,
-        title: item.title || t('notifications.newNotification'),
-        message: item.text || item.body || item.message || '',
+        title: pickTranslation(item.title, isArabic) || t('notifications.newNotification'),
+        message: pickTranslation(item.text || item.body || item.message, isArabic) || '',
         time: new Date(item.createdAt).toLocaleTimeString(isArabic ? 'ar' : 'en', { hour: '2-digit', minute: '2-digit' }),
         isRead: !!item.readAt || !!item.isRead,
         redirectType: item.redirectType,

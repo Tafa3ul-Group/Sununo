@@ -6,7 +6,7 @@ import { RootState } from '@/store';
 import { useGetNotificationsQuery, useMarkNotificationAsReadMutation } from '@/store/api/customerApiSlice';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
@@ -35,13 +35,23 @@ export default function NotificationsScreen() {
     const accountType = useSelector(selectAccountType);
     const router = useRouter();
     const [page, setPage] = useState(1);
+    // Pages are accumulated here rather than in the RTK Query cache: the
+    // notifications endpoint has no `merge`, so each page REPLACES the previous
+    // one in `response.data`. Keeping the running list locally lets the loaded
+    // pages stay on screen while the query still fetches page-by-page.
+    const [items, setItems] = useState<Notification[]>([]);
     const [markAsRead] = useMarkNotificationAsReadMutation();
 
     const handleNotificationPress = useCallback((item: Notification) => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-        // Mark as read
+        // Mark as read. The list is accumulated locally across pages, and the
+        // tag invalidation only refetches the page currently being queried, so
+        // clear the unread dot here too — otherwise a row from an earlier page
+        // keeps its dot until the screen is refreshed from page 1.
         if (!item.readAt) {
+            const readAt = new Date().toISOString();
+            setItems(prev => prev.map(n => (n.id === item.id ? { ...n, readAt } : n)));
             markAsRead(item.id).catch(() => {});
         }
 
@@ -76,12 +86,37 @@ export default function NotificationsScreen() {
         role: activeSection(userType),
     });
 
-    const notifications = response?.data || [];
+    useEffect(() => {
+        // While a new page is in flight RTK Query reports `data: undefined`
+        // (each page is its own cache key) — keep what is already on screen.
+        if (!response) return;
+        const pageItems: Notification[] = response.data || [];
+        setItems(prev => {
+            // Page 1 is the source of truth after a pull-to-refresh.
+            if (page === 1) return pageItems;
+            // A refetch of the current page (e.g. after mark-as-read) must
+            // update the rows already on screen, not duplicate them.
+            const fresh = new Map(pageItems.map(n => [n.id, n]));
+            const merged = prev.map(n => fresh.get(n.id) ?? n);
+            const known = new Set(prev.map(n => n.id));
+            return [...merged, ...pageItems.filter(n => !known.has(n.id))];
+        });
+    }, [response, page]);
+
+    const notifications = items;
 
     const handleLoadMore = () => {
-        if (response?.meta && page < response.meta.totalPages && !isFetching) {
-            setPage(prev => prev + 1);
-        }
+        // The API's shared pagination helper (utils/pagination.ts ReturnPagination)
+        // emits { page, limit, total, lastPage, hasNext, hasPrev } — there is no
+        // `totalPages` on this endpoint, so the old `page < meta.totalPages`
+        // compared against undefined and never advanced past the first page.
+        // `totalPages` is kept as a fallback in case the endpoint is ever
+        // aligned with the hand-rolled ones (bookings, chalets, payouts…).
+        const meta = response?.meta;
+        if (!meta || isFetching) return;
+        const lastPage = Number(meta.lastPage ?? meta.totalPages ?? 0);
+        const hasNext = typeof meta.hasNext === 'boolean' ? meta.hasNext : page < lastPage;
+        if (hasNext) setPage(prev => prev + 1);
     };
 
     const renderItem = ({ item }: { item: Notification }) => {
