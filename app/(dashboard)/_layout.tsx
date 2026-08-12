@@ -58,6 +58,10 @@ export default function DashboardNonTabLayout() {
         name="notification-settings"
         options={{ title: isArabic ? 'إعدادات الإشعارات' : 'Notification Settings' }}
       />
+      <Stack.Screen
+        name="discounts"
+        options={{ title: isArabic ? 'الخصومات' : 'Discounts' }}
+      />
     </Stack>
   );
 }

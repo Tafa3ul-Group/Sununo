@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
 import Svg, { Path } from "react-native-svg";
+import { DiscountBadge, DiscountedFrom } from "./discount-badge";
 import {
   SolarHeartBold,
   SolarMapPointBold,
@@ -58,6 +59,14 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
   } else if (chalet.basePrice) {
     minPrice = Number(chalet.basePrice).toLocaleString();
   }
+
+  // With a campaign running the card leads with what the customer will actually
+  // pay, and DiscountedFrom shows the pre-discount figure struck through beside
+  // it. Without one, `priceAfter` is absent and this is the ordinary price.
+  const displayPrice =
+    chalet.discount?.priceAfter != null
+      ? Number(chalet.discount.priceAfter).toLocaleString()
+      : minPrice;
 
   return (
     <TouchableOpacity
@@ -142,9 +151,12 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
               {isRTL ? "يبدأ من" : "Starts from"}
             </ThemedText>
             <ThemedText style={styles.price}>
-              {isRTL ? `${minPrice} د.ع` : `IQD ${minPrice}`}
+              {isRTL ? `${displayPrice} د.ع` : `IQD ${displayPrice}`}
             </ThemedText>
+            {/* Null on chalets with no campaign, so nothing changes for them. */}
+            <DiscountBadge discount={chalet.discount} size="sm" />
           </View>
+          <DiscountedFrom discount={chalet.discount} size="sm" />
         </View>
       </View>
     </TouchableOpacity>

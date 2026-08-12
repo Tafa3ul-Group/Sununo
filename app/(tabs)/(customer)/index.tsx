@@ -235,6 +235,9 @@ export default function HomeScreen() {
             location: c.region?.name ?? c.city?.name ?? "",
             image: c.images?.[0]?.url ?? c.images?.[0],
             price: getStartingPrice(c),
+            // Carried through so the card can show the discount badge; the API
+            // leaves it undefined when no campaign is running.
+            discount: c.discount,
             rating: c.averageRating ?? c.rating ?? 0,
           };
         }),
@@ -260,7 +263,13 @@ export default function HomeScreen() {
           location: c.region?.name ?? c.city?.name ?? "",
           image: c.images?.[0]?.url ?? c.images?.[0],
           price: getStartingPrice(c),
+          // Carried through so the card can show the discount badge; the API
+          // leaves it undefined when no campaign is running.
+          discount: c.discount,
           rating: c.rating ?? c.averageRating ?? 0,
+          // Resolved server-side (platform default merged with any per-chalet
+          // override), so the card renders it as-is.
+          featuredLabel: c.featuredLabel,
         })),
     [featuredRaw],
   );
@@ -391,6 +400,9 @@ export default function HomeScreen() {
       title: pickTranslation(chalet, isRTL),
       location: pickTranslation(chalet.region, isRTL),
       price: getStartingPrice(chalet),
+      // Carried through so the card can show the discount badge; the API
+      // leaves it undefined when no campaign is running.
+      discount: chalet.discount,
       rating: chalet.averageRating || 0,
       color: CARD_COLORS[index % CARD_COLORS.length],
       image: getImageSrc(chalet.images?.[0]?.url),

@@ -1,5 +1,6 @@
 import { SolarHeartBold, SolarStarBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
+import { DiscountBadge, DiscountedFrom } from "@/components/discount-badge";
 import { Colors, Fonts, normalize } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { Image as ExpoImage } from "expo-image";
@@ -107,6 +108,14 @@ export const HorizontalCard = React.memo(function HorizontalCard({
     ? chalet?.price
     : fetchedPrice ?? chalet?.price ?? "0";
 
+  // With a campaign running the card leads with what the customer will actually
+  // pay, and DiscountedFrom shows the pre-discount figure struck through beside
+  // it. Without one, `priceAfter` is absent and this is the ordinary price.
+  const displayPrice =
+    chalet?.discount?.priceAfter != null
+      ? Number(chalet.discount.priceAfter).toLocaleString()
+      : resolvedPrice;
+
   if (!chalet) return null;
 
   const imageSource =
@@ -121,6 +130,10 @@ export const HorizontalCard = React.memo(function HorizontalCard({
   const dPath = isArabic ? D_PATH_BOWL_LEFT : D_PATH_BOWL_RIGHT;
 
   const config = SHAPES_CONFIG[shapeIndex % SHAPES_CONFIG.length];
+
+  // Present only on chalets from the admin-curated featured strip; every other
+  // caller passes nothing and the badge simply does not render.
+  const featuredLabel = chalet.featuredLabel;
 
   // Subtle press-scale on the card + a pop on the favorite heart. Pure
   // transforms — no layout/design change, just makes taps feel alive.
@@ -202,6 +215,26 @@ export const HorizontalCard = React.memo(function HorizontalCard({
                 { alignItems: "flex-start" },
               ]}
             >
+              {/* Featured badge. Text and both colours are configured per
+                  platform (and optionally overridden per chalet) in the
+                  dashboard, so they are applied from the data, not themed. */}
+              {featuredLabel?.enabled !== false && featuredLabel?.name && (
+                <View
+                  style={[
+                    styles.featuredBadge,
+                    { backgroundColor: featuredLabel.backgroundColor || Colors.primary },
+                  ]}
+                >
+                  <ThemedText
+                    style={[styles.featuredBadgeText, { color: featuredLabel.textColor || "#FFFFFF" }]}
+                    numberOfLines={1}
+                  >
+                    {(isArabic ? featuredLabel.name.ar : featuredLabel.name.en) ||
+                      featuredLabel.name.ar ||
+                      featuredLabel.name.en}
+                  </ThemedText>
+                </View>
+              )}
               <ThemedText
                 style={[styles.title, { textAlign }]}
                 numberOfLines={1}
@@ -264,9 +297,12 @@ export const HorizontalCard = React.memo(function HorizontalCard({
             </ThemedText>
             <ThemedText style={styles.price}>
               {isArabic ? "" : "IQD "}
-              {resolvedPrice}
+              {displayPrice}
               {isArabic ? " د.ع" : ""}
             </ThemedText>
+            {/* Null on chalets with no campaign, so nothing changes for them. */}
+            <DiscountBadge discount={chalet?.discount} size="sm" />
+            <DiscountedFrom discount={chalet?.discount} size="sm" />
           </View>
 
           <View
@@ -341,6 +377,18 @@ const styles = StyleSheet.create({
     color: "#111827" },
   upperText: {
     marginTop: 4 },
+  featuredBadge: {
+    alignSelf: "flex-start",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+    marginBottom: 4,
+  },
+  featuredBadgeText: {
+    fontSize: normalize.font(9),
+    fontFamily: Fonts.bold,
+    lineHeight: normalize.font(13),
+  },
   title: {
     fontSize: normalize.font(15),
     fontFamily: Fonts.bold,

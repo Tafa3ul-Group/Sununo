@@ -385,6 +385,9 @@ export default function ExploreScreen() {
           title: item.name,
           location: item.address,
           price: getStartingPrice(item),
+          // Carried through so the card can show the discount badge; the API
+          // leaves it undefined when no campaign is running.
+          discount: item.discount,
           rating: item.rating || 0,
           color: Colors.primary,
           image: getImageSrc(mainImage?.url),
@@ -604,6 +607,9 @@ export default function ExploreScreen() {
         title: pickTranslation(item, isRTL),
         location: pickTranslation(item.city, isRTL),
         price: getStartingPrice(item),
+        // Carried through so the card can show the discount badge; the API
+        // leaves it undefined when no campaign is running.
+        discount: item.discount,
         rating: item.rating || 0,
         image: getImageSrc(item.images?.[0]?.url),
         color: CARD_COLORS[index % CARD_COLORS.length],

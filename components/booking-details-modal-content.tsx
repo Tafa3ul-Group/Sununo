@@ -92,6 +92,16 @@ export const BookingDetailsModalContent = ({ id, isRTL: _isRTLProp, t, onClose, 
               <Text style={[styles.priceTag, { textAlign }]}>
                 {isRTL ? `IQD ${Number(data.totalPrice).toLocaleString()} / شفت` : `IQD ${Number(data.totalPrice).toLocaleString()} / Shift`}
               </Text>
+
+              {/* What the platform took off this booking out of its own commission.
+                  Only rendered when a campaign actually applied. */}
+              {Number(data.discountAmount) > 0 ? (
+                <Text style={[styles.discountTag, { textAlign }]}>
+                  {isRTL
+                    ? `وفّرت IQD ${Number(data.discountAmount).toLocaleString()}`
+                    : `You saved IQD ${Number(data.discountAmount).toLocaleString()}`}
+                </Text>
+              ) : null}
             </View>
             
             <View style={styles.organicImageContainer}>
@@ -281,6 +291,11 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(14),
     fontFamily: "Alexandria-Medium",
     color: Colors.text.primary },
+  discountTag: {
+    marginTop: normalize.height(2),
+    fontSize: normalize.font(11),
+    fontFamily: "Alexandria-Medium",
+    color: Colors.secondary },
   organicImageContainer: {
     width: normalize.width(100),
     height: normalize.width(100),

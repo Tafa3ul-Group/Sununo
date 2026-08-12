@@ -725,6 +725,40 @@ export const apiSlice = createApi({
       invalidatesTags: ["User"],
     }),
 
+    // ── Discounts (provider) ───────────────────────────────────────────────
+    // A discount the owner funds out of their OWN share — the platform's
+    // commission is worked out on the price before the discount and is not
+    // touched. Requests wait for admin approval before they discount anything.
+
+    /** The owner's own requests plus any discount the platform imposed on them. */
+    getProviderDiscounts: builder.query({
+      query: () => "/provider/discounts",
+      providesTags: ["Chalet"],
+    }),
+
+    requestProviderDiscount: builder.mutation({
+      query: (data) => ({
+        url: "/provider/discounts",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Chalet"],
+    }),
+
+    /**
+     * Pause/resume — only works on campaigns the owner requested themselves. The
+     * server rejects it for platform-imposed ones, which is why the list ships a
+     * `canToggle` flag per row rather than leaving the app to guess.
+     */
+    toggleProviderDiscount: builder.mutation({
+      query: ({ id, isActive }: { id: string; isActive: boolean }) => ({
+        url: `/provider/discounts/${id}/toggle`,
+        method: "PATCH",
+        params: { isActive },
+      }),
+      invalidatesTags: ["Chalet"],
+    }),
+
     // Get a single payout request (for the in-app confirmation screen)
     getPayout: builder.query({
       query: (id: string) => `/provider/payouts/${id}`,
@@ -875,6 +909,11 @@ export const {
   useDeclinePayoutMutation,
   useGetNotificationsQuery,
   useLogoutUserMutation,
+
+  // Provider discounts
+  useGetProviderDiscountsQuery,
+  useRequestProviderDiscountMutation,
+  useToggleProviderDiscountMutation,
 } = apiSlice;
 
 // Force Metro cache reload - Updated at 2026-05-05T14:55

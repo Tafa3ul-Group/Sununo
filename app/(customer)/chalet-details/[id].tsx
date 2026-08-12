@@ -11,6 +11,7 @@ import {
   SolarWidgetBold,
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
+import { DiscountBadge } from "@/components/discount-badge";
 import { CircleBackButton } from "@/components/ui/circle-back-button";
 import { ErrorState } from "@/components/ui/error-state";
 import { SkeletonBox } from "@/components/ui/skeleton-loader";
@@ -232,6 +233,13 @@ const FacilityCell = React.memo(function FacilityCell({
       <ThemedText style={styles.facilityLabelText}>
         {facility.label}
       </ThemedText>
+      {/* Paid amenities say so here, so the amount on the booking screen is
+          never a surprise. */}
+      {facility.price > 0 && (
+        <ThemedText style={styles.facilityPriceText} numberOfLines={1}>
+          {facility.price.toLocaleString()} د.ع{facility.isOptional ? " (اختياري)" : ""}
+        </ThemedText>
+      )}
     </Animated.View>
   );
 });
@@ -570,12 +578,19 @@ export default function ChaletDetailScreen() {
         // Pick shape deterministically by index, cycling through the 4 shapes
         const shapeKey = SHAPE_KEYS[idx % SHAPE_KEYS.length];
 
+        // `price` sits on the chalet↔feature LINK, not the feature: the same
+        // amenity can cost different amounts at different chalets. 0 = free,
+        // which is what nearly every amenity is.
+        const price = Number(item.price) || 0;
+
         return {
           label: pickTranslation(feature, isRTL),
           iconUrl,
           shapeKey,
           shapeColor: SHAPE_COLORS[shapeKey],
           shapePath: SHAPES[shapeKey],
+          price,
+          isOptional: !!item.isOptional,
         };
       });
     }
@@ -791,6 +806,20 @@ export default function ChaletDetailScreen() {
               </View>
             ))}
           </View>
+
+          {/* Running campaign, stated before the customer looks at any shift price
+              so they read the prices below already knowing a discount applies.
+              The API leaves `discount` null when nothing is running. */}
+          {chalet?.discount?.percentage > 0 && (
+            <View style={styles.discountBanner}>
+              <DiscountBadge discount={chalet.discount} />
+              <ThemedText style={[styles.discountBannerText, { textAlign }]}>
+                {isRTL
+                  ? `خصم ${Math.round(chalet.discount.percentage)}% يُطبَّق تلقائياً على حجزك`
+                  : `${Math.round(chalet.discount.percentage)}% off, applied automatically at checkout`}
+              </ThemedText>
+            </View>
+          )}
 
           {/* الفترات المتوفرة */}
           <SectionHeader
@@ -1263,6 +1292,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 20,
   },
+  discountBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: "#22C55E14",
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 12,
+  },
+  discountBannerText: { flex: 1, fontSize: 13, color: "#111827" },
   shiftsGrid: {
     gap: 12,
     marginBottom: 10,
@@ -1459,6 +1499,14 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     width: "100%",
     lineHeight: 18,
+  },
+  facilityPriceText: {
+    fontSize: 10,
+    fontFamily: "Alexandria-Medium",
+    color: Colors.primary,
+    textAlign: "center",
+    width: "100%",
+    lineHeight: 14,
   },
   descriptionText: {
     fontSize: 14,

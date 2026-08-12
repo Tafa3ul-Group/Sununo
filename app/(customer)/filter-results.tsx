@@ -114,6 +114,9 @@ export default function FilterResultsScreen() {
         title: getChaletName(chalet, isArabic),
         location: getChaletLocation(chalet, isArabic),
         price: getStartingPrice(chalet),
+        // Carried through so the card can show the discount badge; the API
+        // leaves it undefined when no campaign is running.
+        discount: chalet.discount,
         image: getImageSrc(chalet.images?.[0]?.url || chalet.image || ""),
         images: chalet.images || [],
         rating: chalet.averageRating || chalet.rating || 0,
