@@ -6,6 +6,48 @@ import { apiSlice, unwrapListResponse } from "./apiSlice";
 // while sharing the same base URL, auth token, and cache infrastructure.
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** The slice of `onQueryStarted`'s api object the optimistic helpers below use. */
+type OptimisticApi = {
+  dispatch: (action: any) => any;
+  queryFulfilled: Promise<unknown>;
+};
+
+/**
+ * Optimistically flip a chalet id inside the cached `getFavoriteIds` array so
+ * the heart responds on tap instead of after the round trip, and undo the patch
+ * if the server rejects the write.
+ *
+ * `apiSlice.util` — not `customerApi.util` — because an injected slice cannot be
+ * referenced from inside its own initializer; both point at the same cache.
+ */
+async function patchFavoriteIds(
+  chaletId: string,
+  op: "toggle" | "add" | "remove",
+  { dispatch, queryFulfilled }: OptimisticApi,
+) {
+  const patch = dispatch(
+    (apiSlice.util.updateQueryData as any)(
+      "getFavoriteIds",
+      undefined,
+      (draft: string[]) => {
+        if (!Array.isArray(draft)) return;
+        const index = draft.indexOf(chaletId);
+        const remove = op === "remove" || (op === "toggle" && index >= 0);
+        if (remove) {
+          if (index >= 0) draft.splice(index, 1);
+        } else if (index < 0) {
+          draft.push(chaletId);
+        }
+      },
+    ),
+  );
+  try {
+    await queryFulfilled;
+  } catch {
+    patch.undo();
+  }
+}
+
 export const customerApi = apiSlice.injectEndpoints({
   overrideExisting: true,
   endpoints: (builder) => ({
@@ -235,38 +277,51 @@ export const customerApi = apiSlice.injectEndpoints({
     }),
 
     // ── Favorites (Customer) ───────────────────────────────────────────────
+    //
+    // Favoriting touches ONLY the favorites data — no chalet field changes — so
+    // these mutations invalidate the "Favorite" tag alone. Invalidating the bare
+    // "Chalet" tag flattened the whole tag bucket, so one heart tap refetched the
+    // browse list, the map (up to 300 rows), featured, detail and reviews.
+    // Every favorite-aware screen renders off `getFavoriteIds`, which is patched
+    // optimistically below so the heart flips on tap instead of after the round
+    // trip (and rolls back if the request fails).
 
     /** Toggle chalet in favorites */
-    toggleFavorite: builder.mutation({
+    toggleFavorite: builder.mutation<any, string>({
       query: (chaletId: string) => ({
         url: `/customer/favorites/toggle/${chaletId}`,
         method: "POST",
       }),
-      invalidatesTags: ["Chalet", "Favorite"],
+      invalidatesTags: ["Favorite"],
+      onQueryStarted: (chaletId, api) =>
+        patchFavoriteIds(chaletId, "toggle", api),
     }),
 
     /** Add chalet to favorites */
-    addFavorite: builder.mutation({
+    addFavorite: builder.mutation<any, string>({
       query: (chaletId: string) => ({
         url: `/customer/favorites/${chaletId}`,
         method: "POST",
       }),
-      invalidatesTags: ["Chalet", "Favorite"],
+      invalidatesTags: ["Favorite"],
+      onQueryStarted: (chaletId, api) => patchFavoriteIds(chaletId, "add", api),
     }),
 
     /** Remove chalet from favorites */
-    removeFavorite: builder.mutation({
+    removeFavorite: builder.mutation<any, string>({
       query: (chaletId: string) => ({
         url: `/customer/favorites/${chaletId}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Chalet", "Favorite"],
+      invalidatesTags: ["Favorite"],
+      onQueryStarted: (chaletId, api) =>
+        patchFavoriteIds(chaletId, "remove", api),
     }),
 
     /** Get list of favorited chalet IDs */
     getFavoriteIds: builder.query<string[], void>({
       query: () => "/customer/favorites/ids",
-      providesTags: ["Chalet", "Favorite"],
+      providesTags: ["Favorite"],
     }),
 
     /** List my favorite chalets (paginated) */
@@ -275,7 +330,7 @@ export const customerApi = apiSlice.injectEndpoints({
         url: "/customer/favorites",
         params,
       }),
-      providesTags: ["Chalet"],
+      providesTags: ["Favorite"],
     }),
 
     // ── Reviews (Customer) ─────────────────────────────────────────────────
@@ -292,7 +347,10 @@ export const customerApi = apiSlice.injectEndpoints({
         method: "POST",
         body: data,
       }),
-      invalidatesTags: ["Chalet"],
+      // "Review" covers `checkCanReview` — without it the eligibility flag stays
+      // at its pre-submission value and the star row stays on screen, inviting a
+      // duplicate review the server then rejects.
+      invalidatesTags: ["Chalet", "Review"],
     }),
 
     /** Update own review */
@@ -309,7 +367,7 @@ export const customerApi = apiSlice.injectEndpoints({
         method: "PATCH",
         body: data,
       }),
-      invalidatesTags: ["Chalet"],
+      invalidatesTags: ["Chalet", "Review"],
     }),
 
     /** Delete own review */
@@ -318,7 +376,9 @@ export const customerApi = apiSlice.injectEndpoints({
         url: `/customer/reviews/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Chalet"],
+      // Deleting makes the user eligible again, so the eligibility flag has to
+      // be refetched here too.
+      invalidatesTags: ["Chalet", "Review"],
     }),
 
     /** Get paginated reviews for a chalet */
@@ -340,6 +400,9 @@ export const customerApi = apiSlice.injectEndpoints({
     /** Check if user can review a specific chalet */
     checkCanReview: builder.query({
       query: (chaletId: string) => `/customer/chalets/${chaletId}/can-review`,
+      providesTags: (result: any, error: any, chaletId: string) => [
+        { type: "Review" as const, id: chaletId },
+      ],
     }),
 
     // ── Wallet (Customer) ──────────────────────────────────────────────────
@@ -486,21 +549,37 @@ export const customerApi = apiSlice.injectEndpoints({
       invalidatesTags: ["User"],
     }),
 
-    /** Request phone number change */
-    changePhoneNumber: builder.mutation({
-      query: (data: { phone: string }) => ({
+    /**
+     * Request phone number change (step 1 — sends the OTP).
+     *
+     * The field is `newPhone`: `ChangePhoneDto` declares only that, and the API
+     * runs its ValidationPipe with `whitelist: true`, so anything else is
+     * stripped before validation and the request 400s. The server normalizes the
+     * number itself (GET_PHONE), so the local `07XXXXXXXXX` form is fine.
+     */
+    changePhoneNumber: builder.mutation<any, { newPhone: string }>({
+      query: ({ newPhone }) => ({
         url: "/users/change-phone",
         method: "POST",
-        body: data,
+        body: { newPhone },
       }),
     }),
 
-    /** Verify and complete phone number change */
-    verifyPhoneNumberChange: builder.mutation({
-      query: (data: { code: string }) => ({
+    /**
+     * Verify and complete phone number change (step 2).
+     *
+     * `UpdateVerifyPhoneDto` requires BOTH fields — the server reads `newPhone`
+     * to write the new number, so the OTP alone is not enough — and types `code`
+     * as a number, hence the explicit cast.
+     */
+    verifyPhoneNumberChange: builder.mutation<
+      any,
+      { newPhone: string; code: string }
+    >({
+      query: ({ newPhone, code }) => ({
         url: "/users/verify-phone",
         method: "POST",
-        body: data,
+        body: { newPhone, code: Number(code) },
       }),
       invalidatesTags: ["User"],
     }),
@@ -510,25 +589,98 @@ export const customerApi = apiSlice.injectEndpoints({
     /**
      * Get all notifications (paginated).
      *
-     * `role` scopes the list to one side of the app — an owner using the app as
-     * a tenant gets the tenant list, not their chalet's bookings. Notifications
-     * that read the same either way come back regardless.
+     * This is the ONLY definition of the endpoint that survives — the slice is
+     * injected with `overrideExisting: true`, so it replaces the identically
+     * named one in apiSlice.ts. The infinite-scroll behaviour therefore lives
+     * here: `page` is stripped from the cache key and later pages are appended
+     * (deduped by id) instead of replacing the visible list.
+     *
+     * `role` is accepted so the call sites can keep passing the section they are
+     * rendering, but it is NOT sent and NOT part of the cache key: the API binds
+     * `@Query() PaginationDto` and runs `whitelist: true`, so the server strips
+     * it and returns every notification for the account either way. Keeping it
+     * out of the key stops owner and tenant mode from holding two identical
+     * copies of the same list and polling for both. See
+     * `backend_changes_needed` — real scoping needs a server-side filter.
      */
     getNotifications: builder.query({
-      query: (params?: { page?: number; limit?: number; role?: "owner" | "customer" }) => ({
-        url: "/notifications",
-        params,
-      }),
+      query: (params?: { page?: number; limit?: number; role?: "owner" | "customer" }) => {
+        const { role, ...rest } = params || {};
+        return {
+          url: "/notifications",
+          params: rest,
+        };
+      },
+      serializeQueryArgs: ({ queryArgs }: { queryArgs: any }) => {
+        const { page, role, ...rest } = queryArgs || {};
+        return rest;
+      },
+      merge: (currentCache: any, newItems: any, { arg }: { arg: any }) => {
+        if (!arg?.page || arg.page === 1 || !currentCache) {
+          return newItems;
+        }
+        const existingData = currentCache.data || [];
+        const newData = newItems.data || [];
+        const existingIds = new Set(existingData.map((item: any) => item?.id));
+        const uniqueNewItems = newData.filter(
+          (item: any) => !existingIds.has(item?.id),
+        );
+        return {
+          ...newItems,
+          data: [...existingData, ...uniqueNewItems],
+          meta: newItems.meta,
+        };
+      },
+      forceRefetch({ currentArg, previousArg }: { currentArg: any; previousArg: any }) {
+        return currentArg !== previousArg;
+      },
       providesTags: ["Notification"],
     }),
 
-    /** Mark notification as read */
-    markNotificationAsRead: builder.mutation({
+    /**
+     * Mark notification as read.
+     *
+     * BROKEN SERVER-SIDE: the list returns `nu.notification.id` but
+     * `markAsRead` looks the row up by the UserNotification primary key, and its
+     * not-found branch answers 200 with a canned success. So the write never
+     * lands and a refetch resurrects the unread dot — which is exactly what
+     * invalidating the "Notification" tag used to do on every tap.
+     *
+     * Until the API returns (or accepts) a matching id, the read state is
+     * applied locally to every cached notifications page instead: the row and
+     * the bell badge settle immediately and stay settled until the next natural
+     * refetch. The request is still sent so this starts persisting for real the
+     * moment the backend is fixed.
+     */
+    markNotificationAsRead: builder.mutation<any, string>({
       query: (id: string) => ({
         url: `/notifications/${id}/mark-as-read`,
         method: "PUT",
       }),
-      invalidatesTags: ["Notification"],
+      async onQueryStarted(id, { dispatch, getState, queryFulfilled }) {
+        const readAt = new Date().toISOString();
+        const cachedArgs: any[] = (apiSlice.util.selectCachedArgsForQuery as any)(
+          getState(),
+          "getNotifications",
+        );
+        const patches = cachedArgs.map((args) =>
+          dispatch(
+            (apiSlice.util.updateQueryData as any)(
+              "getNotifications",
+              args,
+              (draft: any) => {
+                const item = draft?.data?.find((n: any) => n?.id === id);
+                if (item && !item.readAt) item.readAt = readAt;
+              },
+            ),
+          ),
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patches.forEach((patch: any) => patch.undo());
+        }
+      },
     }),
 
     /** Get notification settings */

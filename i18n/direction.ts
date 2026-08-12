@@ -2,43 +2,45 @@ import { Platform } from "react-native";
 import { useTranslation } from "react-i18next";
 
 // ──────────────────────────────────────────────────────────
-// Direction model v2 (single source of truth)
+// Direction model v3 — NATIVE RTL
 // ──────────────────────────────────────────────────────────
-// Native RTL (React Native's I18nManager) is permanently DISABLED — see
-// i18n/index.ts `ensureNativeLTR`. Layout direction is driven by a single
-// `direction: 'rtl' | 'ltr'` style applied on container roots (the navigators'
-// contentStyle/sceneStyle, GestureHandlerRootView, and every NEW NATIVE ROOT —
-// i.e. each RN <Modal>'s top content view), derived from the active language.
+// Native RTL (React Native's I18nManager) is ON for Arabic — see
+// i18n/index.ts `syncNativeRTL`. The OPERATING SYSTEM mirrors the app, which is
+// what v2's container-`direction` model could never do.
 //
-// Inside an RTL container, Yoga auto-mirrors `flexDirection: 'row'` and every
-// LOGICAL edge (start/end, marginStart/End, paddingStart/End, borderStart*).
-// Components therefore write NATURAL LTR layout and never reverse manually.
+// Why we moved off v2: a `direction: 'rtl'` style only mirrors what Yoga lays
+// out in JS. Everything the platform owns stayed LTR — the iOS back-swipe
+// gesture, horizontal scroll offsets, native headers, Alert, the date picker,
+// text-selection handles. v2 needed ~93 hand-written workarounds
+// (`ltrScroller`, `ltrScrollContent`, `useRtlListOrder`, per-screen gesture and
+// animation mirroring) to paper over what `forceRTL` does for free, and it
+// still did not feel RTL. Under v3 all of those become no-ops.
 //
-// ── The text-alignment contract (platform-verified against RN 0.81 source) ──
+// COST OF v3: changing language must RESTART the app (I18nManager only takes
+// effect on a fresh native start). `changeLanguage` in i18n/index.ts handles
+// that with a confirmation prompt.
 //
-// 1. <Text> — `textAlign: 'left' | 'right'` is LOGICAL, not physical.
-//    Fabric swaps left↔right whenever the text node's Yoga-resolved direction
-//    is RTL (iOS: RCTAttributedTextUtils.mm; Android: TextLayoutManager.kt).
-//    The swap is keyed on the CONTAINER `direction` style — NOT I18nManager.
-//    ⇒ To start-align a <Text>, always write `textAlign` from this hook
-//      (it is the constant logical-start value). To end-align, use
-//      `textAlignEnd`. NEVER write `isRTL ? 'right' : 'left'` for a <Text> —
-//      that renders on the WRONG side in Arabic (the old app-wide bug).
+// ── The rules ──
 //
-// 2. <TextInput> — textAlign is PHYSICAL. Inputs do NOT get the logical swap
-//    (verified: ReactTextInputManager.kt maps left/right straight to gravity;
-//    iOS TextInput props never populate the paragraph layoutDirection).
-//    ⇒ For inputs, always use `inputTextAlign` from this hook.
+// 1. Write NATURAL LTR layout. `flexDirection: 'row'` and every LOGICAL edge
+//    (start/end, marginStart/End, paddingStart/End, borderStart*) auto-mirror
+//    under native RTL. NEVER hand-reverse with `row-reverse` or an isRTL
+//    ternary — that double-flips.
 //
-// 3. Never reintroduce `row-reverse` or any isRTL-derived flip of
-//    flexDirection / alignItems / alignSelf / start/end — those values are
-//    already logical under the container direction (double-flip bug).
+// 2. `textAlign: 'left'` is the START side for BOTH <Text> and <TextInput>.
+//    With `swapLeftAndRightInRTL` at its default ON, RN swaps left↔right for
+//    both, so 'left' renders on the right in Arabic. Use `textAlign` from
+//    `useDirection()` (constant 'left') and `textAlignEnd` for the end side.
+//    NEVER write `isRTL ? 'right' : 'left'` — that renders on the WRONG side.
 //
-// 4. Horizontal scrollers (ScrollView/FlatList/FlashList with `horizontal`):
-//    scroll-offset semantics stay physical-LTR even inside an RTL container,
-//    so carousels/chip-strips break under inherited rtl. Use the helpers at
-//    the bottom of this file (`ltrScrollContent` + `useRtlListOrder`) — see
-//    docs/RTL.md for the recipe.
+// 3. Horizontal scrollers need NOTHING. Native RTL mirrors scroll offsets, so
+//    `ltrScroller` / `ltrScrollContent` / `useRtlListOrder` are retained as
+//    NO-OPS purely so the ~80 existing call sites keep compiling. Do not add
+//    new ones, and delete them opportunistically.
+//
+// 4. PHYSICAL left/right still mean physical. Reach for them only when a
+//    subtree must stay LTR regardless of language (phone numbers, OTP boxes,
+//    the Mapbox subtree) — and pin those with an explicit `direction: 'ltr'`.
 // ──────────────────────────────────────────────────────────
 
 export type Direction = "rtl" | "ltr";
@@ -50,12 +52,18 @@ export const isContentRTL = (lang?: string | null): boolean =>
   !!lang && lang.startsWith("ar");
 
 /**
- * PHYSICAL start-side text alignment for the given direction — for
- * <TextInput> only (inputs don't get RN's logical left/right swap).
- * For <Text>, use `textAlign` from `useDirection()` instead.
+ * Start-side text alignment. Constant logical "left".
+ *
+ * Under native RTL (`I18nManager.isRTL`, with `swapLeftAndRightInRTL` left at
+ * its default ON) React Native swaps left↔right for BOTH <Text> and
+ * <TextInput>, so "left" is the start side in Arabic and the left side in
+ * English. The `rtl` argument is ignored and kept only so existing call sites
+ * keep compiling.
+ *
+ * Writing `rtl ? "right" : "left"` — what this used to do — double-flips under
+ * native RTL and lands the text on the WRONG side.
  */
-export const resolveTextAlign = (rtl: boolean): "right" | "left" =>
-  rtl ? "right" : "left";
+export const resolveTextAlign = (_rtl?: boolean): "right" | "left" => "left";
 
 /**
  * @deprecated Rows mirror via the container `direction` style now; just write
@@ -112,25 +120,30 @@ export const pickTranslation = (obj: any, rtl: boolean, depth = 0): string => {
 export interface DirectionInfo {
   /** True when the active language is RTL (Arabic). */
   isRTL: boolean;
-  /** The `direction` value to apply on a container/portal root subtree. */
-  direction: Direction;
-  /** @deprecated always 'row' — rows mirror via the container direction. */
-  rowDirection: "row" | "row-reverse";
   /**
-   * Logical START alignment for <Text>. Constant 'left' on native — RN swaps
-   * it to the right edge inside an rtl container (see contract above).
-   * NOT for <TextInput> — use `inputTextAlign` there.
+   * The active direction. Under v3 the OS already mirrors the whole tree, so
+   * you do NOT apply this on ordinary containers — that double-flips. Use it
+   * only to PIN a subtree that must stay LTR (`direction: 'ltr'`), or on web,
+   * where there is no I18nManager.
    */
+  direction: Direction;
+  /** @deprecated always 'row' — rows mirror natively. */
+  rowDirection: "row" | "row-reverse";
+  /** START alignment. Constant 'left' — RN swaps it to the right in Arabic. */
   textAlign: "right" | "left";
-  /** Logical END alignment for <Text>. Constant 'right' on native. */
+  /** END alignment. Constant 'right' — RN swaps it to the left in Arabic. */
   textAlignEnd: "right" | "left";
-  /** PHYSICAL start alignment for <TextInput> (inputs skip the logical swap). */
+  /**
+   * START alignment for <TextInput>. Identical to `textAlign` under native RTL,
+   * which swaps left/right for inputs too. Kept as its own field so the ~30
+   * existing input call sites keep compiling.
+   */
   inputTextAlign: "right" | "left";
 }
 
 /**
  * Single source of truth for direction in components. Derives everything from
- * `i18n.language` (canonical). Native I18nManager state is never read.
+ * `i18n.language`, which i18n/index.ts keeps in lockstep with I18nManager.
  */
 export function useDirection(): DirectionInfo {
   const { i18n } = useTranslation();
@@ -142,52 +155,56 @@ export function useDirection(): DirectionInfo {
     // Web CSS has no logical swap for left/right — use real logical keywords.
     textAlign: (IS_WEB ? "start" : "left") as "left",
     textAlignEnd: (IS_WEB ? "end" : "right") as "right",
-    inputTextAlign: resolveTextAlign(isRTL),
+    inputTextAlign: (IS_WEB ? "start" : "left") as "left",
   };
 }
 
 // ──────────────────────────────────────────────────────────
-// Horizontal-scroller helpers
+// Horizontal-scroller helpers — NO-OPS under the native-RTL model (v3)
 // ──────────────────────────────────────────────────────────
-// A horizontal ScrollView/FlatList/FlashList inside an rtl container lays its
-// children right-to-left, but contentOffset stays physical (0 = left edge), so
-// the list mounts showing its LAST item and every `index * width` /
-// `scrollTo({x})` computation addresses the mirrored item.
+// These three existed only to undo v2's damage. Under v2 the container
+// `direction: 'rtl'` style mirrored a horizontal list's CHILDREN while
+// `contentOffset` stayed physical (0 = left edge), so the list mounted on its
+// LAST item and `index * width` addressed the mirrored one. The fix was to
+// force the scroller back to physical LTR and hand-reverse the data.
 //
-// Recipe: force BOTH the scroller and its CONTENT container back to physical
-// LTR — `ltrScroller` on `style`, `ltrScrollContent` on `contentContainerStyle`
-// — and, when the item order should read right-to-left in Arabic (chip strips,
-// "All"-first filters), feed it `useRtlListOrder(data)`.
-// IMPORTANT: items with internal directional layout (rows, aligned text) must
-// re-apply `direction` on their own root, since they now sit in an ltr subtree.
+// Native RTL mirrors scroll offsets itself, so all of that is not just
+// unnecessary — it is actively WRONG: pinning a scroller to `direction: 'ltr'`
+// now un-mirrors a list the OS had already mirrored correctly, and reversing
+// the data on top of that flips it a second time.
 //
-// ⚠️ `ltrScrollContent` ALONE IS NOT ENOUGH, and the failure is silent-looking:
-// it fixes how the content container lays out its children, but not where that
-// container is PLACED inside a still-rtl scroll host. Yoga aligns an
-// overflowing child's RIGHT edge to its rtl parent's right edge, so the content
-// extends into NEGATIVE x — and the native Android scroller (native RTL is
-// force-disabled here, see i18n/index.ts) only scrolls x >= 0. Net effect: zero
-// scrollable range, and the list looks completely frozen in Arabic rather than
-// merely mirrored. `ltrScroller` on the scroller's own `style` is what puts the
-// content back at x = 0.
-//
-// Both constants are no-ops in English, so applying them is never a regression
-// risk for LTR.
+// They are kept as no-ops rather than deleted so the ~80 existing call sites
+// keep compiling and can be removed gradually. Do not add new ones.
 
-/** Spread into `style` of every horizontal scroller. */
-export const ltrScroller = { direction: "ltr" } as const;
+/** @deprecated No-op. Native RTL mirrors scroll offsets; remove the call site. */
+export const ltrScroller = {} as const;
 
-/** Spread into `contentContainerStyle` of every horizontal scroller. */
-export const ltrScrollContent = { direction: "ltr" } as const;
+/** @deprecated No-op. Native RTL mirrors scroll offsets; remove the call site. */
+export const ltrScrollContent = {} as const;
 
 /**
- * Reverses `data` when the app is RTL so a horizontal, LTR-forced list keeps
- * reading right-to-left in Arabic (first item at the right edge AND visible
- * at the initial scroll offset). Identity in LTR.
+ * Pins a subtree to physical LTR regardless of language. UNLIKE the deprecated
+ * helpers above this is a real, deliberate opt-out — use it only where physical
+ * left-to-right is genuinely correct:
+ *
+ *  • a paged carousel whose active index is derived from `contentOffset.x`.
+ *    Native RTL flips those offset semantics, and it flips them DIFFERENTLY on
+ *    iOS and Android, so `Math.round(x / pageWidth)` stops matching the visible
+ *    page. Pinning keeps the arithmetic valid on both platforms.
+ *  • content that is inherently LTR: phone numbers, OTP boxes, IBANs, the
+ *    Mapbox subtree.
+ *
+ * Apply it to BOTH `style` and `contentContainerStyle` of a scroller, and
+ * remember that children needing directional layout must re-apply `direction`
+ * on their own root, since they now sit in an LTR subtree.
+ */
+export const pinLTR = { direction: "ltr" } as const;
+
+/**
+ * @deprecated Identity. Native RTL already lays a horizontal list out
+ * right-to-left in Arabic and starts it at the correct end, so reversing the
+ * data flips it back. Remove the call site.
  */
 export function useRtlListOrder<T>(data: readonly T[]): T[] {
-  const { i18n } = useTranslation();
-  const isRTL = isContentRTL(i18n.language);
-  // Cheap enough for chip strips; avoids stale memo deps on array identity.
-  return isRTL ? [...data].reverse() : ([...data] as T[]);
+  return data as T[];
 }

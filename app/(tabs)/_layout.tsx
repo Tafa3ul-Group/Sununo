@@ -22,7 +22,6 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        sceneStyle: { direction },
         tabBarStyle: { display: 'none' } }}
     >
       <Tabs.Screen

@@ -27,6 +27,11 @@ export const ErrorState = ({
   backLabel }: ErrorStateProps) => {
   const { t } = useTranslation();
 
+  // Every string below is keyed in BOTH i18n/en.json and i18n/ar.json, so no
+  // t() call carries an inline default. A hard-coded Arabic default silently
+  // wins whenever the key is missing from en.json, which is how English users
+  // ended up reading an Arabic retry button; without one, a missing key shows
+  // up as the key itself and gets noticed.
   return (
     <View style={styles.container}>
       <View style={styles.content}>
@@ -38,14 +43,14 @@ export const ErrorState = ({
         
         <View style={styles.textContainer}>
           <ThemedText type="h2" style={styles.title}>
-            {title || (type === 'error404' ? t('error.404.title', 'الصفحة غير موجودة') : t('common.error', 'حدث خطأ ما'))}
+            {title || (type === 'error404' ? t('error.404.title') : t('common.error'))}
           </ThemedText>
           
           {message !== "" && (
             <ThemedText style={styles.message}>
-              {message || (type === 'error404' 
-                ? t('error.404.shortMessage', 'نعتذر، لم نجد ما تبحث عنه.') 
-                : t('common.errorMessage', 'يرجى المحاولة مرة أخرى.'))}
+              {message || (type === 'error404'
+                ? t('error.404.shortMessage')
+                : t('common.errorMessage'))}
             </ThemedText>
           )}
         </View>
@@ -58,7 +63,7 @@ export const ErrorState = ({
               onPress={onRetry}
             >
               <ThemedText style={styles.retryButtonText}>
-                {retryLabel || t('common.retry', 'إعادة المحاولة')}
+                {retryLabel || t('common.retry')}
               </ThemedText>
             </TouchableOpacity>
           )}
@@ -70,7 +75,7 @@ export const ErrorState = ({
               onPress={onBack}
             >
               <ThemedText style={styles.backButtonText}>
-                {backLabel || t('common.goBack', 'العودة')}
+                {backLabel || t('common.goBack')}
               </ThemedText>
             </TouchableOpacity>
           )}

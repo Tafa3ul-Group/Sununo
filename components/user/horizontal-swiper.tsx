@@ -1,5 +1,5 @@
 import { normalize } from "@/constants/theme";
-import { ltrScrollContent, ltrScroller, useDirection } from "@/i18n";
+import { ltrScrollContent, ltrScroller, useDirection, pinLTR } from "@/i18n";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Dimensions,
@@ -114,8 +114,10 @@ export function HorizontalSwiper({ data, onPressCard, onIndexChange, favoriteIds
         snapToInterval={SNAP}
         snapToAlignment="center"
         decelerationRate="fast"
-        style={ltrScroller}
-        contentContainerStyle={[styles.listContent, ltrScrollContent]}
+        // Pinned LTR on purpose: handleScroll derives the active index from
+        // contentOffset.x, whose semantics native RTL flips.
+        style={pinLTR}
+        contentContainerStyle={[styles.listContent, pinLTR]}
         pagingEnabled={false}
         ItemSeparatorComponent={() => (
           <View style={{ width: SEPARATOR_WIDTH }} />

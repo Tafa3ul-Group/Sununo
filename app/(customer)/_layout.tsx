@@ -12,9 +12,6 @@ export default function CustomerNonTabLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
-        contentStyle: { direction },
-        animation: isRTL ? "slide_from_left" : "slide_from_right",
-        fullScreenGestureEnabled: true,
       }}
     >
       <Stack.Screen 

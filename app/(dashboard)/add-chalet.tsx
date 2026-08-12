@@ -61,6 +61,26 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { useSelector } from 'react-redux';
+import { formatPrice } from '@/utils/format';
+
+/**
+ * Turns anything a price field may receive into ASCII digits only.
+ *
+ * The price inputs are controlled and re-render their own value FORMATTED, so
+ * whatever the formatter emits comes straight back through onChangeText on the
+ * next keystroke. Hermes' bare `toLocaleString()` used the DEVICE locale, so an
+ * Arabic phone round-tripped Arabic-Indic digits and U+066C into state, where
+ * `parseInt` returns NaN and the price silently collapsed to 0. Formatting now
+ * goes through `formatPrice` (always ASCII + commas), and this strips anything
+ * that is not a digit — including Arabic-Indic digits typed on an Arabic
+ * keypad, which are mapped to their ASCII equivalents instead of dropped.
+ */
+const toAsciiDigits = (value: string): string =>
+  String(value ?? '')
+    // Arabic-Indic (U+0660–0669) and Extended Arabic-Indic (U+06F0–06F9):
+    // both blocks are laid out 0-9 in order, so the low nibble IS the digit.
+    .replace(/[٠-٩۰-۹]/g, (d) => String(d.charCodeAt(0) & 0x0f))
+    .replace(/[^0-9]/g, '');
 
 // ── Amenity Icon (matching amenities-modal) ──
 const AmenityIcon = ({ icon, size = 18 }: { icon: string; size?: number }) => {
@@ -373,7 +393,9 @@ export default function AddChaletScreen() {
   };
 
   const setUniformPrice = (shiftIndex: number, priceStr: string) => {
-    const price = parseInt(priceStr) || 0;
+    // Digits are normalised here as well as in the input, so no caller can push
+    // a locale-formatted string in and quietly zero out the whole shift.
+    const price = parseInt(toAsciiDigits(priceStr), 10) || 0;
     setShifts(prev => prev.map((shift, i) => {
       if (i !== shiftIndex) return shift;
       const newPricing = shift.pricing.map(p => ({ ...p, price }));
@@ -821,7 +843,7 @@ export default function AddChaletScreen() {
                 <Text style={[styles.shiftValueName, isOverlapping && { color: '#D92D20' }]}>
                   {isRTL ? shift.name.ar : shift.name.en}
                   {isActive && weekdayPrice > 0 && (
-                    <Text style={styles.shiftPriceText}> ({weekdayPrice.toLocaleString()})</Text>
+                    <Text style={styles.shiftPriceText}> ({formatPrice(weekdayPrice)})</Text>
                   )}
                 </Text>
                 {isOverlapping && (
@@ -1095,8 +1117,8 @@ export default function AddChaletScreen() {
                             paddingVertical: 14,
                           }}
                           keyboardType="numeric"
-                          value={form.extraPersonPrice ? parseInt(form.extraPersonPrice).toLocaleString() : ''}
-                          onChangeText={(val) => setForm({ ...form, extraPersonPrice: val.replace(/,/g, '') })}
+                          value={form.extraPersonPrice ? formatPrice(form.extraPersonPrice) : ''}
+                          onChangeText={(val) => setForm({ ...form, extraPersonPrice: toAsciiDigits(val) })}
                           placeholder="25,000"
                           placeholderTextColor="#CBD5E1"
                         />
@@ -1243,7 +1265,12 @@ export default function AddChaletScreen() {
                             </TouchableOpacity>
                           </View>
                         ));
-                        return isRTL ? [...thumbs.reverse(), addTile] : [addTile, ...thumbs];
+                        // Source order in both languages: native RTL mirrors
+                        // the strip, so the add tile already lands on the
+                        // leading (right) edge in Arabic. Reversing here would
+                        // flip it back — and `thumbs.reverse()` mutated the
+                        // array in place while doing it.
+                        return [addTile, ...thumbs];
                       })()}
                     </ScrollView>
                   </View>
@@ -1621,8 +1648,8 @@ export default function AddChaletScreen() {
                       textAlign: inputTextAlign,
                       paddingVertical: 14,
                     }}
-                    value={uniformPrice > 0 ? uniformPrice.toLocaleString() : ''}
-                    onChangeText={(val) => setUniformPrice(editingShiftIndex, val.replace(/,/g, ''))}
+                    value={uniformPrice > 0 ? formatPrice(uniformPrice) : ''}
+                    onChangeText={(val) => setUniformPrice(editingShiftIndex, toAsciiDigits(val))}
                     keyboardType="numeric"
                     placeholder="600,000"
                     placeholderTextColor="#CBD5E1"

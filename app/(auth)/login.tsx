@@ -60,45 +60,54 @@ function formatCountdown(totalSeconds: number): string {
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
-function translateAuthError(errorMsg: string): string {
+// A message the screen shows in the user's own language: an i18n key plus the
+// values it interpolates. Resolved with `t()` at render/alert time so switching
+// language never leaves a stale Arabic-only string on screen.
+type LocalizedMessage = { key: string; params?: Record<string, number> };
+
+// Maps a backend auth error (always English, coming straight off the API) onto
+// an i18n key. `null` means "no mapping" — the caller then shows the server's
+// own wording, so a brand-new server-side error still reaches the user instead
+// of being flattened into a generic failure.
+function authErrorKey(errorMsg: string): string | null {
   const msg = String(errorMsg).toLowerCase();
 
   if (
     msg.includes("not linked to an owner") ||
     msg.includes("register as an owner first")
   ) {
-    return "هذا الرقم غير مرتبط بحساب مالك. يرجى التسجيل كمالك أولاً.";
+    return "auth.errors.notOwner";
   }
   if (
     msg.includes("invalid otp") ||
     msg.includes("invalid code") ||
     msg.includes("verification code is incorrect")
   ) {
-    return "رمز التحقق غير صحيح. يرجى التأكد من الرمز والمحاولة مجدداً.";
+    return "auth.errors.invalidOtp";
   }
   if (
     msg.includes("failed to send otp") ||
     msg.includes("failed to send code")
   ) {
-    return "فشل في إرسال رمز التحقق. يرجى المحاولة مرة أخرى.";
+    return "auth.errors.sendFailed";
   }
   if (
     msg.includes("user already exists") ||
     msg.includes("phone number already registered")
   ) {
-    return "رقم الهاتف هذا مسجل بالفعل.";
+    return "auth.errors.alreadyRegistered";
   }
   if (msg.includes("network") || msg.includes("connection")) {
-    return "فشل الاتصال بالشبكة. يرجى التحقق من اتصال الإنترنت.";
+    return "auth.errors.network";
   }
   if (msg.includes("unauthorized") || msg.includes("invalid credentials")) {
-    return "البيانات المدخلة غير صحيحة.";
+    return "auth.errors.unauthorized";
   }
 
-  return errorMsg || "حدث خطأ ما، يرجى المحاولة مرة أخرى.";
+  return null;
 }
 
-function validatePhoneNumber(text: string): string | null {
+function validatePhoneNumber(text: string): LocalizedMessage | null {
   if (!text) {
     return null;
   }
@@ -106,7 +115,7 @@ function validatePhoneNumber(text: string): string | null {
 
   // Check if contains non-numeric (excluding leading +)
   if (/[^\d+]/.test(clean) || (clean.includes("+") && !clean.startsWith("+"))) {
-    return "يجب أن يحتوي رقم الهاتف على أرقام فقط";
+    return { key: "auth.errors.phoneDigitsOnly" };
   }
 
   // Check if it's a test number (10-15 digits of non-standard format)
@@ -139,25 +148,37 @@ function validatePhoneNumber(text: string): string | null {
     clean === "00964";
 
   if (!hasIraqiPrefix) {
-    return "يجب أن يبدأ رقم الهاتف بـ 07 أو 7 أو 9647+";
+    return { key: "auth.errors.phonePrefix" };
   }
 
-  // Length check based on prefix
-  if (clean.startsWith("07")) {
-    if (clean.length < 11) return "رقم الهاتف قصير جداً (مطلوب 11 رقماً)";
-    if (clean.length > 11) return "رقم الهاتف طويل جداً (مطلوب 11 رقماً)";
-  } else if (clean.startsWith("7")) {
-    if (clean.length < 10) return "رقم الهاتف قصير جداً (مطلوب 10 أرقام)";
-    if (clean.length > 10) return "رقم الهاتف طويل جداً (مطلوب 10 أرقام)";
-  } else if (clean.startsWith("+9647")) {
-    if (clean.length < 13) return "رقم الهاتف قصير جداً (مطلوب 13 رقماً)";
-    if (clean.length > 13) return "رقم الهاتف طويل جداً (مطلوب 13 رقماً)";
-  } else if (clean.startsWith("9647")) {
-    if (clean.length < 12) return "رقم الهاتف قصير جداً (مطلوب 12 رقماً)";
-    if (clean.length > 12) return "رقم الهاتف طويل جداً (مطلوب 12 رقماً)";
-  } else if (clean.startsWith("009647")) {
-    if (clean.length < 14) return "رقم الهاتف قصير جداً (مطلوب 14 رقماً)";
-    if (clean.length > 14) return "رقم الهاتف طويل جداً (مطلوب 14 رقماً)";
+  // Length check based on prefix. The expected digit count is interpolated
+  // rather than baked into the sentence — deliberately named `digits` and not
+  // `count`, so i18next does not try to pluralize the key.
+  const expectedLength = clean.startsWith("009647")
+    ? 14
+    : clean.startsWith("+9647")
+      ? 13
+      : clean.startsWith("9647")
+        ? 12
+        : clean.startsWith("07")
+          ? 11
+          : clean.startsWith("7")
+            ? 10
+            : null;
+
+  if (expectedLength !== null) {
+    if (clean.length < expectedLength) {
+      return {
+        key: "auth.errors.phoneTooShort",
+        params: { digits: expectedLength },
+      };
+    }
+    if (clean.length > expectedLength) {
+      return {
+        key: "auth.errors.phoneTooLong",
+        params: { digits: expectedLength },
+      };
+    }
   }
 
   return null;
@@ -185,7 +206,7 @@ export function LoginScreen() {
 
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [phone, setPhone] = useState("");
-  const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [phoneError, setPhoneError] = useState<LocalizedMessage | null>(null);
   const [code, setCode] = useState("");
   const [resendIn, setResendIn] = useState(0);
   const [justResent, setJustResent] = useState(false);
@@ -222,10 +243,24 @@ export function LoginScreen() {
     policyByType.has(type),
   ).map((type) => ({ type, version: policyByType.get(type)!.version }));
 
+  // Backend auth errors are English; show the translated wording when we
+  // recognise the error and the server's own text when we don't.
+  const localizeAuthError = (errorMsg: string) => {
+    const key = authErrorKey(errorMsg);
+    if (key) return t(key);
+    return errorMsg || t("auth.errors.generic");
+  };
+
   function handleTypeChange(type: "owner" | "customer") {
     if (step === "otp") return;
     setLocalUserType(type);
-    dispatch(setUserType(type));
+    // `auth.userType` doubles as the persisted guest marker — a guest is exactly
+    // { isAuthenticated: false, userType: 'guest' }, and both route guards
+    // (app/_layout.tsx and app/index.tsx) bounce anything else that isn't signed
+    // in. Remembering which side of the toggle to show must never cost someone
+    // their guest session, so the preference is written only when there is no
+    // guest session to clobber. A successful verify sets the real userType.
+    if (reduxUserType !== "guest") dispatch(setUserType(type));
   }
 
   function backToPhoneStep() {
@@ -253,7 +288,7 @@ export function LoginScreen() {
     if (step === "phone") {
       const trimmedPhone = phone.trim();
       if (!trimmedPhone) {
-        setPhoneError("يرجى إدخال رقم الهاتف");
+        setPhoneError({ key: "auth.errors.phoneRequired" });
         return;
       }
 
@@ -280,7 +315,7 @@ export function LoginScreen() {
         const displayMsg = Array.isArray(msg)
           ? msg.join(", ")
           : msg || "Failed to send OTP";
-        Alert.alert(t("common.error"), translateAuthError(displayMsg));
+        Alert.alert(t("common.error"), localizeAuthError(displayMsg));
       }
     } else {
       if (isVerifyLoading) return;
@@ -288,7 +323,7 @@ export function LoginScreen() {
         const value = submittedCode ?? code;
         const otpCode = Number(value);
         if (!/^\d{6}$/.test(value) || !Number.isInteger(otpCode)) {
-          Alert.alert(t("common.error"), "رمز التحقق غير صالح");
+          Alert.alert(t("common.error"), t("auth.errors.invalidOtpFormat"));
           return;
         }
 
@@ -302,10 +337,7 @@ export function LoginScreen() {
 
         // Owner mode needs an actual provider account behind it.
         if (isOwner && accountType !== "provider") {
-          Alert.alert(
-            t("common.error"),
-            "هذا الرقم غير مرتبط بحساب مالك. يرجى التسجيل كمالك أولاً.",
-          );
+          Alert.alert(t("common.error"), t("auth.errors.notOwner"));
           return;
         }
 
@@ -344,7 +376,7 @@ export function LoginScreen() {
         // keyboard for a straight retype.
         setCode("");
         otpRef.current?.focus();
-        Alert.alert(t("common.error"), String(displayMsg));
+        Alert.alert(t("common.error"), localizeAuthError(String(displayMsg)));
       }
     }
   }
@@ -363,7 +395,7 @@ export function LoginScreen() {
       const displayMsg = Array.isArray(msg)
         ? msg.join(", ")
         : msg || "Failed to send OTP";
-      Alert.alert(t("common.error"), translateAuthError(displayMsg));
+      Alert.alert(t("common.error"), localizeAuthError(displayMsg));
     }
   }
 
@@ -431,7 +463,7 @@ export function LoginScreen() {
                   <ThemedText
                     style={[styles.errorText, { textAlign }]}
                   >
-                    {phoneError}
+                    {t(phoneError.key, phoneError.params)}
                   </ThemedText>
                 )}
               </View>

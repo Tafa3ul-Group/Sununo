@@ -120,6 +120,20 @@ export default function BookingSuccessDetailsScreen() {
   const [checkPaymentStatus] = useLazyGetPaymentStatusQuery();
   const [isWaitingForPayment, setIsWaitingForPayment] = useState(false);
   const [pollingStatus, setPollingStatus] = useState<"pending" | "success" | "failed" | "timeout">("pending");
+  // Holds the payment-polling interval so it can be cleared on unmount.
+  const pollingIntervalRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Clear the polling interval if the screen unmounts mid-poll — otherwise it
+  // keeps firing for up to a minute, setting state on an unmounted component
+  // and popping an Alert over whatever screen the user navigated to.
+  React.useEffect(() => {
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+    };
+  }, []);
 
   React.useEffect(() => {
     if (booking) {
@@ -135,12 +149,20 @@ export default function BookingSuccessDetailsScreen() {
     let attempts = 0;
     const maxAttempts = 20; // 20 * 3s = 60s (1 minute)
 
+    // Clear any previous interval before starting a new one, so a second
+    // "pay now" never stacks a second poller on top of the first.
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+
     const interval = setInterval(async () => {
       attempts++;
       try {
         const result = await checkPaymentStatus(transactionId).unwrap();
         if (result?.status === "success") {
           clearInterval(interval);
+          pollingIntervalRef.current = null;
           setPollingStatus("success");
           dismissBrowser();
           Alert.alert(
@@ -151,6 +173,7 @@ export default function BookingSuccessDetailsScreen() {
           setIsWaitingForPayment(false);
         } else if (result?.status === "failed") {
           clearInterval(interval);
+          pollingIntervalRef.current = null;
           setPollingStatus("failed");
           dismissBrowser();
           Alert.alert(
@@ -166,11 +189,16 @@ export default function BookingSuccessDetailsScreen() {
 
       if (attempts >= maxAttempts) {
         clearInterval(interval);
+        pollingIntervalRef.current = null;
         setPollingStatus("timeout");
         dismissBrowser();
         setIsWaitingForPayment(false);
       }
     }, 3000);
+
+    // Track the interval so the unmount cleanup above can clear it (prevents
+    // the leak / state updates + Alerts on an unmounted component).
+    pollingIntervalRef.current = interval;
   };
 
   const handlePayNow = async () => {

@@ -79,14 +79,13 @@ export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
       }
     }, [categoriesCount, activeCategoryIndex]);
 
-    useEffect(() => {
+    // The feature ids the SERVER currently says this chalet has.
+    const serverFeatureIds = useMemo<string[] | null>(() => {
       // 1. Try to load from chalet.chaletFeatures first if present
       if (chalet && Array.isArray(chalet.chaletFeatures) && chalet.chaletFeatures.length > 0) {
-        const ids = chalet.chaletFeatures
+        return chalet.chaletFeatures
           .map((cf: any) => cf.featureId || cf.feature?.id)
           .filter(Boolean);
-        setSelectedFeatures(ids);
-        return;
       }
 
       // 2. Load from currentAmenities categories structure
@@ -102,9 +101,36 @@ export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
             });
           }
         });
-        setSelectedFeatures(featureIds);
+        return featureIds;
       }
+
+      return null;
     }, [chalet, currentAmenities]);
+
+    // Seed the local ticks from the server list, keyed on the CONTENT of that
+    // list rather than on the query objects. `chalet` / `currentAmenities` come
+    // from RTK Query with refetchOnFocus, so they get a new identity on every
+    // background refetch even when nothing changed — depending on them meant
+    // backgrounding the app mid-edit replayed the server list over the owner's
+    // unsaved ticks. An identical refetch now leaves the selection alone.
+    const serverSignature = useMemo(
+      () => (serverFeatureIds ? [...serverFeatureIds].sort().join(',') : null),
+      [serverFeatureIds]
+    );
+    const serverFeatureIdsRef = React.useRef(serverFeatureIds);
+    serverFeatureIdsRef.current = serverFeatureIds;
+
+    useEffect(() => {
+      if (serverSignature === null) return;
+      setSelectedFeatures(serverFeatureIdsRef.current || []);
+    }, [serverSignature]);
+
+    // Closing without saving discards the edits, so the next open must start
+    // from the server truth again (the component stays mounted between opens).
+    const handleDismiss = useCallback(() => {
+      setSelectedFeatures(serverFeatureIdsRef.current || []);
+      setActiveCategoryIndex(0);
+    }, []);
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -227,6 +253,7 @@ export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
         ref={ref}
         index={0}
         snapPoints={['85%']}
+        onDismiss={handleDismiss}
         backdropComponent={renderBackdrop}
         backgroundStyle={{ borderRadius: 24, backgroundColor: '#FFFFFF' }}
       >
@@ -354,7 +381,10 @@ export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
                               </View>
                             )),
                           ];
-                          return isRTL ? photoItems.reverse() : photoItems;
+                          // Source order in both languages — native RTL already
+                          // mirrors the strip, and `.reverse()` mutated the
+                          // array in place on top of that.
+                          return photoItems;
                         })()}
                       </ScrollView>
                     </View>

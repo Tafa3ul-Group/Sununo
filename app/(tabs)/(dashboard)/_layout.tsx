@@ -26,8 +26,7 @@ export default function DashboardLayout() {
       tabBar={(props) => <DashboardTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarShowLabel: false,
-        sceneStyle: { direction } }}
+        tabBarShowLabel: false }}
     >
       <Tabs.Screen
         name="home"

@@ -52,10 +52,23 @@ type TFunc = (key: string) => string;
 
 // Format a booking date string for display in the active language.
 // Pure module-level helper so it is not recreated on every render.
+//
+// `bookingDate` is a DATE-ONLY column on the API (Booking.bookingDate is
+// `@Column({ type: 'date' })`), so it arrives as "YYYY-MM-DD" — a calendar day,
+// not an instant. `new Date("2026-03-15")` is parsed as UTC midnight per the ES
+// spec, and `toLocaleDateString` then renders it in the DEVICE timezone, so any
+// device on a negative UTC offset would show the previous day for a booking the
+// server keeps in Asia/Baghdad. Build a LOCAL date from the parts instead so the
+// calendar day is preserved verbatim wherever the phone happens to be.
 const formatBookingDate = (dateStr: string, isArabic: boolean): string => {
   if (!dateStr) return '';
   try {
-    const date = new Date(dateStr);
+    // Date-only values ("2026-03-15") → local midnight; full timestamps
+    // ("...T18:00:00Z") are real instants and stay on the normal Date path.
+    const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr);
+    const date = dateOnly
+      ? new Date(Number(dateOnly[1]), Number(dateOnly[2]) - 1, Number(dateOnly[3]))
+      : new Date(dateStr);
     if (isNaN(date.getTime())) return dateStr;
     return date.toLocaleDateString(isArabic ? 'ar' : 'en-US', {
       day: 'numeric',

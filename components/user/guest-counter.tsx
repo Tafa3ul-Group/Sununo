@@ -56,7 +56,9 @@ export const GuestCounter: React.FC<GuestCounterProps> = ({
         onPress={onDecrement}
         activeOpacity={0.8}
         onPressIn={() => {
-          Haptics.selectionAsync();
+          // Haptics is best-effort: swallow the rejection so a device with no
+          // taptic engine (or an Android throttle) never red-boxes the screen.
+          Haptics.selectionAsync().catch(() => {});
           minusScale.value = withTiming(0.96, { duration: 110 });
         }}
         onPressOut={() => {
@@ -91,7 +93,7 @@ export const GuestCounter: React.FC<GuestCounterProps> = ({
         onPress={onIncrement}
         activeOpacity={0.8}
         onPressIn={() => {
-          Haptics.selectionAsync();
+          Haptics.selectionAsync().catch(() => {});
           plusScale.value = withTiming(0.96, { duration: 110 });
         }}
         onPressOut={() => {

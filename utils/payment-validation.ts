@@ -5,6 +5,27 @@
  * when valid/empty.
  */
 
+// Every accepted Iraqi mobile is the same 10-digit national number ("7" + 9
+// digits) carrying one of five prefixes. Listing the prefixes here and deriving
+// the expected total length from `code.length + NSN_DIGITS` is what keeps the
+// branches honest: the previous version hand-counted a total per branch and
+// compared it against the *string* length, so the "+" and the leading zeros of
+// "00964" were counted as digits and every international number came out one
+// character short — a real +964 number was rejected while a nine-digit one was
+// waved through. The error wording is left exactly as it shipped so translations
+// and the parallel copy in the withdraw sheet stay recognisable.
+const NSN_DIGITS = 10;
+
+// Longest-first, because "00964…" would otherwise be swallowed by the bare "0"
+// trunk prefix and never reach its own length rule.
+const ZAIN_PREFIXES: { code: string; lengthError: string }[] = [
+  { code: "00964", lengthError: "رقم الهاتف يجب أن يكون 14 رقماً" },
+  { code: "+964", lengthError: "رقم الهاتف يجب أن يكون 13 رقماً" },
+  { code: "964", lengthError: "رقم الهاتف يجب أن يكون 12 رقماً" },
+  { code: "0", lengthError: "رقم الهاتف يجب أن يكون 11 رقماً" },
+  { code: "", lengthError: "رقم الهاتف يجب أن يكون 10 أرقام" },
+];
+
 export function validateZainCash(text: string): string | null {
   if (!text) {
     return null;
@@ -15,27 +36,16 @@ export function validateZainCash(text: string): string | null {
     return "يجب أن يحتوي رقم الهاتف على أرقام فقط";
   }
 
-  const hasIraqiPrefix =
-    clean.startsWith("07") ||
-    clean.startsWith("7") ||
-    clean.startsWith("+9647") ||
-    clean.startsWith("9647") ||
-    clean.startsWith("009647");
+  // The "7" is part of the national number, not the prefix, but it has to match
+  // here too — "+964" alone or a "08…" landline is not a mobile we can pay out to.
+  const format = ZAIN_PREFIXES.find((p) => clean.startsWith(`${p.code}7`));
 
-  if (!hasIraqiPrefix) {
+  if (!format) {
     return "يجب أن يبدأ رقم الهاتف بـ 07 أو 7 أو 9647+";
   }
 
-  if (clean.startsWith("07") && clean.length !== 11) {
-    return "رقم الهاتف يجب أن يكون 11 رقماً";
-  } else if (clean.startsWith("7") && clean.length !== 10) {
-    return "رقم الهاتف يجب أن يكون 10 أرقام";
-  } else if (clean.startsWith("+9647") && clean.length !== 13) {
-    return "رقم الهاتف يجب أن يكون 13 رقماً";
-  } else if (clean.startsWith("9647") && clean.length !== 12) {
-    return "رقم الهاتف يجب أن يكون 12 رقماً";
-  } else if (clean.startsWith("009647") && clean.length !== 14) {
-    return "رقم الهاتف يجب أن يكون 14 رقماً";
+  if (clean.length !== format.code.length + NSN_DIGITS) {
+    return format.lengthError;
   }
 
   return null;

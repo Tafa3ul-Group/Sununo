@@ -5,6 +5,7 @@ import { Colors, normalize } from '@/constants/theme';
 import { ltrScrollContent, ltrScroller, useDirection, useRtlListOrder } from "@/i18n";
 import { RootState } from '@/store';
 import { useGetPayoutsQuery } from '@/store/api/apiSlice';
+import { formatPrice } from '@/utils/format';
 import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -12,11 +13,17 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSelector } from 'react-redux';
 
+// Mirrors the API's PayoutStatus enum (payouts/entities/payout-request.entity.ts):
+// pending → approved → confirmed/declined (the owner's in-app نعم/لا step) → paid,
+// with rejected as the admin's refusal. Leaving confirmed/declined out here made
+// the two states this app itself produces unfilterable.
 const FILTERS = [
   { id: undefined, ar: 'الكل', en: 'All' },
   { id: 'pending', ar: 'قيد المراجعة', en: 'Pending' },
-  { id: 'approved', ar: 'مقبول', en: 'Approved' },
+  { id: 'approved', ar: 'بانتظار تأكيدك', en: 'Confirm needed' },
+  { id: 'confirmed', ar: 'مؤكّد', en: 'Confirmed' },
   { id: 'paid', ar: 'تم الدفع', en: 'Paid' },
+  { id: 'declined', ar: 'ملغى', en: 'Declined' },
   { id: 'rejected', ar: 'مرفوض', en: 'Rejected' },
 ];
 
@@ -39,8 +46,12 @@ export default function TransactionsScreen() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'approved': return '#3B82F6';
+      // Owner said نعم — on its way to being paid, so it reads as positive.
+      case 'confirmed': return '#10B981';
       case 'paid': return '#10B981';
       case 'pending': return '#F59E0B';
+      // Owner said لا (security stop) — distinct from an admin rejection.
+      case 'declined': return '#F97316';
       case 'rejected': return '#EF4444';
       default: return Colors.text.muted;
     }
@@ -49,8 +60,10 @@ export default function TransactionsScreen() {
   const getStatusBg = (status: string) => {
     switch (status) {
       case 'approved': return '#EFF6FF';
+      case 'confirmed': return '#ECFDF5';
       case 'paid': return '#ECFDF5';
       case 'pending': return '#FFF7ED';
+      case 'declined': return '#FFF7ED';
       case 'rejected': return '#FEF2F2';
       default: return '#F8F9FB';
     }
@@ -59,18 +72,24 @@ export default function TransactionsScreen() {
   const getStatusIcon = (status: string): any => {
     switch (status) {
       case 'paid': return 'check-circle-outline';
+      case 'confirmed': return 'check-circle-outline';
       case 'approved': return 'thumb-up-outline';
       case 'pending': return 'clock-outline';
+      case 'declined': return 'close-circle-outline';
       case 'rejected': return 'close-circle-outline';
       default: return 'cash-fast';
     }
   };
 
+  // Every value of the API's PayoutStatus enum, so no state ever leaks its raw
+  // English key into the Arabic UI. Wording matches revenue.tsx.
   const getStatusLabel = (status: string) => {
     const labels: any = {
       pending: { ar: 'قيد المراجعة', en: 'Pending' },
-      approved: { ar: 'مقبول', en: 'Approved' },
+      approved: { ar: 'بانتظار تأكيدك', en: 'Confirm needed' },
+      confirmed: { ar: 'مؤكّد', en: 'Confirmed' },
       paid: { ar: 'تم الدفع', en: 'Paid' },
+      declined: { ar: 'ملغى', en: 'Declined' },
       rejected: { ar: 'مرفوض', en: 'Rejected' }
     };
     return isRTL ? labels[status]?.ar || status : labels[status]?.en || status;
@@ -118,7 +137,10 @@ export default function TransactionsScreen() {
 
           <View style={{ alignItems: 'flex-end' }}>
             <Text style={[styles.transactionAmount, { textAlign: textAlignEnd }]}>
-              {Number(item.amount)?.toLocaleString()} <Text style={styles.currencySmall}>{isRTL ? 'د.ع' : 'IQD'}</Text>
+              {/* formatPrice, not toLocaleString: the bare call formats with the
+                  DEVICE locale, so money rendered Arabic-Indic digits on an
+                  Arabic phone even while the app itself was in English. */}
+              {formatPrice(item.amount)} <Text style={styles.currencySmall}>{isRTL ? 'د.ع' : 'IQD'}</Text>
             </Text>
             <View style={[styles.statusBadge, { backgroundColor: statusBg }]}>
               <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
@@ -155,7 +177,19 @@ export default function TransactionsScreen() {
 
           {item.status === 'approved' ? (
             <Text style={[styles.detailMuted, { textAlign }]}>
-              {isRTL ? 'تمت الموافقة — قيد التحويل' : 'Approved — transfer in progress'}
+              {isRTL ? 'تمت الموافقة — بانتظار تأكيدك' : 'Approved — awaiting your confirmation'}
+            </Text>
+          ) : null}
+
+          {item.status === 'confirmed' ? (
+            <Text style={[styles.detailMuted, { textAlign }]}>
+              {isRTL ? 'تم التأكيد — قيد التحويل' : 'Confirmed — transfer in progress'}
+            </Text>
+          ) : null}
+
+          {item.status === 'declined' ? (
+            <Text style={[styles.detailRejected, { textAlign }]}>
+              {isRTL ? 'تم إلغاء الطلب من قبلك' : 'You declined this request'}
             </Text>
           ) : null}
         </View>

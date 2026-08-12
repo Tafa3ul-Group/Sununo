@@ -82,7 +82,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { ltrScrollContent, ltrScroller, pickTranslation, useDirection, useRtlListOrder } from "@/i18n";
+import { ltrScrollContent, ltrScroller, pickTranslation, useDirection, useRtlListOrder, pinLTR } from "@/i18n";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -214,9 +214,13 @@ function ActiveFilterBanner({
   return (
     <View style={filterBannerStyles.container}>
       <View style={[filterBannerStyles.content, { flexDirection: 'row' }]}>
+        {/* ltrScroller AND ltrScrollContent — see the recipe in i18n/direction.ts:
+            contentContainerStyle alone leaves the content at negative x inside a
+            still-rtl host, which makes the chip strip unscrollable in Arabic. */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
+          style={ltrScroller}
           contentContainerStyle={[
             filterBannerStyles.scrollContent,
             { flexDirection: 'row' },
@@ -983,8 +987,10 @@ export default function ExploreScreen() {
                   horizontal
                   pagingEnabled
                   showsHorizontalScrollIndicator={false}
-                  style={ltrScroller}
-                  contentContainerStyle={ltrScrollContent}
+                  // Pinned LTR on purpose: activeImageIndex below is derived
+                  // from contentOffset.x, whose semantics native RTL flips.
+                  style={pinLTR}
+                  contentContainerStyle={pinLTR}
                   onMomentumScrollEnd={(e) => {
                     const index = Math.round(
                       e.nativeEvent.contentOffset.x / (SCREEN_WIDTH - 40),

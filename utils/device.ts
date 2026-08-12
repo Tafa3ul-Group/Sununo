@@ -10,6 +10,11 @@ import { Platform } from "react-native";
 
 const DEVICE_ID_KEY = "device-id";
 let cachedDeviceId: string | null = null;
+// The read is async, so the module-level cache alone cannot stop two callers that
+// race before the first getItem resolves. Memoizing the in-flight promise makes
+// every concurrent caller await the SAME read/generate/persist, so an install can
+// never split into two X-Device-Id values (which would fork its analytics).
+let inFlightDeviceId: Promise<string> | null = null;
 
 function uuidv4(): string {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -19,22 +24,31 @@ function uuidv4(): string {
   });
 }
 
-/** Resolve (and lazily persist) the stable device id. Cached after first read. */
-export async function getDeviceId(): Promise<string> {
-  if (cachedDeviceId) return cachedDeviceId;
+async function readOrCreateDeviceId(): Promise<string> {
   try {
     let id = await AsyncStorage.getItem(DEVICE_ID_KEY);
     if (!id) {
       id = uuidv4();
       await AsyncStorage.setItem(DEVICE_ID_KEY, id);
     }
-    cachedDeviceId = id;
     return id;
   } catch {
     // Storage unavailable — fall back to an in-memory id so the session still groups.
-    if (!cachedDeviceId) cachedDeviceId = uuidv4();
-    return cachedDeviceId;
+    return uuidv4();
   }
+}
+
+/** Resolve (and lazily persist) the stable device id. Cached after first read. */
+export async function getDeviceId(): Promise<string> {
+  if (cachedDeviceId) return cachedDeviceId;
+  if (!inFlightDeviceId) {
+    inFlightDeviceId = readOrCreateDeviceId().then((id) => {
+      cachedDeviceId = id;
+      inFlightDeviceId = null;
+      return id;
+    });
+  }
+  return inFlightDeviceId;
 }
 
 /** Current app version (e.g. "2.1.1"), read from the native/app config. */

@@ -36,12 +36,43 @@ const initialState: FilterState = {
   isActive: false,
 };
 
+/**
+ * The only keys setFilters is allowed to write. Callers spread their own local
+ * filter objects into the payload (explore.tsx keeps minPrice/maxPrice in local
+ * state, screens spread `...activeFilters`), and this slice is persisted, so an
+ * unknown key would otherwise be written to disk and rehydrated forever.
+ */
+const FILTER_KEYS = [
+  "cityId",
+  "cityName",
+  "search",
+  "checkIn",
+  "checkOut",
+  "period",
+  "maxGuests",
+  "adults",
+  "children",
+  "isActive",
+] as const satisfies readonly (keyof FilterState)[];
+
 const filterSlice = createSlice({
   name: "filter",
   initialState,
   reducers: {
     setFilters: (state, action: PayloadAction<Partial<FilterState>>) => {
-      Object.assign(state, action.payload);
+      const payload = action.payload;
+      if (payload) {
+        for (const key of FILTER_KEYS) {
+          const value = payload[key];
+          // `undefined` means "this key was never meant to be sent" (a partial
+          // payload, or a spread of an object that lacks the field) and must
+          // leave the stored value alone. Clearing a filter is done with an
+          // explicit `null`, which still writes through.
+          if (value !== undefined) {
+            (state[key] as FilterState[typeof key]) = value;
+          }
+        }
+      }
       // Mark as active if any meaningful filter is set
       state.isActive =
         !!state.cityId ||

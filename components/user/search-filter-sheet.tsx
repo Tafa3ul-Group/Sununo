@@ -67,8 +67,10 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
   // Dynamic layout helpers from the central direction API.
   const rowDirection = hookRowDirection;
   const textAlignment = textAlign;
-  // Cross-axis start alignment for the footer button, honoring direction.
-  const buttonAlign = isRTL ? "flex-end" : "flex-start";
+  // Cross-axis START alignment for the footer button. Constant: 'flex-start' is
+  // already LOGICAL and native RTL mirrors it to the right edge in Arabic. The
+  // old `isRTL ? 'flex-end' : 'flex-start'` double-flipped it back to the left.
+  const buttonAlign = "flex-start";
 
   // Fetch chalet details if chaletId is provided
   const { data: chaletDetailsResponse } = useGetCustomerChaletDetailsQuery(chaletId || "", {

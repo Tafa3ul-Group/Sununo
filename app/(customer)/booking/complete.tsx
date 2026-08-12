@@ -426,6 +426,13 @@ export default function CompleteBookingScreen() {
   }, [availableShifts, filterPeriod, shiftMatchesFilterPeriod]);
 
   const [currentMonth, setCurrentMonth] = useState(getInitialMonth);
+  // The month the CALENDAR SHEET is showing. It moves with the sheet's arrows /
+  // year picker, independently of the month the picked date lives in, and it is
+  // what the availability query and the scribbled-out days follow. Before this
+  // existed the query only ever ran for the *selection's* month, so paging to
+  // the next month drew it with the previous month's occupancy and a fully
+  // booked day rendered as selectable.
+  const [calendarMonth, setCalendarMonth] = useState(getInitialMonth);
   const getDateForDay = useCallback(
     (day: number) =>
       selectedDateRange.find((date) => date.getDate() === day) ||
@@ -437,7 +444,12 @@ export default function CompleteBookingScreen() {
     return getDateForDay(day).getDay();
   };
 
-  const { data: availabilityData = [] } = useGetChaletAvailabilityQuery(
+  // Occupancy is fetched for BOTH the month the selection lives in and the month
+  // the calendar is showing, and merged. They are the same month most of the
+  // time — RTK Query then serves one cache entry and only one request goes out —
+  // but they diverge the moment the user pages the calendar forward, and the
+  // selected day's shift rows must keep their real availability while they do.
+  const { data: selectionMonthAvailability } = useGetChaletAvailabilityQuery(
     {
       id: chaletId,
       month: currentMonth.getMonth() + 1,
@@ -445,6 +457,42 @@ export default function CompleteBookingScreen() {
     },
     { skip: !chaletId },
   );
+
+  const {
+    data: calendarMonthAvailability,
+    isFetching: isCalendarMonthFetching,
+    isError: isCalendarMonthError,
+  } = useGetChaletAvailabilityQuery(
+    {
+      id: chaletId,
+      month: calendarMonth.getMonth() + 1,
+      year: calendarMonth.getFullYear(),
+    },
+    { skip: !chaletId },
+  );
+
+  const availabilityData = useMemo(
+    () => [
+      ...(Array.isArray(selectionMonthAvailability)
+        ? selectionMonthAvailability
+        : []),
+      ...(Array.isArray(calendarMonthAvailability)
+        ? calendarMonthAvailability
+        : []),
+    ],
+    [selectionMonthAvailability, calendarMonthAvailability],
+  );
+
+  // Until the viewed month's occupancy has actually arrived, no day in it may be
+  // picked — an un-fetched month would otherwise render every day as free.
+  // An outright FAILURE deliberately unlocks the calendar again: the create-booking
+  // call re-checks availability server-side and refuses a taken slot before any
+  // money moves, so a dead availability endpoint should not make the chalet
+  // unbookable.
+  const isCalendarMonthLoading =
+    !!chaletId &&
+    !isCalendarMonthError &&
+    (isCalendarMonthFetching || calendarMonthAvailability === undefined);
 
   // Which shift ids are taken on each "YYYY-MM-DD", as resolved by the backend.
   //
@@ -494,40 +542,49 @@ export default function CompleteBookingScreen() {
     return map;
   }, [availabilityData]);
 
+  // The availability key of a SELECTED day. It must be resolved through
+  // `getDateForDay` (the same source the pricing and the submitted payload use),
+  // not rebuilt from `currentMonth` + day-of-month: the two disagree for any day
+  // that belongs to a different month than `currentMonth`, and the shift rows
+  // then read the availability of the wrong date entirely.
   const dateKeyForDay = useCallback(
-    (day: number) =>
-      `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
-    [currentMonth],
+    (day: number) => getLocalDateKey(getDateForDay(day)),
+    [getDateForDay],
   );
 
   // A day is fully booked when every shift the chalet offers is taken on it.
+  // Keyed off the month the CALENDAR is showing (not the selection's month),
+  // because this is what paints the calendar grid.
   const bookedDates = useMemo(() => {
     if (availableShifts.length === 0) return [];
 
     const daysInMonth = new Date(
-      currentMonth.getFullYear(),
-      currentMonth.getMonth() + 1,
+      calendarMonth.getFullYear(),
+      calendarMonth.getMonth() + 1,
       0,
     ).getDate();
 
     const days: number[] = [];
     for (let day = 1; day <= daysInMonth; day++) {
-      const blocked = blockedShiftsByDate[dateKeyForDay(day)];
+      const key = getLocalDateKey(
+        new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), day),
+      );
+      const blocked = blockedShiftsByDate[key];
       if (blocked && availableShifts.every((s: any) => blocked.has(s.id))) {
         days.push(day);
       }
     }
     return days;
-  }, [blockedShiftsByDate, availableShifts, currentMonth, dateKeyForDay]);
+  }, [blockedShiftsByDate, availableShifts, calendarMonth]);
 
   const bookedDateStrings = useMemo(
     () =>
       bookedDates.map((day) =>
         getLocalDateKey(
-          new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day),
+          new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), day),
         ),
       ),
-    [bookedDates, currentMonth],
+    [bookedDates, calendarMonth],
   );
 
   const isShiftBookedForDay = useCallback(
@@ -609,6 +666,16 @@ export default function CompleteBookingScreen() {
   const calendarSheetRef = React.useRef<BottomSheetModal>(null);
 
   const [createdBookingId, setCreatedBookingId] = useState<string | null>(null);
+  // The payment session of the booking we already created. Kept so an abandoned
+  // payment can be RESUMED instead of creating a second booking for the same
+  // slot — see the resume branch in handleNext.
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
+  // What that pending booking was created for. If the user changes the date,
+  // shift, guests, audience or payment model afterwards, the pending booking no
+  // longer represents what they are agreeing to and a new one must be created.
+  const [pendingBookingKey, setPendingBookingKey] = useState<string | null>(
+    null,
+  );
 
   // Card Details State
   const [cardNum, setCardNum] = useState("");
@@ -622,9 +689,24 @@ export default function CompleteBookingScreen() {
   const [cardName, setCardName] = useState("");
   const [notes, setNotes] = useState("");
 
-  const [adultCount, setAdultCount] = useState<number>(
-    Number(savedFilter?.adults ?? 2),
-  );
+  // The guest count is seeded from the search filter, which is global, persisted
+  // and unbounded (the search sheet increments `adults` with no ceiling), while
+  // the backend hard-rejects `guestsCount > chalet.capacity`. Seeding it raw let
+  // the screen open at 30 guests on a capacity-6 chalet: it priced 24 "extra
+  // persons" into the total, made the user upload BOTH ID photos, and only then
+  // failed with a 400. `chaletDetails` is usually still loading on first render,
+  // so this is only a sane floor — the effect below re-clamps to the real
+  // capacity the moment it arrives.
+  const [adultCount, setAdultCount] = useState<number>(() => {
+    const seeded = Number(savedFilter?.adults);
+    return Number.isFinite(seeded) && seeded > 0 ? seeded : 2;
+  });
+  const chaletCapacity = Number(chaletDetails?.capacity) || 0;
+
+  useEffect(() => {
+    if (chaletCapacity <= 0) return;
+    setAdultCount((prev) => (prev > chaletCapacity ? chaletCapacity : prev));
+  }, [chaletCapacity]);
   const [childrenCount, setChildrenCount] = useState(0);
   const [guestType, setGuestType] = useState<"FAMILY" | "YOUTH">("FAMILY");
   const [idImage1, setIdImage1] = useState<string | null>(null);
@@ -843,6 +925,32 @@ export default function CompleteBookingScreen() {
     }
   }, [depositPercentage]);
 
+  // Identity of the booking the button would create right now. Compared against
+  // `pendingBookingKey` to tell "the user abandoned the payment for exactly this
+  // booking" (resume it) from "they changed something" (create a new one).
+  const currentBookingKey = useMemo(() => {
+    const day = selectedDates[0];
+    if (day === undefined) return null;
+    return [
+      chaletId,
+      getLocalDateKey(getDateForDay(day)),
+      selectedShifts[day] || "",
+      adultCount,
+      guestType,
+      paymentType,
+      selectedMethod,
+    ].join("|");
+  }, [
+    chaletId,
+    selectedDates,
+    selectedShifts,
+    getDateForDay,
+    adultCount,
+    guestType,
+    paymentType,
+    selectedMethod,
+  ]);
+
   const bookingDateString =
     selectedDates.length > 0
       ? (selectedDateRange.length > 0
@@ -893,6 +1001,20 @@ export default function CompleteBookingScreen() {
     if (activeTab === "WHEN") {
       setActiveTab("WHO");
     } else if (activeTab === "WHO") {
+      // Capacity is checked BEFORE the ID upload: the backend rejects
+      // guestsCount > chalet.capacity, and making the customer upload two ID
+      // photos for a booking that can only ever 400 is the worst place to find
+      // out. The counter itself can't be pushed over capacity — this catches a
+      // count seeded from the search filter before chaletDetails had loaded.
+      if (chaletCapacity > 0 && adultCount > chaletCapacity) {
+        Alert.alert(
+          isArabic ? "تنبيه" : "Alert",
+          isArabic
+            ? `السعة القصوى لهذا الشاليه هي ${chaletCapacity} شخص. يرجى تقليل عدد الضيوف.`
+            : `Maximum capacity for this chalet is ${chaletCapacity} guests. Please reduce the guest count.`,
+        );
+        return;
+      }
       // ID document is required for BOTH family and youth bookings.
       if (!idImage1 || !idImage2) {
         Alert.alert(
@@ -953,16 +1075,61 @@ export default function CompleteBookingScreen() {
           return;
         }
 
+        // POST /customer/bookings books exactly ONE date (CreateBookingDto has a
+        // single `bookingDate`, Booking has no end date, and there is no batch
+        // route), so the calendar is single-select. This is the last line of
+        // defence: submitting a multi-day selection would show the customer an
+        // N-night total and deposit while reserving and charging one night.
+        if (selectedDates.length > 1) {
+          Alert.alert(
+            isArabic ? "تنبيه" : "Alert",
+            isArabic
+              ? "يمكن حجز يوم واحد في كل عملية. يرجى اختيار يوم واحد."
+              : "Only one day can be booked at a time. Please select a single day.",
+          );
+          setActiveTab("WHEN");
+          return;
+        }
+
+        // Same capacity rule as the WHO tab — re-checked here because the user
+        // can come straight back to this tab via the "edit" shortcut.
+        if (chaletCapacity > 0 && adultCount > chaletCapacity) {
+          Alert.alert(
+            isArabic ? "تنبيه" : "Alert",
+            isArabic
+              ? `السعة القصوى لهذا الشاليه هي ${chaletCapacity} شخص. يرجى تقليل عدد الضيوف.`
+              : `Maximum capacity for this chalet is ${chaletCapacity} guests. Please reduce the guest count.`,
+          );
+          setActiveTab("WHO");
+          return;
+        }
+
         if (chaletId) {
           const bookings = selectedDates.map((day) => ({
-            bookingDate: (() => {
-              const date = getDateForDay(day);
-              return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-            })(),
+            bookingDate: getLocalDateKey(getDateForDay(day)),
             shiftId: selectedShifts[day],
           }));
 
           const isDelayedBooking = chaletDetails?.bookingType === "delayed";
+
+          // A booking we already created and never paid for still holds this
+          // slot (the backend keeps it PENDING_PAYMENT for ~15 minutes), so
+          // creating a second one for the same date/shift is rejected with
+          // "This shift is not available for the selected date" — the customer
+          // would be told their OWN slot is taken, with no way to pay for it.
+          // `POST /customer/bookings/:id/pay` is delayed-chalets-only, so the
+          // resume path is re-opening the payment session we already have.
+          if (
+            !isDelayedBooking &&
+            createdBookingId &&
+            paymentUrl &&
+            paymentTransactionId &&
+            pendingBookingKey &&
+            pendingBookingKey === currentBookingKey
+          ) {
+            await openPaymentSession(paymentUrl, paymentTransactionId);
+            return;
+          }
 
           if (!isDelayedBooking) {
             logEvent(ANALYTICS_EVENTS.ADD_PAYMENT_INFO, {
@@ -1026,25 +1193,15 @@ export default function CompleteBookingScreen() {
           } else if (result.payment?.paymentUrl) {
             setCreatedBookingId(result.booking.id);
             setPaymentTransactionId(result.payment.transactionId);
- 
-            // Open payment URL in auth session to catch the redirect
-            setIsWaitingForPayment(true);
-            setPollingStatus("pending");
-            processingSheetRef.current?.present();
- 
-            try {
-              const authResult = await WebBrowser.openAuthSessionAsync(
-                result.payment.paymentUrl,
-                "sununo://payment-callback",
-              );
- 
-              // Start polling regardless of authResult to be sure
-              startPaymentPolling(result.payment.transactionId);
-            } catch (e) {
-              console.error("Browser error", e);
-              setIsWaitingForPayment(false);
-              processingSheetRef.current?.dismiss();
-            }
+            // Remember the session and what it was for, so an abandoned payment
+            // can be resumed instead of creating a duplicate booking.
+            setPaymentUrl(result.payment.paymentUrl);
+            setPendingBookingKey(currentBookingKey);
+
+            await openPaymentSession(
+              result.payment.paymentUrl,
+              result.payment.transactionId,
+            );
           } else if (selectedMethod === "wallet") {
             setCreatedBookingId(result.booking.id);
             trackPurchase(result.booking.id);
@@ -1064,11 +1221,41 @@ export default function CompleteBookingScreen() {
           );
         }
       } catch (error: any) {
+        const message = String(error?.data?.message || "");
+
+        // "This shift is not available" after we already created a booking for
+        // this exact slot means the customer's OWN unpaid booking is what is
+        // holding it. Say that, and offer to finish paying for it — the generic
+        // error left them staring at "your slot is taken" for 15 minutes.
+        if (
+          paymentUrl &&
+          paymentTransactionId &&
+          pendingBookingKey === currentBookingKey &&
+          /not available/i.test(message)
+        ) {
+          const resumeUrl = paymentUrl;
+          const resumeTxn = paymentTransactionId;
+          Alert.alert(
+            isArabic ? "لديك حجز بانتظار الدفع" : "Payment already pending",
+            isArabic
+              ? "لديك حجز لهذا اليوم والفترة بانتظار الدفع. أكمل دفع الحجز الحالي بدل إنشاء حجز جديد."
+              : "You already have a booking awaiting payment for this day and shift. Continue that payment instead of creating a new one.",
+            [
+              { text: isArabic ? "إلغاء" : "Cancel", style: "cancel" },
+              {
+                text: isArabic ? "إكمال الدفع" : "Continue payment",
+                onPress: () => {
+                  void openPaymentSession(resumeUrl, resumeTxn);
+                },
+              },
+            ],
+          );
+          return;
+        }
+
         Alert.alert(
           t("common.error") || "Error",
-          error?.data?.message ||
-            t("booking.bookingError") ||
-            "Failed to create booking",
+          message || t("booking.bookingError") || "Failed to create booking",
         );
       }
     }
@@ -1118,10 +1305,23 @@ export default function CompleteBookingScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
+  /**
+   * A booking is ONE day.
+   *
+   * The API creates a single Booking row from a single `bookingDate` — there is
+   * no end date on the entity and no batch route — so a multi-day range could
+   * only ever be *displayed*: the screen priced and charged a deposit on N
+   * nights while the server reserved and charged for the first one, leaving the
+   * rest free for anyone else to take. The calendar is therefore single-select,
+   * and `end` is deliberately ignored here rather than expanded into a range.
+   *
+   * `selectedDates` / `selectedShifts` stay keyed by day-of-month (the shift
+   * rows and pricing are built from them), but now always hold exactly one day.
+   */
   const handleCalendarSelect = useCallback(
-    (start: Date | null, end: Date | null) => {
+    (start: Date | null, _end: Date | null) => {
       setSelectedStartDate(start ? new Date(start) : null);
-      setSelectedEndDate(end ? new Date(end) : null);
+      setSelectedEndDate(null);
 
       if (!start) {
         setSelectedDates([]);
@@ -1129,43 +1329,61 @@ export default function CompleteBookingScreen() {
         return;
       }
 
-      const nextDates: Date[] = [];
-      const cur = new Date(start);
-      cur.setHours(0, 0, 0, 0);
-      const last = end ? new Date(end) : new Date(start);
-      last.setHours(0, 0, 0, 0);
+      const picked = new Date(start);
+      picked.setHours(0, 0, 0, 0);
+      const pickedDay = picked.getDate();
 
-      while (cur <= last) {
-        nextDates.push(new Date(cur));
-        cur.setDate(cur.getDate() + 1);
-      }
+      // Resolve availability against the picked date DIRECTLY. Going through
+      // isShiftBookedForDay here would read `selectedDateRange`, which still
+      // holds the *previous* selection at this point in the render.
+      const pickedKey = getLocalDateKey(picked);
+      const blockedOnPicked = blockedShiftsByDate[pickedKey];
+      const isBlocked = (shiftId: string) =>
+        blockedOnPicked?.has(shiftId) ?? false;
 
-      const nextDays = nextDates.map((date) => date.getDate());
+      // A shift with no pricing (or the <= 1 "closed" sentinel) for that weekday
+      // can't be booked either — auto-selecting one produced a 0 total and a
+      // rejected submit.
+      const dayOfWeek = picked.getDay();
+      const isOpen = (shift: any) => {
+        const pricing = shift?.pricing?.find(
+          (p: any) => p.dayOfWeek === dayOfWeek,
+        );
+        return !!pricing && Number(pricing.price) > 1;
+      };
+      const isSelectable = (shift: any) =>
+        !!shift && isOpen(shift) && !isBlocked(shift.id);
+
       const preferredShiftId =
         filteredSelectedShift?.id ||
         Object.values(selectedShifts).find(Boolean) ||
         (availableShifts.length === 1 ? availableShifts[0].id : "");
+      const preferredShift = availableShifts.find(
+        (s: any) => s.id === preferredShiftId,
+      );
 
-      setCurrentMonth(new Date(start));
-      setSelectedDates(nextDays);
-      setSelectedShifts((prev) => {
-        const next: Record<number, string> = {};
-        nextDays.forEach((day) => {
-          const currentSelected = prev[day];
-          if (currentSelected && !isShiftBookedForDay(day, currentSelected)) {
-            next[day] = currentSelected;
-          } else if (preferredShiftId && !isShiftBookedForDay(day, preferredShiftId)) {
-            next[day] = preferredShiftId;
-          } else {
-            const nonBookedShift = availableShifts.find((s: any) => !isShiftBookedForDay(day, s.id));
-            next[day] = nonBookedShift ? nonBookedShift.id : preferredShiftId;
-          }
-        });
-        return next;
-      });
+      const chosenShift = isSelectable(preferredShift)
+        ? preferredShift
+        : availableShifts.find(isSelectable);
+
+      setCurrentMonth(new Date(picked));
+      setCalendarMonth(new Date(picked));
+      setSelectedDates([pickedDay]);
+      setSelectedShifts(chosenShift ? { [pickedDay]: chosenShift.id } : {});
     },
-    [availableShifts, filteredSelectedShift, selectedShifts, isShiftBookedForDay],
+    [
+      availableShifts,
+      filteredSelectedShift,
+      selectedShifts,
+      blockedShiftsByDate,
+    ],
   );
+
+  // The calendar sheet paged to another month — follow it with the availability
+  // query so the days it is about to draw carry that month's real occupancy.
+  const handleCalendarMonthChange = useCallback((date: Date) => {
+    setCalendarMonth(new Date(date.getFullYear(), date.getMonth(), 1));
+  }, []);
 
   const toggleShiftForDay = (day: number, shiftId: string) => {
     if (isShiftBookedForDay(day, shiftId)) return;
@@ -1182,7 +1400,7 @@ export default function CompleteBookingScreen() {
   // on every parent render.
   const handleIncrementAdults = useCallback(() => {
     const totalNow = adultCount;
-    const maxCap = Number(chaletDetails?.capacity || 50);
+    const maxCap = chaletCapacity > 0 ? chaletCapacity : 50;
     if (totalNow < maxCap) {
       setAdultCount(adultCount + 1);
     } else {
@@ -1193,7 +1411,7 @@ export default function CompleteBookingScreen() {
           : `Maximum capacity for this chalet is ${maxCap} guests. You currently have ${totalNow}.`,
       );
     }
-  }, [adultCount, chaletDetails?.capacity, isArabic]);
+  }, [adultCount, chaletCapacity, isArabic]);
 
   const handleDecrementAdults = useCallback(() => {
     setAdultCount(Math.max(1, adultCount - 1));
@@ -1225,6 +1443,11 @@ export default function CompleteBookingScreen() {
             processingSheetRef.current?.dismiss();
             successSheetRef.current?.present();
           }, 1500);
+          // Terminal result — must NOT fall through to the attempt-count check
+          // below, which on the final attempt overwrote this success with
+          // "timeout" in the same tick and told the customer their completed
+          // payment had failed to verify.
+          return;
         } else if (result?.status === "failed") {
           clearInterval(interval);
           pollingIntervalRef.current = null;
@@ -1234,6 +1457,7 @@ export default function CompleteBookingScreen() {
           setTimeout(() => {
             processingSheetRef.current?.dismiss();
           }, 1500);
+          return; // terminal — see the success branch above
         }
       } catch (e) {
         // Only log actual network errors, ignore WebBrowser close errors
@@ -1257,6 +1481,26 @@ export default function CompleteBookingScreen() {
     // Track the interval so it can be cleared on unmount (prevents the leak /
     // state updates on an unmounted component).
     pollingIntervalRef.current = interval;
+  };
+
+  // Opens (or RE-opens) a payment session and polls it. Used both for a freshly
+  // created booking and to resume the one an abandoned payment left pending, so
+  // the two paths can't drift apart.
+  const openPaymentSession = async (url: string, transactionId: string) => {
+    setIsWaitingForPayment(true);
+    setPollingStatus("pending");
+    processingSheetRef.current?.present();
+
+    try {
+      await WebBrowser.openAuthSessionAsync(url, "sununo://payment-callback");
+      // Poll regardless of the browser result — the gateway may confirm after
+      // the user closes the page.
+      startPaymentPolling(transactionId);
+    } catch (e) {
+      console.error("Browser error", e);
+      setIsWaitingForPayment(false);
+      processingSheetRef.current?.dismiss();
+    }
   };
 
   const renderDetailsTab = () => (
@@ -1741,9 +1985,12 @@ export default function CompleteBookingScreen() {
         <RangeCalendar
           onSelect={handleCalendarSelect}
           initialStartDate={selectedStartDate ?? undefined}
-          initialEndDate={selectedEndDate ?? undefined}
+          // Single-select: the API books exactly one `bookingDate`, so there is
+          // no end date to seed (see handleCalendarSelect).
+          selectionMode="single"
           reservedDates={bookedDateStrings}
-          selectionMode="range"
+          onMonthChange={handleCalendarMonthChange}
+          loading={isCalendarMonthLoading}
         />
         <View style={{ marginTop: 20, paddingHorizontal: 4 }}>
           <PrimaryButton

@@ -19,6 +19,16 @@ export function useCountdown(createdAt: string | undefined, durationHours: numbe
 
     const expiresAt = new Date(createdAt).getTime() + durationHours * 60 * 60 * 1000;
 
+    // An unparseable createdAt (or a non-numeric duration) makes expiresAt NaN,
+    // and every comparison against NaN is false — including the `diff <= 0`
+    // guard below — so without this the user would be shown "NaN:NaN:NaN" on a
+    // countdown that never ends. A deadline we cannot compute is treated as
+    // already passed, which is the safe direction for an approval window.
+    if (!Number.isFinite(expiresAt)) {
+      setRemaining({ hours: 0, minutes: 0, seconds: 0, isExpired: true, formatted: '00:00:00' });
+      return;
+    }
+
     const update = () => {
       const now = Date.now();
       const diff = expiresAt - now;

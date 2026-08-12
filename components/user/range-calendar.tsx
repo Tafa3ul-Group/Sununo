@@ -30,6 +30,19 @@ interface RangeCalendarProps {
   initialEndDate?: Date;
   reservedDates?: string[]; // ISO strings or YYYY-MM-DD
   selectionMode?: "single" | "range";
+  /**
+   * Fires with the first day of the month the calendar has just moved to
+   * (arrows or year picker). `reservedDates` is per-month data the parent has
+   * to fetch, and the calendar owns `viewDate` — without this the parent never
+   * learned the user had paged forward, so the next month kept rendering with
+   * the previous month's occupancy and fully-booked days looked free.
+   */
+  onMonthChange?: (date: Date) => void;
+  /**
+   * The viewed month's occupancy is still being fetched. Days are shown but not
+   * selectable: "we don't know yet" must not read as "free".
+   */
+  loading?: boolean;
 }
 
 export const RangeCalendar: React.FC<RangeCalendarProps> = ({
@@ -38,6 +51,8 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({
   initialEndDate,
   reservedDates = [],
   selectionMode = "range",
+  onMonthChange,
+  loading = false,
 }) => {
   const { i18n } = useTranslation();
   const { isRTL } = useDirection();
@@ -100,6 +115,10 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({
   }, [year, month]);
 
   const handleDayPress = (date: Date) => {
+    // Availability for this month hasn't arrived — refuse the pick rather than
+    // treat an unknown day as bookable.
+    if (loading) return;
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const pressedDate = new Date(date);
@@ -146,13 +165,19 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({
     return time > startDate.getTime() && time < endDate.getTime();
   };
 
+  // Both month movers report the new month upward, so the parent can refetch the
+  // occupancy that `reservedDates`/`loading` are built from.
   const changeMonth = (offset: number) => {
-    setViewDate(new Date(year, month + offset, 1));
+    const next = new Date(year, month + offset, 1);
+    setViewDate(next);
+    onMonthChange?.(next);
   };
 
   const selectYear = (y: number) => {
-    setViewDate(new Date(y, month, 1));
+    const next = new Date(y, month, 1);
+    setViewDate(next);
     setShowYearPicker(false);
+    onMonthChange?.(next);
   };
 
   const monthTitleText = useMemo(() => {
@@ -220,7 +245,13 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({
             ))}
           </View>
 
-          <View style={[styles.grid, { flexDirection: 'row' }]}>
+          <View
+            style={[
+              styles.grid,
+              { flexDirection: 'row' },
+              loading && styles.gridLoading,
+            ]}
+          >
             {calendarDays.map((item, index) => {
               const today = new Date();
               today.setHours(0, 0, 0, 0);
@@ -251,7 +282,7 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({
                       styles.dayCell,
                       (isStart || isEnd) && (isStart ? styles.startDaySelected : styles.endDaySelected),
                     ]}
-                    disabled={!item.isCurrent || isPast || isReserved}
+                    disabled={!item.isCurrent || isPast || isReserved || loading}
                   >
                     <ThemedText
                       style={[
@@ -316,6 +347,10 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     width: '100%',
     justifyContent: 'center' },
+  // Occupancy for the viewed month is in flight — the grid reads as "not ready"
+  // instead of silently offering days we can't price or reserve yet.
+  gridLoading: {
+    opacity: 0.45 },
   dayCellContainer: {
     width: `${100 / 7}%`,
     height: normalize.width(44),

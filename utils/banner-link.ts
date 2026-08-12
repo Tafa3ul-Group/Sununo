@@ -14,8 +14,13 @@ import { Linking } from "react-native";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-/** "https:", "mailto:", "tel:", "sununo:" … */
-const SCHEME_RE = /^[a-z][a-z0-9+.-]*:/i;
+/**
+ * "https://…", "mailto:…", "tel:…", "sununo://…" — but NOT "example.com:8080",
+ * which is a bare host carrying a port. A port is the only thing that follows
+ * the colon as a digit, so a scheme is one that is followed either by "//" or
+ * by anything that is not a digit.
+ */
+const SCHEME_RE = /^[a-z][a-z0-9+.-]*:(\/\/|[^0-9])/i;
 
 export type BannerLinkTarget =
   | { kind: "chalet"; id: string }
@@ -26,9 +31,16 @@ export type BannerLinkTarget =
 export function resolveBannerLink(
   link?: string | null,
 ): BannerLinkTarget | null {
-  const value = link?.trim();
+  // `link` comes straight off an untyped API payload (BannerSwiper's rows are
+  // `any`), so a number or object must resolve to "no link" rather than throw
+  // out of a renderItem and take the home screen down with it.
+  const value = typeof link === "string" ? link.trim() : "";
   if (!value) return null;
   if (UUID_RE.test(value)) return { kind: "chalet", id: value };
+  // "//host/path" is protocol-relative, not an app route — it has to be checked
+  // before the single-slash route branch or it gets pushed at a router that has
+  // no such route.
+  if (value.startsWith("//")) return { kind: "external", url: `https:${value}` };
   if (value.startsWith("/")) return { kind: "route", path: value };
   if (SCHEME_RE.test(value)) return { kind: "external", url: value };
   // Bare hosts ("sununo.app", "www.example.com") — Linking needs a scheme.
@@ -47,7 +59,14 @@ export function openBannerLink(link?: string | null): boolean {
 
   switch (target.kind) {
     case "chalet":
-      router.push(`/chalet-details/${target.id}`);
+      // Same guard as the route branch below: a push can throw (e.g. a tap that
+      // lands before the root layout has mounted), and that must not crash the
+      // home screen.
+      try {
+        router.push(`/chalet-details/${target.id}`);
+      } catch {
+        return false;
+      }
       return true;
     case "route":
       // An admin-typed path may not match a real route; don't crash the home

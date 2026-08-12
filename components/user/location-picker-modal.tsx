@@ -46,10 +46,21 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchInputRef = useRef<TextInput>(null);
 
-  // Sync with initialLocation when modal opens
+  // Sync with initialLocation when modal opens.
+  // Deliberately keyed on the PRIMITIVE lat/lng, never on the `initialLocation`
+  // object: callers build it as a fresh literal on every render (see
+  // app/(dashboard)/chalet-details.tsx), so an object dep re-ran this on any
+  // parent re-render — a background refetch (refetchOnFocus) while the picker
+  // was open snapped the map back to the saved point and wiped the search,
+  // silently discarding the pin the owner had just dragged.
+  const initialLat = initialLocation?.latitude;
+  const initialLng = initialLocation?.longitude;
   React.useEffect(() => {
     if (visible) {
-      const startLoc = initialLocation || { latitude: 33.3152, longitude: 44.3661 };
+      const startLoc =
+        typeof initialLat === 'number' && typeof initialLng === 'number'
+          ? { latitude: initialLat, longitude: initialLng }
+          : { latitude: 33.3152, longitude: 44.3661 };
       setRegion(startLoc);
       // Reset search state
       setSearchQuery('');
@@ -63,7 +74,17 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
         });
       }
     }
-  }, [visible, initialLocation]);
+  }, [visible, initialLat, initialLng]);
+
+  // A geocode debounce still pending when the picker unmounts would resolve
+  // into setSearchResults on a dead component.
+  React.useEffect(() => {
+    return () => {
+      if (searchDebounceRef.current) {
+        clearTimeout(searchDebounceRef.current);
+      }
+    };
+  }, []);
 
   const handleConfirm = () => {
     onSelect(region.latitude, region.longitude);
@@ -79,10 +100,14 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
   };
 
   const onMapIdle = (state: any) => {
-    // onMapIdle uses geometry.coordinates [lng, lat]
-    if (state?.geometry?.coordinates) {
-      const [lng, lat] = state.geometry.coordinates;
-      setRegion({ latitude: lat, longitude: lng });
+    // Same v10 MapState as onCameraChanged — `properties.center` [lng, lat].
+    // The old v8 `geometry.coordinates` read here never matched, so the pin
+    // relied entirely on onCameraChanged firing.
+    if (state?.properties?.center) {
+      const [lng, lat] = state.properties.center;
+      if (typeof lat === 'number' && typeof lng === 'number') {
+        setRegion({ latitude: lat, longitude: lng });
+      }
     }
   };
 
