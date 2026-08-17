@@ -1,7 +1,6 @@
-import { toWhatsAppNumber } from "@/constants/links";
 import { Image as ExpoImage } from "expo-image";
 import React from "react";
-import { Dimensions, Linking, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Dimensions, StyleSheet, View } from "react-native";
 import Svg, { Path, Rect } from "react-native-svg";
 import { ThemedText } from "../themed-text";
 import { useDirection } from "@/i18n";
@@ -13,14 +12,13 @@ const SCALE = (SCREEN_WIDTH - 40) / SVG_WIDTH;
 
 interface HostContactCardProps {
   name: string;
-  phone?: string;
+  phone?: string; // kept for backward compat — the card is display-only, no contact action
   avatar: any;
   isRTL?: boolean; // kept for backward compat but ignored — uses useTranslation internally
 }
 
 export const HostContactCard: React.FC<HostContactCardProps> = ({
   name,
-  phone,
   avatar,
 }) => {
   const { isRTL, textAlign } = useDirection();
@@ -34,21 +32,8 @@ export const HostContactCard: React.FC<HostContactCardProps> = ({
   // Margin spacing to prevent text overlapping avatar
   const infoMargins = { marginStart: 85 * SCALE, marginEnd: 15 * SCALE };
 
-  const handleContact = () => {
-    if (!phone) return;
-    const num = toWhatsAppNumber(phone);
-    Linking.openURL(`https://wa.me/${num}`).catch(() => {
-      Linking.openURL(`tel:+${num}`).catch(() => {});
-    });
-  };
-
   return (
-    <TouchableOpacity
-      style={styles.container}
-      onPress={handleContact}
-      disabled={!phone}
-      activeOpacity={0.85}
-    >
+    <View style={styles.container}>
       <Svg
         width={SCREEN_WIDTH - 40}
         height={SVG_HEIGHT * SCALE}
@@ -109,7 +94,7 @@ export const HostContactCard: React.FC<HostContactCardProps> = ({
           <ExpoImage source={avatar} style={styles.avatar} contentFit="cover" />
         </View>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 };
 
