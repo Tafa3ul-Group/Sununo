@@ -1,6 +1,7 @@
 import { SolarHeartBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
-import { Fonts, normalize } from "@/constants/theme";
+import { DiscountBadge, DiscountedFrom } from "@/components/discount-badge";
+import { Colors, Fonts, normalize } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { useGetCustomerChaletDetailsQuery } from "@/store/api/customerApiSlice";
 import { getStartingPrice } from "@/utils/format";
@@ -70,6 +71,14 @@ export const FeaturedCard = React.memo(function FeaturedCard({
     ? chalet?.price
     : fetchedPrice ?? chalet?.price ?? "0";
 
+  // With a campaign running the card leads with what the customer will actually
+  // pay, and DiscountedFrom shows the pre-discount figure struck through beside
+  // it. Without one, `priceAfter` is absent and this is the ordinary price.
+  const displayPrice =
+    chalet?.discount?.priceAfter != null
+      ? Number(chalet.discount.priceAfter).toLocaleString()
+      : resolvedPrice;
+
   const cardScale = useSharedValue(1);
   const cardAnim = useAnimatedStyle(() => ({
     transform: [{ scale: cardScale.value }],
@@ -93,6 +102,10 @@ export const FeaturedCard = React.memo(function FeaturedCard({
         ? chalet.title.ar
         : chalet.title.en
       : chalet.title;
+
+  // Resolved server-side (platform default merged with any per-chalet override);
+  // absent for anything that is not in the curated featured strip.
+  const featuredLabel = chalet.featuredLabel;
   const handleToggleFavorite = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
     heartScale.value = withSequence(
@@ -124,12 +137,33 @@ export const FeaturedCard = React.memo(function FeaturedCard({
         />
 
         <View style={[styles.overlayRow, { flexDirection: "row" }]}>
-          {/* "Special" badge on the start corner (right in RTL), top-aligned */}
-          <ExpoImage
-            source={require("@/assets/shapes/Special.png")}
-            style={styles.specialBadge}
-            contentFit="contain"
-          />
+          {/* Start corner (right in RTL): the dashboard-configured label when
+              there is one, otherwise the static Special badge. Text and both
+              colours come from the data (a platform default, optionally
+              overridden per chalet), never from the theme. */}
+          {featuredLabel?.enabled !== false && featuredLabel?.name ? (
+            <View
+              style={[
+                styles.featuredBadge,
+                { backgroundColor: featuredLabel.backgroundColor || Colors.primary },
+              ]}
+            >
+              <ThemedText
+                style={[styles.featuredBadgeText, { color: featuredLabel.textColor || "#FFFFFF" }]}
+                numberOfLines={1}
+              >
+                {(isArabic ? featuredLabel.name.ar : featuredLabel.name.en) ||
+                  featuredLabel.name.ar ||
+                  featuredLabel.name.en}
+              </ThemedText>
+            </View>
+          ) : (
+            <ExpoImage
+              source={require("@/assets/shapes/Special.png")}
+              style={styles.specialBadge}
+              contentFit="contain"
+            />
+          )}
 
           {!hideFavorite && (
             <TouchableOpacity
@@ -157,14 +191,19 @@ export const FeaturedCard = React.memo(function FeaturedCard({
           {title}
         </ThemedText>
 
-        <ThemedText
-          style={[styles.price, { textAlign }]}
-          numberOfLines={1}
-        >
-          {isArabic ? "" : "IQD "}
-          {resolvedPrice}
-          {isArabic ? " د.ع" : ""}
-        </ThemedText>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <ThemedText
+            style={[styles.price, { textAlign }]}
+            numberOfLines={1}
+          >
+            {isArabic ? "" : "IQD "}
+            {displayPrice}
+            {isArabic ? " د.ع" : ""}
+          </ThemedText>
+          {/* Null on chalets with no campaign, so nothing changes for them. */}
+          <DiscountBadge discount={chalet?.discount} size="sm" />
+        </View>
+        <DiscountedFrom discount={chalet?.discount} size="sm" />
       </View>
     </AnimatedTouchable>
   );
@@ -226,6 +265,22 @@ const styles = StyleSheet.create({
   textBlock: {
     width: "100%",
     marginTop: normalize.height(6),
+  },
+  featuredBadge: {
+    // Overlaid on the photo's start corner. `overlayRow.start` is tightened to
+    // 2 for the Special PNG (which carries its own transparent margin); a text
+    // chip has none, so it takes the missing inset back here.
+    marginStart: normalize.width(4),
+    // Never let a long label crowd out the favorite heart on the other corner.
+    maxWidth: FEATURED_CARD_WIDTH - normalize.width(46),
+    paddingHorizontal: normalize.width(7),
+    paddingVertical: normalize.height(3),
+    borderRadius: 999,
+  },
+  featuredBadgeText: {
+    fontSize: normalize.font(9),
+    fontFamily: Fonts.bold,
+    lineHeight: normalize.font(13),
   },
   title: {
     fontSize: normalize.font(12),

@@ -163,11 +163,19 @@ export const customerApi = apiSlice.injectEndpoints({
         childrenCount?: number;
         guestsCount?: number;
         addonIds?: string[];
+        /**
+         * Optional PAID amenities the guest chose, as `chaletAmenityId` values
+         * from the chalet payload. Mandatory paid amenities are applied by the
+         * server on their own and must never be sent here.
+         */
+        amenityIds?: string[];
         paymentModel: "DEPOSIT" | "FULL";
         paymentMethod?: "wayl" | "wallet";
         useWalletBalance?: boolean;
         notes?: string;
         audienceType?: "FAMILY" | "YOUTH";
+        /** Discount code typed by the customer; re-validated server-side. */
+        couponCode?: string;
         cardHolderName?: string;
         cardNumber?: string;
         expiry?: string;
@@ -746,6 +754,41 @@ export const customerApi = apiSlice.injectEndpoints({
       query: () => "/customer/terms",
       transformResponse: unwrapListResponse,
     }),
+
+    /**
+     * The discount campaign running on a chalet, if any.
+     *
+     * These campaigns are funded by the platform's commission — the owner is paid
+     * the same either way — so the rate the customer actually gets can be lower
+     * than the campaign's headline rate on chalets with a smaller commission.
+     * Passing `price` makes the server resolve the exact amount rather than a rate,
+     * which is what the checkout summary shows. The booking endpoint applies the
+     * discount server-side regardless; this is purely for display.
+     */
+    /**
+     * Price a coupon code against a specific booking BEFORE committing.
+     *
+     * Never mutates — it only previews. The real redemption happens inside booking
+     * creation, which re-validates everything, so a stale preview can never buy a
+     * discount the server would not grant.
+     */
+    validateCoupon: builder.mutation({
+      query: (body: { code: string; chaletId: string; price?: number }) => ({
+        url: "/customer/coupons/validate",
+        method: "POST",
+        body,
+      }),
+    }),
+
+    getChaletDiscount: builder.query({
+      query: ({ chaletId, price }: { chaletId: string; price?: number }) => ({
+        url: `/discounts/for-chalet/${chaletId}`,
+        params: price != null && price > 0 ? { price } : undefined,
+      }),
+      providesTags: (result: any, error: any, arg: { chaletId: string; price?: number }) => [
+        { type: "Chalet" as const, id: arg.chaletId },
+      ],
+    }),
   }),
 });
 
@@ -838,4 +881,10 @@ export const {
   // Payment Status
   useGetPaymentStatusQuery,
   useLazyGetPaymentStatusQuery,
+
+  // Discounts
+  useGetChaletDiscountQuery,
+
+  // Coupons
+  useValidateCouponMutation,
 } = customerApi;

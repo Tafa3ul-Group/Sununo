@@ -23,8 +23,10 @@ import { ANALYTICS_EVENTS, ANALYTICS_CURRENCY } from "@/constants/analytics-even
 import {
   useCreateCustomerBookingMutation,
   useGetChaletAvailabilityQuery,
+  useGetChaletDiscountQuery,
   useGetCustomerChaletDetailsQuery,
   useGetPlatformConfigQuery,
+  useValidateCouponMutation,
   useLazyGetPaymentStatusQuery,
   useUploadIdCardImagesMutation,
 } from "@/store/api/customerApiSlice";
@@ -279,6 +281,53 @@ export default function CompleteBookingScreen() {
     skip: !chaletId,
   });
   const chaletDetails = response?.data || response;
+
+  /** Amenity names arrive as `{ ar, en }`; fall back rather than render blank. */
+  const amenityName = useCallback(
+    (value: any): string =>
+      typeof value === "string" ? value : (isArabic ? value?.ar : value?.en) || value?.ar || value?.en || "",
+    [isArabic],
+  );
+
+  // ── Paid amenities ─────────────────────────────────────────────────────────
+  // Two kinds, and the difference matters for the price shown on this screen:
+  //   mandatory — the server adds it to EVERY booking, so it must be part of the
+  //     total the guest agrees to. Leaving it out is how the screen would quote
+  //     less than the amount actually charged.
+  //   optional  — only charged when the guest picks it, and only then is its id
+  //     sent back as `amenityIds`.
+  const paidAmenities = useMemo(
+    () => ((chaletDetails?.amenities || []) as any[]).filter((a) => a?.isPaid && Number(a?.price) > 0),
+    [chaletDetails?.amenities],
+  );
+  const mandatoryAmenities = useMemo(
+    () => paidAmenities.filter((a) => !a.isOptional),
+    [paidAmenities],
+  );
+  const optionalAmenities = useMemo(
+    () => paidAmenities.filter((a) => a.isOptional),
+    [paidAmenities],
+  );
+
+  const [selectedAmenityIds, setSelectedAmenityIds] = useState<string[]>([]);
+  const toggleAmenity = useCallback((id: string) => {
+    setSelectedAmenityIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  }, []);
+
+  const mandatoryAmenitiesPrice = useMemo(
+    () => mandatoryAmenities.reduce((sum, a) => sum + Number(a.price || 0), 0),
+    [mandatoryAmenities],
+  );
+  const optionalAmenitiesPrice = useMemo(
+    () =>
+      optionalAmenities
+        .filter((a) => selectedAmenityIds.includes(a.chaletAmenityId))
+        .reduce((sum, a) => sum + Number(a.price || 0), 0),
+    [optionalAmenities, selectedAmenityIds],
+  );
+  const amenitiesPrice = mandatoryAmenitiesPrice + optionalAmenitiesPrice;
 
   // Same rule as the dates: only honor the filter's period while the filter is
   // actively applied, so a cleared filter doesn't pre-select a shift.
@@ -762,30 +811,100 @@ export default function CompleteBookingScreen() {
       }
     });
 
-    const totalPrice = totalBasePrice + totalExtraGuestsPrice;
-    const depositPercentage = Number(chaletDetails?.depositPercentage) || Number(chaletDetails?.minDepositPercentage) || 0;
-    const depositAmount = Math.round((totalPrice * depositPercentage) / 100);
-    const remainingAmount = totalPrice - depositAmount;
+    // Amenities are charged once per booking, not per selected day, matching how
+    // the API prices them. This is the price BEFORE any platform campaign — the
+    // discount is resolved server-side and subtracted below.
+    const originalPrice = totalBasePrice + totalExtraGuestsPrice + amenitiesPrice;
 
     return {
       shiftBasePrice: totalBasePrice,
       extraGuestsPrice: totalExtraGuestsPrice,
-      totalPrice,
-      depositAmount,
-      remainingAmount,
+      originalPrice,
       explanationRows,
       totalGuestsNow,
     };
-  }, [selectedShifts, selectedDates, chaletDetails, adultCount, currentMonth, getDayOfWeek, getDateForDay]);
+  }, [selectedShifts, selectedDates, chaletDetails, adultCount, currentMonth, getDayOfWeek, getDateForDay, amenitiesPrice]);
 
   const {
     shiftBasePrice,
     extraGuestsPrice,
-    totalPrice,
-    depositAmount,
-    remainingAmount,
+    originalPrice,
     explanationRows,
   } = pricingCalculations;
+
+  // ── Platform-funded discount ────────────────────────────────────────────────
+  // Display only: the API resolves and applies the campaign again when the booking
+  // is created, so the customer can never be charged something this screen didn't
+  // show. The chalet owner is paid the same with or without a campaign — the whole
+  // discount comes out of the platform's commission.
+  const { data: discountQuote } = useGetChaletDiscountQuery(
+    { chaletId, price: originalPrice },
+    { skip: !chaletId || !(originalPrice > 0) },
+  );
+
+  const discountAmount = Math.max(0, Number(discountQuote?.discountAmount) || 0);
+  const discountLabel = discountQuote?.discount?.name;
+
+  // ── Coupon ──────────────────────────────────────────────────────────────────
+  // Applied ON TOP of whatever campaign is already running, but funded out of the
+  // platform's commission alone — so the server may grant less than the code's
+  // headline value, or nothing at all, when a campaign already spent that
+  // commission. Whatever it says here is what the booking endpoint re-computes.
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; amount: number } | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [validateCoupon, { isLoading: isCheckingCoupon }] = useValidateCouponMutation();
+
+  const couponAmount = appliedCoupon?.amount ?? 0;
+  const totalPrice = Math.max(0, originalPrice - discountAmount - couponAmount);
+
+  // A code priced against one total must never survive into a different one: the
+  // customer changing dates, shifts or guests re-prices the booking underneath it.
+  useEffect(() => {
+    if (appliedCoupon) {
+      setAppliedCoupon(null);
+      setCouponError(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [originalPrice, chaletId]);
+
+  const applyCoupon = async () => {
+    const code = couponInput.trim();
+    if (!code) return;
+
+    setCouponError(null);
+    try {
+      const result: any = await validateCoupon({
+        code,
+        chaletId,
+        price: originalPrice,
+      }).unwrap();
+
+      if (!result?.valid) {
+        setAppliedCoupon(null);
+        setCouponError(result?.message || (isArabic ? "الكود غير صالح" : "Invalid code"));
+        return;
+      }
+      setAppliedCoupon({ code: result.code || code, amount: Number(result.couponAmount) || 0 });
+    } catch (error: any) {
+      setAppliedCoupon(null);
+      const raw = error?.data?.message;
+      setCouponError(Array.isArray(raw) ? raw.join("\n") : raw || (isArabic ? "تعذّر التحقق من الكود" : "Could not check the code"));
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponInput("");
+    setCouponError(null);
+  };
+
+  // Deposit is a share of what the customer actually pays, so it follows the
+  // discounted total — exactly how the API splits it.
+  const depositPercentage =
+    Number(chaletDetails?.depositPercentage) || Number(chaletDetails?.minDepositPercentage) || 0;
+  const depositAmount = Math.round((totalPrice * depositPercentage) / 100);
+  const remainingAmount = totalPrice - depositAmount;
 
   const selectedShiftPrice = shiftBasePrice;
 
@@ -797,8 +916,6 @@ export default function CompleteBookingScreen() {
     : Number(chaletDetails?.priceCapacity || 2);
 
   const extraGuestsCount = Math.max(0, totalGuestsNow - capacityLimit);
-
-  const depositPercentage = Number(chaletDetails?.depositPercentage) || Number(chaletDetails?.minDepositPercentage) || 0;
 
   useEffect(() => {
     if (depositPercentage === 0) {
@@ -1036,6 +1153,13 @@ export default function CompleteBookingScreen() {
               paymentModel: paymentType.toLowerCase() as any,
               paymentMethod: selectedMethod,
             }),
+            // Only the optional ones: mandatory amenities are applied server-side,
+            // and echoing them back would be the app asserting a charge it does
+            // not own.
+            ...(selectedAmenityIds.length ? { amenityIds: selectedAmenityIds } : {}),
+            // The server re-validates and re-prices the code; sending it is a
+            // request, not an assertion of the amount shown above.
+            ...(appliedCoupon ? { couponCode: appliedCoupon.code } : {}),
             notes,
             audienceType: guestType,
           }).unwrap();
@@ -1529,22 +1653,173 @@ export default function CompleteBookingScreen() {
                 </ThemedText>
               </View>
             )}
+            {/* Itemised so the guest can see exactly which amenity they are
+                paying for, rather than an unexplained bump in the total. */}
+            {mandatoryAmenities.map((a: any) => (
+              <View
+                key={a.chaletAmenityId}
+                style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}
+              >
+                <ThemedText style={[styles.infoLabel, { textAlign }]}>
+                  {amenityName(a.name)}
+                </ThemedText>
+                <ThemedText style={[styles.infoValue, { textAlign: textAlignEnd }]}>
+                  {Number(a.price).toLocaleString()} {t("common.iqd")}
+                </ThemedText>
+              </View>
+            ))}
+            {optionalAmenities
+              .filter((a: any) => selectedAmenityIds.includes(a.chaletAmenityId))
+              .map((a: any) => (
+                <View
+                  key={a.chaletAmenityId}
+                  style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}
+                >
+                  <ThemedText style={[styles.infoLabel, { textAlign }]}>
+                    {amenityName(a.name)}
+                  </ThemedText>
+                  <ThemedText style={[styles.infoValue, { textAlign: textAlignEnd }]}>
+                    {Number(a.price).toLocaleString()} {t("common.iqd")}
+                  </ThemedText>
+                </View>
+              ))}
+            {/* Platform campaign — only rendered when one actually applies, so
+                nothing changes for bookings with no discount running. */}
+            {discountAmount > 0 && (
+              <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
+                <ThemedText style={[styles.infoLabel, { color: Colors.secondary, textAlign }]}>
+                  {amenityName(discountLabel) || (isArabic ? "خصم" : "Discount")}
+                </ThemedText>
+                <ThemedText
+                  style={[styles.infoValue, { color: Colors.secondary, textAlign: textAlignEnd }]}
+                >
+                  − {discountAmount.toLocaleString()} {t("common.iqd")}
+                </ThemedText>
+              </View>
+            )}
+            {/* The coupon gets its own line so the customer can see the code they
+                typed actually did something, separately from any campaign. */}
+            {couponAmount > 0 && (
+              <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
+                <ThemedText style={[styles.infoLabel, { color: Colors.secondary, textAlign }]}>
+                  {isArabic ? "كود " : "Code "}{appliedCoupon?.code}
+                </ThemedText>
+                <ThemedText style={[styles.infoValue, { color: Colors.secondary, textAlign: textAlignEnd }]}>
+                  − {couponAmount.toLocaleString()} {t("common.iqd")}
+                </ThemedText>
+              </View>
+            )}
+
+            {/* Coupon entry */}
+            <View style={styles.couponBox}>
+              {appliedCoupon ? (
+                <View style={[styles.row, { flexDirection: rowDirection, alignItems: "center" }]}>
+                  <SolarCheckCircleBoldDuotone size={16} color={Colors.secondary} />
+                  <ThemedText style={[styles.couponApplied, { textAlign }]} numberOfLines={1}>
+                    {isArabic ? `تم تطبيق ${appliedCoupon.code}` : `${appliedCoupon.code} applied`}
+                  </ThemedText>
+                  <TouchableOpacity onPress={removeCoupon} hitSlop={8}>
+                    <ThemedText style={styles.couponRemove}>{isArabic ? "إزالة" : "Remove"}</ThemedText>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View style={[styles.row, { flexDirection: rowDirection, gap: 8 }]}>
+                  <TextInput
+                    style={[styles.couponInput, { textAlign }]}
+                    value={couponInput}
+                    onChangeText={(text) => { setCouponInput(text.toUpperCase()); setCouponError(null); }}
+                    placeholder={isArabic ? "لديك كود خصم؟" : "Have a discount code?"}
+                    placeholderTextColor={Colors.text.muted}
+                    autoCapitalize="characters"
+                    autoCorrect={false}
+                  />
+                  <TouchableOpacity
+                    style={[styles.couponApply, (!couponInput.trim() || isCheckingCoupon) && { opacity: 0.5 }]}
+                    onPress={applyCoupon}
+                    disabled={!couponInput.trim() || isCheckingCoupon}
+                  >
+                    <ThemedText style={styles.couponApplyText}>
+                      {isCheckingCoupon ? (isArabic ? "..." : "...") : isArabic ? "تطبيق" : "Apply"}
+                    </ThemedText>
+                  </TouchableOpacity>
+                </View>
+              )}
+              {couponError && (
+                <ThemedText style={[styles.couponError, { textAlign }]}>{couponError}</ThemedText>
+              )}
+            </View>
+
             <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
               <ThemedText style={[styles.infoLabel, { fontWeight: "700", textAlign }]}>
                 {t("booking.totalAmount")}
               </ThemedText>
-              <ThemedText
-                style={[
-                  styles.infoValue,
-                  { fontFamily: "Alexandria-Medium", color: Colors.primary, textAlign: textAlignEnd },
-                ]}
-              >
-                {totalPrice.toLocaleString()} {t("common.iqd")}
-              </ThemedText>
+              <View style={{ alignItems: isArabic ? "flex-start" : "flex-end" }}>
+                {(discountAmount > 0 || couponAmount > 0) && (
+                  <ThemedText
+                    style={[
+                      styles.infoValue,
+                      {
+                        textDecorationLine: "line-through",
+                        opacity: 0.5,
+                        fontSize: 12,
+                        textAlign: textAlignEnd,
+                      },
+                    ]}
+                  >
+                    {originalPrice.toLocaleString()} {t("common.iqd")}
+                  </ThemedText>
+                )}
+                <ThemedText
+                  style={[
+                    styles.infoValue,
+                    { fontFamily: "Alexandria-Medium", color: Colors.primary, textAlign: textAlignEnd },
+                  ]}
+                >
+                  {totalPrice.toLocaleString()} {t("common.iqd")}
+                </ThemedText>
+              </View>
             </View>
           </>
         )}
       </Animated.View>
+
+      {/* Optional paid amenities — only rendered when the chalet actually has
+          some, so nothing changes for the vast majority that are free. */}
+      {optionalAmenities.length > 0 && (
+        <Animated.View
+          style={styles.infoSectionCard}
+          entering={FadeInDown.delay(220).duration(380)}
+        >
+          <ThemedText style={[styles.sectionTitle, { alignSelf: "flex-start", textAlign }]}>
+            {isArabic ? "خدمات إضافية" : "Optional Extras"}
+          </ThemedText>
+          <View style={styles.divider} />
+          {optionalAmenities.map((a: any) => {
+            const isSelected = selectedAmenityIds.includes(a.chaletAmenityId);
+            return (
+              <PressableScale
+                key={a.chaletAmenityId}
+                onPress={() => toggleAmenity(a.chaletAmenityId)}
+                style={[
+                  styles.amenityOption,
+                  { flexDirection: rowDirection },
+                  isSelected && styles.amenityOptionActive,
+                ]}
+              >
+                <View style={[styles.amenityCheck, isSelected && styles.amenityCheckActive]}>
+                  {isSelected && <ThemedText style={styles.amenityCheckMark}>✓</ThemedText>}
+                </View>
+                <ThemedText style={[styles.amenityOptionLabel, { textAlign }]} numberOfLines={1}>
+                  {amenityName(a.name)}
+                </ThemedText>
+                <ThemedText style={[styles.amenityOptionPrice, { textAlign: textAlignEnd }]}>
+                  {Number(a.price).toLocaleString()} {t("common.iqd")}
+                </ThemedText>
+              </PressableScale>
+            );
+          })}
+        </Animated.View>
+      )}
 
       <Animated.View
         style={styles.infoSectionCard}
@@ -2470,6 +2745,33 @@ export default function CompleteBookingScreen() {
 }
 
 const styles = StyleSheet.create({
+  couponBox: {
+    marginTop: normalize.height(8),
+    marginBottom: normalize.height(4),
+    gap: normalize.height(6),
+  },
+  couponInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: normalize.radius(10),
+    paddingHorizontal: normalize.width(12),
+    paddingVertical: normalize.height(9),
+    fontSize: normalize.font(13),
+    color: Colors.text.primary,
+    backgroundColor: Colors.white,
+    letterSpacing: 1,
+  },
+  couponApply: {
+    justifyContent: "center",
+    paddingHorizontal: normalize.width(16),
+    borderRadius: normalize.radius(10),
+    backgroundColor: Colors.primary,
+  },
+  couponApplyText: { color: "white", fontSize: normalize.font(13), fontFamily: "Alexandria-Medium" },
+  couponApplied: { flex: 1, marginHorizontal: normalize.width(8), fontSize: normalize.font(13), color: Colors.secondary },
+  couponRemove: { fontSize: normalize.font(12), color: Colors.error, textDecorationLine: "underline" },
+  couponError: { fontSize: normalize.font(11), color: Colors.error, lineHeight: normalize.font(17) },
   container: { flex: 1, backgroundColor: "#FFFFFF" },
   scrollContent: { paddingBottom: 150, paddingHorizontal: 16 },
   tabsContainer: { marginTop: 15, alignItems: "center" },
@@ -2894,6 +3196,39 @@ const styles = StyleSheet.create({
     color: "#15AB64",
   },
   divider: { height: 1, backgroundColor: "#F1F5F9", marginVertical: 10 },
+  amenityOption: {
+    alignItems: "center",
+    gap: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    marginBottom: 8,
+  },
+  amenityOptionActive: { borderColor: Colors.primary, backgroundColor: "#F8FAFF" },
+  amenityCheck: {
+    width: 20,
+    height: 20,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: "#CBD5E1",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  amenityCheckActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
+  amenityCheckMark: { color: "#FFFFFF", fontSize: normalize.font(12), lineHeight: normalize.font(16) },
+  amenityOptionLabel: {
+    flex: 1,
+    fontSize: normalize.font(13),
+    fontFamily: "Alexandria-Medium",
+    color: "#1E293B",
+  },
+  amenityOptionPrice: {
+    fontSize: normalize.font(13),
+    fontFamily: "Alexandria-Medium",
+    color: Colors.primary,
+  },
   infoRow: { justifyContent: "space-between", marginBottom: 10 },
   infoLabel: {
     fontSize: normalize.font(14),

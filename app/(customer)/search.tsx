@@ -78,6 +78,9 @@ export default function SearchScreen() {
             ? chalet.region?.name?.ar || chalet.region?.nameAr || chalet.region?.name || ""
             : chalet.region?.name?.en || chalet.region?.nameEn || chalet.region?.name || "",
           price: getStartingPrice(chalet),
+          // Carried through so the card can show the discount badge; the API
+          // leaves it undefined when no campaign is running.
+          discount: chalet.discount,
           rating: chalet.rating ?? chalet.averageRating ?? 0,
           image: chalet.images?.[0]?.url ?? chalet.images?.[0],
         })),
@@ -91,6 +94,9 @@ export default function SearchScreen() {
       title: pickTranslation(chalet, isArabic),
       location: pickTranslation(chalet.region, isArabic),
       price: getStartingPrice(chalet),
+      // Carried through so the card can show the discount badge; the API
+      // leaves it undefined when no campaign is running.
+      discount: chalet.discount,
       rating: chalet.averageRating || 0,
       image:
         chalet.images?.[0]?.url ||

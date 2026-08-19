@@ -53,6 +53,9 @@ export default function FavoritesScreen() {
         title: pickTranslation(chalet, isRTL),
         location: pickTranslation(chalet.region, isRTL),
         price: getStartingPrice(chalet),
+        // Carried through so the card can show the discount badge; the API
+        // leaves it undefined when no campaign is running.
+        discount: chalet.discount,
         rating: chalet.averageRating?.toFixed(1) || '0',
         image: getImageSrc(chalet.images?.[0]?.url),
         color: '#22C55E' };

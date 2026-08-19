@@ -63,7 +63,11 @@ export default function FeaturedScreen() {
           location: c.region?.name ?? c.city?.name ?? "",
           image: c.images?.[0]?.url ?? c.images?.[0],
           price: getStartingPrice(c),
+          // Carried through so the card can show the discount badge; the API
+          // leaves it undefined when no campaign is running.
+          discount: c.discount,
           rating: c.rating ?? c.averageRating ?? 0,
+          featuredLabel: c.featuredLabel,
         })),
     [featuredRaw],
   );
