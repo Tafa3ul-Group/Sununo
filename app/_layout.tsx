@@ -137,6 +137,9 @@ function RootLayoutNav() {
         }
       } else if (data.type === "chalet" && data.id) {
         router.push(`/chalet-details/${data.id}`);
+      } else if (data.type === "review" && data.id) {
+        // اكتمل الحجز → صفحة الشاليه مع فتح ورقة التقييم تلقائياً (id = الشاليه).
+        router.push(`/chalet-details/${data.id}?openReview=1`);
       } else if (data.type === "payout") {
         // Payout confirmation (نعم/لا) — same screen for customers and owners.
         if (data.id) {

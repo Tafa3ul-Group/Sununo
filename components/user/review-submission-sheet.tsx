@@ -7,11 +7,39 @@ import {
   BottomSheetView, 
   BottomSheetBackdrop 
 } from "@gorhom/bottom-sheet";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as StoreReview from "expo-store-review";
 import React, { forwardRef, useMemo, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { useDirection } from "@/i18n";
+
+// Set once the native store-rating dialog has been requested, so we only ever
+// ask a single time per app install (the OS throttles repeats anyway, but the
+// flag keeps us from even asking).
+const STORE_REVIEW_REQUESTED_KEY = "store_review_requested_v1";
+
+/**
+ * Ask for a native App Store / Play Store rating — call right after the user
+ * successfully submits an in-app review, the one moment they have just
+ * expressed satisfaction. No-op when unavailable (e.g. web, no store build)
+ * or when it already fired on this install.
+ */
+export async function maybeRequestStoreReview() {
+  try {
+    const alreadyRequested = await AsyncStorage.getItem(
+      STORE_REVIEW_REQUESTED_KEY,
+    );
+    if (alreadyRequested) return;
+    if (!(await StoreReview.isAvailableAsync())) return;
+    // Flag first: even if the request itself throws, never ask twice.
+    await AsyncStorage.setItem(STORE_REVIEW_REQUESTED_KEY, "1");
+    await StoreReview.requestReview();
+  } catch {
+    // Non-critical — the store prompt must never break the review flow.
+  }
+}
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 // Base design width for normalization (e.g., iPhone 11/12 is ~390-414, but design units used 499 as container)

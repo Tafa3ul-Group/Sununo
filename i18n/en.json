@@ -113,6 +113,7 @@
       }
     },
     "contactUs": "Contact Us",
+    "reportProblem": "Report a Problem",
     "privacyPolicy": "Privacy Policy",
     "termsAndConditions": "Terms & Conditions",
     "edit": {
@@ -134,7 +135,39 @@
     "yesterday": "Yesterday",
     "older": "Older",
     "empty": "No notifications yet",
-    "emptyDesc": "We'll let you know here when there's something new."
+    "emptyDesc": "We'll let you know here when there's something new.",
+    "markAllRead": "Mark all as read"
+  },
+  "reportProblem": {
+    "title": "Report a Problem",
+    "intro": "Describe the problem you faced and our support team will follow up soon.",
+    "subjectLabel": "Subject (optional)",
+    "subjectPlaceholder": "e.g. Payment issue",
+    "descriptionLabel": "Problem description",
+    "descriptionPlaceholder": "Write the details here...",
+    "submit": "Send Report",
+    "descriptionRequired": "Please describe the problem",
+    "successTitle": "Sent",
+    "successMessage": "Your report was received; our support team will follow up soon.",
+    "errorMessage": "Could not send the report, please try again.",
+    "myReportsTitle": "My Reports",
+    "myReportsLink": "View my reports",
+    "myReportsEmpty": "No reports yet",
+    "myReportsEmptyDesc": "Any problem you report will appear here with its follow-up status.",
+    "untitled": "Untitled report",
+    "adminNoteLabel": "Support reply",
+    "status": {
+      "open": "Open",
+      "in_progress": "In progress",
+      "resolved": "Resolved"
+    }
+  },
+  "ratePrompt": {
+    "title": "How was your stay?",
+    "message": "Your booking at {{chalet}} is complete — share your rating to help others.",
+    "fallbackChalet": "the chalet",
+    "rateNow": "Rate now",
+    "later": "Later"
   },
   "dashboard": {
     "addChalet": "Add New Chalet",
@@ -393,7 +426,13 @@
     "endTime": "End Time",
     "startTime": "Start Time",
     "editDays": "Edit Days",
-    "skipToGuests": "Next"
+    "skipToGuests": "Next",
+    "sortTitle": "Sort by",
+    "sortNewest": "Newest",
+    "sortRating": "Top Rated",
+    "sortNearest": "Nearest",
+    "locationDeniedTitle": "Location unavailable",
+    "locationDeniedMessage": "We need access to your location to show the chalets nearest to you. Enable it in your device settings, or keep browsing with another sort order."
   },
   "payoutConfirm": {
     "title": "Confirm Withdrawal",

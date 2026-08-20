@@ -2,6 +2,7 @@ import { HeaderSection } from "@/components/header-section";
 import { SolarStarBold, SolarStarLinear } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { PrimaryButton } from "@/components/user/primary-button";
+import { maybeRequestStoreReview } from "@/components/user/review-submission-sheet";
 import { Shadows } from "@/constants/theme";
 
 import { useCreateReviewMutation } from "@/store/api/customerApiSlice";
@@ -115,6 +116,8 @@ export default function AddReviewScreen() {
         rating,
         review_length: comment?.length || 0,
       });
+
+      maybeRequestStoreReview();
 
       Alert.alert(t("common.success"), t("profile.review.success"), [
         { text: "OK", onPress: () => router.back() },

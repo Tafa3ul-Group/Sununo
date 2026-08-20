@@ -5,6 +5,7 @@ import {
     SolarClockCircleBold,
     SolarCloseBold,
     SolarMapPointBold,
+    SolarStarBold,
     SolarUsersGroupBold
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
@@ -79,6 +80,18 @@ export default function FilterResultsScreen() {
     }
     if (activeFilters?.period) {
       params.period = activeFilters.period;
+    }
+    if (activeFilters?.sortBy && activeFilters.sortBy !== "newest") {
+      const isNearest = activeFilters.sortBy === "nearest";
+      // "nearest" without stored coordinates can't be honoured server-side
+      // (the API rejects it) — fall back to the default order silently.
+      if (!isNearest || (activeFilters.lat != null && activeFilters.lng != null)) {
+        params.sortBy = activeFilters.sortBy;
+        if (isNearest) {
+          params.lat = activeFilters.lat;
+          params.lng = activeFilters.lng;
+        }
+      }
     }
     return params;
   }, [activeFilters]);
@@ -224,6 +237,24 @@ export default function FilterResultsScreen() {
               adults: 2,
               children: 0,
             }),
+          ),
+      });
+    }
+    if (activeFilters?.sortBy && activeFilters.sortBy !== "newest") {
+      const isNearest = activeFilters.sortBy === "nearest";
+      pills.push({
+        id: "sort",
+        text: isNearest
+          ? isArabic ? "الأقرب" : "Nearest"
+          : isArabic ? "الأكثر تقييماً" : "Top Rated",
+        icon: isNearest ? (
+          <SolarMapPointBold size={14} color={Colors.primary} />
+        ) : (
+          <SolarStarBold size={14} color={Colors.primary} />
+        ),
+        onRemove: () =>
+          dispatch(
+            setFilters({ ...activeFilters, sortBy: null, lat: null, lng: null }),
           ),
       });
     }

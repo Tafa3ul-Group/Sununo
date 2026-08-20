@@ -27,6 +27,7 @@ import {
 import { ThemedText } from "@/components/themed-text";
 import { AppMap } from "@/components/user/app-map";
 import { BannerSwiper } from "@/components/user/banner-swiper";
+import { RateStayPrompt } from "@/components/user/rate-stay-prompt";
 import { HorizontalCard } from "@/components/user/horizontal-card";
 import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
 import { FeaturedSwiper } from "@/components/user/featured-swiper";
@@ -787,6 +788,10 @@ export default function HomeScreen() {
         <View style={styles.stickyFilters}>{renderFilterChips()}</View>
       )}
       </View>
+      {/* One-shot rating invite for a completed, still-unreviewed booking.
+          Fully self-contained — queries, once-per-booking storage and the
+          gorhom sheet all live inside the component. */}
+      <RateStayPrompt />
     </View>
   );
 }

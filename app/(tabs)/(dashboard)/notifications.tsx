@@ -3,7 +3,7 @@ import { CircleBackButton } from '@/components/ui/circle-back-button';
 import { Colors, Shadows } from '@/constants/theme';
 import { useDirection } from "@/i18n";
 import { RootState } from '@/store';
-import { useGetNotificationsQuery, useMarkNotificationAsReadMutation } from '@/store/api/customerApiSlice';
+import { useGetNotificationsQuery, useMarkAllNotificationsAsReadMutation, useMarkNotificationAsReadMutation } from '@/store/api/customerApiSlice';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
@@ -41,6 +41,17 @@ export default function NotificationsScreen() {
     // pages stay on screen while the query still fetches page-by-page.
     const [items, setItems] = useState<Notification[]>([]);
     const [markAsRead] = useMarkNotificationAsReadMutation();
+    const [markAllAsRead] = useMarkAllNotificationsAsReadMutation();
+
+    const handleMarkAllRead = useCallback(() => {
+        Haptics.selectionAsync();
+        // Same reasoning as the per-row patch in handleNotificationPress: the
+        // list is accumulated locally across pages, so clear the dots here too
+        // — the mutation's cache patch only reaches the RTK Query pages.
+        const readAt = new Date().toISOString();
+        setItems(prev => prev.map(n => (n.readAt ? n : { ...n, readAt })));
+        markAllAsRead();
+    }, [markAllAsRead]);
 
     const handleNotificationPress = useCallback((item: Notification) => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -73,6 +84,10 @@ export default function NotificationsScreen() {
             // Public chalet page for both roles — matches the push-tap handler
             // in app/_layout.tsx so the tap lands in the same place either way.
             router.push(`/chalet-details/${item.redirectId}`);
+        } else if (item.redirectType === 'review' && item.redirectId) {
+            // Booking completed → chalet page with the review sheet auto-opened
+            // (redirectId is the CHALET id).
+            router.push(`/chalet-details/${item.redirectId}?openReview=1`);
         } else if (item.redirectType === 'payout') {
             // Opens the in-app withdrawal confirmation (نعم/لا) screen.
             if (item.redirectId) router.push(`/payout-confirm/${item.redirectId}`);
@@ -167,6 +182,20 @@ export default function NotificationsScreen() {
                 keyExtractor={(item) => item.id.toString()}
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
+                ListHeaderComponent={
+                    notifications.some(n => !n.readAt) ? (
+                        <TouchableOpacity
+                            style={styles.markAllButton}
+                            onPress={handleMarkAllRead}
+                            activeOpacity={0.6}
+                            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                            <ThemedText style={styles.markAllText}>
+                                {t('notifications.markAllRead')}
+                            </ThemedText>
+                        </TouchableOpacity>
+                    ) : null
+                }
                 onEndReached={handleLoadMore}
                 onEndReachedThreshold={0.5}
                 refreshControl={
@@ -234,6 +263,15 @@ const styles = StyleSheet.create({
         // Clears the floating dashboard tab bar, which overlays the list.
         paddingBottom: 120,
         paddingTop: 10
+    },
+    markAllButton: {
+        alignSelf: 'flex-end',
+        marginBottom: 10,
+    },
+    markAllText: {
+        fontSize: 11,
+        fontFamily: 'Alexandria-Medium',
+        color: Colors.primary,
     },
     centerContainer: {
         flex: 1,

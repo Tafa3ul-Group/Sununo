@@ -11,8 +11,8 @@ import { HorizontalCard } from "@/components/user/horizontal-card";
 import { Colors, Fonts, normalize } from "@/constants/theme";
 
 import {
-    useBrowseCustomerChaletsQuery,
     useGetFeaturedChaletsQuery,
+    useSearchChaletsQuery,
 } from "@/store/api/customerApiSlice";
 import { getStartingPrice } from "@/utils/format";
 import { useRouter } from "expo-router";
@@ -55,11 +55,20 @@ export default function SearchScreen() {
     return () => clearTimeout(handle);
   }, [searchQuery]);
 
-  const { data: chaletsResponse, isLoading, isError, refetch } = useBrowseCustomerChaletsQuery({
-    page: 1,
-    limit: 20,
-    search: debouncedQuery || undefined,
-  });
+  // Elasticsearch-backed relevance search (falls back to ILIKE server-side).
+  // Skipped while there's nothing to search — the featured list covers the
+  // empty state, so no request is wasted on an empty term.
+  const trimmedQuery = debouncedQuery.trim();
+  const { data: chaletsResponse, isLoading, isError, refetch } = useSearchChaletsQuery(
+    { q: trimmedQuery, page: 1, limit: 20 },
+    { skip: trimmedQuery.length === 0 },
+  );
+
+  // While the debounce window is still open the hook is either skipped or
+  // pointed at the previous term — treat that gap as loading so stale results
+  // (or a premature empty state) never flash between keystrokes.
+  const waitingForDebounce =
+    searchQuery.trim().length > 0 && debouncedQuery !== searchQuery;
 
   // Featured chalets shown before the user types anything.
   const { data: featuredRaw = [], isLoading: featuredLoading } =
@@ -97,7 +106,7 @@ export default function SearchScreen() {
       // Carried through so the card can show the discount badge; the API
       // leaves it undefined when no campaign is running.
       discount: chalet.discount,
-      rating: chalet.averageRating || 0,
+      rating: chalet.averageRating || chalet.rating || 0,
       image:
         chalet.images?.[0]?.url ||
         "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500&auto=format&fit=crop",
@@ -154,8 +163,10 @@ export default function SearchScreen() {
         </View>
       </View>
 
-      {/* Results */}
-      {searchQuery.length === 0 ? (
+      {/* Results — keyed off the trimmed term, like the query itself: a
+          whitespace-only input searches nothing, so it must keep showing the
+          featured list rather than an empty "no results" state. */}
+      {searchQuery.trim().length === 0 ? (
         featuredLoading ? (
           <View style={[styles.listContent, { gap: 12 }]}>
             <HorizontalCardSkeleton />
@@ -196,7 +207,7 @@ export default function SearchScreen() {
             }
           />
         )
-      ) : isLoading ? (
+      ) : isLoading || waitingForDebounce ? (
         <View style={[styles.listContent, { gap: 12 }]}>
           <HorizontalCardSkeleton />
           <HorizontalCardSkeleton />

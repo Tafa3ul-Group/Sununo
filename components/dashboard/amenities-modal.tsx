@@ -2,6 +2,7 @@ import { SolarCameraBold, SolarStarBold, SolarWifiBold } from '@/components/icon
 import { useConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { Colors } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
+import { ImagePrepareError, prepareImageUpload } from '@/utils/prepare-image-upload';
 import {
   useDeleteChaletImageMutation,
   useGetAmenityCategoriesQuery,
@@ -191,19 +192,18 @@ export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        const selectedUri = result.assets[0].uri;
-        await handleUploadCategoryPhoto(categoryId, selectedUri);
+        await handleUploadCategoryPhoto(categoryId, result.assets[0]);
       }
     };
 
-    const handleUploadCategoryPhoto = async (categoryId: string, uri: string) => {
+    const handleUploadCategoryPhoto = async (categoryId: string, asset: ImagePicker.ImagePickerAsset) => {
       try {
         const imageFormData = new FormData();
-        const filename = uri.split('/').pop() || 'image.jpg';
-        const match = /\.(\w+)$/.exec(filename);
-        const type = match ? `image/${match[1]}` : 'image/jpeg';
+        // prepareImageUpload fixes the mime (".jpg" ≠ "image/jpg") and re-encodes
+        // HEIC/WebP picks to JPEG so the API accepts them.
+        const { uri, name, type } = await prepareImageUpload(asset);
         // @ts-ignore
-        imageFormData.append('image', { uri, name: filename, type });
+        imageFormData.append('image', { uri, name, type });
         imageFormData.append('amenityCategoryId', categoryId);
 
         await uploadImage({ chaletId, formData: imageFormData }).unwrap();
@@ -214,7 +214,9 @@ export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
         refetchChalet();
       } catch (err: any) {
         console.error(err);
-        const errMsg = err?.data?.message || err?.message || '';
+        const errMsg = err instanceof ImagePrepareError
+          ? (isRTL ? 'تعذّرت معالجة الصورة، جرّب صورة أخرى' : 'Could not process the image, try another photo')
+          : (err?.data?.message || err?.message || '');
         Toast.show({
           type: 'error',
           text1: isRTL ? 'فشل رفع الصورة' : 'Upload failed',

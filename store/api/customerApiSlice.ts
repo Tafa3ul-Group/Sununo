@@ -56,11 +56,20 @@ export const customerApi = apiSlice.injectEndpoints({
     /** Browse approved & active chalets (public) */
     browseCustomerChalets: builder.query({
       query: (params) => {
-        const { amenityIds, categoryIds, ...rest } = params || {};
+        const { amenityIds, categoryIds, sortBy, lat, lng, ...rest } = params || {};
         return {
           url: "/customer/chalets",
           params: {
             ...rest,
+            // Sorting: the default ("newest"/null) is omitted entirely so the
+            // cache key and the server's cached URL stay identical to the
+            // pre-sorting behaviour.
+            ...(sortBy && sortBy !== "newest" ? { sortBy } : {}),
+            // Coordinates ride along only for "nearest" — the server rejects
+            // sortBy=nearest without them.
+            ...(sortBy === "nearest" && lat != null && lng != null
+              ? { lat, lng }
+              : {}),
             // Send as comma-separated strings: amenityIds=id1,id2 & categoryIds=id1,id2
             ...(amenityIds && amenityIds.length > 0
               ? { amenityIds: amenityIds.join(",") }
@@ -80,9 +89,23 @@ export const customerApi = apiSlice.injectEndpoints({
       providesTags: ["Chalet"],
     }),
 
-    /** Elasticsearch-powered search with fallback */
+    /**
+     * Elasticsearch-powered search with PostgreSQL fallback.
+     *
+     * Returns the same `{ data, meta }` page shape as the browse endpoint
+     * (plus `meta.searchEngine`), so screens can swap between the two without
+     * a transformResponse. Results arrive in ES relevance order.
+     */
     searchChalets: builder.query({
-      query: (params) => ({
+      query: (params: {
+        q: string;
+        page?: number;
+        limit?: number;
+        cityId?: string;
+        maxAdults?: number;
+        checkIn?: string;
+        period?: string;
+      }) => ({
         url: "/customer/chalets/search",
         params,
       }),
@@ -488,6 +511,27 @@ export const customerApi = apiSlice.injectEndpoints({
       query: () => "/settings",
     }),
 
+    // ── Complaints (Customer) ──────────────────────────────────────────────
+
+    /** Report a problem («تبليغ عن مشكلة») — free-form title + description */
+    createComplaint: builder.mutation({
+      query: (data: { title?: string; description: string }) => ({
+        url: "/complaints",
+        method: "POST",
+        // `title` is optional server-side; omit it entirely when empty so the
+        // DTO's EmptyToNull/IsOptional pair never sees a blank string.
+        body: data.title ? data : { description: data.description },
+      }),
+    }),
+
+    /** My submitted reports, with follow-up status + admin note (paginated) */
+    getMyComplaints: builder.query({
+      query: (params?: { page?: number; limit?: number }) => ({
+        url: "/complaints/my",
+        params,
+      }),
+    }),
+
     // ── Account (Customer) ─────────────────────────────────────────────────
 
     /** Delete my account (Apple/Google compliance) */
@@ -596,12 +640,14 @@ export const customerApi = apiSlice.injectEndpoints({
      * (deduped by id) instead of replacing the visible list.
      *
      * `role` is accepted so the call sites can keep passing the section they are
-     * rendering, but it is NOT sent and NOT part of the cache key: the API binds
-     * `@Query() PaginationDto` and runs `whitelist: true`, so the server strips
-     * it and returns every notification for the account either way. Keeping it
-     * out of the key stops owner and tenant mode from holding two identical
-     * copies of the same list and polling for both. See
-     * `backend_changes_needed` — real scoping needs a server-side filter.
+     * rendering, but it is NOT sent and NOT part of the cache key. The server
+     * DOES scope by role now (NotificationsQuery), and mark-all-as-read takes
+     * the same optional scope — this endpoint just deliberately doesn't send it
+     * yet, so one unscoped cache entry serves both owner and tenant mode
+     * instead of two identical lists polling in parallel. If `role` ever
+     * starts being sent here, send it to mark-all-as-read too, and add it to
+     * the cache key — the two must stay in lockstep so "mark all" only ever
+     * touches the rows the list showed.
      */
     getNotifications: builder.query({
       query: (params?: { page?: number; limit?: number; role?: "owner" | "customer" }) => {
@@ -640,17 +686,11 @@ export const customerApi = apiSlice.injectEndpoints({
     /**
      * Mark notification as read.
      *
-     * BROKEN SERVER-SIDE: the list returns `nu.notification.id` but
-     * `markAsRead` looks the row up by the UserNotification primary key, and its
-     * not-found branch answers 200 with a canned success. So the write never
-     * lands and a refetch resurrects the unread dot — which is exactly what
-     * invalidating the "Notification" tag used to do on every tap.
-     *
-     * Until the API returns (or accepts) a matching id, the read state is
-     * applied locally to every cached notifications page instead: the row and
-     * the bell badge settle immediately and stay settled until the next natural
-     * refetch. The request is still sent so this starts persisting for real the
-     * moment the backend is fixed.
+     * The server now looks the row up by the Notification id the list returns
+     * (it used to match the UserNotification primary key and silently no-op).
+     * The local cache patch below stays anyway: the row and the bell badge
+     * settle instantly instead of waiting on the round-trip, and taps keep
+     * working against servers that predate the fix.
      */
     markNotificationAsRead: builder.mutation<any, string>({
       query: (id: string) => ({
@@ -679,6 +719,48 @@ export const customerApi = apiSlice.injectEndpoints({
           await queryFulfilled;
         } catch {
           patches.forEach((patch: any) => patch.undo());
+        }
+      },
+    }),
+
+    /**
+     * Mark every notification as read in one tap. Same cache strategy as the
+     * single-row mutation above: patch every cached notifications page so the
+     * dots and the bell badge clear immediately, undo if the server rejects.
+     */
+    markAllNotificationsAsRead: builder.mutation<any, void>({
+      query: () => ({
+        url: "/notifications/mark-all-as-read",
+        method: "PUT",
+      }),
+      async onQueryStarted(_arg, { dispatch, getState, queryFulfilled }) {
+        const readAt = new Date().toISOString();
+        const cachedArgs: any[] = (apiSlice.util.selectCachedArgsForQuery as any)(
+          getState(),
+          "getNotifications",
+        );
+        const patches = cachedArgs.map((args) =>
+          dispatch(
+            (apiSlice.util.updateQueryData as any)(
+              "getNotifications",
+              args,
+              (draft: any) => {
+                draft?.data?.forEach((item: any) => {
+                  if (item && !item.readAt) item.readAt = readAt;
+                });
+              },
+            ),
+          ),
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patches.forEach((patch: any) => patch.undo());
+          // A row the user marked individually while this was in flight left no
+          // inverse patch of its own (it was already read in the draft), so the
+          // undo above wrongly resurrects its dot. Refetch settles the list on
+          // server truth instead of guessing.
+          dispatch((apiSlice.util as any).invalidateTags(["Notification"]));
         }
       },
     }),
@@ -847,6 +929,10 @@ export const {
   useGetMyWalletQuery,
   useGetSettingsQuery,
 
+  // Complaints
+  useCreateComplaintMutation,
+  useGetMyComplaintsQuery,
+
   // Account
   useDeleteCustomerAccountMutation,
 
@@ -860,6 +946,7 @@ export const {
   // Notifications
   useGetNotificationsQuery,
   useMarkNotificationAsReadMutation,
+  useMarkAllNotificationsAsReadMutation,
   useGetNotificationSettingsQuery,
   useUpdateNotificationSettingsMutation,
   useRegisterFirebaseTokenMutation,

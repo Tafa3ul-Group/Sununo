@@ -4,6 +4,7 @@ import {
   SolarBanknoteBold,
   SolarBellBold,
   SolarCardBold,
+  SolarDangerCircleBold,
   SolarGlobalBold,
   SolarLogoutBold,
   SolarPhoneBold,
@@ -170,6 +171,7 @@ export default function ProviderProfileScreen() {
     { id: 'notification-settings', title: isRTL ? 'إعدادات الإشعارات' : 'Notification Settings', shape: 'green' as const, icon: <SolarSettingsBold size={20} color="white" />, route: '/(dashboard)/notification-settings' },
     { id: 'language', title: isRTL ? 'اللغة' : 'Language', shape: 'blue' as const, icon: <SolarGlobalBold size={20} color="white" />, action: openLanguageSheet },
     { id: 'contact', title: isRTL ? 'تواصل معنا' : 'Contact Us', shape: 'green' as const, icon: <SolarPhoneBold size={20} color="white" />, action: openContactUs },
+    { id: 'reportProblem', title: isRTL ? 'تبليغ عن مشكلة' : 'Report a Problem', shape: 'red' as const, icon: <SolarDangerCircleBold size={20} color="white" />, route: '/(customer)/report-problem' },
     { id: 'privacy', title: isRTL ? 'سياسة الخصوصية' : 'Privacy Policy', shape: 'blue' as const, icon: <SolarShieldBold size={20} color="white" />, action: openPrivacyPolicy },
     { id: 'logout', title: isRTL ? 'تسجيل الخروج' : 'Logout', shape: 'red' as const, icon: <SolarLogoutBold size={20} color="white" />, action: handleLogout },
   ];

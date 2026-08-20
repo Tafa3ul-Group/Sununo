@@ -42,6 +42,7 @@ import {
 import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal, BottomSheetTextInput, BottomSheetView } from '@gorhom/bottom-sheet';
 import { Image as ExpoImage } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
+import { ImagePrepareError, prepareImageUpload } from '@/utils/prepare-image-upload';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -674,17 +675,17 @@ export default function AddChaletScreen() {
       }
 
       // ── Images ──
-      Object.entries(imagesByCategory).forEach(([catId, uris]) => {
+      // prepareImageUpload fixes the mime (".jpg" ≠ "image/jpg") and re-encodes
+      // HEIC/WebP picks to JPEG so the API accepts them.
+      for (const [catId, uris] of Object.entries(imagesByCategory)) {
         const backendCatId = catId === 'general' ? '' : catId;
-        uris.forEach(uri => {
-          const filename = uri.split('/').pop() || 'image.jpg';
-          const match = /\.(\w+)$/.exec(filename);
-          const type = match ? `image/${match[1]}` : 'image/jpeg';
+        for (const uri of uris) {
+          const { uri: fileUri, name, type } = await prepareImageUpload(uri);
           // @ts-ignore
-          formData.append('images', { uri, name: filename, type });
+          formData.append('images', { uri: fileUri, name, type });
           formData.append('imageCategoryIds', backendCatId);
-        });
-      });
+        }
+      }
 
       await createChalet(formData).unwrap();
 
@@ -705,6 +706,10 @@ export default function AddChaletScreen() {
       router.back();
     } catch (error: any) {
       console.error('Error creating chalet:', error);
+      if (error instanceof ImagePrepareError) {
+        Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: isRTL ? 'تعذّرت معالجة إحدى الصور، جرّب صورة أخرى' : 'Could not process one of the images, try another photo', position: 'bottom' });
+        return;
+      }
       const rawMsg = error?.data?.message;
       const errorMessage = Array.isArray(rawMsg) ? rawMsg[0] : (rawMsg || (isRTL ? 'فشل إرسال البيانات، حاول لاحقاً' : 'Failed to save data, try again'));
       Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage), position: 'bottom' });

@@ -77,6 +77,7 @@
     "cancel": "إلغاء",
     "exit": "خروج",
     "contactUs": "تواصل معنا",
+    "reportProblem": "تبليغ عن مشكلة",
     "privacyPolicy": "سياسة الخصوصية",
     "termsAndConditions": "الشروط والأحكام",
     "wallet": {
@@ -134,7 +135,39 @@
     "yesterday": "امس",
     "older": "أقدم",
     "empty": "لا توجد اشعارات حتى الآن",
-    "emptyDesc": "سنخبرك هنا عند وجود أي جديد."
+    "emptyDesc": "سنخبرك هنا عند وجود أي جديد.",
+    "markAllRead": "تحديد الكل كمقروء"
+  },
+  "reportProblem": {
+    "title": "تبليغ عن مشكلة",
+    "intro": "صف المشكلة التي واجهتك وسيتابعها فريق الدعم بأقرب وقت.",
+    "subjectLabel": "عنوان المشكلة (اختياري)",
+    "subjectPlaceholder": "مثال: مشكلة في الدفع",
+    "descriptionLabel": "وصف المشكلة",
+    "descriptionPlaceholder": "اكتب تفاصيل المشكلة هنا...",
+    "submit": "إرسال البلاغ",
+    "descriptionRequired": "يرجى كتابة وصف المشكلة",
+    "successTitle": "تم الإرسال",
+    "successMessage": "تم استلام بلاغك، وسيتابعه فريق الدعم بأقرب وقت.",
+    "errorMessage": "تعذّر إرسال البلاغ، حاول مرة أخرى.",
+    "myReportsTitle": "سجل البلاغات",
+    "myReportsLink": "عرض سجل بلاغاتي",
+    "myReportsEmpty": "لا توجد بلاغات",
+    "myReportsEmptyDesc": "أي مشكلة تبلّغ عنها راح تظهر هنا مع حالة المتابعة.",
+    "untitled": "بلاغ بدون عنوان",
+    "adminNoteLabel": "رد فريق الدعم",
+    "status": {
+      "open": "مفتوحة",
+      "in_progress": "قيد المعالجة",
+      "resolved": "تم الحل"
+    }
+  },
+  "ratePrompt": {
+    "title": "شلون كانت إقامتك؟",
+    "message": "اكتمل حجزك في {{chalet}} — شاركنا تقييمك حتى يستفيد الآخرون.",
+    "fallbackChalet": "الشاليه",
+    "rateNow": "قيّم الآن",
+    "later": "لاحقاً"
   },
   "dashboard": {
     "addChalet": "إضافة شاليه جديد",
@@ -392,7 +425,13 @@
     "endTime": "وقت النهاية",
     "startTime": "وقت البداية",
     "editDays": "تعديل الأيام",
-    "skipToGuests": "التالي"
+    "skipToGuests": "التالي",
+    "sortTitle": "الترتيب حسب",
+    "sortNewest": "الأحدث",
+    "sortRating": "الأكثر تقييماً",
+    "sortNearest": "الأقرب",
+    "locationDeniedTitle": "الموقع غير متاح",
+    "locationDeniedMessage": "لعرض الشاليهات الأقرب إليك نحتاج إذن الوصول إلى موقعك. يمكنك تفعيله من إعدادات الجهاز، أو متابعة البحث بترتيب آخر."
   },
   "payoutConfirm": {
     "title": "تأكيد طلب السحب",

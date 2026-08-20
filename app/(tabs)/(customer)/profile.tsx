@@ -5,6 +5,7 @@ import {
     SolarGlobalBold,
     SolarHeartBold,
     SolarReviewsHeartBold,
+    SolarDangerCircleBold,
     SolarLogoutBold,
     SolarPhoneBold,
     SolarPenNewRoundBoldDuotone,
@@ -258,6 +259,13 @@ export default function CustomerProfileScreen() {
             shape: 'green' as const,
             icon: <SolarPhoneBold size={20} color="white" />,
             action: openContactUs,
+        },
+        {
+            id: 'reportProblem',
+            title: t('profile.reportProblem'),
+            shape: 'red' as const,
+            icon: <SolarDangerCircleBold size={20} color="white" />,
+            route: '/(customer)/report-problem',
         },
         {
             id: 'privacy',

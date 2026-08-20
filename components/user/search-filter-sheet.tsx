@@ -3,9 +3,12 @@ import {
     BottomSheetModal,
     BottomSheetScrollView,
     useBottomSheetModal } from "@gorhom/bottom-sheet";
+import * as Location from "expo-location";
 import React, { forwardRef, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+    ActivityIndicator,
+    Alert,
     Dimensions,
     Keyboard,
     Platform,
@@ -13,14 +16,16 @@ import {
     TextInput,
     TouchableOpacity,
     View } from "react-native";
+import { useDispatch } from "react-redux";
 
-import { SolarBedBold, SolarMagnifierBold, SolarMapPointBold, SolarMoonBold, SolarSunBold } from "@/components/icons/solar-icons";
+import { SolarBedBold, SolarClockCircleBold, SolarMagnifierBold, SolarMapPointBold, SolarMoonBold, SolarStarBold, SolarSunBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { Colors, normalize, Shadows, Spacing } from "@/constants/theme";
 import {
     useGetCityNamesQuery,
     useGetCustomerChaletDetailsQuery,
     useGetChaletAvailabilityQuery } from "@/store/api/customerApiSlice";
+import { setFilters } from "@/store/filterSlice";
 import { PrimaryButton } from "./primary-button";
 import { SecondaryButton } from "./secondary-button";
 import { GuestCounter } from "./guest-counter";
@@ -41,6 +46,8 @@ const STATIC_CITIES = [
   { id: "babylon", name: "بابل", icon: "map" },
 ];
 
+type SortOption = "newest" | "rating" | "nearest";
+
 interface SearchFilterSheetProps {
   onApply?: (filters: any) => void;
   chaletId?: string;
@@ -49,6 +56,7 @@ interface SearchFilterSheetProps {
 export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetProps>((props, ref) => {
   const { onApply, chaletId } = props;
   const { dismiss } = useBottomSheetModal();
+  const dispatch = useDispatch();
   const { t } = useTranslation();
   const { isRTL, rowDirection: hookRowDirection, textAlign } = useDirection();
   const isArabic = isRTL;
@@ -63,6 +71,9 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
   const [checkIn, setCheckIn] = useState<Date | null>(null);
   const [checkOut, setCheckOut] = useState<Date | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [sortBy, setSortBy] = useState<SortOption>("newest");
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
 
   // Dynamic layout helpers from the central direction API.
   const rowDirection = hookRowDirection;
@@ -149,7 +160,48 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
   // The sheet takes 85% of screen height
   const snapPoints = useMemo(() => ["85%"], []);
 
+  /**
+   * "الأقرب" needs the device position, so selecting it asks for foreground
+   * location first. If permission is denied (or the fix fails) the selection
+   * reverts to whatever was chosen before, with an Arabic explanation — the
+   * user is never left on a sort mode the server can't honour.
+   */
+  const handleSelectSort = useCallback(async (value: SortOption) => {
+    if (value !== "nearest") {
+      setSortBy(value);
+      return;
+    }
+    const previous = sortBy === "nearest" ? "newest" : sortBy;
+    setSortBy("nearest");
+    setIsLocating(true);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== Location.PermissionStatus.GRANTED) {
+        throw new Error("location-permission-denied");
+      }
+      const position = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced });
+      // 4 decimals ≈ 11m — precise enough for sorting, and keeps the browse
+      // cache key from churning on every GPS jitter.
+      setCoords({
+        lat: Number(position.coords.latitude.toFixed(4)),
+        lng: Number(position.coords.longitude.toFixed(4)) });
+    } catch {
+      setSortBy(previous);
+      setCoords(null);
+      Alert.alert(
+        t("searchFilter.locationDeniedTitle"),
+        t("searchFilter.locationDeniedMessage"),
+      );
+    } finally {
+      setIsLocating(false);
+    }
+  }, [sortBy, t]);
+
   const handleNext = useCallback(() => {
+    // A location fix still in flight would silently apply "newest" while the
+    // sheet keeps showing "الأقرب" selected — wait for it instead.
+    if (isLocating) return;
     Keyboard.dismiss();
     if (activeTab === "WHERE") {
       setActiveTab("WHEN");
@@ -161,6 +213,16 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
       }
     } else if (activeTab === "WHO") {
       // WHO — apply and close
+      // "nearest" is only actionable with coordinates attached — if the fix
+      // never landed (or is still in flight) fall back to the default order.
+      const effectiveSort: SortOption =
+        sortBy === "nearest" && !coords ? "newest" : sortBy;
+      // The layout's onApply handler only forwards the classic filter keys, so
+      // the sort selection is written into the filter slice directly here.
+      dispatch(setFilters({
+        sortBy: effectiveSort === "newest" ? null : effectiveSort,
+        lat: effectiveSort === "nearest" ? coords?.lat ?? null : null,
+        lng: effectiveSort === "nearest" ? coords?.lng ?? null : null }));
       if (onApply) {
         onApply({
           cityId: selectedCity || null,
@@ -171,11 +233,14 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
           period: selectedPeriod,
           maxGuests: adults,
           adults,
-          children: 0 });
+          children: 0,
+          sortBy: effectiveSort,
+          lat: effectiveSort === "nearest" ? coords?.lat ?? null : null,
+          lng: effectiveSort === "nearest" ? coords?.lng ?? null : null });
       }
       dismiss();
     }
-  }, [activeTab, whenStep, dismiss, onApply, selectedCity, selectedCityName, searchText, adults, selectedPeriod, checkIn, checkOut]);
+  }, [activeTab, whenStep, dismiss, onApply, selectedCity, selectedCityName, searchText, adults, selectedPeriod, checkIn, checkOut, sortBy, coords, dispatch, isLocating]);
 
   const renderBackdrop = useCallback(
     (backdropProps: any) => (
@@ -465,24 +530,98 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
     );
   };
 
-  const renderWhoContent = () => (
-    <View style={styles.tabContent}>
-      <View style={styles.whoContainer}>
-        {/* Adults Counter */}
-        <View style={[styles.guestItem, { flexDirection: rowDirection, justifyContent: "space-between" }]}>
-          <View style={styles.guestInfo}>
-            <ThemedText style={[styles.guestLabel, { textAlign: textAlignment }]}>{t("searchFilter.adults")}</ThemedText>
-            <ThemedText style={[styles.guestSubLabel, { textAlign: textAlignment }]}>{t("searchFilter.adultsDesc")}</ThemedText>
+  const renderWhoContent = () => {
+    // Same radio-row pattern as the shift periods above, one row per sort mode.
+    const sortOptions: { value: SortOption; label: string; icon: React.ReactNode }[] = [
+      {
+        value: "newest",
+        label: t("searchFilter.sortNewest"),
+        icon: <SolarClockCircleBold size={28} color={sortBy === "newest" ? "#035DF9" : Colors.text.muted} /> },
+      {
+        value: "rating",
+        label: t("searchFilter.sortRating"),
+        icon: <SolarStarBold size={28} color={sortBy === "rating" ? "#F6A500" : Colors.text.muted} /> },
+      {
+        value: "nearest",
+        label: t("searchFilter.sortNearest"),
+        icon: <SolarMapPointBold size={28} color={sortBy === "nearest" ? "#15AB64" : Colors.text.muted} /> },
+    ];
+
+    return (
+      <View style={styles.tabContent}>
+        <View style={styles.whoContainer}>
+          {/* Adults Counter */}
+          <View style={[styles.guestItem, { flexDirection: rowDirection, justifyContent: "space-between" }]}>
+            <View style={styles.guestInfo}>
+              <ThemedText style={[styles.guestLabel, { textAlign: textAlignment }]}>{t("searchFilter.adults")}</ThemedText>
+              <ThemedText style={[styles.guestSubLabel, { textAlign: textAlignment }]}>{t("searchFilter.adultsDesc")}</ThemedText>
+            </View>
+            <GuestCounter
+              value={adults}
+              onIncrement={() => setAdults(adults + 1)}
+              onDecrement={() => setAdults(Math.max(1, adults - 1))}
+            />
           </View>
-          <GuestCounter
-            value={adults}
-            onIncrement={() => setAdults(adults + 1)}
-            onDecrement={() => setAdults(Math.max(1, adults - 1))}
-          />
+
+          {/* Sort Order */}
+          <ThemedText style={[styles.sortTitle, { textAlign: textAlignment }]}>
+            {t("searchFilter.sortTitle")}
+          </ThemedText>
+          <View style={styles.periodList}>
+            {sortOptions.map((option) => {
+              const isSelected = sortBy === option.value;
+              const locatingThis = option.value === "nearest" && isLocating;
+              return (
+                <TouchableOpacity
+                  key={option.value}
+                  style={[
+                    styles.periodItem,
+                    { flexDirection: rowDirection, justifyContent: "space-between", alignItems: "center" },
+                    isSelected && styles.selectedPeriodItem,
+                  ]}
+                  onPress={() => handleSelectSort(option.value)}
+                  disabled={isLocating}
+                  activeOpacity={0.8}
+                >
+                  <View style={{ flexDirection: rowDirection, alignItems: "center", gap: 16, flex: 1 }}>
+                    {option.icon}
+                    <ThemedText style={[styles.periodLabel, { textAlign: textAlignment }]}>
+                      {option.label}
+                    </ThemedText>
+                  </View>
+
+                  {/* Radio Button Selector (spinner while acquiring location) */}
+                  {locatingThis ? (
+                    <ActivityIndicator size="small" color="#15AB64" />
+                  ) : (
+                    <View style={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: 10,
+                      borderWidth: 2,
+                      borderColor: isSelected ? "#15AB64" : "#D1D5DB",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      backgroundColor: "white",
+                    }}>
+                      {isSelected && (
+                        <View style={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: 5,
+                          backgroundColor: "#15AB64",
+                        }} />
+                      )}
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   const renderContent = () => {
     if (activeTab === "WHERE") return renderWhereContent();
@@ -599,6 +738,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
                     : t("searchFilter.next")
               }
               onPress={handleNext}
+              disabled={isLocating}
               isActive={true}
               activeColor={activeTab === "WHEN" ? "#15AB64" : activeTab === "WHO" ? "#F64200" : "#035DF9"}
               style={StyleSheet.flatten([styles.nextButton, { alignSelf: buttonAlign }])}
@@ -761,8 +901,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: "#F0F2F5" },
-  guestInfo: { 
+  guestInfo: {
   },
+  sortTitle: {
+    fontSize: 14,
+    fontFamily: "Alexandria-Bold",
+    color: "#1A1A1A",
+    marginTop: 12,
+    marginBottom: 12 },
   guestLabel: {
     fontSize: 14,
     fontFamily: "Alexandria-Medium",

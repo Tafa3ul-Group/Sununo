@@ -10,7 +10,7 @@ import { SolarBellBold } from "@/components/icons/solar-icons";
 import { useRouter } from 'expo-router';
 import { HeaderSection } from '@/components/header-section';
 import { EmptyState } from '@/components/ui/empty-state';
-import { useGetNotificationsQuery, useMarkNotificationAsReadMutation } from '@/store/api/customerApiSlice';
+import { useGetNotificationsQuery, useMarkAllNotificationsAsReadMutation, useMarkNotificationAsReadMutation } from '@/store/api/customerApiSlice';
 import { pickTranslation, useDirection } from '@/i18n';
 import { RootState } from '@/store';
 import { selectAccountType, switchMode } from '@/store/authSlice';
@@ -96,6 +96,7 @@ export default function NotificationsScreen() {
       role: activeSection(userType),
     });
     const [markAsRead] = useMarkNotificationAsReadMutation();
+    const [markAllAsRead] = useMarkAllNotificationsAsReadMutation();
 
     // Pre-process: transform API data + format times once per item
     //
@@ -166,6 +167,10 @@ export default function NotificationsScreen() {
             }
         } else if (item.redirectType === 'chalet' && item.redirectId) {
             router.push(`/chalet-details/${item.redirectId}`);
+        } else if (item.redirectType === 'review' && item.redirectId) {
+            // Booking completed → chalet page with the review sheet auto-opened
+            // (redirectId is the CHALET id).
+            router.push(`/chalet-details/${item.redirectId}?openReview=1`);
         } else if (item.redirectType === 'payout' && item.redirectId) {
             // Opens the in-app withdrawal confirmation (نعم/لا) screen.
             router.push(`/payout-confirm/${item.redirectId}`);
@@ -173,6 +178,18 @@ export default function NotificationsScreen() {
             router.push('/(tabs)/(customer)/profile');
         }
     };
+
+    const hasUnread = useMemo(
+      () => formattedNotifs.some((item) => !item.isRead),
+      [formattedNotifs],
+    );
+
+    const handleMarkAllRead = useCallback(() => {
+      Haptics.selectionAsync();
+      // The mutation patches every cached notifications page, so the list and
+      // the bell badge clear without waiting for the server.
+      markAllAsRead();
+    }, [markAllAsRead]);
 
     const renderItem = useCallback((item: Notification, index: number) => (
         <NotificationItem
@@ -197,6 +214,20 @@ export default function NotificationsScreen() {
                 showsVerticalScrollIndicator={false}
                 refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} />}
             >
+                {/* Mark-all-as-read — only while something is still unread */}
+                {hasUnread && (
+                    <TouchableOpacity
+                        style={styles.markAllButton}
+                        onPress={handleMarkAllRead}
+                        activeOpacity={0.6}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                        <ThemedText style={styles.markAllText}>
+                            {t('notifications.markAllRead')}
+                        </ThemedText>
+                    </TouchableOpacity>
+                )}
+
                 {/* Today Section */}
                 {groupedNotifications.today.length > 0 && (
                     <>
@@ -259,6 +290,16 @@ const styles = StyleSheet.create({
     sectionHeader: {
         marginTop: 20,
         marginBottom: 8,
+    },
+    markAllButton: {
+        alignSelf: 'flex-end',
+        marginTop: 12,
+        marginBottom: -8,
+    },
+    markAllText: {
+        fontSize: 11,
+        fontFamily: 'Alexandria-Medium',
+        color: Colors.primary,
     },
     sectionTitle: {
         fontSize: 12,

@@ -18,6 +18,7 @@ import { RangeCalendar } from "@/components/user/range-calendar";
 import { Colors, normalize } from "@/constants/theme";
 
 import { RootState } from "@/store";
+import { ImagePrepareError, prepareImageUpload } from "@/utils/prepare-image-upload";
 import { logEvent } from "@/services/analytics";
 import { ANALYTICS_EVENTS, ANALYTICS_CURRENCY } from "@/constants/analytics-events";
 import {
@@ -147,28 +148,27 @@ const PressableScale = React.memo(function PressableScale({
 // Append a picked image to FormData as a real file part. Web FormData needs a
 // Blob (an RN {uri,name,type} object would serialize to "[object Object]" and
 // the backend would reject it as "does not contain file"); native uses the
-// {uri,name,type} object. Filename/mime are derived from the URI and forced to
-// the jpeg/png the backend accepts.
+// {uri,name,type} object. prepareImageUpload fixes the mime (".jpg" ≠
+// "image/jpg") and re-encodes HEIC/WebP picks to the jpeg/png the backend
+// accepts.
 async function appendImagePart(
   formData: FormData,
   field: string,
   uri: string,
   fallback: string,
 ) {
-  const rawName = uri.split("?")[0].split("/").pop() || `${fallback}.jpg`;
-  const ext = (/\.(\w+)$/.exec(rawName)?.[1] || "jpg").toLowerCase();
-  const isPng = ext === "png";
-  const type = isPng ? "image/png" : "image/jpeg";
-  const name = /\.(jpe?g|png)$/i.test(rawName)
-    ? rawName
-    : `${fallback}.${isPng ? "png" : "jpg"}`;
+  const prepared = await prepareImageUpload(uri);
+  const rawName = uri.split("?")[0].split("/").pop() || "";
+  // Keep the picked filename when it was already jpeg/png; otherwise use the
+  // stable id_front/id_back fallback (matches the pre-helper behavior).
+  const name = /\.(jpe?g|png)$/i.test(rawName) ? prepared.name : `${fallback}.jpg`;
 
   if (Platform.OS === "web") {
-    const res = await fetch(uri);
+    const res = await fetch(prepared.uri);
     const blob = await res.blob();
     formData.append(field, blob, name);
   } else {
-    formData.append(field, { uri, name, type } as any);
+    formData.append(field, { uri: prepared.uri, name, type: prepared.type } as any);
   }
 }
 
@@ -1036,10 +1036,14 @@ export default function CompleteBookingScreen() {
       } catch (e: any) {
         Alert.alert(
           isArabic ? "تنبيه" : "Alert",
-          e?.data?.message ||
-            (isArabic
-              ? "تعذّر رفع صور الهوية، يرجى المحاولة مرة أخرى"
-              : "Failed to upload ID photos, please try again"),
+          e instanceof ImagePrepareError
+            ? (isArabic
+                ? "تعذّرت معالجة صورة الهوية، جرّب صورة أخرى"
+                : "Could not process the ID photo, try another photo")
+            : e?.data?.message ||
+                (isArabic
+                  ? "تعذّر رفع صور الهوية، يرجى المحاولة مرة أخرى"
+                  : "Failed to upload ID photos, please try again"),
         );
         return;
       }

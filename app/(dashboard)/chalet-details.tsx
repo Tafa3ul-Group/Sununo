@@ -27,6 +27,7 @@ import { PrimaryButton } from '@/components/user/primary-button';
 import { AiTranslateButton } from '@/components/ui/ai-translate-button';
 import { Colors, normalize } from '@/constants/theme';
 import { formatDuration } from '@/utils/format';
+import { ImagePrepareError, prepareImageUpload } from '@/utils/prepare-image-upload';
 import { getImageSrc } from '@/hooks/useImageSrc';
 import { pickTranslation, useDirection } from '@/i18n';
 import {
@@ -323,11 +324,11 @@ export default function ChaletDetailsScreen() {
     try {
       for (const uri of selectedImages) {
         const imageFormData = new FormData();
-        const filename = uri.split('/').pop() || 'image.jpg';
-        const match = /\.(\w+)$/.exec(filename);
-        const type = match ? `image/${match[1]}` : 'image/jpeg';
+        // prepareImageUpload fixes the mime (".jpg" ≠ "image/jpg") and re-encodes
+        // HEIC/WebP picks to JPEG so the API accepts them.
+        const { uri: fileUri, name, type } = await prepareImageUpload(uri);
         // @ts-ignore
-        imageFormData.append('image', { uri, name: filename, type });
+        imageFormData.append('image', { uri: fileUri, name, type });
         await uploadImage({ chaletId: chaletId as string, formData: imageFormData }).unwrap();
       }
       Toast.show({ type: 'success', text1: isRTL ? 'تم الرفع' : 'Uploaded' });
@@ -336,7 +337,9 @@ export default function ChaletDetailsScreen() {
       refetch();
     } catch (err: any) {
       console.error(err);
-      const errMsg = err?.data?.message || err?.message || (isRTL ? 'حدث خطأ أثناء رفع الصور، حاول مرة أخرى' : 'Something went wrong while uploading, please try again');
+      const errMsg = err instanceof ImagePrepareError
+        ? (isRTL ? 'تعذّرت معالجة إحدى الصور، جرّب صورة أخرى' : 'Could not process one of the images, try another photo')
+        : (err?.data?.message || err?.message || (isRTL ? 'حدث خطأ أثناء رفع الصور، حاول مرة أخرى' : 'Something went wrong while uploading, please try again'));
       setErrorModal({
         visible: true,
         title: isRTL ? 'فشل رفع الصور' : 'Upload failed',

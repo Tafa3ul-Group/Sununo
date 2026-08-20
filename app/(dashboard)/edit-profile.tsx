@@ -13,6 +13,7 @@ import { Colors, normalize, Shadows } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
 import { useDirection } from '@/i18n';
 import { RootState } from '@/store';
+import { ImagePrepareError, prepareImageUpload } from '@/utils/prepare-image-upload';
 import {
   useGetCitiesQuery,
   useGetMeQuery,
@@ -127,34 +128,32 @@ export default function EditProfileScreen() {
 
     if (!result.canceled) {
       const imageAsset = result.assets[0];
-      const imageFormData = new FormData();
-
-      const uri = imageAsset.uri;
-      const name = uri.split('/').pop() || 'profile.jpg';
-      let type = imageAsset.mimeType || 'image/jpeg';
-
-      if (type === 'image/jpg' || type.endsWith('jpg')) {
-        type = 'image/jpeg';
-      }
-
-      if (Platform.OS === 'web') {
-        const response = await fetch(uri);
-        const blob = await response.blob();
-        imageFormData.append('image', blob, name);
-      } else {
-        imageFormData.append('image', {
-          uri,
-          name,
-          type
-        } as any);
-      }
 
       try {
+        const imageFormData = new FormData();
+        // prepareImageUpload fixes the mime (".jpg" ≠ "image/jpg") and re-encodes
+        // HEIC/WebP picks to JPEG so the API accepts them.
+        const { uri, name, type } = await prepareImageUpload(imageAsset);
+
+        if (Platform.OS === 'web') {
+          const response = await fetch(uri);
+          const blob = await response.blob();
+          imageFormData.append('image', blob, name);
+        } else {
+          imageFormData.append('image', {
+            uri,
+            name,
+            type
+          } as any);
+        }
+
         await updateProfileImage(imageFormData).unwrap();
         Toast.show({ type: 'success', text1: isArabic ? 'نجاح' : 'Success', text2: isArabic ? 'تم تحديث الصورة بنجاح' : 'Profile image updated successfully', position: 'bottom' });
       } catch (error: any) {
         console.error('Upload Image Error:', error);
-        const errorMessage = error?.data?.message || (isArabic ? 'فشل تحديث الصورة' : 'Failed to update image');
+        const errorMessage = error instanceof ImagePrepareError
+          ? (isArabic ? 'تعذّرت معالجة الصورة، جرّب صورة أخرى' : 'Could not process the image, try another photo')
+          : (error?.data?.message || (isArabic ? 'فشل تحديث الصورة' : 'Failed to update image'));
         Toast.show({ type: 'error', text1: isArabic ? 'خطأ' : 'Error', text2: Array.isArray(errorMessage) ? errorMessage[0] : errorMessage, position: 'bottom' });
       }
     }

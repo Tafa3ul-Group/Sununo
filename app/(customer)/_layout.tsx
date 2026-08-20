@@ -18,9 +18,21 @@ export default function CustomerNonTabLayout() {
         name="booking/complete" 
         options={{ title: isArabic ? 'اكتمال الحجز' : 'Booking Completion' }} 
       />
-      <Stack.Screen 
-        name="chalet-details/[id]" 
-        options={{ title: isArabic ? 'تفاصيل الشاليه' : 'Chalet Details' }} 
+      <Stack.Screen
+        name="chalet-details/[id]"
+        options={{ title: isArabic ? 'تفاصيل الشاليه' : 'Chalet Details' }}
+      />
+      <Stack.Screen
+        name="chalet-map/[id]"
+        options={{ title: isArabic ? 'موقع الشاليه' : 'Chalet Location' }}
+      />
+      <Stack.Screen
+        name="report-problem"
+        options={{ title: isArabic ? 'تبليغ عن مشكلة' : 'Report a Problem' }}
+      />
+      <Stack.Screen
+        name="my-reports"
+        options={{ title: isArabic ? 'سجل البلاغات' : 'My Reports' }}
       />
     </Stack>
   );

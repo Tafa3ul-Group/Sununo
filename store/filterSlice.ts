@@ -19,6 +19,11 @@ export interface FilterState {
   adults: number;
   /** Children count */
   children: number;
+  /** Result ordering; null means the server default ("newest") */
+  sortBy: "newest" | "rating" | "nearest" | null;
+  /** Device coordinates captured when sortBy="nearest" was chosen */
+  lat: number | null;
+  lng: number | null;
   /** Whether any filter has been applied */
   isActive: boolean;
 }
@@ -33,6 +38,9 @@ const initialState: FilterState = {
   maxGuests: null,
   adults: 2,
   children: 0,
+  sortBy: null,
+  lat: null,
+  lng: null,
   isActive: false,
 };
 
@@ -52,6 +60,9 @@ const FILTER_KEYS = [
   "maxGuests",
   "adults",
   "children",
+  "sortBy",
+  "lat",
+  "lng",
   "isActive",
 ] as const satisfies readonly (keyof FilterState)[];
 
@@ -79,7 +90,8 @@ const filterSlice = createSlice({
         !!state.search ||
         !!state.checkIn ||
         !!state.period ||
-        (state.maxGuests != null && state.maxGuests > 0);
+        (state.maxGuests != null && state.maxGuests > 0) ||
+        (state.sortBy != null && state.sortBy !== "newest");
     },
     clearFilters: () => initialState,
   },

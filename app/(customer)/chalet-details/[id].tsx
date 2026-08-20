@@ -19,7 +19,7 @@ import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
 import { HostContactCard } from "@/components/user/host-contact-card";
 import { LoginPromptModal } from "@/components/user/login-prompt-modal";
 import { PrimaryButton } from "@/components/user/primary-button";
-import { ReviewSubmissionSheet } from "@/components/user/review-submission-sheet";
+import { ReviewSubmissionSheet, maybeRequestStoreReview } from "@/components/user/review-submission-sheet";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize, Shadows } from "@/constants/theme";
 import { logEvent } from "@/services/analytics";
@@ -249,7 +249,9 @@ export default function ChaletDetailScreen() {
   const { userType } = useSelector((state: RootState) => state.auth);
   const { isRTL, textAlign } = useDirection();
 
-  const { id } = useLocalSearchParams();
+  // `openReview=1` arrives from the booking-completed notification / home
+  // rating popup and auto-opens the review sheet once eligibility is confirmed.
+  const { id, openReview } = useLocalSearchParams();
   const chaletId = id as string;
   const router = useRouter();
   const [activeImage, setActiveImage] = useState(0);
@@ -548,9 +550,25 @@ export default function ChaletDetailScreen() {
     reviewSheetRef.current?.present();
   };
 
+  // Auto-open the review sheet when arriving with `openReview=1`, but only
+  // after the server has confirmed the user is actually eligible — otherwise
+  // the sheet would invite a review the API then rejects. Once per mount.
+  const openReviewHandledRef = useRef(false);
+  useEffect(() => {
+    if (!openReview || openReviewHandledRef.current) return;
+    if (!canReviewData?.canReview) return;
+    openReviewHandledRef.current = true;
+    // Short delay so the screen's push transition settles before the sheet.
+    const timer = setTimeout(() => reviewSheetRef.current?.present(), 450);
+    return () => clearTimeout(timer);
+  }, [openReview, canReviewData]);
+
   const handleReviewSubmit = async (rating: number, comment: string) => {
     try {
       await createReview({ chaletId, rating, comment }).unwrap();
+      // Right after a submitted review is the one moment to ask for a store
+      // rating; fires at most once per install (guarded inside the helper).
+      maybeRequestStoreReview();
       Alert.alert(
         isRTL ? "تم بنجاح" : "Success",
         isRTL ? "تم إضافة تقييمك بنجاح" : "Review submitted successfully",
@@ -907,12 +925,11 @@ export default function ChaletDetailScreen() {
           <SectionHeader title={t("chalet.details.location")} />
           <TouchableOpacity
             activeOpacity={0.9}
-            onPress={() =>
-              router.push({
-                pathname: "/(tabs)/(customer)/explore",
-                params: { id: chaletId },
-              })
-            }
+            // Push the in-stack chalet map instead of the explore TAB — tab
+            // switching detached from this stack, so back landed on home
+            // rather than this chalet. (Cast: typed routes regenerate on the
+            // next `expo start`, which doesn't know the new route yet.)
+            onPress={() => router.push(`/chalet-map/${chaletId}` as any)}
             style={styles.mapCardFlat}
           >
             <View style={styles.mapInner}>
@@ -977,7 +994,7 @@ export default function ChaletDetailScreen() {
                   </View>
                 </View>
               )}
-              {/* Transparent overlay so tapping the map opens the explore map */}
+              {/* Transparent overlay so tapping the map opens the full chalet map */}
               <View style={StyleSheet.absoluteFill} />
             </View>
             <View style={styles.mapLocLabel}>

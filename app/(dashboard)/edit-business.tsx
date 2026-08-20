@@ -1,12 +1,16 @@
 import {
+    SolarAltArrowDownLinear,
+    SolarCheckCircleBold,
     SolarShieldWarningBold
 } from "@/components/icons/solar-icons";
 import { ThemedText } from '@/components/themed-text';
+import { IRAQI_BANKS, OTHER_BANK_OPTION } from '@/constants/banks';
 import { Colors, normalize } from '@/constants/theme';
 import { useDirection } from '@/i18n';
 import { useGetProviderProfileQuery, useUpdateProviderProfileMutation } from '@/store/api/apiSlice';
+import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     KeyboardAvoidingView,
@@ -34,6 +38,9 @@ import {
 const zainCashLogo = require('@/assets/zaincash.png');
 const qiLogo = require('@/assets/qi.svg');
 
+// The bank sheet's rows: every listed bank plus the "أخرى" free-text escape hatch.
+const BANK_OPTIONS = [...IRAQI_BANKS, OTHER_BANK_OPTION];
+
 export default function ProviderProfileScreen() {
   const { isRTL: isArabic, textAlign, inputTextAlign } = useDirection();
   const dispatch = useDispatch();
@@ -42,12 +49,17 @@ export default function ProviderProfileScreen() {
   const { data: profile, isLoading, isError, refetch } = useGetProviderProfileQuery(undefined);
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProviderProfileMutation();
 
+  const bankSheetRef = useRef<BottomSheetModal>(null);
+
   const [formData, setFormData] = useState({
     zainCash: '',
     qi: '',
     bankName: '',
     bankAccount: ''
   });
+
+  // "أخرى" mode: the bank name is typed instead of picked from the list.
+  const [isOtherBank, setIsOtherBank] = useState(false);
 
   const [errors, setErrors] = useState<{
     zainCash?: string | null;
@@ -60,14 +72,36 @@ export default function ProviderProfileScreen() {
 
   useEffect(() => {
     if (profileData) {
+      const savedBankName = profileData.bankName || '';
       setFormData({
         zainCash: profileData.zainCash || '',
         qi: profileData.qi || '',
-        bankName: profileData.bankName || '',
+        bankName: savedBankName,
         bankAccount: profileData.bankAccount || ''
       });
+      // A saved name outside the list renders as "أخرى" + free text.
+      setIsOtherBank(!!savedBankName && !IRAQI_BANKS.includes(savedBankName));
     }
   }, [profileData]);
+
+  // Picking a row in the bank sheet. Choosing "أخرى" clears a listed value so
+  // the owner types their own; an already-custom name stays as the free text.
+  const handleBankSelect = (option: string) => {
+    const isOther = option === OTHER_BANK_OPTION;
+    const nextBankName = isOther
+      ? (IRAQI_BANKS.includes(formData.bankName) ? '' : formData.bankName)
+      : option;
+    setIsOtherBank(isOther);
+    setFormData(prev => ({ ...prev, bankName: nextBankName }));
+    // The bank pair validates together: filling one field makes the
+    // other required, so re-check both on every change.
+    setErrors(prev => ({
+      ...prev,
+      bankName: validateBankName(nextBankName, formData.bankAccount),
+      bankAccount: validateBankAccount(formData.bankAccount, nextBankName),
+    }));
+    bankSheetRef.current?.dismiss();
+  };
 
   const handleSave = async () => {
     const zainCashErr = validateZainCash(formData.zainCash);
@@ -242,15 +276,62 @@ export default function ProviderProfileScreen() {
               errors.qi,
               'numeric'
             )}
-            {renderField(
-              isArabic ? 'اسم المصرف' : 'Bank Name',
-              formData.bankName,
-              'bankName',
-              null,
-              isArabic ? 'مثلاً: مصرف الرافدين' : 'e.g. Al-Rafidain Bank',
-              errors.bankName,
-              'default'
-            )}
+            {/* Bank name: dropdown over the Iraqi banks list; "أخرى" reveals free text. */}
+            <View style={styles.fieldContainer}>
+              <ThemedText style={[styles.label, { textAlign }]}>
+                {isArabic ? 'اسم المصرف' : 'Bank Name'}
+              </ThemedText>
+              <TouchableOpacity
+                style={[
+                  styles.inputWrapper,
+                  errors.bankName ? { borderColor: '#EF4444' } : null,
+                  { flexDirection: 'row', justifyContent: 'space-between' }
+                ]}
+                onPress={() => bankSheetRef.current?.present()}
+                activeOpacity={0.7}
+              >
+                <ThemedText
+                  style={[
+                    styles.selectValueText,
+                    !(isOtherBank || formData.bankName) && { color: Colors.text.muted }
+                  ]}
+                >
+                  {isOtherBank
+                    ? (isArabic ? 'أخرى' : 'Other')
+                    : formData.bankName || (isArabic ? 'اختر المصرف' : 'Select Bank')}
+                </ThemedText>
+                <SolarAltArrowDownLinear size={16} color={Colors.text.muted} />
+              </TouchableOpacity>
+              {isOtherBank && (
+                <View style={[
+                  styles.inputWrapper,
+                  errors.bankName ? { borderColor: '#EF4444' } : null,
+                  { flexDirection: 'row', marginTop: 8 }
+                ]}>
+                  <TextInput
+                    style={[styles.input, { textAlign: inputTextAlign }]}
+                    value={formData.bankName}
+                    onChangeText={(text) => {
+                      setFormData(prev => ({ ...prev, bankName: text }));
+                      // The bank pair validates together: filling one field makes
+                      // the other required, so re-check both on every keystroke.
+                      setErrors(prev => ({
+                        ...prev,
+                        bankName: validateBankName(text, formData.bankAccount),
+                        bankAccount: validateBankAccount(formData.bankAccount, text),
+                      }));
+                    }}
+                    placeholder={isArabic ? 'اكتب اسم المصرف' : 'Type the bank name'}
+                    placeholderTextColor={Colors.text.muted}
+                  />
+                </View>
+              )}
+              {errors.bankName && (
+                <ThemedText style={[styles.errorText, { textAlign }]}>
+                  {errors.bankName}
+                </ThemedText>
+              )}
+            </View>
             {renderField(
               isArabic ? 'رقم الحساب / الآيبان' : 'Account Number / IBAN',
               formData.bankAccount,
@@ -272,6 +353,51 @@ export default function ProviderProfileScreen() {
           />
 
         </ScrollView>
+
+        {/* Bank Picker Bottom Sheet */}
+        <BottomSheetModal
+          ref={bankSheetRef}
+          index={0}
+          snapPoints={['60%']}
+          backdropComponent={props => (
+            <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
+          )}
+          enablePanDownToClose
+        >
+          <View style={styles.sheetContent}>
+            <ThemedText style={styles.sheetTitle}>
+              {isArabic ? 'اختر المصرف' : 'Select Bank'}
+            </ThemedText>
+            <BottomSheetFlatList
+              data={BANK_OPTIONS}
+              keyExtractor={(item: string) => item}
+              contentContainerStyle={{ paddingBottom: 24 }}
+              renderItem={({ item }: { item: string }) => {
+                const isOtherRow = item === OTHER_BANK_OPTION;
+                const isSelected = isOtherRow
+                  ? isOtherBank
+                  : !isOtherBank && formData.bankName === item;
+                return (
+                  <TouchableOpacity
+                    style={[
+                      styles.bankItem,
+                      isSelected && styles.bankItemActive,
+                      { flexDirection: 'row' }
+                    ]}
+                    onPress={() => handleBankSelect(item)}
+                  >
+                    <ThemedText style={[styles.bankText, isSelected && styles.bankTextActive]}>
+                      {isOtherRow ? (isArabic ? 'أخرى' : 'Other') : item}
+                    </ThemedText>
+                    {isSelected && (
+                      <SolarCheckCircleBold size={20} color={Colors.primary} />
+                    )}
+                  </TouchableOpacity>
+                );
+              }}
+            />
+          </View>
+        </BottomSheetModal>
       </KeyboardAvoidingView>
     </View>
   );
@@ -324,6 +450,39 @@ const styles = StyleSheet.create({
    fontFamily: "Alexandria-Medium" },
   multilineInput: {
     textAlignVertical: 'top' },
+  selectValueText: {
+    fontSize: normalize.font(14),
+    fontFamily: "Alexandria-Medium",
+    color: Colors.text.primary },
+  sheetContent: {
+    flex: 1,
+    padding: 20 },
+  sheetTitle: {
+    fontSize: normalize.font(15),
+    fontFamily: "Alexandria-Medium",
+    color: Colors.text.primary,
+    textAlign: 'center',
+    marginBottom: 16 },
+  bankItem: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+    backgroundColor: '#F8FAFC',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 12 },
+  bankItemActive: {
+    backgroundColor: '#EEF2FF',
+    borderWidth: 1,
+    borderColor: '#C7D2FE' },
+  bankText: {
+    flex: 1,
+    fontSize: normalize.font(13),
+    fontFamily: "Alexandria-Medium",
+    color: Colors.text.primary },
+  bankTextActive: {
+    color: Colors.primary },
   saveButton: {
     backgroundColor: Colors.primary,
     height: 56,

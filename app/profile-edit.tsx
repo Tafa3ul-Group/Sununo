@@ -6,6 +6,7 @@ import { Colors, normalize } from '@/constants/theme';
 import { getImageSrc, getAvatarSrc } from '@/hooks/useImageSrc';
 import { useDirection } from "@/i18n";
 import { RootState } from '@/store';
+import { ImagePrepareError, prepareImageUpload } from '@/utils/prepare-image-upload';
 import { useGetMeQuery } from '@/store/api/apiSlice';
 import {
     useChangePhoneNumberMutation,
@@ -140,27 +141,30 @@ export default function ProfileEditScreen() {
 
     if (!result.canceled) {
       const asset = result.assets[0];
-      const formData = new FormData();
-      const fileName = asset.uri.split('/').pop() || 'profile.jpg';
-      let mimeType = asset.mimeType || 'image/jpeg';
-      if (mimeType === 'image/jpg' || mimeType.endsWith('jpg')) mimeType = 'image/jpeg';
-
-      if (Platform.OS === 'web') {
-        const blob = await fetch(asset.uri).then((r) => r.blob());
-        formData.append('image', blob, fileName);
-      } else {
-        formData.append('image', { uri: asset.uri, name: fileName, type: mimeType } as any);
-      }
 
       try {
+        const formData = new FormData();
+        // prepareImageUpload fixes the mime (".jpg" ≠ "image/jpg") and re-encodes
+        // HEIC/WebP picks to JPEG so the API accepts them.
+        const { uri, name, type } = await prepareImageUpload(asset);
+
+        if (Platform.OS === 'web') {
+          const blob = await fetch(uri).then((r) => r.blob());
+          formData.append('image', blob, name);
+        } else {
+          formData.append('image', { uri, name, type } as any);
+        }
+
         await updateProfileImage(formData).unwrap();
         refetch();
       } catch (err: any) {
-        const msg = getApiErrorMessage(
-          err,
-          isRTL ? 'فشل تحديث الصورة' : 'Failed to update image',
-          isRTL,
-        );
+        const msg = err instanceof ImagePrepareError
+          ? (isRTL ? 'تعذّرت معالجة الصورة، جرّب صورة أخرى' : 'Could not process the image, try another photo')
+          : getApiErrorMessage(
+              err,
+              isRTL ? 'فشل تحديث الصورة' : 'Failed to update image',
+              isRTL,
+            );
         Alert.alert(isRTL ? 'خطأ' : 'Error', msg);
       }
     }
