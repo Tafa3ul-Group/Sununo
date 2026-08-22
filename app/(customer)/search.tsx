@@ -14,7 +14,7 @@ import {
     useGetFeaturedChaletsQuery,
     useSearchChaletsQuery,
 } from "@/store/api/customerApiSlice";
-import { getStartingPrice } from "@/utils/format";
+import { formatChaletLocation, getStartingPrice } from "@/utils/format";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -83,9 +83,7 @@ export default function SearchScreen() {
           title: isArabic
             ? chalet.name?.ar || chalet.nameAr || chalet.name || ""
             : chalet.name?.en || chalet.nameEn || chalet.name || "",
-          location: isArabic
-            ? chalet.region?.name?.ar || chalet.region?.nameAr || chalet.region?.name || ""
-            : chalet.region?.name?.en || chalet.region?.nameEn || chalet.region?.name || "",
+          location: formatChaletLocation(chalet, isArabic),
           price: getStartingPrice(chalet),
           // Carried through so the card can show the discount badge; the API
           // leaves it undefined when no campaign is running.
@@ -102,7 +100,7 @@ export default function SearchScreen() {
     return data.map((chalet: any) => ({
       id: chalet.id,
       title: pickTranslation(chalet, isArabic),
-      location: pickTranslation(chalet.region, isArabic),
+      location: formatChaletLocation(chalet, isArabic),
       price: getStartingPrice(chalet),
       // Carried through so the card can show the discount badge; the API
       // leaves it undefined when no campaign is running.

@@ -2,7 +2,9 @@ import React from 'react';
 import { StyleSheet, View, Modal } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { MotionIcon, MotionName } from '@/components/icons/motion-icons';
+import { SolarDangerTriangleBold } from '@/components/icons/solar-icons';
 import { PrimaryButton } from '@/components/user/primary-button';
+import { Colors, normalize } from '@/constants/theme';
 import { useDirection } from '@/i18n';
 
 interface StatusModalProps {
@@ -29,12 +31,21 @@ export const StatusModal = ({
     <Modal transparent visible={visible} animationType="fade">
       <View style={[styles.container, { direction }]}>
         <View style={styles.card}>
-          <MotionIcon 
-            name={motionName} 
-            size={motionName === 'loading' ? 120 : 180} 
-            loop={motionName === 'loading'}
-            style={styles.animation}
-          />
+          {/* `fail.json` علامته الـ X مرسومة بالأبيض (اللونان الوحيدان فيه
+              #FFFFFF و #CD5050) فتختفي على بطاقة بيضاء وما تبقى غير حلقة
+              فارغة — نستبدلها بنفس شارة الخطأ المستعملة في ErrorState. */}
+          {motionName === 'failed' ? (
+            <View style={styles.badge}>
+              <SolarDangerTriangleBold size={normalize.font(44)} color={Colors.error} />
+            </View>
+          ) : (
+            <MotionIcon
+              name={motionName}
+              size={motionName === 'loading' ? 120 : 180}
+              loop={motionName === 'loading'}
+              style={styles.animation}
+            />
+          )}
           
           {title && <ThemedText style={styles.title}>{title}</ThemedText>}
           {message && <ThemedText style={styles.message}>{message}</ThemedText>}
@@ -59,6 +70,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20 },
+  badge: {
+    width: normalize.width(96),
+    height: normalize.width(96),
+    borderRadius: normalize.width(48),
+    backgroundColor: '#FFF7ED',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12 },
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: 32,

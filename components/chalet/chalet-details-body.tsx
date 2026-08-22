@@ -119,6 +119,54 @@ export function ChaletDetailsBody({
     });
   }, [chalet?.chaletFeatures, chalet?.amenities, isRTL]);
 
+  // Paid amenities get their own section: they change what the guest pays, so
+  // they must not be buried among the free ones (or cut off by the 8-item
+  // preview below).
+  const paidFacilities = useMemo(
+    () => facilities.filter((f: any) => f.price > 0),
+    [facilities],
+  );
+  const freeFacilities = useMemo(
+    () => facilities.filter((f: any) => f.price <= 0),
+    [facilities],
+  );
+
+  const renderFacility = (f: any, i: number) => (
+    <View key={i} style={styles.facilityCell}>
+      <View style={styles.shapeCont}>
+        <Svg height={55} width={55} viewBox="0 0 60 60">
+          <Path d={f.shapePath} fill={f.shapeColor} />
+        </Svg>
+        <View style={styles.iconInShape}>
+          {f.iconUrl ? (
+            <ExpoImage
+              source={f.iconUrl}
+              style={styles.facilityIcon}
+              contentFit="contain"
+            />
+          ) : (
+            <SolarWidgetBold size={22} color="white" />
+          )}
+        </View>
+      </View>
+      <ThemedText style={styles.facilityLabelText}>{f.label}</ThemedText>
+      {f.price > 0 && (
+        <>
+          <ThemedText style={styles.facilityPriceText} numberOfLines={1}>
+            {f.price.toLocaleString()} {isRTL ? "د.ع" : "IQD"}
+          </ThemedText>
+          {/* Optional is a choice at checkout; the rest is already inside the
+              price the guest will be quoted. */}
+          <ThemedText style={styles.facilityKindText} numberOfLines={1}>
+            {f.isOptional
+              ? isRTL ? "اختياري" : "Optional"
+              : isRTL ? "مشمول" : "Included"}
+          </ThemedText>
+        </>
+      )}
+    </View>
+  );
+
   return (
     <View style={[styles.wrapper, style]}>
       {/* Title + rating */}
@@ -299,12 +347,31 @@ export function ChaletDetailsBody({
         )}
       </View>
 
-      {/* Facilities */}
-      {facilities.length > 0 && (
+      {/* Facilities — paid first, then the free ones */}
+      {paidFacilities.length > 0 && (
         <>
           <View style={[styles.facilitiesHeader, { flexDirection: "row" }]}>
-            <SectionHeader title={isRTL ? "المرافق" : "Facilities"} />
-            {facilities.length > 8 && (
+            <SectionHeader
+              title={isRTL ? "مرافق مدفوعة" : "Paid facilities"}
+            />
+          </View>
+          <View style={styles.facilitiesGrid}>
+            {paidFacilities.map(renderFacility)}
+          </View>
+        </>
+      )}
+
+      {freeFacilities.length > 0 && (
+        <>
+          <View style={[styles.facilitiesHeader, { flexDirection: "row" }]}>
+            <SectionHeader
+              title={
+                paidFacilities.length > 0
+                  ? isRTL ? "مرافق مجانية" : "Free facilities"
+                  : isRTL ? "المرافق" : "Facilities"
+              }
+            />
+            {freeFacilities.length > 8 && (
               <TouchableOpacity onPress={onSeeAllFacilities}>
                 <ThemedText style={styles.viewAllText}>
                   {isRTL ? "عرض الكل" : "See all"}
@@ -313,37 +380,7 @@ export function ChaletDetailsBody({
             )}
           </View>
           <View style={styles.facilitiesGrid}>
-            {facilities.slice(0, 8).map((f: any, i: number) => (
-              <View key={i} style={styles.facilityCell}>
-                <View style={styles.shapeCont}>
-                  <Svg height={55} width={55} viewBox="0 0 60 60">
-                    <Path d={f.shapePath} fill={f.shapeColor} />
-                  </Svg>
-                  <View style={styles.iconInShape}>
-                    {f.iconUrl ? (
-                      <ExpoImage
-                        source={f.iconUrl}
-                        style={styles.facilityIcon}
-                        contentFit="contain"
-                      />
-                    ) : (
-                      <SolarWidgetBold size={22} color="white" />
-                    )}
-                  </View>
-                </View>
-                <ThemedText style={styles.facilityLabelText}>
-                  {f.label}
-                </ThemedText>
-                {/* Paid amenities say so up front, so the price on the booking
-                    screen is never a surprise. */}
-                {f.price > 0 && (
-                  <ThemedText style={styles.facilityPriceText} numberOfLines={1}>
-                    {f.price.toLocaleString()} {isRTL ? "د.ع" : "IQD"}
-                    {f.isOptional ? (isRTL ? " (اختياري)" : " (optional)") : ""}
-                  </ThemedText>
-                )}
-              </View>
-            ))}
+            {freeFacilities.slice(0, 8).map(renderFacility)}
           </View>
         </>
       )}
@@ -519,6 +556,12 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     width: "100%",
     lineHeight: 18,
+  },
+  facilityKindText: {
+    fontSize: 9,
+    fontFamily: "Alexandria-Medium",
+    color: "#9CA3AF",
+    marginTop: 1,
   },
   facilityPriceText: {
     fontSize: 10,

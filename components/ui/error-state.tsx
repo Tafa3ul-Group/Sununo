@@ -1,11 +1,17 @@
 import React from 'react';
-import { StyleSheet, View, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
-import { MotionIcon } from '@/components/icons/motion-icons';
+import { SolarDangerTriangleBold, SolarMagnifierBold } from '@/components/icons/solar-icons';
 import { Colors, normalize, Spacing } from '@/constants/theme';
 import { useTranslation } from 'react-i18next';
 
-const { width } = Dimensions.get('window');
+// أيقونة ساكنة داخل دائرة بلون البراند. كانت Lottie بعرض الشاشة كامل
+// (`width * 1.0`) مغطّاة بهوامش سالبة، وحلقتها تطلع فارغة بلا علامة.
+// `Colors.error` برتقالي لا أحمر — البراند مستبدل الأحمر عمداً (constants/theme.ts).
+const BADGE = {
+  failed:   { Icon: SolarDangerTriangleBold, tint: Colors.error,   bg: '#FFF7ED' },
+  error404: { Icon: SolarMagnifierBold,      tint: Colors.primary, bg: '#EFF6FF' },
+} as const;
 
 interface ErrorStateProps {
   type?: 'failed' | 'error404';
@@ -35,11 +41,12 @@ export const ErrorState = ({
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <MotionIcon 
-          name={type} 
-          size={width * 1.0} 
-          style={styles.animation}
-        />
+        <View style={[styles.badge, { backgroundColor: BADGE[type].bg }]}>
+          {React.createElement(BADGE[type].Icon, {
+            size: normalize.font(44),
+            color: BADGE[type].tint,
+          })}
+        </View>
         
         <View style={styles.textContainer}>
           <ThemedText type="h2" style={styles.title}>
@@ -94,24 +101,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: Spacing.xl },
-  animation: {
-    marginTop: -Spacing.xl,
-    marginBottom: -Spacing.lg },
-  textContainer: {
+  badge: {
+    width: normalize.width(96),
+    height: normalize.width(96),
+    borderRadius: normalize.width(48),
     alignItems: 'center',
-    marginTop: -Spacing.md },
+    justifyContent: 'center',
+    marginBottom: Spacing.lg },
+  textContainer: {
+    alignItems: 'center' },
   title: {
     textAlign: 'center',
     marginBottom: 4,
     color: '#0F172A',
-    fontSize: normalize.font(14),
+    fontSize: normalize.font(18),
+    lineHeight: normalize.font(27),
     fontFamily: "IBMPlexSansArabic-SemiBold" },
   message: {
     textAlign: 'center',
     color: '#64748B',
     marginBottom: Spacing.xl,
     paddingHorizontal: Spacing.lg,
-    fontSize: normalize.font(14),
+    fontSize: normalize.font(15),
+    lineHeight: normalize.font(23),
     fontFamily: "IBMPlexSansArabic-Regular" },
   actions: {
     width: '100%',

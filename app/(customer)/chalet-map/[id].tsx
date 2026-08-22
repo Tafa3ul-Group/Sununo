@@ -3,6 +3,7 @@ import { ErrorState } from "@/components/ui/error-state";
 import { AppMap } from "@/components/user/app-map";
 import { Colors } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
+import { getStartingPrice } from "@/utils/format";
 import { useGetCustomerChaletDetailsQuery } from "@/store/api/customerApiSlice";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useMemo } from "react";
@@ -52,6 +53,7 @@ export default function ChaletMapScreen() {
       {
         id: String(chalet.id),
         title: chalet.name ?? "",
+        price: getStartingPrice(chalet),
         image: getImageSrc(mainImage?.url),
         coordinates: [mapLng, mapLat] as [number, number],
       },

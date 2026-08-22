@@ -12,7 +12,7 @@ import { ThemedText } from "@/components/themed-text";
 import { HorizontalCard } from "@/components/user/horizontal-card";
 import { Colors, Shadows } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
-import { getStartingPrice } from "@/utils/format";
+import { formatChaletLocation, getStartingPrice } from "@/utils/format";
 
 import { RootState } from "@/store";
 import { unwrapListResponse } from "@/store/api/apiSlice";
@@ -38,7 +38,7 @@ import {
 import Animated from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
-import { ltrScrollContent, ltrScroller, pickTranslation, useDirection, useRtlListOrder } from "@/i18n";
+import { ltrScrollContent, ltrScroller, useDirection, useRtlListOrder } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -114,7 +114,7 @@ export default function FilterResultsScreen() {
   );
 
   const getChaletLocation = useCallback(
-    (chalet: any, arabic: boolean) => pickTranslation(chalet.region, arabic),
+    (chalet: any, arabic: boolean) => formatChaletLocation(chalet, arabic),
     [],
   );
 

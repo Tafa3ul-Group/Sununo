@@ -459,7 +459,10 @@ export default function ExploreScreen() {
   );
 
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const snapPoints = useMemo(() => ["55%", "94%"], []);
+  // Opens straight at 90% of the screen: tapping a marker is a request to read
+  // the chalet, and the old 55% peek meant an extra drag before anything useful
+  // was visible.
+  const snapPoints = useMemo(() => ["90%"], []);
 
   // Live top edge of the details sheet. The locate button docks just above the
   // tab bar at rest and rides the sheet up as it opens, so it never ends up
@@ -1006,11 +1009,24 @@ export default function ExploreScreen() {
                 >
                   {(selectedChalet.allImages || [selectedChalet.image]).map(
                     (img: any, index: number) => (
-                      <Image
+                      // Tapping a photo opens this chalet's full gallery, the
+                      // same destination the chalet page uses.
+                      <TouchableOpacity
                         key={index}
-                        source={img}
-                        style={styles.carouselImage}
-                      />
+                        activeOpacity={0.9}
+                        onPress={() => {
+                          // The sheet lives in a portal at the app root, so it
+                          // would stay pinned over the gallery unless it is
+                          // dismissed on the way out.
+                          bottomSheetRef.current?.dismiss();
+                          router.push({
+                            pathname: "/(customer)/chalet-details/gallery",
+                            params: { id: selectedChalet.id },
+                          });
+                        }}
+                      >
+                        <Image source={img} style={styles.carouselImage} />
+                      </TouchableOpacity>
                     ),
                   )}
                 </ScrollView>

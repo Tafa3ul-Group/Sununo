@@ -14,7 +14,7 @@ import Animated from 'react-native-reanimated';
 import { HeaderSection } from '@/components/header-section';
 import { useGetCustomerFavoritesQuery, useToggleFavoriteMutation } from '@/store/api/customerApiSlice';
 import { getImageSrc } from '@/hooks/useImageSrc';
-import { getStartingPrice } from '@/utils/format';
+import { formatChaletLocation, getStartingPrice } from "@/utils/format";
 import { pickTranslation, useDirection } from '@/i18n';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -50,12 +50,12 @@ export default function FavoritesScreen() {
       return {
         id: chalet.id,
         title: pickTranslation(chalet, isRTL),
-        location: pickTranslation(chalet.region, isRTL),
+        location: formatChaletLocation(chalet, isRTL),
         price: getStartingPrice(chalet),
         // Carried through so the card can show the discount badge; the API
         // leaves it undefined when no campaign is running.
         discount: chalet.discount,
-        rating: chalet.averageRating?.toFixed(1) || '0',
+        rating: chalet.rating ?? chalet.averageRating ?? 0,
         // The few amenities the card lists ("يحتوي على: ...").
         features: chalet.features ?? chalet.chaletFeatures,
         image: getImageSrc(chalet.images?.[0]?.url),

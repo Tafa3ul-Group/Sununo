@@ -35,7 +35,7 @@ import { useTabBarVisibility } from "@/components/user/tab-bar-visibility";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, Fonts, normalize } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
-import { getStartingPrice } from "@/utils/format";
+import { formatChaletLocation, getStartingPrice } from "@/utils/format";
 import { openBannerLink } from "@/utils/banner-link";
 import { logEvent } from "@/services/analytics";
 import { ANALYTICS_EVENTS } from "@/constants/analytics-events";
@@ -242,7 +242,7 @@ export default function HomeScreen() {
             bookingId: b.id,
             // HorizontalCard expects `title`/`location` (it accepts the {ar,en} object)
             title: c.name,
-            location: c.region?.name ?? c.city?.name ?? "",
+            location: formatChaletLocation(c, isRTL),
             image: c.images?.[0]?.url ?? c.images?.[0],
             blurhash: c.images?.[0]?.blurhash,
             price: getStartingPrice(c),
@@ -272,7 +272,7 @@ export default function HomeScreen() {
           id: c.id,
           // HorizontalCard accepts the {ar,en} object for title/location.
           title: c.name,
-          location: c.region?.name ?? c.city?.name ?? "",
+          location: formatChaletLocation(c, isRTL),
           image: c.images?.[0]?.url ?? c.images?.[0],
           blurhash: c.images?.[0]?.blurhash,
           price: getStartingPrice(c),
@@ -412,12 +412,14 @@ export default function HomeScreen() {
     return chalets.map((chalet: any, index: number) => ({
       id: chalet.id,
       title: pickTranslation(chalet, isRTL),
-      location: pickTranslation(chalet.region, isRTL),
+      location: formatChaletLocation(chalet, isRTL),
       price: getStartingPrice(chalet),
       // Carried through so the card can show the discount badge; the API
       // leaves it undefined when no campaign is running.
       discount: chalet.discount,
-      rating: chalet.averageRating || 0,
+      // The list endpoint returns `rating`; only some payloads carry
+      // `averageRating`, so both are read or the card shows every chalet as new.
+      rating: chalet.rating ?? chalet.averageRating ?? 0,
       color: CARD_COLORS[index % CARD_COLORS.length],
       image: getImageSrc(chalet.images?.[0]?.url),
       // The few amenities the card lists ("يحتوي على: ..."); the list endpoint

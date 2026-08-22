@@ -39,6 +39,12 @@ import Animated, {
 interface MarkerData {
   id: string;
   title: string | { ar: string; en: string };
+  /**
+   * Starting price shown under the name. Callers pass whatever they already
+   * have: `getStartingPrice` hands back a grouped string ("125,000"), other
+   * screens a plain number.
+   */
+  price?: number | string;
   image: string;
   coordinates: [number, number];
   [key: string]: any;
@@ -388,6 +394,29 @@ const AppMapComponent = ({
     [clusterZoom, onSelectMarker],
   );
 
+  // Nothing is drawn for a chalet with no price yet — an empty pill under the
+  // name reads as a bug, not as "free". Note the string case is NOT parsed with
+  // Number(): a grouped "125,000" would come back NaN and silently hide it.
+  const markerPriceOf = useCallback(
+    (marker: MarkerData) => {
+      const raw = marker.price;
+      if (raw == null) return null;
+
+      const text =
+        typeof raw === "number"
+          ? raw > 0
+            ? raw.toLocaleString()
+            : ""
+          : String(raw).trim();
+
+      // Anything that carries no digit above zero ("", "0", "٠") is no price.
+      if (!/[1-9]/.test(text)) return null;
+
+      return `${text} ${isRTL ? "د.ع" : "IQD"}`;
+    },
+    [isRTL],
+  );
+
   const markerTitleOf = useCallback(
     (marker: MarkerData) =>
       typeof marker.title === "object"
@@ -704,6 +733,11 @@ const AppMapComponent = ({
                     <ThemedText style={styles.markerTitle}>
                       {markerTitleOf(member)}
                     </ThemedText>
+                    {markerPriceOf(member) && (
+                      <ThemedText style={styles.markerPrice}>
+                        {markerPriceOf(member)}
+                      </ThemedText>
+                    )}
                   </TouchableOpacity>
                 </Mapbox.MarkerView>
               );
@@ -753,6 +787,11 @@ const AppMapComponent = ({
                       : `${count} chalets`
                     : markerTitleOf(head)}
                 </ThemedText>
+                {count === 1 && markerPriceOf(head) && (
+                  <ThemedText style={styles.markerPrice}>
+                    {markerPriceOf(head)}
+                  </ThemedText>
+                )}
               </TouchableOpacity>
             </Mapbox.MarkerView>
           );
@@ -875,6 +914,17 @@ const styles = StyleSheet.create({
     fontSize: 10,
     lineHeight: 14,
     fontFamily: "IBMPlexSansArabic-Bold"
+  },
+  markerPrice: {
+    fontSize: 8,
+    fontFamily: "IBMPlexSansArabic-SemiBold",
+    color: Colors.primary,
+    marginTop: 2,
+    textAlign: "center",
+    backgroundColor: "rgba(255,255,255,0.95)",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
   },
   markerTitle: {
     fontSize: 8,

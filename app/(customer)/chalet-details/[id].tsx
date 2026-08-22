@@ -231,7 +231,8 @@ const FacilityCell = React.memo(function FacilityCell({
           never a surprise. */}
       {facility.price > 0 && (
         <ThemedText style={styles.facilityPriceText} numberOfLines={1}>
-          {facility.price.toLocaleString()} د.ع{facility.isOptional ? " (اختياري)" : ""}
+          {facility.price.toLocaleString()} د.ع
+          {facility.isOptional ? " (اختياري)" : " (مشمول)"}
         </ThemedText>
       )}
     </Animated.View>
@@ -603,6 +604,18 @@ export default function ChaletDetailScreen() {
     return [];
   }, [chalet.chaletFeatures, chalet.amenities, isRTL]);
 
+  // Paid amenities get their own section: they change what the guest pays, so
+  // they must not be buried among the free ones — or cut off by the 8-item
+  // preview the free grid uses.
+  const paidFacilities = useMemo(
+    () => facilities.filter((f: any) => f.price > 0),
+    [facilities],
+  );
+  const freeFacilities = useMemo(
+    () => facilities.filter((f: any) => f.price <= 0),
+    [facilities],
+  );
+
   // Only show the skeleton on the true first load (no cached data). During a
   // background refetch (isFetching with data present) we keep the existing
   // content on screen so it feels instant/alive instead of flashing a loader.
@@ -854,13 +867,33 @@ export default function ChaletDetailScreen() {
             )}
           </View>
 
-          {facilities.length > 0 && (
+          {paidFacilities.length > 0 && (
+            <>
+              <View
+                style={[styles.facilitiesHeader, { flexDirection: 'row' }]}
+              >
+                <SectionHeader title={isRTL ? "مرافق مدفوعة" : "Paid facilities"} />
+              </View>
+              {/* Never sliced: every amenity that costs money is shown. */}
+              <View style={[styles.facilitiesGrid, { flexDirection: 'row' }]}>
+                {paidFacilities.map((f: any, i: number) => (
+                  <FacilityCell key={`paid-${i}`} facility={f} index={i} />
+                ))}
+              </View>
+            </>
+          )}
+
+          {freeFacilities.length > 0 && (
             <>
               <View
                 style={[styles.facilitiesHeader, { flexDirection: 'row' }]}
               >
                 <SectionHeader
-                  title={t("chalet.details.facilities")}
+                  title={
+                    paidFacilities.length > 0
+                      ? (isRTL ? "مرافق مجانية" : "Free facilities")
+                      : t("chalet.details.facilities")
+                  }
                 />
                 <TouchableOpacity
                   onPress={() =>
@@ -873,8 +906,8 @@ export default function ChaletDetailScreen() {
                 </TouchableOpacity>
               </View>
               <View style={[styles.facilitiesGrid, { flexDirection: 'row' }]}>
-                {facilities.slice(0, 8).map((f: any, i: number) => (
-                  <FacilityCell key={i} facility={f} index={i} />
+                {freeFacilities.slice(0, 8).map((f: any, i: number) => (
+                  <FacilityCell key={`free-${i}`} facility={f} index={i} />
                 ))}
               </View>
             </>

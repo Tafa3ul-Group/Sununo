@@ -85,6 +85,14 @@ export const HorizontalCard = React.memo(function HorizontalCard({
     chalet.discount?.priceAfter != null
       ? Number(chalet.discount.priceAfter).toLocaleString()
       : basePrice;
+  // Prices arrive already grouped ("75,000"), so strip the separators before
+  // judging them. A chalet whose shifts carry no price yet resolves to 0, and
+  // "starts from 0" is worse than saying nothing — the row is dropped instead.
+  const hasPrice =
+    Number(String(displayPrice ?? "").replace(/,/g, "")) > 0;
+
+  // The list endpoints return `rating`; some payloads call it `averageRating`.
+  const rating = Number(chalet.rating ?? chalet.averageRating ?? 0);
 
   const handleToggleFavorite = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
@@ -148,11 +156,7 @@ export const HorizontalCard = React.memo(function HorizontalCard({
               : chalet.title}
           </ThemedText>
           <ThemedText style={styles.ratingText}>
-            {chalet.rating
-              ? Number(chalet.rating).toFixed(1)
-              : isArabic
-                ? "جديد"
-                : "New"}
+            {rating.toFixed(1)}
           </ThemedText>
           <SparkleStarBold size={normalize.font(15)} color="#EF79D7" />
 
@@ -179,7 +183,7 @@ export const HorizontalCard = React.memo(function HorizontalCard({
         {/* Price leads the line, under the title on the reading edge; the
             location trails it, so the card keeps three rows at this height. */}
         <View style={styles.locationRow}>
-          {displayPrice != null && displayPrice !== "" && (
+          {hasPrice && (
             <>
               <ThemedText style={styles.priceLabel}>
                 {isArabic ? "يبدأ من" : "From"}

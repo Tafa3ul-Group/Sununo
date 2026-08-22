@@ -1,3 +1,5 @@
+import { pickTranslation } from "../i18n/direction";
+
 /**
  * Utility functions for formatting numbers and currencies.
  */
@@ -157,4 +159,16 @@ export const getStartingPrice = (chalet: any): string => {
   }
 
   return '0';
+};
+
+/**
+ * What a chalet card prints under its name: the city first, then the area
+ * inside it ("Basra - Al-Jazair"). Cards used to show the region alone, which
+ * left out the one thing a customer scans for. Either half may be missing on a
+ * given payload, so whatever is present is joined and nothing is invented.
+ */
+export const formatChaletLocation = (chalet: any, isRTL: boolean): string => {
+  const city = pickTranslation(chalet?.city, isRTL);
+  const region = pickTranslation(chalet?.region, isRTL);
+  return [city, region].filter(Boolean).join(' - ');
 };

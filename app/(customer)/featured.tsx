@@ -3,9 +3,10 @@ import { ThemedText } from "@/components/themed-text";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { FeaturedCard } from "@/components/user/featured-card";
+import { useDirection } from "@/i18n";
 import { SolarFireBold } from "@/components/icons/solar-icons";
 import { Colors, normalize } from "@/constants/theme";
-import { getStartingPrice } from "@/utils/format";
+import { formatChaletLocation, getStartingPrice } from "@/utils/format";
 import {
   useGetFavoriteIdsQuery,
   useGetFeaturedChaletsQuery,
@@ -28,6 +29,7 @@ import { useSelector } from "react-redux";
 export default function FeaturedScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { isRTL } = useDirection();
   const { userType } = useSelector((state: RootState) => state.auth);
 
   const {
@@ -60,7 +62,7 @@ export default function FeaturedScreen() {
         .map((c: any) => ({
           id: c.id,
           title: c.name,
-          location: c.region?.name ?? c.city?.name ?? "",
+          location: formatChaletLocation(c, isRTL),
           image: c.images?.[0]?.url ?? c.images?.[0],
           price: getStartingPrice(c),
           // Carried through so the card can show the discount badge; the API
@@ -69,7 +71,7 @@ export default function FeaturedScreen() {
           rating: c.rating ?? c.averageRating ?? 0,
           featuredLabel: c.featuredLabel,
         })),
-    [featuredRaw],
+    [featuredRaw, isRTL],
   );
 
   return (
