@@ -395,18 +395,18 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     marginVertical: 15,
     lineHeight: 28,
   },
-  mainTitle: { fontSize: 22, fontFamily: "LamaSans-Black", lineHeight: 32 },
+  mainTitle: { fontSize: 22, fontFamily: "IBMPlexSansArabic-Bold", lineHeight: 33 },
   locationSub: {
     fontSize: 13,
     color: "#6B7280",
-    fontFamily: "LamaSans-Regular",
+    fontFamily: "IBMPlexSansArabic-Regular",
     lineHeight: 20,
   },
-  ratingVal: { fontSize: 18, fontFamily: "LamaSans-Black", lineHeight: 26 },
+  ratingVal: { fontSize: 18, fontFamily: "IBMPlexSansArabic-Bold", lineHeight: 26 },
   specsRow: { flexWrap: "wrap", gap: 8 },
   specTag: {
     backgroundColor: "#F3F7FF",
@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     flexShrink: 1,
   },
-  specText: { fontSize: 13, fontFamily: "LamaSans-Bold", flexShrink: 1 },
+  specText: { fontSize: 13, fontFamily: "IBMPlexSansArabic-Bold", flexShrink: 1 },
   discountBanner: {
     flexDirection: "row",
     alignItems: "center",
@@ -448,21 +448,21 @@ const styles = StyleSheet.create({
   },
   shiftInfo: { flex: 1, marginHorizontal: 12, minWidth: 0 },
   shiftName: {
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     fontSize: 15,
     color: "#1E293B",
     flexShrink: 1,
     lineHeight: 24,
   },
   shiftTime: {
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     fontSize: 12,
     color: "#64748B",
     flexShrink: 1,
     lineHeight: 20,
   },
   shiftPrice: {
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Bold",
     fontSize: 14,
     color: "#1E293B",
     flexShrink: 0,
@@ -482,7 +482,7 @@ const styles = StyleSheet.create({
   closedChaletText: {
     flex: 1,
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#EF4444",
     lineHeight: 22,
   },
@@ -490,7 +490,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  viewAllText: { fontSize: 13, color: "#6B7280", fontFamily: "LamaSans-Bold" },
+  viewAllText: { fontSize: 13, color: "#6B7280", fontFamily: "IBMPlexSansArabic-Bold" },
   facilitiesGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -513,7 +513,7 @@ const styles = StyleSheet.create({
   facilityIcon: { width: 26, height: 26 },
   facilityLabelText: {
     fontSize: 12,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     marginTop: 6,
     textAlign: "center",
     flexWrap: "wrap",
@@ -522,11 +522,11 @@ const styles = StyleSheet.create({
   },
   facilityPriceText: {
     fontSize: 10,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.primary,
     textAlign: "center",
     width: "100%",
-    lineHeight: 14,
+    lineHeight: 15,
   },
   descriptionContainer: { width: "100%" },
   descriptionText: {
@@ -535,7 +535,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     marginTop: 5,
     width: "100%",
-    fontFamily: "LamaSans-Regular",
+    fontFamily: "IBMPlexSansArabic-Regular",
   },
   mapCardFlat: {
     backgroundColor: "#F9FAFB",
@@ -547,5 +547,5 @@ const styles = StyleSheet.create({
   },
   mapInner: { height: 220, borderRadius: 24, overflow: "hidden" },
   mapLocLabel: { paddingVertical: 12, alignItems: "center" },
-  mapLocText: { fontSize: 16, fontFamily: "LamaSans-Black", lineHeight: 24 },
+  mapLocText: { fontSize: 16, fontFamily: "IBMPlexSansArabic-Bold", lineHeight: 24 },
 });

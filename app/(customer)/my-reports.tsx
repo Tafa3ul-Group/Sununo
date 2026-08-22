@@ -15,7 +15,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 
 /**
  * The reporter's side of «تبليغ عن مشكلة»: every report the user sent, with the
@@ -55,7 +55,6 @@ export default function MyReportsScreen() {
 
     return (
       <Animated.View
-        entering={FadeInDown.delay((index % 8) * 60).duration(380)}
         style={styles.card}
       >
         <View style={[styles.cardHeader, { flexDirection: "row" }]}>
@@ -173,7 +172,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     flex: 1,
     fontSize: 13,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#111827",
   },
   badge: {
@@ -183,17 +182,17 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 10,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
   cardBody: {
     fontSize: 12,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#6B7280",
     lineHeight: 20,
   },
   cardDate: {
     fontSize: 10,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#9CA3AF",
     marginTop: 8,
   },
@@ -207,13 +206,13 @@ const styles = StyleSheet.create({
   },
   noteLabel: {
     fontSize: 11,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.primary,
     marginBottom: 4,
   },
   noteText: {
     fontSize: 12,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#374151",
     lineHeight: 20,
   },

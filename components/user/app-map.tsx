@@ -874,11 +874,11 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 10,
     lineHeight: 14,
-    fontFamily: "Alexandria-Bold"
+    fontFamily: "IBMPlexSansArabic-Bold"
   },
   markerTitle: {
     fontSize: 8,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#111827",
     marginTop: 6,
     textAlign: "center",
@@ -902,7 +902,7 @@ const styles = StyleSheet.create({
   fallbackText: {
     fontSize: 8,
     color: "#6B7280",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     textAlign: "center"
   },
   fabContainer: {
@@ -931,7 +931,7 @@ const styles = StyleSheet.create({
   },
   fabText: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium"
+    fontFamily: "IBMPlexSansArabic-Medium"
   },
   userLocationMarker: {
     width: 30,

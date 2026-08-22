@@ -12,6 +12,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Colors, normalize, Shadows } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
 import { useDirection } from '@/i18n';
+import { useSyncAuthUser } from '@/hooks/useSyncAuthUser';
 import { RootState } from '@/store';
 import { ImagePrepareError, prepareImageUpload } from '@/utils/prepare-image-upload';
 import {
@@ -61,6 +62,7 @@ export default function EditProfileScreen() {
   const { user: authUser } = useSelector((state: RootState) => state.auth);
 
   const { data: userData } = useGetMeQuery(undefined);
+  useSyncAuthUser(userData);
   const user = userData?.data || userData || authUser;
 
   const { data: cities = [], isLoading: isCitiesLoading, isError: isCitiesError } = useGetCitiesQuery();
@@ -470,7 +472,7 @@ const styles = StyleSheet.create({
   changePhotoText: {
     marginTop: 12,
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.primary,
   },
   card: {
@@ -482,9 +484,8 @@ const styles = StyleSheet.create({
   },
   cardHeaderTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.text.primary,
-    fontWeight: '600',
     marginBottom: 20,
   },
   fieldContainer: {
@@ -493,7 +494,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.text.secondary
   },
   inputWrapper: {
@@ -515,11 +516,11 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(14),
     color: Colors.text.primary,
     height: '100%',
-    fontFamily: "Alexandria-Medium"
+    fontFamily: "IBMPlexSansArabic-Regular"
   },
   inputTextValue: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: Colors.text.primary,
   },
   disabledInputText: {
@@ -544,12 +545,12 @@ const styles = StyleSheet.create({
   },
   genderText: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.text.secondary
   },
   genderTextActive: {
     color: Colors.primary,
-    fontFamily: "Alexandria-Medium"
+    fontFamily: "IBMPlexSansArabic-Medium"
   },
   saveButton: {
     backgroundColor: Colors.primary,
@@ -566,7 +567,7 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: 'white',
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium"
+    fontFamily: "IBMPlexSansArabic-SemiBold"
   },
   citySheetContent: {
     flex: 1,
@@ -588,23 +589,23 @@ const styles = StyleSheet.create({
   },
   cityText: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.text.primary
   },
   cityTextActive: {
     color: Colors.primary,
-    fontFamily: "Alexandria-Medium"
+    fontFamily: "IBMPlexSansArabic-Medium"
   },
   cityEmptyText: {
     paddingVertical: 24,
     textAlign: 'center',
     color: Colors.text.muted,
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Medium"
+    fontFamily: "IBMPlexSansArabic-Medium"
   },
   sheetTitle: {
     fontSize: normalize.font(15),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.text.primary,
     textAlign: 'center',
     marginBottom: 16
@@ -630,12 +631,12 @@ const styles = StyleSheet.create({
   },
   modalDoneText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.primary,
   },
   modalCloseText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.text.secondary,
   },
   modalPickerContainer: {

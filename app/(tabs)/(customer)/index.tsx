@@ -12,7 +12,7 @@ import { FlashList } from "@shopify/flash-list";
 import { ltrScrollContent, ltrScroller, pickTranslation, useDirection, useRtlListOrder } from "@/i18n";
 import { BannerSkeleton, HorizontalSwiperSkeleton, HorizontalCardSkeleton, CustomerHomeSkeleton } from "@/components/ui/skeleton-loader";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import Animated, { FadeInUp, FadeOutUp } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 
@@ -57,6 +57,9 @@ const CARD_COLORS = [Colors.primary, Colors.secondary, Colors.accent];
 // Temporarily hide the home "Nearby / Map" section. Set to `true` to restore it.
 const SHOW_HOME_MAP = false;
 
+// How far back up the list must scroll before the pinned filter bar lets go.
+const STICKY_RELEASE_BUFFER = 24;
+
 export default function HomeScreen() {
   const { userType } = useSelector((state: RootState) => state.auth);
   const { isRTL, direction, textAlign } = useDirection();
@@ -84,7 +87,13 @@ export default function HomeScreen() {
     (e: any) => {
       tabBarVis?.onScroll(e);
       const y = e.nativeEvent.contentOffset.y;
-      const stick = chipsYRef.current > 0 && y >= chipsYRef.current;
+      // Separate thresholds for pinning and releasing: a single boundary makes
+      // the bar flicker in and out while the finger hovers right on it.
+      const stick =
+        chipsYRef.current > 0 &&
+        (showStickyRef.current
+          ? y >= chipsYRef.current - STICKY_RELEASE_BUFFER
+          : y >= chipsYRef.current);
       if (stick !== showStickyRef.current) {
         showStickyRef.current = stick;
         setShowStickyFilters(stick);
@@ -235,11 +244,13 @@ export default function HomeScreen() {
             title: c.name,
             location: c.region?.name ?? c.city?.name ?? "",
             image: c.images?.[0]?.url ?? c.images?.[0],
+            blurhash: c.images?.[0]?.blurhash,
             price: getStartingPrice(c),
             // Carried through so the card can show the discount badge; the API
             // leaves it undefined when no campaign is running.
             discount: c.discount,
             rating: c.averageRating ?? c.rating ?? 0,
+            features: c.features ?? c.chaletFeatures,
           };
         }),
     [latestBookings],
@@ -263,11 +274,13 @@ export default function HomeScreen() {
           title: c.name,
           location: c.region?.name ?? c.city?.name ?? "",
           image: c.images?.[0]?.url ?? c.images?.[0],
+          blurhash: c.images?.[0]?.blurhash,
           price: getStartingPrice(c),
           // Carried through so the card can show the discount badge; the API
           // leaves it undefined when no campaign is running.
           discount: c.discount,
           rating: c.rating ?? c.averageRating ?? 0,
+          features: c.features,
           // Resolved server-side (platform default merged with any per-chalet
           // override), so the card renders it as-is.
           featuredLabel: c.featuredLabel,
@@ -407,6 +420,9 @@ export default function HomeScreen() {
       rating: chalet.averageRating || 0,
       color: CARD_COLORS[index % CARD_COLORS.length],
       image: getImageSrc(chalet.images?.[0]?.url),
+      // The few amenities the card lists ("يحتوي على: ..."); the list endpoint
+      // trims them to what fits, so they are passed straight through.
+      features: chalet.features,
     }));
   }, [rawChalets, isRTL]);
 
@@ -553,7 +569,7 @@ export default function HomeScreen() {
           {bannersFetching && !bannersResponse ? (
             <BannerSkeleton />
           ) : banners?.length > 0 ? (
-            <Animated.View entering={FadeInDown.duration(400)}>
+            <Animated.View>
               <BannerSwiper data={banners} onBannerPress={handleBannerPress} />
             </Animated.View>
           ) : null}
@@ -785,7 +801,16 @@ export default function HomeScreen() {
         }
       />
       {showStickyFilters && (
-        <View style={styles.stickyFilters}>{renderFilterChips()}</View>
+        // Slides down from under the header and fades, rather than appearing
+        // in one frame. Exit is quicker than entry — the system getting out of
+        // the way should feel faster than it arriving.
+        <Animated.View
+          entering={FadeInUp.duration(220)}
+          exiting={FadeOutUp.duration(140)}
+          style={styles.stickyFilters}
+        >
+          {renderFilterChips()}
+        </Animated.View>
       )}
       </View>
       {/* One-shot rating invite for a completed, still-unreviewed booking.
@@ -877,14 +902,14 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.text.primary,
     textAlign: "center",
     marginBottom: 8,
   },
   emptyDesc: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.text.secondary,
     textAlign: "center",
     marginBottom: 24,
@@ -898,7 +923,7 @@ const styles = StyleSheet.create({
   },
   clearButtonText: {
     color: Colors.white,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     fontSize: normalize.font(14),
   },
 });

@@ -27,6 +27,7 @@ import {
   useLogoutUserMutation,
   useDeleteProfileMutation
 } from '@/store/api/apiSlice';
+import { useSyncAuthUser } from "@/hooks/useSyncAuthUser";
 import { useGetNotificationsQuery } from '@/store/api/customerApiSlice';
 import { PRIVACY_POLICY_URL } from '@/constants/links';
 import { useModeSwitch } from '@/hooks/use-mode-switch';
@@ -71,6 +72,7 @@ export default function ProviderProfileScreen() {
   const { showConfirm } = useConfirmationDialog();
 
   const { data: userData } = useGetMeQuery(undefined);
+  useSyncAuthUser(userData);
   const user = userData?.data || userData || authUser;
 
   const { data: profileResponse } = useGetProviderProfileQuery(undefined);
@@ -306,7 +308,7 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: '#374151'
   },
   avatarWrap: {
@@ -335,7 +337,7 @@ const styles = StyleSheet.create({
   avatarInitialText: {
     color: 'white',
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium"
+    fontFamily: "IBMPlexSansArabic-Medium"
   },
   menuGroup: {
     gap: normalize.height(16)
@@ -352,7 +354,7 @@ const styles = StyleSheet.create({
   menuLabelText: {
     flex: 1,
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: '#374151',
     marginHorizontal: normalize.width(15)
   },
@@ -367,7 +369,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: normalize.font(10),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: '#FFFFFF'
   },
   dangerZone: {
@@ -375,7 +377,7 @@ const styles = StyleSheet.create({
   },
   dangerZoneTitle: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: '#DC2626', // Red color
     marginBottom: normalize.height(10),
     marginHorizontal: normalize.width(4),

@@ -465,7 +465,7 @@ const styles = StyleSheet.create({
     color: '#0F172A',
     textAlign: 'center',
     marginBottom: 10,
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-SemiBold',
     letterSpacing: -0.2,
   },
   message: {
@@ -474,7 +474,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 21,
     marginBottom: 28,
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-Regular',
     paddingHorizontal: 4,
   },
   buttonRow: {
@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     fontSize: 14,
     color: '#475569',
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-SemiBold',
   },
   confirmButton: {
     shadowColor: '#000',
@@ -508,6 +508,6 @@ const styles = StyleSheet.create({
   confirmButtonText: {
     fontSize: 14,
     color: '#FFFFFF',
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-SemiBold',
   },
 });

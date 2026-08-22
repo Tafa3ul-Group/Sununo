@@ -58,7 +58,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
   const { dismiss } = useBottomSheetModal();
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const { isRTL, rowDirection: hookRowDirection, textAlign } = useDirection();
+  const { isRTL, rowDirection: hookRowDirection, textAlign, inputTextAlign } = useDirection();
   const isArabic = isRTL;
 
   const [activeTab, setActiveTab] = useState<TabType>("WHERE");
@@ -266,7 +266,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
         <SolarMagnifierBold size={22} color={Colors.text.muted} />
         <TextInput
           placeholder={t("searchFilter.search")}
-          style={[styles.searchInput, { textAlign: textAlignment }]}
+          style={[styles.searchInput, { textAlign: inputTextAlign }]}
           placeholderTextColor={Colors.text.muted}
           value={searchText}
           onChangeText={setSearchText}
@@ -792,7 +792,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     color: Colors.text.primary,
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "IBMPlexSansArabic-Regular" },
   cityItem: {
     alignItems: "center",
     padding: 12,
@@ -806,7 +806,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#E6EFFF" },
   cityName: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.text.primary,
     marginHorizontal: 8 },
   cityRight: {
@@ -834,7 +834,7 @@ const styles = StyleSheet.create({
     gap: 8 },
   legendText: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#1A1A1A" },
   dot: {
     width: 18,
@@ -883,7 +883,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#EEFBF4" },
   periodLabel: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#1A1A1A" },
   periodsActionRow: {
     flexDirection: "row",
@@ -905,16 +905,16 @@ const styles = StyleSheet.create({
   },
   sortTitle: {
     fontSize: 14,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: "#1A1A1A",
     marginTop: 12,
     marginBottom: 12 },
   guestLabel: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#1A1A1A" },
   guestSubLabel: {
     fontSize: 14,
     color: "#9CA3AF",
     marginTop: 2,
-    fontFamily: "Alexandria-Medium" } });
+    fontFamily: "IBMPlexSansArabic-Medium" } });

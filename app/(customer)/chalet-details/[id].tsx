@@ -41,6 +41,7 @@ import {
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import Constants from "expo-constants";
 import { Image as ExpoImage } from "expo-image";
+import { IMAGE_TRANSITION, imagePlaceholder } from "@/constants/image-loading";
 import {
   Stack,
   useFocusEffect,
@@ -71,17 +72,12 @@ import { useSelector } from "react-redux";
 import { useFormatTime } from "../../../hooks/useFormatTime";
 import { ltrScrollContent, ltrScroller, pickTranslation, useDirection, pinLTR } from "@/i18n";
 import * as Haptics from "expo-haptics";
-import Animated, {
-  FadeInDown,
-  LinearTransition,
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSpring,
-} from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
-const AnimatedImage = Animated.createAnimatedComponent(Image);
+// expo-image, not the RN one: only it supports the blurhash placeholder that
+// gives the header photos their blur-up while they load.
+const AnimatedImage = Animated.createAnimatedComponent(ExpoImage);
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -159,7 +155,6 @@ const ShiftCard = React.memo(function ShiftCard({
 
   return (
     <Animated.View
-      entering={FadeInDown.delay((index % 8) * 60).duration(380)}
       style={[styles.shiftCard, { flexDirection: 'row' }]}
     >
       <View style={styles.shiftIconCircle}>
@@ -211,7 +206,6 @@ const FacilityCell = React.memo(function FacilityCell({
 }) {
   return (
     <Animated.View
-      entering={FadeInDown.delay((index % 8) * 60).duration(380)}
       style={styles.facilityCell}
     >
       <View style={styles.shapeCont}>
@@ -258,16 +252,6 @@ export default function ChaletDetailScreen() {
   const reviewSheetRef = React.useRef<BottomSheetModal>(null);
   const bannerScrollRef = useRef<ScrollView>(null);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-
-  // Press-scale feedback (invisible at rest — animation only).
-  const favoriteScale = useSharedValue(1);
-  const favoriteAnimStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: favoriteScale.value }],
-  }));
-  const imageScale = useSharedValue(1);
-  const imageAnimStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: imageScale.value }],
-  }));
 
   // Fetch chalet details from the backend
   const {
@@ -511,13 +495,16 @@ export default function ChaletDetailScreen() {
   const { formatShiftTime } = useFormatTime();
 
   // Use chalet images from API or fallback
+  // Each entry keeps its blurhash beside the source so the header strip can
+  // paint that photo's own blurred stand-in while it loads.
   const images = useMemo(() => {
     if (chalet.images && chalet.images.length > 0) {
-      return chalet.images.map((img: any) => getImageSrc(img.url));
+      return chalet.images.map((img: any) => ({
+        src: getImageSrc(img.url),
+        blurhash: img.blurhash as string | undefined,
+      }));
     }
-    return [
-      getImageSrc(null), // Placeholder
-    ];
+    return [{ src: getImageSrc(null), blurhash: undefined }];
   }, [chalet.images]);
 
   const totalImages = images.length;
@@ -685,26 +672,26 @@ export default function ChaletDetailScreen() {
             }
             scrollEventThrottle={16}
           >
-            {images.map((img: string, i: number) => (
+            {images.map((img: { src: any; blurhash?: string }, i: number) => (
               <TouchableOpacity
                 key={`${img || "img"}-${i}`}
                 activeOpacity={0.9}
-                onPressIn={() => {
-                  imageScale.value = withTiming(0.97, { duration: 110 });
-                }}
-                onPressOut={() => {
-                  imageScale.value = withSpring(1, { damping: 12, stiffness: 220 });
-                }}
                 onPress={() =>
                   router.push({
                     pathname: "/(customer)/chalet-details/gallery",
-                    params: { startIndex: i },
+                    // The gallery loads the photos from the chalet id — without
+                    // it the screen opens empty. (`startIndex` was passed here
+                    // instead, and the gallery never read it.)
+                    params: { id: chaletId },
                   })
                 }
               >
                 <AnimatedImage
-                  source={typeof img === "string" ? { uri: img } : img}
-                  style={[styles.headerImage, imageAnimStyle]}
+                  source={typeof img.src === "string" ? { uri: img.src } : img.src}
+                  style={styles.headerImage}
+                  contentFit="cover"
+                  placeholder={imagePlaceholder(img.blurhash)}
+                  transition={IMAGE_TRANSITION}
                 />
               </TouchableOpacity>
             ))}
@@ -714,13 +701,7 @@ export default function ChaletDetailScreen() {
           />
 
           <AnimatedTouchable
-            style={[styles.favoriteBtn, { end: 20 }, favoriteAnimStyle]}
-            onPressIn={() => {
-              favoriteScale.value = withTiming(0.96, { duration: 110 });
-            }}
-            onPressOut={() => {
-              favoriteScale.value = withSpring(1, { damping: 12, stiffness: 220 });
-            }}
+            style={[styles.favoriteBtn, { end: 20 }]}
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
               handleToggleFavorite();
@@ -756,7 +737,7 @@ export default function ChaletDetailScreen() {
               activeTextColor="#374151"
               textStyle={{
                 fontSize: 12,
-                fontFamily: "Alexandria-Medium",
+                fontFamily: "IBMPlexSansArabic-Medium",
                 lineHeight: 20,
               }}
             />
@@ -764,10 +745,9 @@ export default function ChaletDetailScreen() {
             <View
               style={{ flexDirection: "row", gap: 6, alignItems: "center", direction: "ltr" }}
             >
-              {images.map((_: string, i: number) => (
+              {images.map((_: { src: any }, i: number) => (
                 <Animated.View
                   key={`dot-${i}`}
-                  layout={LinearTransition.duration(240)}
                   style={[styles.dot, activeImage === i && styles.activeDot]}
                 />
               ))}
@@ -1358,18 +1338,18 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   shiftName: {
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     fontSize: 15,
     color: "#1E293B",
     flexShrink: 1,
     lineHeight: 24,
   },
   shiftNameActive: {
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#035DF9",
   },
   shiftTime: {
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     fontSize: 12,
     color: "#64748B",
     flexShrink: 1,
@@ -1379,14 +1359,14 @@ const styles = StyleSheet.create({
     color: "#035DF9",
   },
   shiftPrice: {
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Bold",
     fontSize: 14,
     color: "#1E293B",
     flexShrink: 0,
     lineHeight: 22,
   },
   shiftPriceActive: {
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: "#035DF9",
   },
   titleSection: {
@@ -1398,12 +1378,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 6,
   },
-  ratingVal: { fontSize: 18, fontFamily: "LamaSans-Black", lineHeight: 26 },
-  mainTitle: { fontSize: 22, fontFamily: "LamaSans-Black", lineHeight: 32 },
+  ratingVal: { fontSize: 18, fontFamily: "IBMPlexSansArabic-Bold", lineHeight: 26 },
+  mainTitle: { fontSize: 22, fontFamily: "IBMPlexSansArabic-Bold", lineHeight: 33 },
   locationSub: {
     fontSize: 13,
     color: "#6B7280",
-    fontFamily: "LamaSans-Regular",
+    fontFamily: "IBMPlexSansArabic-Regular",
     lineHeight: 20,
   },
   sectionHeaderContainer: {
@@ -1414,7 +1394,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     marginVertical: 4,
     lineHeight: 28,
   },
@@ -1426,8 +1406,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     flexShrink: 1,
   },
-  specText: { fontSize: 13, fontFamily: "LamaSans-Bold", flexShrink: 1 },
-  viewAllText: { fontSize: 13, color: "#6B7280", fontFamily: "LamaSans-Bold" },
+  specText: { fontSize: 13, fontFamily: "IBMPlexSansArabic-Bold", flexShrink: 1 },
+  viewAllText: { fontSize: 13, color: "#6B7280", fontFamily: "IBMPlexSansArabic-Bold" },
   facilitiesHeader: {
     justifyContent: "space-between",
     alignItems: "center",
@@ -1459,7 +1439,7 @@ const styles = StyleSheet.create({
   closedChaletText: {
     flex: 1,
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#EF4444",
     lineHeight: 22,
   },
@@ -1470,12 +1450,12 @@ const styles = StyleSheet.create({
   },
   depositLabel: {
     fontSize: 11,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#6B7280",
   },
   depositValue: {
     fontSize: 11,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#035DF9",
   },
   shapeCont: {
@@ -1503,7 +1483,7 @@ const styles = StyleSheet.create({
   infoGearIcon: { position: "absolute" },
   infoLabelText: {
     fontSize: 11,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     marginTop: 8,
     textAlign: "center",
     flexWrap: "wrap",
@@ -1512,7 +1492,7 @@ const styles = StyleSheet.create({
   },
   facilityLabelText: {
     fontSize: 12,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     marginTop: 6,
     textAlign: "center",
     flexWrap: "wrap",
@@ -1521,18 +1501,18 @@ const styles = StyleSheet.create({
   },
   facilityPriceText: {
     fontSize: 10,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.primary,
     textAlign: "center",
     width: "100%",
-    lineHeight: 14,
+    lineHeight: 15,
   },
   descriptionText: {
     fontSize: 14,
     color: "#6B7280",
     lineHeight: 22,
     marginTop: 5,
-    fontFamily: "LamaSans-Regular",
+    fontFamily: "IBMPlexSansArabic-Regular",
   },
   descriptionContainer: {
     width: "100%",
@@ -1575,9 +1555,9 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 12,
   },
-  expoGoText: { color: "white", fontSize: 10, fontFamily: "LamaSans-Medium" },
+  expoGoText: { color: "white", fontSize: 10, fontFamily: "IBMPlexSansArabic-Medium" },
   mapLocLabel: { paddingVertical: 12, alignItems: "center" },
-  mapLocText: { fontSize: 16, fontFamily: "LamaSans-Black", lineHeight: 24 },
+  mapLocText: { fontSize: 16, fontFamily: "IBMPlexSansArabic-Bold", lineHeight: 24 },
   unverifiedReviewMsg: {
     padding: 20,
     backgroundColor: "#F9FAFB",
@@ -1590,7 +1570,7 @@ const styles = StyleSheet.create({
   unverifiedText: {
     color: "#9CA3AF",
     fontSize: 13,
-    fontFamily: "LamaSans-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     textAlign: "center",
   },
 
@@ -1623,7 +1603,7 @@ const styles = StyleSheet.create({
   customRatingText: {
     color: "white",
     fontSize: 16,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     lineHeight: 24,
   },
 
@@ -1646,7 +1626,7 @@ const styles = StyleSheet.create({
   },
   revRateNumMerged: {
     fontSize: 16,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#111827",
     lineHeight: 24,
   },
@@ -1659,7 +1639,7 @@ const styles = StyleSheet.create({
   },
   reviewerNameMerged: {
     fontSize: 16,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#111827",
     lineHeight: 26,
   },
@@ -1668,7 +1648,7 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     marginTop: 8,
     lineHeight: 22,
-    fontFamily: "LamaSans-Regular",
+    fontFamily: "IBMPlexSansArabic-Regular",
   },
   avatarCircleMerged: {
     width: 60,
@@ -1688,7 +1668,7 @@ const styles = StyleSheet.create({
   revTimeTextMerged: {
     fontSize: 13,
     color: "#9CA3AF",
-    fontFamily: "LamaSans-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
 
   addReviewAction: { alignItems: "center", marginVertical: 20 },
@@ -1711,16 +1691,16 @@ const styles = StyleSheet.create({
   footerTextSide: { flex: 1, minWidth: 0 },
   footerPriceBig: {
     fontSize: 18,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Bold",
     marginBottom: 4,
     flexShrink: 1,
-    lineHeight: 26,
+    lineHeight: 27,
   },
   footerMetaRow: { alignItems: "center", gap: 6, flexShrink: 1 },
   footerMetaSmall: {
     fontSize: 10,
     color: "#9CA3AF",
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     flexShrink: 1,
     lineHeight: 16,
   },
@@ -1748,13 +1728,13 @@ const styles = StyleSheet.create({
   },
   addonName: {
     fontSize: 13,
-    fontFamily: "LamaSans-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     marginBottom: 4,
   },
   addonPrice: {
     fontSize: 12,
     color: Colors.primary,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Bold",
   },
   capacityPolicyCard: {
     backgroundColor: "#F8FAFC",
@@ -1772,12 +1752,12 @@ const styles = StyleSheet.create({
   },
   capacityValue: {
     fontSize: 16,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.primary,
   },
   capacityLabel: {
     fontSize: 10,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#64748B",
     marginTop: 2,
   },
@@ -1800,7 +1780,7 @@ const styles = StyleSheet.create({
   emptyReviewsText: {
     fontSize: 14,
     color: "#64748B",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
   rulesChevronCard: {
     backgroundColor: "#F8FAFC",
@@ -1833,13 +1813,13 @@ const styles = StyleSheet.create({
   },
   rulesCardTitleText: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#111827",
     marginBottom: 4,
   },
   rulesCardSubtitleText: {
     fontSize: 11,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#64748B",
     lineHeight: 16,
   },

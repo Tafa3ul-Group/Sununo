@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Dimensions, ViewStyle } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import Animated, { FadeIn, FadeInDown, ZoomIn } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import { ThemedText } from '../themed-text';
 import { Colors, normalize, Spacing } from '@/constants/theme';
 import { PrimaryButton } from '../user/primary-button';
@@ -31,20 +31,19 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     <View style={[styles.container, style]}>
       <View style={styles.content}>
         <Animated.View
-          entering={ZoomIn.duration(360).springify().damping(14)}
           style={styles.iconContainer}
         >
           {icon || <SolarInboxLinear size={normalize.width(80)} color={Colors.text.muted} />}
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.delay(120).duration(360)}>
+        <Animated.View>
           <ThemedText style={styles.title}>
             {title || t('common.noData') || (isRTL ? 'لا توجد بيانات' : 'No Data Found')}
           </ThemedText>
         </Animated.View>
 
         {description && (
-          <Animated.View entering={FadeIn.delay(220).duration(360)}>
+          <Animated.View>
             <ThemedText style={styles.description}>
               {description}
             </ThemedText>
@@ -52,7 +51,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         )}
 
         {actionLabel && onAction && (
-          <Animated.View entering={FadeInDown.delay(320).duration(360)} style={{ width: '100%', alignItems: 'center' }}>
+          <Animated.View style={{ width: '100%', alignItems: 'center' }}>
             <PrimaryButton
               label={actionLabel}
               onPress={onAction}
@@ -88,14 +87,14 @@ const styles = StyleSheet.create({
     marginBottom: normalize.height(16) },
   title: {
     fontSize: normalize.font(15),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.text.primary,
     textAlign: 'center',
     lineHeight: normalize.font(22),
     marginBottom: normalize.height(6) },
   description: {
     fontSize: normalize.font(11),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: Colors.text.secondary,
     textAlign: 'center',
     lineHeight: normalize.font(18),

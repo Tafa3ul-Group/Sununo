@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
     marginBottom: 20 },
   title: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: '#1E293B',
     marginBottom: 12,
     textAlign: 'center' },
@@ -114,6 +114,6 @@ const styles = StyleSheet.create({
     color: '#64748B',
     textAlign: 'center',
     lineHeight: 24,
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "IBMPlexSansArabic-Regular" },
   footer: {
     gap: 12 } });

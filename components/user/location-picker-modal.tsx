@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: normalize.font(16),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: Colors.text.primary,
   },
   // Search
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 14,
-    fontFamily: 'Alexandria-Regular',
+    fontFamily: 'IBMPlexSansArabic-Regular',
     color: Colors.text.primary,
     paddingVertical: 0,
   },
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
   searchClearText: {
     fontSize: 10,
     color: '#64748B',
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
   },
   // Results Dropdown
   resultsDropdown: {
@@ -408,12 +408,12 @@ const styles = StyleSheet.create({
   },
   resultName: {
     fontSize: 14,
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'IBMPlexSansArabic-SemiBold',
     color: Colors.text.primary,
   },
   resultAddress: {
     fontSize: 11,
-    fontFamily: 'Alexandria-Regular',
+    fontFamily: 'IBMPlexSansArabic-Regular',
     color: '#94A3B8',
     marginTop: 2,
   },
@@ -473,13 +473,13 @@ const styles = StyleSheet.create({
   },
   coordBadgeLabel: {
     fontSize: 10,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: '#94A3B8',
     textTransform: 'uppercase',
   },
   coordBadgeValue: {
     fontSize: 12,
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'IBMPlexSansArabic-SemiBold',
     color: Colors.text.primary,
     flex: 1,
     writingDirection: 'ltr',

@@ -12,7 +12,7 @@ import { useDirection } from "@/i18n";
 import React, { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 interface Props {
@@ -72,7 +72,6 @@ export function PayoutConfirmView({
 
   const renderInfoRow = (label: string, value: React.ReactNode, index = 0) => (
     <Animated.View
-      entering={FadeInDown.delay((index % 8) * 60).duration(380)}
       style={[styles.infoRow, { flexDirection: "row" }]}
     >
       <ThemedText style={[styles.infoLabel, { textAlign, writingDirection: writingDir }]}>
@@ -115,7 +114,7 @@ export function PayoutConfirmView({
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Amount */}
-        <Animated.View entering={FadeInDown.duration(380)} style={styles.amountCard}>
+        <Animated.View style={styles.amountCard}>
           <ThemedText style={styles.amountLabel}>{t("payoutConfirm.amountLabel")}</ThemedText>
           <View style={[styles.amountRow, { flexDirection: "row" }]}>
             <ThemedText style={styles.amountValue}>{amount}</ThemedText>
@@ -220,24 +219,24 @@ const styles = StyleSheet.create({
   },
   amountLabel: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#64748B",
   },
   amountRow: { alignItems: "baseline", gap: 6, marginTop: 8 },
   amountValue: {
     fontSize: normalize.font(30),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.primary,
   },
   amountCurrency: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#64748B",
   },
   amountCode: {
     marginTop: 10,
     fontSize: normalize.font(11),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#94A3B8",
     writingDirection: "ltr",
   },
@@ -254,13 +253,13 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.primary,
   },
   divider: { height: 1, backgroundColor: "#F1F5F9", marginVertical: 10 },
   infoRow: { justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
-  infoLabel: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: "#1E293B" },
-  infoValue: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: "#64748B" },
+  infoLabel: { fontSize: normalize.font(14), fontFamily: "IBMPlexSansArabic-Medium", color: "#1E293B" },
+  infoValue: { fontSize: normalize.font(14), fontFamily: "IBMPlexSansArabic-Medium", color: "#64748B" },
 
   // Alert card (matches booking-success.alertCard)
   alertCard: {
@@ -278,20 +277,20 @@ const styles = StyleSheet.create({
   alertText: {
     flex: 1,
     fontSize: normalize.font(11),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#B45309",
     lineHeight: 18,
   },
   resultTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     marginBottom: 4,
   },
 
   // Actions
   prompt: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: "#1E293B",
     textAlign: "center",
     marginBottom: 12,
@@ -309,7 +308,7 @@ const styles = StyleSheet.create({
   },
   declineBtnText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: "#DC2626",
   },
 });

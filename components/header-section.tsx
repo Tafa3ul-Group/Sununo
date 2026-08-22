@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: normalize.width(64) },
   headerTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.text.primary,
     textAlign: 'center' },
   logoCircle: {
@@ -402,7 +402,7 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: normalize.font(9),
     lineHeight: normalize.font(12),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     textAlign: "center" },
   avatarCircleHome: {
     width: "82%",
@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
     marginHorizontal: Spacing.sm,
     fontSize: normalize.font(14),
     color: Colors.text.primary,
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "IBMPlexSansArabic-Regular" },
   categoriesScroll: {
     paddingHorizontal: Spacing.md,
     marginBottom: Spacing.md },
@@ -459,10 +459,10 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary },
   categoryLabel: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.text.primary,
     lineHeight: normalize.font(14),
     paddingVertical: normalize.height(1) },
   categoryLabelActive: {
     color: Colors.background,
-    fontFamily: "Alexandria-Medium" } });
+    fontFamily: "IBMPlexSansArabic-Medium" } });

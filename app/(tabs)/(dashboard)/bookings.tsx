@@ -31,7 +31,7 @@ import {
   View
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import Animated, { FadeIn, FadeInDown, FadeInRight } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import { useSelector } from 'react-redux';
 
 export default function BookingsScreen() {
@@ -48,7 +48,6 @@ export default function BookingsScreen() {
   const [rejectBooking, { isLoading: isRejectLoading }] = useRejectBookingMutation();
   const [deleteExternalBooking, { isLoading: isDeletingExternal }] = useDeleteExternalBookingMutation();
   const [cancellingBookingData] = useState<any>(null);
-
 
   const handleConfirmCancellation = async (reason: string) => {
     if (!cancellingBookingData) return;
@@ -140,8 +139,6 @@ export default function BookingsScreen() {
     return t('dashboard.bookings.records') || (isRTL ? 'السجل' : 'Records');
   };
 
-
-
   const statusMap: Record<string, string | undefined> = {
     pending_approval: 'pending_approval',
     confirmed: 'confirmed',
@@ -174,11 +171,6 @@ export default function BookingsScreen() {
   if (recentBookings.length > 0) {
     console.log('[Home] first booking:', { id: recentBookings[0].id, extName: recentBookings[0].externalCustomerName });
   }
-
-
-
-
-
 
   const formatBookingDate = (dateStr: string) => {
     if (!dateStr) return '';
@@ -294,7 +286,6 @@ export default function BookingsScreen() {
 
     return (
       <Animated.View
-        entering={FadeInDown.delay(index * 30).duration(300).springify().damping(15)}
         key={item.id}
       >
         <TouchableOpacity
@@ -331,7 +322,7 @@ export default function BookingsScreen() {
                   borderWidth: 1,
                   borderColor: statusInfo.color + '30',
                 }}>
-                  <Text style={{ color: statusInfo.color, fontSize: normalize.font(10), fontFamily: 'Alexandria-SemiBold' }}>
+                  <Text style={{ color: statusInfo.color, fontSize: normalize.font(10), fontFamily: 'IBMPlexSansArabic-SemiBold' }}>
                     {statusInfo.label}
                   </Text>
                 </View>
@@ -354,7 +345,7 @@ export default function BookingsScreen() {
             {/* صافي ربح صاحب الشاليه بعد خصم عمولة المنصة */}
             {!bIsExternal && Number(item.providerEarnings) > 0 && (
               <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: normalize.height(4) }}>
-                <Text style={{ fontSize: normalize.font(11), color: '#16A34A', fontFamily: 'Alexandria-SemiBold' }}>
+                <Text style={{ fontSize: normalize.font(11), color: '#16A34A', fontFamily: 'IBMPlexSansArabic-SemiBold' }}>
                   {isRTL
                     ? `صافي ربحك: ${(Number(item.providerEarnings) || 0).toLocaleString()} د.ع`
                     : `Your profit: ${(Number(item.providerEarnings) || 0).toLocaleString()} IQD`}
@@ -371,19 +362,19 @@ export default function BookingsScreen() {
 
             {/* صف 4: عدد الأشخاص + تفاصيل العربون */}
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 5 }}>
-              <Text style={{ fontSize: normalize.font(11), color: '#64748B', fontFamily: 'Alexandria-Medium' }}>
+              <Text style={{ fontSize: normalize.font(11), color: '#64748B', fontFamily: 'IBMPlexSansArabic-Medium' }}>
                 {isRTL ? `${item.guestsCount || item.guestCount || 0} أشخاص` : `${item.guestsCount || item.guestCount || 0} guests`}
               </Text>
               {!bIsExternal && item.paymentModel === 'deposit' && (
                 <>
                   <Text style={styles.modernBookingDot}>•</Text>
-                  <Text style={{ fontSize: normalize.font(11), color: '#F97316', fontFamily: 'Alexandria-Medium', textAlign }}>
+                  <Text style={{ fontSize: normalize.font(11), color: '#F97316', fontFamily: 'IBMPlexSansArabic-Medium', textAlign }}>
                     {isRTL ? `عربون: ${(Number(item.depositAmount) || 0).toLocaleString()} د.ع` : `Deposit: ${(Number(item.depositAmount) || 0).toLocaleString()} IQD`}
                   </Text>
                   {Number(item.remainingAmount) > 0 && (
                     <>
                       <Text style={styles.modernBookingDot}>•</Text>
-                      <Text style={{ fontSize: normalize.font(11), color: '#035DF9', fontFamily: 'Alexandria-Medium', textAlign }}>
+                      <Text style={{ fontSize: normalize.font(11), color: '#035DF9', fontFamily: 'IBMPlexSansArabic-Medium', textAlign }}>
                         {isRTL ? `متبقي: ${(Number(item.remainingAmount) || 0).toLocaleString()} د.ع` : `Rem: ${(Number(item.remainingAmount) || 0).toLocaleString()} IQD`}
                       </Text>
                     </>
@@ -429,7 +420,6 @@ export default function BookingsScreen() {
             <View style={styles.fixedHeaderArea}>
               {/* Filter Bar */}
               <Animated.View
-                entering={FadeInRight.delay(100).duration(400)}
                 style={styles.filterWrapper}
               >
                 <ScrollView
@@ -491,7 +481,7 @@ export default function BookingsScreen() {
                     <ActivityIndicator size="large" color={Colors.primary} />
                   </View>
                 ) : !isBookingsFetching && recentBookings.length === 0 ? (
-                  <Animated.View entering={FadeIn.duration(300)} style={styles.noBookings}>
+                  <Animated.View style={styles.noBookings}>
                     <Text style={styles.noBookingsText}>
                       {t('dashboard.noBookings') || (isRTL ? 'لا توجد حجوزات حالياً' : 'No bookings found')}
                     </Text>
@@ -515,7 +505,6 @@ export default function BookingsScreen() {
             />
           </View>
         </View>
-
 
         <BookingCancellationSheet
           ref={cancelSheetRef}
@@ -621,7 +610,7 @@ const styles = StyleSheet.create({
   walletLabel: {
     color: 'rgba(255,255,255,0.65)',
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     marginBottom: normalize.height(6),
     letterSpacing: normalize.width(0.3),
     textTransform: 'uppercase',
@@ -633,14 +622,14 @@ const styles = StyleSheet.create({
   walletValue: {
     color: Colors.white,
     fontSize: normalize.font(32),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     letterSpacing: normalize.width(-0.5),
     lineHeight: normalize.font(38)
   },
   walletCurrency: {
     color: 'rgba(255,255,255,0.5)',
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     lineHeight: normalize.font(20)
   },
   eyeButton: {
@@ -666,12 +655,10 @@ const styles = StyleSheet.create({
   },
   walletActionText: {
     color: Colors.primary,
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     fontSize: normalize.font(13),
     lineHeight: normalize.font(18)
   },
-
-
 
   // Booking Cards
   bookingCard: {
@@ -693,7 +680,7 @@ const styles = StyleSheet.create({
   },
   avatarLetter: {
     fontSize: normalize.font(18),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     lineHeight: normalize.font(24)
   },
   bookingInfo: {
@@ -701,7 +688,7 @@ const styles = StyleSheet.create({
   },
   bookingName: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.text.primary,
     marginBottom: normalize.height(1),
     lineHeight: normalize.font(20)
@@ -709,19 +696,19 @@ const styles = StyleSheet.create({
   bookingChalet: {
     fontSize: normalize.font(11),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     lineHeight: normalize.font(16)
   },
   bookingDate: {
     fontSize: normalize.font(10),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     marginTop: normalize.height(2),
     lineHeight: normalize.font(14)
   },
   bookingAmount: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.text.primary,
     marginBottom: normalize.height(4),
     lineHeight: normalize.font(20)
@@ -729,7 +716,7 @@ const styles = StyleSheet.create({
   bookingCurrency: {
     fontSize: normalize.font(10),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     lineHeight: normalize.font(14)
   },
   bookingStatusBadge: {
@@ -739,7 +726,7 @@ const styles = StyleSheet.create({
   },
   bookingStatusText: {
     fontSize: normalize.font(9),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     textTransform: 'uppercase',
     lineHeight: normalize.font(13)
   },
@@ -758,14 +745,14 @@ const styles = StyleSheet.create({
   },
   bookingsTitle: {
     fontSize: normalize.font(17),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.text.primary,
     lineHeight: normalize.font(23)
   },
   bookingsViewAll: {
     fontSize: normalize.font(14),
     color: Colors.text.primary,
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     textDecorationLine: 'underline',
     lineHeight: normalize.font(20)
   },
@@ -786,7 +773,7 @@ const styles = StyleSheet.create({
   },
   calendarTitle: {
     fontSize: normalize.font(18),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.text.primary,
     lineHeight: normalize.font(24)
   },
@@ -852,7 +839,7 @@ const styles = StyleSheet.create({
   },
   modernBookingName: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.text.primary,
     marginBottom: normalize.height(1),
     lineHeight: normalize.font(22)
@@ -860,20 +847,20 @@ const styles = StyleSheet.create({
   modernBookingShift: {
     fontSize: normalize.font(12),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     lineHeight: normalize.font(16)
   },
   modernBookingChalet: {
     fontSize: normalize.font(13),
     color: Colors.primary,
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     marginBottom: normalize.height(1),
     lineHeight: normalize.font(18)
   },
   modernBookingDate: {
     fontSize: normalize.font(11),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     lineHeight: normalize.font(16)
   },
   modernBookingDot: {
@@ -886,7 +873,7 @@ const styles = StyleSheet.create({
   },
   modernBookingPrice: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.text.primary,
     lineHeight: normalize.font(20)
   },
@@ -905,10 +892,9 @@ const styles = StyleSheet.create({
   noBookingsText: {
     color: Colors.text.muted,
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     lineHeight: normalize.font(20)
   },
-
 
   // Empty State
   emptyContainer: {
@@ -928,14 +914,14 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.text.primary,
     lineHeight: normalize.font(22)
   },
   emptySubtitle: {
     fontSize: normalize.font(12),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     textAlign: 'center',
     paddingHorizontal: normalize.width(40),
     lineHeight: normalize.font(18)

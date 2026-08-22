@@ -30,7 +30,7 @@ import {
 import {
     useSafeAreaInsets
 } from "react-native-safe-area-context";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 import { pickTranslation, useDirection } from "@/i18n";
 
 // Fixed per-row height for FlatList getItemLayout. The card has a fixed height
@@ -92,6 +92,7 @@ export default function SearchScreen() {
           discount: chalet.discount,
           rating: chalet.rating ?? chalet.averageRating ?? 0,
           image: chalet.images?.[0]?.url ?? chalet.images?.[0],
+          blurhash: chalet.images?.[0]?.blurhash,
         })),
     [featuredRaw, isArabic],
   );
@@ -107,9 +108,12 @@ export default function SearchScreen() {
       // leaves it undefined when no campaign is running.
       discount: chalet.discount,
       rating: chalet.averageRating || chalet.rating || 0,
+      // The few amenities the card lists ("يحتوي على: ..."), trimmed server-side.
+      features: chalet.features,
       image:
         chalet.images?.[0]?.url ||
         "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500&auto=format&fit=crop",
+      blurhash: chalet.images?.[0]?.blurhash,
     }));
   }, [chaletsResponse, isArabic]);
 
@@ -117,7 +121,6 @@ export default function SearchScreen() {
     ({ item, index }: { item: any; index: number }) => (
       <Animated.View
         style={styles.cardWrapper}
-        entering={FadeInDown.delay((index % 8) * 60).duration(380)}
       >
         <HorizontalCard
           chalet={item}
@@ -290,7 +293,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     color: Colors.text.primary,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
   },
   clearBtn: {
     padding: 6,
@@ -323,7 +326,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.text.muted,
     textAlign: "center",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     lineHeight: 24,
   },
 });

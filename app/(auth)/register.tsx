@@ -843,7 +843,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10 },
   headerTitle: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#1E293B" },
   scrollContent: {
     flexGrow: 1,
@@ -862,7 +862,7 @@ const styles = StyleSheet.create({
   stepTitle: {
     width: "100%",
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#1E293B",
     marginBottom: 8,
     lineHeight: 30,
@@ -870,7 +870,7 @@ const styles = StyleSheet.create({
   // Task 2.4: stepSubtitle marginBottom changed from 30 to 20
   stepSubtitle: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#64748B",
     marginBottom: 20 },
   typeCard: {
@@ -896,12 +896,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12 },
   cardTitle: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#1E293B",
     marginBottom: 4 },
   cardDesc: {
     fontSize: 8,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#64748B" },
   // Task 2.4: inputGroup marginBottom changed from normalize.height(20) to 16
   inputGroup: {
@@ -909,7 +909,7 @@ const styles = StyleSheet.create({
   label: {
     width: "100%",
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#1E293B",
     marginBottom: normalize.height(8),
     lineHeight: normalize.font(22),
@@ -924,7 +924,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: normalize.height(10),
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#1E293B" },
   inputError: {
     borderColor: "#EF4444" },
@@ -945,7 +945,7 @@ const styles = StyleSheet.create({
   payInput: {
     flex: 1,
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#1E293B",
     minHeight: normalize.height(52),
     paddingVertical: normalize.height(10) },
@@ -953,12 +953,12 @@ const styles = StyleSheet.create({
     width: "100%",
     color: "#EF4444",
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     marginTop: 6 },
   paymentHint: {
     width: "100%",
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#64748B",
     lineHeight: normalize.font(20),
     marginBottom: 16 },
@@ -973,14 +973,14 @@ const styles = StyleSheet.create({
   gateTitle: {
     width: "100%",
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#1E293B",
     lineHeight: normalize.font(24),
     marginBottom: 6 },
   gateBody: {
     width: "100%",
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#64748B",
     lineHeight: normalize.font(22) },
   acceptedBanner: {
@@ -996,7 +996,7 @@ const styles = StyleSheet.create({
   acceptedText: {
     flex: 1,
     fontSize: normalize.font(11.5),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#15803D",
     lineHeight: normalize.font(20) },
   consentRow: {
@@ -1021,17 +1021,17 @@ const styles = StyleSheet.create({
   checkboxTick: {
     color: "#FFFFFF",
     fontSize: 12,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     lineHeight: 18 },
   consentText: {
     flex: 1,
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#475569",
     lineHeight: normalize.font(22) },
   linkText: {
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#0061FE",
     textDecorationLine: "underline" },
   // Task 2.4: mainBtn marginTop changed from normalize.height(20) to 16

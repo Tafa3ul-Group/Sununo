@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
 
   questionTitle: {
     fontSize: normalize(16),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#111827" },
   starsRow: {
     flexDirection: "row",
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     fontSize: normalize(16),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#111827",
     textAlignVertical: "top" },
   actionsRow: {
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   sendBtnText: {
     color: "white",
     fontSize: normalize(17),
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "IBMPlexSansArabic-SemiBold" },
   cancelBtn: {
     backgroundColor: "white",
     borderWidth: normalize(1),
@@ -279,4 +279,4 @@ const styles = StyleSheet.create({
   cancelBtnText: {
     color: "#035DF9",
     fontSize: normalize(17),
-    fontFamily: "Alexandria-Medium" } });
+    fontFamily: "IBMPlexSansArabic-SemiBold" } });

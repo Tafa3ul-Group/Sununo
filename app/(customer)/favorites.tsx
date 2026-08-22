@@ -10,13 +10,12 @@ import { HorizontalCard } from '@/components/user/horizontal-card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { HorizontalCardSkeleton } from '@/components/ui/skeleton-loader';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import { HeaderSection } from '@/components/header-section';
 import { useGetCustomerFavoritesQuery, useToggleFavoriteMutation } from '@/store/api/customerApiSlice';
 import { getImageSrc } from '@/hooks/useImageSrc';
 import { getStartingPrice } from '@/utils/format';
 import { pickTranslation, useDirection } from '@/i18n';
-
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -57,13 +56,15 @@ export default function FavoritesScreen() {
         // leaves it undefined when no campaign is running.
         discount: chalet.discount,
         rating: chalet.averageRating?.toFixed(1) || '0',
+        // The few amenities the card lists ("يحتوي على: ...").
+        features: chalet.features ?? chalet.chaletFeatures,
         image: getImageSrc(chalet.images?.[0]?.url),
         color: '#22C55E' };
     });
   }, [favoritesResponse, isRTL]);
 
   return (
-    <SafeAreaView style={[styles.container]}>
+    <SafeAreaView style={styles.container}>
       {/* Header matching the design */}
       <HeaderSection
         title={t('headers.favorites')}
@@ -97,7 +98,6 @@ export default function FavoritesScreen() {
           favorites.map((chalet: typeof favorites[number], index: number) => (
             <Animated.View
               key={chalet.id}
-              entering={FadeInDown.delay((index % 8) * 60).duration(380)}
               style={styles.cardWrapper}
             >
                  <HorizontalCard
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40 },
   emptyTitle: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: '#1E293B',
     marginTop: 20 },
   emptySubtitle: {
@@ -153,5 +153,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 10,
     lineHeight: 20,
-    fontFamily: "Alexandria-Medium" 
+    fontFamily: "IBMPlexSansArabic-Regular" 
   } });

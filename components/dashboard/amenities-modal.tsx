@@ -454,7 +454,7 @@ export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
 const styles = StyleSheet.create({
   swiperCategoryTitle: {
     fontSize: 20,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: Colors.text.primary,
     marginBottom: 20,
     marginTop: 10,
@@ -499,7 +499,7 @@ const styles = StyleSheet.create({
   swiperCheckmark: {
     color: '#FFFFFF',
     fontSize: 12,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     marginTop: -1,
   },
   swiperCheckboxInactive: {
@@ -517,7 +517,7 @@ const styles = StyleSheet.create({
   },
   swiperFeatureName: {
     fontSize: 14,
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'IBMPlexSansArabic-SemiBold',
     color: Colors.text.primary,
     flex: 1,
   },
@@ -542,7 +542,7 @@ const styles = StyleSheet.create({
   },
   swiperSectionTitle: {
     fontSize: 14,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: Colors.text.primary,
     marginBottom: 12,
     marginTop: 8,
@@ -595,7 +595,7 @@ const styles = StyleSheet.create({
   swiperImageDeleteText: {
     color: '#FFFFFF',
     fontSize: 14,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     marginTop: -2.5,
   },
   swiperBottomContainer: {
@@ -646,11 +646,11 @@ const styles = StyleSheet.create({
   swiperBackButtonText: {
     color: Colors.text.primary,
     fontSize: 14,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
   },
   swiperActionButtonText: {
     color: '#FFFFFF',
     fontSize: 14,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
   },
 });

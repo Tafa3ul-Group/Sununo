@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
   },
   flatHeaderTitle: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.text.primary,
     textAlign: 'center',
   },

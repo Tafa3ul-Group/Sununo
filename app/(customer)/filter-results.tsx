@@ -35,7 +35,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import { ltrScrollContent, ltrScroller, pickTranslation, useDirection, useRtlListOrder } from "@/i18n";
@@ -132,6 +132,8 @@ export default function FilterResultsScreen() {
         discount: chalet.discount,
         image: getImageSrc(chalet.images?.[0]?.url || chalet.image || ""),
         images: chalet.images || [],
+        // The few amenities the card lists ("يحتوي على: ..."), trimmed server-side.
+        features: chalet.features,
         rating: chalet.averageRating || chalet.rating || 0,
         reviewsCount: chalet.reviewsCount || chalet.reviewCount || 0,
         isFavorite: favoriteIds.includes(chalet.id),
@@ -272,7 +274,7 @@ export default function FilterResultsScreen() {
 
   // Render chalet item card
   const renderChaletCard = ({ item, index }: { item: any; index: number }) => (
-    <Animated.View entering={FadeInDown.delay((index % 8) * 60).duration(380)}>
+    <Animated.View>
       <HorizontalCard
         chalet={item}
         onPress={() => {
@@ -401,7 +403,7 @@ const styles = StyleSheet.create({
   },
   pillText: {
     fontSize: 12,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.primary,
   },
   pillClose: {
@@ -456,7 +458,7 @@ const styles = StyleSheet.create({
   },
   priceText: {
     fontSize: 12,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: "white",
   },
   cardDetails: {
@@ -471,7 +473,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 16,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: "#111827",
     flex: 1,
   },
@@ -482,7 +484,7 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: 12,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#374151",
   },
   locationContainer: {
@@ -492,7 +494,7 @@ const styles = StyleSheet.create({
   },
   locationText: {
     fontSize: 13,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#6B7280",
     flex: 1,
   },
@@ -501,14 +503,14 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 18,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: "#111827",
     textAlign: "center",
     marginBottom: 10,
   },
   emptyDesc: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#6B7280",
     textAlign: "center",
     lineHeight: 22,
@@ -523,7 +525,7 @@ const styles = StyleSheet.create({
   },
   resetButtonText: {
     fontSize: 14,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: "white",
   },
 });

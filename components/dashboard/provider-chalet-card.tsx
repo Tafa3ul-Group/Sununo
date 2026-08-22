@@ -141,13 +141,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#10B981' },
   statusText: {
     fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: '#111827' },
   content: {
     padding: 14 },
   title: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: '#111827',
     marginBottom: 4 },
   locationRow: {
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(8),
     color: Colors.text.secondary,
     flex: 1,
-   fontFamily: "Alexandria-Medium" },
+   fontFamily: "IBMPlexSansArabic-Medium" },
   actionGrid: {
     gap: 8 },
   actionBtn: {
@@ -174,11 +174,11 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary + '20' },
   editBtnText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.primary },
   revenueBtn: {
     backgroundColor: Colors.primary },
   revenueBtnText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: '#FFFFFF' } });

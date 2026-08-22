@@ -838,7 +838,7 @@ export default function ChaletDetailsScreen() {
                 </Text>
                 {!isActive && (
                   <View style={{ backgroundColor: '#F3F4F6', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
-                    <Text style={{ fontSize: normalize.font(9), fontFamily: 'Alexandria-Bold', color: '#6B7280' }}>
+                    <Text style={{ fontSize: normalize.font(9), fontFamily: 'IBMPlexSansArabic-Bold', color: '#6B7280' }}>
                       {isRTL ? 'مخفي' : 'Hidden'}
                     </Text>
                   </View>
@@ -1198,9 +1198,9 @@ export default function ChaletDetailsScreen() {
                         justifyContent: 'center', alignItems: 'center',
                       }}
                     >
-                      <Text style={{ fontSize: 18, fontWeight: '700', color: dailyHours <= 1 ? '#CBD5E1' : Colors.primary }}>−</Text>
+                      <Text style={{ fontSize: 18, fontFamily: 'IBMPlexSansArabic-Bold', color: dailyHours <= 1 ? '#CBD5E1' : Colors.primary }}>−</Text>
                     </TouchableOpacity>
-                    <Text style={{ fontSize: normalize.font(16), fontFamily: 'Alexandria-Bold', color: '#1E293B', minWidth: 24, textAlign: 'center' }}>
+                    <Text style={{ fontSize: normalize.font(16), fontFamily: 'IBMPlexSansArabic-Bold', color: '#1E293B', minWidth: 24, textAlign: 'center' }}>
                       {dailyHours}
                     </Text>
                     <TouchableOpacity
@@ -1212,7 +1212,7 @@ export default function ChaletDetailsScreen() {
                         justifyContent: 'center', alignItems: 'center',
                       }}
                     >
-                      <Text style={{ fontSize: 18, fontWeight: '700', color: dailyHours >= 5 ? '#CBD5E1' : Colors.primary }}>+</Text>
+                      <Text style={{ fontSize: 18, fontFamily: 'IBMPlexSansArabic-Bold', color: dailyHours >= 5 ? '#CBD5E1' : Colors.primary }}>+</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -1336,7 +1336,6 @@ export default function ChaletDetailsScreen() {
         </View>
       </ScrollView>
 
-
       {/* ─── Address & City Modal ─── */}
       <BottomSheetModal
         ref={addressModalRef}
@@ -1381,7 +1380,7 @@ export default function ChaletDetailsScreen() {
               activeOpacity={0.7}
               onPress={() => citySheetRef.current?.present()}
             >
-              <Text style={{ fontSize: normalize.font(13), fontFamily: 'Alexandria-Medium', color: basicForm.cityName ? Colors.text.primary : '#C0C7D0', flex: 1, textAlign }}>
+              <Text style={{ fontSize: normalize.font(13), fontFamily: 'IBMPlexSansArabic-Medium', color: basicForm.cityName ? Colors.text.primary : '#C0C7D0', flex: 1, textAlign }}>
                 {basicForm.cityName || (isRTL ? 'اختر المدينة' : 'Select City')}
               </Text>
               <SolarMapPointBold size={16} color={basicForm.cityName ? Colors.primary : '#94A3B8'} />
@@ -1546,7 +1545,7 @@ export default function ChaletDetailsScreen() {
               <View style={{ flex: 1 }}>
                 <Text style={{
                   fontSize: normalize.font(11.5),
-                  fontFamily: 'Alexandria-Medium',
+                  fontFamily: 'IBMPlexSansArabic-Medium',
                   color: isDepositInvalid ? '#991B1B' : '#475569',
                   textAlign,
                   lineHeight: 17
@@ -1721,10 +1720,10 @@ export default function ChaletDetailsScreen() {
               <SolarNotebookBold size={24} color={Colors.white} />
             </View>
             <View style={{ flex: 1, alignItems: flexStart }}>
-              <Text style={{ fontSize: 18, fontFamily: 'Alexandria-Bold', color: '#0F172A', textAlign }}>
+              <Text style={{ fontSize: 18, fontFamily: 'IBMPlexSansArabic-Bold', color: '#0F172A', textAlign }}>
                 {isRTL ? 'الشروط والقوانين' : 'Rules & Policies'}
               </Text>
-              <Text style={{ fontSize: 12, fontFamily: 'Alexandria-Regular', color: '#94A3B8', marginTop: 2, textAlign }}>
+              <Text style={{ fontSize: 12, fontFamily: 'IBMPlexSansArabic-Regular', color: '#94A3B8', marginTop: 2, textAlign }}>
                 {isRTL ? 'حدّد شروط الإقامة التي تظهر للعملاء' : 'Set the stay rules shown to customers'}
               </Text>
             </View>
@@ -1764,7 +1763,7 @@ export default function ChaletDetailsScreen() {
           {/* Sticky footer */}
           <View style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 28, backgroundColor: '#FFFFFF', borderTopWidth: 1, borderTopColor: '#F1F5F9' }}>
             <TouchableOpacity onPress={handleSaveRules} activeOpacity={0.85} disabled={isUpdatingRules} style={{ height: 52, borderRadius: 26, backgroundColor: Colors.primary, justifyContent: 'center', alignItems: 'center', opacity: isUpdatingRules ? 0.7 : 1 }}>
-              {isUpdatingRules ? <ActivityIndicator color="#FFF" /> : <Text style={{ color: '#FFF', fontSize: 15, fontFamily: 'Alexandria-Bold' }}>{isRTL ? 'حفظ الشروط' : 'Save Rules'}</Text>}
+              {isUpdatingRules ? <ActivityIndicator color="#FFF" /> : <Text style={{ color: '#FFF', fontSize: 15, fontFamily: 'IBMPlexSansArabic-Bold' }}>{isRTL ? 'حفظ الشروط' : 'Save Rules'}</Text>}
             </TouchableOpacity>
           </View>
         </View>
@@ -1833,7 +1832,6 @@ export default function ChaletDetailsScreen() {
       />
     </View>
 
-
   );
 }
 
@@ -1861,7 +1859,7 @@ const styles = StyleSheet.create({
   },
   flatHeaderTitle: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.text.primary,
   },
   flatDeleteButton: {
@@ -1931,7 +1929,7 @@ const styles = StyleSheet.create({
   },
   profileChaletName: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: '#374151',
   },
   profileLocationRow: {
@@ -1941,7 +1939,7 @@ const styles = StyleSheet.create({
   },
   profileLocationText: {
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: '#64748B',
     flexShrink: 1,
   },
@@ -1963,7 +1961,7 @@ const styles = StyleSheet.create({
   },
   approvalTextMini: {
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
   },
   ratingBadgeMini: {
     flexDirection: 'row',
@@ -1976,14 +1974,14 @@ const styles = StyleSheet.create({
   },
   ratingTextMini: {
     fontSize: normalize.font(10),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: '#D97706',
   },
 
   // 2. Settings Group Card Styles
   settingsGroupTitle: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.text.muted,
     marginTop: 10,
     marginBottom: 4,
@@ -2010,17 +2008,17 @@ const styles = StyleSheet.create({
   },
   menuLabelText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: '#374151',
   },
   menuValueText: {
     fontSize: normalize.font(11),
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: Colors.text.muted,
   },
   locationFieldInput: {
     fontSize: normalize.font(12),
-    fontFamily: 'Alexandria-Regular',
+    fontFamily: 'IBMPlexSansArabic-Regular',
     color: Colors.text.primary,
     paddingVertical: 2,
     paddingHorizontal: 0,
@@ -2081,12 +2079,12 @@ const styles = StyleSheet.create({
   },
   statusToggleTitle: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.text.primary,
   },
   statusToggleDesc: {
     fontSize: normalize.font(11),
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: Colors.text.muted,
     lineHeight: 16,
   },
@@ -2102,12 +2100,12 @@ const styles = StyleSheet.create({
   },
   warningNoticeTitle: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: '#B45309',
   },
   warningNoticeText: {
     fontSize: normalize.font(11),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: '#D97706',
     lineHeight: 18,
   },
@@ -2130,17 +2128,17 @@ const styles = StyleSheet.create({
   },
   perfStatValue: {
     fontSize: normalize.font(15),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.text.primary,
   },
   perfCurrency: {
     fontSize: normalize.font(10),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.primary,
   },
   perfStatLabel: {
     fontSize: normalize.font(10),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.text.muted,
   },
   perfStatDivider: {
@@ -2171,12 +2169,12 @@ const styles = StyleSheet.create({
   },
   readinessTitleNew: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.text.primary,
   },
   readinessSubtitleNew: {
     fontSize: normalize.font(10),
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: Colors.text.muted,
     lineHeight: 14,
   },
@@ -2188,7 +2186,7 @@ const styles = StyleSheet.create({
   },
   readinessScoreTextNew: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.primary,
   },
   progressBarBgNew: {
@@ -2224,12 +2222,12 @@ const styles = StyleSheet.create({
   },
   readinessPillTextNew: {
     fontSize: normalize.font(10),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: '#64748B',
   },
   readinessPillTextDoneNew: {
     color: '#10B981',
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
   },
   readinessPillTodoAction: {
     flexDirection: 'row',
@@ -2244,7 +2242,7 @@ const styles = StyleSheet.create({
   },
   readinessPillTextTodoAction: {
     fontSize: normalize.font(11),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: '#DC2626',
   },
   aboutPreviewCard: {
@@ -2257,12 +2255,12 @@ const styles = StyleSheet.create({
   },
   aboutPreviewTitle: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.text.primary,
   },
   aboutPreviewText: {
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: Colors.text.muted,
     lineHeight: 20,
   },
@@ -2275,7 +2273,7 @@ const styles = StyleSheet.create({
   },
   basicFormSectionTitle: {
     fontSize: normalize.font(13),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: Colors.text.muted,
     marginBottom: 8,
     paddingHorizontal: 4,
@@ -2289,14 +2287,14 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: normalize.font(20),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.text.primary,
     marginBottom: 24,
     textAlign: 'center'
   },
   modalSubTitle: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.text.primary,
     marginBottom: 12
   },
@@ -2305,7 +2303,7 @@ const styles = StyleSheet.create({
   },
   modalLabel: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.text.muted,
     marginBottom: 8
   },
@@ -2317,7 +2315,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E2E8F0',
     fontSize: normalize.font(15),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: Colors.text.primary
   },
   modalTextArea: {
@@ -2340,7 +2338,7 @@ const styles = StyleSheet.create({
   },
   capacityLabelInline: {
     fontSize: 14,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.text.primary,
     flex: 1,
     marginHorizontal: 10
@@ -2370,7 +2368,7 @@ const styles = StyleSheet.create({
   },
   amenityName: {
     fontSize: 11,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.text.primary,
     textAlign: 'center'
   },
@@ -2431,7 +2429,7 @@ const styles = StyleSheet.create({
   },
   addPhotosText: {
     fontSize: 12,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.text.muted,
     marginTop: 4
   },
@@ -2442,7 +2440,7 @@ const styles = StyleSheet.create({
   },
   cityPickerText: {
     fontSize: 16,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.text.primary
   },
   managementList: {
@@ -2457,7 +2455,7 @@ const styles = StyleSheet.create({
   },
   modalSectionHeading: {
     fontSize: 16,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: '#1F2937',
     marginTop: 15,
     marginBottom: 10,
@@ -2474,7 +2472,7 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
     padding: 14,
     fontSize: 14,
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-Medium',
     color: '#1F2937',
     minHeight: 100,
     textAlignVertical: 'top'
@@ -2502,7 +2500,7 @@ const styles = StyleSheet.create({
   },
   modalRuleNumberText: {
     fontSize: 12,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: '#EF4444'
   },
   modalRuleText: {
@@ -2511,13 +2509,13 @@ const styles = StyleSheet.create({
   },
   modalRuleTitle: {
     fontSize: 13,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: '#111827',
     marginBottom: 2,
   },
   modalRuleDesc: {
     fontSize: 11,
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-Medium',
     color: '#4B5563',
   },
   modalRuleDelete: {
@@ -2530,13 +2528,13 @@ const styles = StyleSheet.create({
   modalNoRulesText: {
     fontSize: 12,
     color: '#6B7280',
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-Medium',
     textAlign: 'center',
     marginVertical: 12
   },
   modalRuleSubTitle: {
     fontSize: 14,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: '#374151',
     marginBottom: 12,
   },
@@ -2552,7 +2550,7 @@ const styles = StyleSheet.create({
   modalAddRuleBtnText: {
     color: '#fff',
     fontSize: 14,
-    fontFamily: 'Alexandria-Bold'
+    fontFamily: 'IBMPlexSansArabic-Bold'
   },
   modalHeaderRow: {
     marginBottom: 8,
@@ -2567,7 +2565,7 @@ const styles = StyleSheet.create({
   },
   editCardTitle: {
     fontSize: 14,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: Colors.primary,
     marginBottom: 12,
   },
@@ -2595,7 +2593,7 @@ const styles = StyleSheet.create({
   },
   editActionText: {
     fontSize: 12,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: '#fff',
   },
   ruleCardHeader: {
@@ -2623,7 +2621,7 @@ const styles = StyleSheet.create({
   },
   langBadgeText: {
     fontSize: 10,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: Colors.primary,
   },
   langBlockDivider: {
@@ -2685,7 +2683,7 @@ const styles = StyleSheet.create({
   },
   locationEditText: {
     fontSize: normalize.font(11),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: 'white',
   },
   locationInfoBar: {
@@ -2702,12 +2700,12 @@ const styles = StyleSheet.create({
   },
   locationAddressText: {
     fontSize: normalize.font(13),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: '#374151',
   },
   locationCoordsText: {
     fontSize: normalize.font(10),
-    fontFamily: 'Alexandria-Regular',
+    fontFamily: 'IBMPlexSansArabic-Regular',
     color: '#94A3B8',
     marginTop: 2,
   },
@@ -2720,13 +2718,13 @@ const styles = StyleSheet.create({
   },
   locationEmptyTitle: {
     fontSize: normalize.font(14),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: '#374151',
     marginTop: 8,
   },
   locationEmptySubtitle: {
     fontSize: normalize.font(11),
-    fontFamily: 'Alexandria-Regular',
+    fontFamily: 'IBMPlexSansArabic-Regular',
     color: '#94A3B8',
     textAlign: 'center',
   },
@@ -2742,7 +2740,7 @@ const styles = StyleSheet.create({
   },
   locationSetButtonText: {
     fontSize: normalize.font(12),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: 'white',
   },
   locationTextInputsCard: {
@@ -2754,7 +2752,7 @@ const styles = StyleSheet.create({
   },
   locationInputLabel: {
     fontSize: normalize.font(11),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: '#6B7280',
     marginBottom: 6,
   },
@@ -2766,7 +2764,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: normalize.font(13),
-    fontFamily: 'Alexandria-Regular',
+    fontFamily: 'IBMPlexSansArabic-Regular',
     color: Colors.text.primary,
   },
   locationCityPicker: {
@@ -2783,7 +2781,7 @@ const styles = StyleSheet.create({
   locationCityText: {
     flex: 1,
     fontSize: normalize.font(13),
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-Medium',
   },
   locationDetailsCard: {
     backgroundColor: '#FFFFFF',
@@ -2798,7 +2796,7 @@ const styles = StyleSheet.create({
   },
   locationDetailLabel: {
     fontSize: normalize.font(12),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: '#6B7280',
     paddingHorizontal: 4,
   },
@@ -2810,7 +2808,7 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
     paddingHorizontal: 14,
     fontSize: normalize.font(13),
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-Regular',
     color: Colors.text.primary,
   },
   deadlineStepper: {
@@ -2838,7 +2836,7 @@ const styles = StyleSheet.create({
   },
   deadlineStepSign: {
     fontSize: normalize.font(20),
-    fontWeight: '700',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: Colors.primary,
     lineHeight: normalize.font(24),
   },
@@ -2847,12 +2845,12 @@ const styles = StyleSheet.create({
   },
   deadlineValueText: {
     fontSize: normalize.font(14),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: '#1E293B',
   },
   deadlineStepHint: {
     fontSize: normalize.font(9),
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-Regular',
     color: '#94A3B8',
     marginTop: 2,
   },
@@ -2866,12 +2864,12 @@ const styles = StyleSheet.create({
   },
   bookingDurationNoteTitle: {
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: '#0369A1',
   },
   bookingDurationNoteText: {
     fontSize: normalize.font(10),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: '#0284C7',
     lineHeight: 16,
   },

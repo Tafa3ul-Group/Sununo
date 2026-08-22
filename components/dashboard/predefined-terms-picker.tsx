@@ -98,7 +98,7 @@ export function PredefinedTermsPicker({
       {/* Section header */}
       <View style={{ alignItems: 'flex-start', marginBottom: 12 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <Text style={{ fontSize: 15, fontFamily: 'Alexandria-Bold', color: '#0F172A', textAlign }}>
+          <Text style={{ fontSize: 15, fontFamily: 'IBMPlexSansArabic-Bold', color: '#0F172A', textAlign }}>
             {isRTL ? 'الشروط الجاهزة' : 'Ready-made Rules'}
           </Text>
           {selectedCount > 0 && (
@@ -110,13 +110,13 @@ export function PredefinedTermsPicker({
                 borderRadius: 999,
               }}
             >
-              <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Bold', color: Colors.primary }}>
+              <Text style={{ fontSize: 11, fontFamily: 'IBMPlexSansArabic-Bold', color: Colors.primary }}>
                 {isRTL ? `${selectedCount} مختارة` : `${selectedCount} selected`}
               </Text>
             </View>
           )}
         </View>
-        <Text style={{ fontSize: 12, fontFamily: 'Alexandria-Regular', color: '#94A3B8', marginTop: 3, textAlign }}>
+        <Text style={{ fontSize: 12, fontFamily: 'IBMPlexSansArabic-Regular', color: '#94A3B8', marginTop: 3, textAlign }}>
           {isRTL ? 'اختر من الشروط المعرّفة مسبقاً لإضافتها' : 'Choose from predefined rules to add'}
         </Text>
       </View>
@@ -137,7 +137,7 @@ export function PredefinedTermsPicker({
           }}
         >
           <SolarNotebookBold size={26} color="#CBD5E1" />
-          <Text style={{ fontSize: 12, fontFamily: 'Alexandria-Medium', color: '#94A3B8', textAlign: 'center' }}>
+          <Text style={{ fontSize: 12, fontFamily: 'IBMPlexSansArabic-Medium', color: '#94A3B8', textAlign: 'center' }}>
             {isRTL ? 'لا توجد شروط جاهزة متاحة' : 'No ready-made rules available'}
           </Text>
         </View>
@@ -180,7 +180,7 @@ export function PredefinedTermsPicker({
                   }}
                 >
                   {isSelected && (
-                    <Text style={{ color: '#FFF', fontSize: 12, fontFamily: 'Alexandria-Bold', marginTop: -1 }}>✓</Text>
+                    <Text style={{ color: '#FFF', fontSize: 12, fontFamily: 'IBMPlexSansArabic-Bold', marginTop: -1 }}>✓</Text>
                   )}
                 </View>
                 {/* Texts */}
@@ -188,7 +188,7 @@ export function PredefinedTermsPicker({
                   <Text
                     style={{
                       fontSize: 13,
-                      fontFamily: 'Alexandria-Bold',
+                      fontFamily: 'IBMPlexSansArabic-Bold',
                       color: '#1E293B',
                       textAlign,
                     }}
@@ -200,7 +200,7 @@ export function PredefinedTermsPicker({
                       numberOfLines={2}
                       style={{
                         fontSize: 11.5,
-                        fontFamily: 'Alexandria-Regular',
+                        fontFamily: 'IBMPlexSansArabic-Regular',
                         color: '#64748B',
                         marginTop: 3,
                         lineHeight: 18,

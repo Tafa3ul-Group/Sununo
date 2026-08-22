@@ -131,7 +131,7 @@ const StepNode: React.FC<{
       <Animated.Text
         style={[
           styles.stepLabel,
-          isActive && { color: Colors.text.primary, fontFamily: 'Alexandria-Bold' },
+          isActive && { color: Colors.text.primary, fontFamily: 'IBMPlexSansArabic-Bold' },
           isCompleted && { color: SHAPE_COLORS[shapeType] },
           isFuture && { color: '#9CA3AF' },
           textStyle,
@@ -232,16 +232,16 @@ const styles = StyleSheet.create({
   checkText: {
     color: '#FFFFFF',
     fontSize: normalize.font(14),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
   },
   stepNumber: {
     color: '#FFFFFF',
     fontSize: normalize.font(13),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
   },
   stepLabel: {
     fontSize: normalize.font(10),
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-Medium',
     color: '#64748B',
     textAlign: 'center',
     maxWidth: 70,

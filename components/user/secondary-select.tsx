@@ -164,13 +164,13 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#6B7280",
     flexShrink: 1,
   },
   optionTextSelected: {
     color: "#035DF9",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
   dotSelection: {
     width: 8,

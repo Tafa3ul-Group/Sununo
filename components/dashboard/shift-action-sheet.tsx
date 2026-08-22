@@ -120,7 +120,7 @@ export const ShiftActionSheet = forwardRef<BottomSheetModal, ShiftActionSheetPro
                     <Text
                       style={{
                         fontSize: normalize.font(16),
-                        fontFamily: "Alexandria-Bold",
+                        fontFamily: "IBMPlexSansArabic-Bold",
                         color: "#1E293B",
                         textAlign,
                       }}
@@ -151,7 +151,7 @@ export const ShiftActionSheet = forwardRef<BottomSheetModal, ShiftActionSheetPro
                       <Text
                         style={{
                           fontSize: normalize.font(11),
-                          fontFamily: "Alexandria-Bold",
+                          fontFamily: "IBMPlexSansArabic-Bold",
                           color: "#059669",
                         }}
                       >
@@ -175,7 +175,7 @@ export const ShiftActionSheet = forwardRef<BottomSheetModal, ShiftActionSheetPro
                       <Text
                         style={{
                           fontSize: normalize.font(12),
-                          fontFamily: "Alexandria-SemiBold",
+                          fontFamily: "IBMPlexSansArabic-SemiBold",
                           color: "#475569",
                         }}
                       >
@@ -188,7 +188,7 @@ export const ShiftActionSheet = forwardRef<BottomSheetModal, ShiftActionSheetPro
                       <Text
                         style={{
                           fontSize: normalize.font(12),
-                          fontFamily: "Alexandria-SemiBold",
+                          fontFamily: "IBMPlexSansArabic-SemiBold",
                           color: "#475569",
                         }}
                       >
@@ -203,7 +203,7 @@ export const ShiftActionSheet = forwardRef<BottomSheetModal, ShiftActionSheetPro
                   <Text
                     style={[
                       styles.inputLabel,
-                      { textAlign, color: "#475569", fontFamily: "Alexandria-SemiBold" }
+                      { textAlign, color: "#475569", fontFamily: "IBMPlexSansArabic-SemiBold" }
                     ]}
                   >
                     {isRTL ? "اسم الزبون (اختياري)" : "Customer Name (Optional)"}
@@ -227,7 +227,7 @@ export const ShiftActionSheet = forwardRef<BottomSheetModal, ShiftActionSheetPro
                       style={{
                         flex: 1,
                         height: "100%",
-                        fontFamily: "Alexandria-Regular",
+                        fontFamily: "IBMPlexSansArabic-Regular",
                         fontSize: normalize.font(14),
                         color: "#1E293B",
                         textAlign: inputTextAlign,
@@ -242,7 +242,7 @@ export const ShiftActionSheet = forwardRef<BottomSheetModal, ShiftActionSheetPro
                   <Text
                     style={[
                       styles.inputLabel,
-                      { textAlign, color: "#475569", fontFamily: "Alexandria-SemiBold" }
+                      { textAlign, color: "#475569", fontFamily: "IBMPlexSansArabic-SemiBold" }
                     ]}
                   >
                     {isRTL ? "رقم الهاتف (اختياري)" : "Phone Number (Optional)"}
@@ -266,7 +266,7 @@ export const ShiftActionSheet = forwardRef<BottomSheetModal, ShiftActionSheetPro
                       style={{
                         flex: 1,
                         height: "100%",
-                        fontFamily: "Alexandria-Regular",
+                        fontFamily: "IBMPlexSansArabic-Regular",
                         fontSize: normalize.font(14),
                         color: "#1E293B",
                         textAlign: inputTextAlign,
@@ -282,7 +282,7 @@ export const ShiftActionSheet = forwardRef<BottomSheetModal, ShiftActionSheetPro
                   <Text
                     style={[
                       styles.inputLabel,
-                      { textAlign, color: "#475569", fontFamily: "Alexandria-SemiBold" }
+                      { textAlign, color: "#475569", fontFamily: "IBMPlexSansArabic-SemiBold" }
                     ]}
                   >
                     {isRTL
@@ -303,7 +303,7 @@ export const ShiftActionSheet = forwardRef<BottomSheetModal, ShiftActionSheetPro
                     <BottomSheetTextInput
                       style={{
                         flex: 1,
-                        fontFamily: "Alexandria-Regular",
+                        fontFamily: "IBMPlexSansArabic-Regular",
                         fontSize: normalize.font(14),
                         color: "#1E293B",
                         textAlign: inputTextAlign,
@@ -369,7 +369,7 @@ export const ShiftActionSheet = forwardRef<BottomSheetModal, ShiftActionSheetPro
                 <Text style={[styles.sheetTitle, { marginBottom: 8 }]}>
                   {isRTL ? "هذه الفترة مغلقة" : "This shift is closed"}
                 </Text>
-                <Text style={{ textAlign: "center", color: "#64748B", fontFamily: "Alexandria-Regular", fontSize: normalize.font(14), marginBottom: 32 }}>
+                <Text style={{ textAlign: "center", color: "#64748B", fontFamily: "IBMPlexSansArabic-Regular", fontSize: normalize.font(14), marginBottom: 32 }}>
                   {isRTL
                     ? "لقد قمت بإغلاق هذه الفترة يدوياً. لن يتمكن الزبائن من حجزها حتى تقوم بإعادة فتحها."
                     : "You have manually closed this shift. Customers won't be able to book it until you reopen it."}
@@ -477,7 +477,7 @@ export const ShiftActionSheet = forwardRef<BottomSheetModal, ShiftActionSheetPro
                     <Text
                       style={{
                         color: "#64748B",
-                        fontFamily: "Alexandria-SemiBold",
+                        fontFamily: "IBMPlexSansArabic-SemiBold",
                         fontSize: normalize.font(14),
                         letterSpacing: 0.5
                       }}
@@ -602,14 +602,14 @@ const styles = StyleSheet.create({
   },
   successAnimationText: {
     fontSize: normalize.font(18),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#035DF9",
     marginTop: 16,
     textAlign: "center"
   },
   inputLabel: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#64748B",
     marginBottom: 8
   },
@@ -624,13 +624,13 @@ const styles = StyleSheet.create({
   },
   sheetTitle: {
     fontSize: normalize.font(18),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     marginBottom: 16
   },
   customerPhone: {
     fontSize: normalize.font(13),
     color: "#64748B",
-    fontFamily: "Alexandria-Regular"
+    fontFamily: "IBMPlexSansArabic-Regular"
   },
   statusBadge: {
     paddingHorizontal: 10,
@@ -640,7 +640,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: normalize.font(11),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     lineHeight: normalize.font(16)
   }
 });

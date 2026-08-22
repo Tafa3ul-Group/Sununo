@@ -223,13 +223,13 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 15,
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#1E293B",
     lineHeight: 24,
   },
   version: {
     fontSize: 11,
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#94A3B8",
     marginTop: 2,
   },
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 13,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#64748B",
     lineHeight: 22,
   },
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
   },
   retryText: {
     fontSize: 13,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#0061FE",
   },
   scrollContent: {
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   },
   body: {
     fontSize: 13,
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#334155",
     lineHeight: normalize.font(24),
   },
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
   },
   scrollHint: {
     fontSize: 11.5,
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#94A3B8",
   },
   acceptBtn: {

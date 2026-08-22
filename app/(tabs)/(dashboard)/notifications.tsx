@@ -9,7 +9,7 @@ import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectAccountType, switchMode } from '@/store/authSlice';
@@ -161,7 +161,7 @@ export default function NotificationsScreen() {
     };
 
     return (
-        <SafeAreaView style={[styles.container]}>
+        <SafeAreaView style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
                 <View style={[styles.headerInner, { flexDirection: 'row' }]}>
@@ -207,7 +207,7 @@ export default function NotificationsScreen() {
                             <ActivityIndicator size="large" color={Colors.primary} />
                         </View>
                     ) : (
-                        <Animated.View entering={FadeIn.duration(300)} style={styles.centerContainer}>
+                        <Animated.View style={styles.centerContainer}>
                             <ThemedText style={styles.emptyText}>
                                 {isRTL ? 'لا توجد إشعارات حالياً' : 'No notifications found'}
                             </ThemedText>
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 14,
-        fontFamily: "Alexandria-Medium",
+        fontFamily: "IBMPlexSansArabic-SemiBold",
         color: '#111827'
     },
     backButton: {
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
     },
     markAllText: {
         fontSize: 11,
-        fontFamily: 'Alexandria-Medium',
+        fontFamily: 'IBMPlexSansArabic-Medium',
         color: Colors.primary,
     },
     centerContainer: {
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
     },
     emptyText: {
         color: '#9CA3AF',
-        fontFamily: "Alexandria-Medium"
+        fontFamily: "IBMPlexSansArabic-Medium"
     },
     notificationCard: {
         flexDirection: 'row',
@@ -307,14 +307,14 @@ const styles = StyleSheet.create({
     timeText: {
         fontSize: 8,
         color: '#9CA3AF',
-        fontFamily: "Alexandria-Medium"
+        fontFamily: "IBMPlexSansArabic-Medium"
     },
     cardContent: {
         flex: 1
     },
     titleText: {
         fontSize: 14,
-        fontFamily: "Alexandria-Medium",
+        fontFamily: "IBMPlexSansArabic-SemiBold",
         color: '#111827',
         marginBottom: 2
     },
@@ -322,6 +322,6 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#6B7280',
         marginTop: 2,
-        fontFamily: "Alexandria-Medium"
+        fontFamily: "IBMPlexSansArabic-Regular"
     }
 });

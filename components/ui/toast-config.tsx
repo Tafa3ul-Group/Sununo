@@ -279,14 +279,13 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   title: {
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-SemiBold',
     fontSize: 15,
-    fontWeight: '600',
-    lineHeight: 21,
+    lineHeight: 23,
     letterSpacing: -0.2,
   },
   message: {
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-Regular',
     fontSize: 12.5,
     lineHeight: 18,
     opacity: 0.8,

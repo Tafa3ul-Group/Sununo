@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   card: { width: "100%" },
-  title: { fontSize: 20, fontWeight: "700", color: "#111827", marginBottom: 8 },
+  title: { fontSize: 20, fontFamily: "IBMPlexSansArabic-Bold", color: "#111827", marginBottom: 8 },
   subtitle: { fontSize: 14, color: "#6B7280", lineHeight: 22, marginBottom: 16 },
   detailBox: {
     maxHeight: 260,
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
   },
   detailContent: { padding: 12 },
-  detailText: { fontSize: 11, color: "#B91C1C", lineHeight: 16 },
+  detailText: { fontSize: 11, color: "#B91C1C", lineHeight: 17 },
   button: {
     marginTop: 20,
     backgroundColor: "#0061FE",
@@ -83,5 +83,5 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     alignItems: "center",
   },
-  buttonText: { color: "#FFFFFF", fontSize: 15, fontWeight: "600" },
+  buttonText: { color: "#FFFFFF", fontSize: 15, fontFamily: "IBMPlexSansArabic-SemiBold" },
 });

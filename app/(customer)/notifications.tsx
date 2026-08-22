@@ -2,7 +2,7 @@ import React, { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, { FadeInDown, useSharedValue, useAnimatedStyle, withTiming, withSpring } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { Colors, normalize, Shadows } from '../../constants/theme';
 import { ThemedText } from '@/components/themed-text';
@@ -18,7 +18,6 @@ import { activeSection, resolveNotificationSection } from '@/utils/notification-
 import { useDispatch, useSelector } from 'react-redux';
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
-
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -45,11 +44,9 @@ const NotificationItem = React.memo(({ item, index, isArabic, onPress }: Notific
     const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 
     return (
-        <Animated.View entering={FadeInDown.delay((index % 8) * 60).duration(380)} style={animatedStyle}>
+        <Animated.View style={animatedStyle}>
             <AnimatedTouchable
                 style={[styles.notificationCard, { flexDirection: 'row' }]}
-                onPressIn={() => { scale.value = withTiming(0.96, { duration: 110 }); }}
-                onPressOut={() => { scale.value = withSpring(1, { damping: 12, stiffness: 220 }); }}
                 onPress={() => { Haptics.selectionAsync(); onPress(item); }}
                 activeOpacity={0.7}
             >
@@ -298,12 +295,12 @@ const styles = StyleSheet.create({
     },
     markAllText: {
         fontSize: 11,
-        fontFamily: 'Alexandria-Medium',
+        fontFamily: 'IBMPlexSansArabic-Medium',
         color: Colors.primary,
     },
     sectionTitle: {
         fontSize: 12,
-        fontFamily: "Alexandria-Medium",
+        fontFamily: "IBMPlexSansArabic-SemiBold",
         color: '#9CA3AF',
     },
     notificationCard: {
@@ -339,20 +336,20 @@ const styles = StyleSheet.create({
     },
     titleText: {
         fontSize: 12,
-        fontFamily: "Alexandria-Medium",
+        fontFamily: "IBMPlexSansArabic-SemiBold",
         color: '#111827',
         flex: 1,
     },
     timeText: {
         fontSize: 10,
         color: '#9CA3AF',
-        fontFamily: "Alexandria-Medium",
+        fontFamily: "IBMPlexSansArabic-Medium",
         marginHorizontal: 6,
     },
     messageText: {
         fontSize: 11,
         color: '#6B7280',
-        fontFamily: "Alexandria-Medium",
-        lineHeight: 16,
+        fontFamily: "IBMPlexSansArabic-Regular",
+        lineHeight: 17,
     },
 });

@@ -19,7 +19,7 @@ import {
   View
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 import { pickTranslation, useDirection } from "@/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -100,7 +100,7 @@ export default function ReviewsScreen() {
 
   const renderReviewItem = ({ item, index }: { item: any; index: number }) => {
     return (
-      <Animated.View entering={FadeInDown.delay((index % 8) * 60).duration(380)}>
+      <Animated.View>
         <MemoizedReviewCard
           review={{
             ...item,

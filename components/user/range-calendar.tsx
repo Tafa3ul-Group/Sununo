@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
     alignItems: 'center' },
   monthTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#1A1A1A",
     letterSpacing: 0.5 },
   daysHeader: {
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: "center",
     fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#15AB64" },
   grid: {
     flexWrap: "wrap",
@@ -373,12 +373,12 @@ const styles = StyleSheet.create({
     width: '100%' },
   dayText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#1A1A1A" },
   disabledDayText: {
     color: "#D1D5DB",
     opacity: 0,
-    fontFamily: "Alexandria-Medium"
+    fontFamily: "IBMPlexSansArabic-Medium"
   },
   startDaySelected: {
     backgroundColor: Colors.primary,
@@ -388,14 +388,14 @@ const styles = StyleSheet.create({
     borderRadius: normalize.radius(12) },
   selectedDayText: {
     color: "white",
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "IBMPlexSansArabic-Medium" },
   inRangeDayText: {
     color: "#1A1A1A",
-    fontFamily: "Alexandria-Medium"
+    fontFamily: "IBMPlexSansArabic-Medium"
   },
   bookedDayText: {
     color: "#9CA3AF",
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "IBMPlexSansArabic-Medium" },
   scribbleOverlay: {
     position: 'absolute',
     top: 0,
@@ -430,16 +430,16 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary },
   yearText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: '#1A1A1A' },
   yearTextSelected: {
     color: 'white',
-    fontFamily: "Alexandria-Medium"
+    fontFamily: "IBMPlexSansArabic-Medium"
   },
   closeYearBtn: {
     paddingVertical: normalize.height(10),
     paddingHorizontal: normalize.width(20) },
   closeYearText: {
     color: Colors.primary,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     fontSize: normalize.font(14) } });

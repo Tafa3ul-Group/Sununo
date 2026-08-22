@@ -79,7 +79,7 @@ function ShiftPricingView({ shift, isRTL, onEdit }: { shift: any; isRTL: boolean
           <View style={{ width: 20, height: 20, backgroundColor: '#93C5FD', borderRadius: 6, justifyContent: 'center', alignItems: 'center' }}>
             <View style={{ width: 10, height: 10, backgroundColor: '#2563EB', borderRadius: 5 }} />
           </View>
-          <Text style={{ fontSize: 18, fontFamily: "Alexandria-SemiBold", color: '#111827' }}>
+          <Text style={{ fontSize: 18, fontFamily: "IBMPlexSansArabic-SemiBold", color: '#111827' }}>
             {isRTL ? 'تخصيص أسعار الأيام' : 'Daily Pricing'}
           </Text>
         </View>
@@ -90,7 +90,7 @@ function ShiftPricingView({ shift, isRTL, onEdit }: { shift: any; isRTL: boolean
           activeOpacity={0.8}
         >
           <SolarPenBold size={16} color="#2563EB" />
-          <Text style={{ fontSize: 12, color: '#2563EB', fontFamily: "Alexandria-SemiBold" }}>
+          <Text style={{ fontSize: 12, color: '#2563EB', fontFamily: "IBMPlexSansArabic-SemiBold" }}>
             {isRTL ? 'تعديل الأسعار' : 'Edit Prices'}
           </Text>
         </TouchableOpacity>
@@ -121,7 +121,7 @@ function ShiftPricingView({ shift, isRTL, onEdit }: { shift: any; isRTL: boolean
               activeOpacity={0.8}
             >
               <Text style={[
-                { fontSize: 12, color: '#6B7280', fontFamily: "Alexandria-Medium" },
+                { fontSize: 12, color: '#6B7280', fontFamily: "IBMPlexSansArabic-Medium" },
                 isWeekend && { color: '#F97316' },
                 isClosed && { color: '#9CA3AF' }
               ]}>
@@ -130,11 +130,11 @@ function ShiftPricingView({ shift, isRTL, onEdit }: { shift: any; isRTL: boolean
 
               {isClosed ? (
                 <View style={{ backgroundColor: '#FEE2E2', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
-                  <Text style={{ fontSize: 10, color: '#DC2626', fontFamily: "Alexandria-SemiBold" }}>{isRTL ? 'مغلق' : 'OFF'}</Text>
+                  <Text style={{ fontSize: 10, color: '#DC2626', fontFamily: "IBMPlexSansArabic-SemiBold" }}>{isRTL ? 'مغلق' : 'OFF'}</Text>
                 </View>
               ) : (
                 <Text style={[
-                  { fontSize: 15, fontFamily: "Alexandria-Medium", color: '#111827' },
+                  { fontSize: 15, fontFamily: "IBMPlexSansArabic-Medium", color: '#111827' },
                   isWeekend && { color: '#F97316' }
                 ]}>
                   {Number(item.price).toLocaleString()}
@@ -1363,7 +1363,7 @@ export default function ShiftsAndPricesScreen() {
                             styles.cardTitle,
                             {
                               color: shift.isActive ? accentColor : '#9CA3AF',
-                              fontFamily: 'Alexandria-SemiBold',
+                              fontFamily: 'IBMPlexSansArabic-SemiBold',
                               fontSize: 15,
                               textAlign
                             }
@@ -1375,7 +1375,7 @@ export default function ShiftsAndPricesScreen() {
                             <Text style={{
                               fontSize: 11,
                               color: "#94A3B8",
-                              fontFamily: "Alexandria-Medium"
+                              fontFamily: "IBMPlexSansArabic-Medium"
                             }}>
                               {formatTime12h(shift.startTime)} - {formatTime12h(shift.endTime)}
                             </Text>
@@ -1520,7 +1520,7 @@ export default function ShiftsAndPricesScreen() {
                 <SolarInfoCircleBold size={13} color="#94A3B8" style={{ marginTop: 1 }} />
                 <Text style={[styles.availHint, { textAlign, flex: 1 }]}>
                   <Text style={{ color: '#94A3B8' }}>{isRTL ? 'المتاح للاختيار: ' : 'Available: '}</Text>
-                  <Text style={{ color: '#0284C7', fontFamily: 'Alexandria-SemiBold' }}>{availableTimesText}</Text>
+                  <Text style={{ color: '#0284C7', fontFamily: 'IBMPlexSansArabic-SemiBold' }}>{availableTimesText}</Text>
                 </Text>
               </View>
             )}
@@ -1727,11 +1727,11 @@ export default function ShiftsAndPricesScreen() {
             </TouchableOpacity>
 
             <View style={{ flex: 1, alignItems: 'center' }}>
-              <Text style={{ fontSize: 16, fontFamily: 'Alexandria-Bold', color: '#0F172A' }}>
+              <Text style={{ fontSize: 16, fontFamily: 'IBMPlexSansArabic-Bold', color: '#0F172A' }}>
                 {isRTL ? 'تخصيص أسعار الأيام' : 'Daily Pricing'}
               </Text>
               {selectedShift && (
-                <Text style={{ fontSize: 12, color: '#64748B', fontFamily: 'Alexandria-Medium', marginTop: 2 }}>
+                <Text style={{ fontSize: 12, color: '#64748B', fontFamily: 'IBMPlexSansArabic-Medium', marginTop: 2 }}>
                   {pickTranslation(selectedShift.name, isRTL)}
                 </Text>
               )}
@@ -1759,7 +1759,7 @@ export default function ShiftsAndPricesScreen() {
               paddingHorizontal: 16,
               marginBottom: 14,
             }}>
-              <Text style={{ fontSize: 14, fontFamily: 'Alexandria-SemiBold', color: '#0F172A' }}>
+              <Text style={{ fontSize: 14, fontFamily: 'IBMPlexSansArabic-SemiBold', color: '#0F172A' }}>
                 {isRTL ? 'استقبال الحجوزات لهذه الفترة' : 'Accept bookings for this shift'}
               </Text>
               <Switch
@@ -1785,17 +1785,17 @@ export default function ShiftsAndPricesScreen() {
                 justifyContent: 'space-between',
                 marginBottom: 12,
               }}>
-                <Text style={{ fontSize: 13, fontFamily: 'Alexandria-SemiBold', color: '#0F172A' }}>
+                <Text style={{ fontSize: 13, fontFamily: 'IBMPlexSansArabic-SemiBold', color: '#0F172A' }}>
                   {isRTL ? 'سعر موحّد لكل الأيام' : 'One price for all days'}
                 </Text>
                 <View style={{ flexDirection: 'row', gap: 14 }}>
                   <TouchableOpacity onPress={handleEnableAllDays} activeOpacity={0.7}>
-                    <Text style={{ fontSize: 12, fontFamily: 'Alexandria-SemiBold', color: Colors.primary }}>
+                    <Text style={{ fontSize: 12, fontFamily: 'IBMPlexSansArabic-SemiBold', color: Colors.primary }}>
                       {isRTL ? 'تفعيل الكل' : 'Enable all'}
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity onPress={handleDisableAllDays} activeOpacity={0.7}>
-                    <Text style={{ fontSize: 12, fontFamily: 'Alexandria-SemiBold', color: '#EF4444' }}>
+                    <Text style={{ fontSize: 12, fontFamily: 'IBMPlexSansArabic-SemiBold', color: '#EF4444' }}>
                       {isRTL ? 'إيقاف الكل' : 'Disable all'}
                     </Text>
                   </TouchableOpacity>
@@ -1813,7 +1813,7 @@ export default function ShiftsAndPricesScreen() {
                     borderRadius: 12,
                     paddingHorizontal: 14,
                     fontSize: 15,
-                    fontFamily: 'Alexandria-SemiBold',
+                    fontFamily: 'IBMPlexSansArabic-SemiBold',
                     color: '#0F172A',
                     textAlign: inputTextAlign,
                   }}
@@ -1836,7 +1836,7 @@ export default function ShiftsAndPricesScreen() {
                     backgroundColor: bulkPrice ? Colors.primary : '#F1F5F9',
                   }}
                 >
-                  <Text style={{ fontSize: 14, fontFamily: 'Alexandria-SemiBold', color: bulkPrice ? '#fff' : '#94A3B8' }}>
+                  <Text style={{ fontSize: 14, fontFamily: 'IBMPlexSansArabic-SemiBold', color: bulkPrice ? '#fff' : '#94A3B8' }}>
                     {isRTL ? 'تطبيق' : 'Apply'}
                   </Text>
                 </TouchableOpacity>
@@ -1871,11 +1871,11 @@ export default function ShiftsAndPricesScreen() {
                   {/* Day name + save button beside it */}
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                     <View style={{ alignItems: 'flex-start' }}>
-                      <Text style={{ fontSize: 16, fontFamily: 'Alexandria-Bold', color: isStopped ? '#94A3B8' : '#0F172A' }}>
+                      <Text style={{ fontSize: 16, fontFamily: 'IBMPlexSansArabic-Bold', color: isStopped ? '#94A3B8' : '#0F172A' }}>
                         {dayName}
                       </Text>
                       {isWeekend && (
-                        <Text style={{ fontSize: 10, fontFamily: 'Alexandria-Medium', color: '#F97316', marginTop: 1 }}>
+                        <Text style={{ fontSize: 10, fontFamily: 'IBMPlexSansArabic-Medium', color: '#F97316', marginTop: 1 }}>
                           {isRTL ? 'عطلة' : 'Weekend'}
                         </Text>
                       )}
@@ -1912,7 +1912,7 @@ export default function ShiftsAndPricesScreen() {
                   {/* Price + on/off switch */}
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                     {isStopped ? (
-                      <Text style={{ fontSize: 13, fontFamily: 'Alexandria-SemiBold', color: '#94A3B8' }}>
+                      <Text style={{ fontSize: 13, fontFamily: 'IBMPlexSansArabic-SemiBold', color: '#94A3B8' }}>
                         {isRTL ? 'مغلق' : 'Closed'}
                       </Text>
                     ) : (
@@ -1932,7 +1932,7 @@ export default function ShiftsAndPricesScreen() {
                           style={{
                             flex: 1,
                             fontSize: 15,
-                            fontFamily: 'Alexandria-Bold',
+                            fontFamily: 'IBMPlexSansArabic-Bold',
                             color: '#0F172A',
                             textAlign: inputTextAlign,
                             paddingVertical: 0,
@@ -1947,7 +1947,7 @@ export default function ShiftsAndPricesScreen() {
                             setPricingForm(newP);
                           }}
                         />
-                        <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Medium', color: '#94A3B8' }}>
+                        <Text style={{ fontSize: 11, fontFamily: 'IBMPlexSansArabic-Medium', color: '#94A3B8' }}>
                           {isRTL ? 'د.ع' : 'IQD'}
                         </Text>
                       </View>
@@ -1996,7 +1996,7 @@ export default function ShiftsAndPricesScreen() {
               ) : (
                 <>
                   <SolarBookmarkSquareMinimalisticBoldDuotone size={20} color="#fff" />
-                  <Text style={{ fontSize: 15, fontFamily: 'Alexandria-Bold', color: '#fff' }}>
+                  <Text style={{ fontSize: 15, fontFamily: 'IBMPlexSansArabic-Bold', color: '#fff' }}>
                     {isRTL ? 'حفظ كل الأسعار' : 'Save All Prices'}
                   </Text>
                 </>
@@ -2021,7 +2021,7 @@ export default function ShiftsAndPricesScreen() {
               <View style={[styles.row, { justifyContent: 'space-between', marginBottom: 12 }]}>
                 <View>
                   <Text style={styles.modalTitleCompact}>{isRTL ? 'تعديل أوقات الفترات' : 'Edit Shift Times'}</Text>
-                  <Text style={{ fontSize: 11, color: '#64748B', fontFamily: 'Alexandria-Medium', marginTop: 2 }}>
+                  <Text style={{ fontSize: 11, color: '#64748B', fontFamily: 'IBMPlexSansArabic-Medium', marginTop: 2 }}>
                     {isRTL ? 'تعديل وقت البدء والانتهاء لكل فترة بمقدار نصف ساعة' : 'Adjust start and end times by half an hour'}
                   </Text>
                 </View>
@@ -2059,7 +2059,7 @@ export default function ShiftsAndPricesScreen() {
                       <Text style={[styles.editTimeCardTitle, { textAlign }, isOverlapping && { color: '#991B1B' }]}>{shiftName}</Text>
                       {isOverlapping && (
                         <View style={{ backgroundColor: '#FEE4E2', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 }}>
-                          <Text style={{ fontSize: 10, color: '#D92D20', fontFamily: 'Alexandria-Bold' }}>
+                          <Text style={{ fontSize: 10, color: '#D92D20', fontFamily: 'IBMPlexSansArabic-Bold' }}>
                             {isRTL ? 'تداخل' : 'Overlap'}
                           </Text>
                         </View>
@@ -2161,7 +2161,7 @@ const styles = StyleSheet.create({
   scrollContent: { padding: 16, paddingBottom: 100 },
   section: { marginBottom: 24 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  sectionTitle: { fontSize: 16, fontFamily: "Alexandria-Bold", color: '#0F172A' },
+  sectionTitle: { fontSize: 16, fontFamily: "IBMPlexSansArabic-Bold", color: '#0F172A' },
   row: { flexDirection: 'row', alignItems: 'center' },
   cardFlat: {
     backgroundColor: '#fff',
@@ -2177,14 +2177,14 @@ const styles = StyleSheet.create({
     elevation: 1
   },
   cardHeader: { padding: 16 },
-  cardTitle: { fontSize: 14, fontFamily: "Alexandria-SemiBold", color: '#1E293B' },
-  timeBadgeText: { color: Colors.primary, fontSize: 12, fontFamily: "Alexandria-Bold" },
+  cardTitle: { fontSize: 14, fontFamily: "IBMPlexSansArabic-SemiBold", color: '#1E293B' },
+  timeBadgeText: { color: Colors.primary, fontSize: 12, fontFamily: "IBMPlexSansArabic-Bold" },
   expandedContent: { padding: 16, backgroundColor: '#F9FAFB', borderTopWidth: 1, borderTopColor: '#F0F2F7' },
   pricingSectionContainer: { backgroundColor: '#fff', borderRadius: 16, padding: 12 },
   expandedHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  expandedTitle: { fontSize: 14, fontFamily: "Alexandria-Bold" },
+  expandedTitle: { fontSize: 14, fontFamily: "IBMPlexSansArabic-Bold" },
   editBadge: { backgroundColor: Colors.primary + '10', padding: 6, borderRadius: 8 },
-  editBadgeText: { fontSize: 10, color: Colors.primary, fontFamily: "Alexandria-Bold" },
+  editBadgeText: { fontSize: 10, color: Colors.primary, fontFamily: "IBMPlexSansArabic-Bold" },
   emptyPricingCard: { padding: 20, alignItems: 'center', borderStyle: 'dashed', borderWidth: 1, borderColor: '#DDD', borderRadius: 12 },
   emptyPricingText: { fontSize: 12, color: '#999', marginTop: 8 },
   setPriceBtn: { backgroundColor: Colors.primary, padding: 8, borderRadius: 8, marginTop: 10 },
@@ -2195,13 +2195,13 @@ const styles = StyleSheet.create({
   closedMiniCard: { opacity: 0.5 },
   miniCardDay: { fontSize: 10, color: '#666' },
   miniCardPriceRow: { alignItems: 'center' },
-  miniCardPrice: { fontSize: 11, fontFamily: "Alexandria-SemiBold", color: '#1E293B' },
+  miniCardPrice: { fontSize: 11, fontFamily: "IBMPlexSansArabic-SemiBold", color: '#1E293B' },
   miniCardCurrency: { fontSize: 8, color: '#999' },
   closedBadgeMini: { backgroundColor: '#FEE4E2', padding: 2, borderRadius: 4 },
   closedBadgeTextMini: { fontSize: 8, color: '#D92D20' },
   hoursGridContainer: { marginVertical: 16, padding: 16, backgroundColor: '#F9FAFB', borderRadius: 16 },
   gridHeader: { alignItems: 'center', marginBottom: 12 },
-  gridTitleLarge: { fontSize: 14, fontFamily: "Alexandria-Bold", color: '#0F172A' },
+  gridTitleLarge: { fontSize: 14, fontFamily: "IBMPlexSansArabic-Bold", color: '#0F172A' },
   legendText: { fontSize: 10, color: '#666' },
   legendItem: {},
   gridContent: { gap: 6 },
@@ -2210,14 +2210,14 @@ const styles = StyleSheet.create({
   hourSquare: { flex: 1, height: 36, backgroundColor: '#fff', borderWidth: 1, borderColor: '#EEE', justifyContent: 'center', alignItems: 'center' },
   hourSquareMerged: { height: 36, backgroundColor: Colors.primary, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 4 },
   hourText: { fontSize: 12, color: '#999' },
-  shiftOverlayText: { fontSize: 10, color: '#fff', fontFamily: "Alexandria-Bold" },
+  shiftOverlayText: { fontSize: 10, color: '#fff', fontFamily: "IBMPlexSansArabic-Bold" },
   swipeableContainer: { borderRadius: 20 },
   swipeActions: { flexDirection: 'row', height: '100%' },
   swipeAction: { width: 70, justifyContent: 'center', alignItems: 'center' },
-  swipeActionText: { fontSize: 10, fontFamily: "Alexandria-Bold" },
-  modalTitle: { fontSize: 18, fontFamily: "Alexandria-Bold", color: '#0F172A', marginBottom: 20 },
-  modalTitleCompact: { fontSize: 16, fontFamily: "Alexandria-Bold", color: '#0F172A' },
-  label: { fontSize: 14, fontFamily: "Alexandria-Bold", marginBottom: 8, width: '100%' },
+  swipeActionText: { fontSize: 10, fontFamily: "IBMPlexSansArabic-Bold" },
+  modalTitle: { fontSize: 18, fontFamily: "IBMPlexSansArabic-Bold", color: '#0F172A', marginBottom: 20 },
+  modalTitleCompact: { fontSize: 16, fontFamily: "IBMPlexSansArabic-Bold", color: '#0F172A' },
+  label: { fontSize: 14, fontFamily: "IBMPlexSansArabic-Bold", marginBottom: 8, width: '100%' },
   input: { backgroundColor: '#F3F4F6', height: 50, borderRadius: 12, paddingHorizontal: 16, marginBottom: 16 },
   saveBtn: {
     backgroundColor: Colors.primary,
@@ -2234,7 +2234,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   saveBtnDisabled: { backgroundColor: '#CBD5E1', shadowOpacity: 0, elevation: 0 },
-  saveBtnText: { color: '#fff', fontFamily: "Alexandria-Bold", fontSize: 15 },
+  saveBtnText: { color: '#fff', fontFamily: "IBMPlexSansArabic-Bold", fontSize: 15 },
 
   // ── Add-shift sheet — header ──
   sheetHeaderIcon: {
@@ -2245,7 +2245,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  sheetHeaderSub: { fontSize: 12, fontFamily: 'Alexandria-Regular', color: '#94A3B8' },
+  sheetHeaderSub: { fontSize: 12, fontFamily: 'IBMPlexSansArabic-Regular', color: '#94A3B8' },
   sheetCloseBtn: {
     width: 36,
     height: 36,
@@ -2270,7 +2270,7 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   timeCardError: { borderColor: '#FCA5A5', backgroundColor: '#FFF7F7' },
-  timeCardTitle: { fontSize: 14, fontFamily: 'Alexandria-Bold', color: '#334155' },
+  timeCardTitle: { fontSize: 14, fontFamily: 'IBMPlexSansArabic-Bold', color: '#334155' },
   durationPill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2280,7 +2280,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 999,
   },
-  durationPillText: { fontSize: 11, fontFamily: 'Alexandria-Bold', color: Colors.primary },
+  durationPillText: { fontSize: 11, fontFamily: 'IBMPlexSansArabic-Bold', color: Colors.primary },
   overlapPill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2290,7 +2290,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 999,
   },
-  overlapPillText: { fontSize: 11, fontFamily: 'Alexandria-Bold', color: '#D92D20' },
+  overlapPillText: { fontSize: 11, fontFamily: 'IBMPlexSansArabic-Bold', color: '#D92D20' },
   timeColumn: {
     flex: 1,
     backgroundColor: '#F8FAFC',
@@ -2302,9 +2302,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   timeColumnError: { backgroundColor: '#FFF1F1', borderColor: '#FECACA' },
-  timeColLabel: { fontSize: 11, fontFamily: 'Alexandria-SemiBold', color: '#94A3B8' },
-  timeColValue: { fontSize: 19, fontFamily: 'Alexandria-Bold', color: '#0F172A', textAlign: 'center' },
-  timeColPeriod: { fontSize: 12, fontFamily: 'Alexandria-SemiBold', color: '#64748B' },
+  timeColLabel: { fontSize: 11, fontFamily: 'IBMPlexSansArabic-SemiBold', color: '#94A3B8' },
+  timeColValue: { fontSize: 19, fontFamily: 'IBMPlexSansArabic-Bold', color: '#0F172A', textAlign: 'center' },
+  timeColPeriod: { fontSize: 12, fontFamily: 'IBMPlexSansArabic-SemiBold', color: '#64748B' },
   stepBtn: {
     width: 40,
     height: 40,
@@ -2315,8 +2315,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  stepBtnText: { fontSize: 22, fontFamily: 'Alexandria-Bold', color: Colors.primary, lineHeight: 26 },
-  availHint: { fontSize: 11, fontFamily: 'Alexandria-Medium', lineHeight: 17 },
+  stepBtnText: { fontSize: 22, fontFamily: 'IBMPlexSansArabic-Bold', color: Colors.primary, lineHeight: 26 },
+  availHint: { fontSize: 11, fontFamily: 'IBMPlexSansArabic-Regular', lineHeight: 17 },
   overlapWarn: {
     alignItems: 'center',
     backgroundColor: '#FEE4E2',
@@ -2325,10 +2325,10 @@ const styles = StyleSheet.create({
     marginTop: 12,
     gap: 8,
   },
-  overlapWarnText: { color: '#D92D20', fontSize: 11, fontFamily: 'Alexandria-Medium', lineHeight: 17 },
+  overlapWarnText: { color: '#D92D20', fontSize: 11, fontFamily: 'IBMPlexSansArabic-Medium', lineHeight: 17 },
 
   // ── Add-shift sheet — section headers (sectionTitle defined above) ──
-  sectionSub: { fontSize: 12, fontFamily: 'Alexandria-Regular', color: '#94A3B8', lineHeight: 18 },
+  sectionSub: { fontSize: 12, fontFamily: 'IBMPlexSansArabic-Regular', color: '#94A3B8', lineHeight: 18 },
 
   // ── Add-shift sheet — name ──
   nameInputWrap: {
@@ -2340,7 +2340,7 @@ const styles = StyleSheet.create({
     height: 52,
     justifyContent: 'center',
   },
-  nameInput: { fontSize: 14, fontFamily: 'Alexandria-Medium', color: '#0F172A', padding: 0 },
+  nameInput: { fontSize: 14, fontFamily: 'IBMPlexSansArabic-Regular', color: '#0F172A', padding: 0 },
   nameChip: {
     paddingHorizontal: 14,
     paddingVertical: 8,
@@ -2350,8 +2350,8 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   nameChipOn: { backgroundColor: '#EFF4FF', borderColor: '#BFD3FF' },
-  nameChipText: { fontSize: 12, fontFamily: 'Alexandria-SemiBold', color: '#64748B' },
-  nameChipTextOn: { color: Colors.primary, fontFamily: 'Alexandria-Bold' },
+  nameChipText: { fontSize: 12, fontFamily: 'IBMPlexSansArabic-SemiBold', color: '#64748B' },
+  nameChipTextOn: { color: Colors.primary, fontFamily: 'IBMPlexSansArabic-Bold' },
 
   // ── Add-shift sheet — quick pricing ──
   quickCard: {
@@ -2361,7 +2361,7 @@ const styles = StyleSheet.create({
     borderColor: '#EEF1F6',
     padding: 14,
   },
-  quickCardTitle: { fontSize: 12, fontFamily: 'Alexandria-Bold', color: '#475569', marginBottom: 10 },
+  quickCardTitle: { fontSize: 12, fontFamily: 'IBMPlexSansArabic-Bold', color: '#475569', marginBottom: 10 },
   bulkRow: {
     alignItems: 'center',
     backgroundColor: '#fff',
@@ -2373,7 +2373,7 @@ const styles = StyleSheet.create({
     height: 50,
     marginBottom: 10,
   },
-  bulkInput: { flex: 1, height: '100%', fontSize: 15, fontFamily: 'Alexandria-Bold', color: '#0F172A', padding: 0 },
+  bulkInput: { flex: 1, height: '100%', fontSize: 15, fontFamily: 'IBMPlexSansArabic-Bold', color: '#0F172A', padding: 0 },
   bulkCurrencyPill: {
     backgroundColor: '#F1F5F9',
     paddingHorizontal: 12,
@@ -2382,7 +2382,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginStart: 8,
   },
-  bulkCurrencyText: { fontSize: 12, fontFamily: 'Alexandria-Bold', color: '#64748B' },
+  bulkCurrencyText: { fontSize: 12, fontFamily: 'IBMPlexSansArabic-Bold', color: '#64748B' },
   quickBtnRow: { gap: 8 },
   applyChip: {
     flex: 1,
@@ -2394,7 +2394,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  applyChipText: { fontSize: 12, fontFamily: 'Alexandria-Bold', color: Colors.primary },
+  applyChipText: { fontSize: 12, fontFamily: 'IBMPlexSansArabic-Bold', color: Colors.primary },
 
   // ── Add-shift sheet — per-day rows ──
   dayRow: {
@@ -2420,9 +2420,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dayCheckOn: { borderWidth: 0, backgroundColor: 'transparent' },
-  dayRowName: { fontSize: 14, fontFamily: 'Alexandria-SemiBold', color: '#64748B' },
-  dayRowNameOn: { color: '#0F172A', fontFamily: 'Alexandria-Bold' },
-  dayWeekendTag: { fontSize: 9, fontFamily: 'Alexandria-Medium', color: '#F97316', marginTop: 1 },
+  dayRowName: { fontSize: 14, fontFamily: 'IBMPlexSansArabic-SemiBold', color: '#64748B' },
+  dayRowNameOn: { color: '#0F172A', fontFamily: 'IBMPlexSansArabic-Bold' },
+  dayWeekendTag: { fontSize: 9, fontFamily: 'IBMPlexSansArabic-Medium', color: '#F97316', marginTop: 1 },
   dayPriceWrap: {
     alignItems: 'center',
     backgroundColor: '#F1F5F9',
@@ -2433,8 +2433,8 @@ const styles = StyleSheet.create({
     minWidth: 118,
   },
   dayPriceWrapOn: { backgroundColor: '#EFF4FF' },
-  dayPriceInput: { flex: 1, height: '100%', fontSize: 13, fontFamily: 'Alexandria-Bold', color: '#0F172A', padding: 0 },
-  dayPriceCurrency: { fontSize: 10, fontFamily: 'Alexandria-SemiBold', color: '#94A3B8', marginStart: 4 },
+  dayPriceInput: { flex: 1, height: '100%', fontSize: 13, fontFamily: 'IBMPlexSansArabic-Bold', color: '#0F172A', padding: 0 },
+  dayPriceCurrency: { fontSize: 10, fontFamily: 'IBMPlexSansArabic-SemiBold', color: '#94A3B8', marginStart: 4 },
 
   // ── Add-shift sheet — summary bar ──
   summaryBar: {
@@ -2448,9 +2448,9 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   summaryItem: { flex: 1, alignItems: 'center', gap: 2 },
-  summaryVal: { fontSize: 14, fontFamily: 'Alexandria-Bold', color: '#0F172A' },
-  summaryValSmall: { fontSize: 10, fontFamily: 'Alexandria-Medium', color: '#94A3B8' },
-  summaryKey: { fontSize: 10, fontFamily: 'Alexandria-Medium', color: '#94A3B8' },
+  summaryVal: { fontSize: 14, fontFamily: 'IBMPlexSansArabic-Bold', color: '#0F172A' },
+  summaryValSmall: { fontSize: 10, fontFamily: 'IBMPlexSansArabic-Regular', color: '#94A3B8' },
+  summaryKey: { fontSize: 10, fontFamily: 'IBMPlexSansArabic-Medium', color: '#94A3B8' },
   summaryDivider: { width: 1, height: 26, backgroundColor: '#E2E8F0' },
   quickActionCardNew: {
     backgroundColor: Colors.primary,
@@ -2464,7 +2464,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   quickLabelNew: { color: '#fff', fontSize: 12, marginBottom: 4 },
-  quickInputNew: { color: '#fff', fontSize: 16, fontFamily: "Alexandria-Bold" },
+  quickInputNew: { color: '#fff', fontSize: 16, fontFamily: "IBMPlexSansArabic-Bold" },
   pricingRowModern: {
     padding: 16,
     backgroundColor: '#fff',
@@ -2479,9 +2479,9 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   pricingRowStopped: { backgroundColor: '#F9FAFB', opacity: 0.7 },
-  dayFullName: { fontSize: 14, fontFamily: "Alexandria-Bold" },
+  dayFullName: { fontSize: 14, fontFamily: "IBMPlexSansArabic-Bold" },
   priceControlWrapper: { marginTop: 12, backgroundColor: '#F3F4F6', borderRadius: 10, padding: 8 },
-  pricingInputModern: { fontSize: 16, fontFamily: "Alexandria-Bold" },
+  pricingInputModern: { fontSize: 16, fontFamily: "IBMPlexSansArabic-Bold" },
   singleSaveBtn: {
     backgroundColor: '#10B981',
     padding: 8,
@@ -2508,7 +2508,7 @@ const styles = StyleSheet.create({
   adjustPriceBtnTextCompact: {
     fontSize: 16,
     color: '#334155',
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     lineHeight: 18,
   },
   premiumQuickActionCard: {
@@ -2530,12 +2530,12 @@ const styles = StyleSheet.create({
   },
   quickActionTitle: {
     fontSize: 14,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: '#0F172A',
   },
   quickActionSubTitle: {
     fontSize: 11,
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-Regular',
     color: '#64748B',
     marginTop: 12,
     marginBottom: 10,
@@ -2548,7 +2548,7 @@ const styles = StyleSheet.create({
   },
   premiumMiniQuickBtnActiveText: {
     fontSize: 11,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: Colors.primary,
   },
   premiumMiniQuickBtnInactive: {
@@ -2559,7 +2559,7 @@ const styles = StyleSheet.create({
   },
   premiumMiniQuickBtnInactiveText: {
     fontSize: 11,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: '#64748B',
   },
   premiumBulkInputRow: {
@@ -2576,7 +2576,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 40,
     fontSize: 14,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: '#0F172A',
   },
   premiumBulkApplyBtn: {
@@ -2593,7 +2593,7 @@ const styles = StyleSheet.create({
   premiumBulkApplyBtnText: {
     fontSize: 12,
     color: '#FFF',
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
   },
   weekendPill: {
     backgroundColor: '#FEE2E2',
@@ -2604,7 +2604,7 @@ const styles = StyleSheet.create({
   },
   weekendPillText: {
     fontSize: 10,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: '#DC2626',
   },
   premiumAdjustPriceBtn: {
@@ -2619,7 +2619,7 @@ const styles = StyleSheet.create({
   },
   premiumAdjustPriceBtnText: {
     fontSize: 18,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: '#334155',
     lineHeight: 20,
   },
@@ -2671,7 +2671,7 @@ const styles = StyleSheet.create({
   premiumHeaderSaveBtnText: {
     fontSize: 13,
     color: '#FFF',
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
   },
   applyBtnLargeModern: {
     backgroundColor: Colors.primary,
@@ -2687,7 +2687,7 @@ const styles = StyleSheet.create({
   },
   applyBtnTextLarge: {
     color: '#fff',
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     fontSize: 15,
   },
   premiumPriceInputContainer: {
@@ -2705,7 +2705,7 @@ const styles = StyleSheet.create({
   premiumPriceInput: {
     flex: 1,
     fontSize: 16,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: '#0F172A',
     paddingVertical: 8,
   },
@@ -2717,21 +2717,21 @@ const styles = StyleSheet.create({
   },
   currencyText: {
     fontSize: 11,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: '#475569',
   },
   inactiveBadge: { backgroundColor: '#F2F4F7', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, justifyContent: 'center' },
-  inactiveBadgeText: { fontSize: 10, color: '#667085', fontFamily: 'Alexandria-Bold' },
+  inactiveBadgeText: { fontSize: 10, color: '#667085', fontFamily: 'IBMPlexSansArabic-Bold' },
   chaletSelectCard: { padding: 16, borderBottomWidth: 1, borderBottomColor: '#EEE' },
   dayIndicator: { width: 32, height: 32, borderRadius: 16, backgroundColor: Colors.primary + '10', justifyContent: 'center', alignItems: 'center' },
-  dayIndicatorText: { fontSize: 14, fontFamily: 'Alexandria-Black', color: Colors.primary },
+  dayIndicatorText: { fontSize: 14, fontFamily: 'IBMPlexSansArabic-Bold', color: Colors.primary },
   cardInactive: { backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' },
   shiftStatusHighlight: { backgroundColor: '#fff', padding: 16, borderRadius: 20, marginBottom: 20, borderWidth: 1, borderColor: '#F0F2F7', alignItems: 'center', ...Shadows.small },
   statusIconCircle: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
-  statusLabelLarge: { fontSize: 14, fontFamily: 'Alexandria-Bold', color: '#1F2937' },
-  statusValueLarge: { fontSize: 11, fontFamily: 'Alexandria-Medium', marginTop: 2 },
+  statusLabelLarge: { fontSize: 14, fontFamily: 'IBMPlexSansArabic-Bold', color: '#1F2937' },
+  statusValueLarge: { fontSize: 11, fontFamily: 'IBMPlexSansArabic-Medium', marginTop: 2 },
   miniQuickBtn: { backgroundColor: 'rgba(255,255,255,0.3)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
-  miniQuickBtnText: { color: '#fff', fontSize: 10, fontFamily: 'Alexandria-Bold' },
+  miniQuickBtnText: { color: '#fff', fontSize: 10, fontFamily: 'IBMPlexSansArabic-Bold' },
   bulkTimeAdjustCard: {
     backgroundColor: '#EFF6FF',
     borderWidth: 1,
@@ -2742,7 +2742,7 @@ const styles = StyleSheet.create({
   },
   bulkTimeAdjustTitle: {
     fontSize: 13,
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'IBMPlexSansArabic-SemiBold',
     color: '#1E40AF',
   },
   adjustTimeBtn: {
@@ -2758,7 +2758,7 @@ const styles = StyleSheet.create({
   },
   adjustTimeBtnText: {
     fontSize: 12,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: '#FFFFFF',
   },
   editTimeRowCard: {
@@ -2775,17 +2775,17 @@ const styles = StyleSheet.create({
   },
   editTimeCardTitle: {
     fontSize: 14,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: '#1E293B',
   },
   timeLabelText: {
     fontSize: 11,
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-Medium',
     color: '#64748B',
   },
   timeValueText: {
     fontSize: 13,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: '#0F172A',
     minWidth: 70,
     textAlign: 'center',
@@ -2802,7 +2802,7 @@ const styles = StyleSheet.create({
   },
   adjustTimeBtnTextSmall: {
     fontSize: 18,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: Colors.primary,
     lineHeight: 22,
   },
@@ -2815,7 +2815,7 @@ const styles = StyleSheet.create({
   },
   saveAllBtnText: {
     color: '#fff',
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     fontSize: 15,
   },
   overlapWarningCard: {
@@ -2832,7 +2832,7 @@ const styles = StyleSheet.create({
   },
   overlapWarningText: {
     fontSize: 12,
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-Medium',
     color: '#92400E',
     flex: 1,
   },
@@ -2850,7 +2850,7 @@ const styles = StyleSheet.create({
   },
   fullyBookedText: {
     fontSize: 13,
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'IBMPlexSansArabic-SemiBold',
     color: '#0369A1',
   }
 });

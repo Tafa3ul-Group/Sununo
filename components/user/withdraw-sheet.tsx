@@ -456,7 +456,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: "#1C1C1C",
     textAlign: "center",
     marginTop: 6,
@@ -481,13 +481,13 @@ const styles = StyleSheet.create({
   amountInput: {
     minWidth: 120,
     fontSize: normalize.font(32),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: "#035DF9",
     padding: 0,
   },
   amountCurrency: {
     fontSize: normalize.font(15),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#64748B",
   },
   amountMetaRow: {
@@ -500,12 +500,12 @@ const styles = StyleSheet.create({
   },
   amountAvailable: {
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: "#64748B",
   },
   amountAvailableValue: {
     color: "#1C1C1C",
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
   },
   maxButton: {
     paddingHorizontal: 14,
@@ -515,20 +515,20 @@ const styles = StyleSheet.create({
   },
   maxButtonText: {
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: "#035DF9",
   },
   // Labels / errors
   label: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#1C1C1C",
     marginTop: 18,
     marginBottom: 10,
   },
   errorText: {
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#EF4444",
     marginTop: 8,
   },
@@ -560,7 +560,7 @@ const styles = StyleSheet.create({
   },
   methodLabel: {
     fontSize: normalize.font(11),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#94A3B8",
   },
   methodLabelActive: {
@@ -592,7 +592,7 @@ const styles = StyleSheet.create({
   accountInput: {
     flex: 1,
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#1C1C1C",
     paddingVertical: 14,
   },
@@ -613,12 +613,12 @@ const styles = StyleSheet.create({
   },
   warningTitle: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: "#B45309",
   },
   warningText: {
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#D97706",
     lineHeight: 18,
   },
@@ -642,7 +642,7 @@ const styles = StyleSheet.create({
   },
   feedbackText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#1C1C1C",
     textAlign: "center",
     marginTop: 10,
@@ -658,7 +658,7 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#035DF9",
   },
 });

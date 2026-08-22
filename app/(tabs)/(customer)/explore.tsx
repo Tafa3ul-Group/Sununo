@@ -22,6 +22,7 @@ import {
   SolarWindBold,
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
+import { CircleBackButton } from "@/components/ui/circle-back-button";
 import { AppMap } from "@/components/user/app-map";
 import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
 import { ChaletDetailsBody } from "@/components/chalet/chalet-details-body";
@@ -47,11 +48,7 @@ import {
   BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
 import { useTranslation } from "react-i18next";
-import Animated, {
-  FadeInUp,
-  useAnimatedStyle,
-  useSharedValue,
-} from "react-native-reanimated";
+import Animated, { useAnimatedStyle, useSharedValue } from "react-native-reanimated";
 
 import { HostContactCard } from "@/components/user/host-contact-card";
 import { useFormatTime } from "@/hooks/useFormatTime";
@@ -88,7 +85,6 @@ import { useDispatch, useSelector } from "react-redux";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const MAPBOX_ACCESS_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN;
-
 
 import { useGetChaletsMapQuery } from "@/store/api/apiSlice";
 import { setFilters, clearFilters } from "@/store/filterSlice";
@@ -142,7 +138,7 @@ function SectionHeader({ title, isRTL }: { title: string; isRTL: boolean }) {
       <ThemedText
         style={{
           fontSize: 14,
-          fontFamily: "Alexandria-Medium",
+          fontFamily: "IBMPlexSansArabic-Medium",
           color: "#111827",
           textAlign,
         }}
@@ -699,7 +695,7 @@ export default function ExploreScreen() {
                   style={{
                     fontSize: normalize.font(8),
                     color: "#6B7280",
-                    fontFamily: "Alexandria-Medium",
+                    fontFamily: "IBMPlexSansArabic-Medium",
                     textAlign,
                   }}
                 >
@@ -863,6 +859,15 @@ export default function ExploreScreen() {
         ]}
       >
         <View style={styles.searchBarContainer}>
+          {/* This map is a tab, but home and bookings push to it — so offer a
+              way back whenever there is somewhere to go back to. Reached from
+              the tab bar there is no history, and no button. */}
+          {router.canGoBack() && (
+            <CircleBackButton
+              onPress={() => router.back()}
+              style={styles.mapBackBtn}
+            />
+          )}
           <View style={styles.searchInputWrapper}>
             <SolarMagnifierBold size={20} color={Colors.text.muted} />
             <TextInput
@@ -1075,7 +1080,6 @@ export default function ExploreScreen() {
 
                       {/* Reviews Section */}
                       <Animated.View
-                        entering={FadeInUp.delay(300).duration(300)}
                       >
                         <SectionHeader
                           title={isRTL ? "التقييمات" : "Reviews"}
@@ -1175,7 +1179,6 @@ export default function ExploreScreen() {
 
                       {/* Similar Chalets Section */}
                       <Animated.View
-                        entering={FadeInUp.delay(350).duration(300)}
                       >
                         <SectionHeader
                           title={
@@ -1345,7 +1348,7 @@ const styles = StyleSheet.create({
   },
   filterChipText: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#1F2937",
   },
   bottomSheet: {
@@ -1394,7 +1397,7 @@ const styles = StyleSheet.create({
   imageCountText: {
     color: "white",
     fontSize: 8,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
   headerInfo: {
     flex: 1,
@@ -1403,7 +1406,7 @@ const styles = StyleSheet.create({
   },
   chaletTitle: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#111827",
   },
   locationRow: {
@@ -1413,7 +1416,7 @@ const styles = StyleSheet.create({
   chaletLocation: {
     fontSize: 14,
     color: "#6B7280",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
   ratingRow: {
     alignItems: "center",
@@ -1421,7 +1424,7 @@ const styles = StyleSheet.create({
   },
   priceText: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.primary,
   },
   dot: {
@@ -1453,13 +1456,13 @@ const styles = StyleSheet.create({
   },
   navInfoVal: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.primary,
   },
   navInfoLbl: {
     fontSize: 8,
     color: "#9CA3AF",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     textTransform: "uppercase",
   },
   navCircleFab: {
@@ -1509,7 +1512,7 @@ const styles = StyleSheet.create({
   navActionText: {
     color: "white",
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
   enhancedInfoGrid: {
     marginTop: 24,
@@ -1528,13 +1531,13 @@ const styles = StyleSheet.create({
   },
   enhancedInfoValue: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#1E293B",
     marginTop: 6,
   },
   enhancedInfoLabel: {
     fontSize: 8,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#64748B",
     marginTop: 2,
     textTransform: "uppercase",
@@ -1559,7 +1562,7 @@ const styles = StyleSheet.create({
   },
   navOutlineText: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.primary,
   },
 
@@ -1582,7 +1585,7 @@ const styles = StyleSheet.create({
   },
   ratingValue: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#1E293B",
   },
   titleSection: {
@@ -1591,13 +1594,13 @@ const styles = StyleSheet.create({
   },
   chaletTitleMain: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#111827",
   },
   chaletLocationSub: {
     fontSize: 14,
     color: "#6B7280",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     marginTop: 2,
   },
   specsSection: {
@@ -1606,7 +1609,7 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#1E293B",
     marginBottom: 12,
     paddingHorizontal: 0,
@@ -1623,7 +1626,7 @@ const styles = StyleSheet.create({
   },
   specText: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#334155",
   },
   routeButtonContainer: {
@@ -1695,7 +1698,7 @@ const styles = StyleSheet.create({
   },
   footerPrice: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: "#000000",
   },
   bookButtonCustom: {
@@ -1724,7 +1727,7 @@ const styles = StyleSheet.create({
   bookButtonText: {
     color: "white",
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
   },
   loaderOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -1748,7 +1751,7 @@ const styles = StyleSheet.create({
   },
   filterLoadingText: {
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.primary,
   },
 
@@ -1759,6 +1762,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 12,
     width: "100%",
+  },
+  mapBackBtn: {
+    marginEnd: 10,
   },
   searchInputWrapper: {
     flex: 1,
@@ -1776,7 +1782,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#1F2937",
   },
   filterButtonCircle: {
@@ -1807,7 +1813,7 @@ const styles = StyleSheet.create({
   },
   filterModalTitle: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#111827",
     marginBottom: 24,
     textAlign: "center",
@@ -1817,7 +1823,7 @@ const styles = StyleSheet.create({
   },
   filterSectionLabel: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#374151",
     marginBottom: 12,
   },
@@ -1827,7 +1833,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingHorizontal: 16,
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#111827",
     borderWidth: 1,
     borderColor: "#E5E7EB",
@@ -1867,7 +1873,7 @@ const styles = StyleSheet.create({
   },
   revRateNumMerged: {
     fontSize: 16,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#111827",
     lineHeight: 24,
   },
@@ -1880,7 +1886,7 @@ const styles = StyleSheet.create({
   },
   reviewerNameMerged: {
     fontSize: 16,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#111827",
     lineHeight: 26,
   },
@@ -1889,7 +1895,7 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     marginTop: 8,
     lineHeight: 22,
-    fontFamily: "LamaSans-Regular",
+    fontFamily: "IBMPlexSansArabic-Regular",
   },
   avatarCircleMerged: {
     width: 60,
@@ -1908,7 +1914,7 @@ const styles = StyleSheet.create({
   revTimeTextMerged: {
     fontSize: 13,
     color: "#9CA3AF",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
 });
 
@@ -1946,7 +1952,7 @@ const filterBannerStyles = StyleSheet.create({
   },
   pillText: {
     fontSize: 8,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.primary,
   },
   clearBtn: {

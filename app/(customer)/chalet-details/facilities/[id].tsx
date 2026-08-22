@@ -7,7 +7,7 @@ import { getImageSrc } from "@/hooks/useImageSrc";
 import { RootState } from "@/store";
 import { useGetCustomerChaletDetailsQuery } from "@/store/api/customerApiSlice";
 import { Stack, useLocalSearchParams } from "expo-router";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -182,7 +182,6 @@ export default function FacilitiesScreen() {
                 return (
                   <Animated.View
                     key={feat.id}
-                    entering={FadeInDown.delay((featIdx % 8) * 60).duration(380)}
                   >
                     <FacilityCard
                       label={feat.name}
@@ -217,7 +216,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#111827",
   },
   cardContainer: {
@@ -232,14 +231,14 @@ const styles = StyleSheet.create({
   textSide: { flex: 1 },
   cardLabel: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#111827",
   },
   cardSubtext: {
     fontSize: 8,
     color: "#6B7280",
     marginTop: 4,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
   iconSideScalloped: {
     width: 44,

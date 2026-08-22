@@ -853,7 +853,7 @@ export default function AddChaletScreen() {
                 </Text>
                 {isOverlapping && (
                   <View style={{ backgroundColor: '#FEE4E2', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
-                    <Text style={{ fontSize: 9, color: '#D92D20', fontFamily: 'Alexandria-Bold' }}>
+                    <Text style={{ fontSize: 9, color: '#D92D20', fontFamily: 'IBMPlexSansArabic-Bold' }}>
                       {isRTL ? '⚠ تداخل' : '⚠ Overlap'}
                     </Text>
                   </View>
@@ -861,7 +861,7 @@ export default function AddChaletScreen() {
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
                 <SolarClockCircleBold size={11} color={isOverlapping ? '#D92D20' : '#94A3B8'} />
-                <Text style={{ fontSize: 10, color: isOverlapping ? '#D92D20' : '#94A3B8', fontFamily: 'Alexandria-Medium' }}>
+                <Text style={{ fontSize: 10, color: isOverlapping ? '#D92D20' : '#94A3B8', fontFamily: 'IBMPlexSansArabic-Medium' }}>
                   {formatTime12h(shift.startTime)} - {formatTime12h(shift.endTime)}
                 </Text>
               </View>
@@ -965,7 +965,7 @@ export default function AddChaletScreen() {
                       onPress={() => citySheetRef.current?.present()}
                       activeOpacity={0.7}
                     >
-                      <Text style={{ flex: 1, fontSize: 15, fontFamily: form.cityName ? 'Alexandria-Medium' : 'Alexandria-Regular', color: form.cityName ? '#1E293B' : '#BCBCBC', textAlign }}>
+                      <Text style={{ flex: 1, fontSize: 15, fontFamily: form.cityName ? 'IBMPlexSansArabic-Medium' : 'IBMPlexSansArabic-Regular', color: form.cityName ? '#1E293B' : '#BCBCBC', textAlign }}>
                         {form.cityName || (isRTL ? 'اختر المدينة' : 'Select City')}
                       </Text>
                       <Text style={{ fontSize: 16, color: '#94A3B8' }}>{isRTL ? '‹' : '›'}</Text>
@@ -1009,7 +1009,7 @@ export default function AddChaletScreen() {
                       }}
                     />
                     {phoneError && (
-                      <Text style={{ color: '#EF4444', fontSize: 12, fontFamily: 'Alexandria-Medium', marginTop: 6, textAlign }}>
+                      <Text style={{ color: '#EF4444', fontSize: 12, fontFamily: 'IBMPlexSansArabic-Medium', marginTop: 6, textAlign }}>
                         {phoneError}
                       </Text>
                     )}
@@ -1094,10 +1094,10 @@ export default function AddChaletScreen() {
                       padding: 16,
                       marginTop: 4,
                     }}>
-                      <Text style={{ fontSize: 14, fontFamily: 'Alexandria-Bold', color: '#1E293B', textAlign, marginBottom: 4 }}>
+                      <Text style={{ fontSize: 14, fontFamily: 'IBMPlexSansArabic-Bold', color: '#1E293B', textAlign, marginBottom: 4 }}>
                         {isRTL ? 'سعر الشخص الإضافي' : 'Extra Person Price'}
                       </Text>
-                      <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Regular', color: '#94A3B8', textAlign, marginBottom: 12 }}>
+                      <Text style={{ fontSize: 11, fontFamily: 'IBMPlexSansArabic-Regular', color: '#94A3B8', textAlign, marginBottom: 12 }}>
                         {isRTL ? 'لكل شخص إضافي فوق سعة المبلغ' : 'Per extra guest above price capacity'}
                       </Text>
                       <View style={{
@@ -1109,14 +1109,14 @@ export default function AddChaletScreen() {
                         flexDirection: 'row',
                         alignItems: 'center',
                       }}>
-                        <Text style={{ fontSize: 14, fontFamily: 'Alexandria-Medium', color: '#94A3B8', marginEnd: 12 }}>
+                        <Text style={{ fontSize: 14, fontFamily: 'IBMPlexSansArabic-Medium', color: '#94A3B8', marginEnd: 12 }}>
                           {isRTL ? 'د.ع' : 'IQD'}
                         </Text>
                         <TextInput
                           style={{
                             flex: 1,
                             fontSize: 18,
-                            fontFamily: 'Alexandria-Bold',
+                            fontFamily: 'IBMPlexSansArabic-Bold',
                             color: '#1E293B',
                             textAlign: inputTextAlign,
                             paddingVertical: 14,
@@ -1200,19 +1200,19 @@ export default function AddChaletScreen() {
                     {/* Note: photos are optional but recommended for a stronger listing */}
                     <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8, backgroundColor: '#EFF6FF', borderWidth: 1, borderColor: '#BFDBFE', borderRadius: 12, padding: 10, marginBottom: 12 }}>
                       <SolarInfoCircleBold size={16} color="#2563EB" />
-                      <Text style={{ flex: 1, fontSize: 11, fontFamily: 'Alexandria-Medium', color: '#1E40AF', textAlign, lineHeight: 17 }}>
+                      <Text style={{ flex: 1, fontSize: 11, fontFamily: 'IBMPlexSansArabic-Medium', color: '#1E40AF', textAlign, lineHeight: 17 }}>
                         {isRTL
                           ? 'الصور اختيارية، لكن كلما أكملت تفاصيل شاليهك زادت فرص قبوله وظهر بشكل أفضل للزبائن.'
                           : 'Photos are optional, but the more details you complete the better your chalet looks to guests and the higher its chances of approval.'}
                       </Text>
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                      <Text style={{ fontSize: 13, fontFamily: 'Alexandria-Bold', color: '#1E293B', textAlign }}>
+                      <Text style={{ fontSize: 13, fontFamily: 'IBMPlexSansArabic-Bold', color: '#1E293B', textAlign }}>
                         {isRTL ? 'صور المرفق' : 'Amenity Photos'}
                       </Text>
                       {(imagesByCategory[amenityCategories[currentAmenitySubStep].id] || []).length > 0 && (
                         <View style={{ backgroundColor: Colors.primary + '15', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 }}>
-                          <Text style={{ fontSize: 10, fontFamily: 'Alexandria-Bold', color: Colors.primary }}>
+                          <Text style={{ fontSize: 10, fontFamily: 'IBMPlexSansArabic-Bold', color: Colors.primary }}>
                             {(imagesByCategory[amenityCategories[currentAmenitySubStep].id] || []).length} {isRTL ? 'صور' : 'photos'}
                           </Text>
                         </View>
@@ -1243,7 +1243,7 @@ export default function AddChaletScreen() {
                             }}
                           >
                             <SolarCameraBold size={26} color="#94A3B8" />
-                            <Text style={{ fontSize: 10, fontFamily: 'Alexandria-Medium', color: '#94A3B8' }}>
+                            <Text style={{ fontSize: 10, fontFamily: 'IBMPlexSansArabic-Medium', color: '#94A3B8' }}>
                               {isRTL ? 'إضافة صورة' : 'Add Photo'}
                             </Text>
                           </TouchableOpacity>
@@ -1266,7 +1266,7 @@ export default function AddChaletScreen() {
                               }}
                               onPress={() => removeImage(index, amenityCategories[currentAmenitySubStep].id)}
                             >
-                              <Text style={{ color: '#FFF', fontSize: 16, fontFamily: 'Alexandria-Bold', marginTop: -2 }}>×</Text>
+                              <Text style={{ color: '#FFF', fontSize: 16, fontFamily: 'IBMPlexSansArabic-Bold', marginTop: -2 }}>×</Text>
                             </TouchableOpacity>
                           </View>
                         ));
@@ -1524,7 +1524,7 @@ export default function AddChaletScreen() {
                 }}>
 
                   <BottomSheetTextInput
-                    style={{ flex: 1, fontSize: 16, fontFamily: 'Alexandria-Bold', color: '#1E293B', textAlign: inputTextAlign }}
+                    style={{ flex: 1, fontSize: 16, fontFamily: 'IBMPlexSansArabic-Bold', color: '#1E293B', textAlign: inputTextAlign }}
                     value={isRTL ? shift.name.ar : shift.name.en}
                     onChangeText={(val) => updateShiftField(editingShiftIndex, isRTL ? 'nameAr' : 'nameEn', val)}
                     placeholder={isRTL ? 'اسم الفترة' : 'Shift name'}
@@ -1543,13 +1543,13 @@ export default function AddChaletScreen() {
                 }, isCurrentOverlapping && { borderColor: '#FCA5A5', backgroundColor: '#FFF5F5' }]}>
                   {/* Header */}
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                    <Text style={[{ fontSize: 13, fontFamily: 'Alexandria-Bold', color: '#475569' }, isCurrentOverlapping && { color: '#991B1B' }]}>
+                    <Text style={[{ fontSize: 13, fontFamily: 'IBMPlexSansArabic-Bold', color: '#475569' }, isCurrentOverlapping && { color: '#991B1B' }]}>
                       {isRTL ? 'أوقات الفترة' : 'Shift Times'}
                     </Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                       {isCurrentOverlapping && (
                         <View style={{ backgroundColor: '#FEE4E2', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 }}>
-                          <Text style={{ fontSize: 10, color: '#D92D20', fontFamily: 'Alexandria-Bold' }}>
+                          <Text style={{ fontSize: 10, color: '#D92D20', fontFamily: 'IBMPlexSansArabic-Bold' }}>
                             {isRTL ? 'تداخل' : 'Overlap'}
                           </Text>
                         </View>
@@ -1561,7 +1561,7 @@ export default function AddChaletScreen() {
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                     {/* Start Time */}
                     <View style={{ flex: 1, alignItems: 'center' }}>
-                      <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Medium', color: '#64748B' }}>
+                      <Text style={{ fontSize: 11, fontFamily: 'IBMPlexSansArabic-Medium', color: '#64748B' }}>
                         {isRTL ? 'وقت البدء' : 'Start Time'}
                       </Text>
                       <View style={{ alignItems: 'center', marginTop: 6 }}>
@@ -1583,7 +1583,7 @@ export default function AddChaletScreen() {
 
                     {/* End Time */}
                     <View style={{ flex: 1, alignItems: 'center' }}>
-                      <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Medium', color: '#64748B' }}>
+                      <Text style={{ fontSize: 11, fontFamily: 'IBMPlexSansArabic-Medium', color: '#64748B' }}>
                         {isRTL ? 'وقت الانتهاء' : 'End Time'}
                       </Text>
                       <View style={{ alignItems: 'center', marginTop: 6 }}>
@@ -1616,7 +1616,7 @@ export default function AddChaletScreen() {
                       borderColor: '#FECACA',
                     }}>
                       <SolarInfoCircleBold size={16} color="#DC2626" />
-                      <Text style={{ color: '#DC2626', fontSize: 11, fontFamily: 'Alexandria-Medium', flex: 1, textAlign }}>
+                      <Text style={{ color: '#DC2626', fontSize: 11, fontFamily: 'IBMPlexSansArabic-Medium', flex: 1, textAlign }}>
                         {isRTL
                           ? `${shiftOverlapInfo.conflictMsg.ar}. يجب تغيير بقية الأوقات`
                           : `${shiftOverlapInfo.conflictMsg.en}. Change the other shift times`}
@@ -1626,7 +1626,7 @@ export default function AddChaletScreen() {
                 </View>
 
                 {/* Price Section */}
-                <Text style={{ fontSize: 15, fontFamily: 'Alexandria-Bold', color: '#1E293B', textAlign, marginBottom: 12 }}>
+                <Text style={{ fontSize: 15, fontFamily: 'IBMPlexSansArabic-Bold', color: '#1E293B', textAlign, marginBottom: 12 }}>
                   {isRTL ? 'تحديد السعر' : 'Set Price'}
                 </Text>
 
@@ -1641,14 +1641,14 @@ export default function AddChaletScreen() {
                   alignItems: 'center',
                   marginBottom: 32,
                 }}>
-                  <Text style={{ fontSize: 14, fontFamily: 'Alexandria-Medium', color: '#94A3B8', marginEnd: 12 }}>
+                  <Text style={{ fontSize: 14, fontFamily: 'IBMPlexSansArabic-Medium', color: '#94A3B8', marginEnd: 12 }}>
                     {isRTL ? 'د.ع' : 'IQD'}
                   </Text>
                   <BottomSheetTextInput
                     style={{
                       flex: 1,
                       fontSize: 18,
-                      fontFamily: 'Alexandria-Bold',
+                      fontFamily: 'IBMPlexSansArabic-Bold',
                       color: '#1E293B',
                       textAlign: inputTextAlign,
                       paddingVertical: 14,
@@ -1694,17 +1694,17 @@ const styles = StyleSheet.create({
     overflow: 'visible',
   },
   sectionCard: { backgroundColor: 'transparent', padding: 0, gap: Spacing.md, marginBottom: Spacing.md },
-  sectionHeader: { fontSize: normalize.font(16), fontFamily: "Alexandria-Black", color: Colors.text.primary, marginBottom: 2 },
+  sectionHeader: { fontSize: normalize.font(16), fontFamily: "IBMPlexSansArabic-Bold", color: Colors.text.primary, marginBottom: 2 },
   rowInputs: { gap: Spacing.sm },
   inputGroup: { gap: 6 },
-  label: { ...Typography.caption, color: Colors.text.primary, fontFamily: "Alexandria-Black", fontSize: normalize.font(14), lineHeight: normalize.font(22) },
-  requiredStar: { color: '#EF4444', fontSize: normalize.font(11), fontFamily: 'Alexandria-SemiBold' },
-  optionalLabel: { color: '#94A3B8', fontSize: normalize.font(11), fontFamily: 'Alexandria-SemiBold' },
-  smallLabel: { ...Typography.caption, color: Colors.text.muted, fontFamily: "Alexandria-SemiBold", fontSize: normalize.font(12) },
+  label: { ...Typography.caption, color: Colors.text.primary, fontFamily: "IBMPlexSansArabic-Bold", fontSize: normalize.font(14), lineHeight: normalize.font(22) },
+  requiredStar: { color: '#EF4444', fontSize: normalize.font(11), fontFamily: 'IBMPlexSansArabic-SemiBold' },
+  optionalLabel: { color: '#94A3B8', fontSize: normalize.font(11), fontFamily: 'IBMPlexSansArabic-SemiBold' },
+  smallLabel: { ...Typography.caption, color: Colors.text.muted, fontFamily: "IBMPlexSansArabic-SemiBold", fontSize: normalize.font(12) },
   input: {
     height: normalize.height(48), backgroundColor: '#FFFFFF', borderRadius: normalize.radius(12),
     paddingHorizontal: Spacing.md, borderWidth: 1, borderColor: '#E8E8E8',
-    fontSize: normalize.font(15), color: Colors.text.primary, fontFamily: "Alexandria-Regular"
+    fontSize: normalize.font(15), color: Colors.text.primary, fontFamily: "IBMPlexSansArabic-Regular"
   },
   // City Picker Card
   cityPickerCard: {
@@ -1739,23 +1739,23 @@ const styles = StyleSheet.create({
   },
   cityPickerText: {
     fontSize: normalize.font(15),
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'IBMPlexSansArabic-SemiBold',
     color: '#94A3B8',
   },
   cityPickerTextSelected: {
     color: Colors.text.primary,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
   },
   cityPickerHint: {
     fontSize: normalize.font(11),
-    fontFamily: 'Alexandria-Regular',
+    fontFamily: 'IBMPlexSansArabic-Regular',
     color: '#CBD5E1',
     marginTop: 2,
   },
   cityPickerChevron: {
     fontSize: 24,
     color: '#94A3B8',
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
   },
   textArea: { height: normalize.height(100), paddingTop: 18, textAlignVertical: 'top' },
   // Map
@@ -1769,18 +1769,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 6,
     backgroundColor: 'rgba(3, 93, 249, 0.9)', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 100
   },
-  editLocText: { color: Colors.white, fontSize: normalize.font(12), fontFamily: "Alexandria-Bold" },
+  editLocText: { color: Colors.white, fontSize: normalize.font(12), fontFamily: "IBMPlexSansArabic-Bold" },
   // Shifts
   shiftsHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  shiftHint: { fontSize: normalize.font(13), color: Colors.text.muted, fontFamily: "Alexandria-Regular", marginBottom: 4 },
-  pricingTitle: { fontSize: normalize.font(14), fontFamily: "Alexandria-Bold", color: Colors.text.primary },
+  shiftHint: { fontSize: normalize.font(13), color: Colors.text.muted, fontFamily: "IBMPlexSansArabic-Regular", marginBottom: 4 },
+  pricingTitle: { fontSize: normalize.font(14), fontFamily: "IBMPlexSansArabic-Bold", color: Colors.text.primary },
   dayPricingGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
   dayPriceItem: { alignItems: 'center', gap: 4, width: '13%' },
-  dayLabel: { fontSize: normalize.font(10), fontFamily: "Alexandria-Black", color: Colors.text.muted },
+  dayLabel: { fontSize: normalize.font(10), fontFamily: "IBMPlexSansArabic-Bold", color: Colors.text.muted },
   dayPriceInput: {
     width: '100%', height: 36, backgroundColor: '#F8FAFC', borderRadius: 8,
     borderWidth: 1, borderColor: '#E2E8F0', textAlign: 'center',
-    fontSize: normalize.font(11), color: Colors.text.primary, fontFamily: "Alexandria-Medium", paddingHorizontal: 2
+    fontSize: normalize.font(11), color: Colors.text.primary, fontFamily: "IBMPlexSansArabic-Regular", paddingHorizontal: 2
   },
   // Shift Card Row (Matches Screenshot)
   shiftListContainer: { gap: 12, marginBottom: 16 },
@@ -1794,14 +1794,14 @@ const styles = StyleSheet.create({
   shiftEditBtn: { width: 32, height: 32, justifyContent: 'center', alignItems: 'center' },
   shiftInfo: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, justifyContent: 'flex-end' },
   shiftIconLarge: { fontSize: 24 },
-  shiftValueName: { fontSize: normalize.font(15), fontFamily: "Alexandria-Bold", color: Colors.text.primary },
-  shiftPriceText: { color: Colors.text.primary, fontFamily: "Alexandria-Black" },
+  shiftValueName: { fontSize: normalize.font(15), fontFamily: "IBMPlexSansArabic-Bold", color: Colors.text.primary },
+  shiftPriceText: { color: Colors.text.primary, fontFamily: "IBMPlexSansArabic-Bold" },
   addShiftBtnFull: {
     flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center',
     paddingVertical: 12, borderStyle: 'dashed', borderWidth: 1.5, borderColor: Colors.primary + '40',
     borderRadius: 14, marginTop: 8
   },
-  addShiftBtnFullText: { color: Colors.primary, fontFamily: "Alexandria-Bold" },
+  addShiftBtnFullText: { color: Colors.primary, fontFamily: "IBMPlexSansArabic-Bold" },
   // Capacity (Matches Screenshot)
   capacityList: { gap: 12, marginTop: 8 },
   capacityCard: {
@@ -1810,16 +1810,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between', alignItems: 'center'
   },
   capacityInfo: { flex: 1, gap: 2 },
-  capacityLabel: { fontSize: normalize.font(14), fontFamily: "Alexandria-Bold", color: Colors.text.primary },
-  capacitySubLabel: { fontSize: normalize.font(14), fontFamily: "Alexandria-Regular", color: Colors.text.muted },
+  capacityLabel: { fontSize: normalize.font(14), fontFamily: "IBMPlexSansArabic-Bold", color: Colors.text.primary },
+  capacitySubLabel: { fontSize: normalize.font(14), fontFamily: "IBMPlexSansArabic-Regular", color: Colors.text.muted },
   // Modal Edit
   shiftModalCard: { backgroundColor: '#F8FAFC', borderRadius: 16, padding: 16, gap: 16 },
   pricingSectionModal: { gap: 12 },
   modalDeleteBtn: { paddingVertical: 16, alignItems: 'center' },
-  modalDeleteText: { color: Colors.error, fontFamily: "Alexandria-Bold" },
+  modalDeleteText: { color: Colors.error, fontFamily: "IBMPlexSansArabic-Bold" },
   // Amenity Categories & Feature Rows
   categorySectionTitle: {
-    fontSize: normalize.font(16), fontFamily: "Alexandria-Black", color: Colors.text.primary,
+    fontSize: normalize.font(16), fontFamily: "IBMPlexSansArabic-Bold", color: Colors.text.primary,
     textAlign: 'center', marginBottom: 8
   },
   featuresList: { gap: 8 },
@@ -1842,7 +1842,7 @@ const styles = StyleSheet.create({
   },
   featureIconText: { fontSize: normalize.font(20), color: '#FFFFFF' },
   featureName: {
-    fontSize: normalize.font(14), fontFamily: "Alexandria-Bold", color: Colors.text.primary,
+    fontSize: normalize.font(14), fontFamily: "IBMPlexSansArabic-Bold", color: Colors.text.primary,
     flex: 1
   },
   checkbox: {
@@ -1850,9 +1850,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center', alignItems: 'center'
   },
   checkboxActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
-  checkboxCheck: { color: '#FFFFFF', fontSize: normalize.font(14), fontFamily: "Alexandria-Bold" },
-  uploadText: { marginTop: normalize.height(4), color: Colors.text.muted, fontSize: normalize.font(12), fontFamily: "Alexandria-SemiBold" },
-  photoHint: { fontSize: normalize.font(12), color: Colors.text.muted, fontFamily: "Alexandria-Regular", marginBottom: 4 },
+  checkboxCheck: { color: '#FFFFFF', fontSize: normalize.font(14), fontFamily: "IBMPlexSansArabic-Bold" },
+  uploadText: { marginTop: normalize.height(4), color: Colors.text.muted, fontSize: normalize.font(12), fontFamily: "IBMPlexSansArabic-SemiBold" },
+  photoHint: { fontSize: normalize.font(12), color: Colors.text.muted, fontFamily: "IBMPlexSansArabic-Regular", marginBottom: 4 },
   imageContainer: { gap: Spacing.sm },
   imageItem: { width: normalize.width(100), height: normalize.width(100), borderRadius: normalize.radius(16), overflow: 'hidden', position: 'relative' },
   uploadedImage: { width: '100%', height: '100%' },
@@ -1862,7 +1862,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center', alignItems: 'center'
   },
   coverBadge: { position: 'absolute', bottom: 6, start: 6, backgroundColor: Colors.primary, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
-  coverBadgeText: { color: '#FFFFFF', fontSize: normalize.font(9), fontFamily: "Alexandria-Bold" },
+  coverBadgeText: { color: '#FFFFFF', fontSize: normalize.font(9), fontFamily: "IBMPlexSansArabic-Bold" },
   // Amenity Wizard Progress
   amenityProgressContainer: {
     flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 24, marginBottom: 12
@@ -1882,7 +1882,7 @@ const styles = StyleSheet.create({
   modalOptions: { flexDirection: 'row', justifyContent: 'space-around', width: '100%', marginBottom: Spacing.lg },
   modalOption: { alignItems: 'center', gap: Spacing.sm },
   modalIcon: { width: normalize.width(70), height: normalize.width(70), borderRadius: normalize.radius(35), justifyContent: 'center', alignItems: 'center' },
-  modalOptionText: { ...Typography.body, fontFamily: "Alexandria-SemiBold" },
+  modalOptionText: { ...Typography.body, fontFamily: "IBMPlexSansArabic-SemiBold" },
   pickerItem: { width: '100%', paddingVertical: Spacing.md, paddingHorizontal: Spacing.lg, borderBottomWidth: 1, borderBottomColor: Colors.border },
   pickerItemText: { ...Typography.body, fontSize: normalize.font(16), color: Colors.text.primary },
   // City Sheet Premium Styles
@@ -1912,13 +1912,13 @@ const styles = StyleSheet.create({
   },
   citySheetTitle: {
     fontSize: normalize.font(18),
-    fontFamily: 'Alexandria-Black',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: Colors.text.primary,
     marginBottom: 4,
   },
   citySheetSubtitle: {
     fontSize: normalize.font(12),
-    fontFamily: 'Alexandria-Regular',
+    fontFamily: 'IBMPlexSansArabic-Regular',
     color: '#94A3B8',
   },
   citySearchContainer: {
@@ -1943,7 +1943,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     color: Colors.text.primary,
-    fontFamily: 'Alexandria-Regular',
+    fontFamily: 'IBMPlexSansArabic-Regular',
     paddingVertical: 0,
   },
   citySearchClear: {
@@ -1958,7 +1958,7 @@ const styles = StyleSheet.create({
   citySearchClearText: {
     fontSize: 11,
     color: '#64748B',
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
   },
   cityListItem: {
     backgroundColor: '#FFFFFF',
@@ -1990,11 +1990,11 @@ const styles = StyleSheet.create({
   },
   cityListName: {
     fontSize: normalize.font(15),
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'IBMPlexSansArabic-SemiBold',
     color: Colors.text.primary,
   },
   cityListNameSelected: {
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: Colors.primary,
   },
   cityListCheck: {
@@ -2008,7 +2008,7 @@ const styles = StyleSheet.create({
   cityListCheckText: {
     color: '#FFFFFF',
     fontSize: 13,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
   },
   cityListEmpty: {
     alignItems: 'center',
@@ -2021,12 +2021,12 @@ const styles = StyleSheet.create({
   },
   cityListEmptyText: {
     fontSize: normalize.font(15),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: Colors.text.primary,
   },
   cityListEmptyHint: {
     fontSize: normalize.font(12),
-    fontFamily: 'Alexandria-Regular',
+    fontFamily: 'IBMPlexSansArabic-Regular',
     color: '#94A3B8',
   },
   modalSearchContainer: {
@@ -2044,14 +2044,14 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     color: Colors.text.primary,
-    fontFamily: "Alexandria-Regular"
+    fontFamily: "IBMPlexSansArabic-Regular"
   },
   shiftRow: { flexDirection: 'row', gap: Spacing.sm, paddingHorizontal: 14, marginBottom: 10 },
   timeSelectBtn: { height: 48, backgroundColor: '#FFFFFF', borderRadius: 12, borderWidth: 1, borderColor: '#E2E8F0', justifyContent: 'center', alignItems: 'center' },
-  timeSelectText: { fontSize: normalize.font(15), fontFamily: "Alexandria-Bold", color: Colors.text.primary },
+  timeSelectText: { fontSize: normalize.font(15), fontFamily: "IBMPlexSansArabic-Bold", color: Colors.text.primary },
   bulkPricingRow: { flexDirection: 'row', gap: 8, alignItems: 'center', marginBottom: 8 },
   bulkBtn: { paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#EFF6FF', borderRadius: 8, borderWidth: 1, borderColor: '#DBEAFE' },
-  bulkBtnText: { color: Colors.primary, fontSize: normalize.font(12), fontFamily: "Alexandria-Bold" },
+  bulkBtnText: { color: Colors.primary, fontSize: normalize.font(12), fontFamily: "IBMPlexSansArabic-Bold" },
 
   // ── Time Adjustment Styles (matching shifts.tsx) ──
   adjustTimeBtnSmall: {
@@ -2066,13 +2066,13 @@ const styles = StyleSheet.create({
   },
   adjustTimeBtnTextSmall: {
     fontSize: 14,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: Colors.primary,
     lineHeight: 18,
   },
   timeValueText: {
     fontSize: 13,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: '#0F172A',
     minWidth: 70,
     textAlign: 'center',
@@ -2114,7 +2114,7 @@ const styles = StyleSheet.create({
   swiperCheckmark: {
     color: '#FFFFFF',
     fontSize: 12,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     marginTop: -1,
   },
   swiperCheckboxInactive: {
@@ -2132,7 +2132,7 @@ const styles = StyleSheet.create({
   },
   swiperFeatureName: {
     fontSize: 14,
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'IBMPlexSansArabic-SemiBold',
     color: Colors.text.primary,
     flex: 1,
   },
@@ -2157,7 +2157,7 @@ const styles = StyleSheet.create({
   },
   swiperSectionTitle: {
     fontSize: 14,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: Colors.text.primary,
     marginBottom: 12,
     marginTop: 8,
@@ -2203,7 +2203,7 @@ const styles = StyleSheet.create({
   swiperImageDeleteText: {
     color: '#FFFFFF',
     fontSize: 14,
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     marginTop: -2.5,
   },
   swiperPaginationDots: {

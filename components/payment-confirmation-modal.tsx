@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     marginBottom: 20 },
   title: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: '#1E293B',
     textAlign: 'center',
     lineHeight: normalize.font(14) },
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     width: '100%' },
   feedbackText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: '#1C1C1C',
     textAlign: 'center',
     marginTop: 10 } });

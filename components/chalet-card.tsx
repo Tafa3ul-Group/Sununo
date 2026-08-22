@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     gap: 4 },
   ratingText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#111827" },
   heartContainer: {
     width: normalize.width(42),
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     padding: normalize.width(12) },
   title: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#111827" },
   locationRow: {
     alignItems: "center",
@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
   location: {
     fontSize: normalize.font(8),
     color: "#6B7280",
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "IBMPlexSansArabic-Medium" },
   priceContainer: {
     marginTop: normalize.height(12) },
   priceRow: {
@@ -228,9 +228,9 @@ const styles = StyleSheet.create({
     gap: 4 },
   price: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: "#111827" },
   priceLabel: {
     fontSize: normalize.font(8),
     color: "#6B7280",
-    fontFamily: "Alexandria-Medium" } });
+    fontFamily: "IBMPlexSansArabic-Medium" } });

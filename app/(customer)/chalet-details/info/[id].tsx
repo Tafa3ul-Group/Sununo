@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     marginBottom: 15 },
   pageTitle: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#111827" },
   card: {
     backgroundColor: "white",
@@ -278,14 +278,14 @@ const styles = StyleSheet.create({
     borderColor: "#F3F4F6" },
   sectionTitle: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.primary,
     marginBottom: 12 },
   content: {
     fontSize: 14,
     lineHeight: 24,
     color: "#4B5563",
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "IBMPlexSansArabic-Regular" },
   divider: {
     height: 1,
     backgroundColor: "#F3F4F6",
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
   },
   ruleTitleText: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#111827",
     flex: 1,
   },
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 22,
     color: "#4B5563",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     paddingHorizontal: 24,
   },
   ruleDivider: {

@@ -105,14 +105,14 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     color: '#0F172A',
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "IBMPlexSansArabic-SemiBold" },
   message: {
     textAlign: 'center',
     color: '#64748B',
     marginBottom: Spacing.xl,
     paddingHorizontal: Spacing.lg,
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "IBMPlexSansArabic-Regular" },
   actions: {
     width: '100%',
     gap: Spacing.sm,
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     alignItems: 'center' },
   retryButtonText: {
     color: Colors.white,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     fontSize: normalize.font(14) },
   backButton: {
     paddingVertical: normalize.height(12),
@@ -136,5 +136,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC' },
   backButtonText: {
     color: '#64748B',
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     fontSize: normalize.font(14) } });

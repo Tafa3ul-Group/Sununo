@@ -19,7 +19,10 @@ export const SectionIcon = ({
   ...props
 }: SectionIconProps) => {
   return (
-    <View style={[styles.container, { width: normalize.width(width), height: normalize.height(height) }]}>
+    // `width` arrives already measured against the screen (the gallery passes
+    // SCREEN_WIDTH - 64), so it must NOT go through normalize.width again —
+    // that scaled it past the screen edge and the card lost its side margins.
+    <View style={[styles.container, { width, height: normalize.height(height) }]}>
       <Svg
         width="100%"
         height="100%"
@@ -62,5 +65,5 @@ const styles = StyleSheet.create({
     alignItems: "center" },
   titleText: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#171725" } });

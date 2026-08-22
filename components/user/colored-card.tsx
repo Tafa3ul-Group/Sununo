@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#FFFFFF",
     lineHeight: normalize.height(24),
   },
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
   },
   location: {
     fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium", // Not bold
+    fontFamily: "IBMPlexSansArabic-Medium", // Not bold
     color: "#FFFFFF",
     lineHeight: normalize.height(24),
   },
@@ -279,19 +279,19 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     color: "white",
-    fontFamily: "Alexandria-Medium", // Bold
+    fontFamily: "IBMPlexSansArabic-Medium", // Bold
     fontSize: normalize.font(8),
   },
   priceContainer: {},
   price: {
     color: "white",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Bold",
     fontSize: normalize.font(8),
   },
   priceUnit: {
     fontSize: normalize.font(8),
     color: "white",
-    fontFamily: "Alexandria-Medium", // Bold
+    fontFamily: "IBMPlexSansArabic-Medium", // Bold
     opacity: 0.9,
   },
 });

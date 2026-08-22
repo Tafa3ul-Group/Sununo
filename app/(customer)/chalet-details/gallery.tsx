@@ -18,6 +18,7 @@ import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Dimensions,
+  FlatList,
   Image,
   Modal,
   ScrollView,
@@ -28,15 +29,15 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import { Image as ExpoImage } from "expo-image";
+import { IMAGE_TRANSITION, imagePlaceholder } from "@/constants/image-loading";
 import { ltrScrollContent, ltrScroller, pickTranslation, useDirection, useRtlListOrder } from "@/i18n";
-import Animated, {
-  FadeInDown,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from "react-native-reanimated";
+import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
+import {
+  Gesture,
+  GestureDetector,
+  GestureHandlerRootView,
+} from "react-native-gesture-handler";
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -91,22 +92,18 @@ const PressableImage = React.memo(
       <AnimatedTouchable
         activeOpacity={0.9}
         style={[cardStyle, animatedStyle]}
-        onPressIn={() => {
-          scale.value = withTiming(0.96, { duration: 110 });
-        }}
-        onPressOut={() => {
-          scale.value = withSpring(1, { damping: 12, stiffness: 220 });
-        }}
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           onPress();
         }}
       >
         <ExpoImage
-          source={source}
+          source={source.src ?? source}
           style={imageStyle}
           contentFit="cover"
           cachePolicy="memory-disk"
+          placeholder={imagePlaceholder(source.blurhash)}
+          transition={IMAGE_TRANSITION}
         />
       </AnimatedTouchable>
     );
@@ -120,11 +117,122 @@ const WavyHeader = ({ title, color }: { title: string; color: string }) => (
     <SectionIcon
       color={color}
       title={title}
-      width={SCREEN_WIDTH - 64}
+      // Matches the photo cards below it: the section wrapper insets 16 on each
+      // side, so the title card lines up with the images instead of sitting in
+      // its own narrower column.
+      width={SCREEN_WIDTH - 32}
       height={50}
     />
   </View>
 );
+
+/**
+ * Photos arrive either as remote URLs or as bundled `require()` assets — the
+ * viewer's FlatList needs a plain uri string for both.
+ */
+function toUri(src: any): string {
+  if (typeof src === "string") return src;
+  if (src && src.uri) return src.uri;
+  return Image.resolveAssetSource(src)?.uri ?? "";
+}
+
+const MAX_ZOOM = 4;
+
+/**
+ * One page of the photo viewer: pinch to zoom, drag to pan while zoomed,
+ * double-tap to toggle back and forth.
+ *
+ * Panning is only enabled once zoomed (`isZoomed`) — otherwise the pan gesture
+ * would swallow the horizontal swipe the pager needs to change photos.
+ */
+function ZoomableImage({
+  uri,
+  isZoomed,
+  onZoomChange,
+}: {
+  uri: string;
+  isZoomed: boolean;
+  onZoomChange: (zoomed: boolean) => void;
+}) {
+  const scale = useSharedValue(1);
+  const savedScale = useSharedValue(1);
+  const tx = useSharedValue(0);
+  const ty = useSharedValue(0);
+  const savedTx = useSharedValue(0);
+  const savedTy = useSharedValue(0);
+
+  const settle = (next: number) => {
+    "worklet";
+    // Below ~1 the photo snaps back to fit and re-centres, so a half-hearted
+    // pinch never leaves it slightly off-screen.
+    if (next <= 1.01) {
+      scale.value = withTiming(1);
+      tx.value = withTiming(0);
+      ty.value = withTiming(0);
+      savedScale.value = 1;
+      savedTx.value = 0;
+      savedTy.value = 0;
+      runOnJS(onZoomChange)(false);
+    } else {
+      savedScale.value = next;
+      runOnJS(onZoomChange)(true);
+    }
+  };
+
+  const pinch = Gesture.Pinch()
+    .onUpdate((e) => {
+      scale.value = Math.min(Math.max(savedScale.value * e.scale, 0.8), MAX_ZOOM);
+    })
+    .onEnd(() => settle(scale.value));
+
+  const pan = Gesture.Pan()
+    .enabled(isZoomed)
+    .averageTouches(true)
+    .onUpdate((e) => {
+      tx.value = savedTx.value + e.translationX;
+      ty.value = savedTy.value + e.translationY;
+    })
+    .onEnd(() => {
+      savedTx.value = tx.value;
+      savedTy.value = ty.value;
+    });
+
+  const doubleTap = Gesture.Tap()
+    .numberOfTaps(2)
+    .onEnd(() => {
+      if (scale.value > 1.01) {
+        settle(1);
+      } else {
+        scale.value = withTiming(2);
+        settle(2);
+      }
+    });
+
+  const gesture = Gesture.Exclusive(
+    doubleTap,
+    Gesture.Simultaneous(pinch, pan),
+  );
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: tx.value },
+      { translateY: ty.value },
+      { scale: scale.value },
+    ],
+  }));
+
+  return (
+    <GestureDetector gesture={gesture}>
+      <Animated.View style={styles.viewerPage}>
+        <Animated.Image
+          source={{ uri }}
+          style={[styles.modalImg, animatedStyle]}
+          resizeMode="contain"
+        />
+      </Animated.View>
+    </GestureDetector>
+  );
+}
 
 export default function GalleryScreen() {
   const router = useRouter();
@@ -137,7 +245,10 @@ export default function GalleryScreen() {
 
   const [activeFilter, setActiveFilter] = useState("all");
   const [viewerVisible, setViewerVisible] = useState(false);
-  const [viewerImage, setViewerImage] = useState("");
+  const [viewerIndex, setViewerIndex] = useState(0);
+  // Paging and panning compete for the same drag, so the pager is frozen while
+  // a photo is zoomed in — pinch (or double-tap) back out to swipe again.
+  const [viewerZoomed, setViewerZoomed] = useState(false);
 
   const { data: chaletData, isLoading } =
     useGetCustomerChaletDetailsQuery(chaletId);
@@ -164,7 +275,10 @@ export default function GalleryScreen() {
           iconKey: categoryId,
         };
       }
-      grouped[categoryId].images.push(getImageSrc(img.url));
+      grouped[categoryId].images.push({
+        src: getImageSrc(img.url),
+        blurhash: img.blurhash as string | undefined,
+      });
     });
 
     return Object.values(grouped);
@@ -201,21 +315,39 @@ export default function GalleryScreen() {
     return cats;
   }, [gallerySections, t]);
 
-  const openViewer = React.useCallback((url: any) => {
-    if (typeof url === "string") {
-      setViewerImage(url);
-    } else if (url && url.uri) {
-      setViewerImage(url.uri);
-    } else {
-      setViewerImage(Image.resolveAssetSource(url).uri);
-    }
-    setViewerVisible(true);
-  }, []);
-
   const filteredData =
     activeFilter === "all"
       ? gallerySections
       : gallerySections.filter((section) => section.id === activeFilter);
+
+  // Every photo under the current filter, in the order the sections render.
+  // The viewer pages through all of them — the grid only previews four per
+  // section, but once a photo is open, swiping should reach the rest.
+  const viewerImages: string[] = useMemo(
+    () =>
+      filteredData.flatMap((section: any) =>
+        section.images.map((img: any) => toUri(img.src)),
+      ),
+    [filteredData],
+  );
+
+  // Where each section starts inside `viewerImages`, so a tapped photo opens
+  // on itself rather than back at the first one.
+  const sectionOffsets: number[] = useMemo(() => {
+    const offsets: number[] = [];
+    let acc = 0;
+    filteredData.forEach((section: any) => {
+      offsets.push(acc);
+      acc += section.images.length;
+    });
+    return offsets;
+  }, [filteredData]);
+
+  const openViewer = React.useCallback((index: number) => {
+    setViewerIndex(Math.max(0, index));
+    setViewerZoomed(false);
+    setViewerVisible(true);
+  }, []);
 
   // Chip strip is LTR-forced; reverse so it reads right-to-left in Arabic
   // with the "all" chip visible at the right edge.
@@ -234,19 +366,52 @@ export default function GalleryScreen() {
       >
         {/* RN Modal is a new native root — the app's direction does not
             inherit; re-apply it here. */}
-        <View style={[styles.modalBg, { direction }]}>
+        <GestureHandlerRootView style={[styles.modalBg, { direction }]}>
           <TouchableOpacity
             style={styles.modalClose}
             onPress={() => setViewerVisible(false)}
           >
             <SolarCloseCircleBold size={32} color="white" />
           </TouchableOpacity>
-          <Image
-            source={{ uri: viewerImage }}
-            style={styles.modalImg}
-            resizeMode="contain"
+
+          <FlatList
+            data={viewerImages}
+            keyExtractor={(uri, i) => `${uri}-${i}`}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            scrollEnabled={!viewerZoomed}
+            initialScrollIndex={viewerIndex}
+            // Fixed page width, so jumping straight to the tapped photo works
+            // without waiting for the list to measure itself.
+            getItemLayout={(_, i) => ({
+              length: SCREEN_WIDTH,
+              offset: SCREEN_WIDTH * i,
+              index: i,
+            })}
+            onMomentumScrollEnd={(e) => {
+              setViewerIndex(
+                Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH),
+              );
+              setViewerZoomed(false);
+            }}
+            renderItem={({ item }) => (
+              <ZoomableImage
+                uri={item}
+                isZoomed={viewerZoomed}
+                onZoomChange={setViewerZoomed}
+              />
+            )}
           />
-        </View>
+
+          {viewerImages.length > 1 && (
+            <View style={styles.viewerCounter}>
+              <ThemedText style={styles.viewerCounterText}>
+                {`${viewerIndex + 1} / ${viewerImages.length}`}
+              </ThemedText>
+            </View>
+          )}
+        </GestureHandlerRootView>
       </Modal>
 
       <HeaderSection
@@ -287,7 +452,6 @@ export default function GalleryScreen() {
         {filteredData.map((section, idx) => (
           <Animated.View
             key={idx}
-            entering={FadeInDown.delay((idx % 8) * 60).duration(380)}
             style={styles.sectionWrap}
           >
             <WavyHeader title={section.category} color={section.color} />
@@ -297,7 +461,7 @@ export default function GalleryScreen() {
               source={section.images[0]}
               cardStyle={styles.imageCard}
               imageStyle={styles.bigImage}
-              onPress={() => openViewer(section.images[0])}
+              onPress={() => openViewer(sectionOffsets[idx])}
             />
 
             {/* Small Grid */}
@@ -308,7 +472,8 @@ export default function GalleryScreen() {
                   source={img}
                   cardStyle={styles.smallImageCard}
                   imageStyle={styles.smallImage}
-                  onPress={() => openViewer(img)}
+                  // +1: the grid starts after this section's big image.
+                  onPress={() => openViewer(sectionOffsets[idx] + i + 1)}
                 />
               ))}
             </View>
@@ -343,7 +508,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#1E293B",
   },
   backBtn: {
@@ -370,7 +535,7 @@ const styles = StyleSheet.create({
   },
   categoryTabText: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#035DF9",
   },
   categoryIconCircle: {
@@ -434,5 +599,25 @@ const styles = StyleSheet.create({
   modalImg: {
     width: SCREEN_WIDTH,
     height: "100%",
+  },
+  viewerPage: {
+    width: SCREEN_WIDTH,
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  viewerCounter: {
+    position: "absolute",
+    bottom: 48,
+    alignSelf: "center",
+    backgroundColor: "rgba(0,0,0,0.55)",
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  viewerCounterText: {
+    color: "white",
+    fontSize: 12,
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
 });

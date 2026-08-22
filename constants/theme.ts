@@ -81,8 +81,6 @@ export const Spacing = {
   xl: normalize.width(32),
 };
 
-type FontWeight = "normal" | "bold" | "100" | "200" | "300" | "400" | "500" | "600" | "700" | "800" | "900";
-
 interface TypeStyle {
   fontSize: number;
   fontFamily?: string;
@@ -92,58 +90,58 @@ interface TypeStyle {
 
 export const Typography: Record<string, TypeStyle> = {
   h1: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(22),
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.light.text,
-    lineHeight: normalize.font(20),
+    lineHeight: normalize.font(33),
   },
   h2: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(18),
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.light.text,
-    lineHeight: normalize.font(20),
+    lineHeight: normalize.font(27),
   },
   body: {
-    fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(15),
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: Colors.light.text,
-    lineHeight: normalize.font(14),
+    lineHeight: normalize.font(23),
   },
   subtitle: {
-    fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(14),
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: Colors.light.icon,
-    lineHeight: normalize.font(14),
+    lineHeight: normalize.font(21),
   },
   caption: {
-    fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(12),
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: Colors.light.icon,
-    lineHeight: normalize.font(12),
+    lineHeight: normalize.font(18),
   },
   price: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(18),
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.light.primary,
-    lineHeight: normalize.font(20),
+    lineHeight: normalize.font(27),
   },
   rating: {
-    fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(14),
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.light.text,
-    lineHeight: normalize.font(14),
+    lineHeight: normalize.font(21),
   },
   title: {
-    fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(16),
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.light.text,
-    lineHeight: normalize.font(20),
+    lineHeight: normalize.font(24),
   },
   description: {
-    fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium",
+    fontSize: normalize.font(15),
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: Colors.light.text,
-    lineHeight: normalize.font(14),
+    lineHeight: normalize.font(23),
   },
 };
 
@@ -181,9 +179,9 @@ export const Shadows = {
 };
 
 export const Fonts = {
-  regular: "Alexandria-Regular" as const,
-  medium: "Alexandria-Medium" as const,
-  semiBold: "Alexandria-SemiBold" as const,
-  bold: "Alexandria-Bold" as const,
-  black: "Alexandria-Bold" as const,
+  regular: "IBMPlexSansArabic-Regular" as const,
+  medium: "IBMPlexSansArabic-Medium" as const,
+  semiBold: "IBMPlexSansArabic-SemiBold" as const,
+  bold: "IBMPlexSansArabic-Bold" as const,
+  black: "IBMPlexSansArabic-Bold" as const,
 };

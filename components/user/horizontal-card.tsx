@@ -1,68 +1,27 @@
-import { SolarHeartBold, SolarStarBold } from "@/components/icons/solar-icons";
+import { AmenityBlob } from "@/components/amenity-blob";
+import { DiscountBadge } from "@/components/discount-badge";
+import {
+  SolarHeartBold,
+  SolarHeartLinear,
+  SparkleStarBold,
+} from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
-import { DiscountBadge, DiscountedFrom } from "@/components/discount-badge";
 import { Colors, Fonts, normalize } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
+import { pickTranslation, useDirection } from "@/i18n";
 import { Image as ExpoImage } from "expo-image";
-import { getStartingPrice } from "@/utils/format";
-import { useGetCustomerChaletDetailsQuery } from "@/store/api/customerApiSlice";
-import React from "react";
-import { useTranslation } from "react-i18next";
-import { useDirection } from "@/i18n";
-
-import {
-  Dimensions,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-  ViewStyle } from "react-native";
-import Svg, {
-  ClipPath,
-  Defs,
-  G,
-  Path,
-  Image as SvgImage } from "react-native-svg";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSpring,
-  withSequence,
-} from "react-native-reanimated";
+import { IMAGE_TRANSITION, imagePlaceholder } from "@/constants/image-loading";
 import * as Haptics from "expo-haptics";
+import React from "react";
+import { StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
-// "D" outline in a 0 0 100 88 viewBox (inset by the stroke half-width so the
-// colored outline isn't clipped). The bowl faces the text side: in RTL the image
-// sits on the right, so the curve bulges LEFT (toward the text) with a flat right
-// edge; in LTR it mirrors.
-const D_PATH_BOWL_LEFT = "M97 3 H44 A41 41 0 0 0 44 85 H97 Z";
-const D_PATH_BOWL_RIGHT = "M3 3 H56 A41 41 0 0 1 56 85 H3 Z";
+// The card only has room for a couple of amenities before the line wraps.
+const MAX_AMENITIES = 2;
 
-const SHAPES_CONFIG = [
-  {
-    viewBox: "0 0 132 114",
-    width: 132,
-    height: 114,
-    path: "M78.7725 2C93.5962 2.00003 106.408 5.61551 115.473 12.8877C124.473 20.1084 130 31.1096 130 46.416C130 63.2797 118.126 78.4796 102.275 90.1074C86.4772 101.697 67.2293 109.354 53.5078 111.289C39.5004 113.265 27.4662 111.112 18.5918 104.994C9.7592 98.905 3.76485 88.6866 2.18652 73.9004C0.804578 60.9535 7.14433 42.9634 20.3965 28.1426C33.584 13.3941 53.4373 2 78.7725 2Z" },
-  {
-    viewBox: "0 0 114 123",
-    width: 114,
-    height: 123,
-    path: "M9.85254 5.08691C14.303 2.08842 19.387 1.22337 25.6074 2.71387C31.9189 4.22619 39.3773 8.16551 48.3428 14.8115H48.3438C54.6721 19.5016 59.3722 22.5133 64.3926 24.5186C69.4237 26.5281 74.6565 27.4793 81.9785 28.2354C89.7218 29.0339 96.005 30.5378 100.782 32.6768C105.556 34.8141 108.71 37.5308 110.416 40.7041C113.775 46.9529 112.057 56.2142 102.497 69.0352C99.6073 72.9109 97.0067 77.4337 94.4863 82.1016C91.9384 86.8204 89.5052 91.6208 86.8477 96.2988C81.6969 105.366 76.0449 113.313 68.3633 117.591L67.6133 117.993C54.4846 124.782 38.8124 119.692 32.084 106.556L31.7705 105.924C27.2088 96.4439 25.495 86.9985 23.3047 77.1934C21.1955 67.7511 18.6595 58.0937 12.5859 48.4355L11.9873 47.501L11.2256 46.3125C7.41426 40.2506 3.62112 32.4694 2.40234 24.999C1.11592 17.1139 2.71008 9.9001 9.85254 5.08691Z" },
-  {
-    viewBox: "0 0 141 129",
-    width: 141,
-    height: 129,
-    path: "M77.0459 14.0977C86.8144 5.10784 99.2037 0.386687 110.42 2.50195C121.804 4.64892 131.346 13.705 135.513 30.8994C138.687 44.002 138.736 58.6286 136.25 71.833C133.77 85.0021 128.722 96.9923 121.482 104.651C109.519 117.308 92.5368 124.708 75.1924 126.547C57.8513 128.385 39.9659 124.682 26.1904 114.895C2.53265 98.088 -5.36999 65.526 9.69531 44.0059C15.0767 36.3186 23.5058 33.0498 41.1289 30.5859C50.2739 29.3071 56.0975 28.0172 61.1807 25.6816C66.2509 23.3521 70.7222 19.918 77.0449 14.0977H77.0459Z" },
-  {
-    viewBox: "0 0 132 126",
-    width: 132,
-    height: 126,
-    path: "M45.1748 5C48.9809 2.41469 54.6673 0.982912 62.8779 2.84766C70.4802 4.57348 75.4484 9.06905 81.3945 13.4883C87.2987 17.8763 93.9042 21.9016 104.228 21.4062L104.28 21.4043L104.333 21.3984C120.021 19.8142 133.035 33.7153 129.367 47.7393C128.655 50.463 127.55 53.3543 126.367 56.3721C125.202 59.3471 123.956 62.4548 123.058 65.4512C121.307 71.2878 120.589 77.6274 125.296 82.2793C127.44 84.8711 127.477 88.8856 125.707 92.084C123.986 95.1932 120.816 97.0877 116.83 95.8877C111.601 94.3134 107.617 94.271 104.883 96.8135C103.591 98.015 102.787 99.6241 102.217 101.367C101.646 103.112 101.258 105.162 100.908 107.387L100.9 107.436L100.896 107.484C99.755 118.107 88.0985 126.131 76.5039 123.498H76.5049C74.3748 123.014 72.1029 122.076 70.127 120.898C68.1253 119.706 66.5866 118.364 65.7725 117.163C61.1156 110.292 54.8357 108.673 49.4014 108.942C44.1787 109.201 39.4229 111.27 38.0879 111.665C35.0844 112.554 32.9939 112.421 31.54 111.9C30.0969 111.384 29.0576 110.405 28.293 109.181C26.6928 106.617 26.4785 103.251 26.543 102.284C26.8935 97.0298 25.7253 92.917 23.0537 89.542C20.4512 86.2542 16.5664 83.8564 11.8789 81.6816C4.56946 78.219 0.68994 70.5626 2.4043 63.3154L2.49023 62.9707C3.54135 58.9508 6.45448 55.6746 9.89355 53.1914L10.5879 52.7051C12.8209 51.1901 14.7537 49.1186 15.9199 46.3135C17.0847 43.5117 17.4215 40.1308 16.7168 36.0977C16.1566 32.892 16.9632 31.0495 18.1934 29.8545C19.5488 28.5377 21.7224 27.7099 24.3896 27.2539L24.4336 27.2461L24.4775 27.2363C28.5411 26.3545 31.653 25.1675 33.9434 23.1895C36.2879 21.1647 37.5472 18.5108 38.3164 15.1855C39.1493 11.5847 41.3211 7.61766 45.1748 5Z" },
-];
+// Everything on the card is proportioned against this: the image is a square of
+// the same size, and the favourite sits ~30% of the way down.
+const CARD_HEIGHT = normalize.height(86);
 
 interface HorizontalCardProps {
   chalet: any;
@@ -82,39 +41,29 @@ export const HorizontalCard = React.memo(function HorizontalCard({
   hideFavorite = false,
   isFavorite = false,
   onToggleFavorite }: HorizontalCardProps) {
-  const { t, i18n } = useTranslation();
-
   const { isRTL, textAlign } = useDirection();
   const isArabic = isRTL;
 
-  // The list endpoints don't include shift pricing, so when a real price isn't
-  // already provided we fetch the chalet's shifts via the details route and show
-  // the lowest active shift price ("starts from"). The request is skipped once a
-  // price is available (e.g. API-provided startingPrice), so it's a no-op then.
-  const hasPrice =
-    (chalet?.startingPrice != null && Number(chalet.startingPrice) > 0) ||
-    (chalet?.price != null &&
-      Number(String(chalet.price).replace(/,/g, "")) > 0);
-  const { fetchedPrice } = useGetCustomerChaletDetailsQuery(chalet?.id, {
-    skip: !chalet?.id || hasPrice,
-    selectFromResult: ({ data }) => {
-      const detail = (data as any)?.data ?? data;
-      return {
-        fetchedPrice: detail ? getStartingPrice(detail) : undefined,
-      };
-    },
-  });
-  const resolvedPrice = hasPrice
-    ? chalet?.price
-    : fetchedPrice ?? chalet?.price ?? "0";
+  // transforms — no layout/design change, just makes taps feel alive.
 
-  // With a campaign running the card leads with what the customer will actually
-  // pay, and DiscountedFrom shows the pre-discount figure struck through beside
-  // it. Without one, `priceAfter` is absent and this is the ordinary price.
-  const displayPrice =
-    chalet?.discount?.priceAfter != null
-      ? Number(chalet.discount.priceAfter).toLocaleString()
-      : resolvedPrice;
+  // `features` is the trimmed list the card endpoints attach; the other two are
+  // the full shapes returned by the detail route, so a chalet coming from either
+  // source renders the same row.
+  const amenities: any[] = React.useMemo(() => {
+    const raw =
+      chalet?.features ?? chalet?.chaletFeatures ?? chalet?.amenities ?? [];
+    if (!Array.isArray(raw)) return [];
+    return raw
+      .slice(0, MAX_AMENITIES)
+      .map((item: any) => {
+        const feature = item?.feature ?? item;
+        return {
+          label: pickTranslation(feature, isArabic),
+          icon: feature?.icon ?? null,
+        };
+      })
+      .filter((a: any) => !!a.label);
+  }, [chalet?.features, chalet?.chaletFeatures, chalet?.amenities, isArabic]);
 
   if (!chalet) return null;
 
@@ -123,294 +72,258 @@ export const HorizontalCard = React.memo(function HorizontalCard({
       ? getImageSrc(chalet.image)
       : chalet.image ||
         getImageSrc(chalet.images?.[0]?.url || chalet.images?.[0]);
-  const borderColor = chalet.color || Colors.secondary;
-  // Image leads (first child of the mirrored row): RTL → image on the right,
-  // curve bulges left toward the text; LTR → image on the left, curve bulges
-  // right toward the text. SVG paths are physical, so keep the isArabic swap.
-  const dPath = isArabic ? D_PATH_BOWL_LEFT : D_PATH_BOWL_RIGHT;
-
-  const config = SHAPES_CONFIG[shapeIndex % SHAPES_CONFIG.length];
 
   // Present only on chalets from the admin-curated featured strip; every other
   // caller passes nothing and the badge simply does not render.
   const featuredLabel = chalet.featuredLabel;
 
-  // Subtle press-scale on the card + a pop on the favorite heart. Pure
-  // transforms — no layout/design change, just makes taps feel alive.
-  const cardScale = useSharedValue(1);
-  const cardAnim = useAnimatedStyle(() => ({
-    transform: [{ scale: cardScale.value }],
-  }));
-  const heartScale = useSharedValue(1);
-  const heartAnim = useAnimatedStyle(() => ({
-    transform: [{ scale: heartScale.value }],
-  }));
+  // With a campaign running the card leads with what the customer will actually
+  // pay; without one, `priceAfter` is absent and this is the ordinary "starts
+  // from" price the caller already resolved.
+  const basePrice = chalet.price ?? chalet.startingPrice;
+  const displayPrice =
+    chalet.discount?.priceAfter != null
+      ? Number(chalet.discount.priceAfter).toLocaleString()
+      : basePrice;
 
   const handleToggleFavorite = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-    heartScale.value = withSequence(
-      withTiming(1.35, { duration: 130 }),
-      withSpring(1, { damping: 7, stiffness: 200 }),
-    );
     onToggleFavorite?.();
   };
 
   return (
-    <AnimatedTouchable
+    <TouchableOpacity
       activeOpacity={0.9}
       onPress={onPress}
-      onPressIn={() => {
-        cardScale.value = withTiming(0.97, { duration: 90 });
-      }}
-      onPressOut={() => {
-        cardScale.value = withSpring(1, { damping: 12, stiffness: 180 });
-      }}
-      style={[
-        styles.container,
-        { flexDirection: "row" },
-        style,
-        cardAnim,
-      ]}
+      style={[styles.container, style]}
     >
-      {/* Image side FIRST (logical start = leading edge: right in Arabic,
-          left in English — same visual the old constant row-reverse produced).
-          Clean "D": straight edge toward the text, full semicircle outward,
-          with the chalet's colored outline. */}
-      <View style={styles.imageWrapper}>
-        <Svg
-          width={normalize.width(82)}
-          height={normalize.height(72)}
-          viewBox="0 0 100 88"
-        >
-          <Defs>
-            <ClipPath id={`d-clip-${shapeIndex}`}>
-              <Path d={dPath} />
-            </ClipPath>
-          </Defs>
-          <G clipPath={`url(#d-clip-${shapeIndex})`}>
-            <SvgImage
-              href={imageSource}
-              width={100}
-              height={88}
-              preserveAspectRatio="xMidYMid slice"
-            />
-          </G>
-          <Path d={dPath} stroke={borderColor} strokeWidth={5} fill="none" />
-        </Svg>
-      </View>
+      {/* Image leads the row (logical start = right in Arabic, left in English)
+          and is flush with the card on all four sides: the edge facing the text
+          is square, and the outer corners simply take the card's own radius
+          from the container's clipping. */}
+      <ExpoImage
+        source={imageSource}
+        style={styles.image}
+        contentFit="cover"
+        placeholder={imagePlaceholder(chalet.blurhash ?? chalet.images?.[0]?.blurhash)}
+        transition={IMAGE_TRANSITION}
+      />
 
-      {/* info side */}
-      <View style={styles.contentAndLeft}>
-        {/* Top Row: Heart + Title/Location */}
-        <View
-          style={[
-            styles.topRow,
-            { flexDirection: "row" },
-          ]}
-        >
-          <View style={styles.mainContent}>
-            <View
+      {/* Text block */}
+      <View style={styles.content}>
+        {/* Featured badge. Text and both colours are configured per platform
+            (and optionally overridden per chalet) in the dashboard, so they are
+            applied from the data, not themed. */}
+        {featuredLabel?.enabled !== false && featuredLabel?.name && (
+          <View
+            style={[
+              styles.featuredBadge,
+              { backgroundColor: featuredLabel.backgroundColor || Colors.primary },
+            ]}
+          >
+            <ThemedText
               style={[
-                styles.upperText,
-                { alignItems: "flex-start" },
+                styles.featuredBadgeText,
+                { color: featuredLabel.textColor || "#FFFFFF" },
               ]}
+              numberOfLines={1}
             >
-              {/* Featured badge. Text and both colours are configured per
-                  platform (and optionally overridden per chalet) in the
-                  dashboard, so they are applied from the data, not themed. */}
-              {featuredLabel?.enabled !== false && featuredLabel?.name && (
-                <View
-                  style={[
-                    styles.featuredBadge,
-                    { backgroundColor: featuredLabel.backgroundColor || Colors.primary },
-                  ]}
-                >
-                  <ThemedText
-                    style={[styles.featuredBadgeText, { color: featuredLabel.textColor || "#FFFFFF" }]}
-                    numberOfLines={1}
-                  >
-                    {(isArabic ? featuredLabel.name.ar : featuredLabel.name.en) ||
-                      featuredLabel.name.ar ||
-                      featuredLabel.name.en}
-                  </ThemedText>
-                </View>
+              {(isArabic ? featuredLabel.name.ar : featuredLabel.name.en) ||
+                featuredLabel.name.ar ||
+                featuredLabel.name.en}
+            </ThemedText>
+          </View>
+        )}
+
+        {/* Title + rating on one line, the rating trailing the name. */}
+        <View style={styles.titleRow}>
+          <ThemedText
+            style={[styles.title, { textAlign }]}
+            numberOfLines={1}
+          >
+            {typeof chalet.title === "object"
+              ? isArabic
+                ? chalet.title.ar
+                : chalet.title.en
+              : chalet.title}
+          </ThemedText>
+          <ThemedText style={styles.ratingText}>
+            {chalet.rating
+              ? Number(chalet.rating).toFixed(1)
+              : isArabic
+                ? "جديد"
+                : "New"}
+          </ThemedText>
+          <SparkleStarBold size={normalize.font(15)} color="#EF79D7" />
+
+          {/* Pushed to the far (trailing) edge, but kept in this row so it stays
+              level with the title whether or not the amenity line renders. */}
+          <View style={styles.spacer} />
+          {!hideFavorite && (
+            <TouchableOpacity
+              style={styles.heartCircle}
+              onPress={handleToggleFavorite}
+              // The circle is deliberately small, so the tap area is widened to
+              // the 44pt minimum instead of the drawn size.
+              hitSlop={12}
+            >
+              {isFavorite ? (
+                <SolarHeartBold size={normalize.font(14)} color="#EA2129" />
+              ) : (
+                <SolarHeartLinear size={normalize.font(14)} color="#F4623A" />
               )}
-              <ThemedText
-                style={[styles.title, { textAlign }]}
-                numberOfLines={1}
-              >
-                {typeof chalet.title === "object"
-                  ? isArabic
-                    ? chalet.title.ar
-                    : chalet.title.en
-                  : chalet.title}
-              </ThemedText>
-              <ThemedText
-                style={[
-                  styles.location,
-                  { textAlign },
-                ]}
-                numberOfLines={1}
-              >
-                {typeof chalet.location === "object"
-                  ? isArabic
-                    ? chalet.location.ar
-                    : chalet.location.en
-                  : chalet.location}
-              </ThemedText>
-            </View>
-          </View>
-
-          <View style={styles.leftColumn}>
-            {!hideFavorite && (
-              <TouchableOpacity
-                style={styles.heartCircle}
-                onPress={handleToggleFavorite}
-              >
-                <Animated.View style={heartAnim}>
-                  <SolarHeartBold
-                    size={normalize.width(20)}
-                    color={isFavorite ? "#EA2129" : "#9CA3AF"}
-                  />
-                </Animated.View>
-              </TouchableOpacity>
-            )}
-          </View>
+            </TouchableOpacity>
+          )}
         </View>
 
-        {/* Price leads (logical start), rating trails under the heart — same
-            visual the old constant row-reverse produced. */}
-        <View
-          style={[
-            styles.bottomRow,
-            { flexDirection: "row" },
-          ]}
-        >
-          <View
-            style={[
-              styles.priceRow,
-              { flexDirection: 'row' },
-            ]}
-          >
-            <ThemedText style={styles.priceLabel}>
-              {isArabic ? "يبدأ من " : "Starts from "}
-            </ThemedText>
-            <ThemedText style={styles.price}>
-              {isArabic ? "" : "IQD "}
-              {displayPrice}
-              {isArabic ? " د.ع" : ""}
-            </ThemedText>
-            {/* Null on chalets with no campaign, so nothing changes for them. */}
-            <DiscountBadge discount={chalet?.discount} size="sm" />
-            <DiscountedFrom discount={chalet?.discount} size="sm" />
-          </View>
+        {/* Price leads the line, under the title on the reading edge; the
+            location trails it, so the card keeps three rows at this height. */}
+        <View style={styles.locationRow}>
+          {displayPrice != null && displayPrice !== "" && (
+            <>
+              <ThemedText style={styles.priceLabel}>
+                {isArabic ? "يبدأ من" : "From"}
+              </ThemedText>
+              <ThemedText style={styles.price} numberOfLines={1}>
+                {isArabic ? `${displayPrice} د.ع` : `IQD ${displayPrice}`}
+              </ThemedText>
+              {/* Null on chalets with no campaign, so nothing changes for them. */}
+              <DiscountBadge discount={chalet?.discount} size="sm" />
+              <View style={styles.spacer} />
+            </>
+          )}
 
-          <View
-            style={[
-              styles.ratingBox,
-              { flexDirection: "row", gap: 4 },
-            ]}
+          <ThemedText
+            style={[styles.location, { textAlign }]}
+            numberOfLines={1}
           >
-            <SolarStarBold
-              size={normalize.width(16)}
-              color={Colors.secondary}
-            />
-            <ThemedText style={styles.ratingText}>
-              {chalet.rating ? Number(chalet.rating).toFixed(1) : (isArabic ? "جديد" : "New")}
-            </ThemedText>
-          </View>
+            {typeof chalet.location === "object"
+              ? isArabic
+                ? chalet.location.ar
+                : chalet.location.en
+              : chalet.location}
+          </ThemedText>
         </View>
+
+        {/* "Comes with: wifi, garage" — dropped entirely when the payload
+            carries no amenities, so the card never shows a dangling label. */}
+        {amenities.length > 0 && (
+          <View style={styles.amenitiesRow}>
+            <ThemedText style={styles.amenitiesLabel}>
+              {isArabic ? "يحتوي على:" : "Comes with:"}
+            </ThemedText>
+            {amenities.map((amenity, i) => (
+              <View key={`${amenity.label}-${i}`} style={styles.amenityItem}>
+                <AmenityBlob
+                  icon={amenity.icon}
+                  index={shapeIndex + i}
+                  size={normalize.font(18)}
+                />
+                <ThemedText style={styles.amenityLabel} numberOfLines={1}>
+                  {amenity.label}
+                </ThemedText>
+              </View>
+            ))}
+          </View>
+        )}
       </View>
-    </AnimatedTouchable>
+
+    </TouchableOpacity>
   );
 });
 
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
+    alignItems: "stretch",
     backgroundColor: "white",
-    borderRadius: normalize.radius(12),
-    paddingHorizontal: normalize.width(12),
-    paddingVertical: normalize.height(10),
-    borderWidth: 1,
-    borderColor: "#F3F4F6",
-    alignItems: "center",
+    borderRadius: normalize.radius(14),
+    overflow: "hidden",
     marginBottom: normalize.height(12),
-    height: normalize.height(115) },
-  contentAndLeft: {
+    height: CARD_HEIGHT,
+    // Hairline outline so the white card still reads as a card on a white
+    // background, with a soft lift on top of it.
+    borderWidth: 1,
+    borderColor: "#ECEDF0",
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2 },
+  image: {
+    width: CARD_HEIGHT,
+    height: "100%" },
+  content: {
     flex: 1,
-    height: "100%",
-    justifyContent: "space-between",
-    paddingVertical: 2 },
-  topRow: {
-    flexDirection: "row",
-    alignItems: "flex-start" },
-  leftColumn: {
-    width: normalize.width(42),
     justifyContent: "center",
-    alignItems: "center" },
-  mainContent: {
-    flex: 1,
-    paddingHorizontal: 4 },
-  heartCircle: {
-    width: normalize.width(36),
-    height: normalize.width(36),
-    borderRadius: normalize.radius(18),
-    backgroundColor: "white",
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 0.5,
-    borderColor: "#E5E7EB" },
-  bottomRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingStart: normalize.width(6), // لضبط موضع النجمة تحت القلب
-  },
-  ratingBox: {
+    paddingHorizontal: normalize.width(14),
+    gap: normalize.height(5) },
+  titleRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4 },
-  ratingText: {
+    gap: normalize.width(6) },
+  title: {
+    flexShrink: 1,
     fontSize: normalize.font(14),
+    fontFamily: Fonts.bold,
+    color: "#111827" },
+  ratingText: {
+    fontSize: normalize.font(12),
     fontFamily: Fonts.semiBold,
     color: "#111827" },
-  upperText: {
-    marginTop: 4 },
-  featuredBadge: {
-    alignSelf: "flex-start",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 999,
-    marginBottom: 4,
-  },
-  featuredBadgeText: {
-    fontSize: normalize.font(9),
-    fontFamily: Fonts.bold,
-    lineHeight: normalize.font(13),
-  },
-  title: {
-    fontSize: normalize.font(15),
-    fontFamily: Fonts.bold,
-    color: "#111827" },
-  location: {
-    fontSize: normalize.font(9),
-    color: "#6B7280",
-    marginTop: 2,
-    fontFamily: Fonts.regular },
-  priceRow: {
+  locationRow: {
+    flexDirection: "row",
     alignItems: "center",
-    gap: 4 },
-  price: {
-    fontSize: normalize.font(14),
-    fontFamily: Fonts.bold,
-    color: "#111827" },
+    gap: normalize.width(4) },
+  location: {
+    flexShrink: 1,
+    fontSize: normalize.font(11),
+    color: "#6B7280",
+    fontFamily: Fonts.regular },
   priceLabel: {
     fontSize: normalize.font(9),
     color: "#6B7280",
     fontFamily: Fonts.regular },
-  imageWrapper: {
-    width: normalize.width(82),
-    height: normalize.height(72),
+  price: {
+    fontSize: normalize.font(12),
+    color: "#111827",
+    fontFamily: Fonts.bold },
+  amenitiesRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: normalize.width(6) },
+  amenitiesLabel: {
+    fontSize: normalize.font(10),
+    color: "#6B7280",
+    fontFamily: Fonts.regular },
+  amenityItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: normalize.width(3),
+    flexShrink: 1 },
+  amenityLabel: {
+    fontSize: normalize.font(11),
+    color: "#111827",
+    fontFamily: Fonts.medium,
+    flexShrink: 1 },
+  featuredBadge: {
+    alignSelf: "flex-start",
+    paddingHorizontal: 7,
+    paddingVertical: 1,
+    borderRadius: 999 },
+  featuredBadgeText: {
+    fontSize: normalize.font(8),
+    fontFamily: Fonts.bold,
+    lineHeight: normalize.font(11) },
+  // Eats the leftover width of the title row so the favourite lands on the
+  // card's trailing edge.
+  spacer: {
+    flex: 1 },
+  heartCircle: {
+    width: normalize.width(26),
+    height: normalize.width(26),
+    borderRadius: normalize.radius(13),
     justifyContent: "center",
-    alignItems: "center" } });
+    alignItems: "center",
+    borderWidth: 1.2,
+    borderColor: "#E5E7EB" } });

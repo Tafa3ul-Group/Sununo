@@ -32,7 +32,7 @@ import { resolveNotificationSection } from "@/utils/notification-section";
 if (Text.defaultProps == null) Text.defaultProps = {};
 // @ts-ignore
 Text.defaultProps.style = {
-  fontFamily: "Alexandria-Medium",
+  fontFamily: "IBMPlexSansArabic-Regular",
   includeFontPadding: false,
   textAlignVertical: "center",
 };
@@ -41,7 +41,7 @@ Text.defaultProps.style = {
 if (TextInput.defaultProps == null) TextInput.defaultProps = {};
 // @ts-ignore
 TextInput.defaultProps.style = {
-  fontFamily: "Alexandria-Medium",
+  fontFamily: "IBMPlexSansArabic-Regular",
   includeFontPadding: false,
   textAlignVertical: "center",
 };
@@ -69,10 +69,10 @@ function RootLayoutNav() {
   const [notificationRetryNonce, setNotificationRetryNonce] = useState(0);
 
   const [loaded, error] = useFonts({
-    "Alexandria-Regular": require("@expo-google-fonts/alexandria/400Regular/Alexandria_400Regular.ttf"),
-    "Alexandria-Medium": require("@expo-google-fonts/alexandria/500Medium/Alexandria_500Medium.ttf"),
-    "Alexandria-SemiBold": require("@expo-google-fonts/alexandria/600SemiBold/Alexandria_600SemiBold.ttf"),
-    "Alexandria-Bold": require("@expo-google-fonts/alexandria/700Bold/Alexandria_700Bold.ttf"),
+    "IBMPlexSansArabic-Regular": require("@expo-google-fonts/ibm-plex-sans-arabic/400Regular/IBMPlexSansArabic_400Regular.ttf"),
+    "IBMPlexSansArabic-Medium": require("@expo-google-fonts/ibm-plex-sans-arabic/500Medium/IBMPlexSansArabic_500Medium.ttf"),
+    "IBMPlexSansArabic-SemiBold": require("@expo-google-fonts/ibm-plex-sans-arabic/600SemiBold/IBMPlexSansArabic_600SemiBold.ttf"),
+    "IBMPlexSansArabic-Bold": require("@expo-google-fonts/ibm-plex-sans-arabic/700Bold/IBMPlexSansArabic_700Bold.ttf"),
   });
 
   // ── Auth Guard ────────────────────────────────────────────────────────────

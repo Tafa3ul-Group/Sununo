@@ -20,15 +20,7 @@ import {
   Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Animated, {
-  ZoomIn,
-  FadeInDown,
-  LinearTransition,
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSpring,
-} from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import {
   SolarCardBold,
@@ -53,38 +45,19 @@ const dismissBrowser = () => {
   }
 };
 
-const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
-
-// Press-scale wrapper that preserves the exact static appearance of the
-// underlying TouchableOpacity (no visual change at rest) and only adds a
-// subtle scale-down on press + spring-back on release. Layout-aware so it can
-// morph border/background changes via LinearTransition.
+// A plain TouchableOpacity. It used to scale on press and morph its layout
+// changes; both animations were removed app-wide, and `layoutMorph` is kept
+// only so the existing call sites still type-check.
 const PressScaleTouchable: React.FC<
   React.ComponentProps<typeof TouchableOpacity> & {
     children: React.ReactNode;
     layoutMorph?: boolean;
   }
-> = ({ children, style, onPressIn, onPressOut, layoutMorph, ...rest }) => {
-  const scale = useSharedValue(1);
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
+> = ({ children, style, layoutMorph: _layoutMorph, ...rest }) => {
   return (
-    <AnimatedTouchable
-      {...rest}
-      style={[style, animatedStyle]}
-      layout={layoutMorph ? LinearTransition : undefined}
-      onPressIn={(e) => {
-        scale.value = withTiming(0.96, { duration: 110 });
-        onPressIn?.(e);
-      }}
-      onPressOut={(e) => {
-        scale.value = withSpring(1, { damping: 12, stiffness: 220 });
-        onPressOut?.(e);
-      }}
-    >
+    <TouchableOpacity {...rest} style={style}>
       {children}
-    </AnimatedTouchable>
+    </TouchableOpacity>
   );
 };
 
@@ -387,7 +360,6 @@ export default function BookingSuccessDetailsScreen() {
     index: number = 0,
   ) => (
     <Animated.View
-      entering={FadeInDown.delay((index % 8) * 60).duration(380)}
       style={[styles.infoRow, { flexDirection: rowDirection }]}
     >
       <ThemedText
@@ -515,7 +487,6 @@ export default function BookingSuccessDetailsScreen() {
             </ThemedText>
             <View style={{ flex: 1, alignItems: "flex-end" }}>
               <Animated.View
-                entering={ZoomIn.springify().delay(200)}
                 style={[styles.statusBadgeCustom, { backgroundColor: statusDetails.bg }]}
               >
                 <ThemedText style={[styles.statusBadgeTextCustom, { color: statusDetails.color }]}>
@@ -606,7 +577,7 @@ export default function BookingSuccessDetailsScreen() {
             isDepositPayment
               ? (isRTL ? "المبلغ المدفوع (العربون)" : "Paid (Deposit)")
               : (isRTL ? "المبلغ المدفوع" : "Amount Paid"),
-            <ThemedText style={[styles.infoValue, { color: "#16A34A", fontFamily: "Alexandria-SemiBold" }]}>
+            <ThemedText style={[styles.infoValue, { color: "#16A34A", fontFamily: "IBMPlexSansArabic-SemiBold" }]}>
               {`${amountPaidVal.toLocaleString()} ${t("common.iqd")}`}
             </ThemedText>,
             5,
@@ -862,7 +833,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingVertical: 8,
     fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#1E293B",
   },
   infoSectionCard: {
@@ -876,7 +847,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.primary,
   },
   divider: { height: 1, backgroundColor: "#F1F5F9", marginVertical: 10 },
@@ -887,12 +858,12 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#1E293B",
   },
   infoValue: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#64748B",
   },
   statusBadgeBlue: {
@@ -904,7 +875,7 @@ const styles = StyleSheet.create({
   statusBadgeTextBlue: {
     color: "#FFF",
     fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
   statusBadgeGray: {
     backgroundColor: "#94A3B8",
@@ -915,7 +886,7 @@ const styles = StyleSheet.create({
   statusBadgeTextGray: {
     color: "#FFF",
     fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
   statusBadgeCustom: {
     paddingHorizontal: 12,
@@ -924,7 +895,7 @@ const styles = StyleSheet.create({
   },
   statusBadgeTextCustom: {
     fontSize: normalize.font(10),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
   alertCard: {
     flexDirection: "row" as const,
@@ -948,7 +919,7 @@ const styles = StyleSheet.create({
   alertText: {
     flex: 1,
     fontSize: normalize.font(11),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#B45309",
     lineHeight: 18,
   },
@@ -963,7 +934,7 @@ const styles = StyleSheet.create({
   },
   paymentHelpText: {
     fontSize: normalize.font(11),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#64748B",
     marginBottom: 16,
   },
@@ -980,7 +951,7 @@ const styles = StyleSheet.create({
   deadlineBannerText: {
     flex: 1,
     fontSize: normalize.font(11),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#B45309",
     lineHeight: 18,
   },
@@ -1006,12 +977,12 @@ const styles = StyleSheet.create({
   },
   paymentMethodText: {
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#475569",
   },
   paymentMethodTextActive: {
     color: "#FFF",
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
   },
   payBtn: {
     backgroundColor: "#15AB64",
@@ -1023,11 +994,11 @@ const styles = StyleSheet.create({
   payBtnText: {
     color: "#FFF",
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
   },
   paymentModelTitle: {
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#1E293B",
     marginBottom: 8,
     marginTop: 4,
@@ -1048,20 +1019,20 @@ const styles = StyleSheet.create({
   },
   paymentLabel: {
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#64748B",
   },
   paymentLabelActive: {
     color: "#1E293B",
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
   },
   paymentVal: {
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#64748B",
   },
   paymentValActive: {
     color: "#15AB64",
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
   },
 });

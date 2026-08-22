@@ -74,7 +74,7 @@ export function AiTranslateButton({ source, onTranslated, style }: AiTranslateBu
       ) : (
         <SolarStarBold size={13} color={Colors.primary} />
       )}
-      <Text style={{ fontSize: 11, fontFamily: 'Alexandria-Bold', color: Colors.primary }}>
+      <Text style={{ fontSize: 11, fontFamily: 'IBMPlexSansArabic-Bold', color: Colors.primary }}>
         {loading
           ? (isRTL ? 'جارٍ الترجمة…' : 'Translating…')
           : (isRTL ? 'ترجمة بالذكاء' : 'AI Translate')}

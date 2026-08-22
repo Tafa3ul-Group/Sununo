@@ -97,7 +97,7 @@ export default function CustomerLayout() {
                     backgroundColor: "#F3F4F6" }}
                 >
                   <Image
-                    source={getAvatarSrc(user?.imageUrl)}
+                    source={getAvatarSrc(user?.image ?? user?.imageUrl)}
                     style={{ width: "100%", height: "100%" }}
                   />
                 </View>

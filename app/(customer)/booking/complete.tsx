@@ -55,13 +55,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import Animated, {
-  FadeInDown,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import { useFormatTime } from "../../../hooks/useFormatTime";
@@ -99,7 +93,6 @@ const getSortedCapacityTiers = (capacityPricings: any[]) => {
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
-// Reusable press-scale wrapper for buttons rendered inside `.map()` loops where a
 // hook-based shared value cannot be created at the parent's top level. Press
 // feedback is suppressed when `disabled` so non-clickable cards don't animate.
 const PressableScale = React.memo(function PressableScale({
@@ -117,23 +110,11 @@ const PressableScale = React.memo(function PressableScale({
   haptic?: boolean;
   children: React.ReactNode;
 }) {
-  const scale = useSharedValue(1);
-  const animStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
   return (
     <AnimatedTouchable
       disabled={disabled}
       activeOpacity={activeOpacity}
-      style={[style, animStyle]}
-      onPressIn={() => {
-        if (disabled) return;
-        scale.value = withTiming(0.96, { duration: 110 });
-      }}
-      onPressOut={() => {
-        if (disabled) return;
-        scale.value = withSpring(1, { damping: 12, stiffness: 220 });
-      }}
+      style={style}
       onPress={() => {
         if (disabled) return;
         if (haptic) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -658,8 +639,6 @@ export default function CompleteBookingScreen() {
     shiftMatchesFilterPeriod,
     isShiftBookedForDay,
   ]);
-
-
 
   // Success Sheet Ref
   const successSheetRef = React.useRef<BottomSheetModal>(null);
@@ -1510,7 +1489,6 @@ export default function CompleteBookingScreen() {
   const renderDetailsTab = () => (
     <Animated.View
       style={styles.detailsContainer}
-      entering={FadeInDown.duration(380)}
     >
       <HorizontalCard
         chalet={{
@@ -1533,7 +1511,6 @@ export default function CompleteBookingScreen() {
 
       <Animated.View
         style={styles.detailsMapCard}
-        entering={FadeInDown.delay(60).duration(380)}
       >
         <View style={styles.mapSnippetWrapper}>
           <ExpoImage
@@ -1553,7 +1530,6 @@ export default function CompleteBookingScreen() {
 
       <Animated.View
         style={styles.infoSectionCard}
-        entering={FadeInDown.delay(120).duration(380)}
       >
         <ThemedText style={[styles.sectionTitle, { alignSelf: 'flex-start', textAlign }]}>
           {t("booking.customerInfo")}
@@ -1579,7 +1555,6 @@ export default function CompleteBookingScreen() {
 
       <Animated.View
         style={styles.infoSectionCard}
-        entering={FadeInDown.delay(180).duration(380)}
       >
         <View style={[styles.sectionHeaderRow, styles.row, { flexDirection: rowDirection }]}>
           <ThemedText style={[styles.sectionTitle, { textAlign }]}>
@@ -1729,7 +1704,7 @@ export default function CompleteBookingScreen() {
               ) : (
                 <View style={[styles.row, { flexDirection: rowDirection, gap: 8 }]}>
                   <TextInput
-                    style={[styles.couponInput, { textAlign }]}
+                    style={[styles.couponInput, { textAlign: inputTextAlign }]}
                     value={couponInput}
                     onChangeText={(text) => { setCouponInput(text.toUpperCase()); setCouponError(null); }}
                     placeholder={isArabic ? "لديك كود خصم؟" : "Have a discount code?"}
@@ -1754,7 +1729,7 @@ export default function CompleteBookingScreen() {
             </View>
 
             <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
-              <ThemedText style={[styles.infoLabel, { fontWeight: "700", textAlign }]}>
+              <ThemedText style={[styles.infoLabel, { fontFamily: "IBMPlexSansArabic-Bold", textAlign }]}>
                 {t("booking.totalAmount")}
               </ThemedText>
               <View style={{ alignItems: isArabic ? "flex-start" : "flex-end" }}>
@@ -1776,7 +1751,7 @@ export default function CompleteBookingScreen() {
                 <ThemedText
                   style={[
                     styles.infoValue,
-                    { fontFamily: "Alexandria-Medium", color: Colors.primary, textAlign: textAlignEnd },
+                    { fontFamily: "IBMPlexSansArabic-Medium", color: Colors.primary, textAlign: textAlignEnd },
                   ]}
                 >
                   {totalPrice.toLocaleString()} {t("common.iqd")}
@@ -1792,7 +1767,6 @@ export default function CompleteBookingScreen() {
       {optionalAmenities.length > 0 && (
         <Animated.View
           style={styles.infoSectionCard}
-          entering={FadeInDown.delay(220).duration(380)}
         >
           <ThemedText style={[styles.sectionTitle, { alignSelf: "flex-start", textAlign }]}>
             {isArabic ? "خدمات إضافية" : "Optional Extras"}
@@ -1827,7 +1801,6 @@ export default function CompleteBookingScreen() {
 
       <Animated.View
         style={styles.infoSectionCard}
-        entering={FadeInDown.delay(240).duration(380)}
       >
         <ThemedText style={[styles.sectionTitle, { alignSelf: 'flex-start', textAlign }]}>
           {isArabic ? "ملاحظات إضافية" : "Special Requests"}
@@ -1864,7 +1837,7 @@ export default function CompleteBookingScreen() {
               {isArabic ? "ملاحظة حول الحجز" : "Booking Note"}
             </ThemedText>
           </View>
-          <ThemedText style={{ color: "#64748B", fontSize: 13, fontFamily: "Alexandria-Medium", lineHeight: 22, textAlign }}>
+          <ThemedText style={{ color: "#64748B", fontSize: 13, fontFamily: "IBMPlexSansArabic-Medium", lineHeight: 22, textAlign }}>
             {isArabic
               ? "سيتم إرسال طلب الحجز إلى صاحب الشاليه للموافقة عليه. بعد الموافقة ستصلك رسالة عبر واتساب تحتوي على رابط لإتمام عملية الدفع."
               : "Your booking request will be sent to the chalet owner for approval. Once approved, you will receive a WhatsApp message with a link to complete the payment."}
@@ -1952,14 +1925,14 @@ export default function CompleteBookingScreen() {
 
           <View style={[styles.infoSectionCard, { marginTop: 8 }]}>
             <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection, marginBottom: 0, alignItems: "center" }]}>
-              <ThemedText style={[styles.infoLabel, { fontWeight: "700", textAlign }]}>
+              <ThemedText style={[styles.infoLabel, { fontFamily: "IBMPlexSansArabic-Bold", textAlign }]}>
                 {t("booking.paymentMethod") || "طريقة الدفع"}
               </ThemedText>
               <View style={{ flexDirection: rowDirection, alignItems: "center", gap: 8 }}>
                 <View style={{ backgroundColor: "#ECFDF5", padding: 6, borderRadius: 8 }}>
                   <SolarCardBold size={18} color="#10B981" />
                 </View>
-                <ThemedText style={[styles.infoValue, { color: "#10B981", fontFamily: "Alexandria-SemiBold", textAlign: textAlignEnd }]}>
+                <ThemedText style={[styles.infoValue, { color: "#10B981", fontFamily: "IBMPlexSansArabic-SemiBold", textAlign: textAlignEnd }]}>
                   {t("booking.wayl")}
                 </ThemedText>
               </View>
@@ -2240,9 +2213,6 @@ export default function CompleteBookingScreen() {
                     return (
                       <Animated.View
                         key={`preview-${shift.id}`}
-                        entering={FadeInDown.delay((index % 8) * 60).duration(
-                          380,
-                        )}
                         style={[
                           styles.shiftCardFlat,
                           { flexDirection: rowDirection, opacity: 0.6 },
@@ -2331,7 +2301,7 @@ export default function CompleteBookingScreen() {
                     <ThemedText
                       style={{
                         color: "#EF4444",
-                        fontFamily: "Alexandria-Medium",
+                        fontFamily: "IBMPlexSansArabic-Medium",
                       }}
                     >
                       {t("common.delete")}
@@ -2411,7 +2381,7 @@ export default function CompleteBookingScreen() {
                               styles.shiftNameFlat,
                               isSelected && {
                                 color: "#035DF9",
-                                fontFamily: "Alexandria-Medium",
+                                fontFamily: "IBMPlexSansArabic-Medium",
                               },
                             ]}
                           >
@@ -2454,7 +2424,7 @@ export default function CompleteBookingScreen() {
                                 styles.shiftPriceFlat,
                                 isSelected && {
                                   color: "#035DF9",
-                                  fontFamily: "Alexandria-Medium",
+                                  fontFamily: "IBMPlexSansArabic-Medium",
                                 },
                               ]}
                             >
@@ -2643,7 +2613,7 @@ export default function CompleteBookingScreen() {
                           style={{
                             fontSize: 12,
                             color: "#94A3B8",
-                            fontFamily: "Alexandria-Medium",
+                            fontFamily: "IBMPlexSansArabic-Medium",
                           }}
                         >
                           {isArabic ? "الوجه الأول للهوية" : "ID Front Side"}
@@ -2669,7 +2639,7 @@ export default function CompleteBookingScreen() {
                           style={{
                             fontSize: 12,
                             color: "#94A3B8",
-                            fontFamily: "Alexandria-Medium",
+                            fontFamily: "IBMPlexSansArabic-Medium",
                           }}
                         >
                           {isArabic ? "الوجه الثاني للهوية" : "ID Back Side"}
@@ -2772,7 +2742,7 @@ const styles = StyleSheet.create({
     borderRadius: normalize.radius(10),
     backgroundColor: Colors.primary,
   },
-  couponApplyText: { color: "white", fontSize: normalize.font(13), fontFamily: "Alexandria-Medium" },
+  couponApplyText: { color: "white", fontSize: normalize.font(13), fontFamily: "IBMPlexSansArabic-Medium" },
   couponApplied: { flex: 1, marginHorizontal: normalize.width(8), fontSize: normalize.font(13), color: Colors.secondary },
   couponRemove: { fontSize: normalize.font(12), color: Colors.error, textDecorationLine: "underline" },
   couponError: { fontSize: normalize.font(11), color: Colors.error, lineHeight: normalize.font(17) },
@@ -2799,7 +2769,7 @@ const styles = StyleSheet.create({
   dateBadgeActive: { borderColor: Colors.primary, borderWidth: 2 },
   dateBadgeText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#94A3B8",
     textAlign: "center",
     includeFontPadding: false,
@@ -2807,7 +2777,7 @@ const styles = StyleSheet.create({
   },
   dateBadgeTextActive: {
     color: Colors.primary,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
   addDateBtn: {
     width: 42,
@@ -2828,7 +2798,7 @@ const styles = StyleSheet.create({
   },
   calendarMonthTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#1E293B",
     textAlign: "center",
     letterSpacing: 2,
@@ -2846,7 +2816,7 @@ const styles = StyleSheet.create({
   },
   dayHeaderCell: {
     fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#94A3B8",
     width: (SCREEN_WIDTH - 100) / 7,
     textAlign: "center",
@@ -2869,15 +2839,15 @@ const styles = StyleSheet.create({
   filteredOutDayCell: { opacity: 0.18 },
   dayText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#334155",
     textAlign: "center",
   },
-  activeDayText: { color: "#FFF", fontFamily: "Alexandria-Medium" },
+  activeDayText: { color: "#FFF", fontFamily: "IBMPlexSansArabic-Medium" },
   filteredOutDayText: { color: "#94A3B8" },
   bookedDayText: {
     color: "#CBD5E1",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     opacity: 0.4,
   },
   shiftLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
@@ -2891,18 +2861,18 @@ const styles = StyleSheet.create({
   },
   shiftTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#1E293B",
   },
   shiftTime: {
     fontSize: normalize.font(8),
     color: "#64748B",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
   deleteDayText: {
     color: "#EF4444",
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     textDecorationLine: "underline",
   },
   calendarSheetContent: {
@@ -2930,7 +2900,7 @@ const styles = StyleSheet.create({
   },
   dayHeaderText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#1E293B",
   },
   shiftsContainer: {
@@ -2945,7 +2915,7 @@ const styles = StyleSheet.create({
   },
   shiftClosedText: {
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#DC2626",
   },
   shiftCardFlat: {
@@ -2973,21 +2943,21 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   shiftNameFlat: {
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     fontSize: 15,
     color: "#1E293B",
     flexShrink: 1,
     lineHeight: 24,
   },
   shiftTimeFlat: {
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     fontSize: 12,
     color: "#64748B",
     flexShrink: 1,
     lineHeight: 20,
   },
   shiftPriceFlat: {
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Bold",
     fontSize: 14,
     color: "#1E293B",
     flexShrink: 0,
@@ -3016,12 +2986,12 @@ const styles = StyleSheet.create({
   },
   guestTypeText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#64748B",
   },
   guestTypeTextActive: {
     color: "#035DF9",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
   idUploadContainer: {
     marginBottom: 12,
@@ -3058,13 +3028,13 @@ const styles = StyleSheet.create({
   },
   guestLabel: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#111827",
   },
   guestSubLabel: {
     fontSize: normalize.font(8),
     color: "#9CA3AF",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     marginTop: 1,
   },
   footer: {
@@ -3092,7 +3062,7 @@ const styles = StyleSheet.create({
   },
   inlinePaymentTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#15AB64",
     marginBottom: 15,
   },
@@ -3102,7 +3072,7 @@ const styles = StyleSheet.create({
   inputGroupFixed: { width: 90, gap: 6 },
   inputLabel: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#1E293B",
   },
   textInput: {
@@ -3113,7 +3083,7 @@ const styles = StyleSheet.create({
     height: 48,
     paddingHorizontal: 16,
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#1E293B",
   },
   rowInputs: { flexDirection: "row" },
@@ -3141,7 +3111,7 @@ const styles = StyleSheet.create({
   },
   successTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#1E293B",
     marginBottom: 8,
     textAlign: "center",
@@ -3152,7 +3122,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 25,
     lineHeight: 22,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
   successBtn: { width: "100%", height: 56 },
 
@@ -3182,7 +3152,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingVertical: 8,
     fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#1E293B",
     width: "100%",
   },
@@ -3196,7 +3166,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#15AB64",
   },
   divider: { height: 1, backgroundColor: "#F1F5F9", marginVertical: 10 },
@@ -3225,23 +3195,23 @@ const styles = StyleSheet.create({
   amenityOptionLabel: {
     flex: 1,
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#1E293B",
   },
   amenityOptionPrice: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.primary,
   },
   infoRow: { justifyContent: "space-between", marginBottom: 10 },
   infoLabel: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#1E293B",
   },
   infoValue: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#64748B",
   },
   sectionHeaderRow: { justifyContent: "space-between", alignItems: "center" },
@@ -3256,11 +3226,11 @@ const styles = StyleSheet.create({
   editBtnText: {
     color: "#15AB64",
     fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
   },
   paymentMainTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#15AB64",
     marginVertical: 12,
   },
@@ -3277,28 +3247,28 @@ const styles = StyleSheet.create({
   paymentOptionActive: { borderColor: "#15AB64", backgroundColor: "#F0FDF4" },
   paymentVal: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#64748B",
   },
-  paymentValActive: { color: "#1E293B", fontFamily: "Alexandria-Medium" },
+  paymentValActive: { color: "#1E293B", fontFamily: "IBMPlexSansArabic-Medium" },
   paymentLabel: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#64748B",
   },
-  paymentLabelActive: { color: "#1E293B", fontFamily: "Alexandria-Medium" },
+  paymentLabelActive: { color: "#1E293B", fontFamily: "IBMPlexSansArabic-Medium" },
   agreementWrapper: { paddingVertical: 12, paddingBottom: 35 },
   agreementText: {
     fontSize: normalize.font(8),
     color: "#64748B",
     textAlign: "center",
     lineHeight: 18,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
   agreementLink: {
     color: Colors.primary,
     textDecorationLine: "underline",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
   // RTL Utilities
   row: { flexDirection: "row" },
@@ -3331,7 +3301,7 @@ const styles = StyleSheet.create({
   },
   methodName: {
     fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#1E293B",
   },
   capacityBanner: {
@@ -3356,12 +3326,12 @@ const styles = StyleSheet.create({
   },
   capacityRowLabel: {
     fontSize: normalize.font(11),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#475569",
   },
   capacityRowValue: {
     fontSize: normalize.font(11),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#1E293B",
   },
   capacityDivider: {
@@ -3383,7 +3353,7 @@ const styles = StyleSheet.create({
   extraGuestNoticeText: {
     flex: 1,
     fontSize: normalize.font(9),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#92400E",
     lineHeight: 18,
   },
@@ -3400,7 +3370,7 @@ const styles = StyleSheet.create({
   },
   capacityWarningText: {
     fontSize: normalize.font(9),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#991B1B",
   },
 });

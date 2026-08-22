@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   badgeText: {
     color: 'white',
     fontSize: normalize.font(11),
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-Medium',
   },
   badgeTextSmall: { fontSize: normalize.font(9) },
   struck: {

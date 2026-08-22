@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     elevation: 2 },
   headerTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.text.primary },
   scrollContent: {
     padding: normalize.width(16) },
@@ -270,12 +270,12 @@ const styles = StyleSheet.create({
     flex: 1 },
   chaletName: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.text.primary,
     marginBottom: 4 },
   chaletLocation: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.text.muted,
     marginBottom: 8 },
   ratingRow: {
@@ -284,17 +284,17 @@ const styles = StyleSheet.create({
     marginBottom: 12 },
   ratingText: {
     fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.text.primary,
     paddingTop: 2 },
   priceTag: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.text.primary },
   discountTag: {
     marginTop: normalize.height(2),
     fontSize: normalize.font(11),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.secondary },
   organicImageContainer: {
     width: normalize.width(100),
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     borderBottomEndRadius: 50 },
   sectionTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: IDENTITY_BLUE,
     marginBottom: 12 },
   divider: {
@@ -323,20 +323,20 @@ const styles = StyleSheet.create({
     marginBottom: 16 },
   label: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.text.primary,
     flex: 1 },
   value: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.text.primary,
     flex: 2 },
   currency: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "IBMPlexSansArabic-Medium" },
   notesText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.text.muted,
     lineHeight: 20 },
   bottomActions: {
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10 },
   cancelLinkText: {
     color: '#EF4444',
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     fontSize: normalize.font(14),
     textDecorationLine: 'underline' },
   sheetLoading: {

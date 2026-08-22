@@ -124,13 +124,13 @@ const styles = StyleSheet.create({
     flex: 1 },
   title: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#111827" },
   location: {
     fontSize: 8,
     color: "#6B7280",
     marginTop: 2,
-   fontFamily: "Alexandria-Medium" },
+   fontFamily: "IBMPlexSansArabic-Medium" },
   closeButton: {
     padding: 2 },
   footer: {
@@ -141,9 +141,9 @@ const styles = StyleSheet.create({
     gap: 4 },
   rating: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#111827" },
   price: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.primary } });

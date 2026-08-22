@@ -267,13 +267,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: normalize.font(17),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#111827",
     marginBottom: normalize.height(8),
   },
   subtitle: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#6B7280",
     lineHeight: normalize.font(22),
   },
@@ -302,13 +302,13 @@ const styles = StyleSheet.create({
   },
   policyTitle: {
     fontSize: normalize.font(13.5),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#111827",
     marginBottom: 2,
   },
   policyMeta: {
     fontSize: normalize.font(11.5),
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#9CA3AF",
   },
   badge: {
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: normalize.font(11.5),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.primary,
   },
   badgeTextDone: {
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
   error: {
     marginTop: normalize.height(16),
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#DC2626",
     lineHeight: normalize.font(20),
   },
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
   },
   hint: {
     fontSize: normalize.font(11.5),
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#9CA3AF",
   },
   submitBtn: {
@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     fontSize: normalize.font(12.5),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#EF4444",
   },
   submittingOverlay: {

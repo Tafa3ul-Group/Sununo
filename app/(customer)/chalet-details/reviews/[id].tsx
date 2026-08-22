@@ -29,15 +29,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Animated, {
-  FadeIn,
-  FadeInDown,
-  FadeOut,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from "react-native-reanimated";
+import Animated, { useAnimatedStyle, useSharedValue } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { ltrScrollContent, ltrScroller, useDirection } from "@/i18n";
 
@@ -70,21 +62,15 @@ function RatingStarButton({
   return (
     <AnimatedTouchable
       activeOpacity={0.9}
-      onPressIn={() => {
-        scaleValue.value = withTiming(0.96, { duration: 110 });
-      }}
-      onPressOut={() => {
-        scaleValue.value = withSpring(1, { damping: 12, stiffness: 220 });
-      }}
       onPress={handlePress}
       style={animatedStyle}
     >
       {filled ? (
-        <Animated.View entering={FadeIn.duration(180)} exiting={FadeOut.duration(180)}>
+        <Animated.View>
           <SolarStarBold size={normalize(32)} color="#15AB64" />
         </Animated.View>
       ) : (
-        <Animated.View entering={FadeIn.duration(180)} exiting={FadeOut.duration(180)}>
+        <Animated.View>
           <SolarStarLinear size={normalize(32)} color="#15AB64" />
         </Animated.View>
       )}
@@ -247,7 +233,6 @@ export default function ReviewsScreen() {
             return (
               <Animated.View
                 key={idx}
-                entering={FadeInDown.delay((idx % 8) * 60).duration(380)}
                 style={styles.revCardFlat}
               >
                 <View
@@ -383,7 +368,7 @@ const styles = StyleSheet.create({
   summaryArea: { alignItems: "center", marginVertical: normalize(35) },
   bigRatingText: {
     fontSize: normalize(64), // Slightly larger
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#111827",
     lineHeight: normalize(72), // Explicit lineHeight to prevent cutoff
     paddingVertical: 5,
@@ -413,7 +398,7 @@ const styles = StyleSheet.create({
   },
   rateNumText: {
     fontSize: normalize(16),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#111827",
     lineHeight: normalize(20),
     paddingVertical: 2,
@@ -425,7 +410,7 @@ const styles = StyleSheet.create({
   nameAndBody: { flex: 1 },
   reviewerNameText: {
     fontSize: normalize(16),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#111827",
   },
   revBodyText: {
@@ -433,7 +418,7 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     marginTop: normalize(8),
     lineHeight: normalize(22),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
   },
   avatarCircle: {
     width: normalize(60),
@@ -454,7 +439,7 @@ const styles = StyleSheet.create({
   dateTextLabel: {
     fontSize: normalize(13),
     color: "#9CA3AF",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
   footerSticky: {
     position: "absolute",
@@ -486,7 +471,7 @@ const styles = StyleSheet.create({
   },
   questionTitle: {
     fontSize: normalize(16),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#111827",
     marginBottom: normalize(8),
   },
@@ -505,7 +490,7 @@ const styles = StyleSheet.create({
   unverifiedText: {
     fontSize: normalize(13),
     color: "#6B7280",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     textAlign: "center",
   },
 });

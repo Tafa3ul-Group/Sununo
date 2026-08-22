@@ -282,12 +282,12 @@ const styles = StyleSheet.create({
   },
   filterText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.text.secondary
   },
   filterTextActive: {
     color: Colors.white,
-    fontFamily: "Alexandria-Medium"
+    fontFamily: "IBMPlexSansArabic-Medium"
   },
   // List
   listContainer: {
@@ -314,19 +314,19 @@ const styles = StyleSheet.create({
   },
   transactionTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.text.primary,
     marginBottom: 3
   },
   transactionDate: {
     fontSize: normalize.font(8),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-Medium"
+    fontFamily: "IBMPlexSansArabic-Medium"
   },
   refCode: {
     fontSize: normalize.font(10),
     color: Colors.primary,
-    fontFamily: "Alexandria-Medium"
+    fontFamily: "IBMPlexSansArabic-Medium"
   },
   detailBlock: {
     backgroundColor: '#F9FAFB',
@@ -338,32 +338,32 @@ const styles = StyleSheet.create({
   detailText: {
     fontSize: normalize.font(11),
     color: Colors.text.secondary,
-    fontFamily: "Alexandria-Medium"
+    fontFamily: "IBMPlexSansArabic-Medium"
   },
   detailMuted: {
     fontSize: normalize.font(10),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-Medium"
+    fontFamily: "IBMPlexSansArabic-Medium"
   },
   detailPaid: {
     fontSize: normalize.font(11),
     color: '#10B981',
-    fontFamily: "Alexandria-Medium"
+    fontFamily: "IBMPlexSansArabic-Medium"
   },
   detailRejected: {
     fontSize: normalize.font(11),
     color: '#EF4444',
-    fontFamily: "Alexandria-Medium"
+    fontFamily: "IBMPlexSansArabic-Medium"
   },
   transactionAmount: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.text.primary,
     marginBottom: 4
   },
   currencySmall: {
     fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.text.muted
   },
   statusBadge: {
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
   },
   statusBadgeText: {
     fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium"
+    fontFamily: "IBMPlexSansArabic-Medium"
   },
   separator: {
     height: 1,
@@ -404,13 +404,13 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.text.primary
   },
   emptySubtitle: {
     fontSize: normalize.font(8),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     textAlign: 'center',
     paddingHorizontal: 40
   }

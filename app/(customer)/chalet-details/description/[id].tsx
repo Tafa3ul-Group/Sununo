@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     elevation: 8 },
   pageTitle: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: '#111827' },
   card: {
     backgroundColor: 'white',
@@ -100,4 +100,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 24,
     color: '#4B5563',
-    fontFamily: "Alexandria-Medium" } });
+    fontFamily: "IBMPlexSansArabic-Regular" } });

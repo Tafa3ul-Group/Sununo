@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   balanceLabel: {
     color: "white",
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
   bottomRow: {
     alignItems: "flex-end",
@@ -103,14 +103,14 @@ const styles = StyleSheet.create({
   balanceValue: {
     color: "white",
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Bold",
     lineHeight: normalize.font(14),
     paddingVertical: normalize.height(2),
   },
   currencyText: {
     color: "white",
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
   withdrawButton: {
     width: normalize.width(120),
@@ -121,6 +121,6 @@ const styles = StyleSheet.create({
   withdrawText: {
     color: "white",
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
 });

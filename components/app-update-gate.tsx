@@ -165,19 +165,19 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#111827",
   },
   subtitle: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#6B7280",
     textAlign: "center",
     lineHeight: 22,
   },
   version: {
     fontSize: 12,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#9CA3AF",
   },
   actions: {
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
   updateText: {
     color: "white",
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
   laterBtn: {
     width: "100%",
@@ -209,6 +209,6 @@ const styles = StyleSheet.create({
   laterText: {
     color: "#374151",
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
 });

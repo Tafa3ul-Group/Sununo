@@ -1,7 +1,9 @@
 'use no memo';
 import { normalize } from '@/constants/theme';
 import { getImageSrc } from '@/hooks/useImageSrc';
-import { ltrScrollContent, ltrScroller } from '@/i18n';
+import { Image as ExpoImage } from 'expo-image';
+import { IMAGE_BLUR_PLACEHOLDER, IMAGE_TRANSITION } from '@/constants/image-loading';
+
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
     Dimensions,
@@ -11,7 +13,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-import Animated, { LinearTransition } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import { hasBannerLink } from '@/utils/banner-link';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -93,10 +95,12 @@ export function BannerSwiper({
         accessibilityLabel={label}
         onPress={() => onBannerPress?.(item)}
       >
-        <Image
+        <ExpoImage
           source={item.image ? getImageSrc(item.image) : item}
           style={styles.bannerImage}
-          resizeMode="cover"
+          contentFit="cover"
+          placeholder={IMAGE_BLUR_PLACEHOLDER}
+          transition={IMAGE_TRANSITION}
         />
       </TouchableOpacity>
     );
@@ -123,26 +127,32 @@ export function BannerSwiper({
         decelerationRate="fast"
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
-        style={ltrScroller}
-        contentContainerStyle={[styles.listContent, ltrScrollContent]}
+        contentContainerStyle={styles.listContent}
         ItemSeparatorComponent={ItemSeparator}
         onScrollBeginDrag={stopTimer}
         onScrollEndDrag={startTimer}
+        // Pure item-grid offsets: no leading padding baked in, so React Native
+        // can mirror them correctly for RTL and the carousel reads right-to-left
+        // like the rest of the Arabic UI.
         getItemLayout={(_, index) => ({
           length: SNAP_INTERVAL,
-          // Include the leading side padding so scrollToIndex/snap offsets
-          // address the true physical position of each banner.
-          offset: SIDE_PADDING + SNAP_INTERVAL * index,
+          offset: SNAP_INTERVAL * index,
           index })}
+        onScrollToIndexFailed={({ index }) => {
+          // Safety net if the target page has not been measured yet.
+          flatListRef.current?.scrollToOffset({
+            offset: SNAP_INTERVAL * index,
+            animated: true,
+          });
+        }}
       />
 
-      {/* Pagination Dots — physical LTR so dot motion matches the physical
-          page motion of the LTR-forced scroller. */}
-      <View style={[styles.pagination, { flexDirection: 'row', direction: 'ltr' }]}>
+      {/* Dots follow the app direction, matching the scroller: in Arabic the
+          first banner (and its dot) sit on the right. */}
+      <View style={[styles.pagination, { flexDirection: 'row' }]}>
         {displayData.map((_, index) => (
           <Animated.View
             key={index}
-            layout={LinearTransition.duration(240)}
             style={[
               styles.dot,
               activeIndex === index ? styles.activeDot : styles.inactiveDot

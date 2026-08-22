@@ -9,12 +9,7 @@ import {
     ViewStyle,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { useDirection } from "@/i18n";
 
@@ -75,10 +70,6 @@ export function PrimaryButton({
   // Press feedback: subtle shrink on press-in, spring back on release — shared
   // recipe across the app so every button responds with the same motion.
   // Declared before the early `loading` return so hook order stays stable.
-  const scale = useSharedValue(1);
-  const pressAnim = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
 
   if (loading) {
     return (
@@ -105,14 +96,8 @@ export function PrimaryButton({
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
         onPress();
       }}
-      onPressIn={() => {
-        scale.value = withTiming(0.97, { duration: 90 });
-      }}
-      onPressOut={() => {
-        scale.value = withSpring(1, { damping: 12, stiffness: 180 });
-      }}
       disabled={disabled}
-      style={[styles.hybridContainer, { height }, style, pressAnim]}
+      style={[styles.hybridContainer, { height }, style]}
     >
       {/* Logical Start Curve */}
       <View style={{ width: scaledPartWidth, height: scaledPartHeight }}>
@@ -193,7 +178,7 @@ const styles = StyleSheet.create({
   },
   primaryText: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     textAlign: "center",
     lineHeight: 25,
     paddingVertical: 2,

@@ -42,7 +42,7 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 import Svg, { Path } from "react-native-svg";
 
 import { pickTranslation, useDirection } from "@/i18n";
@@ -450,7 +450,6 @@ export default function HomeScreen() {
     [],
   );
 
-
   const shiftsGrid = React.useMemo(() => {
     if (isAvailabilityFetching)
       return (
@@ -622,7 +621,7 @@ export default function HomeScreen() {
                           lineHeight: normalize.font(22),
                           paddingBottom: 2,
                           fontSize: normalize.font(12),
-                          fontFamily: "Alexandria-Bold", // Slightly bolder for premium look
+                          fontFamily: "IBMPlexSansArabic-Bold", // Slightly bolder for premium look
                         },
                       ]}
                     >
@@ -661,7 +660,6 @@ export default function HomeScreen() {
       : item.customer?.name || t("common.user");
     return (
       <Animated.View
-        entering={FadeInDown.delay(index * 50).springify()}
         style={{ width: "100%" }}
       >
 
@@ -933,7 +931,7 @@ export default function HomeScreen() {
         backdropComponent={renderBackdrop}
         enablePanDownToClose
       >
-        <BottomSheetView style={[styles.sheetContent]}>
+        <BottomSheetView style={styles.sheetContent}>
           <View style={{ padding: 24 }}>
             <View
               style={[
@@ -1090,13 +1088,13 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: normalize.font(14),
     color: "#64748B",
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     paddingVertical: normalize.height(2),
     lineHeight: normalize.font(20)
   },
   activeTabText: {
     color: IDENTITY_BLUE,
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     paddingVertical: normalize.height(2),
     lineHeight: normalize.font(20)
   },
@@ -1109,7 +1107,7 @@ const styles = StyleSheet.create({
   filterToggle: { flexDirection: "row", alignItems: "center", gap: 6 },
   filterToggleText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#64748B"
   },
   todayButton: {
@@ -1122,7 +1120,7 @@ const styles = StyleSheet.create({
   },
   todayButtonText: {
     color: IDENTITY_BLUE,
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     fontSize: normalize.font(12),
     lineHeight: normalize.font(16)
   },
@@ -1138,7 +1136,7 @@ const styles = StyleSheet.create({
   },
   monthLabel: {
     fontSize: normalize.font(20),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: IDENTITY_BLUE
   },
   daysScroll: { gap: normalize.width(10) },
@@ -1153,11 +1151,11 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(12),
     color: "#64748B",
     marginBottom: 4,
-    fontFamily: "Alexandria-Regular"
+    fontFamily: "IBMPlexSansArabic-Regular"
   },
   selectedDayLabel: {
     color: "#FFF",
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "IBMPlexSansArabic-Regular",
     lineHeight: normalize.font(16)
   },
   dateCircle: {
@@ -1206,10 +1204,10 @@ const styles = StyleSheet.create({
     height: 5,
     borderRadius: 2.5,
   },
-  dateText: { fontSize: normalize.font(14), fontFamily: "Alexandria-SemiBold" },
+  dateText: { fontSize: normalize.font(14), fontFamily: "IBMPlexSansArabic-SemiBold" },
   selectedDateText: {
     color: IDENTITY_BLUE,
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "IBMPlexSansArabic-Regular",
     lineHeight: normalize.font(18)
   },
   selectedFullyBookedDay: {
@@ -1238,7 +1236,7 @@ const styles = StyleSheet.create({
   },
   chaletChipText: {
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     lineHeight: normalize.font(16),
     paddingTop: normalize.height(2)
   },
@@ -1280,7 +1278,7 @@ const styles = StyleSheet.create({
   shiftNameGroup: { gap: 2, flex: 1 },
   shiftTileName: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     lineHeight: normalize.font(22),
     paddingBottom: 4,
   },
@@ -1288,7 +1286,7 @@ const styles = StyleSheet.create({
   shiftTileTime: {
     fontSize: normalize.font(12),
     color: "#94A3B8",
-    fontFamily: "Alexandria-SemiBold"
+    fontFamily: "IBMPlexSansArabic-SemiBold"
   },
   shiftStatusColumn: { paddingStart: 12 },
   statusGlassBadge: {
@@ -1301,7 +1299,7 @@ const styles = StyleSheet.create({
   },
   statusBadgeText: {
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     lineHeight: normalize.font(18),
     paddingVertical: normalize.height(2)
   },
@@ -1309,7 +1307,7 @@ const styles = StyleSheet.create({
   bookingMiniInfo: { marginTop: 6, alignItems: "center", gap: 6 },
   bookingMiniId: {
     fontSize: normalize.font(11),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     letterSpacing: 0.5,
     flexShrink: 1, // Prevent pushing the badge off-screen
     lineHeight: normalize.font(16),
@@ -1322,7 +1320,7 @@ const styles = StyleSheet.create({
   },
   bookingTypeBadgeText: {
     fontSize: normalize.font(9),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     textTransform: "uppercase",
     lineHeight: normalize.font(13),
     paddingBottom: 1,
@@ -1331,7 +1329,7 @@ const styles = StyleSheet.create({
   noAvailabilityText: {
     textAlign: "center",
     color: "#64748B",
-    fontFamily: "Alexandria-SemiBold"
+    fontFamily: "IBMPlexSansArabic-SemiBold"
   },
   bookingCard: {
     backgroundColor: "#FFF",
@@ -1352,15 +1350,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     overflow: "hidden"
   },
-  customerName: { fontSize: normalize.font(15), fontFamily: "Alexandria-SemiBold" },
+  customerName: { fontSize: normalize.font(15), fontFamily: "IBMPlexSansArabic-SemiBold" },
   chaletName: {
     fontSize: normalize.font(12),
     color: "#64748B",
-    fontFamily: "Alexandria-Regular"
+    fontFamily: "IBMPlexSansArabic-Regular"
   },
   priceText: {
     fontSize: normalize.font(15),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: IDENTITY_BLUE
   },
   dateHighlight: {
@@ -1372,7 +1370,7 @@ const styles = StyleSheet.create({
   },
   dateHighlightText: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#1E293B"
   },
   statusBadge: {
@@ -1383,18 +1381,18 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: normalize.font(11),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     lineHeight: normalize.font(16)
   },
   codeText: {
     fontSize: normalize.font(12),
     color: "#64748B",
-    fontFamily: "Alexandria-Medium"
+    fontFamily: "IBMPlexSansArabic-Medium"
   },
   sheetLoading: { padding: 50, alignItems: "center" },
   sheetScroll: { padding: 20 },
   sheetTopRow: { marginBottom: 20 },
-  sheetHeroTitle: { fontSize: normalize.font(18), fontFamily: "Alexandria-SemiBold" },
+  sheetHeroTitle: { fontSize: normalize.font(18), fontFamily: "IBMPlexSansArabic-SemiBold" },
   customerCard: {
     backgroundColor: "#F8FAFC",
     borderRadius: 12,
@@ -1413,12 +1411,12 @@ const styles = StyleSheet.create({
   customerAvatarImg: { width: 44, height: 44, borderRadius: 12 },
   customerNameSheet: {
     fontSize: normalize.font(15),
-    fontFamily: "Alexandria-SemiBold"
+    fontFamily: "IBMPlexSansArabic-SemiBold"
   },
   customerPhone: {
     fontSize: normalize.font(13),
     color: "#64748B",
-    fontFamily: "Alexandria-Regular"
+    fontFamily: "IBMPlexSansArabic-Regular"
   },
   contactActions: { gap: 8 },
   contactBtn: {
@@ -1448,7 +1446,7 @@ const styles = StyleSheet.create({
   },
   detailCardTitle: {
     fontSize: normalize.font(15),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     flex: 1
   },
   detailSubRow: {
@@ -1460,7 +1458,7 @@ const styles = StyleSheet.create({
   detailSubText: {
     fontSize: normalize.font(12),
     color: "#64748B",
-    fontFamily: "Alexandria-Regular"
+    fontFamily: "IBMPlexSansArabic-Regular"
   },
   scheduleBlock: {
     backgroundColor: "#F8FAFC",
@@ -1476,7 +1474,7 @@ const styles = StyleSheet.create({
   },
   scheduleDate: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     flex: 1
   },
   shiftChip: {
@@ -1487,30 +1485,30 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 6
   },
-  shiftChipText: { fontSize: normalize.font(10), fontFamily: "Alexandria-SemiBold" },
+  shiftChipText: { fontSize: normalize.font(10), fontFamily: "IBMPlexSansArabic-SemiBold" },
   timeLabel: {
     fontSize: normalize.font(10),
     color: "#94A3B8",
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     textTransform: "uppercase"
   },
-  timeValue: { fontSize: normalize.font(14), fontFamily: "Alexandria-SemiBold" },
+  timeValue: { fontSize: normalize.font(14), fontFamily: "IBMPlexSansArabic-SemiBold" },
   timeArrow: { paddingHorizontal: 8 },
   paymentTotalValue: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: IDENTITY_BLUE
   },
   paymentCard: { padding: 12, backgroundColor: "#F8FAFC", borderRadius: 10 },
   paymentTotalRow: { justifyContent: "space-between", alignItems: "center" },
   paymentTotalLabel: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-SemiBold"
+    fontFamily: "IBMPlexSansArabic-SemiBold"
   },
   sheetContent: { paddingBottom: normalize.height(24) },
   sheetTitle: {
     fontSize: normalize.font(18),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     marginBottom: 16
   },
   textInput: {
@@ -1521,7 +1519,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "IBMPlexSansArabic-Regular",
     fontSize: normalize.font(14)
   },
   textArea: {
@@ -1532,13 +1530,13 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "IBMPlexSansArabic-Regular",
     fontSize: normalize.font(14),
     textAlignVertical: "top"
   },
   inputLabel: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#64748B",
     marginBottom: 8
   },
@@ -1557,7 +1555,7 @@ const styles = StyleSheet.create({
   pickerColLabel: {
     fontSize: normalize.font(12),
     color: "#94A3B8",
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     textTransform: "uppercase",
     marginBottom: 12,
     letterSpacing: 0.5
@@ -1575,11 +1573,11 @@ const styles = StyleSheet.create({
   pickerItemTextNew: {
     fontSize: normalize.font(15),
     color: "#64748B",
-    fontFamily: "Alexandria-SemiBold"
+    fontFamily: "IBMPlexSansArabic-SemiBold"
   },
   pickerItemTextActiveNew: {
     color: IDENTITY_BLUE,
-    fontFamily: "Alexandria-SemiBold"
+    fontFamily: "IBMPlexSansArabic-SemiBold"
   },
   activeDot: {
     width: 6,
@@ -1604,14 +1602,14 @@ const styles = StyleSheet.create({
   },
   notesLabel: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: IDENTITY_BLUE
   },
   notesText: {
     fontSize: normalize.font(13),
     color: "#475569",
     lineHeight: 18,
-    fontFamily: "Alexandria-Regular"
+    fontFamily: "IBMPlexSansArabic-Regular"
   },
   row: { flexDirection: "row" },
   successAnimationContainer: {
@@ -1627,7 +1625,7 @@ const styles = StyleSheet.create({
   },
   successAnimationText: {
     fontSize: normalize.font(18),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: IDENTITY_BLUE,
     marginTop: 16,
     textAlign: "center"

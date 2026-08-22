@@ -119,18 +119,18 @@ const styles = StyleSheet.create({
   hostLabel: {
     fontSize: 8,
     color: "#040404ff",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
   hostName: {
     fontSize: 14,
     color: "#111827",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     marginTop: -2,
   },
   hostPhone: {
     fontSize: 10,
     color: "#6B7280",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     marginTop: 2,
   },
   avatarContainer: {

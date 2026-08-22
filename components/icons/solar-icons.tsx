@@ -72,6 +72,31 @@ export function SolarHeartBold({ size = 24, color, ...props }: SolarIconProps) {
   );
 }
 
+export function SolarHeartLinear({ size = 24, color, ...props }: SolarIconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+      <Path
+        stroke={color || SafeColors.primary}
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+        d="M2 9.137C2 14 6.02 16.591 8.962 18.911C10 19.729 11 20.5 12 20.5s2-.77 3.038-1.59C17.981 16.592 22 14 22 9.138S16.5.825 12 5.501C7.5.825 2 4.274 2 9.137"
+      />
+    </Svg>
+  );
+}
+
+// Five-pointed sparkle with concave sides — the rating star used on cards.
+export function SparkleStarBold({ size = 24, color, ...props }: SolarIconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+      <Path
+        fill={color || SafeColors.primary}
+        d="M12 2Q14.7 8.28 21.51 8.91Q16.37 13.42 17.88 20.09Q12 16.6 6.12 20.09Q7.63 13.42 2.49 8.91Q9.3 8.28 12 2Z"
+      />
+    </Svg>
+  );
+}
+
 export function SolarMapBoldDuotone({
   size = 24,
   color,

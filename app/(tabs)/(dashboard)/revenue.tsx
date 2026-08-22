@@ -529,7 +529,7 @@ const styles = StyleSheet.create({
   balanceLabel: {
     color: 'rgba(255,255,255,0.7)',
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     marginBottom: 8,
     letterSpacing: 0.5,
     textTransform: 'uppercase'
@@ -537,20 +537,20 @@ const styles = StyleSheet.create({
   balanceValue: {
     color: Colors.white,
     fontSize: normalize.font(36),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "IBMPlexSansArabic-Bold",
     letterSpacing: -1
   },
   balanceCurrency: {
     color: 'rgba(255,255,255,0.6)',
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     marginBottom: 20,
     marginTop: 2
   },
   balanceLockedNote: {
     color: 'rgba(255,255,255,0.75)',
     fontSize: normalize.font(11),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     textAlign: 'center',
     marginTop: -12,
     marginBottom: 16,
@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
   },
   withdrawButtonText: {
     color: Colors.primary,
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     fontSize: normalize.font(14)
   },
   // Pending earnings strip (inside the balance card) — centered
@@ -598,24 +598,24 @@ const styles = StyleSheet.create({
   },
   pendingStripLabel: {
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: 'rgba(255,255,255,0.85)',
     textAlign: 'center'
   },
   pendingStripValue: {
     fontSize: normalize.font(20),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.white,
     textAlign: 'center'
   },
   pendingStripCurrency: {
     fontSize: normalize.font(11),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: 'rgba(255,255,255,0.7)'
   },
   pendingStripHint: {
     fontSize: normalize.font(10),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: 'rgba(255,255,255,0.7)',
     textAlign: 'center'
   },
@@ -643,12 +643,12 @@ const styles = StyleSheet.create({
   },
   confirmBannerTitle: {
     fontSize: normalize.font(13),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: Colors.white,
   },
   confirmBannerSub: {
     fontSize: normalize.font(11),
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-Medium',
     color: 'rgba(255,255,255,0.85)',
     lineHeight: 17,
   },
@@ -662,7 +662,7 @@ const styles = StyleSheet.create({
   },
   confirmBannerCtaText: {
     fontSize: normalize.font(12),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: Colors.white,
   },
   // Period Filter
@@ -685,12 +685,12 @@ const styles = StyleSheet.create({
   },
   periodText: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.text.secondary
   },
   periodTextActive: {
     color: Colors.white,
-    fontFamily: "Alexandria-Regular"
+    fontFamily: "IBMPlexSansArabic-Regular"
   },
   // Stats
   statsRow: {
@@ -716,13 +716,13 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.text.primary
   },
   statLabel: {
     fontSize: normalize.font(10),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     marginTop: 2,
     textAlign: 'center'
   },
@@ -734,7 +734,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: normalize.font(18),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.text.primary
   },
   viewAllBtn: {
@@ -745,7 +745,7 @@ const styles = StyleSheet.create({
   viewAllText: {
     color: Colors.primary,
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-SemiBold"
+    fontFamily: "IBMPlexSansArabic-SemiBold"
   },
   // Transactions
   transactionsCard: {
@@ -772,24 +772,24 @@ const styles = StyleSheet.create({
   },
   transactionTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.text.primary,
     marginBottom: 3
   },
   transactionDate: {
     fontSize: normalize.font(11),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-Medium"
+    fontFamily: "IBMPlexSansArabic-Medium"
   },
   transactionAmount: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.text.primary,
     marginBottom: 4
   },
   currencySmall: {
     fontSize: normalize.font(11),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.text.muted
   },
   typeBadge: {
@@ -799,7 +799,7 @@ const styles = StyleSheet.create({
   },
   typeBadgeText: {
     fontSize: normalize.font(9),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     textTransform: 'uppercase'
   },
   separator: {
@@ -816,7 +816,7 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: normalize.font(13),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-SemiBold"
+    fontFamily: "IBMPlexSansArabic-SemiBold"
   },
   // Withdraw Sheet
   sheetContent: {
@@ -824,7 +824,7 @@ const styles = StyleSheet.create({
   },
   sheetTitle: {
     fontSize: normalize.font(20),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.text.primary,
     textAlign: 'center',
     marginBottom: 4
@@ -832,14 +832,14 @@ const styles = StyleSheet.create({
   sheetSubtitle: {
     fontSize: normalize.font(13),
     color: Colors.text.muted,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     textAlign: 'center',
     marginBottom: 8
   },
   sheetAvailable: {
     fontSize: normalize.font(12),
     color: Colors.primary,
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     textAlign: 'center',
     marginBottom: 20
   },
@@ -856,13 +856,13 @@ const styles = StyleSheet.create({
   amountInput: {
     flex: 1,
     fontSize: normalize.font(24),
-    fontFamily: "Alexandria-Black",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.text.primary,
     textAlign: 'center'
   },
   amountCurrency: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Bold",
+    fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.text.muted
   }
 });

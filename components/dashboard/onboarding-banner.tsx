@@ -135,12 +135,12 @@ const styles = StyleSheet.create({
   icon: { justifyContent: 'center', alignItems: 'center' },
   title: {
     fontSize: normalize.font(13),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     marginBottom: 2,
   },
   subtitle: {
     fontSize: normalize.font(11),
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-Regular',
     color: Colors.text.secondary,
     lineHeight: 16,
   },

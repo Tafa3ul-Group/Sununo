@@ -260,7 +260,7 @@ export default function BookingDetailsPage() {
       <View style={{ flex: 1, alignItems: flexStart, paddingEnd: 16 }}>
         <Text style={[styles.infoLabel, { textAlign }]}>{label}</Text>
         {subLabel && (
-          <Text style={{ fontSize: 11, color: '#94A3B8', fontFamily: 'Alexandria-Regular', marginTop: 2, textAlign }}>
+          <Text style={{ fontSize: 11, color: '#94A3B8', fontFamily: 'IBMPlexSansArabic-Regular', marginTop: 2, textAlign }}>
             {subLabel}
           </Text>
         )}
@@ -499,7 +499,7 @@ export default function BookingDetailsPage() {
             )}
             {Number(data.extraGuestsPrice) > 0 && renderInfoRow(
               isRTL ? "مبلغ الزيادة" : "Extra Charge",
-              <Text style={[styles.infoValue, { color: '#F97316', fontFamily: 'Alexandria-SemiBold' }]}>
+              <Text style={[styles.infoValue, { color: '#F97316', fontFamily: 'IBMPlexSansArabic-SemiBold' }]}>
                 {`+${Number(data.extraGuestsPrice).toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`}
               </Text>,
               false,
@@ -509,7 +509,7 @@ export default function BookingDetailsPage() {
             )}
             {renderInfoRow(
               isRTL ? "المبلغ النهائي" : "Final Price",
-              <Text style={[styles.infoValue, { color: '#0F172A', fontFamily: 'Alexandria-SemiBold' }]}>
+              <Text style={[styles.infoValue, { color: '#0F172A', fontFamily: 'IBMPlexSansArabic-SemiBold' }]}>
                 {`${totalPrice.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`}
               </Text>,
             )}
@@ -517,7 +517,7 @@ export default function BookingDetailsPage() {
             {/* Owner's net profit after the platform commission is deducted */}
             {providerEarnings > 0 && renderInfoRow(
               isRTL ? "صافي ربحك" : "Your Net Profit",
-              <Text style={[styles.infoValue, { color: '#16A34A', fontFamily: 'Alexandria-SemiBold', fontSize: normalize.font(15) }]}>
+              <Text style={[styles.infoValue, { color: '#16A34A', fontFamily: 'IBMPlexSansArabic-SemiBold', fontSize: normalize.font(15) }]}>
                 {`${providerEarnings.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`}
               </Text>,
               false,
@@ -531,7 +531,7 @@ export default function BookingDetailsPage() {
             {/* Payment status — accurate, based on real payment (confirmed/completed) */}
             {renderInfoRow(
               isRTL ? "حالة الدفع" : "Payment Status",
-              <Text style={[styles.infoValue, { color: bIsPaid ? '#16A34A' : '#E11D48', fontFamily: 'Alexandria-SemiBold' }]}>
+              <Text style={[styles.infoValue, { color: bIsPaid ? '#16A34A' : '#E11D48', fontFamily: 'IBMPlexSansArabic-SemiBold' }]}>
                 {bIsPaid
                   ? (bIsDeposit && remainingAmount > 0
                       ? (isRTL ? 'مدفوع جزئياً (عربون)' : 'Partially Paid (Deposit)')
@@ -543,7 +543,7 @@ export default function BookingDetailsPage() {
             {/* Paid amount — only shown once payment actually went through */}
             {bIsPaid && renderInfoRow(
               bIsDeposit ? (isRTL ? "المبلغ المدفوع (العربون)" : "Paid (Deposit)") : (isRTL ? "المبلغ المدفوع" : "Amount Paid"),
-              <Text style={[styles.infoValue, { color: '#0EA5E9', fontFamily: 'Alexandria-SemiBold' }]}>
+              <Text style={[styles.infoValue, { color: '#0EA5E9', fontFamily: 'IBMPlexSansArabic-SemiBold' }]}>
                 {`${bAmountPaid.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`}
               </Text>,
             )}
@@ -551,7 +551,7 @@ export default function BookingDetailsPage() {
             {/* Remaining cash to collect — only for a paid deposit booking */}
             {bIsPaid && bIsDeposit && Number(data.depositAmount || 0) > 0 && remainingAmount > 0 && renderInfoRow(
               isRTL ? "المتبقي" : "Remaining",
-              <Text style={[styles.infoValue, { color: '#F97316', fontFamily: 'Alexandria-SemiBold' }]}>
+              <Text style={[styles.infoValue, { color: '#F97316', fontFamily: 'IBMPlexSansArabic-SemiBold' }]}>
                 {`${remainingAmount.toLocaleString()} ${isRTL ? "د.ع" : "IQD"}`}
               </Text>,
               false,
@@ -711,7 +711,7 @@ const styles = StyleSheet.create({
   errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFFFFF', padding: 20 },
   errorText: { color: '#64748B', marginTop: 16 },
   backBtn: { marginTop: 20 },
-  backBtnText: { color: IDENTITY_BLUE, fontFamily: "Alexandria-SemiBold" },
+  backBtnText: { color: IDENTITY_BLUE, fontFamily: "IBMPlexSansArabic-SemiBold" },
   menuCircle: {
     width: normalize.width(42),
     height: normalize.width(42),
@@ -746,7 +746,7 @@ const styles = StyleSheet.create({
   cancelledTitle: {
     flex: 1,
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: '#EA2129',
     lineHeight: normalize.font(24)
   },
@@ -758,7 +758,7 @@ const styles = StyleSheet.create({
   },
   cancelledReason: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: '#1E293B',
     lineHeight: normalize.font(20)
   },
@@ -773,7 +773,7 @@ const styles = StyleSheet.create({
   },
   statusBannerText: {
     fontSize: normalize.font(14),
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'IBMPlexSansArabic-SemiBold',
     lineHeight: normalize.font(20),
   },
   // "Waiting for your decision" card — the amber of an open task, not the red
@@ -800,13 +800,13 @@ const styles = StyleSheet.create({
   },
   waitingTitle: {
     fontSize: normalize.font(13),
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'IBMPlexSansArabic-SemiBold',
     color: '#9A3412',
     marginBottom: 2,
   },
   waitingSub: {
     fontSize: normalize.font(12),
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-Medium',
     color: '#B45309',
   },
   // Tenant Category Badge
@@ -819,7 +819,7 @@ const styles = StyleSheet.create({
   },
   tenantCategoryText: {
     fontSize: normalize.font(13),
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'IBMPlexSansArabic-SemiBold',
     lineHeight: normalize.font(18),
   },
   // ID Card Images
@@ -842,7 +842,7 @@ const styles = StyleSheet.create({
   },
   idCardLabel: {
     fontSize: normalize.font(12),
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-Medium',
     color: '#64748B',
     textAlign: 'center',
     paddingVertical: 6,
@@ -879,14 +879,14 @@ const styles = StyleSheet.create({
   closeButtonText: {
     color: '#FFFFFF',
     fontSize: 18,
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'IBMPlexSansArabic-SemiBold',
   },
   chaletSimpleRow: { alignItems: 'center', gap: 16 },
   simpleImageWrapper: { width: 80, height: 80, borderRadius: 16, overflow: 'hidden', backgroundColor: '#F1F5F9' },
   simpleChaletImage: { width: '100%', height: '100%' },
   simpleChaletText: { flex: 1 },
-  simpleChaletName: { fontSize: normalize.font(16), fontFamily: "Alexandria-SemiBold", color: '#1E293B', lineHeight: normalize.font(22) },
-  simpleChaletLocation: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#64748B', lineHeight: normalize.font(20), marginTop: 4 },
+  simpleChaletName: { fontSize: normalize.font(16), fontFamily: "IBMPlexSansArabic-SemiBold", color: '#1E293B', lineHeight: normalize.font(22) },
+  simpleChaletLocation: { fontSize: normalize.font(14), fontFamily: "IBMPlexSansArabic-Medium", color: '#64748B', lineHeight: normalize.font(20), marginTop: 4 },
   infoSectionCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
@@ -897,13 +897,13 @@ const styles = StyleSheet.create({
     paddingBottom: 24
   },
   sectionTitleRow: { width: '100%', marginBottom: 8 },
-  sectionTitle: { fontSize: normalize.font(14), fontFamily: "Alexandria-SemiBold", color: IDENTITY_BLUE, lineHeight: normalize.font(20) },
+  sectionTitle: { fontSize: normalize.font(14), fontFamily: "IBMPlexSansArabic-SemiBold", color: IDENTITY_BLUE, lineHeight: normalize.font(20) },
   divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 10 },
   infoRow: { justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  infoLabel: { fontSize: normalize.font(14), fontFamily: "Alexandria-SemiBold", color: '#1E293B', lineHeight: normalize.font(20) },
+  infoLabel: { fontSize: normalize.font(14), fontFamily: "IBMPlexSansArabic-SemiBold", color: '#1E293B', lineHeight: normalize.font(20) },
   infoValueContainer: { flex: 1 },
-  infoValue: { fontSize: normalize.font(14), fontFamily: "Alexandria-Medium", color: '#64748B', lineHeight: normalize.font(22) },
-  blueValue: { color: IDENTITY_BLUE, fontFamily: "Alexandria-SemiBold", lineHeight: normalize.font(22) },
+  infoValue: { fontSize: normalize.font(14), fontFamily: "IBMPlexSansArabic-Medium", color: '#64748B', lineHeight: normalize.font(22) },
+  blueValue: { color: IDENTITY_BLUE, fontFamily: "IBMPlexSansArabic-SemiBold", lineHeight: normalize.font(22) },
   bottomActions: {
     position: 'absolute',
     bottom: 0,

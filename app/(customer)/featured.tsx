@@ -22,7 +22,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 import { useSelector } from "react-redux";
 
 export default function FeaturedScreen() {
@@ -101,7 +101,6 @@ export default function FeaturedScreen() {
               {featured.map((chalet, index) => (
                 <Animated.View
                   key={chalet.id}
-                  entering={FadeInDown.delay((index % 8) * 60).duration(380)}
                   style={styles.gridItem}
                 >
                   <FeaturedCard

@@ -39,7 +39,7 @@ import Toast from 'react-native-toast-message';
  * admin approves) and what the platform imposed (visible, not pausable).
  */
 export default function ProviderDiscountsScreen() {
-  const { isRTL, textAlign } = useDirection();
+  const { isRTL, textAlign, inputTextAlign } = useDirection();
 
   const { data, isLoading, refetch, isFetching } = useGetProviderDiscountsQuery(undefined);
   const { data: chaletsData } = useGetOwnerChaletsQuery(undefined);
@@ -177,7 +177,7 @@ export default function ProviderDiscountsScreen() {
 
           <Text style={[styles.fieldLabel, { textAlign }]}>{isRTL ? 'اسم العرض' : 'Offer name'}</Text>
           <TextInput
-            style={[styles.input, { textAlign }]}
+            style={[styles.input, { textAlign: inputTextAlign }]}
             value={name}
             onChangeText={setName}
             placeholder={isRTL ? 'مثال: عرض نهاية الأسبوع' : 'e.g. Weekend offer'}
@@ -186,7 +186,7 @@ export default function ProviderDiscountsScreen() {
 
           <Text style={[styles.fieldLabel, { textAlign }]}>{isRTL ? 'نسبة الخصم %' : 'Discount %'}</Text>
           <TextInput
-            style={[styles.input, { textAlign }]}
+            style={[styles.input, { textAlign: inputTextAlign }]}
             value={percentage}
             onChangeText={setPercentage}
             keyboardType="numeric"
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
     padding: normalize.width(14),
     gap: normalize.height(8),
   },
-  cardTitle: { fontSize: normalize.font(15), fontFamily: 'Alexandria-Medium', color: Colors.text.primary },
+  cardTitle: { fontSize: normalize.font(15), fontFamily: 'IBMPlexSansArabic-SemiBold', color: Colors.text.primary },
 
   fieldLabel: {
     fontSize: normalize.font(12),
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
     borderRadius: normalize.radius(14),
     paddingVertical: normalize.height(13),
   },
-  primaryButtonText: { color: 'white', fontSize: normalize.font(13), fontFamily: 'Alexandria-Medium' },
+  primaryButtonText: { color: 'white', fontSize: normalize.font(13), fontFamily: 'IBMPlexSansArabic-SemiBold' },
   secondaryButton: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -382,13 +382,13 @@ const styles = StyleSheet.create({
 
   sectionTitle: {
     fontSize: normalize.font(14),
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-SemiBold',
     color: Colors.text.primary,
     marginTop: normalize.height(8),
   },
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: normalize.width(10) },
-  discountName: { flex: 1, fontSize: normalize.font(14), fontFamily: 'Alexandria-Medium', color: Colors.text.primary },
-  percentage: { fontSize: normalize.font(15), fontFamily: 'Alexandria-Medium', color: Colors.primary },
+  discountName: { flex: 1, fontSize: normalize.font(14), fontFamily: 'IBMPlexSansArabic-SemiBold', color: Colors.text.primary },
+  percentage: { fontSize: normalize.font(15), fontFamily: 'IBMPlexSansArabic-Medium', color: Colors.primary },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: normalize.width(6) },
   statusText: { fontSize: normalize.font(12) },
   meta: { fontSize: normalize.font(11), color: Colors.text.muted, lineHeight: normalize.font(17) },

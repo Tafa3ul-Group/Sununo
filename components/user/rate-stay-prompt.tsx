@@ -237,12 +237,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#111827",
   },
   subtitle: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#6B7280",
     textAlign: "center",
     lineHeight: 22,
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
   rateText: {
     color: "white",
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
   laterBtn: {
     width: "100%",
@@ -276,6 +276,6 @@ const styles = StyleSheet.create({
   laterText: {
     color: "#374151",
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
 });

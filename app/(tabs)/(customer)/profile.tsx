@@ -27,6 +27,7 @@ import { getImageSrc, getAvatarSrc } from '@/hooks/useImageSrc';
 
 import { RootState } from '@/store';
 import { useGetMeQuery } from '@/store/api/apiSlice';
+import { useSyncAuthUser } from '@/hooks/useSyncAuthUser';
 import { useCreateCustomerPayoutMutation, useGetCustomerWalletQuery } from '@/store/api/customerApiSlice';
 
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
@@ -43,19 +44,11 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import Animated, {
-    FadeInDown,
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring,
-    withTiming,
-} from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
+import Animated from 'react-native-reanimated';
 import { useDirection } from '@/i18n';
-
-const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 type MenuItem = {
     id: string;
@@ -74,28 +67,15 @@ const MenuRow = React.memo(function MenuRow({
     onPress: (item: MenuItem) => void;
 }) {
     const { textAlign } = useDirection();
-    const scale = useSharedValue(1);
-    const animatedStyle = useAnimatedStyle(() => ({
-        transform: [{ scale: scale.value }],
-    }));
-
-    const handlePressIn = useCallback(() => {
-        scale.value = withTiming(0.95, { duration: 110 });
-    }, [scale]);
-    const handlePressOut = useCallback(() => {
-        scale.value = withSpring(1, { damping: 12, stiffness: 220 });
-    }, [scale]);
     const handlePress = useCallback(() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         onPress(item);
     }, [item, onPress]);
 
     return (
-        <AnimatedTouchable
-            style={[styles.menuRow, { flexDirection: 'row' }, animatedStyle]}
+        <TouchableOpacity
+            style={[styles.menuRow, { flexDirection: 'row' }]}
             onPress={handlePress}
-            onPressIn={handlePressIn}
-            onPressOut={handlePressOut}
             activeOpacity={0.7}
         >
             {/* Icon first, then label right next to it */}
@@ -113,7 +93,7 @@ const MenuRow = React.memo(function MenuRow({
                     {item.title}
                 </Text>
             </View>
-        </AnimatedTouchable>
+        </TouchableOpacity>
     );
 });
 
@@ -132,6 +112,7 @@ export default function CustomerProfileScreen() {
     const withdrawSheetRef = useRef<WithdrawSheetRef>(null);
 
     const { data: meData, refetch: refetchMe } = useGetMeQuery(undefined);
+    useSyncAuthUser(meData);
     const { data: walletData, refetch: refetchWallet } = useGetCustomerWalletQuery(undefined);
     const [createPayout, { isLoading: isSubmittingPayout }] = useCreateCustomerPayoutMutation();
 
@@ -141,8 +122,6 @@ export default function CustomerProfileScreen() {
         await Promise.all([refetchMe(), refetchWallet()]);
         setIsRefreshing(false);
     }, [refetchMe, refetchWallet]);
-
-
 
     const userData = (meData as any)?.data || meData || authUser;
     const walletBalance = walletData?.balance
@@ -155,17 +134,6 @@ export default function CustomerProfileScreen() {
     // Only a chalet owner browsing as a tenant sees this — see useModeSwitch.
     const { canSwitch, switchTo } = useModeSwitch();
 
-    // Press-scale feedback for the user (edit profile) card.
-    const userCardScale = useSharedValue(1);
-    const userCardAnimatedStyle = useAnimatedStyle(() => ({
-        transform: [{ scale: userCardScale.value }],
-    }));
-    const onUserCardPressIn = useCallback(() => {
-        userCardScale.value = withTiming(0.96, { duration: 110 });
-    }, [userCardScale]);
-    const onUserCardPressOut = useCallback(() => {
-        userCardScale.value = withSpring(1, { damping: 12, stiffness: 220 });
-    }, [userCardScale]);
     const onUserCardPress = useCallback(() => {
         Haptics.selectionAsync();
         router.push('/profile-edit');
@@ -311,12 +279,10 @@ export default function CustomerProfileScreen() {
                 }
             >
                 {/* User Card */}
-                <Animated.View entering={FadeInDown.duration(400)}>
-                <AnimatedTouchable
-                    style={[styles.userCard, { flexDirection: rowDirection }, userCardAnimatedStyle]}
+                <Animated.View>
+                <TouchableOpacity
+                    style={[styles.userCard, { flexDirection: rowDirection }]}
                     onPress={onUserCardPress}
-                    onPressIn={onUserCardPressIn}
-                    onPressOut={onUserCardPressOut}
                     activeOpacity={0.9}
                 >
                     {/* Inner avatar and name/phone block */}
@@ -343,11 +309,11 @@ export default function CustomerProfileScreen() {
                     <View style={styles.editIconWrap}>
                         <SolarPenNewRoundBoldDuotone size={32} color={Colors.primary} />
                     </View>
-                </AnimatedTouchable>
+                </TouchableOpacity>
                 </Animated.View>
 
                 {/* Wallet Card */}
-                <Animated.View entering={FadeInDown.delay(90).duration(400)}>
+                <Animated.View>
                     <WalletCard
                         balance={walletBalance}
                         onWithdraw={openWithdraw}
@@ -359,7 +325,6 @@ export default function CustomerProfileScreen() {
                     {menuItems.map((item, index) => (
                         <Animated.View
                             key={item.id}
-                            entering={FadeInDown.delay(160 + index * 60).duration(380)}
                         >
                         <MenuRow
                             item={item}
@@ -420,13 +385,13 @@ const styles = StyleSheet.create({
     },
     userName: {
         fontSize: normalize.font(14),
-        fontFamily: "Alexandria-Medium",
+        fontFamily: "IBMPlexSansArabic-SemiBold",
         color: '#111827',
         marginBottom: 2,
     },
     userPhone: {
         fontSize: normalize.font(13),
-        fontFamily: "Alexandria-Medium",
+        fontFamily: "IBMPlexSansArabic-Medium",
         color: '#6B7280',
     },
     avatarWrap: {
@@ -465,7 +430,7 @@ const styles = StyleSheet.create({
     },
     menuLabelText: {
         fontSize: normalize.font(14),
-        fontFamily: "Alexandria-Medium",
+        fontFamily: "IBMPlexSansArabic-Medium",
         color: '#374151',
         lineHeight: normalize.font(20),
         paddingBottom: 2,

@@ -153,12 +153,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#DC2626",
   },
   subtitle: {
     fontSize: 13,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#6B7280",
     textAlign: "center",
     lineHeight: 22,
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
   deleteText: {
     color: "white",
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
   cancelBtn: {
     width: "100%",
@@ -192,6 +192,6 @@ const styles = StyleSheet.create({
   cancelText: {
     color: "#374151",
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
 });

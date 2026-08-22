@@ -180,7 +180,7 @@ export const AppDrawer = forwardRef<AppDrawerRef>((props, ref) => {
             router.push("/(tabs)/(customer)/profile");
           }}
         >
-          <Image source={getAvatarSrc(user?.imageUrl)} style={styles.avatar} />
+          <Image source={getAvatarSrc(user?.image ?? user?.imageUrl)} style={styles.avatar} />
           <View style={[styles.userInfo, { alignItems: "flex-start" }]}>
             <ThemedText style={styles.userName}>
               {user?.name || t("common.user")}
@@ -291,13 +291,13 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#1E293B",
   },
   userPhone: {
     fontSize: 14,
     color: "#64748B",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
   divider: {
     height: 1,
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
   },
   menuLabel: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#334155",
   },
   footer: {
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#EF4444",
   },
 });

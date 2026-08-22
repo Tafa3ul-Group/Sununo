@@ -676,7 +676,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#1E293B",
     marginBottom: normalize.height(4),
     lineHeight: normalize.font(14),
@@ -691,19 +691,19 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: normalize.font(14),
     color: "#64748B",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
   },
   linkText: {
     fontSize: normalize.font(14),
     color: "#0061FE",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
   inputGroup: {
     marginBottom: normalize.height(25),
   },
   label: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#1E293B",
     marginBottom: normalize.height(10),
   },
@@ -717,18 +717,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: normalize.width(18),
     paddingVertical: normalize.height(10),
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#1E293B",
   },
   otpHint: {
     fontSize: normalize.font(12.5),
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#64748B",
     marginBottom: normalize.height(4),
   },
   otpHintPhone: {
     fontSize: normalize.font(12.5),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#1E293B",
     writingDirection: "ltr",
   },
@@ -742,22 +742,22 @@ const styles = StyleSheet.create({
   },
   resendPrompt: {
     fontSize: normalize.font(12.5),
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#94A3B8",
   },
   resendSuccess: {
     fontSize: normalize.font(12.5),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#16A34A",
   },
   resendTimer: {
     fontSize: normalize.font(12.5),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#64748B",
   },
   resendLink: {
     fontSize: normalize.font(12.5),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#0061FE",
   },
   resendLinkDisabled: {
@@ -781,13 +781,13 @@ const styles = StyleSheet.create({
     marginTop: 18,
     width: "100%",
     fontSize: normalize.font(11.5),
-    fontFamily: "Alexandria-Regular",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#94A3B8",
     lineHeight: normalize.font(20),
   },
   consentLink: {
     fontSize: normalize.font(11.5),
-    fontFamily: "Alexandria-SemiBold",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#0061FE",
     textDecorationLine: "underline",
   },
@@ -799,12 +799,12 @@ const styles = StyleSheet.create({
   guestLinkText: {
     fontSize: normalize.font(14),
     color: "#94A3B8",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
   },
   errorText: {
     color: "#EF4444",
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     marginTop: 6,
   },
   bottomWaveContainer: {
@@ -823,12 +823,12 @@ const styles = StyleSheet.create({
   ownerHintText: {
     fontSize: 14,
     color: "#64748B",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
   },
   ownerHintLink: {
     fontSize: 14,
     color: "#0061FE",
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
   },
 });
 // Default export for Expo Router

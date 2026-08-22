@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
   },
   groupTitle: {
     fontSize: normalize.font(13),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: Colors.text.muted,
     marginBottom: normalize.height(10),
     paddingHorizontal: normalize.width(4),
@@ -221,12 +221,12 @@ const styles = StyleSheet.create({
   },
   menuLabelText: {
     fontSize: normalize.font(14),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: '#374151',
   },
   menuValueText: {
     fontSize: normalize.font(11),
-    fontFamily: 'Alexandria-Regular',
+    fontFamily: 'IBMPlexSansArabic-Regular',
     color: Colors.text.muted,
     lineHeight: normalize.font(17),
   },
@@ -243,13 +243,13 @@ const styles = StyleSheet.create({
   noticeText: {
     flex: 1,
     fontSize: normalize.font(11),
-    fontFamily: 'Alexandria-Regular',
+    fontFamily: 'IBMPlexSansArabic-Regular',
     color: '#1D4ED8',
     lineHeight: normalize.font(18),
   },
   footnote: {
     fontSize: normalize.font(11),
-    fontFamily: 'Alexandria-Regular',
+    fontFamily: 'IBMPlexSansArabic-Regular',
     color: Colors.text.muted,
     lineHeight: normalize.font(18),
     marginTop: normalize.height(14),

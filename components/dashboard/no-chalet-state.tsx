@@ -197,13 +197,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: normalize.font(18),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: Colors.text.primary,
     marginBottom: normalize.height(8),
   },
   subtitle: {
     fontSize: normalize.font(13),
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-Regular',
     color: Colors.text.secondary,
     lineHeight: normalize.font(22),
     paddingHorizontal: normalize.width(8),
@@ -234,13 +234,13 @@ const styles = StyleSheet.create({
   },
   stepTitle: {
     fontSize: normalize.font(13),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: Colors.text.primary,
     marginBottom: 2,
   },
   stepSubtitle: {
     fontSize: normalize.font(11),
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-Regular',
     color: Colors.text.secondary,
     lineHeight: normalize.font(17),
   },
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
   },
   stepNumberText: {
     fontSize: normalize.font(10),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: Colors.text.muted,
     lineHeight: normalize.font(14),
   },
@@ -270,13 +270,13 @@ const styles = StyleSheet.create({
   },
   warningTitle: {
     fontSize: normalize.font(12),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: '#B45309',
     marginBottom: 2,
   },
   warningText: {
     fontSize: normalize.font(11),
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-Medium',
     color: '#B45309',
     lineHeight: normalize.font(16),
   },
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
   },
   secondaryLinkText: {
     fontSize: normalize.font(12),
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-Medium',
     color: Colors.text.secondary,
   },
 });

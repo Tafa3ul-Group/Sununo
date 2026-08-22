@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#6B7280",
     textAlign: "center",
     lineHeight: 22,
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#374151",
     marginBottom: 10,
     marginHorizontal: 4,
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 18,
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#111827",
     borderWidth: 1,
     borderColor: "#F3F4F6",
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
   },
   logLinkText: {
     fontSize: 12,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.primary,
   },
 });

@@ -109,6 +109,6 @@ const styles = StyleSheet.create({
     gap: 8 },
   tabLabel: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "IBMPlexSansArabic-Medium" },
   activeLabel: {
     color: "#FFFFFF" } });

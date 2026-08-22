@@ -5,16 +5,8 @@ import React from "react";
 import { StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import * as Haptics from "expo-haptics";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSpring,
-} from "react-native-reanimated";
 import { normalize } from "../../constants/theme";
 import { useDirection } from "@/i18n";
-
-const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 interface GuestCounterProps {
   value: number;
@@ -32,41 +24,24 @@ export const GuestCounter: React.FC<GuestCounterProps> = ({
   const { isRTL: isArabic, rowDirection: flexDir } = useDirection();
   const btnSize = 38;
 
-  // Subtle press-scale feedback (no design change at rest).
-  // Compose with the RTL mirror transform so it is never clobbered.
-  const minusScale = useSharedValue(1);
-  const plusScale = useSharedValue(1);
-  const minusMirror = isArabic;
-  const plusMirror = !isArabic;
-  const minusPressStyle = useAnimatedStyle(() => ({
-    transform: minusMirror
-      ? [{ scaleX: -1 }, { scale: minusScale.value }]
-      : [{ scale: minusScale.value }],
-  }));
-  const plusPressStyle = useAnimatedStyle(() => ({
-    transform: plusMirror
-      ? [{ scaleX: -1 }, { scale: plusScale.value }]
-      : [{ scale: plusScale.value }],
-  }));
+  // The button artwork is a one-sided shape, so the trailing button is mirrored.
+  const minusMirrorStyle = isArabic ? styles.mirrored : undefined;
+  const plusMirrorStyle = isArabic ? undefined : styles.mirrored;
 
   return (
     <View style={[styles.container, { flexDirection: flexDir }, style]}>
       {/* Minus Button (Logical Left) */}
-      <AnimatedTouchable
+      <TouchableOpacity
         onPress={onDecrement}
         activeOpacity={0.8}
         onPressIn={() => {
           // Haptics is best-effort: swallow the rejection so a device with no
           // taptic engine (or an Android throttle) never red-boxes the screen.
           Haptics.selectionAsync().catch(() => {});
-          minusScale.value = withTiming(0.96, { duration: 110 });
-        }}
-        onPressOut={() => {
-          minusScale.value = withSpring(1, { damping: 12, stiffness: 220 });
         }}
         style={[
           styles.buttonWrapper,
-          minusPressStyle,
+          minusMirrorStyle,
           { width: btnSize, height: btnSize },
         ]}
       >
@@ -81,7 +56,7 @@ export const GuestCounter: React.FC<GuestCounterProps> = ({
             <SolarMinusBold size={14} color="white" />
           </View>
         </View>
-      </AnimatedTouchable>
+      </TouchableOpacity>
 
       {/* Value Block */}
       <View style={[styles.valueBlock, { height: btnSize }]}>
@@ -89,19 +64,15 @@ export const GuestCounter: React.FC<GuestCounterProps> = ({
       </View>
 
       {/* Plus Button (Logical Right) */}
-      <AnimatedTouchable
+      <TouchableOpacity
         onPress={onIncrement}
         activeOpacity={0.8}
         onPressIn={() => {
           Haptics.selectionAsync().catch(() => {});
-          plusScale.value = withTiming(0.96, { duration: 110 });
-        }}
-        onPressOut={() => {
-          plusScale.value = withSpring(1, { damping: 12, stiffness: 220 });
         }}
         style={[
           styles.buttonWrapper,
-          plusPressStyle,
+          plusMirrorStyle,
           { width: btnSize, height: btnSize },
         ]}
       >
@@ -116,12 +87,14 @@ export const GuestCounter: React.FC<GuestCounterProps> = ({
             <SolarAddBold size={14} color="white" />
           </View>
         </View>
-      </AnimatedTouchable>
+      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  mirrored: {
+    transform: [{ scaleX: -1 }] },
   container: {
     flexDirection: "row",
     alignItems: "center",
@@ -154,7 +127,7 @@ const styles = StyleSheet.create({
   },
   valueText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "white",
   },
 });

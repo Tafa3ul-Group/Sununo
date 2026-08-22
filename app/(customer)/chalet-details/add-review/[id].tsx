@@ -21,14 +21,7 @@ import {
   View,
 } from "react-native";
 import * as Haptics from "expo-haptics";
-import Animated, {
-  FadeIn,
-  FadeOut,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 import { useDirection } from "@/i18n";
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
@@ -44,33 +37,21 @@ const StarButton = React.memo(function StarButton({
   filled,
   onSelect,
 }: StarButtonProps) {
-  // Subtle press-scale feedback (no design change).
-  const scale = useSharedValue(1);
-  const pressStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
   return (
     <AnimatedTouchable
       activeOpacity={0.85}
-      onPressIn={() => {
-        scale.value = withTiming(0.96, { duration: 110 });
-      }}
-      onPressOut={() => {
-        scale.value = withSpring(1, { damping: 12, stiffness: 220 });
-      }}
       onPress={() => {
         Haptics.selectionAsync().catch(() => {});
         onSelect(index);
       }}
-      style={[styles.starTouch, pressStyle]}
+      style={styles.starTouch}
     >
       {filled ? (
-        <Animated.View key="filled" entering={FadeIn.duration(180)} exiting={FadeOut.duration(120)}>
+        <Animated.View key="filled">
           <SolarStarBold size={40} color="#FFB800" />
         </Animated.View>
       ) : (
-        <Animated.View key="empty" entering={FadeIn.duration(180)} exiting={FadeOut.duration(120)}>
+        <Animated.View key="empty">
           <SolarStarLinear size={40} color="#E5E7EB" />
         </Animated.View>
       )}
@@ -212,13 +193,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: "#111827",
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#6B7280",
     textAlign: "center",
   },
@@ -244,7 +225,7 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#374151",
     marginBottom: 10,
     marginHorizontal: 4,
@@ -254,7 +235,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 18,
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: "#111827",
     minHeight: 150,
     textAlignVertical: "top",

@@ -25,7 +25,7 @@ export type ThemedTextProps = TextProps & {
 /**
  * Flattens a style array/object and injects a lineHeight if fontSize is
  * present but lineHeight is missing. Ratio 1.55 works well for Arabic fonts
- * (Alexandria / LamaSans) which have tall ascenders/descenders.
+ * (IBM Plex Sans Arabic) which has tall ascenders/descenders.
  */
 function withAutoLineHeight(style: TextProps["style"]): TextStyle {
   // Flatten nested arrays into a single object
@@ -96,13 +96,13 @@ export function ThemedText({
 
 const styles = StyleSheet.create({
   base: {
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     includeFontPadding: false,
     textAlignVertical: "center" },
   defaultSemiBold: {
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "IBMPlexSansArabic-Medium" },
   link: {
     color: "#2B66FF",
     textDecorationLine: "underline",
-    fontFamily: "Alexandria-Medium" } });
+    fontFamily: "IBMPlexSansArabic-Medium" } });
 

@@ -419,14 +419,14 @@ const styles = StyleSheet.create({
     marginBottom: 32 },
   sectionTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.text.primary,
     marginBottom: 16 },
   fieldContainer: {
     marginBottom: 20 },
   label: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.text.secondary,
     marginBottom: 8 },
   inputWrapper: {
@@ -447,19 +447,19 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(14),
     color: Colors.text.primary,
     height: '100%',
-   fontFamily: "Alexandria-Medium" },
+   fontFamily: "IBMPlexSansArabic-Regular" },
   multilineInput: {
     textAlignVertical: 'top' },
   selectValueText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.text.primary },
   sheetContent: {
     flex: 1,
     padding: 20 },
   sheetTitle: {
     fontSize: normalize.font(15),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: Colors.text.primary,
     textAlign: 'center',
     marginBottom: 16 },
@@ -479,7 +479,7 @@ const styles = StyleSheet.create({
   bankText: {
     flex: 1,
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.text.primary },
   bankTextActive: {
     color: Colors.primary },
@@ -495,11 +495,11 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: Colors.white,
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "IBMPlexSansArabic-SemiBold" },
   errorText: {
     color: '#EF4444',
     fontSize: normalize.font(12),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     marginTop: 6 },
   warningCard: {
     backgroundColor: '#FFFBEB',
@@ -514,10 +514,10 @@ const styles = StyleSheet.create({
     gap: 8 },
   warningTitle: {
     fontSize: normalize.font(14),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: '#B45309' },
   warningText: {
     fontSize: normalize.font(12),
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-Medium',
     color: '#D97706',
     lineHeight: 18 } });

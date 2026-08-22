@@ -318,13 +318,13 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     fontSize: normalize.font(18),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: Colors.text.primary,
     marginBottom: 8,
   },
   heroSubtitle: {
     fontSize: normalize.font(13),
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-Regular',
     color: Colors.text.secondary,
     lineHeight: 22,
     paddingHorizontal: 4,
@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
   progressRow: { marginTop: 16, alignItems: 'center' },
   progressText: {
     fontSize: normalize.font(12),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: Colors.primary,
   },
   card: {
@@ -354,13 +354,13 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: normalize.font(14),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     color: Colors.text.primary,
     marginBottom: 4,
   },
   cardSubtitle: {
     fontSize: normalize.font(12),
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-Regular',
     color: Colors.text.secondary,
     lineHeight: 18,
     marginBottom: 8,
@@ -376,11 +376,11 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: normalize.font(11),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
   },
   reqTag: {
     fontSize: normalize.font(10),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
   },
   noteRow: {
     alignItems: 'center',
@@ -390,7 +390,7 @@ const styles = StyleSheet.create({
   noteText: {
     flex: 1,
     fontSize: normalize.font(11),
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-Regular',
     color: '#DC2626',
     lineHeight: 16,
   },
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: normalize.font(12),
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-Medium',
     color: '#B45309',
     lineHeight: 18,
   },
@@ -420,7 +420,7 @@ const styles = StyleSheet.create({
   },
   footerNote: {
     fontSize: normalize.font(11),
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-Regular',
     color: '#B45309',
     marginBottom: 10,
   },

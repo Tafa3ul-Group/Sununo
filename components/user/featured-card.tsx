@@ -7,6 +7,7 @@ import { useGetCustomerChaletDetailsQuery } from "@/store/api/customerApiSlice";
 import { getStartingPrice } from "@/utils/format";
 import { useDirection } from "@/i18n";
 import { Image as ExpoImage } from "expo-image";
+import { IMAGE_TRANSITION, imagePlaceholder } from "@/constants/image-loading";
 import * as Haptics from "expo-haptics";
 import React from "react";
 import {
@@ -15,15 +16,7 @@ import {
   View,
   ViewStyle,
 } from "react-native";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSequence,
-  withSpring,
-  withTiming,
-} from "react-native-reanimated";
 
-const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 export const FEATURED_CARD_WIDTH = normalize.width(140);
 
@@ -79,15 +72,6 @@ export const FeaturedCard = React.memo(function FeaturedCard({
       ? Number(chalet.discount.priceAfter).toLocaleString()
       : resolvedPrice;
 
-  const cardScale = useSharedValue(1);
-  const cardAnim = useAnimatedStyle(() => ({
-    transform: [{ scale: cardScale.value }],
-  }));
-  const heartScale = useSharedValue(1);
-  const heartAnim = useAnimatedStyle(() => ({
-    transform: [{ scale: heartScale.value }],
-  }));
-
   if (!chalet) return null;
 
   const imageSource =
@@ -108,24 +92,14 @@ export const FeaturedCard = React.memo(function FeaturedCard({
   const featuredLabel = chalet.featuredLabel;
   const handleToggleFavorite = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-    heartScale.value = withSequence(
-      withTiming(1.35, { duration: 130 }),
-      withSpring(1, { damping: 7, stiffness: 200 }),
-    );
     onToggleFavorite?.();
   };
 
   return (
-    <AnimatedTouchable
+    <TouchableOpacity
       activeOpacity={0.9}
       onPress={onPress}
-      onPressIn={() => {
-        cardScale.value = withTiming(0.97, { duration: 90 });
-      }}
-      onPressOut={() => {
-        cardScale.value = withSpring(1, { damping: 12, stiffness: 180 });
-      }}
-      style={[styles.container, { direction }, style, cardAnim]}
+      style={[styles.container, { direction }, style]}
     >
       {/* Image with overlaid badge + heart */}
       <View style={styles.imageWrapper}>
@@ -133,7 +107,8 @@ export const FeaturedCard = React.memo(function FeaturedCard({
           source={imageSource}
           style={styles.image}
           contentFit="cover"
-          transition={200}
+          placeholder={imagePlaceholder(chalet.blurhash ?? chalet.images?.[0]?.blurhash)}
+          transition={IMAGE_TRANSITION}
         />
 
         <View style={[styles.overlayRow, { flexDirection: "row" }]}>
@@ -171,12 +146,10 @@ export const FeaturedCard = React.memo(function FeaturedCard({
               onPress={handleToggleFavorite}
               hitSlop={8}
             >
-              <Animated.View style={heartAnim}>
-                <SolarHeartBold
-                  size={normalize.width(18)}
-                  color={isFavorite ? "#EA2129" : "#FFFFFF"}
-                />
-              </Animated.View>
+              <SolarHeartBold
+                size={normalize.width(18)}
+                color={isFavorite ? "#EA2129" : "#FFFFFF"}
+              />
             </TouchableOpacity>
           )}
         </View>
@@ -205,7 +178,7 @@ export const FeaturedCard = React.memo(function FeaturedCard({
         </View>
         <DiscountedFrom discount={chalet?.discount} size="sm" />
       </View>
-    </AnimatedTouchable>
+    </TouchableOpacity>
   );
 });
 
@@ -250,7 +223,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: normalize.font(10),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: "#111827",
   },
   heartCircle: {

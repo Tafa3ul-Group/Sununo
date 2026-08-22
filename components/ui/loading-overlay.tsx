@@ -57,6 +57,6 @@ const styles = StyleSheet.create({
   message: {
     marginTop: 10,
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: '#1E293B',
     textAlign: 'center' } });

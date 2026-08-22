@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     marginBottom: 10 },
   title: {
     fontSize: 14,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: '#1E293B',
     textAlign: 'center',
     marginBottom: 10 },
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     color: '#64748B',
     textAlign: 'center',
     lineHeight: 22,
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     marginBottom: 25 },
   button: {
     width: '100%',

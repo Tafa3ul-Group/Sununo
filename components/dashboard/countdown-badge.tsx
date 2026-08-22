@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
   },
   compactText: {
     fontSize: normalize.font(10),
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'IBMPlexSansArabic-SemiBold',
     fontVariant: ['tabular-nums'],
   },
 
@@ -93,12 +93,12 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: normalize.font(12),
-    fontFamily: 'Alexandria-Medium',
+    fontFamily: 'IBMPlexSansArabic-SemiBold',
     marginBottom: 2,
   },
   cardTimer: {
     fontSize: normalize.font(20),
-    fontFamily: 'Alexandria-Bold',
+    fontFamily: 'IBMPlexSansArabic-Bold',
     fontVariant: ['tabular-nums'],
     letterSpacing: 1,
   },

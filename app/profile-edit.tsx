@@ -8,6 +8,7 @@ import { useDirection } from "@/i18n";
 import { RootState } from '@/store';
 import { ImagePrepareError, prepareImageUpload } from '@/utils/prepare-image-upload';
 import { useGetMeQuery } from '@/store/api/apiSlice';
+import { useSyncAuthUser } from '@/hooks/useSyncAuthUser';
 import {
     useChangePhoneNumberMutation,
     useUpdateProfileImageMutation,
@@ -107,6 +108,8 @@ export default function ProfileEditScreen() {
     const { user: authUser } = useSelector((state: RootState) => state.auth);
 
   const { data: meData, refetch } = useGetMeQuery(undefined);
+  // Keep the persisted user (tab-bar avatar, drawer) in step with the edits.
+  useSyncAuthUser(meData);
   const userData = (meData as any)?.data || meData || authUser;
 
   const [updateProfile, { isLoading: isSaving }] = useUpdateUserProfileMutation();
@@ -328,7 +331,7 @@ export default function ProfileEditScreen() {
               </ThemedText>
               <View style={styles.inputWrapper}>
                 <TextInput
-                  style={[styles.input, { textAlign }]}
+                  style={[styles.input, { textAlign: inputTextAlign }]}
                   value={name}
                   onChangeText={setName}
                   placeholder={isRTL ? 'أدخل اسمك الكامل' : 'Enter your full name'}
@@ -363,6 +366,11 @@ export default function ProfileEditScreen() {
                     mode="date"
                     maximumDate={new Date()}
                     display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    // الشاشة مثبّتة على خلفية بيضاء، بينما التطبيق
+                    // userInterfaceStyle: "automatic" — بدون هذولا يرسم iOS
+                    // أرقام العجلة بالأبيض بالوضع الليلي فتختفي على الأبيض.
+                    themeVariant="light"
+                    textColor={Colors.text.primary}
                     onChange={onBirthDateChange}
                   />
                   {Platform.OS === 'ios' && (
@@ -516,7 +524,7 @@ const styles = StyleSheet.create({
     alignItems: 'center' },
   headerTitle: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: '#111827' },
   backCircle: {
     width: 38,
@@ -575,7 +583,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: '#374151',
     marginBottom: normalize.height(6),
   },
@@ -589,14 +597,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: normalize.width(14) },
   input: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: '#1E293B',
     flex: 1 },
   // Date display text: NO flex so the wrapper's justifyContent:'center'
   // vertically centers it (flex:1 stretched it and pushed text to the top).
   dateInputText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: '#1E293B' },
   dateDoneBtn: {
     alignSelf: 'center',
@@ -607,7 +615,7 @@ const styles = StyleSheet.create({
     borderRadius: 12 },
   dateDoneText: {
     color: '#FFFFFF',
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     fontSize: normalize.font(14) },
 
   // ── Phone row ────────────────────────────────────────────────────────────
@@ -629,14 +637,14 @@ const styles = StyleSheet.create({
   changePhoneText: {
     color: '#FFFFFF',
     fontSize: normalize.font(8),
-    fontFamily: "Alexandria-Medium" },
+    fontFamily: "IBMPlexSansArabic-Medium" },
   phoneValueWrapper: {
     flex: 1,
     paddingHorizontal: normalize.width(12),
     justifyContent: 'center' },
   phoneValue: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: '#1E293B' },
 
   // ── Map card ─────────────────────────────────────────────────────────────
@@ -660,11 +668,11 @@ const styles = StyleSheet.create({
     alignItems: 'center' },
   locationName: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: '#9CA3AF' },
   changeLocText: {
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: Colors.primary },
 
   // ── Footer ───────────────────────────────────────────────────────────────
@@ -694,13 +702,13 @@ const styles = StyleSheet.create({
     padding: normalize.width(24) },
   modalTitle: {
     fontSize: normalize.font(16),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
     color: '#111827',
     textAlign: 'center',
     marginBottom: normalize.height(18) },
   modalLabel: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: '#6B7280',
     marginBottom: normalize.height(10) },
   modalInput: {
@@ -709,7 +717,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: normalize.width(16),
     height: normalize.height(52),
     fontSize: normalize.font(14),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Regular",
     color: '#111827',
     borderWidth: 1,
     borderColor: '#F3F4F6',
@@ -724,5 +732,5 @@ const styles = StyleSheet.create({
     paddingVertical: normalize.height(8) },
   modalCancelText: {
     fontSize: normalize.font(13),
-    fontFamily: "Alexandria-Medium",
+    fontFamily: "IBMPlexSansArabic-Medium",
     color: '#9CA3AF' } });

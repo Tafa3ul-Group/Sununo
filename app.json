@@ -59,18 +59,6 @@
       "@react-native-community/datetimepicker",
       "@rnmapbox/maps",
       [
-        "expo-font",
-        {
-          "fonts": [
-            "./assets/fonts/LamaSans/LamaSans-BoldCondensed.otf",
-            "./assets/fonts/LamaSans/LamaSans-RegularCondensed.otf",
-            "./assets/fonts/LamaSans/LamaSans-MediumCondensed.otf",
-            "./assets/fonts/LamaSans/LamaSans-SemiBoldCondensed.otf",
-            "./assets/fonts/LamaSans/LamaSans-BlackCondensed.otf"
-          ]
-        }
-      ],
-      [
         "expo-build-properties",
         {
           "ios": {
