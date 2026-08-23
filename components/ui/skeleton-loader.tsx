@@ -9,6 +9,7 @@ import Animated, {
 } from "react-native-reanimated";
 import Svg, { Path } from "react-native-svg";
 import { Colors, normalize } from "@/constants/theme";
+import { FEATURED_CARD_RATIO, FEATURED_CARD_WIDTH } from "@/components/user/featured-card";
 
 // The organic "blob" shape used by the real booking-card image (SHAPES_CONFIG[2]),
 // so the skeleton's image placeholder matches the actual card shape 1:1.
@@ -147,6 +148,21 @@ export const HorizontalSwiperSkeleton: React.FC<{ count?: number }> = ({ count =
           <SkeletonBox width={60} height={12} borderRadius={6} />
         </View>
       </View>
+    ))}
+  </View>
+);
+
+// ─── Featured Swiper Skeleton (portrait photo cards) ────────────────────────────
+
+export const FeaturedSwiperSkeleton: React.FC<{ count?: number }> = ({ count = 3 }) => (
+  <View style={skeletonStyles.horizontalRow}>
+    {Array.from({ length: count }).map((_, i) => (
+      <SkeletonBox
+        key={i}
+        width={FEATURED_CARD_WIDTH}
+        height={FEATURED_CARD_WIDTH / FEATURED_CARD_RATIO}
+        borderRadius={18}
+      />
     ))}
   </View>
 );

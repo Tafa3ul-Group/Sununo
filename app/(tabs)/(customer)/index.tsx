@@ -10,7 +10,7 @@ import {
 import { StatusBar } from "expo-status-bar";
 import { FlashList } from "@shopify/flash-list";
 import { ltrScrollContent, ltrScroller, pickTranslation, useDirection, useRtlListOrder } from "@/i18n";
-import { BannerSkeleton, HorizontalSwiperSkeleton, HorizontalCardSkeleton, CustomerHomeSkeleton } from "@/components/ui/skeleton-loader";
+import { BannerSkeleton, FeaturedSwiperSkeleton, HorizontalSwiperSkeleton, HorizontalCardSkeleton, CustomerHomeSkeleton } from "@/components/ui/skeleton-loader";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import Animated, { FadeInUp, FadeOutUp } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -32,6 +32,7 @@ import { HorizontalCard } from "@/components/user/horizontal-card";
 import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
 import { FeaturedSwiper } from "@/components/user/featured-swiper";
 import { useTabBarVisibility } from "@/components/user/tab-bar-visibility";
+import { useRegisterHomeScrollToTop } from "@/components/user/home-tab-fx";
 import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, Fonts, normalize } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
@@ -74,6 +75,15 @@ export default function HomeScreen() {
       return () => tabBarVis?.show();
     }, [tabBarVis]),
   );
+  // Tapping the home tab button while home is already open scrolls back up.
+  const listRef = React.useRef<any>(null);
+  useRegisterHomeScrollToTop(
+    useCallback(() => {
+      listRef.current?.scrollToOffset?.({ offset: 0, animated: true });
+      tabBarVis?.show();
+    }, [tabBarVis]),
+  );
+
   // Multi-select filter chips. Empty array === "All".
   const [selectedFilters, setSelectedFilters] = React.useState<string[]>([]);
   const insets = useSafeAreaInsets();
@@ -595,7 +605,7 @@ export default function HomeScreen() {
                 </PressableScale>
               </View>
               {featuredLoading ? (
-                <HorizontalSwiperSkeleton count={2} />
+                <FeaturedSwiperSkeleton count={3} />
               ) : (
                 <View style={styles.swiperWrapper}>
                   <FeaturedSwiper
@@ -762,6 +772,7 @@ export default function HomeScreen() {
       <HeaderSection isHome />
       <View style={{ flex: 1 }}>
       <FlashList
+        ref={listRef}
         data={isInitialLoading ? [] : POPULAR_CHALETS}
         keyExtractor={(item: any, index: number) => String(item?.id ?? index)}
         showsVerticalScrollIndicator={false}

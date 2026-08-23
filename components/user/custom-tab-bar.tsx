@@ -6,6 +6,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import Animated, { useAnimatedStyle, useSharedValue, interpolate } from 'react-native-reanimated';
 import { useTabBarVisibility } from './tab-bar-visibility';
+import {
+  SUNBURST_TAPS,
+  SUNBURST_WINDOW_MS,
+  useHomeTabFx,
+} from './home-tab-fx';
+import * as Haptics from 'expo-haptics';
 
 
 /**
@@ -20,6 +26,9 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
   // shared value the scrolling screen updates). Falls back to always-visible
   // when there's no provider above (e.g. screens outside the customer stack).
   const visibilityCtx = useTabBarVisibility();
+  const homeFx = useHomeTabFx();
+  // Timestamps of the recent home-button taps, used for the hidden sunburst.
+  const homeTapsRef = React.useRef<number[]>([]);
   const fallbackHidden = useSharedValue(0);
   const hidden = visibilityCtx?.hidden ?? fallbackHidden;
   const hideDistance =
@@ -53,6 +62,7 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
 
   const isolatedTab = visibleRoutes.find((r: any) => r.name === 'index') || visibleRoutes[0];
   const pillTabs = visibleRoutes.filter((r: any) => r.name !== isolatedTab.name).slice(0, 3);
+  const isHomeTab = isolatedTab.name === 'index';
 
   const NAV_HEIGHT = normalize.height(50);
   const PILL_WIDTH = normalize.width(170);
@@ -89,8 +99,33 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
               target: isolatedTab.key,
               canPreventDefault: true });
 
-            if (currentRouteName !== isolatedTab.name && !event.defaultPrevented) {
+            if (event.defaultPrevented) return;
+
+            const isAlreadyHere = currentRouteName === isolatedTab.name;
+            if (!isAlreadyHere) {
               navigation.navigate(isolatedTab.name);
+            }
+
+            // Only the customer home tab carries the extra behaviour.
+            if (!isHomeTab) return;
+
+            if (isAlreadyHere) {
+              // Tapping home while on home takes the list back to the top.
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+              homeFx?.scrollHomeToTop();
+            }
+
+            // Keep only the taps inside the streak window; enough of them and
+            // the sun comes out.
+            const now = Date.now();
+            const taps = homeTapsRef.current.filter(
+              (t) => now - t < SUNBURST_WINDOW_MS,
+            );
+            taps.push(now);
+            homeTapsRef.current = taps;
+            if (taps.length >= SUNBURST_TAPS) {
+              homeTapsRef.current = [];
+              homeFx?.fireSunburst();
             }
           }}
           activeOpacity={0.8}

@@ -232,10 +232,10 @@ export function HeaderSection({
               {stateUserType !== "guest" && (
                 <TouchableOpacity
                   onPress={() => router.push("/(customer)/notifications")}
-                  style={styles.avatarContainerHome}
+                  style={styles.bellButtonHome}
                 >
                   <SolarBellBingBoldDuotone
-                    size={normalize.width(22)}
+                    size={normalize.width(18)}
                     color={Colors.primary}
                   />
                   {unreadCount > 0 && (
@@ -375,9 +375,10 @@ const styles = StyleSheet.create({
     width: "auto",
     gap: 6,
     alignItems: "center" },
-  avatarContainerHome: {
-    width: normalize.width(40),
-    height: normalize.width(40),
+  bellButtonHome: {
+    // Same height as searchTextPill so the two sit level in the row.
+    width: normalize.width(34),
+    height: normalize.width(34),
     borderRadius: 999,
     justifyContent: "center",
     alignItems: "center",

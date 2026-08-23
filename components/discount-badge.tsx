@@ -35,14 +35,24 @@ export function DiscountBadge({ discount, size = 'md' }: { discount?: ChaletDisc
 }
 
 /** The pre-discount price, struck through. Renders nothing without a real saving. */
-export function DiscountedFrom({ discount, size = 'md' }: { discount?: ChaletDiscount | null; size?: 'sm' | 'md' }) {
+export function DiscountedFrom({
+  discount,
+  size = 'md',
+  tone = 'default',
+}: {
+  discount?: ChaletDiscount | null;
+  size?: 'sm' | 'md';
+  /** `onDark` for cards that lay the price over a photo, where the muted grey
+   *  would disappear against the scrim. */
+  tone?: 'default' | 'onDark';
+}) {
   const { isRTL } = useDirection();
 
   if (!discount || !discount.priceBefore || !discount.priceAfter) return null;
   if (Number(discount.priceBefore) <= Number(discount.priceAfter)) return null;
 
   return (
-    <Text style={[styles.struck, size === 'sm' && styles.struckSmall]}>
+    <Text style={[styles.struck, size === 'sm' && styles.struckSmall, tone === 'onDark' && styles.struckOnDark]}>
       {Number(discount.priceBefore).toLocaleString()} {isRTL ? 'د.ع' : 'IQD'}
     </Text>
   );
@@ -73,4 +83,5 @@ const styles = StyleSheet.create({
     textDecorationLine: 'line-through',
   },
   struckSmall: { fontSize: normalize.font(9) },
+  struckOnDark: { color: 'rgba(255,255,255,0.75)' },
 });

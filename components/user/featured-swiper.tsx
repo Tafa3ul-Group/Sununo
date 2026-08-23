@@ -6,7 +6,7 @@ import { ltrScrollContent, ltrScroller, useDirection } from "@/i18n";
 import { Image as ExpoImage } from "expo-image";
 import React, { useCallback, useMemo } from "react";
 import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
-import { FEATURED_CARD_WIDTH, FeaturedCard } from "./featured-card";
+import { FEATURED_CARD_RATIO, FEATURED_CARD_WIDTH, FeaturedCard } from "./featured-card";
 
 const SEPARATOR_WIDTH = normalize.width(12);
 // How many real cards we show before the trailing "See all" card.
@@ -150,7 +150,8 @@ const styles = StyleSheet.create({
     width: FEATURED_CARD_WIDTH,
   },
   seeAllCard: {
-    height: normalize.width(130),
+    // Same footprint as FeaturedCard so the strip stays even.
+    height: FEATURED_CARD_WIDTH / FEATURED_CARD_RATIO,
     borderRadius: normalize.radius(16),
     backgroundColor: "#F9FAFB",
     borderWidth: 1,
