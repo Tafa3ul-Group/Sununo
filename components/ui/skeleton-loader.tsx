@@ -180,6 +180,18 @@ export const HorizontalCardSkeleton: React.FC = () => (
   </View>
 );
 
+// ─── Map Result Card Skeleton ───────────────────────────────────────────────────
+// Mirrors MapResultCard: a tall photo, then title, place, details and price.
+export const MapResultCardSkeleton: React.FC = () => (
+  <View style={{ marginBottom: 32 }}>
+    <SkeletonBox width="100%" height={200} borderRadius={24} />
+    <SkeletonBox width="60%" height={15} borderRadius={6} style={{ marginTop: 12 }} />
+    <SkeletonBox width="45%" height={13} borderRadius={6} style={{ marginTop: 6 }} />
+    <SkeletonBox width="70%" height={13} borderRadius={6} style={{ marginTop: 6 }} />
+    <SkeletonBox width="35%" height={15} borderRadius={6} style={{ marginTop: 8 }} />
+  </View>
+);
+
 // ─── Booking Card Skeleton ──────────────────────────────────────────────────────
 
 export const BookingCardSkeleton: React.FC = () => (

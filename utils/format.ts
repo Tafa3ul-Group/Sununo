@@ -172,3 +172,20 @@ export const formatChaletLocation = (chalet: any, isRTL: boolean): string => {
   const region = pickTranslation(chalet?.region, isRTL);
   return [city, region].filter(Boolean).join(' - ');
 };
+
+/**
+ * يحوّل الأرقام العربية-الهندية (٠-٩) والفارسية (۰-۹) إلى لاتينية.
+ *
+ * لازمة قبل أي تحقق برقم الهاتف: `\d` في الجافاسكربت يطابق 0-9 اللاتينية
+ * فقط، فمستخدم بكيبورد عربي كان يكتب رقمه ويصطدم برسالة "يجب أن يحتوي
+ * رقم الهاتف على أرقام فقط". الباكند أصلاً يتقبّلها
+ * (src/dto/validation.spec.ts) — المنع كان من التطبيق وحده.
+ */
+export const toLatinDigits = (input: string): string =>
+  input.replace(/[\u0660-\u0669\u06F0-\u06F9]/g, (d) =>
+    String(
+      d.charCodeAt(0) >= 0x06f0
+        ? d.charCodeAt(0) - 0x06f0
+        : d.charCodeAt(0) - 0x0660,
+    ),
+  );

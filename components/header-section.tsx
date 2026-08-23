@@ -169,9 +169,11 @@ export function HeaderSection({
           ) : (
             <View style={[styles.homeLeftGroup, { flexDirection: "row" }]}>
               {showBackButton && <CircleBackButton onPress={onBackPress} />}
+              {/* Search opens the map: results live in a sheet there that
+                  follows whatever area is on screen. */}
               {extraIcon === "search" && (
                 <TouchableOpacity
-                  onPress={() => router.push("/(customer)/search")}
+                  onPress={() => router.push("/(tabs)/(customer)/explore")}
                   style={styles.searchPillHome}
                 >
                   <SolarMagnifierBold
@@ -202,7 +204,7 @@ export function HeaderSection({
               {/* Search and notification swapped: search now takes the bell's
                   former slot and the bell takes the search's. */}
               <TouchableOpacity
-                onPress={() => router.push("/(customer)/search")}
+                onPress={() => router.push("/(tabs)/(customer)/explore")}
                 style={[styles.searchTextPill, { flexDirection: "row" }]}
                 activeOpacity={0.85}
               >

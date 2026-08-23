@@ -136,9 +136,12 @@ export const HorizontalCard = React.memo(function HorizontalCard({
               ]}
               numberOfLines={1}
             >
-              {(isArabic ? featuredLabel.name.ar : featuredLabel.name.en) ||
-                featuredLabel.name.ar ||
-                featuredLabel.name.en}
+              {(isArabic
+                ? featuredLabel.name?.ar
+                : featuredLabel.name?.en) ||
+                featuredLabel.name?.ar ||
+                featuredLabel.name?.en ||
+                ""}
             </ThemedText>
           </View>
         )}
@@ -149,11 +152,12 @@ export const HorizontalCard = React.memo(function HorizontalCard({
             style={[styles.title, { textAlign }]}
             numberOfLines={1}
           >
-            {typeof chalet.title === "object"
-              ? isArabic
-                ? chalet.title.ar
-                : chalet.title.en
-              : chalet.title}
+            {chalet.title && typeof chalet.title === "object"
+              ? (isArabic ? chalet.title.ar : chalet.title.en) ??
+                chalet.title.ar ??
+                chalet.title.en ??
+                ""
+              : chalet.title ?? ""}
           </ThemedText>
           <ThemedText style={styles.ratingText}>
             {rating.toFixed(1)}
@@ -201,11 +205,12 @@ export const HorizontalCard = React.memo(function HorizontalCard({
             style={[styles.location, { textAlign }]}
             numberOfLines={1}
           >
-            {typeof chalet.location === "object"
-              ? isArabic
-                ? chalet.location.ar
-                : chalet.location.en
-              : chalet.location}
+            {chalet.location && typeof chalet.location === "object"
+              ? (isArabic ? chalet.location.ar : chalet.location.en) ??
+                chalet.location.ar ??
+                chalet.location.en ??
+                ""
+              : chalet.location ?? ""}
           </ThemedText>
         </View>
 

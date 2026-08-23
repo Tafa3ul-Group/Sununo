@@ -25,6 +25,7 @@ import { SecondaryButton } from "./secondary-button";
 
 import errorAnim from "../icons/motions/fail.json";
 import successAnim from "../icons/motions/success.json";
+import { toLatinDigits } from "@/utils/format";
 
 const zainCashLogo = require("@/assets/zaincash.png");
 const qiLogo = require("@/assets/qi.svg");
@@ -37,7 +38,7 @@ function validateZainCash(text: string, isRTL: boolean): string | null {
   if (!text) {
     return isRTL ? "يرجى إدخال رقم زين كاش" : "Please enter your Zain Cash number";
   }
-  const clean = text.replace(/[\s\-()]/g, "");
+  const clean = toLatinDigits(text).replace(/[\s\-()]/g, "");
   if (/[^\d+]/.test(clean) || (clean.includes("+") && !clean.startsWith("+"))) {
     return isRTL
       ? "يجب أن يحتوي رقم الهاتف على أرقام فقط"
@@ -72,7 +73,7 @@ function validateQiCard(text: string, isRTL: boolean): string | null {
   if (!text) {
     return isRTL ? "يرجى إدخال رقم بطاقة كي" : "Please enter your Qi card number";
   }
-  const clean = text.replace(/[\s\-()]/g, "");
+  const clean = toLatinDigits(text).replace(/[\s\-()]/g, "");
   if (!/^\d{10}$/.test(clean)) {
     return isRTL
       ? "يجب أن يتكون رقم بطاقة كي من 10 أرقام"

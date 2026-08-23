@@ -24,6 +24,11 @@ import {
 import { ThemedText } from "@/components/themed-text";
 import { CircleBackButton } from "@/components/ui/circle-back-button";
 import { AppMap } from "@/components/user/app-map";
+import { MapResultCardSkeleton } from "@/components/ui/skeleton-loader";
+import {
+  MAP_RESULT_CARD_INSET,
+  MapResultCard,
+} from "@/components/user/map-result-card";
 import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
 import { ChaletDetailsBody } from "@/components/chalet/chalet-details-body";
 import { LoginPromptModal } from "@/components/user/login-prompt-modal";
@@ -40,8 +45,9 @@ import {
   useGetSimilarChaletsQuery,
   useToggleFavoriteMutation,
 } from "@/store/api/customerApiSlice";
-import {
+import BottomSheet, {
   BottomSheetBackdrop,
+  BottomSheetFlatList,
   BottomSheetFooter,
   BottomSheetModal,
   BottomSheetScrollView,
@@ -84,6 +90,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+// StyleSheet is built once, outside the component, so the safe-area value the
+// floating preview needs is read from the initial window metrics.
+const insetsBottom = 16;
 const MAPBOX_ACCESS_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
 import { useGetChaletsMapQuery } from "@/store/api/apiSlice";
@@ -115,6 +124,11 @@ const CARD_COLORS = ["#035DF9", "#15AB64", "#F64300"];
 // it falls inside Iraq, otherwise fall back to this center.
 const IRAQ_BOUNDS = { minLng: 38.7, maxLng: 48.8, minLat: 29.0, maxLat: 37.4 };
 const DEFAULT_CENTER: [number, number] = [44.3661, 33.3152]; // [lng, lat] Baghdad
+
+// Opening zoom: centred on the user but wide enough to cover their governorate,
+// so the first thing on screen is the chalets around them rather than an empty
+// street. (~80 km across at Iraqi latitudes; z14 was roughly two blocks.)
+const GOVERNORATE_ZOOM = 9;
 const isInServiceArea = (lng?: number, lat?: number) =>
   typeof lng === "number" &&
   typeof lat === "number" &&
@@ -267,6 +281,11 @@ export default function ExploreScreen() {
 
   // Filtering State
   const [search, setSearch] = useState("");
+  // The rectangle the map is currently showing — drives the results sheet.
+  const [visibleBounds, setVisibleBounds] = useState<{
+    ne: [number, number];
+    sw: [number, number];
+  } | null>(null);
   const [maxAdults, setMaxAdults] = useState<string>("");
   const [minPrice, setMinPrice] = useState<string>("");
   const [maxPrice, setMaxPrice] = useState<string>("");
@@ -384,6 +403,7 @@ export default function ExploreScreen() {
           id: item.id,
           title: item.name,
           location: item.address,
+          city: item.city,
           price: getStartingPrice(item),
           // Carried through so the card can show the discount badge; the API
           // leaves it undefined when no campaign is running.
@@ -408,8 +428,55 @@ export default function ExploreScreen() {
       });
   }, [chaletsRaw, isRTL]);
 
+  // Chalets inside the rectangle the map is showing, in the same order the
+  // markers are drawn. Recomputed only when the camera settles (the map reports
+  // on idle, not on every frame), so panning stays smooth.
+  const chaletsInView = useMemo(() => {
+    const term = search.trim().toLowerCase();
+
+    return MOCK_CHALETS.filter((c: any) => {
+      const [lng, lat] = c.coordinates || [];
+      if (!Number.isFinite(lng) || !Number.isFinite(lat)) return false;
+
+      if (visibleBounds) {
+        const { ne, sw } = visibleBounds;
+        const withinLng = lng >= Math.min(sw[0], ne[0]) && lng <= Math.max(sw[0], ne[0]);
+        const withinLat = lat >= Math.min(sw[1], ne[1]) && lat <= Math.max(sw[1], ne[1]);
+        if (!withinLng || !withinLat) return false;
+      }
+
+      if (!term) return true;
+      const title =
+        typeof c.title === "object" ? `${c.title?.ar ?? ""} ${c.title?.en ?? ""}` : String(c.title ?? "");
+      return `${title} ${c.location ?? ""}`.toLowerCase().includes(term);
+    });
+  }, [MOCK_CHALETS, visibleBounds, search]);
+
   const handleCameraChanged = useCallback(
-    (center: [number, number], zoomLevel: number) => {
+    (
+      center: [number, number],
+      zoomLevel: number,
+      bounds?: { ne: [number, number]; sw: [number, number] },
+    ) => {
+      // Commit the viewport only once the camera stops changing. On open the
+      // map flies from its default position to the user's area and reports
+      // every step of the way — without this the results list churned through
+      // each intermediate region before landing.
+      if (bounds) {
+        if (boundsTimerRef.current) clearTimeout(boundsTimerRef.current);
+        boundsTimerRef.current = setTimeout(
+          () => setVisibleBounds(bounds),
+          400,
+        );
+      }
+
+      // Browsing the map means the sheet is in the way — drop it to the bar.
+      if (mapSettledOnceRef.current) {
+        resultsSheetRef.current?.snapToIndex(0);
+      } else {
+        mapSettledOnceRef.current = true;
+      }
+
       setCurrentMapRegion({ center, zoom: zoomLevel });
       setZoom(zoomLevel);
       setCameraPosition(center);
@@ -459,6 +526,56 @@ export default function ExploreScreen() {
   );
 
   const bottomSheetRef = useRef<BottomSheetModal>(null);
+  // Always-on results sheet under the map. A plain (non-modal) sheet so it can
+  // sit behind the chalet detail modal instead of fighting it for the stack.
+  const resultsSheetRef = useRef<BottomSheet>(null);
+  // Collapsed shows the handle and the count line — nothing else. The header is
+  // measured rather than guessed: a hardcoded height (or a percentage) left a
+  // sliver of the first card peeking out, which is exactly what collapsing is
+  // supposed to hide.
+  const [resultsHeaderHeight, setResultsHeaderHeight] = useState(46);
+  // Height of the search/back overlay, so the sheet knows where to stop.
+  const [topOverlayHeight, setTopOverlayHeight] = useState(140);
+  const resultsIndexRef = useRef(1);
+  // Drives whether the list is rendered at all — see the sheet below.
+  const [resultsIndex, setResultsIndex] = useState(1);
+  // Whether the chalet detail sheet is on screen. Tracked separately from
+  // `selectedChalet`, which is deliberately kept after dismissal so an active
+  // route survives — gating the results sheet on it meant it never came back.
+  const [isDetailSheetOpen, setIsDetailSheetOpen] = useState(false);
+  const resultsSnapPoints = useMemo(
+    // Header + gorhom's handle, and nothing for the safe area: the sheet
+    // already sits above it, so adding insets.bottom here counted that strip
+    // twice and left the collapsed bar sitting too high.
+    // Top stop is measured from the header rather than a flat 90%: the search
+    // field and back button have to stay reachable, and a percentage covered
+    // them on taller screens.
+    () => [
+      resultsHeaderHeight + 26,
+      "50%",
+      Math.max(SCREEN_HEIGHT - topOverlayHeight - 8, SCREEN_HEIGHT * 0.5),
+    ],
+    [resultsHeaderHeight, topOverlayHeight],
+  );
+  // The sheet keeps whatever height it resolved when it snapped, so a header
+  // measured after that leaves it sitting too high (a sliver of the first card
+  // stays visible). Re-snap when the measurement lands and we are collapsed.
+  useEffect(() => {
+    if (resultsIndexRef.current === 0) {
+      resultsSheetRef.current?.snapToIndex(0);
+    }
+  }, [resultsHeaderHeight]);
+
+  // The map reports once on mount; collapsing on that would undo the 50% the
+  // sheet is supposed to open at, so only user-driven movement counts.
+  const mapSettledOnceRef = useRef(false);
+  const boundsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (boundsTimerRef.current) clearTimeout(boundsTimerRef.current);
+    },
+    [],
+  );
   // Opens straight at 90% of the screen: tapping a marker is a request to read
   // the chalet, and the old 55% peek meant an extra drag before anything useful
   // was visible.
@@ -468,19 +585,6 @@ export default function ExploreScreen() {
   // tab bar at rest and rides the sheet up as it opens, so it never ends up
   // buried under it.
   const sheetTop = useSharedValue(SCREEN_HEIGHT);
-  // Resolve every `normalize.*` call HERE, on the JS thread. The worklet below
-  // runs on the UI thread and can only close over plain values — calling
-  // normalize inside it throws "normalize.height is not a function".
-  const locateFabGap = normalize.height(12);
-  const locateFabRestingBottom =
-    Math.max(insets.bottom, 24) + normalize.height(44) + locateFabGap;
-  const locateFabStyle = useAnimatedStyle(() => ({
-    bottom: Math.max(
-      locateFabRestingBottom,
-      SCREEN_HEIGHT - sheetTop.value + locateFabGap,
-    ),
-  }));
-
   // Stable id of the chalet matching the route param. The previous effect keyed
   // off `MOCK_CHALETS.length`, which changes whenever the memo is rebuilt and so
   // re-ran the auto-selection on every list update. Deriving a stable matched id
@@ -531,6 +635,21 @@ export default function ExploreScreen() {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") return;
 
+      // Seed from the cached fix first: getCurrentPositionAsync can take
+      // seconds, and until it answers the map sits on the default centre and
+      // then flies across the country in full view of the user.
+      const lastKnown = await Location.getLastKnownPositionAsync();
+      if (
+        lastKnown &&
+        isInServiceArea(lastKnown.coords.longitude, lastKnown.coords.latitude)
+      ) {
+        setCameraPosition([
+          lastKnown.coords.longitude,
+          lastKnown.coords.latitude,
+        ]);
+        setZoom(GOVERNORATE_ZOOM);
+      }
+
       let loc = await Location.getCurrentPositionAsync({});
       setLocation(loc);
 
@@ -538,7 +657,7 @@ export default function ExploreScreen() {
       // keep the default Iraq center (avoids the simulator's San Francisco).
       if (isInServiceArea(loc.coords.longitude, loc.coords.latitude)) {
         setCameraPosition([loc.coords.longitude, loc.coords.latitude]);
-        setZoom(14);
+        setZoom(GOVERNORATE_ZOOM);
       }
 
       subscription = await Location.watchPositionAsync(
@@ -735,6 +854,9 @@ export default function ExploreScreen() {
 
   const handleSelectChalet = (chalet: any) => {
     Keyboard.dismiss();
+    // A floating preview, not the full sheet: the guest asked to see which
+    // chalet this pin is, and the whole page is one tap away from the card.
+    resultsSheetRef.current?.close();
     setActiveImageIndex(0); // Reset index
     // Save previous camera state if not already in selection mode
     if (!selectedChalet) {
@@ -750,10 +872,12 @@ export default function ExploreScreen() {
     setZoom(15);
     setCameraPosition(chalet.coordinates);
 
-    bottomSheetRef.current?.present();
+    // (the old detail sheet is no longer presented from the map)
   };
 
   const handleDismissSheet = () => {
+    setIsDetailSheetOpen(false);
+    resultsSheetRef.current?.snapToIndex(0);
     // If not navigating, restore pre-selection zoom
     if (!showMapToolsRef.current && preSelectionRegion) {
       setZoom(preSelectionRegion.zoom);
@@ -842,17 +966,25 @@ export default function ExploreScreen() {
         </View>
       )}
 
-      <AppMap
-        markers={MOCK_CHALETS}
-        onSelectMarker={handleSelectChalet}
-        onPress={() => Keyboard.dismiss()}
-        selectedChalet={selectedChalet}
-        route={route}
-        isNavigating={isNavigating}
-        zoomLevel={zoom}
-        centerCoordinate={cameraPosition}
-        onCameraChanged={handleCameraChanged}
-      />
+      <View
+        style={StyleSheet.absoluteFill}
+        // Touching the map means the user wants to browse it, so the results
+        // sheet gets out of the way immediately — waiting for the camera to
+        // settle felt (and often was) like nothing happened.
+        onTouchStart={() => resultsSheetRef.current?.snapToIndex(0)}
+      >
+        <AppMap
+          markers={MOCK_CHALETS}
+          onSelectMarker={handleSelectChalet}
+          onPress={() => Keyboard.dismiss()}
+          selectedChalet={selectedChalet}
+          route={route}
+          isNavigating={isNavigating}
+          zoomLevel={zoom}
+          centerCoordinate={cameraPosition}
+          onCameraChanged={handleCameraChanged}
+        />
+      </View>
 
       {/* Conditional Interface Elements */}
       <View
@@ -860,17 +992,20 @@ export default function ExploreScreen() {
           styles.topOverlay,
           { paddingTop: insets.top + normalize.height(10) },
         ]}
+        onLayout={(e) => setTopOverlayHeight(e.nativeEvent.layout.height)}
       >
         <View style={styles.searchBarContainer}>
-          {/* This map is a tab, but home and bookings push to it — so offer a
-              way back whenever there is somewhere to go back to. Reached from
-              the tab bar there is no history, and no button. */}
-          {router.canGoBack() && (
-            <CircleBackButton
-              onPress={() => router.back()}
-              style={styles.mapBackBtn}
-            />
-          )}
+          {/* Always shown: the tab bar is hidden on this screen, so this is the
+              only way out. Falls back to home when the map was opened straight
+              from the tab bar and there is no history to pop. */}
+          <CircleBackButton
+            onPress={() =>
+              router.canGoBack()
+                ? router.back()
+                : router.replace("/(tabs)/(customer)")
+            }
+            style={styles.mapBackBtn}
+          />
           <View style={styles.searchInputWrapper}>
             <SolarMagnifierBold size={20} color={Colors.text.muted} />
             <TextInput
@@ -893,6 +1028,20 @@ export default function ExploreScreen() {
               </TouchableOpacity>
             )}
           </View>
+
+          {/* Recenter on the user. It lives in the header rather than floating
+              over the map, where it had to dodge the results sheet. */}
+          {!isNavigating && (
+            <TouchableOpacity
+              style={styles.locateHeaderBtn}
+              onPress={handleLocateMe}
+              activeOpacity={0.85}
+              accessibilityRole="button"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <SolarMapPointWaveBoldDuotone size={18} color={Colors.primary} />
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Active Filter Indicator */}
@@ -947,24 +1096,6 @@ export default function ExploreScreen() {
             <SolarCloseBold size={24} color="#EF4444" />
           </TouchableOpacity>
         </View>
-      )}
-
-      {/* Always-available: recenter the map on the user's exact location */}
-      {!isNavigating && (
-        <Animated.View
-          style={[styles.locateFabWrap, locateFabStyle]}
-          pointerEvents="box-none"
-        >
-          <TouchableOpacity
-            style={styles.locateFab}
-            onPress={handleLocateMe}
-            activeOpacity={0.85}
-            accessibilityRole="button"
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <SolarMapPointWaveBoldDuotone size={26} color={Colors.primary} />
-          </TouchableOpacity>
-        </Animated.View>
       )}
 
       <BottomSheetModal
@@ -1324,6 +1455,103 @@ export default function ExploreScreen() {
           </View>
         </BottomSheetScrollView>
       </BottomSheetModal>
+      {/* Floating preview for the tapped pin. Tapping it opens the chalet
+          page; the X puts the map back the way it was. */}
+      {selectedChalet && (
+        <View style={styles.mapPreviewWrap} pointerEvents="box-none">
+          <MapResultCard
+            chalet={selectedChalet}
+            compact
+            isFavorite={favoriteIds.includes(selectedChalet.id)}
+            onToggleFavorite={() => handleToggleFavorite(selectedChalet.id)}
+            onClose={() => setSelectedChalet(null)}
+            onPress={() => router.push(`/chalet-details/${selectedChalet.id}`)}
+          />
+        </View>
+      )}
+
+      {/* Results for whatever the map is showing. Gone entirely while a pin
+          preview is up — the two stacked on top of each other looked broken. */}
+      {!selectedChalet && (
+      <BottomSheet
+          ref={resultsSheetRef}
+          index={1}
+          snapPoints={resultsSnapPoints}
+          onChange={(i: number) => {
+            resultsIndexRef.current = i;
+            setResultsIndex(i);
+          }}
+          enableDynamicSizing={false}
+          backgroundStyle={styles.resultsSheetBg}
+          handleIndicatorStyle={styles.resultsSheetHandle}
+        >
+          {/* Collapsed, the header is the only thing on screen — so it doubles
+              as the way back up. Dragging the handle still works; this just
+              means a tap does too. */}
+          <TouchableOpacity
+            activeOpacity={resultsIndex === 0 ? 0.6 : 1}
+            onPress={() => {
+              // Straight to the top stop (just under the header) — a tap on the
+              // bar means "show me the list", and stopping halfway just asks
+              // for a second gesture.
+              if (resultsIndex === 0) resultsSheetRef.current?.snapToIndex(2);
+            }}
+            style={styles.resultsHeader}
+            onLayout={(e) =>
+              setResultsHeaderHeight(e.nativeEvent.layout.height)
+            }
+          >
+            <ThemedText style={styles.resultsTitle}>
+              {chaletsInView.length > 0
+                ? isRTL
+                  ? `${chaletsInView.length} شاليه في هذه المنطقة`
+                  : `${chaletsInView.length} chalets in this area`
+                : isRTL
+                  ? "لا توجد شاليهات هنا"
+                  : "No chalets here"}
+            </ThemedText>
+          </TouchableOpacity>
+
+          {resultsIndex > 0 && isChaletsLoading && !chaletsRaw.length ? (
+            <View style={styles.resultsListContent}>
+              <MapResultCardSkeleton />
+              <MapResultCardSkeleton />
+            </View>
+          ) : null}
+
+          {resultsIndex > 0 && !(isChaletsLoading && !chaletsRaw.length) && (
+          <BottomSheetFlatList
+            data={chaletsInView}
+            keyExtractor={(item: any) => String(item.id)}
+            contentContainerStyle={styles.resultsListContent}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item }: { item: any }) => (
+              <View style={styles.resultsCardWrap}>
+                <MapResultCard
+                  chalet={item}
+                  // Straight to the chalet page: the guest is already reading
+                  // the list, so a floating preview of what they just tapped
+                  // would only be a step backwards. (The map's pins still open
+                  // the preview — there the card IS the answer to "which one
+                  // is this pin".)
+                  onPress={() => router.push(`/chalet-details/${item.id}`)}
+                  isFavorite={favoriteIds.includes(item.id)}
+                  onToggleFavorite={() => handleToggleFavorite(item.id)}
+                />
+              </View>
+            )}
+            ListEmptyComponent={
+              <ThemedText style={styles.resultsEmpty}>
+                {isRTL
+                  ? "جرّب تصغير الخارطة أو تحريكها لمنطقة ثانية."
+                  : "Try zooming out or panning to another area."}
+              </ThemedText>
+            }
+          />
+          )}
+        </BottomSheet>
+      )}
+
       <LoginPromptModal
         isVisible={showLoginPrompt}
         onClose={() => setShowLoginPrompt(false)}
@@ -1490,24 +1718,6 @@ const styles = StyleSheet.create({
     ...Shadows.medium,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.2)",
-  },
-  // `start` puts it on the same side as the tab bar's isolated round button,
-  // directly above it. `bottom` is animated (see locateFabStyle).
-  locateFabWrap: {
-    position: "absolute",
-    start: 20,
-    zIndex: 25,
-  },
-  locateFab: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: "white",
-    justifyContent: "center",
-    alignItems: "center",
-    ...Shadows.medium,
-    borderWidth: 1,
-    borderColor: "#F1F5F9",
   },
   navSeparator: {
     width: 1,
@@ -1782,6 +1992,17 @@ const styles = StyleSheet.create({
   mapBackBtn: {
     marginEnd: 10,
   },
+  locateHeaderBtn: {
+    // Same footprint as CircleBackButton so the two header controls match.
+    width: normalize.width(38),
+    height: normalize.width(38),
+    borderRadius: normalize.width(19),
+    backgroundColor: "white",
+    alignItems: "center",
+    justifyContent: "center",
+    marginStart: 10,
+    ...Shadows.small,
+  },
   searchInputWrapper: {
     flex: 1,
     height: 56,
@@ -1931,6 +2152,65 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#9CA3AF",
     fontFamily: "IBMPlexSansArabic-Medium",
+  },
+  mapPreviewWrap: {
+    position: "absolute",
+    start: MAP_RESULT_CARD_INSET,
+    end: MAP_RESULT_CARD_INSET,
+    bottom: Math.max(insetsBottom, 12),
+    backgroundColor: "white",
+    borderRadius: 24,
+    // No padding and clipped: the photo runs to the card's own edges, and the
+    // rounded corners cut it rather than framing it in white.
+    overflow: "hidden",
+    zIndex: 20,
+    ...Shadows.large,
+  },
+  resultsSheetBg: {
+    backgroundColor: "white",
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+  },
+  resultsSheetHandle: {
+    backgroundColor: "#E5E7EB",
+    width: 60,
+  },
+  resultsHeader: {
+    paddingHorizontal: 20,
+    paddingTop: 2,
+    // Generous gap under the count: it doubles as the clearance that keeps the
+    // first card out of sight while the sheet is collapsed (the snap height is
+    // measured from this header).
+    paddingBottom: 20,
+    alignItems: "center",
+  },
+  resultsTitle: {
+    fontSize: 15,
+    fontFamily: "IBMPlexSansArabic-SemiBold",
+    color: "#111827",
+    textAlign: "center",
+  },
+  resultsHint: {
+    fontSize: 11,
+    fontFamily: "IBMPlexSansArabic-Medium",
+    color: "#9CA3AF",
+    marginTop: 2,
+  },
+  resultsListContent: {
+    paddingHorizontal: MAP_RESULT_CARD_INSET,
+    paddingBottom: 120,
+  },
+  resultsCardWrap: {
+    marginBottom: 32,
+  },
+  resultsEmpty: {
+    textAlign: "center",
+    color: "#9CA3AF",
+    fontFamily: "IBMPlexSansArabic-Medium",
+    fontSize: 12,
+    marginTop: 24,
+    paddingHorizontal: 24,
+    lineHeight: 20,
   },
 });
 

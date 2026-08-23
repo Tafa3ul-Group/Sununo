@@ -23,6 +23,7 @@ import { getImageSrc, getAvatarSrc } from "@/hooks/useImageSrc";
 import { useFormatTime } from "@/hooks/useFormatTime";
 import { useDirection } from "@/i18n";
 import { Colors } from "@/constants/theme";
+import { formatChaletLocation } from "@/utils/format";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -93,8 +94,12 @@ export function ChaletDetailsBody({
   const { formatShiftTime } = useFormatTime();
 
   const name = pickLang(chalet?.name, isRTL);
-  const location =
-    pickLang(chalet?.region?.name, isRTL) || pickLang(chalet?.city, isRTL);
+  // "المحافظة - القضاء" — the same pair the cards print. The قضاء used to
+  // REPLACE the governorate here, which dropped the half customers scan for.
+  const location = formatChaletLocation(chalet, isRTL);
+  // Free text the owner writes ("حي الأندلس، قرب جامع النور"). Only the detail
+  // screens show it; the cards stay on the two-part location line.
+  const address = pickLang(chalet?.address, isRTL);
   const description = pickLang(chalet?.description, isRTL);
   const rating = chalet?.averageRating || chalet?.rating || 0;
   const shifts: any[] = chalet?.shifts || [];
@@ -408,6 +413,11 @@ export function ChaletDetailsBody({
         <View style={styles.mapInner}>{mapNode}</View>
         <View style={styles.mapLocLabel}>
           <ThemedText style={styles.mapLocText}>{location}</ThemedText>
+          {!!address && (
+            <ThemedText style={styles.mapAddressText} numberOfLines={2}>
+              {address}
+            </ThemedText>
+          )}
         </View>
       </View>
 
@@ -591,4 +601,11 @@ const styles = StyleSheet.create({
   mapInner: { height: 220, borderRadius: 24, overflow: "hidden" },
   mapLocLabel: { paddingVertical: 12, alignItems: "center" },
   mapLocText: { fontSize: 16, fontFamily: "IBMPlexSansArabic-Bold", lineHeight: 24 },
+  mapAddressText: {
+    fontSize: 13,
+    fontFamily: "IBMPlexSansArabic-Regular",
+    color: "#6B7280",
+    lineHeight: 20,
+    marginTop: 2,
+  },
 });

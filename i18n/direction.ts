@@ -102,7 +102,11 @@ export const pickTranslation = (obj: any, rtl: boolean, depth = 0): string => {
 
   // Preferred language first, then the other one — a half-translated record
   // should still render a label rather than an empty string.
-  const arabic = [obj.ar, obj.nameAr, obj.arName, obj.name_ar, obj.translation?.ar, obj.name_translation?.ar];
+  // A plain string `name` counts as the Arabic candidate: the location tables
+  // (city, region) keep the Arabic in `name` and the English in `enName`, so
+  // leaving it to the fallback below made Arabic render "Basra", not "البصرة".
+  const arabic = [obj.ar, obj.nameAr, obj.arName, obj.name_ar, obj.translation?.ar, obj.name_translation?.ar,
+    typeof obj.name === "string" ? obj.name : undefined];
   const english = [obj.en, obj.nameEn, obj.enName, obj.name_en, obj.displayName, obj.display_name, obj.translation?.en];
 
   for (const value of rtl ? [...arabic, ...english] : [...english, ...arabic]) {

@@ -36,6 +36,7 @@ import {
   useGetAmenityCategoriesQuery,
   useGetChaletAmenitiesQuery,
   useGetChaletShiftsQuery,
+  useGetChaletRegionsQuery,
   useGetCitiesQuery,
   useGetProviderTermsQuery,
   useGetOwnerChaletDetailsQuery,
@@ -125,6 +126,7 @@ export default function ChaletDetailsScreen() {
   const amenitiesModalRef = useRef<BottomSheetModal>(null);
   const imagesModalRef = useRef<BottomSheetModal>(null);
   const citySheetRef = useRef<BottomSheetModal>(null);
+  const regionSheetRef = useRef<BottomSheetModal>(null);
   const rulesModalRef = useRef<BottomSheetModal>(null);
   const addressModalRef = useRef<BottomSheetModal>(null);
 
@@ -135,6 +137,8 @@ export default function ChaletDetailsScreen() {
     descriptionAr: '',
     descriptionEn: '',
     cityId: '',
+    regionId: '',
+    regionName: '',
     cityName: '',
     depositPercentage: '25',
     capacity: '0',
@@ -149,6 +153,11 @@ export default function ChaletDetailsScreen() {
     area: '',
     bedrooms: '',
     bathrooms: ''
+  });
+
+  // Scoped to the chosen محافظة — the API rejects a قضاء from another one.
+  const { data: regions } = useGetChaletRegionsQuery(basicForm.cityId, {
+    skip: !basicForm.cityId,
   });
 
   // Real-time Deposit Percentage Validation
@@ -210,6 +219,8 @@ export default function ChaletDetailsScreen() {
         priceCapacity: chalet.priceCapacity?.toString() || '0',
         extraPersonPrice: chalet.extraPersonPrice?.toString() || '0',
         cityId: chalet.city?.id || chalet.cityId || '',
+        regionId: chalet.region?.id || chalet.regionId || '',
+        regionName: chalet.region ? pickTranslation(chalet.region, isRTL) : '',
         cityName: (isRTL ? chalet.city?.name : (chalet.city?.enName || chalet.city?.name)) || '',
         depositPercentage: chalet.depositPercentage?.toString() || '25',
         phone: chalet.phone || '',
@@ -1387,8 +1398,24 @@ export default function ChaletDetailsScreen() {
             </TouchableOpacity>
           </View>
 
+          <View style={styles.modalInputGroup}>
+            <Text style={[styles.modalLabel, { textAlign }]}>{isRTL ? 'القضاء' : 'District'}</Text>
+            <TouchableOpacity
+              style={[styles.modalInput, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}
+              activeOpacity={basicForm.cityId ? 0.7 : 1}
+              onPress={() => basicForm.cityId && regionSheetRef.current?.present()}
+            >
+              <Text style={{ fontSize: normalize.font(13), fontFamily: 'IBMPlexSansArabic-Medium', color: basicForm.regionName ? Colors.text.primary : '#C0C7D0', flex: 1, textAlign }}>
+                {basicForm.regionName || (basicForm.cityId
+                  ? (isRTL ? 'اختر القضاء' : 'Select District')
+                  : (isRTL ? 'اختر المدينة أولاً' : 'Select a city first'))}
+              </Text>
+              <SolarMapPointBold size={16} color={basicForm.regionName ? Colors.primary : '#94A3B8'} />
+            </TouchableOpacity>
+          </View>
+
           <PrimaryButton
-            label={isRTL ? 'حفظ العنوان والمدينة' : 'Save Address & City'}
+            label={isRTL ? 'حفظ العنوان والموقع' : 'Save Address & Location'}
             onPress={async () => {
               if (!basicForm.addressAr.trim()) {
                 Toast.show({ type: 'error', text1: isRTL ? 'يرجى إدخال العنوان بالعربية' : 'Please enter the Arabic address' });
@@ -1402,6 +1429,7 @@ export default function ChaletDetailsScreen() {
                   }
                 };
                 if (basicForm.cityId) payload.cityId = basicForm.cityId;
+                if (basicForm.regionId) payload.regionId = basicForm.regionId;
                 await updateChalet({ id: chaletId as string, data: payload }).unwrap();
                 Toast.show({ type: 'success', text1: isRTL ? 'تم تحديث العنوان بنجاح' : 'Address updated successfully' });
                 addressModalRef.current?.dismiss();
@@ -1786,8 +1814,43 @@ export default function ChaletDetailsScreen() {
               <TouchableOpacity
                 style={styles.cityPickerItem}
                 onPress={() => {
-                  setBasicForm({ ...basicForm, cityId: item.id, cityName: pickTranslation(item, isRTL) });
+                  // Changing the محافظة invalidates the stored قضاء.
+                  setBasicForm({
+                    ...basicForm,
+                    cityId: item.id,
+                    cityName: pickTranslation(item, isRTL),
+                    regionId: '',
+                    regionName: '',
+                  });
                   citySheetRef.current?.dismiss();
+                }}
+              >
+                <Text style={[styles.cityPickerText, { textAlign }]}>{pickTranslation(item, isRTL)}</Text>
+              </TouchableOpacity>
+            )}
+          />
+        </BottomSheetView>
+      </BottomSheetModal>
+
+      {/* District (قضاء) Picker Modal */}
+      <BottomSheetModal
+        ref={regionSheetRef}
+        index={0}
+        snapPoints={['70%']}
+        backdropComponent={renderBackdrop}
+        backgroundStyle={{ borderRadius: 24 }}
+      >
+        <BottomSheetView style={{ padding: 20, flex: 1 }}>
+          <Text style={styles.modalTitle}>{isRTL ? 'اختر القضاء' : 'Select District'}</Text>
+          <BottomSheetFlatList
+            data={regions || []}
+            keyExtractor={(item: any) => item.id}
+            renderItem={({ item }: { item: any }) => (
+              <TouchableOpacity
+                style={styles.cityPickerItem}
+                onPress={() => {
+                  setBasicForm({ ...basicForm, regionId: item.id, regionName: pickTranslation(item, isRTL) });
+                  regionSheetRef.current?.dismiss();
                 }}
               >
                 <Text style={[styles.cityPickerText, { textAlign }]}>{pickTranslation(item, isRTL)}</Text>

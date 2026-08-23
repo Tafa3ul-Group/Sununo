@@ -45,7 +45,10 @@ export const CustomTabBar: React.FC<any> = ({ state, navigation, descriptors }) 
   const currentOptions = descriptors[state.routes[currentRouteIndex].key]?.options;
 
   const hiddenScreens: string[] = [
-    // Add screens here that should NOT show the tab bar
+    // Add screens here that should NOT show the tab bar.
+    // The map owns the full screen: its results sheet sits at the bottom and
+    // the tab bar would just crowd it.
+    "explore",
   ];
 
   if (currentOptions?.href === null || hiddenScreens.includes(currentRouteName)) {

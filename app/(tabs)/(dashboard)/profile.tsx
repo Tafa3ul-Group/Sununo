@@ -13,7 +13,9 @@ import {
   SolarShieldBold,
   SolarTrashBinBold,
   SolarUserBold,
-  SolarWalletBold
+  SolarWalletBold,
+  SolarAltArrowLeftLinear,
+  SolarAltArrowRightLinear
 } from "@/components/icons/solar-icons";
 import { useConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { LanguageSheet } from '@/components/user/language-sheet';
@@ -61,7 +63,78 @@ type MenuItem = {
   action?: () => void;
   /** Optional end-aligned counter (unread notifications). */
   badge?: string;
+  destructive?: boolean;
 };
+
+type MenuSection = { id: string; header?: string; items: MenuItem[] };
+
+/** صف قائمة iOS مجمّعة: أيقونة ← عنوان ← (شارة) ← شيفرون، وفاصل مُزاح. */
+function MenuRow({
+  item,
+  isLast,
+  onPress,
+}: {
+  item: MenuItem;
+  isLast: boolean;
+  onPress: (item: MenuItem) => void;
+}) {
+  const { textAlign, isRTL } = useDirection();
+  const Chevron = isRTL ? SolarAltArrowLeftLinear : SolarAltArrowRightLinear;
+  return (
+    <TouchableOpacity
+      style={[styles.menuRow, { flexDirection: 'row' }]}
+      onPress={() => onPress(item)}
+      activeOpacity={0.6}
+      accessibilityRole="button"
+      accessibilityLabel={item.title}
+    >
+      <ProfileShape size={normalize.width(30)} type={item.shape}>
+        {item.icon}
+      </ProfileShape>
+      <View style={[styles.rowBody, !isLast && styles.rowDivider]}>
+        <Text
+          style={[styles.menuLabelText, { textAlign }, item.destructive && styles.destructiveText]}
+          numberOfLines={1}
+        >
+          {item.title}
+        </Text>
+        {!!item.badge && (
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{item.badge}</Text>
+          </View>
+        )}
+        <Chevron size={18} color="#C7C7CC" />
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+function MenuGroup({
+  section,
+  onPress,
+}: {
+  section: MenuSection;
+  onPress: (item: MenuItem) => void;
+}) {
+  const { textAlign } = useDirection();
+  return (
+    <View style={styles.groupWrap}>
+      {!!section.header && (
+        <Text style={[styles.groupHeader, { textAlign }]}>{section.header}</Text>
+      )}
+      <View style={styles.groupCard}>
+        {section.items.map((item, i) => (
+          <MenuRow
+            key={item.id}
+            item={item}
+            isLast={i === section.items.length - 1}
+            onPress={onPress}
+          />
+        ))}
+      </View>
+    </View>
+  );
+}
 
 export default function ProviderProfileScreen() {
   const dispatch = useDispatch();
@@ -163,20 +236,54 @@ export default function ProviderProfileScreen() {
     });
   };
 
-  const menuItems: MenuItem[] = [
-    { id: 'switchToCustomer', title: isRTL ? 'التبديل إلى وضع المستأجر' : 'Switch to tenant mode', shape: 'blue' as const, icon: <SolarRefreshBold size={20} color="white" />, action: () => switchTo('customer') },
-    { id: 'profile', title: isRTL ? 'المعلومات الشخصية' : 'Personal Information', shape: 'blue' as const, icon: <SolarUserBold size={20} color="white" />, route: '/(dashboard)/edit-profile' },
-    { id: 'business', title: isRTL ? 'معلومات المصرف' : 'Bank Information', shape: 'blue' as const, icon: <SolarWalletBold size={20} color="white" />, route: '/(dashboard)/edit-business' },
-    { id: 'revenue', title: isRTL ? 'الأرباح' : 'Earnings', shape: 'green' as const, icon: <SolarBanknoteBold size={20} color="white" />, route: '/(tabs)/(dashboard)/revenue' },
-    { id: 'discounts', title: isRTL ? 'الخصومات' : 'Discounts', shape: 'green' as const, icon: <SolarCardBold size={20} color="white" />, route: '/(dashboard)/discounts' },
-    { id: 'notifications', title: isRTL ? 'الإشعارات' : 'Notifications', shape: 'pink' as const, icon: <SolarBellBold size={20} color="white" />, route: '/(tabs)/(dashboard)/notifications', badge: unreadCount > 9 ? '9+' : unreadCount > 0 ? String(unreadCount) : undefined },
-    { id: 'notification-settings', title: isRTL ? 'إعدادات الإشعارات' : 'Notification Settings', shape: 'green' as const, icon: <SolarSettingsBold size={20} color="white" />, route: '/(dashboard)/notification-settings' },
-    { id: 'language', title: isRTL ? 'اللغة' : 'Language', shape: 'blue' as const, icon: <SolarGlobalBold size={20} color="white" />, action: openLanguageSheet },
-    { id: 'contact', title: isRTL ? 'تواصل معنا' : 'Contact Us', shape: 'green' as const, icon: <SolarPhoneBold size={20} color="white" />, action: openContactUs },
-    { id: 'reportProblem', title: isRTL ? 'تبليغ عن مشكلة' : 'Report a Problem', shape: 'red' as const, icon: <SolarDangerCircleBold size={20} color="white" />, route: '/(customer)/report-problem' },
-    { id: 'privacy', title: isRTL ? 'سياسة الخصوصية' : 'Privacy Policy', shape: 'blue' as const, icon: <SolarShieldBold size={20} color="white" />, action: openPrivacyPolicy },
-    { id: 'logout', title: isRTL ? 'تسجيل الخروج' : 'Logout', shape: 'red' as const, icon: <SolarLogoutBold size={20} color="white" />, action: handleLogout },
+  // نفس العناصر والأيقونات، مقسّمة لأقسام على نمط إعدادات iOS.
+  // حذف الحساب وتسجيل الخروج بقسم منفصل بلا عنوان.
+  const menuSections: MenuSection[] = [
+    {
+      id: 'account',
+      header: isRTL ? 'حسابي' : 'My account',
+      items: [
+        { id: 'switchToCustomer', title: isRTL ? 'التبديل إلى وضع المستأجر' : 'Switch to tenant mode', shape: 'blue' as const, icon: <SolarRefreshBold size={16} color="white" />, action: () => switchTo('customer') },
+        { id: 'profile', title: isRTL ? 'المعلومات الشخصية' : 'Personal Information', shape: 'blue' as const, icon: <SolarUserBold size={16} color="white" />, route: '/(dashboard)/edit-profile' },
+        { id: 'business', title: isRTL ? 'معلومات المصرف' : 'Bank Information', shape: 'blue' as const, icon: <SolarWalletBold size={16} color="white" />, route: '/(dashboard)/edit-business' },
+      ],
+    },
+    {
+      id: 'business',
+      header: isRTL ? 'أعمالي' : 'My business',
+      items: [
+        { id: 'revenue', title: isRTL ? 'الأرباح' : 'Earnings', shape: 'green' as const, icon: <SolarBanknoteBold size={16} color="white" />, route: '/(tabs)/(dashboard)/revenue' },
+        { id: 'discounts', title: isRTL ? 'الخصومات' : 'Discounts', shape: 'green' as const, icon: <SolarCardBold size={16} color="white" />, route: '/(dashboard)/discounts' },
+        { id: 'notifications', title: isRTL ? 'الإشعارات' : 'Notifications', shape: 'pink' as const, icon: <SolarBellBold size={16} color="white" />, route: '/(tabs)/(dashboard)/notifications', badge: unreadCount > 9 ? '9+' : unreadCount > 0 ? String(unreadCount) : undefined },
+        { id: 'notification-settings', title: isRTL ? 'إعدادات الإشعارات' : 'Notification Settings', shape: 'green' as const, icon: <SolarSettingsBold size={16} color="white" />, route: '/(dashboard)/notification-settings' },
+      ],
+    },
+    {
+      id: 'preferences',
+      header: isRTL ? 'الإعدادات والدعم' : 'Settings & support',
+      items: [
+        { id: 'language', title: isRTL ? 'اللغة' : 'Language', shape: 'blue' as const, icon: <SolarGlobalBold size={16} color="white" />, action: openLanguageSheet },
+        { id: 'contact', title: isRTL ? 'تواصل معنا' : 'Contact Us', shape: 'green' as const, icon: <SolarPhoneBold size={16} color="white" />, action: openContactUs },
+        { id: 'reportProblem', title: isRTL ? 'تبليغ عن مشكلة' : 'Report a Problem', shape: 'red' as const, icon: <SolarDangerCircleBold size={16} color="white" />, route: '/(customer)/report-problem' },
+        { id: 'privacy', title: isRTL ? 'سياسة الخصوصية' : 'Privacy Policy', shape: 'blue' as const, icon: <SolarShieldBold size={16} color="white" />, action: openPrivacyPolicy },
+      ],
+    },
+    {
+      id: 'danger',
+      items: [
+        { id: 'logout', title: isRTL ? 'تسجيل الخروج' : 'Logout', shape: 'red' as const, icon: <SolarLogoutBold size={16} color="white" />, action: handleLogout, destructive: true },
+        { id: 'deleteAccount', title: isRTL ? 'حذف الحساب نهائياً' : 'Permanently Delete Account', shape: 'red' as const, icon: <SolarTrashBinBold size={16} color="white" />, action: handleDeleteAccount, destructive: true },
+      ],
+    },
   ];
+
+  const onMenuRowPress = (item: MenuItem) => {
+    if (item.action) {
+      item.action();
+    } else if (item.route) {
+      router.push(item.route as any);
+    }
+  };
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -223,51 +330,9 @@ export default function ProviderProfileScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.menuGroup}>
-            {menuItems.map((item) => (
-              <TouchableOpacity
-                key={item.id}
-                style={[styles.menuRow, { flexDirection: 'row' }]}
-                onPress={() => {
-                  if (item.action) {
-                    item.action();
-                  } else if (item.route) {
-                    router.push(item.route as any);
-                  }
-                }}
-                activeOpacity={0.7}
-              >
-                <ProfileShape size={normalize.width(42)} type={item.shape}>
-                  {item.icon}
-                </ProfileShape>
-                <Text style={[styles.menuLabelText, { textAlign }]}>{item.title}</Text>
-                {!!item.badge && (
-                  <View style={styles.badge}>
-                    <Text style={styles.badgeText}>{item.badge}</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {/* Danger Zone */}
-          <View style={styles.dangerZone}>
-            <Text style={[styles.dangerZoneTitle, { textAlign }]}>
-              {isRTL ? 'منطقة الخطر' : 'Danger Zone'}
-            </Text>
-            <TouchableOpacity
-              style={[styles.menuRow, styles.dangerRowOverride, { flexDirection: 'row' }]}
-              onPress={handleDeleteAccount}
-              activeOpacity={0.7}
-            >
-              <ProfileShape size={normalize.width(42)} type="red">
-                <SolarTrashBinBold size={20} color="white" />
-              </ProfileShape>
-              <Text style={[styles.menuLabelText, { textAlign, color: '#DC2626' }]}>
-                {isRTL ? 'حذف الحساب نهائياً' : 'Permanently Delete Account'}
-              </Text>
-            </TouchableOpacity>
-          </View>
+          {menuSections.map((section) => (
+            <MenuGroup key={section.id} section={section} onPress={onMenuRowPress} />
+          ))}
         </ScrollView>
 
         <LanguageSheet ref={languageSheetRef} />
@@ -297,11 +362,11 @@ const styles = StyleSheet.create({
   userCard: {
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: normalize.radius(24),
-    padding: normalize.width(18),
-    marginBottom: normalize.height(10),
+    borderRadius: normalize.radius(12),
+    padding: normalize.width(14),
+    marginBottom: normalize.height(4),
     borderWidth: 1,
-    borderColor: '#F3F4F6'
+    borderColor: '#E5E5EA'
   },
   userInfo: {
     marginHorizontal: normalize.width(15)
@@ -339,24 +404,52 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(14),
     fontFamily: "IBMPlexSansArabic-Medium"
   },
-  menuGroup: {
-    gap: normalize.height(16)
+  groupWrap: {
+    marginTop: normalize.height(20)
+  },
+  groupHeader: {
+    fontSize: normalize.font(13),
+    fontFamily: "IBMPlexSansArabic-Regular",
+    color: '#6D6D72',
+    marginBottom: normalize.height(7),
+    paddingHorizontal: normalize.width(4)
+  },
+  // خلفية الصفحة بيضاء، فالحد هو اللي يرسم حدود المجموعة.
+  groupCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: normalize.radius(12),
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+    overflow: 'hidden'
   },
   menuRow: {
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: normalize.radius(18),
-    paddingVertical: normalize.height(14),
-    paddingHorizontal: normalize.width(18),
-    borderWidth: 1,
-    borderColor: '#F3F4F6'
+    paddingStart: normalize.width(14),
+    minHeight: normalize.height(46),
+    gap: normalize.width(11)
+  },
+  // يبدأ بعد الأيقونة فينحاذي الفاصل مثل iOS.
+  rowBody: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'stretch',
+    gap: normalize.width(8),
+    paddingEnd: normalize.width(14)
+  },
+  rowDivider: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#C6C6C8'
   },
   menuLabelText: {
     flex: 1,
-    fontSize: normalize.font(14),
-    fontFamily: "IBMPlexSansArabic-Medium",
-    color: '#374151',
-    marginHorizontal: normalize.width(15)
+    fontSize: normalize.font(15),
+    fontFamily: "IBMPlexSansArabic-Regular",
+    color: '#000000',
+    lineHeight: normalize.font(23)
+  },
+  destructiveText: {
+    color: '#FF3B30'
   },
   badge: {
     minWidth: normalize.width(22),
@@ -372,18 +465,4 @@ const styles = StyleSheet.create({
     fontFamily: "IBMPlexSansArabic-Medium",
     color: '#FFFFFF'
   },
-  dangerZone: {
-    marginTop: normalize.height(24),
-  },
-  dangerZoneTitle: {
-    fontSize: normalize.font(13),
-    fontFamily: "IBMPlexSansArabic-Bold",
-    color: '#DC2626', // Red color
-    marginBottom: normalize.height(10),
-    marginHorizontal: normalize.width(4),
-  },
-  dangerRowOverride: {
-    backgroundColor: '#FFF5F5', // Light red background
-    borderColor: '#FEE2E2',     // Light red border
-  }
 });

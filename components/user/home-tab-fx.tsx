@@ -36,8 +36,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
  */
 
 /** Taps needed to unlock the sunburst, and the window they must land in. */
-export const SUNBURST_TAPS = 2; // TEMP-TEST
-export const SUNBURST_WINDOW_MS = 20000; // TEMP-TEST
+export const SUNBURST_TAPS = 7;
+export const SUNBURST_WINDOW_MS = 3000;
 
 interface HomeTabFxValue {
   /** Screens call this to expose their scroller to the tab bar. */
@@ -94,7 +94,7 @@ interface SunburstHandle {
   fire: () => void;
 }
 
-const DURATION = 6000; // TEMP-TEST
+const DURATION = 1600;
 /** Square the burst is drawn inside — Android clips anything outside a parent. */
 const BOX = normalize.width(320);
 const RAY_COUNT = 12;
@@ -104,15 +104,24 @@ const RAY_START = normalize.height(26);
 const RAY_TRAVEL = normalize.height(78);
 const CORE = normalize.width(56);
 
-const PARTICLE_CHARS = ["☀️", "✨", "🌞", "✨", "☀️", "✨"];
+const PARTICLE_COLORS = [Colors.accent, Colors.primary, Colors.secondary];
+
 const PARTICLE_COUNT = 14;
-const PARTICLE_SIZE = normalize.font(18);
-/** Fanned upward (‑160°…‑20°) so nothing shoots into the tab bar. */
+/**
+ * Fanned upward (-160°…-20°) so nothing shoots into the tab bar. Drawn as views,
+ * not emoji: the app pins a custom font on every `Text`, which has no glyphs for
+ * emoji and would render tofu boxes instead.
+ */
 const PARTICLES = Array.from({ length: PARTICLE_COUNT }, (_, i) => {
   const angle = (-160 + (140 / (PARTICLE_COUNT - 1)) * i) * (Math.PI / 180);
   const distance = normalize.height(96) + (i % 4) * normalize.height(22);
+  const size = normalize.width(6 + (i % 3) * 2.5);
   return {
-    char: PARTICLE_CHARS[i % PARTICLE_CHARS.length],
+    size,
+    // Every third one is a white spark; the rest carry the brand colours.
+    color: i % 3 === 1 ? "#FFFFFF" : PARTICLE_COLORS[i % PARTICLE_COLORS.length],
+    // Squares tilt into sparkles, circles stay round.
+    square: i % 4 === 0,
     dx: Math.cos(angle) * distance,
     dy: Math.sin(angle) * distance,
     spin: i % 2 === 0 ? 220 : -220,
@@ -162,6 +171,8 @@ const Sunburst = forwardRef<SunburstHandle>((_props, ref) => {
   }));
 
   // Centre of the round home button in CustomTabBar (44pt button, 23pt inset).
+  // `left` is mirrored by React Native under RTL, exactly like the tab bar's own
+  // `row`, so this single value lands on the button in both directions.
   const buttonHalf = normalize.height(22);
   const barBottom = Math.max(insets.bottom, 24);
   const originBottom = barBottom + buttonHalf;
@@ -238,6 +249,8 @@ const Sunburst = forwardRef<SunburstHandle>((_props, ref) => {
         ]}
       >
         <View style={styles.toast}>
+          {/* Little sun, drawn rather than typed: the global font has no emoji. */}
+          <View style={styles.toastSun} />
           <ThemedText style={styles.toastText}>
             {t("home.sunburst")}
           </ThemedText>
@@ -307,7 +320,7 @@ function Particle({
   particle: (typeof PARTICLES)[number];
   progress: SharedValue<number>;
 }) {
-  const { char, dx, dy, spin, delay } = particle;
+  const { size, color, square, dx, dy, spin, delay } = particle;
   const style = useAnimatedStyle(() => {
     // Each particle runs on its own slightly delayed slice of the timeline.
     const p = interpolate(
@@ -343,18 +356,20 @@ function Particle({
   });
 
   return (
-    <Animated.Text
+    <Animated.View
       style={[
-        styles.particle,
         {
-          left: BOX / 2 - PARTICLE_SIZE,
-          top: BOX / 2 - PARTICLE_SIZE,
+          position: "absolute",
+          left: (BOX - size) / 2,
+          top: (BOX - size) / 2,
+          width: size,
+          height: size,
+          borderRadius: square ? size / 5 : size / 2,
+          backgroundColor: color,
         },
         style,
       ]}
-    >
-      {char}
-    </Animated.Text>
+    />
   );
 }
 
@@ -377,12 +392,6 @@ const styles = StyleSheet.create({
     height: RAY_H,
     borderRadius: RAY_W / 2,
   },
-  particle: {
-    position: "absolute",
-    fontSize: PARTICLE_SIZE,
-    width: PARTICLE_SIZE * 2,
-    textAlign: "center",
-  },
   toastWrap: {
     position: "absolute",
     left: 0,
@@ -390,10 +399,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   toast: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: normalize.width(8),
     paddingHorizontal: normalize.width(16),
     paddingVertical: normalize.height(8),
     borderRadius: normalize.height(20),
     backgroundColor: Colors.primary,
+  },
+  toastSun: {
+    width: normalize.width(12),
+    height: normalize.width(12),
+    borderRadius: normalize.width(6),
+    backgroundColor: Colors.accent,
   },
   toastText: {
     color: "#FFFFFF",

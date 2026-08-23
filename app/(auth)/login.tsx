@@ -34,6 +34,7 @@ import {
   View,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
+import { toLatinDigits } from "@/utils/format";
 // import { normalize } from "@/constants/theme";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -111,7 +112,7 @@ function validatePhoneNumber(text: string): LocalizedMessage | null {
   if (!text) {
     return null;
   }
-  const clean = text.replace(/[\s\-\(\)]/g, "");
+  const clean = toLatinDigits(text).replace(/[\s\-\(\)]/g, "");
 
   // Check if contains non-numeric (excluding leading +)
   if (/[^\d+]/.test(clean) || (clean.includes("+") && !clean.startsWith("+"))) {
@@ -299,7 +300,7 @@ export function LoginScreen() {
       }
 
       // Phone validation: remove any spaces, dashes, or parentheses
-      const cleanPhone = trimmedPhone.replace(/[\s\-\(\)]/g, "");
+      const cleanPhone = toLatinDigits(trimmedPhone).replace(/[\s\-\(\)]/g, "");
 
       try {
         const res = await login({ phone: cleanPhone }).unwrap();
@@ -452,8 +453,9 @@ export function LoginScreen() {
                   placeholder={t("auth.phonePlaceholder")}
                   value={phone}
                   onChangeText={(val) => {
-                    setPhone(val);
-                    setPhoneError(validatePhoneNumber(val));
+                    const normalized = toLatinDigits(val);
+                    setPhone(normalized);
+                    setPhoneError(validatePhoneNumber(normalized));
                   }}
                   keyboardType="phone-pad"
                   placeholderTextColor="#94A3B8"

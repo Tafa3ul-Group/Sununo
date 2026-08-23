@@ -35,6 +35,7 @@ import { RootState } from '@/store';
 import {
   useCreateChaletMutation,
   useGetAmenityCategoriesQuery,
+  useGetChaletRegionsQuery,
   useGetCitiesQuery,
   useGetProviderTermsQuery,
   useGetShiftDefaultsQuery
@@ -62,7 +63,7 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { useSelector } from 'react-redux';
-import { formatPrice } from '@/utils/format';
+import { formatPrice, toLatinDigits } from "@/utils/format";
 
 /**
  * Turns anything a price field may receive into ASCII digits only.
@@ -106,7 +107,7 @@ const AmenityIcon = ({ icon, size = 18 }: { icon: string; size?: number }) => {
 // ── Phone Validation (matching login.tsx) ──
 function validatePhoneNumber(text: string): string | null {
   if (!text) return null;
-  const clean = text.replace(/[\s\-\(\)]/g, "");
+  const clean = toLatinDigits(text).replace(/[\s\-\(\)]/g, "");
 
   // Check if contains non-numeric (excluding leading +)
   if (/[^\d+]/.test(clean) || (clean.includes("+") && !clean.startsWith("+"))) {
@@ -211,6 +212,10 @@ export default function AddChaletScreen() {
     descriptionEn: '',
     cityId: '',
     cityName: '',
+    regionId: '',
+    regionName: '',
+    addressAr: '',
+    addressEn: '',
     phone: '',
     whatsapp: '',
     policiesAr: '',
@@ -301,6 +306,11 @@ export default function AddChaletScreen() {
 
   const [imagesByCategory, setImagesByCategory] = useState<Record<string, string[]>>({});
   const { data: cities, isLoading: loadingCities } = useGetCitiesQuery();
+  // The قضاء list only exists inside a محافظة, so it is fetched after one is
+  // picked and cleared again whenever the city changes.
+  const { data: regions, isLoading: loadingRegions } = useGetChaletRegionsQuery(form.cityId, {
+    skip: !form.cityId,
+  });
   const [citySearch, setCitySearch] = useState('');
 
   const filteredCities = useMemo(() => {
@@ -312,6 +322,18 @@ export default function AddChaletScreen() {
       (city.nameEn && city.nameEn.toLowerCase().includes(citySearch.toLowerCase()))
     );
   }, [cities, citySearch]);
+
+  const [regionSearch, setRegionSearch] = useState('');
+
+  const filteredRegions = useMemo(() => {
+    if (!regions) return [];
+    if (!regionSearch) return regions;
+    const q = regionSearch.toLowerCase();
+    return regions.filter((region: any) =>
+      region.name?.includes(regionSearch) ||
+      region.enName?.toLowerCase().includes(q)
+    );
+  }, [regions, regionSearch]);
 
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const [uploadingCategoryId, setUploadingCategoryId] = useState<string | null>(null);
@@ -380,6 +402,7 @@ export default function AddChaletScreen() {
 
   // Bottom Sheet Refs
   const citySheetRef = useRef<BottomSheetModal>(null);
+  const regionSheetRef = useRef<BottomSheetModal>(null);
   const imageSourceSheetRef = useRef<BottomSheetModal>(null);
   const editShiftSheetRef = useRef<BottomSheetModal>(null);
 
@@ -602,6 +625,16 @@ export default function AddChaletScreen() {
       changeStep(1);
       return;
     }
+    if (!form.regionId) {
+      Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: isRTL ? 'يرجى اختيار القضاء' : 'Please select a district', position: 'bottom' });
+      changeStep(1);
+      return;
+    }
+    if (!form.addressAr.trim()) {
+      Toast.show({ type: 'error', text1: isRTL ? 'خطأ' : 'Error', text2: isRTL ? 'يرجى إدخال العنوان التفصيلي' : 'Please enter the detailed address', position: 'bottom' });
+      changeStep(1);
+      return;
+    }
 
     const activeShifts = shifts.filter(s => s.isActive);
     if (activeShifts.length === 0) {
@@ -627,6 +660,8 @@ export default function AddChaletScreen() {
       // ── Required fields ──
       formData.append('name', JSON.stringify({ ar: form.nameAr, en: form.nameEn || form.nameAr }));
       formData.append('cityId', form.cityId);
+      formData.append('regionId', form.regionId);
+      formData.append('address', JSON.stringify({ ar: form.addressAr, en: form.addressEn || form.addressAr }));
       formData.append('latitude', form.latitude || '33.3152');
       formData.append('longitude', form.longitude || '44.3661');
       formData.append('capacity', form.capacity || '1');
@@ -718,8 +753,17 @@ export default function AddChaletScreen() {
 
   const handleCitySelect = (city: any) => {
     const cityName = typeof city.name === 'object' ? (isRTL ? city.name.ar : city.name.en) : city.name;
-    setForm({ ...form, cityId: city.id, cityName });
+    // A قضاء belongs to exactly one محافظة, so changing the city invalidates
+    // whatever was picked before — the backend rejects a mismatched pair.
+    setForm({ ...form, cityId: city.id, cityName, regionId: '', regionName: '' });
+    setRegionSearch('');
     citySheetRef.current?.dismiss();
+  };
+
+  const handleRegionSelect = (region: any) => {
+    const regionName = isRTL ? region.name : region.enName || region.name;
+    setForm({ ...form, regionId: region.id, regionName });
+    regionSheetRef.current?.dismiss();
   };
 
   const isStepValid = useMemo(() => {
@@ -728,6 +772,8 @@ export default function AddChaletScreen() {
         return !!form.nameAr && !!form.descriptionAr;
       case 1: { // Location + Phone
         if (!form.cityId) return false;
+        if (!form.regionId) return false;
+        if (!form.addressAr.trim()) return false;
         if (!form.phone) return false;
         const phoneErr = validatePhoneNumber(form.phone);
         return phoneErr === null;
@@ -758,6 +804,10 @@ export default function AddChaletScreen() {
       } else if (currentStep === 1) {
         if (!form.cityId) {
           Toast.show({ type: 'error', text1: isRTL ? 'مطلوب' : 'Required', text2: isRTL ? 'يرجى اختيار المدينة' : 'Please select a city', position: 'bottom' });
+        } else if (!form.regionId) {
+          Toast.show({ type: 'error', text1: isRTL ? 'مطلوب' : 'Required', text2: isRTL ? 'يرجى اختيار القضاء' : 'Please select a district', position: 'bottom' });
+        } else if (!form.addressAr.trim()) {
+          Toast.show({ type: 'error', text1: isRTL ? 'مطلوب' : 'Required', text2: isRTL ? 'يرجى إدخال العنوان التفصيلي' : 'Please enter the detailed address', position: 'bottom' });
         } else if (!form.phone) {
           setPhoneError(isRTL ? 'يرجى إدخال رقم الهاتف' : 'Please enter phone number');
         } else {
@@ -970,6 +1020,49 @@ export default function AddChaletScreen() {
                       </Text>
                       <Text style={{ fontSize: 16, color: '#94A3B8' }}>{isRTL ? '‹' : '›'}</Text>
                     </TouchableOpacity>
+                  </View>
+
+                  {/* القضاء — only selectable once a محافظة is chosen, since the
+                      list is scoped to it and the backend rejects a mismatch. */}
+                  <View style={styles.inputGroup}>
+                    <Text style={[styles.label, { textAlign }]}>{isRTL ? 'القضاء' : 'District'} <Text style={styles.requiredStar}>{isRTL ? '* مطلوب' : '* Required'}</Text></Text>
+                    <TouchableOpacity
+                      style={[styles.input, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, !form.cityId && { backgroundColor: '#F8FAFC' }]}
+                      onPress={() => form.cityId && regionSheetRef.current?.present()}
+                      activeOpacity={form.cityId ? 0.7 : 1}
+                    >
+                      <Text style={{ flex: 1, fontSize: 15, fontFamily: form.regionName ? 'IBMPlexSansArabic-Medium' : 'IBMPlexSansArabic-Regular', color: form.regionName ? '#1E293B' : '#BCBCBC', textAlign }}>
+                        {form.regionName || (form.cityId
+                          ? (isRTL ? 'اختر القضاء' : 'Select District')
+                          : (isRTL ? 'اختر المدينة أولاً' : 'Select a city first'))}
+                      </Text>
+                      <Text style={{ fontSize: 16, color: '#94A3B8' }}>{isRTL ? '‹' : '›'}</Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  <View style={styles.inputGroup}>
+                    <Text style={[styles.label, { textAlign }]}>{isRTL ? 'العنوان التفصيلي' : 'Detailed Address'} <Text style={styles.requiredStar}>{isRTL ? '* مطلوب' : '* Required'}</Text></Text>
+                    <TextInput
+                      style={[styles.input, { textAlign: inputTextAlign }]}
+                      placeholder={isRTL ? 'مثال: حي الأندلس، قرب جامع النور' : 'e.g. Al-Andalus district, near Al-Noor mosque'}
+                      placeholderTextColor="#BCBCBC"
+                      value={form.addressAr}
+                      onChangeText={(val) => setForm({ ...form, addressAr: val })}
+                    />
+                  </View>
+
+                  <View style={styles.inputGroup}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Text style={[styles.label, { textAlign }]}>{isRTL ? 'العنوان التفصيلي (إنجليزي)' : 'Detailed Address (EN)'} <Text style={styles.optionalLabel}>{isRTL ? 'اختياري' : 'Optional'}</Text></Text>
+                      <AiTranslateButton source={form.addressAr} onTranslated={(en) => setForm((prev) => ({ ...prev, addressEn: en }))} />
+                    </View>
+                    <TextInput
+                      style={[styles.input, { textAlign: inputTextAlign }]}
+                      placeholder="e.g. Al-Andalus district, near Al-Noor mosque"
+                      placeholderTextColor="#BCBCBC"
+                      value={form.addressEn}
+                      onChangeText={(val) => setForm({ ...form, addressEn: val })}
+                    />
                   </View>
 
                   <View style={styles.inputGroup}>
@@ -1440,6 +1533,87 @@ export default function AddChaletScreen() {
                     <Text style={styles.cityListEmptyIcon}>🔍</Text>
                     <Text style={styles.cityListEmptyText}>{isRTL ? 'لا توجد نتائج' : 'No results found'}</Text>
                     <Text style={styles.cityListEmptyHint}>{isRTL ? 'جرّب كلمة بحث أخرى' : 'Try a different search term'}</Text>
+                  </View>
+                }
+              />
+            </View>
+          )}
+        </BottomSheetView>
+      </BottomSheetModal>
+
+      {/* District (قضاء) Picker — same shape as the city sheet, scoped to the
+          chosen محافظة. */}
+      <BottomSheetModal ref={regionSheetRef} index={0} snapPoints={snapPoints} backdropComponent={renderBackdrop} backgroundStyle={{ borderRadius: 28, backgroundColor: '#FFFFFF' }}>
+        <BottomSheetView style={styles.citySheetContent}>
+          {loadingRegions ? (
+            <ActivityIndicator color={Colors.primary} style={{ margin: 40 }} />
+          ) : (
+            <View style={{ width: '100%', flex: 1 }}>
+              <View style={styles.citySheetHeader}>
+                <View style={styles.citySheetIconBadge}>
+                  <SolarMapPointBold size={22} color={Colors.white} />
+                </View>
+                <Text style={styles.citySheetTitle}>{isRTL ? 'اختر القضاء' : 'Select District'}</Text>
+                <Text style={styles.citySheetSubtitle}>
+                  {form.cityName
+                    ? (isRTL ? `أقضية ${form.cityName}` : `Districts of ${form.cityName}`)
+                    : (isRTL ? 'اختر قضاء الشاليه' : 'Choose the chalet\'s district')}
+                </Text>
+              </View>
+
+              <View style={styles.citySearchContainer}>
+                <View style={styles.citySearchIconWrap}>
+                  <SolarMagnifierBold size={18} color="#94A3B8" />
+                </View>
+                <TextInput
+                  style={[styles.citySearchInput, { textAlign: inputTextAlign }]}
+                  placeholder={isRTL ? 'ابحث عن قضاء...' : 'Search for a district...'}
+                  placeholderTextColor="#94A3B8"
+                  value={regionSearch}
+                  onChangeText={setRegionSearch}
+                />
+                {regionSearch.length > 0 && (
+                  <TouchableOpacity onPress={() => setRegionSearch('')} style={styles.citySearchClear}>
+                    <Text style={styles.citySearchClearText}>✕</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              <BottomSheetFlatList
+                data={filteredRegions}
+                keyExtractor={(item: any) => item.id}
+                style={{ width: '100%' }}
+                renderItem={({ item }: { item: any }) => {
+                  const isSelected = form.regionId === item.id;
+                  const regionName = isRTL ? item.name : item.enName || item.name;
+                  return (
+                    <TouchableOpacity
+                      style={[styles.cityListItem, isSelected && styles.cityListItemSelected]}
+                      onPress={() => handleRegionSelect(item)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={[styles.cityListInner, { flexDirection: 'row' }]}>
+                        <View style={[styles.cityListIcon, isSelected && styles.cityListIconSelected]}>
+                          <SolarMapPointBold size={18} color={isSelected ? Colors.white : '#94A3B8'} />
+                        </View>
+                        <Text style={[styles.cityListName, isSelected && styles.cityListNameSelected, { textAlign, flex: 1 }]}>
+                          {regionName}
+                        </Text>
+                        {isSelected && (
+                          <View style={styles.cityListCheck}>
+                            <Text style={styles.cityListCheckText}>✓</Text>
+                          </View>
+                        )}
+                      </View>
+                    </TouchableOpacity>
+                  );
+                }}
+                contentContainerStyle={{ paddingBottom: 40, paddingHorizontal: 20, gap: 8 }}
+                ListEmptyComponent={
+                  <View style={styles.cityListEmpty}>
+                    <Text style={styles.cityListEmptyIcon}>🔍</Text>
+                    <Text style={styles.cityListEmptyText}>{isRTL ? 'لا توجد أقضية' : 'No districts found'}</Text>
+                    <Text style={styles.cityListEmptyHint}>{isRTL ? 'راجع الإدارة لإضافة أقضية هذه المحافظة' : 'Ask an admin to add districts for this governorate'}</Text>
                   </View>
                 }
               />

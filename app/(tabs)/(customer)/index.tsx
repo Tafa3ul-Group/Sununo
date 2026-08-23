@@ -3,23 +3,29 @@ import React, { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
+  Alert,
   RefreshControl,
   StyleSheet,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import * as Location from "expo-location";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { FlashList } from "@shopify/flash-list";
-import { ltrScrollContent, ltrScroller, pickTranslation, useDirection, useRtlListOrder } from "@/i18n";
+import { pickTranslation, useDirection } from "@/i18n";
 import { BannerSkeleton, FeaturedSwiperSkeleton, HorizontalSwiperSkeleton, HorizontalCardSkeleton, CustomerHomeSkeleton } from "@/components/ui/skeleton-loader";
-import { ScrollView as GHScrollView } from "react-native-gesture-handler";
-import Animated, { FadeInUp, FadeOutUp } from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 
 import { HeaderSection } from "@/components/header-section";
 import { PressableScale } from "@/components/ui/pressable-scale";
 import {
+  SolarAltArrowDownBold,
   SolarFireBold,
+  SolarFiltersBoldDuotone,
+  SolarSortByTimeBold,
   SolarTreeBold,
   SolarWaterBold,
   SolarWidgetBold,
@@ -33,7 +39,17 @@ import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
 import { FeaturedSwiper } from "@/components/user/featured-swiper";
 import { useTabBarVisibility } from "@/components/user/tab-bar-visibility";
 import { useRegisterHomeScrollToTop } from "@/components/user/home-tab-fx";
-import { SecondaryButton } from "@/components/user/secondary-button";
+import {
+  HomeFiltersSheet,
+  EMPTY_HOME_FILTERS,
+  countHomeFilters,
+  type HomeFilters,
+} from "@/components/user/home-filters-sheet";
+import {
+  HomeSortSheet,
+  homeSortLabel,
+  type HomeSortKey,
+} from "@/components/user/home-sort-sheet";
 import { Colors, Fonts, normalize } from "@/constants/theme";
 import { getImageSrc } from "@/hooks/useImageSrc";
 import { formatChaletLocation, getStartingPrice } from "@/utils/format";
@@ -53,17 +69,18 @@ import {
   useToggleFavoriteMutation,
 } from "@/store/api/customerApiSlice";
 // Fallback colors for chalet cards
+// One height for the sort chips and the filter button, so the row is level.
+const CONTROL_HEIGHT = 40;
+
 const CARD_COLORS = [Colors.primary, Colors.secondary, Colors.accent];
 
 // Temporarily hide the home "Nearby / Map" section. Set to `true` to restore it.
 const SHOW_HOME_MAP = false;
 
-// How far back up the list must scroll before the pinned filter bar lets go.
-const STICKY_RELEASE_BUFFER = 24;
 
 export default function HomeScreen() {
   const { userType } = useSelector((state: RootState) => state.auth);
-  const { isRTL, direction, textAlign } = useDirection();
+  const { isRTL, rowDirection, textAlign } = useDirection();
   const router = useRouter();
   const { t } = useTranslation();
   const tabBarVis = useTabBarVisibility();
@@ -85,43 +102,61 @@ export default function HomeScreen() {
   );
 
   // Multi-select filter chips. Empty array === "All".
-  const [selectedFilters, setSelectedFilters] = React.useState<string[]>([]);
+  const [filters, setFilters] = React.useState<HomeFilters>(EMPTY_HOME_FILTERS);
   const insets = useSafeAreaInsets();
 
-  // Sticky filter chips: keep the chips in place in the list, and reveal a
-  // pinned copy under the header once the scroll passes their position.
-  const [showStickyFilters, setShowStickyFilters] = React.useState(false);
-  const chipsYRef = React.useRef(0);
-  const showStickyRef = React.useRef(false);
   const handleListScroll = useCallback(
     (e: any) => {
       tabBarVis?.onScroll(e);
-      const y = e.nativeEvent.contentOffset.y;
-      // Separate thresholds for pinning and releasing: a single boundary makes
-      // the bar flicker in and out while the finger hovers right on it.
-      const stick =
-        chipsYRef.current > 0 &&
-        (showStickyRef.current
-          ? y >= chipsYRef.current - STICKY_RELEASE_BUFFER
-          : y >= chipsYRef.current);
-      if (stick !== showStickyRef.current) {
-        showStickyRef.current = stick;
-        setShowStickyFilters(stick);
-      }
     },
     [tabBarVis],
   );
 
-  // Toggle a chip; tapping "all" clears the selection.
-  const toggleFilter = React.useCallback((id: string) => {
-    if (id === "all") {
-      setSelectedFilters([]);
+  // How the recommended list is ordered.
+  const [sortBy, setSortBy] = React.useState<HomeSortKey>("newest");
+  // Only set once the customer asks for "nearest" and grants permission — the
+  // home screen must never prompt for location on its own.
+  const [coords, setCoords] = React.useState<{ lat: number; lng: number } | null>(
+    null,
+  );
+  const filtersSheetRef = React.useRef<BottomSheetModal>(null);
+  const sortSheetRef = React.useRef<BottomSheetModal>(null);
+
+  // Picking "nearest" is the only thing that may ask for location, and only the
+  // first time — every other sort applies straight away.
+  const handleSortSelect = React.useCallback(async (key: HomeSortKey) => {
+    if (key !== "nearest") {
+      setSortBy(key);
       return;
     }
-    setSelectedFilters((prev) =>
-      prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id],
-    );
-  }, []);
+    if (coords) {
+      setSortBy("nearest");
+      return;
+    }
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        isRTL ? "الموقع مغلق" : "Location off",
+        isRTL
+          ? "نحتاج إذن الموقع حتى نرتب الشاليهات حسب الأقرب لك"
+          : "Location permission is needed to sort chalets by distance",
+      );
+      return;
+    }
+    try {
+      const position = await Location.getCurrentPositionAsync({});
+      setCoords({
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+      });
+      setSortBy("nearest");
+    } catch {
+      Alert.alert(
+        isRTL ? "تعذّر تحديد موقعك" : "Could not get your location",
+        isRTL ? "جرّب مرة ثانية" : "Please try again",
+      );
+    }
+  }, [coords, isRTL]);
 
   // Fetch all amenities to resolve real IDs for pool/bbq/garden filters
   const { data: allAmenities = [] } = useGetAmenitiesQuery();
@@ -177,12 +212,12 @@ export default function HomeScreen() {
   const [rawChalets, setRawChalets] = React.useState<any[]>([]);
 
   // Stable key so the paging reset / query only re-run on real changes.
-  const filtersKey = selectedFilters.join(",");
+  const filtersKey = JSON.stringify(filters);
 
   // Reset paging whenever the selected filters change.
   React.useEffect(() => {
     setPage(1);
-  }, [filtersKey]);
+  }, [filtersKey, sortBy]);
 
   const queryParams = React.useMemo(() => {
     const params: any = { page, limit: 10 };
@@ -192,16 +227,34 @@ export default function HomeScreen() {
     // resolved to real amenity IDs via amenityIdMap.
     const amenityIds: string[] = [];
     const categoryIds: string[] = [];
-    selectedFilters.forEach((key) => {
+    filters.amenities.forEach((key) => {
       if (key.startsWith("cat:")) categoryIds.push(key.slice(4));
       else if (key.startsWith("feat:")) amenityIds.push(key.slice(5));
       else amenityIds.push(amenityIdMap[key] || key);
     });
     if (amenityIds.length > 0) params.amenityIds = amenityIds;
     if (categoryIds.length > 0) params.categoryIds = categoryIds;
+
+    // Everything below is null until the customer sets it, and a null is simply
+    // not sent — the API treats a missing param as "no bound".
+    if (filters.minPrice != null) params.minPrice = filters.minPrice;
+    if (filters.maxPrice != null) params.maxPrice = filters.maxPrice;
+    if (filters.cityId) params.cityId = filters.cityId;
+    if (filters.guests) params.maxAdults = filters.guests;
+    if (filters.minRating) params.minRating = filters.minRating;
+    if (filters.minBedrooms) params.minBedrooms = filters.minBedrooms;
+
+    // `nearest` is meaningless without coordinates, and the API ignores it, so
+    // it is only sent once the customer has actually granted location.
+    if (sortBy === "rating") params.sortBy = "rating";
+    if (sortBy === "nearest" && coords) {
+      params.sortBy = "nearest";
+      params.lat = coords.lat;
+      params.lng = coords.lng;
+    }
     return params;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filtersKey, amenityIdMap, page]);
+  }, [filtersKey, amenityIdMap, page, sortBy, coords]);
 
   // Fetch data from the backend
   const { data: bannersResponse, isFetching: bannersFetching, refetch: refetchBanners } = useGetBannersQuery(undefined);
@@ -213,7 +266,11 @@ export default function HomeScreen() {
 
   // Accumulate chalets across pages for infinite scroll (dedup by id).
   React.useEffect(() => {
-    const incoming = chaletsResponse?.data || [];
+    const incoming = chaletsResponse?.data;
+    // Changing a filter or the sort starts a new cache entry, so `data` is
+    // briefly undefined. Clearing the list on that would empty the screen and
+    // then refill it — the cards stay put until the new page actually lands.
+    if (!incoming) return;
     if (!incoming.length && page > 1) return;
     setRawChalets((prev) => {
       if (page === 1) return incoming;
@@ -530,43 +587,44 @@ export default function HomeScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [homeFilterAmenities, isRTL, t]);
 
-  // Chip strip is LTR-forced; reverse so it still reads right-to-left in
-  // Arabic with the "all" chip visible at the right edge.
-  const orderedFilterOptions = useRtlListOrder(FILTER_OPTIONS);
-
   // Owners don't have a customer home — redirect to their dashboard. Placed
   // after all hooks so hook order stays stable across renders.
   if (userType === "owner") return <Redirect href="/(tabs)/(dashboard)/home" />;
 
-  // Recommended filter chips — reused both inline (in the list) and in the
-  // sticky pinned copy under the header.
-  const renderFilterChips = () => (
-    <GHScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      style={ltrScroller}
-      contentContainerStyle={[styles.tabsContainer, ltrScrollContent]}
-    >
-      <View style={{ flexDirection: 'row', gap: 10 }}>
-        {orderedFilterOptions.map((filter) => {
-          const isActive =
-            filter.id === "all"
-              ? selectedFilters.length === 0
-              : selectedFilters.includes(filter.id);
-          return (
-            <SecondaryButton
-              key={filter.id}
-              label={filter.label}
-              isActive={isActive}
-              activeColor={filter.activeColor}
-              icon={filter.icon(isActive)}
-              onPress={() => toggleFilter(filter.id)}
-              style={{ direction }}
-            />
-          );
-        })}
-      </View>
-    </GHScrollView>
+  // Sort dropdown on the reading edge, filter on the far edge — both a fixed
+  // size, so changing either never nudges the row.
+  const renderListControls = () => (
+    <View style={[styles.listControls, { flexDirection: "row" }]}>
+      <TouchableOpacity
+        onPress={() => sortSheetRef.current?.present()}
+        style={[styles.sortButton, { flexDirection: rowDirection }]}
+        activeOpacity={0.85}
+        accessibilityRole="button"
+        accessibilityLabel={isRTL ? "ترتيب النتائج" : "Sort results"}
+        accessibilityValue={{ text: homeSortLabel(sortBy, isRTL) }}
+      >
+        <SolarSortByTimeBold size={16} color={Colors.primary} />
+        <ThemedText style={styles.sortLabel} numberOfLines={1}>
+          {homeSortLabel(sortBy, isRTL)}
+        </ThemedText>
+        <SolarAltArrowDownBold size={14} color="#9CA3AF" />
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={() => filtersSheetRef.current?.present()}
+        style={styles.filterButton}
+        activeOpacity={0.85}
+        accessibilityRole="button"
+        accessibilityLabel={isRTL ? "فلترة" : "Filter"}
+        // Drawn at 40pt; the extra slop brings the tap area to the 44pt minimum.
+        hitSlop={6}
+      >
+        <SolarFiltersBoldDuotone size={18} color={Colors.primary} />
+        {/* A dot rather than a count: the number is in the sheet, and this only
+            has to answer "is anything filtering this list right now?". */}
+        {countHomeFilters(filters) > 0 && <View style={styles.filterDot} />}
+      </TouchableOpacity>
+    </View>
   );
 
   // Everything above the recommended list, rendered as the FlashList header so
@@ -704,36 +762,26 @@ export default function HomeScreen() {
             </>
           )}
 
-          {/* Recommended */}
-          <View
-            style={[
-              styles.sectionHeader,
-              { flexDirection: 'row', justifyContent: "flex-start" },
-            ]}
-          >
+          {/* Recommended — the sort dropdown and the filter button sit on the
+              same line as the title. */}
+          <View style={[styles.sectionHeader, { flexDirection: 'row' }]}>
             <ThemedText
               style={[styles.sectionTitle, { textAlign }]}
+              numberOfLines={1}
             >
               {t("home.recommended")}
             </ThemedText>
-          </View>
-          <View
-            onLayout={(e) => {
-              chipsYRef.current = e.nativeEvent.layout.y;
-            }}
-          >
-            {renderFilterChips()}
+            {renderListControls()}
           </View>
         </>
       )}
     </>
   );
 
-  // Show card skeletons on first load AND while a filter change refetches page 1
-  // (clear feedback that a filter is applying), but not during pull-to-refresh
-  // which has its own spinner.
-  const listLoading =
-    chaletsLoading || (chaletsFetching && page === 1 && !isRefreshing);
+  // Skeletons are for the true first load only. Swapping the list for them on
+  // every filter/sort change made the whole screen jump; the cards now stay on
+  // screen and are replaced in place once the new page arrives.
+  const listLoading = chaletsLoading;
 
   const listEmpty = isInitialLoading ? null : listLoading ? (
     <View style={[styles.listPadding, { gap: 12 }]}>
@@ -751,10 +799,10 @@ export default function HomeScreen() {
         <ThemedText style={styles.emptyDesc}>
           {t("home.noChaletsDesc")}
         </ThemedText>
-        {selectedFilters.length > 0 && (
+        {countHomeFilters(filters) > 0 && (
           <PressableScale
             style={styles.clearButton}
-            onPress={() => setSelectedFilters([])}
+            onPress={() => setFilters(EMPTY_HOME_FILTERS)}
           >
             <ThemedText style={styles.clearButtonText}>
               {t("home.clearFilters")}
@@ -813,29 +861,70 @@ export default function HomeScreen() {
           />
         }
       />
-      {showStickyFilters && (
-        // Slides down from under the header and fades, rather than appearing
-        // in one frame. Exit is quicker than entry — the system getting out of
-        // the way should feel faster than it arriving.
-        <Animated.View
-          entering={FadeInUp.duration(220)}
-          exiting={FadeOutUp.duration(140)}
-          style={styles.stickyFilters}
-        >
-          {renderFilterChips()}
-        </Animated.View>
-      )}
       </View>
       {/* One-shot rating invite for a completed, still-unreviewed booking.
           Fully self-contained — queries, once-per-booking storage and the
           gorhom sheet all live inside the component. */}
       <RateStayPrompt />
+
+      {/* "all" is dropped: clearing every pick is the sheet's own action. */}
+      <HomeFiltersSheet
+        ref={filtersSheetRef}
+        options={FILTER_OPTIONS.filter((o: any) => o.id !== "all")}
+        value={filters}
+        onApply={setFilters}
+      />
+
+      <HomeSortSheet
+        ref={sortSheetRef}
+        value={sortBy}
+        onSelect={handleSortSelect}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: Colors.background },
+  listControls: {
+    alignItems: "center",
+    gap: 8 },
+  sortButton: {
+    height: CONTROL_HEIGHT,
+    // Fixed width: the label swaps between "Newest" and "Top rated" and the row
+    // must not resize under it.
+    width: normalize.width(128),
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: normalize.width(12),
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    backgroundColor: "white" },
+  sortLabel: {
+    flex: 1,
+    fontSize: normalize.font(12),
+    fontFamily: Fonts.medium,
+    color: "#111827" },
+  filterButton: {
+    width: CONTROL_HEIGHT,
+    height: CONTROL_HEIGHT,
+    borderRadius: 999,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#E5E7EB" },
+  filterDot: {
+    position: "absolute",
+    top: normalize.width(8),
+    end: normalize.width(8),
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.primary,
+    borderWidth: 1.5,
+    borderColor: "white" },
   scrollContent: { paddingBottom: 120 },
   sectionHeader: {
     flexDirection: "row",
@@ -876,17 +965,6 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   listPadding: { paddingHorizontal: 16 },
-  tabsContainer: { paddingHorizontal: 16, marginVertical: 10 },
-  stickyFilters: {
-    position: "absolute",
-    top: 0,
-    start: 0,
-    end: 0,
-    backgroundColor: Colors.background,
-    zIndex: 5,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
-  },
   swiperWrapper: { marginVertical: 10 },
   loaderContainer: {
     height: 200,

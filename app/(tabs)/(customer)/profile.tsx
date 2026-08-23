@@ -13,6 +13,8 @@ import {
     SolarShieldBold,
     SolarUserBlockBoldDuotone,
     SolarWalletBold,
+    SolarAltArrowLeftLinear,
+    SolarAltArrowRightLinear,
 } from '@/components/icons/solar-icons';
 import { LanguageSheet } from '@/components/user/language-sheet';
 import { LogoutSheet } from '@/components/user/logout-sheet';
@@ -57,43 +59,91 @@ type MenuItem = {
     icon: React.ReactNode;
     route?: string;
     action?: () => void;
+    destructive?: boolean;
 };
 
+type MenuSection = {
+    id: string;
+    header?: string;
+    items: MenuItem[];
+};
+
+/**
+ * صف على نمط قائمة iOS المجمّعة (Grouped Inset List):
+ * أيقونة ملوّنة ← عنوان ← شيفرون، وفاصل شعري لا يمتد تحت الأيقونة.
+ * الأيقونات هي نفسها الموجودة سابقاً (ProfileShape + Solar) بلا حذف.
+ */
 const MenuRow = React.memo(function MenuRow({
     item,
+    isLast,
     onPress,
 }: {
     item: MenuItem;
+    isLast: boolean;
     onPress: (item: MenuItem) => void;
 }) {
-    const { textAlign } = useDirection();
+    const { textAlign, isRTL } = useDirection();
     const handlePress = useCallback(() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         onPress(item);
     }, [item, onPress]);
 
+    const Chevron = isRTL ? SolarAltArrowLeftLinear : SolarAltArrowRightLinear;
+
     return (
         <TouchableOpacity
             style={[styles.menuRow, { flexDirection: 'row' }]}
             onPress={handlePress}
-            activeOpacity={0.7}
+            activeOpacity={0.6}
+            accessibilityRole="button"
+            accessibilityLabel={item.title}
         >
-            {/* Icon first, then label right next to it */}
-            <View style={styles.menuItemStart}>
-                <ProfileShape size={normalize.width(42)} type={item.shape}>
-                    {item.icon}
-                </ProfileShape>
+            <ProfileShape size={normalize.width(30)} type={item.shape}>
+                {item.icon}
+            </ProfileShape>
+
+            {/* الفاصل داخل هذا الغلاف حتى يبدأ بعد الأيقونة مثل iOS */}
+            <View style={[styles.rowBody, !isLast && styles.rowDivider]}>
                 <Text
                     style={[
                         styles.menuLabelText,
                         { textAlign },
-                        (item.id === 'logout' || item.id === 'deleteAccount') && styles.logoutText,
+                        item.destructive && styles.destructiveText,
                     ]}
+                    numberOfLines={1}
                 >
                     {item.title}
                 </Text>
+                <Chevron size={18} color="#C7C7CC" />
             </View>
         </TouchableOpacity>
+    );
+});
+
+const MenuGroup = React.memo(function MenuGroup({
+    section,
+    onPress,
+}: {
+    section: MenuSection;
+    onPress: (item: MenuItem) => void;
+}) {
+    const { textAlign } = useDirection();
+    return (
+        <View style={styles.groupWrap}>
+            {!!section.header && (
+                <Text style={[styles.groupHeader, { textAlign }]}>{section.header}</Text>
+            )}
+            <View style={styles.groupCard}>
+                {section.items.map((item, i) => (
+                    <MenuRow
+                        key={item.id}
+                        item={item}
+                        isLast={i === section.items.length - 1}
+                        onPress={onPress}
+                    />
+                ))}
+            </View>
+        </View>
     );
 });
 
@@ -176,85 +226,107 @@ export default function CustomerProfileScreen() {
         [createPayout, t, refetchWallet],
     );
 
-    const menuItems: MenuItem[] = [
-        ...(canSwitch
-            ? [{
-                id: 'switchToOwner',
-                title: isArabic ? 'التبديل إلى وضع المالك' : 'Switch to owner mode',
-                shape: 'blue' as const,
-                icon: <SolarRefreshBold size={20} color="white" />,
-                action: () => switchTo('owner'),
-            }]
-            : []),
+    // مقسّمة لأقسام على نمط إعدادات iOS. كل العناصر وأيقوناتها كما هي —
+    // التغيير في التجميع والعرض فقط. الإجراءات الخطرة في قسم منفصل
+    // (destructive-nav-separation).
+    const menuSections: MenuSection[] = [
         {
-            id: 'bookings',
-            title: t('headers.bookings'),
-            shape: 'red' as const,
-            icon: <SolarCalendarBold size={20} color="white" />,
-            route: '/(tabs)/(customer)/bookings',
+            id: 'activity',
+            header: isArabic ? 'نشاطي' : 'My activity',
+            items: [
+                ...(canSwitch
+                    ? [{
+                        id: 'switchToOwner',
+                        title: isArabic ? 'التبديل إلى وضع المالك' : 'Switch to owner mode',
+                        shape: 'blue' as const,
+                        icon: <SolarRefreshBold size={16} color="white" />,
+                        action: () => switchTo('owner'),
+                    }]
+                    : []),
+                {
+                    id: 'bookings',
+                    title: t('headers.bookings'),
+                    shape: 'red' as const,
+                    icon: <SolarCalendarBold size={16} color="white" />,
+                    route: '/(tabs)/(customer)/bookings',
+                },
+                {
+                    id: 'favorites',
+                    title: t('headers.favorites'),
+                    shape: 'pink' as const,
+                    icon: <SolarHeartBold size={16} color="white" />,
+                    route: '/favorites',
+                },
+                {
+                    id: 'transactions',
+                    title: t('profile.wallet.transactions'),
+                    shape: 'green' as const,
+                    icon: <SolarWalletBold size={16} color="white" />,
+                    route: '/(customer)/wallet-transactions',
+                },
+                {
+                    id: 'reviews',
+                    title: t('headers.reviews'),
+                    shape: 'blue' as const,
+                    icon: <SolarReviewsHeartBold size={16} color="white" />,
+                    route: '/reviews',
+                },
+            ],
         },
         {
-            id: 'favorites',
-            title: t('headers.favorites'),
-            shape: 'pink' as const,
-            icon: <SolarHeartBold size={20} color="white" />,
-            route: '/favorites',
+            id: 'preferences',
+            header: isArabic ? 'الإعدادات والدعم' : 'Settings & support',
+            items: [
+                {
+                    id: 'language',
+                    title: t('profile.language'),
+                    shape: 'pink' as const,
+                    icon: <SolarGlobalBold size={16} color="white" />,
+                    action: () => languageSheetRef.current?.present(),
+                },
+                {
+                    id: 'contact',
+                    title: t('profile.contactUs'),
+                    shape: 'green' as const,
+                    icon: <SolarPhoneBold size={16} color="white" />,
+                    action: openContactUs,
+                },
+                {
+                    id: 'reportProblem',
+                    title: t('profile.reportProblem'),
+                    shape: 'red' as const,
+                    icon: <SolarDangerCircleBold size={16} color="white" />,
+                    route: '/(customer)/report-problem',
+                },
+                {
+                    id: 'privacy',
+                    title: t('profile.privacyPolicy'),
+                    shape: 'blue' as const,
+                    icon: <SolarShieldBold size={16} color="white" />,
+                    action: openPrivacyPolicy,
+                },
+            ],
         },
         {
-            id: 'transactions',
-            title: t('profile.wallet.transactions'),
-            shape: 'green' as const,
-            icon: <SolarWalletBold size={20} color="white" />,
-            route: '/(customer)/wallet-transactions',
-        },
-        {
-            id: 'reviews',
-            title: t('headers.reviews'),
-            shape: 'blue' as const,
-            icon: <SolarReviewsHeartBold size={20} color="white" />,
-            route: '/reviews',
-        },
-        {
-            id: 'language',
-            title: t('profile.language'),
-            shape: 'pink' as const,
-            icon: <SolarGlobalBold size={20} color="white" />,
-            action: () => languageSheetRef.current?.present(),
-        },
-        {
-            id: 'contact',
-            title: t('profile.contactUs'),
-            shape: 'green' as const,
-            icon: <SolarPhoneBold size={20} color="white" />,
-            action: openContactUs,
-        },
-        {
-            id: 'reportProblem',
-            title: t('profile.reportProblem'),
-            shape: 'red' as const,
-            icon: <SolarDangerCircleBold size={20} color="white" />,
-            route: '/(customer)/report-problem',
-        },
-        {
-            id: 'privacy',
-            title: t('profile.privacyPolicy'),
-            shape: 'blue' as const,
-            icon: <SolarShieldBold size={20} color="white" />,
-            action: openPrivacyPolicy,
-        },
-        {
-            id: 'deleteAccount',
-            title: isArabic ? 'حذف الحساب' : 'Delete Account',
-            shape: 'red' as const,
-            icon: <SolarUserBlockBoldDuotone size={20} color="white" />,
-            action: () => deleteSheetRef.current?.present(),
-        },
-        {
-            id: 'logout',
-            title: t('profile.logout'),
-            shape: 'red' as const,
-            icon: <SolarLogoutBold size={20} color="white" />,
-            action: () => logoutSheetRef.current?.present(),
+            id: 'danger',
+            items: [
+                {
+                    id: 'deleteAccount',
+                    title: isArabic ? 'حذف الحساب' : 'Delete Account',
+                    shape: 'red' as const,
+                    icon: <SolarUserBlockBoldDuotone size={16} color="white" />,
+                    action: () => deleteSheetRef.current?.present(),
+                    destructive: true,
+                },
+                {
+                    id: 'logout',
+                    title: t('profile.logout'),
+                    shape: 'red' as const,
+                    icon: <SolarLogoutBold size={16} color="white" />,
+                    action: () => logoutSheetRef.current?.present(),
+                    destructive: true,
+                },
+            ],
         },
     ];
 
@@ -320,19 +392,14 @@ export default function CustomerProfileScreen() {
                     />
                 </Animated.View>
 
-                {/* Menu Items */}
-                <View style={styles.menuGroup}>
-                    {menuItems.map((item, index) => (
-                        <Animated.View
-                            key={item.id}
-                        >
-                        <MenuRow
-                            item={item}
-                            onPress={onMenuRowPress}
-                        />
-                        </Animated.View>
-                    ))}
-                </View>
+                {/* Menu — أقسام مجمّعة على نمط إعدادات iOS */}
+                {menuSections.map((section) => (
+                    <MenuGroup
+                        key={section.id}
+                        section={section}
+                        onPress={onMenuRowPress}
+                    />
+                ))}
 
                 <View style={{ height: normalize.height(120) }} />
             </ScrollView>
@@ -363,12 +430,12 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         backgroundColor: '#FFFFFF',
-        borderRadius: normalize.radius(20),
+        borderRadius: normalize.radius(12),
         paddingHorizontal: normalize.width(16),
-        paddingVertical: normalize.height(16),
-        marginBottom: normalize.height(16),
+        paddingVertical: normalize.height(14),
+        marginBottom: normalize.height(20),
         borderWidth: 1,
-        borderColor: '#F3F4F6',
+        borderColor: '#E5E5EA',
     },
     avatarAndInfo: {
         flexDirection: 'row',
@@ -409,33 +476,54 @@ const styles = StyleSheet.create({
         // Slight zoom so the figure fills the circle with no light ring around it.
         transform: [{ scale: 1.18 }],
     },
-    menuGroup: {
-        gap: normalize.height(10),
-        marginTop: normalize.height(16),
+    groupWrap: {
+        marginTop: normalize.height(20),
+    },
+    groupHeader: {
+        fontSize: normalize.font(13),
+        fontFamily: "IBMPlexSansArabic-Regular",
+        color: '#6D6D72',
+        marginBottom: normalize.height(7),
+        paddingHorizontal: normalize.width(4),
+    },
+    // البطاقة تقص زوايا أول وآخر صف، فما نحتاج نصف قطر لكل صف.
+    // على خلفية بيضاء ما يفرّق لون البطاقة عن الصفحة، فالحد هو اللي
+    // يرسم حدود المجموعة ويحافظ على شكل القائمة المجمّعة.
+    groupCard: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: normalize.radius(12),
+        borderWidth: 1,
+        borderColor: '#E5E5EA',
+        overflow: 'hidden',
     },
     menuRow: {
         alignItems: 'center',
-        backgroundColor: '#FFFFFF',
-        borderRadius: normalize.radius(18),
-        paddingVertical: normalize.height(14),
-        paddingHorizontal: normalize.width(16),
-        borderWidth: 1,
-        borderColor: '#F3F4F6',
-        gap: normalize.width(12),
+        paddingStart: normalize.width(14),
+        // 44pt حد أدنى لمساحة اللمس (touch-target-size).
+        minHeight: normalize.height(46),
+        gap: normalize.width(11),
     },
-    menuItemStart: {
+    // يحمل النص والشيفرون والفاصل — يبدأ بعد الأيقونة فينحاذي الفاصل مثل iOS.
+    rowBody: {
+        flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
-        gap: normalize.width(12),
+        justifyContent: 'space-between',
+        alignSelf: 'stretch',
+        paddingEnd: normalize.width(14),
+    },
+    rowDivider: {
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderBottomColor: '#C6C6C8',
     },
     menuLabelText: {
-        fontSize: normalize.font(14),
-        fontFamily: "IBMPlexSansArabic-Medium",
-        color: '#374151',
-        lineHeight: normalize.font(20),
-        paddingBottom: 2,
+        flex: 1,
+        fontSize: normalize.font(15),
+        fontFamily: "IBMPlexSansArabic-Regular",
+        color: '#000000',
+        lineHeight: normalize.font(23),
     },
-    logoutText: {
-        color: '#EF4444',
+    destructiveText: {
+        color: '#FF3B30',
     },
 });

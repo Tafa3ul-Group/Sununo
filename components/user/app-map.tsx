@@ -102,7 +102,16 @@ interface AppMapProps {
   isNavigating?: boolean;
   onSelectMarker?: (chalet: any) => void;
   onPressCard?: (id: string) => void;
-  onCameraChanged?: (center: [number, number], zoom: number) => void;
+  /**
+   * Fires when the camera settles. `bounds` is the visible rectangle, so a
+   * parent can answer "which chalets are on screen right now" without
+   * re-deriving it from center+zoom.
+   */
+  onCameraChanged?: (
+    center: [number, number],
+    zoom: number,
+    bounds?: { ne: [number, number]; sw: [number, number] },
+  ) => void;
   onPress?: () => void;
 }
 
@@ -295,7 +304,20 @@ const AppMapComponent = ({
       }
       lastReportedRef.current = [center[0], center[1], zoom];
 
-      onCameraChanged([center[0], center[1]], zoom);
+      // Mapbox reports the visible rectangle alongside the centre; pass it
+      // through untouched when it looks well-formed.
+      const rawBounds = state?.properties?.bounds;
+      const ne = rawBounds?.ne;
+      const sw = rawBounds?.sw;
+      const bounds =
+        Array.isArray(ne) && Array.isArray(sw)
+          ? {
+              ne: [Number(ne[0]), Number(ne[1])] as [number, number],
+              sw: [Number(sw[0]), Number(sw[1])] as [number, number],
+            }
+          : undefined;
+
+      onCameraChanged([center[0], center[1]], zoom, bounds);
     },
     [onCameraChanged],
   );
@@ -590,7 +612,11 @@ const AppMapComponent = ({
       <Mapbox.MapView
         style={styles.map}
         styleURL={
-          isNavigating ? Mapbox.StyleURL.NavigationDay : Mapbox.StyleURL.Light
+          isNavigating
+            ? Mapbox.StyleURL.NavigationDay
+            : // Satellite imagery with street labels: chalets sit on farmland
+              // and riverbanks that a flat basemap draws as empty space.
+              Mapbox.StyleURL.SatelliteStreet
         }
         logoEnabled={false}
         attributionEnabled={false}
