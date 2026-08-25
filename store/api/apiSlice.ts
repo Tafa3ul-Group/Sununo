@@ -291,6 +291,39 @@ export const apiSlice = createApi({
       providesTags: (result, error, id) => [{ type: "Chalet" as const, id }],
     }),
 
+    // ── Chalet tour video (Bunny Stream) ─────────────────────────────────────
+    /**
+     * Reserve a video and get a short-lived signature. The phone then uploads
+     * the file straight to Bunny — nothing large passes through our API.
+     */
+    createChaletVideoTicket: builder.mutation({
+      query: (chaletId: string) => ({
+        url: `/provider/chalets/${chaletId}/video/upload-ticket`,
+        method: "POST",
+      }),
+      invalidatesTags: (result, error, chaletId) => [
+        { type: "Chalet" as const, id: chaletId },
+      ],
+    }),
+
+    /** Polled while a video is encoding, in case the webhook never arrived. */
+    getChaletVideoStatus: builder.query({
+      query: (chaletId: string) => `/provider/chalets/${chaletId}/video/status`,
+      providesTags: (result, error, chaletId) => [
+        { type: "Chalet" as const, id: chaletId },
+      ],
+    }),
+
+    deleteChaletVideo: builder.mutation({
+      query: (chaletId: string) => ({
+        url: `/provider/chalets/${chaletId}/video`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, chaletId) => [
+        { type: "Chalet" as const, id: chaletId },
+      ],
+    }),
+
     // Mutation for updating a chalet
     updateChalet: builder.mutation({
       query: ({ id, data }) => ({
@@ -974,6 +1007,9 @@ export const {
   useAcceptPoliciesMutation,
   useCreateChaletMutation,
   useUpdateChaletMutation,
+  useCreateChaletVideoTicketMutation,
+  useGetChaletVideoStatusQuery,
+  useDeleteChaletVideoMutation,
   useUploadChaletImageMutation,
   useUpdateChaletImageMutation,
   useDeleteChaletImageMutation,

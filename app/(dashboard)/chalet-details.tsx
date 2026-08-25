@@ -1,4 +1,5 @@
 import { AmenitiesModal } from '@/components/dashboard/amenities-modal';
+import { ChaletVideoUploader } from '@/components/dashboard/chalet-video-uploader';
 import { CustomRulesEditor, type CustomRuleDraft } from '@/components/dashboard/custom-rules-editor';
 import { PredefinedTermsPicker, resolveRuleTermIds, type PredefinedTerm } from '@/components/dashboard/predefined-terms-picker';
 import {
@@ -1135,6 +1136,22 @@ export default function ChaletDetailsScreen() {
             })}
           </View>
 
+          {/* ──── Tour video ──── */}
+          <Text style={[styles.settingsGroupTitle, { textAlign, alignSelf: flexStart }]}>
+            {isRTL ? 'فيديو الشالية' : 'Chalet Video'}
+          </Text>
+          <View style={styles.videoBlock}>
+            <ChaletVideoUploader
+              chaletId={chaletId as string}
+              chaletName={
+                (isRTL ? chalet?.name?.ar : chalet?.name?.en) ||
+                chalet?.name?.ar ||
+                chalet?.name?.en ||
+                ''
+              }
+            />
+          </View>
+
           {/* ──── Visibility Status ──── */}
           <Text style={[styles.settingsGroupTitle, { textAlign, alignSelf: flexStart }]}>
             {isRTL ? 'حالة ظهور الشاليه' : 'Chalet Visibility'}
@@ -2042,6 +2059,9 @@ const styles = StyleSheet.create({
   },
 
   // 2. Settings Group Card Styles
+  videoBlock: {
+    paddingHorizontal: 16,
+    marginBottom: 16 },
   settingsGroupTitle: {
     fontSize: normalize.font(13),
     fontFamily: "IBMPlexSansArabic-Bold",

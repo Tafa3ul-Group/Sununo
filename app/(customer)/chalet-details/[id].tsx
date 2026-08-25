@@ -11,6 +11,7 @@ import {
   SolarWidgetBold,
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
+import { ChaletVideoPlayer } from "@/components/user/chalet-video-player";
 import { DiscountBadge } from "@/components/discount-badge";
 import { CircleBackButton } from "@/components/ui/circle-back-button";
 import { ErrorState } from "@/components/ui/error-state";
@@ -912,6 +913,20 @@ export default function ChaletDetailScreen() {
               </View>
             </>
           )}
+
+          {/* جولة بالفيديو — only once Bunny has finished encoding, so the
+              player is never pointed at a URL that is not live yet. */}
+          {chalet.videoStatus === "ready" && chalet.videoUrl ? (
+            <>
+              <SectionHeader
+                title={isRTL ? "جولة بالفيديو" : "Video tour"}
+              />
+              <ChaletVideoPlayer
+                videoUrl={chalet.videoUrl}
+                thumbnailUrl={chalet.videoThumbnailUrl}
+              />
+            </>
+          ) : null}
 
           {/* نظرة عامة */}
           {chaletDescription ? (
