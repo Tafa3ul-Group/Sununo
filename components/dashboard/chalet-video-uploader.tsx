@@ -134,7 +134,7 @@ export function ChaletVideoUploader({ chaletId, chaletName }: ChaletVideoUploade
         <ThemedText style={styles.title}>
           {isRTL ? "فيديو الشالية" : "Chalet video"}
         </ThemedText>
-        {videoUrl && !isUploading && (
+        {(videoUrl || videoStatus === "processing") && !isUploading && (
           <TouchableOpacity
             onPress={confirmDelete}
             disabled={isDeleting}
@@ -169,6 +169,13 @@ export function ChaletVideoUploader({ chaletId, chaletName }: ChaletVideoUploade
               ? "الفيديو قيد المعالجة، راح يظهر خلال دقيقة"
               : "Processing — it will appear in a minute"}
           </ThemedText>
+          {/* An upload that died mid-flight leaves the video encoding forever
+              on Bunny's side, so there has to be a way out of this state. */}
+          <TouchableOpacity onPress={confirmDelete} hitSlop={8}>
+            <ThemedText style={styles.cancelLink}>
+              {isRTL ? "إلغاء وإعادة المحاولة" : "Cancel and retry"}
+            </ThemedText>
+          </TouchableOpacity>
         </View>
       ) : videoUrl ? (
         <VideoView
@@ -287,6 +294,10 @@ const styles = StyleSheet.create({
     color: Colors.primary },
   actionLabelPrimary: {
     color: "white" },
+  cancelLink: {
+    fontSize: normalize.font(11),
+    fontFamily: Fonts.semiBold,
+    color: Colors.primary },
   hint: {
     textAlign: "center",
     fontSize: normalize.font(10),

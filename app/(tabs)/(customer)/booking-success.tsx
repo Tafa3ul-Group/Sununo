@@ -8,10 +8,11 @@ import { getImageSrc } from "@/hooks/useImageSrc";
 
 import { Image as ExpoImage } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
+  AppState,
   ScrollView,
   StyleSheet,
   View,
@@ -31,7 +32,14 @@ import {
   useGetCustomerBookingDetailsQuery,
   usePayDelayedBookingMutation,
   useLazyGetPaymentStatusQuery,
+  useLazyGetCancellationPreviewQuery,
+  useCancelCustomerBookingMutation,
 } from "@/store/api/customerApiSlice";
+import {
+  CustomerCancellationSheet,
+  type CustomerCancellationSheetRef,
+  type CancellationPreview,
+} from "@/components/user/customer-cancellation-sheet";
 import * as WebBrowser from "expo-web-browser";
 import { pickTranslation, useDirection } from "@/i18n/direction";
 
@@ -107,6 +115,17 @@ export default function BookingSuccessDetailsScreen() {
       }
     };
   }, []);
+
+  // A payment can complete while this screen is in the background — the customer
+  // finishes at the gateway, or in the bank's own app, and the webhook confirms
+  // the booking server-side. Without this the screen they return to still reads
+  // "Awaiting Payment" for money that has already been taken.
+  React.useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextState) => {
+      if (nextState === "active" && bookingId) refetch();
+    });
+    return () => subscription.remove();
+  }, [bookingId, refetch]);
 
   React.useEffect(() => {
     if (booking) {
@@ -212,6 +231,70 @@ export default function BookingSuccessDetailsScreen() {
     }
   };
 
+  // ── Cancellation ──────────────────────────────────────────────────────────
+  // The refund is tiered by how close the booking is and defaults to a FULL
+  // penalty when the chalet published no policy, so the preview is fetched and
+  // shown BEFORE the customer confirms — "cancel" can mean everything back or
+  // nothing back, and they have to see which.
+  const cancellationSheetRef = useRef<CustomerCancellationSheetRef>(null);
+  const [fetchCancellationPreview] = useLazyGetCancellationPreviewQuery();
+  const [cancelBooking, { isLoading: isCancelling }] = useCancelCustomerBookingMutation();
+  const [preview, setPreview] = useState<CancellationPreview | null>(null);
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+
+  const loadCancellationPreview = React.useCallback(async () => {
+    if (!bookingId) return;
+    setIsPreviewLoading(true);
+    setPreviewError(null);
+    try {
+      const result = await fetchCancellationPreview(bookingId).unwrap();
+      setPreview(result as CancellationPreview);
+    } catch (error: any) {
+      setPreview(null);
+      setPreviewError(
+        error?.data?.message ||
+          (isRTL ? "تعذّر حساب المبلغ المسترد" : "Could not calculate the refund"),
+      );
+    } finally {
+      setIsPreviewLoading(false);
+    }
+  }, [bookingId, fetchCancellationPreview, isRTL]);
+
+  const handleOpenCancellation = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    cancellationSheetRef.current?.present();
+    void loadCancellationPreview();
+  };
+
+  const handleConfirmCancellation = async (reason: string) => {
+    // Confirming against a refund we never managed to compute would have the
+    // customer agreeing to an amount neither of us knows.
+    if (!preview) {
+      void loadCancellationPreview();
+      return;
+    }
+    try {
+      const result = await cancelBooking({ id: bookingId, reason: reason.trim() || undefined }).unwrap();
+      const refunded = Number(result?.customerRefund || 0);
+      cancellationSheetRef.current?.showSuccess(
+        refunded > 0
+          ? isRTL
+            ? `تم إلغاء الحجز، وأُضيف ${refunded.toLocaleString()} د.ع إلى محفظتك.`
+            : `Booking cancelled. ${refunded.toLocaleString()} IQD was added to your wallet.`
+          : isRTL
+            ? "تم إلغاء الحجز."
+            : "Booking cancelled.",
+      );
+      refetch();
+    } catch (error: any) {
+      cancellationSheetRef.current?.showError(
+        error?.data?.message ||
+          (isRTL ? "تعذّر إلغاء الحجز. حاول مرة أخرى." : "Could not cancel the booking. Please try again."),
+      );
+    }
+  };
+
   const getStatusDetails = (status?: string) => {
     switch (status) {
       case "pending_approval":
@@ -303,6 +386,11 @@ export default function BookingSuccessDetailsScreen() {
   const isCompleted = status === "completed";
   const isCancelled = status === "cancelled";
   const isPaid = isConfirmed || isCompleted; // money has been received
+  // Mirrors CUSTOMER_CANCELLABLE_STATUSES on the API. PENDING_PAYMENT is absent
+  // on purpose: the customer may be at the gateway right now, and the payment
+  // webhook ignores a booking that is no longer PENDING_PAYMENT — cancelling
+  // mid-session would take their money and leave them without a booking.
+  const canCancel = isPendingApproval || isConfirmed;
   const isDepositPayment = paymentModelVal === "deposit";
   const amountPaidVal = Number(booking?.amountPaid || 0);
   const remainingAmountVal = Number(booking?.remainingAmount || 0);
@@ -802,7 +890,51 @@ export default function BookingSuccessDetailsScreen() {
             </TouchableOpacity>
           </View>
         )}
+
+        {/* Cancellation. Offered for a request still awaiting approval (nothing
+            paid, nothing to lose) and for a confirmed booking (settled under the
+            chalet's policy). A booking that is already paid-for-and-past, or
+            mid-payment, is not the customer's to cancel here. */}
+        {canCancel && (
+          <View style={styles.cancelSection}>
+            <TouchableOpacity
+              style={styles.cancelBtn}
+              onPress={handleOpenCancellation}
+              disabled={isCancelling}
+            >
+              <ThemedText style={styles.cancelBtnText}>
+                {isPendingApproval
+                  ? isRTL
+                    ? "سحب طلب الحجز"
+                    : "Withdraw request"
+                  : isRTL
+                    ? "إلغاء الحجز"
+                    : "Cancel booking"}
+              </ThemedText>
+            </TouchableOpacity>
+            <ThemedText style={[styles.cancelHint, { textAlign }]}>
+              {isPendingApproval
+                ? isRTL
+                  ? "لم يُدفع أي مبلغ بعد، لذا السحب مجاني."
+                  : "Nothing has been paid yet, so withdrawing costs nothing."
+                : isRTL
+                  ? "سنعرض لك المبلغ المسترد قبل التأكيد."
+                  : "We'll show you the refund amount before you confirm."}
+            </ThemedText>
+          </View>
+        )}
       </ScrollView>
+
+      <CustomerCancellationSheet
+        ref={cancellationSheetRef}
+        onConfirm={handleConfirmCancellation}
+        isLoading={isCancelling}
+        preview={preview}
+        isPreviewLoading={isPreviewLoading}
+        previewError={previewError}
+        onRetryPreview={loadCancellationPreview}
+        amountPaid={amountPaidVal}
+      />
     </SafeAreaView>
   );
 }
@@ -995,6 +1127,32 @@ const styles = StyleSheet.create({
     color: "#FFF",
     fontSize: normalize.font(12),
     fontFamily: "IBMPlexSansArabic-Bold",
+  },
+  cancelSection: {
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  cancelBtn: {
+    borderWidth: 1,
+    borderColor: "#FECACA",
+    backgroundColor: "#FEF2F2",
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cancelBtnText: {
+    color: "#DC2626",
+    fontSize: normalize.font(12),
+    fontFamily: "IBMPlexSansArabic-SemiBold",
+  },
+  cancelHint: {
+    marginTop: 8,
+    paddingHorizontal: 4,
+    fontSize: normalize.font(10),
+    fontFamily: "IBMPlexSansArabic-Regular",
+    color: "#94A3B8",
+    lineHeight: 16,
   },
   paymentModelTitle: {
     fontSize: normalize.font(12),

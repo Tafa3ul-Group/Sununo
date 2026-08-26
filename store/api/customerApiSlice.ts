@@ -6,6 +6,40 @@ import { apiSlice, unwrapListResponse } from "./apiSlice";
 // while sharing the same base URL, auth token, and cache infrastructure.
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Body of `POST /customer/bookings`.
+ *
+ * Declared out here rather than inline on `query`, because RTK Query infers a
+ * mutation's argument type from EVERY callback that destructures it — so an
+ * inline annotation on `query` alone loses to a narrower one elsewhere, and
+ * `paymentModel` came out required-but-absent at the call site.
+ *
+ * There are no card fields: payment happens at the gateway's own page, and the
+ * app never sees a card number.
+ */
+type CreateBookingArgs = {
+  chaletId: string;
+  shiftId: string;
+  bookingDate: string;
+  adultsCount?: number;
+  childrenCount?: number;
+  guestsCount?: number;
+  addonIds?: string[];
+  /**
+   * Optional PAID amenities the guest chose, as `chaletAmenityId` values from
+   * the chalet payload. Mandatory paid amenities are applied by the server on
+   * their own and must never be sent here.
+   */
+  amenityIds?: string[];
+  /** Absent for delayed chalets: nothing is charged until the owner approves. */
+  paymentModel?: "deposit" | "full";
+  paymentMethod?: "wayl" | "wallet";
+  notes?: string;
+  audienceType?: "FAMILY" | "YOUTH";
+  /** Discount code typed by the customer; re-validated server-side. */
+  couponCode?: string;
+};
+
 /** The slice of `onQueryStarted`'s api object the optimistic helpers below use. */
 type OptimisticApi = {
   dispatch: (action: any) => any;
@@ -155,6 +189,20 @@ export const customerApi = apiSlice.injectEndpoints({
       ],
     }),
 
+    /**
+     * The chalet's cancellation tiers — what the customer loses by cancelling N
+     * days out. Shown at checkout, where they are asked to agree to it.
+     */
+    getChaletCancellationPolicies: builder.query<
+      { id: string; daysBeforeBooking: number; penaltyPercentage: number | string }[],
+      string
+    >({
+      query: (id: string) => `/customer/chalets/${id}/cancellation-policies`,
+      providesTags: (result: any, error: any, id: string) => [
+        { type: "Chalet" as const, id },
+      ],
+    }),
+
     /** Get chalet occupancy by month */
     getChaletAvailability: builder.query({
       query: ({ id, month, year }: { id: string; month: number; year: number }) => ({
@@ -177,33 +225,8 @@ export const customerApi = apiSlice.injectEndpoints({
     // ── Bookings (Customer) ────────────────────────────────────────────────
 
     /** Create a new booking and initiate payment */
-    createCustomerBooking: builder.mutation({
-      query: (data: {
-        chaletId: string;
-        shiftId: string;
-        bookingDate: string;
-        adultsCount?: number;
-        childrenCount?: number;
-        guestsCount?: number;
-        addonIds?: string[];
-        /**
-         * Optional PAID amenities the guest chose, as `chaletAmenityId` values
-         * from the chalet payload. Mandatory paid amenities are applied by the
-         * server on their own and must never be sent here.
-         */
-        amenityIds?: string[];
-        paymentModel: "DEPOSIT" | "FULL";
-        paymentMethod?: "wayl" | "wallet";
-        useWalletBalance?: boolean;
-        notes?: string;
-        audienceType?: "FAMILY" | "YOUTH";
-        /** Discount code typed by the customer; re-validated server-side. */
-        couponCode?: string;
-        cardHolderName?: string;
-        cardNumber?: string;
-        expiry?: string;
-        cvv?: string;
-      }) => ({
+    createCustomerBooking: builder.mutation<any, CreateBookingArgs>({
+      query: (data) => ({
         url: "/customer/bookings",
         method: "POST",
         body: data,
@@ -275,8 +298,8 @@ export const customerApi = apiSlice.injectEndpoints({
     }),
 
     /** Cancel booking with reason, process refund to wallet */
-    cancelCustomerBooking: builder.mutation({
-      query: ({ id, reason }: { id: string; reason?: string }) => ({
+    cancelCustomerBooking: builder.mutation<any, { id: string; reason?: string }>({
+      query: ({ id, reason }) => ({
         url: `/customer/bookings/${id}/cancel`,
         method: "POST",
         body: { reason },
@@ -889,6 +912,7 @@ export const {
   useGetPlatformTermsQuery,
   useGetChaletPoliciesQuery,
   useGetChaletRulesQuery,
+  useGetChaletCancellationPoliciesQuery,
   useLazyGetChaletRulesQuery,
   useGetChaletImagesQuery,
   useGetChaletAvailabilityQuery,

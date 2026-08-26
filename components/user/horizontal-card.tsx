@@ -13,7 +13,13 @@ import { Image as ExpoImage } from "expo-image";
 import { IMAGE_TRANSITION, imagePlaceholder } from "@/constants/image-loading";
 import * as Haptics from "expo-haptics";
 import React from "react";
-import { StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
+import {
+  Platform,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from "react-native";
 
 
 // The card only has room for a couple of amenities before the line wraps.
@@ -251,14 +257,21 @@ const styles = StyleSheet.create({
     marginBottom: normalize.height(12),
     height: CARD_HEIGHT,
     // Hairline outline so the white card still reads as a card on a white
-    // background, with a soft lift on top of it.
+    // background.
     borderWidth: 1,
     borderColor: "#ECEDF0",
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 2 },
+    // Shadow on iOS only. Android's `elevation` is not the same effect — it
+    // draws a hard grey drop under the whole rect, which on a bordered card
+    // with clipped corners reads as a dirty edge rather than a lift. The
+    // outline alone separates the card there.
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOpacity: 0.06,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 3 } },
+      default: {},
+    }) },
   image: {
     width: CARD_HEIGHT,
     height: "100%" },

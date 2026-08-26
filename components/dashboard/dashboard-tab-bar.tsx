@@ -229,12 +229,18 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
                         selectedChalet?.id === item.id && { backgroundColor: '#F0F7FF' }
                       ]}
                       onPress={() => {
+                        // The whole row opens the chalet's settings — the pen
+                        // used to be the only hit target, so tapping the name
+                        // or the photo silently did nothing but close the sheet.
+                        // Selecting it on the way keeps the dashboard pointed at
+                        // the chalet you just opened.
                         dispatch(setSelectedChalet({
                             id: item.id,
                             name: pickTranslation(item, isRTL),
                             image: item.images?.[0]?.url || null
                         }));
                         closePopover();
+                        router.push({ pathname: '/(dashboard)/chalet-details', params: { id: item.id } });
                       }}
                     >
                       <Image source={getImageSrc(item.images?.[0]?.url)} style={styles.chaletThumb} />
@@ -244,16 +250,10 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
                         </Text>
                       </View>
                       
-                      <TouchableOpacity
-                        style={[styles.editItemBtn, { backgroundColor: '#EFF6FF', borderColor: '#DBEAFE' }]}
-                        onPress={(e) => {
-                          e.stopPropagation();
-                          closePopover();
-                          router.push({ pathname: '/(dashboard)/chalet-details', params: { id: item.id } });
-                        }}
-                      >
-                         <SolarPenBold size={18} color={Colors.primary} />
-                      </TouchableOpacity>
+                      {/* Affordance only — the row itself is the button now. */}
+                      <View style={[styles.editItemBtn, { backgroundColor: '#EFF6FF', borderColor: '#DBEAFE' }]}>
+                        <SolarPenBold size={18} color={Colors.primary} />
+                      </View>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>

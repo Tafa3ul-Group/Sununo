@@ -1,15 +1,19 @@
 import { HeaderSection } from "@/components/header-section";
 import {
   SolarCardBold,
-  SolarCheckCircleBoldDuotone,
   SolarInfoCircleBold,
   SolarMapPointBold,
   SolarMoonBold,
   SolarSunBold,
   SolarUsersGroupRoundedBold,
-  SolarWalletBold,
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
+import { BookingReceiptSheet } from "@/components/booking/booking-receipt-sheet";
+import { CancellationPolicyCard } from "@/components/booking/cancellation-policy-card";
+import { CouponField } from "@/components/booking/coupon-field";
+import { PaymentProcessingSheet } from "@/components/booking/payment-processing-sheet";
+import { ErrorState } from "@/components/ui/error-state";
+import { SkeletonBox } from "@/components/ui/skeleton-loader";
 import { GuestCounter } from "@/components/user/guest-counter";
 import { HorizontalCard } from "@/components/user/horizontal-card";
 import { MainTabs, TabType } from "@/components/user/MainTabs";
@@ -23,13 +27,12 @@ import { logEvent } from "@/services/analytics";
 import { ANALYTICS_EVENTS, ANALYTICS_CURRENCY } from "@/constants/analytics-events";
 import {
   useCreateCustomerBookingMutation,
-  useGetChaletAvailabilityQuery,
   useGetChaletDiscountQuery,
   useGetCustomerChaletDetailsQuery,
-  useGetPlatformConfigQuery,
   useValidateCouponMutation,
-  useLazyGetPaymentStatusQuery,
   useUploadIdCardImagesMutation,
+  usePayDelayedBookingMutation,
+  useGetChaletCancellationPoliciesQuery,
 } from "@/store/api/customerApiSlice";
 import {
   BottomSheetBackdrop,
@@ -40,12 +43,9 @@ import * as Haptics from "expo-haptics";
 import { Image as ExpoImage } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import * as WebBrowser from "expo-web-browser";
-import LottieView from "lottie-react-native";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ActivityIndicator,
   Alert,
   Dimensions,
   Platform,
@@ -59,24 +59,24 @@ import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import { useFormatTime } from "../../../hooks/useFormatTime";
+import { usePaymentSession } from "@/hooks/usePaymentSession";
+import {
+  getLocalDateKey,
+  useChaletAvailability,
+} from "@/hooks/useChaletAvailability";
 import { pickTranslation, useDirection } from "@/i18n";
-
-// dismissAuthSession is iOS-only — Android closes the browser automatically
-const dismissBrowser = () => {
-  if (Platform.OS === "ios") {
-    try {
-      WebBrowser.dismissAuthSession();
-    } catch {
-      /* ignore */
-    }
-  }
-};
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const BOOKING_TABS: TabType[] = ["WHEN", "WHO", "WHERE"];
 
-const getLocalDateKey = (date: Date) =>
-  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+/**
+ * Checkout only ever pays by card. The API and the booking-details screen both
+ * also accept "wallet", and this screen used to carry a `selectedMethod` state
+ * for it — but nothing ever set it, so the wallet branch was unreachable and the
+ * payment-method row was a static label. Naming the one real option is honest
+ * about that; wiring wallet up here is a feature, not a rename.
+ */
+const PAYMENT_METHOD = "wayl" as const;
 
 // Caches the descending-by-guestCount sort per capacityPricings array reference,
 // so the spread + sort runs once instead of on every pricing recomputation.
@@ -188,34 +188,11 @@ export default function CompleteBookingScreen() {
   // The search filter's dates are discovery criteria only — they must NEVER
   // pre-fill the booking calendar. The global filter is persisted and applies
   // app-wide, so inheriting its dates leaked the filter's days into every
-  // chalet's booking (even after the user moved on). The user always picks the
-  // booking date explicitly. Kept as an empty range so all the downstream
-  // calendar defaults (selected days, start/end, current month) start clean.
-  const filterDateRange = useMemo<Date[]>(() => [], []);
-
-  const filterDateKeys = useMemo(() => {
-    return new Set(filterDateRange.map(getLocalDateKey));
-  }, [filterDateRange]);
-  const hasFilterDates = filterDateKeys.size > 0;
-
-  const getInitialMonth = () => {
-    return filterDateRange[0] ? new Date(filterDateRange[0]) : new Date();
-  };
-
-  // Pre-fill dates from filter if available
-  const getInitialDates = (): number[] => {
-    return filterDateRange.map((date) => date.getDate());
-  };
-
-  const [selectedDates, setSelectedDates] = useState<number[]>(getInitialDates);
-  const [selectedStartDate, setSelectedStartDate] = useState<Date | null>(
-    filterDateRange[0] ? new Date(filterDateRange[0]) : null,
-  );
-  const [selectedEndDate, setSelectedEndDate] = useState<Date | null>(
-    filterDateRange.length > 1
-      ? new Date(filterDateRange[filterDateRange.length - 1])
-      : null,
-  );
+  // chalet's booking (even after the user moved on). The customer always picks
+  // the booking date explicitly, so the calendar starts empty.
+  const [selectedDates, setSelectedDates] = useState<number[]>([]);
+  const [selectedStartDate, setSelectedStartDate] = useState<Date | null>(null);
+  const [selectedEndDate, setSelectedEndDate] = useState<Date | null>(null);
   const selectedDateRange = useMemo(() => {
     if (!selectedStartDate) return [];
 
@@ -235,19 +212,6 @@ export default function CompleteBookingScreen() {
     return dates;
   }, [selectedEndDate, selectedStartDate]);
 
-  useEffect(() => {
-    if (filterDateRange.length === 0) return;
-
-    setSelectedStartDate(new Date(filterDateRange[0]));
-    setSelectedEndDate(
-      filterDateRange.length > 1
-        ? new Date(filterDateRange[filterDateRange.length - 1])
-        : null,
-    );
-    setSelectedDates(filterDateRange.map((date) => date.getDate()));
-    setCurrentMonth(new Date(filterDateRange[0]));
-  }, [filterDateRange]);
-
   // Mapping of Day -> Selected Shift ID
   const [selectedShifts, setSelectedShifts] = useState<Record<number, string>>(
     {},
@@ -258,10 +222,48 @@ export default function CompleteBookingScreen() {
     useCreateCustomerBookingMutation();
   const [uploadIdCardImages, { isLoading: isUploadingId }] =
     useUploadIdCardImagesMutation();
-  const { data: response } = useGetCustomerChaletDetailsQuery(chaletId, {
+  // isLoading/isError are load-bearing here, not optional extras: every price on
+  // this screen is derived from `chaletDetails`, so rendering before it arrives
+  // quoted the customer 0 IQD with an empty shift list, and a failed request
+  // looked exactly the same with no way to retry.
+  const {
+    data: response,
+    isLoading: isLoadingChalet,
+    isError: isChaletError,
+    refetch: refetchChalet,
+  } = useGetCustomerChaletDetailsQuery(chaletId, {
     skip: !chaletId,
   });
   const chaletDetails = response?.data || response;
+
+  const {
+    data: cancellationPolicies,
+    isLoading: isLoadingCancellationPolicies,
+  } = useGetChaletCancellationPoliciesQuery(chaletId, { skip: !chaletId });
+
+  // Sorted so the customer reads the most generous window first, the way the
+  // policy is actually applied (the API returns them in the owner's sort order).
+  const cancellationTiers = useMemo(
+    () =>
+      [...(cancellationPolicies || [])].sort(
+        (a, b) => Number(b.daysBeforeBooking) - Number(a.daysBeforeBooking),
+      ),
+    [cancellationPolicies],
+  );
+
+  const openChaletInfo = useCallback(
+    (type: "terms" | "policies") => {
+      if (!chaletId) return;
+      router.push({
+        // Generated expo-router types only include routes seen by a running
+        // `expo start`, so this one needs the cast — same as the chalet-details
+        // screen that links here.
+        pathname: `/(customer)/chalet-details/info/${chaletId}` as any,
+        params: { type },
+      });
+    },
+    [chaletId, router],
+  );
 
   /** Amenity names arrive as `{ ar, en }`; fall back rather than render blank. */
   const amenityName = useCallback(
@@ -406,192 +408,45 @@ export default function CompleteBookingScreen() {
     );
   }, [availableShifts, filterPeriod, shiftMatchesFilterPeriod]);
 
-  const [currentMonth, setCurrentMonth] = useState(getInitialMonth);
+  const [currentMonth, setCurrentMonth] = useState(() => new Date());
   // The month the CALENDAR SHEET is showing. It moves with the sheet's arrows /
   // year picker, independently of the month the picked date lives in, and it is
   // what the availability query and the scribbled-out days follow. Before this
   // existed the query only ever ran for the *selection's* month, so paging to
   // the next month drew it with the previous month's occupancy and a fully
   // booked day rendered as selectable.
-  const [calendarMonth, setCalendarMonth] = useState(getInitialMonth);
+  const [calendarMonth, setCalendarMonth] = useState(() => new Date());
   const getDateForDay = useCallback(
     (day: number) =>
       selectedDateRange.find((date) => date.getDate() === day) ||
-      filterDateRange.find((date) => date.getDate() === day) ||
       new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day),
-    [currentMonth, filterDateRange, selectedDateRange],
+    [currentMonth, selectedDateRange],
   );
-  const getDayOfWeek = (day: number) => {
-    return getDateForDay(day).getDay();
-  };
+  const getDayOfWeek = useCallback(
+    (day: number) => getDateForDay(day).getDay(),
+    [getDateForDay],
+  );
 
   // Occupancy is fetched for BOTH the month the selection lives in and the month
   // the calendar is showing, and merged. They are the same month most of the
   // time — RTK Query then serves one cache entry and only one request goes out —
   // but they diverge the moment the user pages the calendar forward, and the
   // selected day's shift rows must keep their real availability while they do.
-  const { data: selectionMonthAvailability } = useGetChaletAvailabilityQuery(
-    {
-      id: chaletId,
-      month: currentMonth.getMonth() + 1,
-      year: currentMonth.getFullYear(),
-    },
-    { skip: !chaletId },
-  );
-
   const {
-    data: calendarMonthAvailability,
-    isFetching: isCalendarMonthFetching,
-    isError: isCalendarMonthError,
-  } = useGetChaletAvailabilityQuery(
-    {
-      id: chaletId,
-      month: calendarMonth.getMonth() + 1,
-      year: calendarMonth.getFullYear(),
-    },
-    { skip: !chaletId },
-  );
-
-  const availabilityData = useMemo(
-    () => [
-      ...(Array.isArray(selectionMonthAvailability)
-        ? selectionMonthAvailability
-        : []),
-      ...(Array.isArray(calendarMonthAvailability)
-        ? calendarMonthAvailability
-        : []),
-    ],
-    [selectionMonthAvailability, calendarMonthAvailability],
-  );
-
-  // Until the viewed month's occupancy has actually arrived, no day in it may be
-  // picked — an un-fetched month would otherwise render every day as free.
-  // An outright FAILURE deliberately unlocks the calendar again: the create-booking
-  // call re-checks availability server-side and refuses a taken slot before any
-  // money moves, so a dead availability endpoint should not make the chalet
-  // unbookable.
-  const isCalendarMonthLoading =
-    !!chaletId &&
-    !isCalendarMonthError &&
-    (isCalendarMonthFetching || calendarMonthAvailability === undefined);
-
-  // Which shift ids are taken on each "YYYY-MM-DD", as resolved by the backend.
-  //
-  // Every entry now carries `blocks`: the exact (date, shift) cells it occupies.
-  // Counting entries per day and matching `entry.shift.id` (what this did before)
-  // showed occupied slots as free whenever a booking no longer pointed at the
-  // shift being drawn — a deleted shift row, a duplicate row covering the same
-  // hours, or an overnight booking running into the next morning.
-  const blockedShiftsByDate = useMemo(() => {
-    const map: Record<string, Set<string>> = {};
-    if (!Array.isArray(availabilityData)) return map;
-
-    availabilityData.forEach((entry: any) => {
-      const blocks: { date: string; shiftId: string }[] = Array.isArray(entry.blocks)
-        ? entry.blocks
-        : // Older API responses have no `blocks`; fall back to the entry's own
-          // date + shift so the calendar degrades instead of showing everything free.
-          entry.shift?.id
-          ? [{ date: entry.bookingDate?.split("T")[0], shiftId: entry.shift.id }]
-          : [];
-
-      blocks.forEach(({ date, shiftId }) => {
-        if (!date || !shiftId) return;
-        (map[date] ??= new Set()).add(shiftId);
-      });
-    });
-
-    return map;
-  }, [availabilityData]);
-
-  // Of those blocked cells, the ones blocked because their start time has passed
-  // rather than because somebody booked them. They are already unselectable via
-  // `blockedShiftsByDate`; this only decides whether the row reads "انتهى الوقت"
-  // or the misleading "محجوز".
-  const pastShiftsByDate = useMemo(() => {
-    const map: Record<string, Set<string>> = {};
-    if (!Array.isArray(availabilityData)) return map;
-
-    availabilityData.forEach((entry: any) => {
-      if (!entry?.isPast || !Array.isArray(entry.blocks)) return;
-      entry.blocks.forEach(({ date, shiftId }: { date: string; shiftId: string }) => {
-        if (!date || !shiftId) return;
-        (map[date] ??= new Set()).add(shiftId);
-      });
-    });
-
-    return map;
-  }, [availabilityData]);
-
-  // The availability key of a SELECTED day. It must be resolved through
-  // `getDateForDay` (the same source the pricing and the submitted payload use),
-  // not rebuilt from `currentMonth` + day-of-month: the two disagree for any day
-  // that belongs to a different month than `currentMonth`, and the shift rows
-  // then read the availability of the wrong date entirely.
-  const dateKeyForDay = useCallback(
-    (day: number) => getLocalDateKey(getDateForDay(day)),
-    [getDateForDay],
-  );
-
-  // A day is fully booked when every shift the chalet offers is taken on it.
-  // Keyed off the month the CALENDAR is showing (not the selection's month),
-  // because this is what paints the calendar grid.
-  const bookedDates = useMemo(() => {
-    if (availableShifts.length === 0) return [];
-
-    const daysInMonth = new Date(
-      calendarMonth.getFullYear(),
-      calendarMonth.getMonth() + 1,
-      0,
-    ).getDate();
-
-    const days: number[] = [];
-    for (let day = 1; day <= daysInMonth; day++) {
-      const key = getLocalDateKey(
-        new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), day),
-      );
-      const blocked = blockedShiftsByDate[key];
-      if (blocked && availableShifts.every((s: any) => blocked.has(s.id))) {
-        days.push(day);
-      }
-    }
-    return days;
-  }, [blockedShiftsByDate, availableShifts, calendarMonth]);
-
-  const bookedDateStrings = useMemo(
-    () =>
-      bookedDates.map((day) =>
-        getLocalDateKey(
-          new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), day),
-        ),
-      ),
-    [bookedDates, calendarMonth],
-  );
-
-  const isShiftBookedForDay = useCallback(
-    (day: number, shiftId: string) =>
-      blockedShiftsByDate[dateKeyForDay(day)]?.has(shiftId) ?? false,
-    [blockedShiftsByDate, dateKeyForDay],
-  );
-
-  const isShiftPastForDay = useCallback(
-    (day: number, shiftId: string) =>
-      pastShiftsByDate[dateKeyForDay(day)]?.has(shiftId) ?? false,
-    [pastShiftsByDate, dateKeyForDay],
-  );
-
-  // A shift is "closed" on a given day when it has no valid pricing for that
-  // weekday (price missing or <= 1). This mirrors the backend availability rule
-  // (a shift with no ShiftPricing for the day cannot be booked), so a stopped
-  // shift renders disabled and non-clickable.
-  const isShiftClosedForDay = useCallback(
-    (day: number, shift: any) => {
-      const dow = getDateForDay(day).getDay();
-      const dayPricing = shift?.pricing?.find((p: any) => p.dayOfWeek === dow);
-      return !dayPricing || Number(dayPricing.price) <= 1;
-    },
-    [getDateForDay],
-  );
+    isCalendarMonthLoading,
+    bookedDates,
+    bookedDateStrings,
+    isShiftBookedForDay,
+    isShiftBookedOnDate,
+    isShiftPastForDay,
+    isShiftClosedForDay,
+  } = useChaletAvailability({
+    chaletId,
+    selectionMonth: currentMonth,
+    calendarMonth,
+    availableShifts,
+    getDateForDay,
+  });
 
   // Pre-fill selected shifts from the saved filter when possible.
   useEffect(() => {
@@ -645,6 +500,13 @@ export default function CompleteBookingScreen() {
   const calendarSheetRef = React.useRef<BottomSheetModal>(null);
 
   const [createdBookingId, setCreatedBookingId] = useState<string | null>(null);
+  // Shown on the success sheet: the code is what the customer quotes to the
+  // owner, and the status decides whether that sheet reads "booked" or
+  // "request sent".
+  const [createdBookingCode, setCreatedBookingCode] = useState<string | null>(null);
+  const [createdBookingStatus, setCreatedBookingStatus] = useState<string | null>(null);
+  /** A delayed chalet's booking: awaiting the owner, with no money taken yet. */
+  const isBookingRequest = createdBookingStatus === "pending_approval";
   // The payment session of the booking we already created. Kept so an abandoned
   // payment can be RESUMED instead of creating a second booking for the same
   // slot — see the resume branch in handleNext.
@@ -656,16 +518,6 @@ export default function CompleteBookingScreen() {
     null,
   );
 
-  // Card Details State
-  const [cardNum, setCardNum] = useState("");
-  const [expiry, setExpiry] = useState("");
-  const [cvv, setCvv] = useState("");
-  const [selectedMethod, setSelectedMethod] = useState<
-    "wayl" | "wallet"
-  >("wayl");
-
-  const { data: platformConfig } = useGetPlatformConfigQuery({});
-  const [cardName, setCardName] = useState("");
   const [notes, setNotes] = useState("");
 
   // The guest count is seeded from the search filter, which is global, persisted
@@ -686,57 +538,50 @@ export default function CompleteBookingScreen() {
     if (chaletCapacity <= 0) return;
     setAdultCount((prev) => (prev > chaletCapacity ? chaletCapacity : prev));
   }, [chaletCapacity]);
-  const [childrenCount, setChildrenCount] = useState(0);
   const [guestType, setGuestType] = useState<"FAMILY" | "YOUTH">("FAMILY");
   const [idImage1, setIdImage1] = useState<string | null>(null);
   const [idImage2, setIdImage2] = useState<string | null>(null);
 
-  // Payment status polling
-  const [isWaitingForPayment, setIsWaitingForPayment] = useState(false);
-  const [pollingStatus, setPollingStatus] = useState<
-    "pending" | "success" | "failed" | "timeout"
-  >("pending");
-  const [paymentTransactionId, setPaymentTransactionId] = useState<
-    string | null
-  >(null);
-  const [checkPaymentStatus] = useLazyGetPaymentStatusQuery();
+  // Re-opens a payment session for a booking that is still awaiting payment.
+  // Needed because an abandoned session leaves this customer's OWN booking
+  // holding the slot, and the only way back to it is a fresh session — the
+  // paymentUrl from creation is gone once this screen unmounts.
+  const [reopenPaymentSession] = usePayDelayedBookingMutation();
   const processingSheetRef = React.useRef<BottomSheetModal>(null);
-  // Holds the payment-polling interval so it can be cleared on unmount.
-  const pollingIntervalRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Clear the polling interval if the screen unmounts mid-poll.
-  useEffect(() => {
-    return () => {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-        pollingIntervalRef.current = null;
-      }
-    };
-  }, []);
+  const {
+    status: pollingStatus,
+    transactionId: paymentTransactionId,
+    open: openPaymentSession,
+    recheck: recheckPayment,
+    setTransactionId: setPaymentTransactionId,
+  } = usePaymentSession({
+    onSuccess: (txnId: string) => {
+      trackPurchase(txnId);
+      // The confirmation animation in the processing sheet is worth watching
+      // before it is swapped for the receipt.
+      setTimeout(() => {
+        processingSheetRef.current?.dismiss();
+        successSheetRef.current?.present();
+      }, 1500);
+    },
+    onFailure: () => {
+      setTimeout(() => processingSheetRef.current?.dismiss(), 1500);
+    },
+    onSessionOpen: () => processingSheetRef.current?.present(),
+  });
 
-  const getDateKeyForDay = useCallback(
-    (day: number) =>
-      getLocalDateKey(
-        new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day),
-      ),
-    [currentMonth],
-  );
-  const isAllowedFilterDay = useCallback(
-    (day: number) =>
-      !hasFilterDates || filterDateKeys.has(getDateKeyForDay(day)),
-    [filterDateKeys, getDateKeyForDay, hasFilterDates],
-  );
   const pricingCalculations = useMemo(() => {
     let totalBasePrice = 0;
     let totalExtraGuestsPrice = 0;
-    let explanationRows: Array<{
+    const explanationRows: {
       day: number;
       dateStr: string;
       basePrice: number;
       extraGuestsCount: number;
       extraGuestsPrice: number;
       capacityLimit: number;
-    }> = [];
+    }[] = [];
 
     const totalGuestsNow = adultCount;
 
@@ -802,7 +647,9 @@ export default function CompleteBookingScreen() {
       explanationRows,
       totalGuestsNow,
     };
-  }, [selectedShifts, selectedDates, chaletDetails, adultCount, currentMonth, getDayOfWeek, getDateForDay, amenitiesPrice]);
+    // `currentMonth` is not listed: it only ever reaches this through
+    // getDateForDay/getDayOfWeek, which already depend on it.
+  }, [selectedShifts, selectedDates, chaletDetails, adultCount, getDayOfWeek, getDateForDay, amenitiesPrice]);
 
   const {
     shiftBasePrice,
@@ -883,7 +730,6 @@ export default function CompleteBookingScreen() {
   const depositPercentage =
     Number(chaletDetails?.depositPercentage) || Number(chaletDetails?.minDepositPercentage) || 0;
   const depositAmount = Math.round((totalPrice * depositPercentage) / 100);
-  const remainingAmount = totalPrice - depositAmount;
 
   const selectedShiftPrice = shiftBasePrice;
 
@@ -917,7 +763,6 @@ export default function CompleteBookingScreen() {
       adultCount,
       guestType,
       paymentType,
-      selectedMethod,
     ].join("|");
   }, [
     chaletId,
@@ -927,8 +772,57 @@ export default function CompleteBookingScreen() {
     adultCount,
     guestType,
     paymentType,
-    selectedMethod,
   ]);
+
+  // ── Tab gating ─────────────────────────────────────────────────────────────
+  // The tabs are a linear checkout, not free navigation: WHERE prices and books
+  // whatever WHEN and WHO collected. Tapping straight to it skipped the ID-photo
+  // upload, and the customer found out from a raw Arabic-only 400 thrown by the
+  // API. Each tab states what it needs, in one place, so the lock, the message
+  // and the submit guard can never disagree.
+  const whenBlocker = useMemo(() => {
+    if (selectedDates.length === 0) {
+      return isArabic ? "اختر يوم الحجز أولاً" : "Pick a booking date first";
+    }
+    if (!selectedShifts[selectedDates[0]]) {
+      return isArabic ? "اختر الفترة (الشفت) لهذا اليوم" : "Pick a shift for that day";
+    }
+    return null;
+  }, [selectedDates, selectedShifts, isArabic]);
+
+  const whoBlocker = useMemo(() => {
+    if (chaletCapacity > 0 && adultCount > chaletCapacity) {
+      return isArabic
+        ? `السعة القصوى لهذا الشاليه ${chaletCapacity} شخص`
+        : `This chalet takes at most ${chaletCapacity} guests`;
+    }
+    if (!idImage1 || !idImage2) {
+      return isArabic
+        ? "ارفع صورتي الهوية لإتمام الحجز"
+        : "Upload both ID photos to continue";
+    }
+    return null;
+  }, [chaletCapacity, adultCount, idImage1, idImage2, isArabic]);
+
+  const lockedTabs = useMemo<TabType[]>(() => {
+    const locked: TabType[] = [];
+    if (whenBlocker) locked.push("WHO", "WHERE");
+    else if (whoBlocker) locked.push("WHERE");
+    return locked;
+  }, [whenBlocker, whoBlocker]);
+
+  /** Name + hours of the shift chosen for the booked day, for the receipt. */
+  const selectedShiftLabel = useMemo(() => {
+    const day = selectedDates[0];
+    if (day === undefined) return "";
+    const shift = (availableShifts as any[])?.find(
+      (s: any) => s.id === selectedShifts[day],
+    );
+    if (!shift) return "";
+    const name = pickTranslation(shift.name, isArabic);
+    // The LRM marks keep the 24-hour range from reversing inside Arabic text.
+    return `${name} (‎${formatShiftTime(shift.startTime)} - ${formatShiftTime(shift.endTime)}‎)`;
+  }, [availableShifts, selectedShifts, selectedDates, isArabic, formatShiftTime]);
 
   const bookingDateString =
     selectedDates.length > 0
@@ -964,10 +858,152 @@ export default function CompleteBookingScreen() {
       transaction_id: String(transactionId),
       currency: ANALYTICS_CURRENCY,
       value: Number(totalPrice) || 0,
-      payment_type: `${selectedMethod}_${paymentType.toLowerCase()}`,
+      payment_type: `${PAYMENT_METHOD}_${paymentType.toLowerCase()}`,
       deposit_amount: Number(depositAmount) || 0,
       items: buildBookingItems(),
     });
+  };
+
+  /**
+   * The slot is held by a booking this customer already created and never paid
+   * for. Offer to finish that payment instead of leaving them locked out of
+   * their own slot until the hold expires.
+   *
+   * `openPaymentSession` (the in-memory path) only works while this screen has
+   * never unmounted. This asks the API for a FRESH session on the existing
+   * booking, so it also works after the app was killed mid-payment.
+   */
+  const promptResumePendingBooking = (heldBookingId: string) => {
+    Alert.alert(
+      isArabic ? "لديك حجز بانتظار الدفع" : "Payment already pending",
+      isArabic
+        ? "لديك حجز لهذا اليوم والفترة بانتظار الدفع. أكمل دفع الحجز الحالي بدل إنشاء حجز جديد."
+        : "You already have a booking awaiting payment for this day and shift. Continue that payment instead of creating a new one.",
+      [
+        {
+          text: isArabic ? "عرض الحجز" : "View booking",
+          style: "cancel",
+          onPress: () => {
+            router.replace({
+              pathname: "/(tabs)/(customer)/booking-success",
+              params: { id: heldBookingId },
+            });
+          },
+        },
+        {
+          text: isArabic ? "إكمال الدفع" : "Continue payment",
+          onPress: () => {
+            void resumePendingBookingPayment(heldBookingId);
+          },
+        },
+      ],
+    );
+  };
+
+  const resumePendingBookingPayment = async (heldBookingId: string) => {
+    try {
+      const result = await reopenPaymentSession({
+        id: heldBookingId,
+        paymentMethod: PAYMENT_METHOD,
+        paymentModel: paymentType.toLowerCase(),
+      }).unwrap();
+
+      if (result?.payment?.paymentUrl) {
+        setCreatedBookingId(heldBookingId);
+        setPaymentTransactionId(result.payment.transactionId);
+        setPaymentUrl(result.payment.paymentUrl);
+        setPendingBookingKey(currentBookingKey);
+        await openPaymentSession(
+          result.payment.paymentUrl,
+          result.payment.transactionId,
+        );
+        return;
+      }
+
+      // A wallet payment settles server-side with no session to open.
+      if (result?.booking?.status === "confirmed") {
+        setCreatedBookingId(heldBookingId);
+        trackPurchase(heldBookingId);
+        successSheetRef.current?.present();
+        return;
+      }
+
+      // No URL and not confirmed — send them to the booking rather than leaving
+      // them on a checkout screen that can only fail the same way again.
+      router.replace({
+        pathname: "/(tabs)/(customer)/booking-success",
+        params: { id: heldBookingId },
+      });
+    } catch (error: any) {
+      Alert.alert(
+        isArabic ? "خطأ" : "Error",
+        error?.data?.message ||
+          (isArabic
+            ? "تعذّر إكمال الدفع. افتح الحجز من قائمة حجوزاتك وحاول مرة أخرى."
+            : "Could not resume the payment. Open the booking from your bookings list and try again."),
+      );
+    }
+  };
+
+  /**
+   * The booking API reads the ID photos off the customer's PROFILE, not off this
+   * form, so leaving the WHO tab has to persist them first. Every route to the
+   * WHERE tab goes through here — the footer button and the tab bar both — since
+   * skipping it produced a booking that only failed at submit, with the API's
+   * Arabic-only rejection.
+   */
+  const ensureIdUploadedToProfile = async (): Promise<boolean> => {
+    if (!idImage1 || !idImage2) return false;
+    try {
+      const idFormData = new FormData();
+      await appendImagePart(idFormData, "idCardFrontImage", idImage1, "id_front");
+      await appendImagePart(idFormData, "idCardBackImage", idImage2, "id_back");
+      await uploadIdCardImages(idFormData).unwrap();
+      return true;
+    } catch (e: any) {
+      Alert.alert(
+        isArabic ? "تنبيه" : "Alert",
+        e instanceof ImagePrepareError
+          ? (isArabic
+              ? "تعذّرت معالجة صورة الهوية، جرّب صورة أخرى"
+              : "Could not process the ID photo, try another photo")
+          : e?.data?.message ||
+              (isArabic
+                ? "تعذّر رفع صور الهوية، يرجى المحاولة مرة أخرى"
+                : "Failed to upload ID photos, please try again"),
+      );
+      return false;
+    }
+  };
+
+  /**
+   * Going BACK is always free — the customer is only reviewing what they already
+   * entered. Going forward past an unfinished tab is not, and the tap says which
+   * one and why rather than doing nothing.
+   */
+  const handleTabPress = async (tab: TabType) => {
+    const order: TabType[] = ["WHEN", "WHO", "WHERE"];
+    if (order.indexOf(tab) <= order.indexOf(activeTab)) {
+      setActiveTab(tab);
+      return;
+    }
+
+    const blocker = whenBlocker || (tab === "WHERE" ? whoBlocker : null);
+    if (blocker) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      setActiveTab(whenBlocker ? "WHEN" : "WHO");
+      Alert.alert(isArabic ? "تنبيه" : "Alert", blocker);
+      return;
+    }
+
+    // Any forward jump to WHERE leaves the WHO tab, including the one that skips
+    // straight over it from WHEN.
+    if (tab === "WHERE") {
+      if (isUploadingId) return;
+      if (!(await ensureIdUploadedToProfile())) return;
+    }
+
+    setActiveTab(tab);
   };
 
   const handleNext = async () => {
@@ -978,6 +1014,12 @@ export default function CompleteBookingScreen() {
     if (isCreatingBooking || isUploadingId) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     if (activeTab === "WHEN") {
+      // Advancing with no date (or a date with no shift) carried an empty
+      // selection all the way to the submit button, where it failed.
+      if (whenBlocker) {
+        Alert.alert(isArabic ? "تنبيه" : "Alert", whenBlocker);
+        return;
+      }
       setActiveTab("WHO");
     } else if (activeTab === "WHO") {
       // Capacity is checked BEFORE the ID upload: the backend rejects
@@ -1004,28 +1046,7 @@ export default function CompleteBookingScreen() {
         );
         return;
       }
-      // The booking API requires the ID photos on the customer's PROFILE
-      // (customer.idCardFrontImage/BackImage) — local form state isn't enough.
-      // Persist them now so the create-booking call passes the backend check.
-      try {
-        const idFormData = new FormData();
-        await appendImagePart(idFormData, "idCardFrontImage", idImage1, "id_front");
-        await appendImagePart(idFormData, "idCardBackImage", idImage2, "id_back");
-        await uploadIdCardImages(idFormData).unwrap();
-      } catch (e: any) {
-        Alert.alert(
-          isArabic ? "تنبيه" : "Alert",
-          e instanceof ImagePrepareError
-            ? (isArabic
-                ? "تعذّرت معالجة صورة الهوية، جرّب صورة أخرى"
-                : "Could not process the ID photo, try another photo")
-            : e?.data?.message ||
-                (isArabic
-                  ? "تعذّر رفع صور الهوية، يرجى المحاولة مرة أخرى"
-                  : "Failed to upload ID photos, please try again"),
-        );
-        return;
-      }
+      if (!(await ensureIdUploadedToProfile())) return;
       logEvent(ANALYTICS_EVENTS.BEGIN_CHECKOUT, {
         currency: ANALYTICS_CURRENCY,
         value: Number(totalPrice) || 0,
@@ -1087,6 +1108,20 @@ export default function CompleteBookingScreen() {
           return;
         }
 
+        // The API rejects a FAMILY/YOUTH booking without both ID photos on the
+        // customer's profile, in Arabic only. Catch it here so an English user
+        // gets a message they can read, on the tab that can fix it.
+        if (!idImage1 || !idImage2) {
+          Alert.alert(
+            isArabic ? "تنبيه" : "Alert",
+            isArabic
+              ? "يرجى رفع صورتي الهوية لإتمام الحجز"
+              : "Please upload both ID photos to complete the booking",
+          );
+          setActiveTab("WHO");
+          return;
+        }
+
         if (chaletId) {
           const bookings = selectedDates.map((day) => ({
             bookingDate: getLocalDateKey(getDateForDay(day)),
@@ -1121,7 +1156,7 @@ export default function CompleteBookingScreen() {
                 paymentType === "DEPOSIT"
                   ? Number(depositAmount) || 0
                   : Number(totalPrice) || 0,
-              payment_type: `${selectedMethod}_${paymentType.toLowerCase()}`,
+              payment_type: `${PAYMENT_METHOD}_${paymentType.toLowerCase()}`,
             });
           }
 
@@ -1130,11 +1165,13 @@ export default function CompleteBookingScreen() {
             shiftId: bookings[0].shiftId,
             bookingDate: bookings[0].bookingDate,
             adultsCount: adultCount,
+            // The screen never asks for children — the guest counter is a single
+            // "adults" number, and the API needs both fields to agree.
             childrenCount: 0,
             guestsCount: adultCount,
             ...(isDelayedBooking ? {} : {
-              paymentModel: paymentType.toLowerCase() as any,
-              paymentMethod: selectedMethod,
+              paymentModel: paymentType.toLowerCase() as "deposit" | "full",
+              paymentMethod: PAYMENT_METHOD,
             }),
             // Only the optional ones: mandatory amenities are applied server-side,
             // and echoing them back would be the app asserting a charge it does
@@ -1147,6 +1184,11 @@ export default function CompleteBookingScreen() {
             audienceType: guestType,
           }).unwrap();
 
+          // Every branch below shows the same receipt sheet, so the code and
+          // amounts it needs are captured once here.
+          setCreatedBookingCode(result.booking?.bookingCode || null);
+          setCreatedBookingStatus(result.booking?.status || null);
+
           if (result.booking?.status === "pending_approval" || !result.payment) {
             setCreatedBookingId(result.booking.id);
             // Not a paid purchase yet — track as a request/lead, not a purchase.
@@ -1156,23 +1198,7 @@ export default function CompleteBookingScreen() {
               transaction_id: String(result.booking.id),
               items: buildBookingItems(),
             });
-            Alert.alert(
-              isArabic ? "تم إرسال طلب الحجز" : "Booking Request Sent",
-              isArabic
-                ? "تم إرسال طلب الحجز بنجاح! سيقوم صاحب الشاليه بمراجعة طلبك، وسيصلك إشعار بالدفع فور الموافقة عليه."
-                : "Your booking request has been sent successfully! The owner will review your request, and you will receive a notification to pay once approved.",
-              [
-                {
-                  text: isArabic ? "موافق" : "OK",
-                  onPress: () => {
-                    router.replace({
-                      pathname: "/(tabs)/(customer)/booking-success",
-                      params: { id: result.booking.id },
-                    });
-                  },
-                },
-              ],
-            );
+            successSheetRef.current?.present();
           } else if (result.payment?.paymentUrl) {
             setCreatedBookingId(result.booking.id);
             setPaymentTransactionId(result.payment.transactionId);
@@ -1185,12 +1211,8 @@ export default function CompleteBookingScreen() {
               result.payment.paymentUrl,
               result.payment.transactionId,
             );
-          } else if (selectedMethod === "wallet") {
-            setCreatedBookingId(result.booking.id);
-            trackPurchase(result.booking.id);
-            successSheetRef.current?.present();
           } else {
-            // Handle cases where no URL is returned (e.g. error or test)
+            // Settled without a payment session — the API confirmed it outright.
             setCreatedBookingId(result.booking.id);
             trackPurchase(result.booking.id);
             successSheetRef.current?.present();
@@ -1205,6 +1227,18 @@ export default function CompleteBookingScreen() {
         }
       } catch (error: any) {
         const message = String(error?.data?.message || "");
+
+        // The API identified the slot's holder as this customer's own unpaid
+        // booking and handed back its id. This is the path that survives the
+        // screen being unmounted (killed app, backed out and came back), where
+        // the in-memory paymentUrl below is long gone.
+        if (error?.data?.key === "SLOT_HELD_BY_OWN_PENDING_BOOKING") {
+          const heldBookingId = error?.data?.variables?.bookingId;
+          if (heldBookingId) {
+            promptResumePendingBooking(heldBookingId);
+            return;
+          }
+        }
 
         // "This shift is not available" after we already created a booking for
         // this exact slot means the customer's OWN unpaid booking is what is
@@ -1319,10 +1353,7 @@ export default function CompleteBookingScreen() {
       // Resolve availability against the picked date DIRECTLY. Going through
       // isShiftBookedForDay here would read `selectedDateRange`, which still
       // holds the *previous* selection at this point in the render.
-      const pickedKey = getLocalDateKey(picked);
-      const blockedOnPicked = blockedShiftsByDate[pickedKey];
-      const isBlocked = (shiftId: string) =>
-        blockedOnPicked?.has(shiftId) ?? false;
+      const isBlocked = (shiftId: string) => isShiftBookedOnDate(picked, shiftId);
 
       // A shift with no pricing (or the <= 1 "closed" sentinel) for that weekday
       // can't be booked either — auto-selecting one produced a 0 total and a
@@ -1358,7 +1389,7 @@ export default function CompleteBookingScreen() {
       availableShifts,
       filteredSelectedShift,
       selectedShifts,
-      blockedShiftsByDate,
+      isShiftBookedOnDate,
     ],
   );
 
@@ -1399,92 +1430,6 @@ export default function CompleteBookingScreen() {
   const handleDecrementAdults = useCallback(() => {
     setAdultCount(Math.max(1, adultCount - 1));
   }, [adultCount]);
-
-  const startPaymentPolling = async (transactionId: string) => {
-    let attempts = 0;
-    const maxAttempts = 20; // 20 * 3s = 60s (1 minute)
-
-    // Clear any previous interval before starting a new one.
-    if (pollingIntervalRef.current) {
-      clearInterval(pollingIntervalRef.current);
-      pollingIntervalRef.current = null;
-    }
-
-    const interval = setInterval(async () => {
-      attempts++;
-      try {
-        const result = await checkPaymentStatus(transactionId).unwrap();
-        if (result?.status === "success") {
-          clearInterval(interval);
-          pollingIntervalRef.current = null;
-          setPollingStatus("success");
-          setIsWaitingForPayment(false);
-          dismissBrowser();
-          trackPurchase(transactionId);
-          // Wait a bit then show success sheet
-          setTimeout(() => {
-            processingSheetRef.current?.dismiss();
-            successSheetRef.current?.present();
-          }, 1500);
-          // Terminal result — must NOT fall through to the attempt-count check
-          // below, which on the final attempt overwrote this success with
-          // "timeout" in the same tick and told the customer their completed
-          // payment had failed to verify.
-          return;
-        } else if (result?.status === "failed") {
-          clearInterval(interval);
-          pollingIntervalRef.current = null;
-          setPollingStatus("failed");
-          setIsWaitingForPayment(false);
-          dismissBrowser();
-          setTimeout(() => {
-            processingSheetRef.current?.dismiss();
-          }, 1500);
-          return; // terminal — see the success branch above
-        }
-      } catch (e) {
-        // Only log actual network errors, ignore WebBrowser close errors
-        if (e && typeof e === "object" && "status" in e) {
-          console.error("Polling error", e);
-        }
-      }
-
-      if (attempts >= maxAttempts) {
-        clearInterval(interval);
-        pollingIntervalRef.current = null;
-        setPollingStatus("timeout");
-        setIsWaitingForPayment(false);
-        dismissBrowser();
-        setTimeout(() => {
-          processingSheetRef.current?.dismiss();
-        }, 1500);
-      }
-    }, 3000);
-
-    // Track the interval so it can be cleared on unmount (prevents the leak /
-    // state updates on an unmounted component).
-    pollingIntervalRef.current = interval;
-  };
-
-  // Opens (or RE-opens) a payment session and polls it. Used both for a freshly
-  // created booking and to resume the one an abandoned payment left pending, so
-  // the two paths can't drift apart.
-  const openPaymentSession = async (url: string, transactionId: string) => {
-    setIsWaitingForPayment(true);
-    setPollingStatus("pending");
-    processingSheetRef.current?.present();
-
-    try {
-      await WebBrowser.openAuthSessionAsync(url, "sununo://payment-callback");
-      // Poll regardless of the browser result — the gateway may confirm after
-      // the user closes the page.
-      startPaymentPolling(transactionId);
-    } catch (e) {
-      console.error("Browser error", e);
-      setIsWaitingForPayment(false);
-      processingSheetRef.current?.dismiss();
-    }
-  };
 
   const renderDetailsTab = () => (
     <Animated.View
@@ -1689,44 +1634,18 @@ export default function CompleteBookingScreen() {
               </View>
             )}
 
-            {/* Coupon entry */}
-            <View style={styles.couponBox}>
-              {appliedCoupon ? (
-                <View style={[styles.row, { flexDirection: rowDirection, alignItems: "center" }]}>
-                  <SolarCheckCircleBoldDuotone size={16} color={Colors.secondary} />
-                  <ThemedText style={[styles.couponApplied, { textAlign }]} numberOfLines={1}>
-                    {isArabic ? `تم تطبيق ${appliedCoupon.code}` : `${appliedCoupon.code} applied`}
-                  </ThemedText>
-                  <TouchableOpacity onPress={removeCoupon} hitSlop={8}>
-                    <ThemedText style={styles.couponRemove}>{isArabic ? "إزالة" : "Remove"}</ThemedText>
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                <View style={[styles.row, { flexDirection: rowDirection, gap: 8 }]}>
-                  <TextInput
-                    style={[styles.couponInput, { textAlign: inputTextAlign }]}
-                    value={couponInput}
-                    onChangeText={(text) => { setCouponInput(text.toUpperCase()); setCouponError(null); }}
-                    placeholder={isArabic ? "لديك كود خصم؟" : "Have a discount code?"}
-                    placeholderTextColor={Colors.text.muted}
-                    autoCapitalize="characters"
-                    autoCorrect={false}
-                  />
-                  <TouchableOpacity
-                    style={[styles.couponApply, (!couponInput.trim() || isCheckingCoupon) && { opacity: 0.5 }]}
-                    onPress={applyCoupon}
-                    disabled={!couponInput.trim() || isCheckingCoupon}
-                  >
-                    <ThemedText style={styles.couponApplyText}>
-                      {isCheckingCoupon ? (isArabic ? "..." : "...") : isArabic ? "تطبيق" : "Apply"}
-                    </ThemedText>
-                  </TouchableOpacity>
-                </View>
-              )}
-              {couponError && (
-                <ThemedText style={[styles.couponError, { textAlign }]}>{couponError}</ThemedText>
-              )}
-            </View>
+            <CouponField
+              value={couponInput}
+              onChangeValue={(text) => {
+                setCouponInput(text);
+                setCouponError(null);
+              }}
+              appliedCode={appliedCoupon?.code}
+              error={couponError}
+              isChecking={isCheckingCoupon}
+              onApply={applyCoupon}
+              onRemove={removeCoupon}
+            />
 
             <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection }]}>
               <ThemedText style={[styles.infoLabel, { fontFamily: "IBMPlexSansArabic-Bold", textAlign }]}>
@@ -1910,14 +1829,27 @@ export default function CompleteBookingScreen() {
             </ThemedText>
           </PressableScale>
 
+          <CancellationPolicyCard
+            tiers={cancellationTiers}
+            isLoading={isLoadingCancellationPolicies}
+          />
+
           <View style={styles.agreementWrapper}>
             <ThemedText style={styles.agreementText}>
               {t("booking.agreement")}{" "}
-              <ThemedText style={styles.agreementLink}>
+              <ThemedText
+                style={styles.agreementLink}
+                onPress={() => openChaletInfo("terms")}
+                suppressHighlighting
+              >
                 {t("booking.terms")}
               </ThemedText>{" "}
               {t("common.and")}{" "}
-              <ThemedText style={styles.agreementLink}>
+              <ThemedText
+                style={styles.agreementLink}
+                onPress={() => openChaletInfo("policies")}
+                suppressHighlighting
+              >
                 {t("booking.policy")}
               </ThemedText>
             </ThemedText>
@@ -1986,178 +1918,51 @@ export default function CompleteBookingScreen() {
     </BottomSheetModal>
   );
 
-  const renderSuccessSheet = () => (
-    <BottomSheetModal
-      ref={successSheetRef}
-      index={0}
-      snapPoints={["50%"]}
-      backdropComponent={(props) => (
-        <BottomSheetBackdrop
-          {...props}
-          disappearsOnIndex={-1}
-          appearsOnIndex={0}
+  // Nothing on this screen is meaningful without the chalet: the shifts, the
+  // capacity, the prices and the deposit all come from it. Both states replace
+  // the whole body rather than patching individual rows, so there is never a
+  // moment where a real-looking 0 IQD is on screen.
+  if (isChaletError) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <HeaderSection
+          title={t("headers.bookingComplete")}
+          showBackButton
+          showLogo={false}
+          userType={userType}
         />
-      )}
-      handleIndicatorStyle={{ backgroundColor: "#CBD5E1", width: 40 }}
-    >
-      <BottomSheetView style={styles.successSheetContent}>
-        <View style={styles.successIconCircle}>
-          <SolarCheckCircleBoldDuotone
-            size={normalize.width(72)}
-            color="#15AB64"
-          />
+        <ErrorState
+          message={
+            isArabic
+              ? "تعذّر تحميل بيانات الشاليه، وبدونها لا نقدر نعرض الأسعار والفترات."
+              : "Could not load this chalet, and without it we can't show prices or shifts."
+          }
+          onRetry={refetchChalet}
+          onBack={() => router.back()}
+        />
+      </SafeAreaView>
+    );
+  }
+
+  if (isLoadingChalet || !chaletDetails) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <HeaderSection
+          title={t("headers.bookingComplete")}
+          showBackButton
+          showLogo={false}
+          userType={userType}
+        />
+        <View style={styles.checkoutSkeleton}>
+          <SkeletonBox width="100%" height={80} borderRadius={24} />
+          <SkeletonBox width="60%" height={20} borderRadius={8} />
+          <SkeletonBox width="100%" height={96} borderRadius={16} />
+          <SkeletonBox width="100%" height={96} borderRadius={16} />
+          <SkeletonBox width="100%" height={96} borderRadius={16} />
         </View>
-        <ThemedText style={styles.successTitle}>
-          {t("booking.successTitle") || "تم الحجز بنجاح!"}
-        </ThemedText>
-        <ThemedText style={styles.successSub}>
-          {t("booking.successMsg") ||
-            "لقد تم تأكيد حجزك، يمكنك البدء الآن في متابعة التفاصيل."}
-        </ThemedText>
-
-        <PrimaryButton
-          label={t("booking.goToDetails") || "استعراض تفاصيل الحجز"}
-          onPress={() => {
-            successSheetRef.current?.dismiss();
-            router.push({
-              pathname: "/(tabs)/(customer)/booking-success",
-              params: { id: createdBookingId },
-            });
-          }}
-          activeColor="#15AB64"
-          style={styles.successBtn}
-        />
-      </BottomSheetView>
-    </BottomSheetModal>
-  );
-
-  const renderProcessingSheet = () => (
-    <BottomSheetModal
-      ref={processingSheetRef}
-      index={0}
-      snapPoints={["55%"]}
-      enablePanDownToClose={pollingStatus !== "pending"}
-      backdropComponent={(props) => (
-        <BottomSheetBackdrop
-          {...props}
-          disappearsOnIndex={-1}
-          appearsOnIndex={0}
-        />
-      )}
-      handleIndicatorStyle={{ backgroundColor: "#CBD5E1", width: 40 }}
-    >
-      <BottomSheetView style={styles.successSheetContent}>
-        {pollingStatus === "pending" ? (
-          <>
-            <ActivityIndicator
-              size="large"
-              color={Colors.primary}
-              style={{ marginTop: 40, marginBottom: 20 }}
-            />
-            <ThemedText style={styles.successTitle}>
-              {isArabic ? "جاري التحقق من الدفع..." : "Verifying Payment..."}
-            </ThemedText>
-            <ThemedText style={styles.successSub}>
-              {isArabic
-                ? "يرجى الانتظار بينما نتأكد من حالة العملية، قد يستغرق ذلك لحظات."
-                : "Please wait while we confirm your transaction, this may take a few moments."}
-            </ThemedText>
-          </>
-        ) : pollingStatus === "success" ? (
-          <>
-            <LottieView
-              source={require("../../../components/icons/motions/success.json")}
-              autoPlay
-              loop={false}
-              style={[styles.lottieIcon, { height: normalize.height(120) }]}
-              resizeMode="contain"
-            />
-            <ThemedText style={styles.successTitle}>
-              {isArabic ? "تم الدفع بنجاح!" : "Payment Successful!"}
-            </ThemedText>
-            <ThemedText style={styles.successSub}>
-              {isArabic
-                ? "تم تأكيد الدفع بنجاح، جاري تحويلك..."
-                : "Payment confirmed successfully, redirecting..."}
-            </ThemedText>
-          </>
-        ) : pollingStatus === "failed" ? (
-          <>
-            <View
-              style={[
-                styles.methodIconContainer,
-                {
-                  backgroundColor: "#FEE2E2",
-                  width: 80,
-                  height: 80,
-                  borderRadius: 40,
-                  marginBottom: 20,
-                },
-              ]}
-            >
-              <ThemedText style={{ fontSize: 14 }}>❌</ThemedText>
-            </View>
-            <ThemedText style={[styles.successTitle, { color: "#EF4444" }]}>
-              {isArabic ? "فشلت عملية الدفع" : "Payment Failed"}
-            </ThemedText>
-            <ThemedText style={styles.successSub}>
-              {isArabic
-                ? "نعتذر، لم نتمكن من تأكيد عملية الدفع. يرجى المحاولة مرة أخرى."
-                : "Sorry, we couldn't confirm the payment. Please try again."}
-            </ThemedText>
-            <PrimaryButton
-              label={isArabic ? "إغلاق" : "Close"}
-              onPress={() => processingSheetRef.current?.dismiss()}
-              style={{ width: "100%", height: 56, marginTop: 10 }}
-            />
-          </>
-        ) : (
-          <>
-            <View
-              style={[
-                styles.methodIconContainer,
-                {
-                  backgroundColor: "#FEF3C7",
-                  width: 80,
-                  height: 80,
-                  borderRadius: 40,
-                  marginBottom: 20,
-                },
-              ]}
-            >
-              <ThemedText style={{ fontSize: 14 }}>⏳</ThemedText>
-            </View>
-            <ThemedText style={[styles.successTitle, { color: "#F59E0B" }]}>
-              {isArabic ? "انتهت مهلة التحقق" : "Verification Timeout"}
-            </ThemedText>
-            <ThemedText style={styles.successSub}>
-              {isArabic
-                ? "لم نتلقَّ تأكيداً بعد. يرجى مراجعة قائمة حجوزاتك لاحقاً للتأكد من الحالة."
-                : "We haven't received confirmation yet. Please check your bookings later for status."}
-            </ThemedText>
-            {paymentTransactionId ? (
-              <PrimaryButton
-                label={isArabic ? "إعادة التحقق" : "Check Status Again"}
-                onPress={() => {
-                  setPollingStatus("pending");
-                  startPaymentPolling(paymentTransactionId);
-                }}
-                style={{ width: "100%", height: 56, marginTop: 10 }}
-              />
-            ) : null}
-            <PrimaryButton
-              label={isArabic ? "الذهاب للحجوزات" : "Go to Bookings"}
-              onPress={() => {
-                processingSheetRef.current?.dismiss();
-                router.replace("/(tabs)/(customer)/bookings");
-              }}
-              style={{ width: "100%", height: 56, marginTop: 10 }}
-            />
-          </>
-        )}
-      </BottomSheetView>
-    </BottomSheetModal>
-  );
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -2175,9 +1980,10 @@ export default function CompleteBookingScreen() {
         <View style={styles.tabsContainer}>
           <MainTabs
             activeTab={activeTab}
-            onChange={setActiveTab}
+            onChange={handleTabPress}
             tabs={BOOKING_TABS}
             labels={{ WHERE: isArabic ? "التفاصيل" : "Details" }}
+            disabledTabs={lockedTabs}
           />
         </View>
 
@@ -2712,40 +2518,40 @@ export default function CompleteBookingScreen() {
       </View>
 
       {renderCalendarSheet()}
-      {renderSuccessSheet()}
-      {renderProcessingSheet()}
+      <BookingReceiptSheet
+        ref={successSheetRef}
+        bookingCode={createdBookingCode}
+        bookingDate={bookingDateString}
+        shiftLabel={selectedShiftLabel}
+        amount={
+          isBookingRequest || paymentType !== "DEPOSIT" ? totalPrice : depositAmount
+        }
+        isRequest={isBookingRequest}
+        isDeposit={paymentType === "DEPOSIT"}
+        onViewBooking={() => {
+          successSheetRef.current?.dismiss();
+          router.replace({
+            pathname: "/(tabs)/(customer)/booking-success",
+            params: { id: createdBookingId },
+          });
+        }}
+      />
+
+      <PaymentProcessingSheet
+        ref={processingSheetRef}
+        status={pollingStatus}
+        onRecheck={paymentTransactionId ? recheckPayment : undefined}
+        onClose={() => processingSheetRef.current?.dismiss()}
+        onGoToBookings={() => {
+          processingSheetRef.current?.dismiss();
+          router.replace("/(tabs)/(customer)/bookings");
+        }}
+      />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  couponBox: {
-    marginTop: normalize.height(8),
-    marginBottom: normalize.height(4),
-    gap: normalize.height(6),
-  },
-  couponInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: normalize.radius(10),
-    paddingHorizontal: normalize.width(12),
-    paddingVertical: normalize.height(9),
-    fontSize: normalize.font(13),
-    color: Colors.text.primary,
-    backgroundColor: Colors.white,
-    letterSpacing: 1,
-  },
-  couponApply: {
-    justifyContent: "center",
-    paddingHorizontal: normalize.width(16),
-    borderRadius: normalize.radius(10),
-    backgroundColor: Colors.primary,
-  },
-  couponApplyText: { color: "white", fontSize: normalize.font(13), fontFamily: "IBMPlexSansArabic-Medium" },
-  couponApplied: { flex: 1, marginHorizontal: normalize.width(8), fontSize: normalize.font(13), color: Colors.secondary },
-  couponRemove: { fontSize: normalize.font(12), color: Colors.error, textDecorationLine: "underline" },
-  couponError: { fontSize: normalize.font(11), color: Colors.error, lineHeight: normalize.font(17) },
   container: { flex: 1, backgroundColor: "#FFFFFF" },
   scrollContent: { paddingBottom: 150, paddingHorizontal: 16 },
   tabsContainer: { marginTop: 15, alignItems: "center" },
@@ -3089,42 +2895,11 @@ const styles = StyleSheet.create({
   rowInputs: { flexDirection: "row" },
 
   // Success Sheet Styles
-  successSheetContent: {
-    padding: 25,
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
+  checkoutSkeleton: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    gap: 16,
   },
-  lottieIcon: {
-    width: 140,
-    height: 140,
-    alignSelf: "center",
-    marginBottom: 15,
-  },
-  successIconCircle: {
-    width: normalize.width(110),
-    height: normalize.width(110),
-    borderRadius: normalize.width(55),
-    backgroundColor: "#E7F8EF",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 16,
-  },
-  successTitle: {
-    fontSize: normalize.font(14),
-    fontFamily: "IBMPlexSansArabic-SemiBold",
-    color: "#1E293B",
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  successSub: {
-    fontSize: normalize.font(14),
-    color: "#64748B",
-    textAlign: "center",
-    marginBottom: 25,
-    lineHeight: 22,
-    fontFamily: "IBMPlexSansArabic-Medium",
-  },
-  successBtn: { width: "100%", height: 56 },
 
   // Details Styles
   detailsContainer: { marginTop: 15 },
@@ -3290,14 +3065,6 @@ const styles = StyleSheet.create({
   methodCardActive: {
     borderColor: Colors.primary,
     backgroundColor: "#F0F7FF",
-  },
-  methodIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 8,
   },
   methodName: {
     fontSize: normalize.font(8),

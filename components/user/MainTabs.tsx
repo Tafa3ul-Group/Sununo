@@ -36,6 +36,13 @@ interface MainTabsProps {
   onChange: (tab: TabType) => void;
   tabs?: TabType[];
   labels?: TabLabels;
+  /**
+   * Tabs the user has not earned yet. They are dimmed but still tappable, and
+   * `onChange` still fires — the parent owns `activeTab`, so it can refuse the
+   * move and say why. Silently swallowing the tap would leave the customer
+   * pressing a tab that never responds.
+   */
+  disabledTabs?: TabType[];
 }
 
 const TAB_COLORS: Record<TabType, string> = {
@@ -50,6 +57,7 @@ export function MainTabs({
   onChange,
   tabs = DEFAULT_TABS,
   labels = {},
+  disabledTabs = [],
 }: MainTabsProps) {
   const { t } = useTranslation();
   const { isRTL: isArabic } = useDirection();
@@ -197,6 +205,8 @@ export function MainTabs({
                 ? t("booking.mano")
                 : t("booking.where"));
 
+          const isLocked = tab !== activeTab && disabledTabs.includes(tab);
+
           return (
             <TouchableOpacity
               key={tab}
@@ -205,8 +215,9 @@ export function MainTabs({
                   onChange(tab);
                 }
               }}
-              style={styles.tabButton}
+              style={[styles.tabButton, isLocked && styles.tabButtonLocked]}
               activeOpacity={1}
+              accessibilityState={{ disabled: isLocked, selected: tab === activeTab }}
             >
               <AnimatedText style={[styles.tabText, textStyle]}>
                 {label}
@@ -240,6 +251,9 @@ const styles = StyleSheet.create({
     height: "100%",
     alignItems: "center",
     justifyContent: "center",
+  },
+  tabButtonLocked: {
+    opacity: 0.35,
   },
   tabText: {
     fontSize: 14,

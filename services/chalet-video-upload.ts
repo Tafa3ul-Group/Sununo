@@ -45,10 +45,54 @@ const tusHeaders = (ticket: VideoUploadTicket) => ({
   LibraryId: ticket.libraryId,
 });
 
+const B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+/**
+ * UTF-8 → base64, by hand.
+ *
+ * Hermes has no `btoa`, and reaching for it threw before the upload had sent a
+ * single byte — the server-side video record was already created, so Bunny was
+ * left holding an empty video stuck on "encoding" forever. Titles here are
+ * Arabic, so the string is encoded to UTF-8 bytes first rather than char codes.
+ */
+function base64(input: string): string {
+  const bytes: number[] = [];
+  for (const char of input) {
+    const code = char.codePointAt(0)!;
+    if (code < 0x80) bytes.push(code);
+    else if (code < 0x800) bytes.push(0xc0 | (code >> 6), 0x80 | (code & 0x3f));
+    else if (code < 0x10000)
+      bytes.push(
+        0xe0 | (code >> 12),
+        0x80 | ((code >> 6) & 0x3f),
+        0x80 | (code & 0x3f),
+      );
+    else
+      bytes.push(
+        0xf0 | (code >> 18),
+        0x80 | ((code >> 12) & 0x3f),
+        0x80 | ((code >> 6) & 0x3f),
+        0x80 | (code & 0x3f),
+      );
+  }
+
+  let out = "";
+  for (let i = 0; i < bytes.length; i += 3) {
+    const b0 = bytes[i];
+    const b1 = bytes[i + 1];
+    const b2 = bytes[i + 2];
+    out += B64[b0 >> 2];
+    out += B64[((b0 & 3) << 4) | ((b1 ?? 0) >> 4)];
+    out += b1 === undefined ? "=" : B64[((b1 & 15) << 2) | ((b2 ?? 0) >> 6)];
+    out += b2 === undefined ? "=" : B64[b2 & 63];
+  }
+  return out;
+}
+
 /** TUS metadata is a comma-separated list of `key base64(value)` pairs. */
 const encodeMetadata = (values: Record<string, string>) =>
   Object.entries(values)
-    .map(([key, value]) => `${key} ${btoa(unescape(encodeURIComponent(value)))}`)
+    .map(([key, value]) => `${key} ${base64(value)}`)
     .join(",");
 
 /**

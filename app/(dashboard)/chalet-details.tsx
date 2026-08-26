@@ -5,6 +5,7 @@ import { PredefinedTermsPicker, resolveRuleTermIds, type PredefinedTerm } from '
 import {
   ProfileShape,
   SolarBanknoteBold,
+  SolarCalendarBold,
   SolarCameraAddBold,
   SolarCheckCircleBold,
   SolarClockCircleBold,
@@ -21,7 +22,6 @@ import {
 } from "@/components/icons/solar-icons";
 import { useConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { StatusModal } from '@/components/ui/status-modal';
-import { AppMap } from '@/components/user/app-map';
 import { GuestCounter } from '@/components/user/guest-counter';
 import { LocationPickerModal } from '@/components/user/location-picker-modal';
 import { PrimaryButton } from '@/components/user/primary-button';
@@ -53,7 +53,7 @@ import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, Dimensions, Image, ScrollView, StatusBar, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Animated, Dimensions, Image, Pressable, ScrollView, StatusBar, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import Toast from 'react-native-toast-message';
 import { useDispatch } from 'react-redux';
@@ -82,6 +82,20 @@ const PAYMENT_DEADLINE_MAX = 2880;
 // SVG path definitions for the back.svg arrow
 const EN_BACK_PATH = "M16.9467 0L16.984 0.0319551C16.9918 0.563434 17.0077 1.11929 16.9957 1.64861C16.695 2.1116 15.6337 3.01428 15.2014 3.39902C13.6558 4.77432 11.2704 6.6148 10.1626 8.37453C9.66288 9.15572 9.33791 10.0399 9.21086 10.9642C8.96436 12.8514 9.38009 14.7291 10.5583 16.2312C11.0052 16.801 11.7141 17.4728 12.2449 17.9938L14.9532 20.6073C15.3814 21.0236 16.1485 21.753 16.4858 22.2046C16.5279 22.8117 16.5161 23.3931 16.4911 24C15.9468 23.8061 14.9671 23.3157 14.3994 23.0547L10.252 21.1529C8.50688 20.321 6.06286 19.4531 4.65913 18.0823C3.62117 17.0688 2.90487 15.0354 2.91724 13.5511C2.50593 13.4266 1.45728 12.5735 1.04287 12.2832C0.657269 12.013 0.433131 11.8682 0 11.6452C0.660173 11.1658 1.36011 10.727 2.0402 10.2775C2.31689 10.0946 2.85074 9.80927 3.07692 9.61241C3.09687 8.79841 3.17037 8.21858 3.46665 7.45396C3.85861 6.44889 4.52293 5.57892 5.38162 4.94608C6.58946 4.04845 8.20959 3.58706 9.56851 3.00721C10.8307 2.46863 12.0383 1.92053 13.319 1.40781C14.0582 1.1135 14.799 0.823459 15.5414 0.537748C16.0014 0.363519 16.5003 0.198389 16.9467 0Z";
 const AR_BACK_PATH = "M0.0532856 0L0.0160198 0.0319551C0.00823021 0.563434 -0.00767517 1.11929 0.00434875 1.64861C0.305 2.1116 1.3663 3.01428 1.79865 3.39902C3.34419 4.77432 5.72956 6.6148 6.83738 8.37453C7.33712 9.15572 7.66209 10.0399 7.78914 10.9642C8.03564 12.8514 7.61991 14.7291 6.44174 16.2312C5.99476 16.801 5.28592 17.4728 4.75508 17.9938L2.04678 20.6073C1.61862 21.0236 0.851501 21.753 0.514236 22.2046C0.472057 22.8117 0.483946 23.3931 0.508917 24C1.05319 23.8061 2.03285 23.3157 2.60061 23.0547L6.748 21.1529C8.49312 20.321 10.9371 19.4531 12.3409 18.0823C13.3788 17.0688 14.0951 15.0354 14.0828 13.5511C14.4941 13.4266 15.5427 12.5735 15.9571 12.2832C16.3427 12.013 16.5669 11.8682 17 11.6452C16.3398 11.1658 15.6399 10.727 14.9598 10.2775C14.6831 10.0946 14.1493 9.80927 13.9231 9.61241C13.9031 8.79841 13.8296 8.21858 13.5334 7.45396C13.1414 6.44889 12.4771 5.57892 11.6184 4.94608C10.4105 4.04845 8.79041 3.58706 7.43149 3.00721C6.16934 2.46863 4.96171 1.92053 3.68105 1.40781C2.94184 1.1135 2.201 0.823459 1.45856 0.537748C0.998611 0.363519 0.499662 0.198389 0.0532856 0Z";
+
+/**
+ * Money short enough for a metric strip: 1,250,000 → "1.2م" / "1.2M".
+ * The full figure lives on the revenue screen — here it only has to fit.
+ */
+const compactAmount = (value: number, isRTL: boolean): string => {
+  if (!Number.isFinite(value) || value <= 0) return '0';
+  if (value >= 1_000_000) {
+    const millions = value / 1_000_000;
+    return `${millions >= 10 ? Math.round(millions) : millions.toFixed(1)}${isRTL ? 'م' : 'M'}`;
+  }
+  if (value >= 1_000) return `${Math.round(value / 1_000)}${isRTL ? 'ألف' : 'K'}`;
+  return value.toLocaleString();
+};
 
 export default function ChaletDetailsScreen() {
   const { isRTL, textAlign, inputTextAlign } = useDirection();
@@ -128,6 +142,7 @@ export default function ChaletDetailsScreen() {
   const imagesModalRef = useRef<BottomSheetModal>(null);
   const citySheetRef = useRef<BottomSheetModal>(null);
   const regionSheetRef = useRef<BottomSheetModal>(null);
+  const videoModalRef = useRef<BottomSheetModal>(null);
   const rulesModalRef = useRef<BottomSheetModal>(null);
   const addressModalRef = useRef<BottomSheetModal>(null);
 
@@ -691,6 +706,12 @@ export default function ChaletDetailsScreen() {
   const totalBookings = chaletSummary.totalBookings ?? chalet?.bookingCount ?? 0;
   const totalEarnings = chaletSummary.totalProviderEarnings ?? chaletSummary.totalRevenue ?? chalet?.revenue ?? 0;
   const ratingValue = typeof chalet?.rating === 'string' ? parseFloat(chalet.rating) : (chalet?.rating || 0);
+  const reviewCount = Number(chalet?.reviewCount ?? 0);
+  // "المحافظة - القضاء", the same pair the customer cards print.
+  const locationLabel = [
+    pickTranslation(chalet?.city, isRTL),
+    pickTranslation(chalet?.region, isRTL),
+  ].filter(Boolean).join(' - ');
 
   // Sununo commission applied to this chalet (read-only, set by admin). Prefer the
   // backend-resolved "effective" value (falls back to the platform default), then
@@ -763,57 +784,96 @@ export default function ChaletDetailsScreen() {
   const isFullyComplete = completionPercent === 100;
   const incompleteItems = completionItems.filter((item) => !item.done);
 
+  /**
+   * One row of an iOS-style grouped list: a square colour tile, the label, the
+   * current value trailing in grey, then the chevron.
+   *
+   * The value used to sit UNDER the label as a full sentence, which made every
+   * row two lines tall and pushed the settings themselves off the screen. It is
+   * a trailing value now — `subtitle` is the opt-in for the few rows whose state
+   * genuinely needs a sentence (a switch that changes what customers can do).
+   */
   const renderSettingsRow = ({
     icon: IconComponent,
     shape,
     label,
     value,
+    subtitle,
     onPress,
     rightElement,
+    destructive = false,
   }: {
     icon: any;
     shape: "blue" | "green" | "pink" | "red" | "info";
     label: string;
     value?: string | number;
+    subtitle?: string;
     onPress?: () => void;
     rightElement?: React.ReactNode;
+    destructive?: boolean;
   }) => {
     return (
-      <TouchableOpacity
-        activeOpacity={onPress ? 0.7 : 1}
+      <Pressable
         onPress={onPress}
         disabled={!onPress}
-        style={styles.menuRow}
+        // Apple highlights the whole row rather than fading it, which is what
+        // keeps the group reading as one continuous surface while pressed.
+        style={({ pressed }) => [styles.settingsRow, pressed && onPress ? styles.settingsRowPressed : null]}
       >
-        <ProfileShape size={normalize.width(36)} type={shape}>
-          <IconComponent size={18} color="white" />
+        <ProfileShape size={normalize.width(28)} type={shape}>
+          <IconComponent size={normalize.width(14)} color="white" />
         </ProfileShape>
-        <View style={[styles.menuLabelContainer, { alignItems: flexStart }]}>
-          <Text style={[styles.menuLabelText, { textAlign }]}>{label}</Text>
-          {value !== undefined && (
-            <Text style={[styles.menuValueText, { textAlign }]} numberOfLines={1}>{value}</Text>
+
+        <View style={[styles.settingsRowLabelWrap, { alignItems: flexStart }]}>
+          <Text
+            style={[styles.settingsRowLabel, destructive && styles.settingsRowLabelDestructive, { textAlign }]}
+            numberOfLines={subtitle ? 2 : 1}
+          >
+            {label}
+          </Text>
+          {!!subtitle && (
+            <Text style={[styles.settingsRowSubtitle, { textAlign }]} numberOfLines={2}>{subtitle}</Text>
           )}
         </View>
+
+        {value !== undefined && value !== '' && (
+          <Text style={styles.settingsRowValue} numberOfLines={1}>{value}</Text>
+        )}
+
         {rightElement ? (
           rightElement
         ) : onPress ? (
-          <View style={{ opacity: 0.5 }}>
-            <Svg
-              width={10}
-              height={14}
-              viewBox="0 0 17 24"
-              fill="none"
-            >
-              <Path
-                d={isRTL ? EN_BACK_PATH : AR_BACK_PATH}
-                fill="#94A3B8"
-              />
-            </Svg>
-          </View>
+          <Svg width={9} height={13} viewBox="0 0 17 24" fill="none" style={styles.settingsChevron}>
+            <Path d={isRTL ? EN_BACK_PATH : AR_BACK_PATH} fill="#C7C7CC" />
+          </Svg>
         ) : null}
-      </TouchableOpacity>
+      </Pressable>
     );
   };
+
+  /**
+   * The white rounded card that holds a run of rows. Separators are drawn here
+   * rather than by each row so they can be inset past the icon tile — without
+   * that inset the list reads as a stack of boxes instead of one group.
+   */
+  const SettingsGroup = ({ children }: { children: React.ReactNode }) => {
+    const items = React.Children.toArray(children).filter(Boolean);
+    return (
+      <View style={styles.settingsGroup}>
+        {items.map((child, index) => (
+          <React.Fragment key={index}>
+            {child}
+            {index < items.length - 1 && <View style={styles.settingsSeparator} />}
+          </React.Fragment>
+        ))}
+      </View>
+    );
+  };
+
+  /** Grey explainer under a group — where iOS puts the "why" for a setting. */
+  const SettingsFooter = ({ children }: { children: React.ReactNode }) => (
+    <Text style={[styles.settingsFooter, { textAlign }]}>{children}</Text>
+  );
 
   return (
     <View style={styles.container}>
@@ -826,74 +886,103 @@ export default function ChaletDetailsScreen() {
       >
         <View style={styles.contentBodyNew}>
 
-          {/* 1. Chalet Profile Card */}
-          <TouchableOpacity
-            style={[styles.profileCard, { flexDirection: 'row' }]}
-        
-            activeOpacity={0.9}
-          >
+          {/* 1. Chalet Header Card
+              Everything sits beside the photo on three tight lines — name with
+              its status, where it is, then the numbers as one metric strip. The
+              stats used to be a separate block under a divider, which doubled
+              the card's height for three values. */}
+          <View style={styles.profileCard}>
             <View style={styles.avatarWrap}>
               {heroImages.length > 0 ? (
                 <Image source={getImageSrc(heroImages[0].url)} style={styles.avatarImg} />
               ) : (
                 <View style={styles.avatarInitial}>
-                  <SolarGalleryBold size={24} color="white" />
+                  <SolarGalleryBold size={20} color="white" />
                 </View>
               )}
-        
             </View>
 
             <View style={[styles.profileInfo, { alignItems: flexStart }]}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, width: '100%' }}>
+              {/* Name + status on one line: the badge is short, and pairing them
+                  saves a whole row. */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'stretch' }}>
                 <Text style={[styles.profileChaletName, { textAlign, flexShrink: 1 }]} numberOfLines={1}>
                   {chaletName || ''}
                 </Text>
-                {!isActive && (
-                  <View style={{ backgroundColor: '#F3F4F6', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
-                    <Text style={{ fontSize: normalize.font(9), fontFamily: 'IBMPlexSansArabic-Bold', color: '#6B7280' }}>
-                      {isRTL ? 'مخفي' : 'Hidden'}
-                    </Text>
-                  </View>
-                )}
-              </View>
-
-              <View style={[styles.profileBadgesRow, { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 }]}>
-                {!isActive && (
-                  <View style={[styles.approvalBadgeMini, { backgroundColor: '#F3F4F6' }]}>
-                    <Text style={[styles.approvalTextMini, { color: '#6B7280' }]}>
-                      {isRTL ? 'مخفي للزبائن' : 'Hidden for guests'}
-                    </Text>
-                  </View>
-                )}
                 <View style={[styles.approvalBadgeMini, {
                   flexDirection: 'row',
                   backgroundColor: chalet?.isApproved ? '#ECFDF5' : '#FFFBEB',
                   borderColor: chalet?.isApproved ? '#A7F3D0' : '#FDE68A',
                 }]}>
                   {chalet?.isApproved
-                    ? <SolarCheckCircleBold size={16} color="#10B981" />
-                    : <SolarClockCircleBold size={16} color="#F59E0B" />}
+                    ? <SolarCheckCircleBold size={11} color="#10B981" />
+                    : <SolarClockCircleBold size={11} color="#F59E0B" />}
                   <Text style={[styles.approvalTextMini, { color: chalet?.isApproved ? '#10B981' : '#F59E0B' }]}>
-                    {chalet?.isApproved ? (isRTL ? 'نشط ومقبول' : 'Approved') : (isRTL ? 'قيد المراجعة' : 'Pending')}
+                    {chalet?.isApproved ? (isRTL ? 'مقبول' : 'Approved') : (isRTL ? 'مراجعة' : 'Pending')}
                   </Text>
                 </View>
+                {!isActive && (
+                  <View style={[styles.approvalBadgeMini, { backgroundColor: '#F3F4F6', borderColor: '#E5E7EB' }]}>
+                    <Text style={[styles.approvalTextMini, { color: '#6B7280' }]}>
+                      {isRTL ? 'مخفي' : 'Hidden'}
+                    </Text>
+                  </View>
+                )}
+              </View>
 
+              {!!locationLabel && (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                  <SolarMapPointBold size={normalize.width(11)} color="#8E8E93" />
+                  <Text style={[styles.profileLocationText, { textAlign }]} numberOfLines={1}>
+                    {locationLabel}
+                  </Text>
+                </View>
+              )}
+
+              {/* Metric strip — icon + value, no labels: the icons carry the
+                  meaning and it fits on one line instead of three columns. */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: normalize.width(10) }}>
+                <View style={styles.profileMetric}>
+                  <SolarCalendarBold size={normalize.width(12)} color="#6B7280" />
+                  <Text style={styles.profileMetricText}>{isLoadingStats ? '—' : totalBookings}</Text>
+                </View>
+                <View style={styles.profileMetric}>
+                  <SolarStarBold size={normalize.width(12)} color="#F59E0B" />
+                  <Text style={styles.profileMetricText}>
+                    {ratingValue.toFixed(1)}{reviewCount ? ` (${reviewCount})` : ''}
+                  </Text>
+                </View>
+                <View style={styles.profileMetric}>
+                  <SolarBanknoteBold size={normalize.width(12)} color="#10B981" />
+                  <Text style={styles.profileMetricText} numberOfLines={1}>
+                    {isLoadingStats ? '—' : compactAmount(Number(totalEarnings || 0), isRTL)}
+                  </Text>
+                </View>
               </View>
             </View>
-          </TouchableOpacity>
+          </View>
 
-          {/* Sununo Commission — read-only, shown clearly at the top */}
-          {commissionDisplay && renderSettingsRow({
-            icon: SolarBanknoteBold,
-            shape: 'green',
-            label: isRTL ? 'عمولة سنونو' : 'Sununo Commission',
-            value: isRTL ? 'نسبة سنونو من كل حجز مؤكد لهذا الشاليه' : "Sununo's cut from each confirmed booking",
-            rightElement: (
-              <View style={styles.readinessScoreNew}>
-                <Text style={styles.readinessScoreTextNew}>{commissionDisplay}</Text>
-              </View>
-            ),
-          })}
+          {/* Sununo Commission — read-only. A lone row still needs the group
+              wrapper, otherwise it renders as a square strip on the grey page. */}
+          {!!commissionDisplay && (
+            <>
+              <SettingsGroup>
+                {renderSettingsRow({
+                  icon: SolarBanknoteBold,
+                  shape: 'green',
+                  label: isRTL ? 'عمولة سنونو' : 'Sununo Commission',
+                  rightElement: (
+                    <View style={styles.readinessScoreNew}>
+                      <Text style={styles.readinessScoreTextNew}>{commissionDisplay}</Text>
+                    </View>
+                  ),
+                })}
+              </SettingsGroup>
+              <SettingsFooter>
+                {isRTL ? 'نسبة سنونو من كل حجز مؤكد لهذا الشاليه.' : "Sununo's cut from each confirmed booking."}
+              </SettingsFooter>
+            </>
+          )}
 
           {/* Rejected notice — shown with the admin's reason */}
           {chalet?.isRejected && (
@@ -931,24 +1020,6 @@ export default function ChaletDetailsScreen() {
               </View>
             </View>
           )}
-
-          {/* 3. Performance Stats Bar */}
-          <View style={[styles.performanceStatsCard, { flexDirection: 'row' }]}>
-
-            <View style={styles.perfStatDivider} />
-            <View style={styles.perfStatItem}>
-              <Text style={styles.perfStatValue}>{isLoadingStats ? '...' : totalBookings}</Text>
-              <Text style={styles.perfStatLabel}>{isRTL ? 'الحجوزات' : 'Bookings'}</Text>
-            </View>
-            <View style={styles.perfStatDivider} />
-            <View style={styles.perfStatItem}>
-              <View style={[styles.perfRatingRow, { flexDirection: 'row' }]}>
-                <SolarStarBold size={14} color="#F59E0B" />
-                <Text style={styles.perfStatValue}>{ratingValue.toFixed(1)}</Text>
-              </View>
-              <Text style={styles.perfStatLabel}>{isRTL ? 'التقييم' : 'Rating'}</Text>
-            </View>
-          </View>
 
           {/* 4. Listing Readiness Card — hidden when fully complete */}
           {!isFullyComplete && (
@@ -1000,36 +1071,34 @@ export default function ChaletDetailsScreen() {
           <Text style={[styles.settingsGroupTitle, { textAlign, alignSelf: flexStart }]}>
             {isRTL ? 'معلومات وتفاصيل المكان' : 'Space Details & Info'}
           </Text>
-          <View style={styles.menuGroup}>
+          <SettingsGroup>
             {renderSettingsRow({
               icon: SolarNotebookBold,
               shape: 'blue',
               label: isRTL ? 'التفاصيل الأساسية' : 'Basic Details',
-              value: isRTL ? 'الاسم، الوصف، معلومات التواصل' : 'Name, description, contact details',
               onPress: () => basicInfoModalRef.current?.present()
             })}
             {renderSettingsRow({
               icon: SolarUsersGroupBold,
               shape: 'green',
-              label: isRTL ? 'السعة والتسعير الإضافي' : 'Capacity & Extra Pricing',
-              value: isRTL
-                ? `سعة الشاليه: ${basicForm.capacity} شخص • سعة المبلغ: ${basicForm.priceCapacity} • الإضافي: ${Number(basicForm.extraPersonPrice || 0).toLocaleString()} د.ع`
-                : `Max Capacity: ${basicForm.capacity} • Included: ${basicForm.priceCapacity} • Extra: ${Number(basicForm.extraPersonPrice || 0).toLocaleString()} IQD`,
+              label: isRTL ? 'السعة والتسعير' : 'Capacity & Pricing',
+              value: isRTL ? `${basicForm.capacity} شخص` : `${basicForm.capacity} guests`,
               onPress: () => capacityModalRef.current?.present()
             })}
             {renderSettingsRow({
               icon: SolarBanknoteBold,
               shape: 'pink',
-              label: isRTL ? 'نسبة العربون لتأكيد الحجز' : 'Deposit percentage',
-              value: isRTL ? `المطلوب دفع ${basicForm.depositPercentage}% من القيمة الكلية` : `Required ${basicForm.depositPercentage}% deposit for booking`,
+              label: isRTL ? 'نسبة العربون' : 'Deposit',
+              value: `${basicForm.depositPercentage}%`,
               onPress: () => depositModalRef.current?.present()
             })}
-
             {renderSettingsRow({
               icon: SolarClockCircleBold,
               shape: 'info',
-              label: isRTL ? 'إدارة الفترات (Shifts) والأسعار اليومية' : 'Manage Shifts & Pricing',
-              value: isRTL ? 'تعديل أوقات الدخول والخروج وأسعار أيام الأسبوع' : 'Edit check-in/out times & weekday pricing',
+              label: isRTL ? 'الفترات والأسعار' : 'Shifts & Pricing',
+              value: shifts.length
+                ? (isRTL ? `${shifts.length} فترات` : `${shifts.length} shifts`)
+                : undefined,
               onPress: () => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                 dispatch(setSelectedChalet({ id: chaletId as string, name: chaletName || '', image: coverImage?.url || null }));
@@ -1039,166 +1108,133 @@ export default function ChaletDetailsScreen() {
                 });
               }
             })}
-          </View>
+          </SettingsGroup>
 
-          {/* ──── Location Map Card ──── */}
+          {/* ──── Location ────
+              The map used to render inline as a tall preview card. It is a row
+              now like everything else — the picker it opened is a full-screen
+              modal anyway, so the preview only cost vertical space. */}
           <Text style={[styles.settingsGroupTitle, { textAlign, alignSelf: flexStart }]}>
             {isRTL ? 'موقع الشاليه' : 'Chalet Location'}
           </Text>
-          <TouchableOpacity
-            activeOpacity={0.85}
-            onPress={() => setLocationPickerVisible(true)}
-            style={styles.locationMapCard}
-          >
-            {basicForm.latitude && basicForm.longitude ? (
-              <>
-                <View style={styles.locationMapContainer}>
-                  <AppMap
-                    style={styles.locationMapPreview}
-                    centerCoordinate={[parseFloat(basicForm.longitude), parseFloat(basicForm.latitude)]}
-                    zoomLevel={14}
-                    interactive={false}
-                    showMarker={true}
-                  />
-                  {/* Edit overlay */}
-                  <View style={styles.locationMapOverlay}>
-                    <View style={styles.locationEditBadge}>
-                      <SolarPenBold size={14} color="white" />
-                      <Text style={styles.locationEditText}>
-                        {isRTL ? 'تعديل الموقع' : 'Edit Location'}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-                <View style={[styles.locationInfoBar, { flexDirection: 'row' }]}>
-                  <View style={[styles.locationInfoLeft, { flexDirection: 'row', alignItems: 'center' }]}>
-                    <SolarMapPointBold size={16} color={Colors.primary} />
-                    <View style={{ marginHorizontal: 8, flex: 1 }}>
-                      <Text style={[styles.locationCoordsText, { textAlign }]}>
-                        {Number(basicForm.latitude).toFixed(5)}, {Number(basicForm.longitude).toFixed(5)}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              </>
-            ) : (
-              <View style={styles.locationEmptyState}>
-                <SolarMapPointBold size={36} color={Colors.text.muted} />
-                <Text style={styles.locationEmptyTitle}>
-                  {isRTL ? 'لم يتم تحديد الموقع بعد' : 'No location set'}
-                </Text>
-                <Text style={styles.locationEmptySubtitle}>
-                  {isRTL ? 'اضغط هنا لتحديد موقع الشاليه على الخريطة' : 'Tap here to pin your chalet on the map'}
-                </Text>
-                <View style={styles.locationSetButton}>
-                  <SolarMapPointBold size={16} color="white" />
-                  <Text style={styles.locationSetButtonText}>
-                    {isRTL ? 'تحديد الموقع' : 'Set Location'}
-                  </Text>
-                </View>
-              </View>
-            )}
-          </TouchableOpacity>
-
-          {renderSettingsRow({
-            icon: SolarPenBold,
-            shape: 'blue',
-            label: isRTL ? 'العنوان والمدينة' : 'Address & City',
-            value: basicForm.addressAr || (isRTL ? 'لم يتم تعيين العنوان' : 'Address not set'),
-            onPress: () => addressModalRef.current?.present()
-          })}
+          <View>
+            <SettingsGroup>
+              {renderSettingsRow({
+                icon: SolarMapPointBold,
+                shape: 'green',
+                label: isRTL ? 'الموقع على الخريطة' : 'Location on Map',
+                value: basicForm.latitude && basicForm.longitude
+                  ? `${Number(basicForm.latitude).toFixed(4)}, ${Number(basicForm.longitude).toFixed(4)}`
+                  : (isRTL ? 'غير محدد' : 'Not set'),
+                onPress: () => setLocationPickerVisible(true)
+              })}
+              {renderSettingsRow({
+                icon: SolarMapPointBold,
+                shape: 'blue',
+                label: isRTL ? 'المحافظة والقضاء' : 'City & District',
+                value: [basicForm.cityName, basicForm.regionName].filter(Boolean).join(' - ')
+                  || (isRTL ? 'غير محدد' : 'Not set'),
+                onPress: () => addressModalRef.current?.present()
+              })}
+              {renderSettingsRow({
+                icon: SolarPenBold,
+                shape: 'info',
+                label: isRTL ? 'العنوان التفصيلي' : 'Detailed Address',
+                value: basicForm.addressAr || (isRTL ? 'غير محدد' : 'Not set'),
+                onPress: () => addressModalRef.current?.present()
+              })}
+            </SettingsGroup>
+          </View>
 
           {/* ──── Settings Group 2 ──── */}
           <Text style={[styles.settingsGroupTitle, { textAlign, alignSelf: flexStart }]}>
             {isRTL ? 'معرض الصور والمرافق' : 'Media & Content'}
           </Text>
-          <View style={styles.menuGroup}>
+          <SettingsGroup>
             {renderSettingsRow({
               icon: SolarGalleryBold,
               shape: 'blue',
-              label: isRTL ? 'صور الشاليه والغطاء' : 'Chalet Photos',
-              value: isRTL ? `إجمالي ${heroImages.length} صور مضافة حالياً` : `${heroImages.length} total photos uploaded`,
+              label: isRTL ? 'الصور' : 'Photos',
+              value: isRTL ? `${heroImages.length} صورة` : `${heroImages.length}`,
               onPress: () => imagesModalRef.current?.present()
             })}
             {renderSettingsRow({
               icon: SolarStarBold,
               shape: 'pink',
-              label: isRTL ? 'المرافق والخدمات المتاحة' : 'Amenities & Services',
-              value: isRTL ? `مجموع ${activeAmenities.length} مرافق مفعّلة في الصفحة` : `${activeAmenities.length} active amenities configured`,
+              label: isRTL ? 'المرافق والخدمات' : 'Amenities',
+              value: isRTL ? `${activeAmenities.length} مرفق` : `${activeAmenities.length}`,
               onPress: () => amenitiesModalRef.current?.present()
             })}
             {renderSettingsRow({
               icon: SolarNotebookBold,
-              shape: 'blue',
-              label: isRTL ? 'الشروط وقوانين الإقامة' : 'Rules & Policies',
-              value: isRTL ? `عدد ${rulesForm.rules.length} قواعد وشروط مضافة` : `${rulesForm.rules.length} chalet rules defined`,
+              shape: 'info',
+              label: isRTL ? 'الشروط والقوانين' : 'Rules & Policies',
+              value: isRTL ? `${rulesForm.rules.length} قاعدة` : `${rulesForm.rules.length}`,
               onPress: () => rulesModalRef.current?.present()
             })}
-          </View>
+          </SettingsGroup>
 
-          {/* ──── Tour video ──── */}
+          {/* ──── Tour video ────
+              The uploader (player, upload progress, delete) used to sit open in
+              the page. It is a row into a sheet now, so the settings list stays
+              a list. */}
           <Text style={[styles.settingsGroupTitle, { textAlign, alignSelf: flexStart }]}>
             {isRTL ? 'فيديو الشالية' : 'Chalet Video'}
           </Text>
-          <View style={styles.videoBlock}>
-            <ChaletVideoUploader
-              chaletId={chaletId as string}
-              chaletName={
-                (isRTL ? chalet?.name?.ar : chalet?.name?.en) ||
-                chalet?.name?.ar ||
-                chalet?.name?.en ||
-                ''
-              }
-            />
-          </View>
+          <SettingsGroup>
+            {renderSettingsRow({
+              icon: SolarCameraAddBold,
+              shape: 'pink',
+              label: isRTL ? 'فيديو الشاليه' : 'Chalet Video',
+              value: chalet?.videoUrl
+                ? (isRTL ? 'مضاف' : 'Added')
+                : (isRTL ? 'غير مضاف' : 'Not added'),
+              onPress: () => videoModalRef.current?.present()
+            })}
+          </SettingsGroup>
 
-          {/* ──── Visibility Status ──── */}
+          {/* ──── Visibility + booking type ──── */}
           <Text style={[styles.settingsGroupTitle, { textAlign, alignSelf: flexStart }]}>
-            {isRTL ? 'حالة ظهور الشاليه' : 'Chalet Visibility'}
+            {isRTL ? 'الحجز والظهور' : 'Booking & Visibility'}
           </Text>
-          <View style={styles.menuGroup}>
+          <SettingsGroup>
             {renderSettingsRow({
               icon: SolarEyeBold,
               shape: isActive ? 'green' : 'info',
-              label: isRTL ? 'تفعيل ظهور الشاليه للزبائن' : 'Chalet Visibility',
-              value: isActive
-                ? (isRTL ? 'الشاليه مفعّل ويظهر في نتائج البحث والريستات' : 'Chalet is active and visible in search')
-                : (isRTL ? 'الشاليه مخفي ولا يمكن للزبائن حجزه حالياً' : 'Chalet is hidden and bookings are paused'),
+              label: isRTL ? 'ظاهر للزبائن' : 'Visible to customers',
               rightElement: (
                 <Switch
                   value={isActive}
                   onValueChange={toggleStatus}
-                  trackColor={{ false: '#D1D5DB', true: Colors.primary + '40' }}
-                  thumbColor={isActive ? Colors.primary : '#9CA3AF'}
-                  style={{ transform: [{ scaleX: 0.85 }, { scaleY: 0.85 }] }}
+                  trackColor={{ false: '#E9E9EA', true: '#34C759' }}
+                  thumbColor="#FFFFFF"
+                  ios_backgroundColor="#E9E9EA"
                 />
               )
             })}
-          </View>
-
-          {/* ──── Booking Type ──── */}
-          <Text style={[styles.settingsGroupTitle, { textAlign, alignSelf: flexStart }]}>
-            {isRTL ? 'نوع الحجز' : 'Booking Type'}
-          </Text>
-          <View style={styles.menuGroup}>
             {renderSettingsRow({
               icon: SolarClockCircleBold,
               shape: bookingType === 'delayed' ? 'pink' : 'green',
-              label: isRTL ? 'يتطلب موافقة المالك قبل الدفع' : 'Require owner approval before payment',
-              value: bookingType === 'delayed'
-                ? (isRTL ? 'الحجز يتطلب موافقتك أولاً ثم يدفع الزبون' : 'Bookings require your approval before payment')
-                : (isRTL ? 'الزبون يحجز ويدفع مباشرة بدون انتظار' : 'Customers book and pay instantly'),
+              label: isRTL ? 'موافقتي قبل الدفع' : 'Approve before payment',
               rightElement: (
                 <Switch
                   value={bookingType === 'delayed'}
                   onValueChange={toggleBookingType}
-                  trackColor={{ false: '#D1D5DB', true: Colors.primary + '40' }}
-                  thumbColor={bookingType === 'delayed' ? Colors.primary : '#9CA3AF'}
-                  style={{ transform: [{ scaleX: 0.85 }, { scaleY: 0.85 }] }}
+                  trackColor={{ false: '#E9E9EA', true: '#34C759' }}
+                  thumbColor="#FFFFFF"
+                  ios_backgroundColor="#E9E9EA"
                 />
               )
             })}
-          </View>
+          </SettingsGroup>
+          <SettingsFooter>
+            {isActive
+              ? (isRTL ? 'الشاليه يظهر في البحث ويمكن حجزه. ' : 'The chalet appears in search and can be booked. ')
+              : (isRTL ? 'الشاليه مخفي ولا يمكن حجزه حالياً. ' : 'The chalet is hidden and cannot be booked. ')}
+            {bookingType === 'delayed'
+              ? (isRTL ? 'كل طلب حجز ينتظر موافقتك قبل أن يدفع الزبون.' : 'Each request waits for your approval before the customer pays.')
+              : (isRTL ? 'الزبون يحجز ويدفع مباشرة بدون انتظار موافقتك.' : 'Customers book and pay instantly, with no approval step.')}
+          </SettingsFooter>
 
           {/* ──── Daily Hours (Booking Duration) ──── */}
           {bookingType === 'delayed' && (
@@ -1206,13 +1242,13 @@ export default function ChaletDetailsScreen() {
               <Text style={[styles.settingsGroupTitle, { textAlign, alignSelf: flexStart }]}>
                 {isRTL ? 'مدة الحجز' : 'Booking Duration'}
               </Text>
-              <View style={styles.menuGroup}>
-                <View style={styles.menuRow}>
-                  <ProfileShape size={normalize.width(36)} type="blue">
-                    <SolarClockCircleBold size={18} color="white" />
+              <SettingsGroup>
+                <View style={styles.settingsRow}>
+                  <ProfileShape size={normalize.width(28)} type="blue">
+                    <SolarClockCircleBold size={normalize.width(14)} color="white" />
                   </ProfileShape>
-                  <View style={[styles.menuLabelContainer, { alignItems: flexStart, flex: 1 }]}>
-                    <Text style={[styles.menuLabelText, { textAlign }]}>
+                  <View style={[styles.settingsRowLabelWrap, { alignItems: flexStart }]}>
+                    <Text style={[styles.settingsRowLabel, { textAlign }]}>
                       {isRTL ? 'مدة الحجز بالساعات' : 'Duration in Hours'}
                     </Text>
                   </View>
@@ -1245,38 +1281,28 @@ export default function ChaletDetailsScreen() {
                   </View>
                 </View>
 
-                {/* Booking duration info note */}
-                <View style={[styles.bookingDurationNoteCard, { flexDirection: 'row', marginTop: 12, alignItems: 'flex-start' }]}>
-                  <SolarShieldWarningBold size={16} color="#0284C7" style={{ marginTop: 2 }} />
-                  <View style={{ flex: 1, gap: 2, alignItems: flexStart }}>
-                    <Text style={[styles.bookingDurationNoteTitle, { textAlign }]}>
-                      {isRTL ? 'ما هي فائدة مدة الحجز؟' : 'What is the purpose of booking duration?'}
-                    </Text>
-                    <Text style={[styles.bookingDurationNoteText, { textAlign }]}>
-                      {isRTL
-                        ? 'هذا هو الوقت الأقصى المتاح لك للموافقة على طلب الحجز قبل إلغائه تلقائياً.'
-                        : 'This is the maximum time allowed to approve the booking request before it is automatically cancelled.'
-                      }
-                    </Text>
-                  </View>
-                </View>
-              </View>
+              </SettingsGroup>
+              <SettingsFooter>
+                {isRTL
+                  ? 'الوقت الأقصى المتاح لك للموافقة على طلب الحجز قبل إلغائه تلقائياً.'
+                  : 'The maximum time you have to approve a booking request before it is cancelled automatically.'}
+              </SettingsFooter>
 
               {/* ──── Payment Deadline (after owner approval) ──── */}
               <Text style={[styles.settingsGroupTitle, { textAlign, alignSelf: flexStart }]}>
                 {isRTL ? 'مهلة الدفع بعد الموافقة' : 'Payment Deadline After Approval'}
               </Text>
-              <View style={styles.menuGroup}>
-                <View style={[styles.menuRow, { flexDirection: 'column', alignItems: flexStart, gap: 12 }]}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, alignSelf: 'stretch' }}>
-                    <ProfileShape size={normalize.width(36)} type="pink">
-                      <SolarClockCircleBold size={18} color="white" />
+              <SettingsGroup>
+                <View style={[styles.settingsRow, { flexDirection: 'column', alignItems: flexStart, gap: 12 }]}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: normalize.width(12), alignSelf: 'stretch' }}>
+                    <ProfileShape size={normalize.width(28)} type="pink">
+                      <SolarClockCircleBold size={normalize.width(14)} color="white" />
                     </ProfileShape>
                     <View style={{ flex: 1, alignItems: flexStart }}>
-                      <Text style={[styles.menuLabelText, { textAlign }]}>
+                      <Text style={[styles.settingsRowLabel, { textAlign }]}>
                         {isRTL ? 'المهلة المتاحة للزبون للدفع' : 'Time the customer has to pay'}
                       </Text>
-                      <Text style={[styles.bookingDurationNoteText, { textAlign, color: Colors.text.muted }]}>
+                      <Text style={[styles.settingsRowSubtitle, { textAlign }]}>
                         {paymentDeadlineMinutes === 0
                           ? (isRTL ? 'بدون مهلة — لن يُلغى الحجز تلقائياً' : 'No deadline — never auto-cancelled')
                           : (isRTL ? 'تُحتسب من لحظة موافقتك على الطلب' : 'Counted from the moment you approve')}
@@ -1327,37 +1353,33 @@ export default function ChaletDetailsScreen() {
                   </View>
                 </View>
 
-                <View style={[styles.bookingDurationNoteCard, { flexDirection: 'row', alignItems: 'flex-start' }]}>
-                  <SolarShieldWarningBold size={16} color="#0284C7" style={{ marginTop: 2 }} />
-                  <View style={{ flex: 1, gap: 2, alignItems: flexStart }}>
-                    <Text style={[styles.bookingDurationNoteTitle, { textAlign }]}>
-                      {isRTL ? 'لماذا مهلة الدفع مهمة؟' : 'Why does the payment deadline matter?'}
-                    </Text>
-                    <Text style={[styles.bookingDurationNoteText, { textAlign }]}>
-                      {isRTL
-                        ? 'بعد موافقتك يبقى الوقت محجوزاً حتى يدفع الزبون. إذا لم يدفع خلال المهلة يُلغى الحجز تلقائياً ويعود الوقت متاحاً لغيره.'
-                        : 'After you approve, the slot stays blocked until the customer pays. If they miss the deadline the booking is cancelled automatically and the slot is freed.'
-                      }
-                    </Text>
-                  </View>
-                </View>
-              </View>
+              </SettingsGroup>
+              <SettingsFooter>
+                {isRTL
+                  ? 'بعد موافقتك يبقى الوقت محجوزاً حتى يدفع الزبون. إذا لم يدفع خلال المهلة يُلغى الحجز تلقائياً ويعود الوقت متاحاً لغيره.'
+                  : 'After you approve, the slot stays blocked until the customer pays. If they miss the deadline the booking is cancelled automatically and the slot is freed.'}
+              </SettingsFooter>
             </>
           )}
 
-          {/* Danger Zone Group */}
-          <Text style={[styles.settingsGroupTitle, { color: '#EF4444', textAlign, alignSelf: flexStart }]}>
-            {isRTL ? 'إجراءات خطرة' : 'Danger Zone'}
-          </Text>
-          <View style={styles.menuGroup}>
-            {renderSettingsRow({
-              icon: SolarTrashBinBold,
-              shape: 'red',
-              label: isRTL ? 'حذف هذا الشاليه نهائياً' : 'Delete Chalet Permanently',
-              value: isRTL ? 'سيتم مسح كافة البيانات والصور نهائياً ولا يمكن التراجع' : 'This action cannot be undone and deletes all chalet details',
-              onPress: handleDelete
-            })}
+          {/* Danger Zone — iOS keeps the warning in the footer and the row itself
+              short and red, so the destructive action reads at a glance. */}
+          <View style={{ marginTop: normalize.height(22) }}>
+            <SettingsGroup>
+              {renderSettingsRow({
+                icon: SolarTrashBinBold,
+                shape: 'red',
+                label: isRTL ? 'حذف الشاليه' : 'Delete Chalet',
+                onPress: handleDelete,
+                destructive: true,
+              })}
+            </SettingsGroup>
           </View>
+          <SettingsFooter>
+            {isRTL
+              ? 'سيتم مسح كافة البيانات والصور نهائياً ولا يمكن التراجع عن هذا الإجراء.'
+              : 'All details and photos are deleted permanently. This cannot be undone.'}
+          </SettingsFooter>
 
           {/* Back Button Footer Spacer */}
           <View style={{ height: 60 }} />
@@ -1849,6 +1871,29 @@ export default function ChaletDetailsScreen() {
         </BottomSheetView>
       </BottomSheetModal>
 
+      {/* Chalet Video Modal */}
+      <BottomSheetModal
+        ref={videoModalRef}
+        index={0}
+        snapPoints={['70%']}
+        backdropComponent={renderBackdrop}
+        handleIndicatorStyle={{ backgroundColor: '#D1D5DB', width: 36 }}
+        backgroundStyle={{ borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
+      >
+        <BottomSheetScrollView contentContainerStyle={styles.modalScrollContent}>
+          <ChaletVideoUploader
+            chaletId={chaletId as string}
+            chaletName={
+              (isRTL ? chalet?.name?.ar : chalet?.name?.en) ||
+              chalet?.name?.ar ||
+              chalet?.name?.en ||
+              ''
+            }
+          />
+          <View style={{ height: 40 }} />
+        </BottomSheetScrollView>
+      </BottomSheetModal>
+
       {/* District (قضاء) Picker Modal */}
       <BottomSheetModal
         ref={regionSheetRef}
@@ -1918,7 +1963,7 @@ export default function ChaletDetailsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF'
+    backgroundColor: '#FFFFFF',
   },
   loadingContainer: {
     flex: 1,
@@ -1956,6 +2001,70 @@ const styles = StyleSheet.create({
     paddingTop: normalize.height(8),
     paddingBottom: 40,
   },
+  settingsGroup: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: normalize.radius(12),
+    overflow: 'hidden',
+    // On a white page the group needs its own outline — without the grey
+    // backdrop there is nothing else separating it from the page.
+    borderWidth: 1,
+    borderColor: '#EBEBF0',
+  },
+  settingsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    minHeight: normalize.height(44),
+    paddingVertical: normalize.height(6),
+    paddingHorizontal: normalize.width(12),
+    gap: normalize.width(10),
+    backgroundColor: '#FFFFFF',
+  },
+  settingsRowPressed: {
+    backgroundColor: '#F2F2F7',
+  },
+  settingsRowLabelWrap: {
+    flex: 1,
+    gap: 1,
+  },
+  settingsRowLabel: {
+    fontSize: normalize.font(13),
+    fontFamily: 'IBMPlexSansArabic-Medium',
+    color: '#000000',
+  },
+  settingsRowLabelDestructive: {
+    color: '#FF3B30',
+  },
+  settingsRowSubtitle: {
+    fontSize: normalize.font(10),
+    fontFamily: 'IBMPlexSansArabic-Regular',
+    color: '#8E8E93',
+    lineHeight: normalize.font(14),
+  },
+  settingsRowValue: {
+    fontSize: normalize.font(12),
+    fontFamily: 'IBMPlexSansArabic-Regular',
+    color: '#8E8E93',
+    maxWidth: '42%',
+  },
+  settingsChevron: {
+    // Optical alignment: the glyph is drawn slightly off-centre in its box.
+    marginTop: 1,
+  },
+  settingsSeparator: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: '#EBEBF0',
+    // Starts past the icon (row padding + icon + gap), the detail that makes a
+    // run of rows read as ONE group rather than separate cards.
+    marginStart: normalize.width(12) + normalize.width(28) + normalize.width(10),
+  },
+  settingsFooter: {
+    fontSize: normalize.font(10),
+    fontFamily: 'IBMPlexSansArabic-Regular',
+    color: '#8E8E93',
+    lineHeight: normalize.font(15),
+    paddingHorizontal: normalize.width(6),
+    marginTop: normalize.height(6),
+  },
   contentBodyNew: {
     gap: 12,
   },
@@ -1964,11 +2073,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: normalize.radius(20),
-    padding: normalize.width(12),
-    marginBottom: normalize.height(16),
+    borderRadius: normalize.radius(12),
+    padding: normalize.width(10),
+    marginBottom: normalize.height(4),
     borderWidth: 1,
-    borderColor: '#F3F4F6'
+    borderColor: '#EBEBF0',
+  },
+  profileMetric: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  profileMetricText: {
+    fontSize: normalize.font(11),
+    fontFamily: 'IBMPlexSansArabic-Medium',
+    color: '#4B5563',
   },
   profileImageWrapper: {
     width: 72,
@@ -2004,11 +2123,11 @@ const styles = StyleSheet.create({
   },
   profileInfo: {
     flex: 1,
-    marginHorizontal: normalize.width(12),
-    gap: 4,
+    marginHorizontal: normalize.width(10),
+    gap: normalize.height(3),
   },
   profileChaletName: {
-    fontSize: normalize.font(16),
+    fontSize: normalize.font(15),
     fontFamily: "IBMPlexSansArabic-Bold",
     color: '#374151',
   },
@@ -2018,9 +2137,9 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   profileLocationText: {
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(11),
     fontFamily: "IBMPlexSansArabic-Regular",
-    color: '#64748B',
+    color: '#8E8E93',
     flexShrink: 1,
   },
   profileBadgesRow: {
@@ -2032,15 +2151,15 @@ const styles = StyleSheet.create({
   approvalBadgeMini: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    gap: 4,
+    paddingHorizontal: normalize.width(8),
+    paddingVertical: normalize.height(3),
     borderRadius: 999,
     borderWidth: 1,
     borderColor: 'transparent',
   },
   approvalTextMini: {
-    fontSize: normalize.font(12),
+    fontSize: normalize.font(9),
     fontFamily: "IBMPlexSansArabic-Bold",
   },
   ratingBadgeMini: {
@@ -2059,45 +2178,14 @@ const styles = StyleSheet.create({
   },
 
   // 2. Settings Group Card Styles
-  videoBlock: {
-    paddingHorizontal: 16,
-    marginBottom: 16 },
   settingsGroupTitle: {
-    fontSize: normalize.font(13),
-    fontFamily: "IBMPlexSansArabic-Bold",
-    color: Colors.text.muted,
-    marginTop: 10,
-    marginBottom: 4,
-    paddingHorizontal: 4,
-    justifyContent: 'flex-start',
-  },
-  menuGroup: {
-    gap: normalize.height(12),
-  },
-  menuRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: normalize.radius(16),
-    paddingVertical: normalize.height(10),
-    paddingHorizontal: normalize.width(12),
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
-  },
-  menuLabelContainer: {
-    flex: 1,
-    marginHorizontal: normalize.width(12),
-    gap: 2,
-  },
-  menuLabelText: {
-    fontSize: normalize.font(14),
-    fontFamily: "IBMPlexSansArabic-Bold",
-    color: '#374151',
-  },
-  menuValueText: {
     fontSize: normalize.font(11),
-    fontFamily: "IBMPlexSansArabic-Regular",
-    color: Colors.text.muted,
+    fontFamily: "IBMPlexSansArabic-Medium",
+    color: '#6D6D72',
+    marginTop: normalize.height(16),
+    marginBottom: normalize.height(6),
+    paddingHorizontal: normalize.width(6),
+    justifyContent: 'flex-start',
   },
   locationFieldInput: {
     fontSize: normalize.font(12),
@@ -2108,9 +2196,9 @@ const styles = StyleSheet.create({
     margin: 0,
   },
   avatarWrap: {
-    width: normalize.width(66),
-    height: normalize.width(66),
-    borderRadius: normalize.width(33),
+    width: normalize.width(52),
+    height: normalize.width(52),
+    borderRadius: normalize.radius(10),
     backgroundColor: '#F3F4F6',
     borderWidth: 1,
     borderColor: '#E5E7EB',
@@ -2121,12 +2209,12 @@ const styles = StyleSheet.create({
   avatarImg: {
     width: '100%',
     height: '100%',
-    borderRadius: normalize.width(33),
+    borderRadius: normalize.radius(10),
   },
   avatarInitial: {
     width: '100%',
     height: '100%',
-    borderRadius: normalize.width(33),
+    borderRadius: normalize.radius(10),
     backgroundColor: Colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
@@ -2194,45 +2282,10 @@ const styles = StyleSheet.create({
   },
 
   // Performance Stats Card Styles
-  performanceStatsCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    paddingVertical: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-  },
-  perfStatItem: {
-    flex: 1,
-    alignItems: 'center',
-    gap: 4,
-  },
-  perfStatValue: {
-    fontSize: normalize.font(15),
-    fontFamily: "IBMPlexSansArabic-Bold",
-    color: Colors.text.primary,
-  },
   perfCurrency: {
     fontSize: normalize.font(10),
     fontFamily: "IBMPlexSansArabic-Bold",
     color: Colors.primary,
-  },
-  perfStatLabel: {
-    fontSize: normalize.font(10),
-    fontFamily: "IBMPlexSansArabic-Medium",
-    color: Colors.text.muted,
-  },
-  perfStatDivider: {
-    width: 1,
-    height: 32,
-    backgroundColor: '#E2E8F0',
-  },
-  perfRatingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
   },
 
   // Listing Readiness Card Styles
@@ -2725,106 +2778,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   // Location Map Card Styles
-  locationMapCard: {
-    borderRadius: normalize.radius(20),
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
-    overflow: 'hidden',
-  },
-  locationMapContainer: {
-    height: normalize.height(180),
-    position: 'relative',
-    overflow: 'hidden',
-    borderTopLeftRadius: normalize.radius(20),
-    borderTopRightRadius: normalize.radius(20),
-  },
-  locationMapPreview: {
-    ...StyleSheet.absoluteFillObject,
-    borderTopLeftRadius: normalize.radius(20),
-    borderTopRightRadius: normalize.radius(20),
-  },
-  locationMapOverlay: {
-    position: 'absolute',
-    top: 10,
-    end: 10,
-    zIndex: 10,
-  },
-  locationEditBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    gap: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  locationEditText: {
-    fontSize: normalize.font(11),
-    fontFamily: 'IBMPlexSansArabic-Bold',
-    color: 'white',
-  },
-  locationInfoBar: {
-    paddingHorizontal: normalize.width(14),
-    paddingVertical: normalize.height(12),
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
-  },
-  locationInfoLeft: {
-    flex: 1,
-    gap: 4,
-  },
   locationAddressText: {
     fontSize: normalize.font(13),
     fontFamily: 'IBMPlexSansArabic-Bold',
     color: '#374151',
-  },
-  locationCoordsText: {
-    fontSize: normalize.font(10),
-    fontFamily: 'IBMPlexSansArabic-Regular',
-    color: '#94A3B8',
-    marginTop: 2,
-  },
-  locationEmptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: normalize.height(32),
-    paddingHorizontal: normalize.width(20),
-    gap: 6,
-  },
-  locationEmptyTitle: {
-    fontSize: normalize.font(14),
-    fontFamily: 'IBMPlexSansArabic-Bold',
-    color: '#374151',
-    marginTop: 8,
-  },
-  locationEmptySubtitle: {
-    fontSize: normalize.font(11),
-    fontFamily: 'IBMPlexSansArabic-Regular',
-    color: '#94A3B8',
-    textAlign: 'center',
-  },
-  locationSetButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.primary,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 14,
-    gap: 6,
-    marginTop: 12,
-  },
-  locationSetButtonText: {
-    fontSize: normalize.font(12),
-    fontFamily: 'IBMPlexSansArabic-Bold',
-    color: 'white',
   },
   locationTextInputsCard: {
     backgroundColor: '#FFFFFF',
@@ -2936,19 +2893,6 @@ const styles = StyleSheet.create({
     fontFamily: 'IBMPlexSansArabic-Regular',
     color: '#94A3B8',
     marginTop: 2,
-  },
-  bookingDurationNoteCard: {
-    backgroundColor: '#F0F9FF',
-    borderColor: '#BAE6FD',
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 12,
-    gap: 8,
-  },
-  bookingDurationNoteTitle: {
-    fontSize: normalize.font(12),
-    fontFamily: "IBMPlexSansArabic-Bold",
-    color: '#0369A1',
   },
   bookingDurationNoteText: {
     fontSize: normalize.font(10),
