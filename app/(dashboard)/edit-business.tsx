@@ -1,16 +1,18 @@
 import {
     SolarAltArrowDownLinear,
     SolarCheckCircleBold,
+    SolarInfoCircleBold,
     SolarShieldWarningBold
 } from "@/components/icons/solar-icons";
 import { ThemedText } from '@/components/themed-text';
+import { useConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { IRAQI_BANKS, OTHER_BANK_OPTION } from '@/constants/banks';
 import { Colors, normalize } from '@/constants/theme';
 import { useDirection } from '@/i18n';
 import { useGetProviderProfileQuery, useUpdateProviderProfileMutation } from '@/store/api/apiSlice';
 import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     KeyboardAvoidingView,
@@ -29,115 +31,175 @@ import { Image } from 'expo-image';
 import { PrimaryButton } from '@/components/user/primary-button';
 
 import {
-    validateBankAccount,
     validateBankName,
-    validateQiCard,
-    validateZainCash,
+    validateBankNameRequired,
+    validatePayoutAccount,
 } from '@/utils/payment-validation';
 
 const zainCashLogo = require('@/assets/zaincash.png');
 const qiLogo = require('@/assets/qi.svg');
 
-// The bank sheet's rows: every listed bank plus the "أخرى" free-text escape hatch.
-const BANK_OPTIONS = [...IRAQI_BANKS, OTHER_BANK_OPTION];
+// The ONE destination an owner is paid to. A bank carries its own name; the
+// wallets are identified by the kind alone. Saving one clears the others — the
+// old four-field form let an owner save three and nobody knew which to pay.
+type PayoutMethod =
+  | { kind: 'zaincash' }
+  | { kind: 'qi' }
+  | { kind: 'bank'; bankName: string };
+
+// A row in the method sheet. Wallets and banks share one list — with headers,
+// because two wallets followed by 22 bank names reads as one undifferentiated
+// wall of Arabic otherwise — so a row needs an id distinct from its label.
+type MethodRow =
+  | { type: 'header'; id: string; label: string }
+  | { type: 'method'; id: string; label: string; logo?: any };
 
 export default function ProviderProfileScreen() {
   const { isRTL: isArabic, textAlign, inputTextAlign } = useDirection();
   const dispatch = useDispatch();
   const router = useRouter();
+  const { showConfirm } = useConfirmationDialog();
 
   const { data: profile, isLoading, isError, refetch } = useGetProviderProfileQuery(undefined);
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProviderProfileMutation();
 
-  const bankSheetRef = useRef<BottomSheetModal>(null);
+  const methodSheetRef = useRef<BottomSheetModal>(null);
 
-  const [formData, setFormData] = useState({
-    zainCash: '',
-    qi: '',
-    bankName: '',
-    bankAccount: ''
-  });
+  const [method, setMethod] = useState<PayoutMethod | null>(null);
+  const [account, setAccount] = useState('');
 
   // "أخرى" mode: the bank name is typed instead of picked from the list.
   const [isOtherBank, setIsOtherBank] = useState(false);
 
-  const [errors, setErrors] = useState<{
-    zainCash?: string | null;
-    qi?: string | null;
-    bankName?: string | null;
-    bankAccount?: string | null;
-  }>({});
+  const [accountError, setAccountError] = useState<string | null>(null);
+  const [bankNameError, setBankNameError] = useState<string | null>(null);
+
+  // Owners onboarded before the one-destination rule may have several saved.
+  // We keep exactly one and clear the rest, so say so before they hit save.
+  const [hasMultipleSaved, setHasMultipleSaved] = useState(false);
+
+  // What the server currently holds, so a save can tell which previously-filled
+  // destination it is about to wipe.
+  const savedRef = useRef({ zainCash: '', qi: '', bankAccount: '' });
+  // The wipe warning is a one-time gate, not a nag on every retry.
+  const wipeConfirmedRef = useRef(false);
 
   const profileData = profile?.data || profile;
 
   useEffect(() => {
     if (profileData) {
+      const savedZainCash = profileData.zainCash || '';
+      const savedQi = profileData.qi || '';
       const savedBankName = profileData.bankName || '';
-      setFormData({
-        zainCash: profileData.zainCash || '',
-        qi: profileData.qi || '',
-        bankName: savedBankName,
-        bankAccount: profileData.bankAccount || ''
-      });
+      const savedBankAccount = profileData.bankAccount || '';
+
+      savedRef.current = {
+        zainCash: savedZainCash,
+        qi: savedQi,
+        bankAccount: savedBankAccount,
+      };
+
+      // Same precedence the payout screen actually pays out by
+      // (components/payout-confirm-view.tsx): zainCash → qi → bank. Hydrating in
+      // any other order would silently move where an existing owner gets paid.
+      if (savedZainCash) {
+        setMethod({ kind: 'zaincash' });
+        setAccount(savedZainCash);
+      } else if (savedQi) {
+        setMethod({ kind: 'qi' });
+        setAccount(savedQi);
+      } else if (savedBankAccount || savedBankName) {
+        setMethod({ kind: 'bank', bankName: savedBankName });
+        setAccount(savedBankAccount);
+      } else {
+        setMethod(null);
+        setAccount('');
+      }
+
       // A saved name outside the list renders as "أخرى" + free text.
       setIsOtherBank(!!savedBankName && !IRAQI_BANKS.includes(savedBankName));
+      setHasMultipleSaved(
+        [savedZainCash, savedQi, savedBankAccount].filter(Boolean).length > 1
+      );
     }
   }, [profileData]);
 
-  // Picking a row in the bank sheet. Choosing "أخرى" clears a listed value so
-  // the owner types their own; an already-custom name stays as the free text.
-  const handleBankSelect = (option: string) => {
-    const isOther = option === OTHER_BANK_OPTION;
-    const nextBankName = isOther
-      ? (IRAQI_BANKS.includes(formData.bankName) ? '' : formData.bankName)
-      : option;
-    setIsOtherBank(isOther);
-    setFormData(prev => ({ ...prev, bankName: nextBankName }));
-    // The bank pair validates together: filling one field makes the
-    // other required, so re-check both on every change.
-    setErrors(prev => ({
-      ...prev,
-      bankName: validateBankName(nextBankName, formData.bankAccount),
-      bankAccount: validateBankAccount(formData.bankAccount, nextBankName),
-    }));
-    bankSheetRef.current?.dismiss();
+  const methodRows = useMemo<MethodRow[]>(() => [
+    { type: 'header', id: 'header:wallets', label: isArabic ? 'محافظ إلكترونية' : 'E-Wallets' },
+    { type: 'method', id: 'zaincash', label: isArabic ? 'زين كاش' : 'Zain Cash', logo: zainCashLogo },
+    { type: 'method', id: 'qi', label: isArabic ? 'بطاقة كي' : 'Qi Card', logo: qiLogo },
+    { type: 'header', id: 'header:banks', label: isArabic ? 'المصارف' : 'Banks' },
+    ...IRAQI_BANKS.map(bank => ({ type: 'method' as const, id: bank, label: bank })),
+    { type: 'method', id: OTHER_BANK_OPTION, label: isArabic ? 'أخرى' : 'Other' },
+  ], [isArabic]);
+
+  const isRowSelected = (row: MethodRow) => {
+    if (row.type === 'header' || !method) return false;
+    if (row.id === 'zaincash' || row.id === 'qi') return method.kind === row.id;
+    if (row.id === OTHER_BANK_OPTION) return method.kind === 'bank' && isOtherBank;
+    return method.kind === 'bank' && !isOtherBank && method.bankName === row.id;
   };
 
-  const handleSave = async () => {
-    const zainCashErr = validateZainCash(formData.zainCash);
-    const qiErr = validateQiCard(formData.qi);
-    const bankNameErr = validateBankName(formData.bankName, formData.bankAccount);
-    const bankAccountErr = validateBankAccount(formData.bankAccount, formData.bankName);
-
-    if (zainCashErr || qiErr || bankNameErr || bankAccountErr) {
-      setErrors({
-        zainCash: zainCashErr,
-        qi: qiErr,
-        bankName: bankNameErr,
-        bankAccount: bankAccountErr
-      });
-      Toast.show({
-        type: 'error',
-        text1: isArabic ? 'خطأ في المدخلات' : 'Validation Error',
-        text2: isArabic ? 'يرجى تصحيح الأخطاء قبل الحفظ' : 'Please correct the errors before saving',
-        position: 'bottom',
-      });
-      return;
+  // Picking a row in the method sheet. Choosing "أخرى" clears a listed bank so
+  // the owner types their own; an already-custom name stays as the free text.
+  const handleMethodSelect = (row: MethodRow) => {
+    let next: PayoutMethod;
+    if (row.id === 'zaincash' || row.id === 'qi') {
+      next = { kind: row.id };
+      setIsOtherBank(false);
+    } else if (row.id === OTHER_BANK_OPTION) {
+      const kept =
+        method?.kind === 'bank' && !IRAQI_BANKS.includes(method.bankName)
+          ? method.bankName
+          : '';
+      next = { kind: 'bank', bankName: kept };
+      setIsOtherBank(true);
+    } else {
+      next = { kind: 'bank', bankName: row.id };
+      setIsOtherBank(false);
     }
+    setMethod(next);
+    // A mis-tap must not erase what they already typed — keep the account and
+    // only re-check it against the newly chosen method.
+    setAccountError(account ? validatePayoutAccount(next.kind, account) : null);
+    setBankNameError(null);
+    methodSheetRef.current?.dismiss();
+  };
 
-    setErrors({});
+  const methodLabel = !method
+    ? (isArabic ? 'اختر طريقة الاستلام' : 'Select payout method')
+    : method.kind === 'zaincash'
+      ? (isArabic ? 'زين كاش' : 'Zain Cash')
+      : method.kind === 'qi'
+        ? (isArabic ? 'بطاقة كي' : 'Qi Card')
+        : isOtherBank
+          ? (isArabic ? 'أخرى' : 'Other')
+          : method.bankName || (isArabic ? 'اختر المصرف' : 'Select Bank');
+
+  const accountLabel = !method
+    ? ''
+    : method.kind === 'zaincash'
+      ? (isArabic ? 'رقم زين كاش' : 'Zain Cash Number')
+      : method.kind === 'qi'
+        ? (isArabic ? 'رقم بطاقة كي' : 'Qi Card Number')
+        : (isArabic ? 'رقم الحساب / الآيبان' : 'Account Number / IBAN');
+
+  const accountPlaceholder = !method
+    ? ''
+    : method.kind === 'zaincash'
+      ? '07xxxxxxxxx'
+      : method.kind === 'qi'
+        ? (isArabic ? 'رقم البطاقة المكون من 10 أرقام' : '10-digit card number')
+        : 'IQ98NBIQ850123456789012';
+
+  const submit = async (payload: {
+    zainCash: string;
+    qi: string;
+    bankName: string;
+    bankAccount: string;
+  }) => {
     try {
-      // The validators above accept separators ("0772 666 4362"); the server
-      // matches on digits only — normalise before sending, same as register.tsx.
-      // An empty field is sent as-is: the server reads it as "no account here".
-      const clean = (value: string) => value.trim().replace(/[\s\-\(\)]/g, '');
-      await updateProfile({
-        zainCash: clean(formData.zainCash),
-        qi: clean(formData.qi),
-        // The bank name is a real name, not a number — only trim it.
-        bankName: formData.bankName.trim(),
-        bankAccount: clean(formData.bankAccount),
-      }).unwrap();
+      await updateProfile(payload).unwrap();
       Toast.show({
         type: 'success',
         text1: isArabic ? 'نجاح' : 'Success',
@@ -159,6 +221,77 @@ export default function ProviderProfileScreen() {
     }
   };
 
+  const handleSave = async () => {
+    if (!method) {
+      Toast.show({
+        type: 'error',
+        text1: isArabic ? 'خطأ في المدخلات' : 'Validation Error',
+        text2: isArabic ? 'يرجى اختيار طريقة الاستلام' : 'Please choose a payout method',
+        position: 'bottom',
+      });
+      return;
+    }
+
+    const accountErr = validatePayoutAccount(method.kind, account);
+    const bankNameErr =
+      method.kind === 'bank' ? validateBankNameRequired(method.bankName) : null;
+
+    if (accountErr || bankNameErr) {
+      setAccountError(accountErr);
+      setBankNameError(bankNameErr);
+      Toast.show({
+        type: 'error',
+        text1: isArabic ? 'خطأ في المدخلات' : 'Validation Error',
+        text2: isArabic ? 'يرجى تصحيح الأخطاء قبل الحفظ' : 'Please correct the errors before saving',
+        position: 'bottom',
+      });
+      return;
+    }
+
+    setAccountError(null);
+    setBankNameError(null);
+
+    // The validators above accept separators ("0772 666 4362"); the server
+    // matches on digits only — normalise before sending, same as register.tsx.
+    // The three unused fields go out as '': @EmptyToNull in the DTO maps that to
+    // null, which is what actually clears the column server-side.
+    const clean = (value: string) => value.trim().replace(/[\s\-\(\)]/g, '');
+    const payload =
+      method.kind === 'zaincash'
+        ? { zainCash: clean(account), qi: '', bankName: '', bankAccount: '' }
+        : method.kind === 'qi'
+          ? { zainCash: '', qi: clean(account), bankName: '', bankAccount: '' }
+          // The bank name is a real name, not a number — only trim it.
+          : { zainCash: '', qi: '', bankName: method.bankName.trim(), bankAccount: clean(account) };
+
+    // Saving one destination wipes the others. Never do that to a number the
+    // owner had already saved without asking first.
+    const wiped = [
+      savedRef.current.zainCash && !payload.zainCash && (isArabic ? 'رقم زين كاش' : 'Zain Cash number'),
+      savedRef.current.qi && !payload.qi && (isArabic ? 'رقم بطاقة كي' : 'Qi Card number'),
+      savedRef.current.bankAccount && !payload.bankAccount && (isArabic ? 'الحساب المصرفي' : 'bank account'),
+    ].filter(Boolean) as string[];
+
+    if (wiped.length > 0 && !wipeConfirmedRef.current) {
+      showConfirm({
+        title: isArabic ? 'سيتم حذف بيانات محفوظة' : 'Saved details will be removed',
+        message: isArabic
+          ? `يمكن الاحتفاظ بطريقة استلام واحدة فقط. عند الحفظ سيتم حذف: ${wiped.join('، ')}.`
+          : `Only one payout method is kept. Saving will remove: ${wiped.join(', ')}.`,
+        type: 'warning',
+        confirmLabel: isArabic ? 'حفظ' : 'Save',
+        cancelLabel: isArabic ? 'إلغاء' : 'Cancel',
+        onConfirm: async () => {
+          wipeConfirmedRef.current = true;
+          await submit(payload);
+        },
+      });
+      return;
+    }
+
+    await submit(payload);
+  };
+
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -166,66 +299,6 @@ export default function ProviderProfileScreen() {
       </View>
     );
   }
-
-  const renderField = (
-    label: string,
-    value: string,
-    key: string,
-    imageSource: any,
-    placeholder: string,
-    error: string | null = null,
-    keyboardType: 'default' | 'phone-pad' | 'numeric' = 'phone-pad'
-  ) => (
-    <View style={styles.fieldContainer}>
-      <ThemedText style={[styles.label, { textAlign }]}>{label}</ThemedText>
-      <View style={[
-        styles.inputWrapper, 
-        error ? { borderColor: '#EF4444' } : null,
-        { flexDirection: 'row' }
-      ]}>
-        {imageSource && (
-          <Image 
-            source={imageSource} 
-            style={{ width: 30, height: 30, borderRadius: 6, resizeMode: 'contain', marginEnd: 8 }} 
-          />
-        )}
-        <TextInput
-          style={[styles.input, { textAlign: inputTextAlign }]}
-          value={value}
-          onChangeText={(text) => {
-            setFormData(prev => ({ ...prev, [key]: text }));
-            if (key === 'zainCash') {
-              setErrors(prev => ({ ...prev, zainCash: validateZainCash(text) }));
-            } else if (key === 'qi') {
-              setErrors(prev => ({ ...prev, qi: validateQiCard(text) }));
-            } else if (key === 'bankName') {
-              // The bank pair validates together: filling one field makes the
-              // other required, so re-check both on every keystroke.
-              setErrors(prev => ({
-                ...prev,
-                bankName: validateBankName(text, formData.bankAccount),
-                bankAccount: validateBankAccount(formData.bankAccount, text),
-              }));
-            } else if (key === 'bankAccount') {
-              setErrors(prev => ({
-                ...prev,
-                bankAccount: validateBankAccount(text, formData.bankName),
-                bankName: validateBankName(formData.bankName, text),
-              }));
-            }
-          }}
-          placeholder={placeholder}
-          placeholderTextColor={Colors.text.muted}
-          keyboardType={keyboardType}
-        />
-      </View>
-      {error && (
-        <ThemedText style={[styles.errorText, { textAlign }]}>
-          {error}
-        </ThemedText>
-      )}
-    </View>
-  );
 
   return (
     <View style={[styles.container]}>
@@ -252,94 +325,122 @@ export default function ProviderProfileScreen() {
             </View>
             <ThemedText style={[styles.warningText, { textAlign }]}>
               {isArabic 
-                ? 'يرجى التأكد من صحة رقم زين كاش ورقم بطاقة كي وحسابك البنكي بدقة. أي خطأ في هذه البيانات قد يؤدي إلى فشل تحويل مستحقاتك المالية أو إرسالها إلى حساب آخر.'
-                : 'Please verify your Zain Cash, Qi Card and bank account details carefully. Any incorrect details may lead to payout failures or sending funds to the wrong account.'}
+                ? 'يتم تحويل مستحقاتك إلى طريقة استلام واحدة فقط. يرجى التأكد من صحة بياناتها بدقة، فأي خطأ فيها قد يؤدي إلى فشل التحويل أو إرساله إلى حساب آخر.'
+                : 'Your payouts are sent to a single destination. Please verify its details carefully — any mistake may lead to a failed transfer or funds sent to the wrong account.'}
             </ThemedText>
           </View>
 
+          {hasMultipleSaved && (
+            <View style={styles.noticeCard}>
+              <View style={[styles.warningHeader, { flexDirection: 'row' }]}>
+                <SolarInfoCircleBold size={20} color={Colors.primary} />
+                <ThemedText style={styles.noticeTitle}>
+                  {isArabic ? 'طريقة استلام واحدة' : 'One payout method'}
+                </ThemedText>
+              </View>
+              <ThemedText style={[styles.noticeText, { textAlign }]}>
+                {isArabic
+                  ? 'لديك أكثر من طريقة استلام محفوظة. أصبح بالإمكان الاحتفاظ بطريقة واحدة فقط — اختر التي تريدها، وسيتم حذف البقية عند الحفظ.'
+                  : 'You have more than one payout method saved. Only one can be kept now — pick the one you want and the rest are removed when you save.'}
+              </ThemedText>
+            </View>
+          )}
+
           <View style={styles.section}>
-            {renderField(
-              isArabic ? 'رقم زين كاش' : 'Zain Cash Number',
-              formData.zainCash,
-              'zainCash',
-              zainCashLogo,
-              '07xxxxxxxx',
-              errors.zainCash,
-              'phone-pad'
-            )}
-            {renderField(
-              isArabic ? 'رقم بطاقة كي' : 'Qi Card Number',
-              formData.qi,
-              'qi',
-              qiLogo,
-              isArabic ? 'رقم البطاقة المكون من 10 أرقام' : '10-digit card number',
-              errors.qi,
-              'numeric'
-            )}
-            {/* Bank name: dropdown over the Iraqi banks list; "أخرى" reveals free text. */}
+            {/* One selector for everything: the two wallets and every bank. */}
             <View style={styles.fieldContainer}>
               <ThemedText style={[styles.label, { textAlign }]}>
-                {isArabic ? 'اسم المصرف' : 'Bank Name'}
+                {isArabic ? 'طريقة الاستلام' : 'Payout Method'}
               </ThemedText>
               <TouchableOpacity
                 style={[
                   styles.inputWrapper,
-                  errors.bankName ? { borderColor: '#EF4444' } : null,
                   { flexDirection: 'row', justifyContent: 'space-between' }
                 ]}
-                onPress={() => bankSheetRef.current?.present()}
+                onPress={() => methodSheetRef.current?.present()}
                 activeOpacity={0.7}
               >
                 <ThemedText
-                  style={[
-                    styles.selectValueText,
-                    !(isOtherBank || formData.bankName) && { color: Colors.text.muted }
-                  ]}
+                  style={[styles.selectValueText, !method && { color: Colors.text.muted }]}
                 >
-                  {isOtherBank
-                    ? (isArabic ? 'أخرى' : 'Other')
-                    : formData.bankName || (isArabic ? 'اختر المصرف' : 'Select Bank')}
+                  {methodLabel}
                 </ThemedText>
                 <SolarAltArrowDownLinear size={16} color={Colors.text.muted} />
               </TouchableOpacity>
-              {isOtherBank && (
+            </View>
+
+            {method?.kind === 'bank' && isOtherBank && (
+              <View style={styles.fieldContainer}>
+                <ThemedText style={[styles.label, { textAlign }]}>
+                  {isArabic ? 'اسم المصرف' : 'Bank Name'}
+                </ThemedText>
                 <View style={[
                   styles.inputWrapper,
-                  errors.bankName ? { borderColor: '#EF4444' } : null,
-                  { flexDirection: 'row', marginTop: 8 }
+                  bankNameError ? { borderColor: '#EF4444' } : null,
+                  { flexDirection: 'row' }
                 ]}>
                   <TextInput
                     style={[styles.input, { textAlign: inputTextAlign }]}
-                    value={formData.bankName}
+                    value={method.bankName}
                     onChangeText={(text) => {
-                      setFormData(prev => ({ ...prev, bankName: text }));
-                      // The bank pair validates together: filling one field makes
-                      // the other required, so re-check both on every keystroke.
-                      setErrors(prev => ({
-                        ...prev,
-                        bankName: validateBankName(text, formData.bankAccount),
-                        bankAccount: validateBankAccount(formData.bankAccount, text),
-                      }));
+                      setMethod({ kind: 'bank', bankName: text });
+                      setBankNameError(validateBankName(text, account));
                     }}
                     placeholder={isArabic ? 'اكتب اسم المصرف' : 'Type the bank name'}
                     placeholderTextColor={Colors.text.muted}
                   />
                 </View>
-              )}
-              {errors.bankName && (
-                <ThemedText style={[styles.errorText, { textAlign }]}>
-                  {errors.bankName}
-                </ThemedText>
-              )}
-            </View>
-            {renderField(
-              isArabic ? 'رقم الحساب / الآيبان' : 'Account Number / IBAN',
-              formData.bankAccount,
-              'bankAccount',
-              null,
-              'IQ98NBIQ850123456789012',
-              errors.bankAccount,
-              'default'
+                {bankNameError && (
+                  <ThemedText style={[styles.errorText, { textAlign }]}>
+                    {bankNameError}
+                  </ThemedText>
+                )}
+              </View>
+            )}
+
+            {/* The single destination field — nothing to type until a method is picked. */}
+            {method && (
+              <View style={styles.fieldContainer}>
+                <ThemedText style={[styles.label, { textAlign }]}>{accountLabel}</ThemedText>
+                <View style={[
+                  styles.inputWrapper,
+                  accountError ? { borderColor: '#EF4444' } : null,
+                  { flexDirection: 'row' }
+                ]}>
+                  {method.kind !== 'bank' && (
+                    <Image
+                      source={method.kind === 'zaincash' ? zainCashLogo : qiLogo}
+                      style={{ width: 30, height: 30, borderRadius: 6, resizeMode: 'contain', marginEnd: 8 }}
+                    />
+                  )}
+                  <TextInput
+                    style={[styles.input, { textAlign: inputTextAlign }]}
+                    value={account}
+                    onChangeText={(text) => {
+                      setAccount(text);
+                      // Empty stays un-flagged while typing; handleSave catches it.
+                      setAccountError(text ? validatePayoutAccount(method.kind, text) : null);
+                      if (method.kind === 'bank' && isOtherBank) {
+                        setBankNameError(validateBankName(method.bankName, text));
+                      }
+                    }}
+                    placeholder={accountPlaceholder}
+                    placeholderTextColor={Colors.text.muted}
+                    keyboardType={
+                      method.kind === 'zaincash'
+                        ? 'phone-pad'
+                        : method.kind === 'qi'
+                          ? 'numeric'
+                          : 'default'
+                    }
+                  />
+                </View>
+                {accountError && (
+                  <ThemedText style={[styles.errorText, { textAlign }]}>
+                    {accountError}
+                  </ThemedText>
+                )}
+              </View>
             )}
           </View>
 
@@ -354,11 +455,11 @@ export default function ProviderProfileScreen() {
 
         </ScrollView>
 
-        {/* Bank Picker Bottom Sheet */}
+        {/* Method Picker Bottom Sheet */}
         <BottomSheetModal
-          ref={bankSheetRef}
+          ref={methodSheetRef}
           index={0}
-          snapPoints={['60%']}
+          snapPoints={['75%']}
           backdropComponent={props => (
             <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
           )}
@@ -366,17 +467,21 @@ export default function ProviderProfileScreen() {
         >
           <View style={styles.sheetContent}>
             <ThemedText style={styles.sheetTitle}>
-              {isArabic ? 'اختر المصرف' : 'Select Bank'}
+              {isArabic ? 'اختر طريقة الاستلام' : 'Select Payout Method'}
             </ThemedText>
             <BottomSheetFlatList
-              data={BANK_OPTIONS}
-              keyExtractor={(item: string) => item}
+              data={methodRows}
+              keyExtractor={(item: MethodRow) => item.id}
               contentContainerStyle={{ paddingBottom: 24 }}
-              renderItem={({ item }: { item: string }) => {
-                const isOtherRow = item === OTHER_BANK_OPTION;
-                const isSelected = isOtherRow
-                  ? isOtherBank
-                  : !isOtherBank && formData.bankName === item;
+              renderItem={({ item }: { item: MethodRow }) => {
+                if (item.type === 'header') {
+                  return (
+                    <ThemedText style={[styles.sheetSectionTitle, { textAlign }]}>
+                      {item.label}
+                    </ThemedText>
+                  );
+                }
+                const isSelected = isRowSelected(item);
                 return (
                   <TouchableOpacity
                     style={[
@@ -384,10 +489,16 @@ export default function ProviderProfileScreen() {
                       isSelected && styles.bankItemActive,
                       { flexDirection: 'row' }
                     ]}
-                    onPress={() => handleBankSelect(item)}
+                    onPress={() => handleMethodSelect(item)}
                   >
+                    {item.logo && (
+                      <Image
+                        source={item.logo}
+                        style={{ width: 26, height: 26, borderRadius: 6, resizeMode: 'contain' }}
+                      />
+                    )}
                     <ThemedText style={[styles.bankText, isSelected && styles.bankTextActive]}>
-                      {isOtherRow ? (isArabic ? 'أخرى' : 'Other') : item}
+                      {item.label}
                     </ThemedText>
                     {isSelected && (
                       <SolarCheckCircleBold size={20} color={Colors.primary} />
@@ -463,6 +574,12 @@ const styles = StyleSheet.create({
     color: Colors.text.primary,
     textAlign: 'center',
     marginBottom: 16 },
+  sheetSectionTitle: {
+    fontSize: normalize.font(12),
+    fontFamily: "IBMPlexSansArabic-Bold",
+    color: Colors.text.muted,
+    marginTop: 8,
+    marginBottom: 8 },
   bankItem: {
     paddingVertical: 14,
     paddingHorizontal: 16,
@@ -520,4 +637,21 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(12),
     fontFamily: 'IBMPlexSansArabic-Medium',
     color: '#D97706',
+    lineHeight: 18 },
+  noticeCard: {
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 24,
+    gap: 8 },
+  noticeTitle: {
+    fontSize: normalize.font(14),
+    fontFamily: 'IBMPlexSansArabic-Bold',
+    color: Colors.primary },
+  noticeText: {
+    fontSize: normalize.font(12),
+    fontFamily: 'IBMPlexSansArabic-Medium',
+    color: Colors.primary,
     lineHeight: 18 } });

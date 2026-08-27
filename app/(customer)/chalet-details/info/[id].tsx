@@ -6,7 +6,8 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Colors, normalize } from "@/constants/theme";
 import {
   useGetChaletRulesQuery,
-  useGetChaletTermsQuery } from "@/store/api/customerApiSlice";
+  useGetChaletTermsQuery,
+  useGetCustomerChaletDetailsQuery } from "@/store/api/customerApiSlice";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { useTranslation } from "react-i18next";
@@ -36,6 +37,44 @@ export default function ChaletInfoScreen() {
   );
   const { data: policiesData, isLoading: isPoliciesLoading } =
     useGetChaletRulesQuery(id, { skip: !id });
+
+  // The guest policy is a rule the owner cannot phrase or delete, but the
+  // customer reads it in the same place as the house rules. Comes from the
+  // detail endpoint, which the screen the customer arrived from already
+  // cached — this is a tag read, not a second round trip in practice.
+  const { data: chaletData } = useGetCustomerChaletDetailsQuery(id, { skip: !id });
+  const chaletDetails = chaletData?.data || chaletData;
+  // An older payload without the column means "accepts everyone", so nothing
+  // is shown rather than a restriction the owner never set.
+  const guestPolicy = chaletDetails?.guestPolicy ?? 'both';
+  const guestPolicyRule =
+    guestPolicy === 'family' || guestPolicy === 'youth'
+      ? {
+          title: isArabic ? 'نوع الضيوف المسموح' : 'Allowed guests',
+          description:
+            guestPolicy === 'family'
+              ? (isArabic
+                  ? 'هذا الشاليه يستقبل العوائل فقط، ولا تُقبل حجوزات الشباب.'
+                  : 'This chalet accepts families only; bookings from young men are not accepted.')
+              : (isArabic
+                  ? 'هذا الشاليه يستقبل الشباب فقط، ولا تُقبل حجوزات العوائل.'
+                  : 'This chalet accepts young men only; bookings from families are not accepted.'),
+        }
+      : null;
+
+  // `hasOwnerRules` keeps the trailing divider from dangling when the owner
+  // wrote no rules of their own and this is the only line on the page.
+  const renderGuestPolicyRule = (hasOwnerRules: boolean) =>
+    guestPolicyRule ? (
+      <View style={styles.ruleItem}>
+        <View style={[styles.ruleHeader, { flexDirection: rowDirection }]}>
+          <View style={styles.ruleBullet} />
+          <ThemedText style={styles.ruleTitleText}>{guestPolicyRule.title}</ThemedText>
+        </View>
+        <ThemedText style={styles.ruleDescText}>{guestPolicyRule.description}</ThemedText>
+        {hasOwnerRules && <View style={styles.ruleDivider} />}
+      </View>
+    ) : null;
 
   const isLoading = isTermsLoading || isPoliciesLoading;
   const title = type === "terms" 
@@ -73,8 +112,9 @@ export default function ChaletInfoScreen() {
       // it's often where the real "شروط/قوانين الشاليه" content lives.
       const rulesList = Array.isArray(policiesData) ? policiesData : [];
 
-      // Nothing at all → show the no-data message.
-      if (!tStr && !pStr && !cStr && rulesList.length === 0) {
+      // Nothing at all → show the no-data message. The guest policy counts as
+      // content: it is the one rule that can exist without the owner writing any.
+      if (!tStr && !pStr && !cStr && rulesList.length === 0 && !guestPolicyRule) {
         return t("common.noData");
       }
 
@@ -88,15 +128,16 @@ export default function ChaletInfoScreen() {
               <ThemedText style={styles.content}>
                 {tStr}
               </ThemedText>
-              {(pStr || cStr || rulesList.length > 0) && <View style={styles.divider} />}
+              {(pStr || cStr || rulesList.length > 0 || guestPolicyRule) && <View style={styles.divider} />}
             </View>
           ) : null}
 
-          {rulesList.length > 0 ? (
+          {(rulesList.length > 0 || guestPolicyRule) ? (
             <View>
               <ThemedText style={styles.sectionTitle}>
                 {isArabic ? "قوانين الشاليه" : "Chalet Rules"}
               </ThemedText>
+              {renderGuestPolicyRule(rulesList.length > 0)}
               {rulesList.map((rule: any, idx: number) => {
                 const ruleTitle = pickTranslation(rule.title, isArabic);
                 const ruleDesc = pickTranslation(rule.description, isArabic);
@@ -144,7 +185,7 @@ export default function ChaletInfoScreen() {
       );
     } else {
       if (Array.isArray(policiesData)) {
-        if (policiesData.length === 0) {
+        if (policiesData.length === 0 && !guestPolicyRule) {
           return (
             <ThemedText style={styles.content}>
               {t("common.noData")}
@@ -153,6 +194,7 @@ export default function ChaletInfoScreen() {
         }
         return (
           <View>
+            {renderGuestPolicyRule(policiesData.length > 0)}
             {policiesData.map((rule: any, idx: number) => {
               const ruleTitle = pickTranslation(rule.title, isArabic);
               const ruleDesc = pickTranslation(rule.description, isArabic);

@@ -246,6 +246,11 @@ export default function GalleryScreen() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [viewerVisible, setViewerVisible] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
+  // The photo the guest tapped, kept apart from `viewerIndex` (which tracks
+  // what is currently on screen) so swiping the pager can't retarget the
+  // jump-to-tapped-photo that runs when the viewer lays out.
+  const viewerStartRef = React.useRef(0);
+  const viewerListRef = React.useRef<FlatList>(null);
   // Paging and panning compete for the same drag, so the pager is frozen while
   // a photo is zoomed in — pinch (or double-tap) back out to swipe again.
   const [viewerZoomed, setViewerZoomed] = useState(false);
@@ -344,9 +349,37 @@ export default function GalleryScreen() {
   }, [filteredData]);
 
   const openViewer = React.useCallback((index: number) => {
-    setViewerIndex(Math.max(0, index));
+    const target = Math.max(0, index);
+    viewerStartRef.current = target;
+    setViewerIndex(target);
     setViewerZoomed(false);
     setViewerVisible(true);
+  }, []);
+
+  // Track the page actually on screen instead of doing offset math: under
+  // native RTL page 0 sits at the physical right, so
+  // `contentOffset.x / SCREEN_WIDTH` counts from the wrong end and the counter
+  // showed a mirrored number. Both props must be stable refs or
+  // VirtualizedList throws on a changed `onViewableItemsChanged`.
+  const viewerViewabilityConfig = React.useRef({
+    itemVisiblePercentThreshold: 55,
+  }).current;
+  const onViewerItemsChanged = React.useRef(
+    (info: { viewableItems: Array<{ index: number | null }> }) => {
+      const first = info.viewableItems[0];
+      if (first && typeof first.index === "number") setViewerIndex(first.index);
+    },
+  ).current;
+
+  // The Modal mounts a fresh list, so jump to the tapped photo once it is up.
+  // Deliberately NOT `initialScrollIndex` + `getItemLayout`: supplied frames are
+  // logical and override the measured (mirrored) ones, which is exactly how
+  // tapping photo k in Arabic used to open photo (n-1-k).
+  const scrollViewerToStart = React.useCallback(() => {
+    const target = viewerStartRef.current;
+    if (target > 0) {
+      viewerListRef.current?.scrollToIndex({ index: target, animated: false });
+    }
   }, []);
 
   // Chip strip is LTR-forced; reverse so it reads right-to-left in Arabic
@@ -375,26 +408,29 @@ export default function GalleryScreen() {
           </TouchableOpacity>
 
           <FlatList
+            ref={viewerListRef}
             data={viewerImages}
             keyExtractor={(uri, i) => `${uri}-${i}`}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
             scrollEnabled={!viewerZoomed}
-            initialScrollIndex={viewerIndex}
-            // Fixed page width, so jumping straight to the tapped photo works
-            // without waiting for the list to measure itself.
-            getItemLayout={(_, i) => ({
-              length: SCREEN_WIDTH,
-              offset: SCREEN_WIDTH * i,
-              index: i,
-            })}
-            onMomentumScrollEnd={(e) => {
-              setViewerIndex(
-                Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH),
-              );
-              setViewerZoomed(false);
+            onLayout={scrollViewerToStart}
+            onViewableItemsChanged={onViewerItemsChanged}
+            viewabilityConfig={viewerViewabilityConfig}
+            onScrollToIndexFailed={({ index, highestMeasuredFrameIndex }) => {
+              // The target page is not measured yet. Hop to the furthest page
+              // that is — which renders the next window — then finish the jump
+              // on the following frame. Converges instead of looping.
+              viewerListRef.current?.scrollToIndex({
+                index: Math.max(0, highestMeasuredFrameIndex),
+                animated: false,
+              });
+              requestAnimationFrame(() => {
+                viewerListRef.current?.scrollToIndex({ index, animated: false });
+              });
             }}
+            onMomentumScrollEnd={() => setViewerZoomed(false)}
             renderItem={({ item }) => (
               <ZoomableImage
                 uri={item}

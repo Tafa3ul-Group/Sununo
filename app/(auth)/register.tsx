@@ -399,6 +399,11 @@ export default function RegisterScreen() {
           user: result.user,
           token: result.token,
           userType: mode,
+          // The registration form branches on this choice from the first step
+          // (owner sign-up has its own policy + payment stages), so it is always
+          // deliberate — which is what keeps the "already a provider, signing up
+          // as a tenant" case above landing on the tenant side.
+          chosenByUser: true,
           accountType:
             result.user?.type === "provider" ? "provider" : "customer" }),
       );

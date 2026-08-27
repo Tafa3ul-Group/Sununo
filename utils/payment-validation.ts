@@ -62,13 +62,16 @@ export function validateQiCard(text: string): string | null {
   return null;
 }
 
-// The two bank fields validate as a pair: an account number is useless to the
-// admin without the bank it belongs to, and vice versa. Mirrors the API, which
-// accepts 6-34 letters/digits (an IBAN or a plain account number).
-export function validateBankName(text: string, account?: string): string | null {
+// ── Required variants ────────────────────────────────────────────────────────
+// The bank format rules live here, on their own, because two callers need them
+// under two different emptiness policies: the legacy pair below (where a blank
+// field means "no bank account at all" and is fine) and `validatePayoutAccount`
+// (where the owner has already picked bank, so a blank field is the error).
+// Keeping one copy of the rules is what stops the two policies from drifting.
+export function validateBankNameRequired(text: string): string | null {
   const clean = text.trim();
   if (!clean) {
-    return account && account.trim() ? "يرجى إدخال اسم المصرف" : null;
+    return "يرجى إدخال اسم المصرف";
   }
   if (clean.length < 2) {
     return "اسم المصرف قصير جداً";
@@ -79,10 +82,10 @@ export function validateBankName(text: string, account?: string): string | null 
   return null;
 }
 
-export function validateBankAccount(text: string, bankName?: string): string | null {
+export function validateBankAccountRequired(text: string): string | null {
   const clean = text.replace(/[\s\-]/g, "");
   if (!clean) {
-    return bankName && bankName.trim() ? "يرجى إدخال رقم الحساب أو الآيبان" : null;
+    return "يرجى إدخال رقم الحساب أو الآيبان";
   }
   if (!/^[A-Za-z0-9]+$/.test(clean)) {
     return "يجب أن يحتوي رقم الحساب على أرقام وحروف إنجليزية فقط";
@@ -91,4 +94,55 @@ export function validateBankAccount(text: string, bankName?: string): string | n
     return "رقم الحساب يجب أن يكون بين 6 و 34 خانة";
   }
   return null;
+}
+
+// The two bank fields validate as a pair: an account number is useless to the
+// admin without the bank it belongs to, and vice versa. Mirrors the API, which
+// accepts 6-34 letters/digits (an IBAN or a plain account number).
+export function validateBankName(text: string, account?: string): string | null {
+  if (!text.trim()) {
+    return account && account.trim() ? "يرجى إدخال اسم المصرف" : null;
+  }
+  return validateBankNameRequired(text);
+}
+
+export function validateBankAccount(text: string, bankName?: string): string | null {
+  if (!text.replace(/[\s\-]/g, "")) {
+    return bankName && bankName.trim() ? "يرجى إدخال رقم الحساب أو الآيبان" : null;
+  }
+  return validateBankAccountRequired(text);
+}
+
+/** The single payout destination an owner can choose between. */
+export type PayoutMethodKind = "zaincash" | "qi" | "bank";
+
+/**
+ * Validates the ONE account field of the single-destination payout form.
+ *
+ * This is the exact inversion of every validator above: they return null on an
+ * empty value because each field was individually optional, which is precisely
+ * what let the old four-field screen save with nothing filled in at all. Here
+ * the owner has already chosen a method, so an empty account is an error, not
+ * an absence.
+ */
+export function validatePayoutAccount(
+  kind: PayoutMethodKind,
+  text: string,
+): string | null {
+  if (!text.trim()) {
+    if (kind === "zaincash") {
+      return "يرجى إدخال رقم زين كاش";
+    }
+    if (kind === "qi") {
+      return "يرجى إدخال رقم بطاقة كي";
+    }
+    return "يرجى إدخال رقم الحساب أو الآيبان";
+  }
+  if (kind === "zaincash") {
+    return validateZainCash(text);
+  }
+  if (kind === "qi") {
+    return validateQiCard(text);
+  }
+  return validateBankAccountRequired(text);
 }

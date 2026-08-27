@@ -116,11 +116,19 @@ export const HomeFiltersSheet = React.forwardRef<
   const any = isRTL ? "الكل" : "Any";
   const fmt = (n: number) => n.toLocaleString();
 
+  // The min-then-max source order is left alone on purpose: bidi reorders it to
+  // "max — min" in Arabic, which is exactly how the mirrored slider below now
+  // reads. The one thing bidi gets wrong is the trailing "+" — a lone neutral
+  // after a number run, so it lands on the number's LEFT ("+500,000"). An LTR
+  // isolate fixes just that token; unlike pinning the whole string it does not
+  // disturb the max/min order around it.
+  const openEndedMax = `\u2066${fmt(PRICE_MAX)}+\u2069`;
+
   const priceSummary =
     draft.minPrice == null && draft.maxPrice == null
       ? any
       : `${fmt(draft.minPrice ?? PRICE_MIN)} - ${
-          draft.maxPrice == null ? `${fmt(PRICE_MAX)}+` : fmt(draft.maxPrice)
+          draft.maxPrice == null ? openEndedMax : fmt(draft.maxPrice)
         }`;
 
   const citySummary = draft.cityId

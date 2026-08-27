@@ -61,6 +61,7 @@ import {
   ActivityIndicator,
   Alert,
   Dimensions,
+  FlatList,
   Image,
   RefreshControl,
   ScrollView,
@@ -71,7 +72,7 @@ import {
 import Svg, { Path } from "react-native-svg";
 import { useSelector } from "react-redux";
 import { useFormatTime } from "../../../hooks/useFormatTime";
-import { ltrScrollContent, ltrScroller, pickTranslation, useDirection, pinLTR } from "@/i18n";
+import { pickTranslation, useDirection } from "@/i18n";
 import * as Haptics from "expo-haptics";
 import Animated from "react-native-reanimated";
 
@@ -252,7 +253,11 @@ export default function ChaletDetailScreen() {
   const router = useRouter();
   const [activeImage, setActiveImage] = useState(0);
   const reviewSheetRef = React.useRef<BottomSheetModal>(null);
-  const bannerScrollRef = useRef<ScrollView>(null);
+  const bannerScrollRef = useRef<FlatList>(null);
+  // The autoplay timer reads the index from a ref, not from `activeImage`, so
+  // the interval doesn't have to be torn down and rebuilt on every swipe.
+  const activeImageRef = useRef(0);
+  const autoPlayTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   // Fetch chalet details from the backend
@@ -520,20 +525,45 @@ export default function ChaletDetailScreen() {
   );
 
   // Auto Play Banner
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveImage((prev) => {
-        const next = (prev + 1) % totalImages;
-        bannerScrollRef.current?.scrollTo({
-          x: next * SCREEN_WIDTH,
-          animated: true,
-        });
-        return next;
-      });
-    }, 4000);
+  const stopAutoPlay = useCallback(() => {
+    if (autoPlayTimerRef.current) {
+      clearInterval(autoPlayTimerRef.current);
+      autoPlayTimerRef.current = null;
+    }
+  }, []);
 
-    return () => clearInterval(timer);
-  }, [totalImages]);
+  const startAutoPlay = useCallback(() => {
+    if (totalImages <= 1) return;
+    stopAutoPlay();
+    autoPlayTimerRef.current = setInterval(() => {
+      const next = (activeImageRef.current + 1) % totalImages;
+      // scrollToIndex, not a hand-computed offset: under native RTL page 0 sits
+      // at the physical right, so `index * width` addresses the wrong photo.
+      bannerScrollRef.current?.scrollToIndex({ index: next, animated: true });
+      activeImageRef.current = next;
+      setActiveImage(next);
+    }, 4000);
+  }, [totalImages, stopAutoPlay]);
+
+  useEffect(() => {
+    startAutoPlay();
+    return stopAutoPlay;
+  }, [startAutoPlay, stopAutoPlay]);
+
+  // The active photo comes from what is actually on screen, never from
+  // contentOffset.x — native RTL reverses that offset, so the arithmetic would
+  // light the mirrored dot. Both props must be stable refs or VirtualizedList
+  // throws "Changing onViewableItemsChanged on the fly is not supported".
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 55 }).current;
+  const onViewableItemsChanged = useRef(
+    (info: { viewableItems: Array<{ index: number | null }> }) => {
+      const first = info.viewableItems[0];
+      if (first && typeof first.index === "number") {
+        activeImageRef.current = first.index;
+        setActiveImage(first.index);
+      }
+    },
+  ).current;
 
   const openReviewSheet = () => {
     reviewSheetRef.current?.present();
@@ -671,24 +701,24 @@ export default function ChaletDetailScreen() {
       >
         {/* صور الشاليه */}
         <View style={styles.imageHeader}>
-          <ScrollView
+          {/* Direction is left to native RTL — in Arabic the first photo is the
+              one on the RIGHT and the strip advances right-to-left. Deliberately
+              NO getItemLayout: hand-written logical offsets would override the
+              measured frames and re-mirror the very thing we are fixing. */}
+          <FlatList
             ref={bannerScrollRef}
+            data={images}
+            keyExtractor={(_: any, i: number) => `img-${i}`}
             horizontal
             pagingEnabled
-            // Pinned LTR on purpose: activeImage below is derived from
-            // contentOffset.x, whose semantics native RTL flips.
-            style={pinLTR}
-            contentContainerStyle={{ flexDirection: "row", ...pinLTR }}
-            onScroll={(e) =>
-              setActiveImage(
-                Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH),
-              )
-            }
-            scrollEventThrottle={16}
-          >
-            {images.map((img: { src: any; blurhash?: string }, i: number) => (
+            showsHorizontalScrollIndicator={false}
+            onViewableItemsChanged={onViewableItemsChanged}
+            viewabilityConfig={viewabilityConfig}
+            onScrollBeginDrag={stopAutoPlay}
+            onScrollEndDrag={startAutoPlay}
+            onScrollToIndexFailed={() => {}}
+            renderItem={({ item }: { item: { src: any; blurhash?: string } }) => (
               <TouchableOpacity
-                key={`${img || "img"}-${i}`}
                 activeOpacity={0.9}
                 onPress={() =>
                   router.push({
@@ -701,15 +731,17 @@ export default function ChaletDetailScreen() {
                 }
               >
                 <AnimatedImage
-                  source={typeof img.src === "string" ? { uri: img.src } : img.src}
+                  source={
+                    typeof item.src === "string" ? { uri: item.src } : item.src
+                  }
                   style={styles.headerImage}
                   contentFit="cover"
-                  placeholder={imagePlaceholder(img.blurhash)}
+                  placeholder={imagePlaceholder(item.blurhash)}
                   transition={IMAGE_TRANSITION}
                 />
               </TouchableOpacity>
-            ))}
-          </ScrollView>
+            )}
+          />
           <CircleBackButton
             style={[styles.backBtnOriginal, { start: 20 }]}
           />
@@ -756,8 +788,10 @@ export default function ChaletDetailScreen() {
               }}
             />
 
+            {/* Dots follow the app direction, matching the strip: in Arabic
+                dot[0] sits at the right, beside the first photo. */}
             <View
-              style={{ flexDirection: "row", gap: 6, alignItems: "center", direction: "ltr" }}
+              style={{ flexDirection: "row", gap: 6, alignItems: "center" }}
             >
               {images.map((_: { src: any }, i: number) => (
                 <Animated.View
@@ -819,6 +853,19 @@ export default function ChaletDetailScreen() {
                 <ThemedText style={styles.specText}>{d.label}</ThemedText>
               </View>
             ))}
+            {/* Eligibility, not a spec: a restricted policy REJECTS the other
+                audience at checkout, so it gets its own tint instead of reading
+                as one more number in the row. Missing/older payloads mean
+                'both', which shows nothing. */}
+            {(chalet.guestPolicy === 'family' || chalet.guestPolicy === 'youth') && (
+              <View style={styles.eligibilityTag}>
+                <ThemedText style={styles.eligibilityTagText}>
+                  {chalet.guestPolicy === 'family'
+                    ? (isRTL ? 'عوائل فقط' : 'Families only')
+                    : (isRTL ? 'شباب فقط' : 'Young men only')}
+                </ThemedText>
+              </View>
+            )}
           </View>
 
           {/* Running campaign, stated before the customer looks at any shift price
@@ -1455,6 +1502,16 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   specText: { fontSize: 13, fontFamily: "IBMPlexSansArabic-Bold", flexShrink: 1 },
+  eligibilityTag: {
+    backgroundColor: "#FFF4E5",
+    borderWidth: 1,
+    borderColor: "#F5A623",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    flexShrink: 1,
+  },
+  eligibilityTagText: { fontSize: 13, fontFamily: "IBMPlexSansArabic-Bold", color: "#B26A00", flexShrink: 1 },
   viewAllText: { fontSize: 13, color: "#6B7280", fontFamily: "IBMPlexSansArabic-Bold" },
   facilitiesHeader: {
     justifyContent: "space-between",

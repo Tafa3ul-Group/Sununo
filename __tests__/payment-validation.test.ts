@@ -1,6 +1,7 @@
 import {
   validateBankAccount,
   validateBankName,
+  validatePayoutAccount,
   validateQiCard,
   validateZainCash,
 } from "@/utils/payment-validation";
@@ -22,6 +23,8 @@ const ERR_BANK_SHORT = "اسم المصرف قصير جداً";
 const ERR_BANK_LONG = "اسم المصرف طويل جداً";
 
 const ERR_ACCOUNT_REQUIRED = "يرجى إدخال رقم الحساب أو الآيبان";
+const ERR_ZAIN_REQUIRED = "يرجى إدخال رقم زين كاش";
+const ERR_QI_REQUIRED = "يرجى إدخال رقم بطاقة كي";
 const ERR_ACCOUNT_CHARSET = "يجب أن يحتوي رقم الحساب على أرقام وحروف إنجليزية فقط";
 const ERR_ACCOUNT_LEN = "رقم الحساب يجب أن يكون بين 6 و 34 خانة";
 
@@ -290,6 +293,61 @@ describe("validateBankAccount", () => {
     expect(validateBankAccount("(1234)56789")).toBe(ERR_ACCOUNT_CHARSET);
     expect(validateZainCash("(077)12345678")).toBeNull();
     expect(validateQiCard("(1234)567890")).toBeNull();
+  });
+});
+
+describe("validatePayoutAccount — empty is an ERROR (inverts every validator above)", () => {
+  // The owner has already chosen a method by the time this runs, so a blank
+  // field means "I picked a destination and gave you nothing", not "no account
+  // here". This is the whole reason the function exists — the neighbouring
+  // validators all return null on empty, which is what let the old four-field
+  // screen save with every destination blank.
+  it("rejects an empty value for every method, with the method's own wording", () => {
+    expect(validatePayoutAccount("zaincash", "")).toBe(ERR_ZAIN_REQUIRED);
+    expect(validatePayoutAccount("qi", "")).toBe(ERR_QI_REQUIRED);
+    expect(validatePayoutAccount("bank", "")).toBe(ERR_ACCOUNT_REQUIRED);
+  });
+
+  it("treats a whitespace-only value as empty", () => {
+    // Note this differs from validateZainCash("   "), which strips separators
+    // first and falls through to the prefix error.
+    expect(validatePayoutAccount("zaincash", "   ")).toBe(ERR_ZAIN_REQUIRED);
+    expect(validatePayoutAccount("qi", "  \t ")).toBe(ERR_QI_REQUIRED);
+    expect(validatePayoutAccount("bank", "   ")).toBe(ERR_ACCOUNT_REQUIRED);
+  });
+});
+
+describe("validatePayoutAccount — delegates to the per-method rules", () => {
+  it("applies the Zain Cash rules for zaincash", () => {
+    expect(validatePayoutAccount("zaincash", "07712345678")).toBeNull();
+    expect(validatePayoutAccount("zaincash", "0771 234 5678")).toBeNull();
+    expect(validatePayoutAccount("zaincash", "+9647712345678")).toBeNull();
+    expect(validatePayoutAccount("zaincash", "0771234567")).toBe(ERR_LEN_11);
+    expect(validatePayoutAccount("zaincash", "0812345678")).toBe(ERR_PREFIX);
+    expect(validatePayoutAccount("zaincash", "0771234567a")).toBe(ERR_DIGITS_ONLY);
+  });
+
+  it("applies the Qi Card rules for qi", () => {
+    expect(validatePayoutAccount("qi", "1234567890")).toBeNull();
+    expect(validatePayoutAccount("qi", "1234 567 890")).toBeNull();
+    expect(validatePayoutAccount("qi", "123456789")).toBe(ERR_QI);
+    expect(validatePayoutAccount("qi", "12345678ab")).toBe(ERR_QI);
+  });
+
+  it("applies the bank-account rules for bank, with no bank-name argument needed", () => {
+    expect(validatePayoutAccount("bank", "123456")).toBeNull();
+    expect(validatePayoutAccount("bank", "IQ98 NBIQ 8501 2345 6789 01")).toBeNull();
+    expect(validatePayoutAccount("bank", "12345")).toBe(ERR_ACCOUNT_LEN);
+    expect(validatePayoutAccount("bank", "IQ98#NBIQ8501")).toBe(ERR_ACCOUNT_CHARSET);
+    // Separator-only collapses to empty and is required, not a length error.
+    expect(validatePayoutAccount("bank", "- -")).toBe(ERR_ACCOUNT_REQUIRED);
+  });
+
+  it("does not accept one method's value under another", () => {
+    // A 10-digit Qi number is a valid card but not a valid Iraqi mobile.
+    expect(validatePayoutAccount("zaincash", "1234567890")).toBe(ERR_PREFIX);
+    // An 11-digit Zain number is not a 10-digit card.
+    expect(validatePayoutAccount("qi", "07712345678")).toBe(ERR_QI);
   });
 });
 

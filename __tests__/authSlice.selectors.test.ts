@@ -9,6 +9,8 @@ import authReducer, {
 
 const initial = () => authReducer(undefined, { type: "@@INIT" });
 
+// `chosenByUser` because these fixtures mean "signed in having picked this
+// side"; the unchosen path is covered in authSlice.test.ts.
 const signIn = (type: string, userType: "owner" | "customer", id = "u1") =>
   authReducer(
     undefined,
@@ -17,6 +19,7 @@ const signIn = (type: string, userType: "owner" | "customer", id = "u1") =>
       token: `token-${id}`,
       userType,
       accountType: type === "provider" ? "provider" : "customer",
+      chosenByUser: true,
     }),
   );
 
@@ -226,18 +229,22 @@ describe("authSlice — setCredentials with a malformed payload", () => {
     expect(state.isAuthenticated).toBe(true);
   });
 
-  it("treats an unknown user.type as a plain tenant", () => {
+  it("treats a recognised non-provider type as a plain tenant", () => {
     const admin = authReducer(
       initial(),
       setCredentials({ user: { id: "u1", type: "admin" }, token: "t", userType: "customer" }),
     );
     expect(admin.accountType).toBe("customer");
+  });
 
+  // Deliberately NOT 'customer'. Collapsing "we don't know" into "tenant" is what
+  // let a partial payload demote a chalet owner into the customer app.
+  it("leaves the account type unknown when the payload carries no type", () => {
     const typeless = authReducer(
       initial(),
       setCredentials({ user: { id: "u1" }, token: "t", userType: "customer" }),
     );
-    expect(typeless.accountType).toBe("customer");
+    expect(typeless.accountType).toBeNull();
   });
 
   it("stores an empty token as given", () => {
@@ -282,8 +289,9 @@ describe("selectAccountType — rehydrated legacy sessions", () => {
   });
 
   it("is not fooled by a user object that is an empty object", () => {
-    // `{}` is truthy, so the fallback resolves it to a tenant, never a provider.
+    // `{}` carries no type, so the account stays unknown — never a provider, and
+    // never a tenant either.
     const legacy = { auth: { ...initial(), accountType: undefined as any, user: {} } };
-    expect(selectAccountType(legacy as any)).toBe("customer");
+    expect(selectAccountType(legacy as any)).toBeNull();
   });
 });

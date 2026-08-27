@@ -21,7 +21,6 @@ import { LogoutSheet } from '@/components/user/logout-sheet';
 import { DeleteAccountSheet } from '@/components/user/delete-account-sheet';
 import { WalletCard } from '@/components/user/wallet-card';
 import { WithdrawSheet, WithdrawSheetRef } from '@/components/user/withdraw-sheet';
-import { PRIVACY_POLICY_URL } from '@/constants/links';
 import { useModeSwitch } from '@/hooks/use-mode-switch';
 import { useSupportContact } from '@/hooks/use-support-contact';
 import { Colors, normalize } from '@/constants/theme';
@@ -38,7 +37,6 @@ import React, { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     Image,
-    Linking,
     RefreshControl,
     ScrollView,
     StyleSheet,
@@ -200,10 +198,6 @@ export default function CustomerProfileScreen() {
         }
     }, [router]);
 
-    const openPrivacyPolicy = useCallback(() => {
-        Linking.openURL(PRIVACY_POLICY_URL).catch(() => {});
-    }, []);
-
     // Withdraw: open the in-app sheet to collect amount + payout destination.
     const openWithdraw = useCallback(() => {
         withdrawSheetRef.current?.present(Number(walletData?.balance || 0));
@@ -300,10 +294,10 @@ export default function CustomerProfileScreen() {
                 },
                 {
                     id: 'privacy',
-                    title: t('profile.privacyPolicy'),
+                    title: t('profile.policies'),
                     shape: 'blue' as const,
                     icon: <SolarShieldBold size={16} color="white" />,
-                    action: openPrivacyPolicy,
+                    route: '/policies',
                 },
             ],
         },

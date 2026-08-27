@@ -131,18 +131,18 @@ export function BannerSwiper({
         ItemSeparatorComponent={ItemSeparator}
         onScrollBeginDrag={stopTimer}
         onScrollEndDrag={startTimer}
-        // Pure item-grid offsets: no leading padding baked in, so React Native
-        // can mirror them correctly for RTL and the carousel reads right-to-left
-        // like the rest of the Arabic UI.
-        getItemLayout={(_, index) => ({
-          length: SNAP_INTERVAL,
-          offset: SNAP_INTERVAL * index,
-          index })}
-        onScrollToIndexFailed={({ index }) => {
-          // Safety net if the target page has not been measured yet.
-          flatListRef.current?.scrollToOffset({
-            offset: SNAP_INTERVAL * index,
-            animated: true,
+        // No getItemLayout on purpose: hand-written offsets are LOGICAL and
+        // override the measured frames, so under native RTL scrollToIndex would
+        // land on the mirrored banner (index 0 sits at the physical right).
+        onScrollToIndexFailed={({ index, highestMeasuredFrameIndex }) => {
+          // Safety net if the target page has not been measured yet: hop to the
+          // furthest measured one, then finish the jump on the next frame.
+          flatListRef.current?.scrollToIndex({
+            index: Math.max(0, highestMeasuredFrameIndex),
+            animated: false,
+          });
+          requestAnimationFrame(() => {
+            flatListRef.current?.scrollToIndex({ index, animated: true });
           });
         }}
       />

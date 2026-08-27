@@ -15,8 +15,34 @@ export type UserType = 'owner' | 'customer' | 'guest' | null;
  */
 export type AccountType = 'provider' | 'customer' | null;
 
-const toAccountType = (user: any): AccountType =>
-  user ? (user?.type === 'provider' ? 'provider' : 'customer') : null;
+/**
+ * Every `type` the API can actually hand back (`UserTypeEnum` in
+ * sununo-api/src/users/entities/user.entity.ts), plus 'customer' — the enum
+ * calls a tenant 'user', but the word travels through enough of this app's own
+ * payloads that refusing it would be a trap for no benefit.
+ */
+const KNOWN_USER_TYPES = ['admin', 'customer', 'employee', 'provider', 'user'];
+
+/**
+ * Anything outside that list — including a payload that simply doesn't carry
+ * `type` — resolves to null, meaning "not known", NOT "tenant". Reading the
+ * unknown case as a tenant is what let a partial profile response silently
+ * demote a chalet owner into the customer app.
+ */
+const toAccountType = (user: any): AccountType => {
+  const type = user?.type;
+  if (type === 'provider') return 'provider';
+  return KNOWN_USER_TYPES.includes(type) ? 'customer' : null;
+};
+
+/**
+ * Where a session lands when nobody explicitly picked a side: a provider
+ * account belongs in its own dashboard. The login toggle used to be the only
+ * input here and it defaults to "مستأجر", so an owner who never touched it was
+ * persisted as a tenant and relaunched into the customer app from then on.
+ */
+export const defaultSectionFor = (accountType: AccountType): 'owner' | 'customer' =>
+  accountType === 'provider' ? 'owner' : 'customer';
 
 /**
  * Whether two server users are the same person. Ids come back as a number from
@@ -32,6 +58,13 @@ interface AuthState {
   token: string | null;
   userType: UserType;
   accountType: AccountType;
+  /**
+   * Did a human actually pick this section, or is it just where we put them?
+   * Only an explicit choice outranks the account's own default at cold start.
+   * Sessions persisted before this existed rehydrate without the key, which
+   * reads as false — i.e. "never chosen" — which is exactly right for them.
+   */
+  sectionChosen: boolean;
   isAuthenticated: boolean;
   language: 'ar' | 'en';
   selectedChalet: {
@@ -46,6 +79,7 @@ const initialState: AuthState = {
   token: null,
   userType: null,
   accountType: null,
+  sectionChosen: false,
   isAuthenticated: false,
   language: 'ar',
   selectedChalet: null,
@@ -62,9 +96,11 @@ const authSlice = createSlice({
         token: string;
         userType: UserType;
         accountType?: AccountType;
+        /** True only when the human moved the section toggle themselves. */
+        chosenByUser?: boolean;
       }>
     ) => {
-      const { user, token, userType, accountType } = action.payload;
+      const { user, token, userType, accountType, chosenByUser } = action.payload;
       // A different person signing in on this device must not inherit the last
       // one's working context. Every signed-in path goes through logout() first
       // today, which is the only reason this never bit us; a re-login by the
@@ -72,10 +108,15 @@ const authSlice = createSlice({
       if (!isSameAccount(state.user, user)) state.selectedChalet = null;
       state.user = user;
       state.token = token;
-      state.userType = userType;
       // Derived from the server user when a caller doesn't pass it, so no sign-in
       // path can leave the account identity unset.
-      state.accountType = accountType ?? toAccountType(user);
+      const resolvedAccount = accountType ?? toAccountType(user);
+      state.accountType = resolvedAccount;
+      // `userType` is only authoritative when the human actually chose it. The
+      // sign-in toggle defaults to "مستأجر" and most owners never touch it, so
+      // trusting it unconditionally filed every one of them as a tenant.
+      state.userType = chosenByUser ? userType : defaultSectionFor(resolvedAccount);
+      state.sectionChosen = !!chosenByUser;
       state.isAuthenticated = true;
     },
     /**
@@ -113,8 +154,15 @@ const authSlice = createSlice({
       // stops being one, owner mode goes with it — `switchMode` would refuse to
       // re-enter it anyway, and the tab layout routes off `userType`, so
       // leaving that alone would strand a non-provider in the dashboard.
-      state.accountType = toAccountType(state.user);
-      if (state.accountType !== 'provider' && state.userType === 'owner') {
+      //
+      // Only a RECOGNISED type may move the identity, though. Several of these
+      // payloads (an image upload, an envelope-shaped response) carry no `type`
+      // at all, and resolving that to 'customer' demoted a live owner — the
+      // second way an owner ended up relaunching into the tenant app.
+      const resolvedAccount = toAccountType(state.user);
+      if (!resolvedAccount) return;
+      state.accountType = resolvedAccount;
+      if (resolvedAccount !== 'provider' && state.userType === 'owner') {
         state.userType = 'customer';
       }
     },
@@ -131,6 +179,11 @@ const authSlice = createSlice({
     setUserType: (state, action: PayloadAction<UserType>) => {
       const account = state.accountType ?? toAccountType(state.user);
       if (action.payload === 'owner' && state.isAuthenticated && account !== 'provider') return;
+      // 'guest' is the marker for a *signed-out* browser. Writing it over a live
+      // session strands that account in a guest shell — the login screen's
+      // "browse as guest" link is reachable while an owner is still signed in,
+      // and every guard downstream then treats a real owner as a visitor.
+      if (action.payload === 'guest' && state.isAuthenticated) return;
       state.userType = action.payload;
     },
     /**
@@ -142,6 +195,21 @@ const authSlice = createSlice({
       const account = state.accountType ?? toAccountType(state.user);
       if (action.payload === 'owner' && account !== 'provider') return;
       state.userType = action.payload;
+      // This one IS the user asking, so it outranks the account default at the
+      // next cold start.
+      state.sectionChosen = true;
+    },
+    /**
+     * Follow a notification into the other section. Same gate as `switchMode`,
+     * but deliberately does NOT record a choice: one tap on a customer-role push
+     * used to move an owner to the tenant app permanently, because it wrote the
+     * same persisted value the boot router reads. The next launch now puts them
+     * back where the account belongs.
+     */
+    enterSection: (state, action: PayloadAction<'owner' | 'customer'>) => {
+      const account = state.accountType ?? toAccountType(state.user);
+      if (action.payload === 'owner' && account !== 'provider') return;
+      state.userType = action.payload;
     },
     setLanguage: (state, action: PayloadAction<'ar' | 'en'>) => {
       state.language = action.payload;
@@ -149,18 +217,25 @@ const authSlice = createSlice({
     setSelectedChalet: (state, action: PayloadAction<AuthState['selectedChalet']>) => {
       state.selectedChalet = action.payload;
     },
-    logout: (state) => {
+    /**
+     * `reason: 'expired'` marks the involuntary sign-out the api slice fires on a
+     * 401 — the session died under the user, they did not ask for this. Nothing
+     * in the reducer branches on it; store/index.ts uses it to decide whether the
+     * "this phone was an owner" hint should survive.
+     */
+    logout: (state, _action: PayloadAction<{ reason?: 'expired' } | undefined>) => {
       state.user = null;
       state.token = null;
       state.userType = null;
       state.accountType = null;
+      state.sectionChosen = false;
       state.isAuthenticated = false;
       state.selectedChalet = null;
     },
   },
 });
 
-export const { setCredentials, updateUser, setUserType, switchMode, setLanguage, setSelectedChalet, logout } = authSlice.actions;
+export const { setCredentials, updateUser, setUserType, switchMode, enterSection, setLanguage, setSelectedChalet, logout } = authSlice.actions;
 
 /**
  * Account identity, with a fallback for sessions persisted before `accountType`
@@ -169,5 +244,18 @@ export const { setCredentials, updateUser, setUserType, switchMode, setLanguage,
  */
 export const selectAccountType = (state: { auth: AuthState }): AccountType =>
   state.auth.accountType ?? toAccountType(state.auth.user);
+
+/**
+ * The section a cold start should open. An explicit choice wins; otherwise the
+ * account decides, so an owner who never touched the sign-in toggle — or who was
+ * moved by a notification tap — still opens their dashboard.
+ */
+export const selectLandingSection = (state: { auth: AuthState }): UserType => {
+  const { userType, sectionChosen } = state.auth;
+  // A guest is a signed-out browser, not a section anyone chose.
+  if (userType === 'guest') return 'guest';
+  if (sectionChosen && userType) return userType;
+  return defaultSectionFor(selectAccountType(state));
+};
 
 export default authSlice.reducer;

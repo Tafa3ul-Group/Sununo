@@ -13,8 +13,8 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { useGetNotificationsQuery, useMarkAllNotificationsAsReadMutation, useMarkNotificationAsReadMutation } from '@/store/api/customerApiSlice';
 import { pickTranslation, useDirection } from '@/i18n';
 import { RootState } from '@/store';
-import { selectAccountType, switchMode } from '@/store/authSlice';
-import { activeSection, resolveNotificationSection } from '@/utils/notification-section';
+import { enterSection, selectAccountType } from '@/store/authSlice';
+import { activeSection, notificationNeedsSection, resolveNotificationSection } from '@/utils/notification-section';
 import { useDispatch, useSelector } from 'react-redux';
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
@@ -150,9 +150,17 @@ export default function NotificationsScreen() {
 
         // An owner browsing as a tenant can still be reading a notification about
         // their own chalet — the sender says so, and that opens the dashboard.
+        // Moving section only where a guard actually stands, and only for this
+        // trip: `enterSection` records no choice, so the next cold start still
+        // opens whichever section the account belongs to.
         const target = resolveNotificationSection(item.redirectRole, userType, accountType);
-        if (target !== userType && userType !== 'guest') {
-            dispatch(switchMode(target));
+        const inSection = userType === 'owner' || userType === 'customer';
+        if (
+            target !== userType &&
+            inSection &&
+            notificationNeedsSection(item.redirectType, target, !!item.redirectId)
+        ) {
+            dispatch(enterSection(target));
         }
 
         // Navigate based on notification redirect type

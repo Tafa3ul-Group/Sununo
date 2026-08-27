@@ -193,19 +193,28 @@ export const ltrScrollContent = {} as const;
 
 /**
  * Pins a subtree to physical LTR regardless of language. UNLIKE the deprecated
- * helpers above this is a real, deliberate opt-out — use it only where physical
- * left-to-right is genuinely correct:
+ * helpers above this is a real, deliberate opt-out — use it ONLY for content
+ * that is inherently left-to-right no matter what language the UI is in:
+ * phone numbers, OTP boxes, IBANs and payout destinations, booking/receipt
+ * codes, and the Mapbox subtree.
  *
- *  • a paged carousel whose active index is derived from `contentOffset.x`.
- *    Native RTL flips those offset semantics, and it flips them DIFFERENTLY on
- *    iOS and Android, so `Math.round(x / pageWidth)` stops matching the visible
- *    page. Pinning keeps the arithmetic valid on both platforms.
- *  • content that is inherently LTR: phone numbers, OTP boxes, IBANs, the
- *    Mapbox subtree.
+ * 🚨 NEVER pin a horizontal carousel. That was this helper's original flagship
+ * use, justified by a claim that native RTL flips `contentOffset.x` DIFFERENTLY
+ * on iOS and Android. That claim is FALSE on RN 0.81: iOS re-normalises the
+ * offset it reports and accepts (RCTScrollViewComponentView.mm) and Android
+ * emits raw scrollX, and in JS space BOTH give `x = (n - 1 - index) * pageWidth`
+ * — simply reversed, not divergent. Pinning therefore un-mirrors a strip the OS
+ * had already mirrored correctly, so in Arabic the first photo opened on the
+ * LEFT and the strip advanced left-to-right.
  *
- * Apply it to BOTH `style` and `contentContainerStyle` of a scroller, and
- * remember that children needing directional layout must re-apply `direction`
- * on their own root, since they now sit in an LTR subtree.
+ * The right fix for a carousel is to leave it RTL and stop doing offset maths:
+ * take the active index from `onViewableItemsChanged`, scroll with
+ * `scrollToIndex`, and supply NO `getItemLayout` (hand-written logical offsets
+ * override the measured, mirrored frames and re-create the bug). See
+ * `components/user/map-result-card.tsx` for the reference implementation.
+ *
+ * Children of a pinned subtree that need directional layout must re-apply
+ * `direction` on their own root, since they now sit in an LTR subtree.
  */
 export const pinLTR = { direction: "ltr" } as const;
 

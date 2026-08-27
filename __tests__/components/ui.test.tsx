@@ -71,6 +71,7 @@ function makeStore(userType: UserType = null) {
         token: null,
         userType,
         accountType: null,
+        sectionChosen: false,
         isAuthenticated: false,
         language: "ar" as const,
         selectedChalet: null,

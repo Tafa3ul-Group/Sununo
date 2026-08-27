@@ -1,12 +1,18 @@
 import authReducer, {
+  enterSection,
   logout,
   selectAccountType,
+  selectLandingSection,
   setCredentials,
   setLanguage,
+  setUserType,
   switchMode,
   updateUser,
 } from "@/store/authSlice";
 
+// `chosenByUser` because these fixtures mean "signed in having picked this
+// side" — without it the reducer answers with the account's own default, which
+// is a different scenario and has its own tests below.
 const signIn = (type: string, userType: "owner" | "customer") =>
   authReducer(
     undefined,
@@ -15,6 +21,7 @@ const signIn = (type: string, userType: "owner" | "customer") =>
       token: "t",
       userType,
       accountType: type === "provider" ? "provider" : "customer",
+      chosenByUser: true,
     }),
   );
 
@@ -58,6 +65,7 @@ describe("authSlice — account identity vs active mode", () => {
         user: { id: "u1", type: "provider" },
         token: "t",
         userType: "owner",
+        chosenByUser: true,
       }),
     );
     expect(state.accountType).toBe("provider");
@@ -212,5 +220,140 @@ describe("authSlice — updateUser (profile edits reach the persisted user)", ()
     const next = authReducer(owner, updateUser({ id: "u1", image: "https://cdn/a.jpg" }));
     expect(next.accountType).toBe("provider");
     expect(next.userType).toBe("owner");
+  });
+});
+
+// ── The "owner keeps opening the tenant app" report ─────────────────────────
+// The active section is a client value. Before this, the ONLY thing that wrote
+// it at sign-in was a toggle that starts on "مستأجر", and nothing ever checked
+// it against the account — so a chalet owner who never touched that toggle was
+// filed as a tenant and relaunched into the customer app forever.
+describe("authSlice — landing section", () => {
+  const verify = (
+    type: string,
+    userType: "owner" | "customer",
+    chosenByUser?: boolean,
+  ) =>
+    authReducer(
+      undefined,
+      setCredentials({
+        user: { id: "u1", type },
+        token: "t",
+        userType,
+        accountType: type === "provider" ? "provider" : "customer",
+        chosenByUser,
+      }),
+    );
+
+  it("puts a provider who never touched the toggle in owner mode", () => {
+    const state = verify("provider", "customer");
+    expect(state.userType).toBe("owner");
+    expect(state.sectionChosen).toBe(false);
+    expect(selectLandingSection({ auth: state })).toBe("owner");
+  });
+
+  it("still honours a provider who explicitly picked the tenant side", () => {
+    const state = verify("provider", "customer", true);
+    expect(state.userType).toBe("customer");
+    expect(state.sectionChosen).toBe(true);
+  });
+
+  it("keeps that explicit choice across a restart", () => {
+    // What redux-persist hands back on the next cold start is this very object.
+    const rehydrated = verify("provider", "customer", true);
+    expect(selectLandingSection({ auth: rehydrated })).toBe("customer");
+  });
+
+  it("leaves a plain tenant on the tenant side either way", () => {
+    expect(verify("user", "customer").userType).toBe("customer");
+    expect(verify("user", "owner").userType).toBe("customer");
+  });
+
+  it("sends a provider back to the dashboard after a notification moved them", () => {
+    const owner = verify("provider", "customer");
+    const moved = authReducer(owner, enterSection("customer"));
+    // Where they are right now — the notification's destination.
+    expect(moved.userType).toBe("customer");
+    // But nothing was chosen, so the next cold start reads the account instead.
+    expect(moved.sectionChosen).toBe(false);
+    expect(selectLandingSection({ auth: moved })).toBe("owner");
+  });
+
+  it("does not treat a deliberate switch as a notification detour", () => {
+    const owner = verify("provider", "customer");
+    const switched = authReducer(owner, switchMode("customer"));
+    expect(switched.sectionChosen).toBe(true);
+    expect(selectLandingSection({ auth: switched })).toBe("customer");
+  });
+
+  it("reads a session persisted before sectionChosen existed as never chosen", () => {
+    const legacy = {
+      auth: { ...verify("provider", "customer", true), sectionChosen: undefined as any },
+    };
+    expect(selectLandingSection(legacy as any)).toBe("owner");
+  });
+
+  it("keeps a guest a guest", () => {
+    const guest = authReducer(undefined, setUserType("guest"));
+    expect(selectLandingSection({ auth: guest })).toBe("guest");
+  });
+
+  it("logout clears the choice so the next account starts fresh", () => {
+    expect(authReducer(verify("provider", "customer", true), logout()).sectionChosen).toBe(false);
+  });
+});
+
+describe("authSlice — an owner can only be demoted by the server saying so", () => {
+  const owner = () =>
+    authReducer(
+      undefined,
+      setCredentials({
+        user: { id: "u1", type: "provider", name: "أبو شاليه" },
+        token: "t",
+        accountType: "provider",
+        userType: "owner",
+        chosenByUser: true,
+      }),
+    );
+
+  it("a payload with no type leaves the owner an owner", () => {
+    // PUT /users/profile/image answers with just the new image, for instance.
+    const next = authReducer(owner(), updateUser({ image: "https://cdn/a.jpg" }));
+    expect(next.accountType).toBe("provider");
+    expect(next.userType).toBe("owner");
+  });
+
+  it("an envelope-shaped payload leaves the owner an owner", () => {
+    const next = authReducer(owner(), updateUser({ data: { id: "u1", type: "provider" } }));
+    expect(next.accountType).toBe("provider");
+    expect(next.userType).toBe("owner");
+  });
+
+  it("an explicit non-provider type still demotes", () => {
+    const next = authReducer(owner(), updateUser({ id: "u1", type: "user" }));
+    expect(next.accountType).toBe("customer");
+    expect(next.userType).toBe("customer");
+  });
+});
+
+describe("authSlice — setUserType('guest') on a live session", () => {
+  it("is refused, so an owner is never stranded in a guest shell", () => {
+    const owner = authReducer(
+      undefined,
+      setCredentials({
+        user: { id: "u1", type: "provider" },
+        token: "t",
+        accountType: "provider",
+        userType: "owner",
+        chosenByUser: true,
+      }),
+    );
+    const next = authReducer(owner, setUserType("guest"));
+    expect(next.userType).toBe("owner");
+    expect(next.isAuthenticated).toBe(true);
+  });
+
+  it("still marks a signed-out visitor as a guest", () => {
+    expect(authReducer(undefined, setUserType("guest")).userType).toBe("guest");
   });
 });

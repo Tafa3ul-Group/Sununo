@@ -15,6 +15,7 @@ import {
 import type { Middleware } from '@reduxjs/toolkit';
 import { ANALYTICS_EVENTS, USER_PROPS } from '@/constants/analytics-events';
 import { logEvent, setAnalyticsUserId, setUserProps } from '@/services/analytics';
+import { forgetLastAccountType } from '@/utils/last-account-type';
 import { apiSlice } from './api/apiSlice';
 import './api/customerApiSlice';
 import authReducer, { isSameAccount, logout, setCredentials } from './authSlice';
@@ -123,6 +124,19 @@ const analyticsMiddleware: Middleware = (api) => (next) => (action) => {
   return result;
 };
 
+// The "this phone was an owner" hint (utils/last-account-type.ts) is retired on
+// a sign-out the USER asked for, so the next person to use the device doesn't
+// inherit the previous owner's login toggle. The involuntary 401 sign-out passes
+// reason:'expired' and keeps it — surviving that is the whole point of the hint.
+// Lives here rather than in the profile screens so every explicit logout path
+// (profile, account deletion) is covered without each one remembering to.
+const sessionHintMiddleware: Middleware = () => (next) => (action: any) => {
+  if (logout.match(action) && action.payload?.reason !== 'expired') {
+    forgetLastAccountType();
+  }
+  return next(action);
+};
+
 export const store = configureStore({
   reducer: persistedReducer,
   // Adding the api middleware enables caching, invalidation, polling,
@@ -132,7 +146,7 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }).concat(apiSlice.middleware, analyticsMiddleware),
+    }).concat(apiSlice.middleware, analyticsMiddleware, sessionHintMiddleware),
 });
 
 export const persistor = persistStore(store);

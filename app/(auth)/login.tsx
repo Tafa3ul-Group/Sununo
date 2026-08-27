@@ -15,6 +15,7 @@ import {
   useVerifyPhoneMutation,
 } from "@/store/api/apiSlice";
 import { setCredentials, setUserType } from "@/store/authSlice";
+import { readLastAccountType } from "@/utils/last-account-type";
 import { logEvent } from "@/services/analytics";
 import { ANALYTICS_EVENTS } from "@/constants/analytics-events";
 import { useDirection } from "@/i18n";
@@ -203,7 +204,28 @@ export function LoginScreen() {
   const [localUserType, setLocalUserType] = useState<"owner" | "customer">(
     reduxUserType === "owner" ? "owner" : "customer",
   );
+  // Did the human actually move the toggle, or is "مستأجر" just where it starts?
+  // Everything downstream keys off this: an untouched toggle no longer decides
+  // where a chalet owner lands, it only decides which side is highlighted.
+  const typeTouched = useRef(false);
   const isOwner = localUserType === "owner";
+
+  // The 401 auto-logout wipes `auth` wholesale, so a returning owner arrives
+  // here with no persisted section at all. The hint outlives that (it is written
+  // in store/api/apiSlice.ts on the way out) and puts the toggle back on "مالك".
+  // Cosmetic only, and skipped once the toggle has been touched or the persisted
+  // section already answers the question.
+  useEffect(() => {
+    if (reduxUserType === "owner" || reduxUserType === "customer") return;
+    let cancelled = false;
+    readLastAccountType().then((hint) => {
+      if (cancelled || typeTouched.current || hint !== "provider") return;
+      setLocalUserType("owner");
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [reduxUserType]);
 
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [phone, setPhone] = useState("");
@@ -254,6 +276,7 @@ export function LoginScreen() {
 
   function handleTypeChange(type: "owner" | "customer") {
     if (step === "otp") return;
+    typeTouched.current = true;
     setLocalUserType(type);
     // `auth.userType` doubles as the persisted guest marker — a guest is exactly
     // { isAuthenticated: false, userType: 'guest' }, and both route guards
@@ -336,18 +359,28 @@ export function LoginScreen() {
         const accountType =
           result.user?.type === "provider" ? "provider" : "customer";
 
-        // Owner mode needs an actual provider account behind it.
-        if (isOwner && accountType !== "provider") {
+        // Owner mode needs an actual provider account behind it — but only
+        // refuse when the human ASKED for it. An untouched toggle showing "مالك"
+        // (seeded from the hint) must not block a tenant from signing in, since
+        // it no longer decides anything.
+        if (typeTouched.current && isOwner && accountType !== "provider") {
           Alert.alert(t("common.error"), t("auth.errors.notOwner"));
           return;
         }
 
-        // The toggle decides where they land, not the account type — a chalet
-        // owner who picked "مستأجر" wants to browse and book, so send them to the
-        // tenant side. The customer API accepts a provider's token (every
-        // `customer/*` controller guards on JWT alone), and the switcher in
-        // either profile screen moves them back.
-        const mode = isOwner ? "owner" : "customer";
+        // An explicit choice still wins: a chalet owner who tapped "مستأجر"
+        // wants to browse and book, so send them to the tenant side. The
+        // customer API accepts a provider's token (every `customer/*` controller
+        // guards on JWT alone), and the switcher in either profile screen moves
+        // them back. Untouched, the ACCOUNT decides — the toggle's default was
+        // filing every owner who ignored it as a tenant, permanently.
+        const mode = typeTouched.current
+          ? isOwner
+            ? "owner"
+            : "customer"
+          : accountType === "provider"
+            ? "owner"
+            : "customer";
 
         dispatch(
           setCredentials({
@@ -355,6 +388,7 @@ export function LoginScreen() {
             token: result.token,
             userType: mode,
             accountType,
+            chosenByUser: typeTouched.current,
           }),
         );
         logEvent(ANALYTICS_EVENTS.LOGIN, {

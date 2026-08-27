@@ -25,8 +25,11 @@ import Toast from "react-native-toast-message";
 import { toastConfig } from "@/components/ui/toast-config";
 import { Provider, useDispatch, useSelector } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-import { selectAccountType, switchMode } from "@/store/authSlice";
-import { resolveNotificationSection } from "@/utils/notification-section";
+import { enterSection, selectAccountType } from "@/store/authSlice";
+import {
+  notificationNeedsSection,
+  resolveNotificationSection,
+} from "@/utils/notification-section";
 
 // @ts-ignore
 if (Text.defaultProps == null) Text.defaultProps = {};
@@ -122,10 +125,19 @@ function RootLayoutNav() {
 
       const target = resolveNotificationSection(data.role, userType, accountType);
 
-      // Land them in the right section first, or the destination screen's
-      // own guard would bounce them straight back out.
-      if (target !== userType && userType !== "guest") {
-        dispatch(switchMode(target));
+      // Land them in the right section first, or the destination screen's own
+      // guard would bounce them straight back out — but ONLY where a guard
+      // actually stands, and only for this trip. This used to write the
+      // persisted section, so one tap on a customer-role push moved an owner to
+      // the tenant app for good. `enterSection` records no choice, so the next
+      // cold start puts them back where the account belongs.
+      const inSection = userType === "owner" || userType === "customer";
+      if (
+        target !== userType &&
+        inSection &&
+        notificationNeedsSection(data.type, target, !!data.id)
+      ) {
+        dispatch(enterSection(target));
       }
 
       // Deep linking بناءً على نوع الإشعار + القسم المقصود

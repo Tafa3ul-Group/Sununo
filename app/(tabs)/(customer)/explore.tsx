@@ -85,7 +85,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { ltrScrollContent, ltrScroller, pickTranslation, useDirection, useRtlListOrder, pinLTR } from "@/i18n";
+import { ltrScrollContent, ltrScroller, pickTranslation, useDirection, useRtlListOrder } from "@/i18n";
+// Gesture-handler's FlatList, not React Native's: this carousel is nested in a
+// gorhom bottom sheet, whose pan gesture swallows a plain nested scroller.
+import { FlatList } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -678,6 +681,21 @@ export default function ExploreScreen() {
 
   const { formatShiftTime } = useFormatTime();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  // The active photo is read from what is on screen, never from contentOffset.x:
+  // native RTL reverses that offset, so the arithmetic lit the mirrored dot.
+  // Both props must be stable refs or VirtualizedList throws on a changed
+  // `onViewableItemsChanged`.
+  const carouselViewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 55,
+  }).current;
+  const onCarouselItemsChanged = useRef(
+    (info: { viewableItems: Array<{ index: number | null }> }) => {
+      const first = info.viewableItems[0];
+      if (first && typeof first.index === "number") {
+        setActiveImageIndex(first.index);
+      }
+    },
+  ).current;
 
   // Fetch full details when a chalet is selected
   const { data: chaletFullDetails, isLoading: isDetailsLoading } =
@@ -1122,45 +1140,38 @@ export default function ExploreScreen() {
             <View style={styles.cardContainer}>
               {/* Image Carousel Swiper */}
               <View style={styles.imageCarouselContainer}>
-                <ScrollView
+                {/* Direction is left to native RTL — in Arabic the first
+                    photo is the one on the RIGHT. No getItemLayout: hand-written
+                    logical offsets would override the measured, mirrored ones. */}
+                <FlatList
+                  data={selectedChalet.allImages || [selectedChalet.image]}
+                  keyExtractor={(_: any, index: number) => String(index)}
                   horizontal
                   pagingEnabled
                   showsHorizontalScrollIndicator={false}
-                  // Pinned LTR on purpose: activeImageIndex below is derived
-                  // from contentOffset.x, whose semantics native RTL flips.
-                  style={pinLTR}
-                  contentContainerStyle={pinLTR}
-                  onMomentumScrollEnd={(e) => {
-                    const index = Math.round(
-                      e.nativeEvent.contentOffset.x / (SCREEN_WIDTH - 40),
-                    );
-                    setActiveImageIndex(index);
-                  }}
-                  scrollEventThrottle={16}
-                >
-                  {(selectedChalet.allImages || [selectedChalet.image]).map(
-                    (img: any, index: number) => (
-                      // Tapping a photo opens this chalet's full gallery, the
-                      // same destination the chalet page uses.
-                      <TouchableOpacity
-                        key={index}
-                        activeOpacity={0.9}
-                        onPress={() => {
-                          // The sheet lives in a portal at the app root, so it
-                          // would stay pinned over the gallery unless it is
-                          // dismissed on the way out.
-                          bottomSheetRef.current?.dismiss();
-                          router.push({
-                            pathname: "/(customer)/chalet-details/gallery",
-                            params: { id: selectedChalet.id },
-                          });
-                        }}
-                      >
-                        <Image source={img} style={styles.carouselImage} />
-                      </TouchableOpacity>
-                    ),
+                  onViewableItemsChanged={onCarouselItemsChanged}
+                  viewabilityConfig={carouselViewabilityConfig}
+                  onScrollToIndexFailed={() => {}}
+                  renderItem={({ item }: { item: any }) => (
+                    // Tapping a photo opens this chalet's full gallery, the
+                    // same destination the chalet page uses.
+                    <TouchableOpacity
+                      activeOpacity={0.9}
+                      onPress={() => {
+                        // The sheet lives in a portal at the app root, so it
+                        // would stay pinned over the gallery unless it is
+                        // dismissed on the way out.
+                        bottomSheetRef.current?.dismiss();
+                        router.push({
+                          pathname: "/(customer)/chalet-details/gallery",
+                          params: { id: selectedChalet.id },
+                        });
+                      }}
+                    >
+                      <Image source={item} style={styles.carouselImage} />
+                    </TouchableOpacity>
                   )}
-                </ScrollView>
+                />
 
                 {/* Heart / Favorite Button */}
                 <TouchableOpacity style={styles.favoriteBtn}>
@@ -1880,8 +1891,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     gap: 6,
-    // Dot motion must match physical page motion (the carousel is LTR-forced).
-    direction: "ltr",
   },
   footerSpacer: {
     height: 0,

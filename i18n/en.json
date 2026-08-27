@@ -66,7 +66,12 @@
     "noChalets": "No chalets available currently",
     "noChaletsDesc": "Try changing filters or searching for something else",
     "clearFilters": "Clear Filters",
-    "applyingFilter": "Applying filter…"
+    "applyingFilter": "Applying filter…",
+    "ownerBanner": {
+      "title": "You have a chalet owner account",
+      "action": "Switch to owner mode",
+      "dismiss": "Dismiss"
+    }
   },
   "profile": {
     "title": "Profile",
@@ -116,6 +121,7 @@
     "contactUs": "Contact Us",
     "reportProblem": "Report a Problem",
     "privacyPolicy": "Privacy Policy",
+    "policies": "App Policies",
     "termsAndConditions": "Terms & Conditions",
     "edit": {
       "birthDate": "Birth Date",

@@ -93,7 +93,11 @@ function RtlSpikeScreen() {
           {String(isRTL)} | I18nManager.isRTL = {String(I18nManager.isRTL)}
         </Text>
         <Text style={styles.metaWarn}>
-          I18nManager.isRTL MUST be false. If true, the one-time native-LTR reload hasn&apos;t landed yet.
+          {/* Direction model v3: native RTL is ON, so I18nManager.isRTL must TRACK the
+              language. The old "must be false" assertion belonged to v2 and screamed a
+              false alarm on every Arabic launch. */}
+          I18nManager.isRTL MUST equal isRTL. If they disagree, the language changed without the
+          native restart that I18nManager needs.
         </Text>
 
         <View style={styles.btnRow}>
@@ -110,7 +114,8 @@ function RtlSpikeScreen() {
 
         <Text style={styles.note}>
           Below: the app root is already direction={direction}. The two panels FORCE rtl/ltr to
-          compare. Language buttons must flip layout INSTANTLY with no reload.
+          compare. Under v3 the language buttons prompt for a RESTART — I18nManager only takes
+          effect on a fresh native start — and the layout must be mirrored once the app comes back.
         </Text>
 
         <Panel dir="rtl" />

@@ -1,7 +1,7 @@
 import { ThemedText } from "@/components/themed-text";
 import { Colors, Fonts, normalize } from "@/constants/theme";
 import React, { useCallback, useEffect, useState } from "react";
-import { LayoutChangeEvent, StyleSheet, View } from "react-native";
+import { I18nManager, LayoutChangeEvent, StyleSheet, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   runOnJS,
@@ -11,6 +11,23 @@ import Animated, {
 } from "react-native-reanimated";
 
 const THUMB = 24;
+
+/**
+ * Maps a LOGICAL thumb offset (0 = cheapest, `usable` = most expensive) onto the
+ * PHYSICAL x it is painted at. Mirrored, the cheap end sits on the RIGHT, which
+ * is what the rest of the RTL app — including this control's own label row —
+ * already does.
+ *
+ * `mirrored` must be `I18nManager.isRTL`, NOT `useDirection().isRTL`: this
+ * mirrors PHYSICAL geometry, and geometry only mirrors where the OS actually
+ * mirrored the tree. The two agree on native, but on web there is no
+ * I18nManager, nothing mirrors, and flipping on the language-derived flag would
+ * CREATE there the very bug this fixes on native.
+ */
+export function mirrorX(x: number, usable: number, mirrored: boolean): number {
+  "worklet";
+  return mirrored ? usable - x : x;
+}
 
 interface PriceRangeSliderProps {
   min: number;
@@ -44,8 +61,20 @@ export function PriceRangeSlider({
   const [display, setDisplay] = useState<[number, number]>(value);
 
   const usable = Math.max(width - THUMB, 1);
+  // lowX/highX stay LOGICAL throughout (0 = min, usable = max); only the
+  // PAINTED position and the raw pan deltas below are mirrored.
   const lowX = useSharedValue(0);
   const highX = useSharedValue(0);
+
+  const mirrored = I18nManager.isRTL;
+
+  const px = useCallback(
+    (x: number) => {
+      "worklet";
+      return mirrorX(x, usable, mirrored);
+    },
+    [mirrored, usable],
+  );
 
   const toValue = useCallback(
     (x: number) => {
@@ -87,28 +116,34 @@ export function PriceRangeSlider({
   const lowGesture = Gesture.Pan()
     .hitSlop({ horizontal: 14, vertical: 14 })
     .onChange((e) => {
-      lowX.value = Math.min(Math.max(lowX.value + e.changeX, 0), highX.value);
+      // `changeX` is physical. Mirrored, dragging toward the screen's LEFT is a
+      // move UP the price scale, so the logical offset has to grow.
+      const d = mirrored ? -e.changeX : e.changeX;
+      lowX.value = Math.min(Math.max(lowX.value + d, 0), highX.value);
     })
     .onEnd(() => runOnJS(commit)());
 
   const highGesture = Gesture.Pan()
     .hitSlop({ horizontal: 14, vertical: 14 })
     .onChange((e) => {
-      highX.value = Math.min(Math.max(highX.value + e.changeX, lowX.value), usable);
+      const d = mirrored ? -e.changeX : e.changeX;
+      highX.value = Math.min(Math.max(highX.value + d, lowX.value), usable);
     })
     .onEnd(() => runOnJS(commit)());
 
   const lowStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: lowX.value }],
+    transform: [{ translateX: px(lowX.value) }],
   }));
   const highStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: highX.value }],
+    transform: [{ translateX: px(highX.value) }],
   }));
   const fillStyle = useAnimatedStyle(() => ({
-    // Physical `left`, not the logical `start`: the track is pinned to LTR
-    // below so the cheap end is always on the left, in Arabic too — that is how
-    // every price slider reads, and it keeps the drag maths direction-free.
-    left: lowX.value + THUMB / 2,
+    // Physical `left`, not the logical `start`: the track below stays pinned to
+    // physical LTR so `left` and `translateX` are unambiguous physical pixels.
+    // The RTL mirroring is not left to the layout engine — it is done
+    // explicitly, by px(). Mirrored, the fill's physical left edge is the one
+    // governed by the HIGH thumb.
+    left: (mirrored ? px(highX.value) : px(lowX.value)) + THUMB / 2,
     width: Math.max(highX.value - lowX.value, 0),
   }));
 
@@ -118,13 +153,18 @@ export function PriceRangeSlider({
 
   return (
     <View>
+      {/* Deliberately NOT pinned: this row mirrors natively, so in Arabic it
+          paints [high][—][low], which is exactly what the mirrored track below
+          now shows. Pinning it would put the pills back over the wrong thumbs. */}
       <View style={[styles.labels, { flexDirection: "row" }]}>
         <View style={styles.pill}>
           <ThemedText style={styles.value}>{fmt(display[0])}</ThemedText>
         </View>
         <ThemedText style={styles.dash}>—</ThemedText>
         <View style={styles.pill}>
-          <ThemedText style={styles.value}>
+          {/* Pinned LTR: the trailing "+" and the currency word are neutrals /
+              RTL next to a number run, so bidi paints "د.ع +500,000". */}
+          <ThemedText style={[styles.value, { direction: "ltr" }]}>
             {highLabel} {currencyLabel}
           </ThemedText>
         </View>

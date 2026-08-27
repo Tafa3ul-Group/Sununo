@@ -83,6 +83,17 @@ export const HorizontalCard = React.memo(function HorizontalCard({
   // caller passes nothing and the badge simply does not render.
   const featuredLabel = chalet.featuredLabel;
 
+  // A restricted chalet turns the other audience away at checkout, so the card
+  // says so before the customer opens it. An absent value (older payload, or an
+  // endpoint that does not select the column) means 'both' — no badge.
+  const guestPolicy = chalet.guestPolicy;
+  const guestPolicyLabel =
+    guestPolicy === "family"
+      ? (isArabic ? "عوائل فقط" : "Families only")
+      : guestPolicy === "youth"
+        ? (isArabic ? "شباب فقط" : "Young men only")
+        : null;
+
   // With a campaign running the card leads with what the customer will actually
   // pay; without one, `priceAfter` is absent and this is the ordinary "starts
   // from" price the caller already resolved.
@@ -128,27 +139,41 @@ export const HorizontalCard = React.memo(function HorizontalCard({
         {/* Featured badge. Text and both colours are configured per platform
             (and optionally overridden per chalet) in the dashboard, so they are
             applied from the data, not themed. */}
-        {featuredLabel?.enabled !== false && featuredLabel?.name && (
-          <View
-            style={[
-              styles.featuredBadge,
-              { backgroundColor: featuredLabel.backgroundColor || Colors.primary },
-            ]}
-          >
-            <ThemedText
-              style={[
-                styles.featuredBadgeText,
-                { color: featuredLabel.textColor || "#FFFFFF" },
-              ]}
-              numberOfLines={1}
-            >
-              {(isArabic
-                ? featuredLabel.name?.ar
-                : featuredLabel.name?.en) ||
-                featuredLabel.name?.ar ||
-                featuredLabel.name?.en ||
-                ""}
-            </ThemedText>
+        {/* Both badges share one row so a chalet that is featured AND restricted
+            does not grow the card by a second line. Plain 'row' — native RTL
+            mirrors it. */}
+        {((featuredLabel?.enabled !== false && featuredLabel?.name) || guestPolicyLabel) && (
+          <View style={styles.badgeRow}>
+            {featuredLabel?.enabled !== false && featuredLabel?.name && (
+              <View
+                style={[
+                  styles.featuredBadge,
+                  { backgroundColor: featuredLabel.backgroundColor || Colors.primary },
+                ]}
+              >
+                <ThemedText
+                  style={[
+                    styles.featuredBadgeText,
+                    { color: featuredLabel.textColor || "#FFFFFF" },
+                  ]}
+                  numberOfLines={1}
+                >
+                  {(isArabic
+                    ? featuredLabel.name?.ar
+                    : featuredLabel.name?.en) ||
+                    featuredLabel.name?.ar ||
+                    featuredLabel.name?.en ||
+                    ""}
+                </ThemedText>
+              </View>
+            )}
+            {guestPolicyLabel && (
+              <View style={styles.guestPolicyBadge}>
+                <ThemedText style={styles.guestPolicyBadgeText} numberOfLines={1}>
+                  {guestPolicyLabel}
+                </ThemedText>
+              </View>
+            )}
           </View>
         )}
 
@@ -328,6 +353,11 @@ const styles = StyleSheet.create({
     color: "#111827",
     fontFamily: Fonts.medium,
     flexShrink: 1 },
+  badgeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: normalize.width(4),
+    flexWrap: "wrap" },
   featuredBadge: {
     alignSelf: "flex-start",
     paddingHorizontal: 7,
@@ -337,6 +367,20 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(8),
     fontFamily: Fonts.bold,
     lineHeight: normalize.font(11) },
+  guestPolicyBadge: {
+    alignSelf: "flex-start",
+    paddingHorizontal: 7,
+    paddingVertical: 1,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#F5A623",
+    backgroundColor: "#FFF4E5",
+    flexShrink: 1 },
+  guestPolicyBadgeText: {
+    fontSize: normalize.font(8),
+    fontFamily: Fonts.bold,
+    lineHeight: normalize.font(11),
+    color: "#B26A00" },
   // Eats the leftover width of the title row so the favourite lands on the
   // card's trailing edge.
   spacer: {

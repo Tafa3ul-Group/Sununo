@@ -1,13 +1,10 @@
 import { normalize } from "@/constants/theme";
-import { ltrScrollContent, ltrScroller, useDirection, pinLTR } from "@/i18n";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import {
   Dimensions,
   FlatList,
   StyleSheet,
-  View,
-  NativeSyntheticEvent,
-  NativeScrollEvent
+  View
 } from "react-native";
 import { HorizontalCard } from "./horizontal-card";
 
@@ -27,8 +24,9 @@ interface HorizontalSwiperProps {
 }
 
 export function HorizontalSwiper({ data, onPressCard, onIndexChange, favoriteIds = [], onToggleFavorite, autoPlay = false }: HorizontalSwiperProps) {
-  const { direction } = useDirection();
-    const [activeIndex, setActiveIndex] = useState(0);
+  // The active card lives in a ref only: nothing in this component renders it
+  // (there are no dots here), so keeping it in state re-rendered the whole list
+  // on every swipe for nothing.
   const flatListRef = useRef<FlatList>(null);
   const activeIndexRef = useRef(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -47,7 +45,6 @@ export function HorizontalSwiper({ data, onPressCard, onIndexChange, favoriteIds
       const next = (activeIndexRef.current + 1) % data.length;
       flatListRef.current?.scrollToIndex({ index: next, animated: true });
       activeIndexRef.current = next;
-      setActiveIndex(next);
     }, AUTO_PLAY_INTERVAL);
   }, [autoPlay, data.length, stopTimer]);
 
@@ -56,15 +53,24 @@ export function HorizontalSwiper({ data, onPressCard, onIndexChange, favoriteIds
     return stopTimer;
   }, [startTimer, stopTimer]);
 
-  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const scrollOffset = event.nativeEvent.contentOffset.x;
-    const index = Math.round(scrollOffset / SNAP);
-    if (index !== activeIndex && index >= 0 && index < data.length) {
-      activeIndexRef.current = index;
-      setActiveIndex(index);
-      if (onIndexChange) onIndexChange(index);
-    }
-  };
+  // Read the active card from what is actually on screen. Offset math counted
+  // from the physical left, which under native RTL is the LAST card, so the
+  // reported index was mirrored (and the leading padding skewed it further).
+  // Both viewability props must be stable refs or VirtualizedList throws on a
+  // changed `onViewableItemsChanged`; the latest `onIndexChange` reaches the
+  // frozen handler through a ref.
+  const onIndexChangeRef = useRef(onIndexChange);
+  onIndexChangeRef.current = onIndexChange;
+
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 55 }).current;
+  const onViewableItemsChanged = useRef(
+    (info: { viewableItems: Array<{ index: number | null }> }) => {
+      const first = info.viewableItems[0];
+      if (!first || typeof first.index !== "number") return;
+      activeIndexRef.current = first.index;
+      onIndexChangeRef.current?.(first.index);
+    },
+  ).current;
 
   const handleCardPress = useCallback(
     (id: string) => {
@@ -82,9 +88,9 @@ export function HorizontalSwiper({ data, onPressCard, onIndexChange, favoriteIds
 
   const renderItem = useCallback(
     ({ item, index }: { item: any; index: number }) => (
-      // Re-apply the app direction: the content container is forced LTR, so
-      // each card root must restore rtl for its internal layout to mirror.
-      <View style={{ width: ITEM_WIDTH, direction }}>
+      // No `direction` here any more: the list is no longer pinned LTR, so the
+      // card inherits the app direction and re-applying it would double-flip.
+      <View style={{ width: ITEM_WIDTH }}>
         <HorizontalCard
           chalet={item}
           shapeIndex={2}
@@ -95,7 +101,7 @@ export function HorizontalSwiper({ data, onPressCard, onIndexChange, favoriteIds
         />
       </View>
     ),
-    [handleCardPress, handleToggleFavorite, favoriteIds, direction]
+    [handleCardPress, handleToggleFavorite, favoriteIds]
   );
 
   return (
@@ -114,23 +120,29 @@ export function HorizontalSwiper({ data, onPressCard, onIndexChange, favoriteIds
         snapToInterval={SNAP}
         snapToAlignment="center"
         decelerationRate="fast"
-        // Pinned LTR on purpose: handleScroll derives the active index from
-        // contentOffset.x, whose semantics native RTL flips.
-        style={pinLTR}
-        contentContainerStyle={[styles.listContent, pinLTR]}
+        // Direction is left to native RTL, and there is deliberately NO
+        // getItemLayout: hand-written offsets are logical and would override the
+        // measured (mirrored) frames, sending the autoplay to the wrong card.
+        contentContainerStyle={styles.listContent}
         pagingEnabled={false}
         ItemSeparatorComponent={() => (
           <View style={{ width: SEPARATOR_WIDTH }} />
         )}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
         onScrollBeginDrag={stopTimer}
         onScrollEndDrag={startTimer}
-        getItemLayout={(_, index) => ({
-          length: SNAP,
-          offset: SNAP * index,
-          index,
-        })}
+        onScrollToIndexFailed={({ index, highestMeasuredFrameIndex }) => {
+          // Target card not measured yet: hop to the furthest measured one to
+          // render the next window, then finish the jump on the next frame.
+          flatListRef.current?.scrollToIndex({
+            index: Math.max(0, highestMeasuredFrameIndex),
+            animated: false,
+          });
+          requestAnimationFrame(() => {
+            flatListRef.current?.scrollToIndex({ index, animated: true });
+          });
+        }}
       />
     </View>
   );

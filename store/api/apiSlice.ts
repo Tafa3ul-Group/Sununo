@@ -63,8 +63,18 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
     // Force logout if 401 Unauthorized — the token we sent is no longer valid.
     // The root reducer (store/index.ts) also drops the whole RTK Query cache on
     // this action, so nothing of the dead session is left to read.
+    //
+    // Nobody asked for this sign-out, so leave a crumb behind first: the auth
+    // slice is about to be wiped, and without it the next sign-in has no idea
+    // this phone belonged to a chalet owner. Fire-and-forget — a failed write
+    // only costs the login toggle its pre-selection.
+    const accountType = (api.getState() as any)?.auth?.accountType;
+    if (accountType === "provider" || accountType === "customer") {
+      const { rememberLastAccountType } = require("@/utils/last-account-type");
+      rememberLastAccountType(accountType);
+    }
     const { logout } = require("../authSlice");
-    api.dispatch(logout());
+    api.dispatch(logout({ reason: "expired" }));
   }
 
   // Normalize error response shape so callers always have a message
@@ -914,6 +924,28 @@ export const apiSlice = createApi({
       invalidatesTags: ["Chalet"],
     }),
 
+    /**
+     * Re-schedule a campaign the owner requested themselves — the window only.
+     * The rate, the funding source and the targeted chalets are what the admin
+     * approved and the server refuses to take them here, so this body carries
+     * nothing else. `null` on either end means "open" (start now / never end).
+     */
+    updateProviderDiscount: builder.mutation({
+      query: ({
+        id,
+        ...body
+      }: {
+        id: string;
+        startsAt?: string | null;
+        endsAt?: string | null;
+      }) => ({
+        url: `/provider/discounts/${id}`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Chalet"],
+    }),
+
     // Get a single payout request (for the in-app confirmation screen)
     getPayout: builder.query({
       query: (id: string) => `/provider/payouts/${id}`,
@@ -1072,6 +1104,7 @@ export const {
   useGetProviderDiscountsQuery,
   useRequestProviderDiscountMutation,
   useToggleProviderDiscountMutation,
+  useUpdateProviderDiscountMutation,
 } = apiSlice;
 
 // Force Metro cache reload - Updated at 2026-05-05T14:55

@@ -124,10 +124,12 @@ async function createTusUpload(
   const location = response.headers.get("location") || response.headers.get("Location");
   if (!location) throw new Error("Upload could not be started (no location)");
 
-  // Bunny returns an absolute URL, but the spec allows a relative one.
-  return location.startsWith("http")
-    ? location
-    : new URL(location, ticket.uploadUrl).toString();
+  // Bunny answers with a RELATIVE location ("/tusupload/<id>"), which the spec
+  // allows. Resolved by hand against the endpoint's origin: React Native ships
+  // only a partial `URL`, and `new URL(path, base)` is not dependable there.
+  if (location.startsWith("http")) return location;
+  const origin = ticket.uploadUrl.replace(/^(https?:\/\/[^/]+).*$/, "$1");
+  return `${origin}${location.startsWith("/") ? "" : "/"}${location}`;
 }
 
 async function fileSizeOf(fileUri: string): Promise<number> {

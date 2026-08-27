@@ -12,8 +12,8 @@ import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, TouchableOpaci
 import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
-import { selectAccountType, switchMode } from '@/store/authSlice';
-import { activeSection, resolveNotificationSection } from '@/utils/notification-section';
+import { enterSection, selectAccountType } from '@/store/authSlice';
+import { activeSection, notificationNeedsSection, resolveNotificationSection } from '@/utils/notification-section';
 
 interface Notification {
     id: string;
@@ -66,11 +66,18 @@ export default function NotificationsScreen() {
             markAsRead(item.id).catch(() => {});
         }
 
-        // The sender says which side this belongs to; switch there first or the
-        // destination's own guard bounces the tap straight back.
+        // The sender says which side this belongs to; move there first or the
+        // destination's own guard bounces the tap straight back — but only where
+        // a guard actually stands, and only for this trip. `enterSection` records
+        // no choice, so a tap can no longer relocate an owner permanently.
         const target = resolveNotificationSection(item.redirectRole, userType, accountType);
-        if (target !== userType && userType !== 'guest') {
-            dispatch(switchMode(target));
+        const inSection = userType === 'owner' || userType === 'customer';
+        if (
+            target !== userType &&
+            inSection &&
+            notificationNeedsSection(item.redirectType, target, !!item.redirectId)
+        ) {
+            dispatch(enterSection(target));
         }
 
         // Navigate based on redirectType and the target section

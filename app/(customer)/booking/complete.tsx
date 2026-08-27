@@ -539,6 +539,23 @@ export default function CompleteBookingScreen() {
     setAdultCount((prev) => (prev > chaletCapacity ? chaletCapacity : prev));
   }, [chaletCapacity]);
   const [guestType, setGuestType] = useState<"FAMILY" | "YOUTH">("FAMILY");
+
+  // The owner's guest policy. An absent value is deliberately read as 'both':
+  // an older or cached payload must never lock a customer out of a chalet that
+  // in fact accepts them. This is a UX guard only — the server is the real gate
+  // and rejects a mismatched audienceType regardless of what the tabs allowed.
+  const chaletGuestPolicy: "family" | "youth" | "both" =
+    chaletDetails?.guestPolicy === "family" || chaletDetails?.guestPolicy === "youth"
+      ? chaletDetails.guestPolicy
+      : "both";
+  const guestTypeLocked = chaletGuestPolicy !== "both";
+
+  // The policy arrives with the chalet, after this screen's first render, so the
+  // pre-selection has to follow the data rather than seed the initial state.
+  useEffect(() => {
+    if (chaletGuestPolicy === "family") setGuestType("FAMILY");
+    else if (chaletGuestPolicy === "youth") setGuestType("YOUTH");
+  }, [chaletGuestPolicy]);
   const [idImage1, setIdImage1] = useState<string | null>(null);
   const [idImage2, setIdImage2] = useState<string | null>(null);
 
@@ -2352,13 +2369,16 @@ export default function CompleteBookingScreen() {
                   style={[
                     styles.guestTypeTab,
                     guestType === "FAMILY" && styles.guestTypeTabActive,
+                    chaletGuestPolicy === "youth" && styles.guestTypeTabDisabled,
                   ]}
                   onPress={() => setGuestType("FAMILY")}
+                  disabled={chaletGuestPolicy === "youth"}
                 >
                   <ThemedText
                     style={[
                       styles.guestTypeText,
                       guestType === "FAMILY" && styles.guestTypeTextActive,
+                      chaletGuestPolicy === "youth" && styles.guestTypeTextDisabled,
                     ]}
                   >
                     {isArabic ? "عائلات" : "Families"}
@@ -2368,19 +2388,35 @@ export default function CompleteBookingScreen() {
                   style={[
                     styles.guestTypeTab,
                     guestType === "YOUTH" && styles.guestTypeTabActive,
+                    chaletGuestPolicy === "family" && styles.guestTypeTabDisabled,
                   ]}
                   onPress={() => setGuestType("YOUTH")}
+                  disabled={chaletGuestPolicy === "family"}
                 >
                   <ThemedText
                     style={[
                       styles.guestTypeText,
                       guestType === "YOUTH" && styles.guestTypeTextActive,
+                      chaletGuestPolicy === "family" && styles.guestTypeTextDisabled,
                     ]}
                   >
                     {isArabic ? "شباب" : "Youth"}
                   </ThemedText>
                 </PressableScale>
               </View>
+              {/* Says WHY the other tab is dead, so a dimmed control never reads
+                  as a broken one. */}
+              {guestTypeLocked && (
+                <ThemedText style={[styles.guestTypeLockedHint, { textAlign }]}>
+                  {chaletGuestPolicy === "family"
+                    ? (isArabic
+                        ? "هذا الشاليه يستقبل العوائل فقط، ولا تُقبل حجوزات الشباب."
+                        : "This chalet accepts families only; bookings from young men are not accepted.")
+                    : (isArabic
+                        ? "هذا الشاليه يستقبل الشباب فقط، ولا تُقبل حجوزات العوائل."
+                        : "This chalet accepts young men only; bookings from families are not accepted.")}
+                </ThemedText>
+              )}
             </View>
 
             {/* ID upload shown for both family and youth bookings. */}
@@ -2798,6 +2834,18 @@ const styles = StyleSheet.create({
   guestTypeTextActive: {
     color: "#035DF9",
     fontFamily: "IBMPlexSansArabic-Medium",
+  },
+  guestTypeTabDisabled: {
+    opacity: 0.4,
+  },
+  guestTypeTextDisabled: {
+    color: "#94A3B8",
+  },
+  guestTypeLockedHint: {
+    fontSize: normalize.font(11),
+    fontFamily: "IBMPlexSansArabic-Regular",
+    color: "#B26A00",
+    marginTop: 8,
   },
   idUploadContainer: {
     marginBottom: 12,

@@ -21,7 +21,13 @@ export function useModeSwitch() {
   const accountType = useSelector(selectAccountType);
   const activeMode = useSelector((state: RootState) => state.auth.userType);
 
-  const canSwitch = accountType === 'provider';
+  // `accountType` can momentarily read null — a session persisted before the
+  // field existed, or one whose stored user carries no recognisable `type` — and
+  // hiding the switcher then leaves an owner with no way out of the tenant app,
+  // which is the whole complaint. Running in owner mode is itself proof of a
+  // provider account, and a switch TO 'customer' is never refused, so that side
+  // always keeps its exit.
+  const canSwitch = accountType === 'provider' || activeMode === 'owner';
 
   const switchTo = useCallback(
     (mode: 'owner' | 'customer') => {

@@ -36,6 +36,7 @@ import { BannerSwiper } from "@/components/user/banner-swiper";
 import { RateStayPrompt } from "@/components/user/rate-stay-prompt";
 import { HorizontalCard } from "@/components/user/horizontal-card";
 import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
+import { OwnerModeBanner } from "@/components/user/owner-mode-banner";
 import { FeaturedSwiper } from "@/components/user/featured-swiper";
 import { useTabBarVisibility } from "@/components/user/tab-bar-visibility";
 import { useRegisterHomeScrollToTop } from "@/components/user/home-tab-fx";
@@ -631,6 +632,11 @@ export default function HomeScreen() {
   // the chalet list itself stays virtualized (only on-screen cards mount).
   const listHeader = (
     <>
+      {/* Above the skeleton on purpose: an owner who landed here by mistake
+          shouldn't have to wait for the chalet list to load to find the way
+          back. Renders nothing for anyone who isn't a provider in tenant mode. */}
+      <OwnerModeBanner />
+
       {isInitialLoading ? (
         <CustomerHomeSkeleton />
       ) : (

@@ -130,6 +130,7 @@ export default function ChaletDetailsScreen() {
   const [isActive, setIsActive] = useState(false);
   const [bookingType, setBookingType] = useState<'instant' | 'delayed'>('instant');
   const [dailyHours, setDailyHours] = useState(1);
+  const [guestPolicy, setGuestPolicy] = useState<'family' | 'youth' | 'both'>('both');
   const [paymentDeadlineMinutes, setPaymentDeadlineMinutes] = useState(0);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [locationPickerVisible, setLocationPickerVisible] = useState(false);
@@ -534,6 +535,9 @@ export default function ChaletDetailsScreen() {
       setIsActive(chalet.isActive);
       setBookingType(chalet.bookingType || 'instant');
       setDailyHours(chalet.dailyHours || 1);
+      // An older payload without the column must read as "accepts everyone",
+      // never as a restriction the owner never chose.
+      setGuestPolicy(chalet.guestPolicy || 'both');
       // 0 is a real value ("no deadline") and also the default, so `??` — not `||`.
       setPaymentDeadlineMinutes(chalet.paymentDeadlineMinutes ?? 0);
     }
@@ -572,6 +576,24 @@ export default function ChaletDetailsScreen() {
     } catch {
       setBookingType(oldType);
       Toast.show({ type: 'error', text1: isRTL ? 'تعذر تغيير نوع الحجز' : 'Booking type update failed' });
+    }
+  };
+
+  const changeGuestPolicy = async (newPolicy: 'family' | 'youth' | 'both') => {
+    if (newPolicy === guestPolicy) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const oldPolicy = guestPolicy;
+    setGuestPolicy(newPolicy);
+    try {
+      await updateChalet({ id: chaletId as string, data: { guestPolicy: newPolicy } }).unwrap();
+      Toast.show({
+        type: 'success',
+        text1: isRTL ? 'تم تحديث نوع الضيوف' : 'Guest policy updated',
+      });
+      refetch();
+    } catch {
+      setGuestPolicy(oldPolicy);
+      Toast.show({ type: 'error', text1: isRTL ? 'تعذر تغيير نوع الضيوف' : 'Guest policy update failed' });
     }
   };
 
@@ -1361,6 +1383,58 @@ export default function ChaletDetailsScreen() {
               </SettingsFooter>
             </>
           )}
+
+          {/* ──── Guest policy ────
+              Three inline chips rather than a Switch: this is a 3-way choice and
+              a Switch can only express two. Saved on tap like the other rows in
+              this screen — there is no Save button here. */}
+          <Text style={[styles.settingsGroupTitle, { textAlign, alignSelf: flexStart }]}>
+            {isRTL ? 'نوع الضيوف المسموح' : 'Allowed Guests'}
+          </Text>
+          <SettingsGroup>
+            <View style={[styles.settingsRow, { flexDirection: 'column', alignItems: flexStart, gap: 12 }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: normalize.width(12), alignSelf: 'stretch' }}>
+                <ProfileShape size={normalize.width(28)} type="blue">
+                  <SolarUsersGroupBold size={normalize.width(14)} color="white" />
+                </ProfileShape>
+                <View style={[styles.settingsRowLabelWrap, { alignItems: flexStart }]}>
+                  <Text style={[styles.settingsRowLabel, { textAlign }]}>
+                    {isRTL ? 'من يستقبل الشاليه' : 'Who this chalet accepts'}
+                  </Text>
+                </View>
+              </View>
+              {/* Plain 'row': native RTL mirrors it, so no isRTL branch. */}
+              <View style={{ flexDirection: 'row', gap: 8, alignSelf: 'stretch' }}>
+                {([
+                  { value: 'family', ar: 'عوائل فقط', en: 'Families only' },
+                  { value: 'youth', ar: 'شباب فقط', en: 'Young men only' },
+                  { value: 'both', ar: 'عوائل وشباب', en: 'Both' },
+                ] as const).map(opt => {
+                  const selected = guestPolicy === opt.value;
+                  return (
+                    <TouchableOpacity
+                      key={opt.value}
+                      style={[styles.guestPolicyChip, selected && styles.guestPolicyChipActive]}
+                      onPress={() => changeGuestPolicy(opt.value)}
+                      disabled={isUpdating}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={[styles.guestPolicyChipText, selected && styles.guestPolicyChipTextActive]} numberOfLines={1}>
+                        {isRTL ? opt.ar : opt.en}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+          </SettingsGroup>
+          <SettingsFooter>
+            {guestPolicy === 'both'
+              ? (isRTL ? 'الشاليه يستقبل العوائل والشباب، ولا يُرفض أي حجز بسبب نوع الضيوف.' : 'The chalet accepts both families and young men; no booking is rejected over guest type.')
+              : guestPolicy === 'family'
+                ? (isRTL ? 'حجوزات الشباب سترفض تلقائياً.' : 'Bookings from young men will be rejected automatically.')
+                : (isRTL ? 'حجوزات العوائل سترفض تلقائياً.' : 'Bookings from families will be rejected automatically.')}
+          </SettingsFooter>
 
           {/* Danger Zone — iOS keeps the warning in the footer and the row itself
               short and red, so the destructive action reads at a glance. */}
@@ -2893,6 +2967,29 @@ const styles = StyleSheet.create({
     fontFamily: 'IBMPlexSansArabic-Regular',
     color: '#94A3B8',
     marginTop: 2,
+  },
+  guestPolicyChip: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    borderRadius: normalize.radius(12),
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#F8FAFC',
+    alignItems: 'center',
+  },
+  guestPolicyChipActive: {
+    borderColor: Colors.primary,
+    backgroundColor: Colors.primary + '14',
+  },
+  guestPolicyChipText: {
+    fontSize: normalize.font(12),
+    fontFamily: 'IBMPlexSansArabic-Medium',
+    color: '#94A3B8',
+  },
+  guestPolicyChipTextActive: {
+    color: Colors.primary,
+    fontFamily: 'IBMPlexSansArabic-Bold',
   },
   bookingDurationNoteText: {
     fontSize: normalize.font(10),

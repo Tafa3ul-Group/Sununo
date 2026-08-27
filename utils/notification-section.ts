@@ -29,6 +29,33 @@ export function resolveNotificationSection(
 }
 
 /**
+ * Does landing on this notification's destination actually require being in the
+ * other section?
+ *
+ * Only the tab groups gate on it — app/(tabs)/_layout.tsx hides the other
+ * group's route outright and each tab layout redirects out of it — plus
+ * /payout-confirm, which picks between the provider and customer payout APIs by
+ * section. `/(dashboard)/*`, `/(customer)/*` and `/chalet-details/*` render the
+ * same either way, and moving an owner's section for those is a relocation
+ * nobody asked for.
+ */
+export function notificationNeedsSection(
+  redirectType: string | undefined | null,
+  target: NotificationSection,
+  hasId: boolean,
+): boolean {
+  // Either lands on /payout-confirm (which reads the section) or, with no id, on
+  // that section's tab home.
+  if (redirectType === 'payout') return true;
+  // → /(tabs)/(customer)/profile
+  if (redirectType === 'wallet') return target === 'customer';
+  // The owner's copy opens /(dashboard)/booking-details, which is ungated; only
+  // the tenant's copy lands inside the customer tabs.
+  if (redirectType === 'booking' && hasId) return target === 'customer';
+  return false;
+}
+
+/**
  * The section the user is in right now — also the `role` filter for
  * `GET /notifications`, so each side lists its own notifications. Guests read as
  * the tenant side.

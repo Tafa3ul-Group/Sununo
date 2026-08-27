@@ -227,7 +227,11 @@ export default function AddChaletScreen() {
     longitude: '44.3661',
     capacity: '4',
     priceCapacity: '4',
-    extraPersonPrice: '10000'
+    extraPersonPrice: '10000',
+    // Who the chalet accepts. 'both' is the default because a restricted policy
+    // HARD-BLOCKS the other audience at booking time — an owner has to opt into
+    // turning customers away, never fall into it.
+    guestPolicy: 'both' as 'family' | 'youth' | 'both'
   });
 
   const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
@@ -667,6 +671,9 @@ export default function AddChaletScreen() {
       formData.append('capacity', form.capacity || '1');
       formData.append('priceCapacity', form.priceCapacity || '1');
       formData.append('extraPersonPrice', form.extraPersonPrice || '0');
+      // Plain string, no JSON: the DTO validates it with @IsIn and multipart
+      // already delivers it as text.
+      formData.append('guestPolicy', form.guestPolicy);
 
       // Filter only active shifts for submission
       const shiftsPayload = activeShifts.map(s => ({
@@ -1220,6 +1227,37 @@ export default function AddChaletScreen() {
                           placeholder="25,000"
                           placeholderTextColor="#CBD5E1"
                         />
+                      </View>
+                    </View>
+
+                    {/* Guest Policy Card — belongs with capacity: both answer
+                        "who fits in this chalet". */}
+                    <View style={[styles.capacityCard, { alignItems: 'stretch' }]}>
+                      <View style={[styles.capacityInfo, { alignItems: 'flex-start', marginBottom: 12 }]}>
+                        <Text style={[styles.capacityLabel, { textAlign }]}>{isRTL ? 'نوع الضيوف المسموح' : 'Allowed Guests'}</Text>
+                        <Text style={[styles.capacitySubLabel, { textAlign }]}>{isRTL ? 'اختيار فئة واحدة يرفض حجوزات الفئة الأخرى تلقائياً' : 'Picking one audience automatically rejects bookings from the other'}</Text>
+                      </View>
+                      {/* Plain 'row': native RTL mirrors it, so no isRTL branch. */}
+                      <View style={{ flexDirection: 'row', gap: 8 }}>
+                        {([
+                          { value: 'family', ar: 'عوائل فقط', en: 'Families only' },
+                          { value: 'youth', ar: 'شباب فقط', en: 'Young men only' },
+                          { value: 'both', ar: 'عوائل وشباب', en: 'Both' },
+                        ] as const).map(opt => {
+                          const selected = form.guestPolicy === opt.value;
+                          return (
+                            <TouchableOpacity
+                              key={opt.value}
+                              style={[styles.guestPolicyChip, selected && styles.guestPolicyChipActive]}
+                              onPress={() => setForm({ ...form, guestPolicy: opt.value })}
+                              activeOpacity={0.8}
+                            >
+                              <Text style={[styles.guestPolicyChipText, selected && styles.guestPolicyChipTextActive]} numberOfLines={1}>
+                                {isRTL ? opt.ar : opt.en}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        })}
                       </View>
                     </View>
                   </View>
@@ -1986,6 +2024,13 @@ const styles = StyleSheet.create({
   capacityInfo: { flex: 1, gap: 2 },
   capacityLabel: { fontSize: normalize.font(14), fontFamily: "IBMPlexSansArabic-Bold", color: Colors.text.primary },
   capacitySubLabel: { fontSize: normalize.font(14), fontFamily: "IBMPlexSansArabic-Regular", color: Colors.text.muted },
+  guestPolicyChip: {
+    flex: 1, paddingVertical: 10, paddingHorizontal: 6, borderRadius: normalize.radius(12),
+    borderWidth: 1.5, borderColor: '#E2E8F0', backgroundColor: '#F8FAFC', alignItems: 'center'
+  },
+  guestPolicyChipActive: { borderColor: Colors.primary, backgroundColor: Colors.primary + '14' },
+  guestPolicyChipText: { fontSize: normalize.font(12), fontFamily: "IBMPlexSansArabic-Medium", color: Colors.text.muted },
+  guestPolicyChipTextActive: { color: Colors.primary, fontFamily: "IBMPlexSansArabic-Bold" },
   // Modal Edit
   shiftModalCard: { backgroundColor: '#F8FAFC', borderRadius: 16, padding: 16, gap: 16 },
   pricingSectionModal: { gap: 12 },

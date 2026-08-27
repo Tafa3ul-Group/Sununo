@@ -31,7 +31,6 @@ import {
 } from '@/store/api/apiSlice';
 import { useSyncAuthUser } from "@/hooks/useSyncAuthUser";
 import { useGetNotificationsQuery } from '@/store/api/customerApiSlice';
-import { PRIVACY_POLICY_URL } from '@/constants/links';
 import { useModeSwitch } from '@/hooks/use-mode-switch';
 import { activeSection } from '@/utils/notification-section';
 import { useSupportContact } from '@/hooks/use-support-contact';
@@ -44,7 +43,6 @@ import { useTranslation } from 'react-i18next';
 import {
   Alert,
   Image,
-  Linking,
   ScrollView,
   StyleSheet,
   Text,
@@ -173,10 +171,6 @@ export default function ProviderProfileScreen() {
 
   // The owner can leave the dashboard and use the app as a tenant.
   const { switchTo } = useModeSwitch();
-  const openPrivacyPolicy = () => {
-    Linking.openURL(PRIVACY_POLICY_URL).catch(() => {});
-  };
-
   const router = useRouter();
   const languageSheetRef = useRef<BottomSheetModal>(null);
   const logoutSheetRef = useRef<BottomSheetModal>(null);
@@ -265,7 +259,7 @@ export default function ProviderProfileScreen() {
         { id: 'language', title: isRTL ? 'اللغة' : 'Language', shape: 'blue' as const, icon: <SolarGlobalBold size={16} color="white" />, action: openLanguageSheet },
         { id: 'contact', title: isRTL ? 'تواصل معنا' : 'Contact Us', shape: 'green' as const, icon: <SolarPhoneBold size={16} color="white" />, action: openContactUs },
         { id: 'reportProblem', title: isRTL ? 'تبليغ عن مشكلة' : 'Report a Problem', shape: 'red' as const, icon: <SolarDangerCircleBold size={16} color="white" />, route: '/(customer)/report-problem' },
-        { id: 'privacy', title: isRTL ? 'سياسة الخصوصية' : 'Privacy Policy', shape: 'blue' as const, icon: <SolarShieldBold size={16} color="white" />, action: openPrivacyPolicy },
+        { id: 'privacy', title: isRTL ? 'سياسات التطبيق' : 'App Policies', shape: 'blue' as const, icon: <SolarShieldBold size={16} color="white" />, route: '/policies' },
       ],
     },
     {

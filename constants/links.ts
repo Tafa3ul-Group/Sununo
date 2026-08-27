@@ -1,9 +1,11 @@
 // External links and contact info used across the app.
 
-// Published privacy policy URL.
-// NOTE: set this same URL in App Store Connect → App Information → Privacy Policy URL.
-export const PRIVACY_POLICY_URL =
-  "https://privacy-policy.dudes.studio/privacy?app=sununo";
+// Store-listing metadata ONLY: the public web copy of the privacy policy, for
+// App Store Connect → App Information → Privacy Policy URL and the Play Console
+// data-safety form. The app itself no longer opens this — the profile menu goes
+// to the in-app /policies screen, which reads the live documents from the
+// backend (GET /policies) so admin edits land without a release.
+export const PRIVACY_POLICY_URL = "https://sununo.app/privacy";
 
 // Store listing URLs used by the in-app update sheet. These are FALLBACKS only —
 // the live URLs come from the backend config (GET /config → update[platform].storeUrl),
