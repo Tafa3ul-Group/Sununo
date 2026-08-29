@@ -17,9 +17,11 @@ import { pickTranslation, useDirection } from "@/i18n";
 import { BannerSkeleton, FeaturedSwiperSkeleton, HorizontalSwiperSkeleton, HorizontalCardSkeleton, CustomerHomeSkeleton } from "@/components/ui/skeleton-loader";
 import Animated from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import { HeaderSection } from "@/components/header-section";
+import { HomeCitySheet } from "@/components/user/home-city-sheet";
+import { setFilters as setStoredFilters } from "@/store/filterSlice";
 import { PressableScale } from "@/components/ui/pressable-scale";
 import {
   SolarAltArrowDownBold,
@@ -66,6 +68,7 @@ import {
   useGetBannersQuery,
   useGetFavoriteIdsQuery,
   useGetFeaturedChaletsQuery,
+  useGetCityNamesQuery,
   useGetLatestBookingsQuery,
   useToggleFavoriteMutation,
 } from "@/store/api/customerApiSlice";
@@ -104,6 +107,44 @@ export default function HomeScreen() {
 
   // Multi-select filter chips. Empty array === "All".
   const [filters, setFilters] = React.useState<HomeFilters>(EMPTY_HOME_FILTERS);
+
+  // ── Governorate ────────────────────────────────────────────────────────────
+  // The header's search pill became a محافظة picker, so this is the whole
+  // page's "where am I browsing" — the featured strip and the recommended list
+  // both follow it. It lives in the persisted `filter` slice under its own key
+  // (never `cityId`, which belongs to the search flow and would drag the
+  // explore map and the results screen along with it) so the choice survives a
+  // restart.
+  const dispatch = useDispatch();
+  // `?? null` because redux-persist shallow-merges the persisted `filter` blob
+  // over initialState: a customer updating from a build without these keys
+  // rehydrates them as `undefined`, and `undefined === null` is false — which
+  // would leave "كل المحافظات" unmarked in the picker.
+  const homeCityId = useSelector((state: RootState) => state.filter.homeCityId) ?? null;
+  const storedCityName = useSelector((state: RootState) => state.filter.homeCityName) ?? null;
+  const citySheetRef = React.useRef<BottomSheetModal>(null);
+
+  // The name is resolved from the live city list rather than read back from
+  // storage: the stored one is a label rendered in whatever language was active
+  // when it was picked, so after switching to English the header would keep
+  // showing Arabic. The stored value is only the fallback while the list loads.
+  const { data: cityList } = useGetCityNamesQuery(undefined);
+  const homeCityName = React.useMemo(() => {
+    if (!homeCityId) return null;
+    const match = (Array.isArray(cityList) ? cityList : []).find(
+      (c: any) => c?.id === homeCityId,
+    );
+    return match ? pickTranslation(match, isRTL) || storedCityName : storedCityName;
+  }, [cityList, homeCityId, isRTL, storedCityName]);
+
+  const handleCitySelect = React.useCallback(
+    (city: { id: string | null; name: string | null }) => {
+      dispatch(setStoredFilters({ homeCityId: city.id, homeCityName: city.name }));
+      citySheetRef.current?.dismiss();
+    },
+    [dispatch],
+  );
+
   const insets = useSafeAreaInsets();
 
   const handleListScroll = useCallback(
@@ -210,6 +251,16 @@ export default function HomeScreen() {
   // Build query params for Home Screen (ignores global search filters to keep index unfiltered)
   // Infinite scroll paging for the chalets list
   const [page, setPage] = React.useState(1);
+
+  // Paging is per-governorate: the list accumulates pages, so switching city on
+  // page 3 must not fetch page 3 of the new one. Adjusting during render (a
+  // supported React pattern) rather than in an effect means the stale request is
+  // never issued at all — an effect would let one render commit first.
+  const [pagedCityId, setPagedCityId] = React.useState(homeCityId);
+  if (pagedCityId !== homeCityId) {
+    setPagedCityId(homeCityId);
+    setPage(1);
+  }
   const [rawChalets, setRawChalets] = React.useState<any[]>([]);
 
   // Stable key so the paging reset / query only re-run on real changes.
@@ -218,6 +269,8 @@ export default function HomeScreen() {
   // Reset paging whenever the selected filters change.
   React.useEffect(() => {
     setPage(1);
+    // `homeCityId` is deliberately absent: it resets the page during render
+    // above, which happens before any request goes out.
   }, [filtersKey, sortBy]);
 
   const queryParams = React.useMemo(() => {
@@ -240,7 +293,9 @@ export default function HomeScreen() {
     // not sent — the API treats a missing param as "no bound".
     if (filters.minPrice != null) params.minPrice = filters.minPrice;
     if (filters.maxPrice != null) params.maxPrice = filters.maxPrice;
-    if (filters.cityId) params.cityId = filters.cityId;
+    // The governorate comes from the header picker alone — the filter sheet no
+    // longer offers one, so there is exactly one source and nothing to contradict.
+    if (homeCityId) params.cityId = homeCityId;
     if (filters.guests) params.maxAdults = filters.guests;
     if (filters.minRating) params.minRating = filters.minRating;
     if (filters.minBedrooms) params.minBedrooms = filters.minBedrooms;
@@ -255,7 +310,7 @@ export default function HomeScreen() {
     }
     return params;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filtersKey, amenityIdMap, page, sortBy, coords]);
+  }, [filtersKey, amenityIdMap, page, sortBy, coords, homeCityId]);
 
   // Fetch data from the backend
   const { data: bannersResponse, isFetching: bannersFetching, refetch: refetchBanners } = useGetBannersQuery(undefined);
@@ -330,7 +385,10 @@ export default function HomeScreen() {
     data: featuredRaw = [],
     isLoading: featuredLoading,
     refetch: refetchFeatured,
-  } = useGetFeaturedChaletsQuery(undefined);
+    // A governorate with no featured chalet falls back to the full list
+    // server-side, so the strip never empties just because the admin has not
+    // curated that محافظة yet.
+  } = useGetFeaturedChaletsQuery(homeCityId ? { cityId: homeCityId } : undefined);
 
   const featuredChalets = useMemo(
     () =>
@@ -355,6 +413,22 @@ export default function HomeScreen() {
         })),
     [featuredRaw],
   );
+
+  /**
+   * True when a governorate is selected but the strip came back holding none of
+   * its chalets — i.e. the API fell back to the full list because that محافظة
+   * has no featured chalet yet.
+   *
+   * Worth saying out loud: without it the customer picks البصرة and sees a
+   * "مميّزة" strip full of Baghdad, which reads as a broken picker rather than
+   * a deliberate fallback.
+   */
+  const featuredIsFallback = useMemo(() => {
+    if (!homeCityId || featuredLoading || featuredChalets.length === 0) return false;
+    return !(Array.isArray(featuredRaw) ? featuredRaw : []).some(
+      (c: any) => c?.city?.id === homeCityId,
+    );
+  }, [homeCityId, featuredLoading, featuredChalets.length, featuredRaw]);
 
   // Bumping this key remounts the preview map so it re-centers on the nearby
   // chalets / user location (e.g. after returning from a chalet, or on refresh).
@@ -668,6 +742,13 @@ export default function HomeScreen() {
                   </ThemedText>
                 </PressableScale>
               </View>
+              {featuredIsFallback && (
+                <ThemedText style={[styles.featuredFallbackNote, { textAlign }]}>
+                  {isRTL
+                    ? `ماكو شاليهات مميّزة في ${homeCityName} حالياً — هذي المميّزة من كل المحافظات.`
+                    : `No featured chalets in ${homeCityName} yet — showing featured from all governorates.`}
+                </ThemedText>
+              )}
               {featuredLoading ? (
                 <FeaturedSwiperSkeleton count={3} />
               ) : (
@@ -805,10 +886,16 @@ export default function HomeScreen() {
         <ThemedText style={styles.emptyDesc}>
           {t("home.noChaletsDesc")}
         </ThemedText>
-        {countHomeFilters(filters) > 0 && (
+        {(countHomeFilters(filters) > 0 || !!homeCityId) && (
           <PressableScale
             style={styles.clearButton}
-            onPress={() => setFilters(EMPTY_HOME_FILTERS)}
+            onPress={() => {
+              setFilters(EMPTY_HOME_FILTERS);
+              // The governorate is the likeliest reason this list is empty, and
+              // it lives outside `filters` — without this the reset button left
+              // the screen exactly as empty as it found it.
+              dispatch(setStoredFilters({ homeCityId: null, homeCityName: null }));
+            }}
           >
             <ThemedText style={styles.clearButtonText}>
               {t("home.clearFilters")}
@@ -823,7 +910,11 @@ export default function HomeScreen() {
     <View style={[styles.safeArea, { paddingTop: insets.top }]}>
       <StatusBar style="dark" translucent backgroundColor="transparent" />
       {/* Sticky header — stays pinned while the list scrolls underneath. */}
-      <HeaderSection isHome />
+      <HeaderSection
+        isHome
+        cityLabel={homeCityName || undefined}
+        onCityPress={() => citySheetRef.current?.present()}
+      />
       <View style={{ flex: 1 }}>
       <FlashList
         ref={listRef}
@@ -886,6 +977,12 @@ export default function HomeScreen() {
         value={sortBy}
         onSelect={handleSortSelect}
       />
+
+      <HomeCitySheet
+        ref={citySheetRef}
+        selectedCityId={homeCityId}
+        onSelect={handleCitySelect}
+      />
     </View>
   );
 }
@@ -947,6 +1044,14 @@ const styles = StyleSheet.create({
     lineHeight: normalize.font(22),
     paddingVertical: 2,
     flexShrink: 1,
+  },
+  featuredFallbackNote: {
+    fontSize: normalize.font(10),
+    fontFamily: "IBMPlexSansArabic-Medium",
+    color: "#64748B",
+    paddingHorizontal: 16,
+    marginBottom: 6,
+    lineHeight: 17,
   },
   seeAll: {
     fontSize: normalize.font(13),

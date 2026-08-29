@@ -8,7 +8,7 @@ import { getImageSrc } from "@/hooks/useImageSrc";
 
 import { Image as ExpoImage } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -34,7 +34,9 @@ import {
   useLazyGetPaymentStatusQuery,
   useLazyGetCancellationPreviewQuery,
   useCancelCustomerBookingMutation,
+  useGetCustomerWalletQuery,
 } from "@/store/api/customerApiSlice";
+import { useGetAppConfigQuery } from "@/store/api/apiSlice";
 import {
   CustomerCancellationSheet,
   type CustomerCancellationSheetRef,
@@ -97,6 +99,7 @@ export default function BookingSuccessDetailsScreen() {
 
   const [selectedMethod, setSelectedMethod] = useState<"wayl" | "wallet">("wayl");
   const [paymentType, setPaymentType] = useState<"DEPOSIT" | "FULL">("FULL");
+
   const [payDelayedBooking, { isLoading: isPaying }] = usePayDelayedBookingMutation();
   const [checkPaymentStatus] = useLazyGetPaymentStatusQuery();
   const [isWaitingForPayment, setIsWaitingForPayment] = useState(false);
@@ -391,6 +394,41 @@ export default function BookingSuccessDetailsScreen() {
   // webhook ignores a booking that is no longer PENDING_PAYMENT — cancelling
   // mid-session would take their money and leave them without a booking.
   const canCancel = isPendingApproval || isConfirmed;
+
+  // What this screen would charge right now — the same figure the pay button
+  // prints, and what a wallet balance has to cover.
+  const amountDueNow =
+    paymentType === "DEPOSIT" ? depositAmountVal : Number(booking?.totalPrice || 0);
+
+  // The wallet button used to be offered blind — no balance, no check on the
+  // admin's on/off switch — so the customer found out from the API's English
+  // "Insufficient wallet balance" / "Wallet payment is currently disabled".
+  const { data: appConfig } = useGetAppConfigQuery();
+  const { data: walletData, isLoading: isWalletLoading } = useGetCustomerWalletQuery(undefined);
+  const walletBalance = Number(walletData?.balance ?? walletData?.data?.balance ?? 0);
+  // Absent config is treated as enabled — a failed /config must not close the
+  // only way to pay for an approved booking.
+  const isWalletEnabled = appConfig?.isWalletEnabled !== false;
+  const isWaylEnabled = appConfig?.isWaylEnabled !== false;
+  const walletCoversAmount = walletBalance >= amountDueNow && amountDueNow > 0;
+  const canPayByWallet = isWalletEnabled && walletCoversAmount;
+  // The balance reads 0 until the first response lands — not a real shortfall.
+  const isWalletUnsettled = isWalletLoading || isPaying;
+
+  // Keep the selection on something that can actually go through: switching to
+  // the full amount (or the booking re-pricing underneath) can push the total
+  // past a balance that covered the deposit, and the card gateway can be
+  // switched off while the default still points at it.
+  useEffect(() => {
+    if (isWalletUnsettled) return;
+    if (selectedMethod === "wallet" && !canPayByWallet && isWaylEnabled) {
+      setSelectedMethod("wayl");
+      return;
+    }
+    if (selectedMethod === "wayl" && !isWaylEnabled && canPayByWallet) {
+      setSelectedMethod("wallet");
+    }
+  }, [selectedMethod, canPayByWallet, isWaylEnabled, isWalletUnsettled]);
   const isDepositPayment = paymentModelVal === "deposit";
   const amountPaidVal = Number(booking?.amountPaid || 0);
   const remainingAmountVal = Number(booking?.remainingAmount || 0);
@@ -828,6 +866,7 @@ export default function BookingSuccessDetailsScreen() {
             )}
 
             <View style={[styles.paymentMethodsGrid, { flexDirection: rowDirection }]}>
+              {isWaylEnabled && (
               <PressScaleTouchable
                 layoutMorph
                 style={[
@@ -849,29 +888,63 @@ export default function BookingSuccessDetailsScreen() {
                   {isRTL ? "دفع بالبطاقة" : "Card Payment"}
                 </ThemedText>
               </PressScaleTouchable>
+              )}
 
-              <PressScaleTouchable
-                layoutMorph
-                style={[
-                  styles.paymentMethodBtn,
-                  selectedMethod === "wallet" && styles.paymentMethodActive,
-                ]}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  setSelectedMethod("wallet");
-                }}
-              >
-                <SolarWalletBold size={22} color={selectedMethod === "wallet" ? "#FFF" : "#64748B"} />
-                <ThemedText
+              {/* Hidden rather than shown-and-refused when the admin has
+                  switched the wallet off — the API 400s on it either way. */}
+              {isWalletEnabled && (
+                <PressScaleTouchable
+                  layoutMorph
+                  disabled={!walletCoversAmount}
                   style={[
-                    styles.paymentMethodText,
-                    selectedMethod === "wallet" && styles.paymentMethodTextActive,
+                    styles.paymentMethodBtn,
+                    selectedMethod === "wallet" && styles.paymentMethodActive,
+                    !walletCoversAmount && !isWalletUnsettled && { opacity: 0.45 },
                   ]}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setSelectedMethod("wallet");
+                  }}
                 >
-                  {isRTL ? "المحفظة" : "Wallet"}
-                </ThemedText>
-              </PressScaleTouchable>
+                  <SolarWalletBold size={22} color={selectedMethod === "wallet" ? "#FFF" : "#64748B"} />
+                  <ThemedText
+                    style={[
+                      styles.paymentMethodText,
+                      selectedMethod === "wallet" && styles.paymentMethodTextActive,
+                    ]}
+                  >
+                    {isRTL ? "المحفظة" : "Wallet"}
+                  </ThemedText>
+                  {/* The balance is the whole reason to pick this or not. */}
+                  <ThemedText
+                    style={[
+                      styles.paymentMethodBalance,
+                      selectedMethod === "wallet" && styles.paymentMethodTextActive,
+                    ]}
+                  >
+                    {isWalletLoading
+                      ? "..."
+                      : `${walletBalance.toLocaleString()} ${t("common.iqd")}`}
+                  </ThemedText>
+                </PressScaleTouchable>
+              )}
             </View>
+
+            {isWalletUnsettled ? null : !isWaylEnabled && !canPayByWallet ? (
+              <ThemedText style={[styles.paymentMethodHint, styles.paymentMethodHintStrict]}>
+                {isRTL
+                  ? "لا تتوفر طريقة دفع حالياً. اشحن محفظتك أو حاول لاحقاً."
+                  : "No payment method is available right now. Top up your wallet or try again later."}
+              </ThemedText>
+            ) : (
+              isWalletEnabled && !walletCoversAmount && (
+                <ThemedText style={styles.paymentMethodHint}>
+                  {isRTL
+                    ? `رصيد المحفظة لا يكفي لدفع ${amountDueNow.toLocaleString()} ${t("common.iqd")}.`
+                    : `Your wallet balance doesn't cover ${amountDueNow.toLocaleString()} ${t("common.iqd")}.`}
+                </ThemedText>
+              )
+            )}
 
             <TouchableOpacity
               style={styles.payBtn}
@@ -1111,6 +1184,22 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(12),
     fontFamily: "IBMPlexSansArabic-Medium",
     color: "#475569",
+  },
+  paymentMethodBalance: {
+    fontSize: normalize.font(9),
+    fontFamily: "IBMPlexSansArabic-Medium",
+    color: "#94A3B8",
+  },
+  paymentMethodHintStrict: {
+    color: "#B45309",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
+  },
+  paymentMethodHint: {
+    marginTop: 8,
+    fontSize: normalize.font(10),
+    fontFamily: "IBMPlexSansArabic-Medium",
+    color: "#64748B",
+    lineHeight: 18,
   },
   paymentMethodTextActive: {
     color: "#FFF",

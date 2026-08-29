@@ -53,6 +53,11 @@ describe("filterSlice — initial state", () => {
       maxGuests: null,
       adults: 2,
       children: 0,
+      sortBy: null,
+      lat: null,
+      lng: null,
+      homeCityId: null,
+      homeCityName: null,
       isActive: false,
     });
   });
@@ -372,6 +377,31 @@ describe("filterSlice — clearFilters", () => {
     expect(filterReducer(once, clearFilters())).toEqual(init());
   });
 
+  // The home header's governorate is NOT a search filter. It lives in this slice
+  // only because the slice is already persisted, and "مسح الفلاتر" on the
+  // results screen must not silently move the home page to another governorate.
+  it("keeps the home governorate while clearing every search filter", () => {
+    const withHomeCity = apply(fullyPopulated(), {
+      homeCityId: "city-basra",
+      homeCityName: "البصرة",
+    });
+
+    const cleared = filterReducer(withHomeCity, clearFilters());
+
+    expect(cleared.homeCityId).toBe("city-basra");
+    expect(cleared.homeCityName).toBe("البصرة");
+    // Everything that IS a search filter still goes.
+    expect(cleared.cityId).toBeNull();
+    expect(cleared.search).toBeNull();
+    expect(cleared.checkIn).toBeNull();
+    expect(cleared.isActive).toBe(false);
+  });
+
+  it("does not make the home governorate count as an active filter", () => {
+    const state = apply(init(), { homeCityId: "city-basra", homeCityName: "البصرة" });
+    expect(state.isActive).toBe(false);
+  });
+
   it("ignores whatever payload it is handed", () => {
     const state = filterReducer(
       fullyPopulated(),
@@ -395,6 +425,11 @@ describe("filterSlice — clearFilters", () => {
       maxGuests: null,
       adults: 2,
       children: 0,
+      sortBy: null,
+      lat: null,
+      lng: null,
+      homeCityId: null,
+      homeCityName: null,
       isActive: false,
     });
     expect(cleared).toEqual(init());

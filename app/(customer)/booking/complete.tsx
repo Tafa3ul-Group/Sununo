@@ -6,10 +6,12 @@ import {
   SolarMoonBold,
   SolarSunBold,
   SolarUsersGroupRoundedBold,
+  SolarWalletBold,
 } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { BookingReceiptSheet } from "@/components/booking/booking-receipt-sheet";
 import { CancellationPolicyCard } from "@/components/booking/cancellation-policy-card";
+import { ChaletTermsSheet } from "@/components/booking/chalet-terms-sheet";
 import { CouponField } from "@/components/booking/coupon-field";
 import { PaymentProcessingSheet } from "@/components/booking/payment-processing-sheet";
 import { ErrorState } from "@/components/ui/error-state";
@@ -33,7 +35,9 @@ import {
   useUploadIdCardImagesMutation,
   usePayDelayedBookingMutation,
   useGetChaletCancellationPoliciesQuery,
+  useGetCustomerWalletQuery,
 } from "@/store/api/customerApiSlice";
+import { useGetAppConfigQuery } from "@/store/api/apiSlice";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
@@ -70,13 +74,17 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const BOOKING_TABS: TabType[] = ["WHEN", "WHO", "WHERE"];
 
 /**
- * Checkout only ever pays by card. The API and the booking-details screen both
- * also accept "wallet", and this screen used to carry a `selectedMethod` state
- * for it — but nothing ever set it, so the wallet branch was unreachable and the
- * payment-method row was a static label. Naming the one real option is honest
- * about that; wiring wallet up here is a feature, not a rename.
+ * The two ways checkout can settle. `wayl` is the card gateway (a hosted page,
+ * a webhook, a booking that stays PENDING_PAYMENT until it lands); `wallet` is
+ * settled inline by the API, which debits the balance and returns the booking
+ * already CONFIRMED with no payment URL to open.
+ *
+ * The screen used to hardcode `wayl` because nothing ever set the state — the
+ * wallet branch existed on the API and on the booking-details screen, but not
+ * here.
  */
-const PAYMENT_METHOD = "wayl" as const;
+type PaymentMethod = "wayl" | "wallet";
+const DEFAULT_PAYMENT_METHOD: PaymentMethod = "wayl";
 
 // Caches the descending-by-guestCount sort per capacityPricings array reference,
 // so the spread + sort runs once instead of on every pricing recomputation.
@@ -249,6 +257,39 @@ export default function CompleteBookingScreen() {
         (a, b) => Number(b.daysBeforeBooking) - Number(a.daysBeforeBooking),
       ),
     [cancellationPolicies],
+  );
+
+  // ── Chalet terms gate ──────────────────────────────────────────────────────
+  // The customer has to be shown the chalet's terms and tap موافق before the
+  // booking is created — on BOTH paths. Checkout previously carried a sentence
+  // saying they "acknowledge" the terms, with the terms a navigation away and
+  // nothing stopping a booking that never opened them; a delayed chalet showed
+  // not even that.
+  //
+  // Acceptance is per-chalet and lives only for this screen: nothing is sent to
+  // the API, because `booking` has no acceptance column and `chalet.terms` has
+  // no version to record against. It survives a failed submit so a retry does
+  // not re-ask.
+  const termsSheetRef = React.useRef<BottomSheetModal>(null);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  // The sheet dismisses with an animation, so its موافق button stays tappable
+  // for a beat after the first tap — and the submit it schedules has not set
+  // `isCreatingBooking` yet. This latch is the guard for that window; a ref
+  // rather than state because a second tap in the same frame must see it.
+  const termsSubmitRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setTermsAccepted(false);
+  }, [chaletId]);
+
+  // A pending submit must not fire into an unmounted screen: it would create a
+  // booking (and, on the wallet path, debit the balance) with nothing on screen
+  // to show for it.
+  useEffect(
+    () => () => {
+      if (termsSubmitRef.current) clearTimeout(termsSubmitRef.current);
+    },
+    [],
   );
 
   const openChaletInfo = useCallback(
@@ -748,6 +789,53 @@ export default function CompleteBookingScreen() {
     Number(chaletDetails?.depositPercentage) || Number(chaletDetails?.minDepositPercentage) || 0;
   const depositAmount = Math.round((totalPrice * depositPercentage) / 100);
 
+  // ── Payment method ─────────────────────────────────────────────────────────
+  // What the customer owes RIGHT NOW — a deposit booking pays the deposit and
+  // settles the rest in cash on arrival. This, not the total, is what the API
+  // charges and therefore what a wallet balance has to cover.
+  const amountDue = paymentType === "DEPOSIT" ? depositAmount : totalPrice;
+
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(DEFAULT_PAYMENT_METHOD);
+
+  const { data: appConfig } = useGetAppConfigQuery();
+  // Only fetched for instant chalets: a delayed booking pays later, from the
+  // booking-details screen, so there is nothing to check a balance against here.
+  const isDelayedChalet = chaletDetails?.bookingType === "delayed";
+  const { data: walletData, isLoading: isWalletLoading } = useGetCustomerWalletQuery(
+    undefined,
+    { skip: isDelayedChalet },
+  );
+
+  const walletBalance = Number(walletData?.balance ?? walletData?.data?.balance ?? 0);
+  // The API rejects either method outright when the admin has switched it off
+  // (`Wallet payment is currently disabled` / `Wayl is currently disabled`), so
+  // a disabled option is hidden rather than offered and then refused. Absent
+  // config is treated as enabled — a failed /config must not close checkout.
+  const isWalletEnabled = appConfig?.isWalletEnabled !== false;
+  const isWaylEnabled = appConfig?.isWaylEnabled !== false;
+  const walletCoversAmount = walletBalance >= amountDue && amountDue > 0;
+  const canPayByWallet = isWalletEnabled && walletCoversAmount;
+  // The balance reads 0 until the first response lands, and again while it
+  // refetches after a wallet payment invalidates it — neither is a real
+  // "you can't afford this", so the shortfall notice waits for a settled read.
+  // Once a booking exists the picker is history: the receipt is on screen.
+  const isWalletUnsettled = isWalletLoading || isCreatingBooking || !!createdBookingId;
+
+  // Keep the selection on something that can actually go through. Two cases:
+  // the customer picks wallet and then pushes the amount past their balance
+  // (adds a guest, drops a coupon, switches to full payment), or the card
+  // gateway is switched off while the default is still pointing at it.
+  useEffect(() => {
+    if (isWalletUnsettled) return;
+    if (paymentMethod === "wallet" && !canPayByWallet && isWaylEnabled) {
+      setPaymentMethod("wayl");
+      return;
+    }
+    if (paymentMethod === "wayl" && !isWaylEnabled && canPayByWallet) {
+      setPaymentMethod("wallet");
+    }
+  }, [paymentMethod, canPayByWallet, isWaylEnabled, isWalletUnsettled]);
+
   const selectedShiftPrice = shiftBasePrice;
 
   const totalGuestsNow = adultCount;
@@ -780,6 +868,9 @@ export default function CompleteBookingScreen() {
       adultCount,
       guestType,
       paymentType,
+      // A gateway session opened for the card is not the session a wallet
+      // payment needs, so switching method must not "resume" the old one.
+      paymentMethod,
     ].join("|");
   }, [
     chaletId,
@@ -789,6 +880,7 @@ export default function CompleteBookingScreen() {
     adultCount,
     guestType,
     paymentType,
+    paymentMethod,
   ]);
 
   // ── Tab gating ─────────────────────────────────────────────────────────────
@@ -875,7 +967,7 @@ export default function CompleteBookingScreen() {
       transaction_id: String(transactionId),
       currency: ANALYTICS_CURRENCY,
       value: Number(totalPrice) || 0,
-      payment_type: `${PAYMENT_METHOD}_${paymentType.toLowerCase()}`,
+      payment_type: `${paymentMethod}_${paymentType.toLowerCase()}`,
       deposit_amount: Number(depositAmount) || 0,
       items: buildBookingItems(),
     });
@@ -921,7 +1013,7 @@ export default function CompleteBookingScreen() {
     try {
       const result = await reopenPaymentSession({
         id: heldBookingId,
-        paymentMethod: PAYMENT_METHOD,
+        paymentMethod,
         paymentModel: paymentType.toLowerCase(),
       }).unwrap();
 
@@ -937,9 +1029,15 @@ export default function CompleteBookingScreen() {
         return;
       }
 
-      // A wallet payment settles server-side with no session to open.
+      // A wallet payment settles server-side with no session to open. This
+      // branch was unreachable while the screen hardcoded "wayl" (the API
+      // always answered with a payment URL), so it never set the receipt's
+      // fields — and this is precisely the path taken after the app was killed,
+      // where nothing else has filled them in.
       if (result?.booking?.status === "confirmed") {
         setCreatedBookingId(heldBookingId);
+        setCreatedBookingCode(result.booking?.bookingCode || null);
+        setCreatedBookingStatus(result.booking?.status || null);
         trackPurchase(heldBookingId);
         successSheetRef.current?.present();
         return;
@@ -1173,7 +1271,7 @@ export default function CompleteBookingScreen() {
                 paymentType === "DEPOSIT"
                   ? Number(depositAmount) || 0
                   : Number(totalPrice) || 0,
-              payment_type: `${PAYMENT_METHOD}_${paymentType.toLowerCase()}`,
+              payment_type: `${paymentMethod}_${paymentType.toLowerCase()}`,
             });
           }
 
@@ -1188,7 +1286,7 @@ export default function CompleteBookingScreen() {
             guestsCount: adultCount,
             ...(isDelayedBooking ? {} : {
               paymentModel: paymentType.toLowerCase() as "deposit" | "full",
-              paymentMethod: PAYMENT_METHOD,
+              paymentMethod,
             }),
             // Only the optional ones: mandatory amenities are applied server-side,
             // and echoing them back would be the app asserting a charge it does
@@ -1245,6 +1343,22 @@ export default function CompleteBookingScreen() {
       } catch (error: any) {
         const message = String(error?.data?.message || "");
 
+        // The server re-prices the booking (a coupon can be worth less than the
+        // screen showed, and the deposit is rounded server-side), so its
+        // `amountDue` can land a little above the balance this screen checked
+        // against. Say so in Arabic and move them to the card rather than
+        // leaving the API's English string in an alert.
+        if (/insufficient wallet|رصيد المحفظة/i.test(message)) {
+          setPaymentMethod("wayl");
+          Alert.alert(
+            isArabic ? "رصيد المحفظة لا يكفي" : "Insufficient wallet balance",
+            isArabic
+              ? "رصيد محفظتك لا يغطي مبلغ هذا الحجز. تم اختيار الدفع بالبطاقة، حاول مرة أخرى."
+              : "Your wallet doesn't cover this booking. Card payment has been selected — please try again.",
+          );
+          return;
+        }
+
         // The API identified the slot's holder as this customer's own unpaid
         // booking and handed back its id. This is the path that survives the
         // screen being unmounted (killed app, backed out and came back), where
@@ -1293,6 +1407,49 @@ export default function CompleteBookingScreen() {
         );
       }
     }
+  };
+
+  /**
+   * The footer button's real onPress.
+   *
+   * On the last tab it does not submit — it shows the chalet's terms first and
+   * only runs `handleNext` once the customer taps موافق. Every other tab is
+   * plain navigation and goes straight through.
+   */
+  const handlePrimaryPress = () => {
+    if (activeTab !== "WHERE" || termsAccepted) {
+      void handleNext();
+      return;
+    }
+
+    // Same double-submit guard handleNext opens with, applied before the sheet
+    // so a second tap mid-request cannot stack another sheet on top.
+    if (isCreatingBooking || isUploadingId) return;
+
+    // Anything that would bounce the customer back to an earlier tab has to be
+    // said BEFORE the terms, not after they agree to them. `handleNext` still
+    // re-checks all of this — this only fixes the order the two are surfaced in.
+    const blocker = whenBlocker || whoBlocker;
+    if (blocker) {
+      void handleNext();
+      return;
+    }
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    termsSheetRef.current?.present();
+  };
+
+  const handleTermsAgree = () => {
+    if (termsSubmitRef.current) return;
+
+    setTermsAccepted(true);
+    termsSheetRef.current?.dismiss();
+    // handleNext can present the receipt sheet or the payment-processing sheet,
+    // and gorhom will not open one while another is still animating out.
+    termsSubmitRef.current = setTimeout(() => {
+      termsSubmitRef.current = null;
+      void handleNext();
+    }, 300);
   };
 
   const toggleDayDate = (day: number) => {
@@ -1872,21 +2029,99 @@ export default function CompleteBookingScreen() {
             </ThemedText>
           </View>
 
-          <View style={[styles.infoSectionCard, { marginTop: 8 }]}>
-            <View style={[styles.infoRow, styles.row, { flexDirection: rowDirection, marginBottom: 0, alignItems: "center" }]}>
-              <ThemedText style={[styles.infoLabel, { fontFamily: "IBMPlexSansArabic-Bold", textAlign }]}>
-                {t("booking.paymentMethod") || "طريقة الدفع"}
+          <ThemedText style={[styles.paymentMainTitle, { alignSelf: 'flex-start', textAlign, marginTop: 16 }]}>
+            {t("booking.paymentMethod") || "طريقة الدفع"}
+          </ThemedText>
+
+          <View style={[styles.methodRow, { flexDirection: rowDirection }]}>
+            {isWaylEnabled && (
+            <PressableScale
+              style={[
+                styles.methodCard,
+                paymentMethod === "wayl" && styles.methodCardActive,
+              ]}
+              onPress={() => setPaymentMethod("wayl")}
+            >
+              <SolarCardBold
+                size={22}
+                color={paymentMethod === "wayl" ? "#FFFFFF" : "#64748B"}
+              />
+              <ThemedText
+                style={[
+                  styles.methodLabel,
+                  paymentMethod === "wayl" && styles.methodLabelActive,
+                ]}
+              >
+                {t("booking.wayl")}
               </ThemedText>
-              <View style={{ flexDirection: rowDirection, alignItems: "center", gap: 8 }}>
-                <View style={{ backgroundColor: "#ECFDF5", padding: 6, borderRadius: 8 }}>
-                  <SolarCardBold size={18} color="#10B981" />
-                </View>
-                <ThemedText style={[styles.infoValue, { color: "#10B981", fontFamily: "IBMPlexSansArabic-SemiBold", textAlign: textAlignEnd }]}>
-                  {t("booking.wayl")}
+            </PressableScale>
+            )}
+
+            {/* Hidden rather than shown-and-refused when the admin has switched
+                the wallet off — the API 400s on it either way. */}
+            {isWalletEnabled && (
+              <PressableScale
+                style={[
+                  styles.methodCard,
+                  paymentMethod === "wallet" && styles.methodCardActive,
+                  !walletCoversAmount && !isWalletUnsettled && styles.methodCardDisabled,
+                ]}
+                disabled={!walletCoversAmount}
+                onPress={() => setPaymentMethod("wallet")}
+              >
+                <SolarWalletBold
+                  size={22}
+                  color={paymentMethod === "wallet" ? "#FFFFFF" : "#64748B"}
+                />
+                <ThemedText
+                  style={[
+                    styles.methodLabel,
+                    paymentMethod === "wallet" && styles.methodLabelActive,
+                  ]}
+                >
+                  {isArabic ? "المحفظة" : "Wallet"}
                 </ThemedText>
-              </View>
-            </View>
+                {/* The balance is the whole reason to pick this or not, so it is
+                    on the card rather than behind a failed submit. */}
+                <ThemedText
+                  style={[
+                    styles.methodBalance,
+                    paymentMethod === "wallet" && styles.methodLabelActive,
+                  ]}
+                >
+                  {isWalletLoading
+                    ? (isArabic ? "..." : "...")
+                    : `${walletBalance.toLocaleString()} ${t("common.iqd")}`}
+                </ThemedText>
+              </PressableScale>
+            )}
           </View>
+
+          {isWalletUnsettled ? null : !isWaylEnabled && !canPayByWallet ? (
+            // Card off and wallet unusable: there is nothing to tap, so say why
+            // rather than showing an empty row and a button that only 400s.
+            <ThemedText style={[styles.methodHint, styles.methodHintStrict, { textAlign }]}>
+              {isArabic
+                ? "لا تتوفر طريقة دفع حالياً. اشحن محفظتك أو حاول لاحقاً."
+                : "No payment method is available right now. Top up your wallet or try again later."}
+            </ThemedText>
+          ) : (
+            isWalletEnabled && !walletCoversAmount && (
+              <ThemedText style={[styles.methodHint, { textAlign }]}>
+                {isArabic
+                  ? `رصيد المحفظة لا يكفي لدفع ${amountDue.toLocaleString()} ${t("common.iqd")}.`
+                  : `Your wallet balance doesn't cover ${amountDue.toLocaleString()} ${t("common.iqd")}.`}
+              </ThemedText>
+            )
+          )}
+
+          {paymentMethod === "wallet" && (
+            <ThemedText style={[styles.methodHint, { textAlign }]}>
+              {isArabic
+                ? `سيُخصم ${amountDue.toLocaleString()} ${t("common.iqd")} من محفظتك ويُؤكَّد الحجز فوراً.`
+                : `${amountDue.toLocaleString()} ${t("common.iqd")} will be deducted from your wallet and the booking confirmed immediately.`}
+            </ThemedText>
+          )}
         </>
       )}
     </Animated.View>
@@ -2539,7 +2774,7 @@ export default function CompleteBookingScreen() {
                   : t("booking.completePayment"))
               : t("booking.next")
           }
-          onPress={handleNext}
+          onPress={handlePrimaryPress}
           loading={isUploadingId || isCreatingBooking}
           disabled={isUploadingId || isCreatingBooking}
           activeColor={
@@ -2554,6 +2789,18 @@ export default function CompleteBookingScreen() {
       </View>
 
       {renderCalendarSheet()}
+
+      <ChaletTermsSheet
+        ref={termsSheetRef}
+        chaletId={chaletId}
+        cancellationTiers={cancellationTiers}
+        isLoadingCancellation={isLoadingCancellationPolicies}
+        guestPolicy={chaletDetails?.guestPolicy}
+        isRequest={isDelayedChalet}
+        onAgree={handleTermsAgree}
+        onDecline={() => termsSheetRef.current?.dismiss()}
+      />
+
       <BookingReceiptSheet
         ref={successSheetRef}
         bookingCode={createdBookingCode}
@@ -3080,6 +3327,54 @@ const styles = StyleSheet.create({
     color: "#64748B",
   },
   paymentLabelActive: { color: "#1E293B", fontFamily: "IBMPlexSansArabic-Medium" },
+  methodRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 10,
+  },
+  methodCard: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 14,
+    paddingHorizontal: 10,
+    borderRadius: normalize.radius(14),
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    backgroundColor: "#FFFFFF",
+  },
+  methodCardActive: {
+    backgroundColor: "#035DF9",
+    borderColor: "#035DF9",
+  },
+  methodCardDisabled: {
+    opacity: 0.45,
+  },
+  methodLabel: {
+    fontSize: normalize.font(11),
+    fontFamily: "IBMPlexSansArabic-SemiBold",
+    color: "#64748B",
+  },
+  methodLabelActive: {
+    color: "#FFFFFF",
+  },
+  methodBalance: {
+    fontSize: normalize.font(9),
+    fontFamily: "IBMPlexSansArabic-Medium",
+    color: "#94A3B8",
+  },
+  methodHintStrict: {
+    color: "#B45309",
+    fontFamily: "IBMPlexSansArabic-SemiBold",
+  },
+  methodHint: {
+    marginTop: 8,
+    fontSize: normalize.font(10),
+    fontFamily: "IBMPlexSansArabic-Medium",
+    color: "#64748B",
+    lineHeight: 18,
+  },
   agreementWrapper: { paddingVertical: 12, paddingBottom: 35 },
   agreementText: {
     fontSize: normalize.font(8),
@@ -3095,30 +3390,6 @@ const styles = StyleSheet.create({
   },
   // RTL Utilities
   row: { flexDirection: "row" },
-  paymentMethodsGrid: {
-    flexDirection: "row",
-    gap: 12,
-    marginTop: 15,
-  },
-  methodCard: {
-    flex: 1,
-    backgroundColor: "#F8FAFC",
-    borderRadius: 16,
-    padding: 16,
-    alignItems: "center",
-    borderWidth: 2,
-    borderColor: "transparent",
-    position: "relative",
-  },
-  methodCardActive: {
-    borderColor: Colors.primary,
-    backgroundColor: "#F0F7FF",
-  },
-  methodName: {
-    fontSize: normalize.font(8),
-    fontFamily: "IBMPlexSansArabic-SemiBold",
-    color: "#1E293B",
-  },
   capacityBanner: {
     backgroundColor: "#F8FAFC",
     borderRadius: 16,

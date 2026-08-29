@@ -117,9 +117,18 @@ export const customerApi = apiSlice.injectEndpoints({
       providesTags: ["Chalet"],
     }),
 
-    /** Featured chalets shown below the home banner (admin-curated, ordered) */
+    /**
+     * Featured chalets shown below the home banner (admin-curated, ordered).
+     *
+     * With `cityId` the API returns that governorate's featured chalets, and
+     * falls back to the full list when it has none — so the strip never empties
+     * just because the admin has not curated that محافظة yet.
+     */
     getFeaturedChalets: builder.query({
-      query: () => "/customer/chalets/featured",
+      query: (args?: { cityId?: string | null }) => ({
+        url: "/customer/chalets/featured",
+        params: args?.cityId ? { cityId: args.cityId } : undefined,
+      }),
       providesTags: ["Chalet"],
     }),
 
@@ -231,7 +240,12 @@ export const customerApi = apiSlice.injectEndpoints({
         method: "POST",
         body: data,
       }),
-      invalidatesTags: ["Booking", "Chalet"],
+      // "User" carries the wallet balance: a booking paid with `paymentMethod:
+      // "wallet"` is debited server-side and settles inline, so without this the
+      // profile, the wallet screen and the checkout picker all keep showing the
+      // pre-payment balance. Card payments refetch it needlessly, which is
+      // cheaper than showing money the customer no longer has.
+      invalidatesTags: ["Booking", "Chalet", "User"],
     }),
 
     /** List my bookings (paginated, filterable by status) */
@@ -319,6 +333,9 @@ export const customerApi = apiSlice.injectEndpoints({
       invalidatesTags: (result: any, error: any, { id }: { id: string }) => [
         "Booking",
         { type: "Booking" as const, id },
+        // Same reason as createCustomerBooking: this route also accepts
+        // `paymentMethod: "wallet"` and debits the balance inline.
+        "User",
       ],
     }),
 

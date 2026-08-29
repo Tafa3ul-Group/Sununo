@@ -31,13 +31,15 @@ export default function FeaturedScreen() {
   const router = useRouter();
   const { isRTL } = useDirection();
   const { userType } = useSelector((state: RootState) => state.auth);
+  // Same governorate the home header is showing — this page is its "عرض الكل".
+  const homeCityId = useSelector((state: RootState) => state.filter.homeCityId);
 
   const {
     data: featuredRaw = [],
     isLoading,
     isError,
     refetch,
-  } = useGetFeaturedChaletsQuery(undefined);
+  } = useGetFeaturedChaletsQuery(homeCityId ? { cityId: homeCityId } : undefined);
 
   const { data: favoriteIds = [], refetch: refetchFavorites } =
     useGetFavoriteIdsQuery(undefined, { skip: userType === "guest" });

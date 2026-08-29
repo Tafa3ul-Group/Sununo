@@ -24,6 +24,17 @@ export interface FilterState {
   /** Device coordinates captured when sortBy="nearest" was chosen */
   lat: number | null;
   lng: number | null;
+  /**
+   * The governorate chosen in the HOME header picker.
+   *
+   * Deliberately separate from `cityId`: that one belongs to the search flow
+   * and, once set, narrows the explore map and the results screen — and it is
+   * cleared from the results screen's chips. Browsing the home page by
+   * governorate must not silently rewrite the customer's search, and clearing a
+   * search chip must not silently move the home page to another governorate.
+   */
+  homeCityId: string | null;
+  homeCityName: string | null;
   /** Whether any filter has been applied */
   isActive: boolean;
 }
@@ -41,6 +52,8 @@ const initialState: FilterState = {
   sortBy: null,
   lat: null,
   lng: null,
+  homeCityId: null,
+  homeCityName: null,
   isActive: false,
 };
 
@@ -63,6 +76,8 @@ const FILTER_KEYS = [
   "sortBy",
   "lat",
   "lng",
+  "homeCityId",
+  "homeCityName",
   "isActive",
 ] as const satisfies readonly (keyof FilterState)[];
 
@@ -93,7 +108,18 @@ const filterSlice = createSlice({
         (state.maxGuests != null && state.maxGuests > 0) ||
         (state.sortBy != null && state.sortBy !== "newest");
     },
-    clearFilters: () => initialState,
+    /**
+     * Clears the SEARCH filters only.
+     *
+     * `homeCityId` survives: it is the governorate the customer picked in the
+     * home header, and "مسح الفلاتر" on the results screen must not silently
+     * move the home page to another governorate.
+     */
+    clearFilters: (state) => ({
+      ...initialState,
+      homeCityId: state.homeCityId,
+      homeCityName: state.homeCityName,
+    }),
   },
 });
 

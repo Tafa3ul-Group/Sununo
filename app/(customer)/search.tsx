@@ -32,6 +32,8 @@ import {
 } from "react-native-safe-area-context";
 import Animated from "react-native-reanimated";
 import { pickTranslation, useDirection } from "@/i18n";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
 
 // Fixed per-row height for FlatList getItemLayout. The card has a fixed height
 // (normalize.height(115)) and its wrapper adds a 16px bottom margin, so each row
@@ -44,6 +46,9 @@ export default function SearchScreen() {
   const isArabic = isRTL;
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  // The featured list is this screen's pre-typing empty state, so it follows the
+  // governorate the home header is showing rather than contradicting it.
+  const homeCityId = useSelector((state: RootState) => state.filter.homeCityId);
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const insets = useSafeAreaInsets();
 
@@ -72,7 +77,7 @@ export default function SearchScreen() {
 
   // Featured chalets shown before the user types anything.
   const { data: featuredRaw = [], isLoading: featuredLoading } =
-    useGetFeaturedChaletsQuery(undefined);
+    useGetFeaturedChaletsQuery(homeCityId ? { cityId: homeCityId } : undefined);
 
   const featuredChalets = useMemo(
     () =>

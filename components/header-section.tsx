@@ -1,6 +1,7 @@
 import {
   SolarDangerCircleBold,
   SolarGalleryBold,
+  SolarAltArrowDownLinear,
   SolarMagnifierBold,
   SolarMapPointBold,
   SolarStarBold,
@@ -21,7 +22,6 @@ import {
   View } from "react-native";
 import { useSelector } from "react-redux";
 import { ThemedText } from "./themed-text";
-import { RotatingSearchPlaceholder } from "./user/rotating-search-placeholder";
 import { CircleBackButton } from "./ui/circle-back-button";
 import { ltrScrollContent, ltrScroller, useDirection, useRtlListOrder } from "@/i18n";
 import { useGetNotificationsQuery } from "@/store/api/customerApiSlice";
@@ -47,6 +47,13 @@ interface HeaderSectionProps {
   showExtra?: boolean;
   marginBottom?: number;
   isHome?: boolean;
+  /**
+   * Home only. The header's search pill was replaced by a governorate picker,
+   * so the label and the tap handler come from the home screen, which owns the
+   * selection and the sheet.
+   */
+  cityLabel?: string;
+  onCityPress?: () => void;
 }
 
 export function HeaderSection({
@@ -67,7 +74,9 @@ export function HeaderSection({
   showLogo = true,
   showExtra = false,
   marginBottom = 0,
-  isHome = false }: HeaderSectionProps) {
+  isHome = false,
+  cityLabel,
+  onCityPress }: HeaderSectionProps) {
   const router = useRouter();
   const { t } = useTranslation();
   const { isRTL, direction, textAlign, inputTextAlign } = useDirection();
@@ -201,34 +210,30 @@ export function HeaderSection({
         <View style={[styles.headerSide, { alignItems: "flex-start" }]}>
           {isHome && (
             <View style={[styles.homeLeftGroup, { flexDirection: "row" }]}>
-              {/* Search and notification swapped: search now takes the bell's
-                  former slot and the bell takes the search's. */}
+              {/* Governorate picker, in the slot the search pill used to hold.
+                  Home is browsed by محافظة now, and this is the only place that
+                  says which one — so it states the name rather than hiding the
+                  choice in a filter sheet. Search did not move: the Explore tab
+                  and the middle tab's search sheet are unchanged. */}
               <TouchableOpacity
-                onPress={() => router.push("/(tabs)/(customer)/explore")}
+                onPress={onCityPress}
+                disabled={!onCityPress}
                 style={[styles.searchTextPill, { flexDirection: "row" }]}
                 activeOpacity={0.85}
               >
-                <SolarMagnifierBold
+                <SolarMapPointBold
                   size={normalize.width(18)}
                   color={Colors.primary}
                 />
-                <RotatingSearchPlaceholder
-                  phrases={
-                    isArabic
-                      ? [
-                          "ابحث عن شاليه...",
-                          "ابحث عن مسبح خاص...",
-                          "ابحث عن إطلالة بحرية...",
-                          "ابحث عن مزرعة للعائلة...",
-                        ]
-                      : [
-                          "Search for a chalet...",
-                          "Search for a private pool...",
-                          "Search for a sea view...",
-                          "Search for a family farm...",
-                        ]
-                  }
-                  textAlign={textAlign}
+                <ThemedText
+                  style={[styles.cityPillText, { textAlign }]}
+                  numberOfLines={1}
+                >
+                  {cityLabel || (isArabic ? "كل المحافظات" : "All governorates")}
+                </ThemedText>
+                <SolarAltArrowDownLinear
+                  size={normalize.width(14)}
+                  color="#64748B"
                 />
               </TouchableOpacity>
               {stateUserType !== "guest" && (
@@ -431,6 +436,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: normalize.width(8),
     backgroundColor: "#F3F4F6" },
+  cityPillText: {
+    flex: 1,
+    fontSize: normalize.font(11),
+    fontFamily: "IBMPlexSansArabic-SemiBold",
+    color: "#334155",
+  },
   searchContainer: {
     paddingHorizontal: Spacing.md,
     marginBottom: Spacing.md },

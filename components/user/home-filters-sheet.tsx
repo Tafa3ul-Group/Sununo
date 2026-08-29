@@ -4,8 +4,7 @@ import { GuestCounter } from "@/components/user/guest-counter";
 import { PriceRangeSlider } from "@/components/user/price-range-slider";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { Colors, Fonts, normalize } from "@/constants/theme";
-import { pickTranslation, useDirection } from "@/i18n";
-import { useGetCitiesQuery } from "@/store/api/apiSlice";
+import { useDirection } from "@/i18n";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
@@ -20,12 +19,16 @@ export const PRICE_MIN = 0;
 export const PRICE_MAX = 500_000;
 export const PRICE_STEP = 25_000;
 
+/**
+ * NOTE: there is deliberately no `cityId` here. The governorate moved to the
+ * home header's picker, which is visible on the screen and persisted — two
+ * controls for the same thing meant one of them was always silently ignored.
+ */
 export interface HomeFilters {
   /** Amenity/category keys, prefixed the way the home query expects. */
   amenities: string[];
   minPrice: number | null;
   maxPrice: number | null;
-  cityId: string | null;
   guests: number | null;
   minRating: number | null;
   minBedrooms: number | null;
@@ -35,7 +38,6 @@ export const EMPTY_HOME_FILTERS: HomeFilters = {
   amenities: [],
   minPrice: null,
   maxPrice: null,
-  cityId: null,
   guests: null,
   minRating: null,
   minBedrooms: null,
@@ -45,7 +47,6 @@ export const EMPTY_HOME_FILTERS: HomeFilters = {
 export const countHomeFilters = (f: HomeFilters) =>
   f.amenities.length +
   (f.minPrice != null || f.maxPrice != null ? 1 : 0) +
-  (f.cityId ? 1 : 0) +
   (f.guests ? 1 : 0) +
   (f.minRating ? 1 : 0) +
   (f.minBedrooms ? 1 : 0);
@@ -84,7 +85,6 @@ export const HomeFiltersSheet = React.forwardRef<
   const insets = useSafeAreaInsets();
   const [draft, setDraft] = useState<HomeFilters>(value);
 
-  const { data: cities = [] } = useGetCitiesQuery();
   const snapPoints = useMemo(() => ["88%"], []);
 
   const renderBackdrop = useCallback(
@@ -130,13 +130,6 @@ export const HomeFiltersSheet = React.forwardRef<
       : `${fmt(draft.minPrice ?? PRICE_MIN)} - ${
           draft.maxPrice == null ? openEndedMax : fmt(draft.maxPrice)
         }`;
-
-  const citySummary = draft.cityId
-    ? pickTranslation(
-        (cities as any[]).find((c) => c.id === draft.cityId),
-        isRTL,
-      ) || any
-    : any;
 
   const Section = ({
     title,
@@ -285,26 +278,6 @@ export const HomeFiltersSheet = React.forwardRef<
                   set("guests", next > 0 ? next : null);
                 }}
               />
-            </View>
-          </Section>
-
-          <Section title={isRTL ? "المدينة" : "City"} summary={citySummary}>
-            <View style={styles.wrap}>
-              <Chip
-                label={any}
-                active={!draft.cityId}
-                onPress={() => set("cityId", null)}
-              />
-              {(cities as any[]).map((city) => (
-                <Chip
-                  key={city.id}
-                  label={pickTranslation(city, isRTL)}
-                  active={draft.cityId === city.id}
-                  onPress={() =>
-                    set("cityId", draft.cityId === city.id ? null : city.id)
-                  }
-                />
-              ))}
             </View>
           </Section>
 
