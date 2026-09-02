@@ -66,12 +66,7 @@
     "noChalets": "No chalets available currently",
     "noChaletsDesc": "Try changing filters or searching for something else",
     "clearFilters": "Clear Filters",
-    "applyingFilter": "Applying filter…",
-    "ownerBanner": {
-      "title": "You have a chalet owner account",
-      "action": "Switch to owner mode",
-      "dismiss": "Dismiss"
-    }
+    "applyingFilter": "Applying filter…"
   },
   "profile": {
     "title": "Profile",

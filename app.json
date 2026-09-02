@@ -8,6 +8,13 @@
     "scheme": "sununo",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/391462b3-5778-4922-81bb-63fe765d070c",
+      "fallbackToCacheTimeout": 0
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.sununo.app",
@@ -17,7 +24,11 @@
         "ITSAppUsesNonExemptEncryption": false
       },
       "appleTeamId": "UD89399RJ8",
-      "googleServicesFile": "./GoogleService-Info.plist"
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "associatedDomains": [
+        "applinks:sununo.app",
+        "webcredentials:sununo.app"
+      ]
     },
     "android": {
       "adaptiveIcon": {
@@ -29,13 +40,32 @@
       "permissions": [
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
-        "FOREGROUND_SERVICE",
-        "ACCESS_COARSE_LOCATION",
-        "ACCESS_FINE_LOCATION",
         "FOREGROUND_SERVICE"
       ],
       "package": "com.sununo.app",
-      "googleServicesFile": "./google-services.json"
+      "googleServicesFile": "./google-services.json",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "sununo.app",
+              "pathPrefix": "/ar/chalets"
+            },
+            {
+              "scheme": "https",
+              "host": "sununo.app",
+              "pathPrefix": "/en/chalets"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
     },
     "web": {
       "output": "static",

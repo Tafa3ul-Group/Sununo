@@ -9,16 +9,12 @@ export const PRIVACY_POLICY_URL = "https://sununo.app/privacy";
 
 // Store listing URLs used by the in-app update sheet. These are FALLBACKS only —
 // the live URLs come from the backend config (GET /config → update[platform].storeUrl),
-// so they can be changed without an app release. Update the iOS id once the app
-// is live on the App Store.
-// BUG: `ios` is still the placeholder id000000000 — it 404s whenever the
-// backend config is missing/unreachable. BLOCKED on the real numeric App Store
-// ID, which does not exist anywhere in this repo (app.json only has the bundle
-// identifier). Guessing one would open the wrong app, which is worse than a
-// 404, so it stays a placeholder until App Store Connect gives us the id.
+// so they can be changed without an app release.
+// The iOS id is the real App Store id for com.sununo.app; the country-less
+// /app/id<id> form resolves to the viewer's own storefront.
 export const STORE_URLS = {
   android: "https://play.google.com/store/apps/details?id=com.sununo.app",
-  ios: "https://apps.apple.com/app/id000000000",
+  ios: "https://apps.apple.com/app/id6770461860",
 } as const;
 
 // Support / admin WhatsApp number. FALLBACK only — the live number is set by

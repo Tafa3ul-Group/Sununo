@@ -111,15 +111,11 @@ describe("link constants", () => {
     expect(new URL(STORE_URLS.ios).hostname).toBe("apps.apple.com");
   });
 
-  // BUG: the iOS fallback store URL is still the placeholder "id000000000",
-  // so the in-app update sheet opens a 404 whenever the backend config
-  // (GET /config -> update.ios.storeUrl) is missing or unreachable.
-  // BLOCKED: the real numeric App Store ID exists nowhere in this repo
-  // (app.json only carries bundleIdentifier "com.sununo.app"), and inventing
-  // one would send users to somebody else's app — strictly worse than a 404.
-  // Fill in STORE_URLS.ios from App Store Connect and flip this to it().
-  it.failing("points at a real App Store listing id", () => {
+  // The fallback is only reached when GET /config is missing or unreachable,
+  // which is exactly when a placeholder id would send the user to a 404.
+  it("points at a real App Store listing id", () => {
     expect(STORE_URLS.ios).not.toMatch(/id0+$/);
+    expect(new URL(STORE_URLS.ios).pathname).toMatch(/\/id\d{6,}$/);
   });
 
   it("keeps the support WhatsApp number in wa.me format", () => {

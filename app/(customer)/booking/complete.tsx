@@ -1297,6 +1297,10 @@ export default function CompleteBookingScreen() {
             ...(appliedCoupon ? { couponCode: appliedCoupon.code } : {}),
             notes,
             audienceType: guestType,
+            // Reports what actually happened rather than asserting consent: the
+            // gate is the only thing that sets this, so a booking that somehow
+            // reached here without it is recorded as having no acceptance.
+            acceptedTerms: termsAccepted,
           }).unwrap();
 
           // Every branch below shows the same receipt sheet, so the code and

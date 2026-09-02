@@ -26,6 +26,7 @@ import { Colors, normalize, Shadows } from "@/constants/theme";
 import { logEvent } from "@/services/analytics";
 import { ANALYTICS_EVENTS, ANALYTICS_CURRENCY } from "@/constants/analytics-events";
 import { getImageSrc, getAvatarSrc } from "@/hooks/useImageSrc";
+import { getChaletVideos } from "@/utils/chalet-videos";
 import { RootState } from "@/store";
 import {
   useAddFavoriteMutation,
@@ -514,7 +515,27 @@ export default function ChaletDetailScreen() {
     return [{ src: getImageSrc(null), blurhash: undefined }];
   }, [chalet.images]);
 
-  const totalImages = images.length;
+  // The tour videos open the header strip instead of sitting in a section of
+  // their own further down: the first one starts playing the moment the chalet
+  // is opened, and the photos come right after them in the same swipe.
+  const chaletVideos = useMemo(() => getChaletVideos(chalet), [chalet]);
+  const videoCount = chaletVideos.length;
+  const media = useMemo(() => {
+    const photos = images.map((img: { src: any; blurhash?: string }) => ({
+      type: "image" as const,
+      src: img.src,
+      blurhash: img.blurhash,
+    }));
+    const videos = chaletVideos.map((video) => ({
+      type: "video" as const,
+      src: video.url,
+      blurhash: undefined as string | undefined,
+      thumbnail: video.thumbnailUrl,
+    }));
+    return [...videos, ...photos];
+  }, [chaletVideos, images]);
+
+  const totalImages = media.length;
   const reviews = reviewsResponse?.data || [];
   const reviewCount =
     chalet.reviewsCount || reviewsResponse?.meta?.total || reviews.length || 0;
@@ -532,10 +553,21 @@ export default function ChaletDetailScreen() {
     }
   }, []);
 
+  // The strip stays put while a tour video is playing; once that one has played
+  // through, the strip carries on rotating as before.
+  const endedVideosRef = useRef<Set<number>>(new Set());
+  const handleVideoEnded = useCallback((slide: number) => {
+    endedVideosRef.current.add(slide);
+  }, []);
+
   const startAutoPlay = useCallback(() => {
     if (totalImages <= 1) return;
     stopAutoPlay();
     autoPlayTimerRef.current = setInterval(() => {
+      const onVideo = activeImageRef.current < videoCount;
+      if (onVideo && !endedVideosRef.current.has(activeImageRef.current)) {
+        return;
+      }
       const next = (activeImageRef.current + 1) % totalImages;
       // scrollToIndex, not a hand-computed offset: under native RTL page 0 sits
       // at the physical right, so `index * width` addresses the wrong photo.
@@ -543,7 +575,7 @@ export default function ChaletDetailScreen() {
       activeImageRef.current = next;
       setActiveImage(next);
     }, 4000);
-  }, [totalImages, stopAutoPlay]);
+  }, [totalImages, stopAutoPlay, videoCount]);
 
   useEffect(() => {
     startAutoPlay();
@@ -707,8 +739,8 @@ export default function ChaletDetailScreen() {
               measured frames and re-mirror the very thing we are fixing. */}
           <FlatList
             ref={bannerScrollRef}
-            data={images}
-            keyExtractor={(_: any, i: number) => `img-${i}`}
+            data={media}
+            keyExtractor={(item: any, i: number) => `${item.type}-${i}`}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
@@ -717,30 +749,48 @@ export default function ChaletDetailScreen() {
             onScrollBeginDrag={stopAutoPlay}
             onScrollEndDrag={startAutoPlay}
             onScrollToIndexFailed={() => {}}
-            renderItem={({ item }: { item: { src: any; blurhash?: string } }) => (
-              <TouchableOpacity
-                activeOpacity={0.9}
-                onPress={() =>
-                  router.push({
-                    pathname: "/(customer)/chalet-details/gallery",
-                    // The gallery loads the photos from the chalet id — without
-                    // it the screen opens empty. (`startIndex` was passed here
-                    // instead, and the gallery never read it.)
-                    params: { id: chaletId },
-                  })
-                }
-              >
-                <AnimatedImage
-                  source={
-                    typeof item.src === "string" ? { uri: item.src } : item.src
+            renderItem={({ item, index }: { item: any; index: number }) =>
+              item.type === "video" ? (
+                <View style={styles.headerVideo}>
+                  <ChaletVideoPlayer
+                    variant="hero"
+                    videoUrl={item.src}
+                    thumbnailUrl={item.thumbnail}
+                    active={activeImage === index}
+                    onEnded={() => handleVideoEnded(index)}
+                    onPress={() =>
+                      router.push({
+                        pathname: "/(customer)/chalet-details/videos",
+                        params: { id: chaletId, index: String(index) },
+                      })
+                    }
+                  />
+                </View>
+              ) : (
+                <TouchableOpacity
+                  activeOpacity={0.9}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/(customer)/chalet-details/gallery",
+                      // The gallery loads the photos from the chalet id —
+                      // without it the screen opens empty. (`startIndex` was
+                      // passed here instead, and the gallery never read it.)
+                      params: { id: chaletId },
+                    })
                   }
-                  style={styles.headerImage}
-                  contentFit="cover"
-                  placeholder={imagePlaceholder(item.blurhash)}
-                  transition={IMAGE_TRANSITION}
-                />
-              </TouchableOpacity>
-            )}
+                >
+                  <AnimatedImage
+                    source={
+                      typeof item.src === "string" ? { uri: item.src } : item.src
+                    }
+                    style={styles.headerImage}
+                    contentFit="cover"
+                    placeholder={imagePlaceholder(item.blurhash)}
+                    transition={IMAGE_TRANSITION}
+                  />
+                </TouchableOpacity>
+              )
+            }
           />
           <CircleBackButton
             style={[styles.backBtnOriginal, { start: 20 }]}
@@ -793,7 +843,7 @@ export default function ChaletDetailScreen() {
             <View
               style={{ flexDirection: "row", gap: 6, alignItems: "center" }}
             >
-              {images.map((_: { src: any }, i: number) => (
+              {media.map((_: any, i: number) => (
                 <Animated.View
                   key={`dot-${i}`}
                   style={[styles.dot, activeImage === i && styles.activeDot]}
@@ -960,20 +1010,6 @@ export default function ChaletDetailScreen() {
               </View>
             </>
           )}
-
-          {/* جولة بالفيديو — only once Bunny has finished encoding, so the
-              player is never pointed at a URL that is not live yet. */}
-          {chalet.videoStatus === "ready" && chalet.videoUrl ? (
-            <>
-              <SectionHeader
-                title={isRTL ? "جولة بالفيديو" : "Video tour"}
-              />
-              <ChaletVideoPlayer
-                videoUrl={chalet.videoUrl}
-                thumbnailUrl={chalet.videoThumbnailUrl}
-              />
-            </>
-          ) : null}
 
           {/* نظرة عامة */}
           {chaletDescription ? (
@@ -1355,6 +1391,9 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFFFFF" },
   imageHeader: { width: SCREEN_WIDTH, height: 350, position: "relative" },
   headerImage: { width: SCREEN_WIDTH, height: "100%" },
+  // Explicit height, not "100%": the video slide is a plain View, and a
+  // percentage height there collapses to nothing inside the list row.
+  headerVideo: { width: SCREEN_WIDTH, height: 350 },
   backBtnOriginal: { position: "absolute", top: 50, zIndex: 10 },
   favoriteBtn: {
     position: "absolute",

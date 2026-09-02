@@ -2018,3 +2018,37 @@ export function SolarHomeBoldDuotone({
     </Svg>
   );
 }
+
+export function SolarVolumeLoudBold({ size = 24, color, ...props }: SolarIconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+      <Path
+        fill={color || SafeColors.primary}
+        d="M3 10a1 1 0 0 1 1-1h2.8L11.1 5.6a1 1 0 0 1 1.6.8v11.2a1 1 0 0 1-1.6.8L6.8 15H4a1 1 0 0 1-1-1z"
+      />
+      <Path
+        stroke={color || SafeColors.primary}
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        d="M15.8 9.2a4 4 0 0 1 0 5.6M18.3 7.2a7.5 7.5 0 0 1 0 9.6"
+      />
+    </Svg>
+  );
+}
+
+export function SolarMutedBold({ size = 24, color, ...props }: SolarIconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...props}>
+      <Path
+        fill={color || SafeColors.primary}
+        d="M3 10a1 1 0 0 1 1-1h2.8L11.1 5.6a1 1 0 0 1 1.6.8v11.2a1 1 0 0 1-1.6.8L6.8 15H4a1 1 0 0 1-1-1z"
+      />
+      <Path
+        stroke={color || SafeColors.primary}
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        d="M15.8 9.4l4.6 5.2M20.4 9.4l-4.6 5.2"
+      />
+    </Svg>
+  );
+}

@@ -38,6 +38,12 @@ type CreateBookingArgs = {
   audienceType?: "FAMILY" | "YOUTH";
   /** Discount code typed by the customer; re-validated server-side. */
   couponCode?: string;
+  /**
+   * That the customer passed the chalet's terms gate. The server records the
+   * moment and snapshots the terms it holds — this flag carries the decision
+   * only, never the text.
+   */
+  acceptedTerms?: boolean;
 };
 
 /** The slice of `onQueryStarted`'s api object the optimistic helpers below use. */

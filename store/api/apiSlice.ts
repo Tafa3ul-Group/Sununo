@@ -324,12 +324,24 @@ export const apiSlice = createApi({
       ],
     }),
 
+    /** Clears every video of the chalet. */
     deleteChaletVideo: builder.mutation({
       query: (chaletId: string) => ({
         url: `/provider/chalets/${chaletId}/video`,
         method: "DELETE",
       }),
       invalidatesTags: (result, error, chaletId) => [
+        { type: "Chalet" as const, id: chaletId },
+      ],
+    }),
+
+    /** Removes one video out of the chalet's reel. */
+    deleteChaletVideoById: builder.mutation({
+      query: ({ chaletId, videoRowId }: { chaletId: string; videoRowId: string }) => ({
+        url: `/provider/chalets/${chaletId}/video/${videoRowId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, { chaletId }) => [
         { type: "Chalet" as const, id: chaletId },
       ],
     }),
@@ -1042,6 +1054,7 @@ export const {
   useCreateChaletVideoTicketMutation,
   useGetChaletVideoStatusQuery,
   useDeleteChaletVideoMutation,
+  useDeleteChaletVideoByIdMutation,
   useUploadChaletImageMutation,
   useUpdateChaletImageMutation,
   useDeleteChaletImageMutation,

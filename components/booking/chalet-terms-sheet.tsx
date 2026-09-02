@@ -68,8 +68,11 @@ const readLang = (value: any, isRTL: boolean): string => {
  * they tap موافق.
  *
  * Everything it shows is read-only text the owner or the platform already
- * publishes; nothing is recorded server-side, because there is no acceptance
- * column on `booking` and no version on `chalet.terms` to record against.
+ * publishes. Tapping موافق sets `acceptedTerms` on the create-booking call, and
+ * the server stamps `booking.termsAcceptedAt` and stores its own copy of the
+ * terms, rules, guest policy and cancellation tiers — the sheet sends the
+ * decision, never the text, so an owner rewriting their terms later cannot
+ * change what a past booking agreed to.
  */
 export const ChaletTermsSheet = forwardRef<BottomSheetModal, ChaletTermsSheetProps>(
   function ChaletTermsSheet(
