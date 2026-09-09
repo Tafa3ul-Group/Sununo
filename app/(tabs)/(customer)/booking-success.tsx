@@ -4,7 +4,7 @@ import { HorizontalCard } from "@/components/user/horizontal-card";
 import { Colors, normalize } from "@/constants/theme";
 import { useFormatTime } from "@/hooks/useFormatTime";
 import { formatDuration } from "@/utils/format";
-import { getImageSrc } from "@/hooks/useImageSrc";
+import { getChaletCover, getImageSrc } from "@/hooks/useImageSrc";
 
 import { Image as ExpoImage } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -348,7 +348,7 @@ export default function BookingSuccessDetailsScreen() {
   const chaletTitle = pickTranslation(chalet, isRTL);
   const chaletLocation = pickTranslation(chalet.region, isRTL);
   const detailedLocation = chaletLocation;
-  const chaletImage = getImageSrc(chalet.images?.[0]?.url);
+  const chaletImage = getImageSrc(getChaletCover(chalet.images)?.url);
 
   // Map coordinates: parse as numbers (the API may send strings) and validate.
   // Fall back to Basra (the app's region) — NEVER Baghdad — when the chalet has

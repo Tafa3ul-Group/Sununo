@@ -23,6 +23,7 @@ import { ThemedText } from "@/components/themed-text";
 import { Colors, normalize, Shadows, Spacing } from "@/constants/theme";
 import {
     useGetCityNamesQuery,
+    useGetRegionsByCityQuery,
     useGetCustomerChaletDetailsQuery,
     useGetChaletAvailabilityQuery } from "@/store/api/customerApiSlice";
 import { setFilters } from "@/store/filterSlice";
@@ -64,6 +65,10 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
   const [activeTab, setActiveTab] = useState<TabType>("WHERE");
   const [selectedCity, setSelectedCity] = useState<string>("");
   const [selectedCityName, setSelectedCityName] = useState<string>("");
+  // The قضاء inside the chosen محافظة. Reset with the city, because a district
+  // from the previous governorate would filter every chalet away.
+  const [selectedRegion, setSelectedRegion] = useState<string>("");
+  const [selectedRegionName, setSelectedRegionName] = useState<string>("");
   const [searchText, setSearchText] = useState("");
   const [whenStep, setWhenStep] = useState(1);
   const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null);
@@ -157,6 +162,22 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
         : (city.nameEn || city.enName || city.name) }));
   }, [citiesData, isArabic]);
 
+  // Only fetched once a governorate is picked — and never for the offline
+  // STATIC_CITIES fallback, whose ids are slugs the API does not know.
+  const cityIsReal = Boolean(citiesData && citiesData.length > 0);
+  const { data: regionsData, isFetching: regionsFetching } = useGetRegionsByCityQuery(
+    selectedCity,
+    { skip: !selectedCity || !cityIsReal },
+  );
+  const regions = useMemo(
+    () =>
+      (Array.isArray(regionsData) ? regionsData : []).map((region: any) => ({
+        id: region.id,
+        name: pickTranslation(region, isArabic) || region.name,
+      })),
+    [regionsData, isArabic],
+  );
+
   // The sheet takes 85% of screen height
   const snapPoints = useMemo(() => ["85%"], []);
 
@@ -227,6 +248,8 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
         onApply({
           cityId: selectedCity || null,
           cityName: selectedCityName || null,
+          regionId: selectedRegion || null,
+          regionName: selectedRegionName || null,
           search: searchText || null,
           checkIn: checkIn ? checkIn.toISOString() : null,
           checkOut: checkOut ? checkOut.toISOString() : null,
@@ -240,7 +263,7 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
       }
       dismiss();
     }
-  }, [activeTab, whenStep, dismiss, onApply, selectedCity, selectedCityName, searchText, adults, selectedPeriod, checkIn, checkOut, sortBy, coords, dispatch, isLocating]);
+  }, [activeTab, whenStep, dismiss, onApply, selectedCity, selectedCityName, selectedRegion, selectedRegionName, searchText, adults, selectedPeriod, checkIn, checkOut, sortBy, coords, dispatch, isLocating]);
 
   const renderBackdrop = useCallback(
     (backdropProps: any) => (
@@ -274,26 +297,72 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
       </View>
 
       {cities.filter((city: any) => city.name.includes(searchText)).map((city: any) => (
-        <TouchableOpacity
-          key={city.id}
-          onPress={() => {
-            setSelectedCity(city.id);
-            setSelectedCityName(city.name);
-          }}
-          style={[
-            styles.cityItem,
-            { flexDirection: rowDirection, alignItems: "center", justifyContent: "flex-start" },
-            selectedCity === city.id && styles.selectedCityItem,
-          ]}
-        >
-          <View style={[styles.cityRight, { marginEnd: 8 }]}>
-            <SolarMapPointBold
-              size={24}
-              color={Colors.primary}
-            />
-          </View>
-          <ThemedText style={[styles.cityName, { textAlign: textAlignment }]}>{city.name}</ThemedText>
-        </TouchableOpacity>
+        <View key={city.id}>
+          <TouchableOpacity
+            onPress={() => {
+              setSelectedCity(city.id);
+              setSelectedCityName(city.name);
+              setSelectedRegion("");
+              setSelectedRegionName("");
+            }}
+            style={[
+              styles.cityItem,
+              { flexDirection: rowDirection, alignItems: "center", justifyContent: "flex-start" },
+              selectedCity === city.id && styles.selectedCityItem,
+            ]}
+          >
+            <View style={[styles.cityRight, { marginEnd: 8 }]}>
+              <SolarMapPointBold
+                size={24}
+                color={Colors.primary}
+              />
+            </View>
+            <ThemedText style={[styles.cityName, { textAlign: textAlignment }]}>{city.name}</ThemedText>
+          </TouchableOpacity>
+
+          {/* The أقضية of the chosen محافظة, inline under it — the pair reads
+              as one answer to "where", and a second screen for a list this
+              short would cost a tap and a back. */}
+          {selectedCity === city.id && regions.length > 0 ? (
+            <View style={styles.regionList}>
+              {regions.map((region: any) => {
+                const isSelected = selectedRegion === region.id;
+                return (
+                  <TouchableOpacity
+                    key={region.id}
+                    onPress={() => {
+                      // Tapping the current قضاء clears it — back to the whole
+                      // governorate, without having to reselect the city.
+                      setSelectedRegion(isSelected ? "" : region.id);
+                      setSelectedRegionName(isSelected ? "" : region.name);
+                    }}
+                    style={[
+                      styles.regionItem,
+                      { flexDirection: rowDirection, alignItems: "center" },
+                      isSelected && styles.selectedRegionItem,
+                    ]}
+                  >
+                    <ThemedText
+                      style={[
+                        styles.regionName,
+                        isSelected && styles.selectedRegionName,
+                        { textAlign: textAlignment },
+                      ]}
+                    >
+                      {region.name}
+                    </ThemedText>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          ) : null}
+
+          {selectedCity === city.id && regionsFetching && regions.length === 0 ? (
+            <ThemedText style={[styles.regionHint, { textAlign: textAlignment }]}>
+              {isArabic ? "جاري تحميل الأقضية..." : "Loading districts..."}
+            </ThemedText>
+          ) : null}
+        </View>
       ))}
     </View>
   );
@@ -817,6 +886,37 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     ...Shadows.small },
+  // Inset and quieter than a governorate row, so the two levels stay readable
+  // in one scroll. Wraps, because a محافظة can hold a dozen أقضية.
+  regionList: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: -4,
+    marginBottom: 12,
+    paddingHorizontal: 12 },
+  regionItem: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    backgroundColor: "#FFFFFF" },
+  selectedRegionItem: {
+    borderColor: Colors.primary,
+    backgroundColor: "#E6EFFF" },
+  regionName: {
+    fontSize: 12,
+    fontFamily: "IBMPlexSansArabic-Medium",
+    color: Colors.text.primary },
+  selectedRegionName: { color: Colors.primary },
+  regionHint: {
+    fontSize: 11,
+    fontFamily: "IBMPlexSansArabic-Medium",
+    color: Colors.text.muted,
+    marginTop: -4,
+    marginBottom: 12,
+    paddingHorizontal: 12 },
   calendarFooter: {
     marginTop: 20,
     marginBottom: 40,

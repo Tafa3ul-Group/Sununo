@@ -6,6 +6,7 @@ import { FeaturedCard } from "@/components/user/featured-card";
 import { useDirection } from "@/i18n";
 import { SolarFireBold } from "@/components/icons/solar-icons";
 import { Colors, normalize } from "@/constants/theme";
+import { getChaletCover } from "@/hooks/useImageSrc";
 import { formatChaletLocation, getStartingPrice } from "@/utils/format";
 import {
   useGetFavoriteIdsQuery,
@@ -65,7 +66,7 @@ export default function FeaturedScreen() {
           id: c.id,
           title: c.name,
           location: formatChaletLocation(c, isRTL),
-          image: c.images?.[0]?.url ?? c.images?.[0],
+          image: getChaletCover(c.images)?.url ?? c.images?.[0],
           price: getStartingPrice(c),
           // Carried through so the card can show the discount badge; the API
           // leaves it undefined when no campaign is running.

@@ -14,6 +14,8 @@ const apply = (state: FilterState, payload: Partial<FilterState>): FilterState =
 const sheetApply = (over: Partial<FilterState> = {}): Partial<FilterState> => ({
   cityId: null,
   cityName: null,
+  regionId: null,
+  regionName: null,
   search: null,
   checkIn: null,
   checkOut: null,
@@ -31,6 +33,8 @@ const fullyPopulated = (): FilterState =>
     sheetApply({
       cityId: "city-1",
       cityName: "الرياض",
+      regionId: "region-1",
+      regionName: "أبو الخصيب",
       search: "شاليه بمسبح",
       checkIn: "2026-08-20T00:00:00.000Z",
       checkOut: "2026-08-22T00:00:00.000Z",
@@ -46,6 +50,8 @@ describe("filterSlice — initial state", () => {
     expect(init()).toEqual({
       cityId: null,
       cityName: null,
+      regionId: null,
+      regionName: null,
       search: null,
       checkIn: null,
       checkOut: null,
@@ -58,6 +64,9 @@ describe("filterSlice — initial state", () => {
       lng: null,
       homeCityId: null,
       homeCityName: null,
+      homeRegionId: null,
+      homeRegionName: null,
+      homeCityAutoResolved: false,
       isActive: false,
     });
   });
@@ -330,7 +339,13 @@ describe("filterSlice — removing one filter while others remain", () => {
 
   it("removing pills one by one only deactivates after the last contributing field is gone", () => {
     let state = fullyPopulated();
-    state = apply(state, { ...state, cityId: null, cityName: null });
+    state = apply(state, {
+      ...state,
+      cityId: null,
+      cityName: null,
+      regionId: null,
+      regionName: null,
+    });
     expect(state.isActive).toBe(true);
     state = apply(state, { ...state, checkIn: null, checkOut: null });
     expect(state.isActive).toBe(true);
@@ -348,6 +363,8 @@ describe("filterSlice — removing one filter while others remain", () => {
       ...populated,
       cityId: null,
       cityName: null,
+      regionId: null,
+      regionName: null,
       search: null,
       checkIn: null,
       period: null,
@@ -402,6 +419,43 @@ describe("filterSlice — clearFilters", () => {
     expect(state.isActive).toBe(false);
   });
 
+  it("counts a search قضاء as an active filter even without a city", () => {
+    const state = apply(init(), { regionId: "region-1", regionName: "أبو الخصيب" });
+    expect(state.isActive).toBe(true);
+  });
+
+  it("does not make the home قضاء count as an active filter", () => {
+    const state = apply(init(), {
+      homeCityId: "city-basra",
+      homeCityName: "البصرة",
+      homeRegionId: "region-1",
+      homeRegionName: "أبو الخصيب",
+    });
+    expect(state.isActive).toBe(false);
+  });
+
+  it("keeps the home قضاء and the resolved-once flag through clearFilters", () => {
+    // Both belong to the header picker, not to the search flow: «مسح الفلاتر»
+    // on the results screen must not move the home page, and it must not make
+    // the next launch re-apply the location default over a manual choice.
+    const state = filterReducer(
+      apply(fullyPopulated(), {
+        homeCityId: "city-basra",
+        homeCityName: "البصرة",
+        homeRegionId: "region-1",
+        homeRegionName: "أبو الخصيب",
+        homeCityAutoResolved: true,
+      }),
+      clearFilters(),
+    );
+    expect(state.homeCityId).toBe("city-basra");
+    expect(state.homeRegionId).toBe("region-1");
+    expect(state.homeRegionName).toBe("أبو الخصيب");
+    expect(state.homeCityAutoResolved).toBe(true);
+    // The search-side قضاء is cleared with everything else.
+    expect(state.regionId).toBeNull();
+  });
+
   it("ignores whatever payload it is handed", () => {
     const state = filterReducer(
       fullyPopulated(),
@@ -418,6 +472,8 @@ describe("filterSlice — clearFilters", () => {
     expect(init()).toEqual({
       cityId: null,
       cityName: null,
+      regionId: null,
+      regionName: null,
       search: null,
       checkIn: null,
       checkOut: null,
@@ -430,6 +486,9 @@ describe("filterSlice — clearFilters", () => {
       lng: null,
       homeCityId: null,
       homeCityName: null,
+      homeRegionId: null,
+      homeRegionName: null,
+      homeCityAutoResolved: false,
       isActive: false,
     });
     expect(cleared).toEqual(init());

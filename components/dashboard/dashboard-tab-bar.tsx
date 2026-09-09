@@ -4,7 +4,7 @@ import {
   SolarPenBold
 } from '@/components/icons/solar-icons';
 import { Colors, normalize } from '@/constants/theme';
-import { getImageSrc } from '@/hooks/useImageSrc';
+import { getChaletCover, getImageSrc } from '@/hooks/useImageSrc';
 import { RootState } from '@/store';
 import { setSelectedChalet } from '@/store/authSlice';
 import { useGetOwnerChaletsQuery } from '@/store/api/apiSlice';
@@ -66,7 +66,7 @@ export const DashboardTabBar: React.FC<any> = ({ state, navigation, descriptors 
         if (current?.images?.[0]?.url) {
           dispatch(setSelectedChalet({
             ...selectedChalet,
-            image: current.images[0].url
+            image: getChaletCover(current.images)?.url
           }));
         }
       }

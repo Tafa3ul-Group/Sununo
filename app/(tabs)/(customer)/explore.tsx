@@ -60,7 +60,7 @@ import { HostContactCard } from "@/components/user/host-contact-card";
 import { useFormatTime } from "@/hooks/useFormatTime";
 import Svg, { Path } from "react-native-svg";
 
-import { getImageSrc, getAvatarSrc } from "@/hooks/useImageSrc";
+import { getChaletCover, getImageSrc, getAvatarSrc } from "@/hooks/useImageSrc";
 import { getStartingPrice } from "@/utils/format";
 import * as Location from "expo-location";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -182,6 +182,13 @@ function ActiveFilterBanner({
       items.push({
         id: "city",
         text: filter.cityName,
+        icon: <SolarMapPointBold size={14} color={Colors.primary} />,
+      });
+    }
+    if (filter.regionName) {
+      items.push({
+        id: "region",
+        text: filter.regionName,
         icon: <SolarMapPointBold size={14} color={Colors.primary} />,
       });
     }
@@ -316,6 +323,7 @@ export default function ExploreScreen() {
       minPrice: minPrice ? parseInt(minPrice) : undefined,
       maxPrice: maxPrice ? parseInt(maxPrice) : undefined,
       cityId: activeFilters?.cityId || undefined,
+      regionId: activeFilters?.regionId || undefined,
       zoom: Math.round(zoom),
     });
 
@@ -400,7 +408,7 @@ export default function ExploreScreen() {
       })
       .map((item: any) => {
         const mainImage =
-          item.images?.find((img: any) => img.isMain) || item.images?.[0];
+          getChaletCover(item.images);
 
         return {
           id: item.id,
@@ -751,7 +759,7 @@ export default function ExploreScreen() {
         // leaves it undefined when no campaign is running.
         discount: item.discount,
         rating: item.rating || 0,
-        image: getImageSrc(item.images?.[0]?.url),
+        image: getImageSrc(getChaletCover(item.images)?.url),
         color: CARD_COLORS[index % CARD_COLORS.length],
       })),
     [similarResponse, isRTL],

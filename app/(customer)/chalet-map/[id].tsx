@@ -2,7 +2,7 @@ import { HeaderSection } from "@/components/header-section";
 import { ErrorState } from "@/components/ui/error-state";
 import { AppMap } from "@/components/user/app-map";
 import { Colors } from "@/constants/theme";
-import { getImageSrc } from "@/hooks/useImageSrc";
+import { getChaletCover, getImageSrc } from "@/hooks/useImageSrc";
 import { getStartingPrice } from "@/utils/format";
 import { useGetCustomerChaletDetailsQuery } from "@/store/api/customerApiSlice";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -48,7 +48,7 @@ export default function ChaletMapScreen() {
   const markers = useMemo(() => {
     if (!chalet?.id) return [];
     const mainImage =
-      chalet.images?.find((img: any) => img.isMain) || chalet.images?.[0];
+      getChaletCover(chalet.images);
     return [
       {
         id: String(chalet.id),

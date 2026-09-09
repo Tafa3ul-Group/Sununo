@@ -14,6 +14,7 @@ import {
     useGetFeaturedChaletsQuery,
     useSearchChaletsQuery,
 } from "@/store/api/customerApiSlice";
+import { getChaletCover } from "@/hooks/useImageSrc";
 import { formatChaletLocation, getStartingPrice } from "@/utils/format";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -94,8 +95,8 @@ export default function SearchScreen() {
           // leaves it undefined when no campaign is running.
           discount: chalet.discount,
           rating: chalet.rating ?? chalet.averageRating ?? 0,
-          image: chalet.images?.[0]?.url ?? chalet.images?.[0],
-          blurhash: chalet.images?.[0]?.blurhash,
+          image: getChaletCover(chalet.images)?.url ?? chalet.images?.[0],
+          blurhash: getChaletCover(chalet.images)?.blurhash,
         })),
     [featuredRaw, isArabic],
   );
@@ -114,9 +115,9 @@ export default function SearchScreen() {
       // The few amenities the card lists ("يحتوي على: ..."), trimmed server-side.
       features: chalet.features,
       image:
-        chalet.images?.[0]?.url ||
+        getChaletCover(chalet.images)?.url ||
         "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500&auto=format&fit=crop",
-      blurhash: chalet.images?.[0]?.blurhash,
+      blurhash: getChaletCover(chalet.images)?.blurhash,
     }));
   }, [chaletsResponse, isArabic]);
 

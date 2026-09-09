@@ -4,7 +4,7 @@ import { SecondaryButton } from "@/components/user/secondary-button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SolarReviewsHeartBold } from "@/components/icons/solar-icons";
 import { Colors } from "@/constants/theme";
-import { getImageSrc } from "@/hooks/useImageSrc";
+import { getChaletCover, getImageSrc } from "@/hooks/useImageSrc";
 import { useGetCustomerBookingsQuery } from "@/store/api/customerApiSlice";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
@@ -57,7 +57,7 @@ export default function ReviewsScreen() {
         chaletTitle: pickTranslation(booking.chalet, isArabic),
         chaletLocation: pickTranslation(booking.chalet?.region, isArabic),
         price: booking.chalet?.basePrice ? Number(booking.chalet.basePrice).toLocaleString() : '0',
-        chaletImage: getImageSrc(booking.chalet?.images?.[0]?.url)?.uri || '',
+        chaletImage: getImageSrc(getChaletCover(booking.chalet?.images)?.url)?.uri || '',
         userName: booking.customer?.name || meName,
         userAvatar: booking.customer?.imageUrl || meAvatar,
         rating: 0,
@@ -82,7 +82,7 @@ export default function ReviewsScreen() {
           ? (booking.chalet?.region?.nameAr || booking.chalet?.region?.name || '')
           : (booking.chalet?.region?.nameEn || booking.chalet?.region?.name || ''),
         price: booking.chalet?.basePrice ? Number(booking.chalet.basePrice).toLocaleString() : '0',
-        chaletImage: getImageSrc(booking.chalet?.images?.[0]?.url)?.uri || '',
+        chaletImage: getImageSrc(getChaletCover(booking.chalet?.images)?.url)?.uri || '',
         userName: booking.review?.customer?.name || booking.customer?.name || meName,
         userAvatar: booking.review?.customer?.imageUrl || booking.customer?.imageUrl || meAvatar,
         rating: booking.review?.rating || 0,

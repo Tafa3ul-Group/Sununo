@@ -34,6 +34,8 @@ export default function CustomerLayout() {
     dispatch(setFilters({
       cityId: filters.cityId || null,
       cityName: filters.cityName || null,
+      regionId: filters.regionId || null,
+      regionName: filters.regionName || null,
       search: filters.search || null,
       checkIn: filters.checkIn || null,
       checkOut: filters.checkOut || null,

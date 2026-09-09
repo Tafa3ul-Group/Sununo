@@ -13,7 +13,7 @@ import { HorizontalCardSkeleton } from '@/components/ui/skeleton-loader';
 import Animated from 'react-native-reanimated';
 import { HeaderSection } from '@/components/header-section';
 import { useGetCustomerFavoritesQuery, useToggleFavoriteMutation } from '@/store/api/customerApiSlice';
-import { getImageSrc } from '@/hooks/useImageSrc';
+import { getChaletCover, getImageSrc } from '@/hooks/useImageSrc';
 import { formatChaletLocation, getStartingPrice } from "@/utils/format";
 import { pickTranslation, useDirection } from '@/i18n';
 
@@ -58,7 +58,7 @@ export default function FavoritesScreen() {
         rating: chalet.rating ?? chalet.averageRating ?? 0,
         // The few amenities the card lists ("يحتوي على: ...").
         features: chalet.features ?? chalet.chaletFeatures,
-        image: getImageSrc(chalet.images?.[0]?.url),
+        image: getImageSrc(getChaletCover(chalet.images)?.url),
         color: '#22C55E' };
     });
   }, [favoritesResponse, isRTL]);

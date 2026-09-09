@@ -25,7 +25,7 @@ import { SecondaryButton } from "@/components/user/secondary-button";
 import { Colors, normalize, Shadows } from "@/constants/theme";
 import { logEvent } from "@/services/analytics";
 import { ANALYTICS_EVENTS, ANALYTICS_CURRENCY } from "@/constants/analytics-events";
-import { getImageSrc, getAvatarSrc } from "@/hooks/useImageSrc";
+import { getChaletCover, getImageSrc, getAvatarSrc, sortChaletImages } from "@/hooks/useImageSrc";
 import { getChaletVideos } from "@/utils/chalet-videos";
 import { RootState } from "@/store";
 import {
@@ -505,9 +505,14 @@ export default function ChaletDetailScreen() {
   // Use chalet images from API or fallback
   // Each entry keeps its blurhash beside the source so the header strip can
   // paint that photo's own blurred stand-in while it loads.
+  //
+  // Sorted, not taken as they arrive: the header strip opens on the FIRST entry,
+  // and that has to be the photo marked as the cover — not whichever row the
+  // database happened to return first.
   const images = useMemo(() => {
-    if (chalet.images && chalet.images.length > 0) {
-      return chalet.images.map((img: any) => ({
+    const ordered = sortChaletImages(chalet.images as any[]);
+    if (ordered.length > 0) {
+      return ordered.map((img: any) => ({
         src: getImageSrc(img.url),
         blurhash: img.blurhash as string | undefined,
       }));
@@ -1323,7 +1328,7 @@ export default function ChaletDetailScreen() {
                 ? Number(item.basePrice).toLocaleString()
                 : "0",
               rating: item.rating || 0,
-              image: getImageSrc(item.images?.[0]?.url),
+              image: getImageSrc(getChaletCover(item.images)?.url),
               color: CARD_COLORS[index % CARD_COLORS.length],
             }))}
             onPressCard={(id) => router.push(`/chalet-details/${id}`)}

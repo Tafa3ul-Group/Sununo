@@ -53,7 +53,7 @@ import {
   type HomeSortKey,
 } from "@/components/user/home-sort-sheet";
 import { Colors, Fonts, normalize } from "@/constants/theme";
-import { getImageSrc } from "@/hooks/useImageSrc";
+import { getChaletCover, getImageSrc } from "@/hooks/useImageSrc";
 import { formatChaletLocation, getStartingPrice } from "@/utils/format";
 import { openBannerLink } from "@/utils/banner-link";
 import { logEvent } from "@/services/analytics";
@@ -69,6 +69,7 @@ import {
   useGetFeaturedChaletsQuery,
   useGetCityNamesQuery,
   useGetLatestBookingsQuery,
+  useLazyGetNearestCityQuery,
   useToggleFavoriteMutation,
 } from "@/store/api/customerApiSlice";
 // Fallback colors for chalet cards
@@ -121,6 +122,11 @@ export default function HomeScreen() {
   // would leave "كل المحافظات" unmarked in the picker.
   const homeCityId = useSelector((state: RootState) => state.filter.homeCityId) ?? null;
   const storedCityName = useSelector((state: RootState) => state.filter.homeCityName) ?? null;
+  const homeRegionId = useSelector((state: RootState) => state.filter.homeRegionId) ?? null;
+  const storedRegionName = useSelector((state: RootState) => state.filter.homeRegionName) ?? null;
+  const homeCityAutoResolved = useSelector(
+    (state: RootState) => state.filter.homeCityAutoResolved ?? false,
+  );
   const citySheetRef = React.useRef<BottomSheetModal>(null);
 
   // The name is resolved from the live city list rather than read back from
@@ -136,13 +142,95 @@ export default function HomeScreen() {
     return match ? pickTranslation(match, isRTL) || storedCityName : storedCityName;
   }, [cityList, homeCityId, isRTL, storedCityName]);
 
+  // The قضاء list is only fetched once a governorate is chosen, so the name is
+  // read back from storage rather than resolved from a list the header does not
+  // have. It is only a label; the id is what filters.
+  const homeRegionName = storedRegionName;
+
+  // What the header pill reads: «بغداد · أبو غريب» once a قضاء is picked, the
+  // governorate alone otherwise, and nothing at all on «كل المحافظات».
+  const locationLabel = React.useMemo(() => {
+    if (!homeCityName) return null;
+    return homeRegionName ? `${homeCityName} · ${homeRegionName}` : homeCityName;
+  }, [homeCityName, homeRegionName]);
+
   const handleCitySelect = React.useCallback(
-    (city: { id: string | null; name: string | null }) => {
-      dispatch(setStoredFilters({ homeCityId: city.id, homeCityName: city.name }));
+    (
+      city: { id: string | null; name: string | null },
+      region: { id: string | null; name: string | null },
+    ) => {
+      dispatch(
+        setStoredFilters({
+          homeCityId: city.id,
+          homeCityName: city.name,
+          homeRegionId: region.id,
+          homeRegionName: region.name,
+          // A deliberate pick — including «كل المحافظات» — settles the question
+          // for good, so the location default never runs over it again.
+          homeCityAutoResolved: true,
+        }),
+      );
+      // Closed on either pick: the محافظة and the قضاء are one answer to
+      // "where", and the header reopens the sheet to change it.
       citySheetRef.current?.dismiss();
     },
     [dispatch],
   );
+
+  /**
+   * One-time default: open the header on the customer's OWN governorate.
+   *
+   * Runs once ever (`homeCityAutoResolved` is persisted), only while nothing has
+   * been chosen, and gives up quietly on a denied permission or a failed lookup
+   * — «كل المحافظات» stays the fallback, exactly as before.
+   *
+   * This is the one place the home screen asks for location. The sort control
+   * still does not: "الأقرب لك" is an explicit request, whereas this is the
+   * screen's opening state and the client asked for it to follow the customer.
+   */
+  const [resolveNearestCity] = useLazyGetNearestCityQuery();
+  const nearestAttempted = React.useRef(false);
+
+  React.useEffect(() => {
+    if (homeCityAutoResolved || homeCityId || nearestAttempted.current) return;
+    nearestAttempted.current = true;
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          // Recorded as resolved so the prompt is never shown twice; the
+          // customer can still pick a governorate by hand.
+          if (!cancelled) dispatch(setStoredFilters({ homeCityAutoResolved: true }));
+          return;
+        }
+
+        const position = await Location.getCurrentPositionAsync({});
+        const nearest = await resolveNearestCity({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        }).unwrap();
+
+        if (cancelled) return;
+        dispatch(
+          setStoredFilters({
+            homeCityAutoResolved: true,
+            // A null answer (no governorate has coordinates) leaves the header
+            // on «كل المحافظات» rather than writing a broken selection.
+            ...(nearest?.id
+              ? { homeCityId: nearest.id, homeCityName: nearest.name ?? null }
+              : {}),
+          }),
+        );
+      } catch {
+        if (!cancelled) dispatch(setStoredFilters({ homeCityAutoResolved: true }));
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [homeCityAutoResolved, homeCityId, dispatch, resolveNearestCity]);
 
   const insets = useSafeAreaInsets();
 
@@ -251,13 +339,14 @@ export default function HomeScreen() {
   // Infinite scroll paging for the chalets list
   const [page, setPage] = React.useState(1);
 
-  // Paging is per-governorate: the list accumulates pages, so switching city on
-  // page 3 must not fetch page 3 of the new one. Adjusting during render (a
-  // supported React pattern) rather than in an effect means the stale request is
-  // never issued at all — an effect would let one render commit first.
-  const [pagedCityId, setPagedCityId] = React.useState(homeCityId);
-  if (pagedCityId !== homeCityId) {
-    setPagedCityId(homeCityId);
+  // Paging is per-location: the list accumulates pages, so switching محافظة or
+  // قضاء on page 3 must not fetch page 3 of the new one. Adjusting during render
+  // (a supported React pattern) rather than in an effect means the stale request
+  // is never issued at all — an effect would let one render commit first.
+  const locationKey = `${homeCityId ?? ""}|${homeRegionId ?? ""}`;
+  const [pagedLocationKey, setPagedLocationKey] = React.useState(locationKey);
+  if (pagedLocationKey !== locationKey) {
+    setPagedLocationKey(locationKey);
     setPage(1);
   }
   const [rawChalets, setRawChalets] = React.useState<any[]>([]);
@@ -268,8 +357,8 @@ export default function HomeScreen() {
   // Reset paging whenever the selected filters change.
   React.useEffect(() => {
     setPage(1);
-    // `homeCityId` is deliberately absent: it resets the page during render
-    // above, which happens before any request goes out.
+    // `homeCityId`/`homeRegionId` are deliberately absent: they reset the page
+    // during render above, which happens before any request goes out.
   }, [filtersKey, sortBy]);
 
   const queryParams = React.useMemo(() => {
@@ -295,6 +384,9 @@ export default function HomeScreen() {
     // The governorate comes from the header picker alone — the filter sheet no
     // longer offers one, so there is exactly one source and nothing to contradict.
     if (homeCityId) params.cityId = homeCityId;
+    // The قضاء narrows it further. Sent only alongside a governorate, which is
+    // the only state the picker can produce.
+    if (homeRegionId) params.regionId = homeRegionId;
     if (filters.guests) params.maxAdults = filters.guests;
     if (filters.minRating) params.minRating = filters.minRating;
     if (filters.minBedrooms) params.minBedrooms = filters.minBedrooms;
@@ -309,7 +401,7 @@ export default function HomeScreen() {
     }
     return params;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filtersKey, amenityIdMap, page, sortBy, coords, homeCityId]);
+  }, [filtersKey, amenityIdMap, page, sortBy, coords, homeCityId, homeRegionId]);
 
   // Fetch data from the backend
   const { data: bannersResponse, isFetching: bannersFetching, refetch: refetchBanners } = useGetBannersQuery(undefined);
@@ -365,8 +457,8 @@ export default function HomeScreen() {
             // HorizontalCard expects `title`/`location` (it accepts the {ar,en} object)
             title: c.name,
             location: formatChaletLocation(c, isRTL),
-            image: c.images?.[0]?.url ?? c.images?.[0],
-            blurhash: c.images?.[0]?.blurhash,
+            image: getChaletCover(c.images)?.url ?? c.images?.[0],
+            blurhash: getChaletCover(c.images)?.blurhash,
             price: getStartingPrice(c),
             // Carried through so the card can show the discount badge; the API
             // leaves it undefined when no campaign is running.
@@ -398,8 +490,8 @@ export default function HomeScreen() {
           // HorizontalCard accepts the {ar,en} object for title/location.
           title: c.name,
           location: formatChaletLocation(c, isRTL),
-          image: c.images?.[0]?.url ?? c.images?.[0],
-          blurhash: c.images?.[0]?.blurhash,
+          image: getChaletCover(c.images)?.url ?? c.images?.[0],
+          blurhash: getChaletCover(c.images)?.blurhash,
           price: getStartingPrice(c),
           // Carried through so the card can show the discount badge; the API
           // leaves it undefined when no campaign is running.
@@ -562,7 +654,7 @@ export default function HomeScreen() {
       // `averageRating`, so both are read or the card shows every chalet as new.
       rating: chalet.rating ?? chalet.averageRating ?? 0,
       color: CARD_COLORS[index % CARD_COLORS.length],
-      image: getImageSrc(chalet.images?.[0]?.url),
+      image: getImageSrc(getChaletCover(chalet.images)?.url),
       // The few amenities the card lists ("يحتوي على: ..."); the list endpoint
       // trims them to what fits, so they are passed straight through.
       features: chalet.features,
@@ -583,7 +675,7 @@ export default function HomeScreen() {
         .map((c: any) => ({
           id: c.id,
           title: c.name,
-          image: getImageSrc(c.images?.[0]?.url),
+          image: getImageSrc(getChaletCover(c.images)?.url),
           coordinates: [Number(c.longitude), Number(c.latitude)] as [
             number,
             number,
@@ -880,15 +972,21 @@ export default function HomeScreen() {
         <ThemedText style={styles.emptyDesc}>
           {t("home.noChaletsDesc")}
         </ThemedText>
-        {(countHomeFilters(filters) > 0 || !!homeCityId) && (
+        {(countHomeFilters(filters) > 0 || !!homeCityId || !!homeRegionId) && (
           <PressableScale
             style={styles.clearButton}
             onPress={() => {
               setFilters(EMPTY_HOME_FILTERS);
-              // The governorate is the likeliest reason this list is empty, and
-              // it lives outside `filters` — without this the reset button left
-              // the screen exactly as empty as it found it.
-              dispatch(setStoredFilters({ homeCityId: null, homeCityName: null }));
+              // The location is the likeliest reason this list is empty, and it
+              // lives outside `filters` — without this the reset button left the
+              // screen exactly as empty as it found it. The قضاء goes with the
+              // محافظة: it means nothing on its own.
+              dispatch(setStoredFilters({
+                homeCityId: null,
+                homeCityName: null,
+                homeRegionId: null,
+                homeRegionName: null,
+              }));
             }}
           >
             <ThemedText style={styles.clearButtonText}>
@@ -906,7 +1004,7 @@ export default function HomeScreen() {
       {/* Sticky header — stays pinned while the list scrolls underneath. */}
       <HeaderSection
         isHome
-        cityLabel={homeCityName || undefined}
+        cityLabel={locationLabel || undefined}
         onCityPress={() => citySheetRef.current?.present()}
       />
       <View style={{ flex: 1 }}>
@@ -975,6 +1073,7 @@ export default function HomeScreen() {
       <HomeCitySheet
         ref={citySheetRef}
         selectedCityId={homeCityId}
+        selectedRegionId={homeRegionId}
         onSelect={handleCitySelect}
       />
     </View>

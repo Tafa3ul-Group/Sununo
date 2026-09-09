@@ -98,5 +98,36 @@ export function getAvatarSrc(imageId: string | null | undefined): any {
   return result || PERSON_PLACEHOLDER;
 }
 
+/**
+ * A chalet's photos with the cover (`isMain`) first, then the owner's order.
+ *
+ * The chalet routes already return them this way, but not every payload comes
+ * from one — a booking, a favourite and a review each carry a nested chalet
+ * whose images are in whatever order the join produced, and responses cached on
+ * the device predate the change. Applying the rule here means `[0]` is the
+ * cover on every screen, without each one having to remember to look.
+ */
+// The index signature matters: chalet images reach these helpers as `any` from
+// the API layer, so TypeScript cannot infer `T` and falls back to the
+// constraint. Without it, every `.url` / `.blurhash` on the result is a type
+// error even though the value carries them.
+type ChaletImageLike = { isMain?: boolean; order?: number; [key: string]: any };
+
+export function sortChaletImages<T extends ChaletImageLike>(
+  images?: T[] | null,
+): T[] {
+  if (!Array.isArray(images)) return [];
+  return [...images].sort(
+    (a, b) => Number(!!b?.isMain) - Number(!!a?.isMain) || (a?.order ?? 0) - (b?.order ?? 0),
+  );
+}
+
+/** The chalet's cover photo — what a card thumbnail and the detail banner open on. */
+export function getChaletCover<T extends ChaletImageLike>(
+  images?: T[] | null,
+): T | undefined {
+  return sortChaletImages(images)[0];
+}
+
 // Export default for easier importing (hook version)
 export default useImageSrc;

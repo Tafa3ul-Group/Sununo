@@ -1,5 +1,5 @@
 import { normalize, Spacing } from "@/constants/theme";
-import { getImageSrc } from "@/hooks/useImageSrc";
+import { getChaletCover, getImageSrc } from "@/hooks/useImageSrc";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React from "react";
@@ -30,7 +30,7 @@ export function ChaletCard({ chalet, onPress, style }: ChaletCardProps) {
 
   if (!chalet) return null;
 
-  const imageSource = getImageSrc(chalet.images?.[0]?.url || chalet.image);
+  const imageSource = getImageSrc(getChaletCover(chalet.images)?.url || chalet.image);
   const title =
     typeof chalet.title === "object"
       ? isRTL

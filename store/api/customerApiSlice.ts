@@ -151,6 +151,7 @@ export const customerApi = apiSlice.injectEndpoints({
         page?: number;
         limit?: number;
         cityId?: string;
+        regionId?: string;
         maxAdults?: number;
         checkIn?: string;
         period?: string;
@@ -855,9 +856,29 @@ export const customerApi = apiSlice.injectEndpoints({
       providesTags: ["Chalet"],
     }),
 
-    /** Get regions for a specific city */
+    /** Get regions (أقضية) for a specific city */
     getRegionsByCity: builder.query({
       query: (cityId: string) => `/cities/${cityId}/regions`,
+      // Same unwrapping as getCityNames above: the route answers with a bare
+      // array today, and the pickers that read this render nothing at all if a
+      // response envelope ever appears in front of it.
+      transformResponse: unwrapListResponse,
+    }),
+
+    /**
+     * The governorate closest to a pair of coordinates, so the home header can
+     * open on where the customer actually is instead of «كل المحافظات».
+     *
+     * Resolved server-side rather than by comparing city centres on the device:
+     * one definition of "nearest", and it can be improved to a real boundary
+     * lookup without shipping a new build. Returns `null` when no governorate
+     * has coordinates yet, which the caller reads as "leave it on All".
+     */
+    getNearestCity: builder.query({
+      query: (args: { lat: number; lng: number }) => ({
+        url: "/cities/nearest",
+        params: { lat: args.lat, lng: args.lng },
+      }),
     }),
 
     // ── Banners ───────────────────────────────────────────────────────────
@@ -1004,6 +1025,7 @@ export const {
   // Location
   useGetCityNamesQuery,
   useGetRegionsByCityQuery,
+  useLazyGetNearestCityQuery,
   useLazyGetRegionsByCityQuery,
 
   // Banners

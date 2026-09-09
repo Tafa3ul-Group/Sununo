@@ -11,7 +11,7 @@ import {
 import { ThemedText } from "@/components/themed-text";
 import { HorizontalCard } from "@/components/user/horizontal-card";
 import { Colors, Shadows } from "@/constants/theme";
-import { getImageSrc } from "@/hooks/useImageSrc";
+import { getChaletCover, getImageSrc } from "@/hooks/useImageSrc";
 import { formatChaletLocation, getStartingPrice } from "@/utils/format";
 
 import { RootState } from "@/store";
@@ -66,6 +66,7 @@ export default function FilterResultsScreen() {
   const queryParams = useMemo(() => {
     const params: any = { page: 1, limit: 30 };
     if (activeFilters?.cityId) params.cityId = activeFilters.cityId;
+    if (activeFilters?.regionId) params.regionId = activeFilters.regionId;
     if (activeFilters?.search) params.search = activeFilters.search;
     if (activeFilters?.maxGuests) {
       params.maxGuests = activeFilters.maxGuests;
@@ -130,7 +131,7 @@ export default function FilterResultsScreen() {
         // Carried through so the card can show the discount badge; the API
         // leaves it undefined when no campaign is running.
         discount: chalet.discount,
-        image: getImageSrc(chalet.images?.[0]?.url || chalet.image || ""),
+        image: getImageSrc(getChaletCover(chalet.images)?.url || chalet.image || ""),
         images: chalet.images || [],
         // The few amenities the card lists ("يحتوي على: ..."), trimmed server-side.
         features: chalet.features,
@@ -189,9 +190,29 @@ export default function FilterResultsScreen() {
         id: "city",
         text: activeFilters.cityName,
         icon: <SolarMapPointBold size={14} color={Colors.primary} />,
+        // The قضاء goes with the محافظة: it means nothing on its own, and
+        // leaving it behind would keep filtering a governorate the customer
+        // has just cleared.
         onRemove: () =>
           dispatch(
-            setFilters({ ...activeFilters, cityId: null, cityName: null }),
+            setFilters({
+              ...activeFilters,
+              cityId: null,
+              cityName: null,
+              regionId: null,
+              regionName: null,
+            }),
+          ),
+      });
+    }
+    if (activeFilters?.regionName) {
+      pills.push({
+        id: "region",
+        text: activeFilters.regionName,
+        icon: <SolarMapPointBold size={14} color={Colors.primary} />,
+        onRemove: () =>
+          dispatch(
+            setFilters({ ...activeFilters, regionId: null, regionName: null }),
           ),
       });
     }

@@ -5,6 +5,10 @@ export interface FilterState {
   cityId: string | null;
   /** City name for display */
   cityName: string | null;
+  /** District (قضاء) inside `cityId`, chosen in the same WHERE tab */
+  regionId: string | null;
+  /** District name for display */
+  regionName: string | null;
   /** Free-text search */
   search: string | null;
   /** Check-in date ISO string */
@@ -35,6 +39,22 @@ export interface FilterState {
    */
   homeCityId: string | null;
   homeCityName: string | null;
+  /**
+   * The قضاء inside `homeCityId`, chosen in the same header picker.
+   *
+   * Always null when `homeCityId` is null — a district only means something
+   * inside its governorate, and the picker clears it whenever the governorate
+   * changes.
+   */
+  homeRegionId: string | null;
+  homeRegionName: string | null;
+  /**
+   * Whether the governorate has already been resolved from the device's
+   * location once. The header opens on the customer's own محافظة, and that is
+   * a ONE-TIME default: someone who then picks «كل المحافظات» must not have
+   * their choice overwritten on the next launch.
+   */
+  homeCityAutoResolved: boolean;
   /** Whether any filter has been applied */
   isActive: boolean;
 }
@@ -42,6 +62,8 @@ export interface FilterState {
 const initialState: FilterState = {
   cityId: null,
   cityName: null,
+  regionId: null,
+  regionName: null,
   search: null,
   checkIn: null,
   checkOut: null,
@@ -54,6 +76,9 @@ const initialState: FilterState = {
   lng: null,
   homeCityId: null,
   homeCityName: null,
+  homeRegionId: null,
+  homeRegionName: null,
+  homeCityAutoResolved: false,
   isActive: false,
 };
 
@@ -66,6 +91,8 @@ const initialState: FilterState = {
 const FILTER_KEYS = [
   "cityId",
   "cityName",
+  "regionId",
+  "regionName",
   "search",
   "checkIn",
   "checkOut",
@@ -78,6 +105,9 @@ const FILTER_KEYS = [
   "lng",
   "homeCityId",
   "homeCityName",
+  "homeRegionId",
+  "homeRegionName",
+  "homeCityAutoResolved",
   "isActive",
 ] as const satisfies readonly (keyof FilterState)[];
 
@@ -102,6 +132,7 @@ const filterSlice = createSlice({
       // Mark as active if any meaningful filter is set
       state.isActive =
         !!state.cityId ||
+        !!state.regionId ||
         !!state.search ||
         !!state.checkIn ||
         !!state.period ||
@@ -119,6 +150,12 @@ const filterSlice = createSlice({
       ...initialState,
       homeCityId: state.homeCityId,
       homeCityName: state.homeCityName,
+      homeRegionId: state.homeRegionId,
+      homeRegionName: state.homeRegionName,
+      // Survives too: this records that the one-time location default already
+      // ran, and resetting it would make the next launch re-apply it over a
+      // governorate the customer has since chosen for themselves.
+      homeCityAutoResolved: state.homeCityAutoResolved,
     }),
   },
 });

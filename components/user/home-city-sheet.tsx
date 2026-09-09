@@ -2,7 +2,10 @@ import { SolarCheckCircleBoldDuotone, SolarMapPointBold } from "@/components/ico
 import { ThemedText } from "@/components/themed-text";
 import { Colors, normalize } from "@/constants/theme";
 import { pickTranslation, useDirection } from "@/i18n";
-import { useGetCityNamesQuery } from "@/store/api/customerApiSlice";
+import {
+  useGetCityNamesQuery,
+  useGetRegionsByCityQuery,
+} from "@/store/api/customerApiSlice";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
@@ -21,19 +24,30 @@ const SNAP_POINTS = ["70%"];
 export interface HomeCitySheetProps {
   /** null === "كل المحافظات". */
   selectedCityId: string | null;
-  onSelect: (city: { id: string | null; name: string | null }) => void;
+  /** null === "كل الأقضية" within the chosen governorate. */
+  selectedRegionId: string | null;
+  onSelect: (
+    city: { id: string | null; name: string | null },
+    region: { id: string | null; name: string | null },
+  ) => void;
 }
 
 /**
- * The governorate picker behind the home header.
+ * The governorate → قضاء picker behind the home header.
  *
  * It replaced the header's search pill, so this is now the customer's only
  * statement of "where I am browsing" — the featured strip and the recommended
  * list both follow it. Search itself did not move: the Explore tab and the
  * middle tab's search sheet are unchanged.
+ *
+ * The قضاء list appears under the governorate once one is chosen, rather than
+ * on a second screen: it is a short list, and the pair reads as one answer to
+ * "where". A governorate on its own means "the whole governorate", which is
+ * why picking a city commits immediately and only the district row needs a
+ * second tap.
  */
 export const HomeCitySheet = forwardRef<BottomSheetModal, HomeCitySheetProps>(
-  function HomeCitySheet({ selectedCityId, onSelect }, ref) {
+  function HomeCitySheet({ selectedCityId, selectedRegionId, onSelect }, ref) {
     const { isRTL, rowDirection, textAlign } = useDirection();
     const { data: citiesRaw, isLoading } = useGetCityNamesQuery(undefined);
 
@@ -42,7 +56,24 @@ export const HomeCitySheet = forwardRef<BottomSheetModal, HomeCitySheetProps>(
       [citiesRaw],
     );
 
-    const row = (
+    // `skip` rather than a conditional hook: with no governorate chosen there
+    // is no قضاء list to fetch, and «كل المحافظات» has no districts of its own.
+    const { data: regionsRaw, isFetching: regionsFetching } =
+      useGetRegionsByCityQuery(selectedCityId as string, { skip: !selectedCityId });
+
+    const regions = useMemo(
+      () => (Array.isArray(regionsRaw) ? regionsRaw : []).filter(Boolean),
+      [regionsRaw],
+    );
+
+    const selectedCityName = useMemo(() => {
+      const match = cities.find((c: any) => c?.id === selectedCityId);
+      return match ? pickTranslation(match, isRTL) || match.name : null;
+    }, [cities, selectedCityId, isRTL]);
+
+    // Choosing a governorate always resets the قضاء: a district from the
+    // previous one would filter every chalet away.
+    const cityRow = (
       id: string | null,
       label: string,
       key: string,
@@ -53,7 +84,9 @@ export const HomeCitySheet = forwardRef<BottomSheetModal, HomeCitySheetProps>(
           key={key}
           style={[styles.row, { flexDirection: rowDirection }, isSelected && styles.rowActive]}
           activeOpacity={0.8}
-          onPress={() => onSelect({ id, name: id ? label : null })}
+          onPress={() =>
+            onSelect({ id, name: id ? label : null }, { id: null, name: null })
+          }
         >
           <View style={[styles.rowIcon, isSelected && styles.rowIconActive]}>
             <SolarMapPointBold
@@ -69,6 +102,40 @@ export const HomeCitySheet = forwardRef<BottomSheetModal, HomeCitySheetProps>(
           {isSelected && (
             <SolarCheckCircleBoldDuotone
               size={normalize.width(20)}
+              color={Colors.primary}
+            />
+          )}
+        </TouchableOpacity>
+      );
+    };
+
+    const regionRow = (id: string | null, label: string, key: string) => {
+      const isSelected = (selectedRegionId ?? null) === id;
+      return (
+        <TouchableOpacity
+          key={key}
+          style={[
+            styles.row,
+            styles.regionRow,
+            { flexDirection: rowDirection },
+            isSelected && styles.rowActive,
+          ]}
+          activeOpacity={0.8}
+          onPress={() =>
+            onSelect(
+              { id: selectedCityId, name: selectedCityName },
+              { id, name: id ? label : null },
+            )
+          }
+        >
+          <ThemedText
+            style={[styles.rowLabel, isSelected && styles.rowLabelActive, { textAlign }]}
+          >
+            {label}
+          </ThemedText>
+          {isSelected && (
+            <SolarCheckCircleBoldDuotone
+              size={normalize.width(18)}
               color={Colors.primary}
             />
           )}
@@ -95,8 +162,8 @@ export const HomeCitySheet = forwardRef<BottomSheetModal, HomeCitySheetProps>(
             </ThemedText>
             <ThemedText style={[styles.subtitle, { textAlign }]}>
               {isRTL
-                ? "الشاليهات المميّزة والمقترحة تتبع المحافظة المختارة."
-                : "Featured and recommended chalets follow the governorate you pick."}
+                ? "الشاليهات المميّزة والمقترحة تتبع المحافظة المختارة، وتكدر تضيّقها على قضاء."
+                : "Featured and recommended chalets follow the governorate you pick — narrow it to a district if you like."}
             </ThemedText>
           </View>
 
@@ -111,10 +178,43 @@ export const HomeCitySheet = forwardRef<BottomSheetModal, HomeCitySheetProps>(
               </View>
             ) : (
               <>
-                {row(null, isRTL ? "كل المحافظات" : "All governorates", "all")}
+                {cityRow(null, isRTL ? "كل المحافظات" : "All governorates", "all")}
                 {cities.map((city: any) =>
-                  row(city.id, pickTranslation(city, isRTL) || city.name, city.id),
+                  cityRow(city.id, pickTranslation(city, isRTL) || city.name, city.id),
                 )}
+
+                {selectedCityId ? (
+                  <View style={styles.regionsBlock}>
+                    <ThemedText style={[styles.sectionLabel, { textAlign }]}>
+                      {isRTL
+                        ? `أقضية ${selectedCityName ?? ""}`.trim()
+                        : `Districts of ${selectedCityName ?? ""}`.trim()}
+                    </ThemedText>
+
+                    {regionsFetching && regions.length === 0 ? (
+                      <View style={styles.loading}>
+                        <ActivityIndicator color={Colors.primary} />
+                      </View>
+                    ) : regions.length === 0 ? (
+                      <ThemedText style={[styles.emptyRegions, { textAlign }]}>
+                        {isRTL
+                          ? "ماكو أقضية مسجّلة لهذه المحافظة."
+                          : "No districts recorded for this governorate."}
+                      </ThemedText>
+                    ) : (
+                      <>
+                        {regionRow(null, isRTL ? "كل الأقضية" : "All districts", "all-regions")}
+                        {regions.map((region: any) =>
+                          regionRow(
+                            region.id,
+                            pickTranslation(region, isRTL) || region.name,
+                            region.id,
+                          ),
+                        )}
+                      </>
+                    )}
+                  </View>
+                ) : null}
               </>
             )}
           </BottomSheetScrollView>
@@ -176,4 +276,26 @@ const styles = StyleSheet.create({
     color: "#334155",
   },
   rowLabelActive: { color: Colors.primary },
+  regionsBlock: { marginTop: 10, gap: 6 },
+  sectionLabel: {
+    fontSize: normalize.font(11),
+    fontFamily: "IBMPlexSansArabic-Bold",
+    color: "#64748B",
+    paddingHorizontal: 4,
+    paddingTop: 6,
+  },
+  // Inset and lighter than a governorate row, so the two levels stay legible
+  // in one scroll.
+  regionRow: {
+    marginHorizontal: 10,
+    paddingVertical: 8,
+    backgroundColor: "#F8FAFC",
+  },
+  emptyRegions: {
+    fontSize: normalize.font(11),
+    fontFamily: "IBMPlexSansArabic-Medium",
+    color: "#94A3B8",
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+  },
 });

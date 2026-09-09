@@ -22,6 +22,7 @@ import { MainTabs, TabType } from "@/components/user/MainTabs";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { RangeCalendar } from "@/components/user/range-calendar";
 import { Colors, normalize } from "@/constants/theme";
+import { getChaletCover } from "@/hooks/useImageSrc";
 
 import { RootState } from "@/store";
 import { ImagePrepareError, prepareImageUpload } from "@/utils/prepare-image-upload";
@@ -1623,7 +1624,7 @@ export default function CompleteBookingScreen() {
             ? Number(chaletDetails.basePrice).toLocaleString()
             : "0",
           image:
-            chaletDetails?.images?.[0]?.url ||
+            getChaletCover(chaletDetails?.images)?.url ||
             "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500&auto=format&fit=crop",
         }}
         style={styles.chaletCardInstance}

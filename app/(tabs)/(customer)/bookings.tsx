@@ -4,7 +4,7 @@ import { ThemedText } from '@/components/themed-text';
 import { BookingCardSkeleton } from '@/components/ui/skeleton-loader';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Colors, normalize, Shadows } from '@/constants/theme';
-import { getImageSrc } from '@/hooks/useImageSrc';
+import { getChaletCover, getImageSrc } from '@/hooks/useImageSrc';
 
 import { useGetCustomerBookingsQuery } from '@/store/api/customerApiSlice';
 import { formatPrice } from '@/utils/format';
@@ -153,7 +153,7 @@ const BookingCard = React.memo(function BookingCard({
   const chaletName = (isArabic ? booking.chalet?.nameAr : booking.chalet?.nameEn) || '';
   const location = (isArabic ? booking.chalet?.locationAr : booking.chalet?.locationEn) || '';
   const shape = SHAPES_CONFIG[2];
-  const imageSource = getImageSrc(booking.chalet?.images?.[0]?.url || booking.chalet?.images?.[0]);
+  const imageSource = getImageSrc(getChaletCover(booking.chalet?.images)?.url || booking.chalet?.images?.[0]);
   const statusBadge = getPaymentStatusBadge(booking, t, isArabic);
 
   return (
