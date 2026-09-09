@@ -97,6 +97,37 @@ const compactAmount = (value: number, isRTL: boolean): string => {
   return value.toLocaleString();
 };
 
+/**
+ * Rows of a settings card, with the hairlines drawn between them.
+ *
+ * Defined at MODULE level, not inside the screen. While these lived in the
+ * render body every state update minted a new component type, so React threw
+ * the whole subtree away and mounted a fresh one — eleven times a second while
+ * the deadline stepper repeated. A remounted button can never be told that the
+ * touch which began on its predecessor has ended, which is why onPressOut,
+ * then gesture-handler's onFinalize, and then even the raw responder's
+ * onResponderRelease all appeared to "never fire". The runaway was this, not
+ * the touch layer.
+ */
+const SettingsGroup = ({ children }: { children: React.ReactNode }) => {
+  const items = React.Children.toArray(children).filter(Boolean);
+  return (
+    <View style={styles.settingsGroup}>
+      {items.map((child, index) => (
+        <React.Fragment key={index}>
+          {child}
+          {index < items.length - 1 && <View style={styles.settingsSeparator} />}
+        </React.Fragment>
+      ))}
+    </View>
+  );
+};
+
+/** Grey explainer under a group — where iOS puts the "why" for a setting. */
+const SettingsFooterBase = ({ children, textAlign }: { children: React.ReactNode; textAlign: any }) => (
+  <Text style={[styles.settingsFooter, { textAlign }]}>{children}</Text>
+);
+
 export default function ChaletDetailsScreen() {
   const { isRTL, textAlign, inputTextAlign } = useDirection();
   const { showConfirm } = useConfirmationDialog();
@@ -660,29 +691,117 @@ export default function ChaletDetailsScreen() {
       });
   }, [chaletId, isRTL, refetch, updateChalet]);
 
-  const stepPaymentDeadline = useCallback((delta: number) => {
+  /**
+   * Returns false when the value is already at the end of the range.
+   *
+   * `haptic` is off while a hold repeats. Firing one per tick meant eleven
+   * native calls a second on top of eleven re-renders, and that congestion is
+   * what made the release feel late: the touch-ended callback queued behind a
+   * backlog of ticks, so the number kept climbing for a moment after the finger
+   * was already off the glass.
+   */
+  const stepPaymentDeadline = useCallback((delta: number, haptic = true) => {
     const next = Math.min(PAYMENT_DEADLINE_MAX, Math.max(0, deadlineValueRef.current + delta));
-    if (next === deadlineValueRef.current) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (next === deadlineValueRef.current) return false;
+    if (haptic) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     deadlineValueRef.current = next;
     setPaymentDeadlineMinutes(next);
 
     if (deadlineSaveTimer.current) clearTimeout(deadlineSaveTimer.current);
     deadlineSaveTimer.current = setTimeout(commitPaymentDeadline, 700);
+    return true;
   }, [commitPaymentDeadline]);
 
-  // Press = one step; hold = repeat, so reaching 24h doesn't take 96 taps.
-  const startDeadlineHold = useCallback((delta: number) => {
-    stepPaymentDeadline(delta);
-    holdDelayTimer.current = setTimeout(() => {
-      holdRepeatTimer.current = setInterval(() => stepPaymentDeadline(delta), 90);
-    }, 450);
-  }, [stepPaymentDeadline]);
+  /** Set the instant a finger leaves, before the gesture state machine settles. */
+  const holdReleasedRef = useRef(false);
 
   const stopDeadlineHold = useCallback(() => {
+    holdReleasedRef.current = true;
     if (holdDelayTimer.current) { clearTimeout(holdDelayTimer.current); holdDelayTimer.current = null; }
     if (holdRepeatTimer.current) { clearInterval(holdRepeatTimer.current); holdRepeatTimer.current = null; }
   }, []);
+
+  /**
+   * Begins the hold-to-repeat. Called once the gesture below has recognised a
+   * long press, so there is no delay timer of its own.
+   *
+   * Also stops at either end of the range, and after MAX_HOLD_STEPS as a last
+   * resort — one full sweep of the range is already far more than a person
+   * holds a button for.
+   */
+  /** Touch-down: one step straight away, then repeat once it is clearly a hold. */
+  const startDeadlineHold = useCallback((delta: number) => {
+    // Belt and braces: a new touch must never inherit a previous interval.
+    stopDeadlineHold();
+    holdReleasedRef.current = false;
+    stepPaymentDeadline(delta);
+    holdDelayTimer.current = setTimeout(() => startDeadlineRepeatRef.current?.(delta), 450);
+  }, [stepPaymentDeadline, stopDeadlineHold]);
+
+  const startDeadlineRepeat = useCallback((delta: number) => {
+    if (holdReleasedRef.current) return;
+
+    // Backstop only — `onResponderRelease` / `onResponderTerminate` end the
+    // repeat the moment the finger leaves. Nine seconds of holding is far more
+    // than anyone does on purpose, so if this ever fires again something has
+    // gone wrong upstream and the damage stays small and visible.
+    const MAX_HOLD_STEPS = 100;
+    let steps = 0;
+
+    holdReleasedRef.current = false;
+
+    holdRepeatTimer.current = setInterval(() => {
+      // Checked first: if the finger came up while this tick was waiting its
+      // turn on a busy JS thread, the tick must not still spend a step.
+      if (holdReleasedRef.current) { stopDeadlineHold(); return; }
+      const moved = stepPaymentDeadline(delta, false);
+      if (!moved || ++steps >= MAX_HOLD_STEPS) stopDeadlineHold();
+    }, 90);
+  }, [stepPaymentDeadline, stopDeadlineHold]);
+
+  // Lets startDeadlineHold reach the repeat without either declaration having
+  // to come first.
+  const startDeadlineRepeatRef = useRef<((d: number) => void) | null>(null);
+  startDeadlineRepeatRef.current = startDeadlineRepeat;
+
+  /**
+   * Tap = one step, hold = repeat — wired to the RAW RESPONDER API.
+   *
+   * Two earlier attempts could not end the repeat reliably:
+   *   - TouchableOpacity: a held finger drifts, the ScrollView claims the
+   *     touch, and `onPressOut` never arrives.
+   *   - react-native-gesture-handler: `onStart` fired, but `onTouchesUp`,
+   *     `onTouchesCancelled` and `onFinalize` were never delivered at all
+   *     (measured — the repeat only ever ended on its own step cap).
+   *
+   * The responder system is what Touchable is built on, and it answers both
+   * cases directly: `onResponderRelease` for a normal lift, and
+   * `onResponderTerminate` for the ScrollView taking over — which we invite by
+   * granting `onResponderTerminationRequest`. Refusing that request is what
+   * strands the touch; letting it through is what guarantees we hear the end.
+   */
+  const deadlineHoldHandlers = useCallback(
+    (delta: number) => ({
+      onStartShouldSetResponder: () => true,
+      // Movement must not hand the touch away silently — but when the
+      // ScrollView does ask, say yes so `onResponderTerminate` fires.
+      onMoveShouldSetResponder: () => false,
+      onResponderTerminationRequest: () => true,
+      onResponderGrant: () => startDeadlineHold(delta),
+      onResponderRelease: () => stopDeadlineHold(),
+      onResponderTerminate: () => stopDeadlineHold(),
+    }),
+    [startDeadlineHold, stopDeadlineHold],
+  );
+
+  const decreaseDeadlineHandlers = useMemo(
+    () => deadlineHoldHandlers(-PAYMENT_DEADLINE_STEP),
+    [deadlineHoldHandlers],
+  );
+  const increaseDeadlineHandlers = useMemo(
+    () => deadlineHoldHandlers(PAYMENT_DEADLINE_STEP),
+    [deadlineHoldHandlers],
+  );
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -878,23 +997,11 @@ export default function ChaletDetailsScreen() {
    * rather than by each row so they can be inset past the icon tile — without
    * that inset the list reads as a stack of boxes instead of one group.
    */
-  const SettingsGroup = ({ children }: { children: React.ReactNode }) => {
-    const items = React.Children.toArray(children).filter(Boolean);
-    return (
-      <View style={styles.settingsGroup}>
-        {items.map((child, index) => (
-          <React.Fragment key={index}>
-            {child}
-            {index < items.length - 1 && <View style={styles.settingsSeparator} />}
-          </React.Fragment>
-        ))}
-      </View>
-    );
-  };
-
-  /** Grey explainer under a group — where iOS puts the "why" for a setting. */
-  const SettingsFooter = ({ children }: { children: React.ReactNode }) => (
-    <Text style={[styles.settingsFooter, { textAlign }]}>{children}</Text>
+  const SettingsFooter = useCallback(
+    ({ children }: { children: React.ReactNode }) => (
+      <SettingsFooterBase textAlign={textAlign}>{children}</SettingsFooterBase>
+    ),
+    [textAlign],
   );
 
   return (
@@ -905,6 +1012,13 @@ export default function ChaletDetailsScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
         bounces={true}
+        // The scroll starting is the one event that is always delivered when a
+        // held finger drifts — and it is the very thing that orphans the
+        // deadline stepper's long-press (the gesture is taken over and never
+        // finalized). Ending the repeat here closes that hole directly rather
+        // than waiting for a release that is no longer coming.
+        onScrollBeginDrag={stopDeadlineHold}
+        scrollEventThrottle={16}
       >
         <View style={styles.contentBodyNew}>
 
@@ -1332,22 +1446,28 @@ export default function ChaletDetailsScreen() {
                     </View>
                   </View>
 
-                  {/* ±15 minutes; press and hold to run through the range fast */}
+                  {/* ±15 minutes; tap for one step, press and hold to run
+                      through the range fast. Both are gestures, not
+                      Touchables — see deadlineHoldHandlers for why.
+                      Neither button is `disabled`: one that turns disabled
+                      under a finger that is still down is another way to lose
+                      the release. They stay pressable and simply stop moving at
+                      the ends of the range. */}
                   <View style={[styles.deadlineStepper, { alignSelf: 'stretch' }]}>
-                    <TouchableOpacity
-                      onPressIn={() => startDeadlineHold(-PAYMENT_DEADLINE_STEP)}
-                      onPressOut={stopDeadlineHold}
-                      disabled={paymentDeadlineMinutes <= 0}
-                      style={[
-                        styles.deadlineStepButton,
-                        paymentDeadlineMinutes <= 0 && styles.deadlineStepButtonDisabled,
-                      ]}
-                    >
-                      <Text style={[
-                        styles.deadlineStepSign,
-                        paymentDeadlineMinutes <= 0 && styles.deadlineStepSignDisabled,
-                      ]}>−</Text>
-                    </TouchableOpacity>
+                    <View
+                        {...decreaseDeadlineHandlers}
+                        accessibilityRole="button"
+                        accessibilityState={{ disabled: paymentDeadlineMinutes <= 0 }}
+                        style={[
+                          styles.deadlineStepButton,
+                          paymentDeadlineMinutes <= 0 && styles.deadlineStepButtonDisabled,
+                        ]}
+                      >
+                        <Text style={[
+                          styles.deadlineStepSign,
+                          paymentDeadlineMinutes <= 0 && styles.deadlineStepSignDisabled,
+                        ]}>−</Text>
+                      </View>
 
                     <View style={{ flex: 1, alignItems: 'center' }}>
                       <Text style={styles.deadlineValueText}>
@@ -1358,20 +1478,20 @@ export default function ChaletDetailsScreen() {
                       </Text>
                     </View>
 
-                    <TouchableOpacity
-                      onPressIn={() => startDeadlineHold(PAYMENT_DEADLINE_STEP)}
-                      onPressOut={stopDeadlineHold}
-                      disabled={paymentDeadlineMinutes >= PAYMENT_DEADLINE_MAX}
-                      style={[
-                        styles.deadlineStepButton,
-                        paymentDeadlineMinutes >= PAYMENT_DEADLINE_MAX && styles.deadlineStepButtonDisabled,
-                      ]}
-                    >
-                      <Text style={[
-                        styles.deadlineStepSign,
-                        paymentDeadlineMinutes >= PAYMENT_DEADLINE_MAX && styles.deadlineStepSignDisabled,
-                      ]}>+</Text>
-                    </TouchableOpacity>
+                    <View
+                        {...increaseDeadlineHandlers}
+                        accessibilityRole="button"
+                        accessibilityState={{ disabled: paymentDeadlineMinutes >= PAYMENT_DEADLINE_MAX }}
+                        style={[
+                          styles.deadlineStepButton,
+                          paymentDeadlineMinutes >= PAYMENT_DEADLINE_MAX && styles.deadlineStepButtonDisabled,
+                        ]}
+                      >
+                        <Text style={[
+                          styles.deadlineStepSign,
+                          paymentDeadlineMinutes >= PAYMENT_DEADLINE_MAX && styles.deadlineStepSignDisabled,
+                        ]}>+</Text>
+                      </View>
                   </View>
                 </View>
 
