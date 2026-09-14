@@ -1,49 +1,23 @@
 import { HeaderSection } from '@/components/header-section';
-import { SolarCalendarBold, SolarStarBold } from "@/components/icons/solar-icons";
+import { SolarCalendarBold } from "@/components/icons/solar-icons";
 import { ThemedText } from '@/components/themed-text';
-import { BookingCardSkeleton } from '@/components/ui/skeleton-loader';
+import { HorizontalCardSkeleton } from '@/components/ui/skeleton-loader';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Colors, normalize, Shadows } from '@/constants/theme';
-import { getChaletCover, getImageSrc } from '@/hooks/useImageSrc';
+import { Colors, normalize } from '@/constants/theme';
+import { HorizontalCard } from '@/components/user/horizontal-card';
+import { getChaletCover } from '@/hooks/useImageSrc';
 
 import { useGetCustomerBookingsQuery } from '@/store/api/customerApiSlice';
-import { formatPrice } from '@/utils/format';
+import { formatChaletLocation, formatPrice, getStartingPrice } from '@/utils/format';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { RefreshControl, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Platform, RefreshControl, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDirection } from '@/i18n';
-import Svg, { ClipPath, Defs, G, Path, Image as SvgImage } from 'react-native-svg';
 
-const SHAPES_CONFIG = [
-  {
-    viewBox: "0 0 132 114",
-    width: 132,
-    height: 114,
-    path: "M78.7725 2C93.5962 2.00003 106.408 5.61551 115.473 12.8877C124.473 20.1084 130 31.1096 130 46.416C130 63.2797 118.126 78.4796 102.275 90.1074C86.4772 101.697 67.2293 109.354 53.5078 111.289C39.5004 113.265 27.4662 111.112 18.5918 104.994C9.7592 98.905 3.76485 88.6866 2.18652 73.9004C0.804578 60.9535 7.14433 42.9634 20.3965 28.1426C33.584 13.3941 53.4373 2 78.7725 2Z"
-  },
-  {
-    viewBox: "0 0 114 123",
-    width: 114,
-    height: 123,
-    path: "M9.85254 5.08691C14.303 2.08842 19.387 1.22337 25.6074 2.71387C31.9189 4.22619 39.3773 8.16551 48.3428 14.8115H48.3438C54.6721 19.5016 59.3722 22.5133 64.3926 24.5186C69.4237 26.5281 74.6565 27.4793 81.9785 28.2354C89.7218 29.0339 96.005 30.5378 100.782 32.6768C105.556 34.8141 108.71 37.5308 110.416 40.7041C113.775 46.9529 112.057 56.2142 102.497 69.0352C99.6073 72.9109 97.0067 77.4337 94.4863 82.1016C91.9384 86.8204 89.5052 91.6208 86.8477 96.2988C81.6969 105.366 76.0449 113.313 68.3633 117.591L67.6133 117.993C54.4846 124.782 38.8124 119.692 32.084 106.556L31.7705 105.924C27.2088 96.4439 25.495 86.9985 23.3047 77.1934C21.1955 67.7511 18.6595 58.0937 12.5859 48.4355L11.9873 47.501L11.2256 46.3125C7.41426 40.2506 3.62112 32.4694 2.40234 24.999C1.11592 17.1139 2.71008 9.9001 9.85254 5.08691Z"
-  },
-  {
-    viewBox: "0 0 141 129",
-    width: 141,
-    height: 129,
-    path: "M77.0459 14.0977C86.8144 5.10784 99.2037 0.386687 110.42 2.50195C121.804 4.64892 131.346 13.705 135.513 30.8994C138.687 44.002 138.736 58.6286 136.25 71.833C133.77 85.0021 128.722 96.9923 121.482 104.651C109.519 117.308 92.5368 124.708 75.1924 126.547C57.8513 128.385 39.9659 124.682 26.1904 114.895C2.53265 98.088 -5.36999 65.526 9.69531 44.0059C15.0767 36.3186 23.5058 33.0498 41.1289 30.5859C50.2739 29.3071 56.0975 28.0172 61.1807 25.6816C66.2509 23.3521 70.7222 19.918 77.0449 14.0977H77.0459Z"
-  },
-  {
-    viewBox: "0 0 132 126",
-    width: 132,
-    height: 126,
-    path: "M45.1748 5C48.9809 2.41469 54.6673 0.982912 62.8779 2.84766C70.4802 4.57348 75.4484 9.06905 81.3945 13.4883C87.2987 17.8763 93.9042 21.9016 104.228 21.4062L104.28 21.4043L104.333 21.3984C120.021 19.8142 133.035 33.7153 129.367 47.7393C128.655 50.463 127.55 53.3543 126.367 56.3721C125.202 59.3471 123.956 62.4548 123.058 65.4512C121.307 71.2878 120.589 77.6274 125.296 82.2793C127.44 84.8711 127.477 88.8856 125.707 92.084C123.986 95.1932 120.816 97.0877 116.83 95.8877C111.601 94.3134 107.617 94.271 104.883 96.8135C103.591 98.015 102.787 99.6241 102.217 101.367C101.646 103.112 101.258 105.162 100.908 107.387L100.9 107.436L100.896 107.484C99.755 118.107 88.0985 126.131 76.5039 123.498H76.5049C74.3748 123.014 72.1029 122.076 70.127 120.898C68.1253 119.706 66.5866 118.364 65.7725 117.163C61.1156 110.292 54.8357 108.673 49.4014 108.942C44.1787 109.201 39.4229 111.27 38.0879 111.665C35.0844 112.554 32.9939 112.421 31.54 111.9C30.0969 111.384 29.0576 110.405 28.293 109.181C26.6928 106.617 26.4785 103.251 26.543 102.284C26.8935 97.0298 25.7253 92.917 23.0537 89.542C20.4512 86.2542 16.5664 83.8564 11.8789 81.6816C4.56946 78.219 0.68994 70.5626 2.4043 63.3154L2.49023 62.9707C3.54135 58.9508 6.45448 55.6746 9.89355 53.1914L10.5879 52.7051C12.8209 51.1901 14.7537 49.1186 15.9199 46.3135C17.0847 43.5117 17.4215 40.1308 16.7168 36.0977C16.1566 32.892 16.9632 31.0495 18.1934 29.8545C19.5488 28.5377 21.7224 27.7099 24.3896 27.2539L24.4336 27.2461L24.4775 27.2363C28.5411 26.3545 31.653 25.1675 33.9434 23.1895C36.2879 21.1647 37.5472 18.5108 38.3164 15.1855C39.1493 11.5847 41.3211 7.61766 45.1748 5Z"
-  }
-];
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -150,55 +124,21 @@ const BookingCard = React.memo(function BookingCard({
   onViewDetails
 }: BookingCardProps) {
   const { textAlign, textAlignEnd } = useDirection();
-  const chaletName = (isArabic ? booking.chalet?.nameAr : booking.chalet?.nameEn) || '';
-  const location = (isArabic ? booking.chalet?.locationAr : booking.chalet?.locationEn) || '';
-  const shape = SHAPES_CONFIG[2];
-  const imageSource = getImageSrc(getChaletCover(booking.chalet?.images)?.url || booking.chalet?.images?.[0]);
   const statusBadge = getPaymentStatusBadge(booking, t, isArabic);
 
   return (
     <Animated.View
       style={styles.bookingCardContainer}
     >
-      {/* Top Block: Image + Chalet Info */}
-      <View style={[styles.topBlock, { flexDirection: 'row' }]}>
-        <View style={styles.imageBlock}>
-          <Svg width={115} height={100} viewBox={shape.viewBox}>
-            <Defs>
-              <ClipPath id={`clip-${booking.id}`}>
-                <Path d={shape.path} />
-              </ClipPath>
-            </Defs>
-            <G clipPath={`url(#clip-${booking.id})`}>
-              <SvgImage
-                href={imageSource}
-                width={shape.width}
-                height={shape.height}
-                preserveAspectRatio="xMidYMid slice"
-              />
-            </G>
-            <Path d={shape.path} stroke="#15AB64" strokeWidth="6" fill="none" />
-          </Svg>
-        </View>
-
-        <View style={styles.chaletInfoContent}>
-          <View style={{ alignItems: 'flex-start' }}>
-            <ThemedText style={[styles.chaletTitle, { textAlign }]}>{chaletName}</ThemedText>
-            <ThemedText style={[styles.locationText, { textAlign }]}>{location}</ThemedText>
-          </View>
-
-          <View style={[styles.priceRatingRow, { flexDirection: 'row' }]}>
-            <ThemedText style={[styles.priceText, { textAlign }]}>
-              <ThemedText style={styles.priceLabel}>{isArabic ? "شفت / " : "Shift / "}</ThemedText>
-              {formatPrice(booking.chalet?.price)}
-            </ThemedText>
-            <View style={[styles.ratingBox, { flexDirection: 'row' }]}>
-              <ThemedText style={styles.ratingText}>{booking.chalet?.rating}</ThemedText>
-              <SolarStarBold size={14} color="#EA2129" />
-            </View>
-          </View>
-        </View>
-      </View>
+      {/* Top block: the SAME chalet card the home screen uses, flattened into
+          this container (its own border/shadow/margin removed) so the booking
+          details below read as part of one card. */}
+      <HorizontalCard
+        chalet={booking.card}
+        style={styles.chaletCard}
+        hideFavorite
+        onPress={() => onViewDetails(booking.id)}
+      />
 
       {/* Bottom Block: Booking Details */}
       <View style={styles.bottomBlock}>
@@ -293,6 +233,25 @@ export default function BookingsScreen() {
     return items.map((booking: any) => ({
       id: booking.id,
       chaletId: booking.chalet?.id || '',
+      // Shape consumed by HorizontalCard (same mapping the home screen does).
+      // `title`/`location` stay {ar,en} objects so the card resolves the
+      // language itself and this memo does not depend on it.
+      card: {
+        id: booking.chalet?.id || '',
+        title: booking.chalet?.name,
+        location: {
+          ar: formatChaletLocation(booking.chalet, true),
+          en: formatChaletLocation(booking.chalet, false)
+        },
+        image: getChaletCover(booking.chalet?.images)?.url ?? booking.chalet?.images?.[0],
+        blurhash: getChaletCover(booking.chalet?.images)?.blurhash,
+        price: getStartingPrice(booking.chalet) !== '0'
+          ? getStartingPrice(booking.chalet)
+          : formatPrice(booking.chalet?.basePrice || booking.totalPrice || 0),
+        discount: booking.chalet?.discount,
+        rating: booking.chalet?.averageRating ?? booking.chalet?.rating ?? 0,
+        features: booking.chalet?.features ?? booking.chalet?.chaletFeatures
+      },
       status: booking.status,
       startDate: booking.bookingDate,
       endDate: booking.bookingDate,
@@ -301,16 +260,7 @@ export default function BookingsScreen() {
       paymentModel: booking.paymentModel,
       depositAmount: booking.depositAmount || 0,
       remainingAmount: booking.remainingAmount || 0,
-      paymentStatus: booking.paymentStatus,
-      chalet: {
-        nameEn: booking.chalet?.name?.en || booking.chalet?.nameEn || booking.chalet?.name || '',
-        nameAr: booking.chalet?.name?.ar || booking.chalet?.nameAr || booking.chalet?.name || '',
-        locationEn: booking.chalet?.region?.name?.en || booking.chalet?.region?.nameEn || booking.chalet?.region?.name || '',
-        locationAr: booking.chalet?.region?.name?.ar || booking.chalet?.region?.nameAr || booking.chalet?.region?.name || '',
-        rating: booking.chalet?.averageRating || 0,
-        price: booking.chalet?.basePrice || booking.totalPrice || 0,
-        images: booking.chalet?.images || []
-      }
+      paymentStatus: booking.paymentStatus
     }));
   }, [bookingsResponse?.data]);
 
@@ -341,11 +291,11 @@ export default function BookingsScreen() {
         }
       >
         {bookingsLoading ? (
-          <View style={{ gap: 12, paddingHorizontal: 16 }}>
-            <BookingCardSkeleton />
-            <BookingCardSkeleton />
-            <BookingCardSkeleton />
-            <BookingCardSkeleton />
+          <View>
+            <HorizontalCardSkeleton />
+            <HorizontalCardSkeleton />
+            <HorizontalCardSkeleton />
+            <HorizontalCardSkeleton />
           </View>
         ) : bookings.length > 0 ? (
           bookings.map((booking: any, index: number) => (
@@ -374,50 +324,51 @@ export default function BookingsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
-  scrollContent: { flexGrow: 1, paddingHorizontal: 20, paddingBottom: 40, paddingTop: 10 },
+  scrollContent: { flexGrow: 1, paddingHorizontal: 16, paddingBottom: 40, paddingTop: 10 },
 
+  // Mirrors HorizontalCard's own container so the list reads like the home
+  // screen: same radius, hairline outline, iOS-only shadow.
   bookingCardContainer: {
     backgroundColor: '#FFF',
-    borderRadius: 24,
-    marginBottom: 20,
+    borderRadius: normalize.radius(14),
+    overflow: 'hidden',
+    marginBottom: normalize.height(12),
     borderWidth: 1,
-    borderColor: '#F1F5F9',
-    ...Shadows.small
+    borderColor: '#ECEDF0',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOpacity: 0.06,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 3 }
+      },
+      default: {}
+    })
   },
-  topBlock: {
-    padding: 16,
-    alignItems: 'center',
-    gap: 15
+  // The embedded chalet card gives up its own chrome — the outer container
+  // draws it once for the whole booking card.
+  chaletCard: {
+    marginBottom: 0,
+    borderWidth: 0,
+    borderRadius: 0,
+    shadowOpacity: 0
   },
-  chaletInfoContent: { flex: 1, height: 100, justifyContent: 'space-between' },
-  chaletTitle: { fontSize: 14, fontFamily: "IBMPlexSansArabic-SemiBold", color: '#1E293B' },
-  locationText: { fontSize: 14, color: '#64748B', fontFamily: "IBMPlexSansArabic-Medium", marginTop: 4 },
-
-  priceRatingRow: { justifyContent: 'space-between', alignItems: 'center' },
-  ratingBox: { alignItems: 'center', gap: 4 },
-  ratingText: { fontSize: 14, fontFamily: "IBMPlexSansArabic-Medium", color: '#1E293B' },
-  priceText: { fontSize: 14, fontFamily: "IBMPlexSansArabic-Bold", color: '#111827' },
-  priceLabel: { fontSize: 8, fontFamily: "IBMPlexSansArabic-Medium", color: '#64748B' },
-
-  imageBlock: { width: 115, height: 100 },
 
   bottomBlock: {
     backgroundColor: '#FAFCFF',
     borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
-    borderBottomStartRadius: 24,
-    borderBottomEndRadius: 24,
-    paddingHorizontal: 20,
-    paddingVertical: 16
+    borderTopColor: '#ECEDF0',
+    paddingHorizontal: normalize.width(14),
+    paddingVertical: 12
   },
-  detailRow: { justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  detailRow: { justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   detailLabel: { fontSize: normalize.font(14), fontFamily: "IBMPlexSansArabic-Medium", color: '#111827' },
   detailValue: { fontSize: normalize.font(14), fontFamily: "IBMPlexSansArabic-Medium", color: '#94A3B8' },
 
-  paidBadge: { backgroundColor: '#035DF9', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10 },
-  paidBadgeText: { color: '#FFF', fontSize: 14, fontFamily: "IBMPlexSansArabic-Medium" },
+  paidBadge: { backgroundColor: '#035DF9', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 999 },
+  paidBadgeText: { color: '#FFF', fontSize: 12, fontFamily: "IBMPlexSansArabic-Medium" },
 
-  dividerFull: { height: 1, backgroundColor: '#E2E8F0', marginVertical: 15, opacity: 0.6 },
+  dividerFull: { height: 1, backgroundColor: '#ECEDF0', marginTop: 2, marginBottom: 10 },
   viewDetailsBtn: { width: '100%', alignItems: 'center', justifyContent: 'center', paddingVertical: 4 },
   viewDetailsText: { color: '#035DF9', fontSize: 14, fontFamily: "IBMPlexSansArabic-Medium", textAlign: 'center' },
 
