@@ -215,7 +215,10 @@ export const HomeCitySheet = forwardRef<BottomSheetModal, HomeCitySheetProps>(
                     : "No districts recorded for this governorate."}
                 </ThemedText>
               ) : (
-                <View style={[styles.regionsWrap, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+                // Plain `row`: I18nManager already mirrors it in Arabic, so a
+                // `row-reverse` here double-flips and the chips start from the
+                // LEFT. Same rule as the governorate rows above.
+                <View style={[styles.regionsWrap, { flexDirection: rowDirection }]}>
                   {regionChip(null, isRTL ? "كل الأقضية" : "All districts", "all-regions", label)}
                   {regions.map((region: any) =>
                     regionChip(
