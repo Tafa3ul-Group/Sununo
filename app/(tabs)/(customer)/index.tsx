@@ -170,9 +170,8 @@ export default function HomeScreen() {
           homeCityAutoResolved: true,
         }),
       );
-      // Closed on either pick: the محافظة and the قضاء are one answer to
-      // "where", and the header reopens the sheet to change it.
-      citySheetRef.current?.dismiss();
+      // Closing is the sheet's own call now: picking a governorate opens its
+      // أقضية for an optional second choice, so only a final pick ends it.
     },
     [dispatch],
   );
