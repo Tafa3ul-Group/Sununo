@@ -10,7 +10,7 @@ import {
   useSetChaletAmenitiesMutation,
   useUploadChaletImageMutation
 } from '@/store/api/apiSlice';
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import * as ImagePicker from 'expo-image-picker';
 import React, { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -254,12 +254,19 @@ export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
       <BottomSheetModal
         ref={ref}
         index={0}
-        snapPoints={['85%']}
+        snapPoints={['92%']}
+        // gorhom v5 defaults `enableDynamicSizing` to true: the sheet then sizes
+        // to its content, so it opened short (or tiny while loading) and a long
+        // category pushed the Next/Save bar below the screen. A fixed detent
+        // with a flex body keeps the footer pinned and the list scrolling.
+        enableDynamicSizing={false}
         onDismiss={handleDismiss}
         backdropComponent={renderBackdrop}
         backgroundStyle={{ borderRadius: 24, backgroundColor: '#FFFFFF' }}
       >
-        <BottomSheetView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+        {/* A plain View, not BottomSheetView — that one only exists to report
+            content height for dynamic sizing, and leaves `flex: 1` nothing to fill. */}
+        <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
           {/* Step Content (one category at a time — navigated with the Next button) */}
           {(() => {
             const category = activeCategory;
@@ -278,7 +285,7 @@ export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
                   </Text>
 
                   {/* List of features */}
-                  <ScrollView
+                  <BottomSheetScrollView
                     showsVerticalScrollIndicator={false}
                     style={{ flex: 1 }}
                     contentContainerStyle={{ paddingBottom: 24 }}
@@ -390,7 +397,7 @@ export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
                         })()}
                       </ScrollView>
                     </View>
-                  </ScrollView>
+                  </BottomSheetScrollView>
                 </View>
             );
           })()}
@@ -445,7 +452,7 @@ export const AmenitiesModal = forwardRef<BottomSheetModal, AmenitiesModalProps>(
               </TouchableOpacity>
             </View>
           </View>
-        </BottomSheetView >
+        </View>
       </BottomSheetModal >
     );
   }

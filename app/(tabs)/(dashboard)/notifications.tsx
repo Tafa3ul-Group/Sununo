@@ -12,8 +12,9 @@ import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, TouchableOpaci
 import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
-import { enterSection, selectAccountType } from '@/store/authSlice';
-import { activeSection, notificationNeedsSection, resolveNotificationSection } from '@/utils/notification-section';
+import { selectAccountType } from '@/store/authSlice';
+import { activeSection } from '@/utils/notification-section';
+import { openNotificationTarget } from '@/utils/notification-navigation';
 
 interface Notification {
     id: string;
@@ -66,40 +67,10 @@ export default function NotificationsScreen() {
             markAsRead(item.id).catch(() => {});
         }
 
-        // The sender says which side this belongs to; move there first or the
-        // destination's own guard bounces the tap straight back — but only where
-        // a guard actually stands, and only for this trip. `enterSection` records
-        // no choice, so a tap can no longer relocate an owner permanently.
-        const target = resolveNotificationSection(item.redirectRole, userType, accountType);
-        const inSection = userType === 'owner' || userType === 'customer';
-        if (
-            target !== userType &&
-            inSection &&
-            notificationNeedsSection(item.redirectType, target, !!item.redirectId)
-        ) {
-            dispatch(enterSection(target));
-        }
-
-        // Navigate based on redirectType and the target section
-        if (item.redirectType === 'booking' && item.redirectId) {
-            if (target === 'owner') {
-                router.push({ pathname: '/(dashboard)/booking-details', params: { id: item.redirectId } });
-            } else {
-                router.push({ pathname: '/(tabs)/(customer)/booking-success', params: { id: item.redirectId } });
-            }
-        } else if (item.redirectType === 'chalet' && item.redirectId) {
-            // Public chalet page for both roles — matches the push-tap handler
-            // in app/_layout.tsx so the tap lands in the same place either way.
-            router.push(`/chalet-details/${item.redirectId}`);
-        } else if (item.redirectType === 'review' && item.redirectId) {
-            // Booking completed → chalet page with the review sheet auto-opened
-            // (redirectId is the CHALET id).
-            router.push(`/chalet-details/${item.redirectId}?openReview=1`);
-        } else if (item.redirectType === 'payout') {
-            // Opens the in-app withdrawal confirmation (نعم/لا) screen.
-            if (item.redirectId) router.push(`/payout-confirm/${item.redirectId}`);
-            else router.push(target === 'owner' ? '/(tabs)/(dashboard)/home' : '/(tabs)/(customer)/profile');
-        }
+        openNotificationTarget(
+            { type: item.redirectType, id: item.redirectId, role: item.redirectRole },
+            { router, dispatch, userType, accountType },
+        );
     }, [userType, accountType, dispatch, router, markAsRead]);
 
     const { data: response, isLoading, isFetching, refetch } = useGetNotificationsQuery({

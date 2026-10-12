@@ -2,6 +2,7 @@
 import { AppUpdateGate } from "@/components/app-update-gate";
 import { ConfirmationDialogProvider } from "@/components/ui/confirmation-dialog";
 import { PolicyConsentGate } from "@/components/user/policy-consent-gate";
+import { RequiredNameGate } from "@/components/user/required-name-gate";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useDirection } from "@/i18n";
 import { persistor, RootState, store } from "@/store";
@@ -25,11 +26,8 @@ import Toast from "react-native-toast-message";
 import { toastConfig } from "@/components/ui/toast-config";
 import { Provider, useDispatch, useSelector } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-import { enterSection, selectAccountType } from "@/store/authSlice";
-import {
-  notificationNeedsSection,
-  resolveNotificationSection,
-} from "@/utils/notification-section";
+import { selectAccountType } from "@/store/authSlice";
+import { openNotificationTarget } from "@/utils/notification-navigation";
 
 // @ts-ignore
 if (Text.defaultProps == null) Text.defaultProps = {};
@@ -116,50 +114,33 @@ function RootLayoutNav() {
   // معالج الضغط يحتاج الوضع/الحساب الحاليين، لكن المستمع يُركَّب مرة واحدة —
   // لذا نحتفظ بأحدث نسخة منه في ref ويستدعيها المستمع الوحيد.
   const handleNotificationTap = useRef<(response: any) => void>(() => { });
+  // معرّف آخر إشعار فُتح — كي لا يُفتح نفس الإشعار مرتين (المستمع + فحص الإقلاع البارد).
+  const lastHandledNotificationId = useRef<string | null>(null);
+  // ضغطة وصلت وشاشة البداية ما زالت ظاهرة: تُؤجَّل، وإلا استبدلها router.replace.
+  const pendingNotificationTap = useRef<any>(null);
+  const leftSplash = loaded && (segments as string[]).length > 0 && segments[0] !== "(auth)";
+  const leftSplashRef = useRef(leftSplash);
+  leftSplashRef.current = leftSplash;
   useEffect(() => {
     handleNotificationTap.current = (response: any) => {
-      const data = response?.notification?.request?.content
-        ?.data as Record<string, string> | undefined;
+      if (!leftSplashRef.current) {
+        pendingNotificationTap.current = response;
+        return;
+      }
+      const request = response?.notification?.request;
+      const data = request?.content?.data as Record<string, string> | undefined;
 
       if (!data) return;
-
-      const target = resolveNotificationSection(data.role, userType, accountType);
-
-      // Land them in the right section first, or the destination screen's own
-      // guard would bounce them straight back out — but ONLY where a guard
-      // actually stands, and only for this trip. This used to write the
-      // persisted section, so one tap on a customer-role push moved an owner to
-      // the tenant app for good. `enterSection` records no choice, so the next
-      // cold start puts them back where the account belongs.
-      const inSection = userType === "owner" || userType === "customer";
-      if (
-        target !== userType &&
-        inSection &&
-        notificationNeedsSection(data.type, target, !!data.id)
-      ) {
-        dispatch(enterSection(target));
+      if (request?.identifier) {
+        if (lastHandledNotificationId.current === request.identifier) return;
+        lastHandledNotificationId.current = request.identifier;
       }
 
-      // Deep linking بناءً على نوع الإشعار + القسم المقصود
-      if (data.type === "booking" && data.id) {
-        if (target === "owner") {
-          router.push({ pathname: "/(dashboard)/booking-details", params: { id: data.id } });
-        } else {
-          router.push({ pathname: "/(tabs)/(customer)/booking-success", params: { id: data.id } });
-        }
-      } else if (data.type === "chalet" && data.id) {
-        router.push(`/chalet-details/${data.id}`);
-      } else if (data.type === "review" && data.id) {
-        // اكتمل الحجز → صفحة الشاليه مع فتح ورقة التقييم تلقائياً (id = الشاليه).
-        router.push(`/chalet-details/${data.id}?openReview=1`);
-      } else if (data.type === "payout") {
-        // Payout confirmation (نعم/لا) — same screen for customers and owners.
-        if (data.id) {
-          router.push(`/payout-confirm/${data.id}`);
-        } else {
-          router.push(target === "owner" ? "/(tabs)/(dashboard)/home" : "/(tabs)/(customer)/profile");
-        }
-      }
+      // Deep linking بناءً على نوع الإشعار + القسم المقصود (مشترك مع قوائم الإشعارات).
+      openNotificationTarget(
+        { type: data.type, id: data.id, role: data.role },
+        { router, dispatch, userType, accountType },
+      );
     };
   }); // بلا مصفوفة اعتماديات — يجب أن يبقى المعالج محدّثاً بعد كل رندر.
 
@@ -205,6 +186,30 @@ function RootLayoutNav() {
       removeListeners?.();
     };
   }, [loaded]);
+
+  // (ج) الإقلاع البارد: ضغطة على إشعار والتطبيق مغلق تصل قبل تركيب المستمع، ثم
+  // كانت شاشة البداية (app/index.tsx) تستبدل أي شاشة فُتحت بـ router.replace.
+  // ننتظر حتى تغادر شاشة البداية ثم نفتح الإشعار الذي شغّل التطبيق (يُفحص مرة واحدة)
+  // أو أي ضغطة أُجّلت أثناءها.
+  const coldStartChecked = useRef(false);
+  useEffect(() => {
+    if (!leftSplash) return;
+    const checkLaunch = !coldStartChecked.current;
+    coldStartChecked.current = true;
+    if (!checkLaunch && !pendingNotificationTap.current) return;
+
+    (async () => {
+      try {
+        const { getLastNotificationResponse } = await import("@/services/notifications");
+        const response =
+          pendingNotificationTap.current ?? (checkLaunch ? await getLastNotificationResponse() : null);
+        pendingNotificationTap.current = null;
+        if (response) handleNotificationTap.current?.(response);
+      } catch (error) {
+        console.warn("[Notifications] فشل فحص إشعار الإقلاع:", error);
+      }
+    })();
+  }, [leftSplash]);
 
   // (ب) الحصول على التوكن وتسجيله في الباكند عند تغيّر جلسة المستخدم.
   useEffect(() => {
@@ -331,6 +336,9 @@ function RootLayoutNav() {
       {/* App-wide consent gate: blocks the app when a policy the user agreed to
           has been updated (or was never accepted) until they accept it. */}
       <PolicyConsentGate />
+      {/* App-wide name gate: an account created by its first OTP sign-in has
+          no name — ask for it, undismissably, before the app is usable. */}
+      <RequiredNameGate />
     </ThemeProvider>
   );
 }

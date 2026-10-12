@@ -239,6 +239,19 @@ export async function unregisterTokenWithBackend(
  * يُستدعى مرة واحدة عند بدء التطبيق.
  * يرجع دالة cleanup لإزالة المستمعين.
  */
+/**
+ * The tap that launched the app from a killed state, if any. The live response
+ * listener is attached too late to see it.
+ */
+export async function getLastNotificationResponse(): Promise<any | null> {
+  if (!Notifications) return null;
+  try {
+    return await Notifications.getLastNotificationResponseAsync();
+  } catch {
+    return null;
+  }
+}
+
 export function addNotificationListeners(
   onReceive?: (notification: any) => void,
   onResponse?: (response: any) => void,

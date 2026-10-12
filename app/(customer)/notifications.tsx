@@ -13,8 +13,9 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { useGetNotificationsQuery, useMarkAllNotificationsAsReadMutation, useMarkNotificationAsReadMutation } from '@/store/api/customerApiSlice';
 import { pickTranslation, useDirection } from '@/i18n';
 import { RootState } from '@/store';
-import { enterSection, selectAccountType } from '@/store/authSlice';
-import { activeSection, notificationNeedsSection, resolveNotificationSection } from '@/utils/notification-section';
+import { selectAccountType } from '@/store/authSlice';
+import { activeSection } from '@/utils/notification-section';
+import { openNotificationTarget } from '@/utils/notification-navigation';
 import { useDispatch, useSelector } from 'react-redux';
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
@@ -148,40 +149,10 @@ export default function NotificationsScreen() {
             markAsRead(item.id);
         }
 
-        // An owner browsing as a tenant can still be reading a notification about
-        // their own chalet — the sender says so, and that opens the dashboard.
-        // Moving section only where a guard actually stands, and only for this
-        // trip: `enterSection` records no choice, so the next cold start still
-        // opens whichever section the account belongs to.
-        const target = resolveNotificationSection(item.redirectRole, userType, accountType);
-        const inSection = userType === 'owner' || userType === 'customer';
-        if (
-            target !== userType &&
-            inSection &&
-            notificationNeedsSection(item.redirectType, target, !!item.redirectId)
-        ) {
-            dispatch(enterSection(target));
-        }
-
-        // Navigate based on notification redirect type
-        if (item.redirectType === 'booking' && item.redirectId) {
-            if (target === 'owner') {
-                router.push({ pathname: '/(dashboard)/booking-details', params: { id: item.redirectId } });
-            } else {
-                router.push({ pathname: '/(tabs)/(customer)/booking-success', params: { id: item.redirectId } });
-            }
-        } else if (item.redirectType === 'chalet' && item.redirectId) {
-            router.push(`/chalet-details/${item.redirectId}`);
-        } else if (item.redirectType === 'review' && item.redirectId) {
-            // Booking completed → chalet page with the review sheet auto-opened
-            // (redirectId is the CHALET id).
-            router.push(`/chalet-details/${item.redirectId}?openReview=1`);
-        } else if (item.redirectType === 'payout' && item.redirectId) {
-            // Opens the in-app withdrawal confirmation (نعم/لا) screen.
-            router.push(`/payout-confirm/${item.redirectId}`);
-        } else if (item.redirectType === 'wallet') {
-            router.push('/(tabs)/(customer)/profile');
-        }
+        openNotificationTarget(
+            { type: item.redirectType, id: item.redirectId, role: item.redirectRole },
+            { router, dispatch, userType, accountType },
+        );
     };
 
     const hasUnread = useMemo(

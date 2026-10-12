@@ -1,5 +1,25 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { getAppVersion, getDeviceId, getPlatform } from "@/utils/device";
+import { getLastIssuedPushToken } from "@/services/notifications";
+
+/**
+ * Sign this device out: unlink its push token first, THEN revoke the session.
+ * The other order revoked the session before the token DELETE went out, so the
+ * DELETE was refused (401) and the phone kept getting this account's pushes.
+ * Best-effort on the token — a failure there must never block the logout.
+ */
+export async function logoutQueryFn(_arg: void, _api: any, _extra: any, baseQuery: any) {
+  const pushToken = getLastIssuedPushToken();
+  if (pushToken) {
+    await baseQuery({
+      url: "/notifications/expo-token",
+      method: "DELETE",
+      body: { token: pushToken, platform: getPlatform() },
+    });
+  }
+  const res = await baseQuery({ url: "/auth/logout", method: "POST" });
+  return res.error ? { error: res.error } : { data: res.data };
+}
 
 // API base URL — reads from environment variable with fallback
 const BASE_URL =
@@ -1027,11 +1047,8 @@ export const apiSlice = createApi({
     }),
 
     // Logout
-    logoutUser: builder.mutation({
-      query: () => ({
-        url: "/auth/logout",
-        method: "POST",
-      }),
+    logoutUser: builder.mutation<unknown, void>({
+      queryFn: logoutQueryFn,
     }),
   }),
 });
