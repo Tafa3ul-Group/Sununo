@@ -1,4 +1,4 @@
-import { apiSlice, unwrapListResponse } from "./apiSlice";
+import { apiSlice, logoutQueryFn, unwrapListResponse } from "./apiSlice";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Customer-specific API endpoints — injected into the shared apiSlice.
@@ -839,12 +839,9 @@ export const customerApi = apiSlice.injectEndpoints({
 
     // ── Auth (shared but customer-relevant) ────────────────────────────────
 
-    /** Logout */
-    logoutUser: builder.mutation({
-      query: () => ({
-        url: "/auth/logout",
-        method: "POST",
-      }),
+    /** Logout — unlinks this device's push token before revoking the session. */
+    logoutUser: builder.mutation<unknown, void>({
+      queryFn: logoutQueryFn,
     }),
 
     // ── Location ───────────────────────────────────────────────────────────

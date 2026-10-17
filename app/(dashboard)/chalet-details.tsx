@@ -817,6 +817,21 @@ export default function ChaletDetailsScreen() {
     };
   }, [commitPaymentDeadline, stopDeadlineHold]);
 
+  /**
+   * The white rounded card that holds a run of rows. Separators are drawn here
+   * rather than by each row so they can be inset past the icon tile — without
+   * that inset the list reads as a stack of boxes instead of one group.
+   *
+   * Declared above the early returns below: a hook after them runs on some
+   * renders and not others, which crashed the screen once loading finished.
+   */
+  const SettingsFooter = useCallback(
+    ({ children }: { children: React.ReactNode }) => (
+      <SettingsFooterBase textAlign={textAlign}>{children}</SettingsFooterBase>
+    ),
+    [textAlign],
+  );
+
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -991,18 +1006,6 @@ export default function ChaletDetailsScreen() {
       </Pressable>
     );
   };
-
-  /**
-   * The white rounded card that holds a run of rows. Separators are drawn here
-   * rather than by each row so they can be inset past the icon tile — without
-   * that inset the list reads as a stack of boxes instead of one group.
-   */
-  const SettingsFooter = useCallback(
-    ({ children }: { children: React.ReactNode }) => (
-      <SettingsFooterBase textAlign={textAlign}>{children}</SettingsFooterBase>
-    ),
-    [textAlign],
-  );
 
   return (
     <View style={styles.container}>
@@ -1585,6 +1588,9 @@ export default function ChaletDetailsScreen() {
         ref={addressModalRef}
         index={0}
         snapPoints={['65%']}
+        // Fixed height: with v5's default dynamic sizing the sheet shrank to its
+        // content and opened half-empty instead of at this detent.
+        enableDynamicSizing={false}
         backdropComponent={renderBackdrop}
         handleIndicatorStyle={{ backgroundColor: '#D1D5DB', width: 36 }}
         backgroundStyle={{ borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
@@ -1685,6 +1691,9 @@ export default function ChaletDetailsScreen() {
         ref={basicInfoModalRef}
         index={0}
         snapPoints={['90%']}
+        // Fixed height: with v5's default dynamic sizing the sheet shrank to its
+        // content and opened half-empty instead of at this detent.
+        enableDynamicSizing={false}
         backdropComponent={renderBackdrop}
         backgroundStyle={{ borderRadius: 24 }}
       >
@@ -1767,6 +1776,9 @@ export default function ChaletDetailsScreen() {
         ref={depositModalRef}
         index={0}
         snapPoints={['40%']}
+        // Fixed height: with v5's default dynamic sizing the sheet shrank to its
+        // content and opened half-empty instead of at this detent.
+        enableDynamicSizing={false}
         backdropComponent={renderBackdrop}
         backgroundStyle={{ borderRadius: 24 }}
       >
@@ -1834,6 +1846,9 @@ export default function ChaletDetailsScreen() {
         ref={capacityModalRef}
         index={0}
         snapPoints={['55%']}
+        // Fixed height: with v5's default dynamic sizing the sheet shrank to its
+        // content and opened half-empty instead of at this detent.
+        enableDynamicSizing={false}
         backdropComponent={renderBackdrop}
         backgroundStyle={{ borderRadius: 24 }}
       >
@@ -1882,7 +1897,10 @@ export default function ChaletDetailsScreen() {
       <BottomSheetModal
         ref={imagesModalRef}
         index={0}
-        snapPoints={['85%']}
+        snapPoints={['92%']}
+        // Fixed height: with v5's default dynamic sizing the sheet shrank to its
+        // content and opened half-empty instead of at this detent.
+        enableDynamicSizing={false}
         backdropComponent={renderBackdrop}
         backgroundStyle={{ borderRadius: 24 }}
       >
@@ -2035,10 +2053,13 @@ export default function ChaletDetailsScreen() {
         ref={citySheetRef}
         index={0}
         snapPoints={['70%']}
+        // Fixed height: with v5's default dynamic sizing the sheet shrank to its
+        // content and opened half-empty instead of at this detent.
+        enableDynamicSizing={false}
         backdropComponent={renderBackdrop}
         backgroundStyle={{ borderRadius: 24 }}
       >
-        <BottomSheetView style={{ padding: 20, flex: 1 }}>
+        <View style={{ padding: 20, flex: 1 }}>
           <Text style={styles.modalTitle}>{isRTL ? 'اختر المدينة' : 'Select City'}</Text>
           <BottomSheetFlatList
             data={cities}
@@ -2062,7 +2083,7 @@ export default function ChaletDetailsScreen() {
               </TouchableOpacity>
             )}
           />
-        </BottomSheetView>
+        </View>
       </BottomSheetModal>
 
       {/* Chalet Video Modal */}
@@ -2070,6 +2091,9 @@ export default function ChaletDetailsScreen() {
         ref={videoModalRef}
         index={0}
         snapPoints={['70%']}
+        // Fixed height: with v5's default dynamic sizing the sheet shrank to its
+        // content and opened half-empty instead of at this detent.
+        enableDynamicSizing={false}
         backdropComponent={renderBackdrop}
         handleIndicatorStyle={{ backgroundColor: '#D1D5DB', width: 36 }}
         backgroundStyle={{ borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
@@ -2093,10 +2117,13 @@ export default function ChaletDetailsScreen() {
         ref={regionSheetRef}
         index={0}
         snapPoints={['70%']}
+        // Fixed height: with v5's default dynamic sizing the sheet shrank to its
+        // content and opened half-empty instead of at this detent.
+        enableDynamicSizing={false}
         backdropComponent={renderBackdrop}
         backgroundStyle={{ borderRadius: 24 }}
       >
-        <BottomSheetView style={{ padding: 20, flex: 1 }}>
+        <View style={{ padding: 20, flex: 1 }}>
           <Text style={styles.modalTitle}>{isRTL ? 'اختر القضاء' : 'Select District'}</Text>
           <BottomSheetFlatList
             data={regions || []}
@@ -2113,7 +2140,7 @@ export default function ChaletDetailsScreen() {
               </TouchableOpacity>
             )}
           />
-        </BottomSheetView>
+        </View>
       </BottomSheetModal>
 
       {/* Location Picker Modal */}
