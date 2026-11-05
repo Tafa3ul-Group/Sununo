@@ -7,6 +7,11 @@
  * against the route tree, find nothing, and land the user on +not-found — so
  * the web URL is rewritten to the screen that actually shows the chalet.
  *
+ * WhatsApp template buttons (`/b/<id>`, `/tx/<id>`, `/manage/<id>`, from
+ * sununo-api/src/utils/whatsapp-templates.ts) go to `/link`, which opens them
+ * the way the matching push would. An `o-` before the id means the owner's
+ * side of the app.
+ *
  * City pages (`/<locale>/cities/<slug>`) are deliberately NOT claimed by the
  * AASA: the slug is derived from the city's English name, the app has no screen
  * keyed by it, and dropping the user on the home tab with the city silently lost
@@ -18,6 +23,16 @@ const UUID_RE =
     /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
 
 const WEB_HOSTS = new Set(["sununo.app", "www.sununo.app"]);
+
+/** Owner-side link tails start with this (see `ownerLinkTail` in the API). */
+const OWNER_PREFIX = "o-";
+
+/** WhatsApp button paths → the notification target they mean. */
+const LINK_KINDS: Record<string, { type: string; ownerOnly?: boolean }> = {
+    b: { type: "booking" },
+    tx: { type: "payout" },
+    manage: { type: "chalet", ownerOnly: true },
+};
 const LOCALES = new Set(["ar", "en"]);
 
 export function redirectSystemPath({
@@ -45,6 +60,17 @@ export function redirectSystemPath({
 
     const segments = url.pathname.split("/").filter(Boolean);
     if (segments[0] && LOCALES.has(segments[0].toLowerCase())) segments.shift();
+
+    const link = LINK_KINDS[segments[0]];
+    if (link && segments[1]) {
+        const tail = decodeURIComponent(segments[1]);
+        const isOwner = link.ownerOnly || tail.toLowerCase().startsWith(OWNER_PREFIX);
+        const id = tail.match(UUID_RE)?.[0];
+        if (id) {
+            const role = isOwner ? "owner" : "customer";
+            return `/link?type=${link.type}&id=${id.toLowerCase()}&role=${role}`;
+        }
+    }
 
     if (segments[0] === "chalets" && segments[1]) {
         const id = decodeURIComponent(segments[1]).match(UUID_RE)?.[0];

@@ -58,6 +58,21 @@
               "scheme": "https",
               "host": "sununo.app",
               "pathPrefix": "/en/chalets"
+            },
+            {
+              "scheme": "https",
+              "host": "sununo.app",
+              "pathPrefix": "/b/"
+            },
+            {
+              "scheme": "https",
+              "host": "sununo.app",
+              "pathPrefix": "/tx/"
+            },
+            {
+              "scheme": "https",
+              "host": "sununo.app",
+              "pathPrefix": "/manage/"
             }
           ],
           "category": [

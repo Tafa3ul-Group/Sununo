@@ -28,6 +28,7 @@ import { Provider, useDispatch, useSelector } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { selectAccountType } from "@/store/authSlice";
 import { openNotificationTarget } from "@/utils/notification-navigation";
+import { takePendingLink } from "@/utils/pending-link";
 
 // @ts-ignore
 if (Text.defaultProps == null) Text.defaultProps = {};
@@ -211,6 +212,17 @@ function RootLayoutNav() {
     })();
   }, [leftSplash]);
 
+  // (د) رابط فتح التطبيق وهو مغلق (زر قالب واتساب): app/link.tsx يسلّمه هنا ويمرّ
+  // بشاشة البداية، فنفتحه فوق الرئيسية بعد مغادرتها — مثل ضغطة الإشعار. لا نفتحه
+  // وشاشة الرابط نفسها ظاهرة: هي التي خزّنته وستستبدل نفسها.
+  const onLinkScreen = (segments[0] as string) === "link";
+  useEffect(() => {
+    if (!leftSplash || onLinkScreen) return;
+    const link = takePendingLink();
+    if (link) openNotificationTarget(link, { router, dispatch, userType, accountType });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [leftSplash, onLinkScreen]);
+
   // (ب) الحصول على التوكن وتسجيله في الباكند عند تغيّر جلسة المستخدم.
   useEffect(() => {
     if (!loaded) return;
@@ -329,6 +341,7 @@ function RootLayoutNav() {
         <Stack.Screen name="(customer)" />
         <Stack.Screen name="(dashboard)" />
         <Stack.Screen name="payout-confirm/[id]" />
+        <Stack.Screen name="link" options={{ animation: "none" }} />
       </Stack>
       <StatusBar style="auto" />
       {/* App-wide version gate: shows the update sheet when out of date. */}
