@@ -97,6 +97,17 @@ export default function BookingSuccessDetailsScreen() {
       ? Math.round((Number(booking.depositAmount) / Number(booking.totalPrice)) * 100)
       : 0);
 
+  // For a booking awaiting payment the API prices the deposit option itself —
+  // the same resolveDeposit the pay call charges — so a fixed deposit (raised to
+  // the commission, or turned into full payment) shows the real figure. `null`
+  // means full payment only. Older API builds don't send the field; for them
+  // the percentage maths above still applies.
+  const depositOption: { amount: number; remainingAmount: number; type: "percentage" | "fixed" } | null | undefined =
+    booking?.depositOption;
+  const hasDepositOption = depositOption !== undefined;
+  const depositOffered = hasDepositOption ? !!depositOption : depositPercentage > 0;
+  const isFixedDepositOption = depositOption?.type === "fixed" || booking?.chalet?.depositType === "fixed";
+
   const [selectedMethod, setSelectedMethod] = useState<"wayl" | "wallet">("wayl");
   const [paymentType, setPaymentType] = useState<"DEPOSIT" | "FULL">("FULL");
 
@@ -132,13 +143,13 @@ export default function BookingSuccessDetailsScreen() {
 
   React.useEffect(() => {
     if (booking) {
-      if (depositPercentage === 0) {
+      if (!depositOffered) {
         setPaymentType("FULL");
       } else {
         setPaymentType("DEPOSIT");
       }
     }
-  }, [booking, depositPercentage]);
+  }, [booking, depositOffered]);
 
   const startPaymentPolling = async (transactionId: string) => {
     let attempts = 0;
@@ -376,9 +387,13 @@ export default function BookingSuccessDetailsScreen() {
   // Prefer the backend-computed deposit (it already falls back to
   // minDepositPercentage); only recompute if it wasn't stored, so the amount
   // never shows 0 when the booking response omits the chalet's deposit fields.
-  const depositAmountVal = Number(booking?.depositAmount) > 0
-    ? Number(booking.depositAmount)
-    : Math.round((Number(booking?.totalPrice || 0) * depositPercentage) / 100);
+  // While the booking awaits payment, the API's quote is what "pay deposit"
+  // will charge; once paid, the stored amount is what was charged.
+  const depositAmountVal = booking?.status === "pending_payment" && depositOption
+    ? Number(depositOption.amount)
+    : Number(booking?.depositAmount) > 0
+      ? Number(booking.depositAmount)
+      : Math.round((Number(booking?.totalPrice || 0) * depositPercentage) / 100);
 
   // ── Derived state flags (single source of truth = booking.status) ──────────
   const status = booking?.status;
@@ -398,7 +413,7 @@ export default function BookingSuccessDetailsScreen() {
   // What this screen would charge right now — the same figure the pay button
   // prints, and what a wallet balance has to cover.
   const amountDueNow =
-    paymentType === "DEPOSIT" ? depositAmountVal : Number(booking?.totalPrice || 0);
+    paymentType === "DEPOSIT" && depositOffered ? depositAmountVal : Number(booking?.totalPrice || 0);
 
   // The wallet button used to be offered blind — no balance, no check on the
   // admin's on/off switch — so the customer found out from the API's English
@@ -793,7 +808,7 @@ export default function BookingSuccessDetailsScreen() {
             )}
 
             {/* Payment Options Selection (Deposit vs Full) */}
-            {depositPercentage > 0 && (
+            {depositOffered && (
               <View style={{ marginBottom: 16 }}>
                 <ThemedText style={[styles.paymentModelTitle, { textAlign }]}>
                   {isRTL ? "اختر طريقة الدفع (لم يتم الدفع بعد)" : "Choose how to pay (not paid yet)"}
@@ -818,7 +833,7 @@ export default function BookingSuccessDetailsScreen() {
                       { textAlign },
                     ]}
                   >
-                    {t("booking.depositPay")} ({depositPercentage}%)
+                    {t("booking.depositPay")}{isFixedDepositOption ? "" : ` (${depositPercentage}%)`}
                   </ThemedText>
                   <ThemedText
                     style={[
@@ -956,8 +971,8 @@ export default function BookingSuccessDetailsScreen() {
               ) : (
                 <ThemedText style={styles.payBtnText}>
                   {isRTL
-                    ? `ادفع الآن (${(paymentType === "DEPOSIT" ? depositAmountVal : Number(booking?.totalPrice || 0)).toLocaleString()} د.ع)`
-                    : `Pay Now (${(paymentType === "DEPOSIT" ? depositAmountVal : Number(booking?.totalPrice || 0)).toLocaleString()} IQD)`}
+                    ? `ادفع الآن (${amountDueNow.toLocaleString()} د.ع)`
+                    : `Pay Now (${amountDueNow.toLocaleString()} IQD)`}
                 </ThemedText>
               )}
             </TouchableOpacity>

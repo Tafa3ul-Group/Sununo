@@ -26,6 +26,7 @@ import { getChaletCover } from "@/hooks/useImageSrc";
 
 import { RootState } from "@/store";
 import { ImagePrepareError, prepareImageUpload } from "@/utils/prepare-image-upload";
+import { quoteDeposit } from "@/utils/deposit";
 import { logEvent } from "@/services/analytics";
 import { ANALYTICS_EVENTS, ANALYTICS_CURRENCY } from "@/constants/analytics-events";
 import {
@@ -784,17 +785,19 @@ export default function CompleteBookingScreen() {
     setCouponError(null);
   };
 
-  // Deposit is a share of what the customer actually pays, so it follows the
-  // discounted total — exactly how the API splits it.
-  const depositPercentage =
-    Number(chaletDetails?.depositPercentage) || Number(chaletDetails?.minDepositPercentage) || 0;
-  const depositAmount = Math.round((totalPrice * depositPercentage) / 100);
+  // Priced exactly how the API will charge it (utils/deposit mirrors
+  // resolveDeposit): a percentage follows the discounted total; a fixed amount
+  // is raised to the platform commission, and disappears — full payment only —
+  // once it reaches the total.
+  const depositQuote = quoteDeposit({ chalet: chaletDetails, totalPrice, originalPrice });
+  const depositOffered = depositQuote.offered;
+  const depositAmount = depositQuote.amount;
 
   // ── Payment method ─────────────────────────────────────────────────────────
   // What the customer owes RIGHT NOW — a deposit booking pays the deposit and
   // settles the rest in cash on arrival. This, not the total, is what the API
   // charges and therefore what a wallet balance has to cover.
-  const amountDue = paymentType === "DEPOSIT" ? depositAmount : totalPrice;
+  const amountDue = paymentType === "DEPOSIT" && depositOffered ? depositAmount : totalPrice;
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(DEFAULT_PAYMENT_METHOD);
 
@@ -848,13 +851,15 @@ export default function CompleteBookingScreen() {
 
   const extraGuestsCount = Math.max(0, totalGuestsNow - capacityLimit);
 
+  // Flips only when the deposit option appears or disappears — a fixed deposit
+  // vanishes when a coupon or discount brings the total down to it.
   useEffect(() => {
-    if (depositPercentage === 0) {
+    if (!depositOffered) {
       setPaymentType("FULL");
     } else {
       setPaymentType("DEPOSIT");
     }
-  }, [depositPercentage]);
+  }, [depositOffered]);
 
   // Identity of the booking the button would create right now. Compared against
   // `pendingBookingKey` to tell "the user abandoned the payment for exactly this
@@ -1948,7 +1953,7 @@ export default function CompleteBookingScreen() {
             {t("booking.paymentTitle")}
           </ThemedText>
 
-          {depositPercentage > 0 && (
+          {depositOffered && (
             <PressableScale
               style={[
                 styles.paymentOptionCard,
@@ -1965,7 +1970,7 @@ export default function CompleteBookingScreen() {
                   { textAlign },
                 ]}
               >
-                {t("booking.depositPay")} ({depositPercentage}%)
+                {t("booking.depositPay")}{depositQuote.type === "percentage" ? ` (${depositQuote.percentage}%)` : ""}
               </ThemedText>
               <ThemedText
                 style={[

@@ -189,6 +189,8 @@ export default function ChaletDetailsScreen() {
     regionName: '',
     cityName: '',
     depositPercentage: '25',
+    depositType: 'percentage' as 'percentage' | 'fixed',
+    depositFixedAmount: '',
     capacity: '0',
     priceCapacity: '0',
     extraPersonPrice: '0',
@@ -208,10 +210,22 @@ export default function ChaletDetailsScreen() {
     skip: !basicForm.cityId,
   });
 
-  // Real-time Deposit Percentage Validation
+  // Real-time Deposit Validation. A percentage can't go below the commission
+  // (the API refuses it); a fixed amount only has to be positive — the API
+  // raises it to the commission on each booking instead, see the note in the sheet.
+  const isFixedDeposit = basicForm.depositType === 'fixed';
   const minDepositVal = chalet?.minDepositPercentage !== undefined ? Number(chalet.minDepositPercentage) : 0;
   const currentDepositInputVal = parseFloat(basicForm.depositPercentage) || 0;
-  const isDepositInvalid = currentDepositInputVal < minDepositVal;
+  const fixedDepositInputVal = parseFloat(basicForm.depositFixedAmount) || 0;
+  const isDepositInvalid = isFixedDeposit
+    ? fixedDepositInputVal <= 0
+    : currentDepositInputVal < minDepositVal;
+  // What the platform takes per booking, for the fixed-deposit note.
+  const commissionLabel = chalet?.commissionType === 'fixed' && Number(chalet?.effectiveCommissionFixedAmount) > 0
+    ? `${Number(chalet.effectiveCommissionFixedAmount).toLocaleString()} ${isRTL ? 'د.ع' : 'IQD'}`
+    : Number(chalet?.effectiveCommissionPercentage) > 0
+      ? `${Number(chalet.effectiveCommissionPercentage)}%`
+      : null;
 
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
@@ -271,6 +285,8 @@ export default function ChaletDetailsScreen() {
         regionName: chalet.region ? pickTranslation(chalet.region, isRTL) : '',
         cityName: (isRTL ? chalet.city?.name : (chalet.city?.enName || chalet.city?.name)) || '',
         depositPercentage: chalet.depositPercentage?.toString() || '25',
+        depositType: chalet.depositType === 'fixed' ? 'fixed' : 'percentage',
+        depositFixedAmount: Number(chalet.depositFixedAmount) > 0 ? String(Number(chalet.depositFixedAmount)) : '',
         phone: chalet.phone || '',
         whatsapp: chalet.whatsapp || '',
         latitude: chalet.latitude?.toString() || '',
@@ -325,6 +341,31 @@ export default function ChaletDetailsScreen() {
     const minVal = chalet?.minDepositPercentage !== undefined ? Number(chalet.minDepositPercentage) : 0;
     const inputVal = parseFloat(basicForm.depositPercentage) || 0;
 
+    if (isFixedDeposit) {
+      if (fixedDepositInputVal <= 0) {
+        Toast.show({
+          type: 'error',
+          text1: isRTL ? 'تنبيه' : 'Alert',
+          text2: isRTL ? 'أدخل مبلغ العربون بالدينار' : 'Enter the deposit amount in IQD',
+          position: 'bottom'
+        });
+        return;
+      }
+      try {
+        await updateChalet({
+          id: chaletId as string,
+          data: { depositType: 'fixed', depositFixedAmount: fixedDepositInputVal }
+        }).unwrap();
+        Toast.show({ type: 'success', text1: isRTL ? 'تم تحديث العربون' : 'Deposit updated' });
+        depositModalRef.current?.dismiss();
+        refetch();
+        refetchStats();
+      } catch {
+        Toast.show({ type: 'error', text1: isRTL ? 'خطأ في التحديث' : 'Update failed' });
+      }
+      return;
+    }
+
     if (inputVal < minVal) {
       Toast.show({
         type: 'error',
@@ -340,7 +381,7 @@ export default function ChaletDetailsScreen() {
     try {
       await updateChalet({
         id: chaletId as string,
-        data: { depositPercentage: inputVal }
+        data: { depositType: 'percentage', depositPercentage: inputVal }
       }).unwrap();
       Toast.show({ type: 'success', text1: isRTL ? 'تم تحديث العربون' : 'Deposit updated' });
       depositModalRef.current?.dismiss();
@@ -1227,8 +1268,10 @@ export default function ChaletDetailsScreen() {
             {renderSettingsRow({
               icon: SolarBanknoteBold,
               shape: 'pink',
-              label: isRTL ? 'نسبة العربون' : 'Deposit',
-              value: `${basicForm.depositPercentage}%`,
+              label: isRTL ? 'العربون' : 'Deposit',
+              value: basicForm.depositType === 'fixed'
+                ? `${(Number(basicForm.depositFixedAmount) || 0).toLocaleString()} ${isRTL ? 'د.ع' : 'IQD'}`
+                : `${basicForm.depositPercentage}%`,
               onPress: () => depositModalRef.current?.present()
             })}
             {renderSettingsRow({
@@ -1775,17 +1818,44 @@ export default function ChaletDetailsScreen() {
       <BottomSheetModal
         ref={depositModalRef}
         index={0}
-        snapPoints={['40%']}
+        snapPoints={['62%']}
         // Fixed height: with v5's default dynamic sizing the sheet shrank to its
         // content and opened half-empty instead of at this detent.
         enableDynamicSizing={false}
         backdropComponent={renderBackdrop}
         backgroundStyle={{ borderRadius: 24 }}
       >
-        <BottomSheetView style={styles.modalScrollContent}>
-          <Text style={styles.modalTitle}>{isRTL ? 'نسبة العربون' : 'Deposit Percentage'}</Text>
+        <BottomSheetScrollView contentContainerStyle={styles.modalScrollContent} keyboardShouldPersistTaps="handled">
+          <Text style={styles.modalTitle}>{isRTL ? 'العربون' : 'Deposit'}</Text>
+
+          {/* Same chips as the guest policy. Plain 'row': native RTL mirrors it. */}
+          <View style={{ flexDirection: 'row', gap: 8, alignSelf: 'stretch', marginBottom: 14 }}>
+            {([
+              { value: 'percentage', ar: 'نسبة من المبلغ %', en: 'Percentage %' },
+              { value: 'fixed', ar: 'مبلغ ثابت د.ع', en: 'Fixed amount (IQD)' },
+            ] as const).map(opt => {
+              const selected = basicForm.depositType === opt.value;
+              return (
+                <TouchableOpacity
+                  key={opt.value}
+                  style={[styles.guestPolicyChip, selected && styles.guestPolicyChipActive]}
+                  onPress={() => setBasicForm({ ...basicForm, depositType: opt.value })}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.guestPolicyChipText, selected && styles.guestPolicyChipTextActive]} numberOfLines={1}>
+                    {isRTL ? opt.ar : opt.en}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
           <View style={styles.modalInputGroup}>
-            <Text style={[styles.modalLabel, { textAlign }]}>{isRTL ? 'نسبة العربون %' : 'Deposit %'}</Text>
+            <Text style={[styles.modalLabel, { textAlign }]}>
+              {isFixedDeposit
+                ? (isRTL ? 'مبلغ العربون (د.ع)' : 'Deposit amount (IQD)')
+                : (isRTL ? 'نسبة العربون %' : 'Deposit %')}
+            </Text>
             <BottomSheetTextInput
               style={[
                 styles.modalInput, 
@@ -1797,11 +1867,42 @@ export default function ChaletDetailsScreen() {
                 }
               ]}
               keyboardType="numeric"
-              value={basicForm.depositPercentage}
-              onChangeText={(val) => setBasicForm({ ...basicForm, depositPercentage: val })}
+              placeholder={isFixedDeposit ? '25000' : undefined}
+              value={isFixedDeposit ? basicForm.depositFixedAmount : basicForm.depositPercentage}
+              onChangeText={(val) => setBasicForm(isFixedDeposit
+                ? { ...basicForm, depositFixedAmount: val.replace(/[^0-9]/g, '') }
+                : { ...basicForm, depositPercentage: val })}
             />
           </View>
-          {chalet?.minDepositPercentage !== undefined && Number(chalet.minDepositPercentage) > 0 && (
+          {isFixedDeposit ? (
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: '#F8FAFC',
+              borderColor: '#E2E8F0',
+              borderWidth: 1,
+              borderRadius: 12,
+              padding: 12,
+              marginTop: 4,
+              marginBottom: 16,
+              gap: 10
+            }}>
+              <SolarShieldWarningBold size={20} color="#64748B" />
+              <View style={{ flex: 1 }}>
+                <Text style={{
+                  fontSize: normalize.font(11.5),
+                  fontFamily: 'IBMPlexSansArabic-Medium',
+                  color: '#475569',
+                  textAlign,
+                  lineHeight: 17
+                }}>
+                  {isRTL
+                    ? `يدفع الزبون هذا المبلغ عربوناً على كل حجز. إذا كانت عمولة المنصة على الحجز${commissionLabel ? ` (${commissionLabel})` : ''} أكبر منه، يُحتسب العربون بقيمة العمولة. وإذا كان العربون يساوي سعر الحجز أو أكثر، يدفع الزبون المبلغ كاملاً.`
+                    : `Customers pay this amount as the deposit on every booking. If the platform commission on a booking${commissionLabel ? ` (${commissionLabel})` : ''} is higher, the deposit is raised to the commission. If the deposit reaches the booking price, the customer pays in full.`}
+                </Text>
+              </View>
+            </View>
+          ) : chalet?.minDepositPercentage !== undefined && Number(chalet.minDepositPercentage) > 0 && (
             <View style={{
               flexDirection: 'row',
               alignItems: 'center',
@@ -1831,14 +1932,14 @@ export default function ChaletDetailsScreen() {
             </View>
           )}
           <PrimaryButton 
-            label={isRTL ? 'حفظ النسبة' : 'Save Percentage'} 
+            label={isFixedDeposit ? (isRTL ? 'حفظ المبلغ' : 'Save Amount') : (isRTL ? 'حفظ النسبة' : 'Save Percentage')} 
             onPress={handleUpdateDeposit} 
             loading={isUpdating} 
             disabled={isDepositInvalid}
             activeColor={isDepositInvalid ? '#94A3B8' : undefined}
             style={{ opacity: isDepositInvalid ? 0.8 : 1 }}
           />
-        </BottomSheetView>
+        </BottomSheetScrollView>
       </BottomSheetModal>
 
       {/* 3. Capacity Modal */}
