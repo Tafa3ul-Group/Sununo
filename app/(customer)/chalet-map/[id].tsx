@@ -1,14 +1,16 @@
 import { HeaderSection } from "@/components/header-section";
 import { ErrorState } from "@/components/ui/error-state";
 import { AppMap } from "@/components/user/app-map";
+import { DirectionsButton } from "@/components/user/directions-button";
 import { Colors } from "@/constants/theme";
 import { getChaletCover, getImageSrc } from "@/hooks/useImageSrc";
 import { getStartingPrice } from "@/utils/format";
+import { openDirections } from "@/utils/directions";
 import { useGetCustomerChaletDetailsQuery } from "@/store/api/customerApiSlice";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useMemo } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
 // Full-screen map for a single chalet, opened from the location card on the
@@ -18,6 +20,7 @@ import { useTranslation } from "react-i18next";
 export default function ChaletMapScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   const { id } = useLocalSearchParams();
   const chaletId = id as string;
@@ -84,12 +87,19 @@ export default function ChaletMapScreen() {
       ) : error && !chalet?.id ? (
         <ErrorState onRetry={refetch} onBack={() => router.back()} />
       ) : (
-        <AppMap
-          style={styles.map}
-          centerCoordinate={center}
-          zoomLevel={15}
-          markers={markers}
-        />
+        <View style={styles.map}>
+          <AppMap
+            style={styles.map}
+            centerCoordinate={center}
+            zoomLevel={15}
+            markers={markers}
+          />
+          {hasChaletCoords && (
+            <View style={[styles.directions, { bottom: insets.bottom + 16 }]}>
+              <DirectionsButton style={{ flex: 1 }} onPress={() => openDirections(chaletLat, chaletLng)} />
+            </View>
+          )}
+        </View>
       )}
     </SafeAreaView>
   );
@@ -107,5 +117,11 @@ const styles = StyleSheet.create({
   },
   map: {
     flex: 1,
+  },
+  directions: {
+    position: "absolute",
+    start: 16,
+    end: 16,
+    flexDirection: "row",
   },
 });

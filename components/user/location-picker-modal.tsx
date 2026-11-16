@@ -1,9 +1,10 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Keyboard, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Keyboard, Linking, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import * as Location from 'expo-location';
 import { Colors, Spacing, normalize, Typography } from '@/constants/theme';
 import { PrimaryButton } from './primary-button';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { SolarCloseCircleBold, SolarMagnifierBold, SolarMapPointBold, SolarMapPointLinear } from "@/components/icons/solar-icons";
+import { SolarCloseCircleBold, SolarMagnifierBold, SolarMapPointBold, SolarMapPointLinear, SolarMapPointWaveBoldDuotone } from "@/components/icons/solar-icons";
 import { useDirection } from "@/i18n";
 
 const MAPBOX_ACCESS_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN || '';
@@ -180,6 +181,51 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
     setShowResults(false);
   }, []);
 
+  // ── Current location ──
+  // An owner usually sets the location while standing at the chalet, so one tap
+  // drops the pin where they are instead of hunting for it on the map.
+  const [isLocating, setIsLocating] = useState(false);
+  const handleUseMyLocation = useCallback(async () => {
+    if (isLocating) return;
+    setIsLocating(true);
+    try {
+      const { status, canAskAgain } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        // Once the system stops asking, only Settings can turn it back on.
+        Alert.alert(
+          isRTL ? 'الوصول للموقع غير مسموح' : 'Location access is off',
+          isRTL
+            ? 'اسمح لسنونو بالوصول لموقعك حتى تستخدم موقعك الحالي.'
+            : 'Allow Sununo to use your location to use your current location.',
+          canAskAgain
+            ? undefined
+            : [
+                { text: isRTL ? 'إلغاء' : 'Cancel', style: 'cancel' },
+                { text: isRTL ? 'الإعدادات' : 'Settings', onPress: () => Linking.openSettings() },
+              ],
+        );
+        return;
+      }
+      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+      const { latitude, longitude } = loc.coords;
+      setRegion({ latitude, longitude });
+      setShowResults(false);
+      Keyboard.dismiss();
+      cameraRef.current?.setCamera({
+        centerCoordinate: [longitude, latitude],
+        zoomLevel: 17,
+        animationDuration: 1000,
+      });
+    } catch {
+      Alert.alert(
+        isRTL ? 'تعذّر تحديد موقعك' : 'Could not get your location',
+        isRTL ? 'تأكد أن خدمة الموقع مشغّلة وحاول مرة أخرى.' : 'Make sure location services are on and try again.',
+      );
+    } finally {
+      setIsLocating(false);
+    }
+  }, [isLocating, isRTL]);
+
   return (
     <Modal visible={visible} animationType="slide" transparent={false}>
       <SafeAreaView style={[styles.container, { direction }]}>
@@ -283,6 +329,21 @@ export const LocationPickerModal = ({ visible, onClose, onSelect, initialLocatio
           <View style={[styles.markerFixed, { pointerEvents: "none" }]}>
             <SolarMapPointBold size={40} color={Colors.primary} />
           </View>
+
+          <TouchableOpacity
+            style={styles.myLocationBtn}
+            onPress={handleUseMyLocation}
+            disabled={isLocating}
+            activeOpacity={0.85}
+            accessibilityRole="button"
+          >
+            {isLocating ? (
+              <ActivityIndicator size="small" color={Colors.primary} />
+            ) : (
+              <SolarMapPointWaveBoldDuotone size={18} color={Colors.primary} />
+            )}
+            <Text style={styles.myLocationText}>{isRTL ? 'موقعي الحالي' : 'My location'}</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Footer */}
@@ -311,6 +372,29 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.white,
+  },
+  myLocationBtn: {
+    position: 'absolute',
+    // Clear of the Mapbox logo and attribution, which must stay visible.
+    bottom: 48,
+    end: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.white,
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
+  },
+  myLocationText: {
+    fontSize: normalize.font(13),
+    fontFamily: 'IBMPlexSansArabic-SemiBold',
+    color: Colors.primary,
   },
   header: {
     flexDirection: 'row',

@@ -5,6 +5,7 @@ import {
   SolarForbiddenCircleLineDuotone,
   SolarHeartBold,
   SolarMapPointBold,
+  SolarShareBold,
   SolarMoonBold,
   SolarStarBold,
   SolarSunBold,
@@ -18,6 +19,8 @@ import { ErrorState } from "@/components/ui/error-state";
 import { SkeletonBox } from "@/components/ui/skeleton-loader";
 import { HorizontalSwiper } from "@/components/user/horizontal-swiper";
 import { HostContactCard } from "@/components/user/host-contact-card";
+import { DirectionsButton } from "@/components/user/directions-button";
+import { openDirections } from "@/utils/directions";
 import { LoginPromptModal } from "@/components/user/login-prompt-modal";
 import { PrimaryButton } from "@/components/user/primary-button";
 import { ReviewSubmissionSheet, maybeRequestStoreReview } from "@/components/user/review-submission-sheet";
@@ -64,8 +67,10 @@ import {
   Dimensions,
   FlatList,
   Image,
+  Platform,
   RefreshControl,
   ScrollView,
+  Share,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -419,6 +424,23 @@ export default function ChaletDetailScreen() {
   const chaletLocation =
     pickTranslation(chalet.region, isRTL) || pickTranslation(chalet.city, isRTL);
   const chaletCategory = pickTranslation(chalet.category, isRTL);
+
+  // The chalet's page on sununo.app: the app opens it for anyone who has it
+  // installed (universal / app links), and everyone else gets the web page with
+  // a proper WhatsApp preview. The id alone is enough — the site redirects it
+  // to the chalet's readable address.
+  const handleShare = async () => {
+    const url = `https://sununo.app/${isRTL ? "ar" : "en"}/chalets/${chaletId}`;
+    const message = isRTL ? `${chaletName} على سنونو` : `${chaletName} on Sununo`;
+    try {
+      // Android shares `message` only, so the link has to ride inside it.
+      await Share.share(
+        Platform.OS === "ios" ? { message, url } : { message: `${message}\n${url}` },
+      );
+    } catch {
+      // Dismissing the sheet is not an error worth surfacing.
+    }
+  };
   const chaletRating = chalet.averageRating || chalet.rating || 0;
   const chaletPrice = chalet.basePrice
     ? Number(chalet.basePrice).toLocaleString()
@@ -813,6 +835,14 @@ export default function ChaletDetailScreen() {
               color={isFavorite ? "#EA2129" : "#FFFFFF"}
             />
           </AnimatedTouchable>
+          <AnimatedTouchable
+            style={[styles.favoriteBtn, { end: 74 }]}
+            onPress={handleShare}
+            accessibilityRole="button"
+            accessibilityLabel={isRTL ? "مشاركة الشاليه" : "Share chalet"}
+          >
+            <SolarShareBold size={22} color="#FFFFFF" />
+          </AnimatedTouchable>
           <View
             style={{
               position: "absolute",
@@ -1119,6 +1149,17 @@ export default function ChaletDetailScreen() {
               </ThemedText>
             </View>
           </TouchableOpacity>
+
+          {/* No button without real coordinates: the map falls back to a city
+              center then, and directions there would lead nowhere. */}
+          {hasChaletCoords && (
+            <View style={{ marginTop: 12, flexDirection: "row" }}>
+              <DirectionsButton
+                style={{ flex: 1 }}
+                onPress={() => openDirections(chaletLat, chaletLng)}
+              />
+            </View>
+          )}
 
           {/* المضيف */}
           <HostContactCard

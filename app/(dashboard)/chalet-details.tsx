@@ -915,10 +915,13 @@ export default function ChaletDetailsScreen() {
   // the raw chalet fields so it still renders if the API is older.
   const commissionFixedRaw = chalet?.effectiveCommissionFixedAmount ?? chalet?.commissionFixedAmount;
   const commissionPctRaw = chalet?.effectiveCommissionPercentage ?? chalet?.commissionPercentage;
-  const hasFixedCommission = commissionFixedRaw != null && Number(commissionFixedRaw) > 0;
+  // 0 is a real commission (the admin waived it), so the type decides, not the value.
+  const hasFixedCommission = chalet?.commissionType
+    ? chalet.commissionType === 'fixed' && commissionFixedRaw != null
+    : commissionFixedRaw != null && Number(commissionFixedRaw) > 0;
   const commissionDisplay = hasFixedCommission
     ? `${Number(commissionFixedRaw).toLocaleString()} ${isRTL ? 'د.ع' : 'IQD'}`
-    : (commissionPctRaw != null && Number(commissionPctRaw) > 0 ? `${Number(commissionPctRaw)}%` : null);
+    : (commissionPctRaw != null ? `${Number(commissionPctRaw)}%` : null);
   const completionItems = [
     {
       key: 'photos',

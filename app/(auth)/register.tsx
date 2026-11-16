@@ -37,6 +37,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch } from "react-redux";
+import { toLatinDigits } from "@/utils/format";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -589,8 +590,10 @@ export default function RegisterScreen() {
                       ]}
                       placeholder="077XXXXXXXX"
                       value={formData.phone}
+                      // An Arabic keyboard types ٠٧٧…; the regex check below and
+                      // the API both need Latin digits (same as the login screen).
                       onChangeText={(val) =>
-                        setFormData({ ...formData, phone: val })
+                        setFormData({ ...formData, phone: toLatinDigits(val) })
                       }
                       keyboardType="phone-pad"
                       placeholderTextColor="#94A3B8"
@@ -702,7 +705,8 @@ export default function RegisterScreen() {
                     placeholder="07xxxxxxxxx"
                     keyboardType="phone-pad"
                     value={formData.zainCash}
-                    onChangeText={(val) => {
+                    onChangeText={(raw) => {
+                      const val = toLatinDigits(raw);
                       setFormData({ ...formData, zainCash: val });
                       setPayErrors((prev) => ({
                         ...prev,
@@ -739,7 +743,8 @@ export default function RegisterScreen() {
                     }
                     keyboardType="numeric"
                     value={formData.qi}
-                    onChangeText={(val) => {
+                    onChangeText={(raw) => {
+                      const val = toLatinDigits(raw);
                       setFormData({ ...formData, qi: val });
                       setPayErrors((prev) => ({
                         ...prev,

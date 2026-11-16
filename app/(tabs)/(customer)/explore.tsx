@@ -62,6 +62,7 @@ import Svg, { Path } from "react-native-svg";
 
 import { getChaletCover, getImageSrc, getAvatarSrc } from "@/hooks/useImageSrc";
 import { getStartingPrice } from "@/utils/format";
+import { openDirections } from "@/utils/directions";
 import * as Location from "expo-location";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
@@ -77,7 +78,6 @@ import {
   Dimensions,
   Image,
   Keyboard,
-  Linking,
   ScrollView,
   StyleSheet,
   Text,
@@ -1226,8 +1226,7 @@ export default function ExploreScreen() {
                           if (selectedChalet?.coordinates) {
                             const lat = selectedChalet.coordinates[1];
                             const lng = selectedChalet.coordinates[0];
-                            const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
-                            Linking.openURL(url);
+                            openDirections(lat, lng);
                           }
                         }}
                         onSeeAllFacilities={() =>
