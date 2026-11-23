@@ -1653,6 +1653,75 @@ export default function CompleteBookingScreen() {
         onPress={() => {}}
       />
 
+      {/* Extras and notes sit right under the chalet card, before the map and
+          summaries, so they are on screen when the tab opens. Below the
+          summaries they were only reachable by scrolling past everything else. */}
+      {/* Optional paid amenities — only rendered when the chalet actually has
+          some, so nothing changes for the vast majority that are free. */}
+      {optionalAmenities.length > 0 && (
+        <Animated.View
+          style={styles.infoSectionCard}
+        >
+          <ThemedText style={[styles.sectionTitle, { alignSelf: "flex-start", textAlign }]}>
+            {isArabic ? "خدمات إضافية" : "Optional Extras"}
+          </ThemedText>
+          <View style={styles.divider} />
+          {optionalAmenities.map((a: any) => {
+            const isSelected = selectedAmenityIds.includes(a.chaletAmenityId);
+            return (
+              <PressableScale
+                key={a.chaletAmenityId}
+                onPress={() => toggleAmenity(a.chaletAmenityId)}
+                style={[
+                  styles.amenityOption,
+                  { flexDirection: rowDirection },
+                  isSelected && styles.amenityOptionActive,
+                ]}
+              >
+                <View style={[styles.amenityCheck, isSelected && styles.amenityCheckActive]}>
+                  {isSelected && <ThemedText style={styles.amenityCheckMark}>✓</ThemedText>}
+                </View>
+                <ThemedText style={[styles.amenityOptionLabel, { textAlign }]} numberOfLines={1}>
+                  {amenityName(a.name)}
+                </ThemedText>
+                <ThemedText style={[styles.amenityOptionPrice, { textAlign: textAlignEnd }]}>
+                  {Number(a.price).toLocaleString()} {t("common.iqd")}
+                </ThemedText>
+              </PressableScale>
+            );
+          })}
+        </Animated.View>
+      )}
+
+      <Animated.View
+        style={styles.infoSectionCard}
+      >
+        <ThemedText style={[styles.sectionTitle, { alignSelf: 'flex-start', textAlign }]}>
+          {isArabic ? "ملاحظات إضافية" : "Special Requests"}
+        </ThemedText>
+        <View style={styles.divider} />
+        <TextInput
+          style={[
+            styles.textInput,
+            {
+              height: 100,
+              textAlignVertical: "top",
+              paddingTop: 12,
+              textAlign: inputTextAlign,
+            },
+          ]}
+          placeholder={
+            isArabic
+              ? "أي طلبات خاصة أو ملاحظات للمالك..."
+              : "Any special requests or notes for the owner..."
+          }
+          placeholderTextColor="#94A3B8"
+          multiline
+          value={notes}
+          onChangeText={setNotes}
+        />
+      </Animated.View>
+
       <Animated.View
         style={styles.detailsMapCard}
       >
@@ -1878,72 +1947,6 @@ export default function CompleteBookingScreen() {
             </View>
           </>
         )}
-      </Animated.View>
-
-      {/* Optional paid amenities — only rendered when the chalet actually has
-          some, so nothing changes for the vast majority that are free. */}
-      {optionalAmenities.length > 0 && (
-        <Animated.View
-          style={styles.infoSectionCard}
-        >
-          <ThemedText style={[styles.sectionTitle, { alignSelf: "flex-start", textAlign }]}>
-            {isArabic ? "خدمات إضافية" : "Optional Extras"}
-          </ThemedText>
-          <View style={styles.divider} />
-          {optionalAmenities.map((a: any) => {
-            const isSelected = selectedAmenityIds.includes(a.chaletAmenityId);
-            return (
-              <PressableScale
-                key={a.chaletAmenityId}
-                onPress={() => toggleAmenity(a.chaletAmenityId)}
-                style={[
-                  styles.amenityOption,
-                  { flexDirection: rowDirection },
-                  isSelected && styles.amenityOptionActive,
-                ]}
-              >
-                <View style={[styles.amenityCheck, isSelected && styles.amenityCheckActive]}>
-                  {isSelected && <ThemedText style={styles.amenityCheckMark}>✓</ThemedText>}
-                </View>
-                <ThemedText style={[styles.amenityOptionLabel, { textAlign }]} numberOfLines={1}>
-                  {amenityName(a.name)}
-                </ThemedText>
-                <ThemedText style={[styles.amenityOptionPrice, { textAlign: textAlignEnd }]}>
-                  {Number(a.price).toLocaleString()} {t("common.iqd")}
-                </ThemedText>
-              </PressableScale>
-            );
-          })}
-        </Animated.View>
-      )}
-
-      <Animated.View
-        style={styles.infoSectionCard}
-      >
-        <ThemedText style={[styles.sectionTitle, { alignSelf: 'flex-start', textAlign }]}>
-          {isArabic ? "ملاحظات إضافية" : "Special Requests"}
-        </ThemedText>
-        <View style={styles.divider} />
-        <TextInput
-          style={[
-            styles.textInput,
-            {
-              height: 100,
-              textAlignVertical: "top",
-              paddingTop: 12,
-              textAlign: inputTextAlign,
-            },
-          ]}
-          placeholder={
-            isArabic
-              ? "أي طلبات خاصة أو ملاحظات للمالك..."
-              : "Any special requests or notes for the owner..."
-          }
-          placeholderTextColor="#94A3B8"
-          multiline
-          value={notes}
-          onChangeText={setNotes}
-        />
       </Animated.View>
 
       {chaletDetails?.bookingType === "delayed" ? (
@@ -2253,13 +2256,13 @@ export default function CompleteBookingScreen() {
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.tabsContainer}>
-          <MainTabs
         // The adults count is typeable, and iOS's number pad has no Done key:
         // keep the field above the keyboard and let a drag put it away.
         automaticallyAdjustKeyboardInsets
         keyboardDismissMode="on-drag"
+      >
+        <View style={styles.tabsContainer}>
+          <MainTabs
             activeTab={activeTab}
             onChange={handleTabPress}
             tabs={BOOKING_TABS}
@@ -2785,12 +2788,12 @@ export default function CompleteBookingScreen() {
                 value={adultCount}
                 onIncrement={handleIncrementAdults}
                 onDecrement={handleDecrementAdults}
-              />
-            </View>
-
                 onChangeValue={setAdultCount}
                 max={chaletCapacity > 0 ? chaletCapacity : 50}
                 onExceedMax={handleAdultsOverCapacity}
+              />
+            </View>
+
           </View>
         ) : (
           renderDetailsTab()
