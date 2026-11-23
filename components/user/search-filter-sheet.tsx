@@ -2,6 +2,7 @@ import {
     BottomSheetBackdrop,
     BottomSheetModal,
     BottomSheetScrollView,
+    BottomSheetTextInput,
     useBottomSheetModal } from "@gorhom/bottom-sheet";
 import * as Location from "expo-location";
 import React, { forwardRef, useCallback, useMemo, useState } from "react";
@@ -629,6 +630,8 @@ export const SearchFilterSheet = forwardRef<BottomSheetModal, SearchFilterSheetP
               value={adults}
               onIncrement={() => setAdults(adults + 1)}
               onDecrement={() => setAdults(Math.max(1, adults - 1))}
+              onChangeValue={setAdults}
+              InputComponent={BottomSheetTextInput}
             />
           </View>
 

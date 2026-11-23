@@ -1615,6 +1615,21 @@ export default function CompleteBookingScreen() {
     setAdultCount(Math.max(1, adultCount - 1));
   }, [adultCount]);
 
+  // Typed counts are clamped to the chalet's capacity by GuestCounter itself;
+  // this only says why the number the user typed came back smaller.
+  const handleAdultsOverCapacity = useCallback(
+    (typed: number) => {
+      const maxCap = chaletCapacity > 0 ? chaletCapacity : 50;
+      Alert.alert(
+        isArabic ? "تنبيه" : "Alert",
+        isArabic
+          ? `السعة القصوى لهذا الشاليه هي ${maxCap} شخص، فتم تعديل العدد من ${typed} إلى ${maxCap}.`
+          : `Maximum capacity for this chalet is ${maxCap} guests, so ${typed} was changed to ${maxCap}.`,
+      );
+    },
+    [chaletCapacity, isArabic],
+  );
+
   const renderDetailsTab = () => (
     <Animated.View
       style={styles.detailsContainer}
@@ -2241,6 +2256,10 @@ export default function CompleteBookingScreen() {
       >
         <View style={styles.tabsContainer}>
           <MainTabs
+        // The adults count is typeable, and iOS's number pad has no Done key:
+        // keep the field above the keyboard and let a drag put it away.
+        automaticallyAdjustKeyboardInsets
+        keyboardDismissMode="on-drag"
             activeTab={activeTab}
             onChange={handleTabPress}
             tabs={BOOKING_TABS}
@@ -2769,6 +2788,9 @@ export default function CompleteBookingScreen() {
               />
             </View>
 
+                onChangeValue={setAdultCount}
+                max={chaletCapacity > 0 ? chaletCapacity : 50}
+                onExceedMax={handleAdultsOverCapacity}
           </View>
         ) : (
           renderDetailsTab()
