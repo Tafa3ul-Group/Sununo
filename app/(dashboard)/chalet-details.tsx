@@ -21,6 +21,7 @@ import {
   SolarUsersGroupBold
 } from "@/components/icons/solar-icons";
 import { useConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { CancellationPolicySheet, type CancellationPolicySheetRef } from '@/components/dashboard/cancellation-policy-sheet';
 import { StatusModal } from '@/components/ui/status-modal';
 import { GuestCounter } from '@/components/user/guest-counter';
 import { LocationPickerModal } from '@/components/user/location-picker-modal';
@@ -36,6 +37,7 @@ import {
   useDeleteChaletMutation,
   useGetAmenityCategoriesQuery,
   useGetChaletAmenitiesQuery,
+  useGetChaletCancellationPoliciesQuery,
   useGetChaletShiftsQuery,
   useGetChaletRegionsQuery,
   useGetCitiesQuery,
@@ -153,6 +155,10 @@ export default function ChaletDetailsScreen() {
   const { data: currentAmenities } = useGetChaletAmenitiesQuery(chaletId as string, { skip: !chaletId });
   const { data: shiftsResponse } = useGetChaletShiftsQuery(chaletId as string, { skip: !chaletId });
   const shifts = shiftsResponse?.data || shiftsResponse || [];
+  const { data: cancellationPoliciesResponse } = useGetChaletCancellationPoliciesQuery(chaletId as string, { skip: !chaletId });
+  const cancellationTiers: any[] = Array.isArray(cancellationPoliciesResponse)
+    ? cancellationPoliciesResponse
+    : cancellationPoliciesResponse?.data || [];
 
   const chalet = response?.data || (response?.id ? response : null);
   const chaletStats = chaletStatsResponse?.data || chaletStatsResponse || {};
@@ -169,6 +175,7 @@ export default function ChaletDetailsScreen() {
   // Modal Refs
   const basicInfoModalRef = useRef<BottomSheetModal>(null);
   const depositModalRef = useRef<BottomSheetModal>(null);
+  const cancellationPolicyRef = useRef<CancellationPolicySheetRef>(null);
   const capacityModalRef = useRef<BottomSheetModal>(null);
   const amenitiesModalRef = useRef<BottomSheetModal>(null);
   const imagesModalRef = useRef<BottomSheetModal>(null);
@@ -1278,6 +1285,16 @@ export default function ChaletDetailsScreen() {
               onPress: () => depositModalRef.current?.present()
             })}
             {renderSettingsRow({
+              icon: SolarCalendarBold,
+              shape: 'green',
+              label: isRTL ? 'سياسة الإلغاء' : 'Cancellation Policy',
+              // With no tier the API keeps 100% — say so, rather than "not set".
+              value: cancellationTiers.length
+                ? (isRTL ? `${cancellationTiers.length} شرائح` : `${cancellationTiers.length} tiers`)
+                : (isRTL ? 'بدون استرجاع' : 'No refunds'),
+              onPress: () => cancellationPolicyRef.current?.present()
+            })}
+            {renderSettingsRow({
               icon: SolarClockCircleBold,
               shape: 'info',
               label: isRTL ? 'الفترات والأسعار' : 'Shifts & Pricing',
@@ -1944,6 +1961,15 @@ export default function ChaletDetailsScreen() {
           />
         </BottomSheetScrollView>
       </BottomSheetModal>
+
+      {/* Cancellation policy — self-contained sheet (loads and saves its own tiers). */}
+      <CancellationPolicySheet
+        ref={cancellationPolicyRef}
+        chaletId={chaletId as string}
+        depositType={chalet?.depositType}
+        depositPercentage={chalet?.depositPercentage}
+        depositFixedAmount={chalet?.depositFixedAmount}
+      />
 
       {/* 3. Capacity Modal */}
       <BottomSheetModal

@@ -2,6 +2,7 @@ import { SolarInfoCircleBold } from "@/components/icons/solar-icons";
 import { ThemedText } from "@/components/themed-text";
 import { normalize } from "@/constants/theme";
 import { useDirection } from "@/i18n";
+import { describeCancellationTiers } from "@/utils/cancellation-policy-text";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 
@@ -46,21 +47,18 @@ export function CancellationPolicyCard({
         </ThemedText>
       ) : tiers.length > 0 ? (
         <>
-          {tiers.map((tier) => (
+          {/* Same wording as the owner's preview of this policy. */}
+          {describeCancellationTiers(
+            tiers.map((t) => ({ days: Number(t.daysBeforeBooking), fee: Number(t.penaltyPercentage) })),
+            isRTL,
+          ).map((line) => (
             <ThemedText
-              key={tier.id ?? tier.daysBeforeBooking}
-              style={[styles.text, { textAlign }]}
+              key={line.range}
+              style={[styles.text, line.noRefund && styles.textStrict, { textAlign }]}
             >
-              {isRTL
-                ? `• الإلغاء قبل ${tier.daysBeforeBooking} يوم أو أكثر: تُخصم ${Number(tier.penaltyPercentage)}%`
-                : `• Cancel ${tier.daysBeforeBooking}+ days ahead: ${Number(tier.penaltyPercentage)}% fee`}
+              {`• ${line.range}: ${line.outcome}`}
             </ThemedText>
           ))}
-          <ThemedText style={[styles.text, { textAlign }]}>
-            {isRTL
-              ? "• الإلغاء بعد ذلك: لا يُسترد شيء."
-              : "• Cancelling later than that refunds nothing."}
-          </ThemedText>
         </>
       ) : (
         <ThemedText style={[styles.text, styles.textStrict, { textAlign }]}>

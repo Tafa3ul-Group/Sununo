@@ -1963,6 +1963,12 @@ export default function CompleteBookingScreen() {
               ? "سيتم إرسال طلب الحجز إلى صاحب الشاليه للموافقة عليه. بعد الموافقة ستصلك رسالة عبر واتساب تحتوي على رابط لإتمام عملية الدفع."
               : "Your booking request will be sent to the chalet owner for approval. Once approved, you will receive a WhatsApp message with a link to complete the payment."}
           </ThemedText>
+          {/* The customer agrees to this policy by sending the request, so it
+              belongs here too — not only on the pay-now path. */}
+          <CancellationPolicyCard
+            tiers={cancellationTiers}
+            isLoading={isLoadingCancellationPolicies}
+          />
         </View>
       ) : (
         /* ── Instant Booking: Show payment selection ── */
