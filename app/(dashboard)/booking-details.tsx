@@ -15,13 +15,12 @@ import { Image as ExpoImage } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSelector } from 'react-redux';
 import { useConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import Toast from 'react-native-toast-message';
 
 const IDENTITY_BLUE = '#035DF9';
-const SCREEN_WIDTH = Dimensions.get('window').width;
 
 import { PaymentConfirmationSheet, PaymentConfirmationSheetRef } from '@/components/payment-confirmation-modal';
 
@@ -45,7 +44,6 @@ export default function BookingDetailsPage() {
   const [approveBooking, { isLoading: isApproving }] = useApproveBookingMutation();
   const { showConfirm } = useConfirmationDialog();
   const [isSuccessNavigating, setIsSuccessNavigating] = React.useState(false);
-  const [expandedImage, setExpandedImage] = React.useState<string | null>(null);
 
   const { data: bookingDetailsData, isLoading, error, refetch } = useGetProviderBookingDetailsQuery(id as string, { skip: !id });
 
@@ -150,12 +148,6 @@ export default function BookingDetailsPage() {
     : bChaletImage?.url || bChaletImage?.id || bChaletImage?.imageUrl;
 
   const chaletImageSource = getImageSrc(chaletImageId);
-
-  // Customer ID card images
-  const customerIdFront = data.customer?.idCardFrontImage;
-  const customerIdBack = data.customer?.idCardBackImage;
-  const hasIdCards = !bIsExternal && (customerIdFront || customerIdBack);
-  console.log('[BookingDetails] customer ID cards:', { customerIdFront, customerIdBack, hasIdCards, tenantCategory: data.customer?.tenantCategory });
 
   const depositAmount = Number(data.depositAmount || 0);
   const remainingAmount = Number(data.remainingAmount || 0);
@@ -418,54 +410,6 @@ export default function BookingDetailsPage() {
           {data.notes && renderInfoRow(isRTL ? 'ملاحظات' : 'Notes', data.notes)}
         </View>
 
-        {/* Customer ID Card Images */}
-        {hasIdCards && (
-          <View style={styles.infoSectionCard}>
-            <View style={[styles.sectionTitleRow, { alignItems: flexStart }]}>
-              <Text style={[styles.sectionTitle, { textAlign }]}>{isRTL ? 'صور الهوية' : 'ID Card Images'}</Text>
-            </View>
-            <View style={styles.divider} />
-            <View style={styles.idCardsRow}>
-              {customerIdFront && (
-                <TouchableOpacity
-                  style={styles.idCardWrapper}
-                  activeOpacity={0.85}
-                  onPress={() => {
-                    const src = getImageSrc(customerIdFront);
-                    setExpandedImage(typeof src === 'object' ? src.uri : null);
-                  }}
-                >
-                  <ExpoImage
-                    source={getImageSrc(customerIdFront)}
-                    style={styles.idCardImage}
-                    contentFit="cover"
-                    transition={200}
-                  />
-                  <Text style={styles.idCardLabel}>{isRTL ? 'الوجه الأمامي' : 'Front'}</Text>
-                </TouchableOpacity>
-              )}
-              {customerIdBack && (
-                <TouchableOpacity
-                  style={styles.idCardWrapper}
-                  activeOpacity={0.85}
-                  onPress={() => {
-                    const src = getImageSrc(customerIdBack);
-                    setExpandedImage(typeof src === 'object' ? src.uri : null);
-                  }}
-                >
-                  <ExpoImage
-                    source={getImageSrc(customerIdBack)}
-                    style={styles.idCardImage}
-                    contentFit="cover"
-                    transition={200}
-                  />
-                  <Text style={styles.idCardLabel}>{isRTL ? 'الوجه الخلفي' : 'Back'}</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-        )}
-
         {/* Booking Information */}
         <View style={styles.infoSectionCard}>
           <View style={[styles.sectionTitleRow, { alignItems: flexStart }]}>
@@ -677,30 +621,6 @@ export default function BookingDetailsPage() {
         paymentModel={data.paymentModel || 'deposit'}
         refundAmount={refundableAmount}
       />
-
-      {/* Expanded Image Modal */}
-      {expandedImage && (
-        <TouchableOpacity
-          style={styles.expandedOverlay}
-          activeOpacity={1}
-          onPress={() => setExpandedImage(null)}
-        >
-          <View style={styles.expandedContainer}>
-            <ExpoImage
-              source={{ uri: expandedImage }}
-              style={styles.expandedImage}
-              contentFit="contain"
-              transition={200}
-            />
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setExpandedImage(null)}
-            >
-              <Text style={styles.closeButtonText}>✕</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      )}
     </View>
   );
 }
@@ -821,65 +741,6 @@ const styles = StyleSheet.create({
     fontSize: normalize.font(13),
     fontFamily: 'IBMPlexSansArabic-SemiBold',
     lineHeight: normalize.font(18),
-  },
-  // ID Card Images
-  idCardsRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 4,
-  },
-  idCardWrapper: {
-    flex: 1,
-    borderRadius: 14,
-    overflow: 'hidden',
-    backgroundColor: '#F1F5F9',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  idCardImage: {
-    width: '100%',
-    height: normalize.height(120),
-  },
-  idCardLabel: {
-    fontSize: normalize.font(12),
-    fontFamily: 'IBMPlexSansArabic-Medium',
-    color: '#64748B',
-    textAlign: 'center',
-    paddingVertical: 6,
-  },
-  // Expanded Image Modal
-  expandedOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.9)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 9999,
-  },
-  expandedContainer: {
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  expandedImage: {
-    width: SCREEN_WIDTH - 20,
-    height: '70%',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: normalize.height(60),
-    end: 20,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  closeButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontFamily: 'IBMPlexSansArabic-SemiBold',
   },
   chaletSimpleRow: { alignItems: 'center', gap: 16 },
   simpleImageWrapper: { width: 80, height: 80, borderRadius: 16, overflow: 'hidden', backgroundColor: '#F1F5F9' },
